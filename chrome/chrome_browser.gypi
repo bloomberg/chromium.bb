@@ -16,7 +16,7 @@
         'common',
         'common_net',
         'debugger',
-        'in_memory_url_index_cache_proto_cpp',
+        'in_memory_url_index_cache_proto',
         'installer_util',
         'platform_locale_settings',
         'profile_import',
@@ -332,14 +332,6 @@
         'browser/certificate_manager_model.h',
         'browser/certificate_viewer.cc',
         'browser/certificate_viewer.h',
-        # TODO(rkc): Find a better way to include these files
-        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/annotations.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/chrome.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/common.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/dom.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/extension.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/math.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/userfeedback/proto/web.pb.cc',
         'browser/character_encoding.cc',
         'browser/character_encoding.h',
         'browser/chrome_browser_application_mac.h',
@@ -1929,8 +1921,6 @@
         'browser/safe_browsing/protocol_manager.h',
         'browser/safe_browsing/protocol_parser.cc',
         'browser/safe_browsing/protocol_parser.h',
-        '<(protoc_out_dir)/chrome/browser/safe_browsing/report.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/safe_browsing/report.pb.h',
         'browser/safe_browsing/safe_browsing_blocking_page.cc',
         'browser/safe_browsing/safe_browsing_blocking_page.h',
         'browser/safe_browsing/safe_browsing_database.cc',
@@ -3802,8 +3792,6 @@
             'browser/download/download_safe_browsing_client.h',
             'browser/renderer_host/safe_browsing_resource_handler.cc',
             'browser/renderer_host/safe_browsing_resource_handler.h',
-            '<(protoc_out_dir)/chrome/browser/safe_browsing/report.pb.cc',
-            '<(protoc_out_dir)/chrome/browser/safe_browsing/report.pb.h',
           ],
           'sources/': [
             ['exclude', '^browser/safe_browsing/'],
@@ -4815,7 +4803,7 @@
     {
       # Protobuf compiler / generate rule for feedback
       'target_name': 'userfeedback_proto',
-      'type': 'none',
+      'type': 'static_library',
       'sources': [
         'browser/userfeedback/proto/annotations.proto',
         'browser/userfeedback/proto/chrome.proto',
@@ -4825,153 +4813,35 @@
         'browser/userfeedback/proto/math.proto',
         'browser/userfeedback/proto/web.proto',
       ],
-      'rules': [
-        {
-          'rule_name': 'genproto',
-          'extension': 'proto',
-          'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-          ],
-          'variables': {
-            # The protoc compiler requires a proto_path argument with the
-            # directory containing the .proto file.
-            # There's no generator variable that corresponds to this, so fake it.
-            'rule_input_relpath': 'browser/userfeedback/proto',
-          },
-          'outputs': [
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
-          ],
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=./<(rule_input_relpath)',
-            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
-            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
-          ],
-          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'dependencies': [
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        '../third_party/protobuf/protobuf.gyp:protoc#host',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ]
+      'variables': {
+        'proto_in_dir': 'browser/userfeedback/proto',
+        'proto_out_dir': 'chrome/browser/userfeedback/proto',
       },
-      'export_dependent_settings': [
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-      ],
+      'includes': [ '../build/protoc.gypi' ]
     },
     {
       # Protobuf compiler / generator for the safebrowsing reporting
       # protocol buffer.
       'target_name': 'safe_browsing_report_proto',
-      'type': 'none',
+      'type': 'static_library',
       'sources': [ 'browser/safe_browsing/report.proto' ],
-      'rules': [
-        {
-          'rule_name': 'genproto',
-          'extension': 'proto',
-          'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-          ],
-          'variables': {
-            # The protoc compiler requires a proto_path argument with the
-            # directory containing the .proto file.
-            # There's no generator variable that corresponds to this, so fake
-            # it.
-            'rule_input_relpath': 'browser/safe_browsing',
-          },
-          'outputs': [
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
-          ],
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=./<(rule_input_relpath)',
-            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
-            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
-          ],
-          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'dependencies': [
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        '../third_party/protobuf/protobuf.gyp:protoc#host',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ]
+      'variables': {
+        'proto_in_dir': 'browser/safe_browsing',
+        'proto_out_dir': 'chrome/browser/safe_browsing',
       },
-      'export_dependent_settings': [
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-      ],
+      'includes': [ '../build/protoc.gypi' ]
     },
     {
       # Protobuf compiler / generator for the InMemoryURLIndex caching
       # protocol buffer.
       'target_name': 'in_memory_url_index_cache_proto',
-      'type': 'none',
-      'sources': [ 'browser/history/in_memory_url_index_cache.proto' ],
-      'rules': [
-        {
-          'rule_name': 'genproto',
-          'extension': 'proto',
-          'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-          ],
-          'variables': {
-            # The protoc compiler requires a proto_path argument with the
-            # directory containing the .proto file.
-            # There's no generator variable that corresponds to this, so fake
-            # it.
-            'rule_input_relpath': 'browser/history',
-          },
-          'outputs': [
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
-          ],
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=./<(rule_input_relpath)',
-            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
-            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
-          ],
-          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'dependencies': [
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        '../third_party/protobuf/protobuf.gyp:protoc#host',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ]
-      },
-      'export_dependent_settings': [
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-      ],
-    },
-    {
-      'target_name': 'in_memory_url_index_cache_proto_cpp',
       'type': 'static_library',
-      'sources': [
-        '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/history/in_memory_url_index_cache.pb.h',
-      ],
-      'dependencies': [
-        'in_memory_url_index_cache_proto',
-      ],
-      'export_dependent_settings': [
-        'in_memory_url_index_cache_proto',
-      ],
-      # This target exports a hard dependency because it includes generated
-      # header files.
-      'hard_dependency': 1,
+      'sources': [ 'browser/history/in_memory_url_index_cache.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/history',
+        'proto_out_dir': 'chrome/browser/history',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
   ],
   'conditions': [
