@@ -505,7 +505,7 @@
       'target_name': 'syncapi_core',
       'type': 'static_library',
       'sources': [
-        'browser/sync/engine/configure_reason.h'
+        'browser/sync/engine/configure_reason.h',
         'browser/sync/engine/http_post_provider_factory.h',
         'browser/sync/engine/http_post_provider_interface.h',
         'browser/sync/engine/syncapi_internal.cc',
