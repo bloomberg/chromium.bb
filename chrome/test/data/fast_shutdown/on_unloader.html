@@ -1,17 +1,7 @@
 <script>
-function setCookie() {
+addEventListener("unload", function() {
   var expires = new Date();
   expires.setMinutes(expires.getMinutes() + 1);
   document.cookie = "unloaded=ohyeah;path=/;expires=" + expires.toUTCString();
-}
-</script>
-
-<BODY onUnload="setCookie()" onClick="doPopup()">
-
-<script>
-
-function doPopup() {
-  popup = window.open('on_before_unloader.html')
-}
-
+}, false);
 </script>

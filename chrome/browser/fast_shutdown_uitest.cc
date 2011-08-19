@@ -1,0 +1,118 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/file_path.h"
+#include "base/stl_util.h"
+#include "base/test/thread_test_helper.h"
+#include "chrome/browser/net/sqlite_persistent_cookie_store.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/automation/browser_proxy.h"
+#include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/ui/ui_test.h"
+#include "content/browser/browser_thread.h"
+
+class FastShutdown : public UITest {
+ protected:
+  FastShutdown()
+      : db_thread_(BrowserThread::DB),
+        thread_helper_(new base::ThreadTestHelper(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB))) {
+    dom_automation_enabled_ = true;
+  }
+
+  void Init() {
+    ASSERT_TRUE(db_thread_.Start());
+
+    // Cache this, so that we can still access it after the browser exits.
+    user_data_dir_ = user_data_dir();
+  }
+
+  // Looks for the given |cookie| in the cookie store. If it exists, puts the
+  // cookie's value in |cookie_value| and sets |has_cookie| to true. Sets
+  // |has_cookie| to false if the |cookie| wasn't found.
+  void GetCookie(const net::CookieMonster::CanonicalCookie& cookie,
+                 bool* has_cookie, std::string* cookie_value) {
+    scoped_refptr<SQLitePersistentCookieStore> cookie_store(
+        new SQLitePersistentCookieStore(
+            user_data_dir_.AppendASCII(chrome::kInitialProfile)
+                          .Append(chrome::kCookieFilename)));
+    std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+    ASSERT_TRUE(cookie_store->Load(&cookies));
+    *has_cookie = false;
+    for (size_t i = 0; i < cookies.size(); ++i) {
+      if (cookies[i]->IsEquivalent(cookie)) {
+        *has_cookie = true;
+        *cookie_value = cookies[i]->Value();
+      }
+    }
+    cookie_store = NULL;
+    ASSERT_TRUE(thread_helper_->Run());
+    STLDeleteElements(&cookies);
+  }
+
+ private:
+  BrowserThread db_thread_;  // Used by the cookie store during its clean up.
+  scoped_refptr<base::ThreadTestHelper> thread_helper_;
+  FilePath user_data_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(FastShutdown);
+};
+
+// This tests for a previous error where uninstalling an onbeforeunload handler
+// would enable fast shutdown even if an onunload handler still existed.
+TEST_F(FastShutdown, SlowTermination) {
+  Init();
+
+  // Only the name, domain and path are used in IsEquivalent(), so we don't care
+  // what the other fields have.
+  net::CookieMonster::CanonicalCookie cookie(
+      GURL(),        // url
+      "unloaded",    // name
+      "",            // value
+      "",            // domain
+      "/",           // path
+      "",            // mac_key
+      "",            // mac_algorithm
+      base::Time(),  // creation
+      base::Time(),  // expiration
+      base::Time(),  // last_access
+      false,         // secure
+      false,         // httponly
+      false);        // has_expires
+
+  bool has_cookie = false;
+  std::string cookie_value;
+
+  // Check that the cookie (to be set during unload) doesn't exist already.
+  GetCookie(cookie, &has_cookie, &cookie_value);
+  EXPECT_FALSE(has_cookie);
+  EXPECT_EQ("", cookie_value);
+
+  // This page has an unload handler.
+  const FilePath dir(FILE_PATH_LITERAL("fast_shutdown"));
+  const FilePath file(FILE_PATH_LITERAL("on_unloader.html"));
+
+  NavigateToURL(ui_test_utils::GetTestUrl(dir, file));
+
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+
+  // This page has a beforeunload handler.
+  ASSERT_TRUE(browser->GetTab(0)->ExecuteJavaScript(
+      "open('on_before_unloader.html')"));
+  WaitUntilTabCount(2);
+
+  // Close the tab, removing the one and only beforeunload handler.
+  ASSERT_TRUE(browser->GetTab(1)->Close(true));
+
+  // Close the browser. This should launch the unload handler, which sets a
+  // cookie that's stored to disk.
+  QuitBrowser();
+
+  // Read the cookie and check that it has the expected value.
+  GetCookie(cookie, &has_cookie, &cookie_value);
+  EXPECT_TRUE(has_cookie);
+  EXPECT_EQ("ohyeah", cookie_value);
+}
