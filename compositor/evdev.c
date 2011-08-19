@@ -200,16 +200,44 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 #define TEST_BIT(array, bit)    ((array[LONG(bit)] >> OFF(bit)) & 1)
 /* end copied */
 
+static void
+evdev_configure_device(struct evdev_input_device *device)
+{
+	struct input_absinfo absinfo;
+	unsigned long ev_bits[NBITS(EV_MAX)];
+	unsigned long abs_bits[NBITS(ABS_MAX)];
+	unsigned long key_bits[NBITS(KEY_MAX)];
+
+	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
+	if (TEST_BIT(ev_bits, EV_ABS)) {
+		ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)),
+		      abs_bits);
+		if (TEST_BIT(abs_bits, ABS_X)) {
+			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
+			device->min_x = absinfo.minimum;
+			device->max_x = absinfo.maximum;
+		}
+		if (TEST_BIT(abs_bits, ABS_Y)) {
+			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
+			device->min_y = absinfo.minimum;
+			device->max_y = absinfo.maximum;
+		}
+	}
+	if (TEST_BIT(ev_bits, EV_KEY)) {
+		ioctl(device->fd, EVIOCGBIT(EV_KEY, sizeof(key_bits)),
+		      key_bits);
+		if (TEST_BIT(key_bits, BTN_TOOL_FINGER) &&
+		             !TEST_BIT(key_bits, BTN_TOOL_PEN))
+			device->is_touchpad = 1;
+	}
+}
+
 static struct evdev_input_device *
 evdev_input_device_create(struct evdev_input *master,
 			  struct wl_display *display, const char *path)
 {
 	struct evdev_input_device *device;
 	struct wl_event_loop *loop;
-	struct input_absinfo absinfo;
-	unsigned long ev_bits[NBITS(EV_MAX)];
-	unsigned long abs_bits[NBITS(ABS_MAX)];
-	unsigned long key_bits[NBITS(KEY_MAX)];
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
@@ -228,25 +256,7 @@ evdev_input_device_create(struct evdev_input *master,
 		return NULL;
 	}
 
-	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
-	if (TEST_BIT(ev_bits, EV_ABS)) {
-		ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)), abs_bits);
-		if (TEST_BIT(abs_bits, ABS_X)) {
-			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
-			device->min_x = absinfo.minimum;
-			device->max_x = absinfo.maximum;
-		}
-		if (TEST_BIT(abs_bits, ABS_Y)) {
-			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
-			device->min_y = absinfo.minimum;
-			device->max_y = absinfo.maximum;
-		}
-	}
-	if (TEST_BIT(ev_bits, EV_KEY)) {
-		ioctl(device->fd, EVIOCGBIT(EV_KEY, sizeof(key_bits)), key_bits);
-		if (TEST_BIT(key_bits, BTN_TOOL_FINGER) && !TEST_BIT(key_bits, BTN_TOOL_PEN))
-			device->is_touchpad = 1;
-	}
+	evdev_configure_device(device);
 
 	loop = wl_display_get_event_loop(display);
 	device->source = wl_event_loop_add_fd(loop, device->fd,
