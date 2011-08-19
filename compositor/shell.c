@@ -510,7 +510,8 @@ drag_activate(struct wl_client *client,
 	drag->drag_offer.resource.object.implementation =
 		(void (**)(void)) &drag_offer_interface;
 
-	wl_display_add_object(display, &drag->drag_offer.resource.object);
+	wl_display_add_global(display,
+			      &drag->drag_offer.resource.object, NULL);
 
 	target = pick_surface(device, &sx, &sy);
 	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
@@ -660,8 +661,9 @@ selection_activate(struct wl_client *client,
 	selection->selection_offer.resource.object.implementation =
 		(void (**)(void)) &selection_offer_interface;
 
-	wl_display_add_object(display,
-			      &selection->selection_offer.resource.object);
+	wl_display_add_global(display,
+			      &selection->selection_offer.resource.object,
+			      NULL);
 
 	if (wd->selection) {
 		wl_resource_post_event(&wd->selection->resource,
@@ -828,7 +830,6 @@ shell_init(struct wlsc_compositor *ec)
 
 	shell->object.interface = &wl_shell_interface;
 	shell->object.implementation = (void (**)(void)) &shell_interface;
-	wl_display_add_object(ec->wl_display, &shell->object);
 	if (wl_display_add_global(ec->wl_display, &shell->object, NULL))
 		return -1;
 

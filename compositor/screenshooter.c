@@ -64,6 +64,5 @@ screenshooter_create(struct wlsc_compositor *ec)
 		(void(**)(void)) &screenshooter_implementation;
 	shooter->ec = ec;
 
-	wl_display_add_object(ec->wl_display, &shooter->base);
 	wl_display_add_global(ec->wl_display, &shooter->base, NULL);
 };

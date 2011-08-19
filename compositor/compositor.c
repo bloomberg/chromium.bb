@@ -1635,8 +1635,6 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	device->input_device.resource.object.implementation =
 		(void (**)(void)) &input_device_interface;
 	device->input_device.resource.data = device;
-	wl_display_add_object(ec->wl_display,
-			      &device->input_device.resource.object);
 	wl_display_add_global(ec->wl_display,
 			      &device->input_device.resource.object, NULL);
 
@@ -1861,7 +1859,6 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	wl_list_init(&output->frame_callback_list);
 
 	output->resource.object.interface = &wl_output_interface;
-	wl_display_add_object(c->wl_display, &output->resource.object);
 	wl_display_add_global(c->wl_display, &output->resource.object,
 			      wlsc_output_post_geometry);
 }

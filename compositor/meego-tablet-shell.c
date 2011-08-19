@@ -656,7 +656,6 @@ shell_init(struct wlsc_compositor *compositor)
 	shell->resource.object.interface = &meego_tablet_shell_interface;
 	shell->resource.object.implementation =
 		(void (**)(void)) &tablet_shell_interface;
-	wl_display_add_object(compositor->wl_display, &shell->resource.object);
 
 	/* FIXME: This will make the object available to all clients. */
 	wl_display_add_global(compositor->wl_display,

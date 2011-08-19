@@ -797,7 +797,6 @@ wlsc_xserver_init(struct wlsc_compositor *compositor)
 	mxs->xserver.resource.object.interface = &xserver_interface;
 	mxs->xserver.resource.object.implementation =
 		(void (**)(void)) &xserver_implementation;
-	wl_display_add_object(display, &mxs->xserver.resource.object);
 	wl_display_add_global(display, &mxs->xserver.resource.object,
 			      wlsc_xserver_bind);
 
