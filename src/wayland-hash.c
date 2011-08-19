@@ -186,6 +186,20 @@ hash_table_search(struct wl_hash_table *ht, uint32_t hash)
 	return NULL;
 }
 
+WL_EXPORT void
+wl_hash_table_for_each(struct wl_hash_table *ht,
+		       wl_hash_table_func_t func, void *data)
+{
+	struct hash_entry *entry;
+	uint32_t i;
+
+	for (i = 0; i < ht->size; i++) {
+		entry = ht->table + i;
+		if (entry_is_present(entry))
+			func(entry->data, data);
+	}
+}
+
 WL_EXPORT void *
 wl_hash_table_lookup(struct wl_hash_table *ht, uint32_t hash)
 {

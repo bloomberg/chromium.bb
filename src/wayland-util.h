@@ -65,12 +65,16 @@ struct wl_object {
 	uint32_t id;
 };
 
+typedef void (*wl_hash_table_func_t)(void *element, void *data);
+
 struct wl_hash_table;
 struct wl_hash_table *wl_hash_table_create(void);
 void wl_hash_table_destroy(struct wl_hash_table *ht);
 void *wl_hash_table_lookup(struct wl_hash_table *ht, uint32_t hash);
 int wl_hash_table_insert(struct wl_hash_table *ht, uint32_t hash, void *data);
 void wl_hash_table_remove(struct wl_hash_table *ht, uint32_t hash);
+void wl_hash_table_for_each(struct wl_hash_table *ht,
+			    wl_hash_table_func_t func, void *data);
 
 /**
  * wl_list - linked list
