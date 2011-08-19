@@ -99,6 +99,15 @@ TEST_F(ModelTypeTest, ModelTypeBitSetFromString) {
   EXPECT_EQ(ModelTypeBitSet(), output);
 }
 
+TEST_F(ModelTypeTest, GetAllRealModelTypes) {
+  const ModelTypeSet& all_types = GetAllRealModelTypes();
+  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+    ModelType type = ModelTypeFromInt(i);
+    EXPECT_EQ(IsRealDataType(type), all_types.count(type) > 0u);
+  }
+  EXPECT_EQ(0u, all_types.count(MODEL_TYPE_COUNT));
+}
+
 TEST_F(ModelTypeTest, IsRealDataType) {
   EXPECT_FALSE(IsRealDataType(UNSPECIFIED));
   EXPECT_FALSE(IsRealDataType(MODEL_TYPE_COUNT));

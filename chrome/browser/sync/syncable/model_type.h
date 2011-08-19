@@ -168,6 +168,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
 bool NotificationTypeToRealModelType(const std::string& notification_type,
                                      ModelType* model_type);
 
+// Returns a ModelTypeSet with all real model types.
+ModelTypeSet GetAllRealModelTypes();
+
 // Returns true if |model_type| is a real datatype
 bool IsRealDataType(ModelType model_type);
 

@@ -14,6 +14,10 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
+namespace base {
+class DictionaryValue;
+}  // namespace
+
 namespace browser_sync {
 
 enum ModelSafeGroup {
@@ -68,6 +72,16 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
 // disabling sync for certain types, as well as model association completions.
 typedef std::map<syncable::ModelType, ModelSafeGroup>
     ModelSafeRoutingInfo;
+
+// Caller takes ownership of return value.
+base::DictionaryValue* ModelSafeRoutingInfoToValue(
+    const ModelSafeRoutingInfo& routing_info);
+
+std::string ModelSafeRoutingInfoToString(
+    const ModelSafeRoutingInfo& routing_info);
+
+syncable::ModelTypeSet GetRoutingInfoTypes(
+    const ModelSafeRoutingInfo& routing_info);
 
 ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
                                     const ModelSafeRoutingInfo& routes);

@@ -3137,6 +3137,7 @@
         'browser/sync/engine/download_updates_command_unittest.cc',
         'browser/sync/engine/mock_model_safe_workers.cc',
         'browser/sync/engine/mock_model_safe_workers.h',
+        'browser/sync/engine/model_safe_worker_unittest.cc',
         'browser/sync/engine/nigori_util_unittest.cc',
         'browser/sync/engine/process_commit_response_command_unittest.cc',
         'browser/sync/engine/syncer_proto_util_unittest.cc',

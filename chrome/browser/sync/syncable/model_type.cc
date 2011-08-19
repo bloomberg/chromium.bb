@@ -579,6 +579,14 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
   return false;
 }
 
+ModelTypeSet GetAllRealModelTypes() {
+  ModelTypeSet all_types;
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    all_types.insert(ModelTypeFromInt(i));
+  }
+  return all_types;
+}
+
 bool IsRealDataType(ModelType model_type) {
   return model_type >= FIRST_REAL_MODEL_TYPE && model_type < MODEL_TYPE_COUNT;
 }
