@@ -2,33 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
-#include "base/test/test_timeouts.h"
-#include "chrome/browser/ui/view_ids.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/automation/automation_proxy.h"
-#include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/ui/ui_test.h"
-#include "content/browser/net/url_request_mock_http_job.h"
-#include "net/url_request/url_request_test_util.h"
-#include "ui/base/events.h"
-#include "ui/base/message_box_flags.h"
+#include "chrome/browser/unload_uitest.h"
 
-const std::string NOLISTENERS_HTML =
+const char NOLISTENERS_HTML[] =
     "<html><head><title>nolisteners</title></head><body></body></html>";
 
-const std::string UNLOAD_HTML =
+const char UNLOAD_HTML[] =
     "<html><head><title>unload</title></head><body>"
     "<script>window.onunload=function(e){}</script></body></html>";
 
-const std::string BEFORE_UNLOAD_HTML =
+const char BEFORE_UNLOAD_HTML[] =
     "<html><head><title>beforeunload</title></head><body>"
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
     "</body></html>";
 
-const std::string INNER_FRAME_WITH_FOCUS_HTML =
+const char INNER_FRAME_WITH_FOCUS_HTML[] =
     "<html><head><title>innerframewithfocus</title></head><body>"
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
     "<iframe src=\"data:text/html,<html><head><script>window.onload="
@@ -36,7 +24,7 @@ const std::string INNER_FRAME_WITH_FOCUS_HTML =
     "<body><input id='box'></input></body></html>\"></iframe>"
     "</body></html>";
 
-const std::string TWO_SECOND_BEFORE_UNLOAD_HTML =
+const char TWO_SECOND_BEFORE_UNLOAD_HTML[] =
     "<html><head><title>twosecondbeforeunload</title></head><body>"
     "<script>window.onbeforeunload=function(e){"
       "var start = new Date().getTime();"
@@ -44,31 +32,31 @@ const std::string TWO_SECOND_BEFORE_UNLOAD_HTML =
       "return 'foo';"
     "}</script></body></html>";
 
-const std::string INFINITE_UNLOAD_HTML =
+const char INFINITE_UNLOAD_HTML[] =
     "<html><head><title>infiniteunload</title></head><body>"
     "<script>window.onunload=function(e){while(true){}}</script>"
     "</body></html>";
 
-const std::string INFINITE_BEFORE_UNLOAD_HTML =
+const char INFINITE_BEFORE_UNLOAD_HTML[] =
     "<html><head><title>infinitebeforeunload</title></head><body>"
     "<script>window.onbeforeunload=function(e){while(true){}}</script>"
     "</body></html>";
 
-const std::string INFINITE_UNLOAD_ALERT_HTML =
+const char INFINITE_UNLOAD_ALERT_HTML[] =
     "<html><head><title>infiniteunloadalert</title></head><body>"
     "<script>window.onunload=function(e){"
       "while(true){}"
       "alert('foo');"
     "}</script></body></html>";
 
-const std::string INFINITE_BEFORE_UNLOAD_ALERT_HTML =
+const char INFINITE_BEFORE_UNLOAD_ALERT_HTML[] =
     "<html><head><title>infinitebeforeunloadalert</title></head><body>"
     "<script>window.onbeforeunload=function(e){"
       "while(true){}"
       "alert('foo');"
     "}</script></body></html>";
 
-const std::string TWO_SECOND_UNLOAD_ALERT_HTML =
+const char TWO_SECOND_UNLOAD_ALERT_HTML[] =
     "<html><head><title>twosecondunloadalert</title></head><body>"
     "<script>window.onunload=function(e){"
       "var start = new Date().getTime();"
@@ -76,7 +64,7 @@ const std::string TWO_SECOND_UNLOAD_ALERT_HTML =
       "alert('foo');"
     "}</script></body></html>";
 
-const std::string TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML =
+const char TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML[] =
     "<html><head><title>twosecondbeforeunloadalert</title></head><body>"
     "<script>window.onbeforeunload=function(e){"
       "var start = new Date().getTime();"
@@ -84,87 +72,6 @@ const std::string TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML =
       "alert('foo');"
     "}</script></body></html>";
 
-const std::string CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER =
-    "<html><head><title>only_one_unload</title></head>"
-    "<body onclick=\"window.open('data:text/html,"
-    "<html><head><title>popup</title></head></body>')\" "
-    "onbeforeunload='return;'>"
-    "</body></html>";
-
-class UnloadTest : public UITest {
- public:
-  virtual void SetUp() {
-    const testing::TestInfo* const test_info =
-        testing::UnitTest::GetInstance()->current_test_info();
-    if (strcmp(test_info->name(),
-        "BrowserCloseTabWhenOtherTabHasListener") == 0) {
-      launch_arguments_.AppendSwitch(switches::kDisablePopupBlocking);
-    }
-
-    UITest::SetUp();
-  }
-
-  void CheckTitle(const std::wstring& expected_title) {
-    const int kCheckDelayMs = 100;
-    for (int max_wait_time = TestTimeouts::action_max_timeout_ms();
-         max_wait_time > 0; max_wait_time -= kCheckDelayMs) {
-      if (expected_title == GetActiveTabTitle())
-        break;
-      base::PlatformThread::Sleep(kCheckDelayMs);
-    }
-
-    EXPECT_EQ(expected_title, GetActiveTabTitle());
-  }
-
-  void NavigateToDataURL(const std::string& html_content,
-                         const std::wstring& expected_title) {
-    NavigateToURL(GURL("data:text/html," + html_content));
-    CheckTitle(expected_title);
-  }
-
-  void NavigateToNolistenersFileTwice() {
-    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
-                      FilePath(FILE_PATH_LITERAL("title2.html"))));
-    CheckTitle(L"Title Of Awesomeness");
-    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
-                      FilePath(FILE_PATH_LITERAL("title2.html"))));
-    CheckTitle(L"Title Of Awesomeness");
-  }
-
-  // Navigates to a URL asynchronously, then again synchronously. The first
-  // load is purposely async to test the case where the user loads another
-  // page without waiting for the first load to complete.
-  void NavigateToNolistenersFileTwiceAsync() {
-    NavigateToURLAsync(
-        URLRequestMockHTTPJob::GetMockUrl(
-            FilePath(FILE_PATH_LITERAL("title2.html"))));
-    NavigateToURL(
-        URLRequestMockHTTPJob::GetMockUrl(
-            FilePath(FILE_PATH_LITERAL("title2.html"))));
-
-    CheckTitle(L"Title Of Awesomeness");
-  }
-
-  void LoadUrlAndQuitBrowser(const std::string& html_content,
-                             const std::wstring& expected_title = L"") {
-    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-    ASSERT_TRUE(browser.get());
-    NavigateToDataURL(html_content, expected_title);
-    bool application_closed = false;
-    EXPECT_TRUE(CloseBrowser(browser.get(), &application_closed));
-  }
-
-  void ClickModalDialogButton(ui::MessageBoxFlags::DialogButton button) {
-    bool modal_dialog_showing = false;
-    ui::MessageBoxFlags::DialogButton available_buttons;
-    EXPECT_TRUE(automation()->WaitForAppModalDialog());
-    EXPECT_TRUE(automation()->GetShowingAppModalDialog(&modal_dialog_showing,
-        &available_buttons));
-    ASSERT_TRUE(modal_dialog_showing);
-    EXPECT_TRUE((button & available_buttons) != 0);
-    EXPECT_TRUE(automation()->ClickAppModalDialogButton(button));
-  }
-};
 
 // Navigate to a page with an infinite unload handler.
 // Then two async crosssite requests to ensure
@@ -418,56 +325,6 @@ TEST_F(UnloadTest, BrowserCloseTwoSecondUnloadAlert) {
 TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
   LoadUrlAndQuitBrowser(TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML,
                         L"twosecondbeforeunloadalert");
-}
-
-#if defined(OS_MACOSX)
-// http://crbug.com/45162
-#define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    DISABLED_BrowserCloseTabWhenOtherTabHasListener
-#elif defined(OS_WIN)
-// http://crbug.com/45281
-#define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    DISABLED_BrowserCloseTabWhenOtherTabHasListener
-#elif defined(OS_CHROMEOS)
-// http://crbug.com/86769
-#define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    FLAKY_BrowserCloseTabWhenOtherTabHasListener
-#else
-#define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
-    BrowserCloseTabWhenOtherTabHasListener
-#endif
-
-// Tests that if there's a renderer process with two tabs, one of which has an
-// unload handler, and the other doesn't, the tab that doesn't have an unload
-// handler can be closed.
-TEST_F(UnloadTest, MAYBE_BrowserCloseTabWhenOtherTabHasListener) {
-  NavigateToDataURL(CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER, L"only_one_unload");
-
-  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
-  ASSERT_TRUE(browser.get());
-  scoped_refptr<WindowProxy> window = browser->GetWindow();
-  ASSERT_TRUE(window.get());
-
-  gfx::Rect tab_view_bounds;
-  ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER,
-              &tab_view_bounds, true));
-  // Simulate a click to force user_gesture to true; if we don't, the resulting
-  // popup will be constrained, which isn't what we want to test.
-  ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                                      ui::EF_LEFT_BUTTON_DOWN));
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(2));
-
-  CheckTitle(L"popup");
-  scoped_refptr<TabProxy> popup_tab(browser->GetActiveTab());
-  ASSERT_TRUE(popup_tab.get());
-  EXPECT_TRUE(popup_tab->Close(true));
-
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(1));
-  scoped_refptr<TabProxy> main_tab(browser->GetActiveTab());
-  ASSERT_TRUE(main_tab.get());
-  std::wstring main_title;
-  EXPECT_TRUE(main_tab->GetTabTitle(&main_title));
-  EXPECT_EQ(std::wstring(L"only_one_unload"), main_title);
 }
 
 // TODO(ojan): Add tests for unload/beforeunload that have multiple tabs

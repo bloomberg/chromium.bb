@@ -503,6 +503,7 @@
         'browser/browser_keyevents_browsertest.cc',
         'browser/collected_cookies_uitest.cc',
         'browser/debugger/devtools_sanity_unittest.cc',
+        'browser/history/history_interactive_uitest.cc',
         'browser/instant/instant_browsertest.cc',
         'browser/keyboard_access_uitest.cc',
         'browser/mouseleave_interactive_uitest.cc',
@@ -519,6 +520,7 @@
         'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
         'browser/ui/webui/workers_ui_browsertest.cc',
+        'browser/unload_interactive_uitest.cc',
         'test/base/out_of_proc_test_runner.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
@@ -563,6 +565,7 @@
         ['OS=="mac"', {
           'sources!': [
             # TODO(port)
+            'browser/history/history_interactive_uitest.cc',
             'browser/npapi_interactive_test.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
@@ -693,6 +696,7 @@
         'browser/default_plugin_uitest.cc',
         'browser/fast_shutdown_uitest.cc',
         'browser/gpu_uitest.cc',
+        'browser/history/history_uitest.cc',
         'browser/history/multipart_uitest.cc',
         'browser/history/redirect_uitest.cc',
         'browser/iframe_uitest.cc',
@@ -726,7 +730,6 @@
         'test/automation/extension_proxy_uitest.cc',
         'test/automated_ui_tests/automated_ui_test_test.cc',
         'test/base/chrome_process_util_uitest.cc',
-        'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
         'test/ui/named_interface_uitest.cc',
         'test/ui/npapi_uitest.cc',

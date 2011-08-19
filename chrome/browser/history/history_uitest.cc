@@ -4,35 +4,15 @@
 
 // History UI tests
 
-#include "base/file_path.h"
-#include "base/test/test_timeouts.h"
-#include "chrome/browser/ui/view_ids.h"
-#include "chrome/test/automation/automation_proxy.h"
-#include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/tab_proxy.h"
-#include "chrome/test/automation/window_proxy.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/ui/ui_test.h"
-#include "ui/base/events.h"
-#include "ui/gfx/rect.h"
+#include "chrome/browser/history/history_uitest.h"
 
 namespace {
 
 const char kTestCompleteCookie[] = "status";
 const char kTestCompleteSuccess[] = "OK";
-const FilePath::CharType* kHistoryDir = FILE_PATH_LITERAL("History");
+const FilePath::CharType* const kHistoryDir = FILE_PATH_LITERAL("History");
 
 }  // namespace
-
-class HistoryTester : public UITest {
- protected:
-  HistoryTester() : UITest() { }
-
-  virtual void SetUp() {
-    show_window_ = true;
-    UITest::SetUp();
-  }
-};
 
 TEST_F(HistoryTester, VerifyHistoryLength1) {
   // Test the history length for the following page transitions.
@@ -84,40 +64,6 @@ TEST_F(HistoryTester, VerifyHistoryLength3) {
   WaitForFinish("History_Length_Test_3", "1", url_3, kTestCompleteCookie,
                 kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
 }
-
-#if !defined(OS_MACOSX)
-TEST_F(HistoryTester, ConsiderRedirectAfterGestureAsUserInitiated) {
-  // Test the history length for the following page transition.
-  //
-  // -open-> Page 11 -slow_redirect-> Page 12.
-  //
-  // If redirect occurs after a user gesture, e.g., mouse click, the
-  // redirect is more likely to be user-initiated rather than automatic.
-  // Therefore, Page 11 should be in the history in addition to Page 12.
-
-  const FilePath test_case(
-      FILE_PATH_LITERAL("history_length_test_page_11.html"));
-  GURL url = ui_test_utils::GetTestUrl(FilePath(kHistoryDir), test_case);
-  NavigateToURL(url);
-  WaitForFinish("History_Length_Test_11", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
-
-  // Simulate click. This only works for Windows.
-  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
-  ASSERT_TRUE(browser.get());
-  scoped_refptr<WindowProxy> window = browser->GetWindow();
-  ASSERT_TRUE(window.get());
-  gfx::Rect tab_view_bounds;
-  ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
-                                    true));
-  ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
-                                      ui::EF_LEFT_BUTTON_DOWN));
-
-  NavigateToURL(GURL("javascript:redirectToPage12()"));
-  WaitForFinish("History_Length_Test_12", "1", url, kTestCompleteCookie,
-                kTestCompleteSuccess, TestTimeouts::action_max_timeout_ms());
-}
-#endif  // !defined(OS_MACOSX)
 
 TEST_F(HistoryTester, ConsiderSlowRedirectAsUserInitiated) {
   // Test the history length for the following page transition.
