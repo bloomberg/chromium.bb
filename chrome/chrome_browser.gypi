@@ -1502,6 +1502,8 @@
         'browser/net/preconnect.h',
         'browser/net/predictor.cc',
         'browser/net/predictor.h',
+        'browser/net/predictor_api.cc',
+        'browser/net/predictor_api.h',
         'browser/net/pref_proxy_config_service.cc',
         'browser/net/pref_proxy_config_service.h',
         'browser/net/proxy_service_factory.cc',
