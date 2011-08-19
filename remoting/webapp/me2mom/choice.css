@@ -222,7 +222,6 @@ label {
 }
 
 #session-mode {
-  overflow: auto;
   width: 100%;
   -webkit-user-select: none;
 }
