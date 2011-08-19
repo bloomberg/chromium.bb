@@ -878,7 +878,7 @@ def _GenerateMSVSProject(project, options, version):
           spec, options, gyp_dir, sources, excluded_sources))
 
   # Add in files.
-  # _VerifySourcesExist(sources, gyp_dir)
+  _VerifySourcesExist(sources, gyp_dir)
   p.AddFiles(sources)
 
   _AddToolFilesToMSVS(p, spec)
@@ -2730,7 +2730,7 @@ def _GenerateMSBuildProject(project, options, version):
 
   _GenerateMSBuildFiltersFile(project.path + '.filters', sources,
                               extension_to_rule_name)
-  # _VerifySourcesExist(sources, gyp_dir)
+  _VerifySourcesExist(sources, gyp_dir)
 
   for (_, configuration) in configurations.iteritems():
     _FinalizeMSBuildSettings(spec, configuration)
