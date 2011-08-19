@@ -141,18 +141,21 @@ gfx::Size PageInfoBubbleView::GetSeparatorSize() {
   return separator_plus_padding;
 }
 
+double PageInfoBubbleView::GetResizeAnimationCurrentValue() {
+#if defined(OS_CHROMEOS)
+  // We don't run the animation on Chrome OS; see explanation in
+  // OnPageInfoModelChanged().
+  return 1.0;
+#else
+  return resize_animation_.GetCurrentValue();
+#endif
+}
+
 double PageInfoBubbleView::HeightAnimationValue() {
   // We use the first half of the animation to get to fully expanded mode.
   // Towards the end, we also animate the section into view, as determined
   // by OpacityAnimationValue().
-  return std::min(1.0, 2.0 * resize_animation_.GetCurrentValue());
-}
-
-double Section::OpacityAnimationValue() {
-  // We use the tail end of the animation to get to fully visible.
-  // The first half of the animation is devoted to expanding the size of the
-  // bubble, as determined by HeightAnimationValue().
-  return std::max(0.0, std::min(1.0, 1.7 * animation_value_ - 1.0));
+  return std::min(1.0, 2.0 * GetResizeAnimationCurrentValue());
 }
 
 void PageInfoBubbleView::LayoutSections() {
@@ -193,7 +196,7 @@ void PageInfoBubbleView::LayoutSections() {
       // This section is animated into view, so we need to set the height of it
       // according to the animation stage, and let it know how transparent it
       // should draw itself.
-      section->SetAnimationStage(resize_animation_.GetCurrentValue());
+      section->SetAnimationStage(GetResizeAnimationCurrentValue());
       gfx::Size sz(views::Widget::GetLocalizedContentsSize(
           IDS_PAGEINFOBUBBLE_WIDTH_CHARS, IDS_PAGEINFOBUBBLE_HEIGHT_LINES));
       layout->AddView(section,
@@ -268,8 +271,26 @@ void PageInfoBubbleView::OnPageInfoModelChanged() {
   // into existence.
   animation_start_height_ = bounds().height() + GetSeparatorSize().height();
   LayoutSections();
+#if defined(OS_CHROMEOS)
+  // Animating a window's size doesn't work well in X.  Each resize request gets
+  // rerouted to the window manager, which forwards it on to the X server.
+  // That's okay, but to avoid jank (the window's pixmap will have garbage in it
+  // after being resized), compositing window managers also send
+  // _NET_WM_SYNC_REQUEST messages to clients before resizing to ask for notice
+  // after the window has been repainted at the new size.  Chrome appears to
+  // fall behind in handling the repaints, and the sync request responses
+  // typically don't get sent back to the window manager until the animation is
+  // done, which results in the window being invisible until then:
+  // http://crosbug.com/14993.  Trying to e.g. just animate the first-visit
+  // section's opacity has the same negative effect, so we avoid doing any
+  // animation.
+  // TODO(derat): Remove this once we're not using a toplevel X window for the
+  // bubble.
+  bubble_->SizeToContents();
+#else
   resize_animation_.SetSlideDuration(kPageInfoSlideDuration);
   resize_animation_.Show();
+#endif
 }
 
 void PageInfoBubbleView::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
@@ -390,6 +411,13 @@ void Section::Paint(gfx::Canvas* canvas) {
 
 void Section::LinkClicked(views::Link* source, int event_flags) {
   owner_->ShowCertDialog();
+}
+
+double Section::OpacityAnimationValue() {
+  // We use the tail end of the animation to get to fully visible.
+  // The first half of the animation is devoted to expanding the size of the
+  // bubble, as determined by HeightAnimationValue().
+  return std::max(0.0, std::min(1.0, 1.7 * animation_value_ - 1.0));
 }
 
 gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {

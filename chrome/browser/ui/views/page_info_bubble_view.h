@@ -60,6 +60,9 @@ class PageInfoBubbleView : public views::View,
   // Gets the size of the separator, including padding.
   gfx::Size GetSeparatorSize();
 
+  // Get the current value of |resize_animation_| (in [0.0, 1.0]).
+  double GetResizeAnimationCurrentValue();
+
   // Gets the animation value to use for setting the height.
   double HeightAnimationValue();
 
