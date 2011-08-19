@@ -36,6 +36,7 @@
         'content_renderer',
         'test_support_content',
         '../base/base.gyp:test_support_base',
+        '../crypto/crypto.gyp:crypto',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
