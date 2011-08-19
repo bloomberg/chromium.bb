@@ -34,7 +34,6 @@
 #include "wayland-server.h"
 
 struct wl_shm {
-	struct wl_resource resource;
 	const struct wl_shm_callbacks *callbacks;
 };
 
@@ -123,7 +122,7 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	void *data;
 
 	if (!visual || visual->object.interface != &wl_visual_interface) {
-		wl_client_post_error(client, &shm->resource.object,
+		wl_client_post_error(client, &resource->object,
 				     WL_SHM_ERROR_INVALID_VISUAL,
 				     "invalid visual");
 		close(fd);
@@ -131,7 +130,7 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	if (width < 0 || height < 0 || stride < width) {
-		wl_client_post_error(client, &shm->resource.object,
+		wl_client_post_error(client, &resource->object,
 				     WL_SHM_ERROR_INVALID_STRIDE,
 				     "invalid width, height or stride (%dx%d, %u)",
 				     width, height, stride);
@@ -144,7 +143,7 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 
 	close(fd);
 	if (data == MAP_FAILED) {
-		wl_client_post_error(client, &shm->resource.object,
+		wl_client_post_error(client, &resource->object,
 				     WL_SHM_ERROR_INVALID_FD,
 				     "failed mmap fd %d", fd);
 		return;
@@ -166,6 +165,13 @@ const static struct wl_shm_interface shm_interface = {
 	shm_create_buffer
 };
 
+static void
+bind_shm(struct wl_client *client,
+	 void *data, uint32_t version, uint32_t id)
+{
+	wl_client_add_object(client,
+			     &wl_shm_interface, &shm_interface, id, data);
+}
 
 WL_EXPORT struct wl_shm *
 wl_shm_init(struct wl_display *display,
@@ -177,10 +183,12 @@ wl_shm_init(struct wl_display *display,
 	if (!shm)
 		return NULL;
 
-	shm->resource.object.interface = &wl_shm_interface;
-	shm->resource.object.implementation = (void (**)(void)) &shm_interface;
-	shm->resource.data = shm;
-	wl_display_add_global(display, &shm->resource.object, NULL);
+	if (!wl_display_add_global(display,
+				   &wl_shm_interface, shm, bind_shm)) {
+
+		free(shm);
+		return NULL;
+	}
 
 	shm->callbacks = callbacks;
 

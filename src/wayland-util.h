@@ -61,7 +61,7 @@ struct wl_interface {
 
 struct wl_object {
 	const struct wl_interface *interface;
-	void (**implementation)(void);
+	void (* const * implementation)(void);
 	uint32_t id;
 };
 

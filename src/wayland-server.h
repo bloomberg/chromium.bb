@@ -85,24 +85,28 @@ void wl_display_run(struct wl_display *display);
 void wl_display_add_object(struct wl_display *display,
 			   struct wl_object *object);
 
-typedef void (*wl_global_bind_func_t)(struct wl_client *client,
-				      struct wl_object *global,
+typedef void (*wl_global_bind_func_t)(struct wl_client *client, void *data,
 				      uint32_t version, uint32_t id);
 
-int wl_display_add_global(struct wl_display *display,
-			  struct wl_object *object,
-			  wl_global_bind_func_t bind);
+struct wl_global *wl_display_add_global(struct wl_display *display,
+					const struct wl_interface *interface,
+					void *data,
+					wl_global_bind_func_t bind);
 
-int wl_display_remove_global(struct wl_display *display,
-                             struct wl_object *object);
+void wl_display_remove_global(struct wl_display *display,
+			      struct wl_global *global);
 
 struct wl_client *wl_client_create(struct wl_display *display, int fd);
 void wl_client_destroy(struct wl_client *client);
 void wl_client_post_error(struct wl_client *client, struct wl_object *object,
 			  uint32_t code, const char *msg, ...);
 void wl_client_post_no_memory(struct wl_client *client);
-void wl_client_post_global(struct wl_client *client, struct wl_object *object);
 void wl_client_flush(struct wl_client *client);
+
+struct wl_resource *
+wl_client_add_object(struct wl_client *client,
+		     const struct wl_interface *interface,
+		     const void *implementation, uint32_t id, void *data);
 
 struct wl_resource {
 	struct wl_object object;
@@ -115,6 +119,7 @@ struct wl_resource {
 
 struct wl_visual {
 	struct wl_object object;
+	uint32_t name;
 };
 
 struct wl_shm_callbacks {
@@ -128,7 +133,7 @@ struct wl_shm_callbacks {
 };
 
 struct wl_compositor {
-	struct wl_resource resource;
+	const struct wl_compositor_interface *interface;
 	struct wl_visual argb_visual;
 	struct wl_visual premultiplied_argb_visual;
 	struct wl_visual rgb_visual;

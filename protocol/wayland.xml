@@ -66,8 +66,8 @@
          server will always announce an object before the object sends
          out events. -->
     <event name="global">
-      <arg name="id" type="uint" interface="wl_object"/>
-      <arg name="name" type="string"/>
+      <arg name="name" type="uint" interface="wl_object"/>
+      <arg name="interface" type="string"/>
       <arg name="version" type="uint"/>
     </event>
 
@@ -109,7 +109,7 @@
     </enum>
 
     <event name="token_visual">
-      <arg name="visual" type="new_id" interface="wl_visual"/>
+      <arg name="name" type="uint"/>
       <arg name="token" type="uint"/>
     </event>
   </interface>

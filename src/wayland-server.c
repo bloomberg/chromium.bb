@@ -57,7 +57,7 @@ struct wl_client {
 	struct wl_connection *connection;
 	struct wl_event_source *source;
 	struct wl_display *display;
-	struct wl_resource display_resource;
+	struct wl_resource *display_resource;
 	struct wl_list resource_list;
 	uint32_t id_count;
 	uint32_t mask;
@@ -80,7 +80,9 @@ struct wl_display {
 };
 
 struct wl_global {
-	struct wl_object *object;
+	const struct wl_interface *interface;
+	uint32_t name;
+	void *data;
 	wl_global_bind_func_t bind;
 	struct wl_list link;
 };
@@ -119,7 +121,7 @@ wl_client_post_error(struct wl_client *client, struct wl_object *object,
 	vsnprintf(buffer, sizeof buffer, msg, ap);
 	va_end(ap);
 
-	wl_resource_post_event(&client->display_resource,
+	wl_resource_post_event(client->display_resource,
 			       WL_DISPLAY_ERROR, object, code, buffer);
 }
 
@@ -242,17 +244,20 @@ wl_client_get_display(struct wl_client *client)
 static void
 wl_display_post_range(struct wl_display *display, struct wl_client *client)
 {
-	wl_resource_post_event(&client->display_resource,
+	wl_resource_post_event(client->display_resource,
 			       WL_DISPLAY_RANGE, display->client_id_range);
 	display->client_id_range += 256;
 	client->id_count += 256;
 }
 
+static void
+bind_display(struct wl_client *client,
+	     void *data, uint32_t version, uint32_t id);
+
 WL_EXPORT struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
-	struct wl_global *global;
 
 	client = malloc(sizeof *client);
 	if (client == NULL)
@@ -277,22 +282,12 @@ wl_client_create(struct wl_display *display, int fd)
 		return NULL;
 	}
 
-	client->display_resource.object = display->resource.object;
-	client->display_resource.client = client;
-	client->display_resource.data = &display->resource;
-
-	wl_hash_table_insert(client->objects,
-			     client->display_resource.object.id,
-			     &client->display_resource);
+	bind_display(client, display, 1, 1);
 
 	wl_list_insert(display->client_list.prev, &client->link);
 
 	wl_list_init(&client->resource_list);
 
-	wl_display_post_range(display, client);
-
-	wl_list_for_each(global, &display->global_list, link)
-		wl_client_post_global(client, global->object);
 
 	return client;
 }
@@ -318,16 +313,6 @@ wl_client_post_no_memory(struct wl_client *client)
 {
 	wl_client_post_error(client, &client->display->resource.object,
 			     WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
-}
-
-WL_EXPORT void
-wl_client_post_global(struct wl_client *client, struct wl_object *object)
-{
-	wl_resource_post_event(&client->display_resource,
-			       WL_DISPLAY_GLOBAL,
-			       object->id,
-			       object->interface->name,
-			       object->interface->version);
 }
 
 WL_EXPORT void
@@ -551,17 +536,15 @@ display_bind(struct wl_client *client,
 	struct wl_display *display = resource->data;
 
 	wl_list_for_each(global, &display->global_list, link)
-		if (global->object->id == name)
+		if (global->name == name)
 			break;
 
 	if (&global->link == &display->global_list)
 		wl_client_post_error(client, &client->display->resource.object,
 				     WL_DISPLAY_ERROR_INVALID_OBJECT,
 				     "invalid global %d", name);
-	else if (global->bind)
-		global->bind(client, global->object, version, id);
-
-	wl_hash_table_insert(client->objects, id, global->object);
+	else
+		global->bind(client, global->data, version, id);
 }
 
 static void
@@ -582,6 +565,26 @@ struct wl_display_interface display_interface = {
 	display_sync,
 };
 
+static void
+bind_display(struct wl_client *client,
+	     void *data, uint32_t version, uint32_t id)
+{
+	struct wl_display *display = data;
+	struct wl_global *global;
+
+	client->display_resource =
+		wl_client_add_object(client, &wl_display_interface,
+				     &display_interface, id, display);
+
+	wl_display_post_range(display, client);
+
+	wl_list_for_each(global, &display->global_list, link)
+		wl_resource_post_event(client->display_resource,
+				       WL_DISPLAY_GLOBAL,
+				       global->name,
+				       global->interface->name,
+				       global->interface->version);
+}
 
 WL_EXPORT struct wl_display *
 wl_display_create(void)
@@ -611,12 +614,9 @@ wl_display_create(void)
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	display->id = 1;
-	display->resource.object.interface = &wl_display_interface;
-	display->resource.object.implementation =
-		(void (**)(void)) &display_interface;
-	display->resource.data = display;
 
-	if (wl_display_add_global(display, &display->resource.object, NULL)) {
+	if (!wl_display_add_global(display, &wl_display_interface, 
+				   display, bind_display)) {
 		wl_event_loop_destroy(display->loop);
 		free(display);
 		return NULL;
@@ -646,46 +646,36 @@ wl_display_destroy(struct wl_display *display)
 	free(display);
 }
 
-WL_EXPORT int
+WL_EXPORT struct wl_global *
 wl_display_add_global(struct wl_display *display,
-		      struct wl_object *object, wl_global_bind_func_t bind)
+		      const struct wl_interface *interface,
+		      void *data, wl_global_bind_func_t bind)
 {
 	struct wl_global *global;
 
 	global = malloc(sizeof *global);
 	if (global == NULL)
-		return -1;
+		return NULL;
 
-	object->id = display->id++;
-	global->object = object;
+	global->name = display->id++;
+	global->interface = interface;
+	global->data = data;
 	global->bind = bind;
 	wl_list_insert(display->global_list.prev, &global->link);
 
-	return 0;
+	return global;
 }
 
-WL_EXPORT int
-wl_display_remove_global(struct wl_display *display,
-                         struct wl_object *object)
+WL_EXPORT void
+wl_display_remove_global(struct wl_display *display, struct wl_global *global)
 {
-	struct wl_global *global;
 	struct wl_client *client;
 
-	wl_list_for_each(global, &display->global_list, link)
-		if (global->object == object)
-			break;
-
-	if (&global->link == &display->global_list)
-		return -1;
-
 	wl_list_for_each(client, &display->client_list, link)
-		wl_resource_post_event(&client->display_resource,
-				       WL_DISPLAY_GLOBAL_REMOVE,
-				       global->object->id);
+		wl_resource_post_event(client->display_resource,
+				       WL_DISPLAY_GLOBAL_REMOVE, global->name);
 	wl_list_remove(&global->link);
 	free(global);
-
-	return 0;
 }
 
 WL_EXPORT struct wl_event_loop *
@@ -845,30 +835,66 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	return 0;
 }
 
+WL_EXPORT struct wl_resource *
+wl_client_add_object(struct wl_client *client,
+		     const struct wl_interface *interface,
+		     const void *implementation,
+		     uint32_t id, void *data)
+{
+	struct wl_resource *resource;
+
+	resource = malloc(sizeof *resource);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return NULL;
+	}
+
+	resource->object.interface = interface;
+	resource->object.implementation = implementation;
+	resource->object.id = id;
+	resource->client = client;
+	resource->data = data;
+	resource->destroy = (void *) free;
+	wl_list_init(&resource->destroy_listener_list);
+
+	wl_hash_table_insert(client->objects, resource->object.id, resource);
+
+	return resource;
+}
+
 static void
 compositor_bind(struct wl_client *client,
-		struct wl_object *global, uint32_t version, uint32_t id)
+		void *data, uint32_t version, uint32_t id)
 {
-	struct wl_compositor *compositor =
-		container_of(global, struct wl_compositor, resource.object);
+	struct wl_compositor *compositor = data;
+	struct wl_resource *resource;
 
-	compositor->resource.client = client;
-	compositor->resource.object.id = id;
+	resource = wl_client_add_object(client, &wl_compositor_interface,
+					compositor->interface, id, compositor);
 
-	wl_resource_post_event(&compositor->resource,
+	wl_resource_post_event(resource,
 			       WL_COMPOSITOR_TOKEN_VISUAL,
-			       &compositor->argb_visual.object,
+			       compositor->argb_visual.name,
 			       WL_COMPOSITOR_VISUAL_ARGB32);
 
-	wl_resource_post_event(&compositor->resource,
+	wl_resource_post_event(resource,
 			       WL_COMPOSITOR_TOKEN_VISUAL,
-			       &compositor->premultiplied_argb_visual.object,
+			       compositor->premultiplied_argb_visual.name,
 			       WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32);
 
-	wl_resource_post_event(&compositor->resource,
+	wl_resource_post_event(resource,
 			       WL_COMPOSITOR_TOKEN_VISUAL,
-			       &compositor->rgb_visual.object,
+			       compositor->rgb_visual.name,
 			       WL_COMPOSITOR_VISUAL_XRGB32);
+
+	wl_list_insert(client->resource_list.prev, &resource->link);
+}
+
+static void
+bind_visual(struct wl_client *client,
+	    void *data, uint32_t version, uint32_t id)
+{
+	wl_client_add_object(client, &wl_visual_interface, NULL, id, data);
 }
 
 WL_EXPORT int
@@ -876,33 +902,32 @@ wl_compositor_init(struct wl_compositor *compositor,
 		   const struct wl_compositor_interface *interface,
 		   struct wl_display *display)
 {
-	compositor->resource.object.interface = &wl_compositor_interface;
-	compositor->resource.object.implementation =
-		(void (**)(void)) interface;
-	compositor->resource.data = compositor;
-	if (wl_display_add_global(display, &compositor->resource.object,
-				  compositor_bind))
+	struct wl_global *global;
+
+	compositor->interface = interface;
+	global = wl_display_add_global(display, &wl_compositor_interface,
+				       compositor, compositor_bind);
+	if (!global)
 		return -1;
 
-	compositor->argb_visual.object.interface = &wl_visual_interface;
-	compositor->argb_visual.object.implementation = NULL;
-	if (wl_display_add_global(display,
-				  &compositor->argb_visual.object, NULL))
+	global = wl_display_add_global(display, &wl_visual_interface,
+				       &compositor->argb_visual, bind_visual);
+	if (!global)
 		return -1;
+	compositor->argb_visual.name = global->name;
+	
+	global = wl_display_add_global(display, &wl_visual_interface,
+				       &compositor->premultiplied_argb_visual,
+				       bind_visual);
+	if (!global)
+		return -1;
+	compositor->premultiplied_argb_visual.name = global->name;
 
-	compositor->premultiplied_argb_visual.object.interface =
-		&wl_visual_interface;
-	compositor->premultiplied_argb_visual.object.implementation = NULL;
-       if (wl_display_add_global(display,
-                                 &compositor->premultiplied_argb_visual.object,
-				 NULL))
-	       return -1;
-
-	compositor->rgb_visual.object.interface = &wl_visual_interface;
-	compositor->rgb_visual.object.implementation = NULL;
-       if (wl_display_add_global(display,
-				 &compositor->rgb_visual.object, NULL))
-	       return -1;
+	global = wl_display_add_global(display, &wl_visual_interface,
+				       &compositor->rgb_visual, bind_visual);
+	if (!global)
+		return -1;
+	compositor->rgb_visual.name = global->name;
 
 	return 0;
 }
