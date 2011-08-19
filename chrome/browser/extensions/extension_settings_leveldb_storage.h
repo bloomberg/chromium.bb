@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_settings_storage.h"
-#include "third_party/leveldb/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 // Extension settings storage object, backed by a leveldb database.
 // No caching is done; that should be handled by wrapping with an

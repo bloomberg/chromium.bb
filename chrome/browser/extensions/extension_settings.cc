@@ -13,8 +13,8 @@
 #include "chrome/browser/extensions/extension_settings_leveldb_storage.h"
 #include "chrome/browser/extensions/extension_settings_noop_storage.h"
 #include "chrome/browser/extensions/extension_settings_storage_cache.h"
-#include "third_party/leveldb/include/leveldb/iterator.h"
-#include "third_party/leveldb/include/leveldb/write_batch.h"
+#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 ExtensionSettings::ExtensionSettings(const FilePath& base_path)
     : base_path_(base_path) {

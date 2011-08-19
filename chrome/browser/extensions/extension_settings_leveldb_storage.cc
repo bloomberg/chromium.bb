@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "content/browser/browser_thread.h"
-#include "third_party/leveldb/include/leveldb/iterator.h"
-#include "third_party/leveldb/include/leveldb/write_batch.h"
+#include "third_party/leveldatabase/src/include/leveldb/iterator.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace {
 

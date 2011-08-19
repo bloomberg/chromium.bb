@@ -43,7 +43,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/leveldb/leveldb.gyp:leveldb',
+        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
       ],
       'export_dependent_settings': [
         'renderer',
@@ -2384,7 +2384,7 @@
         '../third_party/cld/cld.gyp:cld',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../third_party/leveldb/leveldb.gyp:leveldb',
+        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
