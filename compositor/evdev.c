@@ -200,16 +200,21 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 #define TEST_BIT(array, bit)    ((array[LONG(bit)] >> OFF(bit)) & 1)
 /* end copied */
 
-static void
+static int
 evdev_configure_device(struct evdev_input_device *device)
 {
 	struct input_absinfo absinfo;
 	unsigned long ev_bits[NBITS(EV_MAX)];
 	unsigned long abs_bits[NBITS(ABS_MAX)];
 	unsigned long key_bits[NBITS(KEY_MAX)];
+	int has_key, has_abs;
+
+	has_key = 0;
+	has_abs = 0;
 
 	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
 	if (TEST_BIT(ev_bits, EV_ABS)) {
+		has_abs = 1;
 		ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)),
 		      abs_bits);
 		if (TEST_BIT(abs_bits, ABS_X)) {
@@ -224,12 +229,21 @@ evdev_configure_device(struct evdev_input_device *device)
 		}
 	}
 	if (TEST_BIT(ev_bits, EV_KEY)) {
+		has_key = 1;
 		ioctl(device->fd, EVIOCGBIT(EV_KEY, sizeof(key_bits)),
 		      key_bits);
 		if (TEST_BIT(key_bits, BTN_TOOL_FINGER) &&
 		             !TEST_BIT(key_bits, BTN_TOOL_PEN))
 			device->is_touchpad = 1;
 	}
+
+	/* This rule tries to catch accelerometer devices and opt out. We may
+	 * want to adjust the protocol later adding a proper event for dealing
+	 * with accelerometers and implement here accordingly */
+	if (has_abs && !has_key)
+		return -1;
+
+	return 0;
 }
 
 static struct evdev_input_device *
@@ -256,7 +270,11 @@ evdev_input_device_create(struct evdev_input *master,
 		return NULL;
 	}
 
-	evdev_configure_device(device);
+	if (evdev_configure_device(device) == -1) {
+		close(device->fd);
+		free(device);
+		return NULL;
+	}
 
 	loop = wl_display_get_event_loop(display);
 	device->source = wl_event_loop_add_fd(loop, device->fd,
