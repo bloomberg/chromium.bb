@@ -1107,11 +1107,13 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     NSString* mime = [[paramList descriptorAtIndex:1] stringValue];
     NSString* inputPath = [[paramList descriptorAtIndex:2] stringValue];
     NSString* printTitle = [[paramList descriptorAtIndex:3] stringValue];
+    NSString* printTicket = [[paramList descriptorAtIndex:4] stringValue];
     // Convert the title to UTF 16 as required.
     string16 title16 = base::SysNSStringToUTF16(printTitle);
+    string16 printTicket16 = base::SysNSStringToUTF16(printTicket);
     print_dialog_cloud::CreatePrintDialogForFile(
         FilePath([inputPath UTF8String]), title16,
-        [mime UTF8String], /*modal=*/false);
+        printTicket16, [mime UTF8String], /*modal=*/false);
   }
 }
 

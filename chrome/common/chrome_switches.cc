@@ -126,6 +126,11 @@ const char kCloudPrintFile[]                = "cloud-print-file";
 // Defaults to "application/pdf" if unspecified.
 const char kCloudPrintFileType[]            = "cloud-print-file-type";
 
+// Used with kCloudPrintFile to specify a JSON print ticket for the resulting
+// print job.
+// Defaults to null if unspecified.
+const char kCloudPrintPrintTicket[]            = "cloud-print-print-ticket";
+
 // Used with kCloudPrintFile to specify a title for the resulting print
 // job.
 const char kCloudPrintJobTitle[]            = "cloud-print-job-title";

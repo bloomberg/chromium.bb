@@ -42,6 +42,10 @@ class CloudPrintDataSenderHelper {
   virtual void CallJavascriptFunction(const std::wstring& function_name,
                                       const base::Value& arg1,
                                       const base::Value& arg2);
+  virtual void CallJavascriptFunction(const std::wstring& function_name,
+                                      const base::Value& arg1,
+                                      const base::Value& arg2,
+                                      const base::Value& arg3);
 
  private:
   WebUI* web_ui_;
@@ -59,6 +63,7 @@ class CloudPrintDataSender
   // lifetime of the helper.
   CloudPrintDataSender(CloudPrintDataSenderHelper* helper,
                        const string16& print_job_title,
+                       const string16& print_ticket,
                        const std::string& file_type);
 
   // Calls to read in the PDF file (on the FILE thread) then send that
@@ -80,6 +85,7 @@ class CloudPrintDataSender
   CloudPrintDataSenderHelper* volatile helper_;
   scoped_ptr<base::StringValue> print_data_;
   string16 print_job_title_;
+  string16 print_ticket_;
   std::string file_type_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintDataSender);
@@ -99,6 +105,7 @@ class CloudPrintFlowHandler : public WebUIMessageHandler,
  public:
   CloudPrintFlowHandler(const FilePath& path_to_file,
                         const string16& print_job_title,
+                        const string16& print_ticket,
                         const std::string& file_type);
   virtual ~CloudPrintFlowHandler();
 
@@ -132,6 +139,7 @@ class CloudPrintFlowHandler : public WebUIMessageHandler,
   NotificationRegistrar registrar_;
   FilePath path_to_file_;
   string16 print_job_title_;
+  string16 print_ticket_;
   std::string file_type_;
   scoped_refptr<CloudPrintDataSender> print_data_sender_;
   scoped_ptr<CloudPrintDataSenderHelper> print_data_helper_;
@@ -148,6 +156,7 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
                                int width, int height,
                                const std::string& json_arguments,
                                const string16& print_job_title,
+                               const string16& print_ticket,
                                const std::string& file_type,
                                bool modal);
   virtual ~CloudPrintHtmlDialogDelegate();
@@ -189,6 +198,7 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
 
 void CreateDialogImpl(const FilePath& path_to_file,
                       const string16& print_job_title,
+                      const string16& print_ticket,
                       const std::string& file_type,
                       bool modal);
 
