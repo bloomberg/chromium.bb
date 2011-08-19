@@ -754,6 +754,7 @@ fade_output(struct wlsc_output *output,
 	surface.compositor = compositor;
 	surface.x = output->x;
 	surface.y = output->y;
+	surface.pitch = output->current->width;
 	surface.width = output->current->width;
 	surface.height = output->current->height;
 	surface.texture = GL_NONE;
