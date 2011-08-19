@@ -618,7 +618,6 @@ wl_display_create(void)
 		(void (**)(void)) &display_interface;
 	display->resource.data = display;
 
-	wl_display_add_object(display, &display->resource.object);
 	if (wl_display_add_global(display, &display->resource.object, NULL)) {
 		wl_event_loop_destroy(display->loop);
 		free(display);
@@ -649,12 +648,6 @@ wl_display_destroy(struct wl_display *display)
 	free(display);
 }
 
-WL_EXPORT void
-wl_display_add_object(struct wl_display *display, struct wl_object *object)
-{
-	object->id = display->id++;
-}
-
 WL_EXPORT int
 wl_display_add_global(struct wl_display *display,
 		      struct wl_object *object, wl_global_bind_func_t bind)
@@ -665,6 +658,7 @@ wl_display_add_global(struct wl_display *display,
 	if (global == NULL)
 		return -1;
 
+	object->id = display->id++;
 	global->object = object;
 	global->bind = bind;
 	wl_list_insert(display->global_list.prev, &global->link);
@@ -886,14 +880,12 @@ wl_compositor_init(struct wl_compositor *compositor,
 	compositor->resource.object.implementation =
 		(void (**)(void)) interface;
 	compositor->resource.data = compositor;
-	wl_display_add_object(display, &compositor->resource.object);
 	if (wl_display_add_global(display, &compositor->resource.object,
 				  compositor_bind))
 		return -1;
 
 	compositor->argb_visual.object.interface = &wl_visual_interface;
 	compositor->argb_visual.object.implementation = NULL;
-	wl_display_add_object(display, &compositor->argb_visual.object);
 	if (wl_display_add_global(display,
 				  &compositor->argb_visual.object, NULL))
 		return -1;
@@ -901,8 +893,6 @@ wl_compositor_init(struct wl_compositor *compositor,
 	compositor->premultiplied_argb_visual.object.interface =
 		&wl_visual_interface;
 	compositor->premultiplied_argb_visual.object.implementation = NULL;
-	wl_display_add_object(display,
-			      &compositor->premultiplied_argb_visual.object);
        if (wl_display_add_global(display,
                                  &compositor->premultiplied_argb_visual.object,
 				 NULL))
@@ -910,7 +900,6 @@ wl_compositor_init(struct wl_compositor *compositor,
 
 	compositor->rgb_visual.object.interface = &wl_visual_interface;
 	compositor->rgb_visual.object.implementation = NULL;
-	wl_display_add_object(display, &compositor->rgb_visual.object);
        if (wl_display_add_global(display,
 				 &compositor->rgb_visual.object, NULL))
 	       return -1;

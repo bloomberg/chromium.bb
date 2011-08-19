@@ -180,7 +180,6 @@ wl_shm_init(struct wl_display *display,
 	shm->resource.object.interface = &wl_shm_interface;
 	shm->resource.object.implementation = (void (**)(void)) &shm_interface;
 	shm->resource.data = shm;
-	wl_display_add_object(display, &shm->resource.object);
 	wl_display_add_global(display, &shm->resource.object, NULL);
 
 	shm->callbacks = callbacks;
