@@ -459,7 +459,7 @@ void HostNPScriptObject::FinishConnect(
           base::Bind(&HostNPScriptObject::OnReceivedSupportID,
                      base::Unretained(this),
                      access_verifier.get()))) {
-    OnStateChanged(kDisconnected);
+    OnStateChanged(kError);
     return;
   }
 
@@ -567,6 +567,7 @@ void HostNPScriptObject::OnReceivedSupportID(
 
   if (!success) {
     // TODO(wez): Replace the success/fail flag with full error reporting.
+    OnStateChanged(kError);
     DisconnectInternal();
     return;
   }

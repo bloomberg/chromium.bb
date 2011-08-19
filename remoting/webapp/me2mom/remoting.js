@@ -320,8 +320,15 @@ function onStateChanged_() {
     remoting.setMode(remoting.AppMode.HOST_SHARED);
     disableTimeoutCountdown_();
   } else if (state == plugin.DISCONNECTED) {
-    remoting.setMode(remoting.AppMode.HOST_UNSHARED);
+    if (remoting.currentMode != remoting.AppMode.HOST_SHARE_FAILED) {
+      // If an error is being displayed, then the plugin should not be able to
+      // hide it by setting the state. Errors must be dismissed by the user
+      // clicking OK, which puts the app into mode HOST_UNSHARED.
+      remoting.setMode(remoting.AppMode.HOST_UNSHARED);
+    }
     plugin.parentNode.removeChild(plugin);
+  } else if (state == plugin.ERROR) {
+    remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
   } else {
     remoting.debug.log('Unknown state -> ' + state);
   }
