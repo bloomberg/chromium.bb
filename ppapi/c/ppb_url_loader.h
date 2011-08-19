@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_loader.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppb_url_loader.idl modified Thu Aug 18 19:44:49 2011. */
 
 #ifndef PPAPI_C_PPB_URL_LOADER_H_
 #define PPAPI_C_PPB_URL_LOADER_H_
@@ -94,14 +94,14 @@ struct PPB_URLLoader {
                   PP_Resource request_info,
                   struct PP_CompletionCallback callback);
   /**
-   * FollowRedirect()can be invoked to follow a redirect after Open() completed
-   * on receiving redirect headers.
+   * FollowRedirect() can be invoked to follow a redirect after Open()
+   * completed on receiving redirect headers.
    *
    * @param[in] loader A <code>PP_Resource</code> corresponding to a
    * <code>URLLoader</code>.
    * @param[in] callback A <code>PP_CompletionCallback</code> to run on
    * asynchronous completion of FollowRedirect(). This callback will run when
-   * response headers for the redirect url are received or error occured. This
+   * response headers for the redirect url are received or error occurred. This
    * callback will only run if FollowRedirect() returns
    * <code>PP_OK_COMPLETIONPENDING</code>.
    *
