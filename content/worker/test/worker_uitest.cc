@@ -187,10 +187,10 @@ TEST_F(WorkerTest, MultipleSharedWorkers) {
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // http://crbug.com/80446
-#define TerminateQueuedWorkers FLAKY_TerminateQueuedWorkers
+#define DISABLED_TerminateQueuedWorkers FLAKY_TerminateQueuedWorkers
 #endif
 
-TEST_F(WorkerTest, TerminateQueuedWorkers) {
+TEST_F(WorkerTest, DISABLED_TerminateQueuedWorkers) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
   RunTest(FilePath(FILE_PATH_LITERAL("terminate_queued_workers.html")), "");
   // Make sure all workers exit.
