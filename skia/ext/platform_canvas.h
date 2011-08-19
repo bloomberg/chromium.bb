@@ -109,6 +109,13 @@ SK_API SkDevice* GetTopDevice(const SkCanvas& canvas);
 // transparency: this will enable some optimizations.
 SK_API SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque);
 
+// Non-crashing version of CreateBitmapCanvas
+// returns NULL if allocation fails for any reason.
+// Use this instead of CreateBitmapCanvas in places that are likely to
+// attempt to allocate very large canvases (therefore likely to fail),
+// and where it is possible to recover gracefully from the failed allocation.
+SK_API SkCanvas* TryCreateBitmapCanvas(int width, int height, bool is_opaque);
+
 // Returns true if native platform routines can be used to draw on the
 // given canvas. If this function returns false, BeginPlatformPaint will
 // return NULL PlatformSurface.

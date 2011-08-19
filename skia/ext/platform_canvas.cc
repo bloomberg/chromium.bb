@@ -34,6 +34,15 @@ SkCanvas* CreateBitmapCanvas(int width, int height, bool is_opaque) {
   return new PlatformCanvas(width, height, is_opaque);
 }
 
+SkCanvas* TryCreateBitmapCanvas(int width, int height, bool is_opaque) {
+  PlatformCanvas* canvas = new PlatformCanvas();
+  if (!canvas->initialize(width, height, is_opaque)) {
+    delete canvas;
+    canvas = NULL;
+  }
+  return canvas;
+}
+
 SkDevice* GetTopDevice(const SkCanvas& canvas) {
   SkCanvas::LayerIter iter(const_cast<SkCanvas*>(&canvas), false);
   return iter.device();
