@@ -62,7 +62,7 @@ struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
 	int fd;
-	uint32_t id, id_count, next_range;
+	uint32_t id;
 	uint32_t mask;
 	struct wl_hash_table *objects;
 	struct wl_list global_listener_list;
@@ -245,18 +245,10 @@ display_handle_global_remove(void *data,
 		}
 }
 
-static void
-display_handle_range(void *data,
-		     struct wl_display *display, uint32_t range)
-{
-	display->next_range = range;
-}
-
 static const struct wl_display_listener display_listener = {
 	display_handle_error,
 	display_handle_global,
 	display_handle_global_remove,
-	display_handle_range,
 };
 
 static int
@@ -341,8 +333,9 @@ wl_display_connect(const char *name)
 	wl_list_init(&display->global_listener_list);
 	wl_list_init(&display->global_list);
 
+	display->id = 1;
 	display->proxy.object.interface = &wl_display_interface;
-	display->proxy.object.id = 1;
+	display->proxy.object.id = display->id++;
 	display->proxy.display = display;
 
 	display->proxy.object.implementation =
@@ -504,13 +497,6 @@ wl_display_flush(struct wl_display *display)
 WL_EXPORT uint32_t
 wl_display_allocate_id(struct wl_display *display)
 {
-	if (display->id_count == 0) {
-		display->id_count = 256;
-		display->id = display->next_range;
-	}
-
-	display->id_count--;
-
 	return display->id++;
 }
 

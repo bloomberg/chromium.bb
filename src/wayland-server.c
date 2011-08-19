@@ -70,7 +70,6 @@ struct wl_display {
 	int run;
 
 	struct wl_list callback_list;
-	uint32_t client_id_range;
 	uint32_t id;
 
 	struct wl_list global_list;
@@ -241,15 +240,6 @@ wl_client_get_display(struct wl_client *client)
 }
 
 static void
-wl_display_post_range(struct wl_display *display, struct wl_client *client)
-{
-	wl_resource_post_event(client->display_resource,
-			       WL_DISPLAY_RANGE, display->client_id_range);
-	display->client_id_range += 256;
-	client->id_count += 256;
-}
-
-static void
 bind_display(struct wl_client *client,
 	     void *data, uint32_t version, uint32_t id);
 
@@ -292,11 +282,6 @@ WL_EXPORT void
 wl_client_add_resource(struct wl_client *client,
 		       struct wl_resource *resource)
 {
-	struct wl_display *display = client->display;
-
-	if (client->id_count-- < 64)
-		wl_display_post_range(display, client);
-
 	resource->client = client;
 	wl_list_init(&resource->destroy_listener_list);
 	wl_hash_table_insert(client->objects, resource->object.id, resource);
@@ -576,8 +561,6 @@ bind_display(struct wl_client *client,
 		wl_client_add_object(client, &wl_display_interface,
 				     &display_interface, id, display);
 
-	wl_display_post_range(display, client);
-
 	wl_list_for_each(global, &display->global_list, link)
 		wl_resource_post_event(client->display_resource,
 				       WL_DISPLAY_GLOBAL,
@@ -610,8 +593,6 @@ wl_display_create(void)
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->socket_list);
 	wl_list_init(&display->client_list);
-
-	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	display->id = 1;
 

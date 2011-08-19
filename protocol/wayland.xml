@@ -76,14 +76,6 @@
       <arg name="id" type="uint" />
     </event>
 
-    <!-- Internal, deprecated, and will be changed.  This is an object
-         IDs range that is used by the client to allocate object IDs
-         in "new_id" type arguments.  The server sends range
-         allocations to the client before the next range is about to
-         be depleted. -->
-    <event name="range">
-      <arg name="base" type="uint"/>
-    </event>
   </interface>
 
   <interface name="wl_callback" version="1">
