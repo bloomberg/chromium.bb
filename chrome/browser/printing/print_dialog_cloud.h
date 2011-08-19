@@ -20,7 +20,6 @@ namespace print_dialog_cloud {
 // dialog, it will return immediately. The dialog is handled asynchronously.
 void CreatePrintDialogForFile(const FilePath& path_to_file,
                               const string16& print_job_title,
-                              const string16& print_ticket,
                               const std::string& file_type,
                               bool modal);
 
