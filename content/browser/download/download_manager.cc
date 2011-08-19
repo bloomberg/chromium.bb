@@ -11,13 +11,13 @@
 #include "base/stl_util.h"
 #include "base/task.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
@@ -29,6 +29,29 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
+
+namespace {
+
+void BeginDownload(
+    const GURL& url,
+    const GURL& referrer,
+    const DownloadSaveInfo& save_info,
+    int render_process_host_id,
+    int render_view_id,
+    const content::ResourceContext* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  content::GetContentClient()->browser()->GetResourceDispatcherHost()->
+      BeginDownload(url,
+                    referrer,
+                    save_info,
+                    true,  // Show "Save as" UI.
+                    render_process_host_id,
+                    render_view_id,
+                    *context);
+}
+
+}  // namespace
 
 DownloadManager::DownloadManager(DownloadManagerDelegate* delegate,
                                  DownloadStatusUpdater* status_updater)
@@ -215,7 +238,8 @@ bool DownloadManager::Init(Profile* profile) {
   // In test mode, there may be no ResourceDispatcherHost.  In this case it's
   // safe to avoid setting |file_manager_| because we only call a small set of
   // functions, none of which need it.
-  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
+  ResourceDispatcherHost* rdh =
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
   if (rdh) {
     file_manager_ = rdh->download_file_manager();
     DCHECK(file_manager_);
@@ -715,12 +739,10 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
   // We send a pointer to content::ResourceContext, instead of the usual
   // reference, so that a copy of the object isn't made.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&download_util::DownloadUrl,
+      NewRunnableFunction(&BeginDownload,
                           url,
                           referrer,
-                          referrer_charset,
                           save_info,
-                          g_browser_process->resource_dispatcher_host(),
                           tab_contents->GetRenderProcessHost()->id(),
                           tab_contents->render_view_host()->routing_id(),
                           &tab_contents->browser_context()->

@@ -5,11 +5,22 @@
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_manager.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {}
+
+void DownloadShelfContextMenu::OpenFilesBasedOnExtension(DownloadItem* item,
+                                                         bool open) {
+  DownloadPrefs* prefs = item->download_manager()->download_prefs();
+  if (open)
+    prefs->EnableAutoOpenBasedOnExtension(item->GetUserVerifiedFilePath());
+  else
+    prefs->DisableAutoOpenBasedOnExtension(item->GetUserVerifiedFilePath());
+}
 
 DownloadShelfContextMenu::DownloadShelfContextMenu(
     BaseDownloadItemModel* download_model)
@@ -59,8 +70,8 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
       download_item_->OpenDownload();
       break;
     case ALWAYS_OPEN_TYPE: {
-      download_item_->OpenFilesBasedOnExtension(
-          !IsCommandIdChecked(ALWAYS_OPEN_TYPE));
+      OpenFilesBasedOnExtension(download_item_,
+                                !IsCommandIdChecked(ALWAYS_OPEN_TYPE));
       break;
     }
     case CANCEL:

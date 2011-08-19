@@ -423,7 +423,7 @@ ChromeContentBrowserClient::CreateQuotaPermissionContext() {
   return new ChromeQuotaPermissionContext();
 }
 
-void ChromeContentBrowserClient::RevealFolderInOS(const FilePath& path) {
+void ChromeContentBrowserClient::OpenItem(const FilePath& path) {
   // On Mac, this call needs to be done on the UI thread.  On other platforms,
   // do it on the FILE thread so we don't slow down UI.
 #if defined(OS_MACOSX)
@@ -432,6 +432,17 @@ void ChromeContentBrowserClient::RevealFolderInOS(const FilePath& path) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&platform_util::OpenItem, path));
+#endif
+}
+
+void ChromeContentBrowserClient::ShowItemInFolder(const FilePath& path) {
+#if defined(OS_MACOSX)
+  // Mac needs to run this operation on the UI thread.
+  platform_util::ShowItemInFolder(path);
+#else
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&platform_util::ShowItemInFolder, path));
 #endif
 }
 

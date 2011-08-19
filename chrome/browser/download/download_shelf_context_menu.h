@@ -33,6 +33,11 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   DownloadItem* download_item() const { return download_item_; }
   void set_download_item(DownloadItem* item) { download_item_ = item; }
 
+  // Registers the file's extension for automatic opening upon download
+  // completion if 'open' is true, or prevents the extension from automatic
+  // opening if 'open' is false.
+  static void OpenFilesBasedOnExtension(DownloadItem* item, bool open);
+
  protected:
   explicit DownloadShelfContextMenu(BaseDownloadItemModel* download_model);
 

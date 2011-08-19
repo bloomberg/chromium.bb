@@ -44,6 +44,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_shelf_context_menu.h"
 #include "chrome/browser/download/save_package_file_picker.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -3019,8 +3020,8 @@ void TestingAutomationProvider::PerformActionOnDownload(
             this, reply_message, true));
     selected_item->OpenDownload();
   } else if (action == "toggle_open_files_like_this") {
-    selected_item->OpenFilesBasedOnExtension(
-        !selected_item->ShouldOpenFileBasedOnExtension());
+    DownloadShelfContextMenu::OpenFilesBasedOnExtension(
+        selected_item, !selected_item->ShouldOpenFileBasedOnExtension());
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   } else if (action == "remove") {
     download_manager->AddObserver(
