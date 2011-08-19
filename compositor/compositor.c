@@ -1655,14 +1655,15 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 }
 
 static void
-wlsc_output_post_geometry(struct wl_client *client,
-			  struct wl_object *global, uint32_t version)
+wlsc_output_post_geometry(struct wl_client *client, struct wl_object *global,
+			  uint32_t version, uint32_t id)
 {
 	struct wlsc_output *output =
 		container_of(global, struct wlsc_output, resource.object);
 	struct wlsc_mode *mode;
 
 	output->resource.client = client;
+	output->resource.object.id = id;
 	wl_resource_post_event(&output->resource,
 			       WL_OUTPUT_GEOMETRY,
 			       output->x,

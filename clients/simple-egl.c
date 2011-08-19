@@ -299,7 +299,7 @@ compositor_handle_visual(void *data,
 	switch (token) {
 	case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
 		d->premultiplied_argb_visual =
-			wl_visual_create(d->display, id, 1);
+			wl_display_bind(d->display, id, &wl_visual_interface);
 		break;
 	}
 }
@@ -315,11 +315,12 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	struct display *d = data;
 
 	if (strcmp(interface, "wl_compositor") == 0) {
-		d->compositor = wl_compositor_create(display, id, 1);
+		d->compositor =
+			wl_display_bind(display, id, &wl_compositor_interface);
 		wl_compositor_add_listener(d->compositor,
 					   &compositor_listener, d);
 	} else if (strcmp(interface, "wl_shell") == 0) {
-		d->shell = wl_shell_create(display, id, 1);
+		d->shell = wl_display_bind(display, id, &wl_shell_interface);
 	}
 }
 

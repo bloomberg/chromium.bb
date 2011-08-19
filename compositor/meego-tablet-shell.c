@@ -623,7 +623,7 @@ meego_tablet_shell_set_selection_focus(struct wlsc_shell *shell,
 
 static void
 bind_shell(struct wl_client *client,
-	   struct wl_object *global, uint32_t version)
+	   struct wl_object *global, uint32_t version, uint32_t id)
 {
 	struct meego_tablet_shell *shell =
 		container_of(global,
@@ -635,6 +635,7 @@ bind_shell(struct wl_client *client,
 		return;
 
 	shell->resource.client = client;
+	shell->resource.object.id = id;
 }
 
 void

@@ -460,7 +460,7 @@ wlsc_wm_destroy(struct wlsc_wm *wm)
 
 static void
 wlsc_xserver_bind(struct wl_client *client,
-		  struct wl_object *global, uint32_t version)
+		  struct wl_object *global, uint32_t version, uint32_t id)
 {
 	struct wlsc_xserver *wxs =
 		container_of(global, struct wlsc_xserver,
@@ -471,6 +471,7 @@ wlsc_xserver_bind(struct wl_client *client,
 	if (client != wxs->xserver.resource.client)
 		return;
 
+	wxs->xserver.resource.object.id = id;
 	wxs->wm = wlsc_wm_create(wxs);
 	if (wxs == NULL) {
 		fprintf(stderr, "failed to create wm\n");

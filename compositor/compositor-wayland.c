@@ -453,7 +453,8 @@ display_add_input(struct wayland_compositor *c, uint32_t id)
 	memset(input, 0, sizeof *input);
 
 	input->compositor = c;
-	input->input_device = wl_input_device_create(c->parent.display, id, 1);
+	input->input_device = wl_display_bind(c->parent.display,
+					      id, &wl_input_device_interface);
 	wl_list_insert(c->input_list.prev, &input->link);
 
 	wl_input_device_add_listener(input->input_device,
@@ -470,7 +471,8 @@ compositor_handle_visual(void *data,
 
 	switch (token) {
 	case WL_COMPOSITOR_VISUAL_ARGB32:
-		c->parent.visual = wl_visual_create(c->parent.display, id, 1);
+		c->parent.visual = wl_display_bind(c->parent.display,
+						   id, &wl_visual_interface);
 		break;
 	}
 }
@@ -486,16 +488,19 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	struct wayland_compositor *c = data;
 
 	if (strcmp(interface, "wl_compositor") == 0) {
-		c->parent.compositor = wl_compositor_create(display, id, 1);
+		c->parent.compositor =
+			wl_display_bind(display, id, &wl_compositor_interface);
 		wl_compositor_add_listener(c->parent.compositor,
 					   &compositor_listener, c);
 	} else if (strcmp(interface, "wl_output") == 0) {
-		c->parent.output = wl_output_create(display, id, 1);
+		c->parent.output =
+			wl_display_bind(display, id, &wl_output_interface);
 		wl_output_add_listener(c->parent.output, &output_listener, c);
 	} else if (strcmp(interface, "wl_input_device") == 0) {
 		display_add_input(c, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
-		c->parent.shell = wl_shell_create(display, id, 1);
+		c->parent.shell =
+			wl_display_bind(display, id, &wl_shell_interface);
 		wl_shell_add_listener(c->parent.shell, &shell_listener, c);
 	}
 }
