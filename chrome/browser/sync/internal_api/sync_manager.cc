@@ -169,7 +169,8 @@ class SyncManager::SyncInternal
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
   explicit SyncInternal(const std::string& name)
-      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : name_(name),
+        weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         registrar_(NULL),
         initialized_(false),
         setup_for_test_mode_(false),
