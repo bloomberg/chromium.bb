@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
@@ -84,9 +85,26 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
     return success_;
   }
 
+  void PartialExtractFeatures(const string16* page_text, FeatureMap* features) {
+    extractor_->ExtractFeatures(
+        page_text,
+        features,
+        NewCallback(this, &PhishingTermFeatureExtractorTest::ExtractionDone));
+    msg_loop_.PostTask(
+        FROM_HERE,
+        base::Bind(&PhishingTermFeatureExtractorTest::QuitExtraction,
+                   base::Unretained(this)));
+    msg_loop_.RunAllPending();
+  }
+
   // Completion callback for feature extraction.
   void ExtractionDone(bool success) {
     success_ = success;
+    msg_loop_.Quit();
+  }
+
+  void QuitExtraction() {
+    extractor_->CancelPendingExtraction();
     msg_loop_.Quit();
   }
 
@@ -240,6 +258,45 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
 
   features.Clear();
   EXPECT_FALSE(ExtractFeatures(&page_text, &features));
+}
+
+TEST_F(PhishingTermFeatureExtractorTest, PartialExtractionTest) {
+  scoped_ptr<string16> page_text(new string16(ASCIIToUTF16("one ")));
+  for (int i = 0; i < 28; ++i) {
+    page_text->append(ASCIIToUTF16(StringPrintf("%d ", i)));
+  }
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  EXPECT_CALL(clock_, Now())
+      // Time check at the start of extraction.
+      .WillOnce(Return(now))
+      // Time check at the start of the first chunk of work.
+      .WillOnce(Return(now))
+      // Time check after the first 10 words. This should be greater than
+      // kMaxTimePerChunkMs so that we stop and schedule extraction for later.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(30)));
+
+  FeatureMap features;
+  // Extract first 10 words then stop.
+  PartialExtractFeatures(page_text.get(), &features);
+
+  page_text.reset(new string16());
+  for (int i = 30; i < 58; ++i) {
+    page_text->append(ASCIIToUTF16(StringPrintf("%d ", i)));
+  }
+  page_text->append(ASCIIToUTF16("multi word test "));
+  features.Clear();
+
+  // This part doesn't exercise the extraction timing.
+  EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
+
+  // Now extract normally and make sure nothing breaks.
+  EXPECT_TRUE(ExtractFeatures(page_text.get(), &features));
+
+  FeatureMap expected_features;
+  expected_features.AddBooleanFeature(features::kPageTerm +
+                                      std::string("multi word test"));
+  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
 }  // namespace safe_browsing

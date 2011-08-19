@@ -177,7 +177,6 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
         DLOG(ERROR) << "Feature extraction took too long, giving up";
         // We expect this to happen infrequently, so record when it does.
         UMA_HISTOGRAM_COUNTS("SBClientPhishing.TermFeatureTimeout", 1);
-        negative_word_cache_.Clear();
         RunCallback(false);
         return;
       }
@@ -201,9 +200,6 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
       // Otherwise, continue.
     }
   }
-  // We need to clear the cache because the data that it depends on (page_text_)
-  // is going away.
-  negative_word_cache_.Clear();
   RunCallback(true);
 }
 
@@ -299,6 +295,7 @@ void PhishingTermFeatureExtractor::Clear() {
   features_ = NULL;
   done_callback_.reset(NULL);
   state_.reset(NULL);
+  negative_word_cache_.Clear();
 }
 
 }  // namespace safe_browsing
