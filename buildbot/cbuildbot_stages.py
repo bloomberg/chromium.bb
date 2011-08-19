@@ -6,6 +6,7 @@
 
 import multiprocessing
 import os
+import Queue
 import re
 import shutil
 import socket
