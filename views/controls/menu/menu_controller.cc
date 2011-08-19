@@ -785,7 +785,8 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   if (menu_item && menu_item->GetDelegate())
     menu_item->GetDelegate()->SelectionChanged(menu_item);
 
-  DCHECK(menu_item || (selection_types & SELECTION_EXIT) != 0);
+  // TODO(sky): convert back to DCHECK when figure out 93471.
+  CHECK(menu_item || (selection_types & SELECTION_EXIT) != 0);
 
   pending_state_.item = menu_item;
   pending_state_.submenu_open = (selection_types & SELECTION_OPEN_SUBMENU) != 0;
