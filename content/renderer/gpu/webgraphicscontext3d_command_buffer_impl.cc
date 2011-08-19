@@ -38,7 +38,9 @@ static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : context_(NULL),
       gl_(NULL),
+#ifndef WTF_USE_THREADED_COMPOSITING
       web_view_(NULL),
+#endif
 #if defined(OS_MACOSX)
       plugin_handle_(NULL),
 #endif  // defined(OS_MACOSX)
@@ -123,12 +125,14 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         NULL : (*g_all_contexts.Pointer()->begin())->context_;
   }
 
+  render_directly_to_web_view_ = render_directly_to_web_view;
   if (render_directly_to_web_view) {
+#ifndef WTF_USE_THREADED_COMPOSITING
     RenderView* renderview = RenderView::FromWebView(web_view);
     if (!renderview)
       return false;
-
     web_view_ = web_view;
+#endif
     context_ = RendererGLContext::CreateViewContext(
         host,
         renderview->routing_id(),
@@ -151,7 +155,9 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         preferred_extensions,
         attribs,
         active_url);
+#ifndef WTF_USE_THREADED_COMPOSITING
     web_view_ = NULL;
+#endif
   }
   if (!context_)
     return false;
@@ -222,10 +228,12 @@ WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
 void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
   // Copies the contents of the off-screen render target into the texture
   // used by the compositor.
+#ifndef WTF_USE_THREADED_COMPOSITING
   RenderView* renderview =
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersPosted();
+#endif
   context_->SwapBuffers();
 }
 
@@ -233,7 +241,7 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
   cached_width_ = width;
   cached_height_ = height;
 
-  if (web_view_) {
+  if (render_directly_to_web_view_) {
 #if defined(OS_MACOSX)
     context_->ResizeOnscreen(gfx::Size(width, height));
 #else
@@ -1004,11 +1012,13 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
+#ifndef WTF_USE_THREADED_COMPOSITING
   // This may be called after tear-down of the RenderView.
   RenderView* renderview =
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersComplete();
+#endif
   if (swapbuffers_complete_callback_)
     swapbuffers_complete_callback_->onSwapBuffersComplete();
 }
@@ -1057,11 +1067,12 @@ void WebGraphicsContext3DCommandBufferImpl::OnContextLost(
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }
-
+#ifndef WTF_USE_THREADED_COMPOSITING
   RenderView* renderview =
       web_view_ ? RenderView::FromWebView(web_view_) : NULL;
   if (renderview)
     renderview->OnViewContextSwapBuffersAborted();
+#endif
 }
 
 #endif  // defined(ENABLE_GPU)
