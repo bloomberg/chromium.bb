@@ -420,10 +420,13 @@ be available for now. -->
         An administrator has installed Chromium on this system, and it is available for all users. The system-level Chromium will replace your user-level installation now.
       </message>
       <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
-        This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and download it again.
+        This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.
       </message>
       <message name="IDS_INSTALL_HIGHER_VERSION_CF" desc="Error displayed when higher version already exists.">
-        This computer already has a more recent version of Chromium Frame. If the software is not working, please uninstall Chromium Frame and download it again.
+        This computer already has a more recent version of Chromium Frame. If the software is not working, please uninstall Chromium Frame and try again.
+      </message>
+      <message name="IDS_INSTALL_HIGHER_VERSION_CB_CF" desc="Error displayed when higher version of Chromium and Chromium Frame already exists">
+        This computer already has a more recent version of Chromium and Chromium Frame. If the software is not working, please uninstall both Chromium and Chromium Frame and try again.
       </message>
       <message name="IDS_INSTALL_SYSTEM_LEVEL_EXISTS" desc="Error displayed during user level install if system level Chromium is already installed.">
         Chromium is already installed and available to all users of this computer. If you want to install Chromium at the user level, you must first uninstall the system-level version installed by an administrator.

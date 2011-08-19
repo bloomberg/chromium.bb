@@ -597,6 +597,10 @@ installer::InstallStatus InstallProductsHelper(
       // (or rather must) be upgraded.
       VLOG(1) << "version to install: " << installer_version->GetString();
       bool proceed_with_installation = true;
+      uint32 higher_products = 0;
+      COMPILE_ASSERT(
+          sizeof(higher_products) * 8 > BrowserDistribution::NUM_TYPES,
+          too_many_distribution_types_);
       for (size_t i = 0; i < installer_state.products().size(); ++i) {
         const Product* product = installer_state.products()[i];
         const ProductState* product_state =
@@ -604,20 +608,33 @@ installer::InstallStatus InstallProductsHelper(
                                            product->distribution()->GetType());
         if (product_state != NULL &&
             (product_state->version().CompareTo(*installer_version) > 0)) {
-          LOG(ERROR) << "Higher version is already installed.";
-          proceed_with_installation = false;
-          install_status = installer::HIGHER_VERSION_EXISTS;
-
-          if (product->is_chrome()) {
-            // TODO(robertshield): We should take the installer result text
-            // strings from the Product.
-            installer_state.WriteInstallerResult(install_status,
-                IDS_INSTALL_HIGHER_VERSION_BASE, NULL);
-          } else {
-            installer_state.WriteInstallerResult(install_status,
-                IDS_INSTALL_HIGHER_VERSION_CF_BASE, NULL);
-          }
+          LOG(ERROR) << "Higher version of "
+                     << product->distribution()->GetAppShortCutName()
+                     << " is already installed.";
+          higher_products |= (1 << product->distribution()->GetType());
         }
+      }
+
+      if (higher_products != 0) {
+        COMPILE_ASSERT(BrowserDistribution::NUM_TYPES == 3,
+                       add_support_for_new_products_here_);
+        const uint32 kBrowserBit = 1 << BrowserDistribution::CHROME_BROWSER;
+        const uint32 kGCFBit = 1 << BrowserDistribution::CHROME_FRAME;
+        int message_id = 0;
+
+        proceed_with_installation = false;
+        install_status = installer::HIGHER_VERSION_EXISTS;
+        if ((higher_products & kBrowserBit) != 0) {
+          if ((higher_products & kGCFBit) != 0)
+            message_id = IDS_INSTALL_HIGHER_VERSION_CB_CF_BASE;
+          else
+            message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
+        } else {
+          DCHECK(higher_products == kGCFBit);
+          message_id = IDS_INSTALL_HIGHER_VERSION_CF_BASE;
+        }
+
+        installer_state.WriteInstallerResult(install_status, message_id, NULL);
       }
 
       proceed_with_installation =
