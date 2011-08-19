@@ -21,10 +21,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/platform/nacl_log_intern.h"
-
-#define THREAD_SAFE_DETAIL_CHECK  0
+#define NON_THREAD_SAFE_DETAIL_CHECK  1
 /*
  * If set, check detail_level without grabbing a mutex.  This makes
  * logging much cheaper, but implies that the verbosity level should
@@ -33,46 +30,20 @@
 
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_log_intern.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_timestamp.h"
 
 /*
- * Three implementation strategies for module-specific logging:
- *
- * If Thread Local Storage is available, NaClLogSetModule sets a TLS
- * variable to the current module name and NaClLogDoLogAndUnsetModule
- * will use that variable to determine whether to log or not, without
- * taking a lock.
- *
- * If Thread-Specific Data is available (pthread.h), then
- * NaClLogModuleInit allocates a pthread_[sg]etspecific key, and
- * NaClLogSetModule / NaClLogDoLogAndUnsetModule uses the TSD variable
- * in much the same way that a TLS variable would be used.
- *
- * If neither TLS nor TSD is available, then a global variable is used
- * to hold the module name, and a NaClMutex lock is used to prevent
- * another thread from changing it until the detail level vs verbosity
- * level check has fired.
- */
-#if NACL_PLATFORM_HAS_TLS
-THREAD char const       *gTls_ModuleName = NULL;
-#elif NACL_PLATFORM_HAS_TSD
-#  include <pthread.h>
-pthread_key_t           gModuleNameKey;
-#else
-static char const       *nacl_log_module_name = NULL;
-#endif
-
-/*
- * All logging output is protected by this mutex, so that the logging
- * code may output using multiple calls to the gio functions and not
- * have logging output from multiple threads get intermixed.
+ * All logging is protected by this mutex.
  */
 static struct NaClMutex log_mu;
 static int              tag_output = 0;
 static int              abort_on_unlock = 0;
+static char const       *nacl_log_module_name = NULL;
 
 #define NACL_VERBOSITY_UNSET INT_MAX
 
@@ -284,14 +255,6 @@ void NaClLogModuleInitExtended2(int         default_verbosity,
                                 char const  *module_verbosity_map,
                                 struct Gio  *log_gio) {
 
-#if !THREAD_SAFE_DETAIL_CHECK && !NACL_PLATFORM_HAS_TLS && NACL_PLATFORM_HAS_TSD
-  int errnum;
-
-  if (0 != (errnum = pthread_key_create(&gModuleNameKey, NULL))) {
-    fprintf(stderr, "NaClLogModuleInitExtended2: pthread_key_create failed\n");
-    abort();
-  }
-#endif
   NaClXMutexCtor(&log_mu);
   NaClLogSetVerbosity(default_verbosity);
   NaClLogParseAndSetModuleVerbosityMap(module_verbosity_map);
@@ -503,7 +466,7 @@ void NaClLogV_mu(int        detail_level,
 void NaClLogV(int         detail_level,
               char const  *fmt,
               va_list     ap) {
-#if !THREAD_SAFE_DETAIL_CHECK
+#if NON_THREAD_SAFE_DETAIL_CHECK
   if (detail_level > verbosity) {
     return;
   }
@@ -543,10 +506,6 @@ void NaClLogSetModuleVerbosity(char const *module_name,
   NaClLogUnlock();
 }
 
-/*
- * After initialization, gNaClLogModuleVerbosity is read-only, so can
- * be examined sans locking.
- */
 int NaClLogGetModuleVerbosity_mu(char const *module_name) {
   struct NaClLogModuleVerbosity *p;
 
@@ -568,77 +527,32 @@ int NaClLogGetModuleVerbosity(char const *module_name) {
   return rv;
 }
 
-#if NACL_PLATFORM_HAS_TLS
-int NaClLogSetModule(char const *module_name) {
-  gTls_ModuleName = module_name;
-  return 0;
-}
-
-static void NaClLogDoLogAndUnsetModuleV(int        detail_level,
-                                        const char *fmt,
-                                        va_list    ap) {
-  int module_verbosity;
-
-  module_verbosity = NaClLogGetModuleVerbosity_mu(gTls_ModuleName);
-  if (detail_level <= module_verbosity) {
-    NaClLogLock();
-    NaClLogDoLogV_mu(detail_level, fmt, ap);
-    NaClLogUnlock();
-  }
-  gTls_ModuleName = (char const *) NULL;
-}
-
-#elif NACL_PLATFORM_HAS_TSD
-int NaClLogSetModule(char const *module_name) {
-  (void) pthread_setspecific(gModuleNameKey, (void const *) module_name);
-  return 0;
-}
-
-static void NaClLogDoLogAndUnsetModuleV(int        detail_level,
-                                        const char *fmt,
-                                        va_list    ap) {
-  char const  *module_name = (char const *) pthread_getspecific(gModuleNameKey);
-  int         module_verbosity;
-
-  module_verbosity = NaClLogGetModuleVerbosity_mu(module_name);
-  if (detail_level <= module_verbosity) {
-    NaClLogLock();
-    NaClLogDoLogV_mu(detail_level, fmt, ap);
-    NaClLogUnlock();
-  }
-  (void) pthread_setspecific(gModuleNameKey, (void const *) NULL);
-}
-
-#else
-/* !NACL_PLATFORM_HAS_TLS && !NACL_PLATFORM_HAS_TSD */
-
-int NaClLogSetModule(char const *module_name) {
+int NaClLogLockAndSetModule(char const *module_name) {
   NaClLogLock();
   nacl_log_module_name = module_name;
   return 0;
 }
 
-static void NaClLogDoLogAndUnsetModuleV(int         detail_level,
-                                        char const  *fmt,
-                                        va_list     ap) {
+void NaClLogDoLogAndUnlockV(int         detail_level,
+                            char const  *fmt,
+                            va_list     ap) {
   int module_verbosity;
 
-  module_verbosity = NaClLogGetModuleVerbosity_mu(module_name);
+  module_verbosity = NaClLogGetModuleVerbosity_mu(nacl_log_module_name);
   if (detail_level <= module_verbosity) {
     NaClLogDoLogV_mu(detail_level, fmt, ap);
   }
   nacl_log_module_name = NULL;
   NaClLogUnlock();
 }
-#endif
 
-void NaClLogDoLogAndUnsetModule(int        detail_level,
-                                char const *fmt,
-                                ...) {
+void NaClLogDoLogAndUnlock(int        detail_level,
+                           char const *fmt,
+                           ...) {
   va_list ap;
 
   va_start(ap, fmt);
-  NaClLogDoLogAndUnsetModuleV(detail_level, fmt, ap);
+  NaClLogDoLogAndUnlockV(detail_level, fmt, ap);
   va_end(ap);
 }
 
@@ -647,7 +561,7 @@ void NaClLog(int         detail_level,
              ...) {
   va_list ap;
 
-#if !THREAD_SAFE_DETAIL_CHECK
+#if NON_THREAD_SAFE_DETAIL_CHECK
   if (detail_level > verbosity) {
     return;
   }
@@ -665,7 +579,7 @@ void NaClLog_mu(int         detail_level,
                 ...) {
   va_list ap;
 
-#if THREAD_SAFE_DETAIL_CHECK
+#if NON_THREAD_SAFE_DETAIL_CHECK
   if (detail_level > verbosity) {
     return;
   }
@@ -682,8 +596,8 @@ void NaClLog2(char const *module_name,
               ...) {
   va_list ap;
 
-  NaClLogSetModule(module_name);
+  (void) NaClLogLockAndSetModule(module_name);
   va_start(ap, fmt);
-  NaClLogDoLogAndUnsetModuleV(detail_level, fmt, ap);
+  NaClLogDoLogAndUnlockV(detail_level, fmt, ap);
   va_end(ap);
 }
