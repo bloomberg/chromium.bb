@@ -71,10 +71,15 @@ ChannelProxy::Context::~Context() {
 }
 
 void ChannelProxy::Context::CreateChannel(const IPC::ChannelHandle& handle,
-                                          const Channel::Mode& mode) {
+                                          const Channel::Mode& mode,
+                                          bool needs_override_peer_pid) {
   DCHECK(channel_.get() == NULL);
   channel_id_ = handle.name;
   channel_.reset(new Channel(handle, mode, this));
+#if defined(OS_LINUX)
+  if (needs_override_peer_pid)
+    channel_->SetNeedsOverridePeerPid();
+#endif
 }
 
 bool ChannelProxy::Context::TryFilters(const Message& message) {
@@ -226,6 +231,14 @@ void ChannelProxy::Context::OnRemoveFilter(MessageFilter* filter) {
   NOTREACHED() << "filter to be removed not found";
 }
 
+#if defined(OS_LINUX)
+// Called on the IPC::Channel thread
+void ChannelProxy::Context::OnOverridePeerPid(int32 peer_pid) {
+  if (channel_.get())
+    channel_->OverridePeerPid(peer_pid);
+}
+#endif  // defined(OS_LINUX)
+
 // Called on the listener's thread
 void ChannelProxy::Context::AddFilter(MessageFilter* filter) {
   base::AutoLock auto_lock(pending_filters_lock_);
@@ -282,20 +295,23 @@ void ChannelProxy::Context::OnDispatchError() {
 ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
                            Channel::Mode mode,
                            Channel::Listener* listener,
-                           base::MessageLoopProxy* ipc_thread)
+                           base::MessageLoopProxy* ipc_thread,
+                           bool needs_override_peer_pid)
     : context_(new Context(listener, ipc_thread)),
       outgoing_message_filter_(NULL) {
-  Init(channel_handle, mode, ipc_thread, true);
+  Init(channel_handle, mode, ipc_thread, true, needs_override_peer_pid);
 }
 
 ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
                            Channel::Mode mode,
                            base::MessageLoopProxy* ipc_thread,
+                           bool needs_override_peer_pid,
                            Context* context,
                            bool create_pipe_now)
     : context_(context),
       outgoing_message_filter_(NULL) {
-  Init(channel_handle, mode, ipc_thread, create_pipe_now);
+  Init(channel_handle, mode, ipc_thread, create_pipe_now,
+       needs_override_peer_pid);
 }
 
 ChannelProxy::~ChannelProxy() {
@@ -305,7 +321,8 @@ ChannelProxy::~ChannelProxy() {
 void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
                         Channel::Mode mode,
                         base::MessageLoopProxy* ipc_thread_loop,
-                        bool create_pipe_now) {
+                        bool create_pipe_now,
+                        bool needs_override_peer_pid) {
 #if defined(OS_POSIX)
   // When we are creating a server on POSIX, we need its file descriptor
   // to be created immediately so that it can be accessed and passed
@@ -321,10 +338,11 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
     // low-level pipe so that the client can connect.  Without creating
     // the pipe immediately, it is possible for a listener to attempt
     // to connect and get an error since the pipe doesn't exist yet.
-    context_->CreateChannel(channel_handle, mode);
+    context_->CreateChannel(channel_handle, mode, needs_override_peer_pid);
   } else {
     context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        context_.get(), &Context::CreateChannel, channel_handle, mode));
+        context_.get(), &Context::CreateChannel, channel_handle, mode,
+        needs_override_peer_pid));
   }
 
   // complete initialization on the background thread
@@ -391,6 +409,13 @@ bool ChannelProxy::GetClientEuid(uid_t* client_euid) const {
   return channel->GetClientEuid(client_euid);
 }
 #endif
+
+#if defined(OS_LINUX)
+void ChannelProxy::OverridePeerPid(int32 peer_pid) {
+  context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+      context_.get(), &Context::OnOverridePeerPid, peer_pid));
+}
+#endif  // defined(OS_LINUX)
 
 //-----------------------------------------------------------------------------
 

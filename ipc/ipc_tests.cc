@@ -251,7 +251,8 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
   {
     // setup IPC channel proxy
     IPC::ChannelProxy chan(kTestClientChannel, IPC::Channel::MODE_SERVER,
-                           &channel_listener, thread.message_loop_proxy());
+                           &channel_listener, thread.message_loop_proxy(),
+                           false /* needs_override_peer_pid */);
 
     channel_listener.Init(&chan);
 

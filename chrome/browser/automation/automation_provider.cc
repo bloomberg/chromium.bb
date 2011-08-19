@@ -160,7 +160,8 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
       effective_channel_id,
       GetChannelMode(use_named_interface),
       this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      false /* needs_override_peer_pid */));
   channel_->AddFilter(automation_resource_message_filter_);
 
 #if defined(OS_CHROMEOS)
