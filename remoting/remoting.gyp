@@ -165,7 +165,6 @@
         'remoting_base',
         'remoting_host',
         'remoting_jingle_glue',
-        '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
@@ -285,14 +284,13 @@
         '../ui/ui.gyp:ui',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
+        '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../media/media.gyp:yuv_convert',
         'remoting_jingle_glue',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
         'proto/trace.gyp:trace_proto_lib',
-        # TODO(hclam): Enable VP8 in the build.
-        #'third_party/on2/on2.gyp:vp8',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
@@ -300,11 +298,6 @@
         '../skia/skia.gyp:skia',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
-      ],
-      # TODO(hclam): Remove this and depend on libvpx directly once we remove
-      # libvpx from FFmpeg.
-      'include_dirs': [
-        '../third_party/libvpx/source/libvpx',
       ],
       # This target needs a hard dependency because dependent targets
       # depend on chromotocol_proto_lib for headers.

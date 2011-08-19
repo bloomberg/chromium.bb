@@ -32,7 +32,6 @@
 #include "base/test/mock_chrome_application_mac.h"
 #include "base/threading/thread.h"
 #include "crypto/nss_util.h"
-#include "media/base/media.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/capturer_fake.h"
@@ -271,11 +270,6 @@ int main(int argc, char** argv) {
 
   base::AtExitManager exit_manager;
   crypto::EnsureNSPRInit();
-
-  FilePath media_module_path;
-  PathService::Get(base::DIR_MODULE, &media_module_path);
-  CHECK(media::InitializeMediaLibrary(media_module_path))
-      << "Cannot load media library";
 
 #if defined(TOOLKIT_USES_GTK)
   gfx::GtkInitFromCommandLine(*cmd_line);
