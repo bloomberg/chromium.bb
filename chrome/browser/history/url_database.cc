@@ -263,8 +263,8 @@ bool URLDatabase::InitURLEnumeratorForSignificant(URLEnumerator* enumerator) {
   DCHECK(!enumerator->initialized_);
   std::string sql("SELECT ");
   sql.append(kURLRowFields);
-  sql.append(" FROM urls WHERE last_visit_time >= ? OR visit_count > ? OR "
-             "typed_count > ?");
+  sql.append(" FROM urls WHERE last_visit_time >= ? OR visit_count >= ? OR "
+             "typed_count >= ?");
   enumerator->statement_.Assign(GetDB().GetUniqueStatement(sql.c_str()));
   if (!enumerator->statement_) {
     NOTREACHED() << GetDB().GetErrorMessage();

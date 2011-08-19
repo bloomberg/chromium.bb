@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,13 +174,13 @@ TEST(HistoryQueryResult, RowSignificance) {
   url_row.set_title(UTF8ToUTF16("Google"));
   EXPECT_FALSE(RowQualifiesAsSignificant(url_row, threshold));
   EXPECT_FALSE(RowQualifiesAsSignificant(url_row, base::Time()));
-  url_row.set_visit_count(kLowQualityMatchVisitLimit + 1);
+  url_row.set_visit_count(kLowQualityMatchVisitLimit);
   EXPECT_TRUE(RowQualifiesAsSignificant(url_row, threshold));
   EXPECT_TRUE(RowQualifiesAsSignificant(url_row, base::Time()));
   url_row.set_visit_count(1);
   EXPECT_FALSE(RowQualifiesAsSignificant(url_row, threshold));
   EXPECT_FALSE(RowQualifiesAsSignificant(url_row, base::Time()));
-  url_row.set_typed_count(kLowQualityMatchTypedLimit + 1);
+  url_row.set_typed_count(kLowQualityMatchTypedLimit);
   EXPECT_TRUE(RowQualifiesAsSignificant(url_row, threshold));
   EXPECT_TRUE(RowQualifiesAsSignificant(url_row, base::Time()));
   url_row.set_typed_count(0);

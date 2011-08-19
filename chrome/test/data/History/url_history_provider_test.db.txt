@@ -27,15 +27,16 @@
   in in_memory_url_index_unittest.cc.
 */
 INSERT INTO "urls" VALUES(1,'http://www.reuters.com/article/idUSN0839880620100708','UPDATE 1-US 30-yr mortgage rate drops to new record low | Reuters',3,1,2,0,29);  // Qualifies
-INSERT INTO "urls" VALUES(2,'http://www.golfweek.com/news/2010/jul/08/goydos-opens-john-deere-classic-59/','Goydos opens John Deere Classic with 59',3,1,4,0,27);
+INSERT INTO "urls" VALUES(2,'http://www.golfweek.com/news/2010/jul/08/goydos-opens-john-deere-classic-59/','Goydos opens John Deere Classic with 59',3,1,4,0,27);  // Qualifies
 INSERT INTO "urls" VALUES(3,'http://www.businessandmedia.org/articles/2010/20100708120415.aspx','LeBronomics: Could High Taxes Influence James'' Team Decision?',4,1,2,0,28);  // Qualifies
 INSERT INTO "urls" VALUES(4,'http://www.realclearmarkets.com/articles/2010/07/08/diversity_in_the_financial_sector_98562.html','RealClearMarkets - Racial, Gender Quotas in the Financial Bill?',4,1,4,0,0);  // Qualifies
 INSERT INTO "urls" VALUES(5,'http://drudgereport.com/','DRUDGE REPORT 2010',3,2,2,0,0);  // Qualifies
 INSERT INTO "urls" VALUES(6,'http://totalfinder.binaryage.com/','TotalFinder brings tabs to your native Finder and more!',3,2,4,0,26);  // Qualifies
-INSERT INTO "urls" VALUES(8,'http://getsharekit.com/','ShareKit : Drop-in Share Features for all iOS Apps',4,2,4,0,20);  // Qualifies
+INSERT INTO "urls" VALUES(7,'http://getsharekit.com/','ShareKit : Drop-in Share Features for all iOS Apps',4,2,4,0,20);  // Qualifies
+INSERT INTO "urls" VALUES(8,'http://getsharekit.com/index.html','ShareKit : Drop-in Share Features for all iOS Apps',3,0,4,0,20);
 INSERT INTO "urls" VALUES(9,'http://en.wikipedia.org/wiki/Control-Z','Control-Z - Wikipedia, the free encyclopedia',0,0,6,0,0);
 INSERT INTO "urls" VALUES(10,'http://vmware.com/info?id=724','VMware Account Management Login',1,0,6,0,0);
-INSERT INTO "urls" VALUES(11,'http://www.tech-recipes.com/rx/2621/os_x_change_path_environment_variable/','OS X: Change your PATH environment variable | Mac system administration | Tech-Recipes',0,1,6,0,14);
+INSERT INTO "urls" VALUES(11,'http://www.tech-recipes.com/rx/2621/os_x_change_path_environment_variable/','OS X: Change your PATH environment variable | Mac system administration | Tech-Recipes',0,1,6,0,14);  // Qualifies
 INSERT INTO "urls" VALUES(12,'http://view.atdmt.com/PPJ/iview/194841301/direct;wi.160;hi.600/01?click=','',6,6,0,1,0);  // Qualifies
 INSERT INTO "urls" VALUES(15,'http://www.cnn.com/','CNN.com International - Breaking, World, Business, Sports, Entertainment and Video News',6,6,0,0,89);  // Qualifies
 INSERT INTO "urls" VALUES(16,'http://www.zdnet.com/','Technology News, Analysis, Comments and Product Reviews for IT Professionals | ZDNet',6,6,0,0,652);  // Qualifies

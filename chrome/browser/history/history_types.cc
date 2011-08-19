@@ -383,7 +383,7 @@ MostVisitedThumbnails::~MostVisitedThumbnails() {}
 // Autocomplete thresholds -----------------------------------------------------
 
 const int kLowQualityMatchTypedLimit = 1;
-const int kLowQualityMatchVisitLimit = 3;
+const int kLowQualityMatchVisitLimit = 4;
 const int kLowQualityMatchAgeLimitInDays = 3;
 
 base::Time AutocompleteAgeThreshold() {
@@ -395,8 +395,8 @@ bool RowQualifiesAsSignificant(const URLRow& row,
                                const base::Time& threshold) {
   const base::Time& real_threshold =
       threshold.is_null() ? AutocompleteAgeThreshold() : threshold;
-  return (row.typed_count() > kLowQualityMatchTypedLimit) ||
-         (row.visit_count() > kLowQualityMatchVisitLimit) ||
+  return (row.typed_count() >= kLowQualityMatchTypedLimit) ||
+         (row.visit_count() >= kLowQualityMatchVisitLimit) ||
          (row.last_visit() >= real_threshold);
 }
 

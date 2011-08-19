@@ -32,6 +32,8 @@ using history::InMemoryURLIndex;
 using history::ScoredHistoryMatch;
 using history::ScoredHistoryMatches;
 
+bool HistoryQuickProvider::disabled_ = false;
+
 HistoryQuickProvider::HistoryQuickProvider(ACProviderListener* listener,
                                            Profile* profile)
     : HistoryProvider(listener, profile, "HistoryQuickProvider"),
@@ -42,6 +44,8 @@ HistoryQuickProvider::~HistoryQuickProvider() {}
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
   matches_.clear();
+  if (disabled_)
+    return;
 
   // Don't bother with INVALID and FORCED_QUERY.  Also pass when looking for
   // BEST_MATCH and there is no inline autocompletion because none of the HQP

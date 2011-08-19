@@ -40,6 +40,13 @@ class HistoryQuickProvider : public HistoryProvider {
   // Performs the autocomplete matching and scoring.
   void DoAutocomplete();
 
+  // Disable this provider. For unit testing purposes only. This is required
+  // because this provider is closely associated with the HistoryURLProvider
+  // and in order to properly test the latter the HistoryQuickProvider must
+  // be disabled.
+  // TODO(mrossetti): Eliminate this once the HUP has been refactored.
+  static void set_disabled(bool disabled) { disabled_ = disabled; }
+
  private:
   friend class HistoryQuickProviderTest;
   FRIEND_TEST_ALL_PREFIXES(HistoryQuickProviderTest, Spans);
@@ -89,6 +96,9 @@ class HistoryQuickProvider : public HistoryProvider {
 
   // Only used for testing.
   scoped_ptr<history::InMemoryURLIndex> index_for_testing_;
+
+  // This provider is disabled when true.
+  static bool disabled_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_QUICK_PROVIDER_H_

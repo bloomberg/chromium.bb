@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -36,7 +37,7 @@ struct TestURLInfo {
   {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0},
 
   // Unpopular pages should not appear in the results at all.
-  {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 1},
+  {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 0},
 
   // If a host has a match, we should pick it up during host synthesis.
   {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2},
@@ -102,7 +103,13 @@ class HistoryURLProviderTest : public TestingBrowserProcessTest,
  public:
   HistoryURLProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
+        file_thread_(BrowserThread::FILE, &message_loop_) {
+    HistoryQuickProvider::set_disabled(true);
+  }
+
+  virtual ~HistoryURLProviderTest() {
+    HistoryQuickProvider::set_disabled(false);
+  }
 
   // ACProviderListener
   virtual void OnProviderUpdate(bool updated_matches);
@@ -298,6 +305,7 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
   const std::string short_5a[] = {
     "http://gooey/",
     "http://www.google.com/",
+    "http://go/",
   };
   const std::string short_5b[] = {
     "http://go/",

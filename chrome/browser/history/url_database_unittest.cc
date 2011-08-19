@@ -193,12 +193,12 @@ TEST_F(URLDatabaseTest, EnumeratorForSignificant) {
   std::string url_string2("http://www.url_match_visit_count.com/");
   good_urls.insert("http://www.url_match_visit_count.com/");
   URLRow url_match_visit_count(GURL("http://www.url_match_visit_count.com/"));
-  url_match_visit_count.set_visit_count(kLowQualityMatchVisitLimit + 1);
+  url_match_visit_count.set_visit_count(kLowQualityMatchVisitLimit);
   EXPECT_TRUE(AddURL(url_match_visit_count));
 
   good_urls.insert("http://www.url_match_typed_count.com/");
   URLRow url_match_typed_count(GURL("http://www.url_match_typed_count.com/"));
-  url_match_typed_count.set_typed_count(kLowQualityMatchTypedLimit + 1);
+  url_match_typed_count.set_typed_count(kLowQualityMatchTypedLimit);
   EXPECT_TRUE(AddURL(url_match_typed_count));
 
   good_urls.insert("http://www.url_match_last_visit.com/");

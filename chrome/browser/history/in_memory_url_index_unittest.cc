@@ -296,7 +296,7 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
   url_index_.reset(new InMemoryURLIndex());
   url_index_->Init(this, "en,ja,hi,zh");
   // Signal if someone has changed the test DB.
-  EXPECT_EQ(25U, url_index_->history_info_map_.size());
+  EXPECT_EQ(27U, url_index_->history_info_map_.size());
   InMemoryURLIndex::String16Vector terms;
 
   // Ensure title is being searched.
