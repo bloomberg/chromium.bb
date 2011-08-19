@@ -1328,6 +1328,12 @@ void NativeWidgetGtk::FocusNativeView(gfx::NativeView native_view) {
     gtk_widget_grab_focus(native_view);
 }
 
+bool NativeWidgetGtk::ConvertPointFromAncestor(
+    const Widget* ancestor, gfx::Point* point) const {
+  NOTREACHED();
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, protected:
 

@@ -1090,6 +1090,12 @@ void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
     ::SetFocus(native_view);
 }
 
+bool NativeWidgetWin::ConvertPointFromAncestor(
+    const Widget* ancestor, gfx::Point* point) const {
+  NOTREACHED();
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, MessageLoop::Observer implementation:
 

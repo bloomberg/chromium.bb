@@ -48,6 +48,8 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate,
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
  protected:
+  friend class NativeWidgetView;
+
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
@@ -127,6 +129,8 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate,
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ClearNativeFocus() OVERRIDE;
   virtual void FocusNativeView(gfx::NativeView native_view) OVERRIDE;
+  virtual bool ConvertPointFromAncestor(
+      const Widget* ancestor, gfx::Point* point) const OVERRIDE;
 
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;

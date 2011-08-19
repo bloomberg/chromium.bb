@@ -10,6 +10,7 @@
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/root_view.h"
+#include "views/widget/window_manager.h"
 
 #if defined(HAVE_IBUS)
 #include "views/ime/input_method_ibus.h"
@@ -215,28 +216,15 @@ void NativeWidgetViews::SendNativeAccessibilityEvent(
 }
 
 void NativeWidgetViews::SetMouseCapture() {
-  View* parent_root_view = GetParentNativeWidget()->GetWidget()->GetRootView();
-  static_cast<internal::RootView*>(parent_root_view)->set_capture_view(view_);
-  GetParentNativeWidget()->SetMouseCapture();
+  WindowManager::Get()->SetMouseCapture(GetWidget());
 }
 
 void NativeWidgetViews::ReleaseMouseCapture() {
-  View* parent_root_view = GetParentNativeWidget()->GetWidget()->GetRootView();
-  static_cast<internal::RootView*>(parent_root_view)->set_capture_view(NULL);
-  GetParentNativeWidget()->ReleaseMouseCapture();
+  WindowManager::Get()->ReleaseMouseCapture(GetWidget());
 }
 
 bool NativeWidgetViews::HasMouseCapture() const {
-  // NOTE: we may need to tweak this to only return true if the parent native
-  // widget's RootView has us as the capture view.
-  const internal::NativeWidgetPrivate* parent_widget = GetParentNativeWidget();
-  if (!parent_widget)
-    return false;
-  const internal::RootView* parent_root =
-      static_cast<const internal::RootView*>(parent_widget->GetWidget()->
-                  GetRootView());
-  return parent_widget->HasMouseCapture() &&
-         view_ == parent_root->capture_view();
+  return WindowManager::Get()->HasMouseCapture(GetWidget());
 }
 
 InputMethod* NativeWidgetViews::GetInputMethodNative() {
@@ -363,6 +351,8 @@ void NativeWidgetViews::Show() {
 
 void NativeWidgetViews::Hide() {
   view_->SetVisible(false);
+  if (HasMouseCapture())
+    ReleaseMouseCapture();
 }
 
 void NativeWidgetViews::ShowWithState(ShowState state) {
@@ -489,6 +479,27 @@ void NativeWidgetViews::ClearNativeFocus() {
 
 void NativeWidgetViews::FocusNativeView(gfx::NativeView native_view) {
   GetParentNativeWidget()->FocusNativeView(native_view);
+}
+
+bool NativeWidgetViews::ConvertPointFromAncestor(
+    const Widget* ancestor, gfx::Point* point) const {
+  // This method converts the point from ancestor's coordinates to
+  // this widget's coordinate using recursion as the widget hierachy
+  // is usually shallow.
+
+  if (ancestor == GetWidget())
+    return true;  // no conversion necessary
+
+  const Widget* parent_widget = view_->GetWidget();
+  if (!parent_widget)  // couldn't reach the ancestor.
+    return false;
+
+  if (parent_widget == ancestor ||
+      parent_widget->ConvertPointFromAncestor(ancestor, point)) {
+    View::ConvertPointToView(parent_widget->GetRootView(), GetView(), point);
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

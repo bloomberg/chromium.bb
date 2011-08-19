@@ -26,6 +26,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
+#include "views/window/hit_test.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
@@ -96,6 +97,12 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
 
 TouchBrowserFrameView::~TouchBrowserFrameView() {
   browser_view()->browser()->tabstrip_model()->RemoveObserver(this);
+}
+
+int TouchBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
+  if (keyboard_->GetMirroredBounds().Contains(point))
+    return HTCLIENT;
+  return OpaqueBrowserFrameView::NonClientHitTest(point);
 }
 
 std::string TouchBrowserFrameView::GetClassName() const {

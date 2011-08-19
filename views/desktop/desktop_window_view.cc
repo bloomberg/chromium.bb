@@ -8,6 +8,7 @@
 #include "ui/gfx/transform.h"
 #include "views/desktop/desktop_background.h"
 #include "views/desktop/desktop_window_root_view.h"
+#include "views/desktop/desktop_window_manager.h"
 #include "views/layer_property_setter.h"
 #include "views/widget/native_widget_view.h"
 #include "views/widget/native_widget_views.h"
@@ -51,7 +52,8 @@ class DesktopWindow : public Widget {
       if (native_widget)
         return native_widget->delegate()->OnMouseEvent(event);
     }
-    return Widget::OnMouseEvent(event);
+    return WindowManager::Get()->HandleMouseEvent(this, event) ||
+        Widget::OnMouseEvent(event);
   }
 
   DesktopWindowView* desktop_window_view_;
@@ -127,6 +129,8 @@ void DesktopWindowView::CreateDesktopWindow(DesktopType type) {
   desktop_window_view = new DesktopWindowView(type);
   views::Widget* window = new DesktopWindow(desktop_window_view);
   desktop_window_view->widget_ = window;
+
+  WindowManager::Install(new DesktopWindowManager(window));
 
   views::Widget::InitParams params;
   params.delegate = desktop_window_view;

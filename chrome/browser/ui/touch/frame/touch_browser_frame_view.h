@@ -52,6 +52,7 @@ class TouchBrowserFrameView
   virtual ~TouchBrowserFrameView();
 
   // Overriden from Views.
+  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
   // Overridden from OpaqueBrowserFrameView

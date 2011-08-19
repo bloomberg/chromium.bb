@@ -350,6 +350,8 @@
         'widget/widget.h',
         'widget/widget_delegate.cc',
         'widget/widget_delegate.h',
+        'widget/window_manager.cc',
+        'widget/window_manager.h',
         'window/client_view.cc',
         'window/client_view.h',
         'window/custom_frame_view.cc',
@@ -641,6 +643,8 @@
       'sources': [
         'desktop/desktop_background.cc',
         'desktop/desktop_background.h',
+        'desktop/desktop_window_manager.cc',
+        'desktop/desktop_window_manager.h',
         'desktop/desktop_window_root_view.cc',
         'desktop/desktop_window_root_view.h',
         'desktop/desktop_window_view.cc',

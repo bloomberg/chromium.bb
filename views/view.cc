@@ -26,6 +26,7 @@
 #include "views/layout/layout_manager.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_private.h"
+#include "views/widget/native_widget_views.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
@@ -1687,12 +1688,28 @@ void View::ConvertPointToView(const View* src,
   DCHECK(dst);
   DCHECK(point);
 
+  const Widget* src_widget = src ? src->GetWidget() : NULL ;
+  const Widget* dst_widget = dst->GetWidget();
+  // If dest and src aren't in the same widget, try to convert the
+  // point to the destination widget's coordinates first.
+  // TODO(oshima|sadrul): Cleanup and consolidate conversion methods.
+  if (Widget::IsPureViews() && src_widget && src_widget != dst_widget) {
+    // convert to src_widget first.
+    gfx::Point p = *point;
+    src->ConvertPointForAncestor(src_widget->GetRootView(), &p);
+    if (dst_widget->ConvertPointFromAncestor(src_widget, &p)) {
+      // Convertion to destination widget's coordinates was successful.
+      // Use destination's root as a source to convert the point further.
+      src = dst_widget->GetRootView();
+      *point = p;
+    }
+  }
+
   if (src == NULL || src->Contains(dst)) {
     dst->ConvertPointFromAncestor(src, point);
     if (!src) {
-      const Widget* widget = dst->GetWidget();
-      if (widget) {
-        gfx::Rect b = widget->GetClientAreaScreenBounds();
+      if (dst_widget) {
+        gfx::Rect b = dst_widget->GetClientAreaScreenBounds();
         point->SetPoint(point->x() - b.x(), point->y() - b.y());
       }
     }

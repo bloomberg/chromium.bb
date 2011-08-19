@@ -766,6 +766,11 @@ bool Widget::SetInitialFocus() {
   return !!v;
 }
 
+bool Widget::ConvertPointFromAncestor(
+    const Widget* ancestor, gfx::Point* point) const {
+  return native_widget_->ConvertPointFromAncestor(ancestor, point);
+}
+
 View* Widget::GetChildViewParent() {
   return GetContentsView() ? GetContentsView() : GetRootView();
 }
@@ -951,7 +956,6 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
 void Widget::OnMouseCaptureLost() {
   if (is_mouse_button_pressed_)
     GetRootView()->OnMouseCaptureLost();
-  static_cast<internal::RootView*>(GetRootView())->set_capture_view(NULL);
   is_mouse_button_pressed_ = false;
 }
 

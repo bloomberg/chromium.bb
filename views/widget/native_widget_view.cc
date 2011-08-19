@@ -5,6 +5,10 @@
 #include "views/widget/native_widget_view.h"
 
 #include "ui/gfx/canvas.h"
+#if defined(OS_LINUX)
+#include "views/window/hit_test.h"
+#endif
+#include "views/widget/window_manager.h"
 
 namespace views {
 namespace internal {
@@ -76,6 +80,37 @@ gfx::NativeCursor NativeWidgetView::GetCursor(const MouseEvent& event) {
 
 bool NativeWidgetView::OnMousePressed(const MouseEvent& event) {
   MouseEvent e(event, this);
+  Widget* hosting_widget = GetAssociatedWidget();
+  if (hosting_widget->non_client_view()) {
+    int hittest_code = hosting_widget->non_client_view()->NonClientHitTest(
+        event.location());
+    switch (hittest_code) {
+      case HTCAPTION: {
+        if (!event.IsOnlyRightMouseButton()) {
+          WindowManager::Get()->StartMoveDrag(hosting_widget, event.location());
+          return true;
+        }
+        break;
+      }
+      case HTBOTTOM:
+      case HTBOTTOMLEFT:
+      case HTBOTTOMRIGHT:
+      case HTGROWBOX:
+      case HTLEFT:
+      case HTRIGHT:
+      case HTTOP:
+      case HTTOPLEFT:
+      case HTTOPRIGHT: {
+        WindowManager::Get()->StartResizeDrag(
+            hosting_widget, event.location(), hittest_code);
+        return true;
+      }
+      default:
+        // Everything else falls into standard client event handling...
+        break;
+    }
+  }
+
   return delegate()->OnMouseEvent(event);
 }
 

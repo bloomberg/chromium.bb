@@ -64,11 +64,6 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
 
   // Input ---------------------------------------------------------------------
 
-  // If a capture view has been set all mouse events are forwarded to the
-  // capture view, regardless of whether the mouse is over the view.
-  void set_capture_view(View* v) { capture_view_ = v; }
-  const View* capture_view() const { return capture_view_; }
-
   // Process a key event. Send the event to the focused view and up the focus
   // path, and finally to the default keyboard handler, until someone consumes
   // it. Returns whether anyone consumed the event.
@@ -160,9 +155,6 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   Widget* widget_;
 
   // Input ---------------------------------------------------------------------
-
-  // View capturing mouse input.
-  View* capture_view_;
 
   // The view currently handing down - drag - up
   View* mouse_pressed_handler_;

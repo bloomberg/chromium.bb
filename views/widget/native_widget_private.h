@@ -209,6 +209,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
   virtual void ClearNativeFocus() = 0;
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
+  virtual bool ConvertPointFromAncestor(
+      const Widget* ancestor, gfx::Point* point) const = 0;
 
   // Overridden from NativeWidget:
   virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;

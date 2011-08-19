@@ -252,8 +252,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void NotifyNativeViewHierarchyChanged(bool attached,
                                         gfx::NativeView native_view);
 
-  // Returns the topmost Widget in a hierarchy. Will return NULL if called
-  // before the underlying Native Widget has been initialized.
+  // Returns the top level Widget in a hierarchy. Will return NULL the widget
+  // is not yet attached to top leve widget's hierarchy.
   Widget* GetTopLevelWidget();
   const Widget* GetTopLevelWidget() const;
 
@@ -539,6 +539,13 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void set_focus_on_creation(bool focus_on_creation) {
     focus_on_creation_ = focus_on_creation;
   }
+
+  // Converts the |point| in ancestor's coordinate to this widget's coordinates.
+  // Returns false if |ancestor| is not an ancestor of this widget.
+  // The receiver has to be pure views widget (NativeWidgetViews) and
+  // ancestor can be of any type.
+  bool ConvertPointFromAncestor(
+      const Widget* ancestor, gfx::Point* point) const;
 
   // Returns a View* that any child Widgets backed by NativeWidgetViews
   // are added to.  The default implementation returns the contents view
