@@ -9,5 +9,6 @@ const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
 const char kCloudPrintFile[]                = "cloud-print-file";
 const char kCloudPrintJobTitle[]            = "cloud-print-job-title";
 const char kCloudPrintFileType[]            = "cloud-print-file-type";
+const char kCloudPrintPrintTicket[]         = "cloud-print-print-ticket";
 }  // namespace switches
 

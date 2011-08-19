@@ -34,9 +34,11 @@ bool IsBrowserRunning(std::string bundleID) {
 }
 }   // namespace cloud_print
 
+namespace printer_driver_util {
 void LaunchPrintDialog(const std::string& outputPath,
                        const std::string& jobTitle,
-                       const std::string& user) {
+                       const std::string& user,
+                       const std::string& print_ticket) {
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
   OSStatus status = noErr;
   FSRef ref;
@@ -84,6 +86,9 @@ void LaunchPrintDialog(const std::string& outputPath,
           [NSString stringWithUTF8String:jobTitle.c_str()]];
   NSAppleEventDescriptor* mime = [NSAppleEventDescriptor
                                   descriptorWithString:@"application/pdf"];
+  NSAppleEventDescriptor* ticket =
+      [NSAppleEventDescriptor descriptorWithString:
+          [NSString stringWithUTF8String:print_ticket.c_str()]];
 
   // Create and populate the list of parameters.
   // Note that the array starts at index 1.
@@ -97,6 +102,7 @@ void LaunchPrintDialog(const std::string& outputPath,
   [parameters insertDescriptor:mime atIndex:1];
   [parameters insertDescriptor:printPath atIndex:2];
   [parameters insertDescriptor:title atIndex:3];
+  [parameters insertDescriptor:ticket atIndex:4];
   [event setParamDescriptor:parameters forKeyword:kAECloudPrintClass];
 
   // Set the application launch parameters.
@@ -118,3 +124,5 @@ void LaunchPrintDialog(const std::string& outputPath,
   [pool release];
   return;
 }
+
+}  // namespace printer_driver_util

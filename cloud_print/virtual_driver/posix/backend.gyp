@@ -15,10 +15,12 @@
       ],
       'sources': [
         'printer_driver_util_linux.cc',
+        'printer_driver_util_posix.cc',
         'printer_driver_util_posix.h',
         'printer_driver_util_mac.mm',
         'virtual_driver_posix.cc',
         '../virtual_driver_switches.cc',
+        '../virtual_driver_switches.h',
       ],
       'conditions': [
         ['OS=="mac"', {
@@ -26,6 +28,20 @@
           'libraries': ['ScriptingBridge.framework'],
         }],
      ], 
+    },
+    {
+      'target_name': 'virtual_driver_posix_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../../../base/base.gyp:base',
+        '../../../base/base.gyp:test_support_base',
+        '../../../testing/gmock.gyp:gmock',
+        '../../../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'virtual_driver_posix_tests.cc',
+        'printer_driver_util_posix.cc',
+      ],
   }],
   'conditions': [
      ['OS=="mac"', {

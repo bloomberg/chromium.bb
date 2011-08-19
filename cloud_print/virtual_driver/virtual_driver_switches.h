@@ -28,6 +28,11 @@ extern const char kCloudPrintJobTitle[];
 // file referenced by cloud-print-file.
 // Defaults to "application/pdf" if unspecified.
 extern const char kCloudPrintFileType[];
+
+// Used with kCloudPrintFile to specify a JSON print ticket for the resulting
+// print job.
+// Defaults to null if unspecified.
+extern const char kCloudPrintPrintTicket[];
 }  // namespace switches
 
 #endif  // CLOUD_PRINT_VIRTUAL_DRIVER_VIRTUAL_DRIVER_SWITCHES_H_
