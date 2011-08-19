@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/instant/instant_controller.h"
-#include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1083,8 +1083,11 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
 void AutocompleteEditModel::DoPreconnect(const AutocompleteMatch& match) {
   if (!match.destination_url.SchemeIs(chrome::kExtensionScheme)) {
     // Warm up DNS Prefetch cache, or preconnect to a search service.
-    chrome_browser_net::AnticipateOmniboxUrl(match.destination_url,
-                                             IsPreconnectable(match.type));
+    if (profile_->GetNetworkPredictor()) {
+      profile_->GetNetworkPredictor()->AnticipateOmniboxUrl(
+          match.destination_url,
+          IsPreconnectable(match.type));
+    }
     // We could prefetch the alternate nav URL, if any, but because there
     // can be many of these as a user types an initial series of characters,
     // the OS DNS cache could suffer eviction problems for minimal gain.

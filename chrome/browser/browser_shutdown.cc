@@ -39,7 +39,6 @@
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "net/predictor_api.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
@@ -141,10 +140,6 @@ void Shutdown() {
   // time to get here. If you have something that *must* happen on end session,
   // consider putting it in BrowserProcessImpl::EndSession.
   PrefService* prefs = g_browser_process->local_state();
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  PrefService* user_prefs = profile_manager->GetDefaultProfile()->GetPrefs();
-
-  chrome_browser_net::SavePredictorStateForNextStartupAndTrim(user_prefs);
 
   PluginUpdater::GetInstance()->Shutdown();
 
