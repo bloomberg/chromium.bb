@@ -65,27 +65,21 @@ void TestExtensionService::CheckForUpdatesSoon() {
   ADD_FAILURE();
 }
 
-SyncError TestExtensionService::MergeDataAndStartSyncing(
-    syncable::ModelType type,
-    const SyncDataList& initial_sync_data,
-    SyncChangeProcessor* sync_processor) {
+bool TestExtensionService::GetSyncData(
+    const Extension& extension, ExtensionFilter filter,
+    ExtensionSyncData* extension_sync_data) const {
   ADD_FAILURE();
-  return SyncError();
+  return false;
 }
 
-void TestExtensionService::StopSyncing(syncable::ModelType type) {
+std::vector<ExtensionSyncData> TestExtensionService::GetSyncDataList(
+    ExtensionFilter filter) const {
   ADD_FAILURE();
+  return std::vector<ExtensionSyncData>();
 }
 
-SyncDataList TestExtensionService::GetAllSyncData(
-    syncable::ModelType type) const {
+void TestExtensionService::ProcessSyncData(
+    const ExtensionSyncData& extension_sync_data,
+    ExtensionFilter filter) {
   ADD_FAILURE();
-  return SyncDataList();
-}
-
-SyncError TestExtensionService::ProcessSyncChanges(
-    const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
-  ADD_FAILURE();
-  return SyncError();
 }
