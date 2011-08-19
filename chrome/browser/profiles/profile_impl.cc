@@ -1251,7 +1251,7 @@ void ProfileImpl::CreatePasswordStore() {
 
 DownloadManager* ProfileImpl::GetDownloadManager() {
   if (!created_download_manager_) {
-    download_manager_delegate_= new ChromeDownloadManagerDelegate();
+    download_manager_delegate_= new ChromeDownloadManagerDelegate(this);
     scoped_refptr<DownloadManager> dlm(
         new DownloadManager(download_manager_delegate_,
                             g_browser_process->download_status_updater()));

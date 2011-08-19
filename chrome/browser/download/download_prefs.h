@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/prefs/pref_member.h"
 
+class DownloadManager;
 class PrefService;
 
 // Stores all download-related preferences.
@@ -20,6 +21,9 @@ class DownloadPrefs {
   ~DownloadPrefs();
 
   static void RegisterUserPrefs(PrefService* prefs);
+
+  // Returns the DownloadPrefs corresponding to the given DownloadManager.
+  static DownloadPrefs* FromDownloadManager(DownloadManager* download_manager);
 
   FilePath download_path() const { return *download_path_; }
   int save_file_type() const { return *save_file_type_; }

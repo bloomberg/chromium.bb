@@ -50,7 +50,6 @@
 class DownloadFileManager;
 class DownloadHistory;
 class DownloadManagerDelegate;
-class DownloadPrefs;
 class DownloadStatusUpdater;
 class GURL;
 class Profile;
@@ -199,8 +198,6 @@ class DownloadManager
   Profile* profile() { return profile_; }
 
   DownloadHistory* download_history() { return download_history_.get(); }
-
-  DownloadPrefs* download_prefs() { return download_prefs_.get(); }
 
   FilePath last_download_path() { return last_download_path_; }
 
@@ -391,8 +388,6 @@ class DownloadManager
   Profile* profile_;
 
   scoped_ptr<DownloadHistory> download_history_;
-
-  scoped_ptr<DownloadPrefs> download_prefs_;
 
   // Non-owning pointer for handling file writing on the download_thread_.
   DownloadFileManager* file_manager_;

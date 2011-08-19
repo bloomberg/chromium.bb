@@ -464,7 +464,7 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual DownloadManager* GetDownloadManager() {
     if (!download_manager_.get()) {
-      download_manager_delegate_ = new ChromeDownloadManagerDelegate();
+      download_manager_delegate_ = new ChromeDownloadManagerDelegate(this);
       scoped_refptr<DownloadManager> dlm(
           new DownloadManager(download_manager_delegate_,
                               g_browser_process->download_status_updater()));

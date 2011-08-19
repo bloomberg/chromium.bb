@@ -1349,7 +1349,8 @@ void TestingAutomationProvider::GetDownloadDirectory(
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     DownloadManager* dlm = tab->browser_context()->GetDownloadManager();
-    *download_directory = dlm->download_prefs()->download_path();
+    *download_directory =
+        DownloadPrefs::FromDownloadManager(dlm)->download_path();
   }
 }
 
@@ -3019,7 +3020,8 @@ void TestingAutomationProvider::PerformActionOnDownload(
             this, reply_message, true));
     selected_item->OpenDownload();
   } else if (action == "toggle_open_files_like_this") {
-    DownloadPrefs* prefs = selected_item->download_manager()->download_prefs();
+    DownloadPrefs* prefs =
+        DownloadPrefs::FromDownloadManager(selected_item->download_manager());
     FilePath path = selected_item->GetUserVerifiedFilePath();
     if (!selected_item->ShouldOpenFileBasedOnExtension())
       prefs->EnableAutoOpenBasedOnExtension(path);

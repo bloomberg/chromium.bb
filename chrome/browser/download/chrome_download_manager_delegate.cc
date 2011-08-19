@@ -34,7 +34,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate() {
+ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
+    : download_prefs_(new DownloadPrefs(profile->GetPrefs())) {
 }
 
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
@@ -96,8 +97,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
     return false;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);
-  return download_manager_->download_prefs()->
-      IsAutoOpenEnabledForExtension(extension);
+  return download_prefs_->IsAutoOpenEnabledForExtension(extension);
 }
 
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {
@@ -141,7 +141,8 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
     bool can_save_as_complete) {
   // Deletes itself.
   new SavePackageFilePicker(
-      save_package, suggested_path, can_save_as_complete);
+      save_package, suggested_path, can_save_as_complete,
+      download_prefs_.get());
 }
 
 void ChromeDownloadManagerDelegate::DownloadProgressUpdated() {
@@ -205,7 +206,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     // Freeze the user's preference for showing a Save As dialog.  We're going
     // to bounce around a bunch of threads and we don't want to worry about race
     // conditions where the user changes this pref out from under us.
-    if (download_manager_->download_prefs()->PromptForDownload()) {
+    if (download_prefs_->PromptForDownload()) {
       // But ignore the user's preference for the following scenarios:
       // 1) Extension installation. Note that we only care here about the case
       //    where an extension is installed, not when one is downloaded with
@@ -216,7 +217,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
           !ShouldOpenFileBasedOnExtension(generated_name))
         state.prompt_user_for_save_location = true;
     }
-    if (download_manager_->download_prefs()->IsDownloadPathManaged()) {
+    if (download_prefs_->IsDownloadPathManaged()) {
       state.prompt_user_for_save_location = false;
     }
 
@@ -227,8 +228,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
         !download_manager_->last_download_path().empty()) {
       state.suggested_path = download_manager_->last_download_path();
     } else {
-      state.suggested_path =
-          download_manager_->download_prefs()->download_path();
+      state.suggested_path = download_prefs_->download_path();
     }
     state.suggested_path = state.suggested_path.Append(generated_name);
   } else {
@@ -251,7 +251,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
           &ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists,
           download->id(),
           state,
-          download_manager_->download_prefs()->download_path()));
+          download_prefs_->download_path()));
 }
 
 void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(

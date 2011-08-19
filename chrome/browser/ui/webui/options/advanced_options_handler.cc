@@ -384,7 +384,7 @@ void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   DownloadManager* manager =
       web_ui_->tab_contents()->browser_context()->GetDownloadManager();
   if (manager)
-    manager->download_prefs()->ResetAutoOpen();
+    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
 }
 
 void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
@@ -608,7 +608,8 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   // We enable the button if the user has any auto-open file types registered.
   DownloadManager* manager =
       web_ui_->tab_contents()->browser_context()->GetDownloadManager();
-  bool disabled = !(manager && manager->download_prefs()->IsAutoOpenUsed());
+  bool disabled = !(manager &&
+      DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed());
   base::FundamentalValue value(disabled);
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);

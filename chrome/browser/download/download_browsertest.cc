@@ -525,7 +525,7 @@ class DownloadTest : public InProcessBrowserTest {
                                                  prompt_for_download);
 
     DownloadManager* manager = browser()->profile()->GetDownloadManager();
-    manager->download_prefs()->ResetAutoOpen();
+    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
     manager->RemoveAllDownloads();
 
     return true;
@@ -567,13 +567,12 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   DownloadPrefs* GetDownloadPrefs(Browser* browser) {
-    return browser->profile()->GetDownloadManager()->download_prefs();
+    return DownloadPrefs::FromDownloadManager(
+        browser->profile()->GetDownloadManager());
   }
 
   FilePath GetDownloadDirectory(Browser* browser) {
-    DownloadManager* download_mananger =
-        browser->profile()->GetDownloadManager();
-    return download_mananger->download_prefs()->download_path();
+    return GetDownloadPrefs(browser)->download_path();
   }
 
   // Create a DownloadsObserver that will wait for the

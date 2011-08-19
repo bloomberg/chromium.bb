@@ -4,6 +4,8 @@
 
 #include "content/browser/download/download_manager.h"
 
+#include <iterator>
+
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -12,7 +14,6 @@
 #include "base/task.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/profiles/profile.h"
@@ -135,7 +136,6 @@ void DownloadManager::Shutdown() {
   file_manager_ = NULL;
 
   download_history_.reset();
-  download_prefs_.reset();
 
   shutdown_needed_ = false;
 }
@@ -232,8 +232,6 @@ bool DownloadManager::Init(Profile* profile) {
   download_history_.reset(new DownloadHistory(profile));
   download_history_->Load(
       NewCallback(this, &DownloadManager::OnQueryDownloadEntriesComplete));
-
-  download_prefs_.reset(new DownloadPrefs(profile_->GetPrefs()));
 
   // In test mode, there may be no ResourceDispatcherHost.  In this case it's
   // safe to avoid setting |file_manager_| because we only call a small set of

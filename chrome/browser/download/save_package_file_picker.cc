@@ -54,10 +54,9 @@ const int kIndexToIDS[] = {
 SavePackageFilePicker::SavePackageFilePicker(
     const base::WeakPtr<SavePackage>& save_package,
     const FilePath& suggested_path,
-    bool can_save_as_complete)
+    bool can_save_as_complete,
+    DownloadPrefs* download_prefs)
     : save_package_(save_package) {
-  DownloadPrefs* download_prefs = save_package->tab_contents()->
-      browser_context()->GetDownloadManager()->download_prefs();
   int file_type_index = SavePackageTypeToIndex(
       static_cast<SavePackage::SavePackageType>(
           download_prefs->save_file_type()));

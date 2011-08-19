@@ -8,19 +8,22 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "content/browser/download/download_manager_delegate.h"
 
 class DownloadItem;
 class DownloadManager;
+class DownloadPrefs;
+class Profile;
 struct DownloadStateInfo;
 
-// Browser's download manager: manages all downloads and destination view.
+// This is the Chrome side helper for the download system.
 class ChromeDownloadManagerDelegate
     : public base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>,
       public DownloadManagerDelegate {
  public:
-  ChromeDownloadManagerDelegate();
+  explicit ChromeDownloadManagerDelegate(Profile* profile);
 
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(TabContents* tab_contents,
@@ -38,6 +41,8 @@ class ChromeDownloadManagerDelegate
   virtual void DownloadProgressUpdated() OVERRIDE;
 
   void set_download_manager(DownloadManager* dm) { download_manager_ = dm; }
+
+  DownloadPrefs* download_prefs() { return download_prefs_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
@@ -72,6 +77,7 @@ class ChromeDownloadManagerDelegate
                        bool visited_referrer_before);
 
   scoped_refptr<DownloadManager> download_manager_;
+  scoped_ptr<DownloadPrefs> download_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };

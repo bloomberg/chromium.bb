@@ -232,7 +232,8 @@ void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
 }
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(const ListValue* args) {
-  FilePath path = download_manager_->download_prefs()->download_path();
+  FilePath path = DownloadPrefs::FromDownloadManager(download_manager_)->
+      download_path();
 
 #if defined(OS_MACOSX)
   // Must be called from the UI thread on Mac.

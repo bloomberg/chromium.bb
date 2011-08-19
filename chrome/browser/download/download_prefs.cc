@@ -10,11 +10,13 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_manager.h"
 #include "content/browser/download/save_package.h"
 
 DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
@@ -86,6 +88,14 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
     }
     prefs->SetBoolean(prefs::kDownloadDirUpgraded, true);
   }
+}
+
+// static
+DownloadPrefs* DownloadPrefs::FromDownloadManager(
+    DownloadManager* download_manager) {
+  ChromeDownloadManagerDelegate* delegate =
+      static_cast<ChromeDownloadManagerDelegate*>(download_manager->delegate());
+  return delegate->download_prefs();
 }
 
 bool DownloadPrefs::PromptForDownload() const {

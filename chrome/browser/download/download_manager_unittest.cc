@@ -44,7 +44,8 @@ class DownloadManagerTest : public TestingBrowserProcessTest {
 
   DownloadManagerTest()
       : profile_(new TestingProfile()),
-        download_manager_delegate_(new ChromeDownloadManagerDelegate()),
+        download_manager_delegate_(new ChromeDownloadManagerDelegate(
+            profile_.get())),
         download_manager_(new MockDownloadManager(
             download_manager_delegate_, &download_status_updater_)),
         ui_thread_(BrowserThread::UI, &message_loop_),
@@ -58,6 +59,7 @@ class DownloadManagerTest : public TestingBrowserProcessTest {
     // profile_ must outlive download_manager_, so we explicitly delete
     // download_manager_ first.
     download_manager_ = NULL;
+    download_manager_delegate_ = NULL;
     profile_.reset(NULL);
     message_loop_.RunAllPending();
   }
@@ -300,7 +302,9 @@ TEST_F(DownloadManagerTest, StartDownload) {
   BrowserThread io_thread(BrowserThread::IO, &message_loop_);
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
-  download_manager_->download_prefs()->EnableAutoOpenBasedOnExtension(
+  DownloadPrefs* download_prefs =
+      DownloadPrefs::FromDownloadManager(download_manager_);
+  download_prefs->EnableAutoOpenBasedOnExtension(
       FilePath(FILE_PATH_LITERAL("example.pdf")));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kStartDownloadCases); ++i) {

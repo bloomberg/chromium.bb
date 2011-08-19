@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/shell_dialogs.h"
 
+class DownloadPrefs;
 class FilePath;
 class SavePackage;
 
@@ -18,7 +19,8 @@ class SavePackageFilePicker : public SelectFileDialog::Listener {
  public:
   SavePackageFilePicker(const base::WeakPtr<SavePackage>& save_package,
                         const FilePath& suggested_path,
-                        bool can_save_as_complete);
+                        bool can_save_as_complete,
+                        DownloadPrefs* download_prefs);
   virtual ~SavePackageFilePicker();
 
   // Used to disable prompting the user for a directory/filename of the saved
