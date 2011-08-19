@@ -27,6 +27,10 @@ bool MockDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   return false;
 }
 
+bool MockDownloadManagerDelegate::GenerateFileHash() {
+  return false;
+}
+
 void MockDownloadManagerDelegate::GetSaveDir(
     TabContents* tab_contents,
     FilePath* website_save_dir,

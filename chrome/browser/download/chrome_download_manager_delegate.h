@@ -28,6 +28,7 @@ class ChromeDownloadManagerDelegate
                                   void* data) OVERRIDE;
   virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
+  virtual bool GenerateFileHash() OVERRIDE;
   virtual void GetSaveDir(TabContents* tab_contents,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir) OVERRIDE;

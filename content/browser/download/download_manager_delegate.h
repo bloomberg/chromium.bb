@@ -36,6 +36,9 @@ class DownloadManagerDelegate {
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) = 0;
 
+  // Returns true if we need to generate a binary hash for downloads.
+  virtual bool GenerateFileHash() = 0;
+
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(TabContents* tab_contents,
                           FilePath* website_save_dir,

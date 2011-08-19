@@ -21,6 +21,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
@@ -99,6 +100,15 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
       IsAutoOpenEnabledForExtension(extension);
 }
 
+bool ChromeDownloadManagerDelegate::GenerateFileHash() {
+#if defined(ENABLE_SAFE_BROWSING)
+  return download_manager_->profile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingEnabled) &&
+          g_browser_process->safe_browsing_service()->DownloadBinHashNeeded();
+#else
+  return false;
+#endif
+}
 
 void ChromeDownloadManagerDelegate::GetSaveDir(TabContents* tab_contents,
                                                FilePath* website_save_dir,

@@ -9,15 +9,11 @@
 #include "base/stl_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_manager_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
@@ -140,14 +136,7 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
   info->path = info->save_info.file_path;
 
   manager->CreateDownloadItem(info);
-
-#if defined(ENABLE_SAFE_BROWSING)
-  bool hash_needed = manager->profile()->GetPrefs()->GetBoolean(
-      prefs::kSafeBrowsingEnabled) &&
-          g_browser_process->safe_browsing_service()->DownloadBinHashNeeded();
-#else
-  bool hash_needed = false;
-#endif
+  bool hash_needed = manager->delegate()->GenerateFileHash();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
