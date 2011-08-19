@@ -70,8 +70,11 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
   args.Set(3, Value::CreateStringValue(source_extension_id));
   args.Set(4, Value::CreateStringValue(target_extension_id));
   CHECK(port.sender);
-  port.sender->Send(new ExtensionMsg_MessageInvoke(port.routing_id,
-       "", ExtensionMessageService::kDispatchOnConnect, args, GURL()));
+  port.sender->Send(
+      new ExtensionMsg_MessageInvoke(
+          port.routing_id,
+          target_extension_id,
+          ExtensionMessageService::kDispatchOnConnect, args, GURL()));
 }
 
 static void DispatchOnDisconnect(

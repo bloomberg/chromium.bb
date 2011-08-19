@@ -78,24 +78,23 @@ class ExtensionBase : public v8::Extension {
 
 const char* GetStringResource(int resource_id);
 
-// Contains information about a single javascript context.
+// Contains information about a JavaScript context that is hosting extension
+// bindings.
 struct ContextInfo {
   ContextInfo(v8::Persistent<v8::Context> context,
               const std::string& extension_id,
-              WebKit::WebFrame* parent_frame,
-              RenderView* render_view);
+              WebKit::WebFrame* frame);
   ~ContextInfo();
 
   v8::Persistent<v8::Context> context;
-  std::string extension_id;  // empty if the context is not an extension
 
-  // If this context is a content script, parent will be the frame that it
-  // was injected in.  This is NULL if the context is not a content script.
-  WebKit::WebFrame* parent_frame;
+  // The extension ID this context is associated with.
+  std::string extension_id;
 
-  // The RenderView that this context belongs to.  This is not guaranteed to be
-  // a valid pointer, and is used for comparisons only.  Do not dereference.
-  RenderView* render_view;
+  // The frame the context is associated with. We can't always get this from
+  // WebFrame::frameForContext() (in particular as the the frame is navigating
+  // or being destroyed).
+  WebKit::WebFrame* frame;
 
   // A count of the number of events that are listening in this context. When
   // this is zero, |context| will be a weak handle.
@@ -107,9 +106,6 @@ typedef std::list< linked_ptr<ContextInfo> > ContextList;
 // Calling into javascript may result in the list being modified, so don't rely
 // on iterators remaining valid between calls to javascript.
 ContextList& GetContexts();
-
-// Returns a (copied) list of contexts that have the given extension_id.
-ContextList GetContextsForExtension(const std::string& extension_id);
 
 // Returns the ContextInfo item that has the given context.
 ContextList::iterator FindContext(v8::Handle<v8::Context> context);

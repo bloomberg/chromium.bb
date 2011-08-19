@@ -49,11 +49,7 @@ static const char kUserScriptTail[] = "\n})(window);";
 static const char kInitExtension[] =
   "if (chrome.initExtension) chrome.initExtension('%s', true, %s);";
 
-// static
-UserScriptSlave::IsolatedWorldMap UserScriptSlave::isolated_world_ids_;
-
-// static
-int UserScriptSlave::GetIsolatedWorldId(
+int UserScriptSlave::GetIsolatedWorldIdForExtension(
     const Extension* extension, WebFrame* frame) {
   static int g_next_isolated_world_id = 1;
 
@@ -79,6 +75,16 @@ int UserScriptSlave::GetIsolatedWorldId(
       new_id,
       WebSecurityOrigin::create(extension->url()));
   return new_id;
+}
+
+std::string UserScriptSlave::GetExtensionIdForIsolatedWorld(
+    int isolated_world_id) {
+  for (IsolatedWorldMap::iterator iter = isolated_world_ids_.begin();
+       iter != isolated_world_ids_.end(); ++iter) {
+    if (iter->second == isolated_world_id)
+      return iter->first;
+  }
+  return "";
 }
 
 // static
@@ -107,7 +113,6 @@ void UserScriptSlave::InitializeIsolatedWorld(
   }
 }
 
-// static
 void UserScriptSlave::RemoveIsolatedWorld(const std::string& extension_id) {
   isolated_world_ids_.erase(extension_id);
 }
@@ -315,7 +320,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
       // ID.
       if (!script->extension_id().empty()) {
         InsertInitExtensionCode(&sources, script->extension_id());
-        isolated_world_id = GetIsolatedWorldId(extension, frame);
+        isolated_world_id = GetIsolatedWorldIdForExtension(extension, frame);
       }
 
       PerfTimer exec_timer;

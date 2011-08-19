@@ -130,12 +130,10 @@ v8::Handle<v8::Value> ExtensionBase::Print(const v8::Arguments& args) {
 
 ContextInfo::ContextInfo(v8::Persistent<v8::Context> context,
                          const std::string& extension_id,
-                         WebKit::WebFrame* parent_frame,
-                         RenderView* render_view)
+                         WebFrame* frame)
     : context(context),
       extension_id(extension_id),
-      parent_frame(parent_frame),
-      render_view(render_view),
+      frame(frame),
       num_connected_events(0) {
 }
 
@@ -143,19 +141,6 @@ ContextInfo::~ContextInfo() {}
 
 ContextList& GetContexts() {
   return g_singleton_data.Get().contexts;
-}
-
-ContextList GetContextsForExtension(const std::string& extension_id) {
-  ContextList& all_contexts = GetContexts();
-  ContextList contexts;
-
-  for (ContextList::iterator it = all_contexts.begin();
-       it != all_contexts.end(); ++it) {
-     if ((*it)->extension_id == extension_id)
-       contexts.push_back(*it);
-  }
-
-  return contexts;
 }
 
 ContextInfo* GetInfoForCurrentContext() {

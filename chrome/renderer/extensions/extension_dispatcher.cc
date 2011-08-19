@@ -164,7 +164,7 @@ void ExtensionDispatcher::OnUnloaded(const std::string& id) {
   // If the extension is later reloaded with a different set of permissions,
   // we'd like it to get a new isolated world ID, so that it can pick up the
   // changed origin whitelist.
-  UserScriptSlave::RemoveIsolatedWorld(id);
+  user_script_slave_->RemoveIsolatedWorld(id);
 }
 
 void ExtensionDispatcher::OnSetScriptingWhitelist(

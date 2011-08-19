@@ -17,6 +17,7 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
+#include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/v8_value_converter.h"
@@ -298,48 +299,45 @@ void EventBindings::HandleContextCreated(
   v8::HandleScope handle_scope;
   ContextList& contexts = GetContexts();
 
-  // Figure out the frame's URL.  If the frame is loading, use its provisional
-  // URL, since we get this notification before commit.
-  WebDataSource* ds = frame->provisionalDataSource();
-  if (!ds)
-    ds = frame->dataSource();
-  GURL url = ds->request().url();
-  const ExtensionSet* extensions = extension_dispatcher->extensions();
-  std::string extension_id = extensions->GetIdByURL(url);
-
-  if (!extensions->ExtensionBindingsAllowed(url) &&
-      !content_script) {
-    // This context is a regular non-extension web page or an unprivileged
-    // chrome app. Ignore it. We only care about content scripts and extension
-    // frames.
-    // (Unless we're in unit tests, in which case we don't care what the URL
-    // is).
-    if (!in_unit_tests)
-      return;
-
-    // For tests, we want the dispatchOnLoad to actually setup our bindings,
-    // so we give a fake extension id;
-    extension_id = kTestingExtensionId;
-  }
-
   v8::Persistent<v8::Context> persistent_context =
       v8::Persistent<v8::Context>::New(context);
-  WebFrame* parent_frame = NULL;
+
+  std::string extension_id;
 
   if (content_script) {
-    parent_frame = frame;
     // Content script contexts can get GCed before their frame goes away, so
     // set up a GC callback.
     persistent_context.MakeWeak(NULL, &ContextWeakReferenceCallback);
+    extension_id =
+        extension_dispatcher->user_script_slave()->
+            GetExtensionIdForIsolatedWorld(isolated_world_id);
+  } else {
+    // Figure out the frame's URL.  If the frame is loading, use its provisional
+    // URL, since we get this notification before commit.
+    WebDataSource* ds = frame->provisionalDataSource();
+    if (!ds)
+      ds = frame->dataSource();
+    GURL url = ds->request().url();
+    const ExtensionSet* extensions = extension_dispatcher->extensions();
+    extension_id = extensions->GetIdByURL(url);
+
+    if (!extensions->ExtensionBindingsAllowed(url)) {
+      // This context is a regular non-extension web page or an unprivileged
+      // chrome app. Ignore it. We only care about content scripts and extension
+      // frames.
+      // (Unless we're in unit tests, in which case we don't care what the URL
+      // is).
+      if (!in_unit_tests)
+        return;
+
+      // For tests, we want the dispatchOnLoad to actually setup our bindings,
+      // so we give a fake extension id;
+      extension_id = kTestingExtensionId;
+    }
   }
 
-  RenderView* render_view = NULL;
-  if (frame->view())
-    render_view = RenderView::FromWebView(frame->view());
-
   contexts.push_back(linked_ptr<ContextInfo>(
-      new ContextInfo(persistent_context, extension_id, parent_frame,
-                      render_view)));
+      new ContextInfo(persistent_context, extension_id, frame)));
 
   // Content scripts get initialized in user_script_slave.cc.
   if (!content_script) {
@@ -366,7 +364,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
   // itself might not be registered, but can still be a parent frame.
   for (ContextList::iterator it = GetContexts().begin();
        it != GetContexts().end(); ) {
-    if ((*it)->parent_frame == frame) {
+    if ((*it)->frame == frame) {
       UnregisterContext(it, false);
       // UnregisterContext will remove |it| from the list, but may also
       // modify the rest of the list as a result of calling into javascript.
@@ -393,8 +391,12 @@ void EventBindings::CallFunction(const std::string& extension_id,
   V8ValueConverter converter;
   for (ContextList::iterator it = contexts.begin();
        it != contexts.end(); ++it) {
-    if (render_view && render_view != (*it)->render_view)
-      continue;
+    if (render_view) {
+      RenderView* context_render_view =
+          RenderView::FromWebView((*it)->frame->view());
+      if (render_view != context_render_view)
+        continue;
+    }
 
     if (!extension_id.empty() && extension_id != (*it)->extension_id)
       continue;
