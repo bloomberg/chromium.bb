@@ -193,6 +193,7 @@ Network::Network(const std::string& service_path,
     : state_(STATE_UNKNOWN),
       error_(ERROR_NO_ERROR),
       connectable_(true),
+      connection_started_(false),
       is_active_(false),
       priority_(kPriorityNotSet),
       auto_connect_(false),
@@ -219,6 +220,8 @@ void Network::SetState(ConnectionState new_state) {
       notify_failure_ = true;
     }
   } else {
+    if (!IsConnectingState(new_state))
+      set_connection_started(false);
     // State changed, so refresh IP address.
     // Note: blocking DBus call. TODO(stevenjb): refactor this.
     InitIPAddress();
@@ -720,7 +723,7 @@ int32 NetworkIPConfig::GetPrefixLength() const {
   int prefixlen = 0;
   StringTokenizer t(netmask, ".");
   while (t.GetNext()) {
-    // If there are more than 4 numbers, than it's invalid.
+    // If there are more than 4 numbers, then it's invalid.
     if (count == 4) {
       return -1;
     }
@@ -2230,10 +2233,14 @@ void NetworkLibraryImplBase::NetworkConnectStartVPN(VirtualNetwork* vpn) {
 void NetworkLibraryImplBase::NetworkConnectStart(
     Network* network, NetworkProfileType profile_type) {
   DCHECK(network);
+  DCHECK(!network->connection_started());
   // In order to be certain to trigger any notifications, set the connecting
   // state locally and notify observers. Otherwise there might be a state
   // change without a forced notify.
   network->set_connecting(true);
+  // Distinguish between user-initiated connection attempts
+  // and auto-connect.
+  network->set_connection_started(true);
   NotifyNetworkManagerChanged(true);  // Forced update.
   VLOG(1) << "Requesting connect to network: " << network->service_path()
           << " profile type: " << profile_type;
@@ -2261,7 +2268,7 @@ void NetworkLibraryImplBase::NetworkConnectStart(
 }
 
 // 3. Start the connection attempt for Network.
-// Must Call NetworkConnectCompleted when the connection attept completes.
+// Must Call NetworkConnectCompleted when the connection attempt completes.
 // virtual void CallConnectToNetwork(Network* network) = 0;
 
 // 4. Complete the connection.
@@ -3890,15 +3897,20 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
   for (NetworkMap::iterator iter = old_network_map.begin();
        iter != old_network_map.end(); ++iter) {
     Network* network = iter->second;
+    VLOG(2) << "Delete Network: " << network->name()
+            << " State = " << network->GetStateString()
+            << " connecting = " << network->connecting()
+            << " connection_started = " << network->connection_started();
     if (network->failed() && network->notify_failure()) {
       // We have not notified observers of a connection failure yet.
       AddNetwork(network);
-    } else if (network->connecting()) {
+    } else if (network->connecting() && network->connection_started()) {
       // Network was in connecting state; set state to failed.
+      VLOG(2) << "Removed network was connecting: " << network->name();
       network->SetState(STATE_FAILURE);
       AddNetwork(network);
     } else {
-      VLOG(2) << "Deleting non-existent Network: " << network->name()
+      VLOG(2) << "Deleting removed network: " << network->name()
               << " State = " << network->GetStateString();
       DeleteNetwork(network);
     }
@@ -4605,5 +4617,5 @@ NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {
 }  // namespace chromeos
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
-// won't be deleted until it's last InvokeLater is run.
+// won't be deleted until its last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::NetworkLibraryImplBase);
