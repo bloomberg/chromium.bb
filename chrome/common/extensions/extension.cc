@@ -282,7 +282,7 @@ Extension::Location Extension::GetHigherPriorityLocation(
   // deterministicly choose a location.
   CHECK(loc1_rank != loc2_rank);
 
-  // Lowest rank has highest priority.
+  // Highest rank has highest priority.
   return (loc1_rank > loc2_rank ? loc1 : loc2 );
 }
 
@@ -2819,6 +2819,52 @@ bool Extension::OverlapsWithOrigin(const GURL& origin) const {
   origin_only_pattern_list.AddPattern(origin_only_pattern);
 
   return web_extent().OverlapsWith(origin_only_pattern_list);
+}
+
+Extension::SyncType Extension::GetSyncType() const {
+  // TODO(akalin): Figure out if we need to allow some other types.
+  if (location() != Extension::INTERNAL) {
+    // We have a non-standard location.
+    return SYNC_TYPE_NONE;
+  }
+
+  // Disallow extensions with non-gallery auto-update URLs for now.
+  //
+  // TODO(akalin): Relax this restriction once we've put in UI to
+  // approve synced extensions.
+  if (!update_url().is_empty() &&
+      (update_url() != GalleryUpdateUrl(false)) &&
+      (update_url() != GalleryUpdateUrl(true))) {
+    return SYNC_TYPE_NONE;
+  }
+
+  // Disallow extensions with native code plugins.
+  //
+  // TODO(akalin): Relax this restriction once we've put in UI to
+  // approve synced extensions.
+  if (!plugins().empty()) {
+    return SYNC_TYPE_NONE;
+  }
+
+  switch (GetType()) {
+    case Extension::TYPE_EXTENSION:
+      return SYNC_TYPE_EXTENSION;
+
+    case Extension::TYPE_USER_SCRIPT:
+      // We only want to sync user scripts with gallery update URLs.
+      if (update_url() == GalleryUpdateUrl(true) ||
+          update_url() == GalleryUpdateUrl(false))
+        return SYNC_TYPE_EXTENSION;
+      else
+        return SYNC_TYPE_NONE;
+
+    case Extension::TYPE_HOSTED_APP:
+    case Extension::TYPE_PACKAGED_APP:
+        return SYNC_TYPE_APP;
+
+    default:
+      return SYNC_TYPE_NONE;
+  }
 }
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
