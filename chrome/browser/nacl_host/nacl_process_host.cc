@@ -242,7 +242,6 @@ void NaClProcessHost::OnProcessLaunched() {
            irt_path,
            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
            callback)) {
-    delete callback;
     delete this;
   }
 }
