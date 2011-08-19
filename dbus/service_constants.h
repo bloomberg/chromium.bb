@@ -481,6 +481,7 @@ const char kCashewServiceInterface[] = "org.chromium.Cashew";
 // Cashew function names.
 const char kRequestDataPlanFunction[] = "RequestDataPlansUpdate";
 const char kRetrieveDataPlanFunction[] = "GetDataPlans";
+const char kRequestCellularUsageFunction[] = "RequestCellularUsageInfo";
 
 // Cashew signals.
 const char kMonitorDataPlanUpdate[] = "DataPlansUpdate";
