@@ -111,7 +111,10 @@ net::URLRequestContext* MockContentBrowserClient::OverrideRequestContextForURL(
   return NULL;
 }
 
-void MockContentBrowserClient::RevealFolderInOS(const FilePath& path) {
+void MockContentBrowserClient::OpenItem(const FilePath& path) {
+}
+
+void MockContentBrowserClient::ShowItemInFolder(const FilePath& path) {
 }
 
 void MockContentBrowserClient::AllowCertificateError(

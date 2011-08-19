@@ -3019,8 +3019,12 @@ void TestingAutomationProvider::PerformActionOnDownload(
             this, reply_message, true));
     selected_item->OpenDownload();
   } else if (action == "toggle_open_files_like_this") {
-    selected_item->OpenFilesBasedOnExtension(
-        !selected_item->ShouldOpenFileBasedOnExtension());
+    DownloadPrefs* prefs = selected_item->download_manager()->download_prefs();
+    FilePath path = selected_item->GetUserVerifiedFilePath();
+    if (!selected_item->ShouldOpenFileBasedOnExtension())
+      prefs->EnableAutoOpenBasedOnExtension(path);
+    else
+      prefs->DisableAutoOpenBasedOnExtension(path);
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   } else if (action == "remove") {
     download_manager->AddObserver(

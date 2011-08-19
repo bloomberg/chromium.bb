@@ -145,11 +145,6 @@ class DownloadItem : public NotificationObserver {
   // Tests if a file type should be opened automatically.
   bool ShouldOpenFileBasedOnExtension();
 
-  // Registers this file extension for automatic opening upon download
-  // completion if 'open' is true, or prevents the extension from automatic
-  // opening if 'open' is false.
-  void OpenFilesBasedOnExtension(bool open);
-
   // Open the file associated with this download (wait for the download to
   // complete if it is in progress).
   void OpenDownload();
@@ -280,6 +275,7 @@ class DownloadItem : public NotificationObserver {
   base::Time start_time() const { return start_time_; }
   void set_db_handle(int64 handle) { db_handle_ = handle; }
   int64 db_handle() const { return db_handle_; }
+  DownloadManager* download_manager() { return download_manager_; }
   bool is_paused() const { return is_paused_; }
   bool open_when_complete() const { return open_when_complete_; }
   void set_open_when_complete(bool open) { open_when_complete_ = open; }
