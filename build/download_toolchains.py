@@ -30,13 +30,14 @@ def ShowUpdatedDEPS(base_url, version, nacl_newlib_only):
     pm = toolchainbinaries.PLATFORM_MAPPING[platform]
     for arch in pm:
       for flavor in pm[arch]:
-        if nacl_newlib_only and toolchainbinaries.IsNaClNewlibFlavor(flavor):
+        if (nacl_newlib_only and
+            not toolchainbinaries.IsNaClNewlibFlavor(flavor)):
           continue
         flavors.add(flavor)
   for flavor in flavors:
     url = toolchainbinaries.EncodeToolchainUrl(base_url, version, flavor)
     print '  "nacl_toolchain_%s_hash":' % flavor
-    print '      "%s"' % sync_tgz.HashUrl(url)
+    print '      "%s",' % sync_tgz.HashUrl(url)
     sys.stdout.flush()
 
 
