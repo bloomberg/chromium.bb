@@ -134,7 +134,7 @@ bool NetworkParser::UpdateNetworkFromInfo(const DictionaryValue& info,
     bool res = info.GetWithoutPathExpansion(key, &value);
     DCHECK(res);
     if (res)
-      UpdateStatus(key, *value, network, NULL);
+      network->UpdateStatus(key, *value, NULL);
   }
   if (network->unique_id().empty())
     network->CalculateUniqueId();
