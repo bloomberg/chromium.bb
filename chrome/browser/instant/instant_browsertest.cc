@@ -724,12 +724,10 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
 // DISABLED http://crbug.com/80118
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnSubmitEvent) {
-#elif defined(OS_MACOSX)
+#else
 // http://crbug.com/85387
 IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnSubmitEvent) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
-#endif  // OS_LINUX
+#endif  // !OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
