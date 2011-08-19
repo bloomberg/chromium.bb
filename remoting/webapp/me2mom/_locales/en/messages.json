@@ -33,10 +33,6 @@
     "message": "You are currently sharing this machine with another user. Please confirm that you want to continue sharing.",
     "description": "Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it."
   },
-  "DEBUG_BUTTON": {
-    "message": "Debug Log",
-    "description": "Label for the debug log button. Clicking this button reveals log of debug messages at the bottom of the page."
-  },
   "DESCRIPTION_AUTHORIZE": {
     "message": "In order to use Chromoting you must first grant extended access permissions to your computer. Click Continue to authorize. You only have to do this once.",
     "description": "Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use."
@@ -46,7 +42,7 @@
     "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started."
   },
   "DESCRIPTION_SHARE": {
-    "message": "With Chromoting you can easily let another Chrome user see and control your computer.",
+    "message": "With Chromoting you can easily and securely let another Chrome user see and control your computer.",
     "description": "Description for the host app. This is shown to the host above the 'Share' button user before the client connects."
   },
   "DISCONNECT_BUTTON": {
@@ -124,6 +120,10 @@
   "FOOTER_WAITING": {
     "message": "waiting for connection…",
     "description": "Footer text displayed at the host after an access code has been generated, but before a client connects."
+  },
+  "HELP": {
+    "message": "Help?",
+    "description": "Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ."
   },
   "INSTRUCTIONS_SHARE_ABOVE": {
     "message": "To begin sharing your desktop, read out the access code below to the person who will be assisting you.",
