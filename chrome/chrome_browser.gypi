@@ -45,7 +45,6 @@
         '../third_party/leveldb/leveldb.gyp:leveldb',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
-        '../third_party/libphonenumber/libphonenumber.gyp:phonenumber_proto',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
