@@ -842,6 +842,8 @@ class XcodeSettings(object):
         ldflags, 'DYLIB_COMPATIBILITY_VERSION', '-compatibility_version %s')
     self._Appendf(
         ldflags, 'DYLIB_CURRENT_VERSION', '-current_version %s')
+    self._Appendf(ldflags,
+        'MACOSX_DEPLOYMENT_TARGET', '-mmacosx-version-min=%s')
 
     for library_path in self._Settings().get('LIBRARY_SEARCH_PATHS', []):
       ldflags.append('-L' + library_path)
