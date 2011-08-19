@@ -5,7 +5,6 @@
 #import "chrome/browser/chrome_browser_application_mac.h"
 
 #import "base/logging.h"
-#import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsexception_enabler.h"
 #import "base/metrics/histogram.h"
 #import "base/memory/scoped_nsobject.h"
@@ -122,90 +121,6 @@ static IMP gOriginalInitIMP = NULL;
 }
 @end
 
-static IMP gOriginalNSBundleLoadIMP = NULL;
-
-@interface NSBundle (CrNSBundleSwizzle)
-// -crLoad swizzles -load. It refuses to load parasitic third-party code
-// located in certain directories, returning NO instead of attempting to load
-// the bundle. This circumvents some of the mechanisms that third-party code
-// attempts to use to inject itself into applications. Note that some of these
-// mechanisms are unavailable to 64-bit applications anyway.
-- (BOOL)crLoad;
-@end
-
-@implementation NSBundle (CrNSBundleSwizzle)
-- (BOOL)crLoad {
-  // Method only called when swizzled.
-  DCHECK(_cmd == @selector(load));
-
-  // ~/Library, /Library, and /Network/Library. Things in /System/Library
-  // aren't blacklisted.
-  NSArray* blockedPrefixes =
-     NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
-                                         NSUserDomainMask |
-                                             NSLocalDomainMask |
-                                             NSNetworkDomainMask,
-                                         YES);
-
-  // Everything in the suffix list has a trailing slash so as to only block
-  // loading things contained in these directories.
-  NSString* const blockedSuffixes[] = {
-    // SIMBL - http://code.google.com/p/simbl/source/browse/src/SIMBL.{h,m}.
-    // It attempts to inject itself via an AppleScript event.
-    // http://code.google.com/p/simbl/source/browse/SIMBL%20Agent/SIMBLAgent.m
-    @"Application Support/SIMBL/Plugins/",
-
-#if !defined(__LP64__)
-    // Contextual menu manager plug-ins are unavailable to 64-bit processes.
-    // http://developer.apple.com/library/mac/releasenotes/Cocoa/AppKitOlderNotes.html#NSMenu
-    @"Contextual Menu Items/",
-
-    // Input managers are deprecated, would only be loaded under specific
-    // circumstances, and are entirely unavailable to 64-bit processes.
-    // http://developer.apple.com/library/mac/releasenotes/Cocoa/AppKitOlderNotes.html#NSInputManager
-    @"InputManagers/",
-#endif  // __LP64__
-
-    // Don't load third-party scripting additions either.
-    @"ScriptingAdditions/"
-
-    // This list is intentionally incomplete. For example, it doesn't block
-    // printer drivers or Internet plug-ins.
-  };
-
-  NSString* bundlePath = [self bundlePath];
-  NSUInteger bundlePathLength = [bundlePath length];
-
-  // Merge the prefix and suffix lists.
-  for (NSString* blockedPrefix in blockedPrefixes) {
-    for (size_t blockedSuffixIndex = 0;
-         blockedSuffixIndex < arraysize(blockedSuffixes);
-         ++blockedSuffixIndex) {
-      NSString* blockedSuffix = blockedSuffixes[blockedSuffixIndex];
-      NSString* blockedPath =
-          [blockedPrefix stringByAppendingPathComponent:blockedSuffix];
-      NSUInteger blockedPathLength = [blockedPath length];
-
-      // Do a case-insensitive comparison because most users will be on
-      // case-insensitive HFS+ filesystems and it's cheaper than asking the
-      // disk. This is like [bundlePath hasPrefix:blockedPath] but is
-      // case-insensitive.
-      if (bundlePathLength >= blockedPathLength &&
-          [bundlePath compare:blockedPath
-                      options:NSCaseInsensitiveSearch
-                        range:NSMakeRange(0, blockedPathLength)] ==
-          NSOrderedSame) {
-        // If bundlePath is inside blockedPath (it has blockedPath as a
-        // prefix), refuse to load it.
-        return NO;
-      }
-    }
-  }
-
-  return gOriginalNSBundleLoadIMP(self, _cmd) != nil;
-}
-@end
-
 namespace chrome_browser_application_mac {
 
 // Maximum number of known named exceptions we'll support.  There is
@@ -286,13 +201,6 @@ void SwizzleInit() {
       [NSException class],
       @selector(initWithName:reason:userInfo:),
       @selector(crInitWithName:reason:userInfo:));
-
-  // Avoid loading broken input managers and other parasitic plug-ins.
-  gOriginalNSBundleLoadIMP =
-      ObjcEvilDoers::SwizzleImplementedInstanceMethods(
-          [NSBundle class],
-          @selector(load),
-          @selector(crLoad));
 }
 
 }  // namespace

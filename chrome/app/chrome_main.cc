@@ -65,6 +65,7 @@
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/mac/cfbundle_blocker.h"
 #include "content/browser/mach_broker_mac.h"
 #include "grit/chromium_strings.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
@@ -587,6 +588,7 @@ int ChromeMain(int argc, char** argv) {
 
 #if defined(OS_MACOSX)
   chrome_main::SetUpBundleOverrides();
+  chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
   CommandLine::Init(argc, argv);

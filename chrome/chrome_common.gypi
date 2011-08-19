@@ -206,6 +206,8 @@
         'common/mac/app_mode_common.mm',
         'common/mac/attributed_string_coder.h',
         'common/mac/attributed_string_coder.mm',
+        'common/mac/cfbundle_blocker.h',
+        'common/mac/cfbundle_blocker.mm',
         'common/mac/launchd.h',
         'common/mac/launchd.mm',
         'common/libxml_utils.cc',
@@ -327,6 +329,9 @@
           ],
         }],
         ['OS=="mac"', {
+          'dependencies': [
+            '../third_party/mach_override/mach_override.gyp:mach_override',
+          ],
           'include_dirs': [
             '../third_party/GTM',
           ],
