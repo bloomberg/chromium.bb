@@ -7,6 +7,8 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -55,6 +57,22 @@ const char* kStringSettings[] = {
 const char* kListSettings[] = {
   kAccountsPrefUsers
 };
+
+// Only write the property if the owner is the current logged on user.
+void StartStorePropertyOpIfOwner(const std::string& name,
+                                 const std::string& value,
+                                 SignedSettingsHelper::Callback* callback) {
+  if (OwnershipService::GetSharedInstance()->CurrentUserIsOwner()) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(
+                                &SignedSettingsHelper::StartStorePropertyOp,
+                                base::Unretained(SignedSettingsHelper::Get()),
+                                name,
+                                value,
+                                callback));
+  }
+}
 
 bool IsControlledBooleanSetting(const std::string& pref_path) {
   // TODO(nkostylev): Using std::find for 4 value array generates this warning
@@ -323,9 +341,14 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         // Temporarily allow it until we fix http://crbug.com/62626
         base::ThreadRestrictions::ScopedAllowIO allow_io;
         stats_consent = GoogleUpdateSettings::GetCollectStatsConsent();
-        // Store this value if possible.
-        SignedSettingsHelper::Get()->StartStorePropertyOp(
-            path, stats_consent ? "true" : "false", this);
+        // Only store settings if the owner is logged on, otherwise the write
+        // will fail, triggering another read and we'll end up in an infinite
+        // loop. Owner check needs to be done on the FILE thread.
+        BrowserThread::PostTask(BrowserThread::FILE,
+                                FROM_HERE,
+                                base::Bind(&StartStorePropertyOpIfOwner, path,
+                                           stats_consent ? "true" : "false",
+                                           this));
         UpdateCacheBool(path, stats_consent, USE_VALUE_SUPPLIED);
         LOG(WARNING) << "No metrics policy set will revert to checking "
                      << "consent file which is "
