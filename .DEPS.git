@@ -23,7 +23,7 @@ deps = {
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@c3a62d02c0fb7c7559047fbc6bb4e18185e56712',
     'src/native_client/src/third_party/ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@b7ec44c2740f3d7833d3918a207edf90e9e24016',
+        Var('git_url') + '/chromium/src/ppapi.git@a59c8acaefeae8d85a41ff7edeb5c1e391180457',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@f1dd933c4e47a65889b4bba2a5f58b12aac53383',
     'src/seccompsandbox':
@@ -41,7 +41,7 @@ deps = {
     'src/third_party/cacheinvalidation/files/src/google':
         Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@2bd4562d201c4e0426771543ddaf4bdc16f91d6e',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/deps/ffmpeg/source.git@b27b011b18e163b1c19d8792348e3beea0874145',
+        Var('git_url') + '/chromium/deps/ffmpeg/source.git@09b503920e78fec158cba1d1077a26cbbcf74419',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@1cde08e295604898d14367eda0414ade8121ec43',
     'src/third_party/hunspell':
@@ -196,19 +196,7 @@ hooks = [
     'action':
          [
     'python',
-    'src/build/download_nacl_toolchains.py',
-    '--x86-version',
-    '6473',
-    '--nacl-newlib-only',
-    '--file-hash',
-    'mac_x86_newlib',
-    '82998a858c3b08554ad510f1992cf9a063855713',
-    '--file-hash',
-    'win_x86_newlib',
-    'a29439ae7dc054641ee37771492a5ca7090504e8',
-    '--file-hash',
-    'linux_x86_newlib',
-    '0529b0cb39e1470a609b8dfc11e1208baf8b35b1'
+    'src/build/gyp_chromium'
 ],
     'pattern':
          '.'
@@ -217,7 +205,36 @@ hooks = [
     'action':
          [
     'python',
-    'src/build/gyp_chromium'
+    'src/build/download_nacl_irt.py',
+    '--nacl_revision',
+    '6459',
+    '--file_hash',
+    'x86_32',
+    '96f8b8602ee43b05898fb22302fb5eb2dded4d5c',
+    '--file_hash',
+    'x86_64',
+    '9b04a640e6216aea7153654dee1ab264fb537478'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
+    'src/build/download_nacl_toolchains.py',
+    '--x86-version',
+    '6429',
+    '--nacl-newlib-only',
+    '--file-hash',
+    'mac_x86_newlib',
+    'be4cc2baf6eb34c8fe155a1bb61e2acd8ca1e924',
+    '--file-hash',
+    'win_x86_newlib',
+    '56667d7f653b1005cd5116de3d8e9faf346053cf',
+    '--file-hash',
+    'linux_x86_newlib',
+    '5e4876a1fa53c7701cdbeef969a99b3ff0b0ddc5'
 ],
     'pattern':
          '.'
