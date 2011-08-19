@@ -13,12 +13,58 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_consts.h"
 #include "cloud_print/virtual_driver/win/virtual_driver_helpers.h"
 #include "grit/virtual_driver_setup_resources.h"
 
 namespace {
+const wchar_t kVersionKey[] = L"pv";
+const wchar_t kNameKey[] = L"name";
+const wchar_t kLangKey[] = L"lang";
+const wchar_t kNameValue[] = L"GCP Virtual Driver";
+const wchar_t kLangValue[] = L"rn";
+
+void SetRegistryKeys() {
+  base::win::RegKey key;
+  if (key.Create(HKEY_LOCAL_MACHINE, cloud_print::kKeyLocation,
+                 KEY_SET_VALUE) != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to open key";
+  }
+
+  // Get the version from the resource file.
+  std::wstring version_string;
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+
+  if (version_info.get()) {
+    FileVersionInfoWin* version_info_win =
+        static_cast<FileVersionInfoWin*>(version_info.get());
+    version_string = version_info_win->product_version();
+  } else {
+    LOG(ERROR) << "Unable to get version string";
+    // Use a random version string so that Omaha has something to go by.
+    version_string = L"0.0.0.99";
+  }
+
+  if (key.WriteValue(kVersionKey, version_string.c_str()) != ERROR_SUCCESS ||
+      key.WriteValue(kNameKey, kNameValue) != ERROR_SUCCESS ||
+      key.WriteValue(kLangKey, kLangValue) != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to set registry keys";
+  }
+}
+
+void DeleteRegistryKeys() {
+  base::win::RegKey key;
+  if (key.Open(HKEY_LOCAL_MACHINE, cloud_print::kKeyLocation,
+               DELETE) != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to open key to delete";
+  }
+  if (key.DeleteKey(L"") != ERROR_SUCCESS) {
+    LOG(ERROR) << "Unable to delete key";
+  }
+}
 
 HRESULT GetPpdPath(FilePath* path) {
   if (!PathService::Get(base::DIR_EXE, path)) {
@@ -280,6 +326,7 @@ HRESULT InstallVirtualDriver(void) {
     LOG(ERROR) << "Unable to install printer.";
     return result;
   }
+  SetRegistryKeys();
   return S_OK;
 }
 
@@ -300,6 +347,7 @@ HRESULT UninstallVirtualDriver(void) {
     LOG(ERROR) << "Unable to remove port monitor.";
     return result;
   }
+  DeleteRegistryKeys();
   return S_OK;
 }
 
@@ -317,7 +365,8 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
   } else {
     retval = InstallVirtualDriver();
   }
-  if (!CommandLine::ForCurrentProcess()->HasSwitch("silent")) {
+  // Installer is silent by default as required by Omaha.
+  if (CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
     cloud_print::DisplayWindowsMessage(NULL, retval,
         cloud_print::LoadLocalString(IDS_DRIVER_NAME));
   }
