@@ -612,6 +612,26 @@ int GetUniquePathNumber(const FilePath& path) {
   return -1;
 }
 
+void DownloadUrl(
+    const GURL& url,
+    const GURL& referrer,
+    const std::string& referrer_charset,
+    const DownloadSaveInfo& save_info,
+    ResourceDispatcherHost* rdh,
+    int render_process_host_id,
+    int render_view_id,
+    const content::ResourceContext* context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  rdh->BeginDownload(url,
+                     referrer,
+                     save_info,
+                     true,  // Show "Save as" UI.
+                     render_process_host_id,
+                     render_view_id,
+                     *context);
+}
+
 int GetUniquePathNumberWithCrDownload(const FilePath& path) {
   if (!file_util::PathExists(path) &&
       !file_util::PathExists(GetCrDownloadPath(path)))

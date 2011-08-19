@@ -17,18 +17,21 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/history/download_history_info.h"
+#include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/content_browser_client.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_manager_delegate.h"
-#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/common/notification_source.h"
 
@@ -258,45 +261,63 @@ bool DownloadItem::ShouldOpenFileBasedOnExtension() {
       GetUserVerifiedFilePath());
 }
 
+void DownloadItem::OpenFilesBasedOnExtension(bool open) {
+  DownloadPrefs* prefs = download_manager_->download_prefs();
+  if (open)
+    prefs->EnableAutoOpenBasedOnExtension(GetUserVerifiedFilePath());
+  else
+    prefs->DisableAutoOpenBasedOnExtension(GetUserVerifiedFilePath());
+}
+
 void DownloadItem::OpenDownload() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (IsPartialDownload()) {
     open_when_complete_ = !open_when_complete_;
-    return;
+  } else if (IsComplete() && !file_externally_removed_) {
+    // Ideally, we want to detect errors in opening and report them, but we
+    // don't generally have the proper interface for that to the external
+    // program that opens the file.  So instead we spawn a check to update
+    // the UI if the file has been deleted in parallel with the open.
+    download_manager_->CheckForFileRemoval(this);
+    opened_ = true;
+    FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
+
+    // For testing: If download opening is disabled on this item,
+    // make the rest of the routine a no-op.
+    if (!open_enabled_)
+      return;
+
+    if (is_extension_install()) {
+      download_crx_util::OpenChromeExtension(download_manager_->profile(),
+                                             *this);
+      return;
+    }
+#if defined(OS_MACOSX)
+    // Mac OS X requires opening downloads on the UI thread.
+    platform_util::OpenItem(full_path());
+#else
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableFunction(&platform_util::OpenItem, full_path()));
+#endif
   }
-
-  if (!IsComplete() || file_externally_removed_)
-    return;
-
-  // Ideally, we want to detect errors in opening and report them, but we
-  // don't generally have the proper interface for that to the external
-  // program that opens the file.  So instead we spawn a check to update
-  // the UI if the file has been deleted in parallel with the open.
-  download_manager_->CheckForFileRemoval(this);
-  opened_ = true;
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
-
-  // For testing: If download opening is disabled on this item,
-  // make the rest of the routine a no-op.
-  if (!open_enabled_)
-    return;
-
-  if (is_extension_install()) {
-    download_crx_util::OpenChromeExtension(download_manager_->profile(),
-                                           *this);
-    return;
-  }
-
-  content::GetContentClient()->browser()->OpenItem(full_path());
 }
 
 void DownloadItem::ShowDownloadInShell() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  content::GetContentClient()->browser()->ShowItemInFolder(full_path());
+#if defined(OS_MACOSX)
+  // Mac needs to run this operation on the UI thread.
+  platform_util::ShowItemInFolder(full_path());
+#else
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&platform_util::ShowItemInFolder,
+                          full_path()));
+#endif
 }
 
 void DownloadItem::DangerousDownloadValidated() {
@@ -672,10 +693,8 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   //   "/\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd",
   //   L"/\x4f60\x597d\x4f60\x597d",
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
-  std::string languages;
-  TabContents* tab = request_handle_.GetTabContents();
-  if (tab)
-    languages = content::GetContentClient()->browser()->GetAcceptLangs(tab);
+  PrefService* prefs = download_manager_->profile()->GetPrefs();
+  std::string languages(prefs->GetString(prefs::kAcceptLanguages));
   string16 url_formatted(
       base::i18n::ToLower(net::FormatUrl(GetURL(), languages)));
   if (url_formatted.find(query) != string16::npos)

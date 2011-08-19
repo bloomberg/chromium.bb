@@ -922,7 +922,7 @@ void BrowserRenderProcessHost::OnUserMetricsRecordAction(
 void BrowserRenderProcessHost::OnRevealFolderInOS(const FilePath& path) {
   // Only honor the request if appropriate persmissions are granted.
   if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path))
-    content::GetContentClient()->browser()->OpenItem(path);
+    content::GetContentClient()->browser()->RevealFolderInOS(path);
 }
 
 void BrowserRenderProcessHost::OnSavedPageAsMHTML(int job_id, bool success) {

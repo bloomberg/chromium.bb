@@ -181,6 +181,16 @@ void AppendNumberToPath(FilePath* path, int number);
 // a number, -1 is returned.
 int GetUniquePathNumber(const FilePath& path);
 
+// Download the URL. Must be called on the IO thread.
+void DownloadUrl(const GURL& url,
+                 const GURL& referrer,
+                 const std::string& referrer_charset,
+                 const DownloadSaveInfo& save_info,
+                 ResourceDispatcherHost* rdh,
+                 int render_process_host_id,
+                 int render_view_id,
+                 const content::ResourceContext* context);
+
 // Same as GetUniquePathNumber, except that it also checks the existence
 // of its .crdownload intermediate path.
 // If |path| does not exist, 0 is returned.  If it fails to find such

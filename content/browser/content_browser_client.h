@@ -158,11 +158,8 @@ class ContentBrowserClient {
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() = 0;
 
-  // Open the given file in the desktop's default manner.
-  virtual void OpenItem(const FilePath& path) = 0;
-
-  // Show the given file in a file manager. If possible, select the file.
-  virtual void ShowItemInFolder(const FilePath& path) = 0;
+  // Shows the given path using the OS file manager.
+  virtual void RevealFolderInOS(const FilePath& path) = 0;
 
   // Informs the embedder that a certificate error has occured.  If overridable
   // is true, the user can ignore the error and continue.  If it's false, then

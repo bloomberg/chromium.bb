@@ -51,8 +51,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, const content::ResourceContext& context) OVERRIDE;
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
-  virtual void OpenItem(const FilePath& path) OVERRIDE;
-  virtual void ShowItemInFolder(const FilePath& path) OVERRIDE;
+  virtual void RevealFolderInOS(const FilePath& path) OVERRIDE;
   virtual void AllowCertificateError(
       SSLCertErrorHandler* handler,
       bool overridable,
