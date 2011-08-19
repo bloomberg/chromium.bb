@@ -17,6 +17,48 @@ import xml.sax
 
 _STDOUT_IS_TTY = hasattr(sys.stdout, 'isatty') and sys.stdout.isatty()
 
+
+class DebugLevel(object):
+  """Object that controls the verbosity of program output.
+
+  Setting the debug level to a given level will mute all output that is at a
+  lower debug level.  I.e., setting debug level of ERROR will hide all output
+  that is at WARNING, INFO, and DEBUG levels.
+  """
+  class Level(object):
+    """Object that represents an enumerated debug level."""
+    def __init__(self, level):
+      self.level = level
+
+    def __cmp__(self, other):
+      return self.level - other.level
+
+  # Available levels
+  DEBUG = Level(0)
+  INFO = Level(1)
+  WARNING = Level(2)
+  ERROR = Level(3)
+
+  # Internal variable that stores current global debug level.
+  _current_debug_level = INFO
+
+  @classmethod
+  def GetCurrentDebugLevel(cls):
+    """Get the current debug level for the cros_build_lib module."""
+    return cls._current_debug_level
+
+  @classmethod
+  def SetDebugLevel(cls, debug_level):
+    """Set the current debug level for the cros_build_lib module."""
+    assert isinstance(debug_level, cls.Level), 'Invalid debug level.'
+    cls._current_debug_level = debug_level
+
+  @classmethod
+  def IsValidDebugLevel(cls, debug_level):
+    """Returns whether the passed in debug_level is a valid level."""
+    return isinstance(debug_level, cls.Level)
+
+
 class GitPushFailed(Exception):
   """Raised when a git push failed after retry."""
   pass
@@ -48,12 +90,13 @@ class RunCommandError(Exception):
   def __ne__(self, other):
     return not self.__eq__(other)
 
+
 def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                exit_code=False, redirect_stdout=False, redirect_stderr=False,
                cwd=None, input=None, enter_chroot=False, shell=False,
                env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
-               chroot_args=None):
+               chroot_args=None, debug_level=DebugLevel.INFO):
   """Runs a command.
 
   Args:
@@ -88,7 +131,10 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       If combine_stdout_stderr is set to True, then stderr will also be logged
       to the specified file.
     chroot_args: An array of arguments for the chroot environment wrapper.
-
+    debug_level: The debug level of RunCommand's output - applies to output
+                 coming from subprocess as well.  Having a debug level less than
+                 the global debug level has the effect of muting this command.
+                 Valid debug levels for RunCommand are DEBUG and INFO.
   Returns:
     A CommandResult object.
 
@@ -102,18 +148,23 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   file_handle = None
   cmd_result = CommandResult()
 
+  assert DebugLevel.IsValidDebugLevel(debug_level), 'Invalid debug level'
+  assert debug_level <= DebugLevel.INFO, 'Valid debug levels are DEBUG and INFO'
+  mute_output = DebugLevel.GetCurrentDebugLevel() > debug_level
+
   # Modify defaults based on parameters.
   if log_stdout_to_file:
     file_handle = open(log_stdout_to_file, 'w+')
     stdout = file_handle
     if combine_stdout_stderr:
       stderr = file_handle
-    elif redirect_stderr:
+    elif redirect_stderr or mute_output:
       stderr = subprocess.PIPE
   else:
-    if redirect_stdout: stdout = subprocess.PIPE
-    if redirect_stderr: stderr = subprocess.PIPE
+    if redirect_stdout or mute_output: stdout = subprocess.PIPE
+    if redirect_stderr or mute_output: stderr = subprocess.PIPE
     if combine_stdout_stderr: stderr = subprocess.STDOUT
+
   # TODO(sosa): gpylint complains about redefining built-in 'input'.
   #   Can we rename this variable?
   if input: stdin = subprocess.PIPE
@@ -149,11 +200,11 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     env.update(extra_env)
 
   # Print out the command before running.
-  if print_cmd:
+  if not mute_output and print_cmd:
     if cwd:
-      Info('RunCommand: %r in %s' % (cmd, cwd))
+      Print('RunCommand: %r in %s' % (cmd, cwd), debug_level)
     else:
-      Info('RunCommand: %r' % cmd)
+      Print('RunCommand: %r' % cmd, debug_level)
   cmd_result.cmd = cmd
 
   try:
@@ -172,7 +223,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       cmd_result.returncode = proc.returncode
 
     if not error_ok and proc.returncode:
-      msg = ('Command "%r" with extra env %r\n' % (cmd, extra_env) +
+      msg = ('Failed command "%r" with extra env %r\n' % (cmd, extra_env) +
              (error_message or cmd_result.error or cmd_result.output or ''))
       raise RunCommandError(msg, cmd, proc.returncode)
   # TODO(sosa): is it possible not to use the catch-all Exception here?
@@ -200,21 +251,24 @@ def Die(message):
   Args:
     message: The message to be emitted before exiting.
   """
-  print >> sys.stderr, (
-      Color(_STDOUT_IS_TTY).Color(Color.RED, '\nERROR: ' + message))
+  Error(message)
   sys.exit(1)
+
+
+def Error(message):
+  """Emits a red warning message and continues execution."""
+  if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.ERROR:
+    print >> sys.stderr, (
+        Color(_STDOUT_IS_TTY).Color(Color.RED, '\nERROR: ' + message))
 
 
 #TODO(sjg): Remove this in favor of operation.Warning
 # pylint: disable-msg=W0622
 def Warning(message):
-  """Emits a yellow warning message and continues execution.
-
-  Args:
-    message: The message to be emitted.
-  """
-  print >> sys.stderr, (
-      Color(_STDOUT_IS_TTY).Color(Color.YELLOW, '\nWARNING: ' + message))
+  """Emits a yellow warning message and continues execution."""
+  if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.WARNING:
+    print >> sys.stderr, (
+        Color(_STDOUT_IS_TTY).Color(Color.YELLOW, '\nWARNING: ' + message))
 
 
 # This command is deprecated in favor of operation.Info()
@@ -222,13 +276,32 @@ def Warning(message):
 # The reason is that this is not aware of the terminal output restrictions such
 # as verbose, quiet and subprocess output. You should not be calling this.
 def Info(message):
-  """Emits a blue informational message and continues execution.
+  """Emits a blue informational message and continues execution."""
+  if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.INFO:
+    print >> sys.stderr, (
+        Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message))
 
-  Args:
-    message: The message to be emitted.
-  """
-  print >> sys.stderr, (
-      Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message))
+
+def Debug(message):
+  """Emits a plain-text debug message and continues execution."""
+  if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.INFO:
+    print >> sys.stderr, '\nDEBUG: ' + message
+
+
+def Print(message, debug_level=DebugLevel.INFO):
+  """Print message with a specified debug level to stdout."""
+  assert DebugLevel.IsValidDebugLevel(debug_level), 'Invalid debug level'
+
+  if debug_level == DebugLevel.DEBUG:
+    Debug(message)
+  elif debug_level == DebugLevel.INFO:
+    Info(message)
+  elif debug_level == DebugLevel.WARNING:
+    Warning(message)
+  elif debug_level == DebugLevel.ERROR:
+    Error(message)
+  else:
+    assert False, 'Invalid debug level'
 
 
 def ListFiles(base_dir):
