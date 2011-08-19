@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/launchd_mac.h"
+#include "chrome/common/mac/launchd.h"
 #include "content/common/child_process_host.h"
 
 using ::base::files::FilePathWatcher;

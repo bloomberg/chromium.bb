@@ -1085,8 +1085,8 @@
           'product_name': '<(mac_product_name) App Mode Loader',
           'sources': [
             'app/app_mode_loader_mac.mm',
-            'common/app_mode_common_mac.h',
-            'common/app_mode_common_mac.mm',
+            'common/mac/app_mode_common.h',
+            'common/mac/app_mode_common.mm',
           ],
           'include_dirs': [
             '..',

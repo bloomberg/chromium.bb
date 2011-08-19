@@ -250,7 +250,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
 #include "base/sys_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
-#include "chrome/common/launchd_mac.h"
+#include "chrome/common/mac/launchd.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TODO(dmaclach): Write this in terms of a real mock.

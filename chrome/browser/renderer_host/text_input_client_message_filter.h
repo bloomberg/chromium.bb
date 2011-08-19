@@ -4,8 +4,9 @@
 
 #ifndef CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
 #define CHROME_BROWSER_RENDERER_HOST_TEXT_INPUT_CLIENT_MESSAGE_FILTER_H_
+#pragma once
 
-#include "chrome/common/attributed_string_coder_mac.h"
+#include "chrome/common/mac/attributed_string_coder.h"
 #include "content/browser/browser_message_filter.h"
 
 namespace gfx {

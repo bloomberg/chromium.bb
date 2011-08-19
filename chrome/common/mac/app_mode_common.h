@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_APP_MODE_COMMON_MAC_H_
-#define CHROME_COMMON_APP_MODE_COMMON_MAC_H_
+#ifndef CHROME_COMMON_MAC_APP_MODE_COMMON_H_
+#define CHROME_COMMON_MAC_APP_MODE_COMMON_H_
 #pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
@@ -64,4 +64,4 @@ struct ChromeAppModeInfo {
 
 }  // namespace app_mode
 
-#endif  // CHROME_COMMON_APP_MODE_COMMON_MAC_H_
+#endif  // CHROME_COMMON_MAC_APP_MODE_COMMON_H_

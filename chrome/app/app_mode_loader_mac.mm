@@ -16,7 +16,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
 
-#include "chrome/common/app_mode_common_mac.h"
+#include "chrome/common/mac/app_mode_common.h"
 
 namespace {
 

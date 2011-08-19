@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_ATTRIBUTED_STRING_CODER_MAC_H_
-#define CHROME_COMMON_ATTRIBUTED_STRING_CODER_MAC_H_
+#ifndef CHROME_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
+#define CHROME_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_
+#pragma once
 
 #include <set>
 
@@ -115,4 +116,4 @@ struct ParamTraits<mac::AttributedStringCoder::FontAttribute> {
 
 }  // namespace IPC
 
-#endif  // CHROME_COMMON_ATTRIBUTED_STRING_CODER_MAC_H_
+#endif  // CHROME_COMMON_MAC_ATTRIBUTED_STRING_CODER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/launchd_mac.h"
+#include "chrome/common/mac/launchd.h"
 
 #import <Foundation/Foundation.h>
 #include <launch.h>

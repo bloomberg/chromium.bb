@@ -7,7 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#import "chrome/common/attributed_string_coder_mac.h"
+#import "chrome/common/mac/attributed_string_coder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_LAUNCHD_MAC_H_
-#define CHROME_COMMON_LAUNCHD_MAC_H_
+#ifndef CHROME_COMMON_MAC_LAUNCHD_H_
+#define CHROME_COMMON_MAC_LAUNCHD_H_
+#pragma once
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -97,4 +98,4 @@ class Launchd {
   DISALLOW_COPY_AND_ASSIGN(Launchd);
 };
 
-#endif  // CHROME_COMMON_LAUNCHD_MAC_H_
+#endif  // CHROME_COMMON_MAC_LAUNCHD_H_
