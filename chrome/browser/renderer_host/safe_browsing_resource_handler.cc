@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
+#include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
@@ -184,15 +185,20 @@ void SafeBrowsingResourceHandler::OnBrowseUrlCheckResult(
       // them.
       rdh_->CancelRequest(render_process_host_id_, deferred_request_id_, false);
       should_show_blocking_page = false;
-    } else if (request->load_flags() & net::LOAD_PRERENDERING) {
-      prerender::PrerenderTracker* prerender_tracker = g_browser_process->
-          prerender_tracker();
-      if (prerender_tracker->TryCancelOnIOThread(render_process_host_id_,
-                    render_view_id_,
-                    prerender::FINAL_STATUS_SAFE_BROWSING)) {
-        rdh_->CancelRequest(render_process_host_id_, deferred_request_id_,
-                            false);
-        should_show_blocking_page = false;
+    } else {
+      ChromeURLRequestUserData* user_data =
+          ChromeURLRequestUserData::Get(request);
+      if (user_data && user_data->is_prerender()) {
+        prerender::PrerenderTracker* prerender_tracker = g_browser_process->
+            prerender_tracker();
+        if (prerender_tracker->TryCancelOnIOThread(
+                render_process_host_id_,
+                render_view_id_,
+                prerender::FINAL_STATUS_SAFE_BROWSING)) {
+          rdh_->CancelRequest(render_process_host_id_, deferred_request_id_,
+                              false);
+          should_show_blocking_page = false;
+        }
       }
     }
     if (should_show_blocking_page) {

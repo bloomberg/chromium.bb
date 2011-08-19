@@ -1871,6 +1871,8 @@
         'browser/renderer_host/chrome_render_view_host_observer.h',
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.cc',
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.h',
+        'browser/renderer_host/chrome_url_request_user_data.cc',
+        'browser/renderer_host/chrome_url_request_user_data.h',
         'browser/renderer_host/gtk_im_context_wrapper.cc',
         'browser/renderer_host/gtk_im_context_wrapper.h',
         'browser/renderer_host/gtk_key_bindings_handler.cc',

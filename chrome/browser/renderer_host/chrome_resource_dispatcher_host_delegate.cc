@@ -15,6 +15,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/autologin_infobar_delegate.h"
@@ -135,8 +136,12 @@ ResourceHandler* ChromeResourceDispatcherHostDelegate::RequestBeginning(
     bool is_subresource,
     int child_id,
     int route_id) {
-  if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id))
-    request->set_load_flags(request->load_flags() | net::LOAD_PRERENDERING);
+  ChromeURLRequestUserData* user_data =
+      ChromeURLRequestUserData::Create(request);
+  if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id)) {
+    user_data->set_is_prerender(true);
+    request->set_priority(net::IDLE);
+  }
 
 #if defined(ENABLE_SAFE_BROWSING)
   // Insert safe browsing at the front of the chain, so it gets to decide
@@ -211,7 +216,8 @@ bool ChromeResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
   if (request->load_flags() & net::LOAD_PREFETCH)
     return false;
 
-  if (request->load_flags() & net::LOAD_PRERENDERING) {
+  ChromeURLRequestUserData* user_data = ChromeURLRequestUserData::Get(request);
+  if (user_data && user_data->is_prerender()) {
     int child_id, route_id;
     if (ResourceDispatcherHost::RenderViewForRequest(
             request, &child_id, &route_id)) {
@@ -229,7 +235,8 @@ bool ChromeResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
 bool ChromeResourceDispatcherHostDelegate::AcceptAuthRequest(
     net::URLRequest* request,
     net::AuthChallengeInfo* auth_info) {
-  if (!(request->load_flags() & net::LOAD_PRERENDERING))
+  ChromeURLRequestUserData* user_data = ChromeURLRequestUserData::Get(request);
+  if (!user_data || !user_data->is_prerender())
     return true;
 
   int child_id, route_id;

@@ -233,6 +233,65 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
 #pragma warning(default: 4748)
 #endif
 
+net::RequestPriority DetermineRequestPriority(ResourceType::Type type) {
+  // Determine request priority based on how critical this resource typically
+  // is to user-perceived page load performance. Important considerations are:
+  // * Can this resource block the download of other resources.
+  // * Can this resource block the rendering of the page.
+  // * How useful is the page to the user if this resource is not loaded yet.
+
+  switch (type) {
+    // Main frames are the highest priority because they can block nearly every
+    // type of other resource and there is no useful display without them.
+    // Sub frames are a close second, however it is a common pattern to wrap
+    // ads in an iframe or even in multiple nested iframes. It is worth
+    // investigating if there is a better priority for them.
+    case ResourceType::MAIN_FRAME:
+    case ResourceType::SUB_FRAME:
+      return net::HIGHEST;
+
+    // Stylesheets and scripts can block rendering and loading of other
+    // resources. Fonts can block text from rendering.
+    case ResourceType::STYLESHEET:
+    case ResourceType::SCRIPT:
+    case ResourceType::FONT_RESOURCE:
+      return net::MEDIUM;
+
+    // Sub resources, objects and media are lower priority than potentially
+    // blocking stylesheets, scripts and fonts, but are higher priority than
+    // images because if they exist they are probably more central to the page
+    // focus than images on the page.
+    case ResourceType::SUB_RESOURCE:
+    case ResourceType::OBJECT:
+    case ResourceType::MEDIA:
+    case ResourceType::WORKER:
+    case ResourceType::SHARED_WORKER:
+    case ResourceType::XHR:
+      return net::LOW;
+
+    // Images are the "lowest" priority because they typically do not block
+    // downloads or rendering and most pages have some useful content without
+    // them.
+    case ResourceType::IMAGE:
+    // Favicons aren't required for rendering the current page, but
+    // are user visible.
+    case ResourceType::FAVICON:
+      return net::LOWEST;
+
+    // Prefetches and prerenders are at a lower priority than even
+    // LOWEST, since they are not even required for rendering of the
+    // current page.
+    case ResourceType::PREFETCH:
+    case ResourceType::PRERENDER:
+      return net::IDLE;
+
+    default:
+      // When new resource types are added, their priority must be considered.
+      NOTREACHED();
+      return net::LOW;
+  }
+}
+
 }  // namespace
 
 ResourceDispatcherHost::ResourceDispatcherHost(
@@ -479,8 +538,7 @@ void ResourceDispatcherHost::BeginRequest(
   request->set_load_flags(load_flags);
   request->set_context(
       filter_->GetURLRequestContext(request_data.resource_type));
-  request->set_priority(DetermineRequestPriority(request_data.resource_type,
-                                                 load_flags));
+  request->set_priority(DetermineRequestPriority(request_data.resource_type));
 
   // Set upload data.
   uint64 upload_size = 0;
@@ -2038,72 +2096,6 @@ bool ResourceDispatcherHost::IsValidRequest(net::URLRequest* request) {
   return pending_requests_.find(
       GlobalRequestID(info->child_id(), info->request_id())) !=
       pending_requests_.end();
-}
-
-// static
-net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
-    ResourceType::Type type,
-    int load_flags) {
-  // Determine request priority based on how critical this resource typically
-  // is to user-perceived page load performance. Important considerations are:
-  // * Can this resource block the download of other resources.
-  // * Can this resource block the rendering of the page.
-  // * How useful is the page to the user if this resource is not loaded yet.
-
-  // Prerender-motivated requests should be made at IDLE.
-  if (load_flags & net::LOAD_PRERENDERING)
-    return net::IDLE;
-
-  switch (type) {
-    // Main frames are the highest priority because they can block nearly every
-    // type of other resource and there is no useful display without them.
-    // Sub frames are a close second, however it is a common pattern to wrap
-    // ads in an iframe or even in multiple nested iframes. It is worth
-    // investigating if there is a better priority for them.
-    case ResourceType::MAIN_FRAME:
-    case ResourceType::SUB_FRAME:
-      return net::HIGHEST;
-
-    // Stylesheets and scripts can block rendering and loading of other
-    // resources. Fonts can block text from rendering.
-    case ResourceType::STYLESHEET:
-    case ResourceType::SCRIPT:
-    case ResourceType::FONT_RESOURCE:
-      return net::MEDIUM;
-
-    // Sub resources, objects and media are lower priority than potentially
-    // blocking stylesheets, scripts and fonts, but are higher priority than
-    // images because if they exist they are probably more central to the page
-    // focus than images on the page.
-    case ResourceType::SUB_RESOURCE:
-    case ResourceType::OBJECT:
-    case ResourceType::MEDIA:
-    case ResourceType::WORKER:
-    case ResourceType::SHARED_WORKER:
-    case ResourceType::XHR:
-      return net::LOW;
-
-    // Images are the "lowest" priority because they typically do not block
-    // downloads or rendering and most pages have some useful content without
-    // them.
-    case ResourceType::IMAGE:
-    // Favicons aren't required for rendering the current page, but
-    // are user visible.
-    case ResourceType::FAVICON:
-      return net::LOWEST;
-
-    // Prefetches and prerenders are at a lower priority than even
-    // LOWEST, since they are not even required for rendering of the
-    // current page.
-    case ResourceType::PREFETCH:
-    case ResourceType::PRERENDER:
-      return net::IDLE;
-
-    default:
-      // When new resource types are added, their priority must be considered.
-      NOTREACHED();
-      return net::LOW;
-  }
 }
 
 // static
