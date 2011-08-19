@@ -20,7 +20,9 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/display_utils.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -273,6 +275,10 @@ void MetricsLog::WritePluginList(
     const std::vector<webkit::WebPluginInfo>& plugin_list) {
   DCHECK(!locked_);
 
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(profile_manager->GetLoadedProfiles().front());
+
   OPEN_ELEMENT_FOR_SCOPE("plugins");
 
   for (std::vector<webkit::WebPluginInfo>::const_iterator iter =
@@ -291,8 +297,7 @@ void MetricsLog::WritePluginList(
 #endif
     WriteAttribute("filename", CreateBase64Hash(filename_bytes));
     WriteAttribute("version", UTF16ToUTF8(iter->version));
-    // TODO(bauerb): Plug-in state is per-profile.
-    WriteIntAttribute("disabled", !webkit::IsPluginEnabled(*iter));
+    WriteIntAttribute("disabled", !plugin_prefs->IsPluginEnabled(*iter));
   }
 }
 
