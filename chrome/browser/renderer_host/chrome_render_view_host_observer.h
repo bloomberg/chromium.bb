@@ -8,13 +8,18 @@
 
 #include "content/browser/renderer_host/render_view_host_observer.h"
 
+namespace chrome_browser_net {
+class Predictor;
+}
+
 class Extension;
 
 // This class holds the Chrome specific parts of RenderViewHost, and has the
 // same lifetime.
 class ChromeRenderViewHostObserver : public RenderViewHostObserver {
  public:
-  explicit ChromeRenderViewHostObserver(RenderViewHost* render_view_host);
+  ChromeRenderViewHostObserver(RenderViewHost* render_view_host,
+                               chrome_browser_net::Predictor* predictor);
   virtual ~ChromeRenderViewHostObserver();
 
   // RenderViewHostObserver overrides.
@@ -34,6 +39,8 @@ class ChromeRenderViewHostObserver : public RenderViewHostObserver {
 
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
+
+  chrome_browser_net::Predictor* predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderViewHostObserver);
 };

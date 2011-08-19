@@ -19,6 +19,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -365,7 +366,13 @@ void BrowsingDataRemover::ClearNetworkingHistory(IOThread* io_thread) {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  io_thread->ClearNetworkingHistory();
+  io_thread->ClearHostCache();
+
+  chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
+  if (predictor) {
+    predictor->DiscardInitialNavigationHistory();
+    predictor->DiscardAllResults();
+  }
 
   // Notify the UI thread that we are done.
   BrowserThread::PostTask(

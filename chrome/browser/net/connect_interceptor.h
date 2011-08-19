@@ -6,30 +6,34 @@
 #define CHROME_BROWSER_NET_CONNECT_INTERCEPTOR_H_
 #pragma once
 
-#include "net/url_request/url_request.h"
-
 #include "base/gtest_prod_util.h"
 #include "base/memory/mru_cache.h"
+#include "base/time.h"
+#include "net/url_request/url_request_job_factory.h"
 
 namespace chrome_browser_net {
+
+class Predictor;
 
 //------------------------------------------------------------------------------
 // An interceptor to monitor URLRequests so that we can do speculative DNS
 // resolution and/or speculative TCP preconnections.
-class ConnectInterceptor : public net::URLRequest::Interceptor {
+class ConnectInterceptor : public net::URLRequestJobFactory::Interceptor {
  public:
   // Construction includes registration as an URL.
-  ConnectInterceptor();
+  explicit ConnectInterceptor(Predictor* predictor);
   // Destruction includes unregistering.
   virtual ~ConnectInterceptor();
 
  protected:
   // Overridden from net::URLRequest::Interceptor:
   // Learn about referrers, and optionally preconnect based on history.
-  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
-  virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
-  virtual net::URLRequestJob* MaybeInterceptRedirect(net::URLRequest* request,
-                                                     const GURL& location);
+  virtual net::URLRequestJob* MaybeIntercept(
+      net::URLRequest* request) const OVERRIDE;
+  virtual net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request) const OVERRIDE;
+  virtual net::URLRequestJob* MaybeInterceptRedirect(
+      const GURL& location, net::URLRequest* request) const OVERRIDE;
 
  private:
   // Provide access to local class TimedCache for testing.
@@ -48,17 +52,20 @@ class ConnectInterceptor : public net::URLRequest::Interceptor {
 
     // Evicts any entries that have been in the FIFO "too long," and then checks
     // to see if the given url is (still) in the FIFO cache.
-    bool WasRecentlySeen(const GURL& url);
+    bool WasRecentlySeen(const GURL& url) const;
 
     // Adds the given url to the cache, where it will remain for max_duration_.
-    void SetRecentlySeen(const GURL& url);
+    void SetRecentlySeen(const GURL& url) const;
 
    private:
     // Our cache will be keyed on a URL (actually, just a scheme/host/port).
     // We will always track the time it was last added to the FIFO cache by
     // remembering a TimeTicks value.
     typedef base::MRUCache<GURL, base::TimeTicks> UrlMruTimedCache;
-    UrlMruTimedCache mru_cache_;
+    // mru_cache_ has to be mutable in order to be accessed from the overriden
+    // URLRequestJob functions. It is mutable because it tracks the urls and
+    // caches them.
+    mutable UrlMruTimedCache mru_cache_;
 
     // The longest time an entry can persist in the cache, and still be found.
     const base::TimeDelta max_duration_;
@@ -66,6 +73,7 @@ class ConnectInterceptor : public net::URLRequest::Interceptor {
     DISALLOW_COPY_AND_ASSIGN(TimedCache);
   };
   TimedCache timed_cache_;
+  Predictor* const predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectInterceptor);
 };
