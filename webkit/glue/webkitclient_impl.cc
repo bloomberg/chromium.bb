@@ -501,18 +501,8 @@ void WebKitClientImpl::setSharedTimerFiredFunction(void (*func)()) {
   shared_timer_func_ = func;
 }
 
-#ifndef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
-void WebKitClientImpl::setSharedTimerFireTime(double fire_time) {
-  setSharedTimerFireInterval(fire_time - currentTime());
-}
-#endif
-
 void WebKitClientImpl::setSharedTimerFireInterval(double interval_seconds) {
-#ifdef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
   shared_timer_fire_time_ = interval_seconds + monotonicallyIncreasingTime();
-#else
-  shared_timer_fire_time_ = interval_seconds + currentTime();
-#endif
   if (shared_timer_suspended_)
     return;
 

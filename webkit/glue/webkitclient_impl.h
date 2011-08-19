@@ -75,9 +75,6 @@ class WebKitClientImpl : public WebKit::WebKitClient {
       unsigned char* buffer, size_t length);
   virtual void setSharedTimerFiredFunction(void (*func)());
   virtual void setSharedTimerFireInterval(double interval_seconds);
-#ifndef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
-  virtual void setSharedTimerFireTime(double fire_time);
-#endif
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual WebKit::WebThread* createThread(const char* name);
