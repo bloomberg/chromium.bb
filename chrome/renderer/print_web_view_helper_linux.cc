@@ -212,7 +212,7 @@ void PrintWebViewHelper::PrintPageInternal(
   if (params.params.display_header_footer) {
     // |page_number| is 0-based, so 1 is added.
     // The scale factor on Linux is 1.
-    PrintHeaderAndFooter(device, canvas.get(), params.page_number + 1,
+    PrintHeaderAndFooter(canvas.get(), params.page_number + 1,
                          print_preview_context_.total_page_count(), 1,
                          page_layout_in_points, *header_footer_info_);
   }

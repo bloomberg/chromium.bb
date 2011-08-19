@@ -16,6 +16,7 @@
 #include "content/renderer/render_view_observer_tracker.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
@@ -271,18 +272,15 @@ class PrintWebViewHelper : public RenderViewObserver,
       PrepareFrameAndViewForPrint* prepare,
       PrintMsg_Print_Params* params);
 
-#if defined(USE_SKIA)
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.
   static void PrintHeaderAndFooter(
-      SkDevice* device,
-      skia::VectorCanvas* canvas,
+      WebKit::WebCanvas* canvas,
       int page_number,
       int total_pages,
       float webkit_scale_factor,
       const PageSizeMargins& page_layout_in_points,
       const base::DictionaryValue& header_footer_info);
-#endif  // defined(USE_SKIA)
 
   bool GetPrintFrame(WebKit::WebFrame** frame);
 

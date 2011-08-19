@@ -16,6 +16,7 @@ extern const char kSettingCopies[];
 extern const char kSettingDeviceName[];
 extern const char kSettingDuplexMode[];
 extern const char kSettingHeaderFooterEnabled[];
+extern const int kSettingHeaderFooterCharacterSpacing;
 extern const char kSettingHeaderFooterFontFamilyName[];
 extern const char kSettingHeaderFooterFontName[];
 extern const int kSettingHeaderFooterFontSize;

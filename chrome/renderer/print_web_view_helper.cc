@@ -4,12 +4,17 @@
 
 #include "chrome/renderer/print_web_view_helper.h"
 
+#if defined(OS_MACOSX) && !defined(USE_SKIA)
+#include <CoreGraphics/CGContext.h>
+#endif
+
 #include <string>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/print_messages.h"
@@ -21,6 +26,8 @@
 #include "printing/metafile_impl.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -37,13 +44,18 @@
 #endif
 
 #if defined(USE_SKIA)
-#include "base/string_number_conversions.h"
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#endif  // defined(USE_SKIA)
+#elif defined(OS_MACOSX)
+#include "base/mac/scoped_cftyperef.h"
+#include "base/sys_string_conversions.h"
+#include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
+#endif
 
-using base::Time;
+#if defined(OS_MACOSX)
+using base::mac::ScopedCFTypeRef;
+#endif
 using printing::ConvertPixelsToPoint;
 using printing::ConvertPixelsToPointDouble;
 using printing::ConvertUnit;
@@ -61,7 +73,18 @@ using WebKit::WebView;
 
 namespace {
 
+#if defined(USE_SKIA)
+typedef SkPaint HeaderFooterPaint;
+#elif defined(OS_MACOSX)
+typedef CFDictionaryRef HeaderFooterPaint;
+#endif
+
 const double kMinDpi = 1.0;
+
+#if defined(OS_MACOSX) && !defined(USE_SKIA)
+const double kBlackGrayLevel = 0.0;
+const double kOpaqueLevel = 1.0;
+#endif  // OS_MACOSX && !USE_SKIA
 
 int GetDPI(const PrintMsg_Print_Params* print_params) {
 #if defined(OS_MACOSX)
@@ -115,24 +138,16 @@ void CalculatePrintCanvasSize(const PrintMsg_Print_Params& print_params,
                                  print_params.desired_dpi));
 }
 
-#if defined(USE_SKIA)
-// Given a text, the positions, and the paint object, this method gets the
-// coordinates and prints the text at those coordinates on the canvas.
-void PrintHeaderFooterText(
-    string16 text,
-    skia::VectorCanvas* canvas,
-    SkPaint paint,
+// Get the (x, y) coordinate from where printing of the current text should
+// start depending on the horizontal alignment (LEFT, RIGHT, CENTER) and
+// vertical alignment (TOP, BOTTOM).
+SkPoint GetHeaderFooterPosition(
     float webkit_scale_factor,
     const PageSizeMargins& page_layout,
     printing::HorizontalHeaderFooterPosition horizontal_position,
     printing::VerticalHeaderFooterPosition vertical_position,
-    SkScalar offset_to_baseline) {
-  size_t text_byte_length = text.length() * sizeof(char16);
-  // Get the (x, y) coordinate from where printing of the current text should
-  // start depending on the horizontal alignment (LEFT, RIGHT, CENTER) and
-  // vertical alignment (TOP, BOTTOM).
-  SkScalar text_width_in_points = paint.measureText(text.c_str(),
-                                                    text_byte_length);
+    double offset_to_baseline,
+    double text_width_in_points) {
   SkScalar x = 0;
   switch (horizontal_position) {
     case printing::LEFT: {
@@ -171,34 +186,95 @@ void PrintHeaderFooterText(
       NOTREACHED();
   }
 
-  x = x / webkit_scale_factor;
-  y = y / webkit_scale_factor;
-  paint.setTextSize(paint.getTextSize() / webkit_scale_factor);
-  canvas->drawText(text.c_str(), text_byte_length, x, y, paint);
+  SkPoint point = SkPoint::Make(x / webkit_scale_factor,
+                                y / webkit_scale_factor);
+  return point;
 }
-#endif  // defined(USE_SKIA)
+
+// Given a text, the positions, and the paint object, this method gets the
+// coordinates and prints the text at those coordinates on the canvas.
+void PrintHeaderFooterText(
+    string16 text,
+    WebKit::WebCanvas* canvas,
+    HeaderFooterPaint paint,
+    float webkit_scale_factor,
+    const PageSizeMargins& page_layout,
+    printing::HorizontalHeaderFooterPosition horizontal_position,
+    printing::VerticalHeaderFooterPosition vertical_position,
+    double offset_to_baseline) {
+#if defined(USE_SKIA)
+  size_t text_byte_length = text.length() * sizeof(char16);
+  double text_width_in_points = SkScalarToDouble(paint.measureText(
+      text.c_str(), text_byte_length));
+  SkPoint point = GetHeaderFooterPosition(webkit_scale_factor, page_layout,
+                                          horizontal_position,
+                                          vertical_position, offset_to_baseline,
+                                          text_width_in_points);
+  paint.setTextSize(SkDoubleToScalar(
+      paint.getTextSize() / webkit_scale_factor));
+  canvas->drawText(text.c_str(), text_byte_length, point.x(), point.y(),
+                   paint);
+#elif defined(OS_MACOSX)
+  ScopedCFTypeRef<CFStringRef> cf_text(base::SysUTF16ToCFStringRef(text));
+  ScopedCFTypeRef<CFAttributedStringRef> cf_attr_text(
+      CFAttributedStringCreate(NULL, cf_text, paint));
+  ScopedCFTypeRef<CTLineRef> line(CTLineCreateWithAttributedString(
+      cf_attr_text));
+  double text_width_in_points =
+      CTLineGetTypographicBounds(line, NULL, NULL, NULL) * webkit_scale_factor;
+  SkPoint point = GetHeaderFooterPosition(webkit_scale_factor,
+                                          page_layout, horizontal_position,
+                                          vertical_position, offset_to_baseline,
+                                          text_width_in_points);
+  CGContextSetTextPosition(canvas, SkScalarToDouble(point.x()),
+                           SkScalarToDouble(point.y()));
+  CTLineDraw(line, canvas);
+#endif
+}
 
 }  // namespace
 
-#if defined(USE_SKIA)
 // static - Not anonymous so that platform implementations can use it.
 void PrintWebViewHelper::PrintHeaderAndFooter(
-    SkDevice* device,
-    skia::VectorCanvas* canvas,
+    WebKit::WebCanvas* canvas,
     int page_number,
     int total_pages,
     float webkit_scale_factor,
     const PageSizeMargins& page_layout,
     const DictionaryValue& header_footer_info) {
-  static_cast<skia::VectorPlatformDeviceSkia*>(device)->setDrawingArea(
-      SkPDFDevice::kMargin_DrawingArea);
+#if defined(USE_SKIA)
+  skia::VectorPlatformDeviceSkia* device =
+      static_cast<skia::VectorPlatformDeviceSkia*>(canvas->getTopDevice());
+  device->setDrawingArea(SkPDFDevice::kMargin_DrawingArea);
 
   SkPaint paint;
   paint.setColor(SK_ColorBLACK);
   paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-  paint.setTextSize(printing::kSettingHeaderFooterFontSize);
+  paint.setTextSize(SkDoubleToScalar(printing::kSettingHeaderFooterFontSize));
   paint.setTypeface(SkTypeface::CreateFromName(
       printing::kSettingHeaderFooterFontFamilyName, SkTypeface::kNormal));
+#elif defined(OS_MACOSX)
+  gfx::ScopedCGContextSaveGState CGContextSaveGState(canvas);
+  CGContextSetCharacterSpacing(canvas,
+                               printing::kSettingHeaderFooterCharacterSpacing);
+  CGContextSetTextDrawingMode(canvas, kCGTextFill);
+  CGContextSetGrayFillColor(canvas, kBlackGrayLevel, kOpaqueLevel);
+  CGContextSelectFont(canvas, printing::kSettingHeaderFooterFontName,
+                      printing::kSettingHeaderFooterFontSize,
+                      kCGEncodingFontSpecific);
+  ScopedCFTypeRef<CFStringRef> font_name(base::SysUTF8ToCFStringRef(
+      printing::kSettingHeaderFooterFontName));
+  // Flip the text (makes it appear upright as we would expect it to).
+  const CGAffineTransform flip_text =  CGAffineTransformMakeScale(1.0f, -1.0f);
+  ScopedCFTypeRef<CTFontRef> ct_font(CTFontCreateWithName(
+      font_name,
+      printing::kSettingHeaderFooterFontSize / webkit_scale_factor,
+      &flip_text));
+  const void* keys[] = {kCTFontAttributeName};
+  const void* values[] = {ct_font};
+  ScopedCFTypeRef<CFDictionaryRef> paint(CFDictionaryCreate(
+      NULL, keys, values, sizeof(keys) / sizeof(keys[0]), NULL, NULL));
+#endif
 
   // Print the headers onto the |canvas| if there is enough space to print
   // them.
@@ -212,17 +288,25 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   }
   string16 header_text = date + title;
 
-  SkRect header_bounds;
+  // Used for height calculations. Note that the width may be undefined.
+  SkRect header_vertical_bounds;
+#if defined(USE_SKIA)
   paint.measureText(header_text.c_str(), header_text.length() * sizeof(char16),
-                    &header_bounds, 0);
-  SkScalar text_height =
-      printing::kSettingHeaderFooterInterstice + header_bounds.height();
+                    &header_vertical_bounds, 0);
+#elif defined(OS_MACOSX)
+  header_vertical_bounds.fTop = CTFontGetAscent(ct_font) * webkit_scale_factor;
+  header_vertical_bounds.fBottom = -CTFontGetDescent(ct_font) *
+                                   webkit_scale_factor;
+#endif
+  double text_height = printing::kSettingHeaderFooterInterstice +
+                       header_vertical_bounds.height();
   if (text_height <= page_layout.margin_top) {
     PrintHeaderFooterText(date, canvas, paint, webkit_scale_factor, page_layout,
-                          printing::LEFT, printing::TOP, header_bounds.top());
+                          printing::LEFT, printing::TOP,
+                          header_vertical_bounds.top());
     PrintHeaderFooterText(title, canvas, paint, webkit_scale_factor,
                           page_layout, printing::CENTER, printing::TOP,
-                          header_bounds.top());
+                          header_vertical_bounds.top());
   }
 
   // Prints the footers onto the |canvas| if there is enough space to print
@@ -237,24 +321,30 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   }
   string16 footer_text = page_of_total_pages + url;
 
-  SkRect footer_bounds;
+  // Used for height calculations. Note that the width may be undefined.
+  SkRect footer_vertical_bounds;
+#if defined(USE_SKIA)
   paint.measureText(footer_text.c_str(), footer_text.length() * sizeof(char16),
-                    &footer_bounds, 0);
-  text_height =
-      printing::kSettingHeaderFooterInterstice + footer_bounds.height();
+                    &footer_vertical_bounds, 0);
+#elif defined(OS_MACOSX)
+  footer_vertical_bounds.fTop = header_vertical_bounds.fTop;
+  footer_vertical_bounds.fBottom = header_vertical_bounds.fBottom;
+#endif
+  text_height = printing::kSettingHeaderFooterInterstice +
+                footer_vertical_bounds.height();
   if (text_height <= page_layout.margin_bottom) {
     PrintHeaderFooterText(page_of_total_pages, canvas, paint,
                           webkit_scale_factor, page_layout, printing::RIGHT,
-                          printing::BOTTOM, footer_bounds.bottom());
+                          printing::BOTTOM, footer_vertical_bounds.bottom());
     PrintHeaderFooterText(url, canvas, paint, webkit_scale_factor, page_layout,
                           printing::LEFT, printing::BOTTOM,
-                          footer_bounds.bottom());
+                          footer_vertical_bounds.bottom());
   }
 
-  static_cast<skia::VectorPlatformDeviceSkia*>(device)->setDrawingArea(
-      SkPDFDevice::kContent_DrawingArea);
+#if defined(USE_SKIA)
+  device->setDrawingArea(SkPDFDevice::kContent_DrawingArea);
+#endif
 }
-#endif  // defined(USE_SKIA)
 
 PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     const PrintMsg_Print_Params& print_params,

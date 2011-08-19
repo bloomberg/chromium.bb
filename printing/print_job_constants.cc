@@ -33,6 +33,10 @@ const char kSettingDuplexMode[] = "duplex";
 // Option to print headers and Footers: true if selected, false if not.
 const char kSettingHeaderFooterEnabled[] = "headerFooterEnabled";
 
+// Default character spacing for text while printing headers and footers.
+// (For CoreGraphics only).
+const int kSettingHeaderFooterCharacterSpacing = 0;
+
 // Default font family name for printing the headers and footers.
 const char kSettingHeaderFooterFontFamilyName[] = "sans";
 

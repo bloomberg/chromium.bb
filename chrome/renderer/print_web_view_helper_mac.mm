@@ -135,8 +135,8 @@ void PrintWebViewHelper::RenderPage(
 
     SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
     canvas->unref();  // SkRefPtr and new both took a reference.
-    WebKit::WebCanvas* canvasPtr = canvas.get();
-    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvasPtr, metafile);
+    WebKit::WebCanvas* canvas_ptr = canvas.get();
+    printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas_ptr, metafile);
 #else
     bool success = metafile->StartPage(page_size, content_area, scale_factor);
     DCHECK(success);
@@ -145,18 +145,34 @@ void PrintWebViewHelper::RenderPage(
     // certain that there are no lingering references.
     base::mac::ScopedNSAutoreleasePool pool;
     CGContextRef cgContext = metafile->context();
-    CGContextRef canvasPtr = cgContext;
+    CGContextRef canvas_ptr = cgContext;
 #endif
-    frame->printPage(page_number, canvasPtr);
+
+    PageSizeMargins page_layout_in_points;
+    GetPageSizeAndMarginsInPoints(frame, page_number,
+                                  print_pages_params_->params,
+                                  &page_layout_in_points);
+
+#if !defined(USE_SKIA)
+    // For CoreGraphics, print in the margins before printing in the content
+    // area so that we don't spill over. Webkit draws a white background in the
+    // content area and this acts as a clip.
+    // TODO(aayushkumar): Combine the calls to PrintHeaderAndFooter once we
+    // can draw in the margins safely in Skia in any order.
+    if (print_pages_params_->params.display_header_footer) {
+      PrintHeaderAndFooter(canvas_ptr, page_number + 1,
+                           print_preview_context_.total_page_count(),
+                           scale_factor, page_layout_in_points,
+                           *header_footer_info_);
+    }
+#endif  // !USE_SKIA
+
+    frame->printPage(page_number, canvas_ptr);
+
 #if defined(USE_SKIA)
-    const PrintMsg_Print_Params& printParams =
-        print_preview_context_.print_params();
-    if (printParams.display_header_footer) {
-      PageSizeMargins page_layout_in_points;
-      GetPageSizeAndMarginsInPoints(frame, page_number, printParams,
-                                    &page_layout_in_points);
+    if (print_pages_params_->params.display_header_footer) {
       // |page_number| is 0-based, so 1 is added.
-      PrintHeaderAndFooter(device, canvas.get(), page_number + 1,
+      PrintHeaderAndFooter(canvas_ptr, page_number + 1,
                            print_preview_context_.total_page_count(),
                            scale_factor, page_layout_in_points,
                            *header_footer_info_);

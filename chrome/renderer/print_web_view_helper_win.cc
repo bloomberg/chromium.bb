@@ -190,7 +190,7 @@ Metafile* PrintWebViewHelper::RenderPage(
 
   if (params.display_header_footer) {
     // |page_number| is 0-based, so 1 is added.
-    PrintHeaderAndFooter(device, canvas.get(), page_number + 1,
+    PrintHeaderAndFooter(canvas.get(), page_number + 1,
                          print_preview_context_.total_page_count(),
                          webkit_scale_factor, page_layout_in_points,
                          *header_footer_info_);
