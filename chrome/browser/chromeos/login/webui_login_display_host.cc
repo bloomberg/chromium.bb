@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
@@ -75,6 +76,27 @@ void WebUILoginDisplayHost::ShowBackground() {
 
 void WebUILoginDisplayHost::StartWizard(const std::string& first_screen_name,
                                         const GURL& start_url) {
+  // This is a special case for WebUI. We don't want to go through the
+  // OOBE WebUI page loading. Since we already have the browser we just
+  // show the corresponding page.
+  if (first_screen_name == WizardController::kHTMLPageScreenName) {
+    const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+    const CommandLine::StringVector& args = cmd_line->GetArgs();
+    std::string html_page_url;
+    for (size_t i = 0; i < args.size(); i++) {
+      // It's strange but |args| may contain empty strings.
+      if (!args[i].empty()) {
+        DCHECK(html_page_url.empty()) << "More than one URL in command line";
+        html_page_url = args[i];
+      }
+    }
+    DCHECK(!html_page_url.empty()) << "No URL in command line";
+    DCHECK(!login_window_) << "Login window has already been created.";
+
+    LoadURL(GURL(html_page_url));
+    return;
+  }
+
   if (!login_window_)
     LoadURL(GURL(kOobeURL));
 

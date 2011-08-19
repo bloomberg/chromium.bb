@@ -190,7 +190,9 @@ ViewScreenDelegate* OobeUI::GetRegistrationScreenActor() {
 }
 
 ViewScreenDelegate* OobeUI::GetHTMLPageScreenActor() {
-  NOTIMPLEMENTED();
+  // WebUI implementation of the LoginDisplayHost opens HTML page directly,
+  // without opening OOBE page.
+  NOTREACHED();
   return NULL;
 }
 
