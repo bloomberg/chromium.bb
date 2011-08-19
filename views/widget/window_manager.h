@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "views/views_export.h"
 
 namespace gfx {
 class Point;
@@ -17,7 +18,7 @@ class MouseEvent;
 class Widget;
 
 // A interface to WindowManager.
-class WindowManager {
+class VIEWS_EXPORT WindowManager {
  public:
   WindowManager();
   virtual ~WindowManager();
