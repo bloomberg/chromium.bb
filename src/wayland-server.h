@@ -91,7 +91,7 @@ typedef void (*wl_global_bind_func_t)(struct wl_client *client,
 
 int wl_display_add_global(struct wl_display *display,
 			  struct wl_object *object,
-			  wl_global_bind_func_t func);
+			  wl_global_bind_func_t bind);
 
 int wl_display_remove_global(struct wl_display *display,
                              struct wl_object *object);

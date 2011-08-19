@@ -81,7 +81,7 @@ struct wl_display {
 
 struct wl_global {
 	struct wl_object *object;
-	wl_global_bind_func_t func;
+	wl_global_bind_func_t bind;
 	struct wl_list link;
 };
 
@@ -547,8 +547,8 @@ display_bind(struct wl_client *client,
 		wl_client_post_error(client, &client->display->resource.object,
 				     WL_DISPLAY_ERROR_INVALID_OBJECT,
 				     "invalid object %d", id);
-	else if (global->func)
-		global->func(client, global->object, version);
+	else if (global->bind)
+		global->bind(client, global->object, version);
 }
 
 static void
@@ -652,7 +652,7 @@ wl_display_add_object(struct wl_display *display, struct wl_object *object)
 
 WL_EXPORT int
 wl_display_add_global(struct wl_display *display,
-		      struct wl_object *object, wl_global_bind_func_t func)
+		      struct wl_object *object, wl_global_bind_func_t bind)
 {
 	struct wl_global *global;
 
@@ -661,7 +661,7 @@ wl_display_add_global(struct wl_display *display,
 		return -1;
 
 	global->object = object;
-	global->func = func;
+	global->bind = bind;
 	wl_list_insert(display->global_list.prev, &global->link);
 
 	return 0;
