@@ -22,6 +22,7 @@
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gfx/surface/surface.gyp:surface',
         '../v8/tools/gyp/v8.gyp:v8',
+        '../webkit/support/webkit_support.gyp:webkit_gpu',
       ],
       'include_dirs': [
         '..',

@@ -47,7 +47,7 @@ ContentClient* GetContentClient();
 class ContentClient {
  public:
   ContentClient();
-  ~ContentClient();
+  virtual ~ContentClient();
 
   ContentBrowserClient* browser() { return browser_; }
   void set_browser(ContentBrowserClient* c) { browser_ = c; }

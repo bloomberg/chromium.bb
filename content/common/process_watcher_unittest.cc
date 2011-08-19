@@ -4,7 +4,6 @@
 
 #include "content/common/process_watcher.h"
 
-#if defined(OS_POSIX)
 #include <sys/wait.h>
 
 #include "base/eintr_wrapper.h"
@@ -63,5 +62,3 @@ TEST_F(ProcessWatcherTest, ImmediateTermination) {
 MULTIPROCESS_TEST_MAIN(process_watcher_test_die_immediately) {
   return 0;
 }
-
-#endif  // OS_POSIX

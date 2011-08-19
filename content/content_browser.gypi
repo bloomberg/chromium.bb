@@ -527,8 +527,6 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            # For enable-handle-auditing switch
-            '../sandbox/sandbox.gyp:sandbox',
             # For accessibility
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
@@ -563,6 +561,10 @@
               'browser/worker.sb',
             ],
           },
+        }, { # OS!="mac"
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
         }],
       ],
     },
