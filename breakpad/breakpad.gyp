@@ -104,6 +104,10 @@
         {
           'target_name': 'dump_syms',
           'type': 'executable',
+          'include_dirs++': [
+            # ++ ensures this comes before src brought in from target_defaults.
+            'pending/src',
+          ],
           'include_dirs': [
             'src/common/mac',
           ],
@@ -112,10 +116,10 @@
             'src/common/dwarf/dwarf2reader.cc',
             'src/common/dwarf/bytereader.cc',
             'src/common/dwarf_cfi_to_module.cc',
-            'src/common/dwarf_cu_to_module.cc',
+            'pending/src/common/dwarf_cu_to_module.cc',
             'src/common/dwarf_line_to_module.cc',
             'src/common/language.cc',
-            'src/common/module.cc',
+            'pending/src/common/module.cc',
             'src/common/mac/dump_syms.mm',
             'src/common/mac/file_id.cc',
             'src/common/mac/macho_id.cc',
