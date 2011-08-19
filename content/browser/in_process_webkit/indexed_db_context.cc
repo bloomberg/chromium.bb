@@ -4,6 +4,7 @@
 
 #include "content/browser/in_process_webkit/indexed_db_context.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
@@ -13,6 +14,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/common/content_switches.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
@@ -103,7 +105,8 @@ IndexedDBContext::IndexedDBContext(
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy) {
   data_path_ = webkit_context->data_path().Append(kIndexedDBDirectory);
-  if (quota_manager_proxy) {
+  if (quota_manager_proxy &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
     quota_manager_proxy->RegisterClient(
         new IndexedDBQuotaClient(webkit_thread_loop, this));
   }
