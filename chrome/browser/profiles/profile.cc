@@ -877,7 +877,3 @@ Profile* Profile::CreateOffTheRecordProfile() {
 #endif
   return new OffTheRecordProfileImpl(this);
 }
-
-chrome_browser_net::Predictor* Profile::GetNetworkPredictor() {
-  return NULL;
-}

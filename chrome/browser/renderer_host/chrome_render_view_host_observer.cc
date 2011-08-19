@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/net/predictor.h"
+#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,9 +24,8 @@
 #include "content/common/view_messages.h"
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
-    RenderViewHost* render_view_host, chrome_browser_net::Predictor* predictor)
-    : RenderViewHostObserver(render_view_host),
-      predictor_(predictor) {
+    RenderViewHost* render_view_host)
+    : RenderViewHostObserver(render_view_host) {
   InitRenderViewHostForExtensions();
 }
 
@@ -40,11 +39,9 @@ void ChromeRenderViewHostObserver::RenderViewHostInitialized() {
 void ChromeRenderViewHostObserver::Navigate(
     const ViewMsg_Navigate_Params& params) {
   const GURL& url = params.url;
-  if (!predictor_)
-    return;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame) &&
-     (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme)))
-    predictor_->PreconnectUrlAndSubresources(url);
+      (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme)))
+    chrome_browser_net::PreconnectUrlAndSubresources(url);
 }
 
 bool ChromeRenderViewHostObserver::OnMessageReceived(

@@ -142,10 +142,6 @@ class BrowserMainParts {
   // A/B test for using a different host prefix in Google search suggest.
   void SuggestPrefixFieldTrial();
 
-  // Field trial to see what disabling DNS pre-resolution does to
-  // latency of page loads.
-  void PredictorFieldTrial();
-
   // Used to initialize NSPR where appropriate.
   virtual void InitializeSSL() = 0;
 

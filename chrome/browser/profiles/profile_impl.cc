@@ -47,7 +47,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/net_pref_observer.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/password_manager/password_store_default.h"
@@ -307,21 +306,13 @@ ProfileImpl::ProfileImpl(const FilePath& path,
 #if defined(OS_WIN)
       checked_instant_promo_(false),
 #endif
-      delegate_(delegate),
-      predictor_(NULL) {
+      delegate_(delegate) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
 
   create_session_service_timer_.Start(
       TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS), this,
       &ProfileImpl::EnsureSessionServiceCreated);
-
-  // Determine if prefetch is enabled for this profile.
-  // If not profile_manager is present, it means we are in a unittest.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  predictor_ = chrome_browser_net::Predictor::CreatePredictor(
-      !command_line->HasSwitch(switches::kDisablePreconnect),
-      g_browser_process->profile_manager() == NULL);
 
   if (delegate_) {
     prefs_.reset(PrefService::CreatePrefService(
@@ -443,12 +434,9 @@ void ProfileImpl::DoFinalInit() {
 
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
-
   io_data_.Init(cookie_path, origin_bound_cert_path, cache_path,
                 cache_max_size, media_cache_path, media_cache_max_size,
-                extensions_cookie_path, app_path, predictor_,
-                g_browser_process->local_state(),
-                g_browser_process->io_thread());
+                extensions_cookie_path, app_path);
 
   // Creation has been finished.
   if (delegate_)
@@ -907,7 +895,7 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
 
   DCHECK(!net_pref_observer_.get());
   net_pref_observer_.reset(
-      new NetPrefObserver(prefs_.get(), GetPrerenderManager(), predictor_));
+      new NetPrefObserver(prefs_.get(), GetPrerenderManager()));
 
   DoFinalInit();
 }
@@ -1728,10 +1716,6 @@ prerender::PrerenderManager* ProfileImpl::GetPrerenderManager() {
 #endif
   }
   return prerender_manager_.get();
-}
-
-chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
-  return predictor_;
 }
 
 SpellCheckProfile* ProfileImpl::GetSpellCheckProfile() {
