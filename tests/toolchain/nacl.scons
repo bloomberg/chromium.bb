@@ -9,22 +9,19 @@ Import('env')
 # NOTE: This approach does not work for -lc because of tons of
 #       undefined symbols which would have to be stubbed out
 wa_env = env.Clone()
+
+DEP_LIBS=['nacl', 'srpc', 'imc_syscalls', 'platform', 'gio', 'pthread']
+
 if not wa_env.Bit('bitcode'):
   # NOTE: the pnacl linker does not understand '-Wl,-whole-archive'
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=943
   wa_env.Prepend(LINKFLAGS=['-Wl,-whole-archive',
                             '-lgcc',
-                            '-lm',
-                            '-lnacl',
-                            '-lsrpc',
-                            '-limc_syscalls',
-                            '-lplatform',
-                            '-lgio',
-                            '-lpthread',
-                            '-Wl,-no-whole-archive'])
+                            '-lm']
+                 + map(lambda name: '-l' + name, DEP_LIBS)
+                 + ['-Wl,-no-whole-archive'])
 
-
-nexe = wa_env.ComponentProgram('dummy', 'dummy.c')
+nexe = wa_env.ComponentProgram('dummy', 'dummy.c', EXTRA_LIBS=DEP_LIBS)
 node = wa_env.CommandValidatorTestNacl('whole_archive_test.out',
                                        image=[nexe])
 wa_env.AddNodeToTestSuite(node,
