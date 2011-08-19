@@ -12,6 +12,7 @@
         'common_net',
         'chrome_resources',
         'chrome_strings',
+        'safe_browsing_proto',
         '../content/content.gyp:content_renderer',
         '../content/content.gyp:content_plugin',
         '../net/net.gyp:net',
