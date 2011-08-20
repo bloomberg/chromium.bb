@@ -107,8 +107,6 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // (i.e. the source state is uniquely defined by the pair).
   void OnReachedIdleInInitializing();
   void OnReachedExecutingInInitializing();
-  void OnReachedPauseInFlushing();
-  void OnReachedExecutingInFlushing();
   void OnReachedPauseInResetting();
   void OnReachedExecutingInResetting();
   void OnReachedIdleInDestroying();
@@ -144,10 +142,6 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   OMX_STATETYPE client_state_;
   // See comment on CurrentStateChange above.
   CurrentStateChange current_state_change_;
-  // TODO(fischman): come up with a better scheme than this.  There must be some
-  // way that OMX signals to its client that EmptyBufferDone/FillBufferDone
-  // callbacks are the result of port-flushing as opposed to normal operation.
-  bool saw_eos_during_flush_;
 
   // Following are input port related variables.
   int input_buffer_count_;

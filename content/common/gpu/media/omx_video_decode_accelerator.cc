@@ -70,7 +70,6 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       component_handle_(NULL),
       client_state_(OMX_StateMax),
       current_state_change_(NO_TRANSITION),
-      saw_eos_during_flush_(false),
       input_buffer_count_(0),
       input_buffer_size_(0),
       input_port_(0),
@@ -395,7 +394,10 @@ void OmxVideoDecodeAccelerator::Flush() {
 
 void OmxVideoDecodeAccelerator::OnReachedEOSInFlushing() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  BeginTransitionToState(OMX_StatePause);
+  DCHECK_EQ(client_state_, OMX_StateExecuting);
+  current_state_change_ = NO_TRANSITION;
+  if (client_)
+    client_->NotifyFlushDone();
 }
 
 void OmxVideoDecodeAccelerator::FlushIOPorts() {
@@ -493,22 +495,6 @@ void OmxVideoDecodeAccelerator::OnReachedExecutingInInitializing() {
 
   if (client_)
     client_->NotifyInitializeDone();
-}
-
-void OmxVideoDecodeAccelerator::OnReachedPauseInFlushing() {
-  DCHECK_EQ(client_state_, OMX_StateExecuting);
-  client_state_ = OMX_StatePause;
-  FlushIOPorts();
-}
-
-void OmxVideoDecodeAccelerator::OnReachedExecutingInFlushing() {
-  DCHECK_EQ(client_state_, OMX_StatePause);
-  client_state_ = OMX_StateExecuting;
-  DCHECK(saw_eos_during_flush_);
-  saw_eos_during_flush_ = false;
-  current_state_change_ = NO_TRANSITION;
-  if (client_)
-    client_->NotifyFlushDone();
 }
 
 void OmxVideoDecodeAccelerator::OnReachedPauseInResetting() {
@@ -763,18 +749,15 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
   }
   CHECK(!fake_output_buffers_.size());
 
-  if (current_state_change_ == FLUSHING &&
-      buffer->nFlags & OMX_BUFFERFLAG_EOS) {
-    DCHECK(!saw_eos_during_flush_);
-    saw_eos_during_flush_ = true;
+  if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
+    // Avoid sending the (fake) EOS buffer to the client.
+    return;
   }
 
   // During the transition from Executing to Idle, and during port-flushing, all
   // pictures are sent back through here.  Avoid giving them to the client.
-  // Also avoid sending the (fake) EOS buffer to the client.
-  if ((current_state_change_ != NO_TRANSITION &&
-       current_state_change_ != FLUSHING) ||
-      saw_eos_during_flush_) {
+  if (current_state_change_ != NO_TRANSITION &&
+      current_state_change_ != FLUSHING) {
     if (current_state_change_ == RESETTING)
       queued_picture_buffer_ids_.push_back(picture_buffer_id);
     return;
@@ -825,17 +808,6 @@ void OmxVideoDecodeAccelerator::DispatchStateReached(OMX_STATETYPE reached) {
         default:
           NOTREACHED() << "Unexpected state in INITIALIZING: " << reached;
       }
-    case FLUSHING:
-      switch (reached) {
-        case OMX_StatePause:
-          OnReachedPauseInFlushing();
-          return;
-        case OMX_StateExecuting:
-          OnReachedExecutingInFlushing();
-          return;
-        default:
-          NOTREACHED() << "Unexpected state in FLUSHING: " << reached;
-      }
     case RESETTING:
       switch (reached) {
         case OMX_StatePause:
@@ -851,7 +823,7 @@ void OmxVideoDecodeAccelerator::DispatchStateReached(OMX_STATETYPE reached) {
       switch (reached) {
         case OMX_StatePause:
         case OMX_StateExecuting:
-          // Because Destroy() can interrupt an in-progress Reset() or Flush(),
+          // Because Destroy() can interrupt an in-progress Reset(),
           // we might arrive at these states after current_state_change_ was
           // overwritten with DESTROYING.  That's fine though - we already have
           // the state transition for Destroy() queued up at the component, so
@@ -899,8 +871,7 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
           DispatchStateReached(static_cast<OMX_STATETYPE>(data2));
           return;
         case OMX_CommandFlush:
-          DCHECK(current_state_change_ == FLUSHING ||
-                 current_state_change_ == RESETTING ||
+          DCHECK(current_state_change_ == RESETTING ||
                  current_state_change_ == DESTROYING);
           if (data2 == input_port_)
             InputPortFlushDone();
