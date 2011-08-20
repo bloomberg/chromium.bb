@@ -478,7 +478,9 @@ class Browser : public TabHandlerDelegate,
   // how they appear in the GUI/menus (left to right, top to bottom, etc.).
 
   // Navigation commands
+  bool CanGoBack() const;
   void GoBack(WindowOpenDisposition disposition);
+  bool CanGoForward() const;
   void GoForward(WindowOpenDisposition disposition);
   void Reload(WindowOpenDisposition disposition);
   void ReloadIgnoringCache(WindowOpenDisposition disposition);  // Shift-reload.

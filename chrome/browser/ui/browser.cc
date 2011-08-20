@@ -1364,11 +1364,15 @@ bool Browser::IsClosingPermitted() {
   return can_close;
 }
 
+bool Browser::CanGoBack() const {
+  return GetSelectedTabContentsWrapper()->controller().CanGoBack();
+}
+
 void Browser::GoBack(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("Back"));
 
   TabContentsWrapper* current_tab = GetSelectedTabContentsWrapper();
-  if (current_tab->controller().CanGoBack()) {
+  if (CanGoBack()) {
     TabContents* new_tab = GetOrCloneTabForDisposition(disposition);
     // If we are on an interstitial page and clone the tab, it won't be copied
     // to the new tab, so we don't need to go back.
@@ -1379,9 +1383,13 @@ void Browser::GoBack(WindowOpenDisposition disposition) {
   }
 }
 
+bool Browser::CanGoForward() const {
+  return GetSelectedTabContentsWrapper()->controller().CanGoForward();
+}
+
 void Browser::GoForward(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("Forward"));
-  if (GetSelectedTabContentsWrapper()->controller().CanGoForward())
+  if (CanGoForward())
     GetOrCloneTabForDisposition(disposition)->controller().GoForward();
 }
 

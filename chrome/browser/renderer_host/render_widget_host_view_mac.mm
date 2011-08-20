@@ -1606,21 +1606,26 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
     bool isRightScroll = [theEvent scrollingDeltaX] < 0;
     bool goForward = isRightScroll;
+    bool canGoBack = false, canGoForward = false;
+    if (Browser* browser = BrowserList::GetLastActive()) {
+      canGoBack = browser->CanGoBack();
+      canGoForward = browser->CanGoForward();
+    }
 
+    // If "forward" is inactive and the user rubber-bands to the right,
+    // "isPinnedLeft" will be false.  When the user then rubber-bands to the
+    // left in the same gesture, that should trigger history immediately if
+    // there's no scrollbar, hence the check for hasHorizontalScrollbar_.
+    bool shouldGoBack = isPinnedLeft_ || !hasHorizontalScrollbar_;
+    bool shouldGoForward = isPinnedRight_ || !hasHorizontalScrollbar_;
     if (isHorizontalGesture &&
-        // If "forward" is inactive and the user rubber-bands to the right,
-        // "isPinnedLeft" will be false.  When the user then rubber-bands to
-        // the left in the same gesture, that should trigger history
-        // immediately if there's no scrollbar, hence the check for
-        // hasHorizontalScrollbar_.
-        (!hasHorizontalScrollbar_ ||
-        // One would think we have to check canGoBack / canGoForward here, but
-        // that's actually done in the renderer
+        // For normal pages, canGoBack/canGoForward are checked in the renderer
         // (ChromeClientImpl::shouldRubberBand()), when it decides if it should
-        // rubberband or send back an event unhandled.
-        // TODO(thakis): Is this true with the UI up?
-            (isPinnedLeft_ && !isRightScroll) ||
-            (isPinnedRight_ && isRightScroll))) {
+        // rubberband or send back an event unhandled. The check here is
+        // required for pages with an onmousewheel handler that doesn't call
+        // preventDefault().
+        ((shouldGoBack && canGoBack && !isRightScroll) ||
+         (shouldGoForward && canGoForward && isRightScroll))) {
 
       // Released by the tracking handler once the gesture is complete.
       HistoryOverlayController* historyOverlay =
