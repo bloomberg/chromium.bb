@@ -70,7 +70,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 };
 
 // Encapsulates a pbuffer EGL surface.
-class PbufferGLSurfaceEGL : public GLSurfaceEGL {
+class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
  public:
   PbufferGLSurfaceEGL(bool software, const gfx::Size& size);
   virtual ~PbufferGLSurfaceEGL();

@@ -39,7 +39,7 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
 };
 
 // A surface used to render to a view.
-class NativeViewGLSurfaceGLX : public GLSurfaceGLX {
+class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
  public:
   explicit NativeViewGLSurfaceGLX(gfx::PluginWindowHandle window);
   virtual ~NativeViewGLSurfaceGLX();
