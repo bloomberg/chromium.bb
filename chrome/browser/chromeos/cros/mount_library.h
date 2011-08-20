@@ -29,6 +29,33 @@ typedef enum MountLibraryEventType {
   MOUNT_FORMATTING_FINISHED
 } MountLibraryEventType;
 
+class MountLibcrosProxy {
+ public:
+  virtual ~MountLibcrosProxy() {}
+  virtual void CallMountPath(const char* source_path,
+                             MountType type,
+                             const MountPathOptions& options,
+                             MountCompletedMonitor callback,
+                             void* object) = 0;
+  virtual void CallUnmountPath(const char* path,
+                               UnmountRequestCallback callback,
+                               void* object) = 0;
+  virtual void CallRequestMountInfo(RequestMountInfoCallback callback,
+                                    void* object) = 0;
+  virtual void CallFormatDevice(const char* device_path,
+                                const char* filesystem,
+                                FormatRequestCallback callback,
+                                void* object) = 0;
+  virtual void CallGetDiskProperties(const char* device_path,
+                                     GetDiskPropertiesCallback callback,
+                                     void* object) = 0;
+  virtual MountEventConnection MonitorCrosDisks(MountEventMonitor monitor,
+      MountCompletedMonitor mount_complete_monitor,
+      void* object) = 0;
+  virtual void DisconnectCrosDisksMonitorIfSet(MountEventConnection connection)
+      = 0;
+};
+
 // This class handles the interaction with the ChromeOS mount library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
 // library class like this: chromeos::CrosLibrary::Get()->GetMountLibrary()
@@ -162,6 +189,9 @@ class MountLibrary {
   // Helper functions for parameter conversions.
   static std::string MountTypeToString(MountType type);
   static MountType MountTypeFromString(const std::string& type_str);
+
+  // Used in testing. Enables mocking libcros.
+  virtual void SetLibcrosProxy(MountLibcrosProxy* proxy) {}
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

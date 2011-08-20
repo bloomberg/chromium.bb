@@ -78,6 +78,53 @@ MountLibrary::Disk::Disk(const std::string& device_path,
 
 MountLibrary::Disk::~Disk() {}
 
+class MountLibcrosProxyImpl : public MountLibcrosProxy {
+ public:
+  virtual void CallMountPath(const char* source_path,
+                             MountType type,
+                             const MountPathOptions& options,
+                             MountCompletedMonitor callback,
+                             void* object) OVERRIDE {
+    MountSourcePath(source_path, type, options, callback, object);
+  }
+
+  virtual void CallUnmountPath(const char* path,
+                               UnmountRequestCallback callback,
+                               void* object) OVERRIDE {
+    UnmountMountPoint(path, callback, object);
+  }
+
+  virtual void CallRequestMountInfo(RequestMountInfoCallback callback,
+                                    void* object) OVERRIDE {
+    RequestMountInfo(callback, object);
+  }
+
+  virtual void CallFormatDevice(const char* file_path,
+                                const char* filesystem,
+                                FormatRequestCallback callback,
+                                void* object) OVERRIDE {
+    FormatDevice(file_path, filesystem, callback, object);
+  }
+
+  virtual void CallGetDiskProperties(const char* device_path,
+                                     GetDiskPropertiesCallback callback,
+                                     void* object) OVERRIDE {
+    GetDiskProperties(device_path, callback, object);
+  }
+
+  virtual MountEventConnection MonitorCrosDisks(MountEventMonitor monitor,
+      MountCompletedMonitor mount_completed_monitor,
+      void* object) OVERRIDE {
+    return MonitorAllMountEvents(monitor, mount_completed_monitor, object);
+  }
+
+  virtual void DisconnectCrosDisksMonitorIfSet(MountEventConnection conn)
+      OVERRIDE {
+    if (conn)
+      DisconnectMountEventMonitor(conn);
+  }
+};
+
 class MountLibraryImpl : public MountLibrary {
 
   struct UnmountDeviceRecursiveCallbackData {
@@ -98,7 +145,8 @@ class MountLibraryImpl : public MountLibrary {
   };
 
  public:
-  MountLibraryImpl() : mount_status_connection_(NULL) {
+  MountLibraryImpl() : libcros_proxy_(new MountLibcrosProxyImpl()),
+                       mount_status_connection_(NULL) {
     if (CrosLibrary::Get()->EnsureLoaded())
       Init();
     else
@@ -106,8 +154,8 @@ class MountLibraryImpl : public MountLibrary {
   }
 
   virtual ~MountLibraryImpl() {
-    if (mount_status_connection_)
-      DisconnectMountEventMonitor(mount_status_connection_);
+      libcros_proxy_->DisconnectCrosDisksMonitorIfSet(
+          mount_status_connection_);
   }
 
   // MountLibrary overrides.
@@ -128,7 +176,8 @@ class MountLibraryImpl : public MountLibrary {
                        MountPointInfo(source_path, NULL, type));
       return;
     }
-    MountSourcePath(source_path, type, options, &MountCompletedHandler, this);
+    libcros_proxy_->CallMountPath(source_path, type, options,
+                                  &MountCompletedHandler, this);
   }
 
   virtual void UnmountPath(const char* mount_path) OVERRIDE {
@@ -140,8 +189,8 @@ class MountLibraryImpl : public MountLibrary {
       return;
     }
 
-    UnmountMountPoint(mount_path, &MountLibraryImpl::UnmountMountPointCallback,
-                      this);
+    libcros_proxy_->CallUnmountPath(mount_path, &UnmountMountPointCallback,
+                                    this);
   }
 
   virtual void FormatUnmountedDevice(const char* file_path) OVERRIDE {
@@ -164,17 +213,15 @@ class MountLibraryImpl : public MountLibrary {
         return;
       }
     }
-    FormatDevice(file_path,
-                 "vfat",      // currently format in vfat by default
-                 &MountLibraryImpl::FormatDeviceCallback,
-                 this);
+    libcros_proxy_->CallFormatDevice(file_path, "vfat", &FormatDeviceCallback,
+                                     this);
   }
 
   virtual void FormatMountedDevice(const char* mount_path) OVERRIDE {
     DCHECK(mount_path);
     Disk* disk = NULL;
     for (MountLibrary::DiskMap::iterator it = disks_.begin();
-        it != disks_.end(); ++it) {
+         it != disks_.end(); ++it) {
       if (it->second->mount_path().compare(mount_path) == 0) {
         disk = it->second;
         break;
@@ -187,6 +234,7 @@ class MountLibraryImpl : public MountLibrary {
                      "Device with this mount path not found.");
       return;
     }
+
     if (formatting_pending_.find(disk->device_path()) !=
         formatting_pending_.end()) {
       OnFormatDevice(mount_path,
@@ -243,10 +291,8 @@ class MountLibraryImpl : public MountLibrary {
       for (std::vector<const char*>::iterator it = devices_to_unmount.begin();
            it != devices_to_unmount.end();
            ++it) {
-        UnmountMountPoint(
-            *it,
-            &MountLibraryImpl::UnmountDeviceRecursiveCallback,
-            cb_data);
+        libcros_proxy_->CallUnmountPath(*it, &UnmountDeviceRecursiveCallback,
+                                        cb_data);
       }
     } else {
       LOG(WARNING) << "Unmount recursive request failed for device "
@@ -264,13 +310,18 @@ class MountLibraryImpl : public MountLibrary {
                          kLibraryNotLoaded);
       return;
     }
-    RequestMountInfo(&MountLibraryImpl::RequestMountInfoCallback,
-                     this);
+    libcros_proxy_->CallRequestMountInfo(RequestMountInfoCallback, this);
   }
 
   const DiskMap& disks() const OVERRIDE { return disks_; }
   const MountPointMap& mount_points() const OVERRIDE { return mount_points_; }
 
+  virtual void SetLibcrosProxy(MountLibcrosProxy* proxy) OVERRIDE {
+    libcros_proxy_->DisconnectCrosDisksMonitorIfSet(mount_status_connection_);
+    libcros_proxy_.reset(proxy);
+    mount_status_connection_ = libcros_proxy_->MonitorCrosDisks(
+        &MonitorMountEventsHandler, &MountCompletedHandler, this);
+  }
  private:
   // Callback for MountComplete signal and MountSourcePath method.
   static void MountCompletedHandler(void* object,
@@ -395,8 +446,7 @@ class MountLibraryImpl : public MountLibrary {
         mount_info.mount_type == MOUNT_TYPE_DEVICE &&
         !mount_info.source_path.empty() &&
         !mount_info.mount_path.empty()) {
-      std::string path(mount_info.source_path);
-      DiskMap::iterator iter = disks_.find(path);
+      DiskMap::iterator iter = disks_.find(mount_info.source_path);
       if (iter == disks_.end()) {
         // disk might have been removed by now?
         return;
@@ -491,6 +541,7 @@ class MountLibraryImpl : public MountLibrary {
         disks_.erase(iter);
         is_new = false;
       }
+
       std::string path;
       std::string mountpath;
       std::string systempath;
@@ -560,9 +611,8 @@ class MountLibraryImpl : public MountLibrary {
         current_device_set.insert(std::string(devices[i]));
         found_disk = true;
         // Initiate disk property retrieval for each relevant device path.
-        GetDiskProperties(devices[i],
-                          &MountLibraryImpl::GetDiskPropertiesCallback,
-                          this);
+        libcros_proxy_->CallGetDiskProperties(devices[i],
+            &GetDiskPropertiesCallback, this);
       }
     } else if (error != MOUNT_METHOD_ERROR_NONE) {
       LOG(WARNING) << "Request mount info retrieval request failed with error: "
@@ -588,11 +638,9 @@ class MountLibraryImpl : public MountLibrary {
       return;
     MountLibraryEventType type = MOUNT_DEVICE_ADDED;
     switch (evt) {
-      case DISK_ADDED:
-      case DISK_CHANGED: {
-        GetDiskProperties(device_path,
-                          &MountLibraryImpl::GetDiskPropertiesCallback,
-                          this);
+      case DISK_ADDED: {
+        libcros_proxy_->CallGetDiskProperties(device_path,
+            &MountLibraryImpl::GetDiskPropertiesCallback, this);
         return;
       }
       case DISK_REMOVED: {
@@ -640,7 +688,7 @@ class MountLibraryImpl : public MountLibrary {
 
   void Init() {
     // Getting the monitor status so that the daemon starts up.
-    mount_status_connection_ = MonitorAllMountEvents(
+    mount_status_connection_ = libcros_proxy_->MonitorCrosDisks(
         &MonitorMountEventsHandler, &MountCompletedHandler, this);
   }
 
@@ -683,6 +731,8 @@ class MountLibraryImpl : public MountLibrary {
   // Mount event change observers.
   ObserverList<Observer> observers_;
 
+  scoped_ptr<MountLibcrosProxy> libcros_proxy_;
+
   // A reference to the  mount api, to allow callbacks when the mount
   // status changes.
   MountEventConnection mount_status_connection_;
@@ -691,6 +741,7 @@ class MountLibraryImpl : public MountLibrary {
   MountLibrary::DiskMap disks_;
 
   MountLibrary::MountPointMap mount_points_;
+
   // Set of devices that are supposed to be formated, but are currently waiting
   // to be unmounted. When device is in this map, the formatting process HAVEN'T
   // started yet.
@@ -720,7 +771,6 @@ class MountLibraryStubImpl : public MountLibrary {
   virtual void UnmountDeviceRecursive(const char* device_path,
       UnmountDeviceRecursiveCallbackType callback, void* user_data)
       OVERRIDE {}
-
  private:
   // The list of disks found.
   DiskMap disks_;
