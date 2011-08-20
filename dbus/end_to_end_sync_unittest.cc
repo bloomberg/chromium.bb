@@ -20,9 +20,11 @@ class EndToEndSyncTest : public testing::Test {
 
   void SetUp() {
     // Start the test service;
-    test_service_.reset(new dbus::TestService);
-    test_service_->StartService();
-    test_service_->WaitUntilServiceIsStarted();
+    dbus::TestService::Options options;
+    test_service_.reset(new dbus::TestService(options));
+    ASSERT_TRUE(test_service_->StartService());
+    ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
+    ASSERT_FALSE(test_service_->HasDBusThread());
 
     // Create the client.
     dbus::Bus::Options client_bus_options;
@@ -31,9 +33,12 @@ class EndToEndSyncTest : public testing::Test {
     client_bus_ = new dbus::Bus(client_bus_options);
     object_proxy_ = client_bus_->GetObjectProxy("org.chromium.TestService",
                                                 "/org/chromium/TestObject");
+    ASSERT_FALSE(client_bus_->HasDBusThread());
   }
 
   void TearDown() {
+    test_service_->Shutdown();
+    ASSERT_TRUE(test_service_->WaitUntilServiceIsShutdown());
     test_service_->Stop();
     client_bus_->ShutdownAndBlock();
   }
@@ -74,9 +79,9 @@ TEST_F(EndToEndSyncTest, Timeout) {
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(kHello);
 
-  // Call the method with timeout smaller than TestService::kSlowEchoSleepMs.
+  // Call the method with timeout of 0ms.
   dbus::Response response;
-  const int timeout_ms = dbus::TestService::kSlowEchoSleepMs / 10;
+  const int timeout_ms = 0;
   const bool success =
       object_proxy_->CallMethodAndBlock(&method_call, timeout_ms, &response);
   // Should fail because of timeout.

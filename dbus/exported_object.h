@@ -14,7 +14,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 
 class MessageLoop;
@@ -128,10 +128,8 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
   std::string service_name_;
   std::string object_path_;
   bool object_is_registered_;
-  bool method_is_called_;
   dbus::Response* response_from_method_;
-  base::Lock method_is_called_lock_;
-  base::ConditionVariable on_method_is_called_;
+  base::WaitableEvent on_method_is_called_;
 
   // The method table where keys are absolute method names (i.e. interface
   // name + method name), and values are the corresponding callbacks.

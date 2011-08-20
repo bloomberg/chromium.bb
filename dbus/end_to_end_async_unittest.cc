@@ -29,18 +29,21 @@ class EndToEndAsyncTest : public testing::Test {
     // Make the main thread not to allow IO.
     base::ThreadRestrictions::SetIOAllowed(false);
 
-    // Start the test service;
-    test_service_.reset(new dbus::TestService);
-    test_service_->StartService();
-    test_service_->WaitUntilServiceIsStarted();
-
     // Start the D-Bus thread.
     dbus_thread_.reset(new base::Thread("D-Bus Thread"));
     base::Thread::Options thread_options;
     thread_options.message_loop_type = MessageLoop::TYPE_IO;
-    dbus_thread_->StartWithOptions(thread_options);
+    ASSERT_TRUE(dbus_thread_->StartWithOptions(thread_options));
 
-    // Create the client.
+    // Start the test service, using the D-Bus thread.
+    dbus::TestService::Options options;
+    options.dbus_thread = dbus_thread_.get();
+    test_service_.reset(new dbus::TestService(options));
+    ASSERT_TRUE(test_service_->StartService());
+    ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
+    ASSERT_TRUE(test_service_->HasDBusThread());
+
+    // Create the client, using the D-Bus thread.
     dbus::Bus::Options bus_options;
     bus_options.bus_type = dbus::Bus::SESSION;
     bus_options.connection_type = dbus::Bus::PRIVATE;
@@ -48,6 +51,7 @@ class EndToEndAsyncTest : public testing::Test {
     bus_ = new dbus::Bus(bus_options);
     object_proxy_ = bus_->GetObjectProxy("org.chromium.TestService",
                                          "/org/chromium/TestObject");
+    ASSERT_TRUE(bus_->HasDBusThread());
   }
 
   void TearDown() {
@@ -56,6 +60,10 @@ class EndToEndAsyncTest : public testing::Test {
     // Wait until the bus is shutdown. OnShutdown() will be called in
     // mesage_loop_.
     message_loop_.Run();
+
+    // Shut down the service.
+    test_service_->Shutdown();
+    ASSERT_TRUE(test_service_->WaitUntilServiceIsShutdown());
 
     // Reset to the default.
     base::ThreadRestrictions::SetIOAllowed(true);
@@ -160,8 +168,8 @@ TEST_F(EndToEndAsyncTest, Timeout) {
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(kHello);
 
-  // Call the method with timeout smaller than TestService::kSlowEchoSleepMs.
-  const int timeout_ms = dbus::TestService::kSlowEchoSleepMs / 10;
+  // Call the method with timeout of 0ms.
+  const int timeout_ms = 0;
   CallMethod(&method_call, timeout_ms);
   WaitForResponses(1);
 

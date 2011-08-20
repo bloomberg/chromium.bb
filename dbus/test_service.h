@@ -6,10 +6,10 @@
 #define DBUS_TEST_SERVICE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
-#include "base/synchronization/condition_variable.h"
-#include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 
 namespace dbus {
 
@@ -23,28 +23,53 @@ class Response;
 // the main thread. Methods such as Echo() and SlowEcho() are exported.
 class TestService : public base::Thread {
  public:
-  // SlowEcho() sleeps for this period of time before returns.
-  static const int kSlowEchoSleepMs;
+  // Options for the test service.
+  struct Options {
+    Options();
+    ~Options();
 
-  TestService();
+    // NULL by default (i.e. don't use the D-Bus thread).
+    base::Thread* dbus_thread;
+  };
+
+  // The number of methods we'll export.
+  static const int kNumMethodsToExport;
+
+  TestService(const Options& options);
   virtual ~TestService();
 
   // Starts the service in a separate thread.
-  void StartService();
+  // Returns true if the thread is started successfully.
+  bool StartService();
 
-  // Waits until the service is started (i.e. methods are exported).
-  void WaitUntilServiceIsStarted();
+  // Waits until the service is started (i.e. all methods are exported).
+  // Returns true on success.
+  bool WaitUntilServiceIsStarted() WARN_UNUSED_RESULT;
+
+  // Shuts down the service.
+  void Shutdown();
+
+  // Waits until the service is shut down.
+  // Returns true on success.
+  bool WaitUntilServiceIsShutdown() WARN_UNUSED_RESULT;
+
+  // Returns true if the bus has the D-Bus thread.
+  bool HasDBusThread();
 
  private:
-  // Called when the service is started (i.e. the task is run from the
-  // message loop).
-  void OnServiceStarted();
+  // Helper function used in Shutdown().
+  void ShutdownInternal();
+
+  // Called when a method is exported.
+  void OnExported(const std::string& interface_name,
+                  const std::string& method_name,
+                  bool success);
+
+  // Called when the bus is shut down.
+  void OnShutdown();
 
   // base::Thread override.
   virtual void Run(MessageLoop* message_loop);
-
-  // base::Thread override.
-  virtual void CleanUp();
 
   //
   // Exported methods.
@@ -54,15 +79,17 @@ class TestService : public base::Thread {
   Response* Echo(MethodCall* method_call);
 
   // Echos the text message received from the method call, but sleeps for
-  // kSlowEchoSleepMs before returning the response.
+  // TestTimeouts::tiny_timeout_ms() before returning the response.
   Response* SlowEcho(MethodCall* method_call);
 
   // Returns NULL, instead of a valid Response.
   Response* BrokenMethod(MethodCall* method_call);
 
-  bool service_started_;
-  base::Lock service_started_lock_;
-  base::ConditionVariable on_service_started_;
+  base::Thread* dbus_thread_;
+  base::WaitableEvent on_shutdown_;
+  base::WaitableEvent on_all_methods_exported_;
+  // The number of methods actually exported.
+  int num_exported_methods_;
 
   scoped_refptr<Bus> bus_;
   ExportedObject* exported_object_;

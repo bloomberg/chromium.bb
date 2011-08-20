@@ -36,9 +36,9 @@ ExportedObject::ExportedObject(Bus* bus,
       service_name_(service_name),
       object_path_(object_path),
       object_is_registered_(false),
-      method_is_called_(false),
       response_from_method_(NULL),
-      on_method_is_called_(&method_is_called_lock_) {
+      on_method_is_called_(false /* manual_reset */,
+                           false /* initially_signaled */) {
 }
 
 ExportedObject::~ExportedObject() {
@@ -180,7 +180,6 @@ DBusHandlerResult ExportedObject::HandleMessage(
   Response* response = NULL;
   if (bus_->HasDBusThread()) {
     response_from_method_ = NULL;
-    method_is_called_ = false;
     // Post a task to run the method in the origin thread.
     bus_->PostTaskToOriginThread(FROM_HERE,
                                  base::Bind(&ExportedObject::RunMethod,
@@ -195,14 +194,11 @@ DBusHandlerResult ExportedObject::HandleMessage(
       const int kTimeoutSecs = 10;
       const base::TimeDelta timeout(
           base::TimeDelta::FromSeconds(kTimeoutSecs));
-      const base::Time start_time = base::Time::Now();
 
-      base::AutoLock auto_lock(method_is_called_lock_);
-      while (!method_is_called_) {
-        on_method_is_called_.TimedWait(timeout);
-        CHECK(base::Time::Now() - start_time < timeout)
-            << "Method " << absolute_method_name << " timed out";
-      }
+      const bool signaled = on_method_is_called_.TimedWait(timeout);
+      // Method not called is a fatal error. The method is likely stuck
+      // infinitely in the origin thread. No way to stop it from here.
+      CHECK(signaled) << "Method " << absolute_method_name << " not called";
     }
     response = response_from_method_;
   } else {
@@ -233,9 +229,7 @@ void ExportedObject::RunMethod(MethodCallCallback method_call_callback,
                                MethodCall* method_call) {
   bus_->AssertOnOriginThread();
 
-  base::AutoLock auto_lock(method_is_called_lock_);
   response_from_method_ = method_call_callback.Run(method_call);
-  method_is_called_ = true;
   on_method_is_called_.Signal();
 }
 

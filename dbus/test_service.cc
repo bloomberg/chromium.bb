@@ -5,6 +5,7 @@
 #include "dbus/test_service.h"
 
 #include "base/bind.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -12,69 +13,129 @@
 
 namespace dbus {
 
-const int TestService::kSlowEchoSleepMs = 100;  // In milliseconds.
+// Echo, SlowEcho, BrokenMethod.
+const int TestService::kNumMethodsToExport = 3;
 
-TestService::TestService()
+TestService::Options::Options()
+    : dbus_thread(NULL) {
+}
+
+TestService::Options::~Options() {
+}
+
+TestService::TestService(const Options& options)
     : base::Thread("TestService"),
-      service_started_(false),
-      on_service_started_(&service_started_lock_) {
+      dbus_thread_(options.dbus_thread),
+      on_shutdown_(false /* manual_reset */, false /* initially_signaled */),
+      on_all_methods_exported_(false, false),
+      num_exported_methods_(0) {
 }
 
 TestService::~TestService() {
 }
 
-void TestService::StartService() {
+bool TestService::StartService() {
   base::Thread::Options thread_options;
   thread_options.message_loop_type = MessageLoop::TYPE_IO;
-  StartWithOptions(thread_options);
+  return StartWithOptions(thread_options);
 }
 
-void TestService::WaitUntilServiceIsStarted() {
+bool TestService::WaitUntilServiceIsStarted() {
+  const base::TimeDelta timeout(
+      base::TimeDelta::FromMilliseconds(
+          TestTimeouts::action_max_timeout_ms()));
+  // Wait until all methods are exported.
+  return on_all_methods_exported_.TimedWait(timeout);
+}
+
+void TestService::Shutdown() {
   message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&TestService::OnServiceStarted,
+      base::Bind(&TestService::ShutdownInternal,
                  base::Unretained(this)));
-  base::AutoLock auto_lock(service_started_lock_);
-  while (!service_started_)
-    on_service_started_.Wait();
 }
 
-void TestService::OnServiceStarted() {
-  base::AutoLock auto_lock(service_started_lock_);
-  service_started_ = true;
-  on_service_started_.Signal();
+bool TestService::WaitUntilServiceIsShutdown() {
+  const base::TimeDelta timeout(
+      base::TimeDelta::FromMilliseconds(
+          TestTimeouts::action_max_timeout_ms()));
+  return on_shutdown_.TimedWait(timeout);
+}
+
+bool TestService::HasDBusThread() {
+  return bus_->HasDBusThread();
+}
+
+void TestService::ShutdownInternal() {
+  bus_->Shutdown(base::Bind(&TestService::OnShutdown,
+                            base::Unretained(this)));
+}
+
+void TestService::OnExported(const std::string& interface_name,
+                             const std::string& method_name,
+                             bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to export: " << interface_name << "."
+               << method_name;
+    // Returning here will make WaitUntilServiceIsStarted() to time out
+    // and return false.
+    return;
+  }
+
+  ++num_exported_methods_;
+  if (num_exported_methods_ == kNumMethodsToExport)
+    on_all_methods_exported_.Signal();
+}
+
+void TestService::OnShutdown() {
+  on_shutdown_.Signal();
 }
 
 void TestService::Run(MessageLoop* message_loop) {
   Bus::Options bus_options;
   bus_options.bus_type = Bus::SESSION;
   bus_options.connection_type = Bus::PRIVATE;
+  bus_options.dbus_thread = dbus_thread_;
   bus_ = new Bus(bus_options);
 
   exported_object_ = bus_->GetExportedObject(
       "org.chromium.TestService",
       "/org/chromium/TestObject");
-  CHECK(exported_object_->ExportMethodAndBlock(
+
+  int num_methods = 0;
+  exported_object_->ExportMethod(
       "org.chromium.TestInterface",
       "Echo",
       base::Bind(&TestService::Echo,
-                 base::Unretained(this))));
-  CHECK(exported_object_->ExportMethodAndBlock(
+                 base::Unretained(this)),
+      base::Bind(&TestService::OnExported,
+                 base::Unretained(this)));
+  ++num_methods;
+
+  exported_object_->ExportMethod(
       "org.chromium.TestInterface",
       "SlowEcho",
       base::Bind(&TestService::SlowEcho,
-                 base::Unretained(this))));
-  CHECK(exported_object_->ExportMethodAndBlock(
+                 base::Unretained(this)),
+      base::Bind(&TestService::OnExported,
+                 base::Unretained(this)));
+  ++num_methods;
+
+  exported_object_->ExportMethod(
       "org.chromium.TestInterface",
       "BrokenMethod",
       base::Bind(&TestService::BrokenMethod,
-                 base::Unretained(this))));
+                 base::Unretained(this)),
+      base::Bind(&TestService::OnExported,
+                 base::Unretained(this)));
+  ++num_methods;
 
+  // Just print an error message as we don't want to crash tests.
+  // Tests will fail at a call to WaitUntilServiceIsStarted().
+  if (num_methods != kNumMethodsToExport) {
+    LOG(ERROR) << "The number of methods does not match";
+  }
   message_loop->Run();
-}
-
-void TestService::CleanUp() {
-  bus_->ShutdownAndBlock();
 }
 
 Response* TestService::Echo(MethodCall* method_call) {
@@ -90,7 +151,7 @@ Response* TestService::Echo(MethodCall* method_call) {
 }
 
 Response* TestService::SlowEcho(MethodCall* method_call) {
-  base::PlatformThread::Sleep(kSlowEchoSleepMs);
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout_ms());
   return Echo(method_call);
 }
 
