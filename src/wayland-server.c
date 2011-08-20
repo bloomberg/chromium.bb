@@ -65,7 +65,6 @@ struct wl_client {
 };
 
 struct wl_display {
-	struct wl_resource resource;
 	struct wl_event_loop *loop;
 	int run;
 

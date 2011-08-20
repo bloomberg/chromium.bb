@@ -172,7 +172,6 @@ struct wl_grab {
 };
 
 struct wl_input_device {
-	struct wl_resource resource;
 	struct wl_list resource_list;
 	struct wl_compositor *compositor;
 	struct wl_resource *pointer_focus_resource;
