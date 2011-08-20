@@ -21,6 +21,7 @@
 #include "base/observer_list.h"
 #include "base/timer.h"
 #include "build/build_config.h"
+#include "content/renderer/render_view_selection.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/common/edit_command.h"
 #include "content/common/navigation_gesture.h"
@@ -925,6 +926,12 @@ class RenderView : public RenderWidget,
   // periodic timer so we don't send too many messages.
   void SyncNavigationState();
 
+  // Dispatches the current state of selection on the webpage to the browser if
+  // it has changed.
+  // TODO(varunjain): delete this method once we figure out how to keep
+  // selection handles in sync with the webpage.
+  void SyncSelectionIfRequired();
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   void UpdateFontRenderingFromRendererPrefs();
 #else
@@ -1081,7 +1088,7 @@ class RenderView : public RenderWidget,
   GURL pending_target_url_;
 
   // The text selection the last time DidChangeSelection got called.
-  std::string last_selection_;
+  RenderViewSelection last_selection_;
 
   // View ----------------------------------------------------------------------
 

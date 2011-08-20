@@ -1568,41 +1568,7 @@ void RenderView::didChangeSelection(bool is_empty_selection) {
       return;
   handling_select_range_ = false;
 
-  if (is_empty_selection) {
-    last_selection_.clear();
-  } else {
-    // Sometimes we get repeated didChangeSelection calls from webkit when
-    // the selection hasn't actually changed. We don't want to report these
-    // because it will cause us to continually claim the X clipboard.
-    WebFrame* frame = webview()->focusedFrame();
-    const std::string& this_selection = frame->selectionAsText().utf8();
-    if (this_selection == last_selection_)
-      return;
-    last_selection_ = this_selection;
-  }
-
-  ui::Range range(ui::Range::InvalidRange());
-  size_t location, length;
-  if (webview()->caretOrSelectionRange(&location, &length)) {
-    range.set_start(location);
-    range.set_end(location + length);
-  }
-
-  WebKit::WebPoint start, end;
-  webview()->selectionRange(start, end);
-
-  // Webkit gives an offset of 1 between start and end even if there is no
-  // selection. So we need to check against that.
-  // TODO(varunjain): remove this check once that is fixed.
-  gfx::Point p1, p2;
-  if (std::abs(start.x - end.x) > 1 || std::abs(start.y - end.y) > 1) {
-    gfx::Point scroll_offset = GetScrollOffset();
-    p1.SetPoint(start.x + scroll_offset.x(), start.y + scroll_offset.y());
-    p2.SetPoint(end.x + scroll_offset.x(), end.y + scroll_offset.y());
-  }
-  // TODO(varunjain): add other hooks for SelectionChanged.
-  Send(new ViewHostMsg_SelectionChanged(routing_id_, last_selection_, range,
-                                        p1, p2));
+  SyncSelectionIfRequired();
 #endif  // defined(OS_POSIX)
 }
 
@@ -3111,6 +3077,33 @@ void RenderView::SyncNavigationState() {
       routing_id_, page_id_, webkit_glue::HistoryItemToString(item)));
 }
 
+void RenderView::SyncSelectionIfRequired() {
+  WebFrame* frame = webview()->focusedFrame();
+  const std::string& text = frame->selectionAsText().utf8();
+
+  ui::Range range(ui::Range::InvalidRange());
+  size_t location, length;
+  if (webview()->caretOrSelectionRange(&location, &length)) {
+    range.set_start(location);
+    range.set_end(location + length);
+  }
+
+  WebPoint start, end;
+  webview()->selectionRange(start, end);
+
+  RenderViewSelection this_selection(text, range, start, end);
+
+  // Sometimes we get repeated didChangeSelection calls from webkit when
+  // the selection hasn't actually changed. We don't want to report these
+  // because it will cause us to continually claim the X clipboard.
+  if (this_selection.Equals(last_selection_))
+    return;
+  last_selection_ = this_selection;
+
+  Send(new ViewHostMsg_SelectionChanged(routing_id_, text, range,
+                                        start, end));
+}
+
 GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
                                           ErrorPageType error_type) {
 
@@ -3978,6 +3971,10 @@ void RenderView::DidFlushPaint() {
       navigation_state->set_first_paint_after_load_time(now);
     }
   }
+
+#if defined(TOUCH_UI)
+  SyncSelectionIfRequired();
+#endif
 }
 
 void RenderView::OnViewContextSwapBuffersPosted() {
