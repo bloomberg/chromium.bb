@@ -463,7 +463,7 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
 
 string16 GetNameForURL(const GURL& url) {
   if (url.is_valid()) {
-    return net::GetSuggestedFilename(url, "", "", "", string16());
+    return net::GetSuggestedFilename(url, "", "", "", "", string16());
   } else {
     return l10n_util::GetStringUTF16(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
   }
