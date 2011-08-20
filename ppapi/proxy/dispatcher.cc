@@ -132,6 +132,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Crypto_Proxy::GetInfo());
   AddPPB(PPB_CursorControl_Proxy::GetInfo());
   AddPPB(PPB_FileChooser_Proxy::GetInfo());
+  AddPPB(PPB_FileChooser_Proxy::GetInfo0_4());
   AddPPB(PPB_FileRef_Proxy::GetInfo());
   AddPPB(PPB_FileSystem_Proxy::GetInfo());
   AddPPB(PPB_Flash_Clipboard_Proxy::GetInfo());

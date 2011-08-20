@@ -22,12 +22,13 @@ template <> const char* interface_name<PPB_FileChooser_Dev>() {
 
 }  // namespace
 
-FileChooser_Dev::FileChooser_Dev(const Instance& instance,
-                                 const PP_FileChooserOptions_Dev& options) {
+FileChooser_Dev::FileChooser_Dev(const Instance* instance,
+                                 PP_FileChooserMode_Dev mode,
+                                 const Var& accept_mime_types) {
   if (!has_interface<PPB_FileChooser_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_FileChooser_Dev>()->Create(
-      instance.pp_instance(), &options));
+      instance->pp_instance(), mode, accept_mime_types.pp_var()));
 }
 
 FileChooser_Dev::FileChooser_Dev(const FileChooser_Dev& other)

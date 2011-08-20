@@ -107,8 +107,9 @@ PP_Resource ResourceCreationImpl::CreateDirectoryReader(
 
 PP_Resource ResourceCreationImpl::CreateFileChooser(
     PP_Instance instance,
-    const PP_FileChooserOptions_Dev* options) {
-  return PPB_FileChooser_Impl::Create(instance_, options);
+    PP_FileChooserMode_Dev mode,
+    const PP_Var& accept_mime_types) {
+  return PPB_FileChooser_Impl::Create(instance_, mode, accept_mime_types);
 }
 
 PP_Resource ResourceCreationImpl::CreateFileIO(PP_Instance instance) {

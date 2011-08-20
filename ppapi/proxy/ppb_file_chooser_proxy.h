@@ -24,6 +24,7 @@ class HostResource;
 namespace proxy {
 
 struct PPBFileRef_CreateInfo;
+class SerializedVarReceiveInput;
 
 class PPB_FileChooser_Proxy : public InterfaceProxy {
  public:
@@ -31,10 +32,12 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   virtual ~PPB_FileChooser_Proxy();
 
   static const Info* GetInfo();
+  static const Info* GetInfo0_4();
 
   static PP_Resource CreateProxyResource(
       PP_Instance instance,
-      const PP_FileChooserOptions_Dev* options);
+      PP_FileChooserMode_Dev mode,
+      const PP_Var& accept_mime_types);
 
   const PPB_FileChooser_Dev* ppb_file_chooser_target() const {
     return static_cast<const PPB_FileChooser_Dev*>(target_interface());
@@ -47,7 +50,7 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   // Plugin -> host message handlers.
   void OnMsgCreate(PP_Instance instance,
                    int mode,
-                   const std::string& accept_mime_types,
+                   SerializedVarReceiveInput accept_mime_types,
                    ppapi::HostResource* result);
   void OnMsgShow(const ppapi::HostResource& chooser);
 

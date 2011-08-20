@@ -42,29 +42,25 @@ class MyInstance : public pp::InstancePrivate {
   void ShowFileChooser(bool multi_select) {
     RecreateConsole();
 
-    PP_FileChooserOptions_Dev options;
-    options.mode = (multi_select ? PP_FILECHOOSERMODE_OPENMULTIPLE :
-                    PP_FILECHOOSERMODE_OPEN);
-    options.accept_mime_types = (multi_select ? "" : "plain/text");
+    PP_FileChooserMode_Dev mode =
+        (multi_select ? PP_FILECHOOSERMODE_OPENMULTIPLE
+                      : PP_FILECHOOSERMODE_OPEN);
+    std::string accept_mime_types = (multi_select ? "" : "plain/text");
 
-    // Deleted in ShowSelectedFileNames().
-    pp::FileChooser_Dev* file_chooser = new pp::FileChooser_Dev(
-        *this, options);
-    file_chooser->Show(callback_factory_.NewCallback(
-        &MyInstance::ShowSelectedFileNames, file_chooser));
+    chooser_ = pp::FileChooser_Dev(this, mode, accept_mime_types);
+    chooser_.Show(callback_factory_.NewCallback(
+        &MyInstance::ShowSelectedFileNames));
   }
 
-  void ShowSelectedFileNames(int32_t, pp::FileChooser_Dev* file_chooser) {
-    if (!file_chooser)
+  void ShowSelectedFileNames(int32_t result) {
+    if (!result != PP_OK)
       return;
 
-    pp::FileRef file_ref = file_chooser->GetNextChosenFile();
+    pp::FileRef file_ref = chooser_.GetNextChosenFile();
     while (!file_ref.is_null()) {
       Log(file_ref.GetName());
-      file_ref = file_chooser->GetNextChosenFile();
+      file_ref = chooser_.GetNextChosenFile();
     }
-
-    delete file_chooser;
   }
 
   void RecreateConsole() {
@@ -84,6 +80,8 @@ class MyInstance : public pp::InstancePrivate {
     console_.Call("appendChild", doc.Call("createTextNode", var));
     console_.Call("appendChild", doc.Call("createTextNode", "\n"));
   }
+
+  pp::FileChooser_Dev chooser_;
 
   pp::CompletionCallbackFactory<MyInstance> callback_factory_;
   pp::VarPrivate console_;

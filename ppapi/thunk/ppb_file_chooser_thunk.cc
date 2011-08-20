@@ -17,11 +17,13 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance,
-                   const PP_FileChooserOptions_Dev* options) {
+                   PP_FileChooserMode_Dev mode,
+                   struct PP_Var accept_mime_types) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateFileChooser(instance, options);
+  return enter.functions()->CreateFileChooser(instance, mode,
+                                              accept_mime_types);
 }
 
 PP_Bool IsFileChooser(PP_Resource resource) {

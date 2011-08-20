@@ -11,6 +11,7 @@
 #include "base/sys_string_conversions.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
@@ -25,6 +26,7 @@
 #include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/glue/webkit_glue.h"
 
+using ppapi::StringVar;
 using ppapi::thunk::PPB_FileChooser_API;
 using WebKit::WebCString;
 using WebKit::WebFileChooserCompletion;
@@ -62,12 +64,14 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
 
 PPB_FileChooser_Impl::PPB_FileChooser_Impl(
     PluginInstance* instance,
-    const PP_FileChooserOptions_Dev* options)
+    PP_FileChooserMode_Dev mode,
+    const PP_Var& accept_mime_types)
     : Resource(instance),
-      mode_(options->mode),
-      accept_mime_types_(options->accept_mime_types ?
-                         options->accept_mime_types : ""),
+      mode_(mode),
       next_chosen_file_index_(0) {
+  scoped_refptr<StringVar> accept = StringVar::FromPPVar(accept_mime_types);
+  if (accept)
+    accept_mime_types_ = accept->value();
 }
 
 PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
@@ -76,11 +80,13 @@ PPB_FileChooser_Impl::~PPB_FileChooser_Impl() {
 // static
 PP_Resource PPB_FileChooser_Impl::Create(
     PluginInstance* instance,
-    const PP_FileChooserOptions_Dev* options) {
-  if ((options->mode != PP_FILECHOOSERMODE_OPEN) &&
-      (options->mode != PP_FILECHOOSERMODE_OPENMULTIPLE))
+    PP_FileChooserMode_Dev mode,
+    const PP_Var& accept_mime_types) {
+  if (mode != PP_FILECHOOSERMODE_OPEN &&
+      mode != PP_FILECHOOSERMODE_OPENMULTIPLE)
     return 0;
-  return (new PPB_FileChooser_Impl(instance, options))->GetReference();
+  return (new PPB_FileChooser_Impl(instance, mode,
+                                   accept_mime_types))->GetReference();
 }
 
 PPB_FileChooser_Impl* PPB_FileChooser_Impl::AsPPB_FileChooser_Impl() {
@@ -137,7 +143,7 @@ void PPB_FileChooser_Impl::RunCallback(int32_t result) {
   callback->Run(result);  // Will complete abortively if necessary.
 }
 
-int32_t PPB_FileChooser_Impl::Show(PP_CompletionCallback callback) {
+int32_t PPB_FileChooser_Impl::Show(const PP_CompletionCallback& callback) {
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;

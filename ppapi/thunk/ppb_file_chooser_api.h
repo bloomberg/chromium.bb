@@ -14,7 +14,7 @@ class PPB_FileChooser_API {
  public:
   virtual ~PPB_FileChooser_API() {}
 
-  virtual int32_t Show(PP_CompletionCallback callback) = 0;
+  virtual int32_t Show(const PP_CompletionCallback& callback) = 0;
   virtual PP_Resource GetNextChosenFile() = 0;
 };
 

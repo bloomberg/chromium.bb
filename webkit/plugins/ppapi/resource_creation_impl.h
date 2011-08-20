@@ -47,7 +47,8 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
   virtual PP_Resource CreateDirectoryReader(PP_Resource directory_ref) OVERRIDE;
   virtual PP_Resource CreateFileChooser(
       PP_Instance instance,
-      const PP_FileChooserOptions_Dev* options) OVERRIDE;
+      PP_FileChooserMode_Dev mode,
+      const PP_Var& accept_mime_types) OVERRIDE;
   virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateFileRef(PP_Resource file_system,
                                     const char* path) OVERRIDE;

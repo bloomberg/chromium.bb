@@ -340,8 +340,9 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPMessaging_HandleMessage,
 
 // PPB_URLLoader
 // (Messages from browser to plugin to notify it of changes in state.)
-IPC_MESSAGE_ROUTED1(PpapiMsg_PPBURLLoader_UpdateProgress,
-                    ppapi::proxy::PPBURLLoader_UpdateProgress_Params /* params */)
+IPC_MESSAGE_ROUTED1(
+    PpapiMsg_PPBURLLoader_UpdateProgress,
+    ppapi::proxy::PPBURLLoader_UpdateProgress_Params /* params */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
                     ppapi::HostResource /* loader */,
                     int32 /* result */,
@@ -520,7 +521,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBCursorControl_CanLockCursor,
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileChooser_Create,
                            PP_Instance /* instance */,
                            int /* mode */,
-                           std::string /* accept_mime_types */,
+                           ppapi::proxy::SerializedVar /* accept_mime_types */,
                            ppapi::HostResource /* result */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFileChooser_Show,
                     ppapi::HostResource /* file_chooser */)
@@ -566,9 +567,10 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
                     PP_Bool /* on_top */)
 // This has to be synchronous becuase the caller may want to composite on
 // top of the resulting text after the call is complete.
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFlash_DrawGlyphs,
-                           ppapi::proxy::PPBFlash_DrawGlyphs_Params /* params */,
-                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(
+    PpapiHostMsg_PPBFlash_DrawGlyphs,
+    ppapi::proxy::PPBFlash_DrawGlyphs_Params /* params */,
+    PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
                            PP_Instance /* instance */,
                            std::string /* url */,

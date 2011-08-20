@@ -15,6 +15,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
+#include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
 
 using ppapi::thunk::PPB_FileChooser_API;
@@ -32,7 +33,7 @@ class FileChooser : public Resource,
   virtual PPB_FileChooser_API* AsPPB_FileChooser_API() OVERRIDE;
 
   // PPB_FileChooser_API implementation.
-  virtual int32_t Show(PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t Show(const PP_CompletionCallback& callback) OVERRIDE;
   virtual PP_Resource GetNextChosenFile() OVERRIDE;
 
   // Handles the choose complete notification from the host.
@@ -80,7 +81,7 @@ PPB_FileChooser_API* FileChooser::AsPPB_FileChooser_API() {
   return this;
 }
 
-int32_t FileChooser::Show(PP_CompletionCallback callback) {
+int32_t FileChooser::Show(const PP_CompletionCallback& callback) {
   if (current_show_callback_.func)
     return PP_ERROR_INPROGRESS;  // Can't show more than once.
 
@@ -119,6 +120,37 @@ void FileChooser::ChooseComplete(
 
 namespace {
 
+PP_Resource Create0_4(PP_Instance instance,
+                      const PP_FileChooserOptions_0_4_Dev* options) {
+  PP_Var accept_var = PP_MakeUndefined();
+  if (options->accept_mime_types)
+    accept_var = StringVar::StringToPPVar(0, options->accept_mime_types);
+  PP_Resource result = thunk::GetPPB_FileChooser_Thunk()->Create(
+      instance, options->mode, accept_var);
+  if (accept_var.type == PP_VARTYPE_STRING)
+    PluginResourceTracker::GetInstance()->var_tracker().ReleaseVar(accept_var);
+  return result;
+}
+
+PP_Bool IsFileChooser0_4(PP_Resource resource) {
+  return thunk::GetPPB_FileChooser_Thunk()->IsFileChooser(resource);
+}
+
+int32_t Show0_4(PP_Resource chooser, PP_CompletionCallback callback) {
+  return thunk::GetPPB_FileChooser_Thunk()->Show(chooser, callback);
+}
+
+PP_Resource GetNextChosenFile0_4(PP_Resource chooser) {
+  return thunk::GetPPB_FileChooser_Thunk()->GetNextChosenFile(chooser);
+}
+
+PPB_FileChooser_0_4_Dev file_chooser_0_4_interface = {
+  &Create0_4,
+  &IsFileChooser0_4,
+  &Show0_4,
+  &GetNextChosenFile0_4
+};
+
 InterfaceProxy* CreateFileChooserProxy(Dispatcher* dispatcher,
                                        const void* target_interface) {
   return new PPB_FileChooser_Proxy(dispatcher, target_interface);
@@ -146,10 +178,22 @@ const InterfaceProxy::Info* PPB_FileChooser_Proxy::GetInfo() {
   return &info;
 }
 
+const InterfaceProxy::Info* PPB_FileChooser_Proxy::GetInfo0_4() {
+  static const Info info = {
+    &file_chooser_0_4_interface,
+    PPB_FILECHOOSER_DEV_INTERFACE_0_4,
+    INTERFACE_ID_NONE,
+    false,
+    &CreateFileChooserProxy,
+  };
+  return &info;
+}
+
 // static
 PP_Resource PPB_FileChooser_Proxy::CreateProxyResource(
     PP_Instance instance,
-    const PP_FileChooserOptions_Dev* options) {
+    PP_FileChooserMode_Dev mode,
+    const PP_Var& accept_mime_types) {
   Dispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
@@ -157,8 +201,7 @@ PP_Resource PPB_FileChooser_Proxy::CreateProxyResource(
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBFileChooser_Create(
       INTERFACE_ID_PPB_FILE_CHOOSER, instance,
-      options->mode,
-      options->accept_mime_types ? options->accept_mime_types : std::string(),
+      mode, SerializedVarSendInput(dispatcher, accept_mime_types),
       &result));
 
   if (result.is_null())
@@ -181,15 +224,14 @@ bool PPB_FileChooser_Proxy::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void PPB_FileChooser_Proxy::OnMsgCreate(PP_Instance instance,
-                                        int mode,
-                                        const std::string& accept_mime_types,
-                                        HostResource* result) {
-  PP_FileChooserOptions_Dev options;
-  options.mode = static_cast<PP_FileChooserMode_Dev>(mode);
-  options.accept_mime_types = accept_mime_types.c_str();
-  result->SetHostResource(
-      instance, ppb_file_chooser_target()->Create(instance, &options));
+void PPB_FileChooser_Proxy::OnMsgCreate(
+    PP_Instance instance,
+    int mode,
+    SerializedVarReceiveInput accept_mime_types,
+    HostResource* result) {
+  result->SetHostResource(instance, ppb_file_chooser_target()->Create(
+      instance, static_cast<PP_FileChooserMode_Dev>(mode),
+      accept_mime_types.Get(dispatcher())));
 }
 
 void PPB_FileChooser_Proxy::OnMsgShow(const HostResource& chooser) {

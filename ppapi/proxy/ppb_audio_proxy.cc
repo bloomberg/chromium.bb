@@ -178,8 +178,8 @@ PP_Resource PPB_Audio_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  return (new Audio(result, config_id, audio_callback, user_data))->
-      GetReference();
+  return (new Audio(result, config_id,
+                    audio_callback, user_data))->GetReference();
 }
 
 bool PPB_Audio_Proxy::OnMessageReceived(const IPC::Message& msg) {

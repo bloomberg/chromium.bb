@@ -35,8 +35,7 @@ namespace proxy {
 
 class Surface3D;
 
-class Context3D : public Resource,
-                  public thunk::PPB_Context3D_API {
+class Context3D : public Resource, public thunk::PPB_Context3D_API {
  public:
   explicit Context3D(const HostResource& resource);
   virtual ~Context3D();
