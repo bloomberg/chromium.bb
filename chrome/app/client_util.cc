@@ -11,7 +11,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/rand_util.h"  // For PreReadExperiment.
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -138,25 +137,6 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
       key.ReadValueDW(L"PreRead", &pre_read);
       key.Close();
     }
-
-    // The Syzygy project is a competing optimization technique. Part of the
-    // evaluation consists of an A/B experiment. As a baseline, we wish to
-    // evaluate startup time with preread enabled and disabled. We can't use
-    // base::FieldTrial as this only exists *after* chrome.dll is loaded. We
-    // override the registry setting with a coin-toss for the duration of the
-    // experiment.
-    // NOTE: This experiment is intended for Canary and Dev only, and should be
-    //     removed from any branch heading out to beta and beyond!
-    pre_read = base::RandInt(0, 1);
-    DCHECK(pre_read == 0 || pre_read == 1);
-
-    // We communicate the coin-toss result via a side-channel
-    // (environment variable) to chrome.dll. This ensures that chrome.dll
-    // only reports experiment results if it has been launched by a
-    // chrome.exe that is actually running the experiment.
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    DCHECK(env.get() != NULL);
-    env->SetVar("CHROME_PRE_READ_EXPERIMENT", pre_read ? "1" : "0");
 
     if (pre_read) {
       TRACE_EVENT_BEGIN_ETW("PreReadImage", 0, "");
