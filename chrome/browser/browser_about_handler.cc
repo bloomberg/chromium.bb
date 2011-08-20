@@ -168,18 +168,6 @@ const char* const kChromePaths[] = {
 #endif
 };
 
-// Debug paths, presented without links in chrome://about.
-// These paths will not be suggested by BuiltinProvider.
-const char* const kDebugChromePaths[] = {
-  chrome::kChromeUICrashHost,
-  chrome::kChromeUIKillHost,
-  chrome::kChromeUIHangHost,
-  chrome::kChromeUIShorthangHost,
-  chrome::kChromeUIGpuCleanHost,
-  chrome::kChromeUIGpuCrashHost,
-  chrome::kChromeUIGpuHangHost
-};
-
 // AboutSource handles these chrome:// paths.
 const char* const kAboutSourceNames[] = {
   chrome::kChromeUIChromeURLsHost,
@@ -442,8 +430,8 @@ std::string ChromeURLs() {
       "<p>The following pages are for debugging purposes only. Because they "
       "crash or hang the renderer, they're not linked directly; you can type "
       "them into the address bar if you need them.</p>\n<ul>";
-  for (size_t i = 0; i < arraysize(kDebugChromePaths); i++)
-    html += "<li>chrome://" + std::string(kDebugChromePaths[i]) + "</li>\n";
+  for (int i = 0; i < chrome::kNumberOfChromeDebugURLs; i++)
+    html += "<li>" + std::string(chrome::kChromeDebugURLs[i]) + "</li>\n";
   html += "</ul>\n";
   AppendFooter(&html);
   return html;

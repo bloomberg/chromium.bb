@@ -32,11 +32,23 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 
+namespace {
+
 // Number of ms to delay between loading urls.
-static const int kUpdateDelayMS = 200;
+const int kUpdateDelayMS = 200;
 
 // Amount of time we delay before showing pages that have a non-200 status.
-static const int kShowDelayMS = 800;
+const int kShowDelayMS = 800;
+
+bool IsBlacklistedUrl(const GURL& url) {
+  for (int i = 0; i < chrome::kNumberOfChromeDebugURLs; ++i) {
+    if (url == GURL(chrome::kChromeDebugURLs[i]))
+      return true;
+  }
+  return false;
+}
+
+}
 
 // static
 InstantController::HostBlacklist* InstantController::host_blacklist_ = NULL;
@@ -714,7 +726,11 @@ InstantController::PreviewCondition InstantController::GetPreviewConditionFor(
 
   // Was the host blacklisted?
   if (host_blacklist_ && host_blacklist_->count(match.destination_url.host()))
-    return PREVIEW_CONDITION_BLACKLISTED;
+    return PREVIEW_CONDITION_BLACKLISTED_HOST;
+
+  // Was the URL blacklisted?
+  if (IsBlacklistedUrl(match.destination_url))
+    return PREVIEW_CONDITION_BLACKLISTED_URL;
 
   const CommandLine* cl = CommandLine::ForCurrentProcess();
   if ((cl->HasSwitch(switches::kRestrictInstantToSearch) ||

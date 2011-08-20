@@ -37,7 +37,9 @@ extern const char kChromeUIExtensionsURL[];
 extern const char kChromeUIFlagsURL[];
 extern const char kChromeUIFlashURL[];
 extern const char kChromeUIFaviconURL[];
+extern const char kChromeUIGpuCleanURL[];
 extern const char kChromeUIGpuCrashURL[];
+extern const char kChromeUIGpuHangURL[];
 extern const char kChromeUIHangURL[];
 extern const char kChromeUIHistory2URL[];
 extern const char kChromeUIHistoryURL[];
@@ -256,6 +258,10 @@ extern const char kSpeechInputAboutURL[];
 
 // The URL for the "Learn more" page for register protocol handler infobars.
 extern const char kLearnMoreRegisterProtocolHandlerURL[];
+
+// "Debug" pages which are dangerous and not for general consumption.
+extern const char* const kChromeDebugURLs[];
+extern int kNumberOfChromeDebugURLs;
 
 // Call near the beginning of startup to register Chrome's internal URLs that
 // should be parsed as "standard" with the googleurl library.

@@ -35,7 +35,9 @@ const char kChromeUIExtensionsURL[] = "chrome://extensions/";
 const char kChromeUIFaviconURL[] = "chrome://favicon/";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIFlashURL[] = "chrome://flash/";
+const char kChromeUIGpuCleanURL[] = "chrome://gpuclean";
 const char kChromeUIGpuCrashURL[] = "chrome://gpucrash";
+const char kChromeUIGpuHangURL[] = "chrome://gpuhang";
 const char kChromeUIHangURL[] = "chrome://hang/";
 const char kChromeUIHistory2URL[] = "chrome://history2/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
@@ -284,6 +286,17 @@ const char kLearnMoreRegisterProtocolHandlerURL[] =
 const char kCloudPrintLearnMoreURL[] =
     "https://www.google.com/support/chromeos/bin/topic.py?topic=29023";
 #endif
+
+const char* const kChromeDebugURLs[] = {
+  kChromeUICrashURL,
+  kChromeUIKillURL,
+  kChromeUIHangURL,
+  kChromeUIShorthangURL,
+  kChromeUIGpuCleanURL,
+  kChromeUIGpuCrashURL,
+  kChromeUIGpuHangURL,
+};
+int kNumberOfChromeDebugURLs = static_cast<int>(arraysize(kChromeDebugURLs));
 
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
