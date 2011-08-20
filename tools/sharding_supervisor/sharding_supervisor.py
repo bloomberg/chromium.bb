@@ -30,6 +30,7 @@ sys.path.append(os.path.join(BASE_PATH, ".."))
 try:
   import find_depot_tools
   # Fixes a bug in Windows where some shards die upon starting
+  # TODO(charleslee): actually fix this bug
   import subprocess2 as subprocess
 except ImportError:
   # Unable to find depot_tools, so just use standard subprocess
@@ -91,10 +92,14 @@ class ShardRunner(threading.Thread):
   Attributes:
     supervisor: The ShardingSupervisor that this worker reports to.
     counter: Called to get the next shard index to run.
+    test_start: Regex that detects when a test runs.
+    test_ok: Regex that detects a passing test.
+    test_fail: Regex that detects a failing test.
+    current_test: The name of the currently running test.
   """
 
   def __init__(self, supervisor, counter, test_start, test_ok, test_fail):
-    """Inits ShardRunner with a supervisor and counter."""
+    """Inits ShardRunner and sets the current test to nothing."""
     threading.Thread.__init__(self)
     self.supervisor = supervisor
     self.counter = counter
@@ -103,15 +108,19 @@ class ShardRunner(threading.Thread):
     self.test_fail = test_fail
     self.current_test = ""
 
-  def ReportFailure(self, description, test_name):
-    log_line = "%s: %s\n" % (description, test_name)
+  def ReportFailure(self, description, index, test_name):
+    """Assembles and reports a failure line to be printed later."""
+    log_line = "%s (%i): %s\n" % (description, index, test_name)
     self.supervisor.LogTestFailure(log_line)
 
-  def ProcessLine(self, line):
+  def ProcessLine(self, index, line):
+    """Checks a shard output line for test status, and reports a failure or
+    incomplete test if needed.
+    """
     results = self.test_start.search(line)
     if results:
       if self.current_test:
-        self.ReportFailure("INCOMPLETE", self.current_test)
+        self.ReportFailure("INCOMPLETE", index, self.current_test)
       self.current_test = results.group(1)
       self.supervisor.IncrementTestCount()
       return
@@ -123,15 +132,16 @@ class ShardRunner(threading.Thread):
 
     results = self.test_fail.search(line)
     if results:
-      self.ReportFailure("FAILED", results.group(1))
+      self.ReportFailure("FAILED", index, results.group(1))
       self.current_test = ""
 
   def run(self):
     """Runs shards and outputs the results.
 
     Gets the next shard index from the supervisor, runs it in a subprocess,
-    and collects the output. Each line is prefixed with 'N>', where N is the
-    current shard index.
+    and collects the output. The output is read character by character in
+    case the shard crashes without an ending newline. Each line is processed
+    as it is finished.
     """
     while True:
       try:
@@ -152,12 +162,12 @@ class ShardRunner(threading.Thread):
           line = chars.getvalue()
           if not line and not shard_running:
             break
-          self.ProcessLine(line)
+          self.ProcessLine(index, line)
           self.supervisor.LogOutputLine(index, line)
           chars.close()
           chars = cStringIO.StringIO()
       if self.current_test:
-        self.ReportFailure("INCOMPLETE", self.current_test)
+        self.ReportFailure("INCOMPLETE", index, self.current_test)
       self.supervisor.ShardIndexCompleted(index)
       if shard.returncode != 0:
         self.supervisor.LogShardFailure(index)
@@ -171,9 +181,15 @@ class ShardingSupervisor(object):
     num_shards: Total number of shards to split the test into.
     num_runs: Total number of worker threads to create for running shards.
     color: Indicates which coloring mode to use in the output.
+    original_order: True if shard output should be printed as it comes.
+    prefix: True if each line should indicate the shard index.
+    retry_percent: Integer specifying the max percent of tests to retry.
     gtest_args: The options to pass to gtest.
     failed_tests: List of statements from shard output indicating a failure.
     failed_shards: List of shards that contained failing tests.
+    shards_completed: List of flags indicating which shards have finished.
+    shard_output: Buffer that stores the output from each shard.
+    test_counter: Stores the total number of tests run.
   """
 
   SHARD_COMPLETED = object()
@@ -201,7 +217,9 @@ class ShardingSupervisor(object):
     Runs the test and outputs a summary at the end. All the tests in the
     suite are run by creating (cores * runs_per_core) threads and
     (cores * shards_per_core) shards. When all the worker threads have
-    finished, the lines saved in failed_tests are printed again.
+    finished, the lines saved in failed_tests are printed again. If enabled,
+    and failed tests that do not have FLAKY or FAILS in their names are run
+    again, serially, and the results are printed.
 
     Returns:
       1 if some unexpected (not FLAKY or FAILS) tests failed, 0 otherwise.
@@ -249,33 +267,28 @@ class ShardingSupervisor(object):
     else:
       self.WriteText(sys.stderr, "\nALL SHARDS PASSED!\n", "\x1b[1;5;32m")
     self.PrintSummary(self.failed_tests)
+    if self.retry_percent < 0:
+      return len(self.failed_shards) > 0
 
     self.failed_tests = [x for x in self.failed_tests if x.find("FAILS_") < 0]
     self.failed_tests = [x for x in self.failed_tests if x.find("FLAKY_") < 0]
     if not self.failed_tests:
       return 0
-    if self.retry_percent < 0:
-      return len(self.failed_shards) > 0
     return self.RetryFailedTests()
 
   def LogTestFailure(self, line):
-    """Saves a line in the failure log to be printed at the end.
-
-    Args:
-      line: The line to save in the failed_tests list.
-    """
+    """Saves a line in the lsit of failed tests to be printed at the end."""
     if line not in self.failed_tests:
       self.failed_tests.append(line)
 
   def LogShardFailure(self, index):
-    """Records that a test in the given shard has failed.
-
-    Args:
-      index: The index of the failing shard.
-    """
+    """Records that a test in the given shard has failed."""
     self.failed_shards.append(index)
 
   def WaitForShards(self):
+    """Prints the output from each shard in consecutive order, waiting for
+    the current shard to finish before starting on the next shard.
+    """
     for shard_index in range(self.num_shards):
       while True:
         line = self.shard_output[shard_index].get()
@@ -284,6 +297,9 @@ class ShardingSupervisor(object):
         sys.stdout.write(line)
 
   def LogOutputLine(self, index, line):
+    """Either prints the shard output line immediately or saves it in the
+    output buffer, depending on the settings. Also optionally adds a  prefix.
+    """
     if self.prefix:
       line = "%i>%s" % (index, line)
     if self.original_order:
@@ -292,12 +308,21 @@ class ShardingSupervisor(object):
       self.shard_output[index].put(line)
 
   def IncrementTestCount(self):
+    """Increments the number of tests run. This is relevant to the
+    --retry-percent option.
+    """
     self.test_counter.next()
 
   def ShardIndexCompleted(self, index):
+    """Records that a shard has finished so the output from the next shard
+    can now be printed.
+    """
     self.shard_output[index].put(self.SHARD_COMPLETED)
 
   def RetryFailedTests(self):
+    """Reruns any failed tests serially and prints another summary of the
+    results if no more than retry_percent failed.
+    """
     num_tests_run = self.test_counter.next()
     if len(self.failed_tests) > self.retry_percent * num_tests_run:
       sys.stderr.write("\nNOT RETRYING FAILED TESTS (too many failed)\n")
@@ -334,6 +359,9 @@ class ShardingSupervisor(object):
       self.WriteText(sys.stderr, "ALL TESTS PASSED!\n", "\x1b[1;5;32m")
 
   def WriteText(self, pipe, text, ansi):
+    """Writes the text to the pipe with the ansi escape code, if colored
+    output is set, for Unix systems.
+    """
     if self.color:
       pipe.write(ansi)
     pipe.write(text)
@@ -440,4 +468,3 @@ def main():
 
 if __name__ == "__main__":
   sys.exit(main())
-
