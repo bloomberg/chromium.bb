@@ -461,31 +461,14 @@ const float kTextBaselineShift = -1.0;
   NSRect okButtonFrame = [okButton_ frame];
   NSRect cancelButtonFrame = [cancelButton_ frame];
 
-  DCHECK(NSMaxX(okButtonFrame) < NSMinX(cancelButtonFrame))
-      << "Cancel button expected to be on the right of the Ok button in nib";
+  DCHECK(NSMaxX(cancelButtonFrame) < NSMinX(okButtonFrame))
+      << "Ok button expected to be on the right of the Cancel button in nib";
 
-  CGFloat rightEdge = NSMaxX(cancelButtonFrame);
+  CGFloat rightEdge = NSMaxX(okButtonFrame);
   CGFloat spaceBetweenButtons =
-      NSMinX(cancelButtonFrame) - NSMaxX(okButtonFrame);
+      NSMinX(okButtonFrame) - NSMaxX(cancelButtonFrame);
   CGFloat spaceBeforeButtons =
-      NSMinX(okButtonFrame) - NSMaxX([label_.get() frame]);
-
-  // Update and position the Cancel button if needed.  Otherwise, hide it.
-  if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-    [cancelButton_ setTitle:base::SysUTF16ToNSString(
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL))];
-    [GTMUILocalizerAndLayoutTweaker sizeToFitView:cancelButton_];
-    cancelButtonFrame = [cancelButton_ frame];
-
-    // Position the cancel button to the left of the Close button.
-    cancelButtonFrame.origin.x = rightEdge - cancelButtonFrame.size.width;
-    [cancelButton_ setFrame:cancelButtonFrame];
-
-    // Update the rightEdge
-    rightEdge = NSMinX(cancelButtonFrame);
-  } else {
-    [cancelButton_ removeFromSuperview];
-  }
+      NSMinX(cancelButtonFrame) - NSMaxX([label_.get() frame]);
 
   // Update and position the OK button if needed.  Otherwise, hide it.
   if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK) {
@@ -494,20 +477,36 @@ const float kTextBaselineShift = -1.0;
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:okButton_];
     okButtonFrame = [okButton_ frame];
 
-    // If we had a Cancel button, leave space between the buttons.
-    if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-      rightEdge -= spaceBetweenButtons;
-    }
-
-    // Position the OK button on our current right edge.
+    // Position the ok button to the left of the Close button.
     okButtonFrame.origin.x = rightEdge - okButtonFrame.size.width;
     [okButton_ setFrame:okButtonFrame];
-
 
     // Update the rightEdge
     rightEdge = NSMinX(okButtonFrame);
   } else {
     [okButton_ removeFromSuperview];
+  }
+
+  // Update and position the Cancel button if needed.  Otherwise, hide it.
+  if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
+    [cancelButton_ setTitle:base::SysUTF16ToNSString(
+          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL))];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitView:cancelButton_];
+    cancelButtonFrame = [cancelButton_ frame];
+
+    // If we had a Ok button, leave space between the buttons.
+    if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK) {
+      rightEdge -= spaceBetweenButtons;
+    }
+
+    // Position the Cancel button on our current right edge.
+    cancelButtonFrame.origin.x = rightEdge - cancelButtonFrame.size.width;
+    [cancelButton_ setFrame:cancelButtonFrame];
+
+    // Update the rightEdge.
+    rightEdge = NSMinX(cancelButtonFrame);
+  } else {
+    [cancelButton_ removeFromSuperview];
   }
 
   // If we had either button, leave space before the edge of the textfield.

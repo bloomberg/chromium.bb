@@ -397,7 +397,11 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
   // Get layout information from the NIB.
   NSRect okButtonFrame = [okButton_ frame];
   NSRect cancelButtonFrame = [cancelButton_ frame];
-  spaceBetweenControls_ = NSMinX(cancelButtonFrame) - NSMaxX(okButtonFrame);
+
+  DCHECK(NSMaxX(cancelButtonFrame) < NSMinX(okButtonFrame))
+      << "Ok button expected to be on the right of the Cancel button in nib";
+
+  spaceBetweenControls_ = NSMinX(okButtonFrame) - NSMaxX(cancelButtonFrame);
 
   // Instantiate additional controls.
   [self constructViews];

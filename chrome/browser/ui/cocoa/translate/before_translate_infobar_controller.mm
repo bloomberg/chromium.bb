@@ -58,9 +58,9 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 - (void)layout {
   MoveControl(label1_, fromLanguagePopUp_, spaceBetweenControls_ / 2, true);
   MoveControl(fromLanguagePopUp_, label2_, spaceBetweenControls_, true);
-  MoveControl(label2_, okButton_, spaceBetweenControls_, true);
-  MoveControl(okButton_, cancelButton_, spaceBetweenControls_, true);
-  NSView* lastControl = cancelButton_;
+  MoveControl(label2_, cancelButton_, spaceBetweenControls_, true);
+  MoveControl(cancelButton_, okButton_, spaceBetweenControls_, true);
+  NSView* lastControl = okButton_;
   if (neverTranslateButton_.get()) {
     MoveControl(lastControl, neverTranslateButton_.get(),
                 spaceBetweenControls_, true);
@@ -87,7 +87,7 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 - (NSArray*)visibleControls {
   NSMutableArray* visibleControls = [NSMutableArray arrayWithObjects:
       label1_.get(), fromLanguagePopUp_.get(), label2_.get(),
-      okButton_, cancelButton_, nil];
+      cancelButton_, okButton_, nil];
 
   if ([self delegate]->ShouldShowNeverTranslateButton())
     [visibleControls addObject:neverTranslateButton_.get()];
