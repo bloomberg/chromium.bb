@@ -680,9 +680,9 @@ class XcodeSettings(object):
       return os.path.join(self.GetBundleContentsFolderPath(),
                           'Resources', 'Info.plist')
 
-  def GetBundleBinaryPath(self):
-    """Returns the directory name of the bundle represented by this target. E.g.
-    Chromium.app/Contents/MacOS/Chromium. Only valid for bundles."""
+  def _GetBundleBinaryPath(self):
+    """Returns the name of the bundle binary of by this target.
+    E.g. Chromium.app/Contents/MacOS/Chromium. Only valid for bundles."""
     assert self._IsBundle()
     if self.spec['type'] in ('loadable_module', 'shared_library'):
       path = self.GetBundleContentsFolderPath()
@@ -690,6 +690,53 @@ class XcodeSettings(object):
       path = os.path.join(self.GetBundleContentsFolderPath(), 'MacOS')
     return os.path.join(path, self.spec.get('product_name',
                                             self.spec['target_name']))
+
+  def _GetStandaloneExecutableSuffix(self):
+    if 'product_extension' in self.spec:
+      return '.' + self.spec['product_extension']
+    return {
+      'executable': '',
+      'static_library': '.a',
+      'shared_library': '.dylib',
+      'loadable_module': '.so',
+    }[self.spec['type']]
+
+  def _GetStandaloneExecutablePrefix(self):
+    return self.spec.get('product_prefix', {
+      'executable': '',
+      'static_library': 'lib',
+      'shared_library': 'lib',
+      # Non-bundled loadable_modules are called foo.so for some reason
+      # (that is, .so and no prefix) with the xcode build -- match that.
+      'loadable_module': '',
+    }[self.spec['type']])
+
+  def _GetStandaloneBinaryPath(self):
+    """Returns the name of the non-bundle binary represented by this target.
+    E.g. hello_world. Only valid for non-bundles."""
+    assert not self._IsBundle()
+    assert self.spec['type'] in (
+        'executable', 'shared_library', 'static_library', 'loadable_module')
+    target = self.spec['target_name']
+    if self.spec['type'] == 'static_library':
+      if target[:3] == 'lib':
+        target = target[3:]
+    elif self.spec['type'] in ('loadable_module', 'shared_library'):
+      if target[:3] == 'lib':
+        target = target[3:]
+
+    target_prefix = self._GetStandaloneExecutablePrefix()
+    target = self.spec.get('product_name', target)
+    target_ext = self._GetStandaloneExecutableSuffix()
+    return target_prefix + target + target_ext
+
+  def GetExecutablePath(self):
+    """Returns the directory name of the bundle represented by this target. E.g.
+    Chromium.app/Contents/MacOS/Chromium."""
+    if self._IsBundle():
+      return self._GetBundleBinaryPath()
+    else:
+      return self._GetStandaloneBinaryPath()
 
   def GetCflags(self, configname):
     """Returns flags that need to be added to .c, .cc, .m, and .mm
@@ -861,37 +908,47 @@ class XcodeSettings(object):
     ldflags.append('-L' + generator_default_variables['PRODUCT_DIR'])
 
     install_name = self.GetPerTargetSetting('LD_DYLIB_INSTALL_NAME')
+    install_base = self.GetPerTargetSetting('DYLIB_INSTALL_NAME_BASE')
+    default_install_name = \
+          '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)'
+    if not install_name and install_base:
+      install_name = default_install_name
+
     if install_name:
       # Hardcode support for the variables used in chromium for now, to unblock
       # people using the make build.
       if '$' in install_name:
-        assert install_name == ('$(DYLIB_INSTALL_NAME_BASE:standardizepath)/'
-            '$(WRAPPER_NAME)/$(PRODUCT_NAME)'), (
+        assert install_name in ('$(DYLIB_INSTALL_NAME_BASE:standardizepath)/'
+            '$(WRAPPER_NAME)/$(PRODUCT_NAME)', default_install_name), (
             'Variables in LD_DYLIB_INSTALL_NAME are not generally supported yet'
             ' in target \'%s\' (got \'%s\')' %
                 (self.spec['target_name'], install_name))
-        install_base = self.GetPerTargetSetting('DYLIB_INSTALL_NAME_BASE')
         # I'm not quite sure what :standardizepath does. Just call normpath(),
-        # but don't let @executable_path/../foo collapse to foo
-        prefix, rest = '', install_base
-        if install_base.startswith('@'):
-          prefix, rest = install_base.split('/', 1)
-        rest = os.path.normpath(rest)  # :standardizepath
-        install_base = os.path.join(prefix, rest)
+        # but don't let @executable_path/../foo collapse to foo.
+        if '/' in install_base:
+          prefix, rest = '', install_base
+          if install_base.startswith('@'):
+            prefix, rest = install_base.split('/', 1)
+          rest = os.path.normpath(rest)  # :standardizepath
+          install_base = os.path.join(prefix, rest)
 
         install_name = install_name.replace(
             '$(DYLIB_INSTALL_NAME_BASE:standardizepath)', install_base)
+        if self._IsBundle():
+          # These are only valid for bundles, hence the |if|.
+          install_name = install_name.replace(
+              '$(WRAPPER_NAME)', self.GetWrapperName())
+          install_name = install_name.replace(
+              '$(PRODUCT_NAME)', self.GetProductName())
+        else:
+          assert '$(WRAPPER_NAME)' not in install_name
+          assert '$(PRODUCT_NAME)' not in install_name
+
         install_name = install_name.replace(
-            '$(WRAPPER_NAME)', self.GetWrapperName())
-        install_name = install_name.replace(
-            '$(PRODUCT_NAME)', self.GetProductName())
+            '$(EXECUTABLE_PATH)', self.GetExecutablePath())
 
       install_name = QuoteSpaces(install_name)
       ldflags.append('-install_name ' + install_name)
-    elif self.GetPerTargetSetting('DYLIB_INSTALL_NAME_BASE'):
-      # LD_DYLIB_INSTALL_NAME defaults to
-      # $(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH).
-      print 'Warning: DYLIB_INSTALL_NAME_BASE is not fully implemented.'
 
     self.configname = None
     return ldflags
@@ -1599,18 +1656,21 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     self.WriteLn()
 
 
-  def ComputeOutput(self, spec):
-    """Return the 'output' (full output path) of a gyp spec.
+  def ComputeOutputBasename(self, spec):
+    """Return the 'output basename' of a gyp spec.
 
     E.g., the loadable module 'foobar' in directory 'baz' will produce
-      '$(obj)/baz/libfoobar.so'
+      'libfoobar.so'
     """
     assert not self.is_mac_bundle
+
+    if self.flavor == 'mac' and self.type in (
+        'static_library', 'executable', 'shared_library', 'loadable_module'):
+      return self.xcode_settings.GetExecutablePath()
 
     target = spec['target_name']
     target_prefix = ''
     target_ext = ''
-    path = os.path.join('$(obj).' + self.toolset, self.path)
     if self.type == 'static_library':
       if target[:3] == 'lib':
         target = target[3:]
@@ -1621,31 +1681,37 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         target = target[3:]
       target_prefix = 'lib'
       target_ext = '.so'
-      if self.flavor == 'mac':
-        if self.type == 'shared_library':
-          target_ext = '.dylib'
-        else:
-          # Non-bundled loadable_modules are called foo.so for some reason
-          # (that is, .so and no prefix) with the xcode build -- match that.
-          target_prefix = ''
     elif self.type == 'none':
       target = '%s.stamp' % target
-    elif self.type == 'settings':
-      return ''  # Doesn't have any output.
-    elif self.type == 'executable':
-      path = os.path.join('$(builddir)')
-    else:
+    elif self.type != 'executable':
       print ("ERROR: What output file should be generated?",
              "type", self.type, "target", target)
 
-    path = spec.get('product_dir', path)
     target_prefix = spec.get('product_prefix', target_prefix)
     target = spec.get('product_name', target)
     product_ext = spec.get('product_extension')
     if product_ext:
       target_ext = '.' + product_ext
 
-    return os.path.join(path, target_prefix + target + target_ext)
+    return target_prefix + target + target_ext
+
+
+  def ComputeOutput(self, spec):
+    """Return the 'output' (full output path) of a gyp spec.
+
+    E.g., the loadable module 'foobar' in directory 'baz' will produce
+      '$(obj)/baz/libfoobar.so'
+    """
+    assert not self.is_mac_bundle
+
+    if self.type == 'settings':
+      return ''  # Doesn't have any output.
+
+    path = os.path.join('$(obj).' + self.toolset, self.path)
+    if self.type == 'executable':
+      path = '$(builddir)'
+    path = spec.get('product_dir', path)
+    return os.path.join(path, self.ComputeOutputBasename(spec))
 
 
   def ComputeMacBundleOutput(self, spec):
@@ -1658,7 +1724,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
   def ComputeMacBundleBinaryOutput(self, spec):
     """Return the 'output' (full output path) to the binary in a bundle."""
     path = generator_default_variables['PRODUCT_DIR']
-    return os.path.join(path, self.xcode_settings.GetBundleBinaryPath())
+    return os.path.join(path, self.xcode_settings.GetExecutablePath())
 
 
   def ComputeDeps(self, spec):
@@ -2103,13 +2169,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     }
     if self.type in ('executable', 'shared_library'):
       env['EXECUTABLE_NAME'] = os.path.basename(self.output_binary)
-      # Can't use self.output_binary here because it's not in the products dir.
-      # We really care about the final location of the dylib anyway.
-      env['EXECUTABLE_PATH'] = StripProductDir(
-          self._InstallableTargetInstallPath())
+    if self.type in ('executable', 'shared_library', 'loadable_module'):
+      env['EXECUTABLE_PATH'] = self.xcode_settings.GetExecutablePath()
     if self.is_mac_bundle:
-      # Overwrite this to point to the binary _in_ the bundle.
-      env['EXECUTABLE_PATH'] = self.xcode_settings.GetBundleBinaryPath()
       env['CONTENTS_FOLDER_PATH'] = \
         self.xcode_settings.GetBundleContentsFolderPath()
       env['INFOPLIST_PATH'] = self.xcode_settings.GetBundlePlistPath()
