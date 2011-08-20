@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_REQUEST_EXTRA_DATA_H_
-#define WEBKIT_GLUE_REQUEST_EXTRA_DATA_H_
+#ifndef CONTENT_COMMON_REQUEST_EXTRA_DATA_H_
+#define CONTENT_COMMON_REQUEST_EXTRA_DATA_H_
 #pragma once
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -26,4 +26,4 @@ class RequestExtraData : public WebKit::WebURLRequest::ExtraData {
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };
 
-#endif  // WEBKIT_GLUE_REQUEST_EXTRA_DATA_H_
+#endif  // CONTENT_COMMON_REQUEST_EXTRA_DATA_H_

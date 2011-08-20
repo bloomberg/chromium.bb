@@ -192,6 +192,8 @@
         'common/quota_dispatcher.h',
         'common/renderer_preferences.cc',
         'common/renderer_preferences.h',
+        'common/request_extra_data.cc',
+        'common/request_extra_data.h',
         'common/resource_dispatcher.cc',
         'common/resource_dispatcher.h',
         'common/resource_dispatcher_delegate.cc',

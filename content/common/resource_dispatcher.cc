@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "content/common/request_extra_data.h"
 #include "content/common/resource_dispatcher_delegate.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_response.h"
@@ -93,8 +94,15 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.appcache_host_id = request_info.appcache_host_id;
   request_.download_to_file = request_info.download_to_file;
   request_.has_user_gesture = request_info.has_user_gesture;
-  request_.is_main_frame = request_info.is_main_frame;
-  request_.frame_id = request_info.frame_id;
+  if (request_info.extra_data) {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request_info.extra_data);
+    request_.is_main_frame = extra_data->is_main_frame();
+    request_.frame_id = extra_data->frame_identifier();
+  } else {
+    request_.is_main_frame = false;
+    request_.frame_id = -1;
+  }
 }
 
 IPCResourceLoaderBridge::~IPCResourceLoaderBridge() {
