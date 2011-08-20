@@ -47,39 +47,39 @@
 
 # U.S. English
 xkb:us::eng	us	eng
-xkb:us:intl:eng	us(intl)	eng
-xkb:us:altgr-intl:eng	us(altgr-intl)	eng
-xkb:us:dvorak:eng	us(dvorak)	eng
-xkb:us:colemak:eng	us(colemak)	eng
+xkb:us:intl:eng	us(intl)	eng	!defined(TOUCH_UI)
+xkb:us:altgr-intl:eng	us(altgr-intl)	eng	!defined(TOUCH_UI)
+xkb:us:dvorak:eng	us(dvorak)	eng	!defined(TOUCH_UI)
+xkb:us:colemak:eng	us(colemak)	eng	!defined(TOUCH_UI)
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 
 # Dutch
-xkb:be::nld	be	nld
+xkb:be::nld	be	nld	!defined(TOUCH_UI)
 # We don't support xkb:nl::nld. See b/4430951.
 
 # French
 xkb:fr::fra	fr	fra
-xkb:be::fra	be	fra
-xkb:ca::fra	ca	fra
-xkb:ch:fr:fra	ch(fr)	fra
+xkb:be::fra	be	fra	!defined(TOUCH_UI)
+xkb:ca::fra	ca	fra	!defined(TOUCH_UI)
+xkb:ch:fr:fra	ch(fr)	fra	!defined(TOUCH_UI)
 
 # German
-xkb:de::ger	de	ger
-xkb:de:neo:ger	de(neo)	ger
-xkb:be::ger	be	ger
-xkb:ch::ger	ch	ger
+xkb:de::ger	de	ger	!defined(TOUCH_UI)
+xkb:de:neo:ger	de(neo)	ger	!defined(TOUCH_UI)
+xkb:be::ger	be	ger	!defined(TOUCH_UI)
+xkb:ch::ger	ch	ger	!defined(TOUCH_UI)
 
 # Japanese
 mozc	us	ja
-mozc-jp	jp	ja
-mozc-dv	us(dvorak)	ja
-xkb:jp::jpn	jp	jpn
+mozc-jp	jp	ja	!defined(TOUCH_UI)
+mozc-dv	us(dvorak)	ja	!defined(TOUCH_UI)
+xkb:jp::jpn	jp	jpn	!defined(TOUCH_UI)
 zinnia-japanese	handwriting-vk,jp	ja	defined(TOUCH_UI)
 
 # Russian
-xkb:ru::rus	ru	rus
-xkb:ru:phonetic:rus	ru(phonetic)	rus
+xkb:ru::rus	ru	rus	!defined(TOUCH_UI)
+xkb:ru:phonetic:rus	ru(phonetic)	rus	!defined(TOUCH_UI)
 
 # Thai
 m17n:th:kesmanee	us	th
@@ -88,7 +88,7 @@ m17n:th:tis820	us	th
 
 # Simplified Chinese
 pinyin	us	zh-CN
-pinyin-dv	us(dvorak)	zh-CN
+pinyin-dv	us(dvorak)	zh-CN	!defined(TOUCH_UI)
 # TODO(yusukes): Define zh_CN_dvorak if it's *really* necessary.
 
 # Traditional Chinese
@@ -118,37 +118,37 @@ m17n:fa:isiri	us	fa
 # TODO(yusukes,jshin): Check if we can use ibux-xkb-layouts for these languages.
 
 # ibux-xkb-layouts input methods (keyboard layouts).
-xkb:br::por	br	por
-xkb:bg::bul	bg	bul
-xkb:bg:phonetic:bul	bg(phonetic)	bul
-xkb:ca:eng:eng	ca(eng)	eng
-xkb:cz::cze	cz	cze
-xkb:ee::est	ee	est
-xkb:es::spa	es	spa
-xkb:es:cat:cat	es(cat)	cat
-xkb:dk::dan	dk	dan
-xkb:gr::gre	gr	gre
-xkb:il::heb	il	heb
+xkb:br::por	br	por	!defined(TOUCH_UI)
+xkb:bg::bul	bg	bul	!defined(TOUCH_UI)
+xkb:bg:phonetic:bul	bg(phonetic)	bul	!defined(TOUCH_UI)
+xkb:ca:eng:eng	ca(eng)	eng	!defined(TOUCH_UI)
+xkb:cz::cze	cz	cze	!defined(TOUCH_UI)
+xkb:ee::est	ee	est	!defined(TOUCH_UI)
+xkb:es::spa	es	spa	!defined(TOUCH_UI)
+xkb:es:cat:cat	es(cat)	cat	!defined(TOUCH_UI)
+xkb:dk::dan	dk	dan	!defined(TOUCH_UI)
+xkb:gr::gre	gr	gre	!defined(TOUCH_UI)
+xkb:il::heb	il	heb	!defined(TOUCH_UI)
 xkb:kr:kr104:kor	kr(kr104)	kor
-xkb:latam::spa	latam	spa
-xkb:lt::lit	lt	lit
-xkb:lv:apostrophe:lav	lv(apostrophe)	lav
-xkb:hr::scr	hr	scr
-xkb:gb:extd:eng	gb(extd)	eng
-xkb:gb:dvorak:eng	gb(dvorak)	eng
-xkb:fi::fin	fi	fin
-xkb:hu::hun	hu	hun
-xkb:it::ita	it	ita
-xkb:no::nob	no	nob
-xkb:pl::pol	pl	pol
-xkb:pt::por	pt	por
-xkb:ro::rum	ro	rum
-xkb:se::swe	se	swe
-xkb:sk::slo	sk	slo
-xkb:si::slv	si	slv
-xkb:rs::srp	rs	srp
-xkb:tr::tur	tr	tur
-xkb:ua::ukr	ua	ukr
+xkb:latam::spa	latam	spa	!defined(TOUCH_UI)
+xkb:lt::lit	lt	lit	!defined(TOUCH_UI)
+xkb:lv:apostrophe:lav	lv(apostrophe)	lav	!defined(TOUCH_UI)
+xkb:hr::scr	hr	scr	!defined(TOUCH_UI)
+xkb:gb:extd:eng	gb(extd)	eng	!defined(TOUCH_UI)
+xkb:gb:dvorak:eng	gb(dvorak)	eng	!defined(TOUCH_UI)
+xkb:fi::fin	fi	fin	!defined(TOUCH_UI)
+xkb:hu::hun	hu	hun	!defined(TOUCH_UI)
+xkb:it::ita	it	ita	!defined(TOUCH_UI)
+xkb:no::nob	no	nob	!defined(TOUCH_UI)
+xkb:pl::pol	pl	pol	!defined(TOUCH_UI)
+xkb:pt::por	pt	por	!defined(TOUCH_UI)
+xkb:ro::rum	ro	rum	!defined(TOUCH_UI)
+xkb:se::swe	se	swe	!defined(TOUCH_UI)
+xkb:sk::slo	sk	slo	!defined(TOUCH_UI)
+xkb:si::slv	si	slv	!defined(TOUCH_UI)
+xkb:rs::srp	rs	srp	!defined(TOUCH_UI)
+xkb:tr::tur	tr	tur	!defined(TOUCH_UI)
+xkb:ua::ukr	ua	ukr	!defined(TOUCH_UI)
 
 # TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
 # if necessary.
