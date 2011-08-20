@@ -58,7 +58,9 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
   }
 
   TabContents* tab_contents = browser()->GetSelectedTabContents();
-  EXPECT_EQ(GURL("http://cws.com/detail/abc"), tab_contents->GetURL());
+  EXPECT_EQ(
+      GURL("http://cws.com/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"),
+      tab_contents->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, FindLink) {

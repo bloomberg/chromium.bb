@@ -32,7 +32,7 @@
 
     // Wrong type, right URL.
     linkNode.rel = 'stylesheet';
-    linkNode.href = 'http://cws.com/detail/abc';
+    linkNode.href = 'http://cws.com/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm';
     checkNoLinkFound(NO_LINK_EXCEPTION);
 
     // Right type, wrong URL.
@@ -41,11 +41,18 @@
     checkNoLinkFound(INVALID_URL_EXCEPTION);
 
     // Non-item CWS URL
-    linkNode.href = 'http://cws.com/someotherpage/abc';
+    linkNode.href =
+        'http://cws.com/someotherpage/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm';
+    checkNoLinkFound(INVALID_URL_EXCEPTION);
+
+    // Invalid ID
+    linkNode.rel = 'chrome-webstore-item';
+    linkNode.href = 'http://cws.com/detail/abc';
     checkNoLinkFound(INVALID_URL_EXCEPTION);
 
     // Extra CWS URL parameters
-    linkNode.href = 'http://cws.com/detail/abc?foo=bar';
+    linkNode.href =
+        'http://cws.com/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm?foo=bar';
     checkNoLinkFound(INVALID_URL_EXCEPTION);
 
     // Successful installation is tested elsewhere

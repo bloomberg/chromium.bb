@@ -144,6 +144,11 @@ class ChromeWebstoreExtensionWrapper : public v8::Extension {
 
       std::string candidate_webstore_item_id = webstore_url.path().substr(
           webstore_base_url.path().length());
+      if (!::Extension::IdIsValid(candidate_webstore_item_id)) {
+        *error = kInvalidWebstoreItemUrlError;
+        return false;
+      }
+
       std::string reconstructed_webstore_item_url_string =
           extension_misc::GetWebstoreItemDetailURLPrefix() +
               candidate_webstore_item_id;
