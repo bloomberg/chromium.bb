@@ -335,8 +335,7 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
 
   OpenGetOAuthTokenURL(browser,
       MakeGetOAuthTokenUrl(kOAuth1LoginScope,
-                           OAuthRequestSigner::Encode(
-                               l10n_util::GetStringUTF8(IDS_PRODUCT_NAME))),
+                           l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)),
       GURL("chrome://settings/personal"),
       NEW_POPUP,
       PageTransition::AUTO_BOOKMARK);
@@ -375,8 +374,8 @@ void GaiaOAuthFetcher::StartGetOAuthTokenRequest() {
   request_body_ = "";
   request_headers_ = "";
   fetcher_.reset(CreateGaiaFetcher(getter_,
-      MakeGetOAuthTokenUrl(kOAuth1LoginScope, OAuthRequestSigner::Encode(
-                               l10n_util::GetStringUTF8(IDS_PRODUCT_NAME))),
+      MakeGetOAuthTokenUrl(kOAuth1LoginScope,
+                           l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)),
       std::string(),
       std::string(),
       true,           // send_cookies
