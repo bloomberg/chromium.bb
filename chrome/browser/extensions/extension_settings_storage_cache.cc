@@ -13,12 +13,13 @@
 
 namespace {
 
-void RemoveAll(DictionaryValue* from, const ListValue* keys_to_remove) {
+void RemoveAllWithoutPathExpansion(
+    DictionaryValue* from, const ListValue* keys_to_remove) {
   std::string key;
   for (ListValue::const_iterator it = keys_to_remove->begin();
       it != keys_to_remove->end(); ++it) {
     if ((*it)->GetAsString(&key)) {
-      from->Remove(key, NULL);
+      from->RemoveWithoutPathExpansion(key, NULL);
     }
   }
 }
@@ -85,7 +86,7 @@ class CacheModifyingCallback : public ExtensionSettingsStorage::Callback {
       settings->MergeDictionary(existing_.get());
     }
     if (cache_.get() != NULL && keys_to_remove_ != NULL) {
-      RemoveAll(cache_, keys_to_remove_.get());
+      RemoveAllWithoutPathExpansion(cache_, keys_to_remove_.get());
     }
     delegate_->OnSuccess(settings);
   }
@@ -121,7 +122,7 @@ void ExtensionSettingsStorageCache::Get(const std::string& key,
   Value *value;
   if (GetFromCache(key, &value)) {
     DictionaryValue* settings = new DictionaryValue();
-    settings->Set(key, value);
+    settings->SetWithoutPathExpansion(key, value);
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
@@ -147,7 +148,7 @@ void ExtensionSettingsStorageCache::Get(const ListValue& keys,
     if ((*it)->GetAsString(&key)) {
       Value *value;
       if (GetFromCache(key, &value)) {
-        settings->Set(key, value);
+        settings->SetWithoutPathExpansion(key, value);
       } else {
         missing_keys.Append(Value::CreateStringValue(key));
       }
@@ -187,7 +188,7 @@ void ExtensionSettingsStorageCache::Set(
     const Value& value,
     ExtensionSettingsStorageCache::Callback* callback) {
   // Invalidate the cached entry first, in case the set fails.
-  cache_.Remove(key, NULL);
+  cache_.RemoveWithoutPathExpansion(key, NULL);
   delegate_->Set(
       key,
       value,
@@ -218,7 +219,7 @@ void ExtensionSettingsStorageCache::Remove(
   // We will also need to do if after the callback, to avoid race conditions
   // whether other API calls fill the cache on the UI thread.
   // This would be a good time to use structured cloning...
-  cache_.Remove(key, NULL);
+  cache_.RemoveWithoutPathExpansion(key, NULL);
   ListValue* key_list = new ListValue();
   key_list->Append(Value::CreateStringValue(key));
   delegate_->Remove(
@@ -236,7 +237,7 @@ void ExtensionSettingsStorageCache::Remove(
   // Invalidate each cached entry first, in case the remove fails.
   // We will also need to do if after the callback, to avoid race conditions
   // whether other API calls fill the cache on the UI thread.
-  RemoveAll(&cache_, &keys);
+  RemoveAllWithoutPathExpansion(&cache_, &keys);
   delegate_->Remove(
       keys,
       CacheModifyingCallback::Create(
@@ -257,7 +258,7 @@ void ExtensionSettingsStorageCache::Clear(
 bool ExtensionSettingsStorageCache::GetFromCache(
     const std::string& key, Value** value) {
   Value* cached_value;
-  if (!cache_.Get(key, &cached_value)) {
+  if (!cache_.GetWithoutPathExpansion(key, &cached_value)) {
     return false;
   }
   *value = cached_value->DeepCopy();

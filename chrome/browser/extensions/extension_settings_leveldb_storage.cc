@@ -81,7 +81,7 @@ class ResultClosure {
       base::JSONReader json_reader;
       Value* value = json_reader.JsonToValue(value_as_json, false, false);
       if (value != NULL) {
-        settings->Set(key, value);
+        settings->SetWithoutPathExpansion(key, value);
         return true;
       } else {
         // TODO(kalman): clear the offending non-JSON value from the database.
@@ -214,7 +214,7 @@ class Get3ResultClosure : public ResultClosure {
       Value* value =
           json_reader.JsonToValue(it->value().ToString(), false, false);
       if (value != NULL) {
-        settings_->Set(it->key().ToString(), value);
+        settings_->SetWithoutPathExpansion(it->key().ToString(), value);
       } else {
         // TODO(kalman): clear the offending non-JSON value from the database.
         LOG(ERROR) << "Invalid JSON: " << it->value().ToString();
@@ -252,7 +252,7 @@ class Set1ResultClosure : public ResultClosure {
     leveldb::Status status =
         db_->Put(leveldb::WriteOptions(), key_, value_as_json);
     if (status.ok()) {
-      settings_->Set(key_, value_.release());
+      settings_->SetWithoutPathExpansion(key_, value_.release());
       SucceedOnFileThread();
     } else {
       LOG(WARNING) << "DB write failed: " << status.ToString();

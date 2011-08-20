@@ -287,3 +287,51 @@ TEST_P(ExtensionSettingsStorageTest, ClearWhenNotEmpty) {
   storage_->Get(NEW_CALLBACK(emptyDict_.get()));
   MessageLoop::current()->RunAllPending();
 }
+
+// Dots should be allowed in key names; they shouldn't be interpreted as
+// indexing into a dictionary.
+TEST_P(ExtensionSettingsStorageTest, DotsInKeyNames) {
+  std::string dot_key("foo.bar");
+  StringValue dot_value("baz.qux");
+  ListValue dot_list;
+  dot_list.Append(Value::CreateStringValue(dot_key));
+  DictionaryValue dot_dict;
+  dot_dict.SetWithoutPathExpansion(dot_key, dot_value.DeepCopy());
+
+  storage_->Set(dot_key, dot_value, NEW_CALLBACK(&dot_dict));
+  MessageLoop::current()->RunAllPending();
+
+  storage_->Get(dot_key, NEW_CALLBACK(&dot_dict));
+  MessageLoop::current()->RunAllPending();
+
+  storage_->Remove(dot_key, NEW_CALLBACK(NULL));
+  MessageLoop::current()->RunAllPending();
+
+  storage_->Set(dot_dict, NEW_CALLBACK(&dot_dict));
+  MessageLoop::current()->RunAllPending();
+
+  storage_->Get(dot_list, NEW_CALLBACK(&dot_dict));
+  MessageLoop::current()->RunAllPending();
+
+  storage_->Remove(dot_list, NEW_CALLBACK(NULL));
+  MessageLoop::current()->RunAllPending();
+
+  storage_->Get(NEW_CALLBACK(emptyDict_.get()));
+  MessageLoop::current()->RunAllPending();
+}
+
+TEST_P(ExtensionSettingsStorageTest, DotsInKeyNamesWithDicts) {
+  DictionaryValue outer_dict;
+  DictionaryValue* inner_dict = new DictionaryValue();
+  outer_dict.Set("foo", inner_dict);
+  inner_dict->Set("bar", Value::CreateStringValue("baz"));
+
+  storage_->Set(outer_dict, NEW_CALLBACK(&outer_dict));
+  MessageLoop::current()->RunAllPending();
+
+  storage_->Get("foo", NEW_CALLBACK(&outer_dict));
+  MessageLoop::current()->RunAllPending();
+
+  storage_->Get("foo.bar", NEW_CALLBACK(emptyDict_.get()));
+  MessageLoop::current()->RunAllPending();
+}

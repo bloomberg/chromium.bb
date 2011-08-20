@@ -46,7 +46,7 @@ void ExtensionSettingsNoopStorage::Set(
     const Value& value,
     ExtensionSettingsStorage::Callback* callback) {
   DictionaryValue* settings = new DictionaryValue();
-  settings->Set(key, value.DeepCopy());
+  settings->SetWithoutPathExpansion(key, value.DeepCopy());
   Succeed(callback, settings);
 }
 

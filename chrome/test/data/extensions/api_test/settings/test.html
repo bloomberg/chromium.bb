@@ -201,6 +201,41 @@ chrome.test.runTests([
       'baz'  : 'qux',
       'hello': 'world'
     }, stage1);
+  },
+
+  function keysWithDots() {
+    function stage1(settings) {
+      chrome.test.assertEq({
+        'foo.bar' : 'baz',
+        'one'     : {'two': 'three'}
+      }, settings);
+      chrome.experimental.settings.get(['foo.bar', 'one'], stage2);
+    }
+    function stage2(settings) {
+      chrome.test.assertEq({
+        'foo.bar' : 'baz',
+        'one'     : {'two': 'three'}
+      }, settings);
+      chrome.experimental.settings.get('one.two', stage3);
+    }
+    function stage3(settings) {
+      chrome.test.assertEq({}, settings);
+      chrome.experimental.settings.remove(['foo.bar', 'one.two'], stage4);
+    }
+    function stage4(settings) {
+      chrome.test.assertEq(undefined, settings);
+      chrome.experimental.settings.get(null, stage5);
+    }
+    function stage5(settings) {
+      chrome.test.assertEq({
+        'one'     : {'two': 'three'}
+      }, settings);
+      chrome.test.succeed();
+    }
+    chrome.experimental.settings.set({
+      'foo.bar' : 'baz',
+      'one'     : {'two': 'three'}
+    }, stage1);
   }
 ]);
 </script>
