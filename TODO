@@ -97,51 +97,6 @@ Core wayland protocol
    switching away from.  for minimized windows that we don't want live
    thumb nails for. etc.
 
- - Per client id space.  Each client has an entire 32 bit id namespace
-   to itself.  On the server side, each struct wl_client has an object
-   hash table.  Object announcements use a server id space and clients
-   must respond with subscribe request with a client id for the
-   object.  Part of wl_proxy_create_for_id():
-
-      wl_display_subscribe(display, id, new_id, my_version);
-
-   or maybe
-
-      wl_display_bind(display, id, new_id, my_version);
-
-   Fixes a few things:
-
-    - Maps the global object into the client id space, lets client
-      allocate the id.  All ids are allocated by the client this way,
-      which fixes the range protocol problem.
-
-    - Tells the server that the client is interested in events from
-      the object.  Lets the server know that a client participates in a
-      certain protocol (like drag and drop), so the server can account
-      for whether or not the client is expected to reply
-
-    - Server emits initial object state event(s) in reponse to
-      receiving the subscribe request.  Introduces an extra round trip
-      at initialization time, but the server will still announces all
-      objects in one burst and the client can subscribe in a burst as
-      well.
-
-    - Separates client resources, since each client will have it's own
-      hash table.  It's not longer possible to guess the id of another
-      surface and access it.
-
-    - Server must track the client id for each client an object is
-      exposed to.  In some cases we know this (a surface is always
-      only owned by one client), in other cases it provides a way to
-      track who's interested in the object events.  For input device
-      events, we can look up the client name when it receives pointer
-      focus or keyboard focus and cache it in the device.
-
-    - Server must know which id to send when passing object references
-      in events.  We could say that any object we're passing to a
-      client must have a server id, and each client has a server id ->
-      client id hash.
-
  - Event when a surface moves from one output to another.
 
  - input device discovery, hotplug
@@ -159,13 +114,6 @@ Core wayland protocol
     - synaptics, 3-button emulation, scim
 
  - drm bo access control, authentication, flink_to
-
- - Range protocol may not be sufficient... if a server cycles through
-   2^32 object IDs we don't have a way to handle wrapping.  And since
-   we hand out a range of 256 IDs to each new clients, we're just
-   talking about 2^24 clients.  That's 31 years with a new client
-   every minute...  Maybe just use bigger ranges, then it's feasible
-   to track and garbage collect them when a client dies.
 
  - Add protocol to let applications specify the effective/logical
    surface rectangle, that is, the edge of the window, ignoring drop
