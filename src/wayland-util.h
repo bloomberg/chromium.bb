@@ -65,7 +65,7 @@ struct wl_object {
 	uint32_t id;
 };
 
-typedef void (*wl_hash_table_func_t)(void *element, void *data);
+typedef void (*wl_iterator_func_t)(void *element, void *data);
 
 struct wl_hash_table;
 struct wl_hash_table *wl_hash_table_create(void);
@@ -74,7 +74,7 @@ void *wl_hash_table_lookup(struct wl_hash_table *ht, uint32_t hash);
 int wl_hash_table_insert(struct wl_hash_table *ht, uint32_t hash, void *data);
 void wl_hash_table_remove(struct wl_hash_table *ht, uint32_t hash);
 void wl_hash_table_for_each(struct wl_hash_table *ht,
-			    wl_hash_table_func_t func, void *data);
+			    wl_iterator_func_t func, void *data);
 
 /**
  * wl_list - linked list
@@ -148,6 +148,19 @@ void wl_array_init(struct wl_array *array);
 void wl_array_release(struct wl_array *array);
 void *wl_array_add(struct wl_array *array, int size);
 void wl_array_copy(struct wl_array *array, struct wl_array *source);
+
+struct wl_map {
+	struct wl_array entries;
+	uint32_t free_list;
+};
+
+void wl_map_init(struct wl_map *map);
+void wl_map_release(struct wl_map *map);
+uint32_t wl_map_insert_new(struct wl_map *map, void *data);
+int wl_map_insert_at(struct wl_map *map, uint32_t i, void *data);
+void wl_map_remove(struct wl_map *map, uint32_t i);
+void *wl_map_lookup(struct wl_map *map, uint32_t i);
+void wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
 
 #ifdef  __cplusplus
 }

@@ -188,7 +188,7 @@ hash_table_search(struct wl_hash_table *ht, uint32_t hash)
 
 WL_EXPORT void
 wl_hash_table_for_each(struct wl_hash_table *ht,
-		       wl_hash_table_func_t func, void *data)
+		       wl_iterator_func_t func, void *data)
 {
 	struct hash_entry *entry;
 	uint32_t i;

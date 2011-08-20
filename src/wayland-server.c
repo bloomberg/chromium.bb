@@ -61,7 +61,7 @@ struct wl_client {
 	uint32_t id_count;
 	uint32_t mask;
 	struct wl_list link;
-	struct wl_hash_table *objects;
+	struct wl_map objects;
 };
 
 struct wl_display {
@@ -154,10 +154,9 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (len < size)
 			break;
 
-		resource = wl_hash_table_lookup(client->objects, p[0]);
+		resource = wl_map_lookup(&client->objects, p[0]);
 		if (resource == NULL) {
-			wl_client_post_error(client,
-					     &client->display->resource.object,
+			wl_client_post_error(client, &resource->object,
 					     WL_DISPLAY_ERROR_INVALID_OBJECT,
 					     "invalid object %d", p[0]);
 			wl_connection_consume(connection, size);
@@ -167,8 +166,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		object = &resource->object;
 		if (opcode >= object->interface->method_count) {
-			wl_client_post_error(client,
-					     &client->display->resource.object,
+			wl_client_post_error(client, &resource->object,
 					     WL_DISPLAY_ERROR_INVALID_METHOD,
 					     "invalid method %d, object %s@%d",
 					     object->interface->name,
@@ -180,12 +178,11 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		message = &object->interface->methods[opcode];
 		closure = wl_connection_demarshal(client->connection, size,
-						  client->objects, message);
+						  &client->objects, message);
 		len -= size;
 
 		if (closure == NULL && errno == EINVAL) {
-			wl_client_post_error(client,
-					     &client->display->resource.object,
+			wl_client_post_error(client, &resource->object,
 					     WL_DISPLAY_ERROR_INVALID_METHOD,
 					     "invalid arguments for %s@%d.%s",
 					     object->interface->name,
@@ -264,9 +261,10 @@ wl_client_create(struct wl_display *display, int fd)
 		return NULL;
 	}
 
-	client->objects = wl_hash_table_create();
-	if (client->objects == NULL) {
-		wl_connection_destroy(client->connection);
+	wl_map_init(&client->objects);
+
+	if (wl_map_insert_at(&client->objects, 0, NULL) < 0) {
+		wl_map_release(&client->objects);
 		free(client);
 		return NULL;
 	}
@@ -284,13 +282,13 @@ wl_client_add_resource(struct wl_client *client,
 {
 	resource->client = client;
 	wl_list_init(&resource->destroy_listener_list);
-	wl_hash_table_insert(client->objects, resource->object.id, resource);
+	wl_map_insert_at(&client->objects, resource->object.id, resource);
 }
 
 WL_EXPORT void
 wl_client_post_no_memory(struct wl_client *client)
 {
-	wl_client_post_error(client, &client->display->resource.object,
+	wl_client_post_error(client, &client->display_resource->object,
 			     WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
 }
 
@@ -314,18 +312,18 @@ wl_resource_destroy(struct wl_resource *resource, uint32_t time)
 	struct wl_client *client = resource->client;
 
 	destroy_resource(resource, &time);
-	wl_hash_table_remove(client->objects, resource->object.id);
+	wl_map_insert_at(&client->objects, resource->object.id, NULL);
 }
 
 WL_EXPORT void
 wl_client_destroy(struct wl_client *client)
 {
 	uint32_t time = 0;
-
+	
 	printf("disconnect from client %p\n", client);
 
-	wl_hash_table_for_each(client->objects, destroy_resource, &time);
-	wl_hash_table_destroy(client->objects);
+	wl_map_for_each(&client->objects, destroy_resource, &time);
+	wl_map_release(&client->objects);
 	wl_event_source_remove(client->source);
 	wl_connection_destroy(client->connection);
 	wl_list_remove(&client->link);
@@ -525,7 +523,7 @@ display_bind(struct wl_client *client,
 			break;
 
 	if (&global->link == &display->global_list)
-		wl_client_post_error(client, &client->display->resource.object,
+		wl_client_post_error(client, &resource->object,
 				     WL_DISPLAY_ERROR_INVALID_OBJECT,
 				     "invalid global %d", name);
 	else
@@ -536,13 +534,12 @@ static void
 display_sync(struct wl_client *client,
 	     struct wl_resource *resource, uint32_t id)
 {
-	struct wl_resource callback;
+	struct wl_resource *callback;
 
-	callback.object.interface = &wl_callback_interface;
-	callback.object.id = id;
-	callback.client = client;
-
-	wl_resource_post_event(&callback, WL_CALLBACK_DONE, 0);
+	callback = wl_client_add_object(client,
+					&wl_callback_interface, NULL, id, NULL);
+	wl_resource_post_event(callback, WL_CALLBACK_DONE, 0);
+	wl_resource_destroy(callback, 0);
 }
 
 struct wl_display_interface display_interface = {
@@ -838,7 +835,11 @@ wl_client_add_object(struct wl_client *client,
 	resource->destroy = (void *) free;
 	wl_list_init(&resource->destroy_listener_list);
 
-	wl_hash_table_insert(client->objects, resource->object.id, resource);
+	if (wl_map_insert_at(&client->objects, resource->object.id, resource) < 0) {
+		wl_client_post_no_memory(client);
+		free(resource);
+		return NULL;
+	}
 
 	return resource;
 }
@@ -852,6 +853,8 @@ compositor_bind(struct wl_client *client,
 
 	resource = wl_client_add_object(client, &wl_compositor_interface,
 					compositor->interface, id, compositor);
+	if (resource == NULL)
+		return;
 
 	wl_resource_post_event(resource,
 			       WL_COMPOSITOR_TOKEN_VISUAL,

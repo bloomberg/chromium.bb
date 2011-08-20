@@ -121,3 +121,101 @@ wl_array_copy(struct wl_array *array, struct wl_array *source)
 	wl_array_add(array, source->size);
 	memcpy(array->data, source->data, source->size);
 }
+
+union map_entry {
+	uintptr_t next;
+	void *data;
+};
+
+WL_EXPORT void
+wl_map_init(struct wl_map *map)
+{
+	memset(map, 0, sizeof *map);
+}
+
+WL_EXPORT void
+wl_map_release(struct wl_map *map)
+{
+	wl_array_release(&map->entries);
+}
+
+WL_EXPORT uint32_t
+wl_map_insert_new(struct wl_map *map, void *data)
+{
+	union map_entry *start, *entry;
+
+	if (map->free_list) {
+		start = map->entries.data;
+		entry = &start[map->free_list >> 1];
+		map->free_list = entry->next;
+	} else {
+		entry = wl_array_add(&map->entries, sizeof *entry);
+		start = map->entries.data;
+	}
+
+	entry->data = data;
+
+	return entry - start;
+}
+
+WL_EXPORT int
+wl_map_insert_at(struct wl_map *map, uint32_t i, void *data)
+{
+	union map_entry *start;
+	uint32_t count;
+
+	/* assert(map->free_list == NULL */
+	count = map->entries.size / sizeof *start;
+
+	if (count < i)
+		return -1;
+
+	if (count == i)
+		wl_array_add(&map->entries, sizeof *start);
+
+	start = map->entries.data;
+	start[i].data = data;
+
+	return 0;
+}
+
+WL_EXPORT void
+wl_map_remove(struct wl_map *map, uint32_t i)
+{
+	union map_entry *start;
+	uint32_t count;
+
+	start = map->entries.data;
+	count = map->entries.size / sizeof *start;
+
+	start[i].next = map->free_list;
+	map->free_list = (i << 1) | 1;
+}
+
+WL_EXPORT void *
+wl_map_lookup(struct wl_map *map, uint32_t i)
+{
+	union map_entry *start;
+	uint32_t count;
+
+	start = map->entries.data;
+	count = map->entries.size / sizeof *start;
+
+	if (i < count && !(start[i].next & 1))
+		return start[i].data;
+
+	return NULL;
+}
+
+WL_EXPORT void
+wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data)
+{
+	union map_entry *start, *end, *p;
+
+	start = map->entries.data;
+	end = (union map_entry *) ((char *) map->entries.data + map->entries.size);
+
+	for (p = start; p < end; p++)
+		if (p->data && !(p->next & 1))
+			func(p->data, data);
+}

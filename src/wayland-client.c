@@ -62,9 +62,8 @@ struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
 	int fd;
-	uint32_t id;
 	uint32_t mask;
-	struct wl_hash_table *objects;
+	struct wl_map objects;
 	struct wl_list global_listener_list;
 	struct wl_list global_list;
 
@@ -133,9 +132,8 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 
 	proxy->object.interface = interface;
 	proxy->object.implementation = NULL;
-	proxy->object.id = wl_display_allocate_id(display);
+	proxy->object.id = wl_map_insert_new(&display->objects, proxy);
 	proxy->display = display;
-	wl_hash_table_insert(display->objects, proxy->object.id, proxy);
 
 	return proxy;
 }
@@ -143,7 +141,7 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
-	wl_hash_table_remove(proxy->display->objects, proxy->object.id);
+	wl_map_remove(&proxy->display->objects, proxy->object.id);
 	free(proxy);
 }
 
@@ -215,10 +213,6 @@ display_handle_global(void *data,
 {
 	struct wl_global_listener *listener;
 	struct wl_global *global;
-
-	if (strcmp(interface, "wl_display") == 0)
-		wl_hash_table_insert(display->objects,
-				     id, &display->proxy.object);
 
 	global = malloc(sizeof *global);
 	global->id = id;
@@ -324,29 +318,22 @@ wl_display_connect(const char *name)
 		return NULL;
 	}
 
-	display->objects = wl_hash_table_create();
-	if (display->objects == NULL) {
-		close(display->fd);
-		free(display);
-		return NULL;
-	}
+	wl_map_init(&display->objects);
 	wl_list_init(&display->global_listener_list);
 	wl_list_init(&display->global_list);
 
-	display->id = 1;
-	display->proxy.object.interface = &wl_display_interface;
-	display->proxy.object.id = display->id++;
-	display->proxy.display = display;
+	wl_map_insert_new(&display->objects, NULL);
 
-	display->proxy.object.implementation =
-		(void(**)(void)) &display_listener;
+	display->proxy.object.interface = &wl_display_interface;
+	display->proxy.object.id = wl_map_insert_new(&display->objects, display);
+	display->proxy.display = display;
+	display->proxy.object.implementation = (void(**)(void)) &display_listener;
 	display->proxy.user_data = display;
 
 	display->connection = wl_connection_create(display->fd,
-						   connection_update,
-						   display);
+						   connection_update, display);
 	if (display->connection == NULL) {
-		wl_hash_table_destroy(display->objects);
+		wl_map_release(&display->objects);
 		close(display->fd);
 		free(display);
 		return NULL;
@@ -362,7 +349,7 @@ wl_display_destroy(struct wl_display *display)
 	struct wl_global_listener *listener, *lnext;
 
 	wl_connection_destroy(display->connection);
-	wl_hash_table_destroy(display->objects);
+	wl_map_release(&display->objects);
 	wl_list_for_each_safe(global, gnext,
 			      &display->global_list, link)
 		free(global);
@@ -426,7 +413,7 @@ handle_event(struct wl_display *display,
 	if (id == 1)
 		proxy = &display->proxy;
 	else
-		proxy = wl_hash_table_lookup(display->objects, id);
+		proxy = wl_map_lookup(&display->objects, id);
 
 	if (proxy == NULL || proxy->object.implementation == NULL) {
 		wl_connection_consume(display->connection, size);
@@ -435,7 +422,7 @@ handle_event(struct wl_display *display,
 
 	message = &proxy->object.interface->events[opcode];
 	closure = wl_connection_demarshal(display->connection,
-					  size, display->objects, message);
+					  size, &display->objects, message);
 
 	if (closure == NULL) {
 		fprintf(stderr, "Error demarshalling event: %m\n");
@@ -492,12 +479,6 @@ wl_display_flush(struct wl_display *display)
 {
 	while (display->mask & WL_DISPLAY_WRITABLE)
 		wl_display_iterate (display, WL_DISPLAY_WRITABLE);
-}
-
-WL_EXPORT uint32_t
-wl_display_allocate_id(struct wl_display *display)
-{
-	return display->id++;
 }
 
 WL_EXPORT void *

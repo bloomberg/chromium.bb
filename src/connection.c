@@ -495,7 +495,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 struct wl_closure *
 wl_connection_demarshal(struct wl_connection *connection,
 			uint32_t size,
-			struct wl_hash_table *objects,
+			struct wl_map *objects,
 			const struct wl_message *message)
 {
 	uint32_t *p, *next, *end, length;
@@ -586,7 +586,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			extra += sizeof *object;
 			closure->args[i] = object;
 
-			*object = wl_hash_table_lookup(objects, *p);
+			*object = wl_map_lookup(objects, *p);
 			if (*object == NULL && *p != 0) {
 				printf("unknown object (%d), message %s(%s)\n",
 				       *p, message->name, message->signature);
@@ -599,7 +599,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 'n':
 			closure->types[i] = &ffi_type_uint32;
 			closure->args[i] = p;
-			object = wl_hash_table_lookup(objects, *p);
+			object = wl_map_lookup(objects, *p);
 			if (*p == 0 || object != NULL) {
 				printf("not a new object (%d), "
 				       "message %s(%s)\n",

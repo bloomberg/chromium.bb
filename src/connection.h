@@ -53,7 +53,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 struct wl_closure *
 wl_connection_demarshal(struct wl_connection *connection,
 			uint32_t size,
-			struct wl_hash_table *objects,
+			struct wl_map *objects,
 			const struct wl_message *message);
 void
 wl_closure_invoke(struct wl_closure *closure,
