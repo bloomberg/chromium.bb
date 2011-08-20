@@ -40,7 +40,7 @@ vars = {
 
   # Note: On most bots, clang is not checked out via DEPS but by
   # tools/clang/scripts/update.sh. The script reads this line here.
-  "clang_revision": "137563",
+  "clang_revision": "138187",
 }
 
 deps = {
