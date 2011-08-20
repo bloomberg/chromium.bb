@@ -50,6 +50,7 @@ class ImmediateInterpreter : public Interpreter {
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
+  FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
  public:
   enum TapToClickState {
     kTtcIdle,

@@ -470,6 +470,18 @@ struct HWStateGs {
   bool timeout;
 };
 
+// Shorter names so that HWStateGs defs take only 1 line each
+typedef ImmediateInterpreter::TapToClickState TapState;
+const TapState kIdl = ImmediateInterpreter::kTtcIdle;
+const TapState kFTB = ImmediateInterpreter::kTtcFirstTapBegan;
+const TapState kTpC = ImmediateInterpreter::kTtcTapComplete;
+const TapState kSTB = ImmediateInterpreter::kTtcSubsequentTapBegan;
+const TapState kDrg = ImmediateInterpreter::kTtcDrag;
+const TapState kDRl = ImmediateInterpreter::kTtcDragRelease;
+const TapState kDRt = ImmediateInterpreter::kTtcDragRetouch;
+const unsigned kBL = GESTURES_BUTTON_LEFT;
+const unsigned kBR = GESTURES_BUTTON_RIGHT;
+
 TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   scoped_ptr<ImmediateInterpreter> ii;
 
@@ -488,18 +500,6 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     0,  // semi-mt
     1  // is button pad
   };
-
-  // Shorter names so that HWStateGs defs take only 1 line each
-  typedef ImmediateInterpreter::TapToClickState TapState;
-  const TapState kIdl = ImmediateInterpreter::kTtcIdle;
-  const TapState kFTB = ImmediateInterpreter::kTtcFirstTapBegan;
-  const TapState kTpC = ImmediateInterpreter::kTtcTapComplete;
-  const TapState kSTB = ImmediateInterpreter::kTtcSubsequentTapBegan;
-  const TapState kDrg = ImmediateInterpreter::kTtcDrag;
-  const TapState kDRl = ImmediateInterpreter::kTtcDragRelease;
-  const TapState kDRt = ImmediateInterpreter::kTtcDragRetouch;
-  const unsigned kBL = GESTURES_BUTTON_LEFT;
-  const unsigned kBR = GESTURES_BUTTON_RIGHT;
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -725,6 +725,127 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       EXPECT_DOUBLE_EQ(-1.0, tm) << desc;
     EXPECT_EQ(hwsgs_full[i].expected_state, ii->tap_to_click_state_)
         << desc;
+  }
+}
+
+TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
+  scoped_ptr<ImmediateInterpreter> ii;
+
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    200,  // right edge
+    200,  // bottom edge
+    1.0,  // pixels/TP width
+    1.0,  // pixels/TP height
+    1.0,  // screen DPI x
+    1.0,  // screen DPI y
+    5,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 50, 0, 4, 4, 91},
+    {0, 0, 0, 0, 50, 0, 4, 4, 92},
+    {0, 0, 0, 0, 50, 0, 6, 4, 92},
+    {0, 0, 0, 0, 50, 0, 8, 4, 92},
+    {0, 0, 0, 0, 50, 0, 4, 4, 93},
+    {0, 0, 0, 0, 50, 0, 6, 4, 93},
+    {0, 0, 0, 0, 50, 0, 8, 4, 93},
+  };
+
+  HWStateGs hwsgs_list[] = {
+    // 1-finger tap, move, release, move again (drag lock)
+    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {{ 0.02, 0, 1, 1, &fs[1] }, -1,  MkSet(92), kBL,   0, kSTB, false },
+    {{ 0.03, 0, 1, 1, &fs[2] }, -1,  MkSet(92),   0,   0, kDrg, false },
+    {{ 0.04, 0, 1, 1, &fs[3] }, -1,  MkSet(92),   0,   0, kDrg, false },
+    {{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {{ 0.06, 0, 1, 1, &fs[4] }, -1,  MkSet(93),   0,   0, kDRt, false },
+    {{ 0.07, 0, 1, 1, &fs[5] }, -1,  MkSet(93),   0,   0, kDrg, false },
+    {{ 0.08, 0, 1, 1, &fs[6] }, -1,  MkSet(93),   0,   0, kDrg, false },
+    {{ 0.09, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {{ 0.15, 0, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false }
+  };
+
+  for (int iter = 0; iter < 3; ++iter) {
+    for (size_t i = 0; i < arraysize(hwsgs_list); ++i) {
+      string desc;
+      stime_t disable_time;
+      switch (iter) {
+        case 0:  // test with tap enabled
+          desc = StringPrintf("State %zu (tap enabled)", i);
+          disable_time = -1;  // unreachable time
+          break;
+        case 1:  // test with tap disabled during gesture
+          desc = StringPrintf("State %zu (tap disabled during gesture)", i);
+          disable_time = 0.02;
+          break;
+        case 2:  // test with tap disabled before gesture (while Idle)
+          desc = StringPrintf("State %zu (tap disabled while Idle)", i);
+          disable_time = 0.00;
+          break;
+      }
+
+      HWStateGs &hwsgs = hwsgs_list[i];
+      HardwareState* hwstate = &hwsgs.hws;
+      stime_t now = hwsgs.callback_now;
+      if (hwsgs.callback_now >= 0.0)
+        hwstate = NULL;
+      else
+        now = hwsgs.hws.timestamp;
+
+      bool same_fingers = false;
+      if (hwstate && hwstate->timestamp == 0.0) {
+        // Reset imm interpreter
+        LOG(INFO) << "Resetting imm interpreter, i = " << i;
+        ii.reset(new ImmediateInterpreter);
+        ii->SetHardwareProperties(hwprops);
+        ii->set_tap_timeout(0.05);
+        ii->set_tap_drag_timeout(0.05);
+        EXPECT_EQ(kIdl, ii->tap_to_click_state_);
+        EXPECT_TRUE(ii->tap_enable_);
+      } else {
+        same_fingers = ii->SameFingers(hwsgs.hws);
+      }
+
+      // Disable tap in the middle of the gesture
+      if (hwstate && hwstate->timestamp == disable_time)
+        ii->tap_enable_ = false;
+
+      unsigned bdown = 0;
+      unsigned bup = 0;
+      stime_t tm = -1.0;
+      ii->UpdateTapState(
+          hwstate, hwsgs.gs, same_fingers, now, &bdown, &bup, &tm);
+      ii->prev_gs_fingers_ = hwsgs.gs;
+      if (hwstate)
+        ii->SetPrevState(*hwstate);
+
+      switch (iter) {
+        case 0:  // tap should be enabled
+        case 1:
+          EXPECT_EQ(hwsgs.expected_down, bdown) << desc;
+          EXPECT_EQ(hwsgs.expected_up, bup) << desc;
+          if (hwsgs.timeout)
+            EXPECT_GT(tm, 0.0) << desc;
+          else
+            EXPECT_DOUBLE_EQ(-1.0, tm) << desc;
+          EXPECT_EQ(hwsgs.expected_state, ii->tap_to_click_state_) << desc;
+          break;
+        case 2:  // tap should be disabled
+          EXPECT_EQ(0, bdown) << desc;
+          EXPECT_EQ(0, bup) << desc;
+          EXPECT_DOUBLE_EQ(-1.0, tm) << desc;
+          EXPECT_EQ(kIdl, ii->tap_to_click_state_) << desc;
+          break;
+      }
+    }
   }
 }
 
