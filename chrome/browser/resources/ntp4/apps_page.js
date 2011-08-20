@@ -283,6 +283,18 @@ cr.define('ntp4', function() {
       var imgSize = size * APP_IMG_SIZE_FRACTION;
       this.appImgContainer_.style.width = this.appImgContainer_.style.height =
           this.useSmallIcon_ ? '32px' : imgSize + 'px';
+      if (this.useSmallIcon_) {
+        // 3/4 is the ratio of 96px to 128px (the used height and full height
+        // of icons in apps).
+        var iconSize = imgSize * 3/4;
+        // The -2 is for the div border to improve the visual alignment for the
+        // icon div.
+        this.imgDiv_.style.width = this.imgDiv_.style.height =
+            (iconSize - 2) + 'px';
+        // Margins set to get the icon placement right and the text to line up.
+        this.imgDiv_.style.marginTop = this.imgDiv_.style.marginBottom =
+            ((imgSize - iconSize) / 2) + 'px';
+      }
 
       this.style.width = this.style.height = size + 'px';
       if (this.isStore_)
