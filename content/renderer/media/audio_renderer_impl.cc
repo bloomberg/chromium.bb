@@ -344,7 +344,10 @@ void AudioRendererImpl::DestroyTask() {
   DCHECK_NE(0, stream_id_);
   filter_->RemoveDelegate(stream_id_);
   Send(new AudioHostMsg_CloseStream(stream_id_));
-  ChildProcess::current()->io_message_loop()->RemoveDestructionObserver(this);
+  // During shutdown this may be NULL; don't worry about deregistering in that
+  // case.
+  if (ChildProcess::current())
+    ChildProcess::current()->io_message_loop()->RemoveDestructionObserver(this);
   stream_id_ = 0;
 }
 
@@ -403,7 +406,9 @@ void AudioRendererImpl::NotifyPacketReadyTask() {
 }
 
 void AudioRendererImpl::WillDestroyCurrentMessageLoop() {
-  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  DCHECK(!ChildProcess::current() ||  // During shutdown.
+         (MessageLoop::current() ==
+          ChildProcess::current()->io_message_loop()));
 
   // We treat the IO loop going away the same as stopping.
   base::AutoLock auto_lock(lock_);
