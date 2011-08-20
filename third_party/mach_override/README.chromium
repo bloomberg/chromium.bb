@@ -2,8 +2,8 @@ Name: mach_override
 Short Name: Part of the mach_star project
 Version: Unknown
 URL: https://github.com/rentzsch/mach_star
-Date: 07/22/2011
-Revision: 51ae3d199463fa84548f466d649f0821d579fdaf
+Date: 08/19/2011
+Revision: 87f491f8acef924d2ba90dd55fc23ad64f9d5bbd
 License: MIT
 Security Critical: Yes
 
@@ -11,7 +11,7 @@ Security Critical: Yes
 Description:
 This is the mach_override part of mach_star, namely:
 
-  https://github.com/rentzsch/mach_star/tree/51ae3d199463fa84548f466d649f0821d579fdaf
+  https://github.com/rentzsch/mach_star/tree/87f491f8acef924d2ba90dd55fc23ad64f9d5bbd
 
 This package is used to replace framework functions with different
 implementations at run time.
@@ -19,7 +19,4 @@ implementations at run time.
 
 Local Modifications:
 
-Added the instructions to |possibleInstructions| for the very short
-malloc_error_break() on 10.5 so that it can be overriden on that platform.
-
-Print errors using fprintf() to stderr, rather than printf() to stdout.
+None. All local changes have been upstreamed.
