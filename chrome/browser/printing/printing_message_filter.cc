@@ -165,6 +165,7 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int sequence_number) {
     print_dialog_cloud::CreatePrintDialogForFile(
         it->second,
         string16(),
+        string16(),
         std::string("application/pdf"),
         true);
   else
