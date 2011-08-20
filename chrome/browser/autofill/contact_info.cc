@@ -15,8 +15,6 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 
-static const string16 kNameSplitChars = ASCIIToUTF16("-'. ");
-
 static const AutofillFieldType kAutofillNameInfoTypes[] = {
   NAME_FIRST,
   NAME_MIDDLE,
