@@ -782,6 +782,7 @@ void AutomationProvider::InstallExtension(
     // The observer will delete itself when done.
     new ExtensionReadyNotificationObserver(
         manager,
+        service,
         this,
         AutomationMsg_InstallExtension::ID,
         reply_message);
@@ -827,6 +828,7 @@ void AutomationProvider::EnableExtension(int extension_handle,
     // The observer will delete itself when done.
     new ExtensionReadyNotificationObserver(
         manager,
+        service,
         this,
         AutomationMsg_EnableExtension::ID,
         reply_message);
