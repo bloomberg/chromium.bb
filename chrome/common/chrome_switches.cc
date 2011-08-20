@@ -91,6 +91,11 @@ const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
 
+// Causes the automation provider to reinitialize its IPC channel instead of
+// shutting down when a client disconnects.
+const char kAutomationReinitializeOnChannelError[] =
+    "automation-reinitialize-on-channel-error";
+
 // When the option to block third-party cookies from being set is enabled,
 // also block third-party cookies from being read.
 const char kBlockReadingThirdPartyCookies[] =

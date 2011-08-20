@@ -55,6 +55,7 @@ void DispatchCommand(Command* const command,
   } else {
     NOTREACHED();
   }
+  command->Finish();
 }
 
 void Shutdown(struct mg_connection* connection,

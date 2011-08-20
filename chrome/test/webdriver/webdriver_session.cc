@@ -93,14 +93,28 @@ Error* Session::Init(const Automation::BrowserOptions& options) {
 }
 
 Error* Session::BeforeExecuteCommand() {
+  Error* error = AfterExecuteCommand();
+  if (!error) {
+    scoped_ptr<Error> switch_error(SwitchToTopFrameIfCurrentFrameInvalid());
+    if (switch_error.get()) {
+      std::string text;
+      scoped_ptr<Error> alert_error(GetAlertMessage(&text));
+      if (alert_error.get()) {
+        // Only return a frame checking error if a modal dialog is not present.
+        // TODO(kkania): This is ugly. Fix.
+        return switch_error.release();
+      }
+    }
+  }
+  return error;
+}
+
+Error* Session::AfterExecuteCommand() {
   Error* error = NULL;
   if (!options_.load_async) {
     LOG(INFO) << "Waiting for the page to stop loading";
     error = WaitForAllTabsToStopLoading();
     LOG(INFO) << "Done waiting for the page to stop loading";
-  }
-  if (!error) {
-    error = SwitchToTopFrameIfCurrentFrameInvalid();
   }
   return error;
 }

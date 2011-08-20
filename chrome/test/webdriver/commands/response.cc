@@ -59,7 +59,7 @@ void Response::SetValue(Value* value) {
 
 void Response::SetError(Error* error) {
   DictionaryValue* error_dict = new DictionaryValue();
-  error_dict->SetString(kMessageKey, error->GetMessage());
+  error_dict->SetString(kMessageKey, error->GetErrorMessage());
 
   SetStatus(error->code());
   SetValue(error_dict);
