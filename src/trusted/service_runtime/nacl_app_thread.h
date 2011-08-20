@@ -60,51 +60,6 @@ struct NaClAppThread {
   struct NaClThread         thread;  /* low level thread representation */
 
   /*
-   * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-   *
-   * The locking behavior described below is not yet implemented.
-   *
-   * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
-   *
-   * When a thread invokes a service call from the NaCl application,
-   * it must first grab its own lock (mu) before it executes any code
-   * that can grab other service runtime locks/resources.  The thread
-   * clears the holding_sr_locks flag as it is about to return from
-   * the service call.  Short duration service calls can just hold the
-   * lock throughout; potentially blocking service calls must drop the
-   * thread lock and reacquire when it can unblock.  Condition
-   * variables are used to allow the thread to wake up.  If a thread
-   * is blocked waiting for I/O, a central epoll thread is responsible
-   * for waking up the thread.  (The epoll thread serves the same
-   * purpose as hardware interrupt handlers.)
-   *
-   * To summarily kill a thread from elsewhere, we check the
-   * holding_sr_locks flag after acquiring the target thread's lock.
-   * If it is clear, then the thread is running in the application
-   * space (or at least it has not yet touched any service runtime
-   * resources), and we can directly pthread_kill it before we release
-   * the thread lock, using a signal handler in the trampoline region,
-   * which can deal with segment registers (in the x86-32 case), prior
-   * to invoking pthread_exit.  If it is set, we set the state flag to
-   * NACL_APP_THREAD_SUICIDE_PENDING and release the thread lock,
-   * possibly waking the blocked thread (which should be using
-   * interruptible mutexes/condvars).
-   *
-   * When the thread is about to leave service runtime code and return
-   * to the NaCl application, it should have released all locks to
-   * service-runtime resources.  Next, the thread grabs its own lock
-   * to clear the holding_sr_locks flag, at which point it examines
-   * the suicide flag; if it finds that set, it should gracefully
-   * exit.
-   *
-   * Similarly, if a thread's synchronization operation is
-   * interrupted, it knows that it should abort.  It can fail up
-   * through the normal execution path, freeing up locks and other
-   * resources on the way, and handle thread death as above.
-   */
-  int                       holding_sr_locks;
-
-  /*
    * a thread cannot free up its own mutex lock and commit suicide,
    * since another thread may be trying to summarily kill it and is
    * waiting on the lock in order to ask it to commit suicide!

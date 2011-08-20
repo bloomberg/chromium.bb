@@ -69,19 +69,11 @@ static INLINE size_t  size_min(size_t a, size_t b) {
 static int const kKnownInvalidDescNumber = -1;
 
 void NaClSysCommonThreadSyscallEnter(struct NaClAppThread *natp) {
-  NaClLog(4, "NaClSysCommonThreadSyscallEnter: locking 0x%08"NACL_PRIxPTR"\n",
-          (uintptr_t) &natp->mu);
-  NaClXMutexLock(&natp->mu);
-  natp->holding_sr_locks = 1;
-  NaClLog(4, "NaClSysCommonThreadSyscallEnter: unlocking 0x%08"NACL_PRIxPTR
-          "\n\n",
-          (uintptr_t) &natp->mu);
-  NaClXMutexUnlock(&natp->mu);
+  UNREFERENCED_PARAMETER(natp);
 }
 
 void NaClSysCommonThreadSyscallLeave(struct NaClAppThread *natp) {
   NaClXMutexLock(&natp->mu);
-  natp->holding_sr_locks = 0;
   switch (natp->state) {
     case NACL_APP_THREAD_ALIVE:
       break;

@@ -164,7 +164,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
     goto cleanup_cv;
   }
 
-  natp->holding_sr_locks = 0;
   natp->state = NACL_APP_THREAD_ALIVE;
 
   natp->thread_num = -1;  /* illegal index */
