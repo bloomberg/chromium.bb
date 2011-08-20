@@ -463,16 +463,16 @@ void HostNPScriptObject::FinishConnect(
     return;
   }
 
-  // Nothing went wrong, so lets save the host, config and request.
-  host_config_ = host_config;
-  register_request_.reset(register_request.release());
-
   // Create DesktopEnvironment.
   desktop_environment_.reset(DesktopEnvironment::Create(&host_context_));
   if (desktop_environment_.get() == NULL) {
     OnStateChanged(kError);
     return;
   }
+
+  // Beyond this point nothing can fail, so save the config and request.
+  host_config_ = host_config;
+  register_request_.reset(register_request.release());
 
   // Create the Host.
   LOG(INFO) << "Connecting with NAT state: " << nat_traversal_enabled_;
