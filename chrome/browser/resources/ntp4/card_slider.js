@@ -221,7 +221,22 @@ var CardSlider = (function() {
       if (e.wheelDeltaX == 0)
         return;
 
-      var scrollAmountPerPage = ntp4.isRTL() ? 120 : -120;
+      var preventDefault = true;
+      // If the horizontal scroll didn't change cards (on the far right of
+      // the NTP), let the browser take a shot at the event as well.
+      if (this.currentCard === 0 && this.mouseWheelScrollAmount_ > 0)
+        preventDefault = false;
+      if (this.currentCard === this.cards_.length - 1 &&
+          this.mouseWheelScrollAmount_ < 0) {
+        preventDefault = false;
+      }
+
+      // Mac value feels ok with multitouch trackpads and magic mice
+      // (with physical scrollwheel, too), but not so great with logitech
+      // mice.
+      var scrollAmountPerPage = cr.isMac ? 400 : 120;
+      if (!ntp4.isRTL())
+        scrollAmountPerPage *= -1;
       this.mouseWheelScrollAmount_ += e.wheelDeltaX;
       if (Math.abs(this.mouseWheelScrollAmount_) >=
           Math.abs(scrollAmountPerPage)) {
@@ -229,7 +244,7 @@ var CardSlider = (function() {
         pagesToScroll =
             (pagesToScroll > 0 ? Math.floor : Math.ceil)(pagesToScroll);
         var newCardIndex = this.currentCard + pagesToScroll;
-        newCardIndex = Math.min(this.cards_.length,
+        newCardIndex = Math.min(this.cards_.length - 1,
                                 Math.max(0, newCardIndex));
         this.selectCard(newCardIndex, true);
         this.mouseWheelScrollAmount_ -= pagesToScroll * scrollAmountPerPage;
@@ -244,6 +259,9 @@ var CardSlider = (function() {
         this.scrollClearTimeout_ =
             setTimeout(this.clearMouseWheelScroll_.bind(this), 500);
       }
+
+      if (preventDefault)
+        e.preventDefault();
     },
 
     /**
