@@ -32,14 +32,42 @@ MAKE_CHROOT = [os.path.join(OVERLAY_DIR, 'chromeos/scripts/make_chroot'),
                '--cros_sdk']
 ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
 
+# We need these tools to run. Very common tools (tar,..) are ommited.
+NEEDED_TOOLS = ['curl']
+
 def GetHostArch():
   """Returns a string for the host architecture"""
   out = cros_build_lib.RunCommand(['uname', '-m'],
       redirect_stdout=True, print_cmd=False).output
   return out.rstrip('\n')
 
+def CheckPrerequisites(needed_tools):
+  """Verifies that the required tools are present on the system.
+
+  This is especially important as this script is intended to run
+  outside the chroot.
+
+  Arguments:
+    needed_tools: an array of string specified binaries to look for.
+
+  Returns:
+    True if all needed tools were found.
+  """
+  for tool in needed_tools:
+    cmd = ['which', tool]
+    try:
+      cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True,
+                                combine_stdout_stderr=True)
+    except cros_build_lib.RunCommandError:
+      print 'The tool \'' + tool + '\' not found.'
+      print 'Please install the appropriate package in your host.'
+      print 'Example(ubuntu):'
+      print '  sudo apt-get install <packagename>'
+      return False
+  return True
 
 def GetLatestVersion():
+  """Extracts latest version from chromiumos-overlay."""
   sdk_file = open(SDK_VERSION_FILE)
   buf = sdk_file.readline().rstrip('\n').split('=')
   if buf[0] != 'SDK_LATEST_VERSION':
@@ -57,6 +85,7 @@ def GetArchStageTarball(tarballArch, version):
 
 
 def FetchRemoteTarball(url):
+  """Fetches a tarball given by url, and place it in sdk/."""
   tarball_dest = os.path.join(SDK_DIR,
       os.path.basename(urlparse.urlparse(url).path))
 
@@ -162,6 +191,7 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
 
 
 def RefreshSudoCredentials():
+  """Runs sudo on a harmless command to request sudo credentials explicitly."""
   cros_build_lib.RunCommand(['sudo', 'true'], print_cmd=False)
 
 
@@ -220,6 +250,9 @@ Action taken is the following:
   # Some sanity checks first, before we ask for sudo credentials.
   if cros_build_lib.IsInsideChroot():
     print "This needs to be ran outside the chroot"
+    sys.exit(1)
+
+  if not CheckPrerequisites(NEEDED_TOOLS):
     sys.exit(1)
 
   # Default action is --enter, if no other is selected.
