@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2008 Google Inc.  All rights reserved. -->
+  <head>
+    <title>SRPC Open URL as NaCl Descriptor Test</title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="application/x-javascript">
+      //<![CDATA[
+function enqueueTests(tester, server) {
+  tester.addAsyncTest('nonexistent_file_load', function(status) {
+    function InvalidCallback() {
+      this.onload = status.wrap(function(nacl_desc) {
+        status.fail('Invalid file load succeeded.');
+      });
+      this.onfail = status.wrap(function(object) {
+        status.pass();
+      });
+    }
+
+    // Load of an invalid URL (which should not work).
+    var url = 'url_as_nacl_desc_nonexistent_url.html';
+    server.__urlAsNaClDesc(url, new InvalidCallback());
+  });
+
+  tester.addAsyncTest('cross_origin_load', function(status) {
+    function CrossOriginCallback() {
+      this.onload = status.wrap(function(nacl_desc) {
+        status.fail('Cross origin load succeeded.');
+      });
+      this.onfail = status.wrap(function(object) {
+        status.pass();
+      });
+    }
+
+    // Load of a cross-origin file (which should not work).
+    var url = 'http://www.google.com/robots.txt';
+    server.__urlAsNaClDesc(url, new CrossOriginCallback());
+  });
+
+  tester.addAsyncTest('valid_file_load', function(status) {
+    var ValidCallback = function() {
+      this.onload = status.wrap(function(nacl_desc) {
+        // Get the data that was loaded from the file.
+        var msg = server.cat(nacl_desc, 4096);
+        var len = msg.length;
+        var byte;
+        var fileString = '';
+        for (var i = 0; i < len && (byte = msg[i]) != 0; i++) {
+          fileString += String.fromCharCode(byte);
+        }
+
+        status.assert(fileString.indexOf('TEST PASSED') >= 0);
+        status.pass();
+      });
+
+      this.onfail = status.wrap(function(object) {
+        status.fail('__urlAsNaclDesc failed.');
+      });
+    }
+
+    // Load of a valid file.
+    var url = 'srpc_url_as_nacl_desc_success.html';
+    server.__urlAsNaClDesc(url, new ValidCallback());
+  });
+}
+      //]]>
+    </script>
+  </head>
+  <body>
+    <h1>SRPC Open URL as NaCl Descriptor Test</h1>
+    NOTE: Set NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS=1 to run this test.
+
+    <embed type="application/x-nacl" id="nacl_server" name="naclModule"
+           width="0" height="0" src="cat.nmf" />
+    <script type="application/x-javascript">
+      //<![CDATA[
+var tester = new Tester();
+enqueueTests(tester, $('nacl_server'));
+tester.waitFor($('nacl_server'));
+tester.run();
+      //]]>
+    </script>
+  </body>
+</html>

@@ -6,6 +6,7 @@
 Import('env')
 
 platform = env.get('TARGET_FULLARCH')
+cat_nexe_name = 'cat_%s${PROGSUFFIX}' % platform
 ppapi_example_events_nexe_name = 'ppapi_example_events_%s${PROGSUFFIX}' % platform
 ppapi_user_main_nexe_name = 'ppapi_user_main_%s${PROGSUFFIX}' % platform
 srpc_test_nexe_name = 'srpc_test_%s${PROGSUFFIX}' % platform
@@ -95,6 +96,10 @@ srpc_nrd_xfer_files = [
     env.File('${STAGING_DIR}/srpc_nrd_server.nmf'),
     env.File('${STAGING_DIR}/srpc_nrd_xfer.html')]
 srpc_hw_files = CreateDefaultDeps('srpc_hw');
+srpc_url_as_nacl_desc_files = [
+    env.File('${STAGING_DIR}/' + cat_nexe_name),
+    env.File('${STAGING_DIR}/cat.nmf'),
+    env.File('${STAGING_DIR}/srpc_url_as_nacl_desc.html')]
 
 # sanity.py
 node = env.PyAutoTester('pyauto_sanity.out', env.File('sanity.py'))
@@ -134,7 +139,8 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_tests_files +
                    srpc_basic_files +
                    srpc_hw_files +
-                   srpc_nrd_xfer_files]
+                   srpc_nrd_xfer_files +
+                   srpc_url_as_nacl_desc_files]
 
 # surfaway.py
 node = env.PyAutoTester(

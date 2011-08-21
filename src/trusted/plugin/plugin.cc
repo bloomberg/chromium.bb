@@ -41,6 +41,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/plugin/async_receive.h"
 #include "native_client/src/trusted/plugin/browser_interface.h"
 #include "native_client/src/trusted/plugin/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/manifest.h"
@@ -105,6 +106,33 @@ bool GetReadyStateProperty(void* obj, SrpcParams* params) {
   return true;
 }
 
+// Used only by temporary ld.so infrastructure
+bool LaunchExecutableFromFd(void* obj, SrpcParams* params) {
+  PLUGIN_PRINTF(("LaunchExecutableFromFd ()\n"));
+  Plugin* plugin = static_cast<Plugin*>(obj);
+  NaClDescRef(params->ins()[0]->u.hval);
+  nacl::scoped_ptr<nacl::DescWrapper>
+      wrapper(plugin->wrapper_factory()->MakeGeneric(params->ins()[0]->u.hval));
+  plugin->set_nacl_ready_state(Plugin::LOADING);
+  // Generate the event stream for loading a module.
+  plugin->EnqueueProgressEvent("loadstart",
+                               Plugin::LENGTH_IS_NOT_COMPUTABLE,
+                               Plugin::kUnknownBytes,
+                               Plugin::kUnknownBytes);
+  ErrorInfo error_info;
+  pp::VarPrivate continuation =
+      *static_cast<pp::VarPrivate*>(params->ins()[1]->arrays.oval);
+  bool was_successful = plugin->LoadNaClModule(
+      wrapper.get(), &error_info,
+      plugin->MakeLaunchExecutableFromFdCallback(continuation));
+
+  if (!was_successful) {
+    error_info.PrependMessage("__launchExecutableFromFd failed: ");
+    plugin->ReportLoadError(error_info);
+  }
+  return true;
+}
+
 const char* const kTypeAttribute = "type";
 // The "src" attribute of the <embed> tag.  The value is expected to be either
 // a URL or URI pointing to the manifest file (which is expected to contain
@@ -126,6 +154,20 @@ const char* const kDataUriScheme = "data";
 
 // The key used to find the dictionary nexe URLs in the manifest file.
 const char* const kNexesKey = "nexes";
+
+bool UrlAsNaClDesc(void* obj, SrpcParams* params) {
+  // TODO(sehr,polina): this API should take a selector specify which of
+  // UMP, CORS, or traditional origin policy should be used.
+  NaClSrpcArg** ins = params->ins();
+  PLUGIN_PRINTF(("UrlAsNaClDesc (obj=%p, url=%s, callback=%p)\n",
+                 obj, ins[0]->arrays.str, ins[1]->arrays.oval));
+
+  Plugin* plugin = static_cast<Plugin*>(obj);
+  const char* url = ins[0]->arrays.str;
+  // TODO(sehr,polina): Ensure that origin checks are performed here.
+  plugin->UrlAsNaClDesc(url, *static_cast<pp::Var*>(ins[1]->arrays.oval));
+  return true;
+}
 
 bool GetLastError(void* obj, SrpcParams* params) {
   NaClSrpcArg** outs = params->outs();
@@ -476,6 +518,74 @@ class ZoomAdapter : public pp::Zoom_Dev {
 
 }  // namespace
 
+// TODO(mseaborn): Although this will usually not block, it will
+// block if the socket's buffer fills up.
+bool Plugin::SendAsyncMessage(void* obj, SrpcParams* params,
+                              nacl::DescWrapper** fds, int fds_count) {
+  Plugin* plugin = static_cast<Plugin*>(obj);
+  if (plugin->main_service_runtime() == NULL) {
+    params->set_exception_string("No subprocess running");
+    return false;
+  }
+
+  // TODO(mseaborn): Handle strings containing NULLs.  This might
+  // involve using a different SRPC type.
+  char* utf8string = params->ins()[0]->arrays.str;
+  char* data;
+  size_t data_size;
+  if (!ByteStringFromUTF8(utf8string, strlen(utf8string), &data, &data_size)) {
+    params->set_exception_string("Invalid string");
+    return false;
+  }
+  nacl::DescWrapper::MsgIoVec iov;
+  nacl::DescWrapper::MsgHeader message;
+  iov.base = data;
+  iov.length = static_cast<nacl_abi_size_t>(data_size);
+  message.iov = &iov;
+  message.iov_length = 1;
+  message.ndescv = fds;
+  message.ndescv_length = fds_count;
+  message.flags = 0;
+  nacl::DescWrapper* socket =
+      plugin->main_service_runtime()->async_send_desc();
+  ssize_t sent = socket->SendMsg(&message, 0);
+  free(data);
+  if (sent < 0) {
+    params->set_exception_string("Error sending message");
+    return false;
+  }
+  return true;
+}
+
+// TODO(mseaborn): Combine __sendAsyncMessage0 and __sendAsyncMessage1
+// into a single method that takes an array of FDs.  SRPC does not
+// provide a handle array type so there is not a simple way to do
+// this.
+bool Plugin::SendAsyncMessage0(void* obj, SrpcParams* params) {
+  return SendAsyncMessage(obj, params, NULL, 0);
+}
+
+bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
+  Plugin* plugin = static_cast<Plugin*>(obj);
+  NaClDescRef(params->ins()[1]->u.hval);
+  nacl::DescWrapper* fd_to_send =
+    plugin->wrapper_factory()->MakeGeneric(params->ins()[1]->u.hval);
+  bool result = SendAsyncMessage(obj, params, &fd_to_send, 1);
+  // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
+  delete fd_to_send;
+  return result;
+}
+
+bool Plugin::StartSrpcServicesWrapper(void* obj, SrpcParams* params) {
+  Plugin* plugin = static_cast<Plugin*>(obj);
+  ErrorInfo error_info;
+  if (!plugin->StartSrpcServices(&plugin->main_subprocess_, &error_info)) {
+    params->set_exception_string(error_info.message().c_str());
+    return false;
+  }
+  return true;
+}
+
 bool Plugin::ExperimentalJavaScriptApisAreEnabled() {
   return getenv("NACL_ENABLE_EXPERIMENTAL_JAVASCRIPT_APIS") != NULL;
 }
@@ -486,6 +596,18 @@ void Plugin::LoadMethods() {
   PLUGIN_PRINTF(("Plugin::LoadMethods ()\n"));
   // Properties implemented by Plugin.
   AddPropertyGet(GetReadyStateProperty, "readyState", "i");
+
+  if (!ExperimentalJavaScriptApisAreEnabled()) {
+    return;
+  }
+  // Experimental methods supported by Plugin.
+  // These methods are explicitly not included in shipping versions of Chrome.
+  AddMethodCall(GetSandboxISAProperty, "__getSandboxISA", "", "s");
+  AddMethodCall(LaunchExecutableFromFd, "__launchExecutableFromFd", "ho", "");
+  AddMethodCall(NullPluginMethod, "__nullPluginMethod", "s", "i");
+  AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
+  AddMethodCall(SendAsyncMessage1, "__sendAsyncMessage1", "sh", "");
+  AddMethodCall(StartSrpcServicesWrapper, "__startSrpcServices", "", "");
 }
 
 bool Plugin::HasMethod(uintptr_t method_id, CallType call_type) {
@@ -604,6 +726,11 @@ void Plugin::ShutDownSubprocesses() {
   }
   nacl_subprocesses_.clear();
 
+  if (receive_thread_running_) {
+    NaClThreadJoin(&receive_thread_);
+    receive_thread_running_ = false;
+  }
+
   PLUGIN_PRINTF(("Plugin::ShutDownSubprocess (this=%p, return)\n",
                  static_cast<void*>(this)));
 }
@@ -698,6 +825,38 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   return true;
 }
 
+// BUG(bsy):  this code MUST be deleted prior to public release.
+// Calling out to JavaScript from trusted code is UNSAFE.
+void Plugin::LaunchExecutableFromFdContinuation(int32_t pp_error) {
+  bool was_successful;
+  ErrorInfo error_info;
+
+  UNREFERENCED_PARAMETER(pp_error);
+  NaClLog(4, "Entered LaunchExecutableFromFdContinuation\n");
+  was_successful = LoadNaClModuleContinuationIntern(&error_info);
+  if (was_successful) {
+    // Set the readyState attribute to indicate ready to start.
+    ReportLoadSuccess(Plugin::LENGTH_IS_NOT_COMPUTABLE,
+                      Plugin::kUnknownBytes,
+                      Plugin::kUnknownBytes);
+  } else {
+    error_info.PrependMessage("__launchExecutableFromFd failed: ");
+    ReportLoadError(error_info);
+  }
+  js_continuation_.Call(pp::Var(), was_successful);
+  // should invalidate js_continuation_.
+}
+
+// BUG(bsy) If JavaScript code invokes __launchExecutableFromFd twice
+// in succession without waiting for the completion callback, we may
+// call the wrong continuation.  (This is temporary scaffolding.)
+pp::CompletionCallback Plugin::MakeLaunchExecutableFromFdCallback(
+    pp::VarPrivate js_continuation) {
+  js_continuation_ = js_continuation;
+  return callback_factory_.NewCallback(
+      &Plugin::LaunchExecutableFromFdContinuation);
+}
+
 bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
   if (!(StartSrpcServicesCommon(&main_subprocess_, error_info)
         && StartJSObjectProxy(&main_subprocess_, error_info))) {
@@ -760,14 +919,38 @@ void Plugin::AddPropertyGet(RpcFunction function_ptr,
   property_get_methods_.AddMethod(method_id, new_method);
 }
 
+void Plugin::AddPropertySet(RpcFunction function_ptr,
+                            const char* name,
+                            const char* ins) {
+  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  PLUGIN_PRINTF(("Plugin::AddPropertySet (name='%s', id=%"
+                 NACL_PRIxPTR")\n", name, method_id));
+  MethodInfo* new_method = new MethodInfo(function_ptr, name, ins, "");
+  property_set_methods_.AddMethod(method_id, new_method);
+}
+
+void Plugin::AddMethodCall(RpcFunction function_ptr,
+                           const char* name,
+                           const char* ins,
+                           const char* outs) {
+  uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  PLUGIN_PRINTF(("Plugin::AddMethodCall (name='%s', id=%"
+                 NACL_PRIxPTR")\n", name, method_id));
+  MethodInfo* new_method = new MethodInfo(function_ptr, name, ins, outs);
+  methods_.AddMethod(method_id, new_method);
+}
+
 MethodInfo* Plugin::GetMethodInfo(uintptr_t method_id, CallType call_type) {
   MethodInfo* method_info = NULL;
   switch (call_type) {
+    case METHOD_CALL:
+      method_info = methods_.GetMethod(method_id);
+      break;
     case PROPERTY_GET:
       method_info = property_get_methods_.GetMethod(method_id);
       break;
     case PROPERTY_SET:
-    case METHOD_CALL:
+      method_info = property_set_methods_.GetMethod(method_id);
       break;
   }
   PLUGIN_PRINTF(("Plugin::GetMethodInfo (id=%"NACL_PRIxPTR", "
@@ -810,6 +993,48 @@ bool Plugin::IsForeignMIMEType() const {
       mime_type() != kNaClMIMEType;
 }
 
+
+bool Plugin::SetAsyncCallback(void* obj, SrpcParams* params) {
+  Plugin* plugin = static_cast<Plugin*>(obj);
+  if (plugin->main_service_runtime() == NULL) {
+    params->set_exception_string("No subprocess running");
+    return false;
+  }
+  if (plugin->receive_thread_running_) {
+    params->set_exception_string("A callback has already been registered");
+    return false;
+  }
+  nacl::scoped_ptr<AsyncNaClToJSThreadArgs> args(new(std::nothrow)
+                                                 AsyncNaClToJSThreadArgs);
+  if (args == NULL) {
+    params->set_exception_string("Memory allocation failed");
+    return false;
+  }
+  args->callback = *static_cast<pp::Var*>(params->ins()[0]->arrays.oval);
+  nacl::DescWrapper* socket =
+      plugin->main_service_runtime()->async_receive_desc();
+  NaClDescRef(socket->desc());
+  // The MakeGeneric() call is necessary because the new DescWrapper
+  // has a separate lifetime from the one returned by
+  // async_receive_desc().  The new DescWrapper exists for the
+  // lifetime of the child thread.
+  args->socket.reset(plugin->wrapper_factory()->MakeGeneric(socket->desc()));
+
+  // It would be nice if the thread interface did not require us to
+  // specify a stack size.  This is fairly arbitrary.
+  size_t stack_size = 128 << 10;
+  if (!NaClThreadCreateJoinable(&plugin->receive_thread_,
+                                AsyncNaClToJSThread,
+                                args.get(),
+                                stack_size)) {
+    params->set_exception_string("Thread creation failed");
+    return false;
+  }
+  // Arguments now owned by the new thread.
+  (void)args.release();
+  plugin->receive_thread_running_ = true;
+  return true;
+}
 
 Plugin* Plugin::New(PP_Instance pp_instance) {
   PLUGIN_PRINTF(("Plugin::New (pp_instance=%"NACL_PRId32")\n", pp_instance));
@@ -902,6 +1127,11 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     }
   }
 
+  if (ExperimentalJavaScriptApisAreEnabled()) {
+    AddMethodCall(plugin::UrlAsNaClDesc, "__urlAsNaClDesc", "so", "");
+    AddMethodCall(SetAsyncCallback, "__setAsyncCallback", "o", "");
+  }
+
   // Export a property to allow us to get the last error description.
   AddPropertyGet(GetLastError, "lastError", "s");
 
@@ -912,6 +1142,7 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 Plugin::Plugin(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
+      receive_thread_running_(false),
       browser_interface_(NULL),
       scriptable_handle_(NULL),
       argc_(-1),
@@ -1624,6 +1855,47 @@ bool Plugin::SelectLDURLFromManifest(nacl::string* result,
 // end TODO(jvoung)
 
 
+void Plugin::UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
+                                        FileDownloader*& url_downloader,
+                                        pp::VarPrivate& js_callback) {
+  PLUGIN_PRINTF(("Plugin::UrlDidOpenForUrlAsNaClDesc "
+                 "(pp_error=%"NACL_PRId32", url_downloader=%p)\n",
+                 pp_error, static_cast<void*>(url_downloader)));
+  url_downloaders_.erase(url_downloader);
+  nacl::scoped_ptr<FileDownloader> scoped_url_downloader(url_downloader);
+
+  if (pp_error != PP_OK) {
+    js_callback.Call(pp::Var("onfail"), pp::Var("URL get failed"));
+    return;
+  }
+  int32_t file_desc = scoped_url_downloader->GetPOSIXFileDescriptor();
+  int32_t file_desc_ok_to_close = DUP(file_desc);
+  if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
+    js_callback.Call(pp::Var("onfail"), pp::Var("posix desc or dup failed"));
+    return;
+  }
+  nacl::scoped_ptr<nacl::DescWrapper> scoped_desc_wrapper(
+      wrapper_factory()->MakeFileDesc(
+          file_desc_ok_to_close, NACL_ABI_O_RDONLY));
+  if (scoped_desc_wrapper.get() == NULL) {
+    // MakeFileDesc() already closed the file descriptor.
+    js_callback.Call(pp::Var("onfail"), pp::Var("nacl desc wrapper failed"));
+    return;
+  }
+
+  ScriptableHandle* handle = ScriptableHandle::NewDescHandle(
+      DescBasedHandle::New(scoped_desc_wrapper.get()));
+  if (handle == NULL) {
+    js_callback.Call(pp::Var("onfail"), pp::Var("scriptable handle failed"));
+    return;
+  }
+  // We succeeded, so do not unref the wrapper!
+  (void)(scoped_desc_wrapper.release());
+
+  js_callback.Call(pp::Var("onload"), pp::VarPrivate(this, handle));
+}
+
+
 void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
                                        FileDownloader*& url_downloader,
                                        PP_CompletionCallback callback) {
@@ -1651,6 +1923,32 @@ int32_t Plugin::GetPOSIXFileDesc(const nacl::string& url) {
   if (it != url_fd_map_.end())
     file_desc_ok_to_close = DUP(it->second);
   return file_desc_ok_to_close;
+}
+
+// TODO(polina): reduce code duplication between UrlAsNaClDesc and StreamAsFile.
+
+void Plugin::UrlAsNaClDesc(const nacl::string& url,
+                           pp::VarPrivate js_callback) {
+  PLUGIN_PRINTF(("Plugin::UrlAsNaClDesc (url='%s')\n", url.c_str()));
+  FileDownloader* downloader = new FileDownloader();
+  downloader->Initialize(this);
+  url_downloaders_.insert(downloader);
+  pp::CompletionCallback open_callback =
+      callback_factory_.NewRequiredCallback(
+          &Plugin::UrlDidOpenForUrlAsNaClDesc, downloader, js_callback);
+  // Untrusted loads are always relative to the page's origin.
+  CHECK(url_util_ != NULL);
+  pp::Var resolved_url =
+      url_util_->ResolveRelativeToURL(pp::Var(plugin_base_url()), url);
+  if (!resolved_url.is_string()) {
+    PLUGIN_PRINTF(("Plugin::UrlAsNaClDesc: "
+                   "could not resolve url \"%s\" relative to base \"%s\".",
+                   url.c_str(),
+                   plugin_base_url().c_str()));
+    return;
+  }
+  // Will always call the callback on success or failure.
+  CHECK(downloader->Open(url, DOWNLOAD_TO_FILE, open_callback));
 }
 
 
@@ -1684,6 +1982,9 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
   // Set the readyState attribute to indicate loaded.
   set_nacl_ready_state(DONE);
   // Inform JavaScript that loading was successful and is complete.
+  // Note that these events will be dispatched, as will failure events, when
+  // this code is reached from __launchExecutableFromFd also.
+  // TODO(sehr,polina): Remove comment when experimental APIs are removed.
   EnqueueProgressEvent("load", length_computable, loaded_bytes, total_bytes);
   EnqueueProgressEvent("loadend", length_computable, loaded_bytes, total_bytes);
 

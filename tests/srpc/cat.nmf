@@ -1,0 +1,7 @@
+{
+  "program": {
+    "x86-32": {"url": "cat_x86-32.nexe"},
+    "x86-64": {"url": "cat_x86-64.nexe"},
+    "arm": {"url": "cat_arm.nexe"}
+  }
+}

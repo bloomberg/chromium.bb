@@ -90,6 +90,15 @@ var Init = function(boxsize) {
   }
   BenchBigStringTest =
     new Benchmark('BigStringTest', BigStringTestNativeClient);
+  var NullRpcTestNativeClient = function() {
+    return native_client_service.string(OneKString);
+  }
+  BenchNullTest = new Benchmark('NullRpcTest', NullRpcTestNativeClient);
+  var NullNpapiTestNativeClient = function() {
+    return native_client_service.__nullPluginMethod(OneKString);
+  }
+  BenchNullNpapiTest =
+    new Benchmark('NullNpapiTest', NullNpapiTestNativeClient);
 }
       //]]>
     </script>
@@ -112,6 +121,14 @@ var Init = function(boxsize) {
           <input type="button" onclick="BenchBigStringTest.Run()"
                  value="BigStringTest">
           </input>
+        </td>
+        <td align=center>
+          <input type="button" onclick="BenchNullTest.Run()"
+                 value="NullRpcTest" />
+        </td>
+        <td align=center>
+          <input type="button" onclick="BenchNullNpapiTest.Run()"
+                 value="NullNpapiTest" />
         </td>
       </thead>
     </table>
