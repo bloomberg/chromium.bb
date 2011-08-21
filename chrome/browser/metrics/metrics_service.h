@@ -434,4 +434,17 @@ class MetricsService : public NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
 
+// This class limits and documents access to the IsMetricsReportingEnabled()
+// method. Since the method is private, each user has to be explicitly declared
+// as a 'friend' below.
+class MetricsServiceHelper {
+ private:
+  friend class InstantFieldTrial;
+
+  // Returns true if prefs::kMetricsReportingEnabled is set.
+  static bool IsMetricsReportingEnabled();
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(MetricsServiceHelper);
+};
+
 #endif  // CHROME_BROWSER_METRICS_METRICS_SERVICE_H_

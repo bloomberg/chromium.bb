@@ -5,6 +5,7 @@
 #include "chrome/browser/instant/instant_field_trial.h"
 
 #include "base/metrics/field_trial.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -43,6 +44,7 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
 
   const PrefService* prefs = profile->GetPrefs();
   if (!prefs ||
+      !MetricsServiceHelper::IsMetricsReportingEnabled() ||
       !prefs->GetBoolean(prefs::kSearchSuggestEnabled) ||
       prefs->GetBoolean(prefs::kInstantEnabledOnce) ||
       prefs->IsManagedPreference(prefs::kInstantEnabled)) {

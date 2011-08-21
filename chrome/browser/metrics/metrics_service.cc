@@ -1700,3 +1700,18 @@ void MetricsService::StartExternalMetrics() {
   external_metrics_->Start();
 }
 #endif
+
+// static
+bool MetricsServiceHelper::IsMetricsReportingEnabled() {
+  bool result = false;
+  const PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    const PrefService::Preference* uma_pref =
+        local_state->FindPreference(prefs::kMetricsReportingEnabled);
+    if (uma_pref) {
+      bool success = uma_pref->GetValue()->GetAsBoolean(&result);
+      DCHECK(success);
+    }
+  }
+  return result;
+}
