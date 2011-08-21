@@ -61,8 +61,18 @@ def FetchRemoteTarball(url):
       os.path.basename(urlparse.urlparse(url).path))
 
   print 'Downloading sdk: "%s"' % url
-  cros_build_lib.RunCommand(['curl', '-f', '--retry', '5', '-L',
-      '-y', '30', '-C', '-', '--output', tarball_dest, url])
+  cmd = ['curl', '-f', '--retry', '5', '-L', '-y', '30',
+         '--output', tarball_dest]
+
+  if not url.startswith('file://'):
+    # Only resume for remote URLs. If the file is local, there's no
+    # real speedup, and using the same filename for different files
+    # locally will cause issues.
+    cmd.extend(['-C', '-'])
+
+  cmd.append(url)
+
+  cros_build_lib.RunCommand(cmd)
   return tarball_dest
 
 
