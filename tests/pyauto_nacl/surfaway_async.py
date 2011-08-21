@@ -61,9 +61,6 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayAsyncSRPCResourceDescriptor(self):
     self.surfAwayAsync('srpc_nrd_xfer.html', 'SRPC')
 
-  def testSurfAwayAsyncSRPCURLContentAsNaclResourceDescriptor(self):
-    self.surfAwayAsync('srpc_url_as_nacl_desc.html', 'SRPC')
-
   def testSurfAwayAsyncEvents(self):
     self.surfAwayAsync('ppapi_example_events.html', 'PPAPI')
 

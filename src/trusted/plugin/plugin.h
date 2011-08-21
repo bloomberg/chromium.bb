@@ -274,11 +274,6 @@ class Plugin : public pp::InstancePrivate {
   // event.
   void DispatchProgressEvent(int32_t result);
 
-  // Requests a URL asynchronously resulting in a call to js_callback.onload
-  // with NaClDesc-wrapped file descriptor on success and js_callback.onfail
-  // with an error string on failure.
-  // This is used by JS-based __urlAsNaClDesc().
-  void UrlAsNaClDesc(const nacl::string& url, pp::VarPrivate js_callback);
   // Requests a URL asynchronously resulting in a call to pp_callback with
   // a PP_Error indicating status. On success an open file descriptor
   // corresponding to the url body is recorded for further lookup.
@@ -344,20 +339,6 @@ class Plugin : public pp::InstancePrivate {
   void AddPropertyGet(RpcFunction function_ptr,
                       const char* name,
                       const char* outs);
-  void AddPropertySet(RpcFunction function_ptr,
-                      const char* name,
-                      const char* ins);
-  void AddMethodCall(RpcFunction function_ptr,
-                     const char* name,
-                     const char* ins,
-                     const char* outs);
-
-  // OBSOLETE: Async message channels are only used with SRPC nexes.
-  // TODO(polina): Remove this once SRPC nexe support is no longer needed.
-  static bool SendAsyncMessage(void* obj, SrpcParams* params,
-                               nacl::DescWrapper** fds, int fds_count);
-  static bool SendAsyncMessage0(void* obj, SrpcParams* params);
-  static bool SendAsyncMessage1(void* obj, SrpcParams* params);
 
   // Help load a nacl module, from the file specified in wrapper.
   // This will fully initialize the |subprocess| if the load was successful.
@@ -436,10 +417,6 @@ class Plugin : public pp::InstancePrivate {
   // Determines the appropriate nexe for the sandbox and requests a load.
   void RequestNexeLoad();
 
-  // Callback used when loading a URL for JS-based __urlAsNaClDesc().
-  void UrlDidOpenForUrlAsNaClDesc(int32_t pp_error,
-                                  FileDownloader*& url_downloader,
-                                  pp::VarPrivate& js_callback);
   // Callback used when loading a URL for SRPC-based StreamAsFile().
   void UrlDidOpenForStreamAsFile(int32_t pp_error,
                                  FileDownloader*& url_downloader,
@@ -447,13 +424,6 @@ class Plugin : public pp::InstancePrivate {
 
   // Shuts down the proxy for PPAPI nexes.
   void ShutdownProxy();  // Nexe shutdown + proxy deletion.
-
-  // Handles the __setAsyncCallback() method.  Spawns a thread to receive
-  // IMC messages from the NaCl process and pass them on to Javascript.
-  static bool SetAsyncCallback(void* obj, SrpcParams* params);
-
-  bool receive_thread_running_;
-  struct NaClThread receive_thread_;
 
   BrowserInterface* browser_interface_;
   ScriptableHandle* scriptable_handle_;
@@ -473,9 +443,7 @@ class Plugin : public pp::InstancePrivate {
 
   nacl::DescWrapperFactory* wrapper_factory_;
 
-  MethodMap methods_;
   MethodMap property_get_methods_;
-  MethodMap property_set_methods_;
 
   // File download support.  |nexe_downloader_| can be opened with a specific
   // callback to run when the file has been downloaded and is opened for

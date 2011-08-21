@@ -44,7 +44,6 @@ class NaClTest(pyauto.PyUITest):
            ('srpc_basic.html', 1),
            ('srpc_hw.html', 1),
            ('srpc_nrd_xfer.html', 2),
-           ('srpc_url_as_nacl_desc.html', 1),
            ('test_case.html?mode=nacl&testcase=Graphics2D', 1),
            ('test_case.html?mode=nacl&testcase=ImageData', 1),
            ('test_case.html?mode=nacl&testcase=Memory', 1),

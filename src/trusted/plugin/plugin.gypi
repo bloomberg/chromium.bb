@@ -6,7 +6,6 @@
   'variables': {
     'common_sources': [
       'array_ppapi.cc',
-      'async_receive.cc',
       'browser_interface.cc',
       'desc_based_handle.cc',
       'file_downloader.cc',

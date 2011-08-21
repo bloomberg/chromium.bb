@@ -29,11 +29,10 @@ html_examples = env.Replicate('${STAGING_DIR}', 'examples.html')
 env.Default(html_examples)
 example_nexes = [
     # SRPC Nexe Tests
-    'srpc_hw',          # srpc_hw.html, srpc_hw_fd.html
-    'srpc_test',        # srpc_basic.html, srpc_plugin.html, srpc_perf.html
-    'srpc_nrd_server',  # srpc_nrd_xfer.html, srpc_sockaddr.html
-    'srpc_nrd_client',  # srpc_nrd_xfer.html, srpc_plugin.html
-    'cat',              # srpc_url_as_nacl_desc.html
+    'srpc_hw',          # srpc_hw.html
+    'srpc_test',        # srpc_basic.html, srpc_perf.html
+    'srpc_nrd_server',  # srpc_nrd_xfer.html
+    'srpc_nrd_client',  # srpc_nrd_xfer.html
     # SRPC Nexe Performance
     'mandel_tiled',         # mandel_tiled.html
     'autoloader_default',   # autoloader.html',
