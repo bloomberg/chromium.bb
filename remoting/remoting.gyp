@@ -145,6 +145,8 @@
         'client/plugin/pepper_input_handler.h',
         'client/plugin/pepper_port_allocator_session.cc',
         'client/plugin/pepper_port_allocator_session.h',
+        'client/plugin/pepper_plugin_thread_delegate.cc',
+        'client/plugin/pepper_plugin_thread_delegate.h',
         'client/plugin/pepper_view.cc',
         'client/plugin/pepper_view.h',
         'client/plugin/pepper_view_proxy.cc',

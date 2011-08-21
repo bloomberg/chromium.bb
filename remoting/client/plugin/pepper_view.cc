@@ -37,13 +37,13 @@ bool PepperView::Initialize() {
 }
 
 void PepperView::TearDown() {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   task_factory_.RevokeAll();
 }
 
 void PepperView::Paint() {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   TraceContext::tracer()->PrintString("Start Paint.");
 
@@ -79,7 +79,7 @@ void PepperView::Paint() {
 }
 
 void PepperView::SetHostSize(const gfx::Size& host_size) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   if (host_size_ == host_size)
     return;
@@ -92,7 +92,7 @@ void PepperView::SetHostSize(const gfx::Size& host_size) {
 }
 
 void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   TraceContext::tracer()->PrintString("Start Paint Frame.");
 
@@ -194,20 +194,22 @@ void PepperView::FlushGraphics(base::Time paint_start) {
 }
 
 void PepperView::SetSolidFill(uint32 color) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   is_static_fill_ = true;
   static_fill_color_ = color;
+
+  Paint();
 }
 
 void PepperView::UnsetSolidFill() {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   is_static_fill_ = false;
 }
 
 void PepperView::SetConnectionState(ConnectionState state) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   // TODO(hclam): Re-consider the way we communicate with Javascript.
   ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
@@ -235,7 +237,7 @@ void PepperView::SetConnectionState(ConnectionState state) {
 }
 
 void PepperView::UpdateLoginStatus(bool success, const std::string& info) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   // TODO(hclam): Re-consider the way we communicate with Javascript.
   ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
@@ -298,7 +300,7 @@ void PepperView::AllocateFrame(media::VideoFrame::Format format,
                                base::TimeDelta duration,
                                scoped_refptr<media::VideoFrame>* frame_out,
                                Task* done) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   *frame_out = media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
                                               width, height,
@@ -310,7 +312,7 @@ void PepperView::AllocateFrame(media::VideoFrame::Format format,
 }
 
 void PepperView::ReleaseFrame(media::VideoFrame* frame) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   if (frame) {
     LOG(WARNING) << "Frame released.";
@@ -321,7 +323,7 @@ void PepperView::ReleaseFrame(media::VideoFrame* frame) {
 void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
                                       UpdatedRects* rects,
                                       Task* done) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   TraceContext::tracer()->PrintString("Calling PaintFrame");
   // TODO(ajwong): Clean up this API to be async so we don't need to use a
@@ -332,7 +334,7 @@ void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
 }
 
 void PepperView::OnPaintDone(base::Time paint_start) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
   TraceContext::tracer()->PrintString("Paint flushed");
   instance_->GetStats()->video_paint_ms()->Record(
       (base::Time::Now() - paint_start).InMilliseconds());

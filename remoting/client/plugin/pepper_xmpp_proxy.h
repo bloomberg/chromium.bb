@@ -21,6 +21,7 @@ class PepperXmppProxy : public XmppProxy {
  public:
   PepperXmppProxy(
       base::WeakPtr<ChromotingScriptableObject> scriptable_object,
+      base::MessageLoopProxy* plugin_message_loop,
       base::MessageLoopProxy* callback_message_loop);
 
   // Registered the callback class with this object.
@@ -43,6 +44,7 @@ class PepperXmppProxy : public XmppProxy {
 
   base::WeakPtr<ChromotingScriptableObject> scriptable_object_;
 
+  scoped_refptr<base::MessageLoopProxy> plugin_message_loop_;
   scoped_refptr<base::MessageLoopProxy> callback_message_loop_;
 
   // Must only be access on callback_message_loop_.

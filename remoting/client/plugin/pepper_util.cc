@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,18 +18,6 @@ void CompletionCallbackTaskAdapter(void* user_data, int32_t not_used) {
 
 pp::CompletionCallback TaskToCompletionCallback(Task* task) {
   return pp::CompletionCallback(&CompletionCallbackTaskAdapter, task);
-}
-
-void RunTaskOnPluginThread(Task* task) {
-  pp::Module::Get()->core()->CallOnMainThread(
-      0 /* run immediately */,
-      TaskToCompletionCallback(task),
-      0 /* unused value */
-      );
-}
-
-bool CurrentlyOnPluginThread() {
-  return pp::Module::Get()->core()->IsMainThread();
 }
 
 }  // namespace remoting

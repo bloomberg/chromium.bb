@@ -6,8 +6,10 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -19,7 +21,6 @@
 #include "remoting/jingle_glue/http_port_allocator.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
-#include "remoting/client/plugin/pepper_util.h"
 
 namespace {
 
@@ -33,9 +34,11 @@ static const std::string kCreateSessionURL = "/create_session";
 class SessionFactory : public remoting::PortAllocatorSessionFactory {
  public:
   SessionFactory(remoting::ChromotingInstance* instance,
-                 MessageLoop* message_loop)
+                 base::MessageLoopProxy* pepper_message_loop,
+                 base::MessageLoopProxy* network_message_loop)
       : instance_(instance),
-        jingle_message_loop_(message_loop) {
+        pepper_message_loop_(pepper_message_loop),
+        network_message_loop_(network_message_loop) {
   }
 
   virtual cricket::PortAllocatorSession* CreateSession(
@@ -47,15 +50,15 @@ class SessionFactory : public remoting::PortAllocatorSessionFactory {
       const std::string& relay,
       const std::string& agent) {
     return new remoting::PepperPortAllocatorSession(
-        instance_, jingle_message_loop_, allocator, name, session_type,
-        stun_hosts, relay_hosts, relay, agent);
+        instance_, pepper_message_loop_, network_message_loop_, allocator,
+        name, session_type, stun_hosts, relay_hosts, relay, agent);
   }
 
  private:
   remoting::ChromotingInstance* instance_;
 
-  // Message loop that jingle runs on.
-  MessageLoop* jingle_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> pepper_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> network_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionFactory);
 };
@@ -176,12 +179,13 @@ static void DeletePepperURLFetcher(PepperURLFetcher* fetcher) {
 }
 
 // A helper class to do HTTP request on the pepper thread and then delegate the
-// result to PepperPortAllocatorSession on jingle thread safely.
+// result to PepperPortAllocatorSession on network thread safely.
 class PepperCreateSessionTask
     : public base::RefCountedThreadSafe<PepperCreateSessionTask> {
  public:
   PepperCreateSessionTask(
-      MessageLoop* jingle_message_loop,
+      base::MessageLoopProxy* plugin_message_loop,
+      base::MessageLoopProxy* network_message_loop,
       PepperPortAllocatorSession* allocator_session,
       ChromotingInstance* instance,
       const std::string& host,
@@ -189,7 +193,8 @@ class PepperCreateSessionTask
       const std::string& relay_token,
       const std::string& session_type,
       const std::string& name)
-      : jingle_message_loop_(jingle_message_loop),
+      : plugin_message_loop_(plugin_message_loop),
+        network_message_loop_(network_message_loop),
         allocator_session_(allocator_session),
         instance_(instance),
         host_(host),
@@ -201,9 +206,9 @@ class PepperCreateSessionTask
 
   // Start doing the request. The request will start on the pepper thread.
   void Start() {
-    if (!CurrentlyOnPluginThread()) {
-      RunTaskOnPluginThread(
-          NewRunnableMethod(this, &PepperCreateSessionTask::Start));
+    if (!plugin_message_loop_->BelongsToCurrentThread()) {
+      plugin_message_loop_->PostTask(
+          FROM_HERE, base::Bind(&PepperCreateSessionTask::Start, this));
       return;
     }
 
@@ -233,15 +238,15 @@ class PepperCreateSessionTask
     // Set the pointers to zero.
     {
       base::AutoLock auto_lock(lock_);
-      jingle_message_loop_ = NULL;
+      network_message_loop_ = NULL;
       allocator_session_ = NULL;
       instance_ = NULL;
     }
 
     // IMPORTANT!
     // Destroy PepperURLFetcher only on pepper thread.
-    RunTaskOnPluginThread(
-        NewRunnableFunction(&DeletePepperURLFetcher, url_fetcher_.release()));
+    plugin_message_loop_->PostTask(
+        FROM_HERE, base::Bind(&DeletePepperURLFetcher, url_fetcher_.release()));
   }
 
  private:
@@ -249,18 +254,17 @@ class PepperCreateSessionTask
                      const std::string& response) {
     // IMPORTANT!
     // This method is called on the pepper thread and we want the response to
-    // be delegated to the jingle thread. However jignle thread might have
+    // be delegated to the network thread. However jignle thread might have
     // been destroyed and |allocator_session_| might be dangling too. So we
-    // put a lock here to access |jingle_message_loop_| and then do the
-    // remaining work on the jingle thread.
+    // put a lock here to access |network_message_loop_| and then do the
+    // remaining work on the network thread.
     base::AutoLock auto_lock(lock_);
-    if (!jingle_message_loop_)
+    if (!network_message_loop_)
       return;
 
-    jingle_message_loop_->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &PepperCreateSessionTask::DelegateRequestDone,
-                          success, status_code, response));
+    network_message_loop_->PostTask(
+        FROM_HERE, base::Bind(&PepperCreateSessionTask::DelegateRequestDone,
+                              this, success, status_code, response));
   }
 
   void DelegateRequestDone(bool success, int status_code,
@@ -270,10 +274,11 @@ class PepperCreateSessionTask
     allocator_session_->OnRequestDone(success, status_code, response);
   }
 
-  // Protects |jingle_message_loop_|.
+  // Protects |network_message_loop_| and |allocator_session_|.
   base::Lock lock_;
 
-  MessageLoop* jingle_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> plugin_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> network_message_loop_;
   PepperPortAllocatorSession* allocator_session_;
   ChromotingInstance* instance_;
   std::string host_;
@@ -290,7 +295,8 @@ class PepperCreateSessionTask
 
 PepperPortAllocatorSession::PepperPortAllocatorSession(
     ChromotingInstance* instance,
-    MessageLoop* message_loop,
+    base::MessageLoopProxy* plugin_message_loop,
+    base::MessageLoopProxy* network_message_loop,
     cricket::BasicPortAllocator* allocator,
     const std::string &name,
     const std::string& session_type,
@@ -299,7 +305,8 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
     const std::string& relay_token,
     const std::string& user_agent)
     : BasicPortAllocatorSession(allocator, name, session_type),
-      instance_(instance), jingle_message_loop_(message_loop),
+      instance_(instance), plugin_message_loop_(plugin_message_loop),
+      network_message_loop_(network_message_loop),
       relay_hosts_(relay_hosts), stun_hosts_(stun_hosts),
       relay_token_(relay_token), agent_(user_agent), attempts_(0) {
 }
@@ -357,15 +364,15 @@ void PepperPortAllocatorSession::SendSessionRequest(const std::string& host,
   // Construct a new one and start it. OnRequestDone() will be called when
   // task has completed.
   create_session_task_ = new PepperCreateSessionTask(
-      jingle_message_loop_, this, instance_, host, port, relay_token_,
-      session_type(), name());
+      plugin_message_loop_, network_message_loop_, this, instance_,
+      host, port, relay_token_, session_type(), name());
   create_session_task_->Start();
 }
 
 void PepperPortAllocatorSession::OnRequestDone(bool success,
                                                int status_code,
                                                const std::string& response) {
-  DCHECK_EQ(jingle_message_loop_, MessageLoop::current());
+  DCHECK(network_message_loop_->BelongsToCurrentThread());
 
   if (!success || status_code != 200) {
     LOG(WARNING) << "PepperPortAllocatorSession: failed.";
@@ -413,8 +420,10 @@ void PepperPortAllocatorSession::ReceiveSessionResponse(
 }
 
 PortAllocatorSessionFactory* CreatePepperPortAllocatorSessionFactory(
-    ChromotingInstance* instance) {
-  return new SessionFactory(instance, MessageLoop::current());
+    ChromotingInstance* instance, base::MessageLoopProxy* plugin_message_loop,
+    base::MessageLoopProxy* network_message_loop) {
+  return new SessionFactory(instance, plugin_message_loop,
+                            network_message_loop);
 }
 
 }  // namespace remoting

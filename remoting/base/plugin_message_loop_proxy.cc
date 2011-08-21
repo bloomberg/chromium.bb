@@ -4,6 +4,8 @@
 
 #include "remoting/base/plugin_message_loop_proxy.h"
 
+#include "base/bind.h"
+
 namespace remoting {
 
 PluginMessageLoopProxy::PluginMessageLoopProxy(Delegate* delegate)
@@ -15,7 +17,10 @@ PluginMessageLoopProxy::~PluginMessageLoopProxy() {
 
 void PluginMessageLoopProxy::Detach() {
   base::AutoLock auto_lock(lock_);
-  delegate_ = NULL;
+  if (delegate_) {
+    DCHECK(delegate_->IsPluginThread());
+    delegate_ = NULL;
+  }
 }
 
 // MessageLoopProxy interface implementation.
@@ -30,12 +35,13 @@ bool PluginMessageLoopProxy::PostDelayedTask(
     Task* task,
     int64 delay_ms) {
   base::AutoLock auto_lock(lock_);
-  if (!delegate_) {
+  if (!delegate_)
     return false;
-  } else {
-    return delegate_->RunOnPluginThread(
-        delay_ms, &PluginMessageLoopProxy::RunTask, task);
-  }
+
+  base::Closure* springpad_closure = new base::Closure(base::Bind(
+      &PluginMessageLoopProxy::RunTaskIf, this, task));
+  return delegate_->RunOnPluginThread(
+      delay_ms, &PluginMessageLoopProxy::TaskSpringboard, springpad_closure);
 }
 
 bool PluginMessageLoopProxy::PostNonNestableTask(
@@ -64,13 +70,13 @@ bool PluginMessageLoopProxy::PostDelayedTask(
     const base::Closure& task,
     int64 delay_ms) {
   base::AutoLock auto_lock(lock_);
-  if (!delegate_) {
+  if (!delegate_)
     return false;
-  } else {
-    base::Closure* task_on_heap = new base::Closure(task);
-    return delegate_->RunOnPluginThread(
-        delay_ms, &PluginMessageLoopProxy::RunClosure, task_on_heap);
-  }
+
+  base::Closure* springpad_closure = new base::Closure(base::Bind(
+      &PluginMessageLoopProxy::RunClosureIf, this, task));
+  return delegate_->RunOnPluginThread(
+      delay_ms, &PluginMessageLoopProxy::TaskSpringboard, springpad_closure);
 }
 
 bool PluginMessageLoopProxy::PostNonNestableTask(
@@ -90,25 +96,32 @@ bool PluginMessageLoopProxy::PostNonNestableDelayedTask(
 
 bool PluginMessageLoopProxy::BelongsToCurrentThread() {
   base::AutoLock auto_lock(lock_);
-  if (delegate_) {
-    return delegate_->IsPluginThread();
-  } else {
+  if (!delegate_)
     return false;
-  }
+
+  return delegate_->IsPluginThread();
 }
 
 // static
-void PluginMessageLoopProxy::RunTask(void* data) {
-  Task* task = reinterpret_cast<Task*>(data);
-  task->Run();
-  delete task;
-}
-
-// static
-void PluginMessageLoopProxy::RunClosure(void* data) {
+void PluginMessageLoopProxy::TaskSpringboard(void* data) {
   base::Closure* task = reinterpret_cast<base::Closure*>(data);
   task->Run();
   delete task;
+}
+
+void PluginMessageLoopProxy::RunTaskIf(Task* task) {
+  // |delegate_| can be changed only from our thread, so it's safe to
+  // access it without acquiring |lock_|.
+  if (delegate_)
+    task->Run();
+  delete task;
+}
+
+void PluginMessageLoopProxy::RunClosureIf(const base::Closure& task) {
+  // |delegate_| can be changed only from our thread, so it's safe to
+  // access it without acquiring |lock_|.
+  if (delegate_)
+    task.Run();
 }
 
 }  // namespace remoting

@@ -8,13 +8,14 @@
 #include "remoting/base/tracer.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_instance.h"
-#include "remoting/client/plugin/pepper_util.h"
 
 namespace remoting {
 
-PepperViewProxy::PepperViewProxy(ChromotingInstance* instance, PepperView* view)
+PepperViewProxy::PepperViewProxy(ChromotingInstance* instance, PepperView* view,
+                                 base::MessageLoopProxy* plugin_message_loop)
   : instance_(instance),
-    view_(view) {
+    view_(view),
+    plugin_message_loop_(plugin_message_loop) {
 }
 
 PepperViewProxy::~PepperViewProxy() {
@@ -28,8 +29,9 @@ bool PepperViewProxy::Initialize() {
 }
 
 void PepperViewProxy::TearDown() {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewTracedMethod(this, &PepperViewProxy::TearDown));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(
+        FROM_HERE, NewTracedMethod(this, &PepperViewProxy::TearDown));
     return;
   }
 
@@ -38,8 +40,9 @@ void PepperViewProxy::TearDown() {
 }
 
 void PepperViewProxy::Paint() {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewTracedMethod(this, &PepperViewProxy::Paint));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(
+        FROM_HERE, NewTracedMethod(this, &PepperViewProxy::Paint));
     return;
   }
 
@@ -48,9 +51,9 @@ void PepperViewProxy::Paint() {
 }
 
 void PepperViewProxy::SetSolidFill(uint32 color) {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperViewProxy::SetSolidFill, color));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+        this, &PepperViewProxy::SetSolidFill, color));
     return;
   }
 
@@ -59,9 +62,9 @@ void PepperViewProxy::SetSolidFill(uint32 color) {
 }
 
 void PepperViewProxy::UnsetSolidFill() {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperViewProxy::UnsetSolidFill));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(
+        FROM_HERE, NewTracedMethod(this, &PepperViewProxy::UnsetSolidFill));
     return;
   }
 
@@ -70,9 +73,9 @@ void PepperViewProxy::UnsetSolidFill() {
 }
 
 void PepperViewProxy::SetConnectionState(ConnectionState state) {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewRunnableMethod(this, &PepperViewProxy::SetConnectionState, state));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &PepperViewProxy::SetConnectionState, state));
     return;
   }
 
@@ -81,10 +84,9 @@ void PepperViewProxy::SetConnectionState(ConnectionState state) {
 }
 
 void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewTracedMethod(this,
-                                          &PepperViewProxy::UpdateLoginStatus,
-                                          success, info));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+        this, &PepperViewProxy::UpdateLoginStatus, success, info));
     return;
   }
 
@@ -95,7 +97,7 @@ void PepperViewProxy::UpdateLoginStatus(bool success, const std::string& info) {
 double PepperViewProxy::GetHorizontalScaleRatio() const {
   // This method returns a value, so must run synchronously, so must be
   // called only on the pepper thread.
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   if (view_)
     return view_->GetHorizontalScaleRatio();
@@ -105,7 +107,7 @@ double PepperViewProxy::GetHorizontalScaleRatio() const {
 double PepperViewProxy::GetVerticalScaleRatio() const {
   // This method returns a value, so must run synchronously, so must be
   // called only on the pepper thread.
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   if (view_)
     return view_->GetVerticalScaleRatio();
@@ -120,10 +122,10 @@ void PepperViewProxy::AllocateFrame(
     base::TimeDelta duration,
     scoped_refptr<media::VideoFrame>* frame_out,
     Task* done) {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperViewProxy::AllocateFrame, format, width,
-                        height, timestamp, duration, frame_out, done));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+        this, &PepperViewProxy::AllocateFrame, format, width,
+        height, timestamp, duration, frame_out, done));
     return;
   }
 
@@ -134,10 +136,9 @@ void PepperViewProxy::AllocateFrame(
 }
 
 void PepperViewProxy::ReleaseFrame(media::VideoFrame* frame) {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperViewProxy::ReleaseFrame,
-                        make_scoped_refptr(frame)));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+        this, &PepperViewProxy::ReleaseFrame, make_scoped_refptr(frame)));
     return;
   }
 
@@ -148,10 +149,10 @@ void PepperViewProxy::ReleaseFrame(media::VideoFrame* frame) {
 void PepperViewProxy::OnPartialFrameOutput(media::VideoFrame* frame,
                                            UpdatedRects* rects,
                                            Task* done) {
-  if (instance_ && !CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewTracedMethod(this, &PepperViewProxy::OnPartialFrameOutput,
-                        make_scoped_refptr(frame), rects, done));
+  if (instance_ && !plugin_message_loop_->BelongsToCurrentThread()) {
+    plugin_message_loop_->PostTask(FROM_HERE, NewTracedMethod(
+        this, &PepperViewProxy::OnPartialFrameOutput,
+        make_scoped_refptr(frame), rects, done));
     return;
   }
 
@@ -160,7 +161,7 @@ void PepperViewProxy::OnPartialFrameOutput(media::VideoFrame* frame,
 }
 
 void PepperViewProxy::Detach() {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
   instance_ = NULL;
   view_ = NULL;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,28 +16,22 @@ namespace remoting {
 // process.
 class ClientContext {
  public:
-  ClientContext();
+  ClientContext(base::MessageLoopProxy* main_message_loop_proxy);
   virtual ~ClientContext();
 
   void Start();
   void Stop();
 
-  MessageLoop* main_message_loop();
+  base::MessageLoopProxy* main_message_loop();
   MessageLoop* decode_message_loop();
   base::MessageLoopProxy* network_message_loop();
 
  private:
-  // A thread that handles capture rate control and sending data to the
-  // HostConnection.
-  base::Thread main_thread_;
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
 
   // A thread that handles all decode operations.
   base::Thread decode_thread_;
 
-  // A thread that handles all network IO.
-  //
-  // TODO(sergeyu): Remove |network_thread_| and use main plugin
-  // message loop for network IO.
   base::Thread network_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientContext);

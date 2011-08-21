@@ -19,6 +19,10 @@
 #include "base/memory/ref_counted.h"
 #include "remoting/client/plugin/pepper_view.h"
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace remoting {
 
 class ChromotingInstance;
@@ -28,7 +32,8 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
                         public ChromotingView,
                         public FrameConsumer {
  public:
-  PepperViewProxy(ChromotingInstance* instance, PepperView* view);
+  PepperViewProxy(ChromotingInstance* instance, PepperView* view,
+                  base::MessageLoopProxy* plugin_message_loop);
   virtual ~PepperViewProxy();
 
   // ChromotingView implementation.
@@ -75,6 +80,8 @@ class PepperViewProxy : public base::RefCountedThreadSafe<PepperViewProxy>,
   // This variable is only accessed on the pepper thread. Locking is not
   // necessary.
   PepperView* view_;
+
+  scoped_refptr<base::MessageLoopProxy> plugin_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperViewProxy);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,13 +22,6 @@ void CompletionCallbackTaskAdapter(void* user_data, int32_t not_used);
 // Converts a Task* to a pp::CompletionCallback suitable for use with ppapi C++
 // APIs that require a pp::CompletionCallback.  Takes ownership of |task|.
 pp::CompletionCallback TaskToCompletionCallback(Task* task);
-
-// Posts the current task to the plugin's main thread.  Takes ownership of
-// |task|.
-void RunTaskOnPluginThread(Task* task);
-
-// Returns true if the current thread is the plugin main thread.
-bool CurrentlyOnPluginThread();
 
 }  // namespace remoting
 

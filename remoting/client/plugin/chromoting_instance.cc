@@ -39,7 +39,6 @@
 #include "remoting/client/plugin/pepper_port_allocator_session.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/plugin/pepper_view_proxy.h"
-#include "remoting/client/plugin/pepper_util.h"
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/proto/auth.pb.h"
@@ -80,6 +79,9 @@ const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
 ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::InstancePrivate(pp_instance),
       initialized_(false),
+      plugin_message_loop_(
+          new PluginMessageLoopProxy(&plugin_thread_delegate_)),
+      context_(plugin_message_loop_),
       scale_to_fit_(false),
       enable_client_nat_traversal_(false),
       initial_policy_received_(false),
@@ -94,7 +96,7 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
 }
 
 ChromotingInstance::~ChromotingInstance() {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   // Detach the log proxy so we don't log anything else to the UI.
   // This needs to be done before the instance is unregistered for logging.
@@ -118,6 +120,8 @@ ChromotingInstance::~ChromotingInstance() {
   if (view_proxy_.get()) {
     view_proxy_->Detach();
   }
+
+  plugin_message_loop_->Detach();
 }
 
 bool ChromotingInstance::Init(uint32_t argc,
@@ -142,7 +146,7 @@ bool ChromotingInstance::Init(uint32_t argc,
 
   // Create the chromoting objects that don't depend on the network connection.
   view_.reset(new PepperView(this, &context_));
-  view_proxy_ = new PepperViewProxy(this, view_.get());
+  view_proxy_ = new PepperViewProxy(this, view_.get(), plugin_message_loop_);
   rectangle_decoder_ = new RectangleUpdateDecoder(
       context_.decode_message_loop(), view_proxy_);
 
@@ -153,7 +157,7 @@ bool ChromotingInstance::Init(uint32_t argc,
 }
 
 void ChromotingInstance::Connect(const ClientConfig& config) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   // This can only happen at initialization if the Javascript connect call
   // occurs before the enterprise policy is read.  We are guaranteed that the
@@ -176,7 +180,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   IpcPacketSocketFactory* socket_factory = NULL;
   HostResolverFactory* host_resolver_factory = NULL;
   PortAllocatorSessionFactory* session_factory =
-      CreatePepperPortAllocatorSessionFactory(this);
+      CreatePepperPortAllocatorSessionFactory(
+          this, plugin_message_loop_, context_.network_message_loop());
 
   // If we don't have socket dispatcher for IPC (e.g. P2P API is
   // disabled), then JingleSessionManager will try to use physical sockets.
@@ -204,6 +209,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   ChromotingScriptableObject* scriptable_object = GetScriptableObject();
   scoped_refptr<PepperXmppProxy> xmpp_proxy =
       new PepperXmppProxy(scriptable_object->AsWeakPtr(),
+                          plugin_message_loop_,
                           context_.network_message_loop());
   scriptable_object->AttachXmppProxy(xmpp_proxy);
 
@@ -216,7 +222,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 }
 
 void ChromotingInstance::Disconnect() {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   LOG(INFO) << "Disconnecting from host.";
   if (client_.get()) {
@@ -236,7 +242,7 @@ void ChromotingInstance::Disconnect() {
 
 void ChromotingInstance::DidChangeView(const pp::Rect& position,
                                        const pp::Rect& clip) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   bool size_changed =
       view_->SetPluginSize(gfx::Size(position.width(), position.height()));
@@ -258,7 +264,7 @@ void ChromotingInstance::DidChangeView(const pp::Rect& position,
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
   if (!input_handler_.get()) {
     return false;
   }
@@ -349,7 +355,7 @@ void ChromotingInstance::SubmitLoginInfo(const std::string& username,
 }
 
 void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
   if (scale_to_fit == scale_to_fit_)
     return;
@@ -525,7 +531,7 @@ bool ChromotingInstance::IsNatTraversalAllowed(
 }
 
 void ChromotingInstance::HandlePolicyUpdate(const std::string policy_json) {
-  DCHECK(CurrentlyOnPluginThread());
+  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
   bool traversal_policy = IsNatTraversalAllowed(policy_json);
 
   // If the policy changes from traversal allowed, to traversal denied, we
@@ -542,9 +548,8 @@ void ChromotingInstance::HandlePolicyUpdate(const std::string policy_json) {
   initial_policy_received_ = true;
   enable_client_nat_traversal_ = traversal_policy;
 
-  if (delayed_connect_.get()) {
-    RunTaskOnPluginThread(delayed_connect_.release());
-  }
+  if (delayed_connect_.get())
+    plugin_message_loop_->PostTask(FROM_HERE, delayed_connect_.release());
 }
 
 }  // namespace remoting

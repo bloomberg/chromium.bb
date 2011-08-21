@@ -21,6 +21,7 @@
 #include "ppapi/cpp/private/instance_private.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
+#include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace base {
@@ -129,6 +130,8 @@ class ChromotingInstance : public pp::InstancePrivate {
 
   bool initialized_;
 
+  PepperPluginThreadDelegate plugin_thread_delegate_;
+  scoped_refptr<PluginMessageLoopProxy> plugin_message_loop_;
   ClientContext context_;
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<PepperView> view_;

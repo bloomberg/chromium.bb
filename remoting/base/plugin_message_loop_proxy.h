@@ -65,12 +65,14 @@ class PluginMessageLoopProxy : public base::MessageLoopProxy {
   virtual bool BelongsToCurrentThread() OVERRIDE;
 
  private:
+  static void TaskSpringboard(void* data);
+
+  void RunTaskIf(Task* task);
+  void RunClosureIf(const base::Closure& task);
+
   // |lock_| must be acquired when accessing |delegate_|.
   base::Lock lock_;
   Delegate* delegate_;
-
-  static void RunTask(void* data);
-  static void RunClosure(void* data);
 
   DISALLOW_COPY_AND_ASSIGN(PluginMessageLoopProxy);
 };

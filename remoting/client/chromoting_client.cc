@@ -197,8 +197,6 @@ void ChromotingClient::SetConnectionState(ConnectionState s) {
 
   state_ = s;
   view_->SetConnectionState(s);
-
-  Repaint();
 }
 
 void ChromotingClient::OnPacketDone(bool last_packet,

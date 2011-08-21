@@ -5,9 +5,13 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_PORT_ALLOCATOR_SESSION_H_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_PORT_ALLOCATOR_SESSION_H_
 
-#include "base/message_loop.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
+
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
 
 namespace remoting {
 
@@ -20,7 +24,8 @@ class PepperPortAllocatorSession : public cricket::BasicPortAllocatorSession {
  public:
   PepperPortAllocatorSession(
       ChromotingInstance* instance,
-      MessageLoop* message_loop,
+      base::MessageLoopProxy* plugin_message_loop,
+      base::MessageLoopProxy* network_message_loop,
       cricket::BasicPortAllocator* allocator,
       const std::string& name,
       const std::string& session_type,
@@ -47,7 +52,8 @@ class PepperPortAllocatorSession : public cricket::BasicPortAllocatorSession {
   void TryCreateRelaySession();
 
   ChromotingInstance* const instance_;
-  MessageLoop* const jingle_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> plugin_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> network_message_loop_;
 
   std::vector<std::string> relay_hosts_;
   std::vector<talk_base::SocketAddress> stun_hosts_;
@@ -61,7 +67,9 @@ class PepperPortAllocatorSession : public cricket::BasicPortAllocatorSession {
 };
 
 PortAllocatorSessionFactory* CreatePepperPortAllocatorSessionFactory(
-    ChromotingInstance* instance);
+     ChromotingInstance* instance, base::MessageLoopProxy* plugin_message_loop,
+     base::MessageLoopProxy* network_message_loop);
+
 
 }  // namespace remoting
 
