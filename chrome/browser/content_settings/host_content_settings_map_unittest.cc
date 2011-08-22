@@ -34,6 +34,8 @@ bool SettingsEqual(const ContentSettings& settings1,
   return true;
 }
 
+}  // namespace
+
 class HostContentSettingsMapTest : public TestingBrowserProcessTest {
  public:
   HostContentSettingsMapTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
@@ -1263,5 +1265,3 @@ TEST_F(HostContentSettingsMapTest, CookiesBlockEverythingExceptAllowed) {
             host_content_settings_map->GetCookieContentSetting(
                 kAllowedSite, kAllowedSite, true));
 }
-
-}  // namespace
