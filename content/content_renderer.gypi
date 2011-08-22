@@ -208,6 +208,13 @@
           ],
         }],
         ['toolkit_uses_gtk == 1', {
+          'conditions': [
+            [ 'linux_use_tcmalloc==1', {
+              'dependencies': [
+                 '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
