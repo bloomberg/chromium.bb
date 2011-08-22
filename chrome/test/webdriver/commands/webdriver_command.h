@@ -16,7 +16,6 @@ class DictionaryValue;
 
 namespace webdriver {
 
-class Error;
 class Response;
 class Session;
 
@@ -34,8 +33,6 @@ class WebDriverCommand : public Command {
 
   // Initializes this webdriver command by fetching the command session.
   virtual bool Init(Response* const response);
-
-  virtual void Finish();
 
  protected:
   Session* session_;

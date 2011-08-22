@@ -15,7 +15,6 @@
 
 namespace webdriver {
 
-class Error;
 class Response;
 
 // Base class for a command mapped to a URL in the WebDriver REST API. Each
@@ -37,11 +36,6 @@ class Command {
   // return |false| and populate the |response| with the necessary information
   // to return to the client.
   virtual bool Init(Response* const response);
-
-  // Called after this command is executed. Returns NULL if no error occurs.
-  // This is only called if |Init| is successful and regardless of whether
-  // the execution results in a |Error|.
-  virtual void Finish();
 
   // Executes the corresponding variant of this command URL.
   // Always called after |Init()| and called from the Execute function.

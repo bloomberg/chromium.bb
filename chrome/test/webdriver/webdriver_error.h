@@ -49,7 +49,7 @@ class Error {
 
   void AddDetails(const std::string& details);
 
-  std::string GetErrorMessage() const;
+  std::string GetMessage() const;
 
   ErrorCode code() const;
   const std::string& details() const;

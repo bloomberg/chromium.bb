@@ -42,22 +42,9 @@ class Automation {
     BrowserOptions();
     ~BrowserOptions();
 
-    // The command line to use for launching the browser. If no program is
-    // specified, the default browser executable will be used.
     CommandLine command;
-
-    // The user data directory to be copied and used. If empty, a temporary
-    // directory will be used.
     FilePath user_data_dir;
-
-    // The channel ID of an already running browser to connect to. If empty,
-    // the browser will be launched with an anonymous channel.
     std::string channel_id;
-
-    // True if the Chrome process should only be terminated if quit is called.
-    // If false, Chrome will also be terminated if this process is killed or
-    // shutdown.
-    bool detach_process;
   };
 
   Automation();

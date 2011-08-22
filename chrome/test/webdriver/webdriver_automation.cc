@@ -184,8 +184,7 @@ bool GetDefaultChromeExe(FilePath* browser_exe) {
 namespace webdriver {
 
 Automation::BrowserOptions::BrowserOptions()
-    : command(CommandLine::NO_PROGRAM),
-      detach_process(false) {}
+    : command(CommandLine::NO_PROGRAM) {}
 
 Automation::BrowserOptions::~BrowserOptions() {}
 
@@ -202,8 +201,6 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
   command.AppendSwitch(switches::kFullMemoryCrashReport);
   command.AppendSwitch(switches::kNoDefaultBrowserCheck);
   command.AppendSwitch(switches::kNoFirstRun);
-  if (options.detach_process)
-    command.AppendSwitch(switches::kAutomationReinitializeOnChannelError);
   if (options.user_data_dir.empty())
     command.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
 
@@ -231,35 +228,10 @@ void Automation::Init(const BrowserOptions& options, Error** error) {
   LOG(INFO) << chrome_details;
 
   // Create the ProxyLauncher and launch Chrome.
-  // In Chrome 13/14, the only way to detach the browser process is to use a
-  // named proxy launcher.
-  // TODO(kkania): Remove this when Chrome 15 is stable.
-  std::string channel_id = options.channel_id;
-  bool launch_browser = false;
-  if (options.detach_process) {
-    launch_browser = true;
-    if (!channel_id.empty()) {
-      *error = new Error(
-          kUnknownError, "Cannot detach an already running browser process");
-      return;
-    }
-#if defined(OS_WIN)
-    channel_id = "chromedriver" + GenerateRandomID();
-#elif defined(OS_POSIX)
-    FilePath temp_file;
-    if (!file_util::CreateTemporaryFile(&temp_file) ||
-        !file_util::Delete(temp_file, false /* recursive */)) {
-      *error = new Error(kUnknownError, "Could not create temporary filename");
-      return;
-    }
-    channel_id = temp_file.value();
-#endif
-  }
-  if (channel_id.empty()) {
+  if (options.channel_id.empty()) {
     launcher_.reset(new AnonymousProxyLauncher(false));
   } else {
-    LOG(INFO) << "Using named testing interface";
-    launcher_.reset(new NamedProxyLauncher(channel_id, launch_browser, false));
+    launcher_.reset(new NamedProxyLauncher(options.channel_id, false, false));
   }
   ProxyLauncher::LaunchState launch_props = {
       false,  // clear_profile

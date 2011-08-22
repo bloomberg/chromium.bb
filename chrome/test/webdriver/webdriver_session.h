@@ -77,11 +77,9 @@ class Session {
   // itself and return an error code.
   Error* Init(const Automation::BrowserOptions& options);
 
-  // Should be called before executing a command.
+  // Should be called before executing a command. Performs necessary waits
+  // and frame switching.
   Error* BeforeExecuteCommand();
-
-  // Should be called after executing a command.
-  Error* AfterExecuteCommand();
 
   // Terminates this session and deletes itself.
   void Terminate();
