@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,18 +47,11 @@ WebIDBKey RendererWebIDBCursorImpl::primaryKey() const {
   return primaryKey;
 }
 
-void RendererWebIDBCursorImpl::value(
-    WebSerializedScriptValue& webScriptValue,
-    WebIDBKey& webKey) const {
+WebSerializedScriptValue RendererWebIDBCursorImpl::value() const {
   SerializedScriptValue scriptValue;
-  IndexedDBKey key;
   RenderThread::current()->Send(
-      new IndexedDBHostMsg_CursorValue(idb_cursor_id_, &scriptValue,
-                                       &key));
-  // Only one or the other type should have been "returned" to us.
-  DCHECK(scriptValue.is_null() != (key.type() == WebIDBKey::InvalidType));
-  webScriptValue = scriptValue;
-  webKey = key;
+      new IndexedDBHostMsg_CursorValue(idb_cursor_id_, &scriptValue));
+  return scriptValue;
 }
 
 void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,
@@ -79,8 +72,8 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
                                        idb_cursor_id_, &ec);
 }
 
-void RendererWebIDBCursorImpl::remove(WebIDBCallbacks* callbacks,
-                                      WebExceptionCode& ec) {
+void RendererWebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks,
+                                              WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBCursorDelete(callbacks, idb_cursor_id_, &ec);

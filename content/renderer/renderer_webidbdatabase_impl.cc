@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,6 @@ void RendererWebIDBDatabaseImpl::setVersion(
 WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
     const WebDOMStringList& names,
     unsigned short mode,
-    unsigned long timeout,
     WebExceptionCode& ec) {
   std::vector<string16> object_stores;
   object_stores.reserve(names.length());
@@ -116,7 +115,7 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
   RenderThread::current()->Send(
       new IndexedDBHostMsg_DatabaseTransaction(
           idb_database_id_, object_stores, mode,
-          timeout, &transaction_id, &ec));
+          &transaction_id, &ec));
   if (!transaction_id)
     return NULL;
   return new RendererWebIDBTransactionImpl(transaction_id);

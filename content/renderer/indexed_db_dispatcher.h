@@ -151,7 +151,6 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
   void OnSuccessIDBDatabase(int32 response_id, int32 object_id);
   void OnSuccessIndexedDBKey(int32 response_id, const IndexedDBKey& key);
   void OnSuccessIDBTransaction(int32 response_id, int32 object_id);
-  void OnSuccessIDBIndex(int32 response_id, int32 object_id);
   void OnSuccessOpenCursor(int32 response_id, int32 object_id);
   void OnSuccessSerializedScriptValue(int32 response_id,
                                       const SerializedScriptValue& value);

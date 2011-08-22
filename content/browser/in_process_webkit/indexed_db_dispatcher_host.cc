@@ -431,7 +431,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
     int32 idb_database_id,
     const std::vector<string16>& names,
     int32 mode,
-    int32 timeout,
     int32* idb_transaction_id,
     WebKit::WebExceptionCode* ec) {
   WebIDBDatabase* database = parent_->GetOrTerminateProcess(
@@ -447,7 +446,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
 
   *ec = 0;
   WebIDBTransaction* transaction = database->transaction(
-      object_stores, mode, timeout, *ec);
+      object_stores, mode, *ec);
   DCHECK(!transaction != !*ec);
   *idb_transaction_id =
       *ec ? 0 : parent_->Add(transaction, database_url_map_[idb_database_id]);
@@ -917,18 +916,12 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrimaryKey(
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnValue(
     int32 object_id,
-    SerializedScriptValue* script_value,
-    IndexedDBKey* key) {
+    SerializedScriptValue* script_value) {
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, object_id);
   if (!idb_cursor)
     return;
 
-  WebSerializedScriptValue temp_script_value;
-  WebIDBKey temp_key;
-  idb_cursor->value(temp_script_value, temp_key);
-
-  *script_value = SerializedScriptValue(temp_script_value);
-  *key = IndexedDBKey(temp_key);
+  *script_value = SerializedScriptValue(idb_cursor->value());
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
@@ -971,8 +964,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
     return;
 
   *ec = 0;
-  // TODO(jorlow): This should be delete.
-  idb_cursor->remove(
+  idb_cursor->deleteFunction(
       new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id), *ec);
 }
 

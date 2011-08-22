@@ -16,14 +16,17 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
-class IndexedDBMsg_CallbacksSuccessIDBIndex;
+class IndexedDBMsg_CallbacksSuccessIDBDatabase;
 class IndexedDBMsg_CallbacksSuccessIDBTransaction;
 
 // Template magic to figure out what message to send to the renderer based on
 // which (overloaded) onSuccess method we expect to be called.
 template <class Type> struct WebIDBToMsgHelper { };
-template <> struct WebIDBToMsgHelper<WebKit::WebIDBIndex> {
-  typedef IndexedDBMsg_CallbacksSuccessIDBIndex MsgType;
+template <> struct WebIDBToMsgHelper<WebKit::WebIDBDatabase> {
+  typedef IndexedDBMsg_CallbacksSuccessIDBDatabase MsgType;
+};
+template <> struct WebIDBToMsgHelper<WebKit::WebIDBTransaction> {
+  typedef IndexedDBMsg_CallbacksSuccessIDBTransaction MsgType;
 };
 
 // The code the following two classes share.
@@ -55,52 +58,18 @@ template <class WebObjectType>
 class IndexedDBCallbacks : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id,
+      const GURL& origin_url)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id),
+        origin_url_(origin_url) {
+  }
 
   virtual void onSuccess(WebObjectType* idb_object) {
-    int32 object_id = dispatcher_host()->Add(idb_object);
+    int32 object_id = dispatcher_host()->Add(idb_object, origin_url_);
     dispatcher_host()->Send(
         new typename WebIDBToMsgHelper<WebObjectType>::MsgType(response_id(),
                                                                object_id));
   }
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
-};
-
-template <>
-class IndexedDBCallbacks<WebKit::WebIDBTransaction>
-    : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id,
-      const GURL& origin_url)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id),
-        origin_url_(origin_url) {
-  }
-
-  virtual void onSuccess(WebKit::WebIDBTransaction* idb_object);
-  const GURL& origin_url() const { return origin_url_; }
-
- private:
-  const GURL& origin_url_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
-};
-
-template <>
-class IndexedDBCallbacks<WebKit::WebIDBDatabase>
-    : public IndexedDBCallbacksBase {
- public:
-  IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id,
-      const GURL& origin_url)
-      : IndexedDBCallbacksBase(dispatcher_host, response_id),
-        origin_url_(origin_url) {
-  }
-
-  virtual void onSuccess(WebKit::WebIDBDatabase* idb_object);
-  const GURL& origin_url() const { return origin_url_; }
 
  private:
   GURL origin_url_;

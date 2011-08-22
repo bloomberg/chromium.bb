@@ -112,7 +112,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                       WebKit::WebExceptionCode* ec);
     void OnTransaction(int32 idb_database_id,
                        const std::vector<string16>& names,
-                       int32 mode, int32 timeout,
+                       int32 mode,
                        int32* idb_transaction_id,
                        WebKit::WebExceptionCode* ec);
     void OnOpen(int32 idb_database_id, int32 response_id);
@@ -218,8 +218,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnKey(int32 idb_object_store_id, IndexedDBKey* key);
     void OnPrimaryKey(int32 idb_object_store_id, IndexedDBKey* primary_key);
     void OnValue(int32 idb_object_store_id,
-                 SerializedScriptValue* script_value,
-                 IndexedDBKey* key);
+                 SerializedScriptValue* script_value);
     void OnUpdate(int32 idb_object_store_id,
                   int32 response_id,
                   const SerializedScriptValue& value,

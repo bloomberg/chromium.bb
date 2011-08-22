@@ -25,21 +25,6 @@ void IndexedDBCallbacksBase::onBlocked() {
   dispatcher_host_->Send(new IndexedDBMsg_CallbacksBlocked(response_id_));
 }
 
-void IndexedDBCallbacks<WebKit::WebIDBDatabase>::onSuccess(
-    WebKit::WebIDBDatabase* idb_object) {
-  int32 object_id = dispatcher_host()->Add(idb_object, origin_url());
-  dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksSuccessIDBDatabase(response_id(), object_id));
-}
-
-void IndexedDBCallbacks<WebKit::WebIDBTransaction>::onSuccess(
-    WebKit::WebIDBTransaction* idb_object) {
-  int32 object_id = dispatcher_host()->Add(idb_object, origin_url());
-  dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksSuccessIDBTransaction(response_id(),
-                                                      object_id));
-}
-
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
     WebKit::WebIDBCursor* idb_object) {
   int32 object_id = dispatcher_host()->Add(idb_object);

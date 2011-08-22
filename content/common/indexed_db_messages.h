@@ -142,9 +142,6 @@ IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBDatabase,
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIndexedDBKey,
                      int32 /* response_id */,
                      IndexedDBKey /* indexed_db_key */)
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBIndex,
-                     int32 /* response_id */,
-                     int32 /* idb_index_id */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessIDBTransaction,
                      int32 /* response_id */,
                      int32 /* idb_transaction_id */)
@@ -186,10 +183,9 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorPrimaryKey,
                             IndexedDBKey /* primary_key */)
 
 // WebIDBCursor::value() message.
-IPC_SYNC_MESSAGE_CONTROL1_2(IndexedDBHostMsg_CursorValue,
+IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_CursorValue,
                             int32, /* idb_cursor_id */
-                            SerializedScriptValue, /* script_value */
-                            IndexedDBKey /* key */)
+                            SerializedScriptValue /* script_value */)
 
 // WebIDBCursor::update() message.
 IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorUpdate,
@@ -259,11 +255,10 @@ IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_DatabaseSetVersion,
 // temporary ID and keep a map in the browser process of real
 // IDs to temporary IDs. We can then update the transaction
 // to its real ID asynchronously.
-IPC_SYNC_MESSAGE_CONTROL4_2(IndexedDBHostMsg_DatabaseTransaction,
+IPC_SYNC_MESSAGE_CONTROL3_2(IndexedDBHostMsg_DatabaseTransaction,
                             int32, /* idb_database_id */
                             std::vector<string16>, /* object_stores */
                             int32, /* mode */
-                            int32, /* timeout */
                             int32, /* idb_transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
