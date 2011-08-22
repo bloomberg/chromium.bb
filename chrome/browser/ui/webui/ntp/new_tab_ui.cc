@@ -271,7 +271,7 @@ void NewTabUI::PaintTimeout() {
     int load_time_ms = static_cast<int>(load_time.InMilliseconds());
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_INITIAL_NEW_TAB_UI_LOAD,
-        NotificationService::AllSources(),
+        Source<Profile>(GetProfile()),
         Details<int>(&load_time_ms));
     UMA_HISTOGRAM_TIMES("NewTabUI load", load_time);
   } else {
