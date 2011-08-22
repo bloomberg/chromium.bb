@@ -585,8 +585,8 @@ void GlassBrowserFrameView::UpdateAvatarInfo() {
   if (browser_view_->IsOffTheRecord()) {
     avatar_button_->SetIcon(browser_view_->GetOTRAvatarIcon());
   } else {
-    ProfileInfoInterface& cache =
-        g_browser_process->profile_manager()->GetProfileInfo();
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
     Profile* profile = browser_view_->browser()->profile();
     size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
     if (index != std::string::npos) {

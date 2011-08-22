@@ -185,8 +185,6 @@
         'test/base/testing_pref_service.h',
         'test/base/testing_profile.cc',
         'test/base/testing_profile.h',
-        'test/base/testing_profile_manager.cc',
-        'test/base/testing_profile_manager.h',
         'test/base/thread_observer_helper.h',
         'test/base/ui_test_utils.cc',
         'test/base/ui_test_utils.h',

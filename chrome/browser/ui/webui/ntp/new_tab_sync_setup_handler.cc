@@ -142,7 +142,7 @@ void NewTabSyncSetupHandler::UpdateLogin() {
 
   std::string icon_url;
   ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetMutableProfileInfo();
+      g_browser_process->profile_manager()->GetProfileInfoCache();
   if (cache.GetNumberOfProfiles() > 1) {
     size_t index = cache.GetIndexOfProfileWithPath(
         Profile::FromWebUI(web_ui_)->GetPath());

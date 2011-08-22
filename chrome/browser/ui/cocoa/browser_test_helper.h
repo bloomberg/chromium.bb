@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "content/browser/browser_thread.h"
 
 // Base class which contains a valid Browser*.  Lots of boilerplate to
@@ -33,9 +32,6 @@ class BrowserTestHelper {
 
   virtual TestingProfile* profile() const;
   Browser* browser() const { return browser_.get(); }
-  TestingBrowserProcess* browser_process() {
-    return browser_process_.get();
-  }
 
   // Creates the browser window. To close this window call |CloseBrowserWindow|.
   // Do NOT call close directly on the window.
@@ -46,14 +42,7 @@ class BrowserTestHelper {
   void CloseBrowserWindow();
 
  private:
-  // Code that will relies on g_browser_process->profile_manager() needs special
-  // setup. This performs that setup now that multiprofiles is enabled.
-  void SetUpProfileManager();
-
   ScopedTestingBrowserProcess browser_process_;
-
-  TestingProfileManager* profile_manager_;
-  scoped_ptr<AvatarMenuModel::Item> profile_info_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
