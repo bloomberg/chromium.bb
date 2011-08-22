@@ -7,3 +7,6 @@ FileUtilTest.NormalizeFilePathSymlinks
 
 # Fails on Valgrind/Mac, see http://crbug.com/53196
 CancellationFlagTest.SetOnDifferentThreadDeathTest
+
+# Fails on Valgrind/Mac, see http://crbug.com/93722
+ProcessUtilTest.MacTerminateOnHeapCorruption
