@@ -6,6 +6,7 @@
 
 """ Output file objects for generator. """
 
+import difflib
 import os
 import time
 import sys
@@ -13,6 +14,8 @@ import sys
 from idl_log import ErrOut, InfoOut, WarnOut
 from idl_option import GetOption, Option, ParseOptions
 from stat import *
+
+Option('diff', 'Generate a DIFF when saving the file.')
 
 def IsEquivelent(intext, outtext):
   if not intext: return False
@@ -32,6 +35,7 @@ def IsEquivelent(intext, outtext):
     inwords = inline.split()
     outwords = outline.split()
 
+    if not inwords or not outwords: return False
     if inwords[0] != outwords[0] or inwords[0] != '/*': return False
 
     # Neither the year, nor the modified date need an exact match
@@ -86,6 +90,11 @@ class IDLOutFile(object):
           InfoOut.Log('Output %s unchanged.' % self.filename)
         return False
 
+    if GetOption('diff'):
+      for line in difflib.unified_diff(intext.split('\n'), outtext.split('\n'),
+                                     self.filename, 'NEW', n=1, lineterm=''):
+        ErrOut.Log(line)
+
     try:
       # If the directory does not exit, try to create it, if we fail, we
       # still get the exception when the file is openned.
@@ -94,9 +103,10 @@ class IDLOutFile(object):
         InfoOut.Log('Creating directory: %s\n' % basepath)
         os.makedirs(basepath)
 
-      outfile = open(filename, 'w')
-      outfile.write(''.join(self.outlist))
-      InfoOut.Log('Output %s written.' % self.filename)
+      if not GetOption('test'):
+        outfile = open(filename, 'w')
+        outfile.write(outtext)
+        InfoOut.Log('Output %s written.' % self.filename)
       return True
 
     except IOError as (errno, strerror):
