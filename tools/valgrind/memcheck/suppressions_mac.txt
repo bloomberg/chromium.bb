@@ -1852,9 +1852,17 @@
    fun:*AvatarMenuBubbleControllerTest*
 }
 {
-   bug_93711
+   bug_93711_a
    Memcheck:Leak
    fun:malloc
    fun:allocateBranchIsland
    fun:mach_override_ptr
 }
+{
+   bug_93711_b
+   Memcheck:Param
+   msync(start)
+   fun:msync$UNIX2003
+   fun:mach_override_ptr
+}
+
