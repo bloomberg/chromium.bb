@@ -12,6 +12,7 @@
 #include <gtk/gtk.h>
 #endif
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/accelerator.h"
@@ -61,7 +62,8 @@ FocusManager::WidgetFocusManager::GetInstance() {
 FocusManager::FocusManager(Widget* widget)
     : widget_(widget),
       focused_view_(NULL),
-      focus_change_reason_(kReasonDirectFocusChange) {
+      focus_change_reason_(kReasonDirectFocusChange),
+      is_changing_focus_(false) {
   DCHECK(widget_);
   stored_focused_view_storage_id_ =
       ViewStorage::GetInstance()->CreateStorageID();
@@ -270,6 +272,7 @@ void FocusManager::SetFocusedViewWithReason(
   if (focused_view_ == view)
     return;
 
+  AutoReset<bool> auto_changing_focus(&is_changing_focus_, true);
   // Update the reason for the focus change (since this is checked by
   // some listeners), then notify all listeners.
   focus_change_reason_ = reason;

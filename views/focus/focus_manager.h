@@ -225,6 +225,9 @@ class VIEWS_EXPORT FocusManager {
   // Clears the stored focused view.
   void ClearStoredFocusedView();
 
+  // Returns true if in the process of changing the focused view.
+  bool is_changing_focus() const { return is_changing_focus_; }
+
   // Register a keyboard accelerator for the specified target. If multiple
   // targets are registered for an accelerator, a target registered later has
   // higher priority.
@@ -312,6 +315,9 @@ class VIEWS_EXPORT FocusManager {
 
   // The list of registered FocusChange listeners.
   ObserverList<FocusChangeListener, true> focus_change_listeners_;
+
+  // See description above getter.
+  bool is_changing_focus_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusManager);
 };

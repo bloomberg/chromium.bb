@@ -32,6 +32,12 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_service.h"
 
+#if defined(TOOLKIT_VIEWS)
+#include "views/focus/focus_manager.h"
+#include "views/view.h"
+#include "views/widget/widget.h"
+#endif
+
 namespace {
 
 // Number of ms to delay between loading urls.
@@ -351,6 +357,25 @@ void InstantController::OnAutocompleteLostFocus(
     DestroyPreviewContents();
     return;
   }
+
+#if defined(TOOLKIT_VIEWS)
+  // For views the top level widget is always focused. If the focus change
+  // originated in views determine the child Widget from the view that is being
+  // focused.
+  if (view_gaining_focus) {
+    views::Widget* widget =
+        views::Widget::GetWidgetForNativeView(view_gaining_focus);
+    if (widget) {
+      views::FocusManager* focus_manager = widget->GetFocusManager();
+      if (focus_manager && focus_manager->is_changing_focus() &&
+          focus_manager->GetFocusedView() &&
+          focus_manager->GetFocusedView()->GetWidget()) {
+        view_gaining_focus =
+            focus_manager->GetFocusedView()->GetWidget()->GetNativeView();
+      }
+    }
+  }
+#endif
 
   gfx::NativeView tab_view =
       GetPreviewContents()->tab_contents()->GetNativeView();
