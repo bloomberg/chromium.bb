@@ -12,11 +12,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/infobar.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class CustomDrawButton;
 class GtkThemeService;

@@ -322,6 +322,10 @@
         'browser/renderer_host/global_request_id.h',
         'browser/renderer_host/gpu_message_filter.cc',
         'browser/renderer_host/gpu_message_filter.h',
+        'browser/renderer_host/gtk_im_context_wrapper.cc',
+        'browser/renderer_host/gtk_im_context_wrapper.h',
+        'browser/renderer_host/gtk_key_bindings_handler.cc',
+        'browser/renderer_host/gtk_key_bindings_handler.h',
         'browser/renderer_host/media/audio_common.cc',
         'browser/renderer_host/media/audio_common.h',
         'browser/renderer_host/media/audio_input_device_manager.cc',
@@ -387,6 +391,8 @@
         'browser/renderer_host/render_widget_host_mac.cc',
         'browser/renderer_host/render_widget_host_view.cc',
         'browser/renderer_host/render_widget_host_view.h',
+        'browser/renderer_host/render_widget_host_view_gtk.cc',
+        'browser/renderer_host/render_widget_host_view_gtk.h',
         'browser/renderer_host/resource_dispatcher_host.cc',
         'browser/renderer_host/resource_dispatcher_host.h',
         'browser/renderer_host/resource_dispatcher_host_delegate.h',
@@ -564,6 +570,20 @@
         }, { # OS!="mac"
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
+          ],
+        }],
+        ['chromeos==1', {
+          'sources!': [
+            'browser/renderer_host/gtk_key_bindings_handler.cc',
+            'browser/renderer_host/gtk_key_bindings_handler.h',
+          ],
+        }],
+        ['touchui==1', {
+          'sources/': [
+            ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
+            ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],
+            ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.cc'],
+            ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
           ],
         }],
       ],

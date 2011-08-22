@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_
-#define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_
 #pragma once
 
 #include <gdk/gdk.h>
@@ -13,11 +13,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
@@ -25,9 +25,6 @@
 
 class RenderWidgetHost;
 class GtkIMContextWrapper;
-#if !defined(TOOLKIT_VIEWS)
-class MenuGtk;
-#endif
 struct NativeWebKeyboardEvent;
 
 #if defined(OS_CHROMEOS)
@@ -134,9 +131,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   }
 
 #if !defined(TOOLKIT_VIEWS)
-  // Appends the input methods context menu to the specified |menu| object as a
-  // submenu.
-  void AppendInputMethodsContextMenu(MenuGtk* menu);
+  // Builds a submenu containing all the gtk input method commands.
+  GtkWidget* BuildInputMethodsGtkMenu();
 #endif
 
  private:

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 
 // If this gets included after the gtk headers, then a bunch of compiler
 // errors happen because of a "#define Status int" in Xlib.h, which interacts
 // badly with net::URLRequestStatus::Status.
-#include "chrome/common/render_messages.h"
 #include "content/common/view_messages.h"
 
 #include <cairo/cairo.h>
@@ -26,19 +25,18 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/renderer_host/backing_store_x.h"
+#include "content/browser/renderer_host/gtk_im_context_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/common/content_switches.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/gtk_preserve_window.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
+#include "ui/gfx/gtk_preserve_window.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor_gtk_data.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -46,7 +44,7 @@
 #if defined(OS_CHROMEOS)
 #include "views/widget/tooltip_window_gtk.h"
 #else
-#include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
+#include "content/browser/renderer_host/gtk_key_bindings_handler.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -67,6 +65,13 @@ const float kDefaultScrollPixelsPerTick = 20;
 // See WebInputEventFactor.cpp for a reason for this being the default
 // scroll size for linux.
 const float kDefaultScrollPixelsPerTick = 160.0f / 3.0f;
+#endif
+
+const GdkColor kBGColor =
+#if defined(NDEBUG)
+    { 0, 0xff * 257, 0xff * 257, 0xff * 257 };
+#else
+    { 0, 0x00 * 257, 0xff * 257, 0x00 * 257 };
 #endif
 
 // Returns the spinning cursor used for loading state.
@@ -103,11 +108,7 @@ class RenderWidgetHostViewGtkWidget {
     // called in repsonse to an "expose-event" signal.
     gtk_widget_set_double_buffered(widget, FALSE);
     gtk_widget_set_redraw_on_allocate(widget, FALSE);
-#if defined(NDEBUG)
-    gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gtk_util::kGdkWhite);
-#else
-    gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gtk_util::kGdkGreen);
-#endif
+    gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &kBGColor);
     // Allow the browser window to be resized freely.
     gtk_widget_set_size_request(widget, 0, 0);
 
@@ -820,8 +821,8 @@ void RenderWidgetHostViewGtk::SetTooltipText(const std::wstring& tooltip_text) {
   // this itself).
   // I filed https://bugzilla.gnome.org/show_bug.cgi?id=604641 upstream.
   const string16 clamped_tooltip =
-      l10n_util::TruncateString(WideToUTF16Hack(tooltip_text),
-                                kMaxTooltipLength);
+      ui::TruncateString(WideToUTF16Hack(tooltip_text),
+                         kMaxTooltipLength);
 
   if (clamped_tooltip.empty()) {
     gtk_widget_set_has_tooltip(view_.get(), FALSE);
@@ -849,8 +850,8 @@ void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {
 }
 
 #if !defined(TOOLKIT_VIEWS)
-void RenderWidgetHostViewGtk::AppendInputMethodsContextMenu(MenuGtk* menu) {
-  im_context_->AppendInputMethodsContextMenu(menu);
+GtkWidget* RenderWidgetHostViewGtk::BuildInputMethodsGtkMenu() {
+  return im_context_->BuildInputMethodsGtkMenu();
 }
 #endif
 

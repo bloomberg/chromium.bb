@@ -13,13 +13,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/icon_manager.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/download/download_item.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class BaseDownloadItemModel;
 class DownloadShelfContextMenuGtk;

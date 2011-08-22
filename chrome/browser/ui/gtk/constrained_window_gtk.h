@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/task.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/tab_contents/constrained_window.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class TabContents;
 typedef struct _GdkColor GdkColor;

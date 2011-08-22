@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_GTK_OVERFLOW_BUTTON_H_
 #pragma once
 
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 typedef struct _GtkWidget GtkWidget;
 class Profile;

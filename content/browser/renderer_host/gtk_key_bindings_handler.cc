@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
+#include "content/browser/renderer_host/gtk_key_bindings_handler.h"
 
 #include <gdk/gdkkeysyms.h>
 

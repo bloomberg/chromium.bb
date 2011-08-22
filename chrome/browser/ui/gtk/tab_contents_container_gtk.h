@@ -9,11 +9,11 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class RenderViewHost;
 class StatusBubbleGtk;

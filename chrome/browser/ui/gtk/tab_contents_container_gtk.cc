@@ -7,11 +7,11 @@
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_expanded_container.h"
 #include "chrome/browser/ui/gtk/gtk_floating_container.h"
 #include "chrome/browser/ui/gtk/status_bubble_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_source.h"
 #include "ui/gfx/native_widget_types.h"

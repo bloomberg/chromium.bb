@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_GTK_IM_CONTEXT_WRAPPER_H_
-#define CHROME_BROWSER_RENDERER_HOST_GTK_IM_CONTEXT_WRAPPER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_GTK_IM_CONTEXT_WRAPPER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_GTK_IM_CONTEXT_WRAPPER_H_
 #pragma once
 
 #include <gdk/gdk.h>
@@ -21,9 +21,6 @@ namespace gfx {
 class Rect;
 }
 
-#if !defined(TOOLKIT_VIEWS)
-class MenuGtk;
-#endif
 class RenderWidgetHostViewGtk;
 struct NativeWebKeyboardEvent;
 typedef struct _GtkIMContext GtkIMContext;
@@ -58,7 +55,7 @@ class GtkIMContextWrapper {
 #if !defined(TOOLKIT_VIEWS)
   // Not defined for views because the views context menu doesn't
   // implement input methods yet.
-  void AppendInputMethodsContextMenu(MenuGtk* menu);
+  GtkWidget* BuildInputMethodsGtkMenu();
 #endif
 
   void CancelComposition();
@@ -197,4 +194,4 @@ class GtkIMContextWrapper {
   DISALLOW_COPY_AND_ASSIGN(GtkIMContextWrapper);
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_GTK_IM_CONTEXT_WRAPPER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_GTK_IM_CONTEXT_WRAPPER_H_

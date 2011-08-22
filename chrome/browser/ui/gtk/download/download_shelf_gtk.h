@@ -13,11 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/native_widget_types.h"
 
 class BaseDownloadItemModel;

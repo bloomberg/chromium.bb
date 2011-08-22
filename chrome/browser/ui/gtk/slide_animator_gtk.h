@@ -18,8 +18,8 @@
 #include <gtk/gtk.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 namespace ui {
 class SlideAnimation;

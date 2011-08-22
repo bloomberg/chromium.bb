@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/font.h"
@@ -253,10 +253,10 @@ std::string BuildMenuLabelFor(const BookmarkNode* node) {
   // This breaks on word boundaries. Ideally we would break on character
   // boundaries.
   std::string elided_name = UTF16ToUTF8(
-      l10n_util::TruncateString(node->GetTitle(), kMaxCharsOnAMenuLabel));
+      ui::TruncateString(node->GetTitle(), kMaxCharsOnAMenuLabel));
 
   if (elided_name.empty()) {
-    elided_name = UTF16ToUTF8(l10n_util::TruncateString(
+    elided_name = UTF16ToUTF8(ui::TruncateString(
         UTF8ToUTF16(node->url().possibly_invalid_spec()),
         kMaxCharsOnAMenuLabel));
   }

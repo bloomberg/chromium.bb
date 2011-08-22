@@ -23,7 +23,7 @@
 #include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/events/event.h"
@@ -300,7 +300,7 @@ void RenderWidgetHostViewViews::SetTooltipText(const std::wstring& tip) {
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
   // accidentally DOS the user with a mega tooltip.
   tooltip_text_ =
-      l10n_util::TruncateString(WideToUTF16Hack(tip), kMaxTooltipLength);
+      ui::TruncateString(WideToUTF16Hack(tip), kMaxTooltipLength);
   if (GetWidget())
     GetWidget()->TooltipTextChanged(this);
 }

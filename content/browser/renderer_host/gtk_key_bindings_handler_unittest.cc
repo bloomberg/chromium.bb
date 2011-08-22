@@ -1,7 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
+
+#include "content/browser/renderer_host/gtk_key_bindings_handler.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <string>
@@ -13,7 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "chrome/common/chrome_paths.h"
+#include "content/common/content_paths.h"
 #include "content/common/edit_command.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,8 +30,9 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
       : window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
         handler_(NULL) {
     FilePath gtkrc;
-    PathService::Get(chrome::DIR_TEST_DATA, &gtkrc);
+    PathService::Get(content::DIR_TEST_DATA, &gtkrc);
     gtkrc = gtkrc.AppendASCII("gtk_key_bindings_test_gtkrc");
+    EXPECT_TRUE(file_util::PathExists(gtkrc));
 
     gtk_rc_parse(gtkrc.value().c_str());
 

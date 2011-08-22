@@ -18,7 +18,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/notification_service.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
 #include "webkit/glue/context_menu.h"
 
@@ -76,7 +76,7 @@ string16 ExtensionMenuItem::TitleWithReplacement(
   ReplaceSubstringsAfterOffset(&result, 0, ASCIIToUTF16("%s"), selection);
 
   if (result.length() > max_length)
-    result = l10n_util::TruncateString(result, max_length);
+    result = ui::TruncateString(result, max_length);
   return result;
 }
 

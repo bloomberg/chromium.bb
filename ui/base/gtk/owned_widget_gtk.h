@@ -46,8 +46,8 @@
 //   gtk_destroy_widget(widget);  // Ask all code to destroy their references.
 //   g_object_unref(widget);  // Destroy the initial reference we had claimed.
 
-#ifndef CHROME_BROWSER_UI_GTK_OWNED_WIDGET_GTK_H_
-#define CHROME_BROWSER_UI_GTK_OWNED_WIDGET_GTK_H_
+#ifndef UI_BASE_GTK_OWNED_WIDGET_GTK_H_
+#define UI_BASE_GTK_OWNED_WIDGET_GTK_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -88,4 +88,4 @@ class OwnedWidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(OwnedWidgetGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_OWNED_WIDGET_GTK_H_
+#endif  // UI_BASE_GTK_OWNED_WIDGET_GTK_H_
