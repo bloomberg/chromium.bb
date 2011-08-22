@@ -229,34 +229,35 @@ void ExtensionTtsController::OnTtsEvent(int utterance_id,
 
 ListValue* ExtensionTtsController::GetVoices(Profile* profile) {
   ListValue* result_voices = new ListValue();
-  if (platform_impl_ && platform_impl_->PlatformImplAvailable()) {
+  ExtensionTtsPlatformImpl* platform_impl = GetPlatformImpl();
+  if (platform_impl && platform_impl->PlatformImplAvailable()) {
     DictionaryValue* result_voice = new DictionaryValue();
     result_voice->SetString(
         constants::kVoiceNameKey, constants::kNativeVoiceName);
-    if (!platform_impl_->gender().empty())
-      result_voice->SetString(constants::kGenderKey, platform_impl_->gender());
+    if (!platform_impl->gender().empty())
+      result_voice->SetString(constants::kGenderKey, platform_impl->gender());
     ListValue* event_types = new ListValue();
 
     // All platforms must send end events, and cancelled and interrupted
     // events are generated from the controller.
-    DCHECK(platform_impl_->SendsEvent(TTS_EVENT_END));
+    DCHECK(platform_impl->SendsEvent(TTS_EVENT_END));
     event_types->Append(Value::CreateStringValue(constants::kEventTypeEnd));
     event_types->Append(Value::CreateStringValue(
         constants::kEventTypeCancelled));
     event_types->Append(Value::CreateStringValue(
         constants::kEventTypeInterrupted));
 
-    if (platform_impl_->SendsEvent(TTS_EVENT_START))
+    if (platform_impl->SendsEvent(TTS_EVENT_START))
       event_types->Append(Value::CreateStringValue(constants::kEventTypeStart));
-    if (platform_impl_->SendsEvent(TTS_EVENT_WORD))
+    if (platform_impl->SendsEvent(TTS_EVENT_WORD))
       event_types->Append(Value::CreateStringValue(constants::kEventTypeWord));
-    if (platform_impl_->SendsEvent(TTS_EVENT_SENTENCE))
+    if (platform_impl->SendsEvent(TTS_EVENT_SENTENCE))
       event_types->Append(Value::CreateStringValue(
           constants::kEventTypeSentence));
-    if (platform_impl_->SendsEvent(TTS_EVENT_MARKER))
+    if (platform_impl->SendsEvent(TTS_EVENT_MARKER))
       event_types->Append(Value::CreateStringValue(
           constants::kEventTypeMarker));
-    if (platform_impl_->SendsEvent(TTS_EVENT_ERROR))
+    if (platform_impl->SendsEvent(TTS_EVENT_ERROR))
       event_types->Append(Value::CreateStringValue(
           constants::kEventTypeError));
     result_voice->Set(constants::kEventTypesKey, event_types);
