@@ -139,8 +139,14 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // cwalsp.dll, "%systemroot%\\system32\\".
   { "e579a039", "23d01d5b", "", "", "", kUninstallLink },
 
+  // datamngr.dll, "%programfiles%\\windows searchqu toolbar\\".
+  { "7add320b", "7a3c8be3", "", "", "", kUninstallLink },
+
   // dsoqq0.dll, "%temp%\\".
   { "1c4df325", "59145acf", "", "", "", kUninstallLink },
+
+  // flt.dll, "%programfiles%\\tueagles\\".
+  { "6d01f4a1", "7935e9c2", "", "", "", kUninstallLink },
 
   // This looks like a malware edition of a Brazilian Bank plugin, sometimes
   // referred to as Malware.Banc.A.
@@ -205,6 +211,12 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // post0.dll, "%systemroot%\\system32\\".
   { "7405c0c8", "23d01d5b", "", "", "", kUninstallLink },
 
+  // questbrwsearch.dll, "%programfiles%\\questbrwsearch\\".
+  { "0953ed09", "f0d5eeda", "", "", "", kUninstallLink },
+
+  // questscan.dll, "%programfiles%\\questscan\\".
+  { "f4f3391e", "119d20f7", "", "", "", kUninstallLink },
+
   // radhslib.dll (Naomi web filter), "%programfiles%\\rnamfler\\".
   // See http://crbug.com/12517.
   { "7edcd250", "0733dc3e", "", "", "", INVESTIGATING },
@@ -213,7 +225,10 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   { "a1ed94a7", "ea9d6b36", "", "", "", kUninstallLink },
 
   // rooksdol.dll, "%programfiles%\\trusteer\\rapport\\bin\\".
-  { "802aefef", "06120e13", "", "", "3.5.1008.40", INVESTIGATING },
+  { "802aefef", "06120e13", "", "", "3.5.1008.40", UPDATE },
+
+  // scanquery.dll, "%programfiles%\\scanquery\\".
+  { "0b52d2ae", "a4cc88b1", "", "", "", kUninstallLink },
 
   // sdata.dll, "%programdata%\\srtserv\\".
   { "1936d5cc", "223c44be", "", "", "", kUninstallLink },
