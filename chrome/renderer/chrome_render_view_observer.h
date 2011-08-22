@@ -113,7 +113,6 @@ class ChromeRenderViewObserver : public RenderViewObserver,
                                        const std::string& target);
   void OnJavaScriptStressTestControl(int cmd, int param);
   void OnDownloadFavicon(int id, const GURL& image_url, int image_size);
-  void OnEnableViewSourceMode();
   void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnSetIsPrerendering(bool is_prerendering);
   void OnSetAllowDisplayingInsecureContent(bool allow);

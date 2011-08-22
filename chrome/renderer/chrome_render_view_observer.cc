@@ -225,7 +225,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_JavaScriptStressTestControl,
                         OnJavaScriptStressTestControl)
     IPC_MESSAGE_HANDLER(IconMsg_DownloadFavicon, OnDownloadFavicon)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowDisplayingInsecureContent,
                         OnSetAllowDisplayingInsecureContent)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAllowRunningInsecureContent,
@@ -311,15 +310,6 @@ void ChromeRenderViewObserver::OnDownloadFavicon(int id,
     Send(new IconHostMsg_DidDownloadFavicon(
         routing_id(), id, image_url, true, SkBitmap()));
   }
-}
-
-void ChromeRenderViewObserver::OnEnableViewSourceMode() {
-  if (!render_view()->webview())
-    return;
-  WebFrame* main_frame = render_view()->webview()->mainFrame();
-  if (!main_frame)
-    return;
-  main_frame->enableViewSourceMode(true);
 }
 
 void ChromeRenderViewObserver::OnSetAllowDisplayingInsecureContent(bool allow) {

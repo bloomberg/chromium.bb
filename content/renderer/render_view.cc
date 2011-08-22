@@ -711,6 +711,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateRemoteAccessClientFirewallTraversal)
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
+    IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -4558,3 +4559,13 @@ void RenderView::OnContextMenuClosed(
   else
     context_menu_node_.reset();
 }
+
+void RenderView::OnEnableViewSourceMode() {
+  if (!webview())
+    return;
+  WebFrame* main_frame = webview()->mainFrame();
+  if (!main_frame)
+    return;
+  main_frame->enableViewSourceMode(true);
+}
+
