@@ -204,8 +204,14 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
       sync_child_id = sync_child_node.GetSuccessorId();
 
       // Ignore old sync nodes that don't have any transition data stored with
-      // them (will be deleted below).
-      if (typed_url.visit_transitions_size() == 0) {
+      // them, or transition data that does not match the visit data (will be
+      // deleted below).
+      if (typed_url.visit_transitions_size() == 0 ||
+          typed_url.visit_transitions_size() != typed_url.visits_size()) {
+        // Generate a debug assertion to help track down http://crbug.com/91473,
+        // even though we gracefully handle this case by throwing away this
+        // node.
+        DCHECK_EQ(typed_url.visits_size(), typed_url.visit_transitions_size());
         VLOG(1) << "Deleting obsolete sync node with no visit transition info.";
         obsolete_nodes.push_back(sync_child_node.GetId());
         continue;
@@ -437,7 +443,7 @@ int TypedUrlModelAssociator::MergeUrls(
   DCHECK(!node.url().compare(url.url().spec()));
   DCHECK(!node.url().compare(new_url->url().spec()));
   DCHECK(visits->size());
-  DCHECK_EQ(node.visits_size(), node.visit_transitions_size());
+  CHECK_EQ(node.visits_size(), node.visit_transitions_size());
 
   // If we have an old-format node (before we added the visits and
   // visit_transitions arrays to the protobuf), just overwrite
@@ -618,6 +624,7 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
   DCHECK_EQ(skip_count, 0);
   CHECK_GT(typed_url->visits_size(), 0);
   CHECK_LE(typed_url->visits_size(), kMaxTypedUrlVisits);
+  CHECK_EQ(typed_url->visits_size(), typed_url->visit_transitions_size());
 }
 
 // static
@@ -662,7 +669,7 @@ void TypedUrlModelAssociator::DiffVisits(
 void TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
     const sync_pb::TypedUrlSpecifics& typed_url, history::URLRow* new_url) {
   DCHECK_GT(typed_url.visits_size(), 0);
-  DCHECK_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
+  CHECK_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
   new_url->set_title(UTF8ToUTF16(typed_url.title()));
   new_url->set_hidden(typed_url.hidden());
   new_url->set_last_visit(base::Time::FromInternalValue(
