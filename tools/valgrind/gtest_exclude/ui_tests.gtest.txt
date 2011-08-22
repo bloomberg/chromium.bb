@@ -98,6 +98,9 @@ SessionHistoryTest.JavascriptHistory
 # Fails flakily, http://crbug.com/86783
 ResourceDispatcherTest.CrossSiteImmediateLoadOnunloadCookie
 
+# http://crbug.com/89173
+FastShutdown.SlowTermination
+
 # Out-of-process PPAPI tests fail on buildbots http://crbug.com/89961
 OutOfProcessPPAPITest.Instance
 OutOfProcessPPAPITest.CursorControl
