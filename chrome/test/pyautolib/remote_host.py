@@ -4,14 +4,14 @@
 # found in the LICENSE file.
 
 import cStringIO
+import os
 import pickle
 import socket
 import sys
 
 import pyauto
 
-
-class RemoteHost(pyauto.PyUITest):
+class RemoteHost(object):
   """Class used as a host for tests that use the PyAuto RemoteProxy.
 
   This class fires up a listener which waits for a connection from a RemoteProxy
@@ -20,23 +20,7 @@ class RemoteHost(pyauto.PyUITest):
   can connect to and automate using pyauto.RemoteProxy.
   """
   def __init__(self, *args, **kwargs):
-    pyauto.PyUITest.__init__(self, *args, **kwargs)
     self.StartSocketServer()
-
-  # We give control of setUp and tearDown to the RemoteProxy, so disable them.
-  # The RemoteProxy can call RemoteSetUp() and RemoteTearDown() to do the normal
-  # setUp() and tearDown().
-  def setUp(self):
-    pass
-
-  def tearDown(self):
-    pass
-
-  def RemoteSetUp(self):
-    pyauto.PyUITest.setUp(self)
-
-  def RemoteTearDown(self):
-    pyauto.PyUITest.tearDown(self)
 
   def StartSocketServer(self, port=7410):
     listening_socket = socket.socket()
@@ -44,6 +28,9 @@ class RemoteHost(pyauto.PyUITest):
     listening_socket.bind(('', port))
     listening_socket.listen(1)
     self._socket, _ = listening_socket.accept()
+
+    while self.Connected():
+      self._HandleRPC()
 
   def StopSocketServer(self):
     if self._socket:
@@ -53,6 +40,13 @@ class RemoteHost(pyauto.PyUITest):
 
   def Connected(self):
     return self._socket
+
+  def CreateTarget(self, target_class):
+    """Creates an instance of the specified class to serve as the RPC target.
+
+    RPC calls can be made on the target.
+    """
+    self.target = target_class()
 
   def _HandleRPC(self):
     """Receives a method call request over the socket and executes the method.
@@ -78,7 +72,10 @@ class RemoteHost(pyauto.PyUITest):
     result = None
     exception = None
     try:
-      result = getattr(self, request[0])(*request[1], **request[2])
+      if getattr(self, request[0], None):
+        result = getattr(self, request[0])(*request[1], **request[2])
+      else:
+        result = getattr(self.target, request[0])(*request[1], **request[2])
     except BaseException as e:
       exception = (e.__class__.__name__, str(e))
 
@@ -91,11 +88,3 @@ class RemoteHost(pyauto.PyUITest):
                              exception))
     if self._socket.send(response) != len(response):
       self.StopSocketServer()
-
-  def RunHost(self):
-    while self.Connected():
-      self._HandleRPC()
-
-
-if __name__ == '__main__':
-  pyauto.Main()

@@ -132,10 +132,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     homepage = kwargs.get('homepage', 'about:blank')
 
     pyautolib.PyUITestBase.__init__(self, clear_profile, homepage)
-    # Figure out path to chromium binaries
-    browser_dir = os.path.normpath(os.path.dirname(pyautolib.__file__))
-    self.Initialize(pyautolib.FilePath(browser_dir))
+    self.Initialize(pyautolib.FilePath(self.BrowserPath()))
     unittest.TestCase.__init__(self, methodName)
+
+    # Set up remote proxies, if they were requested.
+    self.remotes = []
+    self.remote = None
+    global _REMOTE_PROXY
+    if _REMOTE_PROXY:
+      self.remotes = _REMOTE_PROXY
+      self.remote = _REMOTE_PROXY[0]
 
   def __del__(self):
     pyautolib.PyUITestBase.__del__(self)
@@ -166,7 +172,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     When using the named interface, it connects to an existing browser
     instance.
     """
-    named_channel_id = _OPTIONS.channel_id
+    named_channel_id = None
+    if _OPTIONS:
+      named_channel_id = _OPTIONS.channel_id
     if self.IsChromeOS():  # Enable testing interface on ChromeOS.
       if self.get_clear_profile():
         self.CleanupBrowserProfileOnChromeOS()
@@ -186,8 +194,30 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     if self.IsChromeOS():
       self.WaitUntil(lambda: not self.GetNetworkInfo()['offline_mode'])
 
+    # If we are connected to any RemoteHosts, create PyAuto
+    # instances on the remote sides and set them up too.
+    for remote in self.remotes:
+      remote.CreateTarget(self)
+      remote.setUp()
+
   def tearDown(self):
+    for remote in self.remotes:
+      remote.tearDown()
+
     self.TearDown()  # Destroy browser
+
+  # Method required by the Python standard library unittest.TestCase.
+  def runTest(self):
+    pass
+
+  @staticmethod
+  def BrowserPath():
+    """Returns the path to Chromium binaries.
+
+    Expects the browser binaries to be in the
+    same location as the pyautolib binaries.
+    """
+    return os.path.normpath(os.path.dirname(pyautolib.__file__))
 
   def ExtraChromeFlags(self):
     """Return a list of extra chrome flags to use with Chrome for testing.
@@ -3719,26 +3749,39 @@ class _RemoteProxy():
   class RemoteException(Exception):
     pass
 
-  def __init__(self, address, port=7410, remote_class=PyUITest):
-    # Make remote-call versions of all remote_class methods.
-    for method_name, _ in inspect.getmembers(remote_class, inspect.ismethod):
-      # Ignore private methods.
-      if method_name[0] in string.letters:
-        setattr(self, method_name, functools.partial(
-            self.Call, method_name))
-    self.Connect(address, port)
+  def __init__(self, address, port=7410):
+    self.RemoteConnect(address, port)
 
-  def Connect(self, address, port=7410):
+  def RemoteConnect(self, address, port):
     self._socket = socket.socket()
     self._socket.connect((address, port))
 
-  def Disconnect(self):
+  def RemoteDisconnect(self):
     if self._socket:
       self._socket.shutdown(socket.SHUT_RDWR)
       self._socket.close()
       self._socket = None
 
-  def Call(self, method_name, *args, **kwargs):
+  def CreateTarget(self, target):
+    """Registers the methods and creates a remote instance of a target.
+
+    Any RPC calls will then be made on the remote target instance. Note that the
+    remote instance will be a brand new instance and will have none of the state
+    of the local instance. The target's class should have a constructor that
+    takes no arguments.
+    """
+    self._Call('CreateTarget', target.__class__)
+    self._RegisterClassMethods(target)
+
+  def _RegisterClassMethods(self, remote_class):
+    # Make remote-call versions of all remote_class methods.
+    for method_name, _ in inspect.getmembers(remote_class, inspect.ismethod):
+      # Ignore private methods and duplicates.
+      if method_name[0] in string.letters and \
+        getattr(self, method_name, None) is None:
+        setattr(self, method_name, functools.partial(self._Call, method_name))
+
+  def _Call(self, method_name, *args, **kwargs):
     # Send request.
     request = pickle.dumps((method_name, args, kwargs))
     if self._socket.send(request) != len(request):
@@ -3757,41 +3800,6 @@ class _RemoteProxy():
       raise self.RemoteException('%s raised by remote client: %s' %
                                  (exception[0], exception[1]))
     return result
-
-
-class PyRemoteUITest(PyUITest):
-  """Convenience class for tests that use a single RemoteProxy.
-
-  This class automatically sets up and tears down a RemoteProxy PyAuto instance.
-  setUp() fires off both remote and local Chrome instances in order.
-  tearDown() closes both Chrome instances in the same order.
-
-  Example usage:
-    class MyTest(pyauto.PyUIRemoteTest):
-      def testRemoteExample(self):
-        self.remote.NavigateToURL('http://www.google.com')
-        title = self.remote.GetActiveTabTitle()
-        self.assertEqual(title, 'Google')
-
-    $ # On remote machine:
-    $ python remote_host.py remote_host.RemoteHost.RunHost
-    $ # On local machine:
-    $ python my_test.py --remote_host=127.0.0.1
-  """
-
-  def __init__(self, *args, **kwargs):
-    global _REMOTE_PROXY
-    assert _REMOTE_PROXY, 'Not connected to remote host.'
-    self.remote = _REMOTE_PROXY
-    PyUITest.__init__(self, *args, **kwargs)
-
-  def setUp(self):
-    self.remote.Call('RemoteSetUp')
-    PyUITest.setUp(self)
-
-  def tearDown(self):
-    self.remote.Call('RemoteTearDown')
-    PyUITest.tearDown(self)
 
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
@@ -3813,10 +3821,10 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
 
     # Start http server, if needed.
     global _OPTIONS
-    if not _OPTIONS.no_http_server:
+    if _OPTIONS and not _OPTIONS.no_http_server:
       self._StartHTTPServer()
-    if _OPTIONS.remote_host:
-      self._ConnectToRemoteHost(_OPTIONS.remote_host)
+    if _OPTIONS and _OPTIONS.remote_host:
+      self._ConnectToRemoteHosts(_OPTIONS.remote_host.split(','))
 
   def __del__(self):
     # python unittest module is setup such that the suite gets deleted before
@@ -3853,13 +3861,15 @@ class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
     _HTTP_SERVER = None
     logging.debug('Stopped http server.')
 
-  def _ConnectToRemoteHost(self, address):
-    """Connect to a remote PyAuto instance using a RemoteProxy.
+  def _ConnectToRemoteHosts(self, addresses):
+    """Connect to remote PyAuto instances using a RemoteProxy.
 
-    The RemoteHost instance must already be running."""
+    The RemoteHost instances must already be running."""
     global _REMOTE_PROXY
     assert not _REMOTE_PROXY, 'Already connected to a remote host.'
-    _REMOTE_PROXY = _RemoteProxy(address)
+    _REMOTE_PROXY = []
+    for address in addresses:
+      _REMOTE_PROXY.append(_RemoteProxy(address))
 
 
 class _GTestTextTestResult(unittest._TextTestResult):
@@ -3902,7 +3912,7 @@ class _GTestTextTestResult(unittest._TextTestResult):
     self.stream.writeln('[     FAILED ] %s' % self._GetTestURI(test))
 
 
-class PyAutoTextTestRuner(unittest.TextTestRunner):
+class PyAutoTextTestRunner(unittest.TextTestRunner):
   """Test Runner for PyAuto tests that displays results in textual format.
 
   Results are displayed in conformance with gtest output.
@@ -3970,7 +3980,7 @@ class Main(object):
         help='Do not start an http server to serve files in data dir.')
     parser.add_option(
         '', '--remote-host', type='string', default=None,
-        help='Connect to a remote host for remote automation.')
+        help='Connect to remote hosts for remote automation.')
     parser.add_option(
         '', '--http-data-dir', type='string',
         default=os.path.join('chrome', 'test', 'data'),
@@ -4200,7 +4210,7 @@ class Main(object):
     verbosity = 1
     if self._options.verbose:
       verbosity = 2
-    result = PyAutoTextTestRuner(verbosity=verbosity).run(pyauto_suite)
+    result = PyAutoTextTestRunner(verbosity=verbosity).run(pyauto_suite)
     del loaded_tests  # Need to destroy test cases before the suite
     del pyauto_suite
     successful = result.wasSuccessful()
