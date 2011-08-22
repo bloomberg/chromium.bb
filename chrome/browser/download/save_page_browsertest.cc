@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/profiles/profile.h"
@@ -112,7 +113,10 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
   void QueryDownloadHistory() {
     // Query the history system.
-    GetDownloadManager()->download_history()->Load(
+    ChromeDownloadManagerDelegate* delegate =
+      static_cast<ChromeDownloadManagerDelegate*>(
+          GetDownloadManager()->delegate());
+    delegate->download_history()->Load(
         NewCallback(this,
                     &SavePageBrowserTest::OnQueryDownloadEntriesComplete));
 

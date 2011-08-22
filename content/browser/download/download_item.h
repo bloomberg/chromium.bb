@@ -94,6 +94,10 @@ class DownloadItem : public NotificationObserver {
     DELETE_DUE_TO_USER_DISCARD
   };
 
+  // A fake download table ID which represents a download that has started,
+  // but is not yet in the table.
+  static const int kUninitializedHandle;
+
   // Interface that observers of a particular download must implement in order
   // to receive updates to the download's status.
   class Observer {
@@ -120,7 +124,8 @@ class DownloadItem : public NotificationObserver {
   DownloadItem(DownloadManager* download_manager,
                const FilePath& path,
                const GURL& url,
-               bool is_otr);
+               bool is_otr,
+               int download_id);
 
   virtual ~DownloadItem();
 

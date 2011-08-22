@@ -48,14 +48,12 @@
 #include "content/browser/download/download_status_updater_delegate.h"
 
 class DownloadFileManager;
-class DownloadHistory;
 class DownloadManagerDelegate;
 class DownloadStatusUpdater;
 class GURL;
 class ResourceDispatcherHost;
 class TabContents;
 struct DownloadCreateInfo;
-struct DownloadHistoryInfo;
 struct DownloadSaveInfo;
 
 namespace content {
@@ -181,10 +179,14 @@ class DownloadManager
   // Remove a download observer from ourself.
   void RemoveObserver(Observer* observer);
 
-  // Methods called on completion of a query sent to the history system.
-  void OnQueryDownloadEntriesComplete(
+  // Called by the embedder, after creating the download manager, to let it know
+  // about downloads from previous runs of the browser.
+  void OnPersistentStoreQueryComplete(
       std::vector<DownloadHistoryInfo>* entries);
-  void OnCreateDownloadEntryComplete(int32 download_id, int64 db_handle);
+
+  // Called by the embedder, in response to
+  // DownloadManagerDelegate::AddItemToPersistentStore.
+  void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
 
   // Display a new download in the appropriate browser UI.
   void ShowDownloadInBrowser(DownloadItem* download);
@@ -195,8 +197,6 @@ class DownloadManager
   }
 
   content::BrowserContext* browser_context() { return browser_context_; }
-
-  DownloadHistory* download_history() { return download_history_.get(); }
 
   FilePath last_download_path() { return last_download_path_; }
 
@@ -242,14 +242,8 @@ class DownloadManager
   // to the DownloadManager.
   void SavePageDownloadStarted(DownloadItem* download);
 
-  // Callback when Save Page As entry is commited to the history system.
-  void OnSavePageDownloadEntryAdded(int32 download_id, int64 db_handle);
-
   // Called when Save Page download is done.
   void SavePageDownloadFinished(DownloadItem* download);
-
-  // Download Id for next Save Page.
-  int32 GetNextSavePageId();
 
   // Get the download item from the active map.  Useful when the item is not
   // yet in the history map.
@@ -312,13 +306,19 @@ class DownloadManager
   // Remove from internal maps.
   int RemoveDownloadItems(const DownloadVector& pending_deletes);
 
+  // Called when a download entry is committed to the persistent store.
+  void OnDownloadItemAddedToPersistentStore(int32 download_id, int64 db_handle);
+
+  // Called when Save Page As entry is commited to the persistent store.
+  void OnSavePageItemAddedToPersistentStore(int32 download_id, int64 db_handle);
+
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in
   // this session, downloads initialized from the history system, and
   // "save page as" downloads.  All other DownloadItem containers in
   // the DownloadManager are maps; they do not own the DownloadItems.
   // Note that this is the only place (with any functional implications;
-  // see save_page_as_downloads_ below) that "save page as" downloads are
+  // see save_page_downloads_ below) that "save page as" downloads are
   // kept, as the DownloadManager's only job is to hold onto those
   // until destruction.
   //
@@ -327,16 +327,17 @@ class DownloadManager
   // sessions.
   //
   // |active_downloads_| is a map of all downloads that are currently being
-  // processed. The key is the ID assigned by the ResourceDispatcherHost,
+  // processed. The key is the ID assigned by the DownloadFileManager,
   // which is unique for the current session.
   //
   // |in_progress_| is a map of all downloads that are in progress and that have
   // not yet received a valid history handle. The key is the ID assigned by the
-  // ResourceDispatcherHost, which is unique for the current session.
+  // DownloadFileManager, which is unique for the current session.
   //
-  // |save_page_as_downloads_| (if defined) is a collection of all the
+  // |save_page_downloads_| (if defined) is a collection of all the
   // downloads the "save page as" system has given to us to hold onto
-  // until we are destroyed.  It is only used for debugging.
+  // until we are destroyed. They key is DownloadFileManager, so it is unique
+  // compared to download item. It is only used for debugging.
   //
   // When a download is created through a user action, the corresponding
   // DownloadItem* is placed in |active_downloads_| and remains there until the
@@ -364,8 +365,6 @@ class DownloadManager
   // The current active browser context.
   content::BrowserContext* browser_context_;
 
-  scoped_ptr<DownloadHistory> download_history_;
-
   // Non-owning pointer for handling file writing on the download_thread_.
   DownloadFileManager* file_manager_;
 
@@ -375,9 +374,6 @@ class DownloadManager
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.
   FilePath last_download_path_;
-
-  // Download Id for next Save Page.
-  int32 next_save_page_id_;
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   DownloadManagerDelegate* delegate_;

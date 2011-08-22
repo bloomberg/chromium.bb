@@ -42,6 +42,7 @@
 
 #include <map>
 
+#include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
@@ -72,7 +73,7 @@ class DownloadFileManager
   // Called on shutdown on the UI thread.
   void Shutdown();
 
-  // Called on the IO thread
+  // Called on the IO or UI threads.
   int GetNextId();
 
   // Called on UI thread to make DownloadFileManager start the download.
@@ -153,8 +154,8 @@ class DownloadFileManager
   // it from the maps.
   void EraseDownload(int id);
 
-  // Unique ID for each DownloadFile.
-  int next_id_;
+  // Unique ID for each DownloadItem.
+  base::AtomicSequenceNumber next_id_;
 
   typedef base::hash_map<int, DownloadFile*> DownloadFileMap;
 

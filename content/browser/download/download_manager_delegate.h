@@ -8,7 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time.h"
 
+class DownloadItem;
 class FilePath;
 class TabContents;
 class SavePackage;
@@ -16,6 +18,9 @@ class SavePackage;
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManagerDelegate {
  public:
+  // Lets the delegate know that the download manager is shutting down.
+  virtual void Shutdown() = 0;
+
   // Notifies the delegate that a download is starting. The delegate can return
   // false to delay the start of the download, in which case it should call
   // DownloadManager::RestartDownload when it's ready.
@@ -38,6 +43,31 @@ class DownloadManagerDelegate {
 
   // Returns true if we need to generate a binary hash for downloads.
   virtual bool GenerateFileHash() = 0;
+
+  // Notifies the embedder that a new download item is created. The
+  // DownloadManager waits for the embedder to add information about this
+  // download to its persistent store. When the embedder is done, it calls
+  // DownloadManager::OnDownloadItemAddedToPersistentStore.
+  virtual void AddItemToPersistentStore(DownloadItem* item) = 0;
+
+  // Notifies the embedder that information about the given download has change,
+  // so that it can update its persistent store.
+  virtual void UpdateItemInPersistentStore(DownloadItem* item) = 0;
+
+  // Notifies the embedder that path for the download item has changed, so that
+  // it can update its persistent store.
+  virtual void UpdatePathForItemInPersistentStore(
+      DownloadItem* item,
+      const FilePath& new_path) = 0;
+
+  // Notifies the embedder that it should remove the download item from its
+  // persistent store.
+  virtual void RemoveItemFromPersistentStore(DownloadItem* item) = 0;
+
+  // Notifies the embedder to remove downloads from the given time range.
+  virtual void RemoveItemsFromPersistentStoreBetween(
+      const base::Time remove_begin,
+      const base::Time remove_end) = 0;
 
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(TabContents* tab_contents,

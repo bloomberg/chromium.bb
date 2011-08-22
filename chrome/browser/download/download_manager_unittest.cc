@@ -50,8 +50,8 @@ class DownloadManagerTest : public TestingBrowserProcessTest {
             download_manager_delegate_, &download_status_updater_)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {
-    download_manager_delegate_->set_download_manager(download_manager_);
     download_manager_->Init(profile_.get());
+    download_manager_delegate_->SetDownloadManager(download_manager_);
   }
 
   ~DownloadManagerTest() {

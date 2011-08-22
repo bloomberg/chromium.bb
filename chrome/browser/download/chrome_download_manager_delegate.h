@@ -12,10 +12,12 @@
 #include "base/task.h"
 #include "content/browser/download/download_manager_delegate.h"
 
+class DownloadHistory;
 class DownloadItem;
 class DownloadManager;
 class DownloadPrefs;
 class Profile;
+struct DownloadHistoryInfo;
 struct DownloadStateInfo;
 
 // This is the Chrome side helper for the download system.
@@ -25,6 +27,9 @@ class ChromeDownloadManagerDelegate
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
 
+  void SetDownloadManager(DownloadManager* dm);
+
+  virtual void Shutdown() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(TabContents* tab_contents,
                                   const FilePath& suggested_path,
@@ -32,6 +37,15 @@ class ChromeDownloadManagerDelegate
   virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
+  virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void UpdateItemInPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void UpdatePathForItemInPersistentStore(
+      DownloadItem* item,
+      const FilePath& new_path) OVERRIDE;
+  virtual void RemoveItemFromPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void RemoveItemsFromPersistentStoreBetween(
+      const base::Time remove_begin,
+      const base::Time remove_end) OVERRIDE;
   virtual void GetSaveDir(TabContents* tab_contents,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir) OVERRIDE;
@@ -40,9 +54,8 @@ class ChromeDownloadManagerDelegate
                               bool can_save_as_complete) OVERRIDE;
   virtual void DownloadProgressUpdated() OVERRIDE;
 
-  void set_download_manager(DownloadManager* dm) { download_manager_ = dm; }
-
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
+  DownloadHistory* download_history() { return download_history_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
@@ -76,9 +89,13 @@ class ChromeDownloadManagerDelegate
                        const DownloadStateInfo& state,
                        bool visited_referrer_before);
 
+  // Callback from history system.
+  void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
+
   Profile* profile_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_ptr<DownloadPrefs> download_prefs_;
+  scoped_ptr<DownloadHistory> download_history_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };

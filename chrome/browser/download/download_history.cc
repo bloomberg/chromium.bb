@@ -10,16 +10,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/download/download_item.h"
 
-// Our download table ID starts at 1, so we use 0 to represent a download that
-// has started, but has not yet had its data persisted in the table. We use fake
-// database handles in incognito mode starting at -1 and progressively getting
-// more negative.
-// static
-const int DownloadHistory::kUninitializedHandle = 0;
-
 DownloadHistory::DownloadHistory(Profile* profile)
     : profile_(profile),
-      next_fake_db_handle_(kUninitializedHandle - 1) {
+      next_fake_db_handle_(DownloadItem::kUninitializedHandle - 1) {
   DCHECK(profile);
 }
 
@@ -97,7 +90,7 @@ void DownloadHistory::AddEntry(
 void DownloadHistory::UpdateEntry(DownloadItem* download_item) {
   // Don't store info in the database if the download was initiated while in
   // incognito mode or if it hasn't been initialized in our database table.
-  if (download_item->db_handle() <= kUninitializedHandle)
+  if (download_item->db_handle() <= DownloadItem::kUninitializedHandle)
     return;
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -112,7 +105,7 @@ void DownloadHistory::UpdateEntry(DownloadItem* download_item) {
 void DownloadHistory::UpdateDownloadPath(DownloadItem* download_item,
                                          const FilePath& new_path) {
   // No update necessary if the download was initiated while in incognito mode.
-  if (download_item->db_handle() <= kUninitializedHandle)
+  if (download_item->db_handle() <= DownloadItem::kUninitializedHandle)
     return;
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -122,7 +115,7 @@ void DownloadHistory::UpdateDownloadPath(DownloadItem* download_item,
 
 void DownloadHistory::RemoveEntry(DownloadItem* download_item) {
   // No update necessary if the download was initiated while in incognito mode.
-  if (download_item->db_handle() <= kUninitializedHandle)
+  if (download_item->db_handle() <= DownloadItem::kUninitializedHandle)
     return;
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);

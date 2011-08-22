@@ -42,6 +42,18 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
 }
 
+void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
+  download_manager_ = dm;
+  download_history_.reset(new DownloadHistory(profile_));
+  download_history_->Load(
+      NewCallback(dm, &DownloadManager::OnPersistentStoreQueryComplete));
+}
+
+void ChromeDownloadManagerDelegate::Shutdown() {
+  download_history_.reset();
+  download_prefs_.reset();
+}
+
 bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
   // We create a download item and store it in our download map, and inform the
   // history system of a new download. Since this method can be called while the
@@ -108,6 +120,35 @@ bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 #endif
 }
 
+void ChromeDownloadManagerDelegate::AddItemToPersistentStore(
+    DownloadItem* item) {
+  download_history_->AddEntry(item,
+      NewCallback(this,
+          &ChromeDownloadManagerDelegate::OnItemAddedToPersistentStore));
+}
+
+void ChromeDownloadManagerDelegate::UpdateItemInPersistentStore(
+    DownloadItem* item) {
+  download_history_->UpdateEntry(item);
+}
+
+void ChromeDownloadManagerDelegate::UpdatePathForItemInPersistentStore(
+    DownloadItem* item,
+    const FilePath& new_path) {
+  download_history_->UpdateDownloadPath(item, new_path);
+}
+
+void ChromeDownloadManagerDelegate::RemoveItemFromPersistentStore(
+    DownloadItem* item) {
+  download_history_->RemoveEntry(item);
+}
+
+void ChromeDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
+    const base::Time remove_begin,
+    const base::Time remove_end) {
+  download_history_->RemoveEntriesBetween(remove_begin, remove_end);
+}
+
 void ChromeDownloadManagerDelegate::GetSaveDir(TabContents* tab_contents,
                                                FilePath* website_save_dir,
                                                FilePath* download_save_dir) {
@@ -168,7 +209,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
   if (is_dangerous_url)
     download->MarkUrlDangerous();
 
-  download_manager_->download_history()->CheckVisitedReferrerBefore(
+  download_history_->CheckVisitedReferrerBefore(
       download_id,
       download->referrer_url(),
       NewCallback(this,
@@ -380,4 +421,16 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
       return true;
   }
   return false;
+}
+
+void ChromeDownloadManagerDelegate::OnItemAddedToPersistentStore(
+    int32 download_id, int64 db_handle) {
+  // It's not immediately obvious, but HistoryBackend::CreateDownload() can
+  // call this function with an invalid |db_handle|. For instance, this can
+  // happen when the history database is offline. We cannot have multiple
+  // DownloadItems with the same invalid db_handle, so we need to assign a
+  // unique |db_handle| here.
+  if (db_handle == DownloadItem::kUninitializedHandle)
+    db_handle = download_history_->GetNextFakeDbHandle();
+  download_manager_->OnItemAddedToPersistentStore(download_id, db_handle);
 }

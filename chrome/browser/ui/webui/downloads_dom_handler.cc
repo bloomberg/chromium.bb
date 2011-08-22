@@ -197,7 +197,7 @@ void DownloadsDOMHandler::ModelChanged() {
     // fixed.
     // We should never see anything that isn't already in the history.
     CHECK(*it);
-    CHECK_NE(DownloadHistory::kUninitializedHandle, (*it)->db_handle());
+    CHECK_NE(DownloadItem::kUninitializedHandle, (*it)->db_handle());
 
     (*it)->AddObserver(this);
   }
@@ -266,7 +266,7 @@ void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file) {
     // TODO(rdsmith): Change to DCHECK when http://crbug.com/84508 is fixed.
-    CHECK_NE(DownloadHistory::kUninitializedHandle, file->db_handle());
+    CHECK_NE(DownloadItem::kUninitializedHandle, file->db_handle());
     file->Remove();
   }
 }

@@ -21,6 +21,7 @@
 #include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
+#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_manager_delegate.h"
@@ -262,12 +263,15 @@ bool SavePackage::Init() {
     return false;
   }
 
-  DCHECK(download_manager_);
+  ResourceDispatcherHost* rdh =
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
+
   // Create the download item, and add ourself as an observer.
   download_ = new DownloadItem(download_manager_,
                                saved_main_file_path_,
                                page_url_,
-                               browser_context->IsOffTheRecord());
+                               browser_context->IsOffTheRecord(),
+                               rdh->download_file_manager()->GetNextId());
   download_->AddObserver(this);
 
   // Transfer ownership to the download manager.

@@ -24,10 +24,6 @@ class DownloadHistory {
  public:
   typedef Callback2<int32, bool>::Type VisitedBeforeDoneCallback;
 
-  // A fake download table ID which represents a download that has started,
-  // but is not yet in the table.
-  static const int kUninitializedHandle;
-
   explicit DownloadHistory(Profile* profile);
   ~DownloadHistory();
 

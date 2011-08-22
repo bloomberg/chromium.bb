@@ -28,8 +28,7 @@ const int kUpdatePeriodMs = 500;
 }  // namespace
 
 DownloadFileManager::DownloadFileManager(ResourceDispatcherHost* rdh)
-    : next_id_(0),
-      resource_dispatcher_host_(rdh) {
+    : resource_dispatcher_host_(rdh) {
 }
 
 DownloadFileManager::~DownloadFileManager() {
@@ -114,11 +113,8 @@ void DownloadFileManager::UpdateInProgressDownloads() {
   }
 }
 
-// Called on the IO thread once the ResourceDispatcherHost has decided that a
-// request is a download.
 int DownloadFileManager::GetNextId() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return next_id_++;
+  return next_id_.GetNext();
 }
 
 void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {

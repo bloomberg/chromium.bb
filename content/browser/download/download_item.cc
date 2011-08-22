@@ -16,7 +16,6 @@
 #include "net/base/net_util.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
-#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/history/download_history_info.h"
@@ -116,6 +115,13 @@ DownloadItem::DangerType GetDangerType(bool dangerous_file,
 
 }  // namespace
 
+// Our download table ID starts at 1, so we use 0 to represent a download that
+// has started, but has not yet had its data persisted in the table. We use fake
+// database handles in incognito mode starting at -1 and progressively getting
+// more negative.
+// static
+const int DownloadItem::kUninitializedHandle = 0;
+
 // Constructor for reading from the history service.
 DownloadItem::DownloadItem(DownloadManager* download_manager,
                            const DownloadHistoryInfo& info)
@@ -171,7 +177,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(info.start_time),
-      db_handle_(DownloadHistory::kUninitializedHandle),
+      db_handle_(DownloadItem::kUninitializedHandle),
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),
@@ -190,8 +196,9 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
 DownloadItem::DownloadItem(DownloadManager* download_manager,
                            const FilePath& path,
                            const GURL& url,
-                           bool is_otr)
-    : download_id_(download_manager->GetNextSavePageId()),
+                           bool is_otr,
+                           int download_id)
+    : download_id_(download_id),
       full_path_(path),
       url_chain_(1, url),
       referrer_url_(GURL()),
@@ -201,7 +208,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(base::Time::Now()),
-      db_handle_(DownloadHistory::kUninitializedHandle),
+      db_handle_(DownloadItem::kUninitializedHandle),
       download_manager_(download_manager),
       is_paused_(false),
       open_when_complete_(false),

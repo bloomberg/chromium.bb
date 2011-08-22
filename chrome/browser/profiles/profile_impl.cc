@@ -1255,8 +1255,8 @@ DownloadManager* ProfileImpl::GetDownloadManager() {
     scoped_refptr<DownloadManager> dlm(
         new DownloadManager(download_manager_delegate_,
                             g_browser_process->download_status_updater()));
-    download_manager_delegate_->set_download_manager(dlm);
     dlm->Init(this);
+    download_manager_delegate_->SetDownloadManager(dlm);
     created_download_manager_ = true;
     download_manager_.swap(dlm);
   }

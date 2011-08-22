@@ -12,6 +12,7 @@
 class MockDownloadManagerDelegate : public DownloadManagerDelegate {
  public:
   virtual ~MockDownloadManagerDelegate();
+  virtual void Shutdown() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(TabContents* tab_contents,
                                   const FilePath& suggested_path,
@@ -19,6 +20,15 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
+  virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void UpdateItemInPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void UpdatePathForItemInPersistentStore(
+      DownloadItem* item,
+      const FilePath& new_path) OVERRIDE;
+  virtual void RemoveItemFromPersistentStore(DownloadItem* item) OVERRIDE;
+  virtual void RemoveItemsFromPersistentStoreBetween(
+      const base::Time remove_begin,
+      const base::Time remove_end) OVERRIDE;
   virtual void GetSaveDir(TabContents* tab_contents,
                           FilePath* website_save_dir,
                           FilePath* download_save_dir) OVERRIDE;

@@ -7,6 +7,9 @@
 MockDownloadManagerDelegate::~MockDownloadManagerDelegate() {
 }
 
+void MockDownloadManagerDelegate::Shutdown() {
+}
+
 bool MockDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
   return true;
 }
@@ -29,6 +32,27 @@ bool MockDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 
 bool MockDownloadManagerDelegate::GenerateFileHash() {
   return false;
+}
+
+void MockDownloadManagerDelegate::AddItemToPersistentStore(DownloadItem* item) {
+}
+
+void MockDownloadManagerDelegate::UpdateItemInPersistentStore(
+    DownloadItem* item) {
+}
+
+void MockDownloadManagerDelegate::UpdatePathForItemInPersistentStore(
+    DownloadItem* item,
+    const FilePath& new_path) {
+}
+
+void MockDownloadManagerDelegate::RemoveItemFromPersistentStore(
+    DownloadItem* item) {
+}
+
+void MockDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
+    const base::Time remove_begin,
+    const base::Time remove_end) {
 }
 
 void MockDownloadManagerDelegate::GetSaveDir(

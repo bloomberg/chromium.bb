@@ -89,7 +89,9 @@ class SaveFileManager
   // Lifetime management.
   void Shutdown();
 
-  // Called on the IO thread
+  // Called on the IO thread. This generates unique IDs for
+  // SaveFileResourceHandler objects (there's one per file in a SavePackage).
+  // Note that this is different from the SavePackage's id.
   int GetNextId();
 
   // Save the specified URL. Called on the UI thread and forwarded to the
