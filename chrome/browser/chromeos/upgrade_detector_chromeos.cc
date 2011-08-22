@@ -20,7 +20,10 @@ UpgradeDetectorChromeos::UpgradeDetectorChromeos() {
 }
 
 UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {
-  chromeos::CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
+  // Only remove observer if CrosLibrary has not already been shut down.
+  // See: http://crosbug.com/19295.
+  if (chromeos::CrosLibrary::Initialized())
+    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
 }
 
 void UpgradeDetectorChromeos::UpdateStatusChanged(

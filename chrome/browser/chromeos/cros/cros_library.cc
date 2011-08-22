@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
-#include "base/lazy_instance.h"
 #include "chrome/browser/chromeos/cros/brightness_library.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
@@ -30,11 +29,9 @@ void CrosLibrary::TestApi::Set##class_prefix##Library(                         \
   library_->var_prefix##_lib_.SetImpl(library, own);                           \
 }
 
-
 namespace chromeos {
 
-static base::LazyInstance<CrosLibrary> g_cros_library(
-    base::LINKER_INITIALIZED);
+static CrosLibrary* g_cros_library = NULL;
 
 CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              own_library_loader_(false),
@@ -50,8 +47,28 @@ CrosLibrary::~CrosLibrary() {
 }
 
 // static
+void CrosLibrary::Initialize() {
+  CHECK(!g_cros_library) <<
+      "CrosLibrary::Initialize() called with non NULL library.";
+  g_cros_library = new CrosLibrary();
+}
+
+// static
+bool CrosLibrary::Initialized() {
+  return g_cros_library != NULL;
+}
+
+// static
+void CrosLibrary::Shutdown() {
+  CHECK(g_cros_library) << "CrosLibrary::Shutdown() called with NULL library";
+  delete g_cros_library;
+  g_cros_library = NULL;
+}
+
+// static
 CrosLibrary* CrosLibrary::Get() {
-  return g_cros_library.Pointer();
+  CHECK(g_cros_library) << "CrosLibrary::Get() called before Initialize()";
+  return g_cros_library;
 }
 
 DEFINE_GET_LIBRARY_METHOD(Brightness, brightness);

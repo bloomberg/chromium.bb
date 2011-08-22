@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -84,6 +85,9 @@ class OfflineLoadPageTest : public RenderViewHostTestHarness,
   UserResponse user_response_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
+
+  // Initializes / shuts down a stub CrosLibrary.
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 };
 
 
