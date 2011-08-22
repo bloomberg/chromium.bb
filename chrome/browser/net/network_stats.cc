@@ -80,6 +80,8 @@ NetworkStats::NetworkStats()
       bytes_to_send_(0),
       encoded_message_(""),
       ALLOW_THIS_IN_INITIALIZER_LIST(
+          resolve_callback_(this, &NetworkStats::OnResolveComplete)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
           read_callback_(this, &NetworkStats::OnReadComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           write_callback_(this, &NetworkStats::OnWriteComplete)),
@@ -90,6 +92,25 @@ NetworkStats::NetworkStats()
 
 NetworkStats::~NetworkStats() {
   socket_.reset();
+}
+
+bool NetworkStats::Start(net::HostResolver* host_resolver,
+                         const net::HostPortPair& server_host_port_pair,
+                         uint32 bytes_to_send,
+                         net::CompletionCallback* finished_callback) {
+  DCHECK(bytes_to_send);   // We should have data to send.
+
+  Initialize(bytes_to_send, finished_callback);
+
+  net::HostResolver::RequestInfo request(server_host_port_pair);
+  int rv = host_resolver->Resolve(request,
+                                  &addresses_,
+                                  &resolve_callback_,
+                                  NULL,
+                                  net::BoundNetLog());
+  if (rv == net::ERR_IO_PENDING)
+    return true;
+  return DoConnect(rv);
 }
 
 void NetworkStats::Initialize(uint32 bytes_to_send,
@@ -104,7 +125,7 @@ void NetworkStats::Initialize(uint32 bytes_to_send,
   finished_callback_ = finished_callback;
 }
 
-bool NetworkStats::DoStart(int result) {
+bool NetworkStats::ConnectComplete(int result) {
   if (result < 0) {
     Finish(CONNECT_FAILED, result);
     return false;
@@ -169,6 +190,10 @@ bool NetworkStats::ReadComplete(int result) {
     return true;
   }
   return false;
+}
+
+void NetworkStats::OnResolveComplete(int result) {
+  DoConnect(result);
 }
 
 void NetworkStats::OnReadComplete(int result) {
@@ -343,21 +368,11 @@ UDPStatsClient::UDPStatsClient()
 UDPStatsClient::~UDPStatsClient() {
 }
 
-bool UDPStatsClient::Start(const std::string& ip_str,
-                           int port,
-                           uint32 bytes_to_send,
-                           net::CompletionCallback* finished_callback) {
-  DCHECK(port);
-  DCHECK(bytes_to_send);   // We should have data to send.
-
-  Initialize(bytes_to_send, finished_callback);
-
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(ip_str, &ip_number)) {
-    Finish(IP_STRING_PARSE_FAILED, net::ERR_INVALID_ARGUMENT);
+bool UDPStatsClient::DoConnect(int result) {
+  if (result != net::OK) {
+    Finish(RESOLVE_FAILED, result);
     return false;
   }
-  net::IPEndPoint server_address = net::IPEndPoint(ip_number, port);
 
   net::UDPClientSocket* udp_socket =
       new net::UDPClientSocket(net::DatagramSocket::DEFAULT_BIND,
@@ -370,8 +385,20 @@ bool UDPStatsClient::Start(const std::string& ip_str,
   }
   set_socket(udp_socket);
 
-  int rv = udp_socket->Connect(server_address);
-  return DoStart(rv);
+  const addrinfo* address = GetAddressList().head();
+  if (!address) {
+    Finish(RESOLVE_FAILED, net::ERR_INVALID_ARGUMENT);
+    return false;
+  }
+
+  net::IPEndPoint endpoint;
+  endpoint.FromSockAddr(address->ai_addr, address->ai_addrlen);
+  int rv = udp_socket->Connect(endpoint);
+  if (rv < 0) {
+    Finish(CONNECT_FAILED, rv);
+    return false;
+  }
+  return NetworkStats::ConnectComplete(rv);
 }
 
 bool UDPStatsClient::ReadComplete(int result) {
@@ -416,37 +443,12 @@ void UDPStatsClient::Finish(Status status, int result) {
 
 // TCPStatsClient methods and members.
 TCPStatsClient::TCPStatsClient()
-  : NetworkStats(),
-    ALLOW_THIS_IN_INITIALIZER_LIST(
-        resolve_callback_(this, &TCPStatsClient::OnResolveComplete)),
-    ALLOW_THIS_IN_INITIALIZER_LIST(
-        connect_callback_(this, &TCPStatsClient::OnConnectComplete)) {
+    : NetworkStats(),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          connect_callback_(this, &TCPStatsClient::OnConnectComplete)) {
 }
 
 TCPStatsClient::~TCPStatsClient() {
-}
-
-bool TCPStatsClient::Start(net::HostResolver* host_resolver,
-                           const net::HostPortPair& server_host_port_pair,
-                           uint32 bytes_to_send,
-                           net::CompletionCallback* finished_callback) {
-  DCHECK(bytes_to_send);   // We should have data to send.
-
-  Initialize(bytes_to_send, finished_callback);
-
-  net::HostResolver::RequestInfo request(server_host_port_pair);
-  int rv = host_resolver->Resolve(request,
-                                  &addresses_,
-                                  &resolve_callback_,
-                                  NULL,
-                                  net::BoundNetLog());
-  if (rv == net::ERR_IO_PENDING)
-    return true;
-  return DoConnect(rv);
-}
-
-void TCPStatsClient::OnResolveComplete(int result) {
-  DoConnect(result);
 }
 
 bool TCPStatsClient::DoConnect(int result) {
@@ -456,7 +458,7 @@ bool TCPStatsClient::DoConnect(int result) {
   }
 
   net::TCPClientSocket* tcp_socket =
-      new net::TCPClientSocket(addresses_, NULL, net::NetLog::Source());
+      new net::TCPClientSocket(GetAddressList(), NULL, net::NetLog::Source());
   if (!tcp_socket) {
     Finish(SOCKET_CREATE_FAILED, net::ERR_INVALID_ARGUMENT);
     return false;
@@ -467,11 +469,11 @@ bool TCPStatsClient::DoConnect(int result) {
   if (rv == net::ERR_IO_PENDING)
     return true;
 
-  return DoStart(rv);
+  return NetworkStats::ConnectComplete(rv);
 }
 
 void TCPStatsClient::OnConnectComplete(int result) {
-  DoStart(result);
+  NetworkStats::ConnectComplete(result);
 }
 
 bool TCPStatsClient::ReadComplete(int result) {
@@ -573,29 +575,31 @@ void CollectNetworkStats(const std::string& network_stats_server,
   // Use SPDY's UDP port per http://www.iana.org/assignments/port-numbers.
   // |network_stats_server| echo TCP and UDP servers listen on the following
   // ports.
-  uint32 kTCPTestingPort = 80;
+  uint32 kTCPTestingPort = 8081;
   uint32 kUDPTestingPort = 6121;
-
-  UDPStatsClient* small_udp_stats = new UDPStatsClient();
-  small_udp_stats->Start(
-      network_stats_server, kUDPTestingPort, kSmallTestBytesToSend, NULL);
-
-  UDPStatsClient* large_udp_stats = new UDPStatsClient();
-  large_udp_stats->Start(
-      network_stats_server, kUDPTestingPort, kLargeTestBytesToSend, NULL);
 
   net::HostResolver* host_resolver = io_thread->globals()->host_resolver.get();
   DCHECK(host_resolver);
 
-  net::HostPortPair server_address(network_stats_server, kTCPTestingPort);
+  net::HostPortPair udp_server_address(network_stats_server, kUDPTestingPort);
+
+  UDPStatsClient* small_udp_stats = new UDPStatsClient();
+  small_udp_stats->Start(
+      host_resolver, udp_server_address, kSmallTestBytesToSend, NULL);
+
+  UDPStatsClient* large_udp_stats = new UDPStatsClient();
+  large_udp_stats->Start(
+      host_resolver, udp_server_address, kLargeTestBytesToSend, NULL);
+
+  net::HostPortPair tcp_server_address(network_stats_server, kTCPTestingPort);
 
   TCPStatsClient* small_tcp_client = new TCPStatsClient();
-  small_tcp_client->Start(host_resolver, server_address, kSmallTestBytesToSend,
-                          NULL);
+  small_tcp_client->Start(
+      host_resolver, tcp_server_address, kSmallTestBytesToSend, NULL);
 
   TCPStatsClient* large_tcp_client = new TCPStatsClient();
-  large_tcp_client->Start(host_resolver, server_address, kLargeTestBytesToSend,
-                          NULL);
+  large_tcp_client->Start(
+      host_resolver, tcp_server_address, kLargeTestBytesToSend, NULL);
 }
 
 }  // namespace chrome_browser_net

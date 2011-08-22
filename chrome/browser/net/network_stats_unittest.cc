@@ -36,9 +36,12 @@ class NetworkStatsTestUDP : public NetworkStatsTest {
   void RunUDPEchoTest(int bytes) {
     TestCompletionCallback cb;
 
+    scoped_ptr<net::MockHostResolver> host_resolver(
+        new net::MockHostResolver());
+
     UDPStatsClient* udp_stats_client = new UDPStatsClient();
-    EXPECT_TRUE(udp_stats_client->Start(test_server_.host_port_pair().host(),
-                                        test_server_.host_port_pair().port(),
+    EXPECT_TRUE(udp_stats_client->Start(host_resolver.get(),
+                                        test_server_.host_port_pair(),
                                         bytes,
                                         &cb));
     int rv = cb.WaitForResult();
