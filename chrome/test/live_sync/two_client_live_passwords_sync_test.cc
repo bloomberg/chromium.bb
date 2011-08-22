@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DeleteAll) {
 
 // TCM ID - 3694311
 // http://crbug.com/90460
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FLAKY_Merge) {
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, DISABLED_Merge) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 

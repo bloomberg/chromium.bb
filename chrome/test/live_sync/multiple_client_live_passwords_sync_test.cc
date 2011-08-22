@@ -10,7 +10,7 @@
 using webkit_glue::PasswordForm;
 
 // TODO(rsimha): Enable after crbug.com/77993 is fixed.
-IN_PROC_BROWSER_TEST_F(MultipleClientLivePasswordsSyncTest, FLAKY_Sanity) {
+IN_PROC_BROWSER_TEST_F(MultipleClientLivePasswordsSyncTest, DISABLED_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   for (int i = 0; i < num_clients(); ++i) {
