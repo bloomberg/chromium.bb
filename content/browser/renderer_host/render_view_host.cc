@@ -167,11 +167,6 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
         process()->id());
   }
 
-  if (BindingsPolicy::is_extension_enabled(enabled_bindings_)) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
-        process()->id());
-  }
-
   renderer_initialized_ = true;
 
   process()->SetCompositingSurface(routing_id(),

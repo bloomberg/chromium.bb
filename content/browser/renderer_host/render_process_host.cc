@@ -70,7 +70,8 @@ static bool IsSuitableHost(RenderProcessHost* host,
   if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(host->id()))
     host_type = RenderProcessHost::TYPE_WEBUI;
   if (ChildProcessSecurityPolicy::GetInstance()->
-        HasExtensionBindings(host->id()))
+        HasExtensionBindings(host->id()) ||
+      host->is_extension_process())
     host_type = RenderProcessHost::TYPE_EXTENSION;
 
   return host_type == type;

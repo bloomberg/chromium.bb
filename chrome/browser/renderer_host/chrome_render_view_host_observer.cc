@@ -92,6 +92,8 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
       (type == Extension::TYPE_HOSTED_APP &&
        extension->location() == Extension::COMPONENT)) {
     render_view_host()->AllowBindings(BindingsPolicy::EXTENSION);
+    ChildProcessSecurityPolicy::GetInstance()->GrantExtensionBindings(
+        render_view_host()->process()->id());
   }
 }
 
