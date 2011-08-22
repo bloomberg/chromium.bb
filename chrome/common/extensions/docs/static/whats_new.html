@@ -7,6 +7,7 @@ made in recent releases.
 </p>
 
 <ul>
+  <li> <a href="#14">Google Chrome 14</a> </li>
   <li> <a href="#13">Google Chrome 13</a> </li>
   <li> <a href="#12">Google Chrome 12</a> </li>
   <li> <a href="#11">Google Chrome 11</a> </li>
@@ -16,6 +17,75 @@ made in recent releases.
   <li> <a href="#7">Google Chrome 7</a> </li>
   <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
+
+<p>
+In addition to the changes listed below,
+check out the
+<a href="experimental.html">experimental APIs</a>.
+</p>
+
+
+<h2 id="14"> Google Chrome 14 </h2>
+
+<h4> New APIs </h4>
+  <ul>
+    <li> The <a href="tts.html">tts API</a>
+      lets extensions generate speech from text. </li>
+    <li> The <a href="ttsEngine.html">ttsEngine API</a>
+      lets extensions implement text-to-speech (TTS) engines. </li>
+    <li> Extensions that are distributed through the Chrome Web Store
+      can now include Native Client modules.
+      No special manifest entry is necessary, as you can see from the
+      <a href="http://code.google.com/p/naclports/source/browse#svn%2Ftrunk%2Fsrc%2Fpackages%2Flibraries%2Fnethack-3.4.3">NetHack example</a>.
+      For more information, see the
+      <a href="http://blog.chromium.org/2011/08/native-client-brings-sandboxed-native.html">announcement</a> and the
+      <a href="http://code.google.com/chrome/nativeclient/">Native Client documentation</a>.
+  </ul>
+
+<h4> Manifest changes </h4>
+  <ul>
+    <li> The new
+      <a href="manifest.html#content_security_policy">content_security_policy</a> field
+      can help prevent
+      <a href="http://blog.chromium.org/2011/07/writing-extensions-more-securely.html">cross-site scripting vulnerabilities</a>
+      in your extension.
+    </li>
+    <li> The new <a href="manifest.html#nacl_modules">nacl_modules</a> field
+      lets you register Native Client modules
+      as content handlers for MIME types.
+      </li>
+  </ul>
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li>
+      <a href="contextMenus.html">Context menu</a> items
+      can now appear even in documents
+      that have file:// or chrome:// URLs.
+      Previously, they were restricted to documents with
+      http:// or https:// URLs.
+    </li>
+    <li>
+      An optional <code>drawAttention</code> field in
+      <a href="windows.html#method-update">chrome.windows.update()</a>'s
+      <code>updateInfo</code> object lets you specify that the window
+      should entice the user to change focus to it.
+    </li>
+    <li>
+      The new
+      <a href="bookmarks.html#method-getSubTree">bookmarks.getSubTree()</a>
+      function lets you retrieve just part of the Bookmarks hierarchy.
+    </li>
+  </ul>
+
+<h4> Changes to existing APIs </h4>
+  <ul>
+    <li>
+      The "tabs" permission is no longer required for
+      <a href="tabs.html#method-remove">tabs.remove</a> and
+      <a href="tabs.html#event-onRemoved">tabs.onRemoved</a>.
+    </li>
+  </ul>
 
 <h2 id="13"> Google Chrome 13 </h2>
 
