@@ -1163,6 +1163,16 @@ def PPAPIBrowserTester(env,
   if 'TRUSTED_ENV' not in env:
     return []
 
+  # Lint the extra arguments that are being passed to the tester.
+  special_args = ['--ppapi_plugin', '--sel_ldr', '--irt_library', '--file',
+                  '--map_file', '--extension', '--tool', '--browser_flag',
+                  '--test_arg']
+  for arg_name in special_args:
+    if arg_name in args:
+      raise Exception('%s: %r is a test argument provided by the SCons test'
+                      ' wrapper, do not specify it as an additional argument' %
+                      (target, arg_name))
+
   env = env.Clone()
   SetupBrowserEnv(env)
 
