@@ -31,7 +31,7 @@ class AccessibilityMacUITest : public UITest {
   // Called to insert an event for validation.
   // This is a order sensitive expectation.
   void AddExpectedEvent(NSString* notificationName) {
-    [AccessibilityMacUITest::expectedEvents addObject:notificationName];
+    [expectedEvents_ addObject:notificationName];
   }
 
   // Assert that there are no remaining expected events.
@@ -39,11 +39,11 @@ class AccessibilityMacUITest : public UITest {
   // Assumes that there is at least one expected event.
   // The runloop stops only if we receive all expected notifications.
   void WaitAndAssertAllEventsObserved() {
-    ASSERT_GE([expectedEvents count], 1U);
+    ASSERT_GE([expectedEvents_ count], 1U);
     CFRunLoopRunInMode(
         kCFRunLoopDefaultMode,
         TestTimeouts::action_max_timeout_ms() / 1000, false);
-    ASSERT_EQ(0U, [AccessibilityMacUITest::expectedEvents count]);
+    ASSERT_EQ(0U, [expectedEvents_ count]);
   }
 
   // The Callback handler added to each AXUIElement.
@@ -52,24 +52,25 @@ class AccessibilityMacUITest : public UITest {
       AXUIElementRef element,
       CFStringRef notificationName,
       void *refcon) {
-    if ([[AccessibilityMacUITest::expectedEvents objectAtIndex:0]
+    AccessibilityMacUITest* this_pointer =
+        reinterpret_cast<AccessibilityMacUITest*>(refcon);
+    if ([[this_pointer->expectedEvents_ objectAtIndex:0]
             isEqualToString:(NSString*)notificationName]) {
-      [AccessibilityMacUITest::expectedEvents removeObjectAtIndex:0];
+      [this_pointer->expectedEvents_ removeObjectAtIndex:0];
     }
 
-    if ([AccessibilityMacUITest::expectedEvents count] == 0) {
+    if ([this_pointer->expectedEvents_ count] == 0) {
       CFRunLoopStop(CFRunLoopGetCurrent());
     }
 
     // TODO(dtseng): currently refreshing on all notifications; scope later.
-    AccessibilityMacUITest::SetAllObserversOnDescendants(
-        element, observerRef);
+    this_pointer->SetAllObserversOnDescendants(element, observerRef);
   }
 
  private:
   // Perform AX setup.
   void Initialize() {
-    AccessibilityMacUITest::expectedEvents.reset([[NSMutableArray alloc] init]);
+    expectedEvents_.reset([[NSMutableArray alloc] init]);
 
     // Construct the Chrome AXUIElementRef.
     ASSERT_NE(-1, browser_process_id());
@@ -94,8 +95,8 @@ class AccessibilityMacUITest : public UITest {
 
   // Taken largely from AXNotificationConstants.h
   // (substituted NSAccessibility* to avoid casting).
-  static void SetupObservedNotifications() {
-    AccessibilityMacUITest::observedNotifications.reset(
+  void SetupObservedNotifications() {
+    observedNotifications_.reset(
         [[NSArray alloc] initWithObjects:
 
             // focus notifications
@@ -149,7 +150,7 @@ class AccessibilityMacUITest : public UITest {
       }
 
   // Observe AX notifications on element and all descendants.
-  static void SetAllObserversOnDescendants(
+  void SetAllObserversOnDescendants(
       AXUIElementRef element,
       AXObserverRef observerRef) {
     SetAllObservers(element, observerRef);
@@ -165,24 +166,20 @@ class AccessibilityMacUITest : public UITest {
   }
 
   // Add observers for all notifications we know about.
-  static void SetAllObservers(
+  void SetAllObservers(
       AXUIElementRef element,
       AXObserverRef observerRef) {
-    for (NSString* notification in
-         AccessibilityMacUITest::observedNotifications.get()) {
+    for (NSString* notification in observedNotifications_.get()) {
       AXObserverAddNotification(
-          observerRef, element, (CFStringRef)notification, nil);
+          observerRef, element, (CFStringRef)notification, this);
     }
   }
 
   // Used to keep track of events received during the lifetime of the tests.
-  static scoped_nsobject<NSMutableArray> expectedEvents;
+  scoped_nsobject<NSMutableArray> expectedEvents_;
   // NSString collection of all AX notifications.
-  static scoped_nsobject<NSArray> observedNotifications;
+  scoped_nsobject<NSArray> observedNotifications_;
 };
-
-scoped_nsobject<NSMutableArray> AccessibilityMacUITest::expectedEvents;
-scoped_nsobject<NSArray> AccessibilityMacUITest::observedNotifications;
 
 TEST_F(AccessibilityMacUITest, TestInitialPageNotifications) {
   // Browse to a new page.
