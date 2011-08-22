@@ -1612,6 +1612,7 @@
         'browser/profiles/profile_manager_unittest.cc',
         'browser/remoting/firewall_traversal_tab_helper_unittest.cc',
         'browser/renderer_host/accelerated_plugin_view_mac_unittest.mm',
+        'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
         'browser/renderer_host/text_input_client_mac_unittest.mm',
         'browser/renderer_host/web_cache_manager_unittest.cc',
@@ -2124,6 +2125,7 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
+            ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
             # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
             # print preview is enabled on CrOS.
             ['exclude', '^browser/ui/webui/print_preview_ui_unittest.cc'],

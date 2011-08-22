@@ -315,6 +315,10 @@ extern const char kFileManagerExtensionPath[];
 #endif
 #endif
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+extern const char kScrollPixels[];
+#endif
+
 #if defined(OS_MACOSX) || defined(OS_WIN)
 extern const char kUseSystemSSL[];
 #endif

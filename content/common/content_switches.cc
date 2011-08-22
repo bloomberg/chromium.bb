@@ -471,11 +471,6 @@ const char kAuditHandles[]                  = "enable-handle-auditing";
 const char kAuditAllHandles[]               = "enable-handle-auditing-all";
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-// Specify the amount the trackpad should scroll by.
-const char kScrollPixels[]                  = "scroll-pixels";
-#endif
-
 #if !defined(OFFICIAL_BUILD)
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererCheckFalseTest[]        = "renderer-check-false-test";

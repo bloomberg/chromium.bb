@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 
 class Browser;
 class ProfileMenuModel;

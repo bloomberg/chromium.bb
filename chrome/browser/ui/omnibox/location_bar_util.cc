@@ -11,7 +11,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
 
 namespace location_bar_util {
 
@@ -35,7 +34,7 @@ std::wstring CalculateMinString(const std::wstring& description) {
   string16 min_string;
   if (chop_index == std::wstring::npos) {
     // No dot or whitespace, truncate to at most 3 chars.
-    min_string = ui::TruncateString(WideToUTF16Hack(description), 3);
+    min_string = l10n_util::TruncateString(WideToUTF16Hack(description), 3);
   } else {
     min_string = WideToUTF16(description.substr(0, chop_index));
   }

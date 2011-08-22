@@ -37,7 +37,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
@@ -781,7 +780,7 @@ std::string BuildTooltipTitleFor(string16 title, const GURL& url) {
   const std::string& url_str = url.possibly_invalid_spec();
   const std::string& title_str = UTF16ToUTF8(title);
 
-  std::string truncated_url = UTF16ToUTF8(ui::TruncateString(
+  std::string truncated_url = UTF16ToUTF8(l10n_util::TruncateString(
       UTF8ToUTF16(url_str), kMaxTooltipURLLength));
   gchar* escaped_url_cstr = g_markup_escape_text(truncated_url.c_str(),
                                                  truncated_url.size());
@@ -792,7 +791,7 @@ std::string BuildTooltipTitleFor(string16 title, const GURL& url) {
   if (url_str == title_str || title.empty()) {
     return escaped_url;
   } else {
-    std::string truncated_title = UTF16ToUTF8(ui::TruncateString(
+    std::string truncated_title = UTF16ToUTF8(l10n_util::TruncateString(
         title, kMaxTooltipTitleLength));
     gchar* escaped_title_cstr = g_markup_escape_text(truncated_title.c_str(),
                                                      truncated_title.size());

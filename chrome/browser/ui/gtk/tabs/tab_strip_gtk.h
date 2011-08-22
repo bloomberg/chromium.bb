@@ -13,13 +13,13 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "content/common/notification_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/rect.h"
 
 class BrowserWindowGtk;

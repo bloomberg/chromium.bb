@@ -8,8 +8,8 @@
 
 typedef struct _GtkWidget GtkWidget;
 
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
 
 class TabContents;
 

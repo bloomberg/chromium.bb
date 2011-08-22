@@ -15,7 +15,7 @@
 #elif defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
 
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)

@@ -65,7 +65,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
 #include "webkit/glue/webmenuitem.h"
 
@@ -1789,8 +1788,8 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
 }
 
 string16 RenderViewContextMenu::PrintableSelectionText() {
-  return ui::TruncateString(params_.selection_text,
-                            kMaxSelectionTextLength);
+  return l10n_util::TruncateString(params_.selection_text,
+                                   kMaxSelectionTextLength);
 }
 
 // Controller functions --------------------------------------------------------

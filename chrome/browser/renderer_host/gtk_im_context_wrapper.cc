@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/gtk_im_context_wrapper.h"
+#include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -12,14 +12,25 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/third_party/icu/icu_utf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/common/native_web_keyboard_event.h"
+#include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/gtk/gtk_im_context_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
+
+#if !defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/gtk/menu_gtk.h"
+#endif
 
 namespace {
 // Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp
@@ -308,11 +319,23 @@ void GtkIMContextWrapper::OnFocusOut() {
 #if !defined(TOOLKIT_VIEWS)
 // Not defined for views because the views context menu doesn't
 // implement input methods yet.
-GtkWidget* GtkIMContextWrapper::BuildInputMethodsGtkMenu() {
+void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
+  gboolean show_input_method_menu = TRUE;
+
+  g_object_get(gtk_widget_get_settings(GTK_WIDGET(host_view_->native_view())),
+               "gtk-show-input-method-menu", &show_input_method_menu, NULL);
+  if (!show_input_method_menu)
+    return;
+
+  std::string label = gfx::ConvertAcceleratorsFromWindowsStyle(
+      l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU));
+  GtkWidget* menuitem = gtk_menu_item_new_with_mnemonic(label.c_str());
   GtkWidget* submenu = gtk_menu_new();
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
   gtk_im_multicontext_append_menuitems(GTK_IM_MULTICONTEXT(context_),
                                        GTK_MENU_SHELL(submenu));
-  return submenu;
+  menu->AppendSeparator();
+  menu->AppendMenuItem(IDC_INPUT_METHODS_MENU, menuitem);
 }
 #endif
 

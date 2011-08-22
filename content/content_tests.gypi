@@ -50,7 +50,6 @@
       'sources': [
         'browser/browser_thread_unittest.cc',
         'browser/child_process_security_policy_unittest.cc',
-        'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/trace_subscriber_stdio_unittest.cc',
         'common/process_watcher_unittest.cc',
@@ -78,11 +77,6 @@
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-        ['chromeos==1', {
-          'sources/': [
-            ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
           ],
         }],
       ],

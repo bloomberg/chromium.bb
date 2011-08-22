@@ -152,10 +152,6 @@ extern const char kAuditHandles[];
 extern const char kAuditAllHandles[];
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-extern const char kScrollPixels[];
-#endif
-
 #if !defined(OFFICIAL_BUILD)
 extern const char kRendererCheckFalseTest[];
 #endif

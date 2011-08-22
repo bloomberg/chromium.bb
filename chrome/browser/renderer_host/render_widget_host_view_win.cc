@@ -49,7 +49,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/text/text_elider.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas.h"
@@ -752,7 +751,7 @@ void RenderWidgetHostViewWin::SetTooltipText(const std::wstring& tooltip_text) {
   // accidentally DOS the user with a mega tooltip (since Windows doesn't seem
   // to do this itself).
   const std::wstring& new_tooltip_text =
-      ui::TruncateString(tooltip_text, kMaxTooltipLength);
+      l10n_util::TruncateString(tooltip_text, kMaxTooltipLength);
 
   if (new_tooltip_text != tooltip_text_) {
     tooltip_text_ = new_tooltip_text;

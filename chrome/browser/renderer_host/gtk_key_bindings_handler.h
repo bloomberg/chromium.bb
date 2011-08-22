@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_GTK_KEY_BINDINGS_HANDLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_GTK_KEY_BINDINGS_HANDLER_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_GTK_KEY_BINDINGS_HANDLER_H_
+#define CHROME_BROWSER_RENDERER_HOST_GTK_KEY_BINDINGS_HANDLER_H_
 #pragma once
 
 #include <gtk/gtk.h>
 
 #include <string>
 
+#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/edit_command.h"
-#include "ui/base/gtk/owned_widget_gtk.h"
 
 struct NativeWebKeyboardEvent;
 
@@ -125,4 +125,4 @@ class GtkKeyBindingsHandler {
   EditCommands edit_commands_;
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_GTK_KEY_BINDINGS_HANDLER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_GTK_KEY_BINDINGS_HANDLER_H_

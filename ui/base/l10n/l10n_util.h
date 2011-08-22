@@ -131,6 +131,13 @@ UI_EXPORT string16 GetStringFUTF16(int message_id,
 UI_EXPORT string16 GetStringFUTF16Int(int message_id, int a);
 string16 GetStringFUTF16Int(int message_id, int64 a);
 
+// Truncates the string to length characters. This breaks the string at
+// the first word break before length, adding the horizontal ellipsis
+// character (unicode character 0x2026) to render ...
+// The supplied string is returned if the string has length characters or
+// less.
+UI_EXPORT string16 TruncateString(const string16& string, size_t length);
+
 // In place sorting of string16 strings using collation rules for |locale|.
 UI_EXPORT void SortStrings16(const std::string& locale,
                              std::vector<string16>* strings);

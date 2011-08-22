@@ -741,6 +741,69 @@ string16 GetStringFUTF16Int(int message_id, int64 a) {
   return GetStringFUTF16(message_id, UTF8ToUTF16(base::Int64ToString(a)));
 }
 
+string16 TruncateString(const string16& string, size_t length) {
+  if (string.size() <= length)
+    // String fits, return it.
+    return string;
+
+  if (length == 0) {
+    // No room for the elide string, return an empty string.
+    return string16();
+  }
+  size_t max = length - 1;
+
+  // Added to the end of strings that are too big.
+  static const char16 kElideString[] = { 0x2026, 0 };
+
+  if (max == 0) {
+    // Just enough room for the elide string.
+    return kElideString;
+  }
+
+  // Use a line iterator to find the first boundary.
+  UErrorCode status = U_ZERO_ERROR;
+  scoped_ptr<icu::RuleBasedBreakIterator> bi(
+      static_cast<icu::RuleBasedBreakIterator*>(
+          icu::RuleBasedBreakIterator::createLineInstance(
+              icu::Locale::getDefault(), status)));
+  if (U_FAILURE(status))
+    return string.substr(0, max) + kElideString;
+  bi->setText(string.c_str());
+  int32_t index = bi->preceding(static_cast<int32_t>(max));
+  if (index == icu::BreakIterator::DONE) {
+    index = static_cast<int32_t>(max);
+  } else {
+    // Found a valid break (may be the beginning of the string). Now use
+    // a character iterator to find the previous non-whitespace character.
+    icu::StringCharacterIterator char_iterator(string.c_str());
+    if (index == 0) {
+      // No valid line breaks. Start at the end again. This ensures we break
+      // on a valid character boundary.
+      index = static_cast<int32_t>(max);
+    }
+    char_iterator.setIndex(index);
+    while (char_iterator.hasPrevious()) {
+      char_iterator.previous();
+      if (!(u_isspace(char_iterator.current()) ||
+            u_charType(char_iterator.current()) == U_CONTROL_CHAR ||
+            u_charType(char_iterator.current()) == U_NON_SPACING_MARK)) {
+        // Not a whitespace character. Advance the iterator so that we
+        // include the current character in the truncated string.
+        char_iterator.next();
+        break;
+      }
+    }
+    if (char_iterator.hasPrevious()) {
+      // Found a valid break point.
+      index = char_iterator.getIndex();
+    } else {
+      // String has leading whitespace, return the elide string.
+      return kElideString;
+    }
+  }
+  return string.substr(0, index) + kElideString;
+}
+
 // Compares the character data stored in two different string16 strings by
 // specified Collator instance.
 UCollationResult CompareString16WithCollator(const icu::Collator* collator,

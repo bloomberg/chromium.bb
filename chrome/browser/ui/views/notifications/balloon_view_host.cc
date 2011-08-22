@@ -14,7 +14,7 @@
 #if defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #else
-#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
 #endif
 #include "views/widget/widget.h"
