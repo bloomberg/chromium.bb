@@ -99,6 +99,11 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyVideoDecoder,
                         OnDestroyVideoDecoder)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ResizeOffscreenFrameBuffer,
+                        OnResizeOffscreenFrameBuffer);
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetWindowSize, OnSetWindowSize);
+#endif  // defined(OS_MACOSX)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -195,17 +200,37 @@ void GpuCommandBufferStub::OnInitialize(
                       &gpu::GpuScheduler::PutChanged));
       command_buffer_->SetParseErrorCallback(
           NewCallback(this, &GpuCommandBufferStub::OnParseError));
-      scheduler_->SetScheduledCallback(
-          NewCallback(channel_, &GpuChannel::OnScheduled));
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
-      if (handle_ != gfx::kNullPluginWindow) {
-        scheduler_->SetResizeCallback(
-            NewCallback(this, &GpuCommandBufferStub::OnResize));
-      }
+      scheduler_->SetScheduledCallback(
+          NewCallback(channel_, &GpuChannel::OnScheduled));
       if (watchdog_)
         scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
+
+#if defined(OS_MACOSX)
+      if (handle_) {
+        // This context conceptually puts its output directly on the
+        // screen, rendered by the accelerated plugin layer in
+        // RenderWidgetHostViewMac. Set up a pathway to notify the
+        // browser process when its contents change.
+        scheduler_->SetSwapBuffersCallback(
+            NewCallback(this,
+                        &GpuCommandBufferStub::SwapBuffersCallback));
+      }
+#endif  // defined(OS_MACOSX)
+
+      // Set up a pathway for resizing the output window or framebuffer at the
+      // right time relative to other GL commands.
+#if defined(TOUCH_UI)
+      if (handle_ == gfx::kNullPluginWindow) {
+        scheduler_->SetResizeCallback(
+            NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
+      }
+#else
+      scheduler_->SetResizeCallback(
+          NewCallback(this, &GpuCommandBufferStub::ResizeCallback));
+#endif
 
       if (parent_stub_for_initialization_) {
         scheduler_->SetParent(parent_stub_for_initialization_->scheduler_.get(),
@@ -402,30 +427,14 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
   Send(reply_message);
 }
 
+void GpuCommandBufferStub::OnResizeOffscreenFrameBuffer(const gfx::Size& size) {
+  scheduler_->ResizeOffscreenFrameBuffer(size);
+}
+
 void GpuCommandBufferStub::OnSwapBuffers() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSwapBuffers");
   ReportState();
-
-#if defined(OS_MACOSX)
-  if (handle_) {
-    // To swap on OSX, we have to send a message to the browser to get the
-    // context put onscreen.
-    GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-    params.renderer_id = renderer_id_;
-    params.render_view_id = render_view_id_;
-    params.window = handle_;
-    params.surface_id = scheduler_->GetSurfaceId();
-    params.route_id = route_id();
-    params.swap_buffers_count = scheduler_->swap_buffers_count();
-    gpu_channel_manager->Send(
-        new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
-    scheduler_->SetScheduled(false);
-  }
-#else
-  // Notify the upstream commandbuffer that the swapbuffers has completed.
   Send(new GpuCommandBufferMsg_SwapBuffers(route_id_));
-#endif
 }
 
 void GpuCommandBufferStub::OnCommandProcessed() {
@@ -434,40 +443,9 @@ void GpuCommandBufferStub::OnCommandProcessed() {
 }
 
 #if defined(OS_MACOSX)
-void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
-    uint64 swap_buffers_count) {
-  TRACE_EVENT1("gpu",
-               "GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped",
-               "frame", swap_buffers_count);
-  DCHECK(handle_ != gfx::kNullPluginWindow);
-
-  // Multiple swapbuffers may get consolidated together into a single
-  // AcceleratedSurfaceBuffersSwapped call. Upstream code listening to the
-  // GpuCommandBufferMsg_SwapBuffers expects to be called one time for every
-  // swap. So, send one SwapBuffers message for every outstanding swap.
-  uint64 delta = swap_buffers_count -
-      scheduler_->acknowledged_swap_buffers_count();
-  scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
-
-  for(uint64 i = 0; i < delta; i++) {
-    // Notify the upstream commandbuffer that the swapbuffers has completed.
-    Send(new GpuCommandBufferMsg_SwapBuffers(route_id_));
-
-    // Wake up the GpuScheduler to start doing work again.
-    scheduler_->SetScheduled(true);
-  }
-}
-#endif  // defined(OS_MACOSX)
-
-void GpuCommandBufferStub::OnResize(gfx::Size size) {
-  if (handle_ == gfx::kNullPluginWindow)
-    return;
-
+void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-
-#if defined(OS_MACOSX)
-  // On Mac, we need to tell the browser about the new IOSurface handle,
-  // asynchronously.
+  // Try using the IOSurface version first.
   uint64 new_backing_store = scheduler_->SetWindowSizeForIOSurface(size);
   if (new_backing_store) {
     GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params;
@@ -485,22 +463,62 @@ void GpuCommandBufferStub::OnResize(gfx::Size size) {
     // questionable.
     NOTREACHED();
   }
-#elif defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
-  // On Windows, Linux, we need to coordinate resizing of onscreen
-  // contexts with the resizing of the actual OS-level window. We do this by
-  // sending a resize message to the browser process and descheduling the
-  // context until the ViewResized message comes back in reply.
-  // Send the resize message if needed
-  gpu_channel_manager->Send(
-      new GpuHostMsg_ResizeView(renderer_id_,
-                                render_view_id_,
-                                route_id_,
-                                size));
-
-  scheduler_->SetScheduled(false);
-#endif // defined(OS_MACOSX)
 }
 
+void GpuCommandBufferStub::SwapBuffersCallback() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::SwapBuffersCallback");
+  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+  params.renderer_id = renderer_id_;
+  params.render_view_id = render_view_id_;
+  params.window = handle_;
+  params.surface_id = scheduler_->GetSurfaceId();
+  params.route_id = route_id();
+  params.swap_buffers_count = scheduler_->swap_buffers_count();
+  gpu_channel_manager->Send(
+      new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+
+  scheduler_->SetScheduled(false);
+}
+
+void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
+    uint64 swap_buffers_count) {
+  TRACE_EVENT1("gpu",
+               "GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped",
+               "frame", swap_buffers_count);
+
+  // Multiple swapbuffers may get consolidated together into a single
+  // AcceleratedSurfaceBuffersSwapped call. Since OnSwapBuffers expects to be
+  // called one time for every swap, make up the difference here.
+  uint64 delta = swap_buffers_count -
+      scheduler_->acknowledged_swap_buffers_count();
+  scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
+
+  for(uint64 i = 0; i < delta; i++) {
+    OnSwapBuffers();
+    // Wake up the GpuScheduler to start doing work again.
+    scheduler_->SetScheduled(true);
+  }
+}
+#endif  // defined(OS_MACOSX)
+
+void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
+  if (handle_ == gfx::kNullPluginWindow) {
+    scheduler_->decoder()->ResizeOffscreenFrameBuffer(size);
+    scheduler_->decoder()->UpdateOffscreenFrameBufferSize();
+  } else {
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+    GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+    gpu_channel_manager->Send(
+        new GpuHostMsg_ResizeView(renderer_id_,
+                                  render_view_id_,
+                                  route_id_,
+                                  size));
+
+    scheduler_->SetScheduled(false);
+#endif
+  }
+}
 
 void GpuCommandBufferStub::ViewResized() {
 #if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)

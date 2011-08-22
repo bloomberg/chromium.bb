@@ -316,7 +316,11 @@ void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
                                             const gfx::Rect& resizer_rect) {
   if (context_) {
     gpu::gles2::GLES2Implementation* gl = context_->GetImplementation();
+#if defined(OS_MACOSX)
+    context_->ResizeOnscreen(size);
+#else
     gl->ResizeCHROMIUM(size.width(), size.height());
+#endif
     gl->Viewport(0, 0, size.width(), size.height());
   }
   RenderWidget::OnResize(size, resizer_rect);

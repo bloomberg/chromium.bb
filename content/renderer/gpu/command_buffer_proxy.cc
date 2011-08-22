@@ -380,6 +380,13 @@ void CommandBufferProxy::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
 }
 
+void CommandBufferProxy::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  Send(new GpuCommandBufferMsg_ResizeOffscreenFrameBuffer(route_id_, size));
+}
+
 void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
   notify_repaint_task_.reset(task);
 }
@@ -405,6 +412,15 @@ CommandBufferProxy::CreateVideoDecoder(
 
   return decoder_host;
 }
+
+#if defined(OS_MACOSX)
+void CommandBufferProxy::SetWindowSize(const gfx::Size& size) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  Send(new GpuCommandBufferMsg_SetWindowSize(route_id_, size));
+}
+#endif
 
 bool CommandBufferProxy::Send(IPC::Message* msg) {
   // Caller should not intentionally send a message if the context is lost.

@@ -106,6 +106,13 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
       const int32* attrib_list,
       const GURL& active_arl);
 
+#if defined(OS_MACOSX)
+  // On Mac OS X only, view RendererGLContexts actually behave like offscreen
+  // RendererGLContexts, and require an explicit resize operation which is
+  // slightly different from that of offscreen RendererGLContexts.
+  void ResizeOnscreen(const gfx::Size& size);
+#endif
+
   // Create a RendererGLContext that renders to an offscreen frame buffer. If
   // parent is not NULL, that RendererGLContext can access a copy of the created
   // RendererGLContext's frame buffer that is updated every time SwapBuffers is
@@ -126,6 +133,13 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   // Sets the parent context. If any parent textures have been created for
   // another parent, it is important to delete them before changing the parent.
   bool SetParent(RendererGLContext* parent);
+
+  // Resize an offscreen frame buffer. The resize occurs on the next call to
+  // SwapBuffers. This is to avoid waiting until all pending GL calls have been
+  // executed by the GPU process. Everything rendered up to the call to
+  // SwapBuffers will be lost. A lost RendererGLContext will be reported if the
+  // resize fails.
+  void ResizeOffscreen(const gfx::Size& size);
 
   // For an offscreen frame buffer RendererGLContext, return the texture ID with
   // respect to the parent RendererGLContext. Returns zero if RendererGLContext
@@ -199,6 +213,7 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
   int32 transfer_buffer_id_;
   gpu::gles2::GLES2Implementation* gles2_implementation_;
+  gfx::Size size_;
   Error last_error_;
   int frame_number_;
 

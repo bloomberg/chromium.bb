@@ -98,6 +98,9 @@ class GpuScheduler : public CommandBufferEngine {
   virtual bool SetGetOffset(int32 offset);
   virtual int32 GetGetOffset();
 
+  // Asynchronously resizes an offscreen frame buffer.
+  void ResizeOffscreenFrameBuffer(const gfx::Size& size);
+
 #if defined(OS_MACOSX)
   // To prevent the GPU process from overloading the browser process,
   // we need to track the number of swap buffers calls issued and

@@ -228,8 +228,11 @@ int32 GpuScheduler::GetGetOffset() {
   return parser_->get();
 }
 
-void GpuScheduler::SetResizeCallback(
-    Callback1<gfx::Size>::Type* callback) {
+void GpuScheduler::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
+  decoder_->ResizeOffscreenFrameBuffer(size);
+}
+
+void GpuScheduler::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
   decoder_->SetResizeCallback(callback);
 }
 

@@ -81,7 +81,12 @@ class GLES2Decoder : public CommonDecoder {
                          uint32 parent_texture_id) = 0;
 
   // Resize an offscreen frame buffer.
-  virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) = 0;
+  virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size) = 0;
+
+  // Force the offscreen frame buffer's size to be updated. This
+  // usually occurs lazily, during SwapBuffers, but on some platforms
+  // (Mac OS X in particular) it must be done immediately.
+  virtual bool UpdateOffscreenFrameBufferSize() = 0;
 
   // Make this decoder's GL context current.
   virtual bool MakeCurrent() = 0;
@@ -100,8 +105,7 @@ class GLES2Decoder : public CommonDecoder {
 
   // Sets a callback which is called when a glResizeCHROMIUM command
   // is processed.
-  virtual void SetResizeCallback(
-      Callback1<gfx::Size>::Type* callback) = 0;
+  virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback) = 0;
 
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;

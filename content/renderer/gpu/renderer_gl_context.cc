@@ -107,6 +107,14 @@ RendererGLContext* RendererGLContext::CreateViewContext(
 #endif
 }
 
+#if defined(OS_MACOSX)
+void RendererGLContext::ResizeOnscreen(const gfx::Size& size) {
+  DCHECK(size.width() > 0 && size.height() > 0);
+  size_ = size;
+  command_buffer_->SetWindowSize(size);
+}
+#endif
+
 RendererGLContext* RendererGLContext::CreateOffscreenContext(
     GpuChannelHost* channel,
     const gfx::Size& size,
@@ -181,6 +189,14 @@ bool RendererGLContext::SetParent(RendererGLContext* new_parent) {
   }
 
   return true;
+}
+
+void RendererGLContext::ResizeOffscreen(const gfx::Size& size) {
+  DCHECK(size.width() > 0 && size.height() > 0);
+  if (size_ != size) {
+    command_buffer_->ResizeOffscreenFrameBuffer(size);
+    size_ = size;
+  }
 }
 
 uint32 RendererGLContext::GetParentTextureId() {
@@ -409,6 +425,8 @@ bool RendererGLContext::Initialize(bool onscreen,
       transfer_buffer_id_,
       share_resources,
       bind_generates_resource);
+
+  size_ = size;
 
   return true;
 }
