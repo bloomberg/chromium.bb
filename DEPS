@@ -18,7 +18,7 @@ vars = {
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
   "python_26_rev": "53573",
-  "tools_rev": "5360",
+  "tools_rev": "6504",
   "valgrind_rev": "5674",
   "wix_rev": "153",
 }
@@ -77,6 +77,9 @@ deps = {
     Var("native_client_trunk") + "/src/third_party/qemu@" + Var("tools_rev"),
   "third_party/scons-2.0.1":
     (Var("native_client_trunk") + "/src/third_party/scons-2.0.1@" +
+     Var("tools_rev")),
+  "third_party/simplejson":
+    (Var("native_client_trunk") + "/src/third_party/simplejson@" +
      Var("tools_rev")),
   "third_party/tlslite":
     Var("chromium_trunk") + "/src/third_party/tlslite@" + Var("chrome_rev"),
