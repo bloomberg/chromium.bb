@@ -319,6 +319,9 @@ CreateChromeApplicationShortcutsDialogGtk::
     icon_resource = app_->GetIconResource(
         kIconPreviewSizePixels, ExtensionIconSet::MATCH_SMALLER);
 
+  // Note that tracker_.LoadImage() can call OnImageLoaded() before it returns,
+  // if the image is cached.  This is very rare.  Do not do anything after
+  // calling LoadImage() that OnImageLoaded() depends on.
   tracker_.LoadImage(app_,
                      icon_resource,
                      max_size,

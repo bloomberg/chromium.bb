@@ -156,8 +156,6 @@ void AppInfoView::UpdateText(const string16& title,
 }
 
 void AppInfoView::UpdateIcon(const SkBitmap& new_icon) {
-  DCHECK(icon_ != NULL);
-
   icon_->SetImage(new_icon);
 }
 
@@ -234,7 +232,12 @@ class CreateUrlApplicationShortcutView::IconDownloadCallbackFunctor {
 };
 
 CreateApplicationShortcutView::CreateApplicationShortcutView(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile),
+      app_info_(NULL),
+      create_shortcuts_label_(NULL),
+      desktop_check_box_(NULL),
+      menu_check_box_(NULL),
+      quick_launch_check_box_(NULL) {}
 
 CreateApplicationShortcutView::~CreateApplicationShortcutView() {}
 
@@ -511,12 +514,17 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
         ExtensionIconSet::MATCH_SMALLER);
   }
 
+  InitControls();
+
+  // tracker_.LoadImage() can call OnImageLoaded() before it returns if the
+  // image is cached.  This is very rare.  app_info_ must be initialized
+  // when OnImageLoaded() is called, so we check it here.
+  CHECK(app_info_);
   tracker_.LoadImage(app_,
                      icon_resource,
                      max_size,
                      ImageLoadingTracker::DONT_CACHE);
 
-  InitControls();
 }
 
 CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
@@ -528,5 +536,6 @@ void CreateChromeApplicationShortcutView::OnImageLoaded(
     image = ExtensionIconSource::LoadImageByResourceId(IDR_APP_DEFAULT_ICON);
 
   shortcut_info_.favicon = *image;
+  CHECK(app_info_);
   static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
 }
