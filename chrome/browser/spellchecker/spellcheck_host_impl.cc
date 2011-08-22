@@ -163,7 +163,7 @@ void SpellCheckHostImpl::InitForRenderer(RenderProcessHost* process) {
 
   process->Send(new SpellCheckMsg_Init(
       file,
-      GetCustomWords(),
+      observer_ ? observer_->GetCustomWords() : CustomWordList(),
       GetLanguage(),
       prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
 }
@@ -171,16 +171,14 @@ void SpellCheckHostImpl::InitForRenderer(RenderProcessHost* process) {
 void SpellCheckHostImpl::AddWord(const std::string& word) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  custom_words_.push_back(word);
-  if (metrics_)
-    metrics_->RecordCustomWordCountStats(custom_words_.size());
+  if (observer_)
+    observer_->CustomWordAddedLocally(word);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
           &SpellCheckHostImpl::WriteWordToCustomDictionary, word));
-
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    i.GetCurrentValue()->Send(new SpellCheckMsg_WordAdded(GetLastAddedFile()));
+    i.GetCurrentValue()->Send(new SpellCheckMsg_WordAdded(word));
   }
 }
 
@@ -238,21 +236,22 @@ void SpellCheckHostImpl::InitializeInternal() {
 
   request_context_getter_ = NULL;
 
+  scoped_ptr<CustomWordList> custom_words(new CustomWordList());
   if (file_ != base::kInvalidPlatformFileValue) {
     // Load custom dictionary.
     std::string contents;
     file_util::ReadFileToString(custom_dictionary_file_, &contents);
-    std::vector<std::string> list_of_words;
+    CustomWordList list_of_words;
     base::SplitString(contents, '\n', &list_of_words);
     for (size_t i = 0; i < list_of_words.size(); ++i)
-      custom_words_.push_back(list_of_words[i]);
+      custom_words->push_back(list_of_words[i]);
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-          &SpellCheckHostImpl::InformObserverOfInitialization));
-  if (metrics_)
-    metrics_->RecordCustomWordCountStats(custom_words_.size());
+      NewRunnableMethod(
+          this,
+          &SpellCheckHostImpl::InformObserverOfInitializationWithCustomWords,
+          custom_words.release()));
 }
 
 void SpellCheckHostImpl::InitializeOnFileThread() {
@@ -263,10 +262,18 @@ void SpellCheckHostImpl::InitializeOnFileThread() {
 }
 
 void SpellCheckHostImpl::InformObserverOfInitialization() {
+  InformObserverOfInitializationWithCustomWords(NULL);
+}
+
+void SpellCheckHostImpl::InformObserverOfInitializationWithCustomWords(
+    CustomWordList* custom_words) {
+  // Non-null |custom_words| should be given only if the observer is available
+  // for simplifying the life-cycle management of the word list.
+  DCHECK(observer_ || !custom_words);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (observer_)
-    observer_->SpellCheckHostInitialized();
+    observer_->SpellCheckHostInitialized(custom_words);
 
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
@@ -423,14 +430,6 @@ bool SpellCheckHostImpl::IsReady() const {
 
 const base::PlatformFile& SpellCheckHostImpl::GetDictionaryFile() const {
   return file_;
-}
-
-const std::vector<std::string>& SpellCheckHostImpl::GetCustomWords() const {
-  return custom_words_;
-}
-
-const std::string& SpellCheckHostImpl::GetLastAddedFile() const {
-  return custom_words_.back();
 }
 
 const std::string& SpellCheckHostImpl::GetLanguage() const {

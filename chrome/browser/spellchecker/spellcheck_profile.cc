@@ -4,11 +4,17 @@
 
 #include "chrome/browser/spellchecker/spellcheck_profile.h"
 
+#include "base/lazy_instance.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/common/pref_names.h"
+
+namespace {
+base::LazyInstance<SpellCheckProfile::CustomWordList> g_empty_list(
+    base::LINKER_INITIALIZED);
+}  // namespace
 
 SpellCheckProfile::SpellCheckProfile()
     : host_ready_(false) {
@@ -70,6 +76,25 @@ void SpellCheckProfile::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_->RecordEnabledStats(spellcheck_enabled);
 }
 
-void SpellCheckProfile::SpellCheckHostInitialized() {
+void SpellCheckProfile::SpellCheckHostInitialized(
+    SpellCheckProfile::CustomWordList* custom_words) {
   host_ready_ = !!host_.get() && host_->IsReady();
+  custom_words_.reset(custom_words);
+  if (metrics_.get()) {
+    int count = custom_words_.get() ? custom_words_->size() : 0;
+    metrics_->RecordCustomWordCountStats(count);
+  }
+}
+
+const SpellCheckProfile::CustomWordList&
+SpellCheckProfile::GetCustomWords() const {
+  return custom_words_.get() ? *custom_words_ : g_empty_list.Get();
+}
+
+void SpellCheckProfile::CustomWordAddedLocally(const std::string& word) {
+  if (!custom_words_.get())
+    custom_words_.reset(new CustomWordList());
+  custom_words_->push_back(word);
+  if (metrics_.get())
+    metrics_->RecordCustomWordCountStats(custom_words_->size());
 }

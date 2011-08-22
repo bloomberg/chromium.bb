@@ -18,7 +18,8 @@ class MockSpellCheckHost : public SpellCheckHost {
   MOCK_METHOD1(InitForRenderer, void(RenderProcessHost* process));
   MOCK_METHOD1(AddWord, void(const std::string& word));
   MOCK_CONST_METHOD0(GetDictionaryFile, const base::PlatformFile&());
-  MOCK_CONST_METHOD0(GetCustomWords, const std::vector<std::string>&());
+  MOCK_CONST_METHOD0(GetCustomWords,
+                     const SpellCheckProfile::CustomWordList&());
   MOCK_CONST_METHOD0(GetLastAddedFile, const std::string&());
   MOCK_CONST_METHOD0(GetLanguage, const std::string&());
   MOCK_CONST_METHOD0(IsUsingPlatformChecker, bool());
@@ -49,12 +50,18 @@ class TestingSpellCheckProfile : public SpellCheckProfile {
     return GetHost() == returning_from_create_.get();
   }
 
+  void SetHostToBeCreated(MockSpellCheckHost* host) {
+    EXPECT_CALL(*host, UnsetObserver()).Times(1);
+    EXPECT_CALL(*host, IsReady()).WillRepeatedly(testing::Return(true));
+    returning_from_create_ = host;
+  }
+
   size_t create_host_calls_;
   scoped_refptr<SpellCheckHost> returning_from_create_;
 };
 
 typedef SpellCheckProfile::ReinitializeResult ResultType;
-} // namespace
+}  // namespace
 
 class SpellCheckProfileTest : public testing::Test {
  protected:
@@ -69,9 +76,7 @@ class SpellCheckProfileTest : public testing::Test {
 TEST_F(SpellCheckProfileTest, ReinitializeEnabled) {
   scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
   TestingSpellCheckProfile target;
-  EXPECT_CALL(*host, UnsetObserver()).Times(1);
-  EXPECT_CALL(*host, IsReady()).WillRepeatedly(testing::Return(true));
-  target.returning_from_create_ = host.get();
+  target.SetHostToBeCreated(host.get());
 
   // The first call should create host.
   ResultType result1 = target.ReinitializeHost(false, true, "", NULL);
@@ -85,7 +90,7 @@ TEST_F(SpellCheckProfileTest, ReinitializeEnabled) {
 
   // Host should become ready after the notification.
   EXPECT_FALSE(target.IsCreatedHostReady());
-  target.SpellCheckHostInitialized();
+  target.SpellCheckHostInitialized(0);
   EXPECT_TRUE(target.IsCreatedHostReady());
 }
 
@@ -107,50 +112,76 @@ TEST_F(SpellCheckProfileTest, ReinitializeDisabled) {
 
 TEST_F(SpellCheckProfileTest, ReinitializeRemove) {
   scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
-  EXPECT_CALL(*host, UnsetObserver()).Times(1);
-  EXPECT_CALL(*host, IsReady()).WillRepeatedly(testing::Return(true));
-
   TestingSpellCheckProfile target;
-  target.returning_from_create_ = host.get();
+  target.SetHostToBeCreated(host.get());
+
 
   // At first, create the host.
   ResultType result1 = target.ReinitializeHost(false, true, "", NULL);
-  target.SpellCheckHostInitialized();
+  target.SpellCheckHostInitialized(0);
   EXPECT_EQ(result1, SpellCheckProfile::REINITIALIZE_CREATED_HOST);
   EXPECT_TRUE(target.IsCreatedHostReady());
 
   // Then the host should be deleted if it's forced to be disabled.
   ResultType result2 = target.ReinitializeHost(true, false, "", NULL);
-  target.SpellCheckHostInitialized();
+  target.SpellCheckHostInitialized(0);
   EXPECT_EQ(result2, SpellCheckProfile::REINITIALIZE_REMOVED_HOST);
   EXPECT_FALSE(target.IsCreatedHostReady());
 }
 
 TEST_F(SpellCheckProfileTest, ReinitializeRecreate) {
   scoped_refptr<MockSpellCheckHost> host1(new MockSpellCheckHost());
-  EXPECT_CALL(*host1, UnsetObserver()).Times(1);
-  EXPECT_CALL(*host1, IsReady()).WillRepeatedly(testing::Return(true));
-
   TestingSpellCheckProfile target;
-  target.returning_from_create_ = host1.get();
+  target.SetHostToBeCreated(host1.get());
 
   // At first, create the host.
   ResultType result1 = target.ReinitializeHost(false, true, "", NULL);
-  target.SpellCheckHostInitialized();
+  target.SpellCheckHostInitialized(0);
   EXPECT_EQ(target.create_host_calls_, 1U);
   EXPECT_EQ(result1, SpellCheckProfile::REINITIALIZE_CREATED_HOST);
   EXPECT_TRUE(target.IsCreatedHostReady());
 
   // Then the host should be re-created if it's forced to recreate.
   scoped_refptr<MockSpellCheckHost> host2(new MockSpellCheckHost());
-  EXPECT_CALL(*host2, UnsetObserver()).Times(1);
-  EXPECT_CALL(*host2, IsReady()).WillRepeatedly(testing::Return(true));
-  target.returning_from_create_ = host2.get();
+  target.SetHostToBeCreated(host2.get());
 
   ResultType result2 = target.ReinitializeHost(true, true, "", NULL);
-  target.SpellCheckHostInitialized();
+  target.SpellCheckHostInitialized(0);
   EXPECT_EQ(target.create_host_calls_, 2U);
   EXPECT_EQ(result2, SpellCheckProfile::REINITIALIZE_CREATED_HOST);
   EXPECT_TRUE(target.IsCreatedHostReady());
 }
 
+TEST_F(SpellCheckProfileTest, SpellCheckHostInitializedWithCustomWords) {
+  scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
+  TestingSpellCheckProfile target;
+  target.SetHostToBeCreated(host.get());
+  target.ReinitializeHost(false, true, "", NULL);
+
+  scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words
+    (new SpellCheckProfile::CustomWordList());
+  loaded_custom_words->push_back("foo");
+  loaded_custom_words->push_back("bar");
+  SpellCheckProfile::CustomWordList expected(*loaded_custom_words);
+  target.SpellCheckHostInitialized(loaded_custom_words.release());
+  EXPECT_EQ(target.GetCustomWords(), expected);
+}
+
+TEST_F(SpellCheckProfileTest, CustomWordAddedLocally) {
+  scoped_refptr<MockSpellCheckHost> host(new MockSpellCheckHost());
+  TestingSpellCheckProfile target;
+  target.SetHostToBeCreated(host.get());
+  target.ReinitializeHost(false, true, "", NULL);
+
+  scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words
+    (new SpellCheckProfile::CustomWordList());
+  target.SpellCheckHostInitialized(NULL);
+  SpellCheckProfile::CustomWordList expected;
+  EXPECT_EQ(target.GetCustomWords(), expected);
+  target.CustomWordAddedLocally("foo");
+  expected.push_back("foo");
+  EXPECT_EQ(target.GetCustomWords(), expected);
+  target.CustomWordAddedLocally("bar");
+  expected.push_back("bar");
+  EXPECT_EQ(target.GetCustomWords(), expected);
+}

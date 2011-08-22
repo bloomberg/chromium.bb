@@ -53,12 +53,12 @@ class SpellCheckHostImpl : public SpellCheckHost,
   virtual void InitForRenderer(RenderProcessHost* process);
   virtual void AddWord(const std::string& word);
   virtual const base::PlatformFile& GetDictionaryFile() const;
-  virtual const std::vector<std::string>& GetCustomWords() const;
-  virtual const std::string& GetLastAddedFile() const;
   virtual const std::string& GetLanguage() const;
   virtual bool IsUsingPlatformChecker() const;
 
  private:
+  typedef SpellCheckHostObserver::CustomWordList CustomWordList;
+
   // These two classes can destruct us.
   friend class BrowserThread;
   friend class DeleteTask<SpellCheckHostImpl>;
@@ -80,6 +80,13 @@ class SpellCheckHostImpl : public SpellCheckHost,
   void InitializeOnFileThread();
 
   // Inform |observer_| that initialization has finished.
+  // |custom_words| holds the custom word list which was
+  // loaded at the file thread.
+  void InformObserverOfInitializationWithCustomWords(
+      CustomWordList* custom_words);
+
+  // An alternative version of InformObserverOfInitializationWithCustomWords()
+  // which implies empty |custom_words|.
   void InformObserverOfInitialization();
 
   // If |dictionary_file_| is missing, we attempt to download it.
@@ -131,9 +138,6 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // The file descriptor/handle for the dictionary file.
   base::PlatformFile file_;
-
-  // In-memory cache of the custom words file.
-  std::vector<std::string> custom_words_;
 
   // We don't want to attempt to download a missing dictionary file more than
   // once.

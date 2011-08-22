@@ -82,10 +82,6 @@ class SpellCheckHost
 
   virtual const base::PlatformFile& GetDictionaryFile() const = 0;
 
-  virtual const std::vector<std::string>& GetCustomWords() const = 0;
-
-  virtual const std::string& GetLastAddedFile() const = 0;
-
   virtual const std::string& GetLanguage() const = 0;
 
   virtual bool IsUsingPlatformChecker() const = 0;

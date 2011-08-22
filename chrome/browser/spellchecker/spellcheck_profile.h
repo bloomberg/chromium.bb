@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -81,7 +82,9 @@ class SpellCheckProfile : public SpellCheckHostObserver {
   void StartRecordingMetrics(bool spellcheck_enabled);
 
   // SpellCheckHostObserver implementation.
-  virtual void SpellCheckHostInitialized();
+  virtual void SpellCheckHostInitialized(CustomWordList* custom_words);
+  virtual const CustomWordList& GetCustomWords() const;
+  virtual void CustomWordAddedLocally(const std::string& word);
 
  protected:
   // Only tests should override this.
@@ -100,6 +103,9 @@ class SpellCheckProfile : public SpellCheckHostObserver {
   // Indicates whether |host_| has told us initialization is
   // finished.
   bool host_ready_;
+
+  // In-memory cache of the custom words file.
+  scoped_ptr<CustomWordList> custom_words_;
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PROFILE_H_
