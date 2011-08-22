@@ -238,6 +238,11 @@ class MessageWriter {
   // function.
   void AppendArrayOfBytes(const uint8* values, size_t length);
 
+  // Appends the array of object paths. Arrays of object paths are often
+  // used to exchanging object paths, hence it's worth having a
+  // specialized function.
+  void AppendArrayOfObjectPaths(const std::vector<std::string>& object_paths);
+
   // Appends the byte wrapped in a variant data container. Variants are
   // widely used in D-Bus services so it's worth having a specialized
   // function. For instance, The third parameter of

@@ -512,6 +512,17 @@ void MessageWriter::AppendArrayOfBytes(const uint8* values, size_t length) {
   CloseContainer(&array_writer);
 }
 
+void MessageWriter::AppendArrayOfObjectPaths(
+    const std::vector<std::string>& object_paths) {
+  DCHECK(!container_is_open_);
+  MessageWriter array_writer(message_);
+  OpenArray("o", &array_writer);
+  for (size_t i = 0; i < object_paths.size(); ++i) {
+    array_writer.AppendObjectPath(object_paths[i]);
+  }
+  CloseContainer(&array_writer);
+}
+
 void MessageWriter::AppendVariantOfByte(uint8 value) {
   AppendVariantOfBasic(DBUS_TYPE_BYTE, &value);
 }

@@ -175,6 +175,26 @@ TEST(MessageTest, ArrayOfBytes) {
   ASSERT_EQ(3, output_bytes[2]);
 }
 
+TEST(MessageTest, ArrayOfObjectPaths) {
+  dbus::Message message;
+  message.reset_raw_message(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_CALL));
+  dbus::MessageWriter writer(&message);
+  std::vector<std::string> object_paths;
+  object_paths.push_back("/object/path/1");
+  object_paths.push_back("/object/path/2");
+  object_paths.push_back("/object/path/3");
+  writer.AppendArrayOfObjectPaths(object_paths);
+
+  dbus::MessageReader reader(&message);
+  std::vector<std::string> output_object_paths;
+  ASSERT_TRUE(reader.PopArrayOfObjectPaths(&output_object_paths));
+  ASSERT_FALSE(reader.HasMoreData());
+  ASSERT_EQ(3U, output_object_paths.size());
+  ASSERT_EQ("/object/path/1", output_object_paths[0]);
+  ASSERT_EQ("/object/path/2", output_object_paths[1]);
+  ASSERT_EQ("/object/path/3", output_object_paths[2]);
+}
+
 // Test that an array can be properly written and read. We only have this
 // test for array, as repeating this for other container types is too
 // redundant.
