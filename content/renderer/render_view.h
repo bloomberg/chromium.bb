@@ -71,7 +71,6 @@ class RenderViewVisitor;
 class RenderWidgetFullscreenPepper;
 class SkBitmap;
 class SpeechInputDispatcher;
-class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 class WebUIBindings;
 struct ContextMenuMediaParams;

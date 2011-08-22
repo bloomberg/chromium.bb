@@ -11,14 +11,8 @@
 #include "base/string16.h"
 #include "build/build_config.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/plugins/npapi/webplugin_2d_device_delegate.h"
-#include "webkit/plugins/npapi/webplugin_3d_device_delegate.h"
-#include "webkit/plugins/npapi/webplugin_audio_device_delegate.h"
-#include "webkit/plugins/npapi/webplugin_file_delegate.h"
-#include "webkit/plugins/npapi/webplugin_print_delegate.h"
 
 class FilePath;
 class GURL;
@@ -40,11 +34,7 @@ class WebPlugin;
 class WebPluginResourceClient;
 
 // This is the interface that a plugin implementation needs to provide.
-class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
-                          public WebPlugin3DDeviceDelegate,
-                          public WebPluginAudioDeviceDelegate,
-                          public WebPluginPrintDelegate,
-                          public WebPluginFileDelegate {
+class WebPluginDelegate {
  public:
   virtual ~WebPluginDelegate() {}
 
@@ -141,26 +131,6 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   // has become seekable.
   virtual WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id) = 0;
-
-  // See WebPluginContainerImpl's description of the interface.
-  virtual bool StartFind(const string16& search_text,
-                         bool case_sensitive,
-                         int identifier);
-  virtual void SelectFindResult(bool forward) {}
-  virtual void StopFind() {}
-  virtual void NumberOfFindResultsChanged(int total, bool final_result) {}
-  virtual void SelectedFindResultChanged(int index) {}
-  virtual NPWidgetExtensions* GetWidgetExtensions();
-  virtual bool SetCursor(NPCursorType type);
-  virtual NPFontExtensions* GetFontExtensions();
-
-  // Used for zooming of full page plugins.  0 means reset, while -1 means zoom
-  // out and +1 means zoom in.
-  virtual void SetZoomFactor(float scale, bool text_only) {}
-  // Gets the selected text, if any.
-  virtual bool HasSelection() const;
-  virtual string16 GetSelectionAsText() const;
-  virtual string16 GetSelectionAsMarkup() const;
 };
 
 }  // namespace npapi

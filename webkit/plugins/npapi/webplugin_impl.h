@@ -91,20 +91,6 @@ class WebPluginImpl : public WebPlugin,
   virtual void didFailLoadingFrameRequest(
       const WebKit::WebURL& url, void* notify_data,
       const WebKit::WebURLError& error);
-  virtual bool supportsPaginatedPrint();
-  virtual int printBegin(const WebKit::WebRect& printable_area,
-                         int printer_dpi);
-  virtual bool printPage(int page_number, WebKit::WebCanvas* canvas);
-  virtual void printEnd();
-  virtual bool hasSelection() const;
-  virtual WebKit::WebString selectionAsText() const;
-  virtual WebKit::WebString selectionAsMarkup() const;
-  virtual void setZoomFactor(float scale, bool text_only);
-  virtual bool startFind(const WebKit::WebString& search_text,
-                         bool case_sensitive,
-                         int identifier);
-  virtual void selectFindResult(bool forward);
-  virtual void stopFind();
 
   // WebPlugin implementation:
   virtual void SetWindow(gfx::PluginWindowHandle window);

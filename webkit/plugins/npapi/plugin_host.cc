@@ -13,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "net/base/net_util.h"
-#include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -21,7 +20,6 @@
 #include "ui/gfx/gl/gl_surface.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
-#include "webkit/plugins/npapi/npapi_extension_thunk.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -873,13 +871,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       break;
     }
   #endif  // OS_MACOSX
-    case NPNVPepperExtensions:
-      // Available for any plugin that attempts to get it.
-      // If the plugin is not started in a Pepper implementation, it
-      // will likely fail when it tries to use any of the functions
-      // attached to the extension vector.
-      rv = webkit::npapi::GetPepperExtensionsFunctions(value);
-      break;
     default:
       DVLOG(1) << "NPN_GetValue(" << variable << ") is not implemented yet.";
       break;

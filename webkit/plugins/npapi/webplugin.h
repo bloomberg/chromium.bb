@@ -164,11 +164,6 @@ class WebPlugin {
   virtual WebPluginAcceleratedSurface* GetAcceleratedSurface();
 #endif
 
-  // Gets the WebPluginDelegate that implements the interface.
-  // This API is only for use with Pepper, and is only overridden
-  // by in-renderer implementations.
-  virtual WebPluginDelegate* delegate();
-
   // Handles NPN_URLRedirectResponse calls issued by plugins in response to
   // HTTP URL redirect notifications.
   virtual void URLRedirectResponse(bool allow, int resource_id) = 0;
