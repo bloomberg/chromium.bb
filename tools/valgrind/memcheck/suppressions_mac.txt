@@ -1851,3 +1851,10 @@
    ...
    fun:*AvatarMenuBubbleControllerTest*
 }
+{
+   bug_93711
+   Memcheck:Leak
+   fun:malloc
+   fun:allocateBranchIsland
+   fun:mach_override_ptr
+}
