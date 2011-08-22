@@ -229,6 +229,11 @@ FileManager.prototype = {
   };
 
   /**
+   * Regexp for archive files. Used to show mount-archive task.
+   */
+  const ARCHIVES_REGEXP = /.zip$/;
+
+  /**
    * Return a translated string.
    *
    * Wrapper function to make dealing with translated strings more concise.
@@ -1532,13 +1537,18 @@ FileManager.prototype = {
     };
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      // Since unmount task cannot be defined in terms of file patterns,
-      // we manually include it here, if all selected items are mount points.
       this.taskButtons_.innerHTML = '';
-      chrome.fileBrowserPrivate.getFileTasks(
-          selection.urls,
-          this.onTasksFound_.bind(this,
-                                  this.shouldShowUnmount_(selection.urls)));
+      // Some internal tasks cannot be defined in terms of file patterns,
+      // so we pass selection to check for them manually.
+      if (selection.directoryCount == 0 && selection.fileCount > 0) {
+        // Only files, not directories, are supported for external tasks.
+        chrome.fileBrowserPrivate.getFileTasks(
+            selection.urls,
+            this.onTasksFound_.bind(this, selection));
+      } else {
+        // There may be internal tasks for directories.
+        this.onTasksFound_(selection, []);
+      }
     }
 
     cacheNextFile();
@@ -1602,17 +1612,11 @@ FileManager.prototype = {
 
   /**
    * Callback called when tasks for selected files are determined.
-   * @param {boolean} unmount Whether unmount task should be included.
+   * @param {Object} selection Selection is passed here, since this.selection
+   *     can change before tasks were found, and we should be accurate.
    * @param {Array.<Task>} tasksList The tasks list.
    */
-  FileManager.prototype.onTasksFound_ = function(unmount, tasksList) {
-    if (unmount) {
-      tasksList.push({
-          taskId: this.getExtensionId_() + '|unmount-archive',
-          iconUrl: '',
-          title: ''
-      });
-    }
+  FileManager.prototype.onTasksFound_ = function(selection, tasksList) {
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
 
@@ -1642,17 +1646,14 @@ FileManager.prototype = {
           task.iconUrl =
               chrome.extension.getURL('images/icon_mount_archive_16x16.png');
           task.title = str('MOUNT_ARCHIVE');
-        } else if (task_parts[1] == 'unmount-archive') {
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_unmount_archive_16x16.png');
-          task.title = str('UNMOUNT_ARCHIVE');
         }
       }
       this.renderTaskButton_(task);
     }
-    // This needs to be done in sparate function, as check requires
+    this.maybeRenderUnmountTask_(selection);
+    // This needs to be done in separate function, as check requires
     // asynchronous function calls.
-    this.maybeRenderFormattingTask_();
+    this.maybeRenderFormattingTask_(selection);
   };
 
   FileManager.prototype.renderTaskButton_ = function(task) {
@@ -1671,14 +1672,36 @@ FileManager.prototype = {
   };
 
   /**
+   * Checks whether unmount task should be displayed and if the answer is
+   * affirmative renders it.
+   * @param {Object} selection Selected files object.
+   */
+  FileManager.prototype.maybeRenderUnmountTask_ = function(selection) {
+    for (var index = 0; index < selection.urls.length; ++index) {
+      // Each url should be a mount point.
+      var path = selection.urls[index];
+      if (!this.mountPoints_.hasOwnProperty(path) ||
+          this.mountPoints_[path].type != 'file')
+        return;
+    }
+    this.renderTaskButton_({
+        taskId: this.getExtensionId_() + '|unmount-archive',
+        iconUrl:
+            chrome.extension.getURL('images/icon_unmount_archive_16x16.png'),
+        title: str('UNMOUNT_ARCHIVE')
+    });
+   };
+
+  /**
    * Checks whether formatting task should be displayed and if the answer is
    * affirmative renders it. Includes asynchronous calls, so it's splitted into
    * three parts.
+   * @param {Object} selection Selected files object.
    */
-  FileManager.prototype.maybeRenderFormattingTask_ = function() {
-    // Not to make unnecesary getMountPoints() call we doublecheck if there is
+  FileManager.prototype.maybeRenderFormattingTask_ = function(selection) {
+    // Not to make unnecessary getMountPoints() call we doublecheck if there is
     // only one selected entry.
-    if (this.selection.entries.length != 1)
+    if (selection.entries.length != 1)
       return;
     var self = this;
     function onMountPointsFound(mountPoints) {
@@ -1693,8 +1716,8 @@ FileManager.prototype = {
 
       function onVolumeMetadataFound(volumeMetadata) {
         if (volumeMetadata.deviceType == "flash") {
-          if (self.selection.entries.length != 1 ||
-              normalize(self.selection.entries[0].fullPath) !=
+          if (selection.entries.length != 1 ||
+              normalize(selection.entries[0].fullPath) !=
               normalize(volumeMetadata.mountPath)) {
             return;
           }
@@ -1707,9 +1730,9 @@ FileManager.prototype = {
         }
       }
 
-      if (self.selection.entries.length != 1)
+      if (selection.entries.length != 1)
         return;
-      var selectedPath = self.selection.entries[0].fullPath;
+      var selectedPath = selection.entries[0].fullPath;
       for (var i = 0; i < mountPoints.length; i++) {
         if (mountPoints[i].mountType == "device" &&
             normalize(mountPoints[i].mountPath) == normalize(selectedPath)) {
@@ -1801,21 +1824,6 @@ FileManager.prototype = {
         chrome.fileBrowserPrivate.formatDevice(urls[0]);
       });
     }
-  };
-
-  /**
-   * Determines whether unmount task should present for selected files.
-   */
-  FileManager.prototype.shouldShowUnmount_ = function(urls) {
-    for (var index = 0; index < urls.length; ++index) {
-      // Each url should be a mount point.
-      var path = urls[index];
-      if (!this.mountPoints_.hasOwnProperty(path) ||
-          this.mountPoints_[path].type != 'file') {
-        return false;
-      }
-    }
-    return true;
   };
 
   FileManager.prototype.openImageEditor_ = function(entry) {
