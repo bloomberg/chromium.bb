@@ -20,6 +20,8 @@ from idl_visitor import IDLVisitor
 Option('wcomment', 'Disable warning for missing comment.')
 Option('wenum', 'Disable warning for missing enum value.')
 Option('winline', 'Disable warning for inline blocks.')
+Option('wname', 'Disable warning for inconsistent interface name.')
+Option('wnone', 'Disable all warnings.')
 Option('wparam', 'Disable warning for missing [in|out|inout] on param.')
 Option('wpass', 'Disable warning for mixed passByValue and returnByValue.')
 
@@ -66,7 +68,7 @@ class IDLLinter(IDLVisitor):
         node.Warning('Expecting label.')
         warnings += 1
       macro = node.GetProperty('macro')
-      if macro:
+      if macro and not node.GetProperty('wname'):
         node.Warning('Interface name inconsistent: %s' % macro)
         warnings += 1
 
@@ -75,7 +77,7 @@ class IDLLinter(IDLVisitor):
       node.parent.Warning('Requires an inline %s block.' % inline_type)
       warnings += 1
 
-    if node.IsA('Callspec'):
+    if node.IsA('Callspec') and not node.GetProperty('wparam'):
       out = False
       for arg in node.GetListOf('Param'):
         if arg.GetProperty('out'):
@@ -101,11 +103,10 @@ class IDLLinter(IDLVisitor):
     return warnings
 
 def Lint(ast):
-  if GetOption('wcomment'): ast.SetProperty('wcomment', True)
-  if GetOption('wenum'): ast.SetProperty('wenum', True)
-  if GetOption('winline'): ast.SetProperty('winilne', True)
-  if GetOption('wparam'): ast.SetProperty('wparam', True)
-  if GetOption('wpass'): ast.SetProperty('wpass', True)
+  options = ['wcomment', 'wenum', 'winline', 'wparam', 'wpass', 'wname']
+  wnone = GetOption('wnone')
+  for opt in options:
+    if wnone or GetOption(opt): ast.SetProperty(opt, True)
 
   skipList = []
   for filenode in ast.GetListOf('File'):
@@ -118,3 +119,4 @@ def Lint(ast):
     if warnings:
       WarnOut.Log('%s warning(s) for %s\n' % (warnings, name))
   return skipList
+
