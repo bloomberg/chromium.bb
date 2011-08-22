@@ -408,6 +408,75 @@ class TestGypMake(TestGypBase):
     return self.workpath(*result)
 
 
+class TestGypNinja(TestGypBase):
+  """
+  Subclass for testing the GYP Ninja generator.
+  """
+  format = 'ninja'
+  build_tool_list = ['ninja']
+  ALL = 'all'
+  DEFAULT = 'all'
+
+  # The default library prefix is computed from TestCommon.lib_prefix,
+  # but ninja uses no prefix for static libraries.
+  lib_ = ''
+
+  def run_gyp(self, gyp_file, *args, **kw):
+    # We must pass the desired configuration as a parameter.
+    if self.configuration:
+      args = list(args) + ['-Gconfig=' + self.configuration]
+    # Stash the gyp configuration we used to run gyp, so we can
+    # know whether we need to rerun it later.
+    self.last_gyp_configuration = self.configuration
+    TestGypBase.run_gyp(self, gyp_file, *args, **kw)
+
+  def build(self, gyp_file, target=None, **kw):
+    if self.last_gyp_configuration != self.configuration:
+      # Rerun gyp if necessary.
+      self.run_gyp(gyp_file)
+
+    arguments = kw.get('arguments', [])[:]
+
+    # Add a -f path/to/build.ninja to the command line.
+    arguments.append('-f')
+    arguments.append(os.path.join('out', self.configuration_dirname(),
+                                  'build.ninja'))
+
+    if target is None:
+      target = 'all'
+    arguments.append(target)
+
+    kw['arguments'] = arguments
+    return self.run(program=self.build_tool, **kw)
+
+  def run_built_executable(self, name, *args, **kw):
+    # Enclosing the name in a list avoids prepending the original dir.
+    program = [self.built_file_path(name, type=self.EXECUTABLE, **kw)]
+    return self.run(program=program, *args, **kw)
+
+  def built_file_path(self, name, type=None, **kw):
+    result = []
+    chdir = kw.get('chdir')
+    if chdir:
+      result.append(chdir)
+    result.append('out')
+    result.append(self.configuration_dirname())
+    if type in (self.STATIC_LIB,):
+      result.append('obj')
+    elif type in (self.SHARED_LIB,):
+      result.append('lib')
+    subdir = kw.get('subdir')
+    if subdir:
+      result.append(subdir)
+    result.append(self.built_file_basename(name, type, **kw))
+    return self.workpath(*result)
+
+  def up_to_date(self, gyp_file, target=None, **kw):
+    # Ninja prints no output when the target is up to date.
+    kw['stdout'] = ""
+    return self.build(gyp_file, target, **kw)
+
+
 class TestGypMSVS(TestGypBase):
   """
   Subclass for testing the GYP Visual Studio generator.
@@ -721,6 +790,7 @@ format_class_list = [
   TestGypGypd,
   TestGypMake,
   TestGypMSVS,
+  TestGypNinja,
   TestGypSCons,
   TestGypXcode,
 ]

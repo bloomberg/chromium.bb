@@ -23,7 +23,7 @@ import TestGyp
 # its sources. I'm not sure if make is wrong for writing outside the current
 # directory, or if the test is wrong for assuming everything generated is under
 # the current directory.
-test = TestGyp.TestGyp(formats=['!make'])
+test = TestGyp.TestGyp(formats=['!make', '!ninja'])
 
 test.run_gyp('prog1.gyp', '--depth=..', chdir='src')
 

@@ -12,7 +12,7 @@ configuration files in a separate directory tree.
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+test = TestGyp.TestGyp(formats=['!ninja'])
 
 test.writable(test.workpath('src'), False)
 

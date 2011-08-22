@@ -21,7 +21,7 @@ chdir = 'src/build'
 # TODO(mmoss) Should the Makefile go in the directory of the passed in .gyp
 # file? What about when passing in multiple .gyp files? Would sub-project
 # Makefiles (see http://codereview.chromium.org/340008 comments) solve this?
-if test.format == 'make':
+if test.format in ('make', 'ninja'):
   chdir = 'src'
 
 if test.format == 'xcode':

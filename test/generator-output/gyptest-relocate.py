@@ -11,7 +11,8 @@ option can be built even when it's relocated to a different path.
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+# Ninja doesn't support --generator-output.
+test = TestGyp.TestGyp(formats=['!ninja'])
 
 test.writable(test.workpath('src'), False)
 

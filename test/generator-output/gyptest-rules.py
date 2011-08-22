@@ -10,7 +10,7 @@ Verifies --generator-output= behavior when using rules.
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+test = TestGyp.TestGyp(formats=['!ninja'])
 
 test.writable(test.workpath('rules'), False)
 

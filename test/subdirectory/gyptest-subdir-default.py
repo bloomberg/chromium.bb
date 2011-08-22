@@ -13,7 +13,8 @@ and using the subdirectory's solution or project file as the entry point.
 import TestGyp
 import errno
 
-test = TestGyp.TestGyp()
+# Ninja doesn't support running from subdirectories.
+test = TestGyp.TestGyp(formats=['!ninja'])
 
 test.run_gyp('prog1.gyp', chdir='src')
 

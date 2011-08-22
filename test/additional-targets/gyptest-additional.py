@@ -33,7 +33,7 @@ test.built_file_must_not_exist('foolib1',
                                chdir=chdir)
 
 # TODO(mmoss) Make consistent with scons, with 'dir1' before 'out/Default'?
-if test.format == 'make':
+if test.format in ('make', 'ninja'):
   chdir='relocate/src'
 else:
   chdir='relocate/src/dir1'

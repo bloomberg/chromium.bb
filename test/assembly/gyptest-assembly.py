@@ -13,7 +13,7 @@ import sys
 import TestGyp
 
 # TODO(bradnelson): get this working for windows.
-test = TestGyp.TestGyp(formats=['make', 'scons', 'xcode'])
+test = TestGyp.TestGyp(formats=['make', 'ninja', 'scons', 'xcode'])
 
 test.run_gyp('assembly.gyp', chdir='src')
 

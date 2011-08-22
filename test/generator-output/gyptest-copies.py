@@ -5,12 +5,14 @@
 # found in the LICENSE file.
 
 """
-Verifies file copies using an explicit build target of 'all'.
+Verifies file copies with --generator-output using an explicit build
+target of 'all'.
 """
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+# Ninja doesn't support --generator-output.
+test = TestGyp.TestGyp(formats=['!ninja'])
 
 test.writable(test.workpath('copies'), False)
 

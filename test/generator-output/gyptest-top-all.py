@@ -12,7 +12,7 @@ directory tree.
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+test = TestGyp.TestGyp(formats=['!ninja'])
 
 test.writable(test.workpath('src'), False)
 
