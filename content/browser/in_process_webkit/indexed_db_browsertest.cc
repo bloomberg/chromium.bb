@@ -17,6 +17,9 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_switches.h"
+#include "webkit/quota/quota_manager.h"
+
+using quota::QuotaManager;
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
 // the actual implementation that lives in the browser side (in_process_webkit).
@@ -156,6 +159,50 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
   // should survive and the first go into vanity.
   ASSERT_FALSE(file_util::PathExists(temp_file_path_1));
   ASSERT_TRUE(file_util::PathExists(temp_file_path_2));
+}
+
+class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
+ public:
+  virtual void SetUpOnMainThread() {
+    const int kInitialQuotaKilobytes = 5000;
+    const int kTemporaryStorageQuotaMaxSize = kInitialQuotaKilobytes
+        * 1024 * QuotaManager::kPerHostTemporaryPortion;
+    SetTempQuota(
+        kTemporaryStorageQuotaMaxSize, browser()->profile()->GetQuotaManager());
+  }
+
+  class SetTempQuotaCallback : public quota::QuotaCallback {
+   public:
+    void Run(quota::QuotaStatusCode, quota::StorageType, int64) {
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    }
+
+    void RunWithParams(const Tuple3<quota::QuotaStatusCode,
+                       quota::StorageType, int64>& params) {
+      Run(params.a, params.b, params.c);
+    }
+  };
+
+  static void SetTempQuota(int64 bytes, scoped_refptr<QuotaManager> qm) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+          NewRunnableFunction(&IndexedDBBrowserTestWithLowQuota::SetTempQuota,
+                              bytes, qm));
+      return;
+    }
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    qm->SetTemporaryGlobalQuota(bytes, new SetTempQuotaCallback);
+    // Don't return until the quota has been set.
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
+    ASSERT_TRUE(helper->Run());
+  }
+
+};
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("quota_test.html"))));
 }
 
 class IndexedDBBrowserTestWithGCExposed : public IndexedDBBrowserTest {
