@@ -3528,6 +3528,10 @@
         'browser/ui/webui/html_dialog_tab_contents_delegate.h',
         'browser/ui/webui/html_dialog_ui.cc',
         'browser/ui/webui/html_dialog_ui.h',
+        'browser/ui/webui/hung_renderer_dialog.cc',
+        'browser/ui/webui/hung_renderer_dialog.h',
+        'browser/ui/webui/hung_renderer_dialog_ui.cc',
+        'browser/ui/webui/hung_renderer_dialog_ui.h',
         'browser/ui/webui/keyboard_ui.cc',
         'browser/ui/webui/keyboard_ui.h',
         'browser/ui/webui/media/media_internals_handler.cc',
@@ -3938,10 +3942,21 @@
             ['exclude', '^browser/ui/webui/certificate_viewer_ui.h'],
           ],
         }],
+        # Exclude other WebUI dialogs if WebUI dialogs are disabled.
+        ['webui_dialogs == 0', {
+          'sources/': [
+            ['exclude', '^browser/ui/webui/hung_renderer_dialog.cc'],
+            ['exclude', '^browser/ui/webui/hung_renderer_dialog.h'],
+            ['exclude', '^browser/ui/webui/hung_renderer_dialog_ui.cc'],
+            ['exclude', '^browser/ui/webui/hung_renderer_dialog_ui.h'],
+          ],
+        }],
         ['webui_dialogs == 1', {
           'sources/': [
             ['exclude', '^browser/ui/gtk/certificate_viewer.cc'],
             ['exclude', '^browser/ui/gtk/certificate_viewer.h'],
+            ['exclude', '^browser/ui/gtk/hung_renderer_dialog_gtk.cc'],
+            ['exclude', '^browser/ui/gtk/hung_renderer_dialog_gtk.h'],
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -4592,12 +4607,13 @@
                 ['exclude', '^browser/ui/panels/panel_browser_window_gtk.h'],
               ],
             }],
-            # Exclude the GTK cert viewer again if webui_dialogs are
-            # enabled.
+            # Exclude the GTK versions of dialogs if webui_dialogs are enabled.
             ['webui_dialogs==1', {
               'sources/': [
                 ['exclude', '^browser/ui/gtk/certificate_viewer.cc'],
                 ['exclude', '^browser/ui/gtk/certificate_viewer.h'],
+                ['exclude', '^browser/ui/gtk/hung_renderer_dialog_gtk.cc'],
+                ['exclude', '^browser/ui/gtk/hung_renderer_dialog_gtk.cc.h'],
               ],
             }],
             # Exclude these toolkit_views specific files again.

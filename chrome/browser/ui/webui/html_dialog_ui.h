@@ -50,6 +50,7 @@ class HtmlDialogUIDelegate {
   virtual std::string GetDialogArgs() const = 0;
 
   // A callback to notify the delegate that the dialog closed.
+  // IMPORTANT:  Deletes 'this'.
   virtual void OnDialogClosed(const std::string& json_retval) = 0;
 
   // Notifies the delegate that the dialog's containing window has been

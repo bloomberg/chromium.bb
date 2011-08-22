@@ -72,6 +72,10 @@
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 #endif
 
+#if defined(WEBUI_DIALOGS)
+#include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
+#endif
+
 namespace {
 
 // A function for creating a new WebUI. The caller owns the return value, which
@@ -149,6 +153,11 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
 #if defined(WEBUI_DIALOGS) && defined(OS_POSIX) && !defined(OS_MACOSX)
   if (url.host() == chrome::kChromeUICertificateViewerHost)
     return &NewWebUI<CertificateViewerUI>;
+#endif
+#if defined(WEBUI_DIALOGS)
+  if (url.host() == chrome::kChromeUIHungRendererDialogHost) {
+    return &NewWebUI<HungRendererDialogUI>;
+  }
 #endif
   if (url.host() == chrome::kChromeUICrashesHost)
     return &NewWebUI<CrashesUI>;

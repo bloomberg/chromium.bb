@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection">
+  <head>
+    <meta charset="utf-8">
+    <title i18n-content="title"></title>
+    <link rel="stylesheet" href="hung_renderer_dialog.css">
+    <link rel="stylesheet" href="chrome://resources/css/button.css">
+    <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
+    <script src="strings.js"></script>
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://resources/js/cr/ui.js"></script>
+    <script src="chrome://resources/js/i18n_template.js"></script>
+    <script src="chrome://resources/js/util.js"></script>
+    <script src="hung_renderer_dialog.js"></script>
+  </head>
+
+  <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+    <div class="vbox">
+      <div class="fill">
+        <div class="hbox">
+          <div>
+            <img id="theme-graphic" src="chrome://theme/IDR_FROZEN_TAB_ICON">
+          </div>
+          <div class="fill">
+            <div class="vbox">
+              <div>
+                <div id="explanation" i18n-content="explanation"></div>
+              </div>
+              <div class="fill">
+                <div id="tab-list-scroll-container">
+                  <div class="vbox" id="tab-table">
+                    <!-- JS inserts a <div class="row"> containing both an <img
+                    class="icon" src=path-to-favicon> and a <div class="title">
+                    containing title text. -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="hbox" id="buttons-table">
+          <div><button id="kill" i18n-content="kill">Kill pages</button></div>
+          <div><button id="wait" i18n-content="wait">Wait</button></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

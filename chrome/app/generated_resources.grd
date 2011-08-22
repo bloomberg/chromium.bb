@@ -7997,7 +7997,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Some options have been disabled by your administrator and others are being managed by an extension.
         </message>
       </if>
-      
+
       <!-- Options search page strings. -->
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
         Search Results
@@ -8948,8 +8948,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_REMOVABLE_DIRECTORY_LABEL" desc="/removable directory label.">
         External Storage
       </message>
-      <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">	
-        External Storage	
+      <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
+        External Storage
       </message>
       <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING" desc="Warning displayed to user when viewing downloads folder.">
 	<ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Caution:<ph name="END_BOLD">&lt;/strong&gt;</ph>  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
@@ -13435,7 +13435,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
       Tracing
     </message>
-
     </messages>
     <includes>
       <if expr="pp_ifdef('_google_chrome')">
@@ -13451,6 +13450,5 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <structure name="IDD_CHROME_FRAME_READY_PROMPT" file="cf_resources.rc" type="dialog" >
       </structure>
     </structures>
-
   </release>
 </grit>
