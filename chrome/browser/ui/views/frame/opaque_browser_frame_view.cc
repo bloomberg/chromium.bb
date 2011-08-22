@@ -1165,8 +1165,8 @@ void OpaqueBrowserFrameView::UpdateAvatarInfo() {
   if (browser_view_->IsOffTheRecord()) {
     avatar_button_->SetIcon(browser_view_->GetOTRAvatarIcon());
   } else {
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
+    ProfileInfoInterface& cache =
+        g_browser_process->profile_manager()->GetProfileInfo();
     Profile* profile = browser_view_->browser()->profile();
     size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
     if (index != std::string::npos) {

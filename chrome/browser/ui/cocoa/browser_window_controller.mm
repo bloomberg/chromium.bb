@@ -1369,8 +1369,8 @@ enum {
 
   if (ProfileManager::IsMultipleProfilesEnabled()) {
     // Show the profile avatar after the user has created more than one profile.
-    ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
+    ProfileInfoInterface& cache =
+        g_browser_process->profile_manager()->GetProfileInfo();
     return cache.GetNumberOfProfiles() > 1;
   }
 

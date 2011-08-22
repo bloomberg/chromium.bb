@@ -26,6 +26,7 @@
 class FilePath;
 class NewProfileLauncher;
 class ProfileInfoCache;
+class ProfileInfoInterface;
 
 class ProfileManagerObserver {
  public:
@@ -157,9 +158,14 @@ class ProfileManager : public base::NonThreadSafe,
   // Register multi-profile related preferences in Local State.
   static void RegisterPrefs(PrefService* prefs);
 
-  // Returns a ProfileInfoCache object which can be used to get information
+  // Returns a ProfileInfoInterface object which can be used to get information
   // about profiles without having to load them from disk.
-  ProfileInfoCache& GetProfileInfoCache();
+  virtual ProfileInfoInterface& GetProfileInfo();
+
+  // Returns the ProfileInfoInterface as a mutable ProfileInfoCache. This should
+  // only be used when you need the full set of methods. Wherever possible use
+  // the ProfileInfoInterface.
+  virtual ProfileInfoCache& GetMutableProfileInfo();
 
   // Schedules the profile at the given path to be deleted on shutdown.
   void ScheduleProfileForDeletion(const FilePath& profile_dir);

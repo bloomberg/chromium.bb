@@ -161,8 +161,8 @@ const CGFloat kMenuYOffsetAdjust = 5.0;
 
 // Updates the avatar information from the profile cache.
 - (void)updateAvatar {
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileInfoInterface& cache =
+      g_browser_process->profile_manager()->GetProfileInfo();
   size_t index =
       cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath());
   if (index != std::string::npos) {

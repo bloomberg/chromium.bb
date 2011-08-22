@@ -20,6 +20,8 @@ BrowserTestHelper::BrowserTestHelper()
   profile_->CreateAutocompleteClassifier();
   profile_->CreateTemplateURLService();
 
+  SetUpProfileManager();
+
   browser_.reset(new Browser(Browser::TYPE_TABBED, profile_.get()));
 }
 
@@ -55,4 +57,12 @@ void BrowserTestHelper::CloseBrowserWindow() {
   browser_->CloseWindow();
   // |browser_| will be deleted by its BrowserWindowController.
   ignore_result(browser_.release());
+}
+
+void BrowserTestHelper::SetUpProfileManager() {
+  profile_manager_ = new TestingProfileManager;  // Owned by browser_process_.
+  browser_process()->SetProfileManager(profile_manager_);
+
+  profile_info_.reset(profile_manager_->CreateFakeInfo("Testing Profile"));
+  profile_manager_->AddTestingProfile(profile(), profile_info_.get());
 }

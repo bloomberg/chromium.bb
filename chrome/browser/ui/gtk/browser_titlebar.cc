@@ -312,8 +312,8 @@ void BrowserTitlebar::Init() {
 
   // If multi-profile is enabled set up profile button and login notifications.
   // The button lives in its own vbox in container_hbox_.
-  ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
+  ProfileInfoInterface& cache =
+      g_browser_process->profile_manager()->GetProfileInfo();
   if (ProfileManager::IsMultipleProfilesEnabled() &&
       cache.GetNumberOfProfiles() > 1 &&
       !browser_window_->browser()->profile()->IsOffTheRecord()) {

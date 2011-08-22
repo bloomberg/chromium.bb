@@ -8,11 +8,9 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "ui/gfx/image/image.h"
 
 class FakeProfileInfo : public ProfileInfoInterface {
