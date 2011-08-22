@@ -16,7 +16,11 @@ class WebThreadImpl : public WebKit::WebThread {
   virtual ~WebThreadImpl();
 
   virtual void postTask(Task* task);
+#ifdef WEBTHREAD_HAS_LONGLONG_CHANGE
+  virtual void postDelayedTask(Task* task, long long delay_ms);
+#else
   virtual void postDelayedTask(Task* task, int64 delay_ms);
+#endif
 
  protected:
   scoped_ptr<base::Thread> thread_;

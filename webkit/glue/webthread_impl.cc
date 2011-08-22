@@ -31,8 +31,13 @@ void WebThreadImpl::postTask(Task* task) {
   thread_->message_loop()->PostTask(FROM_HERE,
                                     new TaskAdapter(task));
 }
+#ifdef WEBTHREAD_HAS_LONGLONG_CHANGE
+void WebThreadImpl::postDelayedTask(
+    Task* task, long long delay_ms) {
+#else
 void WebThreadImpl::postDelayedTask(
     Task* task, int64 delay_ms) {
+#endif
   thread_->message_loop()->PostDelayedTask(
       FROM_HERE, new TaskAdapter(task), delay_ms);
 }
