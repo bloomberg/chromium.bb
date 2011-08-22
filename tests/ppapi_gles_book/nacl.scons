@@ -76,8 +76,7 @@ for demo, sources in gles_book_examples.iteritems():
         files=[nexe,
                env.File(nmf_name),
                env.File('ppapi_gles_book.html')],
-        args=['--enable_experimental_js'],
-        browser_flags=['--enable_accelerated_plugins'])
+        browser_flags=['--enable-accelerated-plugins'])
     env.AddNodeToTestSuite(
         test,
         ['chrome_browser_tests'],

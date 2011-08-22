@@ -32,7 +32,6 @@ env.Publish(nexe, 'run',
 node = env.PPAPIBrowserTester('ppapi_ppb_dev_browser_test.out',
                               url='ppapi_ppb_dev.html',
                               files=env.ExtractPublishedFiles(nexe),
-                              browser_flags=['--enable-pepper-testing'],
                               args=['--enable_ppapi_dev=0'])
 
 env.AddNodeToTestSuite(node,

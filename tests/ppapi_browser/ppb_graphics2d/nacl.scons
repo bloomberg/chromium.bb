@@ -35,7 +35,6 @@ node = env.PPAPIBrowserTester('ppapi_ppb_graphics2d_browser_test.out',
                               files=[ ppapi_ppb_graphics2d_nexe,
                                       env.File('ppapi_ppb_graphics2d.nmf'),
                                       env.File('ppapi_ppb_graphics2d.html')],
-                              args=['--enable_experimental_js'],
                               browser_flags=['--enable-pepper-testing'])
 
 env.AddNodeToTestSuite(node,

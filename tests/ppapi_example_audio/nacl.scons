@@ -27,8 +27,7 @@ test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
                               url='ppapi_example_audio.html#mute',
                               files=[nexe,
                                      env.File('ppapi_example_audio.nmf'),
-                                     env.File('ppapi_example_audio.html')],
-                              args=['--enable_experimental_js'])
+                                     env.File('ppapi_example_audio.html')])
 
 # Though this tests passes locally, it does not pass on the Windows
 # and Linux buildbots, which do not have audio devices.  Although

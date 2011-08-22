@@ -33,8 +33,7 @@ env.Publish(progress_events_target, 'run', [
 node = env.PPAPIBrowserTester(
     'ppapi_progress_events_browser_test.out',
     url='ppapi_progress_events.html',
-    files=env.ExtractPublishedFiles(progress_events_target),
-    args=['--enable_experimental_js'])
+    files=env.ExtractPublishedFiles(progress_events_target))
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
