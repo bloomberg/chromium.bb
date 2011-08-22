@@ -97,10 +97,10 @@ class MyFetcher {
     callback_factory_.Initialize(this);
   }
 
-  void Start(const pp::InstancePrivate& instance,
+  void Start(pp::InstancePrivate& instance,
              const pp::Var& url,
              MyFetcherClient* client) {
-    pp::URLRequestInfo request;
+    pp::URLRequestInfo request(&instance);
     request.SetURL(url);
     request.SetMethod("GET");
 
