@@ -83,9 +83,6 @@ ViewsDelegate* ViewsDelegate::views_delegate = NULL;
 // static
 char View::kViewClassName[] = "views/View";
 
-// TODO(sky): remove this when we figure out 89439.
-static View* view_being_focused_ = NULL;
-
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
 
@@ -124,8 +121,6 @@ View::View()
 }
 
 View::~View() {
-  CHECK_NE(view_being_focused_, this);
-
   if (parent_)
     parent_->RemoveChildView(this);
 
@@ -985,11 +980,8 @@ FocusManager* View::GetFocusManager() {
 
 void View::RequestFocus() {
   FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager && IsFocusableInRootView()) {
-    view_being_focused_ = this;
+  if (focus_manager && IsFocusableInRootView())
     focus_manager->SetFocusedView(this);
-    view_being_focused_ = NULL;
-  }
 }
 
 bool View::SkipDefaultKeyEventProcessing(const KeyEvent& event) {
