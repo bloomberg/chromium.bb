@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_history_info.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
@@ -37,19 +36,13 @@ void BeginDownload(
     const GURL& url,
     const GURL& referrer,
     const DownloadSaveInfo& save_info,
-    int render_process_host_id,
+    ResourceDispatcherHost* resource_dispatcher_host,
+    int render_process_id,
     int render_view_id,
     const content::ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  content::GetContentClient()->browser()->GetResourceDispatcherHost()->
-      BeginDownload(url,
-                    referrer,
-                    save_info,
-                    true,  // Show "Save as" UI.
-                    render_process_host_id,
-                    render_view_id,
-                    *context);
+  resource_dispatcher_host->BeginDownload(
+      url, referrer, save_info, true, render_process_id, render_view_id,
+      *context);
 }
 
 }  // namespace
@@ -684,6 +677,8 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
                                         const DownloadSaveInfo& save_info,
                                         TabContents* tab_contents) {
   DCHECK(tab_contents);
+  ResourceDispatcherHost* resource_dispatcher_host =
+      content::GetContentClient()->browser()->GetResourceDispatcherHost();
   // We send a pointer to content::ResourceContext, instead of the usual
   // reference, so that a copy of the object isn't made.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -691,6 +686,7 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
                           url,
                           referrer,
                           save_info,
+                          resource_dispatcher_host,
                           tab_contents->GetRenderProcessHost()->id(),
                           tab_contents->render_view_host()->routing_id(),
                           &tab_contents->browser_context()->
