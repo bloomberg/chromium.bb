@@ -38,6 +38,10 @@ bool TestBrowserWindow::IsMaximized() const {
   return false;
 }
 
+bool TestBrowserWindow::IsMinimized() const {
+  return false;
+}
+
 bool TestBrowserWindow::IsFullscreen() const {
   return false;
 }

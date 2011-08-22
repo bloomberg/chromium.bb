@@ -19,8 +19,8 @@
 class BrowserWindowCocoaPong : public BrowserWindowCocoa {
  public:
   BrowserWindowCocoaPong(Browser* browser,
-                         BrowserWindowController* controller) :
-  BrowserWindowCocoa(browser, controller, [controller window]) {
+                         BrowserWindowController* controller)
+      : BrowserWindowCocoa(browser, controller) {
     pong_ = false;
   }
   virtual ~BrowserWindowCocoaPong() { }

@@ -466,7 +466,7 @@ class SessionRestoreImpl : public NotificationObserver {
       Browser* browser = CreateRestoredBrowser(
           static_cast<Browser::Type>((*i)->type),
           (*i)->bounds,
-          (*i)->is_maximized);
+          (*i)->show_state);
 
       // Restore and show the browser.
       const int initial_tab_count = browser->tab_count();
@@ -616,7 +616,7 @@ class SessionRestoreImpl : public NotificationObserver {
         browser = CreateRestoredBrowser(
             static_cast<Browser::Type>((*i)->type),
             (*i)->bounds,
-            (*i)->is_maximized);
+            (*i)->show_state);
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
         "SessionRestore-CreateRestoredBrowser-End", false);
@@ -710,12 +710,10 @@ class SessionRestoreImpl : public NotificationObserver {
 
   Browser* CreateRestoredBrowser(Browser::Type type,
                                  gfx::Rect bounds,
-                                 bool is_maximized) {
+                                 ui::WindowShowState show_state) {
     Browser* browser = new Browser(type, profile_);
     browser->set_override_bounds(bounds);
-    browser->set_maximized_state(is_maximized ?
-        Browser::MAXIMIZED_STATE_MAXIMIZED :
-        Browser::MAXIMIZED_STATE_UNMAXIMIZED);
+    browser->set_show_state(show_state);
     browser->InitBrowserWindow();
     return browser;
   }

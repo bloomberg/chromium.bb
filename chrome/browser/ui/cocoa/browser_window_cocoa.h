@@ -27,8 +27,7 @@ class BrowserWindowCocoa : public BrowserWindow,
                            public NotificationObserver {
  public:
   BrowserWindowCocoa(Browser* browser,
-                     BrowserWindowController* controller,
-                     NSWindow* window);
+                     BrowserWindowController* controller);
   virtual ~BrowserWindowCocoa();
 
   // Overridden from BrowserWindow
@@ -53,6 +52,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual gfx::Rect GetRestoredBounds() const;
   virtual gfx::Rect GetBounds() const;
   virtual bool IsMaximized() const;
+  virtual bool IsMinimized() const;
   virtual void SetFullscreen(bool fullscreen);
   virtual bool IsFullscreen() const;
   virtual bool IsFullscreenBubbleVisible() const;

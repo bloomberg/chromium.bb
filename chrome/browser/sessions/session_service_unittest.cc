@@ -45,7 +45,9 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     helper_.set_service(session_service);
 
     service()->SetWindowType(window_id, Browser::TYPE_TABBED);
-    service()->SetWindowBounds(window_id, window_bounds, false);
+    service()->SetWindowBounds(window_id,
+                               window_bounds,
+                               ui::SHOW_STATE_NORMAL);
   }
 
   // Upon notification, increment the sync_save_count variable
@@ -268,7 +270,9 @@ TEST_F(SessionServiceTest, TwoWindows) {
 
   const gfx::Rect window2_bounds(3, 4, 5, 6);
   service()->SetWindowType(window2_id, Browser::TYPE_TABBED);
-  service()->SetWindowBounds(window2_id, window2_bounds, true);
+  service()->SetWindowBounds(window2_id,
+                             window2_bounds,
+                             ui::SHOW_STATE_MAXIMIZED);
   helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
   UpdateNavigation(window2_id, tab2_id, nav2, 0, true);
 
@@ -285,15 +289,15 @@ TEST_F(SessionServiceTest, TwoWindows) {
   SessionTab* rt2;
   if (windows[0]->window_id.id() == window_id.id()) {
     ASSERT_EQ(window2_id.id(), windows[1]->window_id.id());
-    ASSERT_FALSE(windows[0]->is_maximized);
-    ASSERT_TRUE(windows[1]->is_maximized);
+    ASSERT_EQ(ui::SHOW_STATE_NORMAL, windows[0]->show_state);
+    ASSERT_EQ(ui::SHOW_STATE_MAXIMIZED, windows[1]->show_state);
     rt1 = windows[0]->tabs[0];
     rt2 = windows[1]->tabs[0];
   } else {
     ASSERT_EQ(window2_id.id(), windows[0]->window_id.id());
     ASSERT_EQ(window_id.id(), windows[1]->window_id.id());
-    ASSERT_TRUE(windows[0]->is_maximized);
-    ASSERT_FALSE(windows[1]->is_maximized);
+    ASSERT_EQ(ui::SHOW_STATE_MAXIMIZED, windows[0]->show_state);
+    ASSERT_EQ(ui::SHOW_STATE_NORMAL, windows[1]->show_state);
     rt1 = windows[1]->tabs[0];
     rt2 = windows[0]->tabs[0];
   }
@@ -320,7 +324,9 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
 
   const gfx::Rect window2_bounds(3, 4, 5, 6);
   service()->SetWindowType(window2_id, Browser::TYPE_TABBED);
-  service()->SetWindowBounds(window2_id, window2_bounds, false);
+  service()->SetWindowBounds(window2_id,
+                             window2_bounds,
+                             ui::SHOW_STATE_NORMAL);
   helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
 
   ScopedVector<SessionWindow> windows;
@@ -380,7 +386,9 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   ASSERT_NE(window2_id.id(), window_id.id());
 
   service()->SetWindowType(window2_id, Browser::TYPE_TABBED);
-  service()->SetWindowBounds(window2_id, window_bounds, false);
+  service()->SetWindowBounds(window2_id,
+                             window_bounds,
+                             ui::SHOW_STATE_NORMAL);
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
@@ -423,7 +431,9 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   ASSERT_NE(window2_id.id(), window_id.id());
 
   service()->SetWindowType(window2_id, Browser::TYPE_POPUP);
-  service()->SetWindowBounds(window2_id, window_bounds, false);
+  service()->SetWindowBounds(window2_id,
+                             window_bounds,
+                             ui::SHOW_STATE_NORMAL);
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",
@@ -462,7 +472,9 @@ TEST_F(SessionServiceTest, RestorePopup) {
   ASSERT_NE(window2_id.id(), window_id.id());
 
   service()->SetWindowType(window2_id, Browser::TYPE_POPUP);
-  service()->SetWindowBounds(window2_id, window_bounds, false);
+  service()->SetWindowBounds(window2_id,
+                             window_bounds,
+                             ui::SHOW_STATE_NORMAL);
 
   TabNavigation nav1(0, GURL("http://google.com"), GURL(),
                      ASCIIToUTF16("abc"), "def",

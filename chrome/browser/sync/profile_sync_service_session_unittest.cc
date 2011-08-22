@@ -43,6 +43,7 @@
 #include "content/common/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_types.h"
 
 using browser_sync::SessionChangeProcessor;
 using browser_sync::SessionDataTypeController;
@@ -81,7 +82,9 @@ class ProfileSyncServiceSessionTest
     SessionService* session_service = new SessionService(temp_dir_.path());
     helper_.set_service(session_service);
     service()->SetWindowType(window_id_, Browser::TYPE_TABBED);
-    service()->SetWindowBounds(window_id_, window_bounds_, false);
+    service()->SetWindowBounds(window_id_,
+                               window_bounds_,
+                               ui::SHOW_STATE_NORMAL);
     registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
         NotificationService::AllSources());
   }

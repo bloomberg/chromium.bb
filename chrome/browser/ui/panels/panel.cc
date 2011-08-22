@@ -163,6 +163,11 @@ bool Panel::IsMaximized() const {
   return false;
 }
 
+bool Panel::IsMinimized() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void Panel::SetFullscreen(bool fullscreen) {
   NOTIMPLEMENTED();
 }

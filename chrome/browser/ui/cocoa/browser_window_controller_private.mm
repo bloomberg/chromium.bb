@@ -35,6 +35,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "ui/base/ui_base_types.h"
 
 // Forward-declare symbols that are part of the 10.6 SDK.
 #if !defined(MAC_OS_X_VERSION_10_6) || \
@@ -111,18 +112,9 @@ const CGFloat kLocBarBottomInset = 1;
 }
 
 - (void)saveWindowPositionIfNeeded {
-  if (browser_ != BrowserList::GetLastActive())
+  if (!browser_->ShouldSaveWindowPlacement())
     return;
 
-  if (!browser_->profile()->GetPrefs() ||
-      !browser_->ShouldSaveWindowPlacement()) {
-    return;
-  }
-
-  [self saveWindowPositionToPrefs:browser_->profile()->GetPrefs()];
-}
-
-- (void)saveWindowPositionToPrefs:(PrefService*)prefs {
   // If we're in fullscreen mode, save the position of the regular window
   // instead.
   NSWindow* window = [self isFullscreen] ? savedRegularWindow_ : [self window];
@@ -144,13 +136,19 @@ const CGFloat kLocBarBottomInset = 1;
   gfx::Rect bounds(NSRectToCGRect([window frame]));
   bounds.set_y(monitorFrame.size.height - bounds.y() - bounds.height());
 
-  // We also need to save the current work area, in flipped coordinates.
+  // Browser::SaveWindowPlacement saves information for session restore.
+  ui::WindowShowState show_state = [window isMiniaturized] ?
+      ui::SHOW_STATE_MINIMIZED : ui::SHOW_STATE_NORMAL;
+  browser_->SaveWindowPlacement(bounds, show_state);
+
+  // Only save main window information to preferences.
+  PrefService* prefs = browser_->profile()->GetPrefs();
+  if (!prefs || browser_ != BrowserList::GetLastActive())
+    return;
+
+  // Save the current work area, in flipped coordinates.
   gfx::Rect workArea(NSRectToCGRect([windowScreen visibleFrame]));
   workArea.set_y(monitorFrame.size.height - workArea.y() - workArea.height());
-
-  // Browser::SaveWindowPlacement is used for session restore.
-  if (browser_->ShouldSaveWindowPlacement())
-    browser_->SaveWindowPlacement(bounds, /*maximized=*/ false);
 
   DictionaryPrefUpdate update(prefs, browser_->GetWindowPlacementKey().c_str());
   DictionaryValue* windowPreferences = update.Get();

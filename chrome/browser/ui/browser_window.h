@@ -130,6 +130,9 @@ class BrowserWindow {
   // Returns true if the frame is maximized (aka zoomed).
   virtual bool IsMaximized() const = 0;
 
+  // Returns true if the frame is minimized.
+  virtual bool IsMinimized() const = 0;
+
   // Accessors for fullscreen mode state.
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreen() const = 0;

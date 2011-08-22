@@ -156,8 +156,7 @@
 
 @end
 
-// Provide the forward-declarations of new 10.7 SDK symbols so they can be
-// called when building with the 10.5 SDK.
+// Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
@@ -223,7 +222,7 @@ enum {
     browser_.reset(browser);
     ownsBrowser_ = ownIt;
     NSWindow* window = [self window];
-    windowShim_.reset(new BrowserWindowCocoa(browser, self, window));
+    windowShim_.reset(new BrowserWindowCocoa(browser, self));
 
     // Create the bar visibility lock set; 10 is arbitrary, but should hopefully
     // be big enough to hold all locks that'll ever be needed.
@@ -614,6 +613,8 @@ enum {
 
 // Called when we have been minimized.
 - (void)windowDidMiniaturize:(NSNotification *)notification {
+  [self saveWindowPositionIfNeeded];
+
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
   if (TabContents* contents = browser_->GetSelectedTabContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
@@ -1763,6 +1764,8 @@ enum {
 
 // Delegate method called when window is resized.
 - (void)windowDidResize:(NSNotification*)notification {
+  [self saveWindowPositionIfNeeded];
+
   // Resize (and possibly move) the status bubble. Note that we may get called
   // when the status bubble does not exist.
   if (statusBubble_) {
@@ -1803,6 +1806,8 @@ enum {
 // |-windowWillMove:|, which is called less frequently than |-windowDidMove|
 // instead.)
 - (void)windowDidMove:(NSNotification*)notification {
+  [self saveWindowPositionIfNeeded];
+
   NSWindow* window = [self window];
   NSRect windowFrame = [window frame];
   NSRect workarea = [[window screen] visibleFrame];

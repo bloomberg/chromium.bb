@@ -7,6 +7,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -19,7 +20,7 @@
 
 @interface BrowserWindowController (JustForTesting)
 // Already defined in BWC.
-- (void)saveWindowPositionToPrefs:(PrefService*)prefs;
+- (void)saveWindowPositionIfNeeded;
 - (void)layoutSubviews;
 @end
 
@@ -92,7 +93,8 @@ TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
 
   // Ask the window to save its position, then check that a preference
   // exists.
-  [controller_ saveWindowPositionToPrefs:prefs];
+  BrowserList::SetLastActive(browser_helper_.browser());
+  [controller_ saveWindowPositionIfNeeded];
   browser_window_placement =
       prefs->GetDictionary(prefs::kBrowserWindowPlacement);
   ASSERT_TRUE(browser_window_placement);

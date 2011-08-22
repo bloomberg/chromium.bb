@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "ui/base/ui_base_types.h"
 
 class NavigationEntry;
 class Profile;
@@ -81,7 +82,7 @@ class SessionService : public BaseSessionService,
   // Sets the bounds of a window.
   void SetWindowBounds(const SessionID& window_id,
                        const gfx::Rect& bounds,
-                       bool is_maximized);
+                       ui::WindowShowState show_state);
 
   // Sets the visual index of the tab in its parent window.
   void SetTabIndexInWindow(const SessionID& window_id,
@@ -218,7 +219,7 @@ class SessionService : public BaseSessionService,
 
   SessionCommand* CreateSetWindowBoundsCommand(const SessionID& window_id,
                                                const gfx::Rect& bounds,
-                                               bool is_maximized);
+                                               ui::WindowShowState show_state);
 
   SessionCommand* CreateSetTabIndexInWindowCommand(const SessionID& tab_id,
                                                    int new_index);

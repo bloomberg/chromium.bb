@@ -44,8 +44,7 @@ using base::Time;
 
 // Identifier for commands written to file.
 static const SessionCommand::id_type kCommandSetTabWindow = 0;
-// kCommandSetWindowBounds is no longer used (it's superseded by
-// kCommandSetWindowBounds2). I leave it here to document what it was.
+// OBSOLETE Superseded by kCommandSetWindowBounds3.
 // static const SessionCommand::id_type kCommandSetWindowBounds = 1;
 static const SessionCommand::id_type kCommandSetTabIndexInWindow = 2;
 static const SessionCommand::id_type kCommandTabClosed = 3;
@@ -56,11 +55,13 @@ static const SessionCommand::id_type kCommandUpdateTabNavigation = 6;
 static const SessionCommand::id_type kCommandSetSelectedNavigationIndex = 7;
 static const SessionCommand::id_type kCommandSetSelectedTabInIndex = 8;
 static const SessionCommand::id_type kCommandSetWindowType = 9;
-static const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
+// OBSOLETE Superseded by kCommandSetWindowBounds3. Except for data migration.
+// static const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
 static const SessionCommand::id_type
     kCommandTabNavigationPathPrunedFromFront = 11;
 static const SessionCommand::id_type kCommandSetPinnedState = 12;
 static const SessionCommand::id_type kCommandSetExtensionAppID = 13;
+static const SessionCommand::id_type kCommandSetWindowBounds3 = 14;
 
 // Every kWritesPerReset commands triggers recreating the file.
 static const int kWritesPerReset = 250;
@@ -103,6 +104,15 @@ struct WindowBoundsPayload2 {
   int32 w;
   int32 h;
   bool is_maximized;
+};
+
+struct WindowBoundsPayload3 {
+  SessionID::id_type window_id;
+  int32 x;
+  int32 y;
+  int32 w;
+  int32 h;
+  int32 show_state;
 };
 
 struct IDAndIndexPayload {
@@ -188,12 +198,11 @@ void SessionService::SetTabWindow(const SessionID& window_id,
 
 void SessionService::SetWindowBounds(const SessionID& window_id,
                                      const gfx::Rect& bounds,
-                                     bool is_maximized) {
+                                     ui::WindowShowState show_state) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  ScheduleCommand(CreateSetWindowBoundsCommand(window_id, bounds,
-                                               is_maximized));
+  ScheduleCommand(CreateSetWindowBoundsCommand(window_id, bounds, show_state));
 }
 
 void SessionService::SetTabIndexInWindow(const SessionID& window_id,
@@ -667,15 +676,15 @@ SessionCommand* SessionService::CreateSetTabWindowCommand(
 SessionCommand* SessionService::CreateSetWindowBoundsCommand(
     const SessionID& window_id,
     const gfx::Rect& bounds,
-    bool is_maximized) {
-  WindowBoundsPayload2 payload = { 0 };
+    ui::WindowShowState show_state) {
+  WindowBoundsPayload3 payload = { 0 };
   payload.window_id = window_id.id();
   payload.x = bounds.x();
   payload.y = bounds.y();
   payload.w = bounds.width();
   payload.h = bounds.height();
-  payload.is_maximized = is_maximized;
-  SessionCommand* command = new SessionCommand(kCommandSetWindowBounds2,
+  payload.show_state = show_state;
+  SessionCommand* command = new SessionCommand(kCommandSetWindowBounds3,
                                                sizeof(payload));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
@@ -925,6 +934,7 @@ bool SessionService::CreateTabsAndWindows(
 
   for (std::vector<SessionCommand*>::const_iterator i = data.begin();
        i != data.end(); ++i) {
+    const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
     const SessionCommand* command = *i;
 
     switch (command->id()) {
@@ -936,6 +946,8 @@ bool SessionService::CreateTabsAndWindows(
         break;
       }
 
+      // This is here for forward migration only.  New data is saved with
+      // |kCommandSetWindowBounds3|.
       case kCommandSetWindowBounds2: {
         WindowBoundsPayload2 payload;
         if (!command->GetPayload(&payload, sizeof(payload)))
@@ -944,8 +956,28 @@ bool SessionService::CreateTabsAndWindows(
                                                               payload.y,
                                                               payload.w,
                                                               payload.h);
-        GetWindow(payload.window_id, windows)->is_maximized =
-            payload.is_maximized;
+        GetWindow(payload.window_id, windows)->show_state =
+            payload.is_maximized ?
+                ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
+        break;
+      }
+
+      case kCommandSetWindowBounds3: {
+        WindowBoundsPayload3 payload;
+        if (!command->GetPayload(&payload, sizeof(payload)))
+          return true;
+        GetWindow(payload.window_id, windows)->bounds.SetRect(payload.x,
+                                                              payload.y,
+                                                              payload.w,
+                                                              payload.h);
+        ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
+        if (payload.show_state > ui::SHOW_STATE_DEFAULT &&
+            payload.show_state < ui::SHOW_STATE_MAX) {
+          show_state = static_cast<ui::WindowShowState>(payload.show_state);
+        } else {
+          NOTREACHED();
+        }
+        GetWindow(payload.window_id, windows)->show_state = show_state;
         break;
       }
 
@@ -1137,10 +1169,16 @@ void SessionService::BuildCommandsForBrowser(
   DCHECK(browser && commands);
   DCHECK(browser->session_id().id());
 
+  ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
+  if (browser->window()->IsMaximized())
+    show_state = ui::SHOW_STATE_MAXIMIZED;
+  else if (browser->window()->IsMinimized())
+    show_state = ui::SHOW_STATE_MINIMIZED;
+
   commands->push_back(
       CreateSetWindowBoundsCommand(browser->session_id(),
                                    browser->window()->GetRestoredBounds(),
-                                   browser->window()->IsMaximized()));
+                                   show_state));
 
   commands->push_back(CreateSetWindowTypeCommand(
       browser->session_id(), WindowTypeForBrowserType(browser->type())));

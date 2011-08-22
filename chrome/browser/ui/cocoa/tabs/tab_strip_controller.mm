@@ -67,21 +67,6 @@
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
-// 10.7 adds public APIs for full-screen support. Provide the declaration so it
-// can be called below when building with the 10.5 SDK.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSWindow (LionSDKDeclarations)
-- (void)toggleFullScreen:(id)sender;
-@end
-
-enum {
-  NSWindowFullScreenButton = 7
-};
-
-#endif  // MAC_OS_X_VERSION_10_7
-
 namespace {
 
 // A value to indicate tab layout should use the full available width of the

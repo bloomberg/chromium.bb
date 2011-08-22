@@ -18,6 +18,7 @@
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
@@ -76,6 +77,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual gfx::Rect GetRestoredBounds() const;
   virtual gfx::Rect GetBounds() const;
   virtual bool IsMaximized() const;
+  virtual bool IsMinimized() const;
   virtual void SetFullscreen(bool fullscreen);
   virtual bool IsFullscreen() const;
   virtual bool IsFullscreenBubbleVisible() const;
@@ -491,9 +493,10 @@ class BrowserWindowGtk : public BrowserWindow,
   guint32 last_click_time_;
   gfx::Point last_click_position_;
 
-  // If true, maximize the window after we call BrowserWindow::Show for the
-  // first time.  This is to work around a compiz bug.
-  bool maximize_after_show_;
+  // Optionally maximize or minimize the window after we call
+  // BrowserWindow::Show for the first time.  This is to work around a compiz
+  // bug.
+  ui::WindowShowState show_state_after_show_;
 
   // If true, don't call gdk_window_raise() when we get a click in the title
   // bar or window border.  This is to work around a compiz bug.

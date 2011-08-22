@@ -783,6 +783,12 @@ bool BrowserView::IsMaximized() const {
   return frame_->IsMaximized();
 }
 
+bool BrowserView::IsMinimized() const {
+  // TODO(dhollowa): Add support for session restore of minimized state.
+  // http://crbug.com/43274
+  return false;
+}
+
 void BrowserView::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)
     return;  // Nothing to do.
@@ -1623,12 +1629,17 @@ std::wstring BrowserView::GetWindowName() const {
 
 void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
                                       bool maximized) {
+  // TODO(dhollowa): Add support for session restore of minimized state.
+  // http://crbug.com/43274
+
   // If IsFullscreen() is true, we've just changed into fullscreen mode, and
   // we're catching the going-into-fullscreen sizing and positioning calls,
   // which we want to ignore.
   if (!IsFullscreen() && browser_->ShouldSaveWindowPlacement()) {
     WidgetDelegate::SaveWindowPlacement(bounds, maximized);
-    browser_->SaveWindowPlacement(bounds, maximized);
+    browser_->SaveWindowPlacement(bounds,
+                                  maximized ? ui::SHOW_STATE_MAXIMIZED :
+                                              ui::SHOW_STATE_NORMAL);
   }
 }
 
@@ -1672,7 +1683,9 @@ bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
 }
 
 bool BrowserView::GetSavedMaximizedState(bool* maximized) const {
-  *maximized = browser_->GetSavedMaximizedState();
+  // TODO(dhollowa): Add support for session restore of minimized state.
+  // http://crbug.com/43274
+  *maximized = browser_->GetSavedWindowShowState() == ui::SHOW_STATE_MAXIMIZED;
   return true;
 }
 

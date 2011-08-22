@@ -43,6 +43,7 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
 class BrowserSyncedWindowDelegate;
@@ -102,19 +103,6 @@ class Browser : public TabHandlerDelegate,
     FEATURE_DOWNLOADSHELF = 128
   };
 
-  // Maximized state on creation.
-  enum MaximizedState {
-    // The maximized state is set to the default, which varies depending upon
-    // what the user has done.
-    MAXIMIZED_STATE_DEFAULT,
-
-    // Maximized state is explicitly maximized.
-    MAXIMIZED_STATE_MAXIMIZED,
-
-    // Maximized state is explicitly not maximized (normal).
-    MAXIMIZED_STATE_UNMAXIMIZED
-  };
-
   struct CreateParams {
     CreateParams(Type type, Profile* profile);
 
@@ -171,8 +159,8 @@ class Browser : public TabHandlerDelegate,
   void set_override_bounds(const gfx::Rect& bounds) {
     override_bounds_ = bounds;
   }
-  void set_maximized_state(MaximizedState state) {
-    maximized_state_ = state;
+  void set_show_state(ui::WindowShowState show_state) {
+    show_state_ = show_state;
   }
   // Return true if the initial window bounds have been overridden.
   bool bounds_overridden() const {
@@ -310,9 +298,10 @@ class Browser : public TabHandlerDelegate,
   // Save and restore the window position.
   std::string GetWindowPlacementKey() const;
   bool ShouldSaveWindowPlacement() const;
-  void SaveWindowPlacement(const gfx::Rect& bounds, bool maximized);
+  void SaveWindowPlacement(const gfx::Rect& bounds,
+                           ui::WindowShowState show_state);
   gfx::Rect GetSavedWindowBounds() const;
-  bool GetSavedMaximizedState() const;
+  ui::WindowShowState GetSavedWindowShowState() const;
 
   // Gets the Favicon of the page in the selected tab.
   SkBitmap GetCurrentPageIcon() const;
@@ -1226,13 +1215,14 @@ class Browser : public TabHandlerDelegate,
 
   /////////////////////////////////////////////////////////////////////////////
 
-  // Override values for the bounds of the window and its maximized state.
+  // Override values for the bounds of the window and its maximized or minimized
+  // state.
   // These are supplied by callers that don't want to use the default values.
   // The default values are typically loaded from local state (last session),
   // obtained from the last window of the same type, or obtained from the
   // shell shortcut's startup info.
   gfx::Rect override_bounds_;
-  MaximizedState maximized_state_;
+  ui::WindowShowState show_state_;
 
   // The following factory is used to close the frame at a later time.
   ScopedRunnableMethodFactory<Browser> method_factory_;

@@ -13,8 +13,7 @@
 #import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/themes/theme_service.h"
 
-// Provide the forward-declarations of new 10.7 SDK symbols so they can be
-// called when building with the 10.5 SDK.
+// Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 

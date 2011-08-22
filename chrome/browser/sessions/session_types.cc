@@ -114,7 +114,7 @@ SessionWindow::SessionWindow()
     : selected_tab_index(-1),
       type(Browser::TYPE_TABBED),
       is_constrained(true),
-      is_maximized(false) {
+      show_state(ui::SHOW_STATE_DEFAULT) {
 }
 
 SessionWindow::~SessionWindow() {

@@ -44,11 +44,31 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
+// Replicate specific 10.7 SDK declarations for building with prior SDKs.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+enum {
+  NSWindowAnimationBehaviorDefault = 0,
+  NSWindowAnimationBehaviorNone = 2,
+  NSWindowAnimationBehaviorDocumentWindow = 3,
+  NSWindowAnimationBehaviorUtilityWindow = 4,
+  NSWindowAnimationBehaviorAlertPanel = 5
+};
+typedef NSInteger NSWindowAnimationBehavior;
+
+@interface NSWindow (LionSDKDeclarations)
+- (NSWindowAnimationBehavior)animationBehavior;
+- (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_7
+
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
-                                       BrowserWindowController* controller,
-                                       NSWindow* window)
+                                       BrowserWindowController* controller)
   : browser_(browser),
     controller_(controller),
     confirm_close_factory_(browser) {
@@ -73,11 +93,35 @@ void BrowserWindowCocoa::Show() {
   // the previous browser instead if we don't explicitly set it here.
   BrowserList::SetLastActive(browser_);
 
-  [window() makeKeyAndOrderFront:controller_];
+  ui::WindowShowState show_state = browser_->GetSavedWindowShowState();
+  if (show_state == ui::SHOW_STATE_MINIMIZED) {
+    // Turn off swishing when restoring minimized windows.  When creating
+    // windows from nibs it is necessary to |orderFront:| prior to |orderOut:|
+    // then |miniaturize:| when restoring windows in the minimized state.
+    NSWindowAnimationBehavior savedAnimationBehavior = 0;
+    if ([window() respondsToSelector:@selector(animationBehavior)] &&
+        [window() respondsToSelector:@selector(setAnimationBehavior:)]) {
+      savedAnimationBehavior = [window() animationBehavior];
+      [window() setAnimationBehavior:NSWindowAnimationBehaviorNone];
+    }
+
+    [window() makeKeyAndOrderFront:controller_];
+
+    [window() orderOut:controller_];
+    [window() miniaturize:controller_];
+
+    // Restore window animation behavior.
+    if ([window() respondsToSelector:@selector(animationBehavior)] &&
+        [window() respondsToSelector:@selector(setAnimationBehavior:)]) {
+      [window() setAnimationBehavior:savedAnimationBehavior];
+    }
+  } else {
+    [window() makeKeyAndOrderFront:controller_];
+  }
 }
 
 void BrowserWindowCocoa::ShowInactive() {
-    [window() orderFront:controller_];
+  [window() orderFront:controller_];
 }
 
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
@@ -212,6 +256,10 @@ gfx::Rect BrowserWindowCocoa::GetBounds() const {
 
 bool BrowserWindowCocoa::IsMaximized() const {
   return [window() isZoomed];
+}
+
+bool BrowserWindowCocoa::IsMinimized() const {
+  return [window() isMiniaturized];
 }
 
 void BrowserWindowCocoa::SetFullscreen(bool fullscreen) {

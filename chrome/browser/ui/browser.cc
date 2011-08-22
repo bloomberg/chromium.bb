@@ -247,7 +247,7 @@ Browser::Browser(Type type, Profile* profile)
       chrome_updater_factory_(this),
       is_attempting_to_close_browser_(false),
       cancel_download_confirmation_state_(NOT_PROMPTED),
-      maximized_state_(MAXIMIZED_STATE_DEFAULT),
+      show_state_(ui::SHOW_STATE_DEFAULT),
       method_factory_(this),
       block_command_execution_(false),
       last_blocked_command_id_(-1),
@@ -853,7 +853,8 @@ bool Browser::ShouldSaveWindowPlacement() const {
   }
 }
 
-void Browser::SaveWindowPlacement(const gfx::Rect& bounds, bool maximized) {
+void Browser::SaveWindowPlacement(const gfx::Rect& bounds,
+                                  ui::WindowShowState show_state) {
   // Save to the session storage service, used when reloading a past session.
   // Note that we don't want to be the ones who cause lazy initialization of
   // the session service. This function gets called during initial window
@@ -861,7 +862,7 @@ void Browser::SaveWindowPlacement(const gfx::Rect& bounds, bool maximized) {
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service)
-    session_service->SetWindowBounds(session_id_, bounds, maximized);
+    session_service->SetWindowBounds(session_id_, bounds, show_state);
 }
 
 gfx::Rect Browser::GetSavedWindowBounds() const {
@@ -886,21 +887,19 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
 
 // TODO(beng): obtain maximized state some other way so we don't need to go
 //             through all this hassle.
-bool Browser::GetSavedMaximizedState() const {
+ui::WindowShowState Browser::GetSavedWindowShowState() const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
-    return true;
+    return ui::SHOW_STATE_MAXIMIZED;
 
-  if (maximized_state_ == MAXIMIZED_STATE_MAXIMIZED)
-    return true;
-  if (maximized_state_ == MAXIMIZED_STATE_UNMAXIMIZED)
-    return false;
+  if (show_state_ != ui::SHOW_STATE_DEFAULT)
+    return show_state_;
 
   // An explicit maximized state was not set. Query the window sizer.
   gfx::Rect restored_bounds;
   bool maximized = false;
   WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, this,
                                       &restored_bounds, &maximized);
-  return maximized;
+  return maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
 }
 
 SkBitmap Browser::GetCurrentPageIcon() const {
@@ -2728,8 +2727,8 @@ Browser* Browser::CreateNewStripWithContents(
   // Create an empty new browser window the same size as the old one.
   Browser* browser = new Browser(TYPE_TABBED, profile_);
   browser->set_override_bounds(new_window_bounds);
-  browser->set_maximized_state(
-      maximize ? MAXIMIZED_STATE_MAXIMIZED : MAXIMIZED_STATE_UNMAXIMIZED);
+  browser->set_show_state(
+      maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL);
   browser->InitBrowserWindow();
   browser->tabstrip_model()->AppendTabContents(detached_contents, true);
   // Make sure the loading state is updated correctly, otherwise the throbber

@@ -28,9 +28,6 @@
 // Saves the window's position in the local state preferences.
 - (void)saveWindowPositionIfNeeded;
 
-// Saves the window's position to the given pref service.
-- (void)saveWindowPositionToPrefs:(PrefService*)prefs;
-
 // We need to adjust where sheets come out of the window, as by default they
 // erupt from the omnibox, which is rather weird.
 - (NSRect)window:(NSWindow*)window

@@ -324,7 +324,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        frame_cursor_(NULL),
        is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
        last_click_time_(0),
-       maximize_after_show_(false),
+       show_state_after_show_(ui::SHOW_STATE_DEFAULT),
        suppress_window_raise_(false),
        accel_group_(NULL),
        debounce_timer_disabled_(false) {
@@ -646,9 +646,12 @@ void BrowserWindowGtk::Show() {
   BrowserList::SetLastActive(browser());
 
   gtk_window_present(window_);
-  if (maximize_after_show_) {
+  if (show_state_after_show_ == ui::SHOW_STATE_MAXIMIZED) {
     gtk_window_maximize(window_);
-    maximize_after_show_ = false;
+    show_state_after_show_ = ui::SHOW_STATE_NORMAL;
+  } else if (show_state_after_show_ == ui::SHOW_STATE_MINIMIZED) {
+    gtk_window_iconify(window_);
+    show_state_after_show_ = ui::SHOW_STATE_NORMAL;
   }
 
   // If we have sized the window by setting a size request for the render
@@ -835,6 +838,10 @@ gfx::Rect BrowserWindowGtk::GetBounds() const {
 
 bool BrowserWindowGtk::IsMaximized() const {
   return (state_ & GDK_WINDOW_STATE_MAXIMIZED);
+}
+
+bool BrowserWindowGtk::IsMinimized() const {
+  return (state_ & GDK_WINDOW_STATE_ICONIFIED);
 }
 
 bool BrowserWindowGtk::ShouldDrawContentDropShadow() {
@@ -1602,7 +1609,7 @@ void BrowserWindowGtk::SetGeometryHints() {
   // confused and maximizes the window, but doesn't set the
   // GDK_WINDOW_STATE_MAXIMIZED bit.  So instead, we keep track of whether to
   // maximize and call it after gtk_window_present.
-  maximize_after_show_ = browser_->GetSavedMaximizedState();
+  show_state_after_show_ = browser_->GetSavedWindowShowState();
 
   gfx::Rect bounds = browser_->GetSavedWindowBounds();
   // We don't blindly call SetBounds here: that sets a forced position
@@ -1891,8 +1898,14 @@ void BrowserWindowGtk::UpdateCustomFrame() {
 
 void BrowserWindowGtk::SaveWindowPosition() {
   // Browser::SaveWindowPlacement is used for session restore.
+  ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
+  if (IsMaximized())
+    show_state = ui::SHOW_STATE_MAXIMIZED;
+  else if (IsMinimized())
+    show_state = ui::SHOW_STATE_MINIMIZED;
+
   if (browser_->ShouldSaveWindowPlacement())
-    browser_->SaveWindowPlacement(restored_bounds_, IsMaximized());
+    browser_->SaveWindowPlacement(restored_bounds_, show_state);
 
   // We also need to save the placement for startup.
   // This is a web of calls between views and delegates on Windows, but the
