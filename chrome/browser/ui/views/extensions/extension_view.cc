@@ -172,8 +172,11 @@ void ExtensionView::PreferredSizeChanged() {
 
 bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
   // Let the tab key event be processed by the renderer (instead of moving the
-  // focus to the next focusable view).
-  return (e.key_code() == ui::VKEY_TAB);
+  // focus to the next focusable view). Also handle Backspace, since otherwise
+  // (on Windows at least), pressing Backspace, when focus is on a text field
+  // within the ExtensionView, will navigate the page back instead of erasing a
+  // character.
+  return (e.key_code() == ui::VKEY_TAB || e.key_code() == ui::VKEY_BACK);
 }
 
 void ExtensionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
