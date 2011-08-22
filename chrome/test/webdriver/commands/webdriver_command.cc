@@ -50,4 +50,12 @@ bool WebDriverCommand::Init(Response* const response) {
   return true;
 }
 
+void WebDriverCommand::Finish() {
+  scoped_ptr<Error> error(session_->AfterExecuteCommand());
+  if (error.get()) {
+    LOG(WARNING) << "Command did not finish successfully: "
+                 << error->GetErrorMessage();
+  }
+}
+
 }  // namespace webdriver

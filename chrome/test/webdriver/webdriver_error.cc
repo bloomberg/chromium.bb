@@ -63,7 +63,7 @@ void Error::AddDetails(const std::string& details) {
     details_ = details + ";\n " + details_;
 }
 
-std::string Error::GetMessage() const {
+std::string Error::GetErrorMessage() const {
   std::string msg;
   if (details_.length())
     msg = details_;

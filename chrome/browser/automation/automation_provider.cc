@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
@@ -105,7 +106,9 @@ using base::Time;
 AutomationProvider::AutomationProvider(Profile* profile)
     : profile_(profile),
       reply_message_(NULL),
-      reinitialize_on_channel_error_(false),
+      reinitialize_on_channel_error_(
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAutomationReinitializeOnChannelError)),
       is_connected_(false),
       initial_tab_loads_complete_(false),
       network_library_initialized_(true) {

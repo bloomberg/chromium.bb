@@ -14,6 +14,7 @@ from distutils import archive_util
 import hashlib
 import os
 import platform
+import signal
 import subprocess
 import sys
 import tempfile
@@ -69,6 +70,14 @@ def IsLinux():
 
 def IsMac():
   return sys.platform.startswith('darwin')
+
+
+def Kill(pid):
+  """Terminate the given pid."""
+  if IsWindows():
+    subprocess.call(['taskkill.exe', '/T', '/F', '/PID', str(pid)])
+  else:
+    os.kill(pid, signal.SIGTERM)
 
 
 class Request(urllib2.Request):
@@ -323,6 +332,32 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     self.assertNotEqual(-1, driver.page_source.find('ExtTest1'))
     self.assertNotEqual(-1, driver.page_source.find('ExtTest2'))
     driver.quit()
+
+
+class DetachProcessTest(unittest.TestCase):
+
+  def setUp(self):
+    self._server = ChromeDriverLauncher(test_paths.CHROMEDRIVER_EXE).Launch()
+    self._factory = ChromeDriverFactory(self._server)
+
+  def tearDown(self):
+    self._server.Kill()
+
+  # TODO(kkania): Remove this when Chrome 15 is stable.
+  def testDetachProcess(self):
+    # This is a weak test. Its purpose is to just make sure we can start
+    # Chrome successfully in detached mode. There's not an easy way to know
+    # if Chrome is shutting down due to the channel error when the client
+    # disconnects.
+    driver = self._factory.GetNewDriver({'chrome.detach': True})
+    driver.get('about:memory')
+    pid = int(driver.find_elements_by_xpath('//*[@jscontent="pid"]')[0].text)
+    self._server.Kill()
+    try:
+      Kill(pid)
+    except OSError:
+      self.fail('Chrome quit after detached chromedriver server was killed')
+
 
 class CookieTest(ChromeDriverTest):
   """Cookie test for the json webdriver protocol"""
@@ -793,6 +828,13 @@ class AlertTest(ChromeDriverTest):
     self.assertRaises(WebDriverException, driver.back)
     self.assertRaises(WebDriverException, driver.forward)
     self.assertRaises(WebDriverException, driver.get_screenshot_as_base64)
+
+  def testCanHandleAlertInSubframe(self):
+    driver = self.GetNewDriver()
+    driver.get(GetTestDataUrl() + '/alerts.html')
+    driver.switch_to_frame('subframe')
+    driver.execute_async_script('arguments[0](); window.alert("ok")')
+    driver.switch_to_alert().accept()
 
 
 """Chrome functional test section. All implementation tests of ChromeDriver

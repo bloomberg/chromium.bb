@@ -197,6 +197,10 @@ void CreateSession::ExecutePost(Response* const response) {
     error = GetBooleanCapability(capabilities, "chrome.loadAsync",
                                  &session_options.load_async);
   }
+  if (!error) {
+    error = GetBooleanCapability(capabilities, "chrome.detach",
+                                 &browser_options.detach_process);
+  }
   if (error) {
     response->SetError(error);
     return;
