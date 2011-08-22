@@ -468,8 +468,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual void Destroy();
   virtual bool SetParent(GLES2Decoder* parent_decoder,
                          uint32 parent_texture_id);
-  virtual void ResizeOffscreenFrameBuffer(const gfx::Size& size);
-  virtual bool UpdateOffscreenFrameBufferSize();
+  virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size);
   void UpdateParentTextureInfo();
   virtual bool MakeCurrent();
   virtual GLES2Util* GetGLES2Util() { return &util_; }
@@ -1035,8 +1034,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glValidateProgram.
   void DoValidateProgram(GLuint program_client_id);
 
-  void DoResizeCHROMIUM(GLuint width, GLuint height);
-
   void DoSetSurfaceCHROMIUM(GLint surface_id);
 
   // Gets the number of values that will be returned by glGetXXX. Returns
@@ -1180,10 +1177,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // A parent decoder can access this decoders saved offscreen frame buffer.
   // The parent pointer is reset if the parent is destroyed.
   base::WeakPtr<GLES2DecoderImpl> parent_;
-
-  // Width and height to which an offscreen frame buffer should be resized on
-  // the next call to SwapBuffers.
-  gfx::Size pending_offscreen_size_;
 
   // Current width and height of the offscreen frame buffer.
   gfx::Size offscreen_size_;
@@ -1917,8 +1910,7 @@ bool GLES2DecoderImpl::Initialize(
 
     // Allocate the render buffers at their initial size and check the status
     // of the frame buffers is okay.
-    pending_offscreen_size_ = size;
-    if (!UpdateOffscreenFrameBufferSize()) {
+    if (!ResizeOffscreenFrameBuffer(size)) {
       LOG(ERROR) << "Could not allocate offscreen buffer storage.";
       Destroy();
       return false;
@@ -2226,140 +2218,6 @@ GLenum GLES2DecoderImpl::GetBoundDrawFrameBufferInternalFormat() {
   }
 }
 
-bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
-  if (offscreen_size_ == pending_offscreen_size_)
-    return true;
-
-  offscreen_size_ = pending_offscreen_size_;
-  int w = offscreen_size_.width();
-  int h = offscreen_size_.height();
-  if (w < 0 || h < 0 || h >= (INT_MAX / 4) / (w ? w : 1)) {
-    LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
-               << "to allocate storage due to excessive dimensions.";
-    return false;
-  }
-
-  // Reallocate the offscreen target buffers.
-  DCHECK(offscreen_target_color_format_);
-  if (IsOffscreenBufferMultisampled()) {
-    if (!offscreen_target_color_render_buffer_->AllocateStorage(
-        pending_offscreen_size_, offscreen_target_color_format_,
-        offscreen_target_samples_)) {
-      LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
-                 << "to allocate storage for offscreen target color buffer.";
-      return false;
-    }
-  } else {
-    if (!offscreen_target_color_texture_->AllocateStorage(
-        pending_offscreen_size_, offscreen_target_color_format_)) {
-      LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
-                 << "to allocate storage for offscreen target color texture.";
-      return false;
-    }
-  }
-  if (offscreen_target_depth_format_ &&
-      !offscreen_target_depth_render_buffer_->AllocateStorage(
-      pending_offscreen_size_, offscreen_target_depth_format_,
-      offscreen_target_samples_)) {
-    LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
-               << "to allocate storage for offscreen target depth buffer.";
-    return false;
-  }
-  if (offscreen_target_stencil_format_ &&
-      !offscreen_target_stencil_render_buffer_->AllocateStorage(
-      pending_offscreen_size_, offscreen_target_stencil_format_,
-      offscreen_target_samples_)) {
-    LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
-               << "to allocate storage for offscreen target stencil buffer.";
-    return false;
-  }
-
-  // Attach the offscreen target buffers to the target frame buffer.
-  if (IsOffscreenBufferMultisampled()) {
-    offscreen_target_frame_buffer_->AttachRenderBuffer(
-        GL_COLOR_ATTACHMENT0,
-        offscreen_target_color_render_buffer_.get());
-  } else {
-    offscreen_target_frame_buffer_->AttachRenderTexture(
-        offscreen_target_color_texture_.get());
-  }
-  if (offscreen_target_depth_format_) {
-    offscreen_target_frame_buffer_->AttachRenderBuffer(
-        GL_DEPTH_ATTACHMENT,
-        offscreen_target_depth_render_buffer_.get());
-  }
-  const bool packed_depth_stencil =
-      offscreen_target_depth_format_ == GL_DEPTH24_STENCIL8;
-  if (packed_depth_stencil) {
-    offscreen_target_frame_buffer_->AttachRenderBuffer(
-        GL_STENCIL_ATTACHMENT,
-        offscreen_target_depth_render_buffer_.get());
-  } else if (offscreen_target_stencil_format_) {
-    offscreen_target_frame_buffer_->AttachRenderBuffer(
-        GL_STENCIL_ATTACHMENT,
-        offscreen_target_stencil_render_buffer_.get());
-  }
-
-  if (offscreen_target_frame_buffer_->CheckStatus() !=
-      GL_FRAMEBUFFER_COMPLETE) {
-      LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
-                 << "because offscreen FBO was incomplete.";
-    return false;
-  }
-
-  // Clear the target frame buffer.
-  {
-    ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
-    glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
-        offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glClearStencil(0);
-    glStencilMaskSeparate(GL_FRONT, -1);
-    glStencilMaskSeparate(GL_BACK, -1);
-    glClearDepth(0);
-    glDepthMask(GL_TRUE);
-    glDisable(GL_SCISSOR_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    RestoreClearState();
-  }
-
-  // Allocate the offscreen saved color texture.
-  DCHECK(offscreen_saved_color_format_);
-  offscreen_saved_color_texture_->AllocateStorage(
-      pending_offscreen_size_, offscreen_saved_color_format_);
-
-  offscreen_saved_frame_buffer_->AttachRenderTexture(
-      offscreen_saved_color_texture_.get());
-  if (offscreen_saved_frame_buffer_->CheckStatus() !=
-      GL_FRAMEBUFFER_COMPLETE) {
-    LOG(ERROR) << "GLES2DecoderImpl::UpdateOffscreenFrameBufferSize failed "
-               << "because offscreen saved FBO was incomplete.";
-    return false;
-  }
-
-  // Destroy the offscreen resolved framebuffers.
-  if (offscreen_resolved_frame_buffer_.get())
-    offscreen_resolved_frame_buffer_->Destroy();
-  if (offscreen_resolved_color_texture_.get())
-    offscreen_resolved_color_texture_->Destroy();
-  offscreen_resolved_color_texture_.reset();
-  offscreen_resolved_frame_buffer_.reset();
-
-  // Clear the offscreen color texture.
-  {
-    ScopedFrameBufferBinder binder(this, offscreen_saved_frame_buffer_->id());
-    glClearColor(0, 0, 0, 0);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glDisable(GL_SCISSOR_TEST);
-    glClear(GL_COLOR_BUFFER_BIT);
-    RestoreClearState();
-  }
-
-  UpdateParentTextureInfo();
-
-  return true;
-}
-
 void GLES2DecoderImpl::UpdateParentTextureInfo() {
   if (parent_) {
     // Update the info about the offscreen saved color texture in the parent.
@@ -2378,8 +2236,8 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
         GL_TEXTURE_2D,
         0,  // level
         GL_RGBA,
-        pending_offscreen_size_.width(),
-        pending_offscreen_size_.height(),
+        offscreen_size_.width(),
+        offscreen_size_.height(),
         1,  // depth
         0,  // border
         GL_RGBA,
@@ -2407,7 +2265,8 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
   }
 }
 
-void GLES2DecoderImpl::SetResizeCallback(Callback1<gfx::Size>::Type* callback) {
+void GLES2DecoderImpl::SetResizeCallback(
+    Callback1<gfx::Size>::Type* callback) {
   resize_callback_.reset(callback);
 }
 
@@ -2553,22 +2412,166 @@ bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
   return true;
 }
 
-void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
-  // We can't resize the render buffers immediately because there might be a
-  // partial frame rendered into them and we don't want the tail end of that
-  // rendered into the reallocated storage. Defer until the next SwapBuffers.
-  pending_offscreen_size_ = size;
+bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
+  bool is_offscreen = !!offscreen_target_frame_buffer_.get();
+  if (!is_offscreen) {
+    LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer called "
+               << " with an onscreen framebuffer.";
+    return false;
+  }
+
+  if (offscreen_size_ == size)
+    return true;
+
+  offscreen_size_ = size;
+  int w = offscreen_size_.width();
+  int h = offscreen_size_.height();
+  if (w < 0 || h < 0 || h >= (INT_MAX / 4) / (w ? w : 1)) {
+    LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+               << "to allocate storage due to excessive dimensions.";
+    return false;
+  }
+
+  // Reallocate the offscreen target buffers.
+  DCHECK(offscreen_target_color_format_);
+  if (IsOffscreenBufferMultisampled()) {
+    if (!offscreen_target_color_render_buffer_->AllocateStorage(
+        offscreen_size_, offscreen_target_color_format_,
+        offscreen_target_samples_)) {
+      LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+                 << "to allocate storage for offscreen target color buffer.";
+      return false;
+    }
+  } else {
+    if (!offscreen_target_color_texture_->AllocateStorage(
+        offscreen_size_, offscreen_target_color_format_)) {
+      LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+                 << "to allocate storage for offscreen target color texture.";
+      return false;
+    }
+  }
+  if (offscreen_target_depth_format_ &&
+      !offscreen_target_depth_render_buffer_->AllocateStorage(
+      offscreen_size_, offscreen_target_depth_format_,
+      offscreen_target_samples_)) {
+    LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+               << "to allocate storage for offscreen target depth buffer.";
+    return false;
+  }
+  if (offscreen_target_stencil_format_ &&
+      !offscreen_target_stencil_render_buffer_->AllocateStorage(
+      offscreen_size_, offscreen_target_stencil_format_,
+      offscreen_target_samples_)) {
+    LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+               << "to allocate storage for offscreen target stencil buffer.";
+    return false;
+  }
+
+  // Attach the offscreen target buffers to the target frame buffer.
+  if (IsOffscreenBufferMultisampled()) {
+    offscreen_target_frame_buffer_->AttachRenderBuffer(
+        GL_COLOR_ATTACHMENT0,
+        offscreen_target_color_render_buffer_.get());
+  } else {
+    offscreen_target_frame_buffer_->AttachRenderTexture(
+        offscreen_target_color_texture_.get());
+  }
+  if (offscreen_target_depth_format_) {
+    offscreen_target_frame_buffer_->AttachRenderBuffer(
+        GL_DEPTH_ATTACHMENT,
+        offscreen_target_depth_render_buffer_.get());
+  }
+  const bool packed_depth_stencil =
+      offscreen_target_depth_format_ == GL_DEPTH24_STENCIL8;
+  if (packed_depth_stencil) {
+    offscreen_target_frame_buffer_->AttachRenderBuffer(
+        GL_STENCIL_ATTACHMENT,
+        offscreen_target_depth_render_buffer_.get());
+  } else if (offscreen_target_stencil_format_) {
+    offscreen_target_frame_buffer_->AttachRenderBuffer(
+        GL_STENCIL_ATTACHMENT,
+        offscreen_target_stencil_render_buffer_.get());
+  }
+
+  if (offscreen_target_frame_buffer_->CheckStatus() !=
+      GL_FRAMEBUFFER_COMPLETE) {
+      LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+                 << "because offscreen FBO was incomplete.";
+    return false;
+  }
+
+  // Clear the target frame buffer.
+  {
+    ScopedFrameBufferBinder binder(this, offscreen_target_frame_buffer_->id());
+    glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
+        offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClearStencil(0);
+    glStencilMaskSeparate(GL_FRONT, -1);
+    glStencilMaskSeparate(GL_BACK, -1);
+    glClearDepth(0);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_SCISSOR_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    RestoreClearState();
+  }
+
+  // Allocate the offscreen saved color texture.
+  DCHECK(offscreen_saved_color_format_);
+  offscreen_saved_color_texture_->AllocateStorage(
+      offscreen_size_, offscreen_saved_color_format_);
+
+  offscreen_saved_frame_buffer_->AttachRenderTexture(
+      offscreen_saved_color_texture_.get());
+  if (offscreen_saved_frame_buffer_->CheckStatus() !=
+      GL_FRAMEBUFFER_COMPLETE) {
+    LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+               << "because offscreen saved FBO was incomplete.";
+    return false;
+  }
+
+  // Destroy the offscreen resolved framebuffers.
+  if (offscreen_resolved_frame_buffer_.get())
+    offscreen_resolved_frame_buffer_->Destroy();
+  if (offscreen_resolved_color_texture_.get())
+    offscreen_resolved_color_texture_->Destroy();
+  offscreen_resolved_color_texture_.reset();
+  offscreen_resolved_frame_buffer_.reset();
+
+  // Clear the offscreen color texture.
+  {
+    ScopedFrameBufferBinder binder(this, offscreen_saved_frame_buffer_->id());
+    glClearColor(0, 0, 0, 0);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glDisable(GL_SCISSOR_TEST);
+    glClear(GL_COLOR_BUFFER_BIT);
+    RestoreClearState();
+  }
+
+  UpdateParentTextureInfo();
+
+  return true;
 }
 
-void GLES2DecoderImpl::DoResizeCHROMIUM(GLuint width, GLuint height) {
+error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
+    uint32 immediate_data_size, const gles2::ResizeCHROMIUM& c) {
+  GLuint width = static_cast<GLuint>(c.width);
+  GLuint height = static_cast<GLuint>(c.height);
+  TRACE_EVENT2("gpu", "glResizeChromium", "width", width, "height", height);
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(TOUCH_UI)
   // Make sure that we are done drawing to the back buffer before resizing.
   glFinish();
 #endif
-  if (resize_callback_.get()) {
-    gfx::Size size(width, height);
-    resize_callback_->Run(size);
+  bool is_offscreen = !!offscreen_target_frame_buffer_.get();
+  if (is_offscreen) {
+    if (!ResizeOffscreenFrameBuffer(gfx::Size(width, height)))
+      return error::kLostContext;
   }
+
+  if (resize_callback_.get())
+    resize_callback_->Run(gfx::Size(width, height));
+
+  return error::kNoError;
 }
 
 void GLES2DecoderImpl::DoSetSurfaceCHROMIUM(GLint surface_id) {
@@ -6553,14 +6556,6 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   // the rendered frame to another frame buffer.
   if (is_offscreen) {
     ScopedGLErrorSuppressor suppressor(this);
-
-    // First check to see if a deferred offscreen render buffer resize is
-    // pending.
-    if (!UpdateOffscreenFrameBufferSize()) {
-      LOG(ERROR) << "Context lost because reallocation of offscreen FBO "
-                 << "failed.";
-      return error::kLostContext;
-    }
 
     if (IsOffscreenBufferMultisampled()) {
       // For multisampled buffers, bind the resolved frame buffer so that

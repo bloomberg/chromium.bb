@@ -241,17 +241,7 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
   cached_width_ = width;
   cached_height_ = height;
 
-  if (render_directly_to_web_view_) {
-#if defined(OS_MACOSX)
-    context_->ResizeOnscreen(gfx::Size(width, height));
-#else
-    gl_->ResizeCHROMIUM(width, height);
-#endif
-  } else {
-    context_->ResizeOffscreen(gfx::Size(width, height));
-    // Force a SwapBuffers to get the framebuffer to resize.
-    context_->SwapBuffers();
-  }
+  gl_->ResizeCHROMIUM(width, height);
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scanline_.reset(new uint8[width * 4]);
