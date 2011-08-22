@@ -24,15 +24,18 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -476,109 +479,15 @@ bool UpdateJumpList(const wchar_t* app_id,
   return true;
 }
 
-// Represents a task which updates an application JumpList.
-// This task encapsulates all I/O tasks and OS-specific tasks required for
-// updating a JumpList from Chromium, such as:
-// * Deleting the directory containing temporary icon files;
-// * Creating temporary icon files used by the JumpList;
-// * Creating an ICustomDestinationList instance;
-// * Adding items in the ICustomDestinationList instance.
-// To spawn this task,
-// 1. Prepare objects required by this task:
-//    * a std::wstring that contains a temporary icons;
-//    * a ShellLinkItemList that contains the items of the "Most Visited"
-//      category, and;
-//    * a ShellLinkItemList that contains the items of the "Recently Closed"
-//      category.
-// 2. Create a JumpListUpdateTask instance, and;
-// 3. Post this task to the file thread.
-class JumpListUpdateTask : public Task {
- public:
-  JumpListUpdateTask(const wchar_t* app_id,
-                     const FilePath& icon_dir,
-                     const ShellLinkItemList& most_visited_pages,
-                     const ShellLinkItemList& recently_closed_pages)
-    : app_id_(app_id),
-      icon_dir_(icon_dir),
-      most_visited_pages_(most_visited_pages),
-      recently_closed_pages_(recently_closed_pages) {
-  }
-
- private:
-  // Represents an entry point of this task.
-  // When we post this task to a file thread, the thread calls this function.
-  void Run();
-
-  // App id to associate with the jump list.
-  std::wstring app_id_;
-
-  // The directory which contains JumpList icons.
-  FilePath icon_dir_;
-
-  // Items in the "Most Visited" category of the application JumpList.
-  ShellLinkItemList most_visited_pages_;
-
-  // Items in the "Recently Closed" category of the application JumpList.
-  ShellLinkItemList recently_closed_pages_;
-};
-
-void JumpListUpdateTask::Run() {
-  // Delete the directory which contains old icon files, rename the current
-  // icon directory, and create a new directory which contains new JumpList
-  // icon files.
-  FilePath icon_dir_old(icon_dir_.value() + L"Old");
-  if (file_util::PathExists(icon_dir_old))
-    file_util::Delete(icon_dir_old, true);
-  file_util::Move(icon_dir_, icon_dir_old);
-  file_util::CreateDirectory(icon_dir_);
-
-  // Create temporary icon files for shortcuts in the "Most Visited" category.
-  for (ShellLinkItemList::const_iterator item = most_visited_pages_.begin();
-       item != most_visited_pages_.end(); ++item) {
-    SkBitmap icon_bitmap;
-    if ((*item)->data().get() &&
-        gfx::PNGCodec::Decode((*item)->data()->front(),
-                              (*item)->data()->size(),
-                              &icon_bitmap)) {
-      FilePath icon_path;
-      if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
-        (*item)->SetIcon(icon_path.value(), 0, true);
-    }
-  }
-
-  // Create temporary icon files for shortcuts in the "Recently Closed"
-  // category.
-  for (ShellLinkItemList::const_iterator item = recently_closed_pages_.begin();
-       item != recently_closed_pages_.end(); ++item) {
-    SkBitmap icon_bitmap;
-    if ((*item)->data().get() &&
-        gfx::PNGCodec::Decode((*item)->data()->front(),
-                              (*item)->data()->size(),
-                              &icon_bitmap)) {
-      FilePath icon_path;
-      if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
-        (*item)->SetIcon(icon_path.value(), 0, true);
-    }
-  }
-
-  // We finished collecting all resources needed for updating an appliation
-  // JumpList. So, create a new JumpList and replace the current JumpList
-  // with it.
-  UpdateJumpList(app_id_.c_str(), most_visited_pages_, recently_closed_pages_);
-
-  // Delete all items in these lists now since we don't need the ShellLinkItem
-  // objects in these lists.
-  most_visited_pages_.clear();
-  recently_closed_pages_.clear();
-}
-
 }  // namespace
 
-JumpList::JumpList() : profile_(NULL) {
+JumpList::JumpList()
+    : profile_(NULL),
+      handle_(NULL) {
 }
 
 JumpList::~JumpList() {
-  RemoveObserver();
+  Terminate();
 }
 
 // static
@@ -605,8 +514,47 @@ bool JumpList::AddObserver(Profile* profile) {
   app_id_ = ShellIntegration::GetChromiumAppId(profile->GetPath());
   icon_dir_ = profile->GetPath().Append(chrome::kJumpListIconDirname);
   profile_ = profile;
+  history::TopSites* top_sites = profile_->GetTopSites();
+  if (top_sites) {
+    // TopSites updates itself after a delay. This is especially noticable when
+    // your profile is empty. Ask TopSites to update itself when jumplist is
+    // initialized.
+    top_sites->SyncWithHistory();
+    // Register for notification when TopSites changes so that we can update
+    // ourself.
+    registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
+                   Source<history::TopSites>(top_sites));
+    // Register for notification when profile is destroyed to ensure that all
+    // observers are detatched at that time.
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                   Source<Profile>(profile_));
+  }
   tab_restore_service->AddObserver(this);
   return true;
+}
+
+void JumpList::Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_TOP_SITES_CHANGED: {
+      // Most visited urls changed, query again.
+      history::TopSites* top_sites = profile_->GetTopSites();
+      if (top_sites) {
+        top_sites->GetMostVisitedURLs(
+            &topsites_consumer_,
+            NewCallback(this, &JumpList::OnMostVisitedURLsAvailable));
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      // Profile was destroyed, do clean-up.
+      Terminate();
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification type.";
+  }
 }
 
 void JumpList::RemoveObserver() {
@@ -615,29 +563,93 @@ void JumpList::RemoveObserver() {
         TabRestoreServiceFactory::GetForProfile(profile_);
     if (tab_restore_service)
       tab_restore_service->RemoveObserver(this);
+    registrar_.Remove(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
+                     Source<history::TopSites>(profile_->GetTopSites()));
+    registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                     Source<Profile>(profile_));
   }
   profile_ = NULL;
 }
 
-void JumpList::TabRestoreServiceChanged(TabRestoreService* service) {
-  // Added or removed a tab.
-  // Exit if we are updating the application JumpList.
-  if (!icon_urls_.empty())
-    return;
+void JumpList::CancelPendingUpdate() {
+  if (handle_) {
+    FaviconService* favicon_service =
+        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+    favicon_service->CancelRequest(handle_);
+    handle_ = NULL;
+  }
+}
 
-  // Send a query to HistoryService and retrieve the "Most Visited" pages.
-  // This code is copied from MostVisitedHandler::HandleGetMostVisited() to
-  // emulate its behaviors.
-  const int kMostVisitedScope = 90;
-  const int kMostVisitedCount = 9;
-  int result_count = kMostVisitedCount;
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  history_service->QuerySegmentUsageSince(
-      &most_visited_consumer_,
-      base::Time::Now() - base::TimeDelta::FromDays(kMostVisitedScope),
-      result_count,
-      NewCallback(this, &JumpList::OnSegmentUsageAvailable));
+void JumpList::Terminate() {
+  CancelPendingUpdate();
+  RemoveObserver();
+}
+
+void JumpList::OnMostVisitedURLsAvailable(
+    const history::MostVisitedURLList& data) {
+
+  // If we have a pending favicon request, cancel it here (it is out of date).
+  CancelPendingUpdate();
+
+  {
+    base::AutoLock auto_lock(list_lock_);
+    most_visited_pages_.clear();
+    for (size_t i = 0; i < data.size(); i++) {
+      const history::MostVisitedURL& url = data[i];
+      scoped_refptr<ShellLinkItem> link(new ShellLinkItem);
+      std::string url_string = url.url.spec();
+      link->SetArguments(UTF8ToWide(url_string));
+      link->SetTitle(!url.title.empty()? url.title : link->arguments());
+      most_visited_pages_.push_back(link);
+      icon_urls_.push_back(make_pair(url_string, link));
+    }
+  }
+
+  // Send a query that retrieves the first favicon.
+  StartLoadingFavicon();
+}
+
+void JumpList::TabRestoreServiceChanged(TabRestoreService* service) {
+  // if we have a pending handle request, cancel it here (it is out of date).
+  CancelPendingUpdate();
+
+  // local list to pass to methods
+  ShellLinkItemList temp_list;
+
+  // Create a list of ShellLinkItems from the "Recently Closed" pages.
+  // As noted above, we create a ShellLinkItem objects with the following
+  // parameters.
+  // * arguments
+  //   The last URL of the tab object.
+  // * title
+  //   The title of the last URL.
+  // * icon
+  //   An empty string. This value is to be updated in OnFaviconDataAvailable().
+  // This code is copied from
+  // RecentlyClosedTabsHandler::TabRestoreServiceChanged() to emulate it.
+  const int kRecentlyClosedCount = 4;
+  TabRestoreService* tab_restore_service =
+      TabRestoreServiceFactory::GetForProfile(profile_);
+  const TabRestoreService::Entries& entries = tab_restore_service->entries();
+  for (TabRestoreService::Entries::const_iterator it = entries.begin();
+       it != entries.end(); ++it) {
+    const TabRestoreService::Entry* entry = *it;
+    if (entry->type == TabRestoreService::TAB) {
+      AddTab(static_cast<const TabRestoreService::Tab*>(entry),
+             &temp_list, kRecentlyClosedCount);
+    } else if (entry->type == TabRestoreService::WINDOW) {
+      AddWindow(static_cast<const TabRestoreService::Window*>(entry),
+                &temp_list, kRecentlyClosedCount);
+    }
+  }
+  // Lock recently_closed_pages and copy temp_list into it.
+  {
+    base::AutoLock auto_lock(list_lock_);
+    recently_closed_pages_ = temp_list;
+  }
+
+  // Send a query that retrieves the first favicon.
+  StartLoadingFavicon();
 }
 
 void JumpList::TabRestoreServiceDestroyed(TabRestoreService* service) {
@@ -685,104 +697,104 @@ bool JumpList::AddWindow(const TabRestoreService::Window* window,
 }
 
 bool JumpList::StartLoadingFavicon() {
-  if (icon_urls_.empty())
-    return false;
-
-  // Ask FaviconService if it has a favicon of a URL.
-  // When FaviconService has one, it will call OnFaviconDataAvailable().
-  GURL url(icon_urls_.front().first);
+  GURL url;
+  {
+    base::AutoLock auto_lock(list_lock_);
+    if (icon_urls_.empty())
+      return false;
+    // Ask FaviconService if it has a favicon of a URL.
+    // When FaviconService has one, it will call OnFaviconDataAvailable().
+    url = GURL(icon_urls_.front().first);
+  }
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+  handle_ = favicon_service->GetFaviconForURL(
       url, history::FAVICON, &favicon_consumer_,
       NewCallback(this, &JumpList::OnFaviconDataAvailable));
   return true;
 }
 
-void JumpList::OnSegmentUsageAvailable(
-    CancelableRequestProvider::Handle handle,
-    std::vector<PageUsageData*>* data) {
-  // Create a list of ShellLinkItem objects from the given list of
-  // PageUsageData objects.
-  // The command that opens a web page with chrome is:
-  //   "chrome.exe <url-to-the-web-page>".
-  // So, we create a ShellLinkItem object with the following parameters.
-  // * arguments
-  //   The URL of a PageUsagedata object (converted to std::wstring).
-  // * title
-  //   The title of a PageUsageData object. If this string is empty, we use
-  //   the URL as our "Most Visited" page does.
-  // * icon
-  //   An empty string. This value is to be updated in OnFaviconDataAvailable().
-  most_visited_pages_.clear();
-  for (std::vector<PageUsageData*>::const_iterator page = data->begin();
-       page != data->end(); ++page) {
-    scoped_refptr<ShellLinkItem> link(new ShellLinkItem);
-    std::string url = (*page)->GetURL().spec();
-    link->SetArguments(UTF8ToWide(url));
-    link->SetTitle(
-        !(*page)->GetTitle().empty() ? (*page)->GetTitle() : link->arguments());
-    most_visited_pages_.push_back(link);
-    icon_urls_.push_back(make_pair(url, link));
-  }
-
-  // Create a list of ShellLinkItems from the "Recently Closed" pages.
-  // As noted above, we create a ShellLinkItem objects with the following
-  // parameters.
-  // * arguments
-  //   The last URL of the tab object.
-  // * title
-  //   The title of the last URL.
-  // * icon
-  //   An empty string. This value is to be updated in OnFaviconDataAvailable().
-  // This code is copied from
-  // RecentlyClosedTabsHandler::TabRestoreServiceChanged() to emulate it.
-  const int kRecentlyClosedCount = 4;
-  recently_closed_pages_.clear();
-  TabRestoreService* tab_restore_service =
-      TabRestoreServiceFactory::GetForProfile(profile_);
-  const TabRestoreService::Entries& entries = tab_restore_service->entries();
-  for (TabRestoreService::Entries::const_iterator it = entries.begin();
-       it != entries.end(); ++it) {
-    const TabRestoreService::Entry* entry = *it;
-    if (entry->type == TabRestoreService::TAB) {
-      AddTab(static_cast<const TabRestoreService::Tab*>(entry),
-             &recently_closed_pages_, kRecentlyClosedCount);
-    } else if (entry->type == TabRestoreService::WINDOW) {
-      AddWindow(static_cast<const TabRestoreService::Window*>(entry),
-                &recently_closed_pages_, kRecentlyClosedCount);
-    }
-  }
-
-  // Send a query that retrieves the first favicon.
-  StartLoadingFavicon();
-}
-
 void JumpList::OnFaviconDataAvailable(
     FaviconService::Handle handle,
     history::FaviconData favicon) {
-  // Attach the received data to the ShellLinkItem object.
-  // This data will be decoded by JumpListUpdateTask.
-  if (favicon.is_valid()) {
-    if (!icon_urls_.empty() && icon_urls_.front().second)
-      icon_urls_.front().second->SetIconData(favicon.image_data);
-  }
+  // If there is currently a favicon request in progress, it is now outdated,
+  // as we have received another, so nullify the handle from the old request.
+  handle_ = NULL;
+  // lock the list to set icon data and pop the url
+  {
+    base::AutoLock auto_lock(list_lock_);
+    // Attach the received data to the ShellLinkItem object.
+    // This data will be decoded by the RunUpdate method.
+    if (favicon.is_valid()) {
+      if (!icon_urls_.empty() && icon_urls_.front().second)
+        icon_urls_.front().second->SetIconData(favicon.image_data);
+    }
 
+    if (!icon_urls_.empty())
+      icon_urls_.pop_front();
+  }
   // if we need to load more favicons, we send another query and exit.
-  if (!icon_urls_.empty())
-    icon_urls_.pop_front();
   if (StartLoadingFavicon())
     return;
 
   // Finished loading all favicons needed by the application JumpList.
-  // We create a JumpListUpdateTask that creates icon files, and we post it to
+  // We use a RunnableMethod that creates icon files, and we post it to
   // the file thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      new JumpListUpdateTask(app_id_.c_str(), icon_dir_, most_visited_pages_,
-                             recently_closed_pages_));
+      NewRunnableMethod(this, &JumpList::RunUpdate));
+}
 
-  // Delete all items in these lists since we don't need these lists any longer.
-  most_visited_pages_.clear();
-  recently_closed_pages_.clear();
+void JumpList::RunUpdate() {
+  ShellLinkItemList local_most_visited_pages;
+  ShellLinkItemList local_recently_closed_pages;
+
+  {
+    base::AutoLock auto_lock(list_lock_);
+    // Make sure we are not out of date: if icon_urls_ is not empty, then
+    // another notification has been received since we processed this one
+    if (!icon_urls_.empty())
+      return;
+
+    // Make local copies of lists so we can release the lock.
+    local_most_visited_pages = most_visited_pages_;
+    local_recently_closed_pages = recently_closed_pages_;
+  }
+
+  // Delete the directory which contains old icon files, rename the current
+  // icon directory, and create a new directory which contains new JumpList
+  // icon files.
+  FilePath icon_dir_old(icon_dir_.value() + L"Old");
+  if (file_util::PathExists(icon_dir_old))
+    file_util::Delete(icon_dir_old, true);
+  file_util::Move(icon_dir_, icon_dir_old);
+  file_util::CreateDirectory(icon_dir_);
+
+  // Create temporary icon files for shortcuts in the "Most Visited" category.
+  DecodeIconData(local_most_visited_pages);
+
+  // Create temporary icon files for shortcuts in the "Recently Closed"
+  // category.
+  DecodeIconData(local_recently_closed_pages);
+
+  // We finished collecting all resources needed for updating an appliation
+  // JumpList. So, create a new JumpList and replace the current JumpList
+  // with it.
+  UpdateJumpList(app_id_.c_str(), local_most_visited_pages,
+                 local_recently_closed_pages);
+}
+
+void JumpList::DecodeIconData(const ShellLinkItemList& item_list) {
+  for (ShellLinkItemList::const_iterator item = item_list.begin();
+      item != item_list.end(); ++item) {
+    SkBitmap icon_bitmap;
+    if ((*item)->data().get() &&
+        gfx::PNGCodec::Decode((*item)->data()->front(),
+                              (*item)->data()->size(),
+                              &icon_bitmap)) {
+      FilePath icon_path;
+      if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
+        (*item)->SetIcon(icon_path.value(), 0, true);
+    }
+  }
 }

@@ -717,7 +717,7 @@ class BrowserView : public BrowserBubbleHost,
   HungPluginAction hung_plugin_action_;
 
   // The custom JumpList for Windows 7.
-  scoped_ptr<JumpList> jumplist_;
+  scoped_refptr<JumpList> jumplist_;
 
   // The custom AeroPeek manager for Windows 7.
   scoped_ptr<AeroPeekManager> aeropeek_manager_;

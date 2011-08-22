@@ -12,7 +12,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "content/browser/cancelable_request.h"
@@ -97,13 +99,18 @@ typedef std::vector<scoped_refptr<ShellLinkItem> > ShellLinkItemList;
 // updates a JumpList when a tab is added or removed.
 //
 // Updating a JumpList requires some file operations and it is not good to
-// update it in a UI thread. To solve this problem, this class posts a
-// task when it actually updates a JumpList. (This task is implemented in an
-// anomynous namespace in "jumplist_win.cc".)
-class JumpList : public TabRestoreServiceObserver {
+// update it in a UI thread. To solve this problem, this class posts to a
+// runnable method when it actually updates a JumpList.
+class JumpList : public TabRestoreServiceObserver,
+                 public NotificationObserver,
+                 public base::RefCountedThreadSafe<JumpList> {
  public:
   JumpList();
-  ~JumpList();
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Registers (or unregisters) this object as an observer.
   // When the TabRestoreService object notifies the tab status is changed, this
@@ -121,6 +128,14 @@ class JumpList : public TabRestoreServiceObserver {
   // Observer callback to notice when our associated TabRestoreService
   // is destroyed.
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+
+  // Cancel a pending jumplist update.
+  void CancelPendingUpdate();
+
+  // Terminate the jumplist: cancel any pending updates and remove observer
+  // from TabRestoreService. This must be called before the profile provided
+  // in the AddObserver method is destroyed.
+  void Terminate();
 
   // Returns true if the custom JumpList is enabled.
   // We use the custom JumpList when we satisfy the following conditions:
@@ -162,13 +177,34 @@ class JumpList : public TabRestoreServiceObserver {
   void OnFaviconDataAvailable(HistoryService::Handle handle,
                               history::FaviconData favicon);
 
+  // Callback for TopSites that notifies when the "Most
+  // Visited" list is available. This function updates the ShellLinkItemList
+  // objects and send another query that retrieves a favicon for each URL in
+  // the list.
+  void OnMostVisitedURLsAvailable(
+      const history::MostVisitedURLList& data);
+
+  // Runnable method that updates the jumplist, once all the data
+  // has been fetched.
+  void RunUpdate();
+
+  // Helper method for RunUpdate to decode the data about the asynchrounously
+  // loaded icons.
+  void DecodeIconData(const ShellLinkItemList& item_list);
+
  private:
+  friend class base::RefCountedThreadSafe<JumpList>;
+  ~JumpList();
+
   // Our consumers for HistoryService.
   CancelableRequestConsumer most_visited_consumer_;
   CancelableRequestConsumer favicon_consumer_;
+  CancelableRequestConsumer topsites_consumer_;
 
-  // The Profile object used for listening its events.
+  // The Profile object is used to listen for events
   Profile* profile_;
+
+  NotificationRegistrar registrar_;
 
   // App id to associate with the jump list.
   std::wstring app_id_;
@@ -176,15 +212,26 @@ class JumpList : public TabRestoreServiceObserver {
   // The directory which contains JumpList icons.
   FilePath icon_dir_;
 
-  // Items in the "Most Visited" category of the application JumpList.
+  // Items in the "Most Visited" category of the application JumpList,
+  // protected by the list_lock_.
   ShellLinkItemList most_visited_pages_;
 
-  // Items in the "Recently Closed" category of the application JumpList.
+  // Items in the "Recently Closed" category of the application JumpList,
+  // protected by the list_lock_.
   ShellLinkItemList recently_closed_pages_;
 
-  // A list of URLs we need to retrieve their favicons.
+  // A list of URLs we need to retrieve their favicons,
+  // protected by the list_lock_.
   typedef std::pair<std::string, scoped_refptr<ShellLinkItem> > URLPair;
   std::list<URLPair> icon_urls_;
+
+  // Handle of last favicon request used to cancel if a new request
+  // comes in before the current one returns.
+  FaviconService::Handle handle_;
+
+  // Lock for most_visited_pages_, recently_closed_pages_, icon_urls_
+  // as they may be used by up to 3 threads.
+  base::Lock list_lock_;
 };
 
 #endif  // CHROME_BROWSER_JUMPLIST_WIN_H_

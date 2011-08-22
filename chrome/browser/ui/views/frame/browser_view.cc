@@ -353,6 +353,12 @@ BrowserView::~BrowserView() {
   // Stop hung plugin monitoring.
   ticker_.Stop();
   ticker_.UnregisterTickHandler(&hung_window_detector_);
+
+  // Terminate the jumplist (must be called before browser_->profile() is
+  // destroyed.
+  if (jumplist_) {
+    jumplist_->Terminate();
+  }
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -2015,7 +2021,7 @@ void BrowserView::Init() {
   // Create a custom JumpList and add it to an observer of TabRestoreService
   // so we can update the custom JumpList when a tab is added or removed.
   if (JumpList::Enabled()) {
-    jumplist_.reset(new JumpList);
+    jumplist_ = new JumpList();
     jumplist_->AddObserver(browser_->profile());
   }
 
