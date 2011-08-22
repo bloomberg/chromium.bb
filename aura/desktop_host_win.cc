@@ -23,7 +23,8 @@ DesktopHostWin::~DesktopHostWin() {
 }
 
 bool DesktopHostWin::Dispatch(const MSG& msg) {
-  // TODO(ben):
+  TranslateMessage(&msg);
+  DispatchMessage(&msg);
   return true;
 }
 
