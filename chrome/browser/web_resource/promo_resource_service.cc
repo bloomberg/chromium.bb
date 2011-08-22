@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_resource/promo_resource_service.h"
 
+#include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
@@ -47,6 +49,14 @@ static const char kWebStoreHeaderProperty[] = "question";
 static const char kWebStoreButtonProperty[] = "inproduct_target";
 static const char kWebStoreLinkProperty[] = "inproduct";
 static const char kWebStoreExpireProperty[] = "tooltip";
+
+const char* GetPromoResourceURL() {
+  std::string promo_server_url = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kPromoServerURL);
+  return promo_server_url.empty() ?
+      PromoResourceService::kDefaultPromoResourceServer :
+      promo_server_url.c_str();
+}
 
 }  // namespace
 
@@ -108,13 +118,15 @@ bool PromoResourceService::IsBuildTargeted(chrome::VersionInfo::Channel channel,
     case chrome::VersionInfo::CHANNEL_STABLE:
       return (STABLE_BUILD & builds_allowed) != 0;
     default:
-      return false;
+      // Show promos for local builds when using a custom promo URL.
+      return CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPromoServerURL);
   }
 }
 
 PromoResourceService::PromoResourceService(Profile* profile)
     : WebResourceService(profile->GetPrefs(),
-                         PromoResourceService::kDefaultPromoResourceServer,
+                         GetPromoResourceURL(),
                          true,  // append locale to URL
                          chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                          prefs::kNTPPromoResourceCacheUpdate,
