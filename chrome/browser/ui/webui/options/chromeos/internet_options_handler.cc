@@ -118,8 +118,18 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON));
   localized_strings->SetString("enableSharedProxiesHint",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT,
+          l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES)));
+  localized_strings->SetString("policyManagedProxyText",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ENABLE_SHARED_PROXIES_HINT));
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_POLICY_MANAGED_PROXY_TEXT));
+  localized_strings->SetString("extensionManagedProxyText",
+      l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXTENSION_MANAGED_PROXY_TEXT));
+  localized_strings->SetString("unmodifiableProxyText",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNMODIFIABLE_PROXY_TEXT));
 
   localized_strings->SetString("wifiNetworkTabLabel",
       l10n_util::GetStringUTF16(
@@ -351,7 +361,7 @@ void InternetOptionsHandler::GetLocalizedValues(
       chromeos::UserCrosSettingsProvider::cached_owner()));
 
   FillNetworkInfo(localized_strings);
- }
+}
 
 void InternetOptionsHandler::Initialize() {
   cros_->RequestNetworkScan();
@@ -690,15 +700,41 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("connecting", network->connecting());
   dictionary.SetBoolean("connected", network->connected());
   dictionary.SetString("connectionState", network->GetStateString());
-  bool remembered = (network->profile_type() != chromeos::PROFILE_NONE);
-  bool proxy_configurable =
-      (remembered && (network->profile_type() == chromeos::PROFILE_USER ||
-                      use_shared_proxies)) ||
-      (type == chromeos::TYPE_ETHERNET && use_shared_proxies);
+
+  // Determine if proxy is configurable.
+  // First check proxy prefs.
+  bool proxy_configurable = true;
+  std::string change_proxy_text;
+  if (web_ui_) {
+    const PrefService::Preference* proxy_pref =
+      Profile::FromWebUI(web_ui_)->GetPrefs()->FindPreference(prefs::kProxy);
+    if (proxy_pref && (!proxy_pref->IsUserModifiable() ||
+                       proxy_pref->HasUserSetting())) {
+      proxy_configurable = false;
+      // Provide reason that proxy is managed by admin or extension.
+      if (proxy_pref->IsManaged())
+        change_proxy_text = "policyManagedProxyText";
+      else if (proxy_pref->IsExtensionControlled())
+        change_proxy_text = "extensionManagedProxyText";
+      else
+        change_proxy_text = "unmodifiableProxyText";
+    }
+  }
+  // Next check network type and use-shared-proxies.
+  chromeos::NetworkProfileType profile = network->profile_type();
+  bool shared_network = type == chromeos::TYPE_ETHERNET ||
+                        profile == chromeos::PROFILE_SHARED;
+  if (proxy_configurable) {  // Only check more if proxy  is still configurable.
+    proxy_configurable = profile == chromeos::PROFILE_USER ||
+        (shared_network && use_shared_proxies);
+  }
+  // If no reason has been set yet, provide hint to configure shared proxy.
+  if (change_proxy_text.empty() && shared_network && !use_shared_proxies)
+    change_proxy_text = "enableSharedProxiesHint";
+  // Lastly, store proxy-configurable flag and, if available, text to display.
   dictionary.SetBoolean("proxyConfigurable", proxy_configurable);
-  dictionary.SetBoolean("showSharedProxiesHint",
-      !proxy_configurable && !use_shared_proxies &&
-      (remembered || type == chromeos::TYPE_ETHERNET));
+  if (!change_proxy_text.empty())
+    dictionary.SetString("changeProxyText", change_proxy_text);
 
   // Hide the dhcp/static radio if not ethernet or wifi (or if not enabled)
   bool staticIPConfig = CommandLine::ForCurrentProcess()->HasSwitch(

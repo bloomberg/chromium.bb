@@ -542,13 +542,31 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   }
 
   if (options.suggestions & SUGGEST_PROXY_CONFIG) {
+#if defined(OS_CHROMEOS)
+    DictionaryValue* suggest_proxy_config = new DictionaryValue();
+#else
     DictionaryValue* suggest_proxy_config = GetStandardMenuItemsText();
+#endif  // defined(OS_CHROMEOS)
     suggest_proxy_config->SetString("msg",
         l10n_util::GetStringFUTF16(IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG,
             l10n_util::GetStringUTF16(
                 IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM)));
+#if defined(OS_CHROMEOS)
+    suggest_proxy_config->SetString("settingsTitle",
+        l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
+    suggest_proxy_config->SetString("internetTitle",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_INTERNET_TAB_LABEL));
+    suggest_proxy_config->SetString("optionsButton",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OPTIONS));
+    suggest_proxy_config->SetString("networkTab",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK));
+    suggest_proxy_config->SetString("proxyButton",
+        l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON));
+#else
     suggest_proxy_config->SetString("proxyTitle",
         l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
+#endif  // defined(OS_CHROMEOS)
     error_strings->Set("suggestionsProxyConfig", suggest_proxy_config);
   }
 

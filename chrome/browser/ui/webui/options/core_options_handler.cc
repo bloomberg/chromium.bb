@@ -29,15 +29,26 @@
 
 namespace {
 
-DictionaryValue* CreateValueForPref(const PrefService::Preference* pref) {
+DictionaryValue* CreateValueForPref(const PrefService* pref_service,
+                                    const PrefService::Preference* pref) {
   DictionaryValue* dict = new DictionaryValue;
   dict->Set("value", pref->GetValue()->DeepCopy());
-  if (pref->IsManaged()) {
+  const PrefService::Preference* controlling_pref = pref;
+#if defined(OS_CHROMEOS)
+  // For use-shared-proxies pref, the proxy pref determines if the former is
+  // modifiable or managed by policy/extension.
+  if (pref->name() == prefs::kUseSharedProxies) {
+    controlling_pref = pref_service->FindPreference(prefs::kProxy);
+    if (!controlling_pref)
+      return dict;
+  }
+#endif  // defined(OS_CHROMEOS)
+  if (controlling_pref->IsManaged()) {
     dict->SetString("controlledBy", "policy");
-  } else if (pref->IsExtensionControlled()) {
+  } else if (controlling_pref->IsExtensionControlled()) {
     dict->SetString("controlledBy", "extension");
   }
-  dict->SetBoolean("disabled", !pref->IsUserModifiable());
+  dict->SetBoolean("disabled", !controlling_pref->IsUserModifiable());
   return dict;
 }
 
@@ -159,7 +170,7 @@ Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
   if (!pref)
     return Value::CreateNullValue();
 
-  return CreateValueForPref(pref);
+  return CreateValueForPref(pref_service, pref);
 }
 
 void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
@@ -392,7 +403,7 @@ void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
     ListValue result_value;
     result_value.Append(Value::CreateStringValue(pref_name->c_str()));
 
-    result_value.Append(CreateValueForPref(pref));
+    result_value.Append(CreateValueForPref(pref_service, pref));
 
     web_ui_->CallJavascriptFunction(WideToASCII(callback_function),
                                     result_value);

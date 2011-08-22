@@ -450,11 +450,18 @@ cr.define('options', function() {
 
     // Hide change-proxy-button if proxy is not configurable.
     $('change-proxy-button').hidden = !data.proxyConfigurable;
-    // Hide enable-shared-proxies-hint if proxy configuration cannot be enabled.
-    $('enable-shared-proxies-hint').hidden = !data.showSharedProxiesHint;
-    // Hide change-proxy-section if both button and hint are hidden.
+    // If necessary, set text for change-proxy-text and show it.
+    var changeProxyText = $('change-proxy-text');
+    if (data.changeProxyText != '') {
+      changeProxyText.textContent =
+          localStrings.getString(data.changeProxyText);
+      changeProxyText.hidden = false;
+    } else {
+      changeProxyText.hidden = true;
+    }
+    // Hide change-proxy-section if button and text are hidden.
     $('change-proxy-section').hidden = !data.proxyConfigurable &&
-                                       !data.showSharedProxiesHint;
+                                       changeProxyText.hidden;
 
     var ipConfigList = $('ipConfigList');
     ipConfigList.disabled = $('ipTypeDHCP').checked || !data.showStaticIPConfig;
