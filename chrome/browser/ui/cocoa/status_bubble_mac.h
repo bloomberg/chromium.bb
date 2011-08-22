@@ -11,12 +11,12 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "googleurl/src/gurl.h"
 
-class GURL;
 class StatusBubbleMacTest;
 
 class StatusBubbleMac : public StatusBubble {
@@ -36,11 +36,12 @@ class StatusBubbleMac : public StatusBubble {
   virtual ~StatusBubbleMac();
 
   // StatusBubble implementation.
-  virtual void SetStatus(const string16& status);
-  virtual void SetURL(const GURL& url, const string16& languages);
-  virtual void Hide();
-  virtual void MouseMoved(const gfx::Point& location, bool left_content);
-  virtual void UpdateDownloadShelfVisibility(bool visible);
+  virtual void SetStatus(const string16& status) OVERRIDE;
+  virtual void SetURL(const GURL& url, const std::string& languages) OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void MouseMoved(const gfx::Point& location,
+                          bool left_content) OVERRIDE;
+  virtual void UpdateDownloadShelfVisibility(bool visible) OVERRIDE;
 
   // Mac-specific method: Update the size and position of the status bubble to
   // match the parent window. Safe to call even when the status bubble does not
@@ -174,7 +175,7 @@ class StatusBubbleMac : public StatusBubble {
 
   // Needs to be passed to ElideURL if the original URL string is wider than
   // the standard bubble width.
-  string16 languages_;
+  std::string languages_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusBubbleMac);
 };

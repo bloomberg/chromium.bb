@@ -73,7 +73,7 @@ void StatusBubbleGtk::SetStatus(const string16& status_text_wide) {
     SetStatusTextTo(std::string());
 }
 
-void StatusBubbleGtk::SetURL(const GURL& url, const string16& languages) {
+void StatusBubbleGtk::SetURL(const GURL& url, const std::string& languages) {
   url_ = url;
   languages_ = languages;
 
@@ -107,8 +107,8 @@ void StatusBubbleGtk::SetStatusTextToURL() {
 
   // TODO(tc): We don't actually use gfx::Font as the font in the status
   // bubble.  We should extend ui::ElideUrl to take some sort of pango font.
-  url_text_ = UTF16ToUTF8(ui::ElideUrl(url_, gfx::Font(), desired_width,
-                          UTF16ToUTF8(languages_)));
+  url_text_ = UTF16ToUTF8(
+      ui::ElideUrl(url_, gfx::Font(), desired_width, languages_));
   SetStatusTextTo(url_text_);
 }
 

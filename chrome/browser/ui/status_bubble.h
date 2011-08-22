@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_STATUS_BUBBLE_H_
-#define CHROME_BROWSER_STATUS_BUBBLE_H_
+#ifndef CHROME_BROWSER_UI_STATUS_BUBBLE_H_
+#define CHROME_BROWSER_UI_STATUS_BUBBLE_H_
 #pragma once
+
+#include <string>
 
 #include "base/string16.h"
 
@@ -36,9 +38,7 @@ class StatusBubble {
   // the bubble to fade in and remain open until given an empty URL or until
   // the Hide() method is called. languages is the value of Accept-Language
   // to determine what characters are understood by a user.
-  // TODO(tc): |languages| should be std::string (ascii)-- it's current
-  // usage is as bad as a WideToUTF8Hack.
-  virtual void SetURL(const GURL& url, const string16& languages) = 0;
+  virtual void SetURL(const GURL& url, const std::string& languages) = 0;
 
   // Skip the fade and instant-hide the bubble.
   virtual void Hide() = 0;
@@ -57,4 +57,4 @@ class StatusBubble {
   virtual void UpdateDownloadShelfVisibility(bool visible) = 0;
 };
 
-#endif  // CHROME_BROWSER_STATUS_BUBBLE_H_
+#endif  // CHROME_BROWSER_UI_STATUS_BUBBLE_H_

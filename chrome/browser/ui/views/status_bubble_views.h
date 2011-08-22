@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
@@ -14,7 +15,6 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
-class GURL;
 namespace gfx {
 class Point;
 }
@@ -55,11 +55,12 @@ class StatusBubbleViews : public StatusBubble {
   void SetBubbleWidth(int width);
 
   // Overridden from StatusBubble:
-  virtual void SetStatus(const string16& status);
-  virtual void SetURL(const GURL& url, const string16& languages);
-  virtual void Hide();
-  virtual void MouseMoved(const gfx::Point& location, bool left_content);
-  virtual void UpdateDownloadShelfVisibility(bool visible);
+  virtual void SetStatus(const string16& status) OVERRIDE;
+  virtual void SetURL(const GURL& url, const std::string& languages) OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void MouseMoved(const gfx::Point& location,
+                          bool left_content) OVERRIDE;
+  virtual void UpdateDownloadShelfVisibility(bool visible) OVERRIDE;
 
  private:
   class StatusView;
@@ -98,7 +99,7 @@ class StatusBubbleViews : public StatusBubble {
   GURL url_;
 
   // Used to elide the original URL again when we expand it.
-  string16 languages_;
+  std::string languages_;
 
   // Position relative to the base_view_.
   gfx::Point original_position_;

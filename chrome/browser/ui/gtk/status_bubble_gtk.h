@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/owned_widget_gtk.h"
@@ -43,14 +44,15 @@ class StatusBubbleGtk : public StatusBubble,
   int y_offset() const { return y_offset_; }
 
   // StatusBubble implementation.
-  virtual void SetStatus(const string16& status);
-  virtual void SetURL(const GURL& url, const string16& languages);
-  virtual void Hide();
-  virtual void MouseMoved(const gfx::Point& location, bool left_content);
+  virtual void SetStatus(const string16& status) OVERRIDE;
+  virtual void SetURL(const GURL& url, const std::string& languages) OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void MouseMoved(const gfx::Point& location,
+                          bool left_content) OVERRIDE;
 
   // ui::AnimationDelegate implementation.
-  virtual void AnimationEnded(const ui::Animation* animation);
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Called when the download shelf becomes visible or invisible.
   // This is used by to ensure that the status bubble does not obscure
@@ -60,7 +62,7 @@ class StatusBubbleGtk : public StatusBubble,
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Top of the widget hierarchy for a StatusBubble. This top level widget is
   // guarenteed to have its gtk_widget_name set to "status-bubble" for
@@ -136,7 +138,7 @@ class StatusBubbleGtk : public StatusBubble,
 
   // Used to determine the character set that the user can read (for eliding
   // the url text).
-  string16 languages_;
+  std::string languages_;
 
   // A timer that hides our window after a delay.
   base::OneShotTimer<StatusBubbleGtk> hide_timer_;

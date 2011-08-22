@@ -17,8 +17,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -3270,7 +3270,7 @@ void Browser::ContentsMouseEvent(
   if (source == GetSelectedTabContents()) {
     GetStatusBubble()->MouseMoved(location, !motion);
     if (!motion)
-      GetStatusBubble()->SetURL(GURL(), string16());
+      GetStatusBubble()->SetURL(GURL(), std::string());
   }
 }
 
@@ -3280,8 +3280,7 @@ void Browser::UpdateTargetURL(TabContents* source, const GURL& url) {
 
   if (source == GetSelectedTabContents()) {
     PrefService* prefs = profile_->GetPrefs();
-    GetStatusBubble()->SetURL(
-        url, UTF8ToUTF16(prefs->GetString(prefs::kAcceptLanguages)));
+    GetStatusBubble()->SetURL(url, prefs->GetString(prefs::kAcceptLanguages));
   }
 }
 
