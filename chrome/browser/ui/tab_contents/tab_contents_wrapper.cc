@@ -254,6 +254,12 @@ void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kWebkitTabsToLinks,
                              pref_defaults.tabs_to_links,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kWebKitAllowDisplayingInsecureContent,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
 
 #if !defined(OS_MACOSX)
   prefs->RegisterLocalizedStringPref(prefs::kAcceptLanguages,

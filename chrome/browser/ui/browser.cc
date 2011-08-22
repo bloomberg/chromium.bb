@@ -2307,12 +2307,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableReferrers,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebKitAllowDisplayingInsecureContent,
-                             true,
-                             PrefService::UNSYNCABLE_PREF);
 }
 
 // static
