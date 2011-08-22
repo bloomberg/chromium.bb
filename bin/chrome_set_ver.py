@@ -15,11 +15,9 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
 import chromite.lib.cros_build_lib as cros_lib
 
 
-_SUPPORTED_COMMANDS = ['runhooks']
-_CHROMIUM_SRC_ROOT = 'chromium/src'
-_CHROMIUM_CROS_DIR = 'chromium/src/third_party/cros'
-_PLATFORM_CROS_DIR = 'src/platform/cros'
-_PLATFORM_CROS_NAME = 'chromiumos/platform/cros'
+_CHROMIUM_ROOT = 'chromium'
+_CHROMIUM_SRC_ROOT = os.path.join(_CHROMIUM_ROOT, 'src')
+_CHROMIUM_CROS_DEPS = os.path.join(_CHROMIUM_SRC_ROOT, 'tools/cros.DEPS/DEPS')
 
 
 def _LoadDEPS(deps_content):
@@ -66,18 +64,27 @@ def _ResetProject(project_path, commit_hash):
 
 
 def _CreateCrosSymlink(repo_root):
-  """Create the src/third_party/cros symlink that chromium needs to build."""
-  platform_cros_dir = os.path.join(repo_root, _PLATFORM_CROS_DIR)
-  if not os.path.isdir(platform_cros_dir):
-    cros_lib.Die('Repository %s not found!  Please add project %s to your'
-                 'manifest' % (platform_cros_dir, _PLATFORM_CROS_NAME))
+  """Create symlinks to CrOS projects specified in the cros_DEPS/DEPS file."""
+  git_url = 'http://git.chromium.org'
+  cros_deps_file = os.path.join(repo_root, _CHROMIUM_CROS_DEPS)
+  deps, merged_deps = _GetParsedDeps(cros_deps_file)
+  chromium_root = os.path.join(repo_root, _CHROMIUM_ROOT)
 
-  chromium_cros_dir = os.path.join(os.path.join(repo_root, _CHROMIUM_CROS_DIR))
-  rel_link_source = os.path.relpath(platform_cros_dir,
-                                    os.path.dirname(chromium_cros_dir))
-  if not os.path.exists(chromium_cros_dir):
-    print rel_link_source
-    os.symlink(rel_link_source, chromium_cros_dir)
+  for rel_path, project_hash in merged_deps.iteritems():
+    repo_url, _, _ = project_hash.partition('@')
+    msg = ('Found unexpected url %s in %s.\n'
+           'Expected url to start with %s'
+           % (repo_url, cros_deps_file, git_url))
+    assert repo_url.startswith(git_url), msg
+    project = repo_url.replace(git_url, '').lstrip('/')
+    project, _ = os.path.splitext(project)
+
+    link_dir = os.path.join(chromium_root, rel_path)
+    target_dir = os.path.join(repo_root,
+                              cros_lib.GetProjectDir(repo_root, project))
+    path_to_target = os.path.relpath(target_dir, os.path.dirname(link_dir))
+    if not os.path.exists(link_dir):
+      os.symlink(path_to_target, link_dir)
 
 
 def _ResetGitCheckout(chromium_root, deps):
@@ -106,6 +113,18 @@ def _RunHooks(chromium_root, hooks):
     cros_lib.RunCommand(hook['action'], cwd=chromium_root)
 
 
+def _MergeDeps(dest, update):
+  """Merge the dependencies specified in two dictionaries.
+
+  Arguments:
+    dest: The dictionary that will be merged into.
+    update: The dictionary whose elements will be merged into dest.
+  """
+  assert(not set(dest.keys()).intersection(set(update.keys())))
+  dest.update(update)
+  return dest
+
+
 def _GetParsedDeps(deps_file):
   """Returns the full parsed DEPS file dictionary, and merged deps.
 
@@ -119,10 +138,9 @@ def _GetParsedDeps(deps_file):
   with open(deps_file, 'rU') as f:
     deps = _LoadDEPS(f.read())
 
-  merged_deps = deps['deps']
+  merged_deps = deps.get('deps', {})
   unix_deps = deps['deps_os']['unix']
-  assert(not set(merged_deps.keys()).intersection(set(unix_deps)))
-  merged_deps.update(unix_deps)
+  merged_deps = _MergeDeps(merged_deps, unix_deps)
   return deps, merged_deps
 
 
@@ -148,17 +166,33 @@ def main(argv=None):
   if not os.path.isdir(chromium_src_root):
     cros_lib.Die('chromium src/ dir not found')
 
-  deps_file = os.path.join(chromium_src_root, '.DEPS.git')
+  # Add DEPS files to parse
+  deps_files_to_parse = []
   if options.deps:
-    deps_file = options.deps
+    deps_files_to_parse.append(options.deps)
+  else:
+    deps_files_to_parse.append(os.path.join(chromium_src_root, '.DEPS.git'))
 
-  deps, merged_deps = _GetParsedDeps(deps_file)
+  deps_files_to_parse.append(os.path.join(repo_root, _CHROMIUM_CROS_DEPS))
 
-  chromium_root = os.path.dirname(chromium_src_root)
+  chromium_root = os.path.join(repo_root, _CHROMIUM_ROOT)
   _CreateCrosSymlink(repo_root)
-  _ResetGitCheckout(chromium_root, merged_deps)
-  if options.runhooks: _RunHooks(chromium_root, deps['hooks'])
+
+  # Parse DEPS files and store hooks
+  hook_dicts = []
+  for deps_file in deps_files_to_parse:
+    deps, merged_deps = _GetParsedDeps(deps_file)
+    _ResetGitCheckout(chromium_root, merged_deps)
+    hook_dicts.append(deps.get('hooks', {}))
+
+  # Run hooks after checkout has been reset properly
+  if options.runhooks:
+    for hooks in hook_dicts:
+      _RunHooks(chromium_root, hooks)
 
 
 if __name__ == '__main__':
-  main()
+  try:
+    main()
+  except cros_lib.RunCommandError, e:
+    cros_lib.Die('Failed to run a command.\n' + e.args[0])

@@ -332,8 +332,10 @@ def GetProjectDir(cwd, project):
     cwd: a directory within a repo-managed checkout.
     project: the name of the project to get the path for.
   """
-  cmd = ['repo', 'forall', project, '-c', 'pwd']
-  return RunCommand(cmd, cwd=cwd, redirect_stdout=True).output.strip()
+  build_root = FindRepoCheckoutRoot(cwd)
+  manifest_path = os.path.join(build_root, '.repo', 'manifests/full.xml')
+  handler = ManifestHandler.ParseManifest(manifest_path)
+  return os.path.join(build_root, handler.projects[project]['path'])
 
 
 def ReinterpretPathForChroot(path):
