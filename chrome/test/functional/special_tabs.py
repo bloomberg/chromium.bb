@@ -66,12 +66,9 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://textfields': { 'title': 'chrome://textfields', 'CSP': False },
     'chrome://version': { 'title': 'About Version' },
     'chrome://view-http-cache': {},
+    'chrome://workers': { 'title': 'Workers', 'CSP': False },
   }
-
   broken_special_url_tabs = {
-    # crashes under debug, bad include of locale.js (bug 88220).
-    'chrome://taskmanager': { 'CSP': False },
-
     # crashed under debug when invoked from location bar (bug 88223).
     'chrome://devtools': { 'CSP': False },
 
@@ -119,7 +116,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://settings/proxy': { 'title': 'Proxy' },
     'chrome://settings/system': { 'title': 'Settings - System' },
   }
-
   broken_chromeos_special_url_tabs = {
     # returns "not available" page on chromeos=1 linux but has an URL constant.
     'chrome://activationmessage': { 'CSP': False },
@@ -148,15 +144,10 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://tcmalloc': { 'title': 'About tcmalloc' },
     'chrome://sandbox': { 'title': 'Sandbox Status' },
   }
+  broken_linux_special_url_tabs = {}
 
-  broken_linux_special_url_tabs = {
-  }
-
-  mac_special_url_tabs = {
-  }
-
-  broken_mac_special_url_tabs = {
-  }
+  mac_special_url_tabs = {}
+  broken_mac_special_url_tabs = {}
 
   win_special_url_tabs = {
     'chrome://conflicts': {},
@@ -164,22 +155,19 @@ class SpecialTabsTest(pyauto.PyUITest):
     # OVERRIDE - different title for page.
     'chrome://settings': { 'title': 'Options - Basics' },
   }
-
   broken_win_special_url_tabs = {
     # Sync on windows badly broken at the moment.
     'chrome://sync': {},
   }
 
-  google_chrome_special_url_tabs = {
+  google_special_url_tabs = {
     # OVERRIDE - different title for Google Chrome vs. Chromium.
     'chrome://terms': {
       'title': 'Google Chrome Terms of Service',
       'CSP': False
     },
   }
-
-  broken_google_chrome_special_url_tabs = {
-  }
+  broken_google_special_url_tabs = {}
 
   google_chromeos_special_url_tabs = {
     # OVERRIDE - different title for Google Chrome OS vs. Chromium OS.
@@ -188,9 +176,16 @@ class SpecialTabsTest(pyauto.PyUITest):
       'CSP': False
     },
   }
+  broken_google_chromeos_special_url_tabs = {}
 
-  broken_google_chromeos_special_url_tabs = {
-  }
+  google_win_special_url_tabs = {}
+  broken_google_win_special_url_tabs = {}
+
+  google_mac_special_url_tabs = {}
+  broken_gogle_mac_special_url_tabs = {}
+
+  google_linux_special_url_tabs = {}
+  broken_google_linux_special_url_tabs = {}
 
   def _VerifyAppCacheInternals(self):
     """Confirm about:appcache-internals contains expected content for Caches.
@@ -233,15 +228,28 @@ class SpecialTabsTest(pyauto.PyUITest):
     elif self.IsWin():
       tabs.update(self.win_special_url_tabs)
       broken_tabs.update(self.broken_win_special_url_tabs)
-    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
-      tabs.update(self.google_chrome_special_url_tabs)
-      broken_tabs.update(self.broken_google_chrome_special_url_tabs)
-      if self.IsChromeOS():
-        tabs.update(self.google_chromeos_special_url_tabs)
-        broken_tabs.update(self.broken_google_chromeos_special_url_tabs)
     for key, value in broken_tabs.iteritems():
       if key in tabs:
        del tabs[key]
+    broken_tabs = {}
+    if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
+      tabs.update(self.google_special_url_tabs)
+      broken_tabs.update(self.broken_google_special_url_tabs)
+      if self.IsChromeOS():
+        tabs.update(self.google_chromeos_special_url_tabs)
+        broken_tabs.update(self.broken_google_chromeos_special_url_tabs)
+      elif self.IsLinux():
+        tabs.update(self.google_linux_special_url_tabs)
+        broken_tabs.update(self.broken_google_linux_special_url_tabs)
+      elif self.IsMac():
+        tabs.update(self.google_mac_special_url_tabs)
+        broken_tabs.update(self.broken_google_mac_special_url_tabs)
+      elif self.IsWin():
+        tabs.update(self.google_win_special_url_tabs)
+        broken_tabs.update(self.broken_google_win_special_url_tabs)
+      for key, value in broken_tabs.iteritems():
+        if key in tabs:
+         del tabs[key]
     return tabs
 
   def testSpecialURLRedirects(self):
