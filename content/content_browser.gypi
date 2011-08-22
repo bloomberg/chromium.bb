@@ -118,6 +118,8 @@
         'browser/download/download_manager.cc',
         'browser/download/download_manager.h',
         'browser/download/download_manager_delegate.h',
+        'browser/download/download_persistent_store_info.cc',
+        'browser/download/download_persistent_store_info.h',
         'browser/download/download_request_handle.cc',
         'browser/download/download_request_handle.h',
         'browser/download/download_resource_handler.cc',

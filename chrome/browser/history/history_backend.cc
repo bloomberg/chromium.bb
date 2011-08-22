@@ -20,7 +20,6 @@
 #include "base/time.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
@@ -29,6 +28,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/download/download_persistent_store_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1114,7 +1114,7 @@ void HistoryBackend::UpdateDownloadPath(const FilePath& path,
 void HistoryBackend::CreateDownload(
     scoped_refptr<DownloadCreateRequest> request,
     int32 id,
-    const DownloadHistoryInfo& history_info) {
+    const DownloadPersistentStoreInfo& history_info) {
   int64 db_handle = 0;
   if (!request->canceled()) {
     if (db_.get())

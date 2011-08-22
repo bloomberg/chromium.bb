@@ -25,7 +25,7 @@
 #include "sql/init_status.h"
 
 class BookmarkService;
-struct DownloadHistoryInfo;
+struct DownloadPersistentStoreInfo;
 class TestingProfile;
 struct ThumbnailScore;
 
@@ -242,7 +242,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void UpdateDownloadPath(const FilePath& path, int64 db_handle);
   void CreateDownload(scoped_refptr<DownloadCreateRequest> request,
                       int32 id,
-                      const DownloadHistoryInfo& info);
+                      const DownloadPersistentStoreInfo& info);
   void RemoveDownload(int64 db_handle);
   void RemoveDownloadsBetween(const base::Time remove_begin,
                               const base::Time remove_end);

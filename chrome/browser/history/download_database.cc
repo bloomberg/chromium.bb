@@ -10,8 +10,8 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_persistent_store_info.h"
 #include "sql/statement.h"
 
 // Download schema:
@@ -81,7 +81,7 @@ bool DownloadDatabase::DropDownloadTable() {
 }
 
 void DownloadDatabase::QueryDownloads(
-    std::vector<DownloadHistoryInfo>* results) {
+    std::vector<DownloadPersistentStoreInfo>* results) {
   results->clear();
 
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
@@ -93,7 +93,7 @@ void DownloadDatabase::QueryDownloads(
     return;
 
   while (statement.Step()) {
-    DownloadHistoryInfo info;
+    DownloadPersistentStoreInfo info;
     info.db_handle = statement.ColumnInt64(0);
 
     info.path = ColumnFilePath(statement, 1);
@@ -145,7 +145,8 @@ bool DownloadDatabase::CleanUpInProgressEntries() {
   return statement.Run();
 }
 
-int64 DownloadDatabase::CreateDownload(const DownloadHistoryInfo& info) {
+int64 DownloadDatabase::CreateDownload(
+    const DownloadPersistentStoreInfo& info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
       "(full_path, url, start_time, received_bytes, total_bytes, state) "

@@ -14,7 +14,6 @@
 #include "base/task.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
@@ -22,6 +21,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager_delegate.h"
+#include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -779,9 +779,9 @@ void DownloadManager::FileSelectionCanceled(void* params) {
 // Operations posted to us from the history service ----------------------------
 
 // The history service has retrieved all download entries. 'entries' contains
-// 'DownloadHistoryInfo's in sorted order (by ascending start_time).
+// 'DownloadPersistentStoreInfo's in sorted order (by ascending start_time).
 void DownloadManager::OnPersistentStoreQueryComplete(
-    std::vector<DownloadHistoryInfo>* entries) {
+    std::vector<DownloadPersistentStoreInfo>* entries) {
   for (size_t i = 0; i < entries->size(); ++i) {
     DownloadItem* download = new DownloadItem(this, entries->at(i));
     DCHECK(!ContainsKey(history_downloads_, download->db_handle()));

@@ -34,7 +34,6 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
@@ -47,6 +46,7 @@
 #include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_persistent_store_info.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
 #include "sql/connection.h"
@@ -185,14 +185,15 @@ class HistoryTest : public TestingBrowserProcessTest {
   }
 
   int64 AddDownload(int32 state, const Time& time) {
-    DownloadHistoryInfo download(FilePath(FILE_PATH_LITERAL("foo-path")),
-                                 GURL("foo-url"),
-                                 GURL(""),
-                                 time,
-                                 0,
-                                 512,
-                                 state,
-                                 0);
+    DownloadPersistentStoreInfo download(
+        FilePath(FILE_PATH_LITERAL("foo-path")),
+        GURL("foo-url"),
+        GURL(""),
+        time,
+        0,
+        512,
+        state,
+        0);
     return db_->CreateDownload(download);
   }
 
@@ -311,7 +312,7 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   Time month_ago = now - TimeDelta::FromDays(30);
 
   // Initially there should be nothing in the downloads database.
-  std::vector<DownloadHistoryInfo> downloads;
+  std::vector<DownloadPersistentStoreInfo> downloads;
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(0U, downloads.size());
 

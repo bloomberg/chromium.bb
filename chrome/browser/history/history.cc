@@ -32,7 +32,6 @@
 #include "base/task.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
@@ -49,6 +48,7 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_persistent_store_info.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -503,7 +503,7 @@ HistoryService::Handle HistoryService::QueryURL(
 // 'downloads' table.
 HistoryService::Handle HistoryService::CreateDownload(
     int32 id,
-    const DownloadHistoryInfo& create_info,
+    const DownloadPersistentStoreInfo& create_info,
     CancelableRequestConsumerBase* consumer,
     HistoryService::DownloadCreateCallback* callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::CreateDownload, consumer,

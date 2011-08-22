@@ -182,7 +182,7 @@ class DownloadManager
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
   void OnPersistentStoreQueryComplete(
-      std::vector<DownloadHistoryInfo>* entries);
+      std::vector<DownloadPersistentStoreInfo>* entries);
 
   // Called by the embedder, in response to
   // DownloadManagerDelegate::AddItemToPersistentStore.

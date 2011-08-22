@@ -5,10 +5,10 @@
 #include "chrome/browser/download/download_history.h"
 
 #include "base/logging.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_persistent_store_info.h"
 
 DownloadHistory::DownloadHistory(Profile* profile)
     : profile_(profile),
@@ -83,7 +83,8 @@ void DownloadHistory::AddEntry(
   }
 
   int32 id = download_item->id();
-  DownloadHistoryInfo history_info = download_item->GetHistoryInfo();
+  DownloadPersistentStoreInfo history_info =
+      download_item->GetPersistentStoreInfo();
   hs->CreateDownload(id, history_info, &history_consumer_, callback);
 }
 

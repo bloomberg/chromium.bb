@@ -35,7 +35,7 @@ class CrxInstaller;
 class DownloadFileManager;
 class DownloadManager;
 struct DownloadCreateInfo;
-struct DownloadHistoryInfo;
+struct DownloadPersistentStoreInfo;
 
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download. Multiple views, such as a tab's download shelf and the
@@ -113,7 +113,7 @@ class DownloadItem : public NotificationObserver {
 
   // Constructing from persistent store:
   DownloadItem(DownloadManager* download_manager,
-               const DownloadHistoryInfo& info);
+               const DownloadPersistentStoreInfo& info);
 
   // Constructing for a regular download:
   DownloadItem(DownloadManager* download_manager,
@@ -306,7 +306,7 @@ class DownloadItem : public NotificationObserver {
   void set_opened(bool opened) { opened_ = opened; }
   bool opened() const { return opened_; }
 
-  DownloadHistoryInfo GetHistoryInfo() const;
+  DownloadPersistentStoreInfo GetPersistentStoreInfo() const;
   DownloadStateInfo state_info() const { return state_info_; }
   const DownloadRequestHandle& request_handle() const {
     return request_handle_;

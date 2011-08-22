@@ -9,7 +9,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -20,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
@@ -126,25 +126,25 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   }
 
   void OnQueryDownloadEntriesComplete(
-      std::vector<DownloadHistoryInfo>* entries) {
+      std::vector<DownloadPersistentStoreInfo>* entries) {
     history_entries_ = *entries;
 
     // Indicate thet we have received the history and can continue.
     MessageLoopForUI::current()->Quit();
   }
 
-  struct DownloadHistoryInfoMatch
-    : public std::unary_function<DownloadHistoryInfo, bool> {
+  struct DownloadPersistentStoreInfoMatch
+    : public std::unary_function<DownloadPersistentStoreInfo, bool> {
 
-    DownloadHistoryInfoMatch(const GURL& url,
-                             const FilePath& path,
-                             int64 num_files)
+    DownloadPersistentStoreInfoMatch(const GURL& url,
+                                     const FilePath& path,
+                                     int64 num_files)
       : url_(url),
         path_(path),
         num_files_(num_files) {
     }
 
-    bool operator() (const DownloadHistoryInfo& info) const {
+    bool operator() (const DownloadPersistentStoreInfo& info) const {
       return info.url == url_ &&
         info.path == path_ &&
         // For save packages, received bytes is actually the number of files.
@@ -164,11 +164,11 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     QueryDownloadHistory();
 
     EXPECT_NE(std::find_if(history_entries_.begin(), history_entries_.end(),
-        DownloadHistoryInfoMatch(url, path, num_files_)),
+        DownloadPersistentStoreInfoMatch(url, path, num_files_)),
         history_entries_.end());
   }
 
-  std::vector<DownloadHistoryInfo> history_entries_;
+  std::vector<DownloadPersistentStoreInfo> history_entries_;
 
   // Path to directory containing test data.
   FilePath test_dir_;
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
   // Should not be in history.
   QueryDownloadHistory();
   EXPECT_EQ(std::find_if(history_entries_.begin(), history_entries_.end(),
-      DownloadHistoryInfoMatch(url, full_file_name, 1)),
+      DownloadPersistentStoreInfoMatch(url, full_file_name, 1)),
       history_entries_.end());
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));

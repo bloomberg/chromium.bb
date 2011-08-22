@@ -17,7 +17,6 @@ class DownloadItem;
 class DownloadManager;
 class DownloadPrefs;
 class Profile;
-struct DownloadHistoryInfo;
 struct DownloadStateInfo;
 
 // This is the Chrome side helper for the download system.

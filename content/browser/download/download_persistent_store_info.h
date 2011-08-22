@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Download struct used for informing and querying the history service.
+// Download struct used for informing and querying the download system's
+// persitent store.
 
-#ifndef CHROME_BROWSER_HISTORY_DOWNLOAD_HISTORY_INFO_H_
-#define CHROME_BROWSER_HISTORY_DOWNLOAD_HISTORY_INFO_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_PERSISTENT_STORE_INFO_H_
+#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_PERSISTENT_STORE_INFO_H_
 #pragma once
 
 #include <vector>
@@ -16,20 +17,20 @@
 
 class DownloadItem;
 
-// Contains the information that is stored in the download history database
-// (or refers to it).  Managed by the DownloadItem.
-struct DownloadHistoryInfo {
+// Contains the information that is stored in the download system's persistent
+// store (or refers to it).  Managed by the DownloadItem.
+struct DownloadPersistentStoreInfo {
   // TODO(ahendrickson) -- Reduce the number of constructors.
-  DownloadHistoryInfo();
-  DownloadHistoryInfo(const FilePath& path,
-                      const GURL& url,
-                      const GURL& referrer,
-                      const base::Time& start,
-                      int64 received,
-                      int64 total,
-                      int32 download_state,
-                      int64 handle);
-  ~DownloadHistoryInfo();  // For linux-clang.
+  DownloadPersistentStoreInfo();
+  DownloadPersistentStoreInfo(const FilePath& path,
+                              const GURL& url,
+                              const GURL& referrer,
+                              const base::Time& start,
+                              int64 received,
+                              int64 total,
+                              int32 download_state,
+                              int64 handle);
+  ~DownloadPersistentStoreInfo();  // For linux-clang.
 
   // The final path where the download is saved.
   FilePath path;
@@ -57,4 +58,4 @@ struct DownloadHistoryInfo {
   int64 db_handle;
 };
 
-#endif  // CHROME_BROWSER_HISTORY_DOWNLOAD_HISTORY_INFO_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_PERSISTENT_STORE_INFO_H_

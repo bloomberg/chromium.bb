@@ -18,7 +18,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +35,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -844,7 +844,7 @@ class DownloadsHistoryDataCollector {
     ui_test_utils::RunMessageLoop();
   }
 
-  bool GetDownloadsHistoryEntry(DownloadHistoryInfo* result) {
+  bool GetDownloadsHistoryEntry(DownloadPersistentStoreInfo* result) {
     DCHECK(result);
     *result = result_;
     return result_valid_;
@@ -852,9 +852,10 @@ class DownloadsHistoryDataCollector {
 
  private:
   void OnQueryDownloadsComplete(
-      std::vector<DownloadHistoryInfo>* entries) {
+      std::vector<DownloadPersistentStoreInfo>* entries) {
     result_valid_ = false;
-    for (std::vector<DownloadHistoryInfo>::const_iterator it = entries->begin();
+    for (std::vector<DownloadPersistentStoreInfo>::const_iterator it =
+             entries->begin();
          it != entries->end(); ++it) {
       if (it->db_handle == download_db_handle_) {
         result_ = *it;
@@ -864,7 +865,7 @@ class DownloadsHistoryDataCollector {
     MessageLoopForUI::current()->Quit();
   }
 
-  DownloadHistoryInfo result_;
+  DownloadPersistentStoreInfo result_;
   bool result_valid_;
   int64 download_db_handle_;
   CancelableRequestConsumer callback_consumer_;
@@ -1482,7 +1483,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   DownloadsHistoryDataCollector history_collector(
       db_handle,
       browser()->profile()->GetDownloadManager());
-  DownloadHistoryInfo info;
+  DownloadPersistentStoreInfo info;
   EXPECT_TRUE(history_collector.GetDownloadsHistoryEntry(&info)) << db_handle;
   EXPECT_EQ(file, info.path.BaseName());
   EXPECT_EQ(url, info.url);

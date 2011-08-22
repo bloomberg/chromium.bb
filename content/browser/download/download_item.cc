@@ -18,7 +18,6 @@
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -28,6 +27,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_manager_delegate.h"
+#include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/common/notification_source.h"
@@ -124,7 +124,7 @@ const int DownloadItem::kUninitializedHandle = 0;
 
 // Constructor for reading from the history service.
 DownloadItem::DownloadItem(DownloadManager* download_manager,
-                           const DownloadHistoryInfo& info)
+                           const DownloadPersistentStoreInfo& info)
     : download_id_(-1),
       full_path_(info.path),
       url_chain_(1, info.url),
@@ -734,15 +734,15 @@ void DownloadItem::MarkUrlDangerous() {
   UpdateSafetyState();
 }
 
-DownloadHistoryInfo DownloadItem::GetHistoryInfo() const {
-  return DownloadHistoryInfo(full_path(),
-                             GetURL(),
-                             referrer_url(),
-                             start_time(),
-                             received_bytes(),
-                             total_bytes(),
-                             state(),
-                             db_handle());
+DownloadPersistentStoreInfo DownloadItem::GetPersistentStoreInfo() const {
+  return DownloadPersistentStoreInfo(full_path(),
+                                     GetURL(),
+                                     referrer_url(),
+                                     start_time(),
+                                     received_bytes(),
+                                     total_bytes(),
+                                     state(),
+                                     db_handle());
 }
 
 FilePath DownloadItem::GetTargetFilePath() const {
