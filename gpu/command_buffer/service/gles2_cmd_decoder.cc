@@ -15,6 +15,9 @@
 #include "base/atomicops.h"
 #include "base/at_exit.h"
 #include "base/callback.h"
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -1319,6 +1322,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   bool has_arb_robustness_;
   GLenum reset_status_;
 
+  bool needs_mac_nvidia_driver_workaround_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -1680,7 +1685,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
       tex_image_2d_failed_(false),
       frame_number_(0),
       has_arb_robustness_(false),
-      reset_status_(GL_NO_ERROR) {
+      reset_status_(GL_NO_ERROR),
+      needs_mac_nvidia_driver_workaround_(false) {
   DCHECK(group);
 
   attrib_0_value_.v[0] = 0.0f;
@@ -1933,6 +1939,14 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   has_arb_robustness_ = context->HasExtension("GL_ARB_robustness");
+
+#if defined(OS_MACOSX)
+  const char* vendor_str = reinterpret_cast<const char*>(
+      glGetString(GL_VENDOR));
+  needs_mac_nvidia_driver_workaround_ =
+      vendor_str && strstr(vendor_str, "NVIDIA") &&
+          base::mac::IsOSSnowLeopardOrEarlier();
+#endif
 
   if (!InitializeShaderTranslator()) {
     return false;
@@ -2515,6 +2529,10 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     RestoreClearState();
   }
+
+  // Workaround for driver bug on OS X 10.6.x and earlier; crbug.com/89557
+  if (needs_mac_nvidia_driver_workaround_)
+    offscreen_saved_frame_buffer_->Create();
 
   // Allocate the offscreen saved color texture.
   DCHECK(offscreen_saved_color_format_);

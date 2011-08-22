@@ -150,6 +150,12 @@ void GLES2DecoderTestBase::InitDecoder(
       .Times(1)
       .RetiresOnSaturation();
 
+#if defined(OS_MACOSX)
+  EXPECT_CALL(*gl_, GetString(GL_VENDOR))
+      .Times(1)
+      .RetiresOnSaturation();
+#endif
+
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
   Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
   shared_memory_offset_ = kSharedMemoryOffset;
