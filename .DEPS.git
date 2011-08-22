@@ -110,7 +110,7 @@ deps_os = {
         'src/chrome/tools/test/reference_build/chrome_mac':
             Var('git_url') + '/chromium/reference_builds/chrome_mac.git@dde16d147a5b8d0229f8adf8eee6d180fb9f4684',
         'src/third_party/GTM':
-            Var('git_url') + '/external/google-toolbox-for-mac.git@ad05b823885333883c04ddcebe639a6285493b64',
+            Var('git_url') + '/external/google-toolbox-for-mac.git@370bfbfa0a7f3177da752965cd63d3b377d742fb',
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
         'src/third_party/nss':
