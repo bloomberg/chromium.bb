@@ -223,7 +223,6 @@ bool CreateNPVariant(const NPVariant_Param& param,
                      NPVariant* result,
                      gfx::NativeViewId containing_window,
                      const GURL& page_url) {
-  NPObject* object = NULL;
   switch (param.type) {
     case NPVARIANT_PARAM_VOID:
       result->type = NPVariantType_Void;
@@ -252,21 +251,22 @@ bool CreateNPVariant(const NPVariant_Param& param,
       result->value.stringValue.UTF8Length = static_cast<int>(size);
       break;
     }
-    case NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID:
+    case NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID: {
       result->type = NPVariantType_Object;
-      object = channel->GetExistingNPObjectProxy(param.npobject_routing_id);
+      NPObject* object =
+          channel->GetExistingNPObjectProxy(param.npobject_routing_id);
       if (object) {
         WebBindings::retainObject(object);
         result->value.objectValue = object;
       } else {
         result->value.objectValue =
-            object = NPObjectProxy::Create(channel,
-                                           param.npobject_routing_id,
-                                           containing_window,
-                                           page_url);
-        result->value.objectValue = object;
+            NPObjectProxy::Create(channel,
+                                  param.npobject_routing_id,
+                                  containing_window,
+                                  page_url);
       }
       break;
+    }
     case NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID: {
       NPObjectBase* npobject_base =
           channel->GetNPObjectListenerForRoute(param.npobject_routing_id);
