@@ -862,13 +862,15 @@ void RenderWidgetHostViewWin::OnDestroy() {
 }
 
 void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
+  if (!render_widget_host_)
+    return;
+
   DCHECK(render_widget_host_->process()->HasConnection());
 
   // If the GPU process is rendering directly into the View, compositing is
   // already triggered by damage to compositor_host_window_, so all we need to
   // do here is clear borders during resize.
-  if (render_widget_host_ &&
-      render_widget_host_->is_accelerated_compositing_active()) {
+  if (render_widget_host_->is_accelerated_compositing_active()) {
     // We initialize paint_dc here so that BeginPaint()/EndPaint()
     // get called to validate the region.
     CPaintDC paint_dc(m_hWnd);
@@ -1458,6 +1460,9 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
                                                  WPARAM wparam,
                                                  LPARAM lparam,
                                                  BOOL& handled) {
+  if (!render_widget_host_)
+    return MA_NOACTIVATE;
+
   if (!IsActivatable())
     return MA_NOACTIVATE;
 
