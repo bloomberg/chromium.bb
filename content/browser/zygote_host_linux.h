@@ -74,9 +74,7 @@ class ZygoteHost {
     return 0;
   }
 
-  // Adjust the OOM score of the given renderer's PID.  The allowed
-  // range for the score is [0, 1000], where higher values are more
-  // likely to be killed by the OOM killer.
+  // Adjust the OOM score of the given renderer's PID.
   void AdjustRendererOOMScore(base::ProcessHandle process_handle, int score);
 
  private:

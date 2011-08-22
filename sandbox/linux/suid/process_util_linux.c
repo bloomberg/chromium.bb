@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,13 +19,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-// Ranges for the current (oom_score_adj) and previous (oom_adj)
-// flavors of OOM score.
-static const int kMaxOomScore = 1000;
-static const int kMaxOldOomScore = 15;
-
 bool AdjustOOMScore(pid_t process, int score) {
-  if (score < 0 || score > kMaxOomScore)
+  if (score < 0 || score > 15)
     return false;
 
   char oom_adj[27];  // "/proc/" + log_10(2**64) + "\0"
@@ -46,24 +41,13 @@ bool AdjustOOMScore(pid_t process, int score) {
     return false;
   }
 
-  int fd = openat(dirfd, "oom_score_adj", O_WRONLY);
-  if (fd < 0) {
-    // We failed to open oom_score_adj, so let's try for the older
-    // oom_adj file instead.
-    fd = openat(dirfd, "oom_adj", O_WRONLY);
-    if (fd < 0) {
-      // Nope, that doesn't work either.
-      return false;
-    } else {
-      // If we're using the old oom_adj file, the allowed range is now
-      // [0, kMaxOldOomScore], so we scale the score.  This may result in some
-      // aliasing of values, of course.
-      score = score * kMaxOldOomScore / kMaxOomScore;
-    }
-  }
+  const int fd = openat(dirfd, "oom_adj", O_WRONLY);
   close(dirfd);
 
-  char buf[11];  // 0 <= |score| <= kMaxOomScore; using log_10(2**32) + 1 size
+  if (fd < 0)
+    return false;
+
+  char buf[3];  // 0 <= |score| <= 15;
   snprintf(buf, sizeof(buf), "%d", score);
   size_t len = strlen(buf);
 

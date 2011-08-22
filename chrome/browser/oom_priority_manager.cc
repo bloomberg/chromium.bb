@@ -13,7 +13,6 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -30,7 +29,7 @@ using base::ProcessMetrics;
 
 namespace browser {
 
-// The default interval in seconds after which to adjust the oom_score_adj
+// The default interval in seconds after which to adjust the oom_adj
 // value.
 #define ADJUSTMENT_INTERVAL_SECONDS 10
 
@@ -67,11 +66,7 @@ bool OomPriorityManager::CompareRendererStats(RendererStats first,
   static const int64 kTimeBucketInterval =
       TimeDelta::FromMinutes(BUCKET_INTERVAL_MINUTES).ToInternalValue();
 
-  // Being currently selected is most important.
-  if (first.is_selected != second.is_selected)
-    return first.is_selected == true;
-
-  // Being pinned is second most important.
+  // Being pinned is most important.
   if (first.is_pinned != second.is_pinned)
     return first.is_pinned == true;
 
@@ -87,17 +82,16 @@ bool OomPriorityManager::CompareRendererStats(RendererStats first,
 }
 
 // Here we collect most of the information we need to sort the
-// existing renderers in priority order, and hand out oom_score_adj
-// scores based on that sort order.
+// existing renderers in priority order, and hand out oom_adj scores
+// based on that sort order.
 //
 // Things we need to collect on the browser thread (because
 // TabStripModel isn't thread safe):
 // 1) whether or not a tab is pinned
 // 2) last time a tab was selected
-// 3) is the tab currently selected
 //
 // We also need to collect:
-// 4) size in memory of a tab
+// 3) size in memory of a tab
 // But we do that in DoAdjustOomPriorities on the FILE thread so that
 // we avoid jank, because it accesses /proc.
 void OomPriorityManager::AdjustOomPriorities() {
@@ -115,8 +109,7 @@ void OomPriorityManager::AdjustOomPriorities() {
       stats.last_selected = contents->last_selected_time();
       stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
       stats.is_pinned = model->IsTabPinned(i);
-      stats.memory_used = 0;  // This gets calculated in DoAdjustOomPriorities.
-      stats.is_selected = model->IsTabSelected(i);
+      stats.memory_used = 0; // This gets calculated in DoAdjustOomPriorities.
       renderer_stats.push_back(stats);
     }
   }
@@ -152,32 +145,30 @@ void OomPriorityManager::DoAdjustOomPriorities(StatsList renderer_stats) {
   renderer_stats.sort(OomPriorityManager::CompareRendererStats);
 
   // Now we assign priorities based on the sorted list.  We're
-  // assigning priorities in the range of kLowestRendererOomScore to
-  // kHighestRendererOomScore (defined in chrome_constants.h).
-  // oom_score_adj takes values from -1000 to 1000.  Negative values
-  // are reserved for system processes, and we want to give some room
-  // below the range we're using to allow for things that want to be
-  // above the renderers in priority, so the defined range gives us
-  // some variation in priority without taking up the whole range.  In
-  // the end, however, it's a pretty arbitrary range to use.  Higher
-  // values are more likely to be killed by the OOM killer.
-  //
-  // We also remove any duplicate PIDs, leaving the most important
-  // (least likely to be killed) of the duplicates, so that a
-  // particular renderer process takes on the oom_score_adj of the
-  // least likely tab to be killed.
-  const int kPriorityRange = chrome::kHighestRendererOomScore -
-                             chrome::kLowestRendererOomScore;
+  // assigning priorities in the range of 5 to 10.  oom_adj takes
+  // values from -17 to 15.  Negative values are reserved for system
+  // processes, and we want to give some room on either side of the
+  // range we're using to allow for things that want to be above or
+  // below the renderers in priority, so 5 to 10 gives us some
+  // variation in priority without taking up the whole range.  In the
+  // end, however, it's a pretty arbitrary range to use.  Higher
+  // values are more likely to be killed by the OOM killer.  We also
+  // remove any duplicate PIDs, leaving the most important of the
+  // duplicates.
+  const int kMinPriority = 5;
+  const int kMaxPriority = 10;
+  const int kPriorityRange = kMaxPriority - kMinPriority;
   float priority_increment =
       static_cast<float>(kPriorityRange) / renderer_stats.size();
-  float priority = chrome::kLowestRendererOomScore;
+  float priority = kMinPriority;
   std::set<base::ProcessHandle> already_seen;
   for (StatsList::iterator iterator = renderer_stats.begin();
        iterator != renderer_stats.end(); ++iterator) {
     if (already_seen.find(iterator->renderer_handle) == already_seen.end()) {
       already_seen.insert(iterator->renderer_handle);
       ZygoteHost::GetInstance()->AdjustRendererOOMScore(
-          iterator->renderer_handle, static_cast<int>(priority + 0.5f));
+          iterator->renderer_handle,
+          static_cast<int>(priority + 0.5f));
       priority += priority_increment;
     }
   }

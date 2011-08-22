@@ -99,13 +99,6 @@ extern const int kJavascriptMessageExpectedDelay;
 // Are touch icons enabled? False by default.
 extern const bool kEnableTouchIcon;
 
-#if defined(OS_LINUX)
-// The highest and lowest assigned OOM score adjustment
-// (oom_score_adj) used by the OomPriority Manager.
-extern const int kLowestRendererOomScore;
-extern const int kHighestRendererOomScore;
-#endif
-
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_

@@ -244,7 +244,7 @@ class TabContentsIterator {
   }
 
   // Returns the Browser instance associated with the current TabContents.
-  // Valid as long as !done()
+  // Valid as long as !Done()
   Browser* browser() const {
     if (browser_iterator_ != BrowserList::end())
       return *browser_iterator_;

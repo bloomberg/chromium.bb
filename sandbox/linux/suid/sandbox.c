@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,6 @@
 #define CLONE_NEWNET 0x40000000
 #endif
 
-static const char kAdjustOOMScoreSwitch[] = "--adjust-oom-score";
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
 static const char kSandboxHelperPidEnvironmentVarName[] = "SBX_HELPER_PID";
 
