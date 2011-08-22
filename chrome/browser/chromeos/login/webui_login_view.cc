@@ -20,6 +20,10 @@
 #include "views/widget/native_widget_gtk.h"
 #include "views/widget/widget.h"
 
+#if defined(TOUCH_UI)
+#include "chrome/browser/ui/touch/keyboard/keyboard_manager.h"
+#endif
+
 namespace {
 
 const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
@@ -43,6 +47,10 @@ WebUILoginView::WebUILoginView()
       webui_login_(NULL),
       status_window_(NULL),
       host_window_frozen_(false) {
+#if defined(TOUCH_UI)
+  // Make sure the singleton KeyboardManager object is created.
+  KeyboardManager::GetInstance();
+#endif
   accel_map_[views::Accelerator(ui::VKEY_Z, false, true, true)] =
       kAccelNameAccessibility;
   accel_map_[views::Accelerator(ui::VKEY_E, false, true, true)] =

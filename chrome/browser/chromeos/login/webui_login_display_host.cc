@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
-#include "chrome/browser/chromeos/login/touch_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "views/widget/widget.h"
@@ -119,11 +118,7 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
 
     login_window_ = new views::Widget;
     login_window_->Init(params);
-#if defined(TOUCH_UI)
-    login_view_ = new TouchLoginView();
-#else
     login_view_ = new WebUILoginView();
-#endif
 
     login_view_->Init();
     login_window_->SetContentsView(login_view_);

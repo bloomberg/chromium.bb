@@ -20,30 +20,11 @@
 
 class BrowserFrame;
 class BrowserView;
-class KeyboardContainerView;
-class NotificationDetails;
-class NotificationSource;
-
-namespace ui {
-class SlideAnimation;
-}
 
 class TouchBrowserFrameView
     : public OpaqueBrowserFrameView,
-      public views::FocusChangeListener,
-      public TabStripModelObserver,
-#if defined(OS_CHROMEOS)
-      public
-      chromeos::input_method::InputMethodManager::VirtualKeyboardObserver,
-#endif
-      public ui::AnimationDelegate {
+      public views::FocusChangeListener {
  public:
-  enum VirtualKeyboardType {
-    NONE,
-    GENERIC,
-    URL,
-  };
-
   // Internal class name.
   static const char kViewClassName[];
 
@@ -51,62 +32,17 @@ class TouchBrowserFrameView
   TouchBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~TouchBrowserFrameView();
 
-  // Overriden from Views.
-  virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
-  virtual std::string GetClassName() const OVERRIDE;
-
-  // Overridden from OpaqueBrowserFrameView
-  virtual void Layout();
-
+ private:
   // views::FocusChangeListener implementation
   virtual void FocusWillChange(views::View* focused_before,
                                views::View* focused_now);
 
-#if defined(OS_CHROMEOS)
-  // input_method::InputMethodManager::VirtualKeyboardObserver implementation.
-  virtual void VirtualKeyboardChanged(
-      chromeos::input_method::InputMethodManager* manager,
-      const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
-      const std::string& virtual_keyboard_layout);
-#endif
-
- protected:
-  // Overridden from OpaqueBrowserFrameView
-  virtual int GetReservedHeight() const;
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-
- private:
-  virtual void InitVirtualKeyboard();
-  virtual void UpdateKeyboardAndLayout(bool should_show_keyboard);
-  virtual VirtualKeyboardType DecideKeyboardStateForView(views::View* view);
-
   // Overridden from views::View
+  virtual std::string GetClassName() const OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual bool HitTest(const gfx::Point& point) const OVERRIDE;
 
-  // Overrridden from TabStripModelObserver.
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
-                                int index,
-                                bool user_gesture);
-  virtual void TabStripEmpty();
-
-  // Overridden from NotificationObserver.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation);
-  virtual void AnimationEnded(const ui::Animation* animation);
-
-  bool keyboard_showing_;
-  int keyboard_height_;
   bool focus_listener_added_;
-  KeyboardContainerView* keyboard_;
-  NotificationRegistrar registrar_;
-  GURL url_;
-
-  scoped_ptr<ui::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchBrowserFrameView);
 };
