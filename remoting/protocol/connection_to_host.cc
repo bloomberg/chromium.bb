@@ -177,7 +177,6 @@ void ConnectionToHost::OnSessionStateChange(
 
   switch (state) {
     case Session::FAILED:
-      state_ = STATE_FAILED;
       CloseOnError();
       break;
 

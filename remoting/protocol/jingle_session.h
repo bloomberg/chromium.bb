@@ -150,7 +150,6 @@ class JingleSession : public protocol::Session,
   State state_;
   scoped_ptr<StateChangeCallback> state_change_callback_;
 
-  bool closed_;
   bool closing_;
 
   // JID of the other side. Set when the connection is initialized,

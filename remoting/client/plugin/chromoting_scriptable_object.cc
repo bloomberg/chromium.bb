@@ -5,6 +5,7 @@
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 // TODO(wez): Remove this when crbug.com/86353 is complete.
 #include "ppapi/cpp/private/var_private.h"
 #include "remoting/base/auth_token_util.h"
@@ -41,8 +42,10 @@ const char kRoundTripLatencyAttribute[] = "roundTripLatency";
 }  // namespace
 
 ChromotingScriptableObject::ChromotingScriptableObject(
-    ChromotingInstance* instance)
-    : instance_(instance) {
+    ChromotingInstance* instance, base::MessageLoopProxy* plugin_message_loop)
+    : instance_(instance),
+      plugin_message_loop_(plugin_message_loop),
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }
 
 ChromotingScriptableObject::~ChromotingScriptableObject() {
@@ -282,6 +285,24 @@ void ChromotingScriptableObject::AddMethod(const std::string& name,
 }
 
 void ChromotingScriptableObject::SignalConnectionInfoChange() {
+  plugin_message_loop_->PostTask(
+      FROM_HERE, task_factory_.NewRunnableMethod(
+          &ChromotingScriptableObject::DoSignalConnectionInfoChange));
+}
+
+void ChromotingScriptableObject::SignalDesktopSizeChange() {
+  plugin_message_loop_->PostTask(
+      FROM_HERE, task_factory_.NewRunnableMethod(
+          &ChromotingScriptableObject::DoSignalDesktopSizeChange));
+}
+
+void ChromotingScriptableObject::SignalLoginChallenge() {
+  plugin_message_loop_->PostTask(
+      FROM_HERE, task_factory_.NewRunnableMethod(
+          &ChromotingScriptableObject::DoSignalLoginChallenge));
+}
+
+void ChromotingScriptableObject::DoSignalConnectionInfoChange() {
   Var exception;
   VarPrivate cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
 
@@ -293,7 +314,8 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
     LOG(ERROR) << "Exception when invoking connectionInfoUpdate JS callback.";
 }
 
-void ChromotingScriptableObject::SignalDesktopSizeChange() {
+
+void ChromotingScriptableObject::DoSignalDesktopSizeChange() {
   Var exception;
   VarPrivate cb = GetProperty(Var(kDesktopSizeUpdate), &exception);
 
@@ -307,7 +329,7 @@ void ChromotingScriptableObject::SignalDesktopSizeChange() {
   }
 }
 
-void ChromotingScriptableObject::SignalLoginChallenge() {
+void ChromotingScriptableObject::DoSignalLoginChallenge() {
   Var exception;
   VarPrivate cb = GetProperty(Var(kLoginChallenge), &exception);
 

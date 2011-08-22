@@ -115,10 +115,14 @@
 #include <string>
 #include <vector>
 
+#include "base/task.h"
 #include "base/memory/weak_ptr.h"
-
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/var.h"
+
+namespace base {
+class MessageLoopProxy;
+};  // namespace base
 
 namespace remoting {
 
@@ -144,7 +148,9 @@ class ChromotingScriptableObject
     : public pp::deprecated::ScriptableObject,
       public base::SupportsWeakPtr<ChromotingScriptableObject> {
  public:
-  explicit ChromotingScriptableObject(ChromotingInstance* instance);
+  ChromotingScriptableObject(
+      ChromotingInstance* instance,
+      base::MessageLoopProxy* plugin_message_loop);
   virtual ~ChromotingScriptableObject();
 
   virtual void Init();
@@ -205,12 +211,16 @@ class ChromotingScriptableObject
   void AddAttribute(const std::string& name, pp::Var attribute);
   void AddMethod(const std::string& name, MethodHandler handler);
 
-  // This should be called to signal the JS code that the connection status has
-  // changed.
   void SignalConnectionInfoChange();
-
-  // Signal the JS code that the desktop size has changed.
   void SignalDesktopSizeChange();
+
+  // Calls to these methods are posted to the plugin thread from
+  // corresponding Signal*() methods. They actually call JavaScript
+  // code. This is necessary becase JavaScript needs to be called with
+  // clean stack - JavaScript event handlers may destroy the plugin.
+  void DoSignalConnectionInfoChange();
+  void DoSignalDesktopSizeChange();
+  void DoSignalLoginChallenge();
 
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
@@ -235,6 +245,11 @@ class ChromotingScriptableObject
   scoped_refptr<PepperXmppProxy> xmpp_proxy_;
 
   ChromotingInstance* instance_;
+
+  scoped_refptr<base::MessageLoopProxy> plugin_message_loop_;
+  ScopedRunnableMethodFactory<ChromotingScriptableObject> task_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromotingScriptableObject);
 };
 
 }  // namespace remoting

@@ -456,7 +456,8 @@ void ChromotingInstance::ProcessLogToUI(const std::string& message) {
 
 pp::Var ChromotingInstance::GetInstanceObject() {
   if (instance_object_.is_undefined()) {
-    ChromotingScriptableObject* object = new ChromotingScriptableObject(this);
+    ChromotingScriptableObject* object =
+        new ChromotingScriptableObject(this, plugin_message_loop_);
     object->Init();
 
     // The pp::Var takes ownership of object here.

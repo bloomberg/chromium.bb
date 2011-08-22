@@ -32,8 +32,6 @@ class ClientContext {
   // A thread that handles all decode operations.
   base::Thread decode_thread_;
 
-  base::Thread network_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(ClientContext);
 };
 

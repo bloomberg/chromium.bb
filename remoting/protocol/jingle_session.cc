@@ -55,7 +55,6 @@ JingleSession::JingleSession(
     : jingle_session_manager_(jingle_session_manager),
       local_cert_(local_cert),
       state_(INITIALIZING),
-      closed_(false),
       closing_(false),
       cricket_session_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
@@ -90,15 +89,8 @@ void JingleSession::Init(cricket::Session* cricket_session) {
 void JingleSession::CloseInternal(int result, bool failed) {
   DCHECK(CalledOnValidThread());
 
-  if (!closed_ && !closing_) {
+  if (state_ != FAILED && state_ != CLOSED && !closing_) {
     closing_ = true;
-
-    // Inform the StateChangeCallback, so calling code knows not to touch any
-    // channels.
-    if (failed)
-      SetState(FAILED);
-    else
-      SetState(CLOSED);
 
     control_channel_socket_.reset();
     event_channel_socket_.reset();
@@ -111,7 +103,13 @@ void JingleSession::CloseInternal(int result, bool failed) {
       cricket_session_->SignalState.disconnect(this);
     }
 
-    closed_ = true;
+    // Inform the StateChangeCallback, so calling code knows not to
+    // touch any channels. Needs to be done in the end because the
+    // session may be deleted in response to this event.
+    if (failed)
+      SetState(FAILED);
+    else
+      SetState(CLOSED);
   }
 }
 
@@ -124,7 +122,7 @@ cricket::Session* JingleSession::ReleaseSession() {
   DCHECK(CalledOnValidThread());
 
   // Session may be destroyed only after it is closed.
-  DCHECK(closed_);
+  DCHECK(state_ == FAILED || state_ == CLOSED);
 
   cricket::Session* session = cricket_session_;
   if (cricket_session_)
@@ -250,7 +248,7 @@ void JingleSession::OnSessionState(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(cricket_session_, session);
 
-  if (closed_) {
+  if (state_ == FAILED || state_ == CLOSED) {
     // Don't do anything if we already closed.
     return;
   }
@@ -474,7 +472,7 @@ void JingleSession::SetState(State new_state) {
     DCHECK_NE(state_, FAILED);
 
     state_ = new_state;
-    if (!closed_ && state_change_callback_.get())
+    if (state_change_callback_.get())
       state_change_callback_->Run(new_state);
   }
 }
