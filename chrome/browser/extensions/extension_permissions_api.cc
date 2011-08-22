@@ -201,9 +201,6 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
       Source<Profile>(extension_service_->profile()),
       Details<UpdatedExtensionPermissionsInfo>(&info));
 
-  // Trigger the onAdded and onRemoved events in the extension.
-  DispatchEvent(extension->id(), event_name, changed);
-
   // Send the new permissions to the renderers.
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
@@ -217,6 +214,9 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
           changed->explicit_hosts(),
           changed->scriptable_hosts()));
   }
+
+  // Trigger the onAdded and onRemoved events in the extension.
+  DispatchEvent(extension->id(), event_name, changed);
 }
 
 bool ContainsPermissionsFunction::RunImpl() {

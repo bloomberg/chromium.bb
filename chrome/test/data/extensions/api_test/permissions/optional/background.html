@@ -276,6 +276,36 @@ chrome.test.getConfig(function(config) {
             pass(function(result) { assertFalse(result); }));
         doReq('http://c.com', pass(function(result) { assertFalse(result); }));
       }));
+    },
+
+    // Tests that the changed permissions have taken effect from inside the
+    // onAdded and onRemoved event listeners.
+    function eventListenerPermissions() {
+      listenOnce(chrome.experimental.permissions.onAdded,
+                 function(permissions) {
+        chrome.windows.getAll({populate: true}, pass(function() {
+          assertTrue(true);
+        }));
+      });
+      listenOnce(chrome.experimental.permissions.onRemoved,
+                 function(permissions) {
+        try {
+          chrome.windows.getAll({populate: true}, function() {
+            chrome.test.fail("Should not have tabs API permission.");
+          });
+        } catch (e) {
+          assertTrue(e.message.indexOf(NO_TABS_PERMISSION) == 0);
+        }
+      });
+
+      chrome.experimental.permissions.request(
+          {permissions: ['tabs']}, pass(function(granted) {
+        assertTrue(granted);
+        chrome.experimental.permissions.remove(
+            {permissions: ['tabs']}, pass(function() {
+          assertTrue(true);
+        }));
+      }));
     }
 
   ]);
