@@ -1563,7 +1563,7 @@
    bug_86301
    Heapcheck:Leak
    ...
-   fun:base::::MessageLoopProxyTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test*
+   fun:MessageLoopProxyTest_PostTaskAndReply_DeadReplyLoopDoesNotDelete_Test*
    ...
    fun:testing::UnitTest::Run
    fun:base::TestSuite::Run
