@@ -5313,6 +5313,46 @@
    fun:_ZN3net18CertVerifierWorker6FinishEv
    fun:_ZN3net18CertVerifierWorker3RunEv
 }
+{
+   bug_93730_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14ServiceProcess10InitializeEP16MessageLoopForUIRK11CommandLineP19ServiceProcessState
+   fun:_Z18ServiceProcessMainRK18MainFunctionParams
+   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
+{
+   bug_93730_b
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN4base13LaunchProcessERKSt6vectorISsSaISsEERKNS_13LaunchOptionsEPi
+   fun:_ZN4base13LaunchProcessERK11CommandLineRKNS_13LaunchOptionsEPi
+   fun:_ZN21ServiceProcessControl8Launcher5DoRunEv
+   fun:_Z16DispatchToMethodIN21ServiceProcessControl8LauncherEMS1_FvvEEvPT_T0_RK6Tuple0
+}
+{
+   bug_93730_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodIN21ServiceProcessControl8LauncherEMS1_FvvEEP14CancelableTaskPT_T0_
+   fun:_ZN21ServiceProcessControl8Launcher5DoRunEv
+   fun:_Z16DispatchToMethodIN21ServiceProcessControl8LauncherEMS1_FvvEEvPT_T0_RK6Tuple0
+}
+{
+   bug_93730_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyEbPNS8_13WaitableEventE
+   fun:_ZN16ServiceIPCServer13CreateChannelEv
+   fun:_ZN16ServiceIPCServer4InitEv
+   fun:_ZN14ServiceProcess10InitializeEP16MessageLoopForUIRK11CommandLineP19ServiceProcessState
+   fun:_Z18ServiceProcessMainRK18MainFunctionParams
+   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
