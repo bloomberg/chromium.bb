@@ -20,6 +20,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/history/download_history_info.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
@@ -284,8 +285,9 @@ void DownloadItem::OpenDownload() {
     return;
 
   if (is_extension_install()) {
-    download_crx_util::OpenChromeExtension(download_manager_->profile(),
-                                           *this);
+    download_crx_util::OpenChromeExtension(
+        Profile::FromBrowserContext(download_manager_->browser_context()),
+        *this);
     return;
   }
 
@@ -435,7 +437,7 @@ void DownloadItem::StartCrxInstall() {
 
   scoped_refptr<CrxInstaller> crx_installer =
       download_crx_util::OpenChromeExtension(
-          download_manager_->profile(),
+          Profile::FromBrowserContext(download_manager_->browser_context()),
           *this);
 
   // CRX_INSTALLER_DONE will fire when the install completes.  Observe()

@@ -76,6 +76,8 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
   void HandleOpenDownloadsFolder(const base::ListValue* args);
 
  private:
+  class OriginalDownloadManagerObserver;
+
   // Send the current list of downloads to the page.
   void SendCurrentDownloads();
 
@@ -93,6 +95,11 @@ class DownloadsDOMHandler : public WebUIMessageHandler,
 
   // Our model
   DownloadManager* download_manager_;
+
+  // The downloads webui for an off-the-record window also shows downloads from
+  // the parent profile.
+  scoped_ptr<OriginalDownloadManagerObserver>
+      original_download_manager_observer_;
 
   // The current set of visible DownloadItems for this view received from the
   // DownloadManager. DownloadManager owns the DownloadItems. The vector is

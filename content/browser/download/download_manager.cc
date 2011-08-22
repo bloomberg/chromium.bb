@@ -17,6 +17,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_history_info.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/download/download_create_info.h"
@@ -57,7 +58,7 @@ void BeginDownload(
 DownloadManager::DownloadManager(DownloadManagerDelegate* delegate,
                                  DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),
-      profile_(NULL),
+      browser_context_(NULL),
       file_manager_(NULL),
       status_updater_(status_updater->AsWeakPtr()),
       next_save_page_id_(0),
@@ -164,39 +165,8 @@ void DownloadManager::GetAllDownloads(
   }
 }
 
-void DownloadManager::GetCurrentDownloads(
-    const FilePath& dir_path, DownloadVector* result) {
-  DCHECK(result);
-
-  for (DownloadMap::iterator it = history_downloads_.begin();
-       it != history_downloads_.end(); ++it) {
-    DownloadItem* item =it->second;
-    // Skip temporary items.
-    if (item->is_temporary())
-      continue;
-    // Skip items that have all their data, and are OK to save.
-    if (!item->IsPartialDownload() &&
-        (item->safety_state() != DownloadItem::DANGEROUS))
-      continue;
-    // Skip items that don't match |dir_path|.
-    // If |dir_path| is empty, all remaining items match.
-    if (!dir_path.empty() && (it->second->full_path().DirName() != dir_path))
-      continue;
-
-    result->push_back(item);
-  }
-
-  // If we have a parent profile, let it add its downloads to the results.
-  Profile* original_profile = profile_->GetOriginalProfile();
-  if (original_profile != profile_)
-    original_profile->GetDownloadManager()->GetCurrentDownloads(dir_path,
-                                                                result);
-}
-
 void DownloadManager::SearchDownloads(const string16& query,
                                       DownloadVector* result) {
-  DCHECK(result);
-
   string16 query_lower(base::i18n::ToLower(query));
 
   for (DownloadMap::iterator it = history_downloads_.begin();
@@ -209,27 +179,23 @@ void DownloadManager::SearchDownloads(const string16& query,
     // Display Incognito downloads only in Incognito window, and vice versa.
     // The Incognito Downloads page will get the list of non-Incognito downloads
     // from its parent profile.
-    if (profile_->IsOffTheRecord() != download_item->is_otr())
+    if (browser_context_->IsOffTheRecord() != download_item->is_otr())
       continue;
 
     if (download_item->MatchesQuery(query_lower))
       result->push_back(download_item);
   }
-
-  // If we have a parent profile, let it add its downloads to the results.
-  Profile* original_profile = profile_->GetOriginalProfile();
-  if (original_profile != profile_)
-    original_profile->GetDownloadManager()->SearchDownloads(query, result);
 }
 
 // Query the history service for information about all persisted downloads.
-bool DownloadManager::Init(Profile* profile) {
-  DCHECK(profile);
+bool DownloadManager::Init(content::BrowserContext* browser_context) {
+  DCHECK(browser_context);
   DCHECK(!shutdown_needed_)  << "DownloadManager already initialized.";
   shutdown_needed_ = true;
 
-  profile_ = profile;
-  download_history_.reset(new DownloadHistory(profile));
+  browser_context_ = browser_context;
+  download_history_.reset(new DownloadHistory(
+      Profile::FromBrowserContext(browser_context)));
   download_history_->Load(
       NewCallback(this, &DownloadManager::OnQueryDownloadEntriesComplete));
 
@@ -242,9 +208,6 @@ bool DownloadManager::Init(Profile* profile) {
     file_manager_ = rdh->download_file_manager();
     DCHECK(file_manager_);
   }
-
-  other_download_manager_observer_.reset(
-      new OtherDownloadManagerObserver(this));
 
   return true;
 }
@@ -337,7 +300,7 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download = new DownloadItem(this, *info,
-                                            profile_->IsOffTheRecord());
+                                            browser_context_->IsOffTheRecord());
   int32 download_id = info->download_id;
   DCHECK(!ContainsKey(in_progress_, download_id));
   DCHECK(!ContainsKey(active_downloads_, download_id));
@@ -708,11 +671,6 @@ int DownloadManager::RemoveDownloads(const base::Time remove_begin) {
 }
 
 int DownloadManager::RemoveAllDownloads() {
-  if (this != profile_->GetOriginalProfile()->GetDownloadManager()) {
-    // This is an incognito downloader. Clear All should clear main download
-    // manager as well.
-    profile_->GetOriginalProfile()->GetDownloadManager()->RemoveAllDownloads();
-  }
   // The null times make the date range unbounded.
   return RemoveDownloadsBetween(base::Time(), base::Time());
 }
@@ -999,35 +957,6 @@ void DownloadManager::AssertContainersConsistent() const {
                       insert_remainder);
   DCHECK(remainder.empty());
 #endif
-}
-
-// DownloadManager::OtherDownloadManagerObserver implementation ----------------
-
-DownloadManager::OtherDownloadManagerObserver::OtherDownloadManagerObserver(
-    DownloadManager* observing_download_manager)
-    : observing_download_manager_(observing_download_manager),
-      observed_download_manager_(NULL) {
-  if (observing_download_manager->profile_->GetOriginalProfile() ==
-      observing_download_manager->profile_) {
-    return;
-  }
-
-  observed_download_manager_ = observing_download_manager_->
-      profile_->GetOriginalProfile()->GetDownloadManager();
-  observed_download_manager_->AddObserver(this);
-}
-
-DownloadManager::OtherDownloadManagerObserver::~OtherDownloadManagerObserver() {
-  if (observed_download_manager_)
-    observed_download_manager_->RemoveObserver(this);
-}
-
-void DownloadManager::OtherDownloadManagerObserver::ModelChanged() {
-  observing_download_manager_->NotifyModelChanged();
-}
-
-void DownloadManager::OtherDownloadManagerObserver::ManagerGoingDown() {
-  observed_download_manager_ = NULL;
 }
 
 void DownloadManager::SavePageDownloadStarted(DownloadItem* download) {

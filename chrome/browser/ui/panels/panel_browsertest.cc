@@ -390,7 +390,7 @@ class DownloadObserver : public DownloadManager::Observer {
   // DownloadManager::Observer
   virtual void ModelChanged() {
     std::vector<DownloadItem*> downloads;
-    download_manager_->GetCurrentDownloads(FilePath(), &downloads);
+    download_manager_->SearchDownloads(string16(), &downloads);
     if (downloads.empty())
       return;
 

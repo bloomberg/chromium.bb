@@ -5,7 +5,7 @@
 // The DownloadManager object manages the process of downloading, including
 // updates to the history system and providing the information for displaying
 // the downloads view in the Destinations tab. There is one DownloadManager per
-// active profile in Chrome.
+// active browser context in Chrome.
 //
 // Download observers:
 // Objects that are interested in notifications about new downloads, or progress
@@ -52,12 +52,15 @@ class DownloadHistory;
 class DownloadManagerDelegate;
 class DownloadStatusUpdater;
 class GURL;
-class Profile;
 class ResourceDispatcherHost;
 class TabContents;
 struct DownloadCreateInfo;
 struct DownloadHistoryInfo;
 struct DownloadSaveInfo;
+
+namespace content {
+class BrowserContext;
+}
 
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManager
@@ -101,16 +104,12 @@ class DownloadManager
   // are in progress or have completed.
   void GetAllDownloads(const FilePath& dir_path, DownloadVector* result);
 
-  // Return all non-temporary downloads in the specified directory that are
-  // in-progress (including dangerous downloads waiting for user confirmation).
-  void GetCurrentDownloads(const FilePath& dir_path, DownloadVector* result);
-
   // Returns all non-temporary downloads matching |query|. Empty query matches
   // everything.
   void SearchDownloads(const string16& query, DownloadVector* result);
 
   // Returns true if initialized properly.
-  bool Init(Profile* profile);
+  bool Init(content::BrowserContext* browser_context);
 
   // Notifications sent from the download thread to the UI thread
   void StartDownload(int32 id);
@@ -195,7 +194,7 @@ class DownloadManager
     return static_cast<int>(in_progress_.size());
   }
 
-  Profile* profile() { return profile_; }
+  content::BrowserContext* browser_context() { return browser_context_; }
 
   DownloadHistory* download_history() { return download_history_.get(); }
 
@@ -266,30 +265,8 @@ class DownloadManager
   friend class DownloadManagerTest;
   friend class MockDownloadManager;
 
-  // This class is used to let an incognito DownloadManager observe changes to
-  // a normal DownloadManager, to propagate ModelChanged() calls from the parent
-  // DownloadManager to the observers of the incognito DownloadManager.
-  class OtherDownloadManagerObserver : public Observer {
-   public:
-    explicit OtherDownloadManagerObserver(
-        DownloadManager* observing_download_manager);
-    virtual ~OtherDownloadManagerObserver();
-
-    // Observer interface.
-    virtual void ModelChanged();
-    virtual void ManagerGoingDown();
-
-   private:
-    // The incognito download manager.
-    DownloadManager* observing_download_manager_;
-
-    // The original profile's download manager.
-    DownloadManager* observed_download_manager_;
-  };
-
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<DownloadManager>;
-  friend class OtherDownloadManagerObserver;
 
   virtual ~DownloadManager();
 
@@ -345,9 +322,9 @@ class DownloadManager
   // kept, as the DownloadManager's only job is to hold onto those
   // until destruction.
   //
-  // |history_downloads_| is map of all downloads in this profile. The key
-  // is the handle returned by the history system, which is unique
-  // across sessions.
+  // |history_downloads_| is map of all downloads in this browser context. The
+  // key is the handle returned by the history system, which is unique across
+  // sessions.
   //
   // |active_downloads_| is a map of all downloads that are currently being
   // processed. The key is the ID assigned by the ResourceDispatcherHost,
@@ -384,8 +361,8 @@ class DownloadManager
   // Observers that want to be notified of changes to the set of downloads.
   ObserverList<Observer> observers_;
 
-  // The current active profile.
-  Profile* profile_;
+  // The current active browser context.
+  content::BrowserContext* browser_context_;
 
   scoped_ptr<DownloadHistory> download_history_;
 
@@ -401,8 +378,6 @@ class DownloadManager
 
   // Download Id for next Save Page.
   int32 next_save_page_id_;
-
-  scoped_ptr<OtherDownloadManagerObserver> other_download_manager_observer_;
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   DownloadManagerDelegate* delegate_;

@@ -76,6 +76,7 @@ class ChromeDownloadManagerDelegate
                        const DownloadStateInfo& state,
                        bool visited_referrer_before);
 
+  Profile* profile_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_ptr<DownloadPrefs> download_prefs_;
 

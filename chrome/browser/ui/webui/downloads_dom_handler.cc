@@ -50,12 +50,46 @@ class DownloadItemSorter : public std::binary_function<DownloadItem*,
 
 }  // namespace
 
+class DownloadsDOMHandler::OriginalDownloadManagerObserver
+    : public DownloadManager::Observer {
+ public:
+  explicit OriginalDownloadManagerObserver(
+      DownloadManager::Observer* observer,
+      Profile* original_profile)
+      : observer_(observer) {
+    original_profile_download_manager_ = original_profile->GetDownloadManager();
+    original_profile_download_manager_->AddObserver(this);
+  }
+
+  virtual ~OriginalDownloadManagerObserver() {
+    if (original_profile_download_manager_)
+      original_profile_download_manager_->RemoveObserver(this);
+  }
+
+  // Observer interface.
+  virtual void ModelChanged() {
+    observer_->ModelChanged();
+  }
+
+  virtual void ManagerGoingDown() {
+    original_profile_download_manager_ = NULL;
+  }
+
+ private:
+  // The DownloadsDOMHandler for the off-the-record profile.
+  DownloadManager::Observer* observer_;
+
+  // The original profile's download manager.
+  DownloadManager* original_profile_download_manager_;
+};
+
 DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
     : search_text_(),
       download_manager_(dlm),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Create our fileicon data source.
-  dlm->profile()->GetChromeURLDataManager()->AddDataSource(
+  Profile::FromBrowserContext(dlm->browser_context())->
+      GetChromeURLDataManager()->AddDataSource(
 #if defined(OS_CHROMEOS)
       new FileIconSourceCros());
 #else
@@ -72,6 +106,14 @@ DownloadsDOMHandler::~DownloadsDOMHandler() {
 
 void DownloadsDOMHandler::Init() {
   download_manager_->AddObserver(this);
+
+  Profile* profile =
+      Profile::FromBrowserContext(download_manager_->browser_context());
+  Profile* original_profile = profile->GetOriginalProfile();
+  if (original_profile != profile) {
+    original_download_manager_observer_.reset(
+        new OriginalDownloadManagerObserver(this, original_profile));
+  }
 }
 
 void DownloadsDOMHandler::RegisterMessages() {
@@ -135,6 +177,14 @@ void DownloadsDOMHandler::ModelChanged() {
   ClearDownloadItems();
   download_manager_->SearchDownloads(WideToUTF16(search_text_),
                                      &download_items_);
+  // If we have a parent profile, let it add its downloads to the results.
+  Profile* profile =
+      Profile::FromBrowserContext(download_manager_->browser_context());
+  if (profile->GetOriginalProfile() != profile) {
+    profile->GetOriginalProfile()->GetDownloadManager()->SearchDownloads(
+        WideToUTF16(search_text_), &download_items_);
+  }
+
   sort(download_items_.begin(), download_items_.end(), DownloadItemSorter());
 
   // Add ourself to all download items as an observer.
@@ -229,6 +279,13 @@ void DownloadsDOMHandler::HandleCancel(const ListValue* args) {
 
 void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
   download_manager_->RemoveAllDownloads();
+
+  Profile* profile =
+      Profile::FromBrowserContext(download_manager_->browser_context());
+  // If this is an incognito downloader, clear All should clear main download
+  // manager as well.
+  if (profile->GetOriginalProfile() != profile)
+    profile->GetOriginalProfile()->GetDownloadManager()->RemoveAllDownloads();
 }
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(const ListValue* args) {

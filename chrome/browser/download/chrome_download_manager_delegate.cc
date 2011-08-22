@@ -35,7 +35,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
-    : download_prefs_(new DownloadPrefs(profile->GetPrefs())) {
+    : profile_(profile),
+      download_prefs_(new DownloadPrefs(profile->GetPrefs())) {
 }
 
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
@@ -59,8 +60,7 @@ bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
   // It deletes itself after the callback.
   scoped_refptr<DownloadSBClient> sb_client = new DownloadSBClient(
       download_id, download->url_chain(), download->referrer_url(),
-          download_manager_->profile()->GetPrefs()->GetBoolean(
-              prefs::kSafeBrowsingEnabled));
+          profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled));
   sb_client->CheckDownloadUrl(
       NewCallback(this, &ChromeDownloadManagerDelegate::CheckDownloadUrlDone));
 #else
@@ -82,8 +82,7 @@ TabContents* ChromeDownloadManagerDelegate::
     GetAlternativeTabContentsToNotifyForDownload() {
   // Start the download in the last active browser. This is not ideal but better
   // than fully hiding the download from the user.
-  Browser* last_active = BrowserList::GetLastActiveWithProfile(
-      download_manager_->profile());
+  Browser* last_active = BrowserList::GetLastActiveWithProfile(profile_);
   return last_active ? last_active->GetSelectedTabContents() : NULL;
 }
 
@@ -102,9 +101,8 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 #if defined(ENABLE_SAFE_BROWSING)
-  return download_manager_->profile()->GetPrefs()->GetBoolean(
-      prefs::kSafeBrowsingEnabled) &&
-          g_browser_process->safe_browsing_service()->DownloadBinHashNeeded();
+  return profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
+      g_browser_process->safe_browsing_service()->DownloadBinHashNeeded();
 #else
   return false;
 #endif
@@ -376,8 +374,7 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
 
   if (state.is_extension_install) {
     // Extensions that are not from the gallery are considered dangerous.
-    ExtensionService* service =
-        download_manager_->profile()->GetExtensionService();
+    ExtensionService* service = profile_->GetExtensionService();
     if (!service || !service->IsDownloadFromGallery(download.GetURL(),
                                                     download.referrer_url()))
       return true;
