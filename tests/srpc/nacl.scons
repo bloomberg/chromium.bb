@@ -66,17 +66,6 @@ env.Publish(srpc_nrd_client_nexe_name, 'run',
      'srpc_nrd_server.nmf'])
 
 
-cat_nexe_name = ('cat_%s' % env.get('TARGET_FULLARCH'))
-cat_nexe = env.ComponentProgram(
-    cat_nexe_name, 'cat.c',
-    EXTRA_LIBS=['${NON_PPAPI_BROWSER_LIBS}',
-                'srpc', 'imc_syscalls', 'platform', 'gio', '${PTHREAD_LIBS}'])
-env.Publish(cat_nexe_name, 'run',
-    ['srpc_url_as_nacl_desc.html',
-     'srpc_url_as_nacl_desc_success.html',
-     'cat.nmf'])
-
-
 srpc_bidir_nexe_name = ('srpc_bidir_%s' % env.get('TARGET_FULLARCH'))
 srpc_bidir_nexe = env.ComponentProgram(
     srpc_bidir_nexe_name, 'srpc_bidir.c',
@@ -138,15 +127,4 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_nrd_xfer_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
-
-# TODO(sehr): fix this test on windows.
-node = env.PPAPIBrowserTester(
-    'srpc_url_as_nacl_desc_chrome_browser_test.out',
-    url='srpc_url_as_nacl_desc.html',
-    files=env.ExtractPublishedFiles(cat_nexe_name),
-    args=['--enable_experimental_js', '--allow_404'])
-env.AddNodeToTestSuite(node,
-                       ['chrome_browser_tests'],
-                       'run_srpc_url_as_nacl_desc_chrome_browser_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())

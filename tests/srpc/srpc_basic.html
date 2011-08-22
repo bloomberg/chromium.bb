@@ -191,18 +191,6 @@ function SpecialTypes(tester, server) {
     assertRaises(function() { return server.handle([1, 2, 3, 4, 5]); });
   });
 }
-
-function ISATest(tester, server) {
-  tester.addTest('get_sandbox_isa', function() {
-    var isa_string = server.__getSandboxISA();
-    tester.log('Got sandbox ISA identifier: ' + isa_string);
-    // Unfortunately, I don't know how to test the ground-truth.
-    // At least we can test that it does not return garbage.
-    assert(isa_string == "x86-32"
-           || isa_string == "x86-64"
-           || isa_string == "arm");
-  });
-}
     </script>
   </head>
   <body>
@@ -219,7 +207,6 @@ function ISATest(tester, server) {
       ScalarTypes(tester, server);
       ArrayTypes(tester, server);
       SpecialTypes(tester, server);
-      ISATest(tester, server);
       tester.waitFor(server);
       tester.run();
       //]]>

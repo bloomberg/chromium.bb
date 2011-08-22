@@ -1,7 +1,0 @@
-{
-  "program": {
-    "x86-32": {"url": "async_message_test_x86-32.nexe"},
-    "x86-64": {"url": "async_message_test_x86-64.nexe"},
-    "arm": {"url": "async_message_test_arm.nexe"}
-  }
-}
