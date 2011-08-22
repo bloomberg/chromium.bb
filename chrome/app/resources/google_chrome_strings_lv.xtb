@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Jūs mēģinājāt sasniegt &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet servera piedāvātais sertifikāts satur kļūdas. Google Chrome nevar izmantot kļūdainu sertifikātu un nevar novērtēt vietnes identitāti, ar kuru centāties savienoties. Jūsu savienojums nav drošs un jums nevajadzētu turpināt.</translation>
 <translation id="8738921060445980047">Nezināma versija.</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
+<translation id="2748463065602559597">Jūs skatāt drošu Google Chrome lapu.</translation>
 <translation id="3324235665723428530">Nav iespējams izmantot jūsu profilu, jo tas atrodas uz jaunākas Google Chrome versijas.\n\nDažas no funkcijām var nebūt pieejamas. Lūdzu, norādiet citu profila direktoriju vai izmantojiet jaunāku Chrome versiju.</translation>
 <translation id="9073088951656332330">Nevienai Google Chrome vai Google Chrome Frame instalācijai nav atrasti atjauninājumi.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Lai uzlabotu pārlūkošanu, Google Chrome var izmantot tīmekļa pakalpojumus.</translation>
 <translation id="7436949144778751379">Google Chrome darbībai nepieciešams Windows XP vai jaunāka operētājsistēma. Dažas funkcijas var nedarboties.</translation>
 <translation id="7100330187273168372">Google Chrome nevar nolasīt un ierakstīt savu datu direktorijā:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome motīvu galerija</translation>
 <translation id="7938170099933661772">Google Chrome nevar parādīt drukas priekšskatījumu, ja ir atspējots iebūvētais PDF skatītājs. Lai redzētu priekšskatījumu, atveriet lapu <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, iespējojiet opciju Chrome PDF skatītājs un pēc tam mēģiniet vēlreiz.</translation>
 <translation id="6757767188268205357">Netraucējiet mani</translation>
 <translation id="2290095356545025170">Vai tiešām vēlaties atinstalēt Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome vai Google Chrome Frame nevar atjaunināt neatbilstīgu Google atjauninājumu grupas politikas iestatījumu dēļ. Lai Google Chrome Binaries lietojumprogrammai iestatītu atjauninājumu politikas ignorēšanas iestatījumu, izmantojiet grupas politikas redaktoru un mēģiniet vēlreiz.</translation>
 <translation id="6087062680442281307">Google Chrome ir tīmekļa pārlūks, kas zibenīgi atver tīmekļa lapas un izpilda lietojumprogrammas. Tā ir ātra, stabila un ērti lietotojama. Google Chrome iebūvētā aizsardzība pret ļaunprātīgu programmatūru un pikšķerēšanu nodrošina daudz drošāku tīmekļa pārlūkošanu.</translation>
 <translation id="5941830788786076944">Izveidot Google Chrome par noklusējuma pārlūku</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Atklāts konflikts ar citu instalētu lietojumprogrammu.</translation>
 <translation id="7018032895891496381">Google Chrome izmanto jūsu noklusējuma meklētājprogrammu — <ph name="PAGE_TITLE"/>. Vai vēlaties turpināt lietot noklusējuma meklētājprogrammu?</translation>
 <translation id="7161904924553537242">Laipni lūdzam Google Chrome</translation>
+<translation id="5211087808649701653">Palaist datora drukas dialoglodziņu</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">Šajā lapā tiek parādīta tikai informācija par pēdējā laika avārijām, ja <ph name="BEGIN_LINK"/>iespējojat avāriju pārskatu izveidi<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome nereaģē. Vai restartēt to tūlīt?</translation>

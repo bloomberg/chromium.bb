@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun sertifikat yang diberikan oleh server berisi kesalahan. Google Chrome dapat menggunakan sertifikat yang berisi kesalahan dan tidak dapat memvalidasi identitas situs yang akan dibuka. Sambungan tidak aman dan Anda tidak boleh melanjutkan.</translation>
 <translation id="8738921060445980047">Versi tidak diketahui.</translation>
 <translation id="2485422356828889247">Copot instalasi</translation>
+<translation id="2748463065602559597">Anda sedang melihat laman Google Chrome yang aman.</translation>
 <translation id="3324235665723428530">Profil Anda tidak dapat digunakan karena berasal dari versi Google Chrome yang lebih baru.\n\nBeberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome terbaru.</translation>
 <translation id="9073088951656332330">Tidak ditemukan pemasangan Google Chrome atau Google Chrome Frame untuk diperbarui.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome dapat menggunakan layanan web guna meningkatkan pengalaman meramban Anda.</translation>
 <translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
 <translation id="7100330187273168372">Google Chrome tidak dapat membaca dan menulis ke direktori data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galeri Tema Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome tidak dapat menampilkan pratinjau cetak jika penayang PDF yang tertanam dinonaktifkan. Untuk melihat pratinjau, kunjungi <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, aktifkan &quot;Chrome PDF Viewer&quot;, lalu coba lagi.</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome atau Google Chrome Frame tidak dapat diperbarui pada akun yang memiliki setelan Kebijakan Grup Google Pemutakhiran yang tidak konsisten. Gunakan Editor Kebijakan Grup untuk menyetel kebijakan pembaruan yang berlaku bagi aplikasi Google Chrome Binaries dan coba lagi.</translation>
 <translation id="6087062680442281307">Google Chrome adalah peramban web yang menjalankan laman dan aplikasi web dengan kecepatan kilat. Cepat, stabil, dan mudah digunakan. Ramban web secara lebih aman dengan perlindungan terhadap perangkat lunak jahat dan phishing yang disertakan dalam Google Chrome.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome sebagai browser default</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Terdeteksi konflik dengan aplikasi terinstal lain.</translation>
 <translation id="7018032895891496381">Google Chrome menggunakan mesin telusur bawaan, yang saat ini disetel ke <ph name="PAGE_TITLE"/>. Anda ingin mempertahankan mesin telusur bawaan?</translation>
 <translation id="7161904924553537242">Selamat Datang di Google Chrome</translation>
+<translation id="5211087808649701653">Luncurkan dialog cetak asli</translation>
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="3444832043240812445">Laman ini hanya menunjukkan informasi tentang kondisi ngadat terkini jika Anda <ph name="BEGIN_LINK"/>mengaktifkan pelaporan kondisi ngadat<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome tidak merespons. Luncurkan ulang sekarang?</translation>

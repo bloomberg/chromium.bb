@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーの証明書にエラーが含まれています。エラーのある証明書は Google Chrome で使用できないため、接続しようとしているサイトの身元を検証することができません。この接続は安全でないため、ここで操作を止めてください。</translation>
 <translation id="8738921060445980047">バージョンが不明です。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
+<translation id="2748463065602559597">Google Chrome の安全なページを表示しています。</translation>
 <translation id="3324235665723428530">バージョンが新しい Google Chrome のプロフィールは使用できません。\n\n一部の機能が使用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください</translation>
 <translation id="9073088951656332330">Google Chrome と Google Chrome Frame のインストール可能なアップデートは見つかりませんでした。</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。</translation>
 <translation id="7436949144778751379">Google Chrome では Windows XP 以降が必要です。機能の一部が動作しない可能性があります。</translation>
 <translation id="7100330187273168372">このディレクトリには Google Chrome はアクセスできません:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome テーマ ギャラリー</translation>
 <translation id="7938170099933661772">Google Chrome では、組み込みの PDF ビューアが無効になっていると、印刷プレビューを表示できません。プレビューを表示するには、<ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> にアクセスし、[Chrome PDF ビューア] を有効にして、もう一度お試しください。</translation>
 <translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
+<translation id="1243097286641060337">Google Chrome や Google Chrome Frame では、Google Update Group Policy 設定に矛盾があるアカウントを更新することはできません。Group Policy Editor で Google Chrome Binaries アプリケーションの更新ポリシーの上書きを設定してから再度お試しください。</translation>
 <translation id="6087062680442281307">Google Chrome は、ウェブページやウェブ アプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブ ブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">インストールされている別のアプリケーションとの競合が検出されました。</translation>
 <translation id="7018032895891496381">Google Chrome は既定の検索エンジンを使用します。現在は <ph name="PAGE_TITLE"/> に設定されています。この検索エンジンを使用しますか？</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
+<translation id="5211087808649701653">ネイティブのプリンタ ダイアログを起動</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>障害レポートを有効<ph name="END_LINK"/>にした場合にのみ、このページに最近の障害情報が表示されます。</translation>
 <translation id="8614913330719544658">Google Chrome が応答しません。今すぐ再起動しますか？</translation>

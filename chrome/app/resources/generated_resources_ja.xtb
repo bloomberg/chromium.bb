@@ -3,10 +3,10 @@
 <translationbundle lang="ja">
 <translation id="6779164083355903755">削除(&amp;R)</translation>
 <translation id="6879617193011158416">ブックマーク バーを切り替える</translation>
+<translation id="273269537092923463"><ph name="SHORT_PRODUCT_NAME"/> の同期をセットアップ</translation>
 <translation id="8130276680150879341">プライベート ネットワークとの接続を切断</translation>
 <translation id="1058418043520174283"><ph name="COUNT"/> 件のうち <ph name="INDEX"/> 番目</translation>
 <translation id="4480627574828695486">このアカウントとの同期を停止...</translation>
-<translation id="1437399238463685286">ファイル名に無効な文字が含まれています: $1</translation>
 <translation id="7040807039050164757">このフィールドのスペルをチェック(&amp;C)</translation>
 <translation id="778579833039460630">データを受信して​​いません</translation>
 <translation id="8791923223854254330">ハンドラを管理...</translation>
@@ -14,10 +14,11 @@
 <translation id="3828924085048779000">パスフレーズは必ず指定してください。</translation>
 <translation id="8265562484034134517">他のブラウザからデータをインポート...</translation>
 <translation id="2709516037105925701">自動入力</translation>
-<translation id="4857138207355690859">P2P API</translation>
+<translation id="3916445069167113093">この種類のファイルはコンピュータに損害を与える可能性があります。<ph name="FILE_NAME"/> のダウンロードを続けますか？</translation>
 <translation id="250599269244456932">自動的に実行する（推奨）</translation>
 <translation id="3581034179710640788">このサイトのセキュリティ証明書は失効しています</translation>
 <translation id="2825758591930162672">サブジェクトの公開鍵</translation>
+<translation id="8306243285620593545">ステータス アイコンにフォーカスを移す</translation>
 <translation id="8275038454117074363">インポート</translation>
 <translation id="8418445294933751433">タブで表示(&amp;S)</translation>
 <translation id="6985276906761169321">ID:</translation>
@@ -46,15 +47,13 @@
 <translation id="2105006017282194539">まだ読み込まれていません</translation>
 <translation id="7821009361098626711"><ph name="DOMAIN"/> サーバーでは、ユーザー名とパスワードが必要です。サーバーからのメッセージ: <ph name="REALM"/></translation>
 <translation id="524759338601046922">新しい PIN を再入力:</translation>
-<translation id="688547603556380205">L2TP/IPSec + ユーザー証明書</translation>
 <translation id="777702478322588152">都道府県</translation>
 <translation id="6562437808764959486">リカバリ イメージを展開しています...</translation>
 <translation id="561349411957324076">完了</translation>
 <translation id="4764776831041365478"><ph name="URL"/> のウェブページは一時的に停止しているか、新しい URL に移動した可能性があります。</translation>
 <translation id="6156863943908443225">スクリプト キャッシュ</translation>
-<translation id="3233454090437339537">今後は、<ph name="PROTOCOL"/> リンクの処理に <ph name="REPLACED_HANDLER_TITLE"/> ではなく <ph name="HANDLER_TITLE"/>（<ph name="HANDLER_HOSTNAME"/>）を使用しますか？</translation>
 <translation id="4610656722473172270">Google ツールバー</translation>
-<translation id="7845201717638045845">コピーして貼り付けるデータ</translation>
+<translation id="7845201717638045845">コピー＆ペーストするデータ</translation>
 <translation id="151501797353681931">Safari からのインポート</translation>
 <translation id="7880025619322806991">ポータル状態</translation>
 <translation id="6706684875496318067"><ph name="PLUGIN_NAME"/> プラグインは使用できません。</translation>
@@ -68,12 +67,14 @@
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> でパスワードを同期できるようになりました。</translation>
 <translation id="5704565838965461712">ID として提示する証明書を選択します:</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> がクラッシュしました。このバルーンをクリックして再起動してください。</translation>
+<translation id="381723870071368006">共有プロキシを使用</translation>
 <translation id="6322279351188361895">秘密鍵を読み取ることができませんでした。</translation>
 <translation id="3781072658385678636">このページの次のプラグインがブロックされました:</translation>
 <translation id="4428782877951507641">同期を設定しています</translation>
 <translation id="3648460724479383440">選択されているラジオボタン</translation>
 <translation id="4654488276758583406">極小</translation>
 <translation id="6647228709620733774">Netscape 認証局取り消し URL</translation>
+<translation id="4008217099472149670">Kaspersky ウイルス対策ソフトウェアのために安全な接続を確立できません</translation>
 <translation id="546411240573627095">テンキーのスタイル</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="5895138241574237353">再起動</translation>
@@ -86,7 +87,6 @@
 <translation id="7017587484910029005">下記の画像に表示されている文字を入力してください。</translation>
 <translation id="9013589315497579992">SSL クライアント認証証明書が不正です。</translation>
 <translation id="8595062045771121608">この場合、ブラウザに提示されたサーバー証明書または中間認証機関証明書は、RSA-MD2 などの脆弱な署名アルゴリズムを使用して署名されています。コンピュータ科学者による最近の研究では、署名アルゴリズムはこれまで考えられていたほど強力ではないことがわかりました。現在、信頼性の高いウェブサイトで署名アルゴリズムが使用されることはほとんどありません。この証明書は偽装されている恐れがあります。これ以上処理を続行しないでください。</translation>
-<translation id="8666632926482119393">前を検索する</translation>
 <translation id="7567293639574541773">要素を検証(&amp;N)</translation>
 <translation id="8392896330146417149">ローミングの状態:</translation>
 <translation id="6813971406343552491">いいえ(&amp;N)</translation>
@@ -99,6 +99,8 @@
 <translation id="3208703785962634733">未確認</translation>
 <translation id="6523841952727744497">ログインする前に、ゲスト セッションを開始して、<ph name="NETWORK_ID"/> ネットワークを有効にしてください。</translation>
 <translation id="7450044767321666434">画像の書き込みが完了しました。</translation>
+<translation id="5704318649385838512">CAPS LOCK はオンになっています\nShift キーと同時に押すと解除できます</translation>
+<translation id="620329680124578183">読み込まない（推奨）</translation>
 <translation id="2653266418988778031">認証局（CA）の証明書を削除すると、ブラウザはその CA が発行するどの証明書も信頼しなくなります。</translation>
 <translation id="298068999958468740">すべてのデータを常に同期させるか、このパソコンから同期させるデータを選択してください。</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> 時間前</translation>
@@ -114,7 +116,6 @@
 <translation id="9181716872983600413">Unicode</translation>
 <translation id="1383861834909034572">ダウンロードが完了したら開きます</translation>
 <translation id="2492538245231809938">暗号化するデータの種類</translation>
-<translation id="1905982276051748623">プロトコルと MIME タイプのハンドラ</translation>
 <translation id="5727728807527375859">拡張機能、アプリケーション、テーマはパソコンに悪影響を与える可能性があります。処理を続けてもよろしいですか？</translation>
 <translation id="3857272004253733895">Double Pinyin スキーマ</translation>
 <translation id="1636842079139032947">このアカウントとの同期を停止...</translation>
@@ -125,6 +126,7 @@
 <translation id="2861301611394761800">システムの更新が完了しました。システムを再起動してください。</translation>
 <translation id="2231238007119540260">サーバー証明書を削除すると、そのサーバーの通常のセキュリティ チェックを復活させることになり、サーバーは正当な証明書を使用することが必要となります。</translation>
 <translation id="9134410174832249455"><ph name="HOST_NAME"/> からの応答が遅いため、<ph name="PRODUCT_NAME"/> ではウェブページの読み込みができませんでした。ウェブサイトがダウンしているか、インターネット接続に問題が発生している可能性があります。</translation>
+<translation id="2562265053877774071">一部の設定は拡張機能によって管理されています。</translation>
 <translation id="7624154074265342755">無線ネットワーク</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/> を隠す</translation>
 <translation id="3496213124478423963">縮小</translation>
@@ -140,7 +142,8 @@
 <translation id="645705751491738698">Javascript を引き続きブロックする</translation>
 <translation id="4780321648949301421">ページを別名で保存...</translation>
 <translation id="2551191967044410069">現在地の例外</translation>
-<translation id="4092066334306401966">13 px</translation>
+<translation id="3011284594919057757">Flash について</translation>
+<translation id="8789464255255332543">印刷するページが閉じられたため、印刷できません。</translation>
 <translation id="8178665534778830238">コンテンツ:</translation>
 <translation id="153384433402665971"><ph name="PLUGIN_NAME"/> プラグインのバージョンが古いためブロックされました。</translation>
 <translation id="2610260699262139870">実寸大(&amp;C)</translation>
@@ -170,6 +173,7 @@
 <translation id="9213479837033539041">残り <ph name="NUMBER_MANY"/> 秒</translation>
 <translation id="560442828508350263">「$1」を移動できません: $2</translation>
 <translation id="300544934591011246">以前のパスワード</translation>
+<translation id="8106242143503688092">読み込まない（推奨）</translation>
 <translation id="5078796286268621944">PIN が正しくありません</translation>
 <translation id="989988560359834682">住所の編集</translation>
 <translation id="8487678622945914333">拡大</translation>
@@ -177,8 +181,6 @@
 <translation id="735327918767574393">このウェブページの表示中に問題が発生しました。続行するには、ページを再読み込みするか別のページに移動してください。</translation>
 <translation id="8028060951694135607">Microsoft キー回復</translation>
 <translation id="6391832066170725637">指定したファイルまたはディレクトリは見つかりませんでした。</translation>
-<translation id="4694445829210540512"><ph name="NETWORK"/> の有効なデータ プランがありません</translation>
-<translation id="5510072263871409308">追加のプリンタを読み込んでいます</translation>
 <translation id="577624874850706961">Cookie を検索</translation>
 <translation id="5494920125229734069">すべて選択する</translation>
 <translation id="2857834222104759979">マニフェスト ファイルが無効です。</translation>
@@ -187,11 +189,11 @@
 <translation id="7938958445268990899">サーバーの証明書が有効になっていません。</translation>
 <translation id="4569998400745857585">表示できない拡張機能のメニュー</translation>
 <translation id="4081383687659939437">情報を保存</translation>
+<translation id="1834398142751010799">新しいプロフィール</translation>
 <translation id="1801827354178857021">ピリオド</translation>
 <translation id="7849443193236180005">ホスト名のパターン</translation>
 <translation id="2179052183774520942">検索エンジンの追加</translation>
 <translation id="5498951625591520696">サーバーにアクセスできません。</translation>
-<translation id="2956948609882871496">ブックマークのインポート...</translation>
 <translation id="1621207256975573490">名前を付けてフレームを保存(&amp;F)...</translation>
 <translation id="4681260323810445443">ウェブページ（<ph name="URL"/>）へのアクセスを許可されていません。ログインが必要となる場合があります。</translation>
 <translation id="2176444992480806665">最新のアクティブ タブのスクリーンショットを送信する</translation>
@@ -202,8 +204,8 @@
 <translation id="9218430445555521422">デフォルトとして設定</translation>
 <translation id="5027550639139316293">メール証明書</translation>
 <translation id="938582441709398163">キーボード オーバーレイ</translation>
+<translation id="148557595510244003">一部のオプションは管理者によって無効になっています。</translation>
 <translation id="427208986916971462">接続は <ph name="COMPRESSION"/> で圧縮されています。</translation>
-<translation id="4589279373639964403">ブックマークのエクスポート...</translation>
 <translation id="8876215549894133151">形式:</translation>
 <translation id="5234764350956374838">表示しない</translation>
 <translation id="40027638859996362">1 語移動する</translation>
@@ -211,9 +213,10 @@
 <translation id="5154917547274118687">メモリ</translation>
 <translation id="1493492096534259649">この言語はスペルチェックに使用できません</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 検索</translation>
+<translation id="112818052757437142">ディレクトリ名「$1」は既に存在しています。別の名前を指定してください。</translation>
 <translation id="2502105862509471425">新しいクレジットカードを追加...</translation>
+<translation id="6937266377577518989">選択した範囲をクリップボードにコピーします。</translation>
 <translation id="4037618776454394829">最後に保存されたスクリーンショットを送信する</translation>
-<translation id="8987670145726065238">これは不正なファイルです。続行してもよろしいですか？</translation>
 <translation id="182729337634291014">同期エラー...</translation>
 <translation id="4465830120256509958">ポルトガル語（ブラジル）のキーボード</translation>
 <translation id="2459861677908225199">TLS 1.0 を使用する</translation>
@@ -223,7 +226,6 @@
 <translation id="7531238562312180404"><ph name="PRODUCT_NAME"/> では拡張機能があなたの個人情報をどう処理するかを制御できないため、シークレット ウィンドウではすべての拡張機能が無効になっています。<ph name="BEGIN_LINK"/>拡張機能マネージャ<ph name="END_LINK"/>で個別に有効にできます。</translation>
 <translation id="5667293444945855280">マルウェア</translation>
 <translation id="3435845180011337502">ページの書式設定またはレイアウト</translation>
-<translation id="3838186299160040975">さらに購入...</translation>
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="3587482841069643663">すべて</translation>
 <translation id="6698381487523150993">作成:</translation>
@@ -232,6 +234,7 @@
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT"/> / <ph name="TOTAL_SIZE"/> コピー済み</translation>
 <translation id="4950138595962845479">オプション...</translation>
 <translation id="4653235815000740718">OS リカバリ メディアの作成中に問題が発生しました。使用するストレージ デバイスが見つかりません。</translation>
+<translation id="6732153478633637389">L2TP/IPSec 事前共有鍵</translation>
 <translation id="6943836128787782965">HTTP を取得できませんでした</translation>
 <translation id="5516565854418269276">ブックマーク バーを常に表示(&amp;A)</translation>
 <translation id="6426222199977479699">SSL エラー</translation>
@@ -258,18 +261,20 @@
 <translation id="8079135502601738761">この PDF 文書の一部を表示できませんでした。Adobe Reader で開きますか？</translation>
 <translation id="9123413579398459698">FTP プロキシ</translation>
 <translation id="3887875461425980041">PPAPI バージョンの Flash が使用されている場合、専用のプラグイン プロセスよりも各レンダリング プロセスで Flash を実行します。</translation>
+<translation id="1751752860232137596">試験運用版の滑らかなスクロール機能の設定を有効にします。</translation>
 <translation id="8534801226027872331">ブラウザに提示された証明書にエラーがあり解析できません。したがって、証明書の ID 情報や、セキュリティで保護された接続を確保するための情報を読み取れない可能性があります。処理を続行しないでください。</translation>
 <translation id="3608527593787258723">タブ 1 を有効にする</translation>
+<translation id="6993929801679678186">自動入力の予測候補を表示</translation>
 <translation id="4497369307931735818">リモーティング</translation>
 <translation id="1476822615785139447">プリンタを管理...</translation>
 <translation id="3855676282923585394">ブックマークと設定をインポート...</translation>
 <translation id="1116694919640316211">Chrome OS について</translation>
 <translation id="6878031674662373246">このアカウントの同期を停止...</translation>
+<translation id="8195796306739579529">パスワードを暗号化する</translation>
 <translation id="4422347585044846479">このページのブックマークを編集します</translation>
 <translation id="1880905663253319515">証明書「<ph name="CERTIFICATE_NAME"/>」を削除しますか？</translation>
 <translation id="8546306075665861288">画像キャッシュ</translation>
 <translation id="5904093760909470684">プロキシ設定</translation>
-<translation id="2874027208508018603">Chrome は Wi-Fi 接続ができない場合に 3G 回線を使用します。</translation>
 <translation id="3348643303702027858">OS リカバリ メディアの作成はキャンセルされました。</translation>
 <translation id="3391060940042023865">次のプラグインがクラッシュしました: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">ネットワーク接続エラー</translation>
@@ -296,11 +301,14 @@
 <translation id="2580170710466019930"><ph name="PRODUCT_NAME"/> が最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
 <translation id="7428061718435085649">左右の Shift キーを使用して 2 番目と 3 番目の候補を選択する</translation>
 <translation id="1070066693520972135">WEP</translation>
+<translation id="2850297146577954246">合成音声で読み上げた任意のテキスト</translation>
+<translation id="1243196447546764522">サードパーティの Cookie の設定をブロックする</translation>
 <translation id="206683469794463668">簡単な Zhuyin モード。自動候補選択や関連オプションは無効または無視されます。</translation>
 <translation id="5191625995327478163">言語設定(&amp;L)...</translation>
 <translation id="8833054222610756741">CRX を使用しないウェブ アプリケーション</translation>
 <translation id="4031729365043810780">ネットワーク接続</translation>
 <translation id="1985136186573666099"><ph name="PRODUCT_NAME"/> は、コンピュータのシステム プロキシ設定を使用してネットワークに接続しています。</translation>
+<translation id="4808139931410481934">ウィンドウ 2 に切り替える</translation>
 <translation id="6508261954199872201">アプリケーション: <ph name="APP_NAME"/></translation>
 <translation id="5585645215698205895">下へ(&amp;D)</translation>
 <translation id="8366757838691703947">? デバイス上のすべてのデータが失われます。</translation>
@@ -309,6 +317,7 @@
 <translation id="4508265954913339219">起動に失敗しました</translation>
 <translation id="8656768832129462377">確認しない</translation>
 <translation id="715487527529576698">初期の中国語モードを簡体中国語にする</translation>
+<translation id="7475292478930529311">プラグイン設定が無効になっています。</translation>
 <translation id="1674989413181946727">コンピュータ共通の SSL 設定:</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/> への接続は暗号化されていません。</translation>
 <translation id="3042282020249392540">ファイアウォールまたはウイルス対策ソフトウェアの設定で、 <ph name="PRODUCT_NAME"/> を許可されたプログラムとして追加してください。 許可されたプログラムとして既に追加されている場合は、リストからいったん削除してから再度追加してください。</translation>
@@ -320,11 +329,11 @@
 <translation id="6500116422101723010">サーバーは現在、リクエストを処理できません。このコードは、状態が一時的なものであることを示しており、しばらくするとサーバーは利用可能になります。</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1297175357211070620">送信先</translation>
-<translation id="6219983382864672018">ウェブ オーディオ</translation>
 <translation id="479280082949089240">このページで設定した Cookie</translation>
 <translation id="4198861010405014042">アクセスの共有</translation>
 <translation id="6204930791202015665">表示...</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME"/> にログインしてください。</translation>
+<translation id="1046059554679513793">この名前は既に使用されています。</translation>
 <translation id="4417229845571722044">新しいメールを追加</translation>
 <translation id="8049151370369915255">フォントをカスタマイズ...</translation>
 <translation id="2886862922374605295">ハードウェア:</translation>
@@ -372,7 +381,6 @@
 <translation id="5098629044894065541">ヘブライ語</translation>
 <translation id="7751559664766943798">ブックマーク バーを常に表示</translation>
 <translation id="5098647635849512368">圧縮するディレクトリの絶対パスが見つかりません。</translation>
-<translation id="780617032715125782">新しいプロフィールを作成</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="6380224340023442078">コンテンツの設定...</translation>
 <translation id="950108145290971791">インスタント検索を有効にして検索や閲覧を高速化しますか？</translation>
@@ -396,16 +404,19 @@
           [<ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>] をクリックします。</translation>
 <translation id="2934952234745269935">ボリューム ラベル</translation>
 <translation id="6272247697534482847">GPU の垂直同期を無効にする</translation>
+<translation id="3589447798447761053"><ph name="PRODUCT_NAME"/> は、Kaspersky 製品が安全な接続を阻止していることを検出しました。通常、Kaspersky ソフトウェアが同じパソコン上で稼働しているため、これはセキュリティの問題とはなりません。ただし、<ph name="PRODUCT_NAME"/> では安全な接続を行うことを徹底しているため、接続を阻止しないよう Kaspersky 製品を設定する必要があります。設定オプションを無効にする手順については、[詳細] をクリックしてください。</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> は、このコンピュータのすべてのユーザーに対して自動更新を設定します。</translation>
 <translation id="4973698491777102067">次の期間のアイテムを消去:</translation>
 <translation id="6074963268421707432">どのサイトにもデスクトップ通知の表示を許可しない</translation>
 <translation id="6273404661268779365">新しい FAX 番号を追加</translation>
+<translation id="8558056454375650717"><ph name="SHORT_PRODUCT_NAME"/> のプロフィールには、ブックマーク、閲覧履歴、保存したパスワード、テーマが含まれています。別の設定を管理する必要がある場合は、複数のプロフィールを作成できます。たとえば、あなたと友だちでそれぞれ別のプロフィールを使用できます。</translation>
 <translation id="1995173078718234136">コンテンツをスキャンしています...</translation>
+<translation id="5979681173469464041">次のペインにフォーカスを移す</translation>
 <translation id="4735819417216076266">スペースの入力スタイル</translation>
 <translation id="2977095037388048586"><ph name="DOMAIN"/> にアクセスしようとしましたが、実際にアクセスしたサーバーは <ph name="DOMAIN2"/> と識別されました。サーバーの設定が間違っているか、より深刻な問題が発生している可能性があります。ネットワーク上の悪意のあるユーザーが <ph name="DOMAIN3"/> の偽ドメイン（または有害なドメイン）にアクセスするよう誘導している可能性があります。処理を続行しないでください。</translation>
 <translation id="220138918934036434">ボタンを非表示にする</translation>
 <translation id="5374359983950678924">画像を変更</translation>
-<translation id="2194400577068159994">今後は <ph name="HANDLER_TITLE"/>（<ph name="HANDLER_HOSTNAME"/>）を使用して <ph name="PROTOCOL"/> リンクを処理しますか？</translation>
+<translation id="2859738163554174612">今後表示しない</translation>
 <translation id="5158548125608505876">パスワードを同期しない</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="6974306300279582256"><ph name="SITE"/> からの通知を有効にする</translation>
@@ -419,6 +430,8 @@
 <translation id="1992397118740194946">未設定</translation>
 <translation id="7966826846893205925">自動入力設定の管理...</translation>
 <translation id="8556732995053816225">大文字小文字を区別(&amp;C)</translation>
+<translation id="3504135463003295723">グループ名:</translation>
+<translation id="2651472069264772588">貼り付けに失敗しました。ファイル システムのエラー: $1'</translation>
 <translation id="3314070176311241517">すべてのサイトで Javascript の実行を許可する（推奨）</translation>
 <translation id="2406911946387278693">クラウド デバイスの管理</translation>
 <translation id="7419631653042041064">カタロニア語のキーボード</translation>
@@ -429,13 +442,13 @@
 <translation id="4381849418013903196">コロン</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE"/>を常に翻訳</translation>
 <translation id="2263497240924215535">（無効）</translation>
+<translation id="2042078858148122628">DNS ルックアップでエラーが発生したため、<ph name="HOST_NAME"/> にあるサーバーを見つけることができません。DNS は、ウェブサイトの名前をインターネット アドレスに変換するためのウェブ サービスです。このエラーはほとんどの場合、インターネットに接続されていないか、ネットワークの設定が間違っていることが原因です。ただし、DNS サーバーの応答がない、ファイアウォールによって <ph name="PRODUCT_NAME"/> からのネットワーク アクセスがブロックされている、などの原因で発生する場合もあります。</translation>
 <translation id="2159087636560291862">この証明書はコンピュータが信頼する認証局によって確認されていません。ウェブサイトの正当性を主張する証明書を作成することは誰でもできるため、信頼できる第三機関による確認が必要になり、確認されていない証明書の ID 情報は無効です。したがって、通信している相手が、<ph name="DOMAIN"/> なのか、悪意のあるユーザーが作成した証明書によって正当と主張する <ph name="DOMAIN2"/> なのかを確認することができません。これ以上、処理を続行しないでください。</translation>
 <translation id="58625595078799656"><ph name="PRODUCT_NAME"/> では、Google パスワードまたは任意のパスフレーズを使ってデータを暗号化する必要があります。</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="6840184929775541289">認証局ではない</translation>
 <translation id="6099520380851856040">発生: <ph name="CRASH_TIME"/></translation>
 <translation id="144518587530125858">テーマの「<ph name="IMAGE_PATH"/>」を読み込むことができませんでした。</translation>
-<translation id="5355097969896547230">もう一度検索する</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> を待機しています...</translation>
 <translation id="2553440850688409052">このプラグインを表示しない</translation>
 <translation id="3280237271814976245">名前を付けて保存(&amp;A)...</translation>
@@ -464,6 +477,7 @@
 <translation id="5548207786079516019">この <ph name="PRODUCT_NAME"/> はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
 <translation id="3984413272403535372">拡張機能の署名中にエラーが発生しました。</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> では、アドレス バーを使ってウェブを検索できます。使用する検索エンジンを選択してください:</translation>
+<translation id="4980066111423877353">プロフィールを削除...</translation>
 <translation id="9208886416788010685">Adobe Reader が最新ではありません</translation>
 <translation id="3373604799988099680">拡張機能またはアプリケーション</translation>
 <translation id="318408932946428277">ブラウザの終了時に Cookie と他のサイトやプラグインのデータを削除する</translation>
@@ -476,6 +490,7 @@
 <translation id="4417271111203525803">住所 2</translation>
 <translation id="7617095560120859490">問題の詳細をお知らせください（必須）。</translation>
 <translation id="5618333180342767515">（数分かかることがあります）</translation>
+<translation id="1697820107502723922">アーカイブ</translation>
 <translation id="938470336146445890">ユーザー証明書をインストールしてください。</translation>
 <translation id="5399884481423204214">ユーザーのフィードバックを送信できませんでした: $1</translation>
 <translation id="4307992518367153382">基本設定</translation>
@@ -492,12 +507,14 @@
 <translation id="3467848195100883852">スペルの自動訂正を有効にする</translation>
 <translation id="1336254985736398701">ページ情報を表示(&amp;I)</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
+<translation id="2120194937135899861">ウィンドウ 4 に切り替える</translation>
 <translation id="6828153365543658583">ログインを以下のユーザーに制限する:</translation>
 <translation id="1652965563555864525">ミュート(&amp;M)</translation>
 <translation id="4200983522494130825">新しいタブ(&amp;T)</translation>
 <translation id="7979036127916589816">同期エラー</translation>
 <translation id="1029317248976101138">ズーム</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> / <ph name="TOTAL_MATCHCOUNT"/></translation>
+<translation id="8586353611925512169">プロフィール名</translation>
 <translation id="8890069497175260255">キーボード タイプ</translation>
 <translation id="1202290638211552064">ゲートウェイ サーバーまたはプロキシ サーバーが、上流のサーバーからの応答を待つ間にタイムアウトしました。</translation>
 <translation id="7765158879357617694">移動</translation>
@@ -508,6 +525,7 @@
 <translation id="2493021387995458222">「一度に 1 語」選択する</translation>
 <translation id="5279600392753459966">すべてブロックする</translation>
 <translation id="6846298663435243399">読み込み中...</translation>
+<translation id="5723508132121499792">実行中のバックグラウンド アプリケーションはありません</translation>
 <translation id="7392915005464253525">閉じたウィンドウを開く（&amp;E）</translation>
 <translation id="1144684570366564048">例外の管理...</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -527,6 +545,7 @@
 <translation id="362276910939193118">全履歴を表示</translation>
 <translation id="6079696972035130497">無制限</translation>
 <translation id="4365411729367255048">ドイツ語（Neo 2）のキーボード</translation>
+<translation id="672826849891626219">プロフィール アイコン:</translation>
 <translation id="6348657800373377022">コンボ ボックス</translation>
 <translation id="8064671687106936412">キー:</translation>
 <translation id="2218515861914035131">プレーン テキストとして貼り付ける</translation>
@@ -549,6 +568,7 @@
 <translation id="1464570622807304272">「蘭」と入力して Enter キーを押してみてください。</translation>
 <translation id="8026684114486203427">Chrome ウェブストアを使用するには、Google アカウントでログインする必要があります。</translation>
 <translation id="1486096554574027028">パスワードを検索</translation>
+<translation id="3845608881815490588">オプションによっては、管理者によって無効になっているものと、拡張機能によって管理されているものがあります。</translation>
 <translation id="8417276187983054885"><ph name="CLOUD_PRINT_NAME"/> のセットアップ</translation>
 <translation id="3056462238804545033">エラー: ユーザー認証時に問題が発生しました。ログイン情報をお確かめのうえ、もう一度お試しください。</translation>
 <translation id="5298420986276701358">Google Apps でログインすると、この <ph name="PRODUCT_NAME"/> デバイスの設定をクラウドから遠隔管理できます。</translation>
@@ -566,6 +586,7 @@
 <translation id="3303818374450886607">コピー</translation>
 <translation id="2019718679933488176">オーディオを新しいタブで開く(&amp;O)</translation>
 <translation id="1031362278801463162">プレビューを読み込んでいます</translation>
+<translation id="731250560645734839"><ph name="SHORT_PRODUCT_NAME"/> の同期のセットアップ</translation>
 <translation id="4138267921960073861">ログイン ページにユーザー名と写真を表示する</translation>
 <translation id="7465778193084373987">Netscape 証明書取り消し URL</translation>
 <translation id="5976690834266782200">タブ コンテキスト メニューにアイテムを追加してタブをグループ化します</translation>
@@ -580,6 +601,7 @@
 <translation id="2600306978737826651">画像のダウンロードに失敗し、書き込みを中止しました。</translation>
 <translation id="609978099044725181">漢字モードを有効/無効にする</translation>
 <translation id="1829483195200467833">自動で開く設定のクリア</translation>
+<translation id="2359244647993923521">設定によっては、管理者によって無効になっているものと、拡張機能によって管理されているものがあります。</translation>
 <translation id="2738771556149464852">終了時刻</translation>
 <translation id="5774515636230743468">マニフェスト:</translation>
 <translation id="719464814642662924">Visa</translation>
@@ -593,7 +615,6 @@
 <translation id="1407050882688520094">これらの認証局を識別するための証明書がファイルに格納されています:</translation>
 <translation id="4287689875748136217">サーバーからデータが送信されないためウェブページを読み込むことができません。</translation>
 <translation id="1634788685286903402">メール ユーザーの身元を特定するこの証明書を信頼します。</translation>
-<translation id="7052402604161570346">この種類のファイルはコンピュータに損害を与える可能性があります。本当に <ph name="FILE_NAME"/> をダウンロードしてもよろしいですか？</translation>
 <translation id="3154015489111064513">DHCP を使用</translation>
 <translation id="8642489171979176277">Google ツールバー ブックマーク</translation>
 <translation id="4142744419835627535">インスタント検索の即時オートコンプリート</translation>
@@ -614,8 +635,10 @@
 <translation id="8494979374722910010">サーバーに接続できませんでした。</translation>
 <translation id="7810202088502699111">このページのポップアップはブロックされました。</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
+<translation id="3808873045540128170">強制終了しました</translation>
 <translation id="646727171725540434">HTTP プロキシ</translation>
 <translation id="7576690715254076113">部単位で印刷</translation>
+<translation id="6355108086588020252">一部の設定は管理者によって無効になっています。</translation>
 <translation id="1006316751839332762">暗号化パスフレーズ</translation>
 <translation id="8795916974678578410">新規ウインドウ</translation>
 <translation id="2733275712367076659">自分を識別するためにこれらの機関から発行された証明書を所持しています:</translation>
@@ -631,14 +654,16 @@
 <translation id="4845656988780854088">前回のログイン後に変更された\n設定とデータのみを同期する\n（以前のパスワードが必要です）</translation>
 <translation id="348620396154188443">すべてのサイトにデスクトップ通知の表示を許可する</translation>
 <translation id="8214489666383623925">ファイルを開く...</translation>
-<translation id="5376120287135475614">ウィンドウを切り替えます</translation>
+<translation id="4583537898417244378">ファイルが無効か壊れています。</translation>
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="1701567960725324452">同期を停止しても、このパソコンに保存されているデータと、Google アカウントに保存されているデータはそのまま残ります。ただし、片方のデータを追加または変更しても、他方のデータには同期されなくなります。</translation>
 <translation id="7761701407923456692">サーバーの証明書が URL と一致しません。</translation>
 <translation id="3885155851504623709">教区</translation>
 <translation id="4910171858422458941">会社のポリシーによって無効になっているプラグインを有効にすることはできません</translation>
 <translation id="4495419450179050807">このページに表示しない</translation>
+<translation id="3096212521773120572">ウィンドウ 6 に切り替える</translation>
 <translation id="1225544122210684390">ハード ディスク デバイス</translation>
+<translation id="5560242443494923856">アドレスバーでショートカット機能を有効にします。</translation>
 <translation id="939736085109172342">新しいフォルダ</translation>
 <translation id="4933484234309072027"><ph name="URL"/> に埋め込まれたページ</translation>
 <translation id="5554720593229208774">メール認証局</translation>
@@ -647,6 +672,7 @@
 <translation id="6749695674681934117">新しいフォルダの名前を入力してください</translation>
 <translation id="6204994989617056362">SSL 再ネゴシエーション拡張機能が安全なハンドシェイクから欠落しています。再ネゴシエーション拡張機能に対応している一部のサイトでは、既知の攻撃を避けるために、より安全なハンドシェイクが Chrome で必要となります。この拡張機能の欠落は、送信中に接続が傍受され、不正操作された可能性があることを示しています。</translation>
 <translation id="6679492495854441399">エラー: このデバイスの登録中にネットワーク通信エラーが発生しました。ネットワーク接続を確認してからもう一度お試しください。</translation>
+<translation id="2879755071890315043">モバイル ネットワークを設定しています。しばらくお待ちください。</translation>
 <translation id="7789962463072032349">一時停止</translation>
 <translation id="121827551500866099">すべてのダウンロードを表示</translation>
 <translation id="1562633988311880769"><ph name="CLOUD_PRINT_NAME"/> にログイン</translation>
@@ -654,9 +680,10 @@
 <translation id="3115147772012638511">キャッシュを待機しています...</translation>
 <translation id="257088987046510401">テーマ</translation>
 <translation id="6771079623344431310">プロキシ サーバーに接続できません</translation>
+<translation id="409980434320521454">同期に失敗しました</translation>
+<translation id="1368725949478140659">読み込む</translation>
 <translation id="2200129049109201305">暗号化されているデータの同期をスキップしますか？</translation>
 <translation id="1426410128494586442">はい</translation>
-<translation id="6468252175335241103">%b %-d, %Y</translation>
 <translation id="6725970970008349185">1 ページに表示する候補数</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="5749483996735055937">リカバリ イメージをデバイスにコピー中に問題が発生しました。</translation>
@@ -697,6 +724,7 @@
 <translation id="6623138136890659562">[ネットワーク] メニューにプライベート ネットワークを表示して、VPN への接続を有効にします。</translation>
 <translation id="8969837897925075737">システム アップデートを検証しています...</translation>
 <translation id="3393716657345709557">リクエストされたエントリがキャッシュ内に見つかりませんでした。</translation>
+<translation id="7191454237977785534">名前を付けて保存</translation>
 <translation id="7241389281993241388">クライアント証明書をインポートするには <ph name="TOKEN_NAME"/> にログインしてください。</translation>
 <translation id="40334469106837974">ページのレイアウトを変更します</translation>
 <translation id="4804818685124855865">切断</translation>
@@ -704,6 +732,7 @@
 <translation id="210445503571712769">同期済みの設定</translation>
 <translation id="1608306110678187802">フレームを印刷(&amp;R)...</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
+<translation id="3719388386220274270">自動入力のフィードバックを送信</translation>
 <translation id="6622980291894852883">画像を引き続きブロックする</translation>
 <translation id="5937837224523037661">表示するサイトにプラグインがある場合:</translation>
 <translation id="1710259589646384581">OS</translation>
@@ -713,10 +742,13 @@
 <translation id="4948468046837535074">次のページを開く:</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="6978121630131642226">検索エンジン</translation>
+<translation id="662720828712108508"><ph name="REPLACED_HANDLER_TITLE"/> の代わりに <ph name="HANDLER_TITLE"/>（<ph name="HANDLER_HOSTNAME"/>）で <ph name="PROTOCOL"/> リンクをすべて開くようにしますか？</translation>
 <translation id="6839225236531462745">証明書削除エラー</translation>
 <translation id="6745994589677103306">何もしない</translation>
+<translation id="5342221287123687807">デフォルトのテーマに戻す</translation>
 <translation id="855081842937141170">タブを固定</translation>
 <translation id="6263541650532042179">同期をリセット</translation>
+<translation id="6513247462497316522">他のネットワークに接続していない場合、Google Chrome はモバイル データを使用します。</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 with RSA 暗号化</translation>
 <translation id="7903984238293908205">カタカナ</translation>
 <translation id="3781488789734864345">モバイル ネットワークの選択</translation>
@@ -726,12 +758,14 @@
 <translation id="2620436844016719705">システム</translation>
 <translation id="5362741141255528695">秘密鍵ファイルを選択します。</translation>
 <translation id="8638842473654406096">ページを再度開く</translation>
+<translation id="4580526846085481512">$1 項目を削除してもよろしいですか？</translation>
 <translation id="5292890015345653304">SD カードまたは USB メモリ スティックを挿入してください</translation>
 <translation id="5583370583559395927">残り時間: <ph name="TIME_REMAINING"/></translation>
 <translation id="8065982201906486420">クリックして <ph name="PLUGIN_NAME"/> プラグインを実行</translation>
 <translation id="6219717821796422795">Hanyu</translation>
 <translation id="3725367690636977613">ページ</translation>
 <translation id="2688477613306174402">設定</translation>
+<translation id="1090126737595388931">実行中のバックグラウンド アプリケーションはありません</translation>
 <translation id="1195447618553298278">不明なエラーです。</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> 日前</translation>
 <translation id="8811462119186190367">設定の同期後に Chrome の言語が「<ph name="FROM_LOCALE"/>」から「<ph name="TO_LOCALE"/>」に変更されました。</translation>
@@ -743,7 +777,6 @@
 <translation id="5076340679995252485">貼り付け(&amp;P)</translation>
 <translation id="2904348843321044456">コンテンツの設定...</translation>
 <translation id="1055216403268280980">画像サイズ</translation>
-<translation id="1784284518684746740">名前を付けてファイルを保存</translation>
 <translation id="7032947513385578725">フラッシュ デバイス</translation>
 <translation id="5518442882456325299">現在の検索エンジン:</translation>
 <translation id="14171126816530869"><ph name="LOCALITY"/> の <ph name="ORGANIZATION"/> の ID は、<ph name="ISSUER"/> によって確認済みです。</translation>
@@ -765,10 +798,13 @@
 <translation id="3473105180351527598">フィッシングや不正なソフトウェアからの保護を有効にする</translation>
 <translation id="6151323131516309312"><ph name="SEARCH_KEY"/> を押して <ph name="SITE_NAME"/> を検索</translation>
 <translation id="6216679966696797604">ゲスト セッションを開始</translation>
+<translation id="8844703966364420804">登録されているマジックはありません。</translation>
 <translation id="5456397824015721611">事前編集バッファ内の中国語の最大文字数（入力中の Zhuyin 記号を含む）</translation>
 <translation id="2342959293776168129">ダウンロード履歴</translation>
 <translation id="2503522102815150840">ブラウザがクラッシュする</translation>
 <translation id="7201354769043018523">右かっこ</translation>
+<translation id="6745789064498140868">印刷 - <ph name="PREVIEW_TAB_TITLE"/></translation>
+<translation id="7523913831415327888">$1 項目を選択、$2</translation>
 <translation id="425878420164891689">フル充電までの時間を計算しています</translation>
 <translation id="508794495705880051">新しいクレジットカードを追加...</translation>
 <translation id="1425975335069981043">ローミング:</translation>
@@ -783,19 +819,21 @@
 <translation id="8596540852772265699">カスタム ファイル</translation>
 <translation id="7017354871202642555">ウィンドウが設定されている場合はモードを設定できません。</translation>
 <translation id="3101709781009526431">日時</translation>
+<translation id="3960611155749707703">最後のウィンドウに切り替える</translation>
 <translation id="69375245706918574">同期設定のカスタマイズ</translation>
 <translation id="833853299050699606">プラン情報がありません。</translation>
 <translation id="1737968601308870607">バグを報告</translation>
 <translation id="4571852245489094179">ブックマークと設定のインポート</translation>
+<translation id="434849659521617751">1 つのディレクトリを選択しました</translation>
 <translation id="4421917670248123270">ダウンロードをキャンセルして終了</translation>
 <translation id="5605623530403479164">その他の検索エンジン</translation>
 <translation id="8887243200615092733"><ph name="PRODUCT_NAME"/> でパスワードを同期できるようになりました。データを保護するには、アカウント情報を確認する必要があります。</translation>
-<translation id="4740663705480958372">P2P Pepper API と P2P JavaScript API を有効にします。API は現在開発中で、まだ実際には機能しません。</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="3452884066206827415">インスタント検索のデフォルト検索エンジンをあらかじめ読み込む</translation>
 <translation id="1421046588786494306">外部セッション</translation>
 <translation id="1661245713600520330">このページには、メイン プロセスに読み込まれているすべてのモジュールと、後で読み込むために登録されているモジュールが表示されます。</translation>
 <translation id="5451646087589576080">フレーム情報を表示(&amp;I)</translation>
+<translation id="7927948142484020408">プロフィール名:</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="3498309188699715599">Chewing 入力設定</translation>
 <translation id="8486154204771389705">このページに固定する</translation>
@@ -816,16 +854,19 @@
         この動作が望ましくない場合（ウェブサイトのデバッグ時など）は、<ph name="NET_INTERNALS_PAGE"/> ページをご覧ください。この機能を無効にする方法など詳しくご説明しています。</translation>
 <translation id="1725068750138367834">ファイル マネージャ(&amp;F)</translation>
 <translation id="4254921211241441775">このアカウントの同期を停止</translation>
+<translation id="1376877080032948260">プロフィールの削除...</translation>
 <translation id="7791543448312431591">追加</translation>
 <translation id="8569764466147087991">ファイルを選択して開く</translation>
 <translation id="5449451542704866098">データ プランがありません</translation>
 <translation id="307505906468538196">Google アカウントを作成</translation>
+<translation id="5548400724382318984">プロフィールの管理</translation>
 <translation id="2053553514270667976">郵便番号</translation>
 <translation id="48838266408104654">タスク マネージャ(&amp;T)</translation>
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="3694027410380121301">前のタブを選択</translation>
 <translation id="6178664161104547336">証明書の選択</translation>
 <translation id="1375321115329958930">保存したパスワード</translation>
+<translation id="1086573544069171115">クラウド プリンタを追加...</translation>
 <translation id="3341703758641437857">ファイルの URL へのアクセスを許可する</translation>
 <translation id="5702898740348134351">検索エンジンの編集(&amp;E)...</translation>
 <translation id="734303607351427494">検索エンジンの管理...</translation>
@@ -839,11 +880,14 @@
 <translation id="4240069395079660403">この言語で <ph name="PRODUCT_NAME"/> を表示することはできません</translation>
 <translation id="747114903913869239">エラー: 拡張機能をデコードできません</translation>
 <translation id="5412637665001827670">ブルガリア語のキーボード</translation>
+<translation id="1146204723345436916">HTML ファイルからブックマークをインポート...</translation>
 <translation id="2113921862428609753">認証局アクセス情報</translation>
 <translation id="5227536357203429560">プライベート ネットワークを追加...</translation>
 <translation id="732677191631732447">オーディオの URL をコピー(&amp;O)</translation>
 <translation id="7224023051066864079">サブネット マスク:</translation>
 <translation id="2401813394437822086">アカウントにアクセスできない場合</translation>
+<translation id="243166756403268832">貼り付けが完了しました。</translation>
+<translation id="1906805647949588115">ウィンドウ 8 に切り替える</translation>
 <translation id="2344262275956902282">- キーと = キーで候補リストのページを切り替える</translation>
 <translation id="3609138628363401169">このサーバーでは TLS の再交渉拡張がサポートされていません。</translation>
 <translation id="3369624026883419694">ホストを解決しています...</translation>
@@ -853,6 +897,7 @@
 <translation id="4064488613268730704">自動入力設定の管理...</translation>
 <translation id="6830600606572693159">ウェブページ（<ph name="URL"/>）は現在表示できません。アクセスが集中しているか、メンテナンスのために停止している可能性があります。</translation>
 <translation id="4145797339181155891">取り出し</translation>
+<translation id="1847198727512820188">プロフィール名:</translation>
 <translation id="8417944620073548444">残り <ph name="MEGABYTES"/> MB</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="3026202950002788510">以下の順にアクセスします:
@@ -866,6 +911,7 @@
 <translation id="5305688511332277257">インストールされていません</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> 分前</translation>
 <translation id="2816269189405906839">中国語の入力方法（cangjie）</translation>
+<translation id="8395901698320285466">サイズ</translation>
 <translation id="7087282848513945231">郡</translation>
 <translation id="2149951639139208969">アドレスを新しいタブで開く</translation>
 <translation id="175196451752279553">閉じたタブを開く(&amp;R)</translation>
@@ -896,6 +942,7 @@
 <translation id="3445830502289589282">フェーズ 2 認証:</translation>
 <translation id="5650551054760837876">一致する情報はありません。</translation>
 <translation id="5494362494988149300">ダウンロードしたら開く(&amp;D)</translation>
+<translation id="540323899562948110">プロフィールのカスタマイズ...</translation>
 <translation id="2956763290572484660">Cookie: <ph name="COOKIES"/></translation>
 <translation id="6989836856146457314">日本語の入力方法（US キーボード用）</translation>
 <translation id="9187787570099877815">プラグインを引き続きブロックする</translation>
@@ -915,36 +962,42 @@
 <translation id="189210018541388520">全画面表示</translation>
 <translation id="8795668016723474529">クレジットカードを追加</translation>
 <translation id="5860033963881614850">オフ</translation>
-<translation id="3755825649750405623"><ph name="SHORT_PRODUCT_NAME"/> › 接続</translation>
 <translation id="3956882961292411849">モバイル データ プラン情報を読み込んでいます。しばらくお待ちください...</translation>
 <translation id="689050928053557380">データ プランに加入...</translation>
 <translation id="4235618124995926194">このメールを含める:</translation>
 <translation id="4874539263382920044">タイトルには 1 文字以上入力してください</translation>
+<translation id="7184085666627891006">事前ログインを有効にしている場合、プロフィールを Google アカウントに接続すると、アカウントの Cookie がプロフィールの Cookie 格納場所に追加されます。これにより、ブラウザでユーザー名とパスワードを再入力する必要がなくなります。プロフィールが Google アカウントに接続されていない場合、事前ログインは常に無効になります。</translation>
 <translation id="798525203920325731">ネットワーク ネームスペース</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> のインストールを完了できませんでした。ただし、今後もディスク イメージから実行できます。</translation>
+<translation id="6186893483313227582">アイコン <ph name="VALUE"/></translation>
 <translation id="7025190659207909717">モバイル データ サービスの管理</translation>
 <translation id="8265096285667890932">サイド タブを使用する</translation>
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="3949593566929137881">SIM カードの PIN の入力</translation>
 <translation id="6291953229176937411">Finder で表示(&amp;S)</translation>
+<translation id="4781649528196590732">1 つ前のペインにフォーカスを移す</translation>
 <translation id="2476990193835943955">Ctrl キー、Alt キー、または Shift キーを押すと、&lt;br&gt;各キーのキーボード ショートカットが表示されます。</translation>
 <translation id="9187827965378254003">現在のところ使用できる試験運用機能はありません。</translation>
 <translation id="8933960630081805351">Finder で表示(&amp;S)</translation>
 <translation id="3041612393474885105">証明書情報</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="4611079913162790275">パスワードの同期を確認する必要があります。</translation>
 <translation id="6562758426028728553">以前の PIN と新しい PIN を入力してください。</translation>
 <translation id="614161640521680948">言語:</translation>
 <translation id="3665650519256633768">検索結果</translation>
 <translation id="3733127536501031542">International Step-UP 対応の SSL サーバー</translation>
 <translation id="3614837889828516995">PDF に保存</translation>
 <translation id="5745056705311424885">USB メモリ スティックが検出されました</translation>
+<translation id="7651319298187296870">ユーザー証明にはログインが必要です。</translation>
+<translation id="626568068055008686">パスワードが間違っているか、ファイルが壊れています。</translation>
 <translation id="5895875028328858187">データが少ないかデータの有効期限が近付いている場合に通知する</translation>
 <translation id="939598580284253335">パスフレーズを入力</translation>
+<translation id="8418240940464873056">漢字モード</translation>
 <translation id="7917972308273378936">リトアニア語のキーボード</translation>
 <translation id="8371806639176876412">アドレスバーへの入力は記録される場合があります</translation>
 <translation id="4216499942524365685">アカウントのログイン情報が古くなっています。クリックしてパスワードを再入力してください。</translation>
+<translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">ベトナム語</translation>
+<translation id="1282227640663454719">フォームの署名 <ph name="FORM_SIGNATURE"/> は <ph name="FORM_URL"/> 用です。</translation>
 <translation id="4091434297613116013">用紙</translation>
 <translation id="7475671414023905704">Netscape パスワード紛失 URL</translation>
 <translation id="3335947283844343239">閉じたタブを開く</translation>
@@ -975,6 +1028,7 @@
 <translation id="1093148655619282731">選択した証明書の詳細:</translation>
 <translation id="5568069709869097550">ログインできない</translation>
 <translation id="2743322561779022895">有効:</translation>
+<translation id="5359095000408548198">新しい <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="4181898366589410653">サーバー証明書の取り消し機構が見つかりません。</translation>
 <translation id="8705331520020532516">シリアル番号</translation>
 <translation id="1665770420914915777">新しいタブの画面を表示する</translation>
@@ -989,10 +1043,12 @@
 <translation id="4089521618207933045">サブメニューあり</translation>
 <translation id="1936157145127842922">フォルダで表示</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> 分前</translation>
+<translation id="3952119550285200690">ユーザーを追加するには、まずネットワークに接続してください。</translation>
 <translation id="7977590112176369853">&lt;検索キーワードを入力&gt;</translation>
 <translation id="3449839693241009168"><ph name="SEARCH_KEY"/> を押すと <ph name="EXTENSION_NAME"/> にコマンドが送信されます</translation>
 <translation id="7443484992065838938">レポートをプレビュー</translation>
 <translation id="5714678912774000384">最後のタブを有効にする</translation>
+<translation id="9017608379655359501">貼り付けをキャンセルしました。</translation>
 <translation id="3799598397265899467">ブラウザの終了時</translation>
 <translation id="8813811964357448561">用紙</translation>
 <translation id="2125314715136825419">Adobe Reader を更新せずに次に進む（非推奨）</translation>
@@ -1002,14 +1058,15 @@
 <translation id="9027459031423301635">新しいタブで開く(&amp;T)</translation>
 <translation id="2251809247798634662">新しいシークレット ウィンドウ</translation>
 <translation id="358344266898797651">ケルト語</translation>
-<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> › 縮小印刷</translation>
 <translation id="3625870480639975468">ズームをリセットする</translation>
+<translation id="8337399713761067085">現在オフラインです</translation>
 <translation id="5199729219167945352">試験運用機能</translation>
 <translation id="5055518462594137986">このようなリンクの設定をすべて保存する</translation>
 <translation id="246059062092993255">このページのプラグインはブロックされました。</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="7724603315864178912">カット</translation>
+<translation id="8456681095658380701">名前が無効です</translation>
 <translation id="4164507027399414915">削除されたサムネイルをすべて復元</translation>
 <translation id="917051065831856788">サイド タブを使用する</translation>
 <translation id="1976150099241323601">セキュリティ デバイスへのログイン</translation>
@@ -1019,17 +1076,20 @@
 <translation id="2175607476662778685">クイック起動バー</translation>
 <translation id="6434309073475700221">破棄</translation>
 <translation id="1367951781824006909">ファイルを選択</translation>
+<translation id="3589825953300272289">ブックマークはツール メニューやブックマーク バーに表示されます。</translation>
 <translation id="1425127764082410430"><ph name="SEARCH_ENGINE"/> で「<ph name="SEARCH_TERMS"/>」を検索(&amp;S)</translation>
 <translation id="684265517037058883">（まだ有効ではありません）</translation>
 <translation id="2027538664690697700">プラグインを更新...</translation>
 <translation id="8205333955675906842">Sans Serif フォント</translation>
 <translation id="39964277676607559">コンテンツ スクリプトの Javascript「<ph name="RELATIVE_PATH"/>」を読み込むことができませんでした。</translation>
+<translation id="4284105660453474798">「$ 1」を削除してもよろしいですか？</translation>
 <translation id="4378551569595875038">接続しています...</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="8053278772142718589">PKCS #12 ファイル</translation>
 <translation id="3129020372442395066"><ph name="PRODUCT_NAME_SHORT"/> 自動入力のオプション</translation>
 <translation id="4114360727879906392">前のウィンドウ</translation>
 <translation id="8238649969398088015">ヘルプのヒント</translation>
+<translation id="7704257085511986521">プロフィール アイコン:</translation>
 <translation id="5958418293370246440"><ph name="TOTAL_FILES"/> 個中 <ph name="SAVED_FILES"/> 個のファイル</translation>
 <translation id="2350172092385603347">言語/地域機能は使用されていますが、マニフェストに default_locale が指定されていません。</translation>
 <translation id="8221729492052686226">このリクエストを開始していない場合、システムが攻撃される可能性があります。このリクエストを開始するための明確な措置を講じていない場合は、[何もしない] をクリックします。</translation>
@@ -1054,17 +1114,6 @@
 <translation id="152234381334907219">未保存</translation>
 <translation id="5600599436595580114">このページは事前にレンダリングされました。</translation>
 <translation id="8494214181322051417">New!</translation>
-<translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>シークレット モードを使用中です<ph name="END_BOLD"/>。このウィンドウで開いたページはブラウザの履歴や検索履歴に残りません。このウィンドウを閉じると Cookie などの記録もパソコンから消去されます。ただし、ダウンロードしたファイルやブックマークしたページは保存されます。
-        <ph name="LINE_BREAK"/>
-        <ph name="BEGIN_BOLD"/>シークレット モードが他のユーザーやサーバー、ソフトウェアの動作に影響することはありません。なお、下記のようなケースにご注意ください。<ph name="END_BOLD"/>
-        <ph name="BEGIN_LIST"/>
-          <ph name="BEGIN_LIST_ITEM"/>ユーザーの情報を収集、共有するウェブサイト<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>アクセスしたページをトラッキングするインターネット サービス プロバイダや雇用主<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>無料ダウンロードなどと一緒にインストールされ、キーストロークを記録するマルウェア<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>スパイ、諜報活動<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>背後にいる人<ph name="END_LIST_ITEM"/>
-        <ph name="END_LIST"/>
-        シークレット モードの詳細については<ph name="BEGIN_LINK"/>こちら<ph name="END_LINK"/>をご覧ください。</translation>
 <translation id="2386255080630008482">サーバーの証明書は取り消されています。</translation>
 <translation id="2135787500304447609">再開(&amp;R)</translation>
 <translation id="8309505303672555187">ネットワークの選択:</translation>
@@ -1082,7 +1131,9 @@
 <translation id="8730621377337864115">完了</translation>
 <translation id="4932733599132424254">日付</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME"/> での認証に使用する証明書を選択してください</translation>
+<translation id="8028653631868039867">これは不正なファイルです。ダウンロードを続けますか？</translation>
 <translation id="2422927186524098759">サイドバー</translation>
+<translation id="2065605535667375562">プロフィール アイコン</translation>
 <translation id="7839809549045544450">サーバーは短い一時 Diffie-Hellman 公開鍵を使用しています</translation>
 <translation id="5515806255487262353">辞書を検索</translation>
 <translation id="350048665517711141">検索エンジンを選択してください</translation>
@@ -1094,7 +1145,9 @@
 <translation id="201192063813189384">キャッシュからデータを読み込み中にエラーが発生しました。</translation>
 <translation id="7851768487828137624">Canary</translation>
 <translation id="6129938384427316298">Netscape 証明書コメント</translation>
+<translation id="4262366363486082931">ツールバーにフォーカスを移す</translation>
 <translation id="8210608804940886430">次のページへ</translation>
+<translation id="473775607612524610">アップデート</translation>
 <translation id="9065596142905430007"><ph name="PRODUCT_NAME"/> は最新です</translation>
 <translation id="1035650339541835006">自動入力の設定...</translation>
 <translation id="6315493146179903667">すべてを手前に移動</translation>
@@ -1119,13 +1172,14 @@
 <translation id="7163503212501929773">残り <ph name="NUMBER_MANY"/> 時間</translation>
 <translation id="7705276765467986571">ブックマーク モデルを読み込むことができませんでした。</translation>
 <translation id="1196338895211115272">秘密鍵をエクスポートできませんでした。</translation>
+<translation id="1459967076783105826">拡張機能によって追加された検索エンジン</translation>
 <translation id="5586329397967040209">このページをホームページにする</translation>
 <translation id="629730747756840877">アカウント</translation>
 <translation id="8525306231823319788">全画面表示</translation>
 <translation id="5892507820957994680">組み込みのソフトウェア レンダリング リストを上書きし、サポートされていないシステム設定で GPU アクセラレーションを有効にします。</translation>
-<translation id="6280731100889067253">印刷プレビュー</translation>
 <translation id="9054208318010838">すべてのサイトに対して自分の物理的な現在地の追跡を許可する</translation>
 <translation id="3058212636943679650">パソコンのオペレーティング システムを復旧する必要が生じると、復旧用の SD カードまたは USB メモリ スティックが必要になります。</translation>
+<translation id="7325521623703686754">名前とアバターを選択し、[作成] をクリックして新しいプロフィールを作成します。</translation>
 <translation id="2815382244540487333">以下の Cookie がブロックされました:</translation>
 <translation id="8882395288517865445">アドレスブックの住所を含める</translation>
 <translation id="374530189620960299">このサイトのセキュリティ証明書は信頼できません</translation>
@@ -1142,9 +1196,11 @@
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME"/> について</translation>
 <translation id="2090876986345970080">システム セキュリティの設定</translation>
 <translation id="9219103736887031265">画像</translation>
+<translation id="7415834062450491574">フィードバックを Google に送信</translation>
 <translation id="5453632173748266363">キリル文字</translation>
 <translation id="1008557486741366299">後で</translation>
 <translation id="8415351664471761088">ダウンロード完了後に終了</translation>
+<translation id="6442051556415866605">ウィンドウ 3 に切り替える</translation>
 <translation id="1545775234664667895">テーマ「<ph name="THEME_NAME"/>」をインストールしました</translation>
 <translation id="5329858601952122676">削除(&amp;D)</translation>
 <translation id="6100736666660498114">スタート メニュー</translation>
@@ -1156,8 +1212,13 @@
 <translation id="1362165759943288856"><ph name="DATE"/> に無制限のデータを購入しました。</translation>
 <translation id="2078019350989722914">終了する前に警告メッセージを表示する（<ph name="KEY_EQUIVALENT"/>）</translation>
 <translation id="7965010376480416255">共有メモリ</translation>
+<translation id="2951809536086907720">ヒューリスティック タイプ: <ph name="HEURISTIC_TYPE"/>\nサーバー タイプ: <ph name="SERVER_TYPE"/>\nフィールドの署名: <ph name="FIELD_SIGNATURE"/>\nフォームの署名: <ph name="FORM_SIGNATURE"/>\nテスト用 ID: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="6248988683584659830">検索設定</translation>
 <translation id="8323232699731382745">ネットワーク パスワード</translation>
+<translation id="104086161873270383">新しいプロフィール</translation>
+<translation id="2750306679399709583">$1 x $2</translation>
+<translation id="462551743132815358">アーカイブを閉じる</translation>
+<translation id="608057490819882785">このコンピュータからプロフィール「<ph name="PROFILE_NAME"/> 」とそれに関連付けられているすべてのデータを削除してもよろしいですか？一度削除すると元に戻すことはできません。</translation>
 <translation id="6588399906604251380">スペルチェックを有効にする</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="2485056306054380289">サーバー CA 証明書:</translation>
@@ -1165,6 +1226,7 @@
 <translation id="2727712005121231835">実際のサイズ</translation>
 <translation id="8887733174653581061">常に上部に表示する</translation>
 <translation id="5581211282705227543">プラグインはインストールされていません</translation>
+<translation id="3330206034087160972">プレゼンテーション モードを終了</translation>
 <translation id="610886263749567451">Javascript のアラート</translation>
 <translation id="5488468185303821006">シークレット モードでの実行を許可する</translation>
 <translation id="6556866813142980365">やり直す</translation>
@@ -1178,7 +1240,6 @@
 <translation id="7238461040709361198">このパソコンでの前回のログイン後に、Google アカウントのパスワードが変更されています。</translation>
 <translation id="1956050014111002555">ファイルに含まれる複数の証明書のうち、いずれもインポートできませんでした:</translation>
 <translation id="302620147503052030">ボタンを表示する</translation>
-<translation id="7030689690480150547">このパネルについて</translation>
 <translation id="5512074755152723588">アドレスバーに既存のタブの URL を入力すると、現在のタブを読み込む代わりにフォーカスを既存のタブに戻します。</translation>
 <translation id="9157595877708044936">セットアップ中...</translation>
 <translation id="4475552974751346499">ダウンロード検索</translation>
@@ -1195,6 +1256,7 @@
 <translation id="569109051430110155">自動検出</translation>
 <translation id="4408599188496843485">ヘルプ(&amp;H)</translation>
 <translation id="5399158067281117682">PIN が一致しません。</translation>
+<translation id="6021987327127625071">$1 個のディレクトリを選択しました</translation>
 <translation id="8494234776635784157">ウェブ コンテンツ</translation>
 <translation id="2681441671465314329">キャッシュ</translation>
 <translation id="3646789916214779970">デフォルトのテーマに戻す</translation>
@@ -1221,13 +1283,16 @@
 <translation id="74354239584446316">あなたのウェブストアのアカウントは <ph name="EMAIL_ADDRESS"/> です - 別のアカウントで同期機能にログインすると問題が発生します。</translation>
 <translation id="3712897371525859903">名前を付けてページを保存(&amp;A)...</translation>
 <translation id="7926251226597967072"><ph name="IMPORT_BROWSER_NAME"/> から <ph name="PRODUCT_NAME"/> に次のアイテムをインポートしています:</translation>
+<translation id="4146671046252289537">次の単語の末尾に移動</translation>
 <translation id="4442424173763614572">DNS を検索できませんでした</translation>
 <translation id="2767649238005085901">Enter キーを押すと次に進み、コンテキスト メニュー キーを押すと履歴が表示されます</translation>
+<translation id="6921968934403058457">試験運用版の拡張機能を有効にすると、ブラウザ フレームの外側にパネル ウィンドウが開きます。</translation>
 <translation id="8580634710208701824">フレームの再読み込み</translation>
 <translation id="1018656279737460067">キャンセルされました</translation>
 <translation id="7606992457248886637">認証局</translation>
 <translation id="707392107419594760">キーボードを選択:</translation>
 <translation id="2007404777272201486">問題の報告...</translation>
+<translation id="1783075131180517613">同期パスフレーズを更新してください。</translation>
 <translation id="2390045462562521613">このネットワークの記録を削除</translation>
 <translation id="3348038390189153836">リムーバブル デバイスが検出されました</translation>
 <translation id="1666788816626221136">他のどのカテゴリにも適合しない証明書がファイルに格納されています:</translation>
@@ -1242,10 +1307,11 @@
 <translation id="8116190140324504026">詳細情報...</translation>
 <translation id="7469894403370665791">このネットワークに自動接続する</translation>
 <translation id="4807098396393229769">名義人名</translation>
-<translation id="4094130554533891764">現在アクセス可能:</translation>
+<translation id="4094130554533891764">以下にアクセスできるようになりました:</translation>
 <translation id="4131410914670010031">白黒</translation>
 <translation id="3800503346337426623">ログインせずゲストとしてブラウジング</translation>
 <translation id="2615413226240911668">ただし、このページには安全でない他のリソースが含まれています。これらのリソースは、送信中に他のユーザーに参照されたり、悪意のあるユーザーにページの見た目を変更されたりする可能性があります。</translation>
+<translation id="197288927597451399">保存</translation>
 <translation id="5880867612172997051">ネットワーク アクセスが中断されました</translation>
 <translation id="7842346819602959665">拡張機能「<ph name="EXTENSION_NAME"/>」の最新バージョンは、許可がさらに必要なため、無効になっています。</translation>
 <translation id="3776667127601582921">この場合は、ブラウザに提示されたサーバー証明書または中間認証機関証明書が無効です。この原因には、証明書が正しくない、サポートされていない、証明書に無効なフィールドが含まれている、などが考えられます。</translation>
@@ -1254,6 +1320,7 @@
 <translation id="7019805045859631636">速い</translation>
 <translation id="7584802760054545466"><ph name="NETWORK_ID"/> に接続しています</translation>
 <translation id="208047771235602537">現在ダウンロードを実行中です。<ph name="PRODUCT_NAME"/> を終了してよろしいですか？</translation>
+<translation id="3595946410121365924">左方向にサイズを変更</translation>
 <translation id="4060383410180771901">ウェブサイトは <ph name="URL"/> のリクエストを処理できません。</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="1108600514891325577">停止(&amp;S)</translation>
@@ -1261,13 +1328,13 @@
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
 <translation id="1567993339577891801">JavaScript コンソール</translation>
 <translation id="1559235587769913376">Unicode 文字の入力</translation>
+<translation id="3297788108165652516">このネットワークは、他のユーザーと共有しています。</translation>
 <translation id="1548132948283577726">パスワードを保存していないサイトはこちらに表示されます。</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="3774278775728862009">タイ語の入力方法（TIS-820.2538 キーボード）</translation>
 <translation id="9115675100829699941">ブックマーク(&amp;B)</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="1731589410171062430">印刷総数: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/>（<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>）</translation>
-<translation id="6349012449811924268">前回 <ph name="USER_EMAIL_ADDRESS"/> と同期しました。<ph name="BEGIN_LINK"/>Google ダッシュボード<ph name="END_LINK"/>で同期データを管理できます。</translation>
 <translation id="2621889926470140926">現在 <ph name="DOWNLOAD_COUNT"/> 件のダウンロードを実行中です。<ph name="PRODUCT_NAME"/> を終了してよろしいですか？</translation>
 <translation id="7279701417129455881">Cookie のブロックを管理...</translation>
 <translation id="1166359541137214543">ABC</translation>
@@ -1287,7 +1354,9 @@
 <translation id="4509345063551561634">場所:</translation>
 <translation id="7596288230018319236">アクセスしたページはすべてここに表示されます (シークレット ウィンドウで開いたページを除く)。履歴に保存されているページは検索することもできます。</translation>
 <translation id="7434509671034404296">開発/管理</translation>
+<translation id="1790550373387225389">プレゼンテーション モードを開始</translation>
 <translation id="6447842834002726250">Cookie</translation>
+<translation id="8059178146866384858">ファイル名「$1」は既に存在しています。別の名前を指定してください。</translation>
 <translation id="2609371827041010694">このサイトでは常に実行する</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
 <translation id="883848425547221593">その他のブックマーク</translation>
@@ -1296,19 +1365,20 @@
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> では既定のブラウザを判断または設定できません。</translation>
 <translation id="8898786835233784856">次のタブを選択</translation>
 <translation id="2674170444375937751">履歴からこれらのページを削除してもよろしいですか？</translation>
-<translation id="2932883381142163287">不正行為を報告</translation>
 <translation id="9111102763498581341">ロック解除</translation>
 <translation id="289695669188700754">キー ID: <ph name="KEY_ID"/></translation>
 <translation id="3067198360141518313">このプラグインを実行する</translation>
 <translation id="8767072502252310690">ユーザー</translation>
 <translation id="683526731807555621">新しい検索エンジンを追加</translation>
 <translation id="6871644448911473373">OCSP レスポンダ: <ph name="LOCATION"/></translation>
+<translation id="8157788939037761987"><ph name="CLOUD_PRINT_NAME"/> を開く</translation>
 <translation id="8281886186245836920">スキップ</translation>
 <translation id="3867944738977021751">証明書のフィールド</translation>
 <translation id="2114224913786726438">モジュール（<ph name="TOTAL_COUNT"/>） - 競合は検出されませんでした</translation>
 <translation id="7629827748548208700">タブ:<ph name="TAB_NAME"/></translation>
 <translation id="388442998277590542">オプション ページ「<ph name="OPTIONS_PAGE"/>」を読み込むことができませんでした。</translation>
 <translation id="8449008133205184768">ペーストしてスタイルを合わせる</translation>
+<translation id="356785714429487785"><ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="9114223350847410618">別の言語を追加しないと、この言語を削除できません。</translation>
 <translation id="4408427661507229495">ネットワーク名</translation>
 <translation id="8886960478266132308"><ph name="PRODUCT_NAME"/> は、ユーザーのデータを Google アカウントと安全に同期させることができます。</translation>
@@ -1318,12 +1388,14 @@
 <translation id="1383876407941801731">検索</translation>
 <translation id="8398877366907290961">このまま続行</translation>
 <translation id="5063180925553000800">新しい PIN:</translation>
+<translation id="4883178195103750615">HTML ファイルにブックマークをエクスポート...</translation>
 <translation id="2496540304887968742">デバイスの容量は 4 GB 以上である必要があります。</translation>
 <translation id="6974053822202609517">右から左</translation>
 <translation id="2370882663124746154">ダブルピンイン モードを有効にする</translation>
 <translation id="5463856536939868464">非表示のブックマークを含むメニュー</translation>
 <translation id="8286227656784970313">システム辞書を使用する</translation>
 <translation id="5431084084184068621">Google パスワードによるデータの暗号化を選択しました。この同期設定はいつでも変更できます。</translation>
+<translation id="6231148928368101651">パネル</translation>
 <translation id="1493263392339817010">フォントをカスタマイズ...</translation>
 <translation id="5352033265844765294">タイム スタンプ</translation>
 <translation id="6449085810994685586">このフィールドのスペルをチェック(&amp;C)</translation>
@@ -1344,7 +1416,6 @@
 <translation id="1901769927849168791">SD カードが検出されました</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - 所有者</translation>
 <translation id="1358032944105037487">日本語のキーボード</translation>
-<translation id="603890000178803545">1 月^2 月^3 月^4 月^5 月^6 月^7 月^8 月^9 月^10 月^11 月^12 月</translation>
 <translation id="8302838426652833913">以下の順にアクセスします:
           <ph name="BEGIN_BOLD"/>
           [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [アシスタント]
@@ -1352,7 +1423,7 @@
           接続をテストします。</translation>
 <translation id="8664389313780386848">ページのソースを表示(&amp;V)</translation>
 <translation id="8970407809569722516">ファームウェア:</translation>
-<translation id="1180549724812639004">新しいプロフィールを作成</translation>
+<translation id="2789428618572362768">複数のユーザーがこのコンピュータで同時に Chrome を使用しています。Chrome を最初に起動したユーザーのみ、これらの設定を変更できます。</translation>
 <translation id="57646104491463491">更新日</translation>
 <translation id="5992752872167177798">Seccomp サンドボックス</translation>
 <translation id="6362853299801475928">問題の報告(&amp;R)...</translation>
@@ -1360,7 +1431,9 @@
 <translation id="3289566588497100676">簡単な記号入力</translation>
 <translation id="6507969014813375884">簡体中国語</translation>
 <translation id="7314244761674113881">SOCKS ホスト</translation>
+<translation id="4630590996962964935">「$1」は無効な文字です。</translation>
 <translation id="5285794783728826432">ウェブサイトの身元を特定するこの証明書を信頼します。</translation>
+<translation id="7460131386973988868">静的 IP 設定を有効にします。動作しない場合があります。</translation>
 <translation id="4224803122026931301">現在地の例外</translation>
 <translation id="749452993132003881">ひらがな</translation>
 <translation id="8226742006292257240">ランダムに生成され、ご使用のパソコンに割り当てられた TPM パスワードは以下のとおりです:</translation>
@@ -1373,6 +1446,7 @@
 <translation id="1190844492833803334">ブラウザの終了時</translation>
 <translation id="5646376287012673985">現在地</translation>
 <translation id="7444538544936087653">お使いのオペレーティング システムはサポートが終了しているため、<ph name="PRODUCT_NAME"/> はアップデートされません。</translation>
+<translation id="539755880180803351">自動入力欄型の予測機能をプレースホルダ テキストとしてウェブ フォームに追加します。</translation>
 <translation id="1110155001042129815">待機</translation>
 <translation id="2607101320794533334">サブジェクトの公開鍵情報</translation>
 <translation id="7071586181848220801">不明なプラグイン</translation>
@@ -1406,6 +1480,7 @@
 <translation id="6254503684448816922">キーが侵害された</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="4006726980536015530"><ph name="PRODUCT_NAME"/> を終了すると、ダウンロードはキャンセルされます。</translation>
+<translation id="5261073535210137151">このフォルダには <ph name="COUNT"/> 件のブックマークがあります。削除してもよろしいですか？</translation>
 <translation id="4194415033234465088">Dachen 26</translation>
 <translation id="1664712100580477121">次のデバイスに画像を書き込んでもよろしいですか:</translation>
 <translation id="6639554308659482635">SQLite メモリ</translation>
@@ -1414,15 +1489,17 @@
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME"/> はこの言語で表示されています</translation>
 <translation id="740624631517654988">ポップアップがブロックされました</translation>
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
+<translation id="7777698395338723844">入力した URL を同期オプションで有効にします。これにより、入力した URL の履歴を他のクライアントと同期して、アドレスバーの自動入力を支援することができます。</translation>
 <translation id="6550769511678490130">すべてのブックマークを開く</translation>
 <translation id="1847961471583915783">ブラウザの終了時に Cookie と他のサイトやプラグインのデータを削除する</translation>
 <translation id="8870318296973696995">ホームページ</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="7661266386772591122">HTML ファイルにブックマークをエクスポート...</translation>
 <translation id="6575134580692778371">設定されていません</translation>
 <translation id="4624768044135598934">完了しました</translation>
 <translation id="6014776969142880350">更新を完了するには <ph name="PRODUCT_NAME"/> を再起動してください</translation>
 <translation id="5582768900447355629">データをすべて暗号化する</translation>
-<translation id="6122365914076864562">モバイル ネットワークを設定しています。しばらくお待ちください。</translation>
+<translation id="4220188427073615244">次のメール アドレスを使用してこのサイトにログイン: <ph name="EMAIL_ADDRESS"/></translation>
 <translation id="1974043046396539880">CRL 配布ポイント</translation>
 <translation id="7049357003967926684">アソシエーション</translation>
 <translation id="8641392906089904981">キーボード レイアウトを切り替えるには Shift-Alt キーを押します</translation>
@@ -1442,7 +1519,6 @@
 <translation id="7222232353993864120">メール アドレス</translation>
 <translation id="2128531968068887769">ネイティブ クライアント</translation>
 <translation id="7175353351958621980">ロード元:</translation>
-<translation id="4590074117005971373">グラフィックス プロセッサ ユニット（GPU）ハードウェアを使用してレンダリングすることで、2D コンテキストを持つキャンバス タグのパフォーマンスを向上できます。</translation>
 <translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE"/>から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました</translation>
 <translation id="8448695406146523553">パスフレーズを知っているユーザーだけが暗号化されたデータを見ることができます。パスフレーズは Google には送信されず、保存されることもありません。パスフレーズを忘れた場合は次の操作を行う必要があります。</translation>
 <translation id="6052976518993719690">SSL 認証局</translation>
@@ -1458,7 +1534,6 @@
 <translation id="5542132724887566711">プロフィール</translation>
 <translation id="5196117515621749903">キャッシュを無視して再読み込みする</translation>
 <translation id="5552632479093547648">マルウェアとフィッシングが検出されました</translation>
-<translation id="4310537301481716192">強制終了しました</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> 日前</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="1588343679702972132">このサイトでは、証明書でユーザーを識別する必要があります:</translation>
@@ -1478,7 +1553,6 @@
 <translation id="2497284189126895209">すべてのファイル</translation>
 <translation id="696036063053180184">3 ボル式（Shift なし）</translation>
 <translation id="452785312504541111">全角キーボード（英語）</translation>
-<translation id="945332329539165145">GPU アクセラレート キャンバス 2D</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
 <translation id="2282146716419988068">GPU プロセス</translation>
 <translation id="428771275901304970">残り 1 MB 未満</translation>
@@ -1544,12 +1618,12 @@
 <translation id="751377616343077236">証明書名</translation>
 <translation id="7154108546743862496">詳細情報</translation>
 <translation id="8637688295594795546">システムのアップロードが見つかりました。ダウンロードの準備をしています...</translation>
-<translation id="5167270755190684957">Google Chrome テーマ ギャラリー</translation>
 <translation id="8382913212082956454">メール アドレスをコピー(&amp;E)</translation>
 <translation id="7447930227192971403">タブ 3 を有効にする</translation>
 <translation id="2903493209154104877">住所</translation>
 <translation id="2056143100006548702">プラグイン: <ph name="PLUGIN_NAME"/>（<ph name="PLUGIN_VERSION"/>）</translation>
 <translation id="3479552764303398839">後で</translation>
+<translation id="3714633008798122362">ウェブ カレンダー</translation>
 <translation id="6445051938772793705">国</translation>
 <translation id="3251759466064201842">&lt;証明書に含まれていません&gt;</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> 秒前</translation>
@@ -1576,6 +1650,7 @@
 <translation id="8871696467337989339">サポートされていないコマンドライン フラグ <ph name="BAD_FLAG"/> を使用しています。これにより、安全性とセキュリティが損なわれます。</translation>
 <translation id="4767443964295394154">ダウンロード場所</translation>
 <translation id="5031870354684148875">Google 翻訳について</translation>
+<translation id="7609538960069667341"><ph name="SHORT_PRODUCT_NAME"/> の新しいプロフィールを作成</translation>
 <translation id="720658115504386855">大文字と小文字は区別されません</translation>
 <translation id="2454247629720664989">キーワード</translation>
 <translation id="3950820424414687140">ログイン</translation>
@@ -1587,6 +1662,7 @@
 <translation id="782590969421016895">現在のページを使用</translation>
 <translation id="6521850982405273806">エラーを報告</translation>
 <translation id="736515969993332243">ネットワークをスキャンしています。</translation>
+<translation id="2951310213712249777">アドレスバーから事前レンダリング</translation>
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
 <translation id="2717361709448355148">「$1」の名前を変更できません: $2</translation>
 <translation id="1769104665586091481">新しいウインドウで開く(&amp;W)</translation>
@@ -1608,8 +1684,8 @@
 <translation id="5575473780076478375">シークレット モード拡張機能: <ph name="EXTENSION_NAME"/></translation>
 <translation id="9118862410733032325">再生時にエラーが発生しました</translation>
 <translation id="4188026131102273494">キーワード:</translation>
+<translation id="8004512796067398576">増やす</translation>
 <translation id="2930644991850369934">リカバリ イメージのダウンロード中に問題が発生しました。ネットワーク接続が切断されました。</translation>
-<translation id="3461610253915486539">一部の設定は IT 管理者によって無効になっています。</translation>
 <translation id="5750053751252005701"><ph name="NETWORK"/> データがありません</translation>
 <translation id="8858939932848080433">フィードバックを送信する前に、問題が発生した箇所を入力してください。</translation>
 <translation id="1720318856472900922">TLS WWW サーバー認証</translation>
@@ -1624,8 +1700,10 @@
 <translation id="4278390842282768270">許可</translation>
 <translation id="2074527029802029717">タブの固定を解除</translation>
 <translation id="1533897085022183721"><ph name="MINUTES"/>未満です。</translation>
+<translation id="1224582695479061572">新しいプロフィールを作成...</translation>
 <translation id="7503821294401948377">ブラウザ操作のアイコン「<ph name="ICON"/>」を読み込むことができませんでした。</translation>
-<translation id="5539694491979265537">Google ダッシュボードに移動</translation>
+<translation id="8403381103556738778">このページには安全でないコンテンツが含まれています。</translation>
+<translation id="1954982207163873487">ツール メニューを表示</translation>
 <translation id="3942946088478181888">ヘルプ情報</translation>
 <translation id="3722396466546931176">言語を追加し、ドラッグして優先度に応じて並び替えてください。</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME"/> はシステム起動時に開始され、他の <ph name="PRODUCT_NAME"/> ウィンドウをすべて閉じてもバックグラウンドで動作し続けます。</translation>
@@ -1636,6 +1714,7 @@
 <translation id="5392544185395226057">ネイティブ クライアントに対応できるようにします。</translation>
 <translation id="5400640815024374115">Trusted Platform Module（TPM）チップは、無効であるか、存在しません。</translation>
 <translation id="2151576029659734873">入力されたタブ インデックスが無効です。</translation>
+<translation id="1815861158988915678"><ph name="BEGIN_BOLD"/>注:<ph name="END_BOLD"/> これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK"/>詳細<ph name="END_LINK"/></translation>
 <translation id="5150254825601720210">Netscape 証明書 SSL サーバー名</translation>
 <translation id="6771503742377376720">認証局である</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -1643,6 +1722,7 @@
 <translation id="8410619858754994443">パスワードの確認:</translation>
 <translation id="2210840298541351314">印刷プレビュー</translation>
 <translation id="3858678421048828670">イタリア語のキーボード</translation>
+<translation id="1436784010935106834">削除しました</translation>
 <translation id="4938277090904056629">ESET ウイルス対策ソフトウェアのために安全な接続を確立できません</translation>
 <translation id="4521805507184738876">（期限切れ）</translation>
 <translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
@@ -1656,18 +1736,20 @@
 <translation id="1195977189444203128"><ph name="PLUGIN_NAME"/> プラグインの期限が切れています。</translation>
 <translation id="3878562341724547165">移動したようです。<ph name="NEW_GOOGLE_URL"/> を使用しますか？</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="7469237359338869056">テキストを再検索</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> 時間</translation>
 <translation id="8053390638574070785">ページを再読み込み</translation>
 <translation id="5507756662695126555">否認防止</translation>
 <translation id="3678156199662914018">拡張機能: <ph name="EXTENSION_NAME"/></translation>
 <translation id="7951780829309373534">「$1」を貼り付けできません: $2</translation>
-<translation id="9194519262242876737">Web Audio API を有効にします。</translation>
 <translation id="3531250013160506608">パスワード テキスト ボックス</translation>
 <translation id="8314066201485587418">ブラウザの終了時に Cookie と他のサイトのデータを削除する</translation>
 <translation id="4094105377635924481">タブ コンテキスト メニューにグループ化を追加</translation>
 <translation id="8655295600908251630">チャンネル</translation>
 <translation id="8250690786522693009">ラテン文字</translation>
 <translation id="2119721408814495896"><ph name="CLOUD_PRINT_NAME"/> コネクタを使用するには、Microsoft XML Paper Specification Essentials Pack をインストールする必要があります。</translation>
+<translation id="5829401023154985950">管理...</translation>
+<translation id="8923749287865336189">貼り付けに失敗しました。予期しないエラー: $1</translation>
 <translation id="7624267205732106503">ブラウザの終了時に Cookie と他のサイトのデータを削除する</translation>
 <translation id="8401363965527883709">チェックボックスがオフ</translation>
 <translation id="7771452384635174008">レイアウト</translation>
@@ -1683,10 +1765,10 @@
 <translation id="6571070086367343653">クレジットカードの編集</translation>
 <translation id="1204242529756846967">スペルチェックに使用する言語</translation>
 <translation id="3981760180856053153">入力された保存形式が無効です。</translation>
+<translation id="4508345242223896011">滑らかなスクロール</translation>
 <translation id="8464591670878858520"><ph name="NETWORK"/> データの期限が切れました</translation>
-<translation id="4568660204877256194">ブックマークのエクスポート...</translation>
+<translation id="4510781427281143276">プロフィールの削除</translation>
 <translation id="3116361045094675131">英語（英国）のキーボード</translation>
-<translation id="4577070033074325641">ブックマークのインポート...</translation>
 <translation id="1641504961675316934"><ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="1715941336038158809">ユーザー名またはパスワードが無効です。</translation>
 <translation id="1901303067676059328">すべて選択(&amp;A)</translation>
@@ -1696,8 +1778,10 @@
 <translation id="2168039046890040389">前のページへ</translation>
 <translation id="1767519210550978135">Hsu</translation>
 <translation id="5508282018086013138">この拡張機能は、管理者のポリシーに基づきブラックリストに登録されています。</translation>
+<translation id="4388353399237186340"><ph name="PROFILE_NAME"/>（現在のプロフィール）</translation>
 <translation id="2498539833203011245">最小化</translation>
 <translation id="2893168226686371498">既定のブラウザ</translation>
+<translation id="6928955981459329182">アドレスバーで指定された事前レンダリング候補です。</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
 <translation id="7988355189918024273">アクセシビリティ機能を有効にする</translation>
 <translation id="5438653034651341183">現在のスクリーンショットを含める:</translation>
@@ -1710,10 +1794,10 @@
 <translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> mins</translation>
 <translation id="7568790562536448087">更新中:</translation>
 <translation id="4856408283021169561">マイクが見つかりません。</translation>
+<translation id="7984180109798553540">セキュリティを強化するため、 <ph name="PRODUCT_NAME"/> ではデータを暗号化します。</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME"/> に接続中</translation>
 <translation id="3222343486469566063">ログインしていません</translation>
 <translation id="6144890426075165477">現在、<ph name="PRODUCT_NAME"/> は既定のブラウザに設定されていません。</translation>
-<translation id="2498131838700757846">IndexedDB に対して LevelDB バックエンドを試験的に有効にします。</translation>
 <translation id="823241703361685511">プラン</translation>
 <translation id="4068506536726151626">このページには、あなたの現在地を追跡している以下のサイトからの要素が含まれています。</translation>
 <translation id="4721475475128190282">複数のプロフィール</translation>
@@ -1723,6 +1807,8 @@
 <translation id="1640283014264083726">PKCS #1 MD4 with RSA 暗号化</translation>
 <translation id="872451400847464257">検索エンジンの編集</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> 分</translation>
+<translation id="5512653252560939721">ユーザー証明書はハードウェア式である必要があります。</translation>
+<translation id="3726392994785559752">未接続</translation>
 <translation id="2466804342846034717">上に正しいパスワードを入力してから、次の画像に表示されている文字を入力してください。</translation>
 <translation id="3881435075661337013"><ph name="NETWORK"/> の期限が迫っています</translation>
 <translation id="5681833099441553262">前のタブを有効にする</translation>
@@ -1756,6 +1842,7 @@
 
 <ph name="EXTENSION_FILE"/></translation>
 <translation id="16620462294541761">パスワードを確認できませんでした。もう一度お試しください。</translation>
+<translation id="3058072209957292419">試験運用版の静的 IP の設定</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="1394630846966197578">音声認識サーバーに接続できませんでした。</translation>
 <translation id="2498765460639677199">極大</translation>
@@ -1770,11 +1857,13 @@
 <translation id="6644512095122093795">パスワードを保存できるようにする</translation>
 <translation id="4724450788351008910">アフィリエーションが変更された</translation>
 <translation id="2249605167705922988">例 1～5、8、11～13</translation>
+<translation id="3886815172404033724">アクセシビリティ機能を切り替える</translation>
 <translation id="8691686986795184760">（会社のポリシーにより有効）</translation>
 <translation id="1911483096198679472">説明</translation>
 <translation id="1976323404609382849">複数サイトからの Cookie がブロックされました。</translation>
 <translation id="2662952950313424742">ユーザー指定の DNS サーバーです。システム デフォルトのサーバーの代わりとして、DNS の解決に使用されます。</translation>
 <translation id="4176463684765177261">無効</translation>
+<translation id="154603084978752493">検索エンジンとして追加(&amp;G)</translation>
 <translation id="2079545284768500474">取消</translation>
 <translation id="114140604515785785">拡張機能のルート ディレクトリ:</translation>
 <translation id="4788968718241181184">ベトナム語 IME（TCVN6064）</translation>
@@ -1802,6 +1891,7 @@
 <translation id="5584091888252706332">起動時</translation>
 <translation id="8960795431111723921">この問題については現在調査中です。</translation>
 <translation id="2482878487686419369">通知</translation>
+<translation id="4408398408958794606">L2TP/IPSec + ユーザー証明書</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
 <translation id="695755122858488207">選択されていないラジオボタン</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
@@ -1813,9 +1903,11 @@
 <translation id="9095710730982563314">通知の例外</translation>
 <translation id="8072988827236813198">複数のタブを固定</translation>
 <translation id="1234466194727942574">タブ バー</translation>
+<translation id="3291862315280588024">1 つ前の単語の先頭に移動</translation>
 <translation id="7974087985088771286">タブ 6 を有効にする</translation>
 <translation id="4035758313003622889">タスク マネージャ(&amp;T)</translation>
 <translation id="6356936121715252359">Adobe Flash Player の保存設定...</translation>
+<translation id="926145120297878023">アドレスバーの検索キーワードに基づいてよく選択されるオートコンプリートの結果を記憶し、次回同じ検索キーワードが入力されたときにこれらの URL を表示します。</translation>
 <translation id="5885996401168273077">ネットワーク接続</translation>
 <translation id="7313804056609272439">ベトナム語の入力方法（VNI）</translation>
 <translation id="1768211415369530011">これを許可すると、次のアプリケーションが起動します: \n\n <ph name="APPLICATION"/></translation>
@@ -1826,7 +1918,7 @@
 <translation id="5089810972385038852">州</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="8986267729801483565">ダウンロード保存先:</translation>
-<translation id="8428252096944387389">印刷プレビュー - <ph name="PREVIEW_TAB_TITLE"/></translation>
+<translation id="1776712937009046120">ユーザーを追加</translation>
 <translation id="4322394346347055525">他のタブをすべて閉じる</translation>
 <translation id="593451978644335626">以前の入力方法を選択するには、Ctrl+ スペース キーを押します。</translation>
 <translation id="4411770745820968260">ファイル一覧</translation>
@@ -1834,6 +1926,7 @@
 <translation id="1812631533912615985">タブの固定を解除</translation>
 <translation id="8318945219881683434">証明書取り消しを確認できませんでした。</translation>
 <translation id="1650709179466243265">www. と .com を追加してアドレスを開く</translation>
+<translation id="7258264058936813500">読み込む</translation>
 <translation id="3524079319150349823">ポップアップを検証するには、ページまたはブラウザ操作のアイコンを右クリックして [ポップアップを検証] を選択します。</translation>
 <translation id="994289308992179865">ループ(&amp;L)</translation>
 <translation id="7793343764764530903"><ph name="CLOUD_PRINT_NAME"/> が有効になりました。<ph name="PRODUCT_NAME"/> により、このパソコン上のプリンタが &lt;b&gt;<ph name="EMAIL_ADDRESSES"/>&lt;/b&gt; で登録されました。これで、<ph name="CLOUD_PRINT_NAME"/> 対応のすべてのウェブやモバイル アプリケーションからプリンタに印刷できます。</translation>
@@ -1856,6 +1949,7 @@
 <translation id="602251597322198729">このサイトは複数のファイルをダウンロードしようとしています。許可しますか？</translation>
 <translation id="5843685321177053287">デバイス管理サービスとのハンドシェイクが保留中です...</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> 時間</translation>
+<translation id="7026338066939101231">減らす</translation>
 <translation id="5411472733320185105">以下のホストとドメインにはプロキシ設定を使用しない:</translation>
 <translation id="6691936601825168937">進む(&amp;F)</translation>
 <translation id="6566142449942033617">プラグインの「<ph name="PLUGIN_PATH"/>」を読み込むことができませんでした。</translation>
@@ -1864,12 +1958,12 @@
 <translation id="6454421252317455908">中国語の入力方法（quick）</translation>
 <translation id="368789413795732264">ファイルの書き出し中にエラーが発生しました: <ph name="ERROR_TEXT"/></translation>
 <translation id="1173894706177603556">名前を変更</translation>
-<translation id="5670032673361607750">同期を確認してください</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="1002064594444093641">フレームを印刷(&amp;R)...</translation>
 <translation id="7234674978021619913">サイト上で検出された不正なソフトウェアについては既に <ph name="HOST_NAME"/> に通知いたしました。<ph name="HOST_NAME2"/> で検出された問題の詳細については、Google の<ph name="DIAGNOSTIC_PAGE"/>をご覧ください。</translation>
 <translation id="8202390211066742724">ユーザー指定の DNS サーバー アドレス。</translation>
 <translation id="4608500690299898628">検索(&amp;F)...</translation>
+<translation id="7582582252461552277">このネットワークを優先する</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY"/> <ph name="STATE"/> <ph name="CITY"/></translation>
 <translation id="8724859055372736596">フォルダを開く(&amp;S)</translation>
 <translation id="2367657048471519165"><ph name="PRODUCT_NAME"/> を既定のブラウザに設定する</translation>
@@ -1919,13 +2013,11 @@
 <translation id="2190355936436201913">(なし)</translation>
 <translation id="8515737884867295000">証明書ベースの認証に失敗しました</translation>
 <translation id="5868426874618963178">現在のページのソースを送信</translation>
-<translation id="1269138312169077280">一部の設定は IT 管理者によって無効になっています。</translation>
 <translation id="5818003990515275822">韓国語</translation>
 <translation id="4182252350869425879">警告: フィッシング サイトの疑いがあります</translation>
 <translation id="5458214261780477893">Dvorak</translation>
 <translation id="1164369517022005061">残り <ph name="NUMBER_DEFAULT"/> 時間</translation>
 <translation id="5943260032016910017">Cookie とサイト データの例外</translation>
-<translation id="93424266670380528">DNS ルックアップでエラーが発生したため、<ph name="HOST_NAME"/> にあるサーバーを見つけることができません。DNS は、ウェブサイトの名前をインターネット アドレスに変換するためのウェブ サービスです。このエラーはほとんどの場合、インターネットに接続されていないか、ネットワークの設定が間違っていることが原因です。ただし、DNS サーバーの応答がない、ファイアウォールによって <ph name="PRODUCT_NAME"/> からのネットワーク アクセスがブロックされている、などの原因で発生する場合もあります。</translation>
 <translation id="2214283295778284209"><ph name="SITE"/> に接続できません</translation>
 <translation id="8755376271068075440">拡大(&amp;L)</translation>
 <translation id="8132793192354020517"><ph name="NAME"/> に接続しました</translation>
@@ -1950,15 +2042,19 @@
 <translation id="1970746430676306437">ページ情報を表示(&amp;I)</translation>
 <translation id="8741168824058335685">永続的ストレージ:</translation>
 <translation id="3199127022143353223">サーバー</translation>
+<translation id="2189470649391435617">右方向にサイズを変更</translation>
 <translation id="2805646850212350655">Microsoft 暗号化ファイル システム</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="8053959338015477773">表示するのにプラグインの追加が必要なコンテンツがあります。</translation>
 <translation id="3541661933757219855">Ctrl+Alt+/ または Esc キーで非表示</translation>
 <translation id="8813873272012220470">互換性のないソフトウェアが検出されたときに警告するためのバックグラウンド チェックを有効にします（たとえば、ブラウザのクラッシュの原因となるサードパーティ モジュールが検出されると警告します）。</translation>
 <translation id="5020734739305654865">ログインに</translation>
+<translation id="7871467315479343122">自動入力の品質向上にご協力ください。</translation>
+<translation id="899457468947881820">プロトコル ハンドラ</translation>
 <translation id="7414887922320653780">残り <ph name="NUMBER_ONE"/> 時間</translation>
 <translation id="121632099317611328">カメラを初期化できませんでした。</translation>
 <translation id="399179161741278232">インポートしたブックマーク</translation>
+<translation id="810066391692572978">サポートされていない機能がファイルで使用されています。</translation>
 <translation id="3829932584934971895">プロバイダの種類:</translation>
 <translation id="462288279674432182">制限付き IP:</translation>
 <translation id="9097192044535179206">クラウド プリンタの管理...</translation>
@@ -1966,6 +2062,8 @@
 <translation id="3524915994314972210">ダウンロードが開始するのを待機しています...</translation>
 <translation id="6484929352454160200">新しいバージョンの <ph name="PRODUCT_NAME"/> をご利用いただけます</translation>
 <translation id="3187212781151025377">ヘブライ語のキーボード</translation>
+<translation id="1142012852508714031">プロフィール名</translation>
+<translation id="2357350991104857462">事前ログインをオフにする</translation>
 <translation id="351152300840026870">固定幅フォント</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="778881183694837592">必須項目が未入力です</translation>
@@ -1998,6 +2096,7 @@
 <translation id="3561217442734750519">秘密鍵の入力値は有効なパスでなければなりません。</translation>
 <translation id="2444609190341826949">パスフレーズを指定しないと、このパソコン上のパスワードやその他の暗号化されたデータが同期されません。</translation>
 <translation id="77221669950527621">拡張機能またはアプリケーション</translation>
+<translation id="5227808808023563348">1 つ前のテキストを表示する</translation>
 <translation id="6650142020817594541">このサイトでは Google Chrome Frame（インストール済み）が推奨されています。</translation>
 <translation id="6780786534712515143">インスタント検索が有効になっている状態でアドレスバーに URL を入力すると、ほとんどのウェブページの読み込みが Enter キーを押す前に開始されます。さらに、既定の検索エンジンがインスタント検索に対応している場合は、アドレスバーにキーワードを入力するとすぐに検索結果が表示されます。また、インライン予測機能によって的確なキーワードが導き出されます。\n\nキーワードの入力中に検索結果がリクエストされるため、既定の検索エンジンによってはそれらが検索キーワードとして記録されます。\n</translation>
 <translation id="6503077044568424649">よくアクセスするページ</translation>
@@ -2038,6 +2137,7 @@
 <translation id="4010065515774514159">ブラウザ操作</translation>
 <translation id="4286563808063000730">既にパスフレーズでデータが暗号化されているため、入力したパスフレーズは使用できません。既存の同期パスフレーズを以下に入力してください。</translation>
 <translation id="1154228249304313899">アドレス:</translation>
+<translation id="1335810654854159539">一部の設定は管理者によって無効になっています。</translation>
 <translation id="9074348188580488499">すべてのパスワードを削除しますか？</translation>
 <translation id="6635491740861629599">ドメインで選択</translation>
 <translation id="3627588569887975815">シークレット ウィンドウで開く(&amp;G)</translation>
@@ -2050,10 +2150,12 @@
 <translation id="1139892513581762545">サイド タブ</translation>
 <translation id="7634357567062076565">再開</translation>
 <translation id="4779083564647765204">拡大/縮小</translation>
+<translation id="6998579716604177680">設定によっては、管理者によって無効になっているものと、拡張機能によって管理されているものがあります。</translation>
 <translation id="3282430104564575032">DOM インスペクタ</translation>
 <translation id="1526560967942511387">無題ドキュメント</translation>
 <translation id="1291144580684226670">標準フォント</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE"/> を有効にする</translation>
+<translation id="7819857487979277519">PSK（WPA または RSN）</translation>
 <translation id="5538307496474303926">クリアしています...</translation>
 <translation id="4367133129601245178">画像 URL をコピー(&amp;O)</translation>
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
@@ -2063,8 +2165,6 @@
 <translation id="7005812687360380971">失敗</translation>
 <translation id="2356070529366658676">確認する</translation>
 <translation id="5731247495086897348">貼り付けて実行(&amp;S)</translation>
-<translation id="8467548439852845758">セキュリティを強化するため、<ph name="PRODUCT_NAME"/> はパスワードを暗号化します。</translation>
-<translation id="2524947000814989347">パスフレーズを忘れた場合は、Google ダッシュボードから同期を停止する必要があります。</translation>
 <translation id="8018154597338652331"><ph name="TOTAL_SIZE"/> 中 <ph name="BURNT_AMOUNT"/></translation>
 <translation id="7635741716790924709">住所 1</translation>
 <translation id="5135533361271311778">ブックマークの項目を作成できませんでした。</translation>
@@ -2081,12 +2181,12 @@
 <translation id="4270393598798225102">バージョン <ph name="NUMBER"/></translation>
 <translation id="534916491091036097">左かっこ</translation>
 <translation id="4157869833395312646">Microsoft SGC（Server Gated Cryptography）</translation>
+<translation id="5685236799358487266">検索エンジンとして追加(&amp;G)...</translation>
 <translation id="8903921497873541725">拡大する</translation>
 <translation id="2195729137168608510">電子メールの保護</translation>
 <translation id="1425734930786274278">以下の Cookie がブロックされました（サードパーティの Cookie は例外なくブロックされます）:</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME"/> からクライアント証明書をインポートするには <ph name="TOKEN_NAME"/> にログインしてください。</translation>
 <translation id="3437016096396740659">バッテリーは充電されています</translation>
-<translation id="6916146760805488559">新しいプロファイルを作成...</translation>
 <translation id="1199232041627643649"><ph name="KEY_EQUIVALENT"/> キーを押すと終了します。</translation>
 <translation id="5428562714029661924">このプラグインを表示しない</translation>
 <translation id="7907591526440419938">ファイルを開く</translation>
@@ -2126,9 +2226,9 @@
 <translation id="4567836003335927027"><ph name="WEBSITE_1"/> にあるデータ</translation>
 <translation id="756445078718366910">ブラウザ ウィンドウを開く</translation>
 <translation id="4126154898592630571">日時の変換</translation>
+<translation id="6132383530370527946">縮小印刷</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 with RSA 暗号化</translation>
 <translation id="6392373519963504642">韓国語のキーボード</translation>
-<translation id="5037358328087281103">IndexedDB で LevelDB を使用する</translation>
 <translation id="7887334752153342268">タブを複製</translation>
 <translation id="4980691186726139495">このページに固定しない</translation>
 <translation id="3081523290047420375"><ph name="CLOUD_PRINT_NAME"/> を無効にする</translation>
@@ -2153,10 +2253,11 @@
 <translation id="3869917919960562512">インデックスが正しくありません。</translation>
 <translation id="7031962166228839643">TPM を準備しています。しばらくお待ちください（数分かかることがあります）...</translation>
 <translation id="4250377793615429299">コピーの数が無効です</translation>
-<translation id="7180865173735832675">カスタマイズ</translation>
 <translation id="5737306429639033676">ネットワーク動作を予測してページの表示速度を向上させる</translation>
 <translation id="8123426182923614874">残りのデータ:</translation>
+<translation id="2070909990982335904">ドットで始まる名前はシステム専用です。別の名前を指定してください。</translation>
 <translation id="3707020109030358290">認証局ではありません。</translation>
+<translation id="5293659407874396561"><ph name="SUBJECT"/>（<ph name="ISSUER"/>）</translation>
 <translation id="2115926821277323019">有効な URL を入力してください</translation>
 <translation id="8986494364107987395">使用統計データや障害レポートを自動的に Google に送信する</translation>
 <translation id="7070714457904110559">位置情報機能で使用する試験運用版の拡張機能を有効にします。使用できる場合は、オペレーティング システム現在地 API も使用します。また、より精度の高い位置情報を提供するために、追加のローカル ネットワーク設定データを Google の位置情報サービスに送信します。</translation>
@@ -2166,7 +2267,6 @@
 <translation id="1307041843857566458">再度有効化</translation>
 <translation id="8314308967132194952">新しい住所を追加...</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 with RSA 暗号化</translation>
-<translation id="853265131227167869">日^月^火^水^木^金^土</translation>
 <translation id="3323447499041942178">テキスト ボックス</translation>
 <translation id="580571955903695899">タイトルで並べ替え</translation>
 <translation id="5230516054153933099">ウインドウ</translation>
@@ -2176,6 +2276,7 @@
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="7671576867600624">テクノロジー:</translation>
 <translation id="1103966635949043187">サイトのホームページにアクセスする:</translation>
+<translation id="7477347901712410606">パスフレーズをお忘れの場合、<ph name="BEGIN_LINK"/>Google ダッシュボード<ph name="END_LINK"/>から同期を停止してリセットしてください。</translation>
 <translation id="1086613338090581534">証明書が有効期限内の場合、その証明書の発行元はいわゆる「取り消しリスト」を保持する責任を有します。証明書が侵害された場合、取り消しリストに追加することで、発行元は、その証明書を取り消すことができます。これにより、ブラウザはこの証明書を信頼しないようになります。失効した証明書については、取り消しステータスを保持する必要はないため、証明書が侵害され取り消されるか、または安全が保持されるかどうかを、その証明書が有効な間に判断することは不可能です。したがって、通信しているウェブサイトが正当なものかどうか、または通信対象の証明書が侵害され現在は悪意のあるユーザーの所有物となっているかどうかを見分けることができません。これ以上、処理を続行しないでください。</translation>
 <translation id="2645575947416143543">ただし、独自の証明書を生成している組織では、その証明書を使用して組織内部のウェブサイトに接続した場合に、この問題を安全に解決できる場合があります。組織のルート証明書は「ルート証明書」としてインポートできます。インポート後、組織により発行または検証された証明書はその信頼性が保証され、次回から、内部のウェブサイトへの接続時にこのエラーは表示されなくなります。お使いのパソコンに新しいルート証明書を追加する方法については、組織のサポート スタッフにお問い合わせください。</translation>
 <translation id="376466258076168640"><ph name="PRODUCT_NAME"/> を既定のブラウザにする</translation>
@@ -2196,7 +2297,9 @@
 <translation id="2101225219012730419">バージョン:</translation>
 <translation id="1570242578492689919">フォントとエンコード</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE"/> - <ph name="PAGE_URL"/></translation>
+<translation id="9004241046659393937">ウィンドウ 5 に切り替える</translation>
 <translation id="8050038245906040378">Microsoft 商用コード署名</translation>
+<translation id="271907111803265074">モバイル データが不足しています。<ph name="NETWORK"/> の別プランに加入してください。</translation>
 <translation id="3031557471081358569">インポートするデータを選択:</translation>
 <translation id="1368832886055348810">左から右</translation>
 <translation id="3031433885594348982"><ph name="DOMAIN"/> への接続は、弱レベルの暗号で暗号化されています。</translation>
@@ -2210,9 +2313,11 @@
 <translation id="8820901253980281117">ポップアップの例外</translation>
 <translation id="1143142264369994168">証明書の署名者</translation>
 <translation id="904949795138183864">ウェブページ（<ph name="URL"/>）が存在しません。</translation>
+<translation id="214353449635805613">領域をスクリーンショット</translation>
 <translation id="3228279582454007836">このサイトにアクセスしたのは今日がはじめてです。</translation>
 <translation id="2159017110205600596">カスタマイズ...</translation>
 <translation id="5449716055534515760">ウィンドウを閉じる(&amp;D)</translation>
+<translation id="6093803049406781019">プロフィールを削除</translation>
 <translation id="2814489978934728345">このページの読み込みを停止します</translation>
 <translation id="2354001756790975382">その他のブックマーク</translation>
 <translation id="8561574028787046517"><ph name="PRODUCT_NAME"/> をアップデートしました</translation>
@@ -2238,11 +2343,13 @@
 <translation id="5189060859917252173">証明書「<ph name="CERTIFICATE_NAME"/>」は認証局を示します。</translation>
 <translation id="3785852283863272759">ページの場所をメールで送信</translation>
 <translation id="2255317897038918278">Microsoft タイム スタンプ</translation>
+<translation id="2529377200258391825">CAPS LOCK はオンになっています\nShift キーと同時に押すと解除できます</translation>
 <translation id="3493881266323043047">有効期間</translation>
 <translation id="8124784517328765068">ホスト名のパターン:</translation>
 <translation id="5979421442488174909"><ph name="LANGUAGE"/>に翻訳(&amp;T)</translation>
 <translation id="7326526699920221209">バッテリー残量: <ph name="PRECENTAGE"/>%</translation>
 <translation id="952992212772159698">無効</translation>
+<translation id="3040136669977326843">$1 項目（$2 項目中）を貼り付け...</translation>
 <translation id="8299269255470343364">日本語</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/>（<ph name="DEVICE"/>）</translation>
 <translation id="6429639049555216915">現在アプリケーションからアクセスできません。</translation>
@@ -2255,6 +2362,7 @@
 <translation id="5951823343679007761">バッテリなし</translation>
 <translation id="1618661679583408047">このサーバーのセキュリティ証明書はまだ有効ではありません</translation>
 <translation id="7039912931802252762">Microsoft スマート カード ログオン</translation>
+<translation id="793703748056186466">一部の設定は拡張機能によって管理されています。</translation>
 <translation id="3065140616557457172">キーワードを入力して検索するか、直接 URL を入力してください。</translation>
 <translation id="5509693895992845810">別名で保存(&amp;A)...</translation>
 <translation id="5986279928654338866"><ph name="DOMAIN"/> サーバーでは、ユーザー名とパスワードが必要です。</translation>
@@ -2276,11 +2384,14 @@
 <translation id="7422192691352527311">環境設定...</translation>
 <translation id="354211537509721945">アップデートは管理者によって無効になっています。</translation>
 <translation id="1375198122581997741">バージョン情報</translation>
+<translation id="642282551015776456">この名前はフォルダのファイル名として使用できません</translation>
 <translation id="2345435964258511234">GPU レンダリング時のディスプレイの垂直リフレッシュによる同期を無効にします。この設定により、60 ヘルツを超過するフレーム レートを設定することができます。この設定はベンチマーク プロセスにおいて便利ですが、高速に画面を更新すると表示に乱れが発生します。</translation>
 <translation id="7915471803647590281">フィードバックを送信する前に、問題の詳細を入力してください。</translation>
 <translation id="5725124651280963564"><ph name="HOST_NAME"/> 用のキーを生成するには <ph name="TOKEN_NAME"/> にログインしてください。</translation>
 <translation id="8418113698656761985">ルーマニア語のキーボード</translation>
+<translation id="3206175707080061730">「$1」という名前のファイルは既に存在します。置き換えますか？</translation>
 <translation id="5976160379964388480">その他</translation>
+<translation id="1648797160541174252"><ph name="NETWORK_NAME"/> のネットワーク プロキシ</translation>
 <translation id="3665842570601375360">セキュリティ:</translation>
 <translation id="1430915738399379752">印刷</translation>
 <translation id="7999087758969799248">標準の入力方法</translation>
@@ -2291,8 +2402,8 @@
 <translation id="3324684065575061611">（会社のポリシーにより無効になっています）</translation>
 <translation id="7385854874724088939">印刷中に問題が発生しました。プリンタを確認してからもう一度お試しください。</translation>
 <translation id="770015031906360009">ギリシャ語</translation>
-<translation id="3834901049798243128">例外を無視し、サードパーティの Cookie の設定をブロックする</translation>
 <translation id="8116152017593700047">保存したスクリーンショットはこちらから選択できます。現時点で選択できるスクリーンショットはありません。スクリーンショットを撮るには Ctrl キーを押しながら「概観モード」キーを押します。ここには、最新のスクリーンショットが 3 つまで表示されます。</translation>
+<translation id="6718553273653596934">「$1」を開くことができません: $2</translation>
 <translation id="3454157711543303649">起動を完了</translation>
 <translation id="884923133447025588">取り消し機構が見つかりません。</translation>
 <translation id="556042886152191864">ボタン</translation>
@@ -2342,6 +2453,7 @@
 <translation id="3616741288025931835">閲覧履歴を消去(&amp;C)...</translation>
 <translation id="3313622045786997898">証明書の署名値</translation>
 <translation id="8535005006684281994">Netscape 証明書更新 URL</translation>
+<translation id="6970856801391541997">指定したページを印刷</translation>
 <translation id="2440604414813129000">ソースを表示(&amp;O)</translation>
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>（<ph name="TIME_REMAINING"/>）</translation>
 <translation id="8200772114523450471">再開</translation>
@@ -2351,6 +2463,8 @@
 <translation id="7323391064335160098">VPN のサポート</translation>
 <translation id="3929673387302322681">Dev - 不安定</translation>
 <translation id="4251486191409116828">アプリケーションのショートカットを作成できませんでした</translation>
+<translation id="7077872827894353012">無視したプロトコル ハンドラ</translation>
+<translation id="3009731429620355204">セッション</translation>
 <translation id="5190835502935405962">ブックマーク バー</translation>
 <translation id="7828272290962178636">リクエストの実行に必要な機能はサーバーにあります。</translation>
 <translation id="7823073559911777904">プロキシ設定の変更...</translation>
@@ -2360,6 +2474,7 @@
 <translation id="4856478137399998590">モバイル データ サービスがご利用いただけるようになりました</translation>
 <translation id="3978212384680351466">同期済みブックマーク</translation>
 <translation id="1676388805288306495">ウェブページの既定のフォントと言語を変更します。</translation>
+<translation id="3648607100222897006">この試験運用機能は、随時変更、中断、提供中止されることがあります。これらの機能のいずれかを有効にした場合に生じる結果について、Google は一切保証しません。ブラウザによってすべてのデータが削除されたり、予期せぬ方法でセキュリティやプライバシーが侵害されたりする可能性があります。有効にした試験運用機能は同じブラウザを使用する全ユーザーに対して有効になります。続行する場合は十分ご注意ください。</translation>
 <translation id="8969761905474557563">GPU アクセラレート合成</translation>
 <translation id="3937640725563832867">証明書の発行元の代替名</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
@@ -2368,6 +2483,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="7564847347806291057">プロセスを終了</translation>
 <translation id="1607220950420093847">アカウントが削除されたか、無効になっています。ログアウトしてください。</translation>
+<translation id="5660872996699900541">セッションはありません。</translation>
 <translation id="5613695965848159202">匿名 ID:</translation>
 <translation id="2233320200890047564">インデックス付きデータベース</translation>
 <translation id="7063412606254013905">フィッシング詐欺の詳細</translation>
@@ -2377,12 +2493,13 @@
 <translation id="1242521815104806351">接続の詳細</translation>
 <translation id="5295309862264981122">ナビゲーションの確認</translation>
 <translation id="1492817554256909552">アクセス ポイント名:</translation>
+<translation id="901834265349196618">メール</translation>
+<translation id="5835133142369577970">フォルダ名を指定してください。</translation>
 <translation id="5546865291508181392">検索</translation>
 <translation id="1999115740519098545">起動時</translation>
 <translation id="2983818520079887040">設定...</translation>
 <translation id="1465619815762735808">クリックして再生する</translation>
 <translation id="6941937518557314510">証明書で <ph name="HOST_NAME"/> の認証を受けるには <ph name="TOKEN_NAME"/> にログインしてください。</translation>
-<translation id="2783600004153937501">IT 管理者がオプションの一部を無効にしています。</translation>
 <translation id="2099686503067610784">サーバー証明書「<ph name="CERTIFICATE_NAME"/>」を削除しますか？</translation>
 <translation id="9027603907212475920">同期の設定...</translation>
 <translation id="6873213799448839504">文字列を自動確定する</translation>
@@ -2404,7 +2521,6 @@
 <translation id="2812989263793994277">すべての画像を表示しない</translation>
 <translation id="7190251665563814471">これらの <ph name="HOST"/> のプラグインを常に許可する</translation>
 <translation id="6845383723252244143">フォルダを選択</translation>
-<translation id="3653550165444444309">クラウド プリンタを追加...</translation>
 <translation id="8925458182817574960">設定(&amp;S)</translation>
 <translation id="6361850914223837199">エラーの詳細:</translation>
 <translation id="8948393169621400698"><ph name="HOST"/> のプラグインを常に許可する</translation>
@@ -2430,8 +2546,6 @@
 <translation id="8051695050440594747"><ph name="MEGABYTES"/> MB 利用可</translation>
 <translation id="7088615885725309056">古い</translation>
 <translation id="461656879692943278"><ph name="HOST_NAME"/> には、不正なソフトウェアを配布していることで知られる <ph name="ELEMENTS_HOST_NAME"/> のコンテンツが含まれています。このサイトにアクセスすると、パソコンがウイルスに感染するおそれがあります。</translation>
-<translation id="6468702002867725697">機密性の高いデータを暗号化する（パスワード）</translation>
-<translation id="1387022316521171484">この試験運用機能は、随時変更、中断、提供中止されることがあります。これらの機能のいずれかを有効にした場合に生じる結果について、Google は一切保証しません。ブラウザによってすべてのデータが削除されたり、予期せぬ方法でセキュリティやプライバシーが侵害されたりする可能性があります。続行する場合は十分ご注意ください。</translation>
 <translation id="2143778271340628265">手動プロキシ設定</translation>
 <translation id="5294529402252479912">今すぐ Adobe Reader を更新する</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> 日前</translation>
@@ -2455,6 +2569,7 @@
 <translation id="5554573843028719904">他の Wi-Fi ネットワーク....</translation>
 <translation id="5034259512732355072">別のディレクトリを選択...</translation>
 <translation id="8885905466771744233">指定した拡張機能の秘密鍵は既に存在します。その鍵を再利用するか、先に削除してください。</translation>
+<translation id="1105057716440030352">HTML ファイルからブックマークをインポート...</translation>
 <translation id="7831504847856284956">住所の追加</translation>
 <translation id="7505152414826719222">ローカル ストレージ</translation>
 <translation id="2541423446708352368">すべてのダウンロードを表示</translation>
@@ -2466,11 +2581,12 @@
 <translation id="2137808486242513288">ユーザーを追加する</translation>
 <translation id="6193618946302416945">母国語以外のページで翻訳ツールを表示する</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
+<translation id="1588870296199743671">次のプログラムでリンクを開く...</translation>
 <translation id="4287167099933143704">PIN ロック解除キーを入力</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> 日</translation>
 <translation id="3129140854689651517">テキストを検索する</translation>
-<translation id="7221585318879598658">Sans Serif</translation>
 <translation id="5558129378926964177">拡大(&amp;I)</translation>
+<translation id="4089178294798788516">切り取り範囲をクリップボードにコピーします。</translation>
 <translation id="6451458296329894277">フォーム再送信の確認</translation>
 <translation id="5116333507878097773"><ph name="NUMBER_ONE"/> 時間</translation>
 <translation id="8028152732786498049">これは <ph name="CHROME_WEB_STORE"/> からのみインストールできます。</translation>
@@ -2508,6 +2624,7 @@
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> 秒前</translation>
 <translation id="7009102566764819240">以下のリストは危険性のある要素の一覧です。マルウェアの脅威に関する詳細情報については、[診断] をクリックしてください。誤ってフィッシングとして報告されているリソースがある場合は、[エラーを報告] リンクをクリックしてください。</translation>
+<translation id="4536111748245793305">プロフィール <ph name="VALUE"/></translation>
 <translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました。</translation>
 <translation id="3631337165634322335">以下の例外は、このシークレット モード セッションにのみ適用されます。</translation>
 <translation id="676327646545845024">このタイプのリンクのダイアログを再び表示しない。</translation>
@@ -2526,6 +2643,7 @@
 <translation id="957120528631539888">検証メッセージの表示を無効にしてフォームが送信されないようにします。</translation>
 <translation id="146000042969587795">このフレームにはセキュリティで保護されていないコンテンツが含まれているためブロックされました。</translation>
 <translation id="3258924582848461629">手書きによる日本語の入力方法</translation>
+<translation id="6338268303901873939">貼り付けに失敗しました。次の項目が存在します: $1</translation>
 <translation id="8112223930265703044">すべて</translation>
 <translation id="3968739731834770921">かな</translation>
 <translation id="3729920814805072072">保存したパスワードの管理...</translation>
@@ -2545,6 +2663,7 @@
 <translation id="486595306984036763">フィッシング報告を開く</translation>
 <translation id="3140353188828248647">アドレスバーにフォーカスを移す</translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> 秒前</translation>
+<translation id="1185611560928829188">マジック リスト（<ph name="MAGIC_COUNT"/>）</translation>
 <translation id="5565871407246142825">クレジットカード</translation>
 <translation id="2587203970400270934">事業者コード:</translation>
 <translation id="3355936511340229503">接続エラー</translation>
@@ -2557,7 +2676,6 @@
 <translation id="1893137424981664888">プラグインはインストールされていません。</translation>
 <translation id="3718288130002896473">動作</translation>
 <translation id="2168725742002792683">ファイル拡張子</translation>
-<translation id="2285615095750412963">拡張機能のインストール日: <ph name="DATE"/></translation>
 <translation id="7861805612256278846">ログインしていません</translation>
 <translation id="1753905327828125965">よくアクセスするページ</translation>
 <translation id="8116972784401310538">ブックマーク マネージャ(&amp;B)</translation>
@@ -2566,6 +2684,7 @@
 <translation id="621638399744152264"><ph name="VALUE"/>%</translation>
 <translation id="4927301649992043040">拡張機能のパッケージ化</translation>
 <translation id="8679658258416378906">タブ 5 を有効にする</translation>
+<translation id="9049835026521739061">ハングル モード</translation>
 <translation id="4763816722366148126">前の入力方法を選択する</translation>
 <translation id="6458308652667395253">Javascript のブロックを管理...</translation>
 <translation id="8435334418765210033">記録されているネットワーク</translation>
@@ -2573,6 +2692,7 @@
 <translation id="5125751979347152379">URL が無効です。</translation>
 <translation id="2791364193466153585">セキュリティ情報</translation>
 <translation id="4673916386520338632">既にインストールされている「<ph name="APP_NAME"/>」と競合するため、アプリケーションをインストールできませんでした。</translation>
+<translation id="6989426679472387780">合成が有効になっている場合、ページのコンテンツの GPU アクセラレーションによる描画を有効にします。</translation>
 <translation id="2024918351532495204">デバイスがオフラインです</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="5607923769356613853"><ph name="BEGIN_BOLD"/>ツール メニューの [<ph name="SETTINGS_TITLE"/>]、[<ph name="ADVANCED_TITLE"/>]、[<ph name="PROXIES_TITLE"/>]、[LAN の設定]<ph name="END_BOLD"/> を順にクリックし、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
@@ -2615,6 +2735,7 @@
 <translation id="3951872452847539732">ネットワーク プロキシ設定は拡張機能によって管理されています。</translation>
 <translation id="6442697326824312960">タブの固定を解除</translation>
 <translation id="6382612843547381371"><ph name="START_DATE_TIME"/>から<ph name="END_DATE_TIME"/>まで有効</translation>
+<translation id="5653352175373198541">ネットワーク メニュー（右上）からインターネットに接続し、Chromebook の設定を完了してください。</translation>
 <translation id="6869402422344886127">チェックボックスがオン</translation>
 <translation id="5637380810526272785">入力方法</translation>
 <translation id="404928562651467259">警告</translation>
@@ -2628,18 +2749,30 @@
 <translation id="8326395326942127023">データベース名:</translation>
 <translation id="7507930499305566459">ステータス レスポンダ証明書</translation>
 <translation id="2689915906323125315">Google アカウントのパスワードを使用する</translation>
+<translation id="407097265175181480"><ph name="BEGIN_BOLD"/>シークレット モードを使用中です<ph name="END_BOLD"/>。このウィンドウで開いたページはブラウザの履歴や検索履歴に記録されません。シークレット モードで開いたウィンドウを&lt;strong&gt;すべて&lt;/strong&gt;閉じると、Cookie などの記録もパソコンから消去されます。ただし、ダウンロードしたファイルやブックマークしたページは保存されます。
+        <ph name="LINE_BREAK"/>
+        <ph name="BEGIN_BOLD"/>シークレット モードにしても、他のユーザー、サーバー、ソフトウェアの動作に影響することはないため、次のようなケースにご注意ください。<ph name="END_BOLD"/>
+        <ph name="BEGIN_LIST"/>
+          <ph name="BEGIN_LIST_ITEM"/>ユーザーの情報を収集、共有するウェブサイト<ph name="END_LIST_ITEM"/>
+          <ph name="BEGIN_LIST_ITEM"/>ユーザーがアクセスしたページをトラッキングするインターネット サービス プロバイダや雇用主<ph name="END_LIST_ITEM"/>
+          <ph name="BEGIN_LIST_ITEM"/>無料ダウンロードなどと一緒にインストールされ、キーストロークを記録する不正ソフトウェア<ph name="END_LIST_ITEM"/>
+          <ph name="BEGIN_LIST_ITEM"/>スパイ、諜報活動<ph name="END_LIST_ITEM"/>
+          <ph name="BEGIN_LIST_ITEM"/>背後にいる人<ph name="END_LIST_ITEM"/>
+        <ph name="END_LIST"/>
+        シークレット モードの詳細については<ph name="BEGIN_LINK"/>こちら<ph name="END_LINK"/>をご覧ください。</translation>
 <translation id="7727721885715384408">名前を変更...</translation>
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> が無効になっています。ブックマークの同期を停止した場合は、拡張機能のページから再度有効にできます。拡張機能のページにはツール メニューからアクセスできます。</translation>
 <translation id="2024621544377454980">ページが読み込まれない</translation>
 <translation id="7136694880210472378">デフォルトに設定</translation>
+<translation id="6173478701774033550">プロフィール アイコン</translation>
 <translation id="7681202901521675750">SIM カードがロックされています。PIN を入力してください。あと <ph name="TRIES_COUNT"/> 回入力できます。</translation>
-<translation id="7420789336015002755">次のフォルダ名に無効な文字が含まれています: $1</translation>
 <translation id="9215535963167691630">その他のプリンタ...</translation>
 <translation id="1731346223650886555">セミコロン</translation>
 <translation id="158849752021629804">ホーム ネットワークが必要です</translation>
 <translation id="7339763383339757376">PKCS #7、単一の証明書</translation>
 <translation id="7587108133605326224">バルト語</translation>
 <translation id="3991936620356087075">誤った PIN が一定回数以上入力されたため、SIM カードが完全に無効になりました。</translation>
+<translation id="9071761050483587943">Google サイトへの自動ログインを有効にする</translation>
 <translation id="936801553271523408">システム診断データ</translation>
 <translation id="6389701355360299052">ウェブページ、HTML のみ</translation>
 <translation id="8067791725177197206">続行 »</translation>
@@ -2668,9 +2801,11 @@
 <translation id="6684737638449364721">すべての閲覧データを消去...</translation>
 <translation id="3954582159466790312">ミュート解除(&amp;M)</translation>
 <translation id="1110772031432362678">ネットワークが見つかりません。</translation>
+<translation id="7737525395960596244">自動入力の品質向上にご協力ください。この設定を有効にした場合、自動入力担当チームへのフィードバックの送信をお願いするメッセージが表示されることがあります。</translation>
 <translation id="3936390757709632190">オーディオを新しいタブで開く(&amp;O)</translation>
 <translation id="7297622089831776169">入力方法(&amp;M)</translation>
 <translation id="5731698828607291678">タブまたはウィンドウ</translation>
+<translation id="1902427289834481011"><ph name="SHORT_PRODUCT_NAME"/> から削除します。</translation>
 <translation id="1152775729948968688">ただし、このページには安全でない他のリソースが含まれています。これらのリソースは、送信中に他のユーザーに参照されたり、悪意のあるユーザーにページの動作を変更されたりする可能性があります。</translation>
 <translation id="604124094241169006">自動</translation>
 <translation id="862542460444371744">拡張機能(&amp;E)</translation>
@@ -2679,12 +2814,12 @@
 <translation id="2927657246008729253">変更...</translation>
 <translation id="7978412674231730200">秘密鍵</translation>
 <translation id="5308380583665731573">接続</translation>
+<translation id="4535127706710932914">デフォルトのプロフィール</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="9049981332609050619"><ph name="DOMAIN"/> にアクセスしようとしましたが、サーバーから無効な証明書が提示されました。</translation>
 <translation id="4414232939543644979">新しいシークレット ウインドウ(&amp;I)</translation>
 <translation id="1693754753824026215">ページ <ph name="SITE"/> の記述:</translation>
 <translation id="7148804936871729015"><ph name="URL"/> のサーバーからの応答時間が長すぎます。サーバーの過負荷が原因の可能性があります。</translation>
-<translation id="5950967683057767490">L2TP/IPSec + 事前共有キー</translation>
 <translation id="8108473539339615591">XSS 検知機能</translation>
 <translation id="1902576642799138955">有効期間</translation>
 <translation id="4910021444507283344">WebGL</translation>
@@ -2695,7 +2830,6 @@
 <translation id="4443536555189480885">ヘルプ(&amp;H)</translation>
 <translation id="340485819826776184">予測サービスを使用してアドレスバーに入力した検索と URL を補完する</translation>
 <translation id="4074900173531346617">メール署名者の証明書</translation>
-<translation id="4743103415223548376">印刷するページが閉じられたため、印刷プレビューの表示に失敗しました。</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="9052208328806230490"><ph name="CLOUD_PRINT_NAME"/> に、アカウント <ph name="EMAIL"/> を使ってプリンタを登録しました</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> 日前</translation>
@@ -2727,7 +2861,9 @@
 <translation id="6630452975878488444">選択ショートカット</translation>
 <translation id="8709969075297564489">サーバー証明書の取り消しを確認する</translation>
 <translation id="8698171900303917290">インストールに関するヘルプ</translation>
+<translation id="2440443888409942524">ピンイン入力方法（US Dvorak キーボード用）</translation>
 <translation id="830868413617744215">Beta</translation>
+<translation id="2679392804024228530">同期データをすべて暗号化する</translation>
 <translation id="5925147183566400388">CPS（認証実施規定）ポインタ</translation>
 <translation id="1497270430858433901"><ph name="DATE"/>に <ph name="DATA_AMOUNT"/> の無料のデータを受領しました</translation>
 <translation id="8150167929304790980">氏名</translation>
@@ -2741,6 +2877,7 @@
 <translation id="4180788401304023883">CA 証明書「<ph name="CERTIFICATE_NAME"/>」を削除しますか？</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
 <translation id="1709220265083931213">高度な設定</translation>
+<translation id="3436440123324878555">プランに加入...</translation>
 <translation id="5748266869826978907">DNS 設定を確認してください。確認方法がわからない場合はネットワーク管理者までお問い合わせください。</translation>
 <translation id="4771973620359291008">不明なエラーが発生しました。</translation>
 <translation id="5509914365760201064">発行元: <ph name="CERTIFICATE_AUTHORITY"/></translation>
@@ -2751,7 +2888,6 @@
 <translation id="8615618338313291042">シークレット モード アプリケーション: <ph name="APP_NAME"/></translation>
 <translation id="978146274692397928">初期の句読点幅を全角にする</translation>
 <translation id="8959027566438633317"><ph name="EXTENSION_NAME"/> をインストールしますか？</translation>
-<translation id="3250798078333049843">データをすべて暗号化する</translation>
 <translation id="8155798677707647270">新しいバージョンをインストールしています...</translation>
 <translation id="6886871292305414135">新しいタブで開く(&amp;T)</translation>
 <translation id="1639192739400715787">セキュリティ設定にアクセスするには、SIM カードの PIN を入力してください</translation>
@@ -2759,6 +2895,7 @@
 <translation id="3950924596163729246">ネットワークにアクセスできません。</translation>
 <translation id="2835170189407361413">フォームをクリア</translation>
 <translation id="4631110328717267096">システムを更新できませんでした。</translation>
+<translation id="361846151613043842">ウィンドウ 1 に切り替える</translation>
 <translation id="3695919544155087829">この証明書ファイルの暗号化に使用したパスワードを入力してください。</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="6308937455967653460">名前を付けてリンク先を保存(&amp;K)...</translation>
@@ -2772,7 +2909,6 @@
 <translation id="480990236307250886">ホームページを開く</translation>
 <translation id="8286036467436129157">ログイン</translation>
 <translation id="5999940714422617743"><ph name="EXTENSION_NAME"/> がインストールされました。</translation>
-<translation id="6665950606684122759"><ph name="EXTENSION_NAME"/> をアンインストール</translation>
 <translation id="1122198203221319518">ツール(&amp;T)</translation>
 <translation id="5757539081890243754">ホームページ</translation>
 <translation id="2760009672169282879">ブルガリア語（翻字）のキーボード</translation>
@@ -2784,6 +2920,7 @@
 <translation id="1753682364559456262">画像のブロックを管理...</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> 時間前</translation>
+<translation id="2889064240420137087">次のプログラムでリンクを開く...</translation>
 <translation id="431076611119798497">詳細(&amp;D)</translation>
 <translation id="737801893573836157">システム タイトル バーを隠してコンパクトな枠線を使用する</translation>
 <translation id="5352235189388345738">アクセス可能:</translation>
@@ -2812,11 +2949,13 @@
 <translation id="4055738107007928968"><ph name="DOMAIN"/> にアクセスしようとしましたが、サーバーにより提示された証明書は脆弱な署名アルゴリズムを使用して署名されています。これは、サーバーにより提示されたセキュリティ認証が偽装されている可能性を示しており、アクセスしようとしたサーバーとは異なるサーバーである恐れがあります（悪意のあるユーザーと通信している可能性があります）。処理を続行しないでください。</translation>
 <translation id="5308689395849655368">障害レポートが無効になっています。</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
+<translation id="7349325818436011302">アーカイブを開く</translation>
 <translation id="8689341121182997459">有効期限:</translation>
 <translation id="899403249577094719">Netscape 証明書基本 URL</translation>
 <translation id="2737363922397526254">折りたたむ...</translation>
 <translation id="4880827082731008257">履歴を検索</translation>
 <translation id="8661290697478713397">シークレット ウインドウでリンクを開く(&amp;G)</translation>
+<translation id="8997135628821231"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]（<ph name="DEVICE"/>）</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> 秒</translation>
 <translation id="2158448795143567596">WebGL API を介してキャンバス要素が 3D グラフィックスを使用できるようにします。</translation>
 <translation id="1702534956030472451">西欧</translation>
@@ -2832,6 +2971,7 @@
 <translation id="8235333616059839358">インターネット接続を確認し、使用しているネットワーク デバイス（ルーター、モデムなど）を再起動してください。</translation>
 <translation id="4042471398575101546">ページの追加</translation>
 <translation id="8848709220963126773">Shift キー モードの切り替え</translation>
+<translation id="3703445029708071516">入力した URL の同期を有効にする</translation>
 <translation id="4871865824885782245">日時オプションを開く...</translation>
 <translation id="8828933418460119530">DNS 名</translation>
 <translation id="988159990683914416">Developer Build</translation>
@@ -2847,12 +2987,14 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="7005848115657603926">ページ範囲が無効です。<ph name="EXAMPLE_PAGE_RANGE"/> の範囲で指定してください。</translation>
 <translation id="3705722231355495246">-</translation>
+<translation id="3448976534399424402">ツール メニューにフォーカスを移す</translation>
 <translation id="2635102990349508383">アカウントのログイン情報がまだ入力されていません。</translation>
 <translation id="6902055721023340732">自動設定 URL</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="3759876923365568382">残り <ph name="NUMBER_FEW"/> 日</translation>
 <translation id="295228163843771014">パスワードの非同期を選択しました。この同期設定はいつでも変更できます。</translation>
+<translation id="2478277127709346535">ウィンドウ 7 に切り替える</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME"/> を起動</translation>
 <translation id="7828702903116529889"><ph name="PRODUCT_NAME"/>
         からネットワークにアクセスできません。
@@ -2861,9 +3003,13 @@
         <ph name="PRODUCT_NAME"/>
         が誤って侵害と見なされ、インターネットへの接続をブロックされていることが考えられます。</translation>
 <translation id="878069093594050299">この証明書は、以下の用途に使用できることが確認されています:</translation>
+<translation id="3910322943643470802">プロキシ設定を変更するには、[共有プロキシを使用] 設定を有効にします。</translation>
+<translation id="6463782637635274853">貼り付けています...</translation>
 <translation id="5852112051279473187">エラー: このデバイスの登録中に問題が発生しました。もう一度お試しいただくか、サポート担当者にお問い合わせください。</translation>
+<translation id="6894066781028910720">ファイル マネージャを開きます</translation>
 <translation id="1664314758578115406">ページの追加...</translation>
 <translation id="7088418943933034707">証明書の管理...</translation>
+<translation id="497421865427891073">次に進む</translation>
 <translation id="8482183012530311851">デバイスをスキャンしています...</translation>
 <translation id="3127589841327267804">PYJJ</translation>
 <translation id="3668823961463113931">ハンドラ</translation>
@@ -2872,7 +3018,6 @@
 <translation id="4084682180776658562">ブックマーク</translation>
 <translation id="8859057652521303089">言語の選択:</translation>
 <translation id="3030138564564344289">ダウンロードを再試行</translation>
-<translation id="8525552230188318924">パスワードの同期を設定する</translation>
 <translation id="4381091992796011497">ユーザー名:</translation>
 <translation id="5830720307094128296">ページを別名で保存(&amp;A)...</translation>
 <translation id="2448312741937722512">タイプ</translation>
@@ -2896,12 +3041,14 @@
 <translation id="5818334088068591797">問題が発生した箇所をお知らせください（必須）。</translation>
 <translation id="6264485186158353794">セキュリティで保護されたページに戻る</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7739677892468726004">プロフィールをカスタマイズ...</translation>
 <translation id="5130080518784460891">Eten</translation>
 <translation id="5847724078457510387">このサイトのすべての有効な証明書は DNS に含まれていますが、サーバーで DNS に含まれていない証明書が使用されました。</translation>
 <translation id="1394853081832053657">音声認識オプション</translation>
 <translation id="5037676449506322593">すべてを選択</translation>
 <translation id="2785530881066938471">コンテンツ スクリプトのファイル「<ph name="RELATIVE_PATH"/>」を読み込むことができませんでした。UTF-8 でエンコードされていません。</translation>
 <translation id="3807747707162121253">キャンセル(&amp;C)</translation>
+<translation id="2740531572673183784">OK</translation>
 <translation id="3306897190788753224">変換のカスタマイズ、履歴に基づく候補表示、ユーザー辞書を一時的に無効にする</translation>
 <translation id="2489435327075806094">ポインタの速度:</translation>
 <translation id="2574102660421949343"><ph name="DOMAIN"/> からの Cookie が許可されました。</translation>
@@ -2912,6 +3059,7 @@
 <translation id="1639058970766796751">キューに追加</translation>
 <translation id="1177437665183591855">不明なサーバー証明書エラー</translation>
 <translation id="8467473010914675605">韓国語 IME</translation>
+<translation id="6538242311007136163">セッション（<ph name="SESSION_COUNT"/>）</translation>
 <translation id="3819800052061700452">全画面表示(&amp;F)</translation>
 <translation id="5419540894229653647"><ph name="ERROR_DESCRIPTION_TEXT"/>
         <ph name="LINE_BREAK"/>
@@ -2922,8 +3070,10 @@
 <translation id="2333340435262918287"><ph name="PRODUCT_NAME"/> を再起動すると変更が有効になります。</translation>
 <translation id="5906065664303289925">ハードウェアのアドレス:</translation>
 <translation id="3178000186192127858">読み取り専用</translation>
+<translation id="4236660184841105427">すべてのファイルを表示</translation>
 <translation id="2187895286714876935">サーバー証明書インポート エラー</translation>
 <translation id="5460896875189097758">ローカルに格納されたデータ</translation>
+<translation id="4882473678324857464">ブックマークにフォーカスを移す</translation>
 <translation id="4618990963915449444"><ph name="DEVICE_NAME"/> 上のファイルはすべて消去されます。</translation>
 <translation id="614998064310228828">デバイス モデル:</translation>
 <translation id="1581962803218266616">Finder で表示</translation>
@@ -2991,6 +3141,7 @@
 <translation id="2445081178310039857">拡張機能のルート ディレクトリを指定してください。</translation>
 <translation id="8251578425305135684">サムネイルを削除しました。</translation>
 <translation id="6163522313638838258">すべてを展開...</translation>
+<translation id="4988364749377710401">プロフィールの管理</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="5803531701633845775">カーソルを動かさずに後ろからフレーズを選択する</translation>
 <translation id="1918141783557917887">縮小(&amp;S)</translation>
@@ -3000,6 +3151,7 @@
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
 <translation id="4481249487722541506">パッケージ化されていない拡張機能を読み込む...</translation>
 <translation id="8180239481735238521">ページ</translation>
+<translation id="68673033339624707">新しいプロフィールを作成...</translation>
 <translation id="2963783323012015985">トルコ語のキーボード</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
 <translation id="5431318178759467895">カラー</translation>
@@ -3026,8 +3178,10 @@
 <translation id="1146498888431277930">SSL 接続エラー</translation>
 <translation id="8041089156583427627">フィードバックを送信</translation>
 <translation id="6394627529324717982">カンマ</translation>
+<translation id="3325146402434751578"><ph name="CLOUD_PRINT_NAME"/> でのプリンタの設定、管理</translation>
 <translation id="253434972992662860">一時停止(&amp;P)</translation>
 <translation id="335985608243443814">参照...</translation>
+<translation id="8048178988014360106"><ph name="SHORT_PRODUCT_NAME"/> の新しいプロフィールの作成</translation>
 <translation id="7802488492289385605">Google 日本語入力（US Dvorak キーボード用）</translation>
 <translation id="7452120598248906474">固定幅フォント</translation>
 <translation id="3129687551880844787">セッション ストレージ</translation>
@@ -3042,9 +3196,11 @@
 <translation id="5988840637546770870">Dev チャンネルは新しい機能を試すことができますが、非常に不安定になることがあります。十分ご注意の上でご利用ください。</translation>
 <translation id="3569713929051927529">フォルダの追加...</translation>
 <translation id="4032664149172368180">日本語の入力方法（US Dvorak キーボード用）</translation>
+<translation id="747459581954555080">すべて復元</translation>
 <translation id="3748706263662799310">バグを報告</translation>
 <translation id="7167486101654761064">この種類のファイルは常に開く(&amp;A)</translation>
 <translation id="4283623729247862189">光デバイス</translation>
+<translation id="7027559794548152684">前回 <ph name="USER_EMAIL_ADDRESS"/> と同期しました。<ph name="BEGIN_LINK"/>Google ダッシュボード<ph name="END_LINK"/>で同期データを管理できます。</translation>
 <translation id="5826507051599432481">一般名（CN）</translation>
 <translation id="8914326144705007149">極大</translation>
 <translation id="4215444178533108414">アイテムの削除を完了</translation>
@@ -3076,6 +3232,7 @@
 <translation id="100242374795662595">不明なデバイス</translation>
 <translation id="9087725134750123268">Cookie と他のサイトのデータを削除する</translation>
 <translation id="5050255233730056751">入力した URL</translation>
+<translation id="294238750282796288">一部のオプションは拡張機能によって管理されています。</translation>
 <translation id="3349155901412833452">, キーと . キーで候補リストのページを切り替える</translation>
 <translation id="3981681824736556685">プロキシ サーバーを使用している場合は、プロキシの設定を確認するか、ネットワーク管理者にプロキシ サーバーが正常に動作しているかどうかを確認してください。プロキシ サーバーを使用していない場合は、次のプロキシ設定を編集してください: <ph name="PLATFORM_TEXT"/></translation>
 <translation id="6872947427305732831">メモリを解放</translation>
@@ -3104,10 +3261,12 @@
 <translation id="4886690096315032939">起動時に既存のタブにフォーカス</translation>
 <translation id="5729712731028706266">表示(&amp;V)</translation>
 <translation id="774576312655125744"><ph name="WEBSITE_1"/>、<ph name="WEBSITE_2"/>、<ph name="NUMBER_OF_OTHER_WEBSITES"/> などのウェブサイトにあるデータ</translation>
+<translation id="9023317578768157226"><ph name="HANDLER_TITLE"/>（<ph name="HANDLER_HOSTNAME"/>）で <ph name="PROTOCOL"/> リンクをすべて開くようにしますか？</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> の SMS</translation>
 <translation id="4508765956121923607">ソースを表示(&amp;O)</translation>
 <translation id="5975083100439434680">縮小する</translation>
 <translation id="8080048886850452639">オーディオの URL をコピー(&amp;O)</translation>
+<translation id="50501183967525113">GPU アクセラレーションによる描画</translation>
 <translation id="2817109084437064140">インポートしてデバイスにバインド...</translation>
 <translation id="3331321258768829690">（<ph name="UTCOFFSET"/>）<ph name="LONGTZNAME"/>（<ph name="EXEMPLARCITY"/>）</translation>
 <translation id="619398760000422129">プラグイン（Adobe Flash Player や QuickTime など）</translation>
@@ -3118,6 +3277,7 @@
 <translation id="3529020546926570314">ログインしてクラウド プリンタにアクセス...</translation>
 <translation id="1384721974622518101">上部に表示されるボックスから直接検索できます</translation>
 <translation id="992543612453727859">フレーズを前に追加する</translation>
+<translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="1559528461873125649">該当するファイルまたはディレクトリがありません</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1244147615850840081">通信会社</translation>

@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; domaint, de a szerver tanúsítványa hibás. A Google Chrome nem tud hibás tanúsítványt feldolgozni; ennek következtében nem tudja igazolni azt a webhelyet, amelyet el akart érni. A kapcsolat nem biztonságos, ezért nem javasoljuk a továbblépést.</translation>
 <translation id="8738921060445980047">Ismeretlen verzió.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
+<translation id="2748463065602559597">Ön egy biztonságos Google Chrome-oldalt lát.</translation>
 <translation id="3324235665723428530">A profilja nem működik, mert az a Google Chrome egy újabb verziójából származik.\n\nLehetséges, hogy néhány funkció nem lesz elérhető. Kérjük, adjon meg egy másik profilmappát vagy használja a Google Chrome újabb verzióját.</translation>
 <translation id="9073088951656332330">Nem található telepített Google Chrome vagy Google Chrome Frame a frissítéshez.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">A Google Chrome internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
 <translation id="7436949144778751379">A Google Chrome Windows XP-t vagy újabb operációs rendszert igényel. Korábbi verziójú operációs rendszeren lehet, hogy néhány funkció nem fog működni.</translation>
 <translation id="7100330187273168372">A Google Chrome nem tud beleírni és nem tudja olvasni a következő mappát:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome témák galériája</translation>
 <translation id="7938170099933661772">A Google Chrome nem tudja megjeleníteni a nyomtatási előnézetet, ha le van tiltva a beépített PDF-megtekintő. Az előnézet megjelenítéséhez, kérjük, keresse fel a <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> címet, engedélyezze a Chrome PDF-megtekintőjét, majd próbálja újra.</translation>
 <translation id="6757767188268205357">Ne zavarjanak ezzel</translation>
 <translation id="2290095356545025170">Biztos benne, hogy eltávolítja a Google Chrome-ot?</translation>
+<translation id="1243097286641060337">Nem lehet frissíteni a Google Chrome-ot vagy a Google Chrome Frame-et a Google Update csoportházirendjének beállításaiban található ellentmondások miatt. A Csoportházirend-szerkesztő használatával állítsa be a frissítések házirendjének felülírását a Google Chrome Binaries alkalmazásban, majd próbálkozzon újra.</translation>
 <translation id="6087062680442281307">A Google Chrome olyan böngésző, amely villámsebesen futtatja a weboldalakat és az alkalmazásokat. Gyors, stabil és könnyen használható. A beépített, adathalászat és a kártékony programok elleni védelemmel biztonságosabban böngészhet az interneten.</translation>
 <translation id="5941830788786076944">A Google Chrome beállítása alapértelmezett böngészőként</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">A rendszer ütközést észlelt egy másik telepített alkalmazással.</translation>
 <translation id="7018032895891496381">A Google Chrome az alapértelmezett keresőmotort használja, amely jelenleg a(z) <ph name="PAGE_TITLE"/>. Megtartja az alapértelmezett keresőmotort?</translation>
 <translation id="7161904924553537242">Üdvözli Önt a Google Chrome!</translation>
+<translation id="5211087808649701653">Natív nyomtatási párbeszédablak indítása</translation>
 <translation id="8669527147644353129">Google Chrome segéd</translation>
 <translation id="3444832043240812445">Ez az oldal csak akkor jelenít meg információkat a legutóbbi rendszerösszeomlásokról, ha <ph name="BEGIN_LINK"/>engedélyezi a hibabejelentést<ph name="END_LINK"/> .</translation>
 <translation id="8614913330719544658">A Google Chrome nem válaszol. Újraindítja most?</translation>

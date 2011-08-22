@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书有误。Google Chrome 浏览器无法使用有错误的证书，也无法验证所尝试连接的网站的身份。您的连接不安全，应该停止操作。</translation>
 <translation id="8738921060445980047">版本未知。</translation>
 <translation id="2485422356828889247">卸载</translation>
+<translation id="2748463065602559597">您正在查看的是安全的 Google Chrome 浏览器网页。</translation>
 <translation id="3324235665723428530">您的配置文件来自新版 Google Chrome 浏览器，因此无法使用。\n\n某些功能可能不能使用。请指定其他配置文件目录，或使用新版 Chrome 浏览器。</translation>
 <translation id="9073088951656332330">未发现“Google Chrome 浏览器”或“Google Chrome 浏览器内嵌框架”的安装更新。</translation>
 <translation id="1759842336958782510">Chrome 浏览器</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome 浏览器可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="7436949144778751379">您需要在 Windows XP 或更高版本的操作系统中运行 Google Chrome 浏览器，否则可能无法正常使用某些功能。</translation>
 <translation id="7100330187273168372">Google Chrome 浏览器无法对其数据目录进行读写操作：\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome 浏览器主题库</translation>
 <translation id="7938170099933661772">“Google Chrome 浏览器”无法在内置 PDF 查看器已停用的情况下显示打印预览。要查看打印预览，请访问 <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>，启用“Chrome PDF 查看器”，然后重试。</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="2290095356545025170">确定要卸载 Google Chrome 浏览器吗？</translation>
+<translation id="1243097286641060337">如果帐户的“Google 更新组策略”设置不一致，Google Chrome 浏览器或 Google Chrome 浏览器内嵌框架就无法更新。请使用“组策略编辑器”设置覆盖 Google Chrome 浏览器二进制 (Google Chrome Binaries) 应用程序的更新策略，然后重试。</translation>
 <translation id="6087062680442281307">Google Chrome 浏览器是一款可高速运行网页和应用程序的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更加安全地浏览网页。</translation>
 <translation id="5941830788786076944">将 Google Chrome 浏览器设为默认浏览器</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">检测到与另一个已安装的应用程序存在冲突。</translation>
 <translation id="7018032895891496381">Google Chrome 浏览器会使用您的默认搜索引擎（目前设置为<ph name="PAGE_TITLE"/>）。您想要保留自己的默认搜索引擎吗？</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome 浏览器</translation>
+<translation id="5211087808649701653">启动本地打印对话框</translation>
 <translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
 <translation id="3444832043240812445">如果<ph name="BEGIN_LINK"/>启用崩溃报告<ph name="END_LINK"/>，则该网页将只显示您最近的崩溃信息。</translation>
 <translation id="8614913330719544658">Google Chrome 浏览器未响应。是否立即重新启动？</translation>

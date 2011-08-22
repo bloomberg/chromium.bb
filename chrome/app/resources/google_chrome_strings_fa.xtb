@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">سعی داشتید به &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; برسید، اما گواهی ارائه شده از سوی سرور دارای خطا است. Google Chrome نمی تواند از گواهی دارای خطا استفاده کند و نمی تواند هویت سایتی را تعیین کند که می خواهید به آن وصل شوید. اتصال شما ایمن نیست و نباید ادامه دهید.</translation>
 <translation id="8738921060445980047">نسخه ناشناخته.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
+<translation id="2748463065602559597">شما در حال مشاهده یک صفحه امن Google Chrome هستید.</translation>
 <translation id="3324235665723428530">استفاده از نمایه شما ممکن نیست چون از نسخه جدیدتر Google Chrome است. ممکن است برخی از ویژگیها در دسترس نباشند. لطفاً دایرکتوری نمایه دیگری را تعیین کنید یا نسخه جدیدتر Chrome را استفاده کنید.</translation>
 <translation id="9073088951656332330">هیچ Google Chrome یا Google Chrome Frame برای به روز رسانی یافت نشد.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome ممکن است از سرویس های وب برای بهبود تجربه مرور استفاده کند.</translation>
 <translation id="7436949144778751379">Google Chrome به Windows XP یا نسخه بالاتر آن نیاز دارد. برخی از ویژگیها ممکن است کار نکند.</translation>
 <translation id="7100330187273168372">Google Chrome نمی تواند دایرکتوری داده های خود را بخواند یا در آن بنویسد:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">گالری طرح های زمینه Google Chrome</translation>
 <translation id="7938170099933661772">در صورتی که نمایشگر PDF داخلی غیر فعال شده باشد، Google Chrome نمی تواند پیش نمایش چاپ را نشان دهد. به منظور مشاهده پیش نمایش، لطفاً به <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> مراجعه کنید و &quot;نمایشگر Chrome PDF&quot; را فعال کرده و دوباره امتحان کنید.</translation>
 <translation id="6757767188268205357">مرا اذیت نکن</translation>
 <translation id="2290095356545025170">آیا می خواهید Google Chrome را غیر فعال کنید؟</translation>
+<translation id="1243097286641060337">Google Chrome یا Google Chrome Frame نمی‌تواند بر روی حساب تنظیمات خط مشی Google Update Group متناقض به‌روزرسانی شود. از Group Policy Editor برای لغو خط مشی به‌روزرسانی برای برنامه Google Chrome Binaries استفاده کرده و دوباره امتحان کنید.</translation>
 <translation id="6087062680442281307">Google Chrome یک مرورگر وب است که برنامه های کاربردی و صفحات وب را در یک چشم به هم زدن اجرا و باز می کند. استفاده از آن سریع و آسان است و همیشه در دسترس است. با برنامه های حفاظت در برابر فیشینگ و بدافزار تعبیه شده در Google Chrome، وب را امن تر مرور کنید.</translation>
 <translation id="5941830788786076944">Google Chrome مرورگر پیش فرض شود</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">تداخلی با یک برنامه کاربردی نصب شده دیگر شناسایی شد.</translation>
 <translation id="7018032895891496381">Google Chrome از موتور جستجوی پیش فرض شما استفاده می کند، که اکنون روی <ph name="PAGE_TITLE"/> تنظیم شده است. آیا می خواهید موتور جستجوی پیش فرض خود را حفظ کنید؟</translation>
 <translation id="7161904924553537242">به Google Chrome خوش آمدید</translation>
+<translation id="5211087808649701653">راه‌اندازی گفتگوی چاپ بومی</translation>
 <translation id="8669527147644353129">راهنمای Google Chrome</translation>
 <translation id="3444832043240812445">در صورتی که <ph name="BEGIN_LINK"/>ارسال گزارش خرابی را فعال کنید<ph name="END_LINK"/>، این صفحه فقط اطلاعاتی را در مورد مشکلات اخیر شما نشان می دهد.</translation>
 <translation id="8614913330719544658">Google Chrome پاسخ نمی دهد. مجدداً راه اندازی شود؟</translation>

@@ -20,15 +20,18 @@
           Par défaut, toutes les extensions figurent sur la liste blanche. Toutefois, si toutes les extensions ont été mises sur la liste noire par la stratégie, seules les extensions expressément indiquées dans la liste blanche pourront être utilisées.</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
+<translation id="2908277604670530363">Nombre maximal de connexions simultanées au serveur proxy</translation>
 <translation id="3512877396423730277">Contrôle si le sous-contenu tiers d'une page est autorisé à ouvrir un pop-up d'authentification HTTP de base (Basic Auth). Cette option est habituellement désactivée dans le cadre de la protection contre le phishing.</translation>
 <translation id="1438955478865681012">Configure les règles relatives aux extensions. L'utilisateur n'est pas autorisé à installer les extensions inscrites sur la liste noires, sauf si elles figurent sur la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME"/> à installer des extensions. Pour ce faire, dressez la liste de ces extensions dans <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La liste noire est prioritaire sur la liste des extensions dont l'installation est forcée.</translation>
 <translation id="4070280487546651935">Définit le mot clé correspondant au raccourci utilisé dans le champ polyvalent pour déclencher la recherche pour ce moteur de recherche. Facultatif.</translation>
+<translation id="6036523166753287175">Activer la traversée de pare-feu depuis l'hôte d'accès à distance</translation>
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
 <translation id="7567380065339179813">Autoriser les plug-ins sur ces sites</translation>
 <translation id="5290940294294002042">Répertorier les plug-ins pouvant être activés ou désactivés par l'utilisateur</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1827523283178827583">Utiliser des serveurs proxy déterminés</translation>
 <translation id="3021409116652377124">Désactiver l'outil de recherche de plug-ins</translation>
+<translation id="3288595667065905535">Version disponible</translation>
 <translation id="2455652143675149114">Permet de définir le comportement du navigateur au démarrage.
 
           Si vous choisissez la valeur &quot;Ouvrir la page d'accueil&quot;, cette page s'affiche systématiquement lorsque vous lancez <ph name="PRODUCT_NAME"/>.
@@ -42,13 +45,14 @@
           Désactiver ce paramètre équivaut à le laisser non configuré. L'utilisateur pourra toujours le modifier dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4980635395568992380">Type de données :</translation>
 <translation id="3096595567015595053">Liste des plug-ins activés</translation>
-<translation id="7998998292074133333">Activer le verrouillage lorsque les périphériques utilisant Google Chrome OS sont inactifs ou en veille.
+<translation id="7998998292074133333">Activer le verrouillage lorsque les appareils utilisant Google Chrome OS sont inactifs ou en veille.
 
-      Si vous activez ce paramètre, les utilisateurs sont invités à fournir un mot de passe pour réactiver les périphériques utilisant Google Chrome OS lorsqu'ils sont en veille.
+      Si vous activez ce paramètre, les utilisateurs sont invités à fournir un mot de passe pour réactiver les appareils utilisant Google Chrome OS lorsqu'ils sont en veille.
 
-      Si vous désactivez ce paramètre, les utilisateurs n'ont pas de mot de passe à fournir pour réactiver les périphériques utilisant Google Chrome OS lorsqu'ils sont en veille.
+      Si vous désactivez ce paramètre, les utilisateurs n'ont pas de mot de passe à fournir pour réactiver les appareils utilisant Google Chrome OS lorsqu'ils sont en veille.
 
       Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétre dans <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="8781881969636812184">Permet d'utiliser des serveurs STUN et relais lorsque les clients distants tentent d'établir une connexion à cette machine. Lorsque ce paramètre est activé, les clients distants peuvent identifier ces machines et s'y connecter, même si un pare-feu les sépare. Lorsque ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine ne permet que la connexion de machines clientes au sein du réseau local.</translation>
 <translation id="5912364507361265851">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe.</translation>
 <translation id="6999540307315670568">Active la barre de favoris sur la page &quot;Nouvel onglet&quot; de <ph name="PRODUCT_NAME"/>.
 
@@ -176,6 +180,7 @@
 
           Si vous activez ce paramètre, les utilisateurs ne peuvent pas modifier l'URL de leur page d'accueil dans <ph name="PRODUCT_NAME"/>. Toutefois, ils peuvent sélectionner la page &quot;Nouvel onglet&quot; en guise de page d'accueil.</translation>
 <translation id="4423597592074154136">Spécifier manuellement les paramètres de proxy</translation>
+<translation id="209586405398070749">Version stable</translation>
 <translation id="3137734558440858947">Vous permet d'indiquer si des sites Web sont autorisés à afficher des images. L'affichage d'images peut être soit autorisé pour tous les sites Web, soit refusé pour tous les sites Web.</translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
 <translation id="3523486089716697173">Vous permet de définir une liste de formats d'URL indiquant les sites non autorisés à afficher des images.</translation>
@@ -187,6 +192,7 @@
 <translation id="6022948604095165524">Action au démarrage</translation>
 <translation id="3704185423155638353">Vous permet de définir une liste de formats d'URL indiquant les sites non autorisés à exécuter JavaScript.</translation>
 <translation id="7628741187268592472">Indique la bibliothèque GSSAPI à utiliser pour l'authentification HTTP. Vous pouvez indiquer uniquement le nom de la bibliothèque ou son chemin d'accès complet. Si vous ne fournissez aucun paramètre, <ph name="PRODUCT_NAME"/> utilise un nom de bibliothèque par défaut.</translation>
+<translation id="2435100545355792516">Forcer l'activation du mode navigation privée</translation>
 <translation id="605147781209875705">Cette stratégie n'est plus autorisée et doit être remplacée par ProxyMode.
 
           Vous permet d'indiquer le serveur proxy utilisé par <ph name="PRODUCT_NAME"/> et d'empêcher les utilisateurs de modifier les paramètres de proxy.
@@ -214,6 +220,7 @@
 
           Pour consulter des exemples détaillés, accédez à :
           <ph name="PROXY_HELP_URL"/></translation>
+<translation id="5770738360657678870">Version en développement (peut être instable)</translation>
 <translation id="2959898425599642200">Règles de contournement de proxy</translation>
 <translation id="7337941689192402544">Définir le répertoire de données utilisateur pour <ph name="PRODUCT_NAME"/></translation>
 <translation id="5326137997741385453">Configure le répertoire qui sera utilisé par <ph name="PRODUCT_NAME"/> pour stocker les fichiers mis en cache sur le disque. Si vous l'appliquez, <ph name="PRODUCT_NAME"/> utilisera le répertoire fourni, que l'utilisateur ait spécifié ou non l'indicateur &quot;--disk-cache-dir&quot;.</translation>
@@ -235,6 +242,7 @@
 
       Cette liste commence par <ph name="CHROMIUM_KEY"/> pour les stratégies Chromium et par <ph name="GOOGLE_CHROME_KEY"/> pour les stratégies Google Chrome.</translation>
 <translation id="7003746348783715221">Préférences de <ph name="PRODUCT_NAME"/></translation>
+<translation id="4723829699367336876">Activer la traversée de pare-feu depuis le client d'accès à distance</translation>
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
@@ -242,7 +250,6 @@
 <translation id="6157537876488211233">Liste de règles de contournement de proxy séparées par des virgules</translation>
 <translation id="7091198954851103976">Toujours exécuter les plug-ins qui nécessitent une autorisation</translation>
 <translation id="8870318296973696995">Page d'accueil</translation>
-<translation id="4505337077089958219">Fréquence d'actualisation des stratégies</translation>
 <translation id="996560596616541671">Serveurs auxquels <ph name="PRODUCT_NAME"/> peut accorder une délégation.</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="2236488539271255289">Interdire à tous les sites de définir des données locales</translation>
@@ -321,6 +328,7 @@
 
       Si ce paramètre est désactivé, les utilisateurs ne peuvent pas imprimer à partir de <ph name="PRODUCT_NAME"/>. La fonction d'impression est désactivée dans le menu clé à molette, dans les extensions, dans les applications JavaScript, etc. Il est cependant possible d'effectuer des impressions à partir des plug-ins qui contournent <ph name="PRODUCT_NAME"/> lors de l'impression. Par exemple, l'option d'impression figurant dans le menu contextuel de certaines applications Flash n'est pas désactivée.</translation>
 <translation id="6908640907898649429">Configure le moteur de recherche par défaut. Vous pouvez définir le moteur de recherche par défaut dont se servira l'utilisateur ou choisir de désactiver le moteur de recherche par défaut.</translation>
+<translation id="8621254262912103717">Indique le nombre maximal de connexions simultanées au serveur proxy. Certains serveurs proxy ne peuvent pas gérer de nombreuses connexions simultanées par client. Ce problème peut être résolu en diminuant la valeur de cette règle, qui doit être inférieure à 100 et supérieure à 6, pour une valeur par défaut de 32. Certaines applications Web sont connues pour utiliser de nombreuses connexions avec des requêtes GET en attente. Définir une valeur inférieure à 32 peut donc provoquer des blocages du navigateur si trop d'applications Web de ce type sont ouvertes. Toute diminution de la valeur par défaut est effectuée à vos propres risques.</translation>
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
 <translation id="4027608872760987929">Activer le moteur de recherche par défaut</translation>
 <translation id="2223598546285729819">Paramètre de notification par défaut</translation>
@@ -337,6 +345,7 @@
 <translation id="4733471537137819387">Stratégies liées à l'authentification HTTP intégrée</translation>
 <translation id="4608714268466689965">Vous permet de définir si des sites Web sont autorisés à afficher des notifications sur le bureau. L'affichage des notifications sur le bureau peut être autorisé par défaut, refusé par défaut, ou la question peut être posée à l'utilisateur chaque fois qu'un site Web veut afficher des notifications sur le bureau.</translation>
 <translation id="8951350807133946005">Définir le répertoire du cache disque</translation>
+<translation id="3866571346358522601">Indique en millisecondes l'intervalle de temps entre chaque demande d'informations sur les règles relatives aux utilisateurs auprès du service de gestion d'appareils. Si cette règle est définie, la valeur par défaut de trois heures est remplacée. Les valeurs admises pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86 400 000 (un jour). Les valeurs situées en dehors de cette plage sont remplacées par la valeur limite la plus proche.</translation>
 <translation id="1334051495529796396">Indique si le SPN Kerberos généré est basé sur le nom canonique du serveur DNS ou sur le nom initialement saisi.
 
           Si vous activez ce paramètre, la consultation CNAME n'est pas effectuée et le nom du serveur est utilisé tel qu'il a été saisi.
@@ -412,6 +421,8 @@
 <translation id="5226033722357981948">Indiquer si l'outil de recherche de plug-ins doit être désactivé</translation>
 <translation id="9068358498333390522">Vous permet d'indiquer si les sites Web sont autorisés à afficher des fenêtres pop-up. L'affichage des fenêtres pop-up peut être autorisé pour tous les sites Web ou refusé pour tous les sites Web.</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
+<translation id="1843117931376765605">Fréquence d'actualisation des règles relatives aux utilisateurs</translation>
+<translation id="1630808801738981930">Force l'activation du mode navigation privée pour chaque session dans <ph name="PRODUCT_NAME"/>. Si ce paramètre est activé, les utilisateurs ne peuvent ouvrir des pages qu'en mode navigation privée. Si ce paramètre est désactivé ou n'est pas configuré, les utilisateurs peuvent également utiliser le navigateur en mode normal.</translation>
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
 <translation id="4554678280250165996">Répertorie les systèmes d'authentification HTTP compatibles avec <ph name="PRODUCT_NAME"/>.
 
@@ -422,6 +433,7 @@
 <translation id="6013842521938070987">Désactive les schémas de protocole répertoriés dans <ph name="PRODUCT_NAME"/>.
 
       Les URL utilisant un schéma de cette liste ne seront pas chargées et sont inaccessibles.</translation>
+<translation id="4845434807154973261">Permet d'utiliser des serveurs STUN et relais lors de la connexion à un client distant. Lorsque ce paramètre est activé, cette machine peut identifier les hôtes distants et s'y connecter, même si un pare-feu les sépare. Lorsque ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine ne peut se connecter qu'aux hôtes au sein du réseau local.</translation>
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
 <translation id="3808945828600697669">Répertorier les plug-ins désactivés</translation>
 <translation id="2187975305444384964">Vous permet d'indiquer si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Le suivi de la position géographique des utilisateurs peut être autorisé par défaut, refusé par défaut ou la question peut être posée à l'utilisateur chaque fois qu'un site Web demande sa position géographique.</translation>
@@ -431,9 +443,11 @@
 <translation id="2098658257603918882">Autoriser l'envoi de statistiques d'utilisation et de rapports d'erreur</translation>
 <translation id="1151353063931113432">Autoriser les images sur ces sites</translation>
 <translation id="4498075447689127727">Vous permet de définir une liste de formats d'URL indiquant les sites non autorisés à ouvrir des fenêtres pop-up.</translation>
+<translation id="5807843250244274844">Indique la version sur laquelle cet appareil devrait être verrouillé. Cette règle est en cours de configuration. L'utilisateur peut actuellement changer de version, même si celle-ci est définie dans la règle.</translation>
 <translation id="1297182715641689552">Utiliser un script de proxy .pac</translation>
 <translation id="8631434304112909927">jusqu'à la version <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Activer les suggestions de recherche</translation>
+<translation id="4906194810004762807">Fréquence d'actualisation des règles de l'appareil</translation>
 <translation id="5511702823008968136">Activer le barre de favoris</translation>
 <translation id="3653673712530669976">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME"/> est installé.
           Le paramétrage par défaut de cette stratégie autorise le navigateur hôte à effectuer le rendu. Toutefois, vous pouvez remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME"/> assure le rendu des pages HTML par défaut.</translation>
@@ -442,6 +456,8 @@
       remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME"/> assure le rendu des pages HTML pages par défaut.</translation>
 <translation id="4486602758942612946">Personnalise la liste des formats d'URL qui doivent être systématiquement rendus par le navigateur hôte.
           Pour consulter des exemples de formats, accédez à : http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2257451316169619209">Indique en millisecondes l'intervalle de temps entre chaque demande d'informations sur les règles relatives aux appareils auprès du service de gestion d'appareils. Si cette règle est définie, la valeur par défaut de trois heures est remplacée. Les valeurs admises pour cette règle sont comprises entre 1 800 000 (30 minutes) et 86 400 000 (un jour). Les valeurs situées en dehors de cette plage sont remplacées par la valeur limite la plus proche.</translation>
+<translation id="1734716591049455502">Configurer les options d'accès à distance</translation>
 <translation id="4346795218451526495">Répertorie les plug-ins que l'utilisateur peut activer ou désactiver dans <ph name="PRODUCT_NAME"/>.
 
       Les caractères génériques &quot;*&quot; et &quot;?&quot; remplacent des séquences de caractères arbitraires. &quot;*&quot; correspond à un nombre arbitraire de caractères, tandis que &quot;?&quot; représente un caractère unique facultatif, c'est-à-dire qu'il remplace zéro ou un caractère. Placé devant les caractères &quot;*&quot;, &quot;?&quot; ou &quot;\&quot;, le caractère d'échappement &quot;\&quot; permet de rechercher ces caractères eux-mêmes.
@@ -454,6 +470,7 @@
       Si vous désactivez ce paramètre, les plug-ins obsolètes ne seront pas utilisés et l'autorisation des utilisateurs ne sera pas requise pour leur exécution.
 
       Si ce paramètre n'est pas défini, l'autorisation des utilisateurs sera requise pour l'exécution des plug-ins obsolètes.</translation>
+<translation id="2629448496147630947">Configurer les options d'accès à distance dans <ph name="PRODUCT_NAME"/>. Ces fonctionnalités sont ignorées, sauf si l'application Web d'accès à distance est installée.</translation>
 <translation id="407895324478579198">Permet de spécifier une liste d'extensions qui seront installées en tâche de fond, sans intervention de l'utilisateur.
 
           Chaque élément de la liste est une chaîne constituée d'un identifiant d'extension et d'une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON"/>). Par exemple : <ph name="EXTENSION_POLICY_EXAMPLE"/>. Pour chaque élément, <ph name="PRODUCT_NAME"/> récupère l'extension désignée par l'identifiant à l'adresse URL spécifiée, puis installe l'extension en arrière-plan. Dans les pages qui suivent, vous découvrirez comment héberger des extensions sur votre propre serveur. À propos des URL de mise à jour : <ph name="LINK_TO_EXTENSION_DOC1"/>, à propos des extensions d'hébergement en général :<ph name="LINK_TO_EXTENSION_DOC2"/>.
@@ -468,9 +485,6 @@
 <translation id="3780152581321609624">Inclure un port non standard dans le SPN Kerberos</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
 <translation id="5512418063782665071">URL de la page d'accueil</translation>
-<translation id="8990655542335348641">Indique en millisecondes l'intervalle de temps entre chaque demande d'informations sur la stratégie auprès du service de gestion de périphériques.
-
-      Si cette stratégie est définie, la valeur par défaut de  3 heures est remplacée. Les valeurs admises pour cette stratégie sont comprises entre 30 minutes et 1 jour. Les valeurs situées en dehors de cette plage sont remplacées par la valeur limite la plus proche.</translation>
 <translation id="6049075103826767200">Autorise l'envoi à Google de rapports anonymes concernant l'utilisation et les incidents de <ph name="PRODUCT_NAME"/>, et empêche les utilisateurs de modifier ce paramétrage.
 
       Si vous activez ce paramètre, des rapports anonymes concernant l'utilisation et les incidents sont envoyés à Google.
@@ -478,7 +492,7 @@
       Si vous désactivez ce paramètre, aucun rapport anonyme concernant l'utilisation et les incidents n'est envoyé à Google.
 
       Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="2263362640517427542">Activer le verrouillage lorsque les périphériques utilisant Google Chrome OS sont inactifs ou en veille.</translation>
+<translation id="2263362640517427542">Activer le verrouillage lorsque les appareils utilisant Google Chrome OS sont inactifs ou en veille.</translation>
 <translation id="6808666497110319299">Permet d'utiliser les pages d'erreur alternatives intégrées à <ph name="PRODUCT_NAME"/> (par exemple, &quot;Page introuvable&quot;) et empêche les utilisateurs de modifier ce paramétrage.
 
       Si vous activez ce paramètre, les pages d'erreur alternatives sont utilisées.
@@ -487,6 +501,7 @@
 
       Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer ce paramétrage dans <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1948757837129151165">Stratégies d'authentification HTTP</translation>
+<translation id="5946082169633555022">Version bêta</translation>
 <translation id="817926804885880359">Active la fonction de saisie automatique de <ph name="PRODUCT_NAME"/> et permet aux utilisateurs de remplir automatiquement des formulaires Web à l'aide de données précédemment stockées, telles qu'une adresse ou des informations de carte de crédit.
 
       Si vous désactivez ce paramètre, la fonction de saisie automatique n'est pas accessible aux utilisateurs.

@@ -14,19 +14,27 @@
 <translation id="5183383917553127163">允許您指定不應列入黑名單的擴充功能。星號 (*) 代表排除所有的擴充功能，而使用者只能安裝許可清單所列的擴充功能。根據預設，所有擴充功能都會列入許可清單，但如果因為政策而導致所有擴充功能都進入黑名單，則您可以使用許可清單覆寫該政策。</translation>
 <translation id="3185009703220253572">自第 <ph name="SINCE_VERSION"/> 版起</translation>
 <translation id="5469825884154817306">封鎖這些網站的圖片</translation>
+<translation id="2908277604670530363">Proxy 伺服器的並行連線數量上限</translation>
 <translation id="3512877396423730277">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。</translation>
 <translation id="1438955478865681012">設定擴充功能相關政策。使用者不得安裝黑名單上的擴充應用程式，除非該擴充功能重返許可清單。如要強制 <ph name="PRODUCT_NAME"/> 自動安裝擴充功能，請在 <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/> 中指定。應以黑名單優先，接著才是強制擴充功能清單。</translation>
 <translation id="4070280487546651935">指定關鍵字，將它設為網址列捷徑，讓引擎開始搜尋 (選用)。</translation>
+<translation id="6036523166753287175">允許遠端存取主機穿越防火牆</translation>
 <translation id="1096105751829466145">預設搜尋引擎</translation>
 <translation id="7567380065339179813">允許這些網站的外掛程式</translation>
 <translation id="5290940294294002042">指定使用者可以任意啟用或停用的外掛程式清單</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
 <translation id="1827523283178827583">使用固定的 Proxy 伺服器</translation>
 <translation id="3021409116652377124">停用外掛程式尋找工具</translation>
+<translation id="3288595667065905535">發佈版</translation>
 <translation id="2455652143675149114">允許您指定起始動作。如果您選擇 [開啟首頁]，那麼每當您啟用 <ph name="PRODUCT_NAME"/>，就會開啟首頁。如果您選擇 [重新開啟最後開啟的網址]，那麼就會重新開啟上次關閉 <ph name="PRODUCT_NAME"/> 時開啟的網址。如果您選擇 [開啟網址清單]，那麼當使用者啟用 <ph name="PRODUCT_NAME"/> 時，會一併開啟「起始時開啟的網址」清單。如果您啟用這項設定，使用者就無法在 <ph name="PRODUCT_NAME"/> 中變更或覆寫該清單。停用這項設定等同放著清單不進行任何設定。使用者仍然可以在 <ph name="PRODUCT_NAME"/> 中變更清單。</translation>
 <translation id="4980635395568992380">資料類型：</translation>
 <translation id="3096595567015595053">啟用的外掛程式清單</translation>
 <translation id="7998998292074133333">在 ChromeOS 裝置閒置或暫停時，啟用鎖定。如果您啟用這項設定，那麼使用者必須輸入密碼才能將 ChromeOS 裝置從睡眠狀態中解除鎖定。如果您停用這項設定，那麼使用者不需特地輸入密碼將 ChromeOS 裝置從睡眠狀態中喚醒。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_OS_NAME"/> 中變更或覆寫這項設定。</translation>
+<translation id="8781881969636812184">遠端用戶端嘗試與這台機器建立連線時，啟用 STUN 和轉送伺服器。
+
+          如果啟用這項設定，遠端用戶端即使受到防火牆隔離，仍然可以偵測到這台電腦，並與其建立連線。
+
+          如果停用這項設定，而防火牆又同時過濾了外送 UDP 連線，這台電腦就只會接受來自區域網路中用戶端機器的連線。</translation>
 <translation id="5912364507361265851">允許使用者在密碼管理員中顯示密碼</translation>
 <translation id="6999540307315670568">啟用 <ph name="PRODUCT_NAME"/> 新分頁中的書籤列。如果您啟用這項設定，那麼 <ph name="PRODUCT_NAME"/> 會在「新分頁」中顯示書籤列。如果您停用這項設定，書籤列就不會顯示。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME"/> 中變更或覆寫這項設定。</translation>
 <translation id="8828766846428537606">設定 <ph name="PRODUCT_NAME"/> 中的預設首頁並禁止使用者變更這項設定。如果您選取使用者的首頁作為新分頁，或是將使用者的首頁設為網址並指定為首頁網址，系統會完全鎖定使用者的首頁設定。如果您沒有指定首頁網址，那麼使用者只需將網址設為「chrome://newtab」，就能以新分頁做為首頁。</translation>
@@ -86,6 +94,7 @@
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
 <translation id="6569553007023490040">設定 <ph name="PRODUCT_NAME"/> 的預設首頁網址並禁止使用者變更本設定。首頁類型可設為您在這裡指定的網址或設為「新分頁」。如果您選取「新分頁」，則系統會忽略本政策。如果您啟用這項設定，使用者就無法在 <ph name="PRODUCT_NAME"/> 中變更首頁網址，不過使用者仍然可以選擇將「新分頁」設為首頁。</translation>
 <translation id="4423597592074154136">手動指定 Proxy 設定</translation>
+<translation id="209586405398070749">穩定版</translation>
 <translation id="3137734558440858947">允許您設定是否要讓網站顯示圖片。您可以允許或禁止所有網站顯示圖片。</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="3523486089716697173">允許您設定網址模式清單以指定不得顯示圖片的網站。</translation>
@@ -93,11 +102,13 @@
 <translation id="6022948604095165524">起始動作</translation>
 <translation id="3704185423155638353">允許您設定網址模式清單以指定不得執行 JavaScript 的網站。</translation>
 <translation id="7628741187268592472">指定 HTTP 驗證要用的 GSSAPI 資料庫。您可以設定資料庫名稱或完整路徑。如果沒有提供任何設定，<ph name="PRODUCT_NAME"/> 會回復為預設資料庫名稱。</translation>
+<translation id="2435100545355792516">強制無痕模式</translation>
 <translation id="605147781209875705">本政策已遭淘汰，請改用 ProxyMode。允許您指定 <ph name="PRODUCT_NAME"/> 要用的 Proxy 伺服器並禁止使用者變更 Proxy 設定。如果您選擇永不使用 Proxy 伺服器並一律直接連線，那麼系統會忽略其他選項。如果您選擇使用系統 Proxy 設定或自動偵測 Proxy 伺服器，那麼系統會忽略其他選項。如果您選擇手動 Proxy 設定，就能進一步指定 [Proxy 伺服器的地址或網址]、[Proxy .pac 檔案的網址] 和 [以逗號間隔的 Proxy 略過規則清單] 中的選項。如需詳例，請造訪：<ph name="PROXY_HELP_URL"/>。如果您啟用這項設定，那麼 <ph name="PRODUCT_NAME"/> 就會忽略所有從命令列指定的 Proxy 相關選項。</translation>
 <translation id="6516561898504323308">封鎖第三方 Cookie。啟用這項設定可以禁止非瀏覽器網址列中網域的網頁元件設定 Cookie。停用這項設定則會允許非瀏覽器網址列中網域的網頁元件設定 Cookie，並禁止使用者變更這項設定。</translation>
 <translation id="3864818549971490907">預設外掛程式設定</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
 <translation id="6886010724297701888"><ph name="PRODUCT_NAME"/> 會略過這些主機清單所列的任何 Proxy。只有當您在 [選擇如何指定 Proxy 伺服器設定] 選擇手動 Proxy 設定時，本政策才會生效。如需詳例，請造訪：<ph name="PROXY_HELP_URL"/>。</translation>
+<translation id="5770738360657678870">開發人員版 (可能不穩定)</translation>
 <translation id="2959898425599642200">Proxy 略過規則</translation>
 <translation id="7337941689192402544">設定 <ph name="PRODUCT_NAME"/> 使用者資料目錄</translation>
 <translation id="5326137997741385453">設定 <ph name="PRODUCT_NAME"/> 用來儲存快取檔案的磁碟目錄。如果您設定這項政策，<ph name="PRODUCT_NAME"/> 只會使用提供的目錄，不論使用者是否另行指定「--disk-cache-dir」標記。</translation>
@@ -107,6 +118,7 @@
 <translation id="6641981670621198190">停止支援 3D 圖形 API</translation>
 <translation id="2741921267428646309">這是 <ph name="PRODUCT_NAME"/> 遵循的政策清單。您不需手動變更這些設定，前往 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/> 就能下載簡單易用的範例。本支援政策清單與 Chromium 和 Google Chrome 的相同，只是 Windows 登陸位置不一樣。Chromium 政策以 <ph name="CHROMIUM_KEY"/> 為開頭，而 Google Chrome 政策以 <ph name="GOOGLE_CHROME_KEY"/> 為開頭。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> 偏好設定</translation>
+<translation id="4723829699367336876">允許遠端存取用戶端穿越防火牆</translation>
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>
 <translation id="7063895219334505671">允許這些網站的彈出式視窗</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
@@ -114,7 +126,6 @@
 <translation id="6157537876488211233">以逗號間隔的 Proxy 略過規則清單</translation>
 <translation id="7091198954851103976">一律執行需要驗證的外掛程式</translation>
 <translation id="8870318296973696995">首頁</translation>
-<translation id="4505337077089958219">政策重新整理的頻率</translation>
 <translation id="996560596616541671">可能委派 <ph name="PRODUCT_NAME"/> 的伺服器</translation>
 <translation id="3866249974567520381">說明</translation>
 <translation id="2236488539271255289">不允許任何網站設定本機資料</translation>
@@ -157,6 +168,7 @@
 <translation id="2493647325461842868">啟用 <ph name="PRODUCT_NAME"/> 網址列的搜尋建議並禁止使用者變更設定。如果您啟用這項設定，系統就會使用搜尋建議。如果您停用這項設定，系統就不會使用搜尋建議。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME"/> 中變更或覆寫這項設定。</translation>
 <translation id="6775978436824155661">啟用 <ph name="PRODUCT_NAME"/> 的列印功能並禁止使用者變更設定。如果您啟用或尚未設定這項設定，那麼使用者就能使用列印功能。如果您停用這項設定，使用者就無法從 <ph name="PRODUCT_NAME"/> 列印東西。扳手功能表、擴充功能、JavaScript 應用程式等都無法使用列印功能。要透過列印時略過 <ph name="PRODUCT_NAME"/> 的外掛程式中列印還是有可能的。例如，某些 Flash 應用程式的內容選單內有列印選項，且這個選項會一直維持可用狀態。</translation>
 <translation id="6908640907898649429">設定預設搜尋引擎。您可以指定使用者要使用的預設搜尋引擎或選擇停用預設搜尋。</translation>
+<translation id="8621254262912103717">指定 Proxy 伺服器的同時連線數量上限。部分 Proxy 伺服器無法處理單一用戶端的大量並行連線，您可以調降這項政策的值來解決這個問題。這項政策的值必須介於 6 到 100 之間，預設值為 32。已知部分網路應用程式會耗用許多連線來處理 GET 動作，如果調降後的值低於 32，開啟太多這類網路應用程式時可能會導致瀏覽器網路當機。請自行承擔低於預設值的風險。</translation>
 <translation id="681446116407619279">支援的驗證機制</translation>
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
 <translation id="2223598546285729819">預設通知設定</translation>
@@ -167,6 +179,7 @@
 <translation id="4733471537137819387">與整合 HTTP 驗證相關的政策。</translation>
 <translation id="4608714268466689965">允許您設定是否要讓網站顯示桌面通知。您可以將網站預設為允許或禁止顯示桌面通知，也可以設為每次網站要顯示桌面通知時再詢問使用者。</translation>
 <translation id="8951350807133946005">設定磁碟快取目錄</translation>
+<translation id="3866571346358522601">以毫秒數指定對裝置管理服務詢問使用者政策資訊的時間。設定這項政策會覆寫 3 小時的預設值。本政策的有效值範圍由 1800000 (30 分鐘) 到 86400000 (1 天)。超出範圍的值會自動歸類為上限值或下限值。</translation>
 <translation id="1334051495529796396">指定產生的 Kerberos SPN 是否以標準 DNS 名稱為基礎，或是以輸入的原始名稱為基礎。如果您啟用這項選項，系統會略過 CNAME 查詢並以輸入的名稱當作伺服器名稱。如果您停用這項選項，伺服器的標準名稱會由 CNAME 查詢決定。</translation>
 <translation id="166427968280387991">Proxy 伺服器：</translation>
 <translation id="2805707493867224476">允許所有網站顯示彈出式視窗</translation>
@@ -210,10 +223,17 @@
 <translation id="5226033722357981948">指定是否該停用外掛程式尋找工具</translation>
 <translation id="9068358498333390522">允許您設定是否要讓網站顯示彈出式視窗。您可以允許或禁止所有網站顯示彈出式視窗。</translation>
 <translation id="7194407337890404814">預設搜尋引擎名稱</translation>
+<translation id="1843117931376765605">使用者政策的重新整理頻率</translation>
+<translation id="1630808801738981930">強制使 <ph name="PRODUCT_NAME"/> 的所有工作階段進入無痕模式。如果啟用這項設定，使用者只能在無痕模式中開啟網頁。如果停用這項設定或未設定，則使用者也可以透過正常模式使用瀏覽器。</translation>
 <translation id="5535973522252703021">Kerberos 委派伺服器許可清單</translation>
 <translation id="4554678280250165996">指定 <ph name="PRODUCT_NAME"/> 要支援的 HTTP 驗證機制。可用值為「basic」、「digest」、「ntlm」和「negotiate」。請以逗號分隔數個值。</translation>
 <translation id="5034323863800401760">停用「開發人員工具」和「JavaScript 控制台」。如果您啟用這項設定，系統就無法存取「開發人員工具」且無法查看網站元素。此外，也會停用任何用來開啟「開發人員工具」和「JavaScript 控制台」的鍵盤快速鍵、選單或內容選單項目。</translation>
 <translation id="6013842521938070987">停用 <ph name="PRODUCT_NAME"/> 中列出的通訊協定機制。系統不會載入使用清單所列機制的網址，也不會瀏覽至這些網址。</translation>
+<translation id="4845434807154973261">連線至遠端用戶端時，啟用 STUN 和轉送伺服器。
+
+          如果啟用這項設定，即使遠端主機機器受到防火牆隔離，這台電腦仍然可以偵測到它們，並與其建立連線。
+
+          如果停用這項設定，而防火牆又同時過濾了外送 UDP 連線，這台電腦就只能與區域網路中的主機機器建立連線。</translation>
 <translation id="4056910949759281379">停用 SPDY 通訊協定</translation>
 <translation id="3808945828600697669">指定停用的外掛程式清單</translation>
 <translation id="2187975305444384964">允許您設定是否要讓網站追蹤使用者的實際位置。您可以將網站預設為允許或禁止追蹤使用者的實際位置，也可以設為網站每次需要實際位置時再詢問使用者。</translation>
@@ -221,15 +241,22 @@
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
 <translation id="1151353063931113432">允許這些網站的圖片</translation>
 <translation id="4498075447689127727">允許您設定網址模式清單以指定不得開啟彈出式視窗的網站。</translation>
+<translation id="5807843250244274844">指定這個裝置要鎖定的發佈版。這項政策仍然處於開發階段，目前即使政策指定的發佈版不同，使用者仍然可以加以變更。</translation>
 <translation id="1297182715641689552">使用 .pac Proxy 指令碼</translation>
 <translation id="8631434304112909927">到第 <ph name="UNTIL_VERSION"/> 版為止</translation>
 <translation id="7469554574977894907">啟用搜尋建議</translation>
+<translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
 <translation id="5511702823008968136">啟用書籤列</translation>
 <translation id="3653673712530669976">允許您在安裝 <ph name="PRODUCT_FRAME_NAME"/> 之後，設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME"/> 轉譯 HTML 網頁。</translation>
 <translation id="7848840259379156480">允許您在安裝 <ph name="PRODUCT_FRAME_NAME"/> 之後設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME"/> 轉譯 HTML 網頁。</translation>
 <translation id="4486602758942612946">自訂一律由主機瀏覽器轉譯的網站模式清單。如需模式範例，請參閱 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
+<translation id="2257451316169619209">以毫秒數指定對裝置管理服務詢問裝置政策資訊的時間。設定這項政策會覆寫 3 小時的預設值。本政策的有效值範圍由 1800000 (30 分鐘) 到 86400000 (1 天)。超出範圍的值會自動歸類為上限值或下限值。</translation>
+<translation id="1734716591049455502">設定遠端存取選項</translation>
 <translation id="4346795218451526495">指定使用者可以在 <ph name="PRODUCT_NAME"/> 中啟用或停用的外掛程式。萬用字元「*」和「?」可與任意字元序列相配。「*」可與任意數量的字元相配，但「?」只能指定選擇性的單一字元，例如與零或一個字元相配。逸出字元為「\」，因此如要與真正的「*」、「?」或「\」字元配對，請在這些字元前方插入「\」。如果啟用這項設定，<ph name="PRODUCT_NAME"/> 就會使用指定的外掛程式清單。即使外掛程式符合 DisabledPlugins 上的模式，使用者仍然可以在「about:plugins」中啟用或停用這些外掛程式。使用者也可以啟用或停用不符合 DisabledPlugins、DisabledPluginsExceptions 和 EnabledPlugins 上任何模式的外掛程式。</translation>
 <translation id="8777120694819070607">允許 <ph name="PRODUCT_NAME"/> 執行舊版的外掛程式。如果您啟用這項設定，系統就會像執行一般外掛程式一樣執行舊版外掛程式。如果您停用這項設定，系統就不會使用舊版外掛程式，且不會向使用者要求權限執行這些外掛程式。如過這項設定尚未設定好，系統會向使用者要求權限以執行舊版外掛程式。</translation>
+<translation id="2629448496147630947">在 <ph name="PRODUCT_NAME"/> 中設定遠端存取選項。
+
+      除非安裝「遠端存取」網路應用程式，否則這些功能會遭到忽略。</translation>
 <translation id="407895324478579198">允許您指定要以無訊息方式安裝不需與使用者互動的擴充程式清單。每個清單項目都是一條字串，包含以分號間隔的一個擴充程式 ID 和一個更新網址 (<ph name="SEMICOLON"/>)。例如：<ph name="EXTENSION_POLICY_EXAMPLE"/>。<ph name="PRODUCT_NAME"/> 都會為每個項目從指定的網址中擷取以 ID 指定的擴充程式，並以無訊息方式加以安裝。以下幾頁會解釋如何管理自己伺服器上的擴充功能。關於更新網址：<ph name="LINK_TO_EXTENSION_DOC1"/>，關於管理一般擴充功能：<ph name="LINK_TO_EXTENSION_DOC2"/>。使用者可以解除安裝本政策所指定的擴充功能。如果您從清單中移除一個擴充功能，<ph name="PRODUCT_NAME"/> 會自動解除安裝該擴充功能。本政策無法強制安裝列入「ExtensionInstallBlacklist」黑名單而非許可清單的的擴充功能。</translation>
 <translation id="3300906985144143927">指定預設搜尋引擎的最愛圖示網址 (選用)。</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME"/></translation>
@@ -240,11 +267,11 @@
 <translation id="3780152581321609624">Kerberos SPN 包含非標準通訊埠</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
 <translation id="5512418063782665071">首頁網址</translation>
-<translation id="8990655542335348641">以毫秒數指定詢問裝置管理服務政策資訊的時間。設定這項政策會覆寫 3 小時的預設值。本政策的有效值範圍由 30 分鐘到 1 天。不在範圍內的值會歸類至個別邊界。</translation>
 <translation id="6049075103826767200">啟用向 Google 匿名回報 <ph name="PRODUCT_NAME"/> 使用狀況和相關當機資料的功能，並禁止使用者變更這項設定。如果您啟用這項設定，系統會以匿名方式傳送使用狀況和相關當機資料給 Google。如果您停用這項設定，系統永遠都不會將這些報告傳送給 Google。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME"/> 變更或覆寫這項設定。</translation>
 <translation id="2263362640517427542">當 ChromeOS 裝置閒置或暫停時啟用鎖定。</translation>
 <translation id="6808666497110319299">啟用 <ph name="PRODUCT_NAME"/> 內建的替代錯誤網頁 (例如「找不到網頁」) 並禁止使用者變更這項設定。如果您啟用這項設定，系統就會使用替代錯誤網頁。如果您停用這項設定，系統就永不使用替代錯誤網頁。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME"/> 中變更或覆寫這項設定。</translation>
 <translation id="1948757837129151165">HTTP 驗證政策</translation>
+<translation id="5946082169633555022">測試版</translation>
 <translation id="817926804885880359">啟用 <ph name="PRODUCT_NAME"/> 的「自動填入」功能並允許使用者使用先前儲存的地址或信用卡資料等資訊自動填寫網路表單。如果您停用這項設定，使用者就無法使用「自動填入」功能。如果您啟用這項設定或尚未設定值，使用者還能掌控「自動填入」功能。這允許使用者設定「自動填入」設定檔並可自行決定是否要開啟「自動填入」功能。</translation>
 <translation id="6938581770853731947">設定 <ph name="PRODUCT_NAME"/> 中的預設首頁類型並禁止使用者變更首頁的偏好設定。您可以將首頁設為指定的網址或「新分頁」。如果您啟用這項設定，系統會一律使用「新分頁」當作首頁，並忽略首頁網址位置。如果您停用這項設定，系統永遠不會使用「新分頁」當作使用者首頁，除非首頁網址設為「chrome://newtab」。不論您啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME"/> 變更他們的首頁類型。</translation>
 <translation id="5645779841392247734">允許這些網站的 Cookie</translation>

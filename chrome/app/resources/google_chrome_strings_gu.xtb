@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સુધી પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે પ્રસ્તુત કરેલ પ્રમાણપત્રમાં ભૂલો છે. Google Chrome ભૂલોવાળું પ્રમાણપત્ર ઉપયોગમાં લઈ શકતું નથી અને તમે કનેક્ટ કરવાનો પ્રયાસ કરો છો તે સાઇટની ઓળખાણને માન્ય કરી શકતું નથી. તમારું કનેક્શન સુરક્ષિત નથી અને તમારે આગળ ન વધવું જોઈએ.</translation>
 <translation id="8738921060445980047">અજ્ઞાત સંસ્કરણ.</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટોલ કરો</translation>
+<translation id="2748463065602559597">તને એક સુરક્ષિત Google Chrome  પૃષ્ઠ જોઈ રહ્યાં છો.</translation>
 <translation id="3324235665723428530">તમારી પ્રોફાઇલ ઉપયોગમાં લઈ શકાતી નથી કારણ કે તે Google Chrome ના નવા વર્ઝનમાંથી છે.\n\nકેટલીક સુવિધાઓ અનુપલબ્ધ હોઈ શકે છે. કૃપા કરીને એક અલગ પ્રોફાઇલ ડાયરેક્ટરીનો ઉલ્લેખ કરો અથવા Chrome ના નવા વર્ઝનનો ઉપયોગ કરો.</translation>
 <translation id="9073088951656332330">અપડેટ કરવા માટે Google Chrome  અથવા Google Chrome ફ્રેમ નું ઇન્સ્ટોલેશન નથી.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome તમારા બ્રાઉઝિંગ અનુભવને સુધારવા માટે વેબ સેવાઓનો ઉપયોગ કરી શકે છે.</translation>
 <translation id="7436949144778751379">Google Chrome ને Windows XP અથવા તે પછીનાની આવશ્યકતા છે. કેટલીક સુવિધાઓ કામ કરશે નહીં.</translation>
 <translation id="7100330187273168372">Google Chrome તેની ડેટા ડાયરેક્ટરીને વાંચી અને લખી શકતું નથી:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome થીમ્સ ગેલેરી</translation>
 <translation id="7938170099933661772">બિલ્ટ-ઇન PDF વ્યુઅર અક્ષમ હોય ત્યારે Google Chrome છાપવાનું પૂર્વાવલોકન બતાવી શકતું નથી. પૂર્વાવલોકન જોવા માટે, કૃપા કરીને <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> ની મુલાકાત લો, અને &quot;Chrome PDF Viewer&quot;ને સક્ષમ કરો, તથા ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6757767188268205357">મને બગ રીતે કરશો નહીં</translation>
 <translation id="2290095356545025170">શું તમને ખાતરી છે કે તમારે Google Chromeને અનઇન્સ્ટોલ કરવું છે?</translation>
+<translation id="1243097286641060337">વિસંગત Google Update જૂથ નીતિ સેટિંગ્સના એકાઉન્ટ પર Google Chrome અથવા Google Chrome Frame અપડેટ થઈ શકતું નથી. Google Chrome Binaries એપ્લિકેશન માટે અપડેટ નીતિ ઓવરરાઇડને સેટ કરવા માટે જૂથ નીતિનો ઉપયોગ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="6087062680442281307">Google Chrome એ એક એવું વેબ બ્રાઉઝર છે જે પ્રકાશની ગતિએ વેબ પૃષ્ઠો અને એપ્લિકેશંસને ચલાવે છે. તે ઝડપી, સ્થિર અને ઉપયોગમાં સરળ છે. Google Chrome માં નિર્મિત મૉલવેર અને ફિશીંગ સુરક્ષા સાથે વેબને વધુ સુરક્ષિત રૂપે બ્રાઉઝ કરો.</translation>
 <translation id="5941830788786076944">Google Chrome ને ડિફૉલ્ટ બ્રાઉઝર બનાવો</translation>
 <translation id="4990567037958725628">Google Chrome કૅનેરી</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">બીજી ઇન્સ્ટોલ કરેલી એપ્લિકેશન સાથે વિરોધાભાસ દેખાયો છે.</translation>
 <translation id="7018032895891496381">Google  Chrome તમારા ડિફોલ્ટ  શોધ  એંજિનનો ઉપયોગ કરે છે, જે હાલમાં <ph name="PAGE_TITLE"/> પર સેટ છે. શું તમે તમારા ડિફોલ્ટ  શોધ  એંજિનને રાખવા માંગો છો?</translation>
 <translation id="7161904924553537242">Google Chrome માં સ્વાગત છે</translation>
+<translation id="5211087808649701653">નેટિવ પ્રિંટ સંવાદ લોંચ કરો</translation>
 <translation id="8669527147644353129">Google Chrome સહાયક</translation>
 <translation id="3444832043240812445">આ પૃષ્ઠ તો જ તમારા હાલનાં ક્રેશેસ પર માહિતી બતાવે છે જો તમે <ph name="BEGIN_LINK"/>ક્રેશ રિપોર્ટિંગ સક્ષમ કરો છો<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome પ્રતિસાદ આપતું નથી. હવે ફરીથી લોંચ કરીએ?</translation>

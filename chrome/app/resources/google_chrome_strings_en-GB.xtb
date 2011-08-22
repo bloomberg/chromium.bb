@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented contains errors. Google Chrome cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to. Your connection is not secure and you should not proceed.</translation>
 <translation id="8738921060445980047">Unknown version.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
+<translation id="2748463065602559597">You are viewing a secure Google Chrome page.</translation>
 <translation id="3324235665723428530">Your profile cannot be used because it is from a newer version of Google Chrome.\n\nSome features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
 <translation id="9073088951656332330">No installation of Google Chrome or Google Chrome Frame found to update.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome may use web services to improve your browsing experience.</translation>
 <translation id="7436949144778751379">Google Chrome requires Windows XP or later. Some features may not work.</translation>
 <translation id="7100330187273168372">Google Chrome cannot read and write to its data directory:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome Themes Gallery</translation>
 <translation id="7938170099933661772">Google Chrome cannot show the print preview when the built-in PDF viewer is disabled. In order to see the preview, please visit <ph name="BEGIN_LINK"/>chrome://plug-ins<ph name="END_LINK"/>, enable the &quot;Chrome PDF Viewer&quot; and try again.</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome or Google Chrome Frame cannot be updated because of inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again.</translation>
 <translation id="6087062680442281307">Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">A conflict with another installed application has been detected.</translation>
 <translation id="7018032895891496381">Google Chrome uses your default search engine, which is currently set to <ph name="PAGE_TITLE"/>. Do you want to keep your default search engine?</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
+<translation id="5211087808649701653">Launch native print dialogue</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>

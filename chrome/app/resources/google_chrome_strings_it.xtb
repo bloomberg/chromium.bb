@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Hai tentato di accedere a strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato presentato dal server contiene degli errori. Google Chrome non può utilizzare un certificato in cui sono presenti errori e non è in grado di convalidare l'identità del sito a cui hai tentato di accedere. La connessione non è protetta, ti consigliamo di non procedere.</translation>
 <translation id="8738921060445980047">Versione sconosciuta.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
+<translation id="2748463065602559597">È visualizzata una pagina sicura di Google Chrome.</translation>
 <translation id="3324235665723428530">Non è possibile utilizzare il tuo profilo, poiché è associato a una versione di Google Chrome più recente.\n\nAlcune funzioni potrebbero non essere disponibili. Specifica una directory di profilo diversa o utilizza una versione di Chrome più recente.</translation>
 <translation id="9073088951656332330">Impossibile trovare un'installazione di Google Chrome o Google Chrome Frame da aggiornare.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome potrebbe utilizzare servizi web per migliorare la navigazione.</translation>
 <translation id="7436949144778751379">Google Chrome richiede Windows XP o versione successiva. Alcune funzioni potrebbero non essere disponibili.</translation>
 <translation id="7100330187273168372">Chrome non è in grado di leggere e scrivere nella directory dei dati:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galleria di temi di Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome non può visualizzare l'anteprima di stampa quando il visualizzatore PDF incorporato è disattivato. Per visualizzare l'anteprima, visita il sito <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, attiva il visualizzatore PDF di Google Chrome e riprova.</translation>
 <translation id="6757767188268205357">Non mi interessa</translation>
 <translation id="2290095356545025170">Sei sicuro di voler disinstallare Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome o Google Chrome Frame non può essere aggiornato a causa di impostazioni dei criteri di gruppo di Google Update incoerenti. Utilizza l'Editor Criteri di gruppo per impostare l'override dei criteri di aggiornamento per l'applicazione Google Chrome Binaries e riprova.</translation>
 <translation id="6087062680442281307">Google Chrome è un browser web che apre pagine e applicazioni web con grande velocità. È veloce, stabile e facile da utilizzare. Esplora il Web in modo più sicuro grazie alla protezione contro malware e phishing incorporata in Google Chrome.</translation>
 <translation id="5941830788786076944">Imposta Google Chrome come browser predefinito</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">È stato rilevato un conflitto con un'altra applicazione installata.</translation>
 <translation id="7018032895891496381">Google Chrome utilizza il tuo motore di ricerca predefinito, correntemente impostato su <ph name="PAGE_TITLE"/>. Mantenere il motore di ricerca predefinito?</translation>
 <translation id="7161904924553537242">Benvenuto in Google Chrome</translation>
+<translation id="5211087808649701653">Avvia finestra di dialogo di stampa nativa</translation>
 <translation id="8669527147644353129">Supporto Google Chrome</translation>
 <translation id="3444832043240812445">Questa pagina mostra solo informazioni sugli arresti anomali recenti se <ph name="BEGIN_LINK"/>attivi la segnalazione degli arresti anomali<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome non risponde. Riavviarlo ora?</translation>

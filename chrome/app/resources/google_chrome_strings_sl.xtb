@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa potrdilo, ki ga je predložil strežnik, vsebuje napake. Google Chrome ne more uporabiti potrdila z napakami in ne more preveriti identitete spletnega mesta, s katerim ste se poskušali povezati. Vaša povezava ni varna, zato vam priporočamo, da ne nadaljujete.</translation>
 <translation id="8738921060445980047">Neznana različica</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
+<translation id="2748463065602559597">Ogledujete si varno stran Google Chrome.</translation>
 <translation id="3324235665723428530">Vašega profila ni mogoče uporabiti, ker je iz novejše različice brskalnika Google Chrome.\n\nNekatere funkcije morda ne bodo na voljo. Prosimo vas, da navedete drug imenik profila ali pa uporabite novejšo različico brskalnika Chrome.</translation>
 <translation id="9073088951656332330">Najti ni bilo mogoče nobenega brskalnika Google Chrome ali vtičnika Google Chrome Frame, ki bi ga bilo mogoče posodobiti.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome lahko za boljšo izkušnjo brskanja uporablja spletne storitve.</translation>
 <translation id="7436949144778751379">Google Chrome zahteva Windows XP ali novejšo različico. Nekatere funkcije morda ne bodo delovale.</translation>
 <translation id="7100330187273168372">Google Chrome ne more prebrati ali pisati v imenik s podatki:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galerija tem Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome ne more prikazati predogleda tiskanja, če je onemogočen vgrajeni pregledovalnik datotek PDF. Če želite videti predogled, pojdite na <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, omogočite »Chromov pregledovalnik datotek PDF« in poskusite znova.</translation>
 <translation id="6757767188268205357">Ne nadleguj me</translation>
 <translation id="2290095356545025170">Ali ste prepričani, da želite odstraniti Google Chrome?</translation>
+<translation id="1243097286641060337">Brskalnika Google Chrome ali dodatka Google Chrome Frame ni mogoče posodobiti v računu zaradi nedoslednih nastavitev pravilnika skupine za Google Update. Uporabite urejevalnik pravilnika skupine in nastavite preglasitev pravilnika za posodobitev za dvojiške vrednosti programov za Google Chrome, nato pa poskusite znova.</translation>
 <translation id="6087062680442281307">Google Chrome je spletni brskalnik, ki bliskovito izvaja spletne strani in programe. Je hiter, stabilen in preprost za uporabo. V Google Chrome je vgrajena zaščita pred zlonamerno programsko opremo in lažnim predstavljanjem, kar omogoča varnejše brskanje v spletu.</translation>
 <translation id="5941830788786076944">Nastavi Google Chrome kot privzeti brskalnik</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Zaznan je bil spor z drugim nameščenim programom.</translation>
 <translation id="7018032895891496381">Google Chrome uporablja privzet iskalnik, ki je trenutno <ph name="PAGE_TITLE"/>. Ali želite obdržati privzet iskalnik?</translation>
 <translation id="7161904924553537242">Dobrodošli v brskalniku Google Chrome</translation>
+<translation id="5211087808649701653">Zaženi izvorno pogovorno okno za tiskanje</translation>
 <translation id="8669527147644353129">Pomočnik za Google Chrome</translation>
 <translation id="3444832043240812445">Ta stran prikazuje informacije o zadnjih zrušitvah, samo če <ph name="BEGIN_LINK"/>omogočite poročanje o zrušitvah<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome se ne odziva. Ga želite znova zagnati?</translation>

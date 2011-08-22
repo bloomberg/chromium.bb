@@ -18,15 +18,18 @@
           By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
+<translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
 <translation id="3512877396423730277">Controls whether third-party sub-content on a page is allowed to pop up an HTTP Basic Auth dialogue box. Typically, this is disabled as a phishing defence.</translation>
 <translation id="1438955478865681012">Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME"/> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. The blacklist takes precedence over the list of forced extensions.</translation>
 <translation id="4070280487546651935">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider. Optional.</translation>
+<translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
 <translation id="1096105751829466145">Default search provider</translation>
 <translation id="7567380065339179813">Allow plug-ins on these sites</translation>
 <translation id="5290940294294002042">Specify a list of plug-ins that the user can enable or disable</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
 <translation id="3021409116652377124">Disable plug-in finder</translation>
+<translation id="3288595667065905535">Release channel</translation>
 <translation id="2455652143675149114">Allows you to specify the behaviour on startup.
 
           If you choose 'Open home page' the home page will always be opened when you start <ph name="PRODUCT_NAME"/>.
@@ -47,6 +50,7 @@
       If you disable this setting, users will not be asked for a password to wake ChromeOS devices from sleep.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="8781881969636812184">Enables usage of STUN and relay servers when remote clients are trying to establish a connection to this machine. If this setting is enabled, then remote clients can discover and connect to this machine even if they are separated by a firewall. If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine will only allow connections from client machines within the local network.</translation>
 <translation id="5912364507361265851">Allow users to show passwords in Password Manager</translation>
 <translation id="6999540307315670568">Enables the bookmark bar on the new tab page on <ph name="PRODUCT_NAME"/>.
 
@@ -167,6 +171,7 @@
 
           If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME"/>, but they can still can choose the New Tab Page as their home page.</translation>
 <translation id="4423597592074154136">Manually specify proxy settings</translation>
+<translation id="209586405398070749">Stable channel</translation>
 <translation id="3137734558440858947">Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="3523486089716697173">Allows you to set a list of url patterns that specify sites which are not allowed to display images.</translation>
@@ -178,6 +183,7 @@
 <translation id="6022948604095165524">Action on startup</translation>
 <translation id="3704185423155638353">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.</translation>
 <translation id="7628741187268592472">Specifies which GSSAPI library to be used for HTTP Authentication. You can set either just a library name, or a full path. If no setting is provided, <ph name="PRODUCT_NAME"/> will fall back to using a default library name.</translation>
+<translation id="2435100545355792516">Force Incognito mode</translation>
 <translation id="605147781209875705"> instead.
 
           Allows you to specify the proxy server used by <ph name="PRODUCT_NAME"/> file' and 'Comma-separated list of proxy bypass rules'.
@@ -199,6 +205,7 @@
 
           For more detailed examples, visit:
           <ph name="PROXY_HELP_URL"/></translation>
+<translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
 <translation id="7337941689192402544">Set <ph name="PRODUCT_NAME"/> user data directory</translation>
 <translation id="5326137997741385453">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing cached files on the disk. If you set this policy, <ph name="PRODUCT_NAME"/> will use the directory provided, regardless of whether the user has specified the '--disk-cache-dir' flag or not.</translation>
@@ -221,6 +228,7 @@
 
       It starts with <ph name="CHROMIUM_KEY"/> for Chromium policies and with <ph name="GOOGLE_CHROME_KEY"/> for Google Chrome policies.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> preferences</translation>
+<translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
@@ -228,7 +236,6 @@
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="7091198954851103976">Always runs plug-ins that require authorisation</translation>
 <translation id="8870318296973696995">Homepage</translation>
-<translation id="4505337077089958219">Policy refresh rate</translation>
 <translation id="996560596616541671">Servers to which that <ph name="PRODUCT_NAME"/> may delegate.</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="2236488539271255289">Do not allow any site to set local data</translation>
@@ -316,6 +323,7 @@
 
       If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME"/>. Printing is disabled in the wrench menu, extensions, JavaScript applications etc. It is still possible to print from plug-ins that bypass <ph name="PRODUCT_NAME"/> while printing. For example certain Flash applications have the print option in their context menu, and that will not be disabled.</translation>
 <translation id="6908640907898649429">Configures the default search provider. You can specify the default search provider that the user will use or choose to disable default search.</translation>
+<translation id="8621254262912103717">Specifies the maximum number of simultanious connections to the proxy server. Some proxy servers cannot handle a high number of concurrent connections per client; this can be solved by setting this policy to a lower value. The value of this policy should be lower than 100 and higher than 6, with the default value of 32. Some web apps are known to consume many connections with hanging GETs, so lowering below 32 may lead to browser networking hangs if too many such web apps are open. Lower below the default at your own risk.</translation>
 <translation id="681446116407619279">Supported authentication schemes</translation>
 <translation id="4027608872760987929">Enable the default search provider</translation>
 <translation id="2223598546285729819">Default notification settings</translation>
@@ -332,6 +340,7 @@
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
 <translation id="4608714268466689965">Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.</translation>
 <translation id="8951350807133946005">Set disk cache directory</translation>
+<translation id="3866571346358522601">Specifies the period in milliseconds at which the device management service is queried for policy information. Setting this policy overrides the default value of 3 hours. Valid values for this policy range between 1800000 (30 minutes) and 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.</translation>
 <translation id="1334051495529796396">Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
 
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
@@ -403,6 +412,8 @@
 <translation id="5226033722357981948"> finder should be disabled</translation>
 <translation id="9068358498333390522"> can be either allowed for all websites or denied for all websites.</translation>
 <translation id="7194407337890404814">Default search provider name</translation>
+<translation id="1843117931376765605">Refresh rate for user policy</translation>
+<translation id="1630808801738981930">Forces every session into Incognito mode in <ph name="PRODUCT_NAME"/>. If this setting is enabled, users can open pages only in Incognito mode. If this setting is disabled or not configured, users can use the browser in normal mode as well.</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
 <translation id="4554678280250165996">Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME"/>.
 
@@ -411,6 +422,11 @@
 <translation id="6013842521938070987">Disables the listed protocol schemes in <ph name="PRODUCT_NAME"/>.
 
       URLs using a scheme from this list will not load and cannot be navigated to.</translation>
+<translation id="4845434807154973261">Enables usage of STUN and relay servers when connecting to a remote client.
+
+          If this setting is enabled, then this machine can discover and connect to remote host machines even if they are separated by a firewall.
+
+          If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
 <translation id="4056910949759281379">Disable SPDY protocol</translation>
 <translation id="3808945828600697669">Specify a list of disabled plug-ins</translation>
 <translation id="2187975305444384964">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.</translation>
@@ -420,9 +436,11 @@
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
 <translation id="1151353063931113432">Allow images on these sites</translation>
 <translation id="4498075447689127727">.</translation>
+<translation id="5807843250244274844">Specifies the release channel to which this device should be locked. This policy is a work in progress; currently, the user can still change the release channel even if it's specified by the policy.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
 <translation id="8631434304112909927">until version <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Enable search suggestions</translation>
+<translation id="4906194810004762807">Refresh rate for Device Policy</translation>
 <translation id="5511702823008968136">Enable Bookmark Bar</translation>
 <translation id="3653673712530669976"> when <ph name="PRODUCT_FRAME_NAME"/> is installed.
           The default setting is to allow the host browser do the rendering, but you
@@ -432,10 +450,15 @@
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME"/> render HTML pages by default.</translation>
 <translation id="4486602758942612946">Customise the list of URL patterns that should always be rendered by the host browser.
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
+<translation id="2257451316169619209">Specifies the period in milliseconds at which the device management service is queried for policy information. Setting this policy overrides the default value of 3 hours. Valid values for this policy range between 1800000 (30 minutes) and 86400000 (1 day). Any values not in this range will be clamped to the respective boundary.</translation>
+<translation id="1734716591049455502">Configure remote access options</translation>
 <translation id="4346795218451526495">Specifies a list of plug-ins that user can enable or disable in <ph name="PRODUCT_NAME"/> characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\', so to match actual '*', '?' or '\' characters, you can put a '\' in front of them.
 
       If you enable this setting, the specified list of plug-ins can be used in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8777120694819070607">Allows <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="2629448496147630947">Configure remote access options in <ph name="PRODUCT_NAME"/>.
+
+      These features are ignored unless the Remote Access web application is installed.</translation>
 <translation id="407895324478579198">Allows you to specify a list of extensions that will be installed silently, without user interaction.
 
           Each item of the list is a string, that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON"/>). For example: <ph name="EXTENSION_POLICY_EXAMPLE"/>. For each item, <ph name="PRODUCT_NAME"/> will retrieve the extension specified by the ID from the specified URL and silently install it. The following pages explain how you can host extensions on your own server. About update URLs: <ph name="LINK_TO_EXTENSION_DOC1"/> , about hosting extensions in general: <ph name="LINK_TO_EXTENSION_DOC2"/>.
@@ -450,9 +473,6 @@
 <translation id="3780152581321609624">Include non-standard port in Kerberos SPN</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
 <translation id="5512418063782665071">Home page URL</translation>
-<translation id="8990655542335348641">Specifies the period in milliseconds at which the device management service is queried for policy information.
-
-      Setting this policy overrides the default value of 3 hours. Valid values for this policy range between 30 minutes and 1 day. Any values not in this range will be clamped to the respective boundary.</translation>
 <translation id="6049075103826767200">Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME"/> to Google and prevents users from changing this setting.
 
       If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.
@@ -469,6 +489,7 @@
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1948757837129151165">Policies for HTTP Authentication</translation>
+<translation id="5946082169633555022">Beta channel</translation>
 <translation id="817926804885880359">Enables <ph name="PRODUCT_NAME"/>'s AutoFill feature and allows users to auto complete web forms using previously stored information such as address or credit card information.
 
       If you disable this setting, AutoFill will be inaccessible to users.

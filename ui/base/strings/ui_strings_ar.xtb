@@ -9,11 +9,14 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7222373446505536781">F11</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY"/> بايت</translation>
 <translation id="3660179305079774227">مفتاح سهم إلى أعلى</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY"/> ميغابايات/ثانية</translation>
 <translation id="3990502903496589789">الحافة اليسرى</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="3909791450649380159">&amp;قص</translation>
 <translation id="5076340679995252485">ل&amp;صق</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY"/> تيرابايت</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="3234408098842461169">مفتاح سهم  إلى أسفل</translation>
 <translation id="3087734570205094154">أسفل</translation>
@@ -21,10 +24,13 @@
 <translation id="8210608804940886430">صفحة  إلى أسفل</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY"/> ميغابايت</translation>
+<translation id="3806858430610674159"><ph name="QUANTITY"/> كيلوبايت</translation>
 <translation id="2497284189126895209">الملفّات كلّها</translation>
 <translation id="7814458197256864873">&amp;نسخ</translation>
 <translation id="3889424535448813030">مفتاح سهم إلى اليمين</translation>
 <translation id="1398853756734560583">تكبير</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY"/> غيغابايت</translation>
 <translation id="1901303067676059328">تح&amp;ديد الكلّ</translation>
 <translation id="2168039046890040389">صفحة  إلى أعلى</translation>
 <translation id="3183922693828471536">التمرير إلى هنا</translation>
@@ -40,11 +46,17 @@
 <translation id="3157931365184549694">استعادة</translation>
 <translation id="8179976553408161302">تفضل</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
+<translation id="520299402983819650"><ph name="QUANTITY"/> بيتابايت</translation>
 <translation id="5583640892426849032">Backspace</translation>
+<translation id="2619528525756897123"><ph name="QUANTITY"/> كيلوبايت/ثانية</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY"/> غيغابايت/ثانية</translation>
 <translation id="436869212180315161">اضغط</translation>
+<translation id="2297836609126180313"><ph name="QUANTITY"/> تيرابايت/ثانية</translation>
 <translation id="6040143037577758943">إغلاق</translation>
+<translation id="6142413573757616983"><ph name="QUANTITY"/> بايت/ثانية</translation>
 <translation id="7000311294523403548">صفحة ويب بلا عنوان</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6907759265145635167"><ph name="QUANTITY"/> بيتابايت/ثانية</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="5941711191222866238">تصغير</translation>
 <translation id="8328145009876646418">الحافة اليمنى</translation>

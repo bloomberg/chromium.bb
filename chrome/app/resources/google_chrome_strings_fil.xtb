@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Tinatangka mong maabot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit ang sertipiko na ipinakita ng server ay naglalaman ng mga error. Hindi magagamit ng Chrome ang isang sertipiko na may mga error at hindi mapatunayan ang pagkilala ng site na tinangka mong kumunekta sa. Ang iyong koneksyon ay hindi secure at dapat hindi magpatuloy.</translation>
 <translation id="8738921060445980047">Hindi kilalang bersyon.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
+<translation id="2748463065602559597">Tumitingin ka sa isang secure na pahina ng Google Chrome.</translation>
 <translation id="3324235665723428530">Ang iyong profile ay hindi magagamit dahil ito ay mula sa isang bagong bersyon ng Google Chrome.\n\nIlang mga tampok ay maaaring hindi magagamit. Mangyaring tukuyin ang isang kakaibang derektoryo ng profile o gamitin ang isan bagong bersyon ng Chrome.</translation>
 <translation id="9073088951656332330">Walang nakitang pag-install sa Google Chrome o Google Chrome Frame na i-a-update.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Maaaring gumamit ang Google Chrome ng mga serbisyo sa web upang mapabuti ang iyong karanasan sa pagba-browse.</translation>
 <translation id="7436949144778751379">Kailangan ng Google Chrome ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
 <translation id="7100330187273168372">Hindi mababasa ang Google Chrome at isulat ito sa direktoryo ng data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Gallery ng Mga Tema ng Google Chrome</translation>
 <translation id="7938170099933661772">Hindi maipakita ng Google Chrome ang preview ng pag-print kapag hindi pinagana ang built-in na PDF viewer. Upang makita ang preview, pakibisita ang <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, Paganahin ang &quot;Chrome PDF Viewer&quot;, at subukang muli.</translation>
 <translation id="6757767188268205357">Huwag akong istorbohin</translation>
 <translation id="2290095356545025170">Sigurado ka bang nais mong i-uninstall ang Google Chrome?</translation>
+<translation id="1243097286641060337">Hindi maaaring i-update ang Google Chrome o Google Chrome Frame dahil sa mga inconsistent na setting ng Google Update Group Policy. Gamitin ang Group Policy Editor upang itakda ang pag-override sa patakaran sa pag-update para sa application na Google Chrome Binaries at subukan muli.</translation>
 <translation id="6087062680442281307">Ang Google Chrome ay isang web browser na nagpapatakbo ng mga web page at application na kasingbilis ng kidlat. Mabilis ito, matatag, at madaling gamitin. I-browse ang web nang mas ligtas na may proteksyon sa malware at phishing na binuo sa Google Chrome.</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">May nakitang salungatan sa isa pang naka-install na application.</translation>
 <translation id="7018032895891496381">Ginagamit ng Google Chrome ang iyong default na search engine, na kasalukuyang nakatakda sa <ph name="PAGE_TITLE"/>. Nais mo bang panatilihin ang iyong default na search engine?</translation>
 <translation id="7161904924553537242">Maligayang pagdating sa Google Chrome</translation>
+<translation id="5211087808649701653">Ilunsad ang dialog na native print</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">Ipinapakita lang ng pahinang ito ang impormasyon ng iyong kamakailang mga pag-crash kung <ph name="BEGIN_LINK"/>papaganahin mo ang pag-uulat ng pag-crash<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Hindi gumagana ang Google Chrome. Ilunsad muli ngayon?</translation>

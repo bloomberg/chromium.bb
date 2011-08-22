@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat geretourneerd dat fouten bevat. Google Chrome kan geen certificaten met fouten verwerken en kan de identiteit niet verifiëren van de site waarmee u verbinding probeert te maken. Uw verbinding is niet veilig en u kunt beter niet verdergaan.</translation>
 <translation id="8738921060445980047">Onbekende versie.</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
+<translation id="2748463065602559597">U bekijkt een veilige Google Chrome-pagina.</translation>
 <translation id="3324235665723428530">Chrome kan uw profiel niet gebruiken aangezien het van een nieuwere versie van Google Chrome is.\n\nSommige functies zijn misschien niet beschikbaar. Geef een andere profieldirectory aan of gebruik een nieuwere versie van Chrome.</translation>
 <translation id="9073088951656332330">Geen installatie van Google Chrome of Google Chrome Frame gevonden om bij te werken.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome kan webservices gebruiken om uw internetervaring te verbeteren.</translation>
 <translation id="7436949144778751379">Voor Google Chrome is Windows XP of hoger vereist. Het is mogelijk dat sommige functies niet werken.</translation>
 <translation id="7100330187273168372">Google Chrome kan deze datadirectory niet lezen of beschrijven:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galerij met thema's voor Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome kan geen afdrukvoorbeeld weergeven wanneer de ingebouwde pdf-viewer is uitgeschakeld. Als u een afdrukvoorbeeld wilt bekijken, gaat u naar  <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, schakelt u 'Chrome PDF Viewer' in en probeert u het opnieuw.</translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
 <translation id="2290095356545025170">Weet u zeker dat u Google Chrome wilt verwijderen?</translation>
+<translation id="1243097286641060337">Google Chrome of Google Chrome Frame kan niet worden bijgewerkt vanwege inconsistente groepsbeleidinstellingen voor Google Update. Gebruik de editor voor groepsbeleid om het updatebeleid in te stellen dat moet gelden voor de Google Chrome Binaries-applicatie en probeer het opnieuw.</translation>
 <translation id="6087062680442281307">Google Chrome is een webbrowser die bliksemsnel webpagina's en online applicaties kan weergeven. Het is snel, stabiel en gebruiksvriendelijk. Met Google Chrome kunt u veiliger op internet surfen dankzij de ingebouwde bescherming tegen phishing en malware.</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851"/>
 <translation id="7018032895891496381">Google Chrome gebruikt uw standaardzoekmachine. Deze is momenteel ingesteld op <ph name="PAGE_TITLE"/>. Wilt u uw standaardzoekmachine behouden?</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
+<translation id="5211087808649701653">Systeemeigen afdrukdialoogvenster openen</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">Deze pagina bevat alleen informatie over recente crashes als u <ph name="BEGIN_LINK"/>crashrapportage inschakelt<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome reageert niet meer. Nu opnieuw starten?</translation>

@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Du forsøkte å komme til &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men sertifikatet som tjeneren presenterte, inneholder feil. Google Chrome kan ikke bruke et sertifikat med feil, og kan ikke validere identiteten til nettstedet du har forsøkt å koble til. Tilkoblingen er ikke sikker, og du bør ikke fortsette.</translation>
 <translation id="8738921060445980047">Ukjent versjon.</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
+<translation id="2748463065602559597">Du ser på en sikker Google Chrome-side.</translation>
 <translation id="3324235665723428530">Profilen kan ikke brukes fordi den er fra en nyere versjon av Google Chrome.\n\nNoen funksjoner kan være utilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chrome.</translation>
 <translation id="9073088951656332330">Finner ingen installasjon av Google Chrome eller Google Chrome Frame å oppdatere.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Det kan hende at Google Chrome bruker nettbaserte tjenester for å forbedre din surfeopplevelse.</translation>
 <translation id="7436949144778751379">Google Chrome krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
 <translation id="7100330187273168372">Google Chrome kan ikke lese og lagre data i denne katalogen:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galleri med Google Chromes temaer</translation>
 <translation id="7938170099933661772">Google Chrome kan ikke forhåndsvise en utskrift når den innebygde PDF-leseren er deaktivert. Du kan se forhåndsvisningen ved å gå til <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, aktivere «Chrome PDF Viewer» og prøve på nytt.</translation>
 <translation id="6757767188268205357">Ikke spør meg igjen</translation>
 <translation id="2290095356545025170">Er du sikker på at du vil avinstallere Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome eller Google Chrome Frame kan ikke oppdateres på grunn av inkonsekvente gruppeinnstillinger for Google Oppdatering. Bruk redigeringsprogrammet for gruppeinnstillinger til å konfigurere overstyring av oppdateringsinnstillingene for Google Chrome-binærprogrammet, og prøv på nytt.</translation>
 <translation id="6087062680442281307">Nettleseren Google Chrome kjører nettsider og programmer i ekspressfart. Den er rask, stabil og enkel å bruke. Google Chrome har innebygd beskyttelse mot skadelig programvare og svindelforsøk (nettfisking), slik at du kan føle deg tryggere når du bruker Internett.</translation>
 <translation id="5941830788786076944">Gjør Google Chrome til standardleser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Det er registrert en konflikt med et annet installert program.</translation>
 <translation id="7018032895891496381">Google Chrome bruker din standard søkemotor, som er <ph name="PAGE_TITLE"/>. Vil du beholde denne?</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>
+<translation id="5211087808649701653">Start integrert utskriftsdialogboks</translation>
 <translation id="8669527147644353129">Google Chrome-hjelper</translation>
 <translation id="3444832043240812445">Denne siden viser kun informasjon om nylige programstopp hvis du <ph name="BEGIN_LINK"/>aktiverer rapportering av programstopp<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du starte på nytt nå?</translation>

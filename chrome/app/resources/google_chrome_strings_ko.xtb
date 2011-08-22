@@ -50,6 +50,7 @@
 <translation id="6009537148180854585"><ph name="DOMAIN"/></translation>
 <translation id="8738921060445980047">알 수 없는 버전입니다.</translation>
 <translation id="2485422356828889247">제거</translation>
+<translation id="2748463065602559597">지금 안전한 Chrome 페이지를 보고 계십니다.</translation>
 <translation id="3324235665723428530">최신 버전의 Chrome에서 가져온 사용자 프로필을 사용할 수 없습니다.\n\n일부 기능만 사용 가능할 수 있습니다. 다른 프로필 디렉토리를 지정하거나 최신 버전의 Chrome을 사용하세요.</translation>
 <translation id="9073088951656332330">업데이트할 Chrome 또는 Chrome 프레임이 없습니다.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Chrome은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
 <translation id="7436949144778751379">Chrome에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="7100330187273168372">Chrome에서 다음 데이터 디렉토리에 읽고 쓸 수 없습니다.\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Chrome 테마 갤러리</translation>
 <translation id="7938170099933661772">기본 지원 PDF 뷰어를 사용 중지하면, Chrome에서 인쇄 미리보기를 볼 수 없습니다. 미리보기를 보려면 <ph name="BEGIN_LINK"/><ph name="END_LINK"/>를 방문하여 'Chrome PDF 뷰어'를 사용하도록 설정하고 다시 시도해 보세요.</translation>
 <translation id="6757767188268205357">더 이상 묻지 않음</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>
+<translation id="1243097286641060337">Chrome 또는 Chrome 프레임은 일관되지 않은 Google 업데이트 그룹 정책 설정으로 인해 업데이트할 수 없습니다. 그룹 정책 편집기를 사용하여 Chrome 바이너리 애플리케이션에 대해 업데이트 정책 무시를 설정한 다음 다시 시도해 보세요.</translation>
 <translation id="6087062680442281307">Chrome은 웹페이지와 애플리케이션을 빠르게 실행하는 웹 브라우저입니다. 또한 빠르고 안정적이며 사용하기 쉽습니다. Chrome에 기본적으로 제공되는 악성코드 및 피싱 방지로 더욱 안전하게 웹을 탐색하세요.</translation>
 <translation id="5941830788786076944">Chrome을 기본 브라우저로</translation>
 <translation id="4990567037958725628">Chrome 카나리아</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">설치된 다른 애플리케이션과의 충돌이 감지되었습니다.</translation>
 <translation id="7018032895891496381">Chrome은 현재 <ph name="PAGE_TITLE"/>(으)로 설정되어 있는 기본 검색엔진을 사용합니다. 기본 검색엔진을 계속 유지하시겠습니까?</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>
+<translation id="5211087808649701653">기본 인쇄 대화상자 실행</translation>
 <translation id="8669527147644353129">Chrome 도우미</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>충돌 보고를 사용<ph name="END_LINK"/>하면 최근 충돌에 대한 정보만 이 페이지에 표시됩니다.</translation>
 <translation id="8614913330719544658">Chrome이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>

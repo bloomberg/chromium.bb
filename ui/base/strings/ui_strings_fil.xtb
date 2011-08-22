@@ -9,11 +9,14 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7222373446505536781">F11</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY"/> (na) B</translation>
 <translation id="3660179305079774227">Up Arrow</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY"/> (na) MB/s</translation>
 <translation id="3990502903496589789">Tamang Lamang</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="3909791450649380159">Al&amp;isin</translation>
 <translation id="5076340679995252485">&amp;Ilagay</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY"/> (na) TB</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3087734570205094154">Sa ilalim</translation>
@@ -21,10 +24,13 @@
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="5329858601952122676">&amp;Tanggalin</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY"/> (na) MB</translation>
+<translation id="3806858430610674159"><ph name="QUANTITY"/> kB</translation>
 <translation id="2497284189126895209">Lahat ng Mga File</translation>
 <translation id="7814458197256864873">&amp;Kopyahin</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
 <translation id="1398853756734560583">Maximize</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY"/> (na) GB</translation>
 <translation id="1901303067676059328">Piliin ang &amp;lahat</translation>
 <translation id="2168039046890040389">Pataas</translation>
 <translation id="3183922693828471536">Mag-scroll dito</translation>
@@ -40,11 +46,17 @@
 <translation id="3157931365184549694">Ipanumbalik</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">&amp;I-undo</translation>
+<translation id="520299402983819650"><ph name="QUANTITY"/> (na) PB</translation>
 <translation id="5583640892426849032">Backspace</translation>
+<translation id="2619528525756897123"><ph name="QUANTITY"/> (na) kB/s</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY"/> (na) GB/s</translation>
 <translation id="436869212180315161">Pindutin</translation>
+<translation id="2297836609126180313"><ph name="QUANTITY"/> (na) TB/s</translation>
 <translation id="6040143037577758943">Isara</translation>
+<translation id="6142413573757616983"><ph name="QUANTITY"/> (na) B/s</translation>
 <translation id="7000311294523403548">Walang pamagat na Web Page</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6907759265145635167"><ph name="QUANTITY"/> (na) PB/s</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Minimize</translation>
 <translation id="8328145009876646418">Kalwang Edge</translation>

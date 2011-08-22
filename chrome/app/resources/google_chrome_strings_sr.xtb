@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Покушали сте да дођете до &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али сертификат који је представио сервер садржи грешке. Google Chrome не може да користи сертификат са грешкама и не може да потврди веродостојност сајта са којим сте покушали да се повежете. Ваша веза није безбедна и не би требало да наставите.</translation>
 <translation id="8738921060445980047">Непозната верзија.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
+<translation id="2748463065602559597">Прегледате безбедну Google Chrome страницу.</translation>
 <translation id="3324235665723428530">Ваш профил не може да се користи пошто припада новијој верзији програма Google Chrome.\n\nНеке функције можда нису доступне. Наведите други директоријум профила или користите новију верзију програма Chrome.</translation>
 <translation id="9073088951656332330">Нису пронађене Google Chrome или Google Chrome Frame инсталације за ажурирање.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome може да користи веб услуге да би побољшао искуство прегледања.</translation>
 <translation id="7436949144778751379">Google Chrome захтева Windows XP или новију верзију. Неке функције можда неће радити.</translation>
 <translation id="7100330187273168372">Google Chrome не може да прочита нити да упише податке у свој директоријум са подацима:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Галерија Google Chrome тема</translation>
 <translation id="7938170099933661772">Google Chrome не може да прикаже преглед пре штампања када је уграђени приказивач PDF датотека онемогућен. Да бисте видели преглед, посетите <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, омогућите „Chrome PDF прегледач“ и покушајте поново.</translation>
 <translation id="6757767188268205357">Не досађуј</translation>
 <translation id="2290095356545025170">Да ли заиста желите да деинсталирате Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome или Google Chrome Frame не може да се ажурира на налогу на ком постоје недоследна подешавања групних смерница за Google ажурирање. Користите уређивач групних смерница да бисте подесили замену смерница ажурирања за апликацију Google Chrome Binaries и покушајте поново.</translation>
 <translation id="6087062680442281307">Google Chrome је веб прегледач који приказује веб странице и апликације муњевитом брзином. Он је брз, стабилан и једноставан за употребу. Google Chrome вас аутоматски штити од малвера и „пецања“ и омогућава безбедније прегледање Веба.</translation>
 <translation id="5941830788786076944">Подесите Google Chrome као подразумевани прегледач</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Откривено је сукобљавање са другом инсталираном апликацијом.</translation>
 <translation id="7018032895891496381">Google Chrome користи подразумевани претраживач, који је тренутно постављен на <ph name="PAGE_TITLE"/>. Желите ли да овај претраживач остане подразумевани претраживач?</translation>
 <translation id="7161904924553537242">Добро дошли у Google Chrome</translation>
+<translation id="5211087808649701653">Покрени матични дијалог за штампање</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="3444832043240812445">Ова страница приказује информације о недавним отказивањима само уколико <ph name="BEGIN_LINK"/>омогућите извештавање о отказивањима<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не реагује. Желите ли да га одмах поново покренете?</translation>

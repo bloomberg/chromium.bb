@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ అందించిన సర్టిఫికెట్లో లోపాలను ఉన్నాయి. లోపాలు ఉన్న సర్టిఫికెట్‌ను Google Chrome ఉపయోగించదు మరియు మీరు కనెక్ట్ అవ్వడానికి ప్రయత్నించిన సైట్ యొక్క గుర్తింపును ప్రమాణీకరించబడలేదు. మీ కనెక్షన్ సురక్షితమైనది కాదు మరియు మీరు ముందుకు సాగకూడదు.</translation>
 <translation id="8738921060445980047">తెలియని సంస్కరణ.</translation>
 <translation id="2485422356828889247">వ్యవస్థాపనను తీసివెయ్యి</translation>
+<translation id="2748463065602559597">మీరు సురక్షితమైన Google Chrome పేజీని వీక్షిస్తున్నారు.</translation>
 <translation id="3324235665723428530">మీ ప్రొఫైల్ Google Chrome యొక్క కొత్త వెర్షన్ కాబట్టి దాన్ని ఉపయోగించలేము. \n\nకొన్ని ఫీచర్లు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chrome యొక్క కొత్త వెర్షన్‌ను ఉపయోగించండి.</translation>
 <translation id="9073088951656332330">అప్‌డేట్ చేయడానికి Google Chrome లేదా Google Chrome Frame యొక్క వ్యవస్థాపన కనుగొనబడలేదు.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవలను ఉపయోగించవచ్చు.</translation>
 <translation id="7436949144778751379">Google Chromeకు Windows XP లేదా క్రొత్తది అవసరం. కొన్ని లక్షణాలు పని చేయకపోవచ్చు.</translation>
 <translation id="7100330187273168372">Google Chrome దాని డేటా డైరెక్టరీలో రాయలేదు మరియు చదవలేదు:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome థీమ్ల గ్యాలరీ</translation>
 <translation id="7938170099933661772">అంతర్నిర్మాణ PDF వ్యూయర్ నిలిపివేసినపుడు Google Chrome ముద్రణ పరిదృశ్యాన్ని చూపించదు. పరిదృశ్యాన్ని చూడటానికి, దయచేసి <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>ను సందర్శించండి మరియు &quot;Chrome PDF Viewer&quot; ని ప్రారంభించి మరల ప్రయత్నించండి.</translation>
 <translation id="6757767188268205357">నన్ను విసిగించకు</translation>
 <translation id="2290095356545025170">మీరు Google Chrome ని ఖచ్చితంగా అన్ ఇన్స్టాల్ చెయ్యాలని అనుకుంటున్నారా?</translation>
+<translation id="1243097286641060337">Google నవీకరణ గుంపు పాలసీ సెట్టింగుల సరిపోలని కారణంగా Google Chrome లేదా Google Chrome Frame నవీకరించబడదు.  Google Chrome Binaries అనువర్తనం కోసం నవీకరణ పాలసీని అమర్చడానికి గుంపు పాలసీ ఎడిటర్‌ను ఉపయోగించండి మరియు మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="6087062680442281307">Google Chrome అనేది మెరుపు వేగంతో వెబ్ పేజీలను మరియు అనువర్తనాలను అమలు చేసే వెబ్ బ్రౌజర్. ఇది వేగమైనది, సామర్థ్యం కలది మరియు ఉపయోగించడానికి సులభమైంది. Google Chromeలో నిర్మితమైన మాల్వేర్ మరియు ఫిషింగ్ భద్రతతో మరింత సురక్షితంగా వెబ్‌ను బ్రౌజ్ చేయండి.</translation>
 <translation id="5941830788786076944">Google Chromeను డిఫాల్ట్ బ్రౌజర్‌గా చేసుకోండి</translation>
 <translation id="4990567037958725628">Google Chrome కేనరీ</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">ఇన్‌స్టాల్ చెయ్యబడిన మరొక అప్లికేషన్‌తో విరోధం కనుగొనబడింది.</translation>
 <translation id="7018032895891496381">Google Chrome ప్రస్తుతం <ph name="PAGE_TITLE"/>కు సెట్ చేసిన, మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉపయోగిస్తుంది. మీరు మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉంచాలనుకుంటున్నారా?</translation>
 <translation id="7161904924553537242">Google Chromeకు స్వాగతం</translation>
+<translation id="5211087808649701653">స్థానిక ముద్రణ డైలాగ్‌ను ఆవిష్కరించు</translation>
 <translation id="8669527147644353129">Google Chrome సహాయకారుడు</translation>
 <translation id="3444832043240812445">మీరు <ph name="BEGIN_LINK"/>క్రాష్‌ నివేదికను ప్రారంభించినపుడు<ph name="END_LINK"/> ఈ పేజీ మీ ఇటీవలి క్రాష్‌ల సమాచారాన్ని మాత్రమే చూపిస్తుంది.</translation>
 <translation id="8614913330719544658">Google Chrome స్పందించడం లేదు. ఇప్పుడే పునఃప్రారంభించాలా?</translation>

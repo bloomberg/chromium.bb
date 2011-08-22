@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanına ulaşmayı denediniz, ancak sunucunun sunduğu sertifika hata içeriyor. Google Chrome, hatalı bir sertifika kullanamaz ve bağlanmayı denediğiniz sitenin kimliğini doğrulayamıyor. Bağlantınız güvenli değil. Devam etmemelisiniz.</translation>
 <translation id="8738921060445980047">Bilinmeyen sürüm.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
+<translation id="2748463065602559597">Güvenli bir Google Chrome sayfasını görüntülüyorsunuz.</translation>
 <translation id="3324235665723428530">Profiliniz, Google Chrome'un daha yeni bir sürümünden olduğu için kullanılamıyor.\n\nBazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya Chrome'un daha yeni bir sürümünü kullanın.</translation>
 <translation id="9073088951656332330">Google Chrome veya Google Chrome Frame'in güncellenecek yüklemesi bulunamadı.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome, tarama deneyiminizi iyileştirmek için Web hizmetlerinden yararlanabilir.</translation>
 <translation id="7436949144778751379">Google Chrome, Windows XP veya sonrasını gerektirir. Bazı özellikler çalışmayabilir.</translation>
 <translation id="7100330187273168372">Google Chrome, veri dizini üzerinde okuma ve yazma işlemi yapamaz:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome Tema Galerisi</translation>
 <translation id="7938170099933661772">Google Chrome, yerleşik PDF görüntüleyici devre dışıyken yazdırma önizlemesini gösteremez. Önizlemeyi görebilmek için lütfen <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> sayfasını ziyaret edin, &quot;Chrome PDF Görüntüleyici&quot; seçeneğini etkinleştirin ve tekrar deneyin.</translation>
 <translation id="6757767188268205357">Beni rahatsız etmeyin</translation>
 <translation id="2290095356545025170">Google Chrome'u kaldırmak istediğinizden emin misiniz?</translation>
+<translation id="1243097286641060337">Google Chrome veya Google Chrome Frame, tutarsız Google Güncelleme Grup Politikası ayarları bulunan hesaplarda güncellenemez. Google Chrome Binaries uygulaması için güncelleme politikasını geçersiz kılmayı ayarlamak üzere Grup Politikası Düzenleyici'yi kullanın ve tekrar deneyin.</translation>
 <translation id="6087062680442281307">Google Chrome, web sayfalarını ve uygulamaları yıldırım hızıyla çalıştıran bir web tarayıcısıdır. Hızlı, dengeli ve kullanımı kolaydır. Kötü amaçlı yazılımlara ve e-dolandırıcılığa karşı Google Chrome'un içinde yerleşik olarak bulunan koruma özellikleriyle web'de daha güvenli bir şekilde gezinin.</translation>
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Yüklü başka bir uygulamayla çakışma tespit edildi.</translation>
 <translation id="7018032895891496381">Google Chrome şu anda <ph name="PAGE_TITLE"/> olarak ayarlanmış olan varsayılan arama motorunuzu kullanır. Varsayılan arama motorunuzun aynı kalmasını istiyor musunuz?</translation>
 <translation id="7161904924553537242">Google Chrome'a Hoş Geldiniz</translation>
+<translation id="5211087808649701653">Yerel yazdırma iletişimini kutusunu başlat</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK"/>Kilitlenme bildirmeyi etkinleştirdiyseniz<ph name="END_LINK"/>, bu sayfada yalnızca, karşılaştığınız son kilitlenme olayları hakkında bilgiler gösterilir.</translation>
 <translation id="8614913330719544658">Google Chrome yanıt vermiyor. Yeniden başlatılsın mı?</translation>

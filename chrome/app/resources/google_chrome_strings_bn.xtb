@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এ পৌঁছানোর প্রচেষ্টা করেছেন, কিন্তু সার্ভারটি একটি এমন শংসাপত্র উপস্থিত করেছে যাতে ত্রুটি আছে৷ Google Chrome কোনো ত্রুটিযুক্ত শংসাপত্র ব্যবহার করে না এবং আপনি যে সাইটে সংযোগ করার চেষ্টা করেন তার পরিচয় যাচাই করে না৷ আপনার কানেকশনটি নিরাপদ নয় এবং আপনার এগোনো উচিত নয়৷</translation>
 <translation id="8738921060445980047">অজানা সংস্করণ৷</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
+<translation id="2748463065602559597">আপনি একটি নিরাপদ Google Chrome পৃষ্ঠা দেখছ্নে৷</translation>
 <translation id="3324235665723428530">আপনার প্রোফাইলটি Google Chrome-এর একটি নবীনতর সংস্করণের হওয়ার কারণে এটি ব্যবহার করা যাবে না৷\n\nকিছু বৈশিষ্ট্য উপলব্ধ নাও হতে পারে৷ দয়া করে কোনো ভিন্ন প্রোফাইল ডাইরেক্টরি নির্দিষ্ট করুন অথবা Chrome-এর একটি নবীনতর সংস্করণ ব্যবহার করুন৷</translation>
 <translation id="9073088951656332330">আপডেট করার জন্য Google Chrome বা Google Chrome Frame-এর কোনও ইনস্টলশান পাওয়া যায়নি৷</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">আপনার ব্রাউজিং অভিজ্ঞতার উন্নতি ঘটাতে Google Chrome ওয়েব পরিষেবা ব্যবহার করতে পারে৷</translation>
 <translation id="7436949144778751379">Google Chrome-এর Windows XP বা পরবর্তী প্রয়োজন৷ কিছু বৈশিষ্ট্য নাও কাজ করতে পারে৷</translation>
 <translation id="7100330187273168372">Google Chrome, তার ডেটা ডিরেক্টরিতে পড়তে বা লিখতে পারে না:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome থিমগুলির গ্যালারী</translation>
 <translation id="7938170099933661772">বিল্ট-ইন PDF ভিউয়ারটি অক্ষম থাকলে Google Chrome মুদ্রণ পূর্বরূপ প্রদর্শন করতে পারবে না৷ পূর্বরূপটি দেখতে, দয়া করে <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> পরিদর্শন করুন, &quot;Chrome PDF ভিউয়ার&quot; সক্ষম করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
 <translation id="2290095356545025170">আপনি কি Google Chrome আনইনস্টল করার ব্যাপারে নিষ্চিত ?</translation>
+<translation id="1243097286641060337">Google Chrome বা Google Chrome Frame অসঙ্গত Google আপডেট গোষ্ঠী নীতি সেটিংস-এর কারণে আপডেট করতে পারে না৷ Google Chrome Binaries অ্যাপ্লিকেশনের জন্য আপডেট নীতি ওভাররাইড সেট করতে গোষ্ঠী নীতি সম্পাদক ব্যবহার করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="6087062680442281307">Google Chrome হ'ল একটি ওয়েব ব্রাউজার যা ওয়েব পৃষ্ঠাগুলি এবং অ্যাপ্লিকেশনগুলিকে বিদ্যুত গতিতে চালনা করে৷ এটি স্রুত, সুস্থির এবং সহজেই ব্যবহারযোগ্য৷ Google Chrome এ অন্তর্গঠিত ম্যালওয়ার এবং ফিশিং সুরক্ষার সাথে আরও নিরাপদে ওয়েব ব্রাউজ করুন৷</translation>
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">অন্য একটি ইনস্টল থাকা প্রয়োগের সাথে বিরোধ সনাক্ত করা হয়েছে৷</translation>
 <translation id="7018032895891496381">Google Chrome আপনার ডিফল্ট সার্চ ইঞ্জিন ব্যবহার করে, যা বর্তমানে <ph name="PAGE_TITLE"/>-এ সেট আছে৷ আপনি কি নিজের ডিফল্ট সার্চ ইঞ্জিন রাখতে চান?</translation>
 <translation id="7161904924553537242">Google Chrome-এ আপনাকে স্বাগতম</translation>
+<translation id="5211087808649701653">নেটিভ মুদ্রণ কথোপকথন প্রবর্তন করুন</translation>
 <translation id="8669527147644353129">Google Chrome সহায়তাকারী</translation>
 <translation id="3444832043240812445">যদি আপনি <ph name="BEGIN_LINK"/>ক্র্যাশ প্রতিবেদন সক্ষম করেন<ph name="END_LINK"/> তাহলে এই পৃষ্ঠাটি কেবল আপনার সাম্প্রতিক ক্র্যাশগুলির তথ্য দেখায়৷</translation>
 <translation id="8614913330719544658">Google Chrome প্রতিক্রিয়া করছে না৷ এখনই পুনঃলঞ্চ করবেন?</translation>

@@ -3,10 +3,10 @@
 <translationbundle lang="gu">
 <translation id="6779164083355903755">&amp;દૂર કરો</translation>
 <translation id="6879617193011158416">બુકમાર્ક બાર ટૉગલ કરો </translation>
+<translation id="273269537092923463"><ph name="SHORT_PRODUCT_NAME"/> સમન્વયન સેટ કરો</translation>
 <translation id="8130276680150879341">ખાનગી નેટવર્ક ડિસ્કનેક્ટ કરો</translation>
 <translation id="1058418043520174283"><ph name="COUNT"/> માંથી <ph name="INDEX"/></translation>
 <translation id="4480627574828695486">આ એકાઉન્ટને ડિસ્કનેક્ટ કરો...</translation>
-<translation id="1437399238463685286">ફાઇલના નામમાં અમાન્ય અક્ષર છે: $1</translation>
 <translation id="7040807039050164757">આ ફીલ્ડમાં&amp;જોડણી તપાસો</translation>
 <translation id="778579833039460630">ડેટા પ્રાપ્ત થયો નથી</translation>
 <translation id="8791923223854254330">હેન્ડલર્સ મેનેજ કરો...</translation>
@@ -14,10 +14,11 @@
 <translation id="3828924085048779000">ખાલી પાસફ્રેઝને અનુમતિ નથી. </translation>
 <translation id="8265562484034134517">બીજા બ્રાઉઝરમાંથી ડેટા આયાત કરો...</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
-<translation id="4857138207355690859">P2P API</translation>
+<translation id="3916445069167113093">આ પ્રકારની ફાઇલ તમારા કમ્પ્યુટરને નુકસાન પહોંચાડી શકે છે. શું તમે તો પણ <ph name="FILE_NAME"/> ને રાખવા માગો છો?</translation>
 <translation id="250599269244456932">આપમેળે ચલાવો (ભલામણભર્યું)</translation>
 <translation id="3581034179710640788">સાઇટના સુરક્ષા પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ ગઈ છે!</translation>
 <translation id="2825758591930162672">વિષયની સાર્વજનિક કી</translation>
+<translation id="8306243285620593545">સ્થિતિ  આયકન પર ફોકસ કરો</translation>
 <translation id="8275038454117074363">આયાત કરો</translation>
 <translation id="8418445294933751433">ટૅબ તરીકે &amp;બતાવો</translation>
 <translation id="6985276906761169321">ID:</translation>
@@ -46,13 +47,11 @@
 <translation id="2105006017282194539">હજી લોડ કર્યું નથી</translation>
 <translation id="7821009361098626711">સર્વર <ph name="DOMAIN"/> ને વપરાશકર્તાનામ અને  પાસવર્ડની આવશ્યકતા છે. સર્વર કહે છે :<ph name="REALM"/></translation>
 <translation id="524759338601046922">નવો PIN ફરીથી લખો:</translation>
-<translation id="688547603556380205">L2TP/IPSec + વપરાશકર્તા પ્રમાણપત્ર </translation>
 <translation id="777702478322588152">પ્રીફેક્ચર</translation>
 <translation id="6562437808764959486">પુનઃપ્રાપ્તિ છબીને એક્સ્ટ્રેક્ટ કરી રહ્યું છે...</translation>
 <translation id="561349411957324076">પૂર્ણ</translation>
 <translation id="4764776831041365478"><ph name="URL"/> પરનાં વેબપેજ અસ્થાયી ધોરણે બંધ હોઈ શકે છે અથવા તે કાયમ માટે નવા વેબ સરનામાં પર ખસેડવામાં આવ્યા હોઈ શકે છે.</translation>
 <translation id="6156863943908443225">સ્ક્રિપ્ટ  કેશ</translation>
-<translation id="3233454090437339537">શું તમને હવેથી <ph name="PROTOCOL"/>:// ને હેન્ડલ કરવા માટે <ph name="REPLACED_HANDLER_TITLE"/> ને બદલે <ph name="HANDLER_TITLE"/>(<ph name="HANDLER_HOSTNAME"/>) નો ઉપયોગ કરવો ગમશે?</translation>
 <translation id="4610656722473172270">Google ટુલબાર</translation>
 <translation id="7845201717638045845">તમે કૉપિ અને પેસ્ટ કરેલો ડેટા</translation>
 <translation id="151501797353681931">સફારીમાંથી આયાત કરેલું</translation>
@@ -68,12 +67,14 @@
 <translation id="4714531393479055912"><ph name="PRODUCT_NAME"/> હવે તમારા પાસવર્ડ્સ સમન્વિત કરી શકે છે.</translation>
 <translation id="5704565838965461712">ઓળખાણ તરીકે પ્રસ્તુત કરવા માટે એક પ્રમાણપત્ર પસંદ કરો:</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME"/> ક્રેશ થયું છે. એક્સ્ટેંશનને ફરીથી લોડ કરવા માટે આ બલૂન ક્લિક કરો.</translation>
+<translation id="381723870071368006">શેર કરેલી પ્રોક્સીઓનો ઉપયોગ કરો</translation>
 <translation id="6322279351188361895">ખાનગી કી વાંચવામાં નિષ્ફળ છે.</translation>
 <translation id="3781072658385678636">આ પૃષ્ઠ પર નીચેના પ્લગ-ઇન્સ અવરોધિત હતા:</translation>
 <translation id="4428782877951507641">સમન્વયન સેટિંગ અપ</translation>
 <translation id="3648460724479383440">પસંદ કરેલું રેડિઓ બટન</translation>
 <translation id="4654488276758583406">ખૂબ નાનું</translation>
 <translation id="6647228709620733774">નેટસ્કેપ પ્રમાણન અધિકારી રિવોકેશન URL</translation>
+<translation id="4008217099472149670">Kaspersky એન્ટી-વાયરસને લીધે સુરક્ષિત કનેક્શન બનાવી શકાતું નથી</translation>
 <translation id="546411240573627095">નમપૅડ શૈલી</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
@@ -86,7 +87,6 @@
 <translation id="7017587484910029005">નીચેના ચિત્રમાં તમે જોયેલા અક્ષરો લખો.</translation>
 <translation id="9013589315497579992">ખરાબ SSL ક્લાયંટ પ્રમાણીકરણ પ્રમાણપત્ર.</translation>
 <translation id="8595062045771121608">આવા કિસ્સામાં, તમારા બ્રાઉઝરને રજૂ કરેલા સર્વર પ્રમાણપત્ર અથવા કોઈ ઇંટરમિડિએટ CA પ્રમાણપત્ર નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને સાઇન કર્યા છે, જેમ કે RSA-MD2. કમ્પ્યુટર વૈજ્ઞાનિકોનું હાલનું સંશોધન બતાવે છે કે પહેલા મનાતી હતી તે કરતા હાલની હસ્તાક્ષર અલ્ગોરિધમ વધુ નબળી છે, અને વિશ્વસનીય વેબસાઇટ્સ દ્વારા હાલમાં ભાગ્યે જ હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ થાય છે. આ પ્રમાણપત્ર બનાવટી હોઈ શકે છે. તમારે આ બિંદુથી આગળ વધવું ન જોઈએ.</translation>
-<translation id="8666632926482119393">પહેલાનું શોધો</translation>
 <translation id="7567293639574541773">ઘટકની ત&amp;પાસ કરો</translation>
 <translation id="8392896330146417149">રોમિંગ સ્થિતિ:</translation>
 <translation id="6813971406343552491">&amp;નહીં</translation>
@@ -99,6 +99,8 @@
 <translation id="3208703785962634733">પુષ્ટિ થયેલ નથી</translation>
 <translation id="6523841952727744497">સાઇન ઇન કરતા પહેલા, નેટવર્ક <ph name="NETWORK_ID"/> ને સક્રિય કરવા માટે કૃપા કરીને અતિથિ સત્ર શરૂ કરો</translation>
 <translation id="7450044767321666434">છબી સફળતાપૂર્વક બર્ન થઈ! </translation>
+<translation id="5704318649385838512">CAPS LOCK ચાલુ છે\nરદ કરવા માટે બન્ને Shift કીઝ દબાવો</translation>
+<translation id="620329680124578183">લોડ કરશો નહીં (ભલામણ કરેલ)</translation>
 <translation id="2653266418988778031">જો તમે સર્ટિફિકેશન ઑથોરિટી (CA) ને કાઢો છો, તો તમારું બ્રાઉઝર તે CA દ્વારા રજૂ કરાયેલા કોઈપણ પ્રમાણપત્રો પર વિશ્વાસ કરશે નહીં.</translation>
 <translation id="298068999958468740">દરેક વસ્તુને સમન્વયિત રાખો અથવા આ કમ્પ્યુટરથી કયો ડેટા સમન્વયિત કરવાનો છે તે પસંદ કરો.</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
@@ -114,7 +116,6 @@
 <translation id="9181716872983600413">યુનિકોડ</translation>
 <translation id="1383861834909034572">પૂર્ણ થવા પર ખુલે છે</translation>
 <translation id="2492538245231809938">એન્ક્રિપ્ટેડ  ડેટા પ્રકારો</translation>
-<translation id="1905982276051748623">પ્રોટોકોલ અને MIME પ્રકારનાં હેન્ડલર્સ</translation>
 <translation id="5727728807527375859">એક્સટેન્શન્સ, એપ્લિકેશન અને થીમ્સ તમારા કમ્પ્યુટરને નુકસાન પહોંચાડી શકે છે. શું તમે ખરેખર આગળ વધવા માંગો છો?</translation>
 <translation id="3857272004253733895">ડબલ પિનયિન સ્કિમા</translation>
 <translation id="1636842079139032947">આ એકાઉન્ટને ડિસ્કનેક્ટ કરો...</translation>
@@ -129,6 +130,7 @@
         <ph name="HOST_NAME"/>
         એ પ્રતિસાદ આપવામાં ખૂબ સમય લીધો. વેબસાઇટ બંધ હશે, અથવા તમારા ઇંટરનેટ કનેક્શન સાથે 
         કંઈક સમસ્યા આવી હોઈ શકે છે.</translation>
+<translation id="2562265053877774071">કેટલીક પસંદગીઓને એક્સ્ટેંશન દ્વારા મેનેજ થઈ રહી છે.</translation>
 <translation id="7624154074265342755">વાયરલેસ નેટવર્ક્સ</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME"/> છુપાવો</translation>
 <translation id="3496213124478423963">ઝૂમ ઘટાડો</translation>
@@ -144,7 +146,8 @@
 <translation id="645705751491738698">JavaScript ને અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="4780321648949301421">પૃષ્ઠ આ રીતે સાચવો...</translation>
 <translation id="2551191967044410069">ભૌગોલિક સ્થાન અપવાદો</translation>
-<translation id="4092066334306401966">13px</translation>
+<translation id="3011284594919057757">ફ્લેશ વિશે </translation>
+<translation id="8789464255255332543">પ્રિંટ અનઉપલબ્ધ છે કારણ કે તમે જે પૃષ્ઠ છાપવાનો પ્રયાસ કરી રહ્યાં હતાં તે બંધ કરવામાં આવ્યું છે.</translation>
 <translation id="8178665534778830238">સામગ્રી:</translation>
 <translation id="153384433402665971"><ph name="PLUGIN_NAME"/> પ્લગ-ઇન અવરોધિત છે કારણ કે તે જૂનું છે.</translation>
 <translation id="2610260699262139870">A&amp;ctual Size</translation>
@@ -174,6 +177,7 @@
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> સેકન્ડ બાકી</translation>
 <translation id="560442828508350263">&quot;$1&quot; ને ખસેડવામાં અક્ષમ : $2</translation>
 <translation id="300544934591011246">પહેલાનો પાસવર્ડ</translation>
+<translation id="8106242143503688092">લોડ કરશો નહીં (ભલામણ કરેલ)</translation>
 <translation id="5078796286268621944">ખોટો PIN</translation>
 <translation id="989988560359834682">સરનામું સંપાદિત કરો</translation>
 <translation id="8487678622945914333">ઝૂમ વધારો</translation>
@@ -181,8 +185,6 @@
 <translation id="735327918767574393">આ વેબપૃષ્ઠ પ્રદર્શિત કરતી વખતે કંઈક ખોટું થયું હતું. ચાલુ રાખવા, ફરીથી લોડ કરો અથવા બીજા પૃષ્ઠ પર જાઓ.</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="6391832066170725637">ફાઇલ અથવા ડાયરેક્ટરી શોધી શકાઈ નથી.</translation>
-<translation id="4694445829210540512">કોઈ <ph name="NETWORK"/> ડેટા પ્લાન સક્રિય નથી</translation>
-<translation id="5510072263871409308">અતિરિક્ત પ્રિંટર લોડ કરી રહ્યું છે </translation>
 <translation id="577624874850706961">કૂકીઝ શોધો</translation>
 <translation id="5494920125229734069">બધા પસંદ કરો</translation>
 <translation id="2857834222104759979">મેનિફેસ્ટ ફાઇલ અમાન્ય છે.</translation>
@@ -191,11 +193,11 @@
 <translation id="7938958445268990899">સર્વરનું પ્રમાણપત્ર હજી માન્ય નથી.</translation>
 <translation id="4569998400745857585">મેનૂમાં છુપાયેલા એક્સ્ટેશંસ છે</translation>
 <translation id="4081383687659939437">માહિતી સાચવો </translation>
+<translation id="1834398142751010799">નવી પ્રોફાઇલ</translation>
 <translation id="1801827354178857021">અવધિ</translation>
 <translation id="7849443193236180005">હોસ્ટનામનો દાખલો</translation>
 <translation id="2179052183774520942">શોધ એંજીન ઉમેરો</translation>
 <translation id="5498951625591520696">સર્વર સુધી પહોંચી શકાતું નથી.</translation>
-<translation id="2956948609882871496">બુકમાર્ક્સ આયાત કરો...</translation>
 <translation id="1621207256975573490">&amp;ફ્રેમને આ રૂપે સાચવો...</translation>
 <translation id="4681260323810445443">તમે <ph name="URL"/> પર વેબપૃષ્ઠને ઍક્સેસ કરવા માટે અધિકૃત નથી. તમને સાઇન ઇન કરવાની જરૂર પડી શકે છે.</translation>
 <translation id="2176444992480806665">છેલ્લો સક્રિય ટૅબ સ્ક્રીન શૉટ મોકલો</translation>
@@ -206,8 +208,8 @@
 <translation id="9218430445555521422">ડિફોલ્ટ તરીકે સેટ કરો</translation>
 <translation id="5027550639139316293">ઇમેઇલ પ્રમાણપત્ર</translation>
 <translation id="938582441709398163">કીબોર્ડ ઓવરલે</translation>
+<translation id="148557595510244003">તમારા  વ્યવસ્થાપક દ્વારા કેટલાક વિકલ્પોને અક્ષમ કરવામાં આવ્યા છે.</translation>
 <translation id="427208986916971462">કનેક્શન <ph name="COMPRESSION"/> ની સાથે સંકુચિત કર્યું છે.</translation>
-<translation id="4589279373639964403">બુકમાર્ક્સનો નિકાસ કરો...</translation>
 <translation id="8876215549894133151">ફોર્મેટ:</translation>
 <translation id="5234764350956374838">કાઢી નાખો</translation>
 <translation id="40027638859996362">શબ્દ ખસેડો</translation>
@@ -215,9 +217,10 @@
 <translation id="5154917547274118687">મેમરી</translation>
 <translation id="1493492096534259649">આ ભાષાનો ઉપયોગ જોડણી પરીક્ષણ માટે કરી શકાતો નથી</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> શોધ</translation>
+<translation id="112818052757437142">&quot;$1&quot; નામવાળી નિર્દેશિકા પહેલાથી અસ્તિત્વમાં છે. કૃપા કરી ભિન્ન નામ પસંદ કરો.</translation>
 <translation id="2502105862509471425">નવું ક્રેડિટ કાર્ડ ઉમેરો... </translation>
+<translation id="6937266377577518989">ક્લિપબોર્ડ પર પસંદગીની કૉપિ બનાવી.</translation>
 <translation id="4037618776454394829">છેલ્લો સાચવેલો સ્ક્રીન શૉટ મોકલો</translation>
-<translation id="8987670145726065238">આ ફાઇલ દૂષિત છે. શું તમે ખરેખર ચાલુ રાખવા માંગો છો?</translation>
 <translation id="182729337634291014">સમન્વયન ભૂલ...</translation>
 <translation id="4465830120256509958">બ્રાઝિલિયન કીબોર્ડ</translation>
 <translation id="2459861677908225199">TLS 1.0 નો ઉપયોગ કરો</translation>
@@ -228,7 +231,6 @@
         <ph name="BEGIN_LINK"/>એક્સટેન્શંસ મેનેજર<ph name="END_LINK"/> માં તેને ફરીથી સક્ષમ કરી શકો છો.</translation>
 <translation id="5667293444945855280">મૉલવેર</translation>
 <translation id="3435845180011337502">પૃષ્ઠ સ્વરૂપણ અથવા લેઆઉટ</translation>
-<translation id="3838186299160040975">વધુ ખરીદો......</translation>
 <translation id="6831043979455480757">ભાષાંતર કરો</translation>
 <translation id="3587482841069643663">બધા</translation>
 <translation id="6698381487523150993">બનાવેલા:</translation>
@@ -237,6 +239,7 @@
 <translation id="6615807189585243369"><ph name="TOTAL_SIZE"/> માંથી <ph name="BURNT_AMOUNT"/> કૉપિ થઈ</translation>
 <translation id="4950138595962845479">વિકલ્પો...</translation>
 <translation id="4653235815000740718">OS પુનર્પ્રાપ્તિ મીડિયા બનાવતી વખતે એક સમસ્યા આવી હતી. વપરાયેલ સ્ટોરેજ ઉપકરણ મળી શક્યું નથી. </translation>
+<translation id="6732153478633637389">L2TP/IPsec + પૂર્વ-શેર કરેલી કી</translation>
 <translation id="6943836128787782965">HTTP નિષ્ફળ ગયું</translation>
 <translation id="5516565854418269276">&amp;બુકમાર્ક્સ બાર હંમેશા બતાવો</translation>
 <translation id="6426222199977479699">SSL ભૂલ</translation>
@@ -263,18 +266,20 @@
 <translation id="8079135502601738761">આ PDF દસ્તાવેજ ના ભાગોને પ્રદર્શિત કરી શકાયા નથી. તેને Adobe Reader માં ખોલીએ?</translation>
 <translation id="9123413579398459698">FTP  પ્રોક્સી</translation>
 <translation id="3887875461425980041">જો Flashનું PPAPI સંસ્કરણ ઉપયોગમાં હોય, તો સમર્પિત પ્લગઇન પ્રક્રિયામાં ચલાવવાને બદલે તેને દરેક રેંડરર પ્રક્રિયામાં ચલાવો.</translation>
+<translation id="1751752860232137596">પ્રાયોગિક સુગમ સ્ક્રૉલિંગ અમલીકરણને સક્ષમ કરો.</translation>
 <translation id="8534801226027872331">આ કિસ્સામાં, તમારા બ્રાઉઝરને પ્રસ્તુત કરેલા પ્રમાણપત્રમાં ભૂલ છે અને સમજી શકાય તેવું નથી.  આનો અર્થ એ હોઈ શકે કે પ્રમાણપત્રની અંદરની માહિતી અથવા કનેક્શનને સુરક્ષિત કરવા ઉપયોગમાં લેવાયેલી પ્રમાણપત્રની અમુક માહિતીને અમે ઓળખી અને સમજી શકતા નથી.  તમારે આગળ વધવું ન જોઈએ.</translation>
 <translation id="3608527593787258723">ટૅબ 1 સક્રિય કરો</translation>
+<translation id="6993929801679678186">સ્વતઃભરો અનુમાનો બતાવો</translation>
 <translation id="4497369307931735818">રીમોટિંગ</translation>
 <translation id="1476822615785139447">પ્રિંટર્સ મેનેજ કરો...</translation>
 <translation id="3855676282923585394">બુકમાર્ક્સ અને સેટિંગ્સ આયાત કરો...</translation>
 <translation id="1116694919640316211">વિશે</translation>
 <translation id="6878031674662373246">આ એકાઉન્ટ સમન્વય કરવાનું બંધ કરો...</translation>
+<translation id="8195796306739579529">પાસવર્ડ્સ એન્ક્રિપ્ટ કરો</translation>
 <translation id="4422347585044846479">આ પૃષ્ઠ માટે બુકમાર્ક સંપાદિત કરો</translation>
 <translation id="1880905663253319515">પ્રમાણપત્ર &quot;<ph name="CERTIFICATE_NAME"/>&quot; કાઢી નાખીએ?</translation>
 <translation id="8546306075665861288">છબી કેશ</translation>
 <translation id="5904093760909470684">પ્રોક્સી ગોઠવણી</translation>
-<translation id="2874027208508018603">WiFi કનેક્શન હાજર ન હોય ત્યારે Chrome, 3G ડેટાનો ઉપયોગ કરશે.</translation>
 <translation id="3348643303702027858">OS પુનર્પ્રાપ્તિ મીડિયા બનાવટ રદ કરવામાં આવી છે.</translation>
 <translation id="3391060940042023865">નીચેનું પ્લગ-ઇન ક્રેશ થયું છે:<ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">નેટવર્ક કનેક્શન ભૂલ</translation>
@@ -301,12 +306,15 @@
 <translation id="2580170710466019930"><ph name="PRODUCT_NAME"/> નવીનતમ અપડેટ્સ ઇન્સ્ટોલ્સ કરે ત્યારે કૃપા કરી પ્રતીક્ષા કરો.</translation>
 <translation id="7428061718435085649">2જા અને 3જા ઉમ્મેદવારોને પસંદ કરવા માટે ડાબી અને જમણી Shift કીનો ઉપયોગ કરો</translation>
 <translation id="1070066693520972135">WEP</translation>
+<translation id="2850297146577954246">સિન્થેસાઇઝ કરેલી વાણીનો ઉપયોગ કરીને બોલાતો કોઈપણ પાઠ</translation>
+<translation id="1243196447546764522">તૃતીય-પક્ષની કૂકીઝને સેટ થવાથી અવરોધિત કરો</translation>
 <translation id="206683469794463668">સાદો ઝુયિન મોડ. સ્વતઃ ઉમેદવારને પસંદ કરવામાં અને સંબંધિત વિકલ્પો
         અક્ષમ છે અથવા અવગણવામાં આવ્યાં છે.</translation>
 <translation id="5191625995327478163">&amp;ભાષા સેટિંગ્સ...</translation>
 <translation id="8833054222610756741">CRX-less Web Apps</translation>
 <translation id="4031729365043810780">નેટવર્ક કનેક્શન</translation>
 <translation id="1985136186573666099"><ph name="PRODUCT_NAME"/> નેટવર્કથી કનેક્ટ કરવા માટે તમારા કમ્પ્યુટરની સિસ્ટમ પ્રોક્સી સેટિંગ્સનો ઉપયોગ કરી રહ્યાં છે.</translation>
+<translation id="4808139931410481934">વિંડો 2 ને સક્રિય કરો</translation>
 <translation id="6508261954199872201">App: <ph name="APP_NAME"/></translation>
 <translation id="5585645215698205895">&amp;Down</translation>
 <translation id="8366757838691703947">? ડિવાઇસ પરનો તમામ ડેટા ગૂમ થઈ જશે.</translation>
@@ -315,6 +323,7 @@
 <translation id="4508265954913339219">સક્રિયતા નિષ્ફળ</translation>
 <translation id="8656768832129462377">તપાસ કરશો નહીં</translation>
 <translation id="715487527529576698">પ્રારંભિક ચીની મોડ એ સરળીકૃત ચીની છે</translation>
+<translation id="7475292478930529311">પ્લગિન પસંદગીઓને અક્ષમ કરવામાં આવી છે.</translation>
 <translation id="1674989413181946727">કમ્પ્યુટર-વાઇડ SSL સેટિંગ્સ:</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/> સાથેનું તમારું કનેક્શન એન્ક્રિપ્ટેડ નથી.</translation>
 <translation id="3042282020249392540"><ph name="PRODUCT_NAME"/>
@@ -329,11 +338,11 @@
 <translation id="6500116422101723010">હાલમાં સર્વર વિનંતીને હેન્ડલ કરવામાં અક્ષમ છે. આ કોડ સૂચવે છે કે આ એક અસ્થાયી સ્થિતિ છે અને સર્વર વિલંબ પછી ફરી ચાલુ થઈ જશે.</translation>
 <translation id="1644574205037202324">ઇતિહાસ</translation>
 <translation id="1297175357211070620">લક્ષ્યસ્થાન</translation>
-<translation id="6219983382864672018">વેબ ઑડિઓ</translation>
 <translation id="479280082949089240">આ પૃષ્ઠ દ્વારા કૂકીઝ સેટ થાય છે</translation>
 <translation id="4198861010405014042">શેર કરેલી ઍક્સેસ</translation>
 <translation id="6204930791202015665">જુઓ...</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME"/> માટે કૃપા કરીને સાઇન ઇન કરો.</translation>
+<translation id="1046059554679513793">ઓહ, આ નામ પહેલેથી ઉપયોગમાં છે!</translation>
 <translation id="4417229845571722044">નવું ઇમેઇલ ઉમેરો </translation>
 <translation id="8049151370369915255">ફોન્ટ્સ કસ્ટમાઇઝ કરો ...</translation>
 <translation id="2886862922374605295">હાર્ડવેર:</translation>
@@ -379,7 +388,6 @@
 <translation id="5098629044894065541">હીબ્રુ</translation>
 <translation id="7751559664766943798">બુકમાર્ક્સ બાર હંમેશા બતાવો</translation>
 <translation id="5098647635849512368">પૅક કરવા માટે ડાયરેક્ટરીનો સંપૂર્ણ પાથ શોધી શકાતો નથી.</translation>
-<translation id="780617032715125782">નવી પ્રોફાઇલ બનાવો</translation>
 <translation id="933712198907837967">ડાઇનર્સ ક્લબ</translation>
 <translation id="6380224340023442078">સામગ્રી સેટિંગ્સ...</translation>
 <translation id="950108145290971791">ઝડપી શોધ અને બ્રાઉઝિંગ માટે ઝટપટને સક્ષમ કરીએ?</translation>
@@ -399,16 +407,27 @@
           <ph name="BEGIN_BOLD"/>%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD"/> લખો, અને તે પછી <ph name="BEGIN_BOLD"/> ઑકે<ph name="END_BOLD"/>ને ક્લિક કરો.</translation>
 <translation id="2934952234745269935">વોલ્યૂમ લેબલ</translation>
 <translation id="6272247697534482847">GPU VSync અક્ષમકરો </translation>
+<translation id="3589447798447761053"><ph name="PRODUCT_NAME"/> એ શોધ્યું છે કે
+ Kaspersky ઉત્પાદન સુરક્ષિત કનેક્શન્સને અટકાવી રહ્યું છે. આ સામાન્ય રીતે કોઈ
+ સુરક્ષા સમસ્યા નથી કારણ કે Kaspersky સૉફ્ટવેર સામાન્ય રીતે તે જ કમ્પ્યુટર
+        પર ચાલી રહ્યું છે. તેમ છતાં, <ph name="PRODUCT_NAME"/> ના સુરક્ષિત કનેક્શન્સના વિશિષ્ટ પરિમાણો પર અસહિષ્ણુતાને લીધે,
+        Kaspersky ઉત્પાદનોને આ અટકાવને ન કરવા માટે ગોઠવવું જોઈએ. સૂચનાઓ માટે 'વધુ જાણો' લિંક પર ક્લિક કરો
+        જે તમને ગોઠવણી વિકલ્પ પર લઈ જશે જે અક્ષમ હોવો જોઈએ.</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> આ કમ્પ્યૂટરના બધા વપરાશકર્તા માટે સ્વચાલિત અપડેટ્સ સેટ કરશે.</translation>
 <translation id="4973698491777102067">નીચેની આઇટમ્સ આમાંથી નષ્ટ કરી નાખો:</translation>
 <translation id="6074963268421707432">કોઈ પણ સાઇટને ડેસ્કટૉપ સૂચનાઓ બતાવવાની મંજૂરી આપશો નહીં</translation>
 <translation id="6273404661268779365">નવું ફૅક્સ ઉમેરો</translation>
+<translation id="8558056454375650717"><ph name="SHORT_PRODUCT_NAME"/> પ્રોફાઇલમાં
+     બુકમાર્ક્સ, બ્રાઉઝિંગ ઇતિહાસ, સાચવેલા પાસવર્ડ્સ અને વિષયવસ્તુઓનો એક સેટ શામેલ હોય છે. જો તમને
+      ભિન્ન સેટિંગ્સ મેનેજ કરવાની જરૂર પડે, તો તમે બહુવિધ પ્રોફાઇલો બનાવી શકો છો.
+      ઉદાહરણ તરીકે, તમે એક પ્રોફાઇલનો ઉપયોગ કરી શકો છો, અને તમારો મિત્ર બીજી પ્રોફાઇલનો ઉપયોગ કરી શકે છે.&quot;</translation>
 <translation id="1995173078718234136">સામગ્રી સ્કેન કરી રહ્યું છે...</translation>
+<translation id="5979681173469464041">આગલા ફલક પર ફોકસ કરો</translation>
 <translation id="4735819417216076266">સ્પેસ ઇનપુટ શૈલી</translation>
 <translation id="2977095037388048586">તમે <ph name="DOMAIN"/> પર પહોંચવાનો પ્રયાસ કર્યો છે, પરંતુ તેને બદલે તમે <ph name="DOMAIN2"/> તરીકે ઓળખાતા સર્વર પર પહોંચ્યા છો. આવું કદાચ સર્વર પર ગેરવ્યવસ્થા અથવા કંઈક વધુ ગંભીર સમસ્યાને કારણે બની શકે છે. તમારા નેટવર્ક પર કોઈ હુમલાખોર કદાચ તમારી મુલાકાત <ph name="DOMAIN3"/> ના નકલી (અને સંભવિતરૂપે નુકસાનકારક) સંસ્કરણથી કરાવવાનો પ્રયાસ કરી રહ્યો છે. તમારે આગળ વધવું જોઈએ નહીં.</translation>
 <translation id="220138918934036434">છુપાવો બટન</translation>
 <translation id="5374359983950678924">ચિત્ર બદલો</translation>
-<translation id="2194400577068159994">શું તમને હવેથી <ph name="PROTOCOL"/>:લિંક્સને હેન્ડલ કરવા માટે <ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) નો ઉપયોગ કરવો ગમશે?</translation>
+<translation id="2859738163554174612">મને ક્યારે પણ સાઇન ઇન કરવાનું કહેશો નહીં</translation>
 <translation id="5158548125608505876">મારા પાસવર્ડ્સ સમન્વયિત કરશો નહીં</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="6974306300279582256"><ph name="SITE"/> તરફથી સૂચનાઓ સક્ષમ કરો</translation>
@@ -422,6 +441,8 @@
 <translation id="1992397118740194946">સેટ નથી</translation>
 <translation id="7966826846893205925">સ્વતઃભરો સેટિંગ્સ મેનેજ કરો...</translation>
 <translation id="8556732995053816225">કેસ મેચ કરો</translation>
+<translation id="3504135463003295723">જૂથ નામ:</translation>
+<translation id="2651472069264772588">પેસ્ટ કરો નિષ્ફળ, ફાઇલ સિસ્ટમ ભૂલ: $1'</translation>
 <translation id="3314070176311241517">બધી સાઇટ્સને JavaScript ચલાવવા દો (ભલામણ કરેલ)</translation>
 <translation id="2406911946387278693">મેઘથી તમારા ઉપકરણને મેનેજ કરો</translation>
 <translation id="7419631653042041064">કતલાન કીબોર્ડ</translation>
@@ -432,13 +453,18 @@
 <translation id="4381849418013903196">મહાવિરામ</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE"/> નો હંમેશાં અનુવાદ કરો</translation>
 <translation id="2263497240924215535">(અક્ષમ કરેલું)</translation>
+<translation id="2042078858148122628"><ph name="HOST_NAME"/> પર સર્વર મળી
+        શક્યું નથી, કારણ કે DNS લુકઅપ નિષ્ફળ થયું છે. DNS એક નેટવર્ક સેવા છે 
+        જે વેબસાઇટનાં નામને તેના ઇંટરનેટ સરનામાંમાં ભાષાંતરિત કરે છે.  આ ભૂલ 
+        મોટે ભાગે ઇંટરનેટ કનેક્શન હોવાના કારણે અથવા નેટવર્કની ખોટી ગોઠવણીને લીધે આવે છે.  તે બિનપ્રતિસાદી DNS
+સર્વરને         લીધે અથવા ફાયરવૉલ 
+        <ph name="PRODUCT_NAME"/> ને નેટવર્ક ઍક્સેસ કરવાથી અટકાવતી હોવાના કારણે પણ હોઈ શકે છે.</translation>
 <translation id="2159087636560291862">આ સ્થિતિમાં, પ્રમાણપત્ર તે તૃતીય પક્ષ દ્વારા ચકાસવામાં આવેલું હોતું નથી કે જે તમારા કમ્પ્યુટરના વિશ્વસનીયો છે. કોઈપણ કે તેઓ જે પણ વેબસાઇટ પસંદ કરે તેનો દાવો કરતું પ્રમાણપત્ર બનાવી શકે છે, જેથી તે વિશ્વસનીય તૃતીય પક્ષ દ્વારા ચકાસાયેલું હોવું જોઈએ. તે ચકાસણી વિના, પ્રમાણપત્રની ઓળખ માહિતી અર્થહીન છે. એટલા માટે એ ચકાસવું શક્ય નથી કે તમે કોઈ એવા હુમલાખોર કે જેણે <ph name="DOMAIN2"/> હોવાનો દાવો કરતું પોતાનું પ્રમાણપત્ર બનાવ્યું છે તેને બદલે <ph name="DOMAIN"/> સાથે વાતચીત કરી રહ્યાં છે. તમારે આ મુદ્દો આગળ વધારવો જોઈએ નહીં.</translation>
 <translation id="58625595078799656"><ph name="PRODUCT_NAME"/> ને તમે તમારા Google પાસવર્ડ અથવા તમારા પોતાના પાસફ્રેઝનો ઉપયોગ કરીને તમારા ડેટાને એન્ક્રિપ્ટ કરવાની જરૂર છે.</translation>
 <translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="6840184929775541289">કોઈ પ્રમાણન અધિકારી નથી</translation>
 <translation id="6099520380851856040"><ph name="CRASH_TIME"/> પર થયું</translation>
 <translation id="144518587530125858">થીમ માટે '<ph name="IMAGE_PATH"/>' લોડ કરી શકાયું નથી.</translation>
-<translation id="5355097969896547230">ફરીથી શોધો</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> ની પ્રતીક્ષા કરે છે...</translation>
 <translation id="2553440850688409052">આ પ્લગિન છુપાવો </translation>
 <translation id="3280237271814976245">આ &amp;રૂપમાં સાચવો...</translation>
@@ -467,6 +493,7 @@
 <translation id="5548207786079516019">આ <ph name="PRODUCT_NAME"/> નું સેકન્ડરી ઇન્સ્ટોલેશન છે, અને તે તમારું ડિફૉલ્ટ બ્રાઉઝર બની શકતું નથી.</translation>
 <translation id="3984413272403535372">એક્સટેંશન હસ્તાક્ષરિત કરતી વખતે ભૂલ.</translation>
 <translation id="8807083958935897582"><ph name="PRODUCT_NAME"/> થી તમે ઑમ્નિબૉક્સનો ઉપયોગ કરીને વેબ પર શોધ કરી શકો છો. કૃપા કરીને તમને કયું શોધ એંજીન વાપરવું ગમશે તે પસંદ કરો:</translation>
+<translation id="4980066111423877353">પ્રોફાઇલ કાઢી નાખો...</translation>
 <translation id="9208886416788010685">Adobe Reader જૂનું છે</translation>
 <translation id="3373604799988099680">એક્સ્ટેંશન્સ અથવા એપ્લિકેશન</translation>
 <translation id="318408932946428277">હું મારું બ્રાઉઝર છોડું ત્યારે કૂકીઝ અને અન્ય સાઇટ તથા પ્લગ-ઇન ડેટા સાફ કરો</translation>
@@ -479,6 +506,7 @@
 <translation id="4417271111203525803">સરનામાં પંક્તિ 2</translation>
 <translation id="7617095560120859490">શું થઈ રહ્યું છે તે અમને કહો. (આવશ્યક)</translation>
 <translation id="5618333180342767515">(આમાં થોડો સમય લાગી શકે છે)</translation>
+<translation id="1697820107502723922">આર્કાઇવ્સ</translation>
 <translation id="938470336146445890">કૃપા કરીને એક વપરાશકર્તા  પ્રમાણપત્ર ઇન્સ્ટોલ કરો.</translation>
 <translation id="5399884481423204214">વપરાશકર્તા પ્રતિસાદ સબમિશન નિષ્ફળ ગયું: $1</translation>
 <translation id="4307992518367153382">પાયાગત</translation>
@@ -495,12 +523,14 @@
 <translation id="3467848195100883852">આપમેળે જોડણી સુધારણા સક્ષમ કરો </translation>
 <translation id="1336254985736398701">પૃષ્ઠ &amp;માહિતી જુઓ</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP"/>.html</translation>
+<translation id="2120194937135899861">વિંડો 4 ને સક્રિય કરો</translation>
 <translation id="6828153365543658583">નીચેના વપરાશકર્તાઓ માટે સાઇન-ઇન નિયંત્રિત કરો:</translation>
 <translation id="1652965563555864525">&amp;અવાજ બંધ</translation>
 <translation id="4200983522494130825">નવું &amp;ટૅબ</translation>
 <translation id="7979036127916589816">સમન્વય ભૂલ</translation>
 <translation id="1029317248976101138">ઝૂમ કરો</translation>
 <translation id="5455790498993699893"><ph name="TOTAL_MATCHCOUNT"/> માંથી <ph name="ACTIVE_MATCH"/></translation>
+<translation id="8586353611925512169">પ્રોફાઇલ નામ</translation>
 <translation id="8890069497175260255">કીબોર્ડ પ્રકાર</translation>
 <translation id="1202290638211552064">ગેટવે અથવા પ્રોક્સી સર્વર અપસ્ટ્રીમ સર્વર તરફથી પ્રતિસાદની પ્રતીક્ષામાં સમય બાહ્ય થયા છે.</translation>
 <translation id="7765158879357617694">સ્થાન</translation>
@@ -511,6 +541,7 @@
 <translation id="2493021387995458222">&quot;એક સમયે એક શબ્દ&quot; પસંદ કરો</translation>
 <translation id="5279600392753459966">તમામને અવરોધિત કરો</translation>
 <translation id="6846298663435243399">લોડ કરી રહ્યું છે...</translation>
+<translation id="5723508132121499792">કોઈપણ પૃષ્ઠભૂમિ એપ્લિકેશન ચાલી રહી નથી</translation>
 <translation id="7392915005464253525">બંધ કરેલી વિંડો ફ&amp;રીથી ખોલો</translation>
 <translation id="1144684570366564048">અપવાદોને મેનેજ કરો...</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -530,6 +561,7 @@
 <translation id="362276910939193118">પૂર્ણ ઇતિહાસ બતાવો</translation>
 <translation id="6079696972035130497">અસીમિત</translation>
 <translation id="4365411729367255048">જર્મન નીઓ 2 કીબોર્ડ</translation>
+<translation id="672826849891626219">પ્રોફાઇલ આયકન:</translation>
 <translation id="6348657800373377022">કૉમ્બો બૉક્સ</translation>
 <translation id="8064671687106936412">કી:</translation>
 <translation id="2218515861914035131">સાદા ટેક્સ્ટ તરીકે પેસ્ટ કરો</translation>
@@ -552,6 +584,7 @@
 <translation id="1464570622807304272">આ અજમાવી જુઓ - &quot;ગુલાબ&quot; લખો અને Enter દબાવો.</translation>
 <translation id="8026684114486203427">Chrome વેબ બજારનો ઉપયોગ કરવા માટે, તમારે કોઈ Google એકાઉન્ટથી સાઇન ઇન કરવું આવશ્યક છે.</translation>
 <translation id="1486096554574027028">પાસવર્ડ્સ શોધો</translation>
+<translation id="3845608881815490588">કેટલાક વિકલ્પોને તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યાં છે અને અન્યને એક્સટેંશન દ્વારા મેનેજ કરવામાં આવી રહ્યાં છે.</translation>
 <translation id="8417276187983054885">સેટ અપ <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="3056462238804545033">અરે! તમને પ્રમાણિત કરવાનો પ્રયાસ કરતી વખતે કંઈક ખોટું થઈ ગયું. કૃપા કરીને તમારા લૉગિન ઓળખપત્રોને બીજીવાર તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="5298420986276701358">તમારા ડોમેન એકાઉન્ટના તમારા Google Apps થી સાઇન ઇન કરીને, તમે મેઘમાં આ <ph name="PRODUCT_NAME"/> ઉપકરણની ગોઠવણીને દૂરથી મેનેજ કરી શકો છો.</translation>
@@ -569,6 +602,7 @@
 <translation id="3303818374450886607">કોપિસ</translation>
 <translation id="2019718679933488176">નવા ટૅબમાં ઑડિયો &amp;ખોલો</translation>
 <translation id="1031362278801463162">પૂર્વાવલોકન લોડ કરી રહ્યું છે</translation>
+<translation id="731250560645734839"><ph name="SHORT_PRODUCT_NAME"/> સમન્વયન સેટ કરો</translation>
 <translation id="4138267921960073861">સાઇન-ઇન સ્ક્રીન પર વપરાશકર્તા નામ અને ફોટાઓ બતાવો</translation>
 <translation id="7465778193084373987">નેટસ્કેપ પ્રમાણપત્ર રિવોકેશન URL</translation>
 <translation id="5976690834266782200">ટૅબ્સને જૂથબદ્ધ કરવા માટે ટૅબ સંદર્ભ મેનૂ પર આઇટમ્સ ઉમેરે છે.</translation>
@@ -587,6 +621,7 @@
 <translation id="2600306978737826651">છબી ડાઉનલોડ નિષ્ફળ ગયું, બર્ન કરવું રોકાયું!</translation>
 <translation id="609978099044725181">હંજા મોડ સક્ષમ કરો/અક્ષમ કરો</translation>
 <translation id="1829483195200467833">સ્વતઃખોલવાની સેટિંગ્સ સાફ કરો</translation>
+<translation id="2359244647993923521">કેટલીક પસંદગીઓને તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવી છે અને અન્યને એક્સટેંશન દ્વારા મેનેજ કરવામાં આવી રહી છે.</translation>
 <translation id="2738771556149464852">આના પછી નહીં</translation>
 <translation id="5774515636230743468">સ્પષ્ટ:</translation>
 <translation id="719464814642662924">વિઝા</translation>
@@ -600,7 +635,6 @@
 <translation id="1407050882688520094">તમારી પાસે ફાઇલ પર પ્રમાણપત્રો છે જે આ પ્રમાણપત્ર અધિકારીઓને ઓળખે છે:</translation>
 <translation id="4287689875748136217">વેબપૃષ્ઠ લોડ કરવામાં અક્ષમ છે કારણ કે સર્વરે કોઈ ડેટા મોકલ્યો નથી.</translation>
 <translation id="1634788685286903402">ઇમેઇલ વપરાશકર્તાઓને ઓળખવા માટે આ પ્રમાણપત્ર પર વિશ્વાસ કરો.</translation>
-<translation id="7052402604161570346">આ પ્રકારની ફાઇલો તમારા કમ્પ્યુટરને નુકસાન પહોંચાડી શકે છે. શું આપ ખરેખર <ph name="FILE_NAME"/> ને ડાઉનલોડ કરવા માંગો છો?</translation>
 <translation id="3154015489111064513">DHCP નો ઉપયોગ કરો</translation>
 <translation id="8642489171979176277">Google ટૂલબારમાંથી આયાત કરેલું</translation>
 <translation id="4142744419835627535">ઝટપટ સ્વત:પૂર્ણ ત્વરિત</translation>
@@ -621,8 +655,10 @@
 <translation id="8494979374722910010">સર્વર સાથે કનેક્ટ થવાનો પ્રયાસ નિષ્ફળ થયો છે.</translation>
 <translation id="7810202088502699111">આ પૃષ્ઠ પરનાં પૉપ-અપ્સ અવરોધિત હતા.</translation>
 <translation id="8190698733819146287">ભાષાઓ અને ઇનપુટને કસ્ટમાઇઝ કરો...</translation>
+<translation id="3808873045540128170">તે નષ્ટ થઈ ગયું, જીમ!</translation>
 <translation id="646727171725540434">HTTP પ્રોક્સી</translation>
 <translation id="7576690715254076113">કૉલેટ</translation>
+<translation id="6355108086588020252">તમારા  વ્યવસ્થાપક દ્વારા કેટલીક સેટિંગ્સ અક્ષમ કરવામાં આવી છે.</translation>
 <translation id="1006316751839332762">એન્ક્રિપ્શન પાસફ્રેઝ</translation>
 <translation id="8795916974678578410">નવી વિંડો</translation>
 <translation id="2733275712367076659">તમે આ સંસ્થાઓના પ્રમાણપત્ર લો કે જે તમને ઓળખે છે:</translation>
@@ -638,14 +674,16 @@
 <translation id="4845656988780854088">ફક્ત તે સેટિંગ્સ અને ડેટાનું સમન્વયન કરો કે જે \nછેલ્લા સાઇન ઇનથી બદલાયેલા છે\n(તમારા પહેલાનો પાસવર્ડની જરૂર છે)</translation>
 <translation id="348620396154188443">બધી સાઇટ્સને ડેસ્કટૉપ સૂચનાઓ બતાવવાની મંજૂરી આપો</translation>
 <translation id="8214489666383623925">ફાઇલ ખોલો...</translation>
-<translation id="5376120287135475614">વિંડોઝ પર સ્વિચ કરો</translation>
+<translation id="4583537898417244378">અમાન્ય અથવા દૂષિત ફાઇલ.</translation>
 <translation id="5230160809118287008">Goats Teleported</translation>
 <translation id="1701567960725324452">જો તમે સમન્વયન કરવાનું રોકો છો, તો આ કમ્પ્યુટર પર સ્ટોર કરેલો ડેટા તેમજ તમારા Google એકાઉન્ટમાં સ્ટોર કરેલો ડેટા બંને જગ્યાએ રહેશે. જો કે, નવો ડેટા અથવા તમે તમારા ડેટામાં કરેલા ફેરફારો તેમની વચ્ચે સમન્વિત થશે નહીં.</translation>
 <translation id="7761701407923456692">સર્વરનું પ્રમાણપત્ર URL સાથે મેળ ખાતું નથી.</translation>
 <translation id="3885155851504623709">પેરિશ</translation>
 <translation id="4910171858422458941">સંગઠન નીતિ દ્વારા અક્ષમ કરેલા પ્લગ-ઇન્સ સક્ષમ કરી શકાતા નથી</translation>
 <translation id="4495419450179050807">આ પૃષ્ઠ પર બતાવશો નહીં</translation>
+<translation id="3096212521773120572">વિંડો 6 ને સક્રિય કરો</translation>
 <translation id="1225544122210684390">હાર્ડ ડિસ્ક ઉપકરણ</translation>
+<translation id="5560242443494923856">ઑમ્નિબૉક્સમાં 'શોર્ટકટ્સ' સક્ષમ કરો.</translation>
 <translation id="939736085109172342">નવું ફોલ્ડર</translation>
 <translation id="4933484234309072027"><ph name="URL"/> પર એમ્બેડ કર્યું</translation>
 <translation id="5554720593229208774">ઇમેઇલ પ્રમાણન અધિકારી</translation>
@@ -654,6 +692,7 @@
 <translation id="6749695674681934117">નવા ફોલ્ડર માટે નામ દાખલ કરો</translation>
 <translation id="6204994989617056362">સુરક્ષિત હેન્ડશેકમાં SSL રીનેગોશિયેશન એક્સ્ટેન્શન ખૂટતું હતું. કેટલીક સાઇટ્સ માટે, કે જે રીનેગોશિયેશન એક્સ્ટેંશનને સપોર્ટ કરવા માટે જાણીતી છે, Chrome ને જાણીતા હુમલાઓના એક વર્ગને રોકવા માટે વધુ સુરક્ષિત હેન્ડશેકની જરૂર છે. આ એક્સ્ટેંશનનું છુટવું સૂચવે છે કે તમારું કનેક્શન સંચાર દરમિયાન કપાયું હતું અને તેમાં હેરફેર થયો હતો.</translation>
 <translation id="6679492495854441399">અરે! આ ઉપકરણની નોંધણીનો પ્રયાસ કરતી વખતે નેટવર્ક સંચાર સમસ્યા આવી. કૃપા કરીને તમારા નેટવર્ક કનેક્શનને તપાસો અને ફરીથી પ્રયાસ કરો.</translation>
+<translation id="2879755071890315043">અમે તમારું મોબાઇલ નેટવર્ક સેટ કરીએ ત્યાં સુધી કૃપા કરીને રાહ જુઓ.</translation>
 <translation id="7789962463072032349">થોભો</translation>
 <translation id="121827551500866099">બધા ડાઉનલોડ્સ બતાવો...</translation>
 <translation id="1562633988311880769"><ph name="CLOUD_PRINT_NAME"/> પર સાઇન ઇન કરો</translation>
@@ -661,9 +700,10 @@
 <translation id="3115147772012638511">કૅશ માટે રાહ જુએ છે...</translation>
 <translation id="257088987046510401">થીમ્સ</translation>
 <translation id="6771079623344431310">પ્રોક્સી સર્વરથી કનેક્ટ કરવામાં અક્ષમ છે</translation>
+<translation id="409980434320521454">સમન્વયન નિષ્ફળ </translation>
+<translation id="1368725949478140659">કોઈપણ રીતે લોડ કરો</translation>
 <translation id="2200129049109201305">એન્ક્રિપ્ટેડ ડેટાને સમન્વયિત કરવાનું છોડીએ? </translation>
 <translation id="1426410128494586442">હા</translation>
-<translation id="6468252175335241103">%b %-d, %Y</translation>
 <translation id="6725970970008349185">પૃષ્ઠ દીઠ પ્રદર્શિત કરવાના ઉમેદવારોની સંખ્યા</translation>
 <translation id="6198252989419008588">PIN બદલો</translation>
 <translation id="5749483996735055937">પુનર્પ્રાપ્તિ છબીની ઉપકરણ પર કૉપિ બનાવતી વખતે એક સમસ્યા આવી હતી.</translation>
@@ -704,6 +744,7 @@
 <translation id="6623138136890659562">VPN થી કનેક્ટ કરવાનું સક્ષમ કરવા માટે નેટવર્ક મેનૂમાં ખાનગી નેટવર્ક્સ બતાવો.</translation>
 <translation id="8969837897925075737">સિસ્ટમ અપડેટની ચકસણી કરી રહ્યું છે…</translation>
 <translation id="3393716657345709557">વિનંતી કરેલી એન્ટ્રી કેશમાં મળી નહોતી.</translation>
+<translation id="7191454237977785534">ફાઇલના રૂપમાં સાચવો</translation>
 <translation id="7241389281993241388">ક્લાયંટ પ્રમાણપત્ર આયાત કરવા માટે કૃપા કરીને <ph name="TOKEN_NAME"/> પર સાઇન ઇન કરો.</translation>
 <translation id="40334469106837974">પૃષ્ઠ લેઆઉટ બદલો</translation>
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
@@ -711,6 +752,7 @@
 <translation id="210445503571712769">સમન્વિત કરેલી પસંદગીઓ</translation>
 <translation id="1608306110678187802">ફ્રેમ છા&amp;પો...</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
+<translation id="3719388386220274270">વધારાના સ્વતઃભરો પ્રતિસાદ મોકલો</translation>
 <translation id="6622980291894852883">છબીઓને અવરોધિત કરવાનું ચાલુ રાખો</translation>
 <translation id="5937837224523037661">જ્યારે મને કોઈ સાઇટ પર પ્લગ-ઇન્સ મળે:</translation>
 <translation id="1710259589646384581">OS</translation>
@@ -720,10 +762,13 @@
 <translation id="4948468046837535074">નીચેના પૃષ્ઠો ખોલો:</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="6978121630131642226">શોધ એંજીન્સ</translation>
+<translation id="662720828712108508"><ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) ને <ph name="REPLACED_HANDLER_TITLE"/> બદલે બધી <ph name="PROTOCOL"/> લિંક્સ ખોલવાની મંજૂરી આપીએ?</translation>
 <translation id="6839225236531462745">પ્રમાણપત્ર કાઢી નાખવામાં ભૂલ</translation>
 <translation id="6745994589677103306">કંઈ ન કરો</translation>
+<translation id="5342221287123687807">ડિફૉલ્ટ થીમ પર ફરીથી સેટ કરો</translation>
 <translation id="855081842937141170">ટૅબ પિન કરો</translation>
 <translation id="6263541650532042179">સમન્વયન ફરીથી સેટ કરો </translation>
+<translation id="6513247462497316522">જો તમે બીજા નેટવર્કથી કનેક્ટ નથી, તો Google Chrome મોબાઇલ ડેટાનો ઉપયોગ કરશે.</translation>
 <translation id="6055392876709372977">RSA એન્ક્રિપ્શનવાળા PKCS #1 SHA-256</translation>
 <translation id="7903984238293908205">કટકાન</translation>
 <translation id="3781488789734864345">મોબાઇલ નેટવર્ક પસંદ કરો</translation>
@@ -733,12 +778,14 @@
 <translation id="2620436844016719705">સિસ્ટમ</translation>
 <translation id="5362741141255528695">ખાનગી કી ફાઇલ પસંદ કરો.</translation>
 <translation id="8638842473654406096">પૃષ્ઠને ફરીથી ખોલો</translation>
+<translation id="4580526846085481512">શું તમે ખરેખર $1 આઇટમ્સને કાઢવા માંગો છો?</translation>
 <translation id="5292890015345653304">SD કાર્ડ અથવા USB મેમરી સ્ટિક શામેલ કરો</translation>
 <translation id="5583370583559395927">સમય બાકી: <ph name="TIME_REMAINING"/></translation>
 <translation id="8065982201906486420"><ph name="PLUGIN_NAME"/> પ્લગ-ઇન ચલાવવા માટે ક્લિક કરો.</translation>
 <translation id="6219717821796422795">હેન્યુ</translation>
 <translation id="3725367690636977613"> પૃષ્ઠો</translation>
 <translation id="2688477613306174402">કન્ફિગરેશન</translation>
+<translation id="1090126737595388931">કોઈપણ પૃષ્ઠભૂમિ એપ્લિકેશન ચાલી રહી નથી</translation>
 <translation id="1195447618553298278">અજ્ઞાત ભૂલ.</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> days ago</translation>
 <translation id="8811462119186190367">તમારી સેટિંગ્સ સમન્વયિત કર્યા પછી Chrome ની ભાષા &quot;<ph name="FROM_LOCALE"/>&quot; થી &quot;<ph name="TO_LOCALE"/>&quot; માં બદલાઈ ગઈ છે.</translation>
@@ -750,7 +797,6 @@
 <translation id="5076340679995252485">પેસ્ટ કરો</translation>
 <translation id="2904348843321044456">સામગ્રી સેટિંગ્સ...</translation>
 <translation id="1055216403268280980">છબી પરિમાણો</translation>
-<translation id="1784284518684746740">આ રૂપમાં સાચવવા માટે એક ફાઇલ પસંદ કરો</translation>
 <translation id="7032947513385578725">ફ્લેશ ઉપકરણ</translation>
 <translation id="5518442882456325299">ચાલુ શોધ એંજિન:</translation>
 <translation id="14171126816530869"><ph name="LOCALITY"/> માં <ph name="ORGANIZATION"/> ની ઓળખાણ <ph name="ISSUER"/> દ્વારા ચકાસવામાં આવી છે.</translation>
@@ -772,10 +818,13 @@
 <translation id="3473105180351527598">ફિશીંગ અને મૉલવેર સુરક્ષા સક્ષમ કરો</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME"/> ને શોધવા માટે <ph name="SEARCH_KEY"/> દબાવો</translation>
 <translation id="6216679966696797604">અતિથિ સત્ર પ્રારંભ કરો</translation>
+<translation id="8844703966364420804">કોઈ જાદુ નથી.</translation>
 <translation id="5456397824015721611">પ્રી-એડિટ બફરમાં ઝુયિન પ્રતીકો ઇનપુટ કરવા સહિત મહત્તમ ચીની વર્ણો</translation>
 <translation id="2342959293776168129">ડાઉનલોડ ઇતિહાસ સાફ કરો</translation>
 <translation id="2503522102815150840">બ્રાઉઝર તૂટી ગયું... ઝડપથી જાઓ</translation>
 <translation id="7201354769043018523">જમણો કૌંસ</translation>
+<translation id="6745789064498140868">છાપો - <ph name="PREVIEW_TAB_TITLE"/></translation>
+<translation id="7523913831415327888">$1 આઇટમ્સ પસંદ કરાઈ, $2</translation>
 <translation id="425878420164891689">પૂર્ણ થવા સુધીના સમયની ગણના કરે છે</translation>
 <translation id="508794495705880051">નવું ક્રેડિટ કાર્ડ ઉમેરો... </translation>
 <translation id="1425975335069981043">રૉમિંગ:</translation>
@@ -790,19 +839,21 @@
 <translation id="8596540852772265699">કસ્ટમ ફાઇલો</translation>
 <translation id="7017354871202642555">વિંડો સેટ થઈ જાય પછી મોડને સેટ કરી શકાતો નથી.</translation>
 <translation id="3101709781009526431">તારીખ અને સમય</translation>
+<translation id="3960611155749707703">છેલ્લી વિંડોને સક્રિય કરો</translation>
 <translation id="69375245706918574">સમન્વયન પસંદગીઓને કસ્ટમાઇઝ કરો</translation>
 <translation id="833853299050699606">યોજના માહિતી ઉપલબ્ધ નથી.</translation>
 <translation id="1737968601308870607">બગ ફાઇલ કરો</translation>
 <translation id="4571852245489094179">બુકમાર્ક્સ અને સેટિંગ્સ આયાત કરો</translation>
+<translation id="434849659521617751">એક નિર્દેશિકા પસંદ કરી</translation>
 <translation id="4421917670248123270">ડાઉનલોડ્સને બંધ અને રદ કરો</translation>
 <translation id="5605623530403479164">અન્ય શોધ એંજીન્સ</translation>
 <translation id="8887243200615092733"><ph name="PRODUCT_NAME"/> હવે તમારા પાસવર્ડ્સ સમન્વિત કરી શકે છે. તમારા ડેટાને સુરક્ષિત કરવા માટે, તમારે તમારી એકાઉન્ટ માહિતીની પુષ્ટિ કરવાની જરૂર છે.</translation>
-<translation id="4740663705480958372">P2P Pepper API અને P2P JavaScript API ને સક્ષમ કરે છે. API પ્રગતિકાર્ય હેઠળ છે, અને હમણાં કામ કરતું નથી.</translation>
 <translation id="5710435578057952990">આ વેબસાઇટની ઓળખ ચકાસવામાં આવી નથી.</translation>
 <translation id="3452884066206827415">ઝટપટ માટે ડિફોલ્ટ  શોધ  એંજિન  પહેલાથી લોડ કરો.</translation>
 <translation id="1421046588786494306">વિદેશી સત્રો</translation>
 <translation id="1661245713600520330">આ પૃષ્ઠ મુખ્ય પ્રક્રિયામાં લોડ થયેલા અને પછીથી લોડ કરવા માટે નોંધવામાં આવેલા બધા મોડ્યૂલ્સને સૂચિબદ્ધ કરે છે.</translation>
 <translation id="5451646087589576080">ફ્રેમ &amp;માહિતી જુઓ</translation>
+<translation id="7927948142484020408">પ્રોફાઇલ નામ:</translation>
 <translation id="3368922792935385530">કનેક્ટેડ</translation>
 <translation id="3498309188699715599">ચ્યુઇંગ ઇનપુટ સેટિંગ્સ</translation>
 <translation id="8486154204771389705">આ પૃષ્ઠ પર રાખો</translation>
@@ -823,16 +874,19 @@
         જો તમે વિચારતા હો કે આ વર્તન અનિચ્છિત છે, ઉદાહરણ તરીકે, તમે તમારી પોતાની વેબસાઇટ ડીબગ કરી રહ્યા હો, તો કૃપા કરીને <ph name="NET_INTERNALS_PAGE"/> પૃષ્ઠની મુલાકાત લો, જ્યાં તમે વધુ માહિતી મેળવી શકો છો અથવા સુવિધાને અક્ષમ કરી શકો છો. </translation>
 <translation id="1725068750138367834">&amp;ફાઇલ મેનેજર </translation>
 <translation id="4254921211241441775">આ એકાઉન્ટ સમન્વય કરવાનું બંધ કરો</translation>
+<translation id="1376877080032948260">પ્રોફાઇલ કાઢી નાખો...</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
 <translation id="8569764466147087991">ખોલવા માટે એક ફાઇલ પસંદ કરો</translation>
 <translation id="5449451542704866098">ડેટા પ્લાન નહીં</translation>
 <translation id="307505906468538196">એક Google એકાઉન્ટ બનાવો</translation>
+<translation id="5548400724382318984">પ્રોફાઇલ મેનેજ કરો</translation>
 <translation id="2053553514270667976">ઝિપ કોડ</translation>
 <translation id="48838266408104654">&amp;કાર્ય વ્યવસ્થાપક</translation>
 <translation id="4378154925671717803">ફોન</translation>
 <translation id="3694027410380121301">પહેલાનું ટૅબ પસંદ કરો</translation>
 <translation id="6178664161104547336">એક પ્રમાણપત્ર પસંદ કરો</translation>
 <translation id="1375321115329958930">સાચવેલા પાસવર્ડ્સ</translation>
+<translation id="1086573544069171115">મેઘ મુદ્રકો ઉમેરો...</translation>
 <translation id="3341703758641437857">URL ફાઇલ કરવા ઍક્સેસની મંજૂરી આપો</translation>
 <translation id="5702898740348134351">&amp;શોધ એન્જિન્સ સંપાદિત કરો...</translation>
 <translation id="734303607351427494">શોધ એંજીન્સ મેનેજ કરો...</translation>
@@ -846,11 +900,14 @@
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME"/>ને આ ભાષામાં પ્રદર્શિત કરી શકાતું નથી.</translation>
 <translation id="747114903913869239">ભૂલ: એક્સટેન્શનને ડિકોડ કરવામાં અક્ષમ</translation>
 <translation id="5412637665001827670">બલ્ગેરિયન કીબોર્ડ</translation>
+<translation id="1146204723345436916">HTML ફાઇલમાંથી બુકમાર્કસ આયાત કરો...</translation>
 <translation id="2113921862428609753">અધિકારી માહિતી ઍક્સેસ</translation>
 <translation id="5227536357203429560">ખાનગી નેટવર્ક ઉમેરો...</translation>
 <translation id="732677191631732447">ઑડિયો URL કૉ&amp;પિ કરો</translation>
 <translation id="7224023051066864079">સબનેટ માસ્ક:</translation>
 <translation id="2401813394437822086">તમારું એકાઉન્ટ ઍક્સેસ કરી શકાતું નથી?</translation>
+<translation id="243166756403268832">પેસ્ટ કરો પૂર્ણ.</translation>
+<translation id="1906805647949588115">વિંડો 8 ને સક્રિય કરો</translation>
 <translation id="2344262275956902282">ઉમેદવારોની સૂચિ પૃષ્ઠબદ્ધ કરવા માટે - અને = કીઝનો ઉપયોગ કરો. </translation>
 <translation id="3609138628363401169">સર્વર TLS રીનેગોશિએશન એક્સ્ટેંશનને સપોર્ટ કરતું નથી. </translation>
 <translation id="3369624026883419694">હોસ્ટને રીસોલ્વ કરી રહ્યું છે...</translation>
@@ -860,6 +917,7 @@
 <translation id="4064488613268730704">સ્વતઃભરો સેટિંગ્સ મેનેજ કરો...</translation>
 <translation id="6830600606572693159"><ph name="URL"/> પરનું વેબપૃષ્ઠ હાલમાં અનુપલબ્ધ છે. તે કદાચ ઑવરલોડ થઈ ગયું છે અથવા જાળવણી કાર્ય માટે બંધ કરેલું છે.</translation>
 <translation id="4145797339181155891">બહાર કાઢો</translation>
+<translation id="1847198727512820188">પ્રોફાઇલ નામ:</translation>
 <translation id="8417944620073548444"><ph name="MEGABYTES"/> MB બાકી</translation>
 <translation id="7339898014177206373">નવી વિંડો</translation>
 <translation id="3026202950002788510">          <ph name="BEGIN_BOLD"/>
@@ -872,6 +930,7 @@
 <translation id="5305688511332277257">કશું ઇન્સ્ટોલ કરેલું નથી</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="2816269189405906839">ચાઇનીઝ ઇનપુટ મેથડ (કૅંગી)</translation>
+<translation id="8395901698320285466">પરિમાણો</translation>
 <translation id="7087282848513945231">વહીવટી વિભાગ</translation>
 <translation id="2149951639139208969">નવા ટૅબમાં સરનામું ખોલો</translation>
 <translation id="175196451752279553">બંધ કરેલું ટેબ ફરિથી&amp;ખોલો</translation>
@@ -901,6 +960,7 @@
 <translation id="3445830502289589282">ફેસ 2 પ્રમાણીકરણ:</translation>
 <translation id="5650551054760837876">કોઈ શોધ પરિણામ મળ્યા નથી.</translation>
 <translation id="5494362494988149300">&amp;પૂર્ણ થાય ત્યારે ખોલો</translation>
+<translation id="540323899562948110">પ્રોફાઇલને કસ્ટમાઇઝ કરો...</translation>
 <translation id="2956763290572484660"><ph name="COOKIES"/> કૂકીઝ</translation>
 <translation id="6989836856146457314">જાપાની ઇનપુટ મેથડ (યુએસ કીબોર્ડ)</translation>
 <translation id="9187787570099877815">પ્લગ-ઇન્સ અવરોધિત કરવાનું ચાલુ રાખો </translation>
@@ -920,36 +980,44 @@
 <translation id="189210018541388520">પૂર્ણ સ્ક્રીન ખોલો</translation>
 <translation id="8795668016723474529">ક્રેડિટ કાર્ડ ઉમેરો </translation>
 <translation id="5860033963881614850">બંધ</translation>
-<translation id="3755825649750405623"><ph name="SHORT_PRODUCT_NAME"/> › કનેક્ટ</translation>
 <translation id="3956882961292411849">મોબાઇલ ડેટા પ્લાન માહિતી લોડ કરી રહ્યું છે, કૃપા કરીને રાહ જુઓ...</translation>
 <translation id="689050928053557380">ડેટા પ્લાન ખરીદો...</translation>
 <translation id="4235618124995926194">આ ઇમેઇલ શામેલ કરો:</translation>
 <translation id="4874539263382920044">શીર્ષકમાં ઓછામાં ઓછો એક અક્ષર હોવો જરૂરી છે</translation>
+<translation id="7184085666627891006">જ્યારે પૂર્વ-લોગિન ચાલુ હોય, ત્યારે  કોઈ Google એકાઉન્ટને કનેક્ટ કરવાથી પ્રોફાઇલના 
+        કૂકી જાર પર એકાઉન્ટની કૂકીઝ જોડાશે, તેથી બ્રાઉઝરમાં વપરાશકર્તાનામ અને પાસવર્ડ ફરીથી લખવાની આવશ્યકતા નથી.
+        જો પ્રોફાઇલ Google એકાઉન્ટથી કનેક્ટ કરેલી નથી, તો પૂર્વ-લોગિન હંમેશા અક્ષમ હોય છે.</translation>
 <translation id="798525203920325731">નેટવર્ક નેમસ્પેસેસ</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> ઇન્સ્ટોલેશન પૂર્ણ કરી શક્યું નથી, પરંતુ તેની ડિસ્ક છબીથી ચાલુ રહી શકે છે.</translation>
+<translation id="6186893483313227582">આયકન <ph name="VALUE"/></translation>
 <translation id="7025190659207909717">મોબાઇલ ડેટા સેવા મેનેજમેન્ટ</translation>
 <translation id="8265096285667890932">સાઇડ ટૅબ્સનો ઉપયોગ કરો</translation>
 <translation id="4250680216510889253">નહીં</translation>
 <translation id="3949593566929137881">SIM કાર્ડ PIN દાખલ કરો</translation>
 <translation id="6291953229176937411">ફાઇન્ડર માં &amp;બતાવો</translation>
+<translation id="4781649528196590732">પાછલા ફલક પર ફોકસ કરો</translation>
 <translation id="2476990193835943955">તે સંશોધકો માટેનાં કીબોર્ડ &lt;br&gt; શૉર્ટકટ્સ જોવા માટે Control, Alt, અથવા Shift દબાવી રાખો.</translation>
 <translation id="9187827965378254003">ઓહ, લાગે છે કે ત્યાં હાલમાં કોઈ પ્રયોગો ઉપલબ્ધ નથી.</translation>
 <translation id="8933960630081805351">ફાઇન્ડર માં &amp;બતાવો</translation>
 <translation id="3041612393474885105">પ્રમાણપત્ર માહિતી</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="4611079913162790275">પાસવર્ડ સમન્વયન પર તમારું ધ્યાન હોવું આવશ્યક છે. </translation>
 <translation id="6562758426028728553">કૃપા કરીને જૂનો અને નવો PIN દાખલ કરો.</translation>
 <translation id="614161640521680948">ભાષા:</translation>
 <translation id="3665650519256633768">શોધ પરિણામો</translation>
 <translation id="3733127536501031542">સ્ટેપ-અપ સાથે SSL સર્વર </translation>
 <translation id="3614837889828516995">PDF પર છાપો</translation>
 <translation id="5745056705311424885">USB મેમરી સ્ટિક મળ્યું</translation>
+<translation id="7651319298187296870">વપરાશકર્તા પ્રમાણપત્ર માટે લોગિન આવશ્યક.</translation>
+<translation id="626568068055008686">ખોટો પાસવર્ડ અથવા દૂષિત ફાઇલ. </translation>
 <translation id="5895875028328858187"> જ્યારે ડેટા ધીમો હોય અથવા સમાપ્તિની નજીક હોય ત્યારે સૂચનાઓ બતાવો</translation>
 <translation id="939598580284253335">પાસફ્રેઝ દાખલ કરો</translation>
+<translation id="8418240940464873056">હંજા મોડ</translation>
 <translation id="7917972308273378936">લિથુનિયન કીબોર્ડ</translation>
 <translation id="8371806639176876412">ઑમ્નિબૉક્સ ઇનપુટ લૉગ કરેલું હોઈ શકે છે</translation>
 <translation id="4216499942524365685">તમારા એકાઉન્ટની સાઇન-ઇન વિગતો જૂની થઈ ગઈ છે. તમારો પાસવર્ડ ફરી દાખલ કરવા માટે ક્લિક કરો.</translation>
+<translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">વિયેતનામીસ</translation>
+<translation id="1282227640663454719"><ph name="FORM_URL"/> માટે ફોર્મ હસ્તાક્ષર <ph name="FORM_SIGNATURE"/> છે.</translation>
 <translation id="4091434297613116013">કાગળનાં પત્રકો</translation>
 <translation id="7475671414023905704">નેટસ્કેપ ખોવાયેલો પાસવર્ડ URL</translation>
 <translation id="3335947283844343239">બંધ કરેલું ટૅબ ફરીથી ખોલો</translation>
@@ -980,6 +1048,7 @@
 <translation id="1093148655619282731">પસંદ કરેલા પ્રમાણપત્રની વિગતો:</translation>
 <translation id="5568069709869097550">સાઇન ઇન કરી શકાતું નથી</translation>
 <translation id="2743322561779022895">સક્રિયતા:</translation>
+<translation id="5359095000408548198">નવું <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="4181898366589410653">સર્વરના પ્રમાણપત્રમાં કોઈ રદ કરવાની મેકેનિઝમ મળી નથી.</translation>
 <translation id="8705331520020532516">શૃંખલા ક્રમાંક</translation>
 <translation id="1665770420914915777">નવા ટૅબ પૃષ્ઠનો ઉપયોગ કરો</translation>
@@ -994,10 +1063,12 @@
 <translation id="4089521618207933045">તેમાં સબમેનૂ છે</translation>
 <translation id="1936157145127842922">ફોલ્ડરમાં બતાવો</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> mins ago</translation>
+<translation id="3952119550285200690">વપરાશકર્તાને ઉમેરવા, કૃપા કરી પહેલાં નેટવર્કથી કનેક્ટ કરો.</translation>
 <translation id="7977590112176369853">&lt;ક્વેરી દાખલ કરો&gt;</translation>
 <translation id="3449839693241009168">આદેશોને <ph name="EXTENSION_NAME"/> પર મોકલવા માટે <ph name="SEARCH_KEY"/> દબાવો</translation>
 <translation id="7443484992065838938">રીપોર્ટનું પૂર્વાવલોકન</translation>
 <translation id="5714678912774000384">છેલ્લો ટૅબ સક્રિય કરો</translation>
+<translation id="9017608379655359501">પેસ્ટ કરો રદ કર્યું</translation>
 <translation id="3799598397265899467">જ્યારે હું મારું બ્રાઉઝર છોડું ત્યારે</translation>
 <translation id="8813811964357448561">કાગળનું પત્રક</translation>
 <translation id="2125314715136825419">Adobe Reader અપડેટ કર્યા વગર આગળ વધો (ભલામણપાત્ર નથી)</translation>
@@ -1007,14 +1078,15 @@
 <translation id="9027459031423301635">લિંક નવા &amp;ટૅબમાં ખોલો</translation>
 <translation id="2251809247798634662">નવી છુપી વિંડો</translation>
 <translation id="358344266898797651">સેલ્ટિક</translation>
-<translation id="5106282558266057405"><ph name="SHORT_PRODUCT_NAME"/> નાનું પ્રિંટ</translation>
 <translation id="3625870480639975468">ઝૂમ ફરીથી સેટ કરો </translation>
+<translation id="8337399713761067085">તમે હાલમાં ઑફલાઇન છો</translation>
 <translation id="5199729219167945352">પ્રયોગો</translation>
 <translation id="5055518462594137986">આ પ્રકારની બધી લિંક્સ માટે મારી પસંદ યાદ રાખો.</translation>
 <translation id="246059062092993255">આ પૃષ્ઠ પર પ્લગ-ઇન્સ અવરોધિત હતાં.</translation>
 <translation id="2870560284913253234">સાઇટ</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
 <translation id="7724603315864178912">કાપો</translation>
+<translation id="8456681095658380701">અમાન્ય નામ</translation>
 <translation id="4164507027399414915">દૂર કરેલા બધા થંબનેલ્સને ફરિથી સ્ટોર કરો</translation>
 <translation id="917051065831856788">સાઇડ ટૅબ્સનો ઉપયોગ કરો</translation>
 <translation id="1976150099241323601">સુરક્ષા ઉપકરણ પર સાઇન ઇન કરો </translation>
@@ -1024,17 +1096,20 @@
 <translation id="2175607476662778685">ઝડપી લૉંચ બાર</translation>
 <translation id="6434309073475700221">કાઢી નાખો</translation>
 <translation id="1367951781824006909">એક ફાઇલ પસંદ કરો</translation>
+<translation id="3589825953300272289">સાધનો મેનૂમાં અથવા બુકમાર્ક્સ બાર પર તમારા બુકમાર્ક્સ શોધો.</translation>
 <translation id="1425127764082410430">'<ph name="SEARCH_TERMS"/>' માટે <ph name="SEARCH_ENGINE"/> &amp;શોધો</translation>
 <translation id="684265517037058883">(હજી સુધી માન્ય નથી)</translation>
 <translation id="2027538664690697700">પ્લગ-ઇન અપડેટ કરો...</translation>
 <translation id="8205333955675906842">Sans-Serif ફૉન્ટ</translation>
 <translation id="39964277676607559">સામગ્રી સ્ક્રિપ્ટ માટે JavaScript '<ph name="RELATIVE_PATH"/>'  લોડ કરી શકાયું નથી.</translation>
+<translation id="4284105660453474798">શું આપ ખરેખર  &quot;$1&quot; ને કાઢી નાખવા માંગો છો?</translation>
 <translation id="4378551569595875038">કનેક્ટિંગ...</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
 <translation id="8053278772142718589">PKCS #12 ફાઇલો</translation>
 <translation id="3129020372442395066"><ph name="PRODUCT_NAME_SHORT"/> સ્વતઃભરો વિકલ્પો</translation>
 <translation id="4114360727879906392">પહેલાની વિંડો</translation>
 <translation id="8238649969398088015">સહાય ટીપ</translation>
+<translation id="7704257085511986521">પ્રોફાઇલ આયકન:</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ફાઇલ્સ</translation>
 <translation id="2350172092385603347">લૉકલાઇઝેશન વપરાયુ, પરંતુ default_locale નો ઉલ્લેખ મેનિફેસ્ટમાં નહોતો.</translation>
 <translation id="8221729492052686226">જો તમે આ વિનંતી કરી નહોતી, તો તે તમારા સિસ્ટમ પર હુમલાનો પ્રયાસ હોઈ શકે છે. જ્યાં સુધી તમે આ વિનંતી કરવા માટે કોઈ સ્પષ્ટ પગલું ન લો ત્યાં સુધી તમારે, 'કંઈ ન કરો' દબાવવું જોઈએ.</translation>
@@ -1059,17 +1134,6 @@
 <translation id="152234381334907219">ક્યારેય ન સચવાયેલું</translation>
 <translation id="5600599436595580114">આ પૃષ્ઠ સમય પૂર્વે રેન્ડર થયું હતું. </translation>
 <translation id="8494214181322051417">નવું!</translation>
-<translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>તમે છૂપાયા છો<ph name="END_BOLD"/>. આ વિંડોમાં તમે જે પૃષ્ઠો જુઓ છો તે તમારા બ્રાઉઝર ઇતિહાસમાં અથવા શોધ ઇતિહાસમાં દેખાશે નહીં, અને તે કોઈ અન્ય નિશાનીઓ જેમ કે તમારા કમ્પ્યુટર પર કૂકીઝ વગેરે છૂપી વિંડો બંધ કર્યા પછી છોડતા નથી. તેમછતાં, તમે ડાઉનલોડ કરો છો તે ફાઇલો અથવા તમે બનાવો છો તે બુકમાર્ક્સ સુરક્ષિત રાખવામાં આવશે.
-        <ph name="LINE_BREAK"/>
-        <ph name="BEGIN_BOLD"/>છૂપાવાથી અન્ય લોકોનાં વર્તન, સર્વર્સ અથવા સૉફ્ટવેર પર કોઈ અસર થતી નથી. આનાથી સાવધ રહેજો:<ph name="END_BOLD"/>
-        <ph name="BEGIN_LIST"/>
-          <ph name="BEGIN_LIST_ITEM"/>તે વેબસાઇટ્સ કે જે તમારા વિશેની માહિતીનો સંગ્રહ કરે છે અથવા વહેંચે છે<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>ઇંટરનેટ સેવા પ્રદાતાઓ અથવા કર્મચારીઓ કે જે તમે મુલાકાત લીધેલા પૃષ્ઠોની નોંધ રાખે છે<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>દૂષિત સૉફ્ટવેર કે જે નિઃશુલ્ક સ્માઇલીનાં બદલામાં તમારા કીસ્ટ્રૉક્સની નોંધ રાખે છે<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>ગુપ્ત એજંટ્સ દ્વારા રાખવામાં આવતો પહેરો<ph name="END_LIST_ITEM"/>
-          <ph name="BEGIN_LIST_ITEM"/>તમારી પાછળ ઉભેલા લોકોથી<ph name="END_LIST_ITEM"/>
-        <ph name="END_LIST"/>
-        છૂપા બ્રાઉઝિંગ વિશે <ph name="BEGIN_LINK"/>વધુ જાણો<ph name="END_LINK"/>.</translation>
 <translation id="2386255080630008482">સર્વરનું પ્રમાણપત્ર રદ કરવામાં આવ્યું છે.</translation>
 <translation id="2135787500304447609">&amp;ફરી શરૂ કરો</translation>
 <translation id="8309505303672555187">નેટવર્ક પસંદ કરો:</translation>
@@ -1087,7 +1151,9 @@
 <translation id="8730621377337864115">થઈ ગયું</translation>
 <translation id="4932733599132424254">તારીખ</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME"/> પર પોતાને પ્રમાણિત કરવા માટે એક પ્રમાણપત્ર પસંદ કરો</translation>
+<translation id="8028653631868039867">આ ફાઇલ દુર્ભાવનાપૂર્ણ છે. શું તો પણ તમે તેને રાખવા માગો છો?</translation>
 <translation id="2422927186524098759">સાઇડબાર</translation>
+<translation id="2065605535667375562">પ્રોફાઇલ આયકન</translation>
 <translation id="7839809549045544450">સર્વરમાં નબળી એફેમેરલ ડિફિ-હેલમેન પબ્લિક કી છે</translation>
 <translation id="5515806255487262353">શબ્દકોશમાં શબ્દ શોધો</translation>
 <translation id="350048665517711141">શોધ એંજિન પસંદ કરો</translation>
@@ -1099,7 +1165,9 @@
 <translation id="201192063813189384">કેશમાંથી ડેટા વાંચવામાં ભૂલ.</translation>
 <translation id="7851768487828137624">કૅનેરી</translation>
 <translation id="6129938384427316298">નેટસ્કેપ પ્રમાણપત્ર ટિપ્પણી</translation>
+<translation id="4262366363486082931">ટૂલબાર પર ફોકસ કરો</translation>
 <translation id="8210608804940886430">પૃષ્ઠ નીચે</translation>
+<translation id="473775607612524610">અપડેટ કરો</translation>
 <translation id="9065596142905430007"><ph name="PRODUCT_NAME"/> અદ્યતીત છે</translation>
 <translation id="1035650339541835006">સ્વતઃભરો સેટિંગ્સ...</translation>
 <translation id="6315493146179903667">બધાને આગળ લાવો</translation>
@@ -1124,13 +1192,14 @@
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> કલાક બાકી</translation>
 <translation id="7705276765467986571">બુકમાર્ક મૉડેલ લોડ કરી શકાયું નથી. </translation>
 <translation id="1196338895211115272">ખાનગી કી નિકાસ કરવામાં નિષ્ફળ.</translation>
+<translation id="1459967076783105826">એક્સ્ટેંશન દ્વારા શોધ એન્જિન ઉમેરવામાં આવ્યું</translation>
 <translation id="5586329397967040209">આને મારું હોમ પેજ બનાવો</translation>
 <translation id="629730747756840877">એકાઉન્ટ</translation>
 <translation id="8525306231823319788">પૂર્ણ સ્ક્રીન</translation>
 <translation id="5892507820957994680">બિલ્ટ-ઇન સૉફ્ટવેર રેંડરિંગ સૂચિને ઓવરરાઇડ કરે છે અને અનસપોર્ટેડ સિસ્ટમ ગોઠવણી પર  GPU-એક્સિલરેશનને સક્ષમ કરે છે.</translation>
-<translation id="6280731100889067253">પ્રિંટ પૂર્વાવલોકન</translation>
 <translation id="9054208318010838">મારા ભૌતિક સ્થાનોને ટ્રૅક કરવા માટે તમામ સાઇટ્સને મંજૂરી આપો</translation>
 <translation id="3058212636943679650">જો કોઈવાર તમને તમારા કમ્પ્યુટરની ઑપરેટિંગ સિસ્ટમ પુનઃસ્થાપિત કરવાની જરૂર પડે, તો તમને  SD કાર્ડ અથવા USB મેમરી સ્ટિકની પુનઃપ્રાપ્તિ કરવાની જરૂર પડશે.</translation>
+<translation id="7325521623703686754">એક નામ અને એક અવતાર પસંદ કરો, પછી નવી પ્રોફાઇલ બનાવવા માટે બનાવો ક્લિક કરો.</translation>
 <translation id="2815382244540487333">નીચેની કૂકીઝ અવરોધિત હતી:</translation>
 <translation id="8882395288517865445">મારી સરનામાં પુસ્તિકા કાર્ડમાંથી સરનામાં શામેલ કરો</translation>
 <translation id="374530189620960299">સાઇટનું સુરક્ષા પ્રમાણપત્ર વિશ્વસનીય નથી!</translation>
@@ -1147,9 +1216,11 @@
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME"/> વિશે</translation>
 <translation id="2090876986345970080">સિસ્ટમ સુરક્ષા સેટિંગ</translation>
 <translation id="9219103736887031265">છબીઓ</translation>
+<translation id="7415834062450491574">Google ને પ્રતિસાદ મોકલો.</translation>
 <translation id="5453632173748266363">સિરિલિક</translation>
 <translation id="1008557486741366299">હમણાં નહીં</translation>
 <translation id="8415351664471761088">ડાઉનલોડ પૂર્ણ થાય તેની રાહ જુઓ</translation>
+<translation id="6442051556415866605">વિંડો 3 ને સક્રિય કરો</translation>
 <translation id="1545775234664667895">ઇન્સ્ટોલ કરેલી થીમ &quot;<ph name="THEME_NAME"/>&quot;</translation>
 <translation id="5329858601952122676">&amp;કાઢી નાખો</translation>
 <translation id="6100736666660498114">પ્રારંભ મેનૂ</translation>
@@ -1161,8 +1232,13 @@
 <translation id="1362165759943288856">તમે <ph name="DATE"/> પર અસીમિત ડેટા ખરીદ્યો</translation>
 <translation id="2078019350989722914">(<ph name="KEY_EQUIVALENT"/>) ને છોડતા પહેલા ચેતવો</translation>
 <translation id="7965010376480416255">વહેંચેલી મેમરી</translation>
+<translation id="2951809536086907720">સંશોધનાત્મક પ્રકાર: <ph name="HEURISTIC_TYPE"/>\nસર્વર પ્રકાર: <ph name="SERVER_TYPE"/>\nફીલ્ડ હસ્તાક્ષર: <ph name="FIELD_SIGNATURE"/>\nફોર્મ હસ્તાક્ષર: <ph name="FORM_SIGNATURE"/>\nપ્રાયોગિક id: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
 <translation id="6248988683584659830">શોધ સેટિંગ્સ</translation>
 <translation id="8323232699731382745">નેટવર્ક પાસવર્ડ</translation>
+<translation id="104086161873270383">નવી પ્રોફાઇલ</translation>
+<translation id="2750306679399709583">$1 x $2</translation>
+<translation id="462551743132815358">આર્કાઇવ બંધ કરો</translation>
+<translation id="608057490819882785">શું તમે આ કમ્પ્યુટરમાંથી ખરેખર પ્રોફાઇલ &quot;<ph name="PROFILE_NAME"/>&quot; અને તેનાથી સંબંધિત ડેટાને કાઢી નાંખવા માગો છો!</translation>
 <translation id="6588399906604251380">જોડણી પરીક્ષણ સક્ષમ કરો </translation>
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="2485056306054380289">સર્વર CA પ્રમાણપત્ર:</translation>
@@ -1170,6 +1246,7 @@
 <translation id="2727712005121231835">વાસ્તવિક કદ</translation>
 <translation id="8887733174653581061">હંમેશા શીર્ષ પર</translation>
 <translation id="5581211282705227543">કોઈ પ્લગઇન્સ ઇન્સ્ટોલ કરેલા નથી</translation>
+<translation id="3330206034087160972">પ્રસ્તુતિ મોડમાંથી બહાર નીકળો</translation>
 <translation id="610886263749567451">Javascript ચેતવણી</translation>
 <translation id="5488468185303821006">છૂપા મોડમાં મંજૂરી આપો</translation>
 <translation id="6556866813142980365">ફરી કરો</translation>
@@ -1183,7 +1260,6 @@
 <translation id="7238461040709361198">તમારો Google એકાઉન્ટ પાસવર્ડ તમે આ કમ્પ્યુટર પર છેલ્લીવાર સાઇન ઇન કર્યું ત્યારથી બદલાઈ ગયો છે.</translation>
 <translation id="1956050014111002555">ફાઇલમાં બહુવિધ પ્રમાણપત્રો રહેલા છે, તેમાંનાં કોઈપણ આયાત કરેલા નથી:</translation>
 <translation id="302620147503052030">બતાવો બટન</translation>
-<translation id="7030689690480150547">આ પેનલ વિશે</translation>
 <translation id="5512074755152723588">omnibox માં અસ્તિત્વમાંના ટૅબનું URL લખવાથી તે ચાલુ ટૅબમાં લોડ થવાને બદલે ટૅબ પર ફરીથી ફોકસ કરે છે.</translation>
 <translation id="9157595877708044936">સેટિંગ અપ...</translation>
 <translation id="4475552974751346499">ડાઉનલોડ્સ શોધો</translation>
@@ -1203,6 +1279,7 @@
 <translation id="569109051430110155">સ્વતઃ શોધો</translation>
 <translation id="4408599188496843485">સ&amp;હાય</translation>
 <translation id="5399158067281117682">PIN મેળ ખાતો નથી!</translation>
+<translation id="6021987327127625071">$1 નિર્દેશિકાઓ પસંદ કરી</translation>
 <translation id="8494234776635784157">વેબ સામગ્રીઓ</translation>
 <translation id="2681441671465314329">કૅશ ખાલી કરો</translation>
 <translation id="3646789916214779970">ડિફૉલ્ટ થીમ પર ફરીથી સેટ કરો</translation>
@@ -1232,13 +1309,16 @@
 <translation id="74354239584446316">તમારું વેબ બજાર એકાઉન્ટ <ph name="EMAIL_ADDRESS"/> છે- કોઈ અલગ એકાઉન્ટથી સિંક્રનાઇઝમાં સાઇન ઇન કરવાથી અસંગતતાઓ પરિણમશે.</translation>
 <translation id="3712897371525859903">પૃષ્ઠ આ &amp;રીતે સાચવો...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/>  હવે <ph name="IMPORT_BROWSER_NAME"/> માંથી નીચેની આઇટમ્સ આયાત કરી રહ્યું છે:</translation>
+<translation id="4146671046252289537">આગલા શબ્દની સમાપ્તિ પર ખસેડો</translation>
 <translation id="4442424173763614572">DNS લુકઅપ નિષ્ફળ ગયું</translation>
 <translation id="2767649238005085901">કૃપા કરીને આગળ જવા માટે દાખલ કરો, ઇતિહાસ જોવા માટે સંદર્ભ મેનૂ કી દબાવો</translation>
+<translation id="6921968934403058457">બ્રાઉઝર ફ્રેમની બહારની પેનલ વિન્ડોઝ ખોલવા માટે પ્રયોગાત્મક એક્સટેંશંસને સક્ષમ કરો.</translation>
 <translation id="8580634710208701824">ફ્રેમ ફરીથી લોડ કરો</translation>
 <translation id="1018656279737460067">રદ કરેલા</translation>
 <translation id="7606992457248886637">અધિકારીઓ</translation>
 <translation id="707392107419594760">તમારા કીબોર્ડને પસંદ કરો:</translation>
 <translation id="2007404777272201486">સમસ્યાની જાણ કરો...</translation>
+<translation id="1783075131180517613">કૃપા કરી તમારા સમન્વયન પાસફ્રેઝને અપડેટ કરો.</translation>
 <translation id="2390045462562521613">આ નેટવર્કને ભૂલી જાઓ</translation>
 <translation id="3348038390189153836">કાઢી નાખવા યોગ્ય ઉપકરણ મળ્યું</translation>
 <translation id="1666788816626221136">તમારી ફાઇલ પર પ્રમાણપત્રો છે જે અન્ય કોઈપણ કેટેગરીમાં ફિટ થતા નથી:</translation>
@@ -1257,6 +1337,7 @@
 <translation id="4131410914670010031">કાળો અને સફેદ</translation>
 <translation id="3800503346337426623">સાઇન-ઇન કરવાનું છોડો અને અતિથિ તરીકે બ્રાઉઝ કરો</translation>
 <translation id="2615413226240911668">જોકે, આ પૃષ્ઠમાં અન્ય એવા સાધનો છે જે સુરક્ષિત નથી. ટ્રાંઝિટમાં હોવા પર આ સાધનોને અન્ય લોકો દ્વારા જોઈ શકાશે અને પૃષ્ઠનો દેખાવ બદલવા માટે હુમલાખોર દ્વારા ફેરફાર કરવામાં આવી શકે છે.</translation>
+<translation id="197288927597451399">રાખો</translation>
 <translation id="5880867612172997051">નેટવર્ક ઍક્સેસ નિલંબીત</translation>
 <translation id="7842346819602959665">એક્સ્ટેંશન &quot;<ph name="EXTENSION_NAME"/>&quot; ના નવા સંસ્કરણને વધુ પરવાનગીઓની જરૂર છે, તેથી તેને અક્ષમ કરવામાં આવ્યું છે.</translation>
 <translation id="3776667127601582921">આ સ્થિતિમાં, તમારા બ્રાઉઝરને પ્રસ્તુત કરેલું સર્વર પ્રમાણપત્ર અથવા મધ્યવર્તી CA પ્રમાણપત્ર અમાન્ય છે. આનો અર્થ એવો હોઈ શકે છે કે પ્રમાણપત્ર દૂષિત છે, અમાન્ય ફીલ્ડ્સ ધરાવે છે અથવા તે સપોર્ટેડ નથી.</translation>
@@ -1265,6 +1346,7 @@
 <translation id="7019805045859631636">ઝડપી</translation>
 <translation id="7584802760054545466"><ph name="NETWORK_ID"/> થી કનેક્ટ કરે છે</translation>
 <translation id="208047771235602537">ડાઉનલોડ કાર્ય ચાલુ હોય ત્યારે તમે <ph name="PRODUCT_NAME"/> માંથી બહાર નીકળવા માંગો છો?</translation>
+<translation id="3595946410121365924">ડાબે આકાર બદલો</translation>
 <translation id="4060383410180771901">વેબસાઇટ <ph name="URL"/> માટેની વિનંતીને હેન્ડલ કરવામાં અક્ષમ છે.</translation>
 <translation id="6710213216561001401">પહેલાનું</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -1272,14 +1354,13 @@
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
 <translation id="1567993339577891801">JavaScript કન્સોલ</translation>
 <translation id="1559235587769913376">યુનિકોડ અક્ષરો ઇનપુટ કરો</translation>
+<translation id="3297788108165652516">આ નેટવર્કને અન્ય વપરાશકર્તાઓ સાથે શેર કરવામાં આવેલું છે.</translation>
 <translation id="1548132948283577726">ક્યારેય પાસવર્ડ્સ ન સાચવતી સાઇટ્સ અહીં દેખાશે.</translation>
 <translation id="583281660410589416">અજ્ઞાત</translation>
 <translation id="3774278775728862009">થાઈ ઇનપુટ મેથડ (TIS-820.2538 કીબોર્ડ) </translation>
 <translation id="9115675100829699941">&amp;Bookmarks</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટોલ કરો</translation>
 <translation id="1731589410171062430">કુલ: <ph name="NUMBER_OF_SHEETS"/> <ph name="SHEETS_LABEL"/> (<ph name="NUMBER_OF_PAGES"/> <ph name="PAGE_OR_PAGES_LABEL"/>)</translation>
-<translation id="6349012449811924268">છેલ્લે <ph name="USER_EMAIL_ADDRESS"/> થી સમન્વયિત થયું. 
-        <ph name="BEGIN_LINK"/>Google ડેશબોર્ડ<ph name="END_LINK"/> પર સમન્વયિત કરેલો ડેટા મેનેજ કરો.</translation>
 <translation id="2621889926470140926"><ph name="DOWNLOAD_COUNT"/> ડાઉનલોડ્સની ક્રિયા ચાલુ હોય ત્યારે તમે <ph name="PRODUCT_NAME"/> થી બહાર નીકળવા માંગો છો?</translation>
 <translation id="7279701417129455881">કૂકીને અવરોધિત કરવાનું મેનેજ કરો</translation>
 <translation id="1166359541137214543">ABC</translation>
@@ -1299,7 +1380,9 @@
 <translation id="4509345063551561634">સ્થાન:</translation>
 <translation id="7596288230018319236">તમે મુલાકાત લીધેલા બધા પૃષ્ઠો અહીં દેખાશે જ્યાં સુધી તમે તેમને છૂપી વિંડોમાં નહીં ખોલો. તમારા ઇતિહાસમાંનાં બધા પૃષ્ઠોને શોધવા માટે તમે આ પૃષ્ઠ પરનાં શોધ બટનનો ઉપયોગ કરી શકો છો.</translation>
 <translation id="7434509671034404296">વિકાસકર્તા</translation>
+<translation id="1790550373387225389">પ્રસ્તુતિ મોડમાં દાખલ થાઓ </translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
+<translation id="8059178146866384858">&quot;$1&quot; નામવાળી ફાઇલ પહેલાથી અસ્તિત્વમાં છે. કૃપા કરી ભિન્ન નામ પસંદ કરો.</translation>
 <translation id="2609371827041010694">હંમેશા આ સાઇટ પર ચલાવો</translation>
 <translation id="5170568018924773124">ફોલ્ડરમાં બતાવો</translation>
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>
@@ -1308,19 +1391,20 @@
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/>  ડિફૉલ્ટ બ્રાઉઝરને નિર્ધારિત અથવા સેટ કરી શક્તું નથી.</translation>
 <translation id="8898786835233784856">આગલું ટૅબ પસંદ કરો</translation>
 <translation id="2674170444375937751">શું તમે ખરેખર તમારા ઇતિહાસમાંથી આ પૃષ્ઠોને કાઢી નાખવા માંગો છો?</translation>
-<translation id="2932883381142163287">દુરુપયોગ જણાવો</translation>
 <translation id="9111102763498581341">અનલોક કરો</translation>
 <translation id="289695669188700754">કી ID: <ph name="KEY_ID"/></translation>
 <translation id="3067198360141518313">આ પ્લગિન ચલાવો</translation>
 <translation id="8767072502252310690">વપરાશકર્તાઓ</translation>
 <translation id="683526731807555621">એક નવું શોધ એંજીન ઉમેરો</translation>
 <translation id="6871644448911473373">OCSP પ્રતિસાદકર્તા: <ph name="LOCATION"/></translation>
+<translation id="8157788939037761987"><ph name="CLOUD_PRINT_NAME"/> ના રોજ ખુલ્લું છે</translation>
 <translation id="8281886186245836920">છોડો</translation>
 <translation id="3867944738977021751">પ્રમાણપત્ર ફીલ્ડ્સ</translation>
 <translation id="2114224913786726438">મોડ્યુલ્સ (<ph name="TOTAL_COUNT"/>) - કોઈ વિરોધાભાસ મળ્યા નહીં </translation>
 <translation id="7629827748548208700">ટૅબ: <ph name="TAB_NAME"/></translation>
 <translation id="388442998277590542">વિકલ્પોનું પૃષ્ઠ '<ph name="OPTIONS_PAGE"/>' લોડ કરી શકાયું નથી.</translation>
 <translation id="8449008133205184768">શૈલી પેસ્ટ કરો અને મેળ બેસાડો</translation>
+<translation id="356785714429487785"><ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="9114223350847410618">કૃપા કરીને આને દૂર કરતા પહેલા બીજી ભાષા ઉમેરો.</translation>
 <translation id="4408427661507229495">નેટવર્કનું નામ</translation>
 <translation id="8886960478266132308"><ph name="PRODUCT_NAME"/> તમારા ડેટાને તમારા Google એકાઉન્ટ સાથે સુરક્ષિતપણે સમન્વયિત કરે છે.</translation>
@@ -1330,12 +1414,14 @@
 <translation id="1383876407941801731">શોધ</translation>
 <translation id="8398877366907290961">કોઈપણ રીતે આગળ વધારો</translation>
 <translation id="5063180925553000800">નવું PIN:</translation>
+<translation id="4883178195103750615">બુકમાર્ક્સને HTML ફાઇલ પર નિકાસ કરો...</translation>
 <translation id="2496540304887968742">ઉપકરણની ક્ષમતા 4GB અથવા તેથી વધુ હોવી આવશ્યક છે.</translation>
 <translation id="6974053822202609517">જમણેથી ડાબે</translation>
 <translation id="2370882663124746154">Double-Pinyin મોડને સક્ષમ કરો </translation>
 <translation id="5463856536939868464">મેનૂમાં છુપાયેલા બુકમાર્ક્સ છે</translation>
 <translation id="8286227656784970313">સિસ્ટમ શબ્દકોશનો ઉપયોગ કરો</translation>
 <translation id="5431084084184068621">તમે તમારા Google પાસવર્ડનો ઉપયોગ કરીને ડેટા એન્ક્રિપ્ટ કરવાનું પસંદ કર્યું છે; તમે પછી ગમે ત્યારે તમારી સમન્વયન સેટિંગ્સને બદલીને તમારો વિચાર બદલી શકો છો.</translation>
+<translation id="6231148928368101651">પેનલ્સ</translation>
 <translation id="1493263392339817010">ફોન્ટ્સ કસ્ટમાઇઝ કરો ...</translation>
 <translation id="5352033265844765294">ટાઇમ સ્ટેમ્પિંગ</translation>
 <translation id="6449085810994685586">આ ક્ષેત્રની જોડણી &amp;તપાસો</translation>
@@ -1356,7 +1442,6 @@
 <translation id="1901769927849168791">SD કાર્ડ મળ્યું</translation>
 <translation id="818454486170715660"><ph name="NAME"/> - માલિક</translation>
 <translation id="1358032944105037487">જાપાનીઝ કીબોર્ડ</translation>
-<translation id="603890000178803545">જાન્યુ^ફેબ્રુ^માર્ચ^એપ્રિલ^મે^જૂન^જુલાઈ^ઑગ^સપ્ટે^ઑક્ટો^નોવે^ડિસે</translation>
 <translation id="8302838426652833913">તમારા કનેક્શનને તપાસવા માટે 
           <ph name="BEGIN_BOLD"/>
           Applications &gt; System Preferences &gt; Network &gt; Assist me
@@ -1364,7 +1449,7 @@
           પર જાઓ.</translation>
 <translation id="8664389313780386848">પૃષ્ઠ સ્રોત &amp;જુઓ</translation>
 <translation id="8970407809569722516">ફર્મવેર:</translation>
-<translation id="1180549724812639004">નવી પ્રોફાઇલ બનાવો</translation>
+<translation id="2789428618572362768">આ કમ્પ્યુટર પર Chrome ના ઘણાં બધાં વપરાશકર્તાઓ છે. Chrome લોંચ કરવા માટેનાં ફક્ત પ્રથમ વપરાશકર્તા જ આ પસંદગીઓમાં ફેરફાર કરી શકે છે. તે માટે ક્ષમાપ્રાર્થી છીએ!</translation>
 <translation id="57646104491463491">ફેરફાર કર્યાની તારીખ</translation>
 <translation id="5992752872167177798">Seccomp sandbox</translation>
 <translation id="6362853299801475928">&amp;સમસ્યાની જાણ કરો...</translation>
@@ -1372,7 +1457,9 @@
 <translation id="3289566588497100676">સરળ પ્રતીક ઇનપુટ</translation>
 <translation id="6507969014813375884">સરળ બનાવેલ ચાઇનીઝ</translation>
 <translation id="7314244761674113881">સૉક્સ હોસ્ટ</translation>
+<translation id="4630590996962964935">અમાન્ય અક્ષર: $1</translation>
 <translation id="5285794783728826432">વેબ સાઇટ્સને ઓળખવા માટે આ પ્રમાણપત્ર પર વિશ્વાસ કરો.</translation>
+<translation id="7460131386973988868">આંકડાકીય ip ગોઠવણીને સક્ષમ કરે છે. બની શકે કે કાર્ય ન કરે.</translation>
 <translation id="4224803122026931301">સ્થાન અપવાદો</translation>
 <translation id="749452993132003881">હિરગાન</translation>
 <translation id="8226742006292257240">નીચે રેંડમલી બનાવેલો TPM પાસવર્ડ છે જે તમારા કમ્પ્યુટરને અસાઇન કરવામાં આવ્યો છે:</translation>
@@ -1385,6 +1472,7 @@
 <translation id="1190844492833803334">જ્યારે હું મારું બ્રાઉઝર બંધ કરું ત્યારે</translation>
 <translation id="5646376287012673985">સ્થાન</translation>
 <translation id="7444538544936087653"><ph name="PRODUCT_NAME"/> હવે અપડેટ થઈ રહ્યું નથી કારણ કે તમારું ઑપરેટિંગ સિસ્ટમ અપ્રચલિત થઈ ગયું છે.</translation>
+<translation id="539755880180803351">સ્વતઃભરો ફીલ્ડ પ્રકાર અનુમાનોવાળા વેબ ફોર્મ્સને પ્લેસહોલ્ડર ટેક્સ્ટ તરીકે એનોટેટ કરે છે.</translation>
 <translation id="1110155001042129815">રાહ જુઓ</translation>
 <translation id="2607101320794533334">વિષય સાર્વજનિક કી માહિતી</translation>
 <translation id="7071586181848220801">અજ્ઞાત પ્લગ-ઇન</translation>
@@ -1417,6 +1505,7 @@
 <translation id="6254503684448816922">કી સમાધાન</translation>
 <translation id="1181037720776840403">દૂર કરો</translation>
 <translation id="4006726980536015530">જો તમે હવે<ph name="PRODUCT_NAME"/>  બંધ કરશો, તો આ ડાઉનલોડ્સ રદ થઈ જશે.</translation>
+<translation id="5261073535210137151">આ ફોલ્ડરમાં <ph name="COUNT"/> બુકમાર્ક્સ છે. શું તમે ખરેખર તેને કાઢી નાંખવા માગો છો?</translation>
 <translation id="4194415033234465088">ડાચેન 26</translation>
 <translation id="1664712100580477121">શું તમે ખરેખર નીચે આપેલી ડિવાઇસની છબીને બર્ન કરવા માંગો છો:</translation>
 <translation id="6639554308659482635">SQLite મેમરી</translation>
@@ -1425,15 +1514,17 @@
 <translation id="7650701856438921772"><ph name="PRODUCT_NAME"/> ને આ ભાષામાં પ્રદર્શિત કરવામાં આવ્યું છે</translation>
 <translation id="740624631517654988">પૉપ-અપ અવરોધિત છે</translation>
 <translation id="3738924763801731196"><ph name="OID"/>:</translation>
+<translation id="7777698395338723844">સમન્વયન વિકલ્પોમાં લખેલા URL ને સક્ષમ કરો. આ તમને અન્ય ગ્રાહકોને ઑમ્નિબૉક્સ સ્વતઃ-પૂર્ણમાં સહાય કરવા માટે તમારા લખેલા URL ઇતિહાસનું સમન્વયન કરવા દે છે.</translation>
 <translation id="6550769511678490130">બધાં બુકમાર્ક્સ ખોલો</translation>
 <translation id="1847961471583915783">હું મારું બ્રાઉઝર બંધ કરું ત્યારે કૂકીઝ અને અન્ય સાઇટ તથા પ્લગ-ઇન ડેટા સાફ કરો</translation>
 <translation id="8870318296973696995">હોમ પેજ</translation>
 <translation id="6659594942844771486">ટૅબ</translation>
+<translation id="7661266386772591122">HTML ફાઇલમાં બુકમાર્ક્સ નિકાસ કરો...</translation>
 <translation id="6575134580692778371">ગોઠવેલું નથી</translation>
 <translation id="4624768044135598934">સફળતા!</translation>
 <translation id="6014776969142880350">અપડેટ કરવાનું સમાપ્ત કરવા માટે  <ph name="PRODUCT_NAME"/> ને ફરીથી લોંચ કરો </translation>
 <translation id="5582768900447355629">મારા તમામ ડેટાને એન્ક્રિપ્ટ કરો</translation>
-<translation id="6122365914076864562">અમે તમારું મોબાઇલ નેટવર્ક સેટ કરીએ ત્યાં સુધી કૃપા કરીને રાહ જુઓ.</translation>
+<translation id="4220188427073615244">આનો ઉપયોગ કરીને આ સાઇટમાં સાઇન ઇન કરો: <ph name="EMAIL_ADDRESS"/></translation>
 <translation id="1974043046396539880">CRL વિતરણ પૉઇન્ટ્સ</translation>
 <translation id="7049357003967926684">સંસ્થા</translation>
 <translation id="8641392906089904981">કીબોર્ડ લેઆઉટ પર સ્વિચ કરવા માટે Shift-Alt ને હીટ કરો</translation>
@@ -1453,7 +1544,6 @@
 <translation id="7222232353993864120">ઇમેઇલ સરનામું</translation>
 <translation id="2128531968068887769">મૂળ ક્લાઇન્ટ</translation>
 <translation id="7175353351958621980">અહીંથી લોડ કરેલું:</translation>
-<translation id="4590074117005971373">ગ્રાફિક્સ પ્રોસેસર યૂનિટ (GPU) હાર્ડવેરના ઉપયોગને રેન્ડર કરીને 2D સંદર્ભવાળા કૅનવાસ ટૅગ્સના ઉચ્ચ પ્રદર્શનને સક્ષમ કરે છે.</translation>
 <translation id="7186367841673660872">આ પૃષ્ઠનું<ph name="ORIGINAL_LANGUAGE"/>માંથી<ph name="LANGUAGE_LANGUAGE"/>માં ભાષાંતર કરવામાં આવ્યું છે.</translation>
 <translation id="8448695406146523553">ફક્ત અમુક લોકો જ તમારા પાસફ્રેઝથી તમારો એન્ક્રિપ્ટેડ ડેટા વાંચી શકે છે -- પાસફ્રેઝ Google દ્વારા સ્ટોર કરવામાં કે મોકલવામાં આવતો નથી. જો તમે તમારો પાસફ્રેઝ ભૂલી ગયા હો, તો તમારે આની જરૂર પડશે</translation>
 <translation id="6052976518993719690">SSL પ્રમાણન અધિકારી</translation>
@@ -1469,7 +1559,6 @@
 <translation id="5542132724887566711">પ્રોફાઇલ</translation>
 <translation id="5196117515621749903">કેશને અવગણીને ફરીથી લોડ કરો</translation>
 <translation id="5552632479093547648">મૉલવેર અને ફિશીંગ શોધાયું!</translation>
-<translation id="4310537301481716192">તે નષ્ટ થઈ ગયું, જીમ!</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> days ago</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="1588343679702972132">આ સાઇટે વિનંતી કરી છે કે તમારી પોતાની એક પ્રમાણપત્ર સાથે ઓળખાણ આપો:</translation>
@@ -1489,7 +1578,6 @@
 <translation id="2497284189126895209">બધી ફાઇલો</translation>
 <translation id="696036063053180184">3 સેટ (શિફ્ટ નહીં)</translation>
 <translation id="452785312504541111">પૂર્ણ-પહોળાઈ અંગ્રેજી</translation>
-<translation id="945332329539165145">GPU દ્વારા એક્સેલરેટેડ કૅનવાસ 2D</translation>
 <translation id="9148126808321036104">ફરીથી સાઇન ઇન કરો </translation>
 <translation id="2282146716419988068">GPU પ્રક્રિયા</translation>
 <translation id="428771275901304970">1 MB કરતાં ઓછું ઉપલબ્ધ</translation>
@@ -1571,12 +1659,12 @@
 <translation id="751377616343077236">પ્રમાણપત્ર નામ</translation>
 <translation id="7154108546743862496">વધુ માહિતી</translation>
 <translation id="8637688295594795546">સિસ્ટમ અપડેટ ઉપલબ્ધ છે. ડાઉનલોડ કરવા માટે તૈયાર થઈ રહ્યું છે...</translation>
-<translation id="5167270755190684957">Google Chrome થીમ્સ ગેલેરી</translation>
 <translation id="8382913212082956454">&amp;ઇમેઇલ સરનામું કૉપિ કરો</translation>
 <translation id="7447930227192971403">ટૅબ 3 સક્રિય કરો</translation>
 <translation id="2903493209154104877">સરનામાંઓ</translation>
 <translation id="2056143100006548702">પ્લગ-ઇન: <ph name="PLUGIN_NAME"/> (<ph name="PLUGIN_VERSION"/>)</translation>
 <translation id="3479552764303398839">હમણાં નહીં</translation>
+<translation id="3714633008798122362">વેબ કૅલેન્ડર</translation>
 <translation id="6445051938772793705">દેશ</translation>
 <translation id="3251759466064201842">&lt;પ્રમાણપત્રનો ભાગ નથી&gt;</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sec ago</translation>
@@ -1603,6 +1691,7 @@
 <translation id="8871696467337989339">તમે એક અનસપોર્ટેડ કમાન્ડ-લાઇન ફ્લેગનો ઉપયોગ કરી રહ્યા છો: <ph name="BAD_FLAG"/>. સ્થાયિત્વ અને સુરક્ષા જોખમાશે.</translation>
 <translation id="4767443964295394154">સ્થાન ડાઉનલોડ કરો</translation>
 <translation id="5031870354684148875">Google અનુવાદ વિશે</translation>
+<translation id="7609538960069667341">એક નવી <ph name="SHORT_PRODUCT_NAME"/> પ્રોફાઇલ બનાવો</translation>
 <translation id="720658115504386855">અક્ષરો કેસ-સેન્સિટીવ નથી.</translation>
 <translation id="2454247629720664989">કીવર્ડ</translation>
 <translation id="3950820424414687140">સાઇન ઇન</translation>
@@ -1614,6 +1703,7 @@
 <translation id="782590969421016895">ચાલુ પૃષ્ઠોનો ઉપયોગ કરો</translation>
 <translation id="6521850982405273806">ભૂલની જાણ કરો</translation>
 <translation id="736515969993332243">નેટવર્ક્સ માટે સ્કેનિંગ.</translation>
+<translation id="2951310213712249777">ઑમ્નિબૉક્સ દ્વારા પૂર્વે રજૂ કરો</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="2717361709448355148">&quot;$1&quot; નું નામ બદલવામાં અક્ષમ: $2</translation>
 <translation id="1769104665586091481">નવી &amp;વિંડોમાં લિંક ખોલો</translation>
@@ -1635,8 +1725,8 @@
 <translation id="5575473780076478375">છુપું એક્સ્ટેંશન: <ph name="EXTENSION_NAME"/></translation>
 <translation id="9118862410733032325">ફરિથી ચાલુ કરવામાં ભૂલ</translation>
 <translation id="4188026131102273494">કીવર્ડ:</translation>
+<translation id="8004512796067398576">વૃદ્ધિ</translation>
 <translation id="2930644991850369934">છબી ડાઉનલોડની પુનર્પ્રાપ્તિ દરમિયાન એક સમસ્યા આવી હતી. નેટવર્ક કનેક્શન જતું રહ્યું હતું.</translation>
-<translation id="3461610253915486539">તમારા IT વ્યવસ્થાપક દ્વારા કેટલીક પસંદગીઓને અક્ષમ કરવામાં આવી છે.</translation>
 <translation id="5750053751252005701"><ph name="NETWORK"/> ડેટાની બહાર</translation>
 <translation id="8858939932848080433">કૃપા કરીને પ્રતિસાદ મોકલતા પહેલા તમને ક્યાં સમસ્યા આવી રહી છે તે કહો.</translation>
 <translation id="1720318856472900922">TLS WWW સર્વર પ્રમાણીકરણ</translation>
@@ -1651,8 +1741,10 @@
 <translation id="4278390842282768270">મંજૂર</translation>
 <translation id="2074527029802029717">ટૅબ અનપિન કરો</translation>
 <translation id="1533897085022183721"><ph name="MINUTES"/> થી ઓછુ</translation>
+<translation id="1224582695479061572">નવી પ્રોફાઇલ બનાવો...</translation>
 <translation id="7503821294401948377">બ્રાઉઝર ક્રિયા માટે આયકન '<ph name="ICON"/>' લોડ કરી શકાયું નથી.</translation>
-<translation id="5539694491979265537">Google Dashboard ની મુલાકાત લો</translation>
+<translation id="8403381103556738778">આ પૃષ્ઠમાં અસુરક્ષિત સામગ્રી છે.</translation>
+<translation id="1954982207163873487">સાધનો મેનૂ બતાવો</translation>
 <translation id="3942946088478181888">સમજવામાં મને સહાય કરો</translation>
 <translation id="3722396466546931176">ભાષા ઉમેરો અને તેને તમારા પ્રાથમિકતાના આધારે ક્રમમાં ગોઠવવા માટે ખેંચો.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME"/> સિસ્ટમ શરૂ થવા પર લોંચ થશે અને તમે બાકી તમામ <ph name="PRODUCT_NAME"/> વિંડોઝ બંધ કરી દેશો તે પછી પણ તે પૃષ્ઠભૂમિમાં ચાલુ રહે છે.</translation>
@@ -1663,6 +1755,7 @@
 <translation id="5392544185395226057">મૂળ ક્લાઇન્ટ માટે સપોર્ટ સક્ષમ કરો.</translation>
 <translation id="5400640815024374115">ટ્રસ્ટેડ પ્લેટફોર્મ મૉડ્યૂલ (TPM) ચિપ અક્ષમ અથવા ગેરહાજર છે.</translation>
 <translation id="2151576029659734873">અમાન્ય ટૅબ અનુક્રમણિકા દાખલ કરી.</translation>
+<translation id="1815861158988915678"><ph name="BEGIN_BOLD"/>ચેતવણી:<ph name="END_BOLD"/>  આ ફાઇલો અસ્થાયી છે અને બની શકે કે ડિસ્ક સ્થાન ખાલી કરવા માટે આપમેળે કાઢી નાંખવામાં આવે.  <ph name="BEGIN_LINK"/>વધુ જાણો<ph name="END_LINK"/></translation>
 <translation id="5150254825601720210">નેટસ્કેપ પ્રમાણપત્ર SSL સર્વર નામ</translation>
 <translation id="6771503742377376720">એ એક પ્રમાણન અધિકારી છે</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -1670,6 +1763,7 @@
 <translation id="8410619858754994443">પાસવર્ડની પુષ્ટિ કરો:</translation>
 <translation id="2210840298541351314">છાપો પૂર્વાવલોકન</translation>
 <translation id="3858678421048828670">ઇટાલિયન કીબોર્ડ</translation>
+<translation id="1436784010935106834">દૂર કરેલું</translation>
 <translation id="4938277090904056629">ESET એન્ટી-વાયરસને લીધે સુરક્ષિત કનેક્શન બનાવી શકાતું નથી</translation>
 <translation id="4521805507184738876">(સમાપ્ત)</translation>
 <translation id="111844081046043029">શું તમે ખરેખર આ પૃષ્ઠ છોડવા માંગો છો?</translation>
@@ -1690,18 +1784,20 @@
 <translation id="1195977189444203128"><ph name="PLUGIN_NAME"/> પ્લગ-ઇન જૂનું થઈ ગયું છે.</translation>
 <translation id="3878562341724547165">એવું લાગે છે કે તમે ખસેડી દીધું છે. શું તમે <ph name="NEW_GOOGLE_URL"/> નો ઉપયોગ કરવા માંગો છો?</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="7469237359338869056">ફરી ટેક્સ્ટ શોધો</translation>
 <translation id="6690744523875189208"><ph name="NUMBER_TWO"/> કલાક</translation>
 <translation id="8053390638574070785">આ પૃષ્ઠને રીલોડ કરો</translation>
 <translation id="5507756662695126555">નૉન-રીપ્યૂડિએશન</translation>
 <translation id="3678156199662914018">એક્સ્ટેંશન: <ph name="EXTENSION_NAME"/></translation>
 <translation id="7951780829309373534">&quot;$1&quot; પેસ્ટ કરવામાં અક્ષમ છે: $2</translation>
-<translation id="9194519262242876737">વેબ ઑડિઓ API સક્ષમ કરે છે.</translation>
 <translation id="3531250013160506608">પાસવર્ડ ટેક્સ્ટ બૉક્સ</translation>
 <translation id="8314066201485587418">હું મારું બ્રાઉઝર છોડું ત્યારે કૂકીઝ અને અન્ય સાઇટ ડેટા સાફ કરો</translation>
 <translation id="4094105377635924481">ટૅબ સંદર્ભ મેનૂ પર જૂથબદ્ધતા ઉમેરો</translation>
 <translation id="8655295600908251630">ચેનલ</translation>
 <translation id="8250690786522693009">લેટિન</translation>
 <translation id="2119721408814495896"><ph name="CLOUD_PRINT_NAME"/> કનેક્ટરને Microsoft XML Paper Specification Essentials Pack ઇન્સ્ટોલ કરવાની જરૂર છે.</translation>
+<translation id="5829401023154985950">મેનેજ કરો...</translation>
+<translation id="8923749287865336189">પેસ્ટ કરો  નિષ્ફળ અનપેક્ષિત ભૂલ: $1</translation>
 <translation id="7624267205732106503">હું મારું બ્રાઉઝર બંધ કરું ત્યારે કૂકીઝ અને અન્ય સાઇટ ડેટા સાફ કરો</translation>
 <translation id="8401363965527883709">અનચેક કરેલા ચેક બૉક્સ</translation>
 <translation id="7771452384635174008">લેઆઉટ</translation>
@@ -1717,10 +1813,10 @@
 <translation id="6571070086367343653">ક્રેડિટ કાર્ડ સંપાદિત કરો </translation>
 <translation id="1204242529756846967">આ ભાષાનો ઉપયોગ જોડણી પરીક્ષણ માટે કરી શકાય છે.</translation>
 <translation id="3981760180856053153">અમાન્ય સાચવો પ્રકાર દાખલ થયો છે.</translation>
+<translation id="4508345242223896011">સુગમ સ્ક્રોલિંગ</translation>
 <translation id="8464591670878858520"><ph name="NETWORK"/> ડેટાનો સમય સમાપ્ત થયો</translation>
-<translation id="4568660204877256194">બુકમાર્ક્સનો નિકાસ કરો...</translation>
+<translation id="4510781427281143276">પ્રોફાઇલ કાઢી નાખો</translation>
 <translation id="3116361045094675131">યુકે કીબોર્ડ</translation>
-<translation id="4577070033074325641">બુકમાર્ક્સ આયાત કરો...</translation>
 <translation id="1641504961675316934"><ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="1715941336038158809">અમાન્ય લૉગિન નામ અથવા પાસવર્ડ.</translation>
 <translation id="1901303067676059328">&amp;બધા પસંદ કરો</translation>
@@ -1730,8 +1826,10 @@
 <translation id="2168039046890040389">પૃષ્ઠ ઉપર</translation>
 <translation id="1767519210550978135">એચએસયુ</translation>
 <translation id="5508282018086013138">આ એક્સ્ટેંશન એડમિન નીતિઓ દ્વારા બ્લેકલિસ્ટ કરાયેલું છે.</translation>
+<translation id="4388353399237186340"><ph name="PROFILE_NAME"/> (વર્તમાન પ્રોફાઇલ)</translation>
 <translation id="2498539833203011245">નાનું કરો</translation>
 <translation id="2893168226686371498">ડિફૉલ્ટ બ્રાઉઝર</translation>
+<translation id="6928955981459329182">ઑમ્નિબૉક્સમાં આપેલ સૂચનોને પૂર્વે રજૂ કરો.</translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
 <translation id="7988355189918024273">ઍક્સેસિબિલિટી સુવિધાઓ સક્ષમ કરો </translation>
 <translation id="5438653034651341183">ચાલુ સ્ક્રીનશોટ શામેલ કરો:</translation>
@@ -1744,10 +1842,10 @@
 <translation id="7363290921156020669"><ph name="NUMBER_ZERO"/> મિનિટ</translation>
 <translation id="7568790562536448087">અપડેટ થઈ રહ્યું છે</translation>
 <translation id="4856408283021169561">માઇક્રોફોન મળ્યો નથી.</translation>
+<translation id="7984180109798553540">ઉમેરેલી સુરક્ષા માટે, <ph name="PRODUCT_NAME"/> તમારા ડેટાને એન્ક્રિપ્ટ કરશે.</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME"/> થી કનેક્ટ કરે છે</translation>
 <translation id="3222343486469566063">સાઇન ઇન નથી</translation>
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME"/> હમણાં તમારું ડિફૉલ્ટ બ્રાઉઝર નથી.</translation>
-<translation id="2498131838700757846">IndexedDB માટે પ્રાયોગિક LevelDB બૅક-એન્ડને સક્ષમ કરો.</translation>
 <translation id="823241703361685511">પ્લાન</translation>
 <translation id="4068506536726151626">આ પૃષ્ઠમાં તમારા સ્થાનને ટ્રૅક કરતી નીચેની સાઇટ્સનાં ઘટકો શામેલ છે:</translation>
 <translation id="4721475475128190282">બહુવિધ પ્રોફાઇલ્સ</translation>
@@ -1757,6 +1855,8 @@
 <translation id="1640283014264083726">RSA એન્ક્રિપ્શનવાળું PKCS #1 MD4</translation>
 <translation id="872451400847464257">શોધ એન્જિન સંપાદિત કરો</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> મિનિટ્સ</translation>
+<translation id="5512653252560939721">વપરાશકર્તા પ્રમાણપત્ર હાર્ડવેર-સમર્થિત હોવું જોઈએ</translation>
+<translation id="3726392994785559752">કનેક્ટેડ નથી</translation>
 <translation id="2466804342846034717">ઉપર સાચો પાસવર્ડ દાખલ કરો અને ત્યાર પછી નીચે ચિત્રમાં જોયેલ વર્ણો ટાઇપ કરો.</translation>
 <translation id="3881435075661337013"><ph name="NETWORK"/> સમાપ્ત થવામાં જ છે</translation>
 <translation id="5681833099441553262">પહેલાનું ટેબ સક્રિય કરો</translation>
@@ -1789,6 +1889,7 @@
 
 <ph name="EXTENSION_FILE"/></translation>
 <translation id="16620462294541761">માફ કરશો, તમારો પાસવર્ડ ચકાસી શકાયો નથી. કૃપા કરીને ફરીથી પ્રયત્ન કરો.</translation>
+<translation id="3058072209957292419">પ્રાયોગિક આંકડાકીય ip ગોઠવણી</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="1394630846966197578">ભાષણ સર્વર પરનું કનેક્શન નિષ્ફળ થયું.</translation>
 <translation id="2498765460639677199">વિશાળ</translation>
@@ -1803,11 +1904,13 @@
 <translation id="6644512095122093795">પાસવર્ડ્સ સાચવવા માટે પ્રદાન કરો</translation>
 <translation id="4724450788351008910">એફિલિએશન બદલાયું</translation>
 <translation id="2249605167705922988">ઉદા. ત. 1-5, 8, 11-13</translation>
+<translation id="3886815172404033724">એક્સેસિબિલિટી સુવિધાને ટૉગલ કરો</translation>
 <translation id="8691686986795184760">(સંગઠન નીતિ દ્વારા સક્ષમ)</translation>
 <translation id="1911483096198679472">આ શું છે?</translation>
 <translation id="1976323404609382849">બહુવિધ સાઇટ્સની કૂકીઝ અવરોધિત કરી છે.</translation>
 <translation id="2662952950313424742">યૂઝર સ્પેસિફાઇડ DNS સર્વર, જેનો ઉપયોગ Chrome સિસ્ટમ ડિફૉલ્ટ કરતા DNS રિઝૉલ્યુશન માટે કરવામાં આવશે.</translation>
 <translation id="4176463684765177261">અક્ષમ કરેલું</translation>
+<translation id="154603084978752493">શોધ એંજી&amp;ન તરીકે ઉમેરો...</translation>
 <translation id="2079545284768500474">પૂર્વવત્ કરો</translation>
 <translation id="114140604515785785">એક્સ્ટેંશન રૂટ ડાયરેક્ટરી:</translation>
 <translation id="4788968718241181184">Vietnamese input method (TCVN6064)</translation>
@@ -1835,6 +1938,7 @@
 <translation id="5584091888252706332">સ્ટાર્ટઅપ પર</translation>
 <translation id="8960795431111723921">અમે હાલમાં આ સમસ્યાની તપાસ કરી રહ્યા છીએ.</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
+<translation id="4408398408958794606">L2TP/IPsec + વપરાશકર્તા પ્રમાણપત્ર </translation>
 <translation id="8004582292198964060">બ્રાઉઝર</translation>
 <translation id="695755122858488207">પસંદ ન કરેલું  રેડિઓ બટન</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> દિવસ</translation>
@@ -1846,9 +1950,11 @@
 <translation id="9095710730982563314">સૂચના અપવાદો</translation>
 <translation id="8072988827236813198">ટૅબ્સ પિન કરો</translation>
 <translation id="1234466194727942574">ટૅબસ્ટ્રિપ</translation>
+<translation id="3291862315280588024">પાછલા શબ્દનાં પ્રારંભ પર જાઓ</translation>
 <translation id="7974087985088771286">ટૅબ 6 સક્રિય કરો</translation>
 <translation id="4035758313003622889">&amp;કાર્ય વ્યવસ્થાપક</translation>
 <translation id="6356936121715252359">Adobe Flash Player સ્ટોરેજ સેટિંગ્સ...</translation>
+<translation id="926145120297878023">ઑમ્નિબૉક્સ શોધ શબ્દના આધારે સામાન્ય રૂપે પસંદ કરેલા પરિણામોને યાદ રાખે છે અને આગલી વખતે એવા URL આપે છે કે જેમાં સમાન શોધ શબ્દ લખેલા છે.</translation>
 <translation id="5885996401168273077">નેટવર્ક કનેક્શન</translation>
 <translation id="7313804056609272439">વિયતાનામી ઇનપુટ મેથડ ((વીએનઆય))</translation>
 <translation id="1768211415369530011">જો તમે આ વિનંતિનો સ્વીકાર કરશો તો નીચેની એપ્લિકેશન શરૂ થશે:\n\n <ph name="APPLICATION"/></translation>
@@ -1859,7 +1965,7 @@
 <translation id="5089810972385038852">રાજ્ય</translation>
 <translation id="2872961005593481000">શટ ડાઉન કરો</translation>
 <translation id="8986267729801483565">ડાઉનલોડ સ્થાન:</translation>
-<translation id="8428252096944387389">પ્રિંટ પૂર્વાવલોકન - <ph name="PREVIEW_TAB_TITLE"/></translation>
+<translation id="1776712937009046120">વપરાશકર્તા ઉમેરો</translation>
 <translation id="4322394346347055525">અન્ય ટૅબ્સને બંધ કરો</translation>
 <translation id="593451978644335626">પાછલી ઇનપુટ પદ્ધતિને પસંદ કરવા માટે ctrl+space દબાવો.</translation>
 <translation id="4411770745820968260">ફાઇલ શેલ્ફ</translation>
@@ -1867,6 +1973,7 @@
 <translation id="1812631533912615985">ટૅબ્સ અનપિન કરો</translation>
 <translation id="8318945219881683434">રદ કરવાની તપાસ કરવામાં નિષ્ફળ થયું.</translation>
 <translation id="1650709179466243265">www. અને .com ઉમેરો અને સરનામું ખોલો</translation>
+<translation id="7258264058936813500">કોઈપણ રીતે લોડ કરો</translation>
 <translation id="3524079319150349823">પૉપઅપની તપાસ કરવા માટે, પૃષ્ઠ અથવા બ્રાઉઝર ક્રિયાના આયકનને રાઇટ-ક્લિક કરો અને પૉપઅપની તપાસ કરોને પસંદ કરો.</translation>
 <translation id="994289308992179865">&amp;લૂપ કરો</translation>
 <translation id="7793343764764530903">તમે <ph name="CLOUD_PRINT_NAME"/> સફળતાપૂર્વક સક્ષમ કર્યું છે! <ph name="PRODUCT_NAME"/> એ આ મશીન પર &lt;b&gt;<ph name="EMAIL_ADDRESSES"/>&lt;/b&gt; ની સાથે પ્રિંટર્સની નોંધણી કરી છે. હવે તમે કોઈપણ <ph name="CLOUD_PRINT_NAME"/> સક્ષમ વેબ અથવા મોબાઇલ એપ્લિકેશનથી તમારા પ્રિંટર્સ પરથી છાપી શકો છો!</translation>
@@ -1889,6 +1996,7 @@
 <translation id="602251597322198729">આ સાઇટ બહુવિધ ફાઇલો ડાઉનલોડ કરવાનો પ્રયાસ કરી રહી છે. તમે આને પરવાનગી આપવા માંગો છો?</translation>
 <translation id="5843685321177053287">ઉપકરણ સંચાલન સેવા સાથે હેન્ડશેક બાકી...</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> કલાક</translation>
+<translation id="7026338066939101231">હ્રાસ</translation>
 <translation id="5411472733320185105">આ હોસ્ટ્સ અને ડોમેન્સ માટે પ્રોક્સી સેટિંગ્સનો ઉપયોગ કરશો નહીં: </translation>
 <translation id="6691936601825168937">&amp;ફોર્વર્ડ કરો</translation>
 <translation id="6566142449942033617">પ્લગઇન માટે '<ph name="PLUGIN_PATH"/>' લોડ કરી શકાયું નહીં.</translation>
@@ -1897,12 +2005,12 @@
 <translation id="6454421252317455908">ચાઇનીઝ ઇનપુટ મેથડ (ક્વિક)</translation>
 <translation id="368789413795732264">ફાઇલ લખવાનો પ્રયાસ કરતી વખતે ભૂલ આવી હતી: <ph name="ERROR_TEXT"/>.</translation>
 <translation id="1173894706177603556">નામ બદલો</translation>
-<translation id="5670032673361607750">સમન્વયન પર તમારે ધ્યાન દેવાની જરૂર છે. </translation>
 <translation id="2148716181193084225">આજે</translation>
 <translation id="1002064594444093641">ફ્રેમ છા&amp;પો...</translation>
 <translation id="7234674978021619913">અમે પહેલાથી જ સૂચિત કર્યું<ph name="HOST_NAME"/> કે અમને સાઇટ પર મૉલવેર મળ્યા છે. <ph name="HOST_NAME2"/> પરની સમસ્યાઓ વિશે વધુ માટે, Google <ph name="DIAGNOSTIC_PAGE"/> ની મુલાકાત લો.</translation>
 <translation id="8202390211066742724">વપરાશકર્તા ઉલ્લેખિત DNS સર્વર સરનામું.</translation>
 <translation id="4608500690299898628">&amp;શોધો...</translation>
+<translation id="7582582252461552277">આ નેટવર્કને પસંદ કરો</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">ફોલ્ડરમાં બતાવો</translation>
 <translation id="2367657048471519165"><ph name="PRODUCT_NAME"/> ને મારા ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
@@ -1952,18 +2060,11 @@
 <translation id="2190355936436201913">(ખાલી)</translation>
 <translation id="8515737884867295000">પ્રમાણપત્ર-આધારિત પ્રમાણીકરણ નિષ્ફળ થયું</translation>
 <translation id="5868426874618963178">હાલનાં પૃષ્ઠનો સ્રોત મોકલો</translation>
-<translation id="1269138312169077280">તમારા IT વ્યવસ્થાપક દ્વારા કેટલીક સેટિંગ્સ અક્ષમ કરવામાં આવી છે.</translation>
 <translation id="5818003990515275822">કોરિયન</translation>
 <translation id="4182252350869425879">ચેતવણી: ફિશીંગ સાઇટની આશંકા!</translation>
 <translation id="5458214261780477893">ડ્વોરેક</translation>
 <translation id="1164369517022005061"><ph name="NUMBER_DEFAULT"/> કલાક બાકી</translation>
 <translation id="5943260032016910017">કૂકી અને સાઇટ ડેટા અપવાદો</translation>
-<translation id="93424266670380528"><ph name="HOST_NAME"/> પર સર્વર મળી
-        શક્યું નથી, કારણ કે DNS લુકઅપ નિષ્ફળ થયું છે. DNS એક વેબ સેવા છે 
-        જે વેબસાઇટનાં નામને તેના ઇંટરનેટ સરનામાંમાં ભાષાંતરિત કરે છે.  આ ભૂલ 
-        મોટે ભાગે ઇંટરનેટ કનેક્શન હોવાના કારણે અથવા નેટવર્કની ખોટી ગોઠવણીને લીધે આવે છે.  તે બિનપ્રતિસાદી DNS
- સર્વરને         લીધે અથવા ફાયરવૉલ 
-        <ph name="PRODUCT_NAME"/> ને નેટવર્ક ઍક્સેસ કરવાથી અટકાવતી હોવાના કારણે પણ હોઈ શકે છે.</translation>
 <translation id="2214283295778284209"><ph name="SITE"/> ઉપલબ્ધ નથી.</translation>
 <translation id="8755376271068075440">&amp;વધુ મોટું</translation>
 <translation id="8132793192354020517"><ph name="NAME"/> થી કનેક્ટેડ છે</translation>
@@ -1988,15 +2089,19 @@
 <translation id="1970746430676306437">પૃષ્ઠ &amp;માહિતી જુઓ</translation>
 <translation id="8741168824058335685">સતત સ્ટોરેજ:</translation>
 <translation id="3199127022143353223">સર્વર્સ</translation>
+<translation id="2189470649391435617">જમણે આકાર બદલો</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="1974060860693918893">વિગતવાર</translation>
 <translation id="8053959338015477773">આ પૃષ્ઠ પર કેટલાક ઘટકોને પ્રદર્શિત કરવા માટે  એક વધારાનાં પ્લગ-ઇનની આવશ્યકતા છે.</translation>
 <translation id="3541661933757219855">છુપાવવા માટે Ctrl+Alt+/ અથવા Escape ટાઇપ કરો</translation>
 <translation id="8813873272012220470">પૃષ્ઠભૂમિ તપાસને સક્ષમ કરે છે જે તમને સૉફ્ટવેર અસંગતતાની જાણ થતા જ ચેતવણી આપે છે (દા.ત. 3જા પક્ષના મોડ્યુલ્સ કે જે બ્રાઉઝર ક્રેશ કરે છે).</translation>
 <translation id="5020734739305654865">આના વડે સાઇન ઇન કરો</translation>
+<translation id="7871467315479343122">સ્વતઃભરોને વધુ સારું બનાવવામાં મદદ કરો.</translation>
+<translation id="899457468947881820">પ્રોટોકૉલ હેન્ડલર્સ</translation>
 <translation id="7414887922320653780"><ph name="NUMBER_ONE"/> કલાક બાકી</translation>
 <translation id="121632099317611328">કૅમેરો શરૂ થવામાં નિષ્ફળ રહ્યો.</translation>
 <translation id="399179161741278232">આયાત કરેલા</translation>
+<translation id="810066391692572978">ફાઇલ અનસપોર્ટેડ સુવિધાઓનો ઉપયોગ કરે છે.</translation>
 <translation id="3829932584934971895">પ્રદાતા પ્રકાર:</translation>
 <translation id="462288279674432182">પ્રતિબંધિત IP:</translation>
 <translation id="9097192044535179206">મેઘ મુદ્રણો મેનેજ કરો...</translation>
@@ -2004,6 +2109,8 @@
 <translation id="3524915994314972210">ડાઉનલોડ પ્રારંભ કરવા માટે પ્રતીક્ષા કરી રહ્યું છે...</translation>
 <translation id="6484929352454160200"><ph name="PRODUCT_NAME"/> નું નવું સંસ્કરણ ઉપલબ્ધ છે</translation>
 <translation id="3187212781151025377">હીબ્રુ કીબોર્ડ</translation>
+<translation id="1142012852508714031">પ્રોફાઇલ નામ</translation>
+<translation id="2357350991104857462">પૂર્વ-લૉગિન બંધ કરો</translation>
 <translation id="351152300840026870">નિશ્ચિત-પહોળાઇ ફૉન્ટ</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="778881183694837592">આવશ્યક ક્ષેત્ર ખાલી છોડી શકાશે નહીં</translation>
@@ -2036,6 +2143,7 @@
 <translation id="3561217442734750519">ખાનગી કી માટેનું ઇનપુટ મૂલ્ય એ એક માન્ય પાથ હોવો આવશ્યક છે.</translation>
 <translation id="2444609190341826949">કોઈ પાસફ્રેઝ વગર, તમારા પાસવર્ડ્સ અને અન્ય એન્ક્રિપ્ટ કરેલો ડેટા આ કમ્પ્યુટર પર સમન્વયિત થશે નહીં.</translation>
 <translation id="77221669950527621">એક્સ્ટેંશન્સ અથવા એપ્લિકેશન</translation>
+<translation id="5227808808023563348">પાછલો ટેક્સ્ટ શોધો</translation>
 <translation id="6650142020817594541">આ સાઇટ Google Chrome ફ્રેમ (પહેલાથી જ ઇન્સ્ટોલ કરેલું છે)ની ભલામણ કરે છે .</translation>
 <translation id="6780786534712515143">ઝટપટ સક્ષમ સાથે, મોટા ભાગનાં વેબપૃષ્ઠો તમારા ટાઇપ કરતાની સાથે જ ઑમ્નિબૉક્સમાં URL લોડ કરવા લાગે છે, તમે Enter દબાવો તે પહેલા જ. આ ઉપરાંત, જો તમારા ડિફૉલ્ટ શોધ એંજીન દ્વારા સપોર્ટેડ હોય તો, ઑમિંબૉક્સમાં તમારી ક્વેરી ટાઇપ કરતાંની સાથે જ ઝટપટ શોધ પરિણામો દેખાવા લાગશે, અને ઇન-લાઇન અનુમાનો તમારી શોધને માર્ગદર્શિત કરવામાં સહાય કરશે.\n\nતમે ક્વેરી ટાઇપ કરી રહ્યા હો ત્યારે શોધ પરિણામોની વિનંતી કરવામાં આવે છે, તમારું ડિફૉલ્ટ શોધ એંજીન આ શોધ ક્વેરીઝ તરીકે લૉગિંગ કરી શકે છે.\n</translation>
 <translation id="6503077044568424649">સૌથી વધુ જોવાયેલ</translation>
@@ -2076,6 +2184,7 @@
 <translation id="4010065515774514159">બ્રાઉઝર ક્રિયા</translation>
 <translation id="4286563808063000730">તમે દાખલ કરેલો પાસફ્રેઝ ઉપયોગમાં લઈ શકાતો નથી કારણ કે તમારી પાસે પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરેલો ડેટા પહેલાથી જ છે. કૃપા કરીને તમારો અસ્તિત્વમાંનો સમન્વયિત પાસફ્રેઝ નીચે દાખલ કરો.</translation>
 <translation id="1154228249304313899">આ પૃષ્ઠ ખોલો:</translation>
+<translation id="1335810654854159539">તમારા  વ્યવસ્થાપક દ્વારા કેટલીક પસંદગીઓને અક્ષમ કરવામાં આવી છે.</translation>
 <translation id="9074348188580488499">શું તમે ખરેખર બધાં પાસવર્ડ્સ દૂર કરવા માંગો છો?</translation>
 <translation id="6635491740861629599">ડોમેન દ્વારા પસંદ કરો</translation>
 <translation id="3627588569887975815">છુ&amp;પી વિંડોમાં લિંક ખોલો</translation>
@@ -2088,10 +2197,12 @@
 <translation id="1139892513581762545">સાઇટ ટૅબ્સ</translation>
 <translation id="7634357567062076565">ફરી શરૂ કરો</translation>
 <translation id="4779083564647765204">ઝૂમ કરો</translation>
+<translation id="6998579716604177680">કેટલીક સેટિંગ્સને તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવી છે અને અન્યને એક્સટેંશન દ્વારા મેનેજ કરવામાં આવી રહી છે.</translation>
 <translation id="3282430104564575032">DOM ઇન્સપેક્ટર</translation>
 <translation id="1526560967942511387">નામ વિનાનો દસ્તાવેજ</translation>
 <translation id="1291144580684226670">માનક ફૉન્ટ</translation>
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE"/> સક્ષમ કરો</translation>
+<translation id="7819857487979277519">PSK (WPA અથવા RSN)</translation>
 <translation id="5538307496474303926">સાફ કરી રહ્યું છે...</translation>
 <translation id="4367133129601245178">છબી URL ની કૉ&amp;પિ કરો</translation>
 <translation id="7542995811387359312">આપમેળે ક્રેડિટ કાર્ડ ભરણ અક્ષમ કર્યું છે કારણ કે આ ફોર્મ સુરક્ષિત કનેક્શનનો ઉપયોગ કરતું નથી.</translation>
@@ -2101,8 +2212,6 @@
 <translation id="7005812687360380971">નિષ્ફળતા</translation>
 <translation id="2356070529366658676">કહો</translation>
 <translation id="5731247495086897348">પે&amp;સ્ટ કરો અને જાઓ</translation>
-<translation id="8467548439852845758">ઉમેરેલી સુરક્ષા માટે, <ph name="PRODUCT_NAME"/> તમારા પાસવર્ડ્સને એન્ક્રિપ્ટ કરશે.</translation>
-<translation id="2524947000814989347">જો તમે તમારો પાસફ્રેઝ ભૂલી ગયા છો, તો તમારે Google Dashboard થી સમન્વયનને રોકવાની જરૂર પડશે.</translation>
 <translation id="8018154597338652331"><ph name="TOTAL_SIZE"/> માંથી <ph name="BURNT_AMOUNT"/></translation>
 <translation id="7635741716790924709">સરનામાં રેખા 1</translation>
 <translation id="5135533361271311778">બુકમાર્ક આઇટમ બનાવી શકાઈ નથી.</translation>
@@ -2119,12 +2228,12 @@
 <translation id="4270393598798225102">સંસ્કરણ <ph name="NUMBER"/></translation>
 <translation id="534916491091036097">ડાબો કૌંસ</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
+<translation id="5685236799358487266">શોધ એંજી&amp;ન તરીકે ઉમેરો...</translation>
 <translation id="8903921497873541725">ઝૂમ વધારો</translation>
 <translation id="2195729137168608510">ઇમેઇલ સુરક્ષા</translation>
 <translation id="1425734930786274278">નીચેની કૂકીઝ અવરોધિત કરવામાં આવી હતી (તૃતીય-પક્ષ કૂકીઝ કોઈપણ અપવાદ સિવાય અવરોધિત કરવામાં આવી રહી છે):</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME"/> તરફથી ક્લાયંટ પ્રમાણપત્ર આયાત કરવા માટે કૃપા કરીને <ph name="TOKEN_NAME"/> પર સાઇન ઇન કરો.</translation>
 <translation id="3437016096396740659">બૅટરી ચાર્જ થઈ છે</translation>
-<translation id="6916146760805488559">એક  નવી પ્રોફાઇલ બનાવો...</translation>
 <translation id="1199232041627643649">છોડવા માટે <ph name="KEY_EQUIVALENT"/> પકડો.</translation>
 <translation id="5428562714029661924">આ પ્લગ-ઇન છુપાવો</translation>
 <translation id="7907591526440419938">ફાઇલ ખોલો</translation>
@@ -2164,9 +2273,9 @@
 <translation id="4567836003335927027"><ph name="WEBSITE_1"/> પરનો તમારો ડેટા</translation>
 <translation id="756445078718366910">બ્રાઉઝર વિંડો ખોલો</translation>
 <translation id="4126154898592630571">તારીખ/સમય કન્વર્ઝન</translation>
+<translation id="6132383530370527946">નાનું પ્રિંટ</translation>
 <translation id="5088534251099454936">RSA એન્ક્રિપ્શનવાળું PKCS #1 SHA-512</translation>
 <translation id="6392373519963504642">કોરિયન કીબોર્ડ</translation>
-<translation id="5037358328087281103">IndexedDB LevelDB નો ઉપયોગ કરે છે.</translation>
 <translation id="7887334752153342268">ડુપ્લિકેટ</translation>
 <translation id="4980691186726139495">આ પૃષ્ઠ પર રાખશો નહીં</translation>
 <translation id="3081523290047420375"><ph name="CLOUD_PRINT_NAME"/> અક્ષમ કરો</translation>
@@ -2191,10 +2300,11 @@
 <translation id="3869917919960562512">ખોટી અનુક્રમણિકા</translation>
 <translation id="7031962166228839643">TPM બનાવાઈ રહી છે, કૃપા કરીને રાહ જુઓ (આમાં થોડીવાર લાગી શકે છે)...</translation>
 <translation id="4250377793615429299">કૉપિઝની અમાન્ય સંખ્યા</translation>
-<translation id="7180865173735832675">કસ્ટમાઇઝ કરો</translation>
 <translation id="5737306429639033676">પૃષ્ઠ લોડ પ્રદર્શનને સુધારવા માટે નેટવર્ક ક્રિયાઓનું અનુમાન કરો</translation>
 <translation id="8123426182923614874">ડેટા બાકી:</translation>
+<translation id="2070909990982335904">ડૉટથી પ્રારંભ થતા નામો સિસ્ટમ માટે આરક્ષિત છે. કૃપા કરી બીજું નામ પસંદ કરો.</translation>
 <translation id="3707020109030358290">કોઈ પ્રમાણન અધિકારી નથી</translation>
+<translation id="5293659407874396561"><ph name="SUBJECT"/> (<ph name="ISSUER"/>)</translation>
 <translation id="2115926821277323019">માન્ય URL હોવો જોઈએ</translation>
 <translation id="8986494364107987395">ઉપયોગિતા આંકડાઓ અને ક્રેશ રિપોર્ટ્સ Google ને આપમેળે મોકલો</translation>
 <translation id="7070714457904110559">પ્રાયોગિક એક્સ્ટેંશન્સને ભૌગોલિક સ્થાન (જીઓલોકેશન) સુવિધા પર સક્ષમ કરે છે. વપરાશમાંનું ઑપરેટિંગ સિસ્ટમ સ્થાન API (જ્યાં ઉપલબ્ધ હોય) શામેલ કરે છે, અને ઉચ્ચ સચોટતા સ્થિતિ પ્રદાન કરવા વધારાનો સ્થાનિક નેટવર્ક ગોઠવણી ડેટા Google સ્થાન સેવાને મોકલે છે.</translation>
@@ -2204,7 +2314,6 @@
 <translation id="1307041843857566458">ફરીથી સક્ષમ કરવાની પુષ્ટિ કરો</translation>
 <translation id="8314308967132194952">નવું શેરીનું સરનામું ઉમેરો ...</translation>
 <translation id="1221024147024329929">RSA એન્ક્રિપ્શનવાળું PKCS #1 MD2 </translation>
-<translation id="853265131227167869">રવિ^સોમ^મંગળ^બુધ^ગુરુ^શુક્ર^શનિ</translation>
 <translation id="3323447499041942178">ટેક્સ્ટ બૉક્સ</translation>
 <translation id="580571955903695899">શીર્ષકથી પુનઃક્રમાંકિત કરો</translation>
 <translation id="5230516054153933099">વિંડો</translation>
@@ -2214,6 +2323,7 @@
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> મિનિટ બાકી</translation>
 <translation id="7671576867600624">તકનીક:</translation>
 <translation id="1103966635949043187">સાઇટનાં હોમપેજ પર જાઓ:</translation>
+<translation id="7477347901712410606">જો તમે પાસફ્રેઝ ભૂલી ગયા છો, તો થોભો અને સમન્વયન <ph name="BEGIN_LINK"/>Google ડેશબોર્ડ<ph name="END_LINK"/> દ્વારા ફરીથી સેટ કરો.</translation>
 <translation id="1086613338090581534">સમાપ્ત ન થયેલા પ્રમાણપત્ર માટે, તે પ્રમાણપત્રનાં રજૂકર્તા “રદ કરવાની સૂચિ” કહેવાય છે તેની જાળવણી માટે જવાબદાર છે. જો પ્રમાણપત્ર શંકાસ્પદ હોય તો, રજૂકર્તા તેને રદ કરવાની સૂચિમાં ઉમેરીને રદ કરી શકે છે, અને તે પછી તમારા બ્રાઉઝર માટે આ પ્રમાણપત્ર વિશ્વસનીય રહેશે નહીં. સમાપ્ત પ્રમાણપત્રો માટે રદ કરવાની સ્થિતિ જાળવવાનું જરૂરી નથી, તેથી તમે મુલાકાત લઈ રહ્યા છો તે વેબસાઇટ માટે આ પ્રમાણપત્ર ક્યારેક માન્ય હતું પણ હાલમાં તો આ પ્રમાણપત્ર શંકાસ્પદ હતું કે નહીં અને  પછીથી તે રદ કરાયું હતું કે પછી તે હજુ સુરક્ષિત છે તે નિર્ધારિત કરવું શક્ય નથી. સીધેસીધું એમ કહેવું અસંભવ છે કે તમે કોઈ વાસ્તવિક વેબસાઇટનાં સંપર્કમાં છો કે પછી આ પ્રમાણપત્ર  સમાધાન થયેલું છે અને હવે તે કોઈ હુમલાખોરનાં અધિકારમાં છે કે જેની સાથે તમે વાતચીત કરી રહ્યા છો. તમારે આ બિંદુથી આગળ વધવું ન જોઈએ.</translation>
 <translation id="2645575947416143543">જો તેમ છતાં પણ તમે કોઈ એવી સંસ્થામાં કામ કરો છો કે જે તેના પ્રમાણપત્રો સ્વયં બનાવે છે અને તમે આવા કોઈ પ્રમાણપત્રનો ઉપયોગ કરીને તે સંસ્થાની આંતરિક વેબસાઇટથી કનેક્ટ કરવાનો પ્રયાસ કરી રહ્યાં હોવ, તો તમે આ સમસ્યાને સુરક્ષિત રીતે હલ કરી શકો છો. તમે તમારી સંસ્થાના રૂટ પ્રમાણપત્રને &quot;રૂટ પ્રમાણપત્ર&quot; તરીકે આયાત કરી શકો છો અને પછી તમારી સંસ્થા દ્વારા રજૂ કરાયેલા અથવા ચકાસાયેલા પ્રમાણપત્રો વિશ્વસનીય બનશે અને પછી આગલી વખતે જ્યારે તમે કોઈ આંતરિક વેબસાઇટથી કનેક્ટ કરવાનો પ્રયાસ કરશો ત્યારે તમને આ ભૂલ દેખાશે નહીં. તમારા કમ્પ્યુટરમાં નવું રૂટ પ્રમાણપત્ર ઉમેરવામાં સહાયતા માટે તમારી સંસ્થાના મદદ સ્ટાફનો સંપર્ક કરો.</translation>
 <translation id="376466258076168640"><ph name="PRODUCT_NAME"/> ને મારું ડિફૉલ્ટ બ્રાઉઝર બનાવો</translation>
@@ -2234,7 +2344,9 @@
 <translation id="2101225219012730419">સંસ્કરણ:</translation>
 <translation id="1570242578492689919">ફૉન્ટ્સ અને એન્કોડિંગ</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE"/> - <ph name="PAGE_URL"/></translation>
+<translation id="9004241046659393937">વિંડો 5 ને સક્રિય કરો</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
+<translation id="271907111803265074">તમે મોબાઇલ ડેટાની બહાર છો. <ph name="NETWORK"/> નો ઉપયોગ કરવા માટે બીજો પ્લાન ખરીદો.</translation>
 <translation id="3031557471081358569">આયાત કરવા માટે આઇટમ્સ પસંદ કરો:</translation>
 <translation id="1368832886055348810">ડાબેથી જમણે</translation>
 <translation id="3031433885594348982"><ph name="DOMAIN"/> થી તમારું કનેક્શન નબળા એન્ક્રિપ્શન સાથે એન્ક્રિપ્ટેડ છે.</translation>
@@ -2248,9 +2360,11 @@
 <translation id="8820901253980281117">પૉપ-અપ અપવાદો</translation>
 <translation id="1143142264369994168">પ્રમાણપત્ર હસ્તાક્ષરકર્તા</translation>
 <translation id="904949795138183864"><ph name="URL"/> પરનું વેબપૃષ્ઠ હવે અસ્તિત્વમાં નથી.</translation>
+<translation id="214353449635805613">સ્ક્રીનશોટ પ્રદેશ</translation>
 <translation id="3228279582454007836">તમે આજ પહેલાં ક્યારેય આ સાઇટની મુલાકાત લીધી નથી.</translation>
 <translation id="2159017110205600596">કસ્ટમાઇઝ કરો...</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
+<translation id="6093803049406781019">પ્રોફાઇલ કાઢી નાખો</translation>
 <translation id="2814489978934728345">આ પૃષ્ઠ લોડ કરવાનું રોકો</translation>
 <translation id="2354001756790975382">અન્ય બુકમાર્ક્સ</translation>
 <translation id="8561574028787046517"><ph name="PRODUCT_NAME"/> અપડેટ કરવામાં આવ્યું છે</translation>
@@ -2278,11 +2392,13 @@
 <translation id="5189060859917252173">પ્રમાણપત્ર &quot;<ph name="CERTIFICATE_NAME"/>&quot; એ પ્રમાણન અધિકારીનું પ્રતિનિધિત્વ કરે છે.</translation>
 <translation id="3785852283863272759">પૃષ્ઠ સ્થાન ઇમેઇલ કરો</translation>
 <translation id="2255317897038918278">Microsoft Time Stamping</translation>
+<translation id="2529377200258391825">CAPS LOCK ચાલુ છે\nરદ કરવા માટે શોધ કી દબાવો</translation>
 <translation id="3493881266323043047">માન્યતા</translation>
 <translation id="8124784517328765068">હોસ્ટનામનો દાખલો:</translation>
 <translation id="5979421442488174909"><ph name="LANGUAGE"/> માં &amp;અનુવાદ કરો</translation>
 <translation id="7326526699920221209">બૅટરી: <ph name="PRECENTAGE"/>%</translation>
 <translation id="952992212772159698">સક્રિય કરેલું નથી</translation>
+<translation id="3040136669977326843">$2 માંથી $1 આઇટમ્સ ચોંટાડવામાં આવી રહી છે...</translation>
 <translation id="8299269255470343364">જાપાનીઝ</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME"/> (<ph name="DEVICE"/>)</translation>
 <translation id="6429639049555216915">એપ્લિકેશન હાલમાં પહોંચી શકવા યોગ્ય નથી. </translation>
@@ -2295,6 +2411,7 @@
 <translation id="5951823343679007761">બૅટરી નથી</translation>
 <translation id="1618661679583408047">સર્વરનું સુરક્ષા પ્રમાણપત્ર હજી સુધી માન્ય નથી!</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
+<translation id="793703748056186466">કેટલીક સેટિંગ્સને એક્સ્ટેંશન દ્વારા મેનેજ કરવામાં આવી રહી છે.</translation>
 <translation id="3065140616557457172">શોધવા માટે ટાઇપ કરો અથવા નેવિગેટ કરવા માટે એક URL દાખલ કરો – દરેક વસ્તુ કાર્ય કરે છે.</translation>
 <translation id="5509693895992845810">આ &amp;રૂપમાં સાચવો...</translation>
 <translation id="5986279928654338866">સર્વર <ph name="DOMAIN"/> ને વપરાશકર્તાનામ અને પાસવર્ડની જરૂર છે.</translation>
@@ -2316,12 +2433,15 @@
 <translation id="7422192691352527311">પસંદગીઓ...</translation>
 <translation id="354211537509721945">વ્યવસ્થાપક દ્વારા અપડેટ્સ અક્ષમ કરાયા છે</translation>
 <translation id="1375198122581997741">વર્ઝન વિશે</translation>
+<translation id="642282551015776456">આ નામનો ઉપયોગ ફોલ્ડર નામની કોઈ ફાઇલ તરીકે થઈ શકશે નહીં</translation>
 <translation id="2345435964258511234">GPU રેન્ડર હોય ત્યારે પ્રદર્શનના ઊભા રીફ્રેશ દર સાથેના સમન્વયનને અક્ષમ કરે છે. તેનાથી ફ્રેમ દર 
         60 hertz ને ઓળંગી શકે છે. બેંચમાર્કિંગના હેતુ માટે ઉપયોગી હોવા છતાં, તે ઝડપી સ્ક્રીન અપડેટ્સ દરમિયાન દૃશ્યાત્મક ઉગ્રતામાં પરિણમે છે.</translation>
 <translation id="7915471803647590281">કૃપા કરીને પ્રતિસાદ મોકલતા પહેલા શું થઈ રહ્યું છે તે અમને કહો.</translation>
 <translation id="5725124651280963564"><ph name="HOST_NAME"/> માટે એક કી જનરેટ કરવા માટે કૃપા કરીને <ph name="TOKEN_NAME"/>માં સાઇન ઇન કરો.</translation>
 <translation id="8418113698656761985">રોમેનિયન કીબોર્ડ</translation>
+<translation id="3206175707080061730">&quot;$1&quot; નામવાળી એક ફાઇલ પહેલાથી અસ્તિત્વમાં છે. શું તમે તેને બદલવા માગો છો?</translation>
 <translation id="5976160379964388480">અન્ય લોકો</translation>
+<translation id="1648797160541174252"><ph name="NETWORK_NAME"/> માટે નેટવર્ક પ્રોક્સી</translation>
 <translation id="3665842570601375360">સુરક્ષા:</translation>
 <translation id="1430915738399379752">છાપો</translation>
 <translation id="7999087758969799248">માનક ઇનપુટ મેથડ</translation>
@@ -2332,8 +2452,8 @@
 <translation id="3324684065575061611">(ઉદ્યોગ નીતિ દ્વારા અક્ષમ)</translation>
 <translation id="7385854874724088939">છાપવાનો પ્રયાસ કરતી વખતે કાંઈક ખોટું થઈ ગયું.  કૃપા કરી તમારું મુદ્રણ તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="770015031906360009">ગ્રીક</translation>
-<translation id="3834901049798243128">અપવાદોને અવગણો અને તૃતીય-પક્ષ કૂકીઝને સેટ થવાથી અવરોધિત કરો</translation>
 <translation id="8116152017593700047">તમે અહીંથી સાચવેલા સ્ક્રીનશૉટ્સ પસંદ કરી શકો છો. હાલમાં ત્યાં કોઈ સ્ક્રીનશૉટ્સ ઉપલબ્ધ નથી. તમે સ્ક્રીનશૉટ લેવા માટે Ctrl + &quot;Overview Mode&quot; કીને એકસાથે દબાવી શકો છો. તમે લીધેલા છેલ્લા ત્રણ સ્ક્રીનશૉટ્સ અહીં પ્રદર્શિત થશે.</translation>
+<translation id="6718553273653596934">&quot;$1&quot; ખોલવામાં અક્ષમ છીએ: $2</translation>
 <translation id="3454157711543303649">સક્રિયતા પૂર્ણ</translation>
 <translation id="884923133447025588">રદ કરવાની કોઈ મેકેનિઝમ મળી નથી.</translation>
 <translation id="556042886152191864">બટન</translation>
@@ -2383,6 +2503,7 @@
 <translation id="3616741288025931835">બ્રાઉઝિંગ ડેટા &amp;સાફ કરો...</translation>
 <translation id="3313622045786997898">પ્રમાણપત્ર હસ્તાક્ષર મૂલ્ય</translation>
 <translation id="8535005006684281994">નેટસ્કેપ પ્રમાણપત્ર નવીકરણ URL</translation>
+<translation id="6970856801391541997">વિશિષ્ટ પૃષ્ઠો છાપો</translation>
 <translation id="2440604414813129000">સ્રોત જુ&amp;ઓ</translation>
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">રિઝ્યુમે</translation>
@@ -2392,6 +2513,8 @@
 <translation id="7323391064335160098">VPN સપોર્ટ</translation>
 <translation id="3929673387302322681">પ્રગતિ - અસ્થાયી</translation>
 <translation id="4251486191409116828">એપ્લિકેશન શૉર્ટકટ બનાવવામાં નિષ્ફળ</translation>
+<translation id="7077872827894353012">ધ્યાન ન આપેલ પ્રોટોકૉલ હેન્ડલર્સ</translation>
+<translation id="3009731429620355204">સત્રો</translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
 <translation id="7828272290962178636">સર્વરની પાસે વિનંતી પૂરી કરવા માટે જોઈતી કાર્યક્ષમતા છે.</translation>
 <translation id="7823073559911777904">પ્રોક્સી સેટિંગ્સ બદલો...</translation>
@@ -2401,6 +2524,7 @@
 <translation id="4856478137399998590">તમારી મોબાઇલ ડેટા સેવા સક્રિય થઈ છે અને ઉપયોગ માટે તૈયાર છે</translation>
 <translation id="3978212384680351466">સમન્વયિત બુકમાર્ક્સ</translation>
 <translation id="1676388805288306495">વેબપેજીસ માટે ડિફૉલ્ટ ફૉન્ટ અને ભાષા બદલો.</translation>
+<translation id="3648607100222897006">આ પ્રાયોગિક સુવિધાઓ કોઈપણ સમયે બદલાઈ, ભંગ અથવા અદૃશ્ય થઈ શકે છે. જો તમે આમાંના કોઈ એક પ્રયોગને ચાલુ કરો છો તો તેનું શું થશે તેની અમે કોઈ ગેરેંટી આપી શકતા નથી, બને કે તમારું બ્રાઉઝર પણ ભડકી ઉઠે. તમારું બ્રાઉઝર તમારા ડેટાને કાઢી નાખી શકે છે, અથવા તમારી સુરક્ષા અને ગોપનીયતા સાથે અનપેક્ષિત રીતે ચેડા થઈ શકે છે. તમે જે પ્રયોગોને અક્ષમ કરો છો તે આ બ્રાઉઝરના બધા વપરાશકર્તાઓ માટે સક્ષમ થશે. કૃપા કરીને સાવધાનીપૂર્વક આગળ વધો.</translation>
 <translation id="8969761905474557563">GPU દ્વારા એક્લિલરેટ કરેલું સંમિશ્રણ</translation>
 <translation id="3937640725563832867">પ્રમાણપત્ર રજૂકર્તા વૈકલ્પિક નામ</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
@@ -2409,6 +2533,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="7564847347806291057">પ્રક્રિયાનો અંત કરો</translation>
 <translation id="1607220950420093847">તમારું એકાઉન્ટ કાઢી નાખવામાં અથવા અક્ષમ કરવામાં આવ્યું હોઈ શકે છે. કૃપા કરીને સાઇન આઉટ કરો.</translation>
+<translation id="5660872996699900541">ત્યાં કોઈ સત્ર નથી.</translation>
 <translation id="5613695965848159202">અજ્ઞાત ઓળખાણ:</translation>
 <translation id="2233320200890047564">અનુક્રમિત ડેટાબેસેસ</translation>
 <translation id="7063412606254013905">ફિશીંગ સ્કેમ્સ વિશે વધુ જાણો.</translation>
@@ -2418,12 +2543,13 @@
 <translation id="1242521815104806351">કનેક્શન વિગતો</translation>
 <translation id="5295309862264981122">નેવિગેશનની પુષ્ટિ કરો</translation>
 <translation id="1492817554256909552">ઍક્સેસ પોઇન્ટનું નામ:</translation>
+<translation id="901834265349196618">ઇમેઇલ</translation>
+<translation id="5835133142369577970">કૃપા કરી કોઈ ફોલ્ડર નામનો ઉલ્લેખ કરો</translation>
 <translation id="5546865291508181392">શોધો</translation>
 <translation id="1999115740519098545">સ્ટાર્ટઅપ પર</translation>
 <translation id="2983818520079887040">સેટિંગ્સ...</translation>
 <translation id="1465619815762735808">ચલાવવા માટે ક્લિક કરો</translation>
 <translation id="6941937518557314510">તમારા પ્રમાણપત્ર સાથે <ph name="HOST_NAME"/> ને અધિકૃત કરવા માટે કૃપા કરીને <ph name="TOKEN_NAME"/> પર સાઇન ઇન કરો.</translation>
-<translation id="2783600004153937501">તમારા IT વ્યવસ્થાપક દ્વારા કેટલાક વિકલ્પોને અક્ષમ કરવામાં આવ્યા છે.</translation>
 <translation id="2099686503067610784">સર્વર પ્રમાણપત્ર &quot;<ph name="CERTIFICATE_NAME"/>&quot; ને કાઢી નાખીએ?</translation>
 <translation id="9027603907212475920">સમન્વયન સેટ કરો...</translation>
 <translation id="6873213799448839504">સ્ટ્રિંગને સ્વતઃ કમિટ કરો</translation>
@@ -2445,7 +2571,6 @@
 <translation id="2812989263793994277">કોઈ પણ છબીઓ બતાવશો નહીં</translation>
 <translation id="7190251665563814471"><ph name="HOST"/> પર આ પ્લગ-ઇન્સને હંમેશા મંજૂરી આપો </translation>
 <translation id="6845383723252244143">ફોલ્ડર પસંદ કરો</translation>
-<translation id="3653550165444444309">એક મેઘ મુદ્રણ ઉમેરો... </translation>
 <translation id="8925458182817574960">&amp;સેટિંગ્સ</translation>
 <translation id="6361850914223837199">ભૂલ વિગતો:</translation>
 <translation id="8948393169621400698"><ph name="HOST"/> પર પ્લગ-ઇન્સને હંમેશા મંજૂરી આપો </translation>
@@ -2471,8 +2596,6 @@
 <translation id="8051695050440594747"><ph name="MEGABYTES"/> MB ઉપલબ્ધ</translation>
 <translation id="7088615885725309056">વધુ જૂનું</translation>
 <translation id="461656879692943278"><ph name="HOST_NAME"/> માં <ph name="ELEMENTS_HOST_NAME"/> ની સામગ્રી રહેલી છે, જે સાઇટ મૉલવેર વિતરિત કરવા માટે જાણીતી છે. જો તમે આ સાઇટની મુલાકાત લેશો તો તમારું કમ્પ્યુટર વાયરસ પકડી શકે છે.</translation>
-<translation id="6468702002867725697">સંવેદનશીલ ડેટા (પાસવર્ડ્સ) એન્ક્રિપ્ટ કરો </translation>
-<translation id="1387022316521171484">આ પ્રાયોગિક સુવિધાઓ કોઈપણ સમયે બદલાઈ, ભંગ અથવા અદૃશ્ય થઈ શકે છે. જો તમે આમાંના કોઈ એક પ્રયોગને ચાલુ કરો છો તો તેનું શું થશે તેની અમે કોઈ ગેરેંટી આપી શકતા નથી, બને કે તમારું બ્રાઉઝર પણ ભડકી ઉઠે. તમારું બ્રાઉઝર તમારા ડેટાને કાઢી નાખી શકે છે, અથવા તમારી સુરક્ષા અને ગોપનીયતા સાથે અનપેક્ષિત રીતે ચેડા થઈ શકે છે. કૃપા કરીને સાવધાનીપૂર્વક આગળ વધો.</translation>
 <translation id="2143778271340628265">મેન્યુઅલ પ્રોક્સી ગોઠવણી</translation>
 <translation id="5294529402252479912">Adobe Reader હમણાં અપડેટ કરો</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
@@ -2496,6 +2619,7 @@
 <translation id="5554573843028719904">અન્ય Wi-Fi નેટવર્ક...</translation>
 <translation id="5034259512732355072">બીજી ડાયરેક્ટરી પસંદ કરો...</translation>
 <translation id="8885905466771744233">ઉલ્લેખિત એક્સટેન્શન માટે ખાનગી કી પહેલાંથી અસતિત્વમાં છે. તે કી ફરીથી વાપરો અથવા પહેલા તેને કાઢી નાખો.</translation>
+<translation id="1105057716440030352">HTML ફાઇલથી બુકમાર્ક્સ આયાત કરો...</translation>
 <translation id="7831504847856284956">એક સરનામું ઉમેરો</translation>
 <translation id="7505152414826719222">સ્થાનિક સ્ટોરેજ</translation>
 <translation id="2541423446708352368">બધા ડાઉનલોડ્સ બતાવો</translation>
@@ -2507,11 +2631,12 @@
 <translation id="2137808486242513288">વપરાશકર્તાને ઉમેરો</translation>
 <translation id="6193618946302416945">તે પૃષ્ઠોનું અનુવાદ કરવા નિવેદન કે જે હું વાંચું છું તે ભાષામાં નથી</translation>
 <translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
+<translation id="1588870296199743671">આની સાથે લિંક ખોલો...</translation>
 <translation id="4287167099933143704">PIN અનલોકિંગ કી દાખલ કરો </translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> દિવસ</translation>
 <translation id="3129140854689651517">આગલું શોધો </translation>
-<translation id="7221585318879598658">sans-serif</translation>
 <translation id="5558129378926964177">Zoom &amp;In</translation>
+<translation id="4089178294798788516">ક્લિપબોર્ડ પર પસંદગીને કાપો.</translation>
 <translation id="6451458296329894277">ફોર્મનાં ફરી સબમિશનની પુષ્ટિ કરો</translation>
 <translation id="5116333507878097773"><ph name="NUMBER_ONE"/> કલાક</translation>
 <translation id="8028152732786498049">આ ફક્ત <ph name="CHROME_WEB_STORE"/> થી જ ઇન્સ્ટોલ થઈ શકે છે.</translation>
@@ -2549,6 +2674,7 @@
 <translation id="3414952576877147120">કદ:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secs ago</translation>
 <translation id="7009102566764819240">નીચે પૃષ્ઠ માટેનાં બધા અસુરક્ષિત ઘટકોની સૂચિ છે. વિશિષ્ટ સાધન માટેનાં મૉલવેર થ્રેડ પર વધુ માહિતી માટે ડાયગ્નોસ્ટિક લિંક પર ક્લિક કરો. જો તમે જાણો છો કે સાધનની ભૂલથી ફિશીંગ તરીકે રિપોર્ટ થઈ છે, તો “ભૂલની જાણ કરો” લિંકને ક્લિક કરો.</translation>
+<translation id="4536111748245793305">પ્રોફાઇલ <ph name="VALUE"/></translation>
 <translation id="4923417429809017348">આ પૃષ્ઠ કોઈ અજ્ઞાત ભાષામાંથી <ph name="LANGUAGE_LANGUAGE"/> માં અનુવાદિત કરવામાં આવ્યું છે</translation>
 <translation id="3631337165634322335">ચાલુ છૂપા સત્ર પર ફક્ત નીચેના અપવાદો લાગુ થાય છે.</translation>
 <translation id="676327646545845024">આ પ્રકારની તમામ લિંક્સ માટે સંવાદ ફરી ક્યારેય બતાવશો નહીં.</translation>
@@ -2567,6 +2693,7 @@
 <translation id="957120528631539888">માન્યતા સંદેશાઓ બતાવવાનું અને ફોર્મ સબમિશન અવરોધવાનું અક્ષમ કરો </translation>
 <translation id="146000042969587795">આ ફ્રેમ અવરોધિત કરવામાં આવી હતી કારણ કે તેમાં કેટલીક અસુરક્ષિત સામગ્રી છે.</translation>
 <translation id="3258924582848461629">જાપાનીઓ માટેની હસ્તાક્ષર ઇનપુટ પદ્ધતિ</translation>
+<translation id="6338268303901873939">પેસ્ટ કરો નિષ્ફળ, આઇટમ અસ્તિત્વમાં છે: $1</translation>
 <translation id="8112223930265703044">દરેક વસ્તુ</translation>
 <translation id="3968739731834770921">કાના</translation>
 <translation id="3729920814805072072">સાચવેલા પાસવર્ડ્સ મેનેજ કરો...</translation>
@@ -2586,6 +2713,7 @@
 <translation id="486595306984036763">ફિશીંગ રીપોર્ટ ખોલો</translation>
 <translation id="3140353188828248647">સરનામાં બાર પર ફોકસ કરો</translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
+<translation id="1185611560928829188">મેજિક સૂચિ <ph name="MAGIC_COUNT"/></translation>
 <translation id="5565871407246142825">ક્રેડિટ કાર્ડ્સ</translation>
 <translation id="2587203970400270934">ઑપરેટર કોડ:</translation>
 <translation id="3355936511340229503">કનેક્શન ભૂલ</translation>
@@ -2598,7 +2726,6 @@
 <translation id="1893137424981664888">પ્લગ-ઇન્સ ઇન્સ્ટોલ કરેલા નથી.</translation>
 <translation id="3718288130002896473">વર્તન</translation>
 <translation id="2168725742002792683">ફાઇલ એક્સ્ટેંશન</translation>
-<translation id="2285615095750412963">એક્સ્ટેંશન ઇન્સ્ટોલ કર્યું: <ph name="DATE"/></translation>
 <translation id="7861805612256278846">સાઇન ઇન નથી</translation>
 <translation id="1753905327828125965">સૌથી વધુ જોવાયેલ</translation>
 <translation id="8116972784401310538">&amp;બુકમાર્ક વ્યવસ્થાપક</translation>
@@ -2607,6 +2734,7 @@
 <translation id="621638399744152264"><ph name="VALUE"/>%</translation>
 <translation id="4927301649992043040">પૅક એક્સ્ટેંશન</translation>
 <translation id="8679658258416378906">ટૅબ 5 સક્રિય કરો</translation>
+<translation id="9049835026521739061">હંગુલ મોડ</translation>
 <translation id="4763816722366148126">પહેલાની ઇનપુટ પદ્ધતિ પસંદ કરો</translation>
 <translation id="6458308652667395253">JavaScript અવરોધિત કરવાનું મેનેજ કરો...</translation>
 <translation id="8435334418765210033">યાદ રાખેલા નેટવર્ક્સ</translation>
@@ -2614,6 +2742,7 @@
 <translation id="5125751979347152379">અમાન્ય URL.</translation>
 <translation id="2791364193466153585">સુરક્ષા માહિતી</translation>
 <translation id="4673916386520338632">એપ્લિકેશન ઇન્સ્ટોલ કરી શકાઈ નહી કારણ કે તે '<ph name="APP_NAME"/>' સાથે વિરોધાભાસ ઉભો કરે છે, જે પહેલેથી ઇન્સ્ટોલ કરેલી છે.</translation>
+<translation id="6989426679472387780">જ્યારે લખવાનું સક્ષમ હોય ત્યારે પૃષ્ઠ સામગ્રીઓના GPU એક્સિલરેટેડ રેખાંકન સક્ષમ કરો.</translation>
 <translation id="2024918351532495204">તમારું ઉપકરણ ઓફલાઇન છે</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="5607923769356613853">
@@ -2667,6 +2796,7 @@
 <translation id="3951872452847539732">તમારી નેટવર્ક પ્રોક્સી સેટિંગ્સ એક એક્સ્ટેંશન દ્વારા સંચાલિત થઈ રહી છે.</translation>
 <translation id="6442697326824312960">ટૅબ અનપિન કરો</translation>
 <translation id="6382612843547381371"><ph name="START_DATE_TIME"/> થી <ph name="END_DATE_TIME"/> સુધી માન્ય</translation>
+<translation id="5653352175373198541">તમારી Chromebook નું સેટઅપ પૂર્ણ કરવા હેતુ ઇન્ટરનેટને કનેક્ટ કરવા માટે કૃપા કરી નેટવર્ક મેનૂ (ઉપર જમણે)નો ઉપયોગ કરો.</translation>
 <translation id="6869402422344886127">ચેક કરેલું ચેક બૉક્સ</translation>
 <translation id="5637380810526272785">ઇનપુટ પદ્ધતિ</translation>
 <translation id="404928562651467259">ચેતવણી</translation>
@@ -2680,18 +2810,30 @@
 <translation id="8326395326942127023">ડેટાબેસ નામ:</translation>
 <translation id="7507930499305566459">પ્રતિસાદકર્તાની સ્થિતિનું પ્રમાણપત્ર</translation>
 <translation id="2689915906323125315">મારા Google એકાઉન્ટ પાસવર્ડનો ઉપયોગ કરો</translation>
+<translation id="407097265175181480"><ph name="BEGIN_BOLD"/>તમે છુપામાં ગયા છો<ph name="END_BOLD"/>. તમે આ વિંડોમાં જુઓ છો તે પૃષ્ઠો તમારા બ્રાઉઝર ઇતિહાસ અથવા શોધ ઇતિહાસમાં પ્રદર્શિત થતાં નથી અને તમે &lt;strong&gt;બધી&lt;/strong&gt; ખુલ્લી છુપી વિંડોઝ બંધ કરી લો પછી, તેઓ તમારા કમ્પ્યુટર પર અન્ય ટ્રેસેસ, જેમ કે કૂકીઝ રાખશે નહીં. તેમ છતાં, તમે ડાઉનલોડ કરો તે કોઈપણ ફાઇલો અથવા તમે બનાવો તે બુકમાર્ક્સ, આરક્ષિત રહેશે.
+        <ph name="LINE_BREAK"/>
+        <ph name="BEGIN_BOLD"/>છુપા પર જવું તે અન્ય લોકો, સર્વર્સ અથવા સૉફ્ટવેરને અસર કરતું નથી. આનાથી સાવચેત રહો:<ph name="END_BOLD"/>
+        <ph name="BEGIN_LIST"/>
+          <ph name="BEGIN_LIST_ITEM"/>વેબસાઇટ્સ કે જે તમારા વિશેની માહિતી એકત્રિત અથવા શેર કરતી હોય<ph name="END_LIST_ITEM"/>
+          <ph name="BEGIN_LIST_ITEM"/>ઈંટરનેટ સેવા પ્રદાતાઓ કે જે તમે મુલાકાત લો છો તે પૃષ્ઠોનો ટ્રૅક રાખતા હોય<ph name="END_LIST_ITEM"/>
+          <ph name="BEGIN_LIST_ITEM"/>દૂર્ભાવનાપૂર્ણ સૉફ્ટવેર કે જે ફ્રી સ્માઇલીઝના બદલામાં તમારા કીસ્ટ્રૉક્સનો ટ્રૅક્સ રાખે છે<ph name="END_LIST_ITEM"/>
+          <ph name="BEGIN_LIST_ITEM"/>ગુપ્ત એજન્ટ્સ દ્વારા દેખરેખ<ph name="END_LIST_ITEM"/>
+          <ph name="BEGIN_LIST_ITEM"/>તમારી પાછળ ઊભા રહેતા લોકો<ph name="END_LIST_ITEM"/>
+        <ph name="END_LIST"/>
+        છુપી ઓળખ બ્રાઉઝિંગ વિશે <ph name="BEGIN_LINK"/>વધુ જાણો<ph name="END_LINK"/>.</translation>
 <translation id="7727721885715384408">નામ બદલો...</translation>
 <translation id="2604243255129603442"><ph name="NAME_OF_EXTENSION"/> અક્ષમ કરવામાં આવ્યું છે. જો તમે બુકમાર્ક સમન્વયનને બંધ કરો છો, તો તમે તેને ટૂલ્સ મેનૂ દ્વારા એક્સેસ કરવાયોગ્ય એકસટેન્શન પૃષ્ઠ પર ફરી સક્ષમ કરી શકો છો.</translation>
 <translation id="2024621544377454980">પૃષ્ઠો લોડ થઈ રહ્યા નથી</translation>
 <translation id="7136694880210472378">ડિફૉલ્ટ બનાવો</translation>
+<translation id="6173478701774033550">પ્રોફાઇલ આયકન</translation>
 <translation id="7681202901521675750">SIM કાર્ડ લૉક થયું છે, કૃપા કરીને PIN દાખલ કરો. બાકી પ્રયાસો:<ph name="TRIES_COUNT"/></translation>
-<translation id="7420789336015002755">ફોલ્ડરના નામમાં અમાન્ય અક્ષરો છે: $1</translation>
 <translation id="9215535963167691630">વધુ પ્રિંટર્સ...</translation>
 <translation id="1731346223650886555">અર્ધવિરામ</translation>
 <translation id="158849752021629804">હોમ નેટવર્કની આવશ્યકતા છે</translation>
 <translation id="7339763383339757376">PKCS #7, સિંગલ પ્રમાણપત્ર</translation>
 <translation id="7587108133605326224">બાલ્ટિક</translation>
 <translation id="3991936620356087075">તમે ઘણી બધી વાર ખોટી PIN અનલોકિંગ કી દાખલ કરી છે. તમારું SIM કાર્ડ કાયમી રીતે અક્ષમ થઈ ગયું છે.</translation>
+<translation id="9071761050483587943">Google સાઇટ્સ માટે સ્વચાલિત સાઇન ઇનને સક્ષમ કરો</translation>
 <translation id="936801553271523408">સિસ્ટમ ડાયગ્નોસ્ટિક ડેટા</translation>
 <translation id="6389701355360299052">વેબ પૃષ્ઠ, ફક્ત HTML</translation>
 <translation id="8067791725177197206">ચાલુ રાખીએ »</translation>
@@ -2720,9 +2862,11 @@
 <translation id="6684737638449364721">બધો બ્રાઉઝિંગ ડેટા સાફ કરો...</translation>
 <translation id="3954582159466790312">અવાજ&amp; ચાલુ કરો</translation>
 <translation id="1110772031432362678">કોઈ નેટવર્ક્સ મળ્યા નથી.</translation>
+<translation id="7737525395960596244">સ્વતઃસુધારોને સુધારવામાં મદદ કરો. આ સક્ષમ કરતાની સાથે, Chrome તમને અવારનવાર સ્વતઃભરો ટીમને વધારાના પ્રતિસાદ મોકલવાનો સંકેત આપશે.</translation>
 <translation id="3936390757709632190">નવા ટૅબમાં ઑડિયો &amp;ખોલો</translation>
 <translation id="7297622089831776169">ઇનપુટ &amp;પદ્ધતિઓ</translation>
 <translation id="5731698828607291678">ટૅબ્સ અથવા વિંડોઝ</translation>
+<translation id="1902427289834481011"><ph name="SHORT_PRODUCT_NAME"/> માંથી દૂર કરો.</translation>
 <translation id="1152775729948968688">જોકે, આ પૃષ્ઠમાં અન્ય એવા સાધનો છે જે સુરક્ષિત નથી. ટ્રાંઝિટમાં હોવા પર આ સાધનોને અન્ય લોકો દ્વારા જોઈ શકાશે અને પૃષ્ઠનો વ્યવવહાર બદલવા માટે હુમલાખોર દ્વારા ફેરફાર કરવામાં આવી શકે છે.</translation>
 <translation id="604124094241169006">સ્વચલિત</translation>
 <translation id="862542460444371744">&amp;એક્સ્ટેન્શન્સ</translation>
@@ -2731,12 +2875,12 @@
 <translation id="2927657246008729253">બદલો...</translation>
 <translation id="7978412674231730200">ખાનગી કી</translation>
 <translation id="5308380583665731573">કનેક્ટ</translation>
+<translation id="4535127706710932914">ડિફૉલ્ટ પ્રોફાઇલ</translation>
 <translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="9049981332609050619">તમે <ph name="DOMAIN"/> સુધી પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે અમાન્ય પ્રમાણપત્ર પ્રસ્તુત કર્યું. </translation>
 <translation id="4414232939543644979">નવી &amp;છુપી વિંડો</translation>
 <translation id="1693754753824026215"><ph name="SITE"/> પરનું પૃષ્ઠ કહે છે:</translation>
 <translation id="7148804936871729015"><ph name="URL"/> માટેના સર્વરે પ્રતિસાદ આપવા માટે ઘણો સમય લીધો.તે ઓવરલોડ હોઈ શકે છે.</translation>
-<translation id="5950967683057767490">L2TP/IPSec + પૂર્વ-શેર કરેલી કી</translation>
 <translation id="8108473539339615591">XSS ઑડિટર</translation>
 <translation id="1902576642799138955">માન્ય અવધિ</translation>
 <translation id="4910021444507283344">WebGL</translation>
@@ -2747,7 +2891,6 @@
 <translation id="4443536555189480885">&amp;Help</translation>
 <translation id="340485819826776184">સરનામાં બારમાં લખેલા URL અને શોધોને પૂર્ણ કરવામાં સહાય માટે અનુમાન સેવાનો ઉપયોગ કરો</translation>
 <translation id="4074900173531346617">ઇમેઇલ હસ્તાક્ષરકર્તા પ્રમાણપત્ર</translation>
-<translation id="4743103415223548376">પ્રિંટ પૂર્વાવલોકન નિષ્ફળ ગયું કારણ કે તમે છાપવાનો પ્રયાસ કરી રહ્યા હતા તે પૃષ્ઠ બંધ કરવામાં આવ્યું છે.</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="9052208328806230490">તમે એકાઉન્ટ <ph name="EMAIL"/> નો ઉપયોગ કરીને, તમારા પ્રિંટર્સને <ph name="CLOUD_PRINT_NAME"/> સાથે નોંધાવ્યા છે</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>
@@ -2779,7 +2922,9 @@
 <translation id="6630452975878488444">પસંદગી શૉર્ટકટ</translation>
 <translation id="8709969075297564489">સર્વર પ્રમાણપત્ર રદ થયાની તપાસ કરો</translation>
 <translation id="8698171900303917290">ઇન્સ્ટોલ કરવામાં સમસ્યા છે?</translation>
+<translation id="2440443888409942524">પિનયિન ઇનપુટ મેથડ (US Dvorak કીબોર્ડ માટે)</translation>
 <translation id="830868413617744215">બીટા</translation>
+<translation id="2679392804024228530">તમામ સમન્વયિત ડેટાને એન્ક્રિપ્ટ કરો</translation>
 <translation id="5925147183566400388">સર્ટિફિકેશન પ્રેક્ટીસ સ્ટેટમેન્ટ પોઇન્ટર</translation>
 <translation id="1497270430858433901">તમે <ph name="DATE"/> પર <ph name="DATA_AMOUNT"/> મફત ઉપયોગ પ્રાપ્ત કર્યા</translation>
 <translation id="8150167929304790980">પૂરું નામ</translation>
@@ -2793,6 +2938,7 @@
 <translation id="4180788401304023883">CA પ્રમાણપત્ર &quot;<ph name="CERTIFICATE_NAME"/>&quot; ને કાઢીએ?</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
 <translation id="1709220265083931213">વિગતવાર વિકલ્પો</translation>
+<translation id="3436440123324878555">પ્લાન ખરીદો...</translation>
 <translation id="5748266869826978907">તમારી DNS સેટિંગ્સ તપાસો. આ શું છે તે ખાતરીપૂર્વક જાણતા ન હો તો તમારા નેટવર્ક વ્યવસ્થાપકનો સંપર્ક કરો.</translation>
 <translation id="4771973620359291008">કોઈ અજ્ઞાત ભૂલ આવી.</translation>
 <translation id="5509914365760201064">રજૂકર્તા: <ph name="CERTIFICATE_AUTHORITY"/></translation>
@@ -2803,7 +2949,6 @@
 <translation id="8615618338313291042">છૂપી એપ્લિકેશન: <ph name="APP_NAME"/></translation>
 <translation id="978146274692397928">પ્રારંભિક વિરામચિહ્નની પહોળાઈ પૂર્ણ છે</translation>
 <translation id="8959027566438633317"><ph name="EXTENSION_NAME"/> ઇન્સ્ટોલ કરીએ?</translation>
-<translation id="3250798078333049843">તમામ ડેટાને એન્ક્રિપ્ટ કરો</translation>
 <translation id="8155798677707647270">નવું વર્ઝન ઇન્સ્ટોલ કરી રહ્યું છે...</translation>
 <translation id="6886871292305414135">લિંક નવા &amp;ટૅબમાં ખોલો</translation>
 <translation id="1639192739400715787">સુરક્ષા સેટિંગ્સને ઍકસેસ કરવા માટે SIM કાર્ડPIN દાખલ કરો</translation>
@@ -2811,6 +2956,7 @@
 <translation id="3950924596163729246">નેટવર્ક ઍક્સેસ કરવામાં અક્ષમ છે.</translation>
 <translation id="2835170189407361413">ફોર્મ સાફ કરો</translation>
 <translation id="4631110328717267096">સિસ્ટમ અપડેટ નિષ્ફળ ગયું</translation>
+<translation id="361846151613043842">વિંડો 1 ને સક્રિય કરો</translation>
 <translation id="3695919544155087829">કૃપા કરીને આ પ્રમાણપત્ર ફાઇલને એન્ક્રિપ્ટ કરવા માટે ઉપયોગમાં લેવાયો હતો તે પાસવર્ડ દાખલ કરો.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="6308937455967653460">લિં&amp;કને આ રીતે સાચવો...</translation>
@@ -2824,7 +2970,6 @@
 <translation id="480990236307250886">હોમ પેજ ખોલો</translation>
 <translation id="8286036467436129157">સાઇન ઇન</translation>
 <translation id="5999940714422617743"><ph name="EXTENSION_NAME"/> હવે ઇન્સ્ટોલ થઈ ગયું છે.</translation>
-<translation id="6665950606684122759">અનઇન્સ્ટોલ કરો<ph name="EXTENSION_NAME"/></translation>
 <translation id="1122198203221319518">&amp;સાધનો</translation>
 <translation id="5757539081890243754">હોમ પેજ</translation>
 <translation id="2760009672169282879">બલ્ગેરિયન ધ્વન્યાત્મક કીબોર્ડ</translation>
@@ -2836,6 +2981,7 @@
 <translation id="1753682364559456262">છબી અવરોધિત કરવું મેનેજ કરો...</translation>
 <translation id="6550675742724504774">વિકલ્પો</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>
+<translation id="2889064240420137087">આની સાથે લિંક ખોલો...</translation>
 <translation id="431076611119798497">&amp;વિગતો</translation>
 <translation id="737801893573836157">સિસ્ટમ શીર્ષક બાર છુપાવો અને સંક્ષિપ્ત બોર્ડર્સનો ઉપયોગ કરો</translation>
 <translation id="5352235189388345738">તે ઍક્સેસ કરી શકાય છે:</translation>
@@ -2864,11 +3010,13 @@
 <translation id="4055738107007928968">તમે <ph name="DOMAIN"/> પર પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું પ્રમાણપત્ર પ્રસ્તુત કર્યું. આનો અર્થ એ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો બનાવટી હોઈ શકે છે અને તે સર્વર તમારું અપેક્ષિત સર્વર (તમે કોઈ હુમલાખોર સાથે વાતચીત કરી શકો છો) ન પણ હોય. તમારે આગળ વધવું જોઈએ નહીં.</translation>
 <translation id="5308689395849655368">ક્રેશની જાણ કરવાનું અક્ષમ કર્યું છે.</translation>
 <translation id="8372369524088641025">ખરાબ WEP કી</translation>
+<translation id="7349325818436011302">આર્કાઇવ ખોલો</translation>
 <translation id="8689341121182997459">સમાપ્તિ:</translation>
 <translation id="899403249577094719">નેટસ્કેપ પ્રમાણપત્ર બેઝ URL</translation>
 <translation id="2737363922397526254">સંકુચિત કરો...</translation>
 <translation id="4880827082731008257">ઇતિહાસ શોધ</translation>
 <translation id="8661290697478713397">છુ&amp;પી વિંડોમાં લિંક ખોલો</translation>
+<translation id="8997135628821231"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>] (<ph name="DEVICE"/>)</translation>
 <translation id="4197700912384709145"><ph name="NUMBER_ZERO"/> સેકંડ</translation>
 <translation id="2158448795143567596"> WebGL API દ્વારા 3D ગ્રાફિક્સનો ઉપયોગ કરવા માટે કેનવાસ ઘટકોને સક્ષમ કરે છે.</translation>
 <translation id="1702534956030472451">પશ્ચિમી</translation>
@@ -2885,6 +3033,7 @@
         નેટવર્ક ડિવાઇસેસ ફરીથી પ્રારંભ કરો.</translation>
 <translation id="4042471398575101546">પૃષ્ઠ ઉમેરો</translation>
 <translation id="8848709220963126773">શિફ્ટ કી મોડ સ્વિચ</translation>
+<translation id="3703445029708071516">લખેલા URL નું સમન્વયન કરવું સક્ષમ કરો</translation>
 <translation id="4871865824885782245">તારીખ  અને  સમય વિકલ્પો ખોલો...</translation>
 <translation id="8828933418460119530">DNS નામ</translation>
 <translation id="988159990683914416">વિકાસકર્તા બિલ્ડ</translation>
@@ -2900,12 +3049,14 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="7005848115657603926">અમાન્ય પૃષ્ઠ શ્રેણી, <ph name="EXAMPLE_PAGE_RANGE"/> નો ઉપયોગ કરો</translation>
 <translation id="3705722231355495246">-</translation>
+<translation id="3448976534399424402">સાધન મેનૂ પર ફોકસ કરો</translation>
 <translation id="2635102990349508383">એકાઉન્ટ સાઇન-ઇન વિગતો હજી દાખલ કરી નથી.</translation>
 <translation id="6902055721023340732">સ્વતઃગોઠવણી URL</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
 <translation id="3759876923365568382"><ph name="NUMBER_FEW"/> દિવસ બાકી</translation>
 <translation id="295228163843771014">તમે પાસવર્ડ્સને સમન્વિત ન કરવાનું પસંદ કર્યું છે; તમે ક્યારેય પણ પછીથી તમારી સમન્વયન સેટિંગ્સ બદલીને તમારો વિચાર બદલી શકો છો.</translation>
+<translation id="2478277127709346535">વિંડો 7 ને સક્રિય કરો</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME"/>  શરૂ કરો</translation>
 <translation id="7828702903116529889"><ph name="PRODUCT_NAME"/>
         ને નેટવર્ક ઍક્સેસ કરવામાં મુશ્કેલી આવી રહી છે.
@@ -2914,9 +3065,13 @@
         <ph name="PRODUCT_NAME"/>
         એ તમારા કમ્પ્યુટર પર એક ઘુસણખોર છે અને તે તેને ઇન્ટરનેટથી કનેક્ટ થવાથી અવરોધિત કરી રહ્યું છે.</translation>
 <translation id="878069093594050299">આ પ્રમાણપત્ર નીચેના ઉપયોગો માટે ચકાસવામાં આવ્યું છે:</translation>
+<translation id="3910322943643470802">પ્રોક્સી સેટિંગ્સમાં ફેરફાર કરવા માટે, &quot;શેર કરેલી પ્રોક્સીઓનો ઉપયોગ કરો&quot; સેટિંગને સક્ષમ કરો.</translation>
+<translation id="6463782637635274853">પેસ્ટ કરી રહ્યું છે...</translation>
 <translation id="5852112051279473187">અરે! આ ઉપકરણની નોંધણી કરતી વખતે ખરેખર કંઈક ખોટું થયું હતું. કૃપા કરીને ફરી પ્રયાસ કરો અથવા તમારા સપોર્ટ પ્રતિનિધિનો સંપર્ક કરો.</translation>
+<translation id="6894066781028910720">ફાઇલ મેનેજર ખોલો </translation>
 <translation id="1664314758578115406">પૃષ્ઠ ઉમેરો...</translation>
 <translation id="7088418943933034707">પ્રમાણપત્રો મેનેજ કરો...</translation>
+<translation id="497421865427891073">આગળ જાઓ</translation>
 <translation id="8482183012530311851">ડિવાઇસને સ્કેન કરી રહ્યું છે...</translation>
 <translation id="3127589841327267804">પીવાયજેજે</translation>
 <translation id="3668823961463113931">હેન્ડલર્સ</translation>
@@ -2925,7 +3080,6 @@
 <translation id="4084682180776658562">બુકમાર્ક</translation>
 <translation id="8859057652521303089">તમારી ભાષા પસંદ કરો:</translation>
 <translation id="3030138564564344289">ડાઉનલોડનો ફરીથી પ્રયાસ કરો</translation>
-<translation id="8525552230188318924">પાસવર્ડ સમન્વયન ગોઠવો. </translation>
 <translation id="4381091992796011497">વપરાશકર્તાનું નામ:</translation>
 <translation id="5830720307094128296">પૃષ્ઠ આ &amp;રીતે સાચવો...</translation>
 <translation id="2448312741937722512">પ્રકાર</translation>
@@ -2949,12 +3103,14 @@
 <translation id="5818334088068591797">તમને ક્યાં સમસ્યા આવી રહી છે? (આવશ્યક)</translation>
 <translation id="6264485186158353794">સુરક્ષા પર પાછા</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7739677892468726004">પ્રોફાઇલને કસ્ટમાઇઝ કરો...</translation>
 <translation id="5130080518784460891">ઇટેન</translation>
 <translation id="5847724078457510387">આ સાઇટ DNS માંના તેના તમામ માન્ય પ્રમાણપત્રોને સૂચિબદ્ધ કરે છે. તેમછતાં સર્વર જેનો ઉપયોગ કરે છે તે સૂચિબદ્ધ નથી.</translation>
 <translation id="1394853081832053657">અવાજ ઓળખ વિકલ્પો</translation>
 <translation id="5037676449506322593">બધા પસંદ કરો</translation>
 <translation id="2785530881066938471">સામગ્રી સ્ક્રિપ્ટ માટે '<ph name="RELATIVE_PATH"/>' ફાઇલ લોડ કરી શકાઈ નથી. તે UTF-8 એન્કોડેડ નથી.</translation>
 <translation id="3807747707162121253">&amp;કેન્સલ કરો</translation>
+<translation id="2740531572673183784">ઓકે</translation>
 <translation id="3306897190788753224">વાતચીત વૈયક્તિકરણ, સૂચનો આધારિત-ઇતિહાસ અને વપરાશકર્તા શબ્દકોષને અસ્થાયીરૂપે અક્ષમ કરો. </translation>
 <translation id="2489435327075806094">પોઇન્ટર ગતિ:</translation>
 <translation id="2574102660421949343"><ph name="DOMAIN"/> તરફથી કૂકીઝને મંજૂરી છે.</translation>
@@ -2965,6 +3121,7 @@
 <translation id="1639058970766796751">એન્ક્યૂ</translation>
 <translation id="1177437665183591855">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ</translation>
 <translation id="8467473010914675605">કોરિયન ઇનપુટ મેથડ</translation>
+<translation id="6538242311007136163">સત્રો<ph name="SESSION_COUNT"/></translation>
 <translation id="3819800052061700452">&amp;પૂર્ણ સ્ક્રીન</translation>
 <translation id="5419540894229653647"><ph name="ERROR_DESCRIPTION_TEXT"/>
         <ph name="LINE_BREAK"/>
@@ -2975,8 +3132,10 @@
 <translation id="2333340435262918287">તમારા ફેરફારો તમે આગલી વખતે <ph name="PRODUCT_NAME"/> ફરીથી લોંચ કરશો ત્યારે પ્રભાવમાં આવશે.</translation>
 <translation id="5906065664303289925">હાર્ડવેર સરનામું:</translation>
 <translation id="3178000186192127858">ફક્ત વાંચવા માટે</translation>
+<translation id="4236660184841105427">બધી ફાઇલો બતાવો</translation>
 <translation id="2187895286714876935">સર્વર પ્રમાણપત્ર આયાત કરવામાં ભૂલ</translation>
 <translation id="5460896875189097758">સ્થાનિક રીતે સ્ટોર કરેલો ડેટા</translation>
+<translation id="4882473678324857464">બુકમાર્ક્સ પર ફોકસ કરો</translation>
 <translation id="4618990963915449444"><ph name="DEVICE_NAME"/> પરની તમામ ફાઇલો ભૂંસી નખાશે.</translation>
 <translation id="614998064310228828">ઉપકરણ મૉડેલ: </translation>
 <translation id="1581962803218266616">ફાઇન્ડર માં બતાવો</translation>
@@ -3043,6 +3202,7 @@
 <translation id="2445081178310039857">એક્સ્ટેંશન રૂટ ડાયરેક્ટરી આવશ્યક છે.</translation>
 <translation id="8251578425305135684">થંબનેલ દૂર કર્યું.</translation>
 <translation id="6163522313638838258">તમામ વિસ્તૃત કરો...</translation>
+<translation id="4988364749377710401">પ્રોફાઇલ મેનેજ કરો</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
 <translation id="5803531701633845775">કર્સરને ખસેડ્યા વગર, પાછળથી શબ્દસમૂહ પસંદ કરો</translation>
 <translation id="1918141783557917887">&amp;નાનું</translation>
@@ -3052,6 +3212,7 @@
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
 <translation id="4481249487722541506">અનપેક્ડ એક્સટેન્શનને લોડ કરો...</translation>
 <translation id="8180239481735238521"> પૃષ્ઠ</translation>
+<translation id="68673033339624707">નવી પ્રોફાઇલ બનાવો...</translation>
 <translation id="2963783323012015985">ટર્કિશ કીબોર્ડ</translation>
 <translation id="2149973817440762519">બુકમાર્ક સંપાદિત કરો</translation>
 <translation id="5431318178759467895">રંગ</translation>
@@ -3078,8 +3239,10 @@
 <translation id="1146498888431277930">SSL કનેક્શન ભૂલ</translation>
 <translation id="8041089156583427627">પ્રતિસાદ મોકલો</translation>
 <translation id="6394627529324717982">અલ્પવિરામ</translation>
+<translation id="3325146402434751578">પ્રિંટર્સને <ph name="CLOUD_PRINT_NAME"/> માં સેટ અથવા મેનેજ કરો</translation>
 <translation id="253434972992662860">&amp;થોભો</translation>
 <translation id="335985608243443814">બ્રાઉઝ કરો...</translation>
+<translation id="8048178988014360106">એક નવી <ph name="SHORT_PRODUCT_NAME"/> પ્રોફાઇલ બનાવો</translation>
 <translation id="7802488492289385605">Google જાપાનીઝ ઇનપુટ (યુએસ ડ્વોરક કીબોર્ડ માટે)</translation>
 <translation id="7452120598248906474">નિશ્ચિત-પહોળાઇ ફૉન્ટ</translation>
 <translation id="3129687551880844787">સત્ર સંગ્રહ</translation>
@@ -3094,9 +3257,12 @@
 <translation id="5988840637546770870">વિકાસ ચૅનલ પર વિચારોની તપાસણી થાય છે, પણ ઘણીવાર તે ખૂબ અસ્થાયી હોઈ શકે છે. કૃપા કરીને સાવધાનીપૂર્વક આગળ વધો.</translation>
 <translation id="3569713929051927529">ફોલ્ડર ઉમેરો...</translation>
 <translation id="4032664149172368180">જાપાનીઝ ઇનપુટ મેથડ (યુએસ ડ્વોરેક કીબોર્ડ માટે)</translation>
+<translation id="747459581954555080">બધુ પુનર્પ્રાપ્ત કરો</translation>
 <translation id="3748706263662799310">બગની જાણ કરો</translation>
 <translation id="7167486101654761064">આ પ્રકારની ફાઇલો &amp;હંમેશા ખોલો</translation>
 <translation id="4283623729247862189">ઓપ્ટિકલ ઉપકરણ</translation>
+<translation id="7027559794548152684">છેલ્લે <ph name="USER_EMAIL_ADDRESS"/> થી સમન્વયિત થયું. 
+        <ph name="BEGIN_LINK"/>Google ડેશબોર્ડ<ph name="END_LINK"/> પર સમન્વયિત કરેલો ડેટા મેનેજ કરો.</translation>
 <translation id="5826507051599432481">કોમન નેમ (CN)</translation>
 <translation id="8914326144705007149">બહુ મોટું</translation>
 <translation id="4215444178533108414">આઇટમ્સ દૂર કરવાનું પૂર્ણ</translation>
@@ -3128,6 +3294,7 @@
 <translation id="100242374795662595">અજ્ઞાત ઉપકરણ</translation>
 <translation id="9087725134750123268">કૂકીઝ અને અન્ય સાઇટનો ડેટા કાઢી નાખો</translation>
 <translation id="5050255233730056751">લખેલ URLs</translation>
+<translation id="294238750282796288">કેટલાક વિકલ્પોને એક્સ્ટેંશન દ્વારા મેનેજ થઈ રહ્યાં છે.</translation>
 <translation id="3349155901412833452">ઉમેદવારોની સૂચિ પૃષ્ઠબદ્ધ કરવા માટે , અને . કીઝનો ઉપયોગ કરો. </translation>
 <translation id="3981681824736556685">જો તમે પ્રોક્સી સર્વરનો ઉપયોગ કરી રહ્યા છો, તો પ્રોક્સી સર્વર કામ કરી રહ્યું છે તેની ખાતરી કરવા માટે તમારી પ્રોક્સી સેટિંગ્સ તપાસો . 
         અથવા તમારા નેટવર્ક વ્યવસ્થાપક સાથે સંપર્ક કરો. જો તમે 
@@ -3155,10 +3322,12 @@
 <translation id="4886690096315032939">ખોલવા પર અસ્તિત્વમાંના ટૅબ પર ફોકસ કરો</translation>
 <translation id="5729712731028706266">&amp;જુઓ</translation>
 <translation id="774576312655125744"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> અને <ph name="NUMBER_OF_OTHER_WEBSITES"/> અન્ય વેબસાઇટ્સ પરનો તમારો ડેટા</translation>
+<translation id="9023317578768157226"><ph name="HANDLER_TITLE"/> (<ph name="HANDLER_HOSTNAME"/>) ને બધી <ph name="PROTOCOL"/> લિંક્સ ખોલવાની મંજૂરી આપીએ?</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> તરફથી SMS</translation>
 <translation id="4508765956121923607">સ્રો&amp;ત જુઓ</translation>
 <translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>
 <translation id="8080048886850452639">ઑડિયો URL કૉ&amp;પિ કરો</translation>
+<translation id="50501183967525113">GPU એક્સિલરેટેડ રેખાંકન</translation>
 <translation id="2817109084437064140">આયાત કરો અને ઉપકરણ સાથે બાંધો</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET"/>) <ph name="LONGTZNAME"/> (<ph name="EXEMPLARCITY"/>)</translation>
 <translation id="619398760000422129">પ્લગ-ઇન્સ (દા.ત. Adobe Flash Player, Quicktime વગેરે)</translation>
@@ -3169,6 +3338,7 @@
 <translation id="3529020546926570314">મેઘ મુદ્રણો ઍક્સેસ કરવા માટે સાઇન ઇન કરો </translation>
 <translation id="1384721974622518101">શું તમે જાણો છો કે તમે ઉપરનાં બૉક્સથી સીધા જ શોધ કરી શકો છો?</translation>
 <translation id="992543612453727859">શબ્દસમૂહોને સામે ઉમેરો </translation>
+<translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="1559528461873125649">આવી કોઈ ફાઇલ અથવા નિર્દેશિકા નથી</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="1244147615850840081">વાહક</translation>

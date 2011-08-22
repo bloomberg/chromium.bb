@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Vous avez tenté d'accéder à &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le certificat présenté par le serveur contient des erreurs. Google Chrome ne peut pas utiliser un certificat avec des erreurs et valider l'identité du site auquel vous tentez d'accéder. Ne poursuivez pas, car votre connexion n'est pas sécurisée.</translation>
 <translation id="8738921060445980047">Version inconnue</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
+<translation id="2748463065602559597">Cette page Google Chrome est sécurisée.</translation>
 <translation id="3324235665723428530">Votre profil ne peut être utilisé, car il provient d'une version plus récente de Chrome.\n\nIl est possible que certaines fonctionnalités ne soient pas disponibles. Veuillez indiquer un autre répertoire de profil ou utiliser une version plus récente de Chrome.</translation>
 <translation id="9073088951656332330">Aucune installation de Google Chrome ni de Google Chrome Frame à mettre à jour.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome utilise parfois des services Web pour améliorer votre confort de navigation.</translation>
 <translation id="7436949144778751379">Google Chrome requiert Windows XP ou une version ultérieure. Certaines fonctionnalités risquent de ne pas fonctionner.</translation>
 <translation id="7100330187273168372">Google Chrome ne peut ni lire ni écrire vers son répertoire de données :\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galerie des thèmes Google Chrome</translation>
 <translation id="7938170099933661772">Impossible d'afficher l'aperçu avant l'impression sur Google Chrome lorsque la visionneuse de documents PDF intégrée est désactivée. Pour l'afficher, veuillez accéder à <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, activer &quot;Chrome PDF Viewer&quot;, puis réessayer.</translation>
 <translation id="6757767188268205357">Ne plus me notifier</translation>
 <translation id="2290095356545025170">Voulez-vous vraiment désinstaller Google Chrome ?</translation>
+<translation id="1243097286641060337">Impossible de mettre à jour Google Chrome ni Google Chrome Frame en raison de paramètres de stratégies de groupe incompatibles dans Google Update. Utilisez l'éditeur de stratégie de groupe pour définir le remplacement de la stratégie de mise à jour de l'application Google Chrome Binaries, puis réessayez.</translation>
 <translation id="6087062680442281307">Google Chrome est un navigateur Web qui exécute des applications et des pages Web en un temps record. Il est rapide, stable et simple à utiliser. Naviguez sur Internet en toute sécurité grâce à la protection intégrée de Google Chrome contre le phishing et les logiciels malveillants.</translation>
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Détection d'un conflit avec une autre application installée.</translation>
 <translation id="7018032895891496381">Google Chrome utilise votre moteur de recherche par défaut actuel, à savoir <ph name="PAGE_TITLE"/>. Voulez-vous conserver ce moteur de recherche par défaut ?</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>
+<translation id="5211087808649701653">Lancer la boîte de dialogue d'impression native</translation>
 <translation id="8669527147644353129">Application d'aide de Google Chrome</translation>
 <translation id="3444832043240812445">Cette page affiche uniquement des informations sur les erreurs récentes si vous <ph name="BEGIN_LINK"/>activez l'envoi de rapports d'erreur<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ne répond pas. Voulez-vous le relancer maintenant ?</translation>

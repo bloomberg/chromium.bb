@@ -14,19 +14,27 @@
 <translation id="5183383917553127163">Cho phép bạn chỉ định các tiện ích mở rộng không thuộc danh sách đen. Giá trị danh sách đen là * có nghĩa là tất cả tiện ích mở rộng đều được đưa vào danh sách đen và người dùng chỉ có thể cài đặt các tiện ích mở rộng trong danh sách trắng. Theo mặc định, tất cả tiện ích mở rộng đều được đưa vào danh sách trắng nhưng nếu tất cả tiện ích mở rộng đều đã được đưa vào danh sách đen theo chính sách thì có thể sử dụng danh sách trắng để ghi đè chính sách đó.</translation>
 <translation id="3185009703220253572">kể từ phiên bản <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Chặn hình ảnh trên các trang web này</translation>
+<translation id="2908277604670530363">Số lượng tối đa kết nối đồng thời tới máy chủ proxy</translation>
 <translation id="3512877396423730277">Kiểm soát xem nội dung phụ của bên thứ ba trên trang có được phép bật lên hộp thoại Xác thực cơ bản HTTP không. Thông thường tính năng này bị vô hiệu như là một phương pháp phòng thủ lừa đảo.</translation>
 <translation id="1438955478865681012">Định cấu hình các chính sách liên quan đến tiện ích mở rộng. Người dùng không được phép cài đặt các tiện ích mở rộng được đưa vào danh sách đen trừ khi chúng được đưa vào danh sách trắng. Bạn cũng có thể buộc <ph name="PRODUCT_NAME"/> tự động cài đặt tiện ích mở rộng bằng cách chỉ định chúng trong <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Danh sách đen được ưu tiên hơn danh sách các tiện ích mở rộng bắt buộc.</translation>
 <translation id="4070280487546651935">Chỉ định từ khóa, là các phím tắt được sử dụng trong thanh địa chỉ để kích hoạt tìm kiếm nhà cung cấp này. Tùy chọn.</translation>
+<translation id="6036523166753287175">Bật tính năng chặn tường lửa từ máy chủ truy cập từ xa</translation>
 <translation id="1096105751829466145">Nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="7567380065339179813">Cho phép trình cắm trên các trang web này</translation>
 <translation id="5290940294294002042">Chỉ định danh sách trình cắm mà người dùng có thể bật hoặc tắt</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
 <translation id="1827523283178827583">Sử dụng máy chủ proxy cố định</translation>
 <translation id="3021409116652377124">Vô hiệu hóa trình tìm kiếm trình cắm</translation>
+<translation id="3288595667065905535">Kênh phát hành</translation>
 <translation id="2455652143675149114">Cho phép bạn chỉ định tác vụ khi khởi động. Nếu bạn chọn 'Mở trang chủ', trang chủ sẽ luôn được mở khi bạn khởi động <ph name="PRODUCT_NAME"/>. Nếu bạn chọn 'Mở lại các URL được mở lần cuối', các URL được mở vào lần cuối <ph name="PRODUCT_NAME"/> được đóng lại sẽ được mở lại. Nếu bạn chọn 'Mở danh sách URL', danh sách 'Các URL được mở khi khởi động' sẽ được mở khi người dùng khởi động <ph name="PRODUCT_NAME"/>. Nếu bạn bật cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>. Vô hiệu hóa cài đặt này tương đương với không định cấu hình cài đặt này. Người dùng sẽ vẫn có thể thay đổi cài đặt này trong <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4980635395568992380">Loại dữ liệu:</translation>
 <translation id="3096595567015595053">Danh sách trình cắm được kích hoạt</translation>
 <translation id="7998998292074133333">Bật khóa khi các thiết bị sử dụng ChromeOS ngừng hoạt động hoặc bị treo. Nếu bạn bật cài đặt này, người dùng sẽ được yêu cầu cung cấp mật khẩu để mở khóa các thiết bị sử dụng ChromeOS khỏi chế độ ngủ. Nếu bạn tắt cài đặt này, người dùng sẽ không được yêu cầu cung cấp mật khẩu để đánh thức các thiết bị ChromeOS khỏi chế độ ngủ. Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="8781881969636812184">Cho phép sử dụng STUN và máy chủ chuyển tiếp khi máy khách từ xa cố gắng thiết lập kết nối với máy này.
+
+          Nếu cài đặt này được bật, máy khách từ xa có thể khám phá và kết nối với máy này ngay cả khi các máy khách này bị tường lửa phân tách.
+
+          Nếu cài đặt này bị vô hiệu và kết nối UDP đi bị lọc bởi tường lửa, máy này sẽ chỉ cho phép kết nối từ các máy khách trong mạng cục bộ.</translation>
 <translation id="5912364507361265851">Cho phép người dùng hiển thị mật khẩu trong Trình quản lý mật khẩu</translation>
 <translation id="6999540307315670568">Bật thanh dấu trang trên trang tab mới trong <ph name="PRODUCT_NAME"/>. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME"/> sẽ hiển thị một thanh dấu trang trên trang &quot;Tab mới&quot;. Nếu bạn tắt cài đặt này, người dùng sẽ không bao giờ nhìn thấy thanh dấu trang. Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8828766846428537606">Định cấu hình trang chủ mặc định trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cấu hình đó. Cài đặt trang chủ của người dùng chỉ được khóa hoàn toàn nếu bạn chọn trang chủ là trang tab mới hoặc đặt trang chủ là một URL và chỉ định URL trang chủ. Nếu bạn không chỉ định URL trang chủ, người dùng sẽ vẫn có thể đặt trang chủ là trang tab mới bằng cách chỉ định 'chrome://newtab'.</translation>
@@ -86,6 +94,7 @@
 <translation id="1522425503138261032">Cho phép các trang web theo dõi vị trí thực của người dùng</translation>
 <translation id="6569553007023490040">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này. Loại trang chủ có thể được đặt là một URL mà bạn chỉ định tại đây hoặc được đặt là Trang tab mới. Nếu bạn chọn Trang tab mới, chính sách này sẽ được bỏ qua. Nếu bạn bật cài đặt này, người dùng không thể thay đổi URL trang chủ của họ trong <ph name="PRODUCT_NAME"/>, nhưng họ vẫn có thể chọn Trang tab mới làm trang chủ.</translation>
 <translation id="4423597592074154136">Chỉ định cài đặt proxy theo cách thủ công</translation>
+<translation id="209586405398070749">Kênh ổn định</translation>
 <translation id="3137734558440858947">Cho phép bạn đặt có cho phép các trang web hiển thị hình ảnh hay không. Bạn có thể cho phép hoặc từ chối hiển thị hình ảnh đối với tất cả các trang web.</translation>
 <translation id="9035964157729712237">Các ID tiện ích mở rộng được miễn khỏi danh sách đen</translation>
 <translation id="3523486089716697173">Cho phép bạn thiết lập danh sách các mẫu url chỉ định các trang web không được phép hiển thị hình ảnh.</translation>
@@ -93,11 +102,13 @@
 <translation id="6022948604095165524">Tác vụ khi khởi động</translation>
 <translation id="3704185423155638353">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định các trang web không được phép chạy JavaScript.</translation>
 <translation id="7628741187268592472">Chỉ định thư viện GSSAPI nào được sử dụng để Xác thực HTTP. Bạn có thể chỉ đặt tên thư viện hoặc đường dẫn đầy đủ. Nếu không có cài đặt nào được cung cấp, <ph name="PRODUCT_NAME"/> sẽ quay trở lại sử dụng tên thư viện mặc định.</translation>
+<translation id="2435100545355792516">Bật chế độ ẩn danh</translation>
 <translation id="605147781209875705">Chính sách này không được chấp thuận, sử dụng ProxyMode thay thế. Cho phép bạn chỉ định máy chủ proxy mà <ph name="PRODUCT_NAME"/> sử dụng và ngăn người dùng thay đổi cài đặt proxy. Nếu bạn chọn không bao giờ sử dụng máy chủ proxy và luôn kết nối trực tiếp, tất cả các tùy chọn khác đều được bỏ qua. Nếu bạn chọn sử dụng cài đặt proxy hệ thống hoặc tự động phát hiện máy chủ proxy, tất cả các tùy chọn khác đều được bỏ qua. Nếu bạn chọn cài đặt proxy thủ công, bạn có thể chỉ định thêm tùy chọn trong 'Địa chỉ hoặc URL của máy chủ proxy', 'URL tới tệp .pac proxy' và 'Danh sách các quy tắc bỏ qua proxy được phân cách bằng dấu  phẩy'. Để xem ví dụ chi tiết, hãy truy cập: <ph name="PROXY_HELP_URL"/> Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME"/> sẽ bỏ qua tất cả các tùy chọn liên quan đến proxy được chỉ định từ dòng lệnh.</translation>
 <translation id="6516561898504323308">Chặn cookie của bên thứ ba. Bật cài đặt này sẽ ngăn các phần tử trang web không thuộc miền nằm trong thanh địa chỉ của trình duyệt thiết lập cookie. Tắt cài đặt này cho phép các phần tử trang web không thuộc miền trong thanh địa chỉ của trình duyệt thiết lập cookie và ngăn người dùng thay đổi cài đặt này.</translation>
 <translation id="3864818549971490907">Cài đặt trình cắm mặc định</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 hoặc mới hơn</translation>
 <translation id="6886010724297701888"><ph name="PRODUCT_NAME"/> sẽ bỏ qua mọi proxy cho danh sách các máy chủ lưu trữ được cung cấp ở đây. Chính sách này chỉ có hiệu lực nếu bạn đã chọn cài đặt proxy thủ công tại 'Chọn cách chỉ định cài đặt máy chủ proxy'. Để biết thêm ví dụ chi tiết, truy cập: <ph name="PROXY_HELP_URL"/></translation>
+<translation id="5770738360657678870">Kênh nhà phát triển (có thể không ổn định)</translation>
 <translation id="2959898425599642200">Quy tắc bỏ qua proxy</translation>
 <translation id="7337941689192402544">Đặt thư mục dữ liệu người dùng <ph name="PRODUCT_NAME"/></translation>
 <translation id="5326137997741385453">Định cấu hình thư mục mà <ph name="PRODUCT_NAME"/> sẽ sử dụng để lưu trữ các tệp đã lưu trong bộ nhớ cache trong đĩa.
@@ -109,6 +120,7 @@
 <translation id="6641981670621198190">Tắt hỗ trợ dành cho API đồ họa 3D</translation>
 <translation id="2741921267428646309">Đây là danh sách các chính sách mà <ph name="PRODUCT_NAME"/> tuân theo. Bạn không cần thay đổi các cài đặt này bằng tay! Bạn có thể tải xuống các mẫu dễ sử dụng từ <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>. Danh sách các chính sách được hỗ trợ cho Chromium và Google Chrome giống nhau nhưng vị trí sổ đăng ký Windows của chúng khác nhau. Danh sách này bắt đầu bằng <ph name="CHROMIUM_KEY"/> đối với các chính sách cho Chromium và <ph name="GOOGLE_CHROME_KEY"/> đối với các chính sách cho Google Chrome.</translation>
 <translation id="7003746348783715221">Tùy chọn <ph name="PRODUCT_NAME"/></translation>
+<translation id="4723829699367336876">Bật tính năng chặn tường lửa từ máy khách truy cập từ xa</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>
 <translation id="7063895219334505671">Cho phép cửa sổ bật lên trên các trang web này</translation>
 <translation id="2824715612115726353">Bật chế độ Ẩn danh</translation>
@@ -120,7 +132,6 @@
 <translation id="6157537876488211233">Danh sách quy tắc bỏ qua proxy được phân cách bằng dấu phẩy</translation>
 <translation id="7091198954851103976">Luôn chạy plugin yêu cầu ủy quyền</translation>
 <translation id="8870318296973696995">Trang chủ</translation>
-<translation id="4505337077089958219">Tốc độ làm mới chính sách</translation>
 <translation id="996560596616541671">Các máy chủ mà <ph name="PRODUCT_NAME"/> có thể ủy quyền.</translation>
 <translation id="3866249974567520381">Mô tả</translation>
 <translation id="2236488539271255289">Không cho phép bất kỳ trang web nào đặt dữ liệu cục bộ</translation>
@@ -163,6 +174,7 @@
 <translation id="2493647325461842868">Cho phép đề xuất tìm kiếm trong Thanh địa chỉ của <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này. Nếu bạn bật cài đặt này, đề xuất tìm kiếm sẽ được sử dụng. Nếu bạn tắt cài đặt này, đề xuất tìm kiếm sẽ không bao giờ được sử dụng. Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/></translation>
 <translation id="6775978436824155661">Cho phép in trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi cài đặt này. Nếu cài đặt này được bật hoặc không được định cấu hình, người dùng có thể in. Nếu cài đặt này bị tắt, người dùng không thể in từ <ph name="PRODUCT_NAME"/>. Chế độ in bị tắt trong trình đơn cờ lê, tiện ích mở rộng, các ứng dụng JavaScript, v.v.. Vẫn có thể in từ các trình cắm bỏ qua <ph name="PRODUCT_NAME"/> khi in. Ví dụ: một số ứng dụng Flash nhất định có tùy chọn in trong trình đơn ngữ cảnh và tùy chọn này sẽ không bị tắt.</translation>
 <translation id="6908640907898649429">Định cấu hình nhà cung cấp dịch vụ tìm kiếm mặc định. Bạn có thể chỉ định nhà cung cấp dịch vụ tìm kiếm mặc định mà người dùng sẽ sử dụng hoặc chọn tắt tìm kiếm mặc định.</translation>
+<translation id="8621254262912103717">Chỉ định số lượng tối đa kết nối đồng thời tới máy chủ proxy. Một số máy chủ proxy không thể xử lý nhiều kết nối cùng lúc đối với mỗi máy khách và điều này có thể được giải quyết bằng cách đặt chính sách này về giá trị thấp hơn. Giá trị của chính sách này phải nhỏ hơn 100 và lớn hơn 6 và giá trị mặc định là 32. Một số ứng dụng web tiêu hao nhiều kết nối với GET treo, vì vậy, việc hạ giá trị xuống dưới 32 có thể khiến mạng của trình duyệt treo nếu mở quá nhiều trang web như vậy. Bạn tự chịu rủi ro khi hạ thấp dưới giá trị mặc định.</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
 <translation id="4027608872760987929">Bật nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="2223598546285729819">Cài đặt thông báo mặc định</translation>
@@ -173,6 +185,7 @@
 <translation id="4733471537137819387">Các chính sách liên quan đến xác thực HTTP tích hợp.</translation>
 <translation id="4608714268466689965">Cho phép bạn thiết lập có cho phép các trang web hiển thị thông báo trên màn hình hay không. Việc hiển thị thông báo trên màn hình có thể được cho phép theo mặc định, từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web muốn hiển thị thông báo trên màn hình.</translation>
 <translation id="8951350807133946005">Thiết lập thư mục bộ nhớ cache trên đĩa</translation>
+<translation id="3866571346358522601">Chỉ định khoảng thời gian tính bằng mili giây mà dịch vụ quản lý thiết bị được truy vấn về thông tin chính sách người dùng. Việc thiết lập chính sách này ghi đè giá trị mặc định là 3 giờ. Các giá trị hợp lệ dành cho chính sách này nằm trong khoảng từ 1800000 (30 phút) tới 86400000 (1 ngày). Mọi giá trị không nằm trong khoảng này sẽ được gắn với ranh giới tương ứng.</translation>
 <translation id="1334051495529796396">Chỉ định Kerberos SPN được tạo được dựa trên tên DNS chuẩn hay tên gốc được nhập. Nếu bạn bật cài đặt này, tra cứu CNAME sẽ được bỏ qua và tên máy chủ sẽ được sử dụng như được nhập. Nếu bạn tắt cài đặt này, tên chuẩn của máy chủ sẽ được xác định thông qua tra cứu CNAME.</translation>
 <translation id="166427968280387991">Máy chủ proxy</translation>
 <translation id="2805707493867224476">Cho phép tất cả các trang web hiển thị cửa sổ bật lên</translation>
@@ -216,10 +229,17 @@
 <translation id="5226033722357981948">Chỉ định có nên vô hiệu hóa trình tìm kiếm trình cắm hay không</translation>
 <translation id="9068358498333390522">Cho phép bạn đặt có cho phép các trang web hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.</translation>
 <translation id="7194407337890404814">Tên nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
+<translation id="1630808801738981930">Bật mỗi phiên ở chế độ Ẩn danh trong <ph name="PRODUCT_NAME"/>. Nếu cài đặt này được bật, người dùng chỉ có thể mở các trang ở chế độ ẩn danh. Nếu cài đặt này bị vô hiệu hoặc không được định cấu hình, người dùng cũng có thể sử dụng trình duyệt ở chế độ thông thường.</translation>
 <translation id="5535973522252703021">Danh sách trắng máy chủ ủy quyền Kerberos</translation>
 <translation id="4554678280250165996">Chỉ định các giao thức Xác thực HTTP mà <ph name="PRODUCT_NAME"/> hỗ trợ. Các giá trị có thể có là 'basic', 'digest', 'ntlm' và 'negotiate'. Phân tách  nhiều giá trị bằng dấu phẩy.</translation>
 <translation id="5034323863800401760">Vô hiệu hóa các Công cụ dành cho nhà phát triển trong bảng điều khiển JavaScript. Nếu bạn bật cài đặt này, các Công cụ dành cho nhà phát triển không thể truy cập được và các phần tử của trang web không thể kiểm tra được nữa. Mọi phím tắt và mọi trình đơn hoặc các mục nhập trình đơn ngữ cảnh để mở các Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript sẽ bị vô hiệu hóa.</translation>
 <translation id="6013842521938070987">Vô hiệu hóa các giao thức được liệt kê trong <ph name="PRODUCT_NAME"/>. Các URL sử dụng lược đồ từ danh sách này sẽ không tải và không thể được điều hướng tới.</translation>
+<translation id="4845434807154973261">Cho phép sử dụng STUN và máy chủ chuyển tiếp khi kết nối với máy khách từ xa.
+
+          Nếu cài đặt này được bật, máy này có thể khám phá và kết nối với máy chủ từ xa ngay cả khi các máy chủ này bị tường lửa phân tách.
+
+          Nếu cài đặt này bị vô hiệu và kết nối UDP đi bị lọc bởi tường lửa, máy này chỉ có thể kết nối với máy chủ trong mạng cục bộ.</translation>
 <translation id="4056910949759281379">Vô hiệu hóa giao thức SPDY</translation>
 <translation id="3808945828600697669">Chỉ định danh sách các trình cắm bị vô hiệu hóa</translation>
 <translation id="2187975305444384964">Cho phép bạn đặt có cho phép các trang web theo dõi vị trí thực của người dùng hay không. Theo dõi vị trí thực của người dùng có thể được cho phép theo mặc định, từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web yêu cầu cung cấp vị trí thực.</translation>
@@ -227,15 +247,22 @@
 <translation id="2098658257603918882">Bật tính năng báo cáo sử dụng và dữ liệu liên quan đến sự cố</translation>
 <translation id="1151353063931113432">Cho phép hình ảnh trên các trang web này</translation>
 <translation id="4498075447689127727">Cho phép bạn thiết lập danh sách các mẫu url chỉ định các trang web không được phép mở cửa sổ bật lên.</translation>
+<translation id="5807843250244274844">Chỉ định kênh phát hành mà thiết bị này phải bị khóa. Chính sách này đang được tiến hành; hiện tại, người dùng vẫn có thể thay đổi kênh phát hành ngay cả khi kênh này được chính sách chỉ định.</translation>
 <translation id="1297182715641689552">Sử dụng tập lệnh proxy .pac</translation>
 <translation id="8631434304112909927">cho đến phiên bản <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Bật đề xuất tìm kiếm</translation>
+<translation id="4906194810004762807">Chính sách tốc độ làm mới cho thiết bị</translation>
 <translation id="5511702823008968136">Bật Thanh dấu trang</translation>
 <translation id="3653673712530669976">Cho phép bạn định cấu hình trình hiển thị HTML mặc định khi <ph name="PRODUCT_FRAME_NAME"/> được cài đặt. Cài đặt mặc định cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu <ph name="PRODUCT_FRAME_NAME"/> hiển thị các trang HTML theo mặc định.</translation>
 <translation id="7848840259379156480">Cho phép bạn định cấu hình trình hiển thị HTML mặc định khi <ph name="PRODUCT_FRAME_NAME"/> được cài đặt. Cài đặt mặc định cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu <ph name="PRODUCT_FRAME_NAME"/> hiển thị các trang HTML theo mặc định.</translation>
 <translation id="4486602758942612946">Tùy chỉnh danh sách các mẫu URL sẽ luôn được trình duyệt chính hiển thị. Để xem các mẫu ví dụ, xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2257451316169619209">Chỉ định khoảng thời gian tính bằng mili giây mà dịch vụ quản lý thiết bị được truy vấn về thông tin chính sách thiết bị. Việc thiết lập chính sách này ghi đè giá trị mặc định là 3 giờ. Các giá trị hợp lệ dành cho chính sách này nằm trong khoảng từ 1800000 (30 phút) tới 86400000 (1 ngày). Mọi giá trị không nằm trong khoảng này sẽ được gắn với ranh giới tương ứng.</translation>
+<translation id="1734716591049455502">Định cấu hình tùy chọn truy cập từ xa</translation>
 <translation id="4346795218451526495">Chỉ định danh sách các trình cắm mà người dùng có thể bật hoặc tắt trong <ph name="PRODUCT_NAME"/>. Các ký tự đại diện '*' và '?' có thể được sử dụng để khớp với thứ tự của các ký tự ngẫu nhiên. '*' khớp với một số ngẫu nhiên các ký tự còn '?' chỉ định ký tự đơn tùy chọn, tức là khớp với ký tự 0 hoặc 1. Ký tự thoát là '\', vì vậy để khớp với các ký tự thực '*', '?' hoặc '\', bạn có thể đặt '\' trước các ký tự này. Nếu bạn bật cài đặt này, danh sách trình cắm được chỉ định có thể được sử dụng trong <ph name="PRODUCT_NAME"/>. Người dùng có thể bật hoặc tắt các trình cắm này trong 'about:plugins' ngay cả khi trình cắm cũng khớp với một mẫu trong DisabledPlugins. Người dùng cũng có thể bật và tắt các trình cắm không khớp với bất kỳ mẫu nào trong DisabledPlugins, DisabledPluginsExceptions và EnabledPlugins.</translation>
 <translation id="8777120694819070607">Cho phép <ph name="PRODUCT_NAME"/> chạy các trình cắm lỗi thời. Nếu bạn bật cài đặt này, các trình cắm lỗi thời sẽ được sử dụng như những trình cắm bình thường. Nếu bạn tắt cài đặt này, các trình cắm lỗi thời sẽ không được sử dụng và người dùng sẽ không được yêu cầu cấp phép chạy các trình cắm đó. Nếu bạn không đặt cài đặt này, người dùng sẽ được yêu cầu cấp phép để chạy các trình cắm lỗi thời.</translation>
+<translation id="2629448496147630947">Định cấu hình tùy chọn truy cập từ xa trong <ph name="PRODUCT_NAME"/>.
+
+      Các tính năng này bị bỏ qua trừ khi ứng dụng web Truy cập từ xa được cài đặt.</translation>
 <translation id="407895324478579198">Cho phép bạn chỉ định danh sách các tiện ích mở rộng sẽ được cài đặt tĩnh mà không có sự can thiệp của người dùng. Mỗi mục của danh sách là một chuỗi chứa ID tiện ích mở rộng và URL cập nhật được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON"/>). Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE"/>. Đối với từng mục, <ph name="PRODUCT_NAME"/> sẽ truy xuất tiện ích mở rộng được chỉ định bởi ID từ URL được chỉ định và cài đặt tĩnh tiện ích mở rộng đó. Các trang sau đây giải thích cách bạn có thể lưu trữ các tiện ích mở rộng trên máy chủ của riêng bạn. Về các URL cập nhật: <ph name="LINK_TO_EXTENSION_DOC1"/>, về các tiện ích mở rộng lưu trữ nói chung: <ph name="LINK_TO_EXTENSION_DOC2"/>. Người dùng sẽ không thể gỡ cài đặt các tiện ích mở rộng mà chính sách này chỉ định. Nếu bạn xóa tiện ích mở rộng khỏi danh sách này, tiện ích mở rộng đó sẽ được <ph name="PRODUCT_NAME"/> gỡ cài đặt tự động. Các tiện ích mở rộng được đưa vào danh sách đen  'ExtensionInstallBlacklist' và không thuộc danh sách trắng sẽ không thể cài đặt bắt buộc theo chính sách này.</translation>
 <translation id="3300906985144143927">Chỉ định URL biểu tượng ưa thích của nhà cung cấp dịch vụ tìm kiếm mặc định. Tùy chọn.</translation>
 <translation id="1583248206450240930">Sử dụng <ph name="PRODUCT_FRAME_NAME"/> theo mặc định</translation>
@@ -246,11 +273,11 @@
 <translation id="3780152581321609624">Bao gồm cổng không chuẩn trong  Kerberos SPN</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
 <translation id="5512418063782665071">URL trang chủ</translation>
-<translation id="8990655542335348641">Chỉ định khoảng thời gian tính bằng mili giây mà dịch vụ quản lý thiết bị được truy vấn về thông tin chính sách. Việc thiết lập chính sách này ghi đè giá trị mặc định là 3 giờ. Các giá trị hợp lệ dành cho chính sách này nằm trong khoảng 30 phút tới 1 ngày. Mọi giá trị không nằm trong khoảng này sẽ được gắn với ranh giới tương ứng.</translation>
 <translation id="6049075103826767200">Cho phép báo cáo ẩn danh về sử dụng và dữ liệu liên quan đến sự cố về <ph name="PRODUCT_NAME"/> tới Google và ngăn người dùng thay đổi cài đặt này. Nếu bạn bật cài đặt này, báo cáo ẩn danh về sử dụng và dữ liên quan đến sự cố sẽ được gửi tới Google. Nếu bạn tắt cài đặt này, báo cáo ẩn danh về sử dụng và dữ liệu liên quan đến sự cố sẽ không bao giờ được gửi tới Google. Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/></translation>
 <translation id="2263362640517427542">Bật khóa khi thiết bị sử dụng ChromeOS ngừng hoạt động hoặc bị treo.</translation>
 <translation id="6808666497110319299">Cho phép sử dụng các trang lỗi thay thế được tích hợp vào <ph name="PRODUCT_NAME"/> (chẳng hạn như 'không tìm thấy trang') và ngăn người dùng thay đổi cài đặt này. Nếu bạn bật cài đặt này, các trang lỗi thay thế sẽ được sử dụng, nếu bạn tắt cài đặt này, các trang lỗi thay thế sẽ không bao giờ được sử dụng. Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1948757837129151165">Chính sách xác thực HTTP</translation>
+<translation id="5946082169633555022">Kênh beta</translation>
 <translation id="817926804885880359">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME"/> và cho phép người dùng tự động hoàn thành các biểu mẫu web bằng cách sử dụng thông tin được lưu trữ trước đây, chẳng hạn như địa chỉ hoặc thông tin thẻ tín dụng. Nếu bạn tắt cài đặt này, người dùng sẽ không thể truy cập Tự động điền. Nếu bạn bật cài đặt này hoặc không thiết lập giá trị, Tự động điền sẽ vẫn thuộc quyền kiểm soát của người dùng. Điều này sẽ cho phép họ thiết lập cấu hình Tự động điền và bật hoặc tắt Tự động điền tùy theo ý họ.</translation>
 <translation id="6938581770853731947">Định cấu hình loại trang chủ mặc định trong <ph name="PRODUCT_NAME"/> và ngăn người dùng thay đổi tùy chọn trang chủ. Trang chủ có thể được đặt là URL mà bạn chỉ định hoặc đặt là Trang tab mới. Nếu bạn bật cài đặt này, Trang tab mới luôn được sử dụng cho trang chủ và vị trí URL trang chủ được bỏ qua. Nếu bạn tắt cài đặt này, trang chủ của người dùng sẽ không bao giờ là Trang tab mới trừ khi URL của trang này được đặt là 'chrome://newtab'. Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi loại trang chủ của họ trong <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="5645779841392247734">Cho phép cookie trên các trang web này</translation>

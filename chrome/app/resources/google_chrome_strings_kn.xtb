@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ, ಆದರೆ ಸರ್ವರ್ ನೀಡಿದ ಪ್ರಮಾಣಪತ್ರ ದೋಷಗಳನ್ನು ಹೊಂದಿದೆ. Google Chrome ದೋಷಗಳಿರುವ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಬಳಸುವುದಿಲ್ಲ ಮತ್ತು ನೀವು ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿದ ಸೈಟ್‌ನ ಗುರುತನ್ನು ಮಾನ್ಯಗೊಳಿಸುವುದಿಲ್ಲ. ನಿಮ್ಮ ಸಂಪರ್ಕವು ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ ಮತ್ತು ನೀವು ಮುಂದುವರಿಸಬಾರದು.</translation>
 <translation id="8738921060445980047">ಅಜ್ಞಾತ ಆವೃತ್ತಿ.</translation>
 <translation id="2485422356828889247">ಅಸ್ಥಾಪಿಸು</translation>
+<translation id="2748463065602559597">ನೀವು ಸುರಕ್ಷಿತ Google Chrome ಪುಟವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ.</translation>
 <translation id="3324235665723428530">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ ಏಕೆಂದರೆ ಅದು Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿ.\n\nಕೆಲವು ವೈಶಿಷ್ಟ್ಯತೆಗಳು ಲಭ್ಯವಿರುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು ಬೇರೆ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿ ಅನ್ನು ಸ್ಪಷ್ಟವಾಗಿ ನಮೂದಿಸಿ ಅಥವಾ Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="9073088951656332330">ನವೀಕರಿಸಲು Google Chrome ಅಥವಾ Google Chrome ಫ್ರೇಮ್‌‌ನ ಯಾವುದೇ ಸ್ಥಾಪನೆಯು ಕಂಡುಬಂದಿಲ್ಲ.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಇನ್ನಷ್ಟು ಸುಧಾರಿಸಲು Google Chrome ವೆಬ್ ಸೇವೆಗಳನ್ನು ಬಳಸಬಹುದು.</translation>
 <translation id="7436949144778751379">Google Chrome ಗೆ Windows XP ಅಥವಾ ನಂತರದ್ದು ಅಗತ್ಯವಿದೆ. ಕೆಲವು ಲಕ್ಷಣಗಳು ಕೆಲಸ ಮಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="7100330187273168372">Google Chrome ಅದರ ಡೇಟಾ ಡೈರೆಕ್ಟರಿ ಅನ್ನು ಓದಲು ಅಥವಾ ಬರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome ಥೀಮ್‌ಗಳ ಗ್ಯಾಲರಿ</translation>
 <translation id="7938170099933661772">ಬಿಲ್ಟ್-ಇನ್ PDF ವೀಕ್ಷಕವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾಗ ಮುದ್ರಣ ಪೂರ್ವವೀಕ್ಷಣೆಯನ್ನು Google Chrome ತೋರಿಸುವುದಿಲ್ಲ. ಪೂರ್ವವೀಕ್ಷಣೆಯನ್ನು ವೀಕ್ಷಿಸಲು, ದಯವಿಟ್ಟು <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> ಗೆ ಭೇಟಿ ನೀಡಿ, &quot;Chrome PDF Viewer&quot; ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ, ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6757767188268205357">ನನ್ನನ್ನು ಬಗ್ ಮಾಡಬೇಡ</translation>
 <translation id="2290095356545025170">ನೀವು ಖಚಿತವಾಗಿ Google Chrome ಸ್ಥಾಪನೆಯನ್ನು ತೆಗೆಯಲು ಬಯಸುತ್ತೀರಾ?</translation>
+<translation id="1243097286641060337">ಅಸಮಂಜಸ Google ನವೀಕರಣ ಗುಂಪು ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು Google Chrome ಅಥವಾ Google Chrome ಫ್ರೇಮ್ ನವೀಕರಿಸಲು ಆಗುವುದಿಲ್ಲ. Google Chrome Binaries ಅಪ್ಲಿಕೇಶನ್‌ಗಾಗಿ ನವೀಕರಣ ನೀತಿಯ ಮೇಲ್ಬರಹವನ್ನು ಹೊಂದಿಸಲು ಗುಂಪು ನೀತಿಯ ಸಂಪಾದಕರನ್ನು ಬಳಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6087062680442281307">Google Chrome ವೆಬ್ ಆಧಾರಿತ ಬ್ರೌಸರ್ ಆಗಿದ್ದು, ಅದು ಮಿಂಚಿನ ವೇಗದಲ್ಲಿ ವೆಬ್ ಪುಟಗಳು ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಚಾಲನೆ ಮಾಡುತ್ತದೆ. ಅದು ವೇಗ, ದೃಢ ಮತ್ತು ಬಳಸಲು ಸುಲಭವಾಗಿದೆ. Google Chrome ನೊಳಗೆ ರಚಿತವಾಗಿರುವ ಮಾಲ್ವೇರ್ ಮತ್ತು ಫಿಶಿಂಗ್ ರಕ್ಷಣೆಯೊಂದಿಗೆ ವೆಬ್ ಅನ್ನು ಹೆಚ್ಚು ಸುರಕ್ಷಿತವಾಗಿ ಬ್ರೌಸ್ ಮಾಡಿ.</translation>
 <translation id="5941830788786076944">Google Chrome ಅನ್ನು ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಮಾಡಿ</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">ಇನ್ನೊಂದು ಸ್ಥಾಪಿಸಿದ ಅಪ್ಲಿಕೇಶನ್‌ನೊಂದಿಗೆ ಘರ್ಷಣೆಯನ್ನು ಪತ್ತೆಹಚ್ಚಲಾಗಿದೆ.</translation>
 <translation id="7018032895891496381">ಪ್ರಸ್ತುತ <ph name="PAGE_TITLE"/> ಕ್ಕೆ ಹೊಂದಿಸಿದ, ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಹುಡುಕಾಟ ಎಂಜಿನ್ ಅನ್ನು Google Chrome ಬಳಸುತ್ತದೆ. ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಹುಡುಕಾಟ ಎಂಜಿನ್ ಅನ್ನು ಇರಿಸಿಕೊಳ್ಳಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="7161904924553537242">Google Chrome ಗೆ ಸ್ವಾಗತ</translation>
+<translation id="5211087808649701653">ಸ್ಥಳೀಯ ಮುದ್ರಣ ಸಂವಾದವನ್ನು ಆರಂಭಿಸಿ</translation>
 <translation id="8669527147644353129">Google Chrome ಸಹಾಯಕ</translation>
 <translation id="3444832043240812445">ನೀವು <ph name="BEGIN_LINK"/>ಕ್ರ‍್ಯಾಶ್‌‌ ವರದಿಮಾಡುವಿಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿದರೆ<ph name="END_LINK"/> ನಿಮ್ಮ ಇತ್ತೀಚಿನ ಕ್ರ‍್ಯಾಶ್‌ಗಳಲ್ಲಿ ಮಾಹಿತಿಯನ್ನು ಈ ಪುಟ ತೋರಿಸುತ್ತದೆ.</translation>
 <translation id="8614913330719544658">Google Chrome ಸ್ಪಂದಿಸುತ್ತಿಲ್ಲ. ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?

@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">您嘗試前往 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但是伺服器提供的憑證包含錯誤資訊。Google Chrome 無法使用含有錯誤資訊的憑證，也無法驗證您要連結的網站的身分。您的連線並不安全，建議您就此停住。</translation>
 <translation id="8738921060445980047">未知版本。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
+<translation id="2748463065602559597">您正在瀏覽安全型 Google Chrome 網頁。</translation>
 <translation id="3324235665723428530">由於您的設定檔是來自較新版本的 Google Chrome，所以系統無法使用該檔案。\n\n這表示您可以無法使用某些功能。請指定另一個設定檔目錄，或使用較新版本的 Google Chrome。</translation>
 <translation id="9073088951656332330">找不到任何要安裝/更新的 Google Chrome 或「Google Chrome 內嵌框架」。</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome 會使用網路服務來改善瀏覽品質。</translation>
 <translation id="7436949144778751379">Google Chrome 需要 Windows XP 或更新版本的作業系統。某些功能可能無法執行。</translation>
 <translation id="7100330187273168372">Google Chrome 無法讀取或寫入資料目錄:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome 主題庫</translation>
 <translation id="7938170099933661772">Google Chrome 內建的 PDF 檢視器停用時，便無法顯示列印預覽畫面。如要檢視預覽畫面，請造訪 <ph name="BEGIN_LINK"/>$<ph name="END_LINK"/>，從中啟用「Chrome PDF 檢視器」，然後再試一次。</translation>
 <translation id="6757767188268205357">不要再問我</translation>
 <translation id="2290095356545025170">您是否確定要解除安裝 Google Chrome？</translation>
+<translation id="1243097286641060337">「Google 更新群組政策」設定不一致，因此無法更新 Google Chrome 或「Google Chrome 內嵌框架」。請使用「群組政策編輯器」為 Google Chrome Binaries 應用程式設定更新政策覆寫，然後再試一次。</translation>
 <translation id="6087062680442281307">Google Chrome 開啟網頁和執行應用程式的速度奇快無比！除了執行速度快、穩定且容易使用之外，它還內建防護機制，讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
 <translation id="5941830788786076944">使用 Google Chrome 作為我的預設瀏覽器</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
 <translation id="7018032895891496381">Google Chrome 使用您目前預設的搜尋引擎 <ph name="PAGE_TITLE"/>，要保留目前預設的搜尋引擎嗎？</translation>
 <translation id="7161904924553537242">歡迎使用 Google Chrome</translation>
+<translation id="5211087808649701653">啟動本機列印對話方塊</translation>
 <translation id="8669527147644353129">Google Chrome 小幫手</translation>
 <translation id="3444832043240812445">如果您<ph name="BEGIN_LINK"/>啟用當機報告功能<ph name="END_LINK"/>，這個頁面僅會顯示最近的當機資訊。</translation>
 <translation id="8614913330719544658">Google Chrome 沒有回應，要立即重新啟動嗎？</translation>

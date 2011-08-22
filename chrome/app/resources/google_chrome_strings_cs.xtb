@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Pokusili jste se přejít na server &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale certifikát, který tento server předložil, obsahuje chyby. Chrome nemůže používat certifikát obsahující chyby a nemůže ověřit totožnost stránek, k nimž se pokoušíte připojit. Vaše spojení není bezpečné a neměli byste pokračovat.</translation>
 <translation id="8738921060445980047">Neznámá verze.</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
+<translation id="2748463065602559597">Zobrazujete zabezpečenou stránku Google Chrome.</translation>
 <translation id="3324235665723428530">Váš profil nelze použít, protože je vytvořen v novější verzi aplikace Google Chrome.\n\nNěkteré funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu nebo použijte novější verzi aplikace Chrome.</translation>
 <translation id="9073088951656332330">Žádnou instalaci prohlížeče Google Chrome nebo modulu Google Chrome Frame není třeba aktualizovat.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Prohlížeč Google Chrome vám může usnadnit prohlížení pomocí webových služeb.</translation>
 <translation id="7436949144778751379">Google Chrome vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
 <translation id="7100330187273168372">Aplikace Google Chrome nemůže číst ani zapisovat do svého datového adresáře:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galerie motivů Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome nemůže zobrazit náhled tisku, je-li deaktivován vestavěný prohlížeč souborů PDF. Chcete-li náhled zobrazit, přejděte na stránku <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, aktivujte modul Chrome PDF Viewer a zkuste to znovu.</translation>
 <translation id="6757767188268205357">Již se neptat</translation>
 <translation id="2290095356545025170">Opravdu chcete odinstalovat Google Chrome?</translation>
+<translation id="1243097286641060337">Aplikaci Google Chrome nebo Google Chrome Frame nelze aktualizovat kvůli nekonzistentnímu nastavení zásad skupiny programu Google Update. Použijte editor zásad skupiny, přepište zásadu aktualizace pro aplikaci Google Chrome Binaries a zkuste to znovu.</translation>
 <translation id="6087062680442281307">Webový prohlížeč Google Chrome spouští webové stránky a aplikace rychlostí blesku. Je rychlý, stabilní a snadno použitelný. S ochranou proti malwaru a phishingu integrovanou do prohlížeče Google Chrome můžete procházet web bezpečněji.</translation>
 <translation id="5941830788786076944">Nastavit Google Chrome jako výchozí prohlížeč</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Byl zjištěn konflikt s jinou nainstalovanou aplikací.</translation>
 <translation id="7018032895891496381">Google Chrome používá váš výchozí vyhledávač. Aktuálně nastavený výchozí vyhledávač: <ph name="PAGE_TITLE"/>. Chcete zachovat nastavení výchozího vyhledávače?</translation>
 <translation id="7161904924553537242">Vítejte v aplikaci Google Chrome</translation>
+<translation id="5211087808649701653">Spustit dialog nativního tisku</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">Pokud zvolíte možnost <ph name="BEGIN_LINK"/>povolit zprávy o selhání<ph name="END_LINK"/>, tato stránka bude zobrazovat jen informace o posledních selháních.</translation>
 <translation id="8614913330719544658">Google Chrome neodpovídá. Restartovat?</translation>

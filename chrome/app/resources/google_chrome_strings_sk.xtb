@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Pokúšate sa otvoriť doménu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server poskytol certifikát, ktorý obsahuje chyby. Prehľadávač Google Chrome nemôže použiť certifikát s chybami a nemôže overiť identitu stránky, ktorú sa pokúšate otvoriť. Vaše pripojenie nie je zabezpečené a nemali by ste pokračovať.</translation>
 <translation id="8738921060445980047">Neznáma verzia.</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
+<translation id="2748463065602559597">Práve si prezeráte zabezpečenú stránku prehliadača Google Chrome.</translation>
 <translation id="3324235665723428530">Váš profil nemožno použiť, pretože pochádza z novšej verzie prehľadávača Google Chrome.\n\nNiektoré funkcie nemusia byť k dispozícii. Špecifikujte iný adresár pre profil alebo použite novšiu verziu prehľadávača Chrome.</translation>
 <translation id="9073088951656332330">Nenašla sa žiadna inštalácia aplikácií Google Chrome alebo Google Chrome Frame na aktualizáciu.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Prehliadač Google Chrome vám môže spríjemniť prehliadanie pomocou webových služieb.</translation>
 <translation id="7436949144778751379">Prehliadač Google Chrome vyžaduje systém Windows XP alebo novší. Niektoré funkcie nemusia fungovať.</translation>
 <translation id="7100330187273168372">Prehľadávač Google Chrome nemôže čítať ani zapisovať do údajového adresára::\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galéria motívov prehliadača Google Chrome</translation>
 <translation id="7938170099933661772">Prehliadač Google Chrome nedokáže zobraziť ukážku tlače, ak je zakázaný zabudovaný prehliadač súborov PDF. Ak chcete zobraziť ukážku, prejdite na stránku <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, povoľte položku „Prehliadač súborov PDF“ a skúste to znova.</translation>
 <translation id="6757767188268205357">Nezobrazovať výzvu</translation>
 <translation id="2290095356545025170">Naozaj chcete odinštalovať aplikáciu Google Chrome?</translation>
+<translation id="1243097286641060337">Prehliadač Google Chrome alebo doplnok Google Chrome Frame nie je možné aktualizovať, pretože nastavenia skupinových pravidiel programu Google Update sú nekonzistentné. Použite editor skupinových pravidiel, prepíšte nastavenia aktualizácie pre aplikáciu Google Chrome Binaries a skúste to znova.</translation>
 <translation id="6087062680442281307">Google Chrome je webový prehliadač, ktorý spúšťa webové stránky a aplikácie rýchlosťou blesku. Je rýchly, stabilný a jednoduchý. Má v sebe vstavanú ochranu pred škodlivým softvérom a neoprávneným získavaním údajov, vďaka ktorej je prehliadanie webu bezpečnejšie.</translation>
 <translation id="5941830788786076944">Nastaviť prehľadávač Google Chrome ako predvolený</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Zistil sa konflikt s inou nainštalovanou aplikáciou.</translation>
 <translation id="7018032895891496381">Google Chrome používa váš predvolený vyhľadávací nástroj, ktorý je v súčasnosti nastavený na <ph name="PAGE_TITLE"/>. Chcete ponechať predvolený vyhľadávací nástroj?</translation>
 <translation id="7161904924553537242">Víta vás prehľadávač Google Chrome</translation>
+<translation id="5211087808649701653">Spustiť dialógové okno natívnej tlače</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">Táto stránka zobrazuje informácie o nedávnych zlyhaniach, len ak ste <ph name="BEGIN_LINK"/>povolili hlásenia zlyhaní<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome nereaguje. Chcete ho spustiť znova?</translation>

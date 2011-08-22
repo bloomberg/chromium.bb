@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">لقد حاولت الوصول إلى الموقع &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، لكنّ الشهادة التي قدّمها الخادم تحتوي على أخطاء. لا يستطيع Google Chrome استخدام شهادة فيها أخطاء، والتحقّق من هوية الموقع المقصود. الاتصال غير آمن ويجب عدم المتابعة.</translation>
 <translation id="8738921060445980047">إصدار غير معروف.</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
+<translation id="2748463065602559597">أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="3324235665723428530">يتعذّر استخدام ملفّ تعريف الارتباط لأنهّ ينمتي إلى إصدار حديث من Google Chrome \n\ وقد ينقصه بعض الميزات المعيّنة. يرجى اختيار دليل آخر لتحديد ملّف التعريف أو استخدام إصدار أحدث من Chrome.</translation>
 <translation id="9073088951656332330">لم يتم العثور على Google Chrome أو إطار Google Chrome للتحديث.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح لديك.</translation>
 <translation id="7436949144778751379">يتطلب Google Chrome نظام التشغيل Windows XP أو الأحدث. قد لا تعمل بعض الميزات.</translation>
 <translation id="7100330187273168372">يتعذّر على Google Chrome القراءة والكتابة إلى دليل البيانات:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">معرض مظاهر Google Chrome</translation>
 <translation id="7938170099933661772">يتعذر على Google Chrome إظهار معاينة الطباعة متى كان عارض PDF المضمن معطلاً. وللتمكن من إجراء المعاينة، يرجى زيارة <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>، وتمكين &quot;عارض PDF في Chrome&quot;، ثم إعادة المحاولة.</translation>
 <translation id="6757767188268205357">عدم المطالبة مرة أخرى</translation>
 <translation id="2290095356545025170">هل تريد بالتأكيد إزالة Google Chrome؟</translation>
+<translation id="1243097286641060337">يتعذر تحديث Google Chrome أو إطار Google Chrome نظرًا لعدم ثبات إعدادات سياسة مجموعة تحديث Google. استخدم محرر سياسة المجموعة لإعداد تجاوز سياسة التحديث لتطبيق القيم الثنائية لمتصفح Google Chrome ثم أعد المحاولة.</translation>
 <translation id="6087062680442281307">إن Google Chrome هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة خاطفة. فهذا المتصفح سريع ويتميز بالثبات وسهولة الاستخدام، ويمكنك من خلاله تصفح الويب بقدر أكبر من الأمان من خلال وجود حماية مضمنة داخله ضد البرامج الضارة والتصيّد.</translation>
 <translation id="5941830788786076944">جعل Google Chrome المتصفّح الافتراضي</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">تم اكتشاف تعارض مع تطبيق آخر مثبَّت.</translation>
 <translation id="7018032895891496381">يستخدم Google Chrome محرك البحث الافتراضي، والذي يتم تعيينه حاليًا على <ph name="PAGE_TITLE"/>، فهل تريد بالتأكيد الإبقاء على محرك البحث الافتراضي؟</translation>
 <translation id="7161904924553537242">مرحبًا بك في Google Chrome</translation>
+<translation id="5211087808649701653">تشغيل مربع حوار الطباعة الأصلي</translation>
 <translation id="8669527147644353129">مساعد Google Chrome</translation>
 <translation id="3444832043240812445">تعرض هذه الصفحة فقط معلومات عن الأعطال الحديثة إذا <ph name="BEGIN_LINK"/>مكّنت الإبلاغ عن الأعطال<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">لا يستجيب Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>

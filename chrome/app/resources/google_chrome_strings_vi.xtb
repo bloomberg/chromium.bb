@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Bạn đã cố truy cập &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, nhưng chứng chỉ mà máy chủ xuất trình có lỗi. Google Chrome không thể sử dụng chứng chỉ có lỗi và không thể xác nhận nhận diện của trang web mà bạn đã cố kết nối. Kết nối không an toàn và bạn không nên tiếp tục.</translation>
 <translation id="8738921060445980047">Phiên bản không xác định.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
+<translation id="2748463065602559597">Bạn đang xem trang Google Chrome an toàn.</translation>
 <translation id="3324235665723428530">Không thể sử dụng hồ sơ của bạn vì hồ sơ được tạo từ phiên bản Google Chrome mới.\n\nMột số tính năng có thể không có sẵn. Vui lòng xác định thư mục hồ sơ khác hoặc sử dụng phiên bản Google Chrome mới.</translation>
 <translation id="9073088951656332330">Không tìm thấy cài đặt Google Chrome hoặc Google Chrome Frame để cập nhật.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="7436949144778751379">Google Chrome yêu cầu Windows XP hoặc phiên bản mới hơn. Một số tính năng không thể hoạt động.</translation>
 <translation id="7100330187273168372">Google Chrome không thể đọc và ghi lên thư mục dữ liệu:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Thư viện Chủ đề của Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome không thể hiển thị xem trước bản in khi trình xem PDF được tích hợp sẵn bị tắt. Để xem bản xem trước, vui lòng truy cập <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, bật &quot;Trình xem PDF trên Chrome&quot; và thử lại.</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
+<translation id="1243097286641060337">Không thể cập nhật Google Chrome hoặc Google Chrome Frame trên tài khoản có cài đặt Chính sách nhóm của Google Update không nhất quán. Sử dụng Trình chỉnh sửa chính sách nhóm để đặt chính sách cập nhật ghi đè ứng dụng Google Chrome Binaries và thử lại.</translation>
 <translation id="6087062680442281307">Google Chrome là một trình duyệt web chạy các trang web và ứng dụng với tốc độ cực nhanh. Trình duyệt này nhanh, ổn định và dễ sử dụng. Duyệt web an toàn hơn với tính năng ngăn chặn phần mềm độc hại và lừa đảo được tích hợp vào Google Chrome.</translation>
 <translation id="5941830788786076944">Chọn Google Chrome làm trình duyệt mặc định</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Đã phát hiện thấy xung đột với một ứng dụng đã cài đặt khác.</translation>
 <translation id="7018032895891496381">Google Chrome sử dụng công cụ tìm kiếm mặc định của bạn, hiện đang được đặt là <ph name="PAGE_TITLE"/>. Bạn có muốn giữ công cụ tìm kiếm mặc định của mình không?</translation>
 <translation id="7161904924553537242">Chào mừng bạn đến với Google Chrome</translation>
+<translation id="5211087808649701653">Khởi chạy hộp thoại in gốc</translation>
 <translation id="8669527147644353129">Trình trợ giúp của Google Chrome</translation>
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK"/>bật báo cáo sự cố<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome không hồi đáp. Khởi chạy lại ngay bây giờ?</translation>

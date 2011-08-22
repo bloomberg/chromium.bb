@@ -9,11 +9,14 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7222373446505536781">F11</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY"/> Б</translation>
 <translation id="3660179305079774227">Стрелка вверх</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY"/> МБ/с</translation>
 <translation id="3990502903496589789">Правый край</translation>
 <translation id="932327136139879170">На главную</translation>
 <translation id="3909791450649380159">Выре&amp;зать</translation>
 <translation id="5076340679995252485">&amp;Вставить</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY"/> ТБ</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="3234408098842461169">Стрелка вниз</translation>
 <translation id="3087734570205094154">Низ</translation>
@@ -21,10 +24,13 @@
 <translation id="8210608804940886430">Прокрутка вниз</translation>
 <translation id="5329858601952122676">&amp;Удалить</translation>
 <translation id="6659594942844771486">Вкладка</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY"/> МБ</translation>
+<translation id="3806858430610674159"><ph name="QUANTITY"/> КБ</translation>
 <translation id="2497284189126895209">Все файлы</translation>
 <translation id="7814458197256864873">&amp;Копировать</translation>
 <translation id="3889424535448813030">Стрелка вправо</translation>
 <translation id="1398853756734560583">Развернуть</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY"/> ГБ</translation>
 <translation id="1901303067676059328">Выделить &amp;все</translation>
 <translation id="2168039046890040389">Вверх</translation>
 <translation id="3183922693828471536">Прокрутить до этого места</translation>
@@ -40,11 +46,17 @@
 <translation id="3157931365184549694">Восстановить</translation>
 <translation id="8179976553408161302">Войти</translation>
 <translation id="9170848237812810038">&amp;Отменить</translation>
+<translation id="520299402983819650"><ph name="QUANTITY"/> ПБ</translation>
 <translation id="5583640892426849032">Клавиша возврата (Backspace)</translation>
+<translation id="2619528525756897123"><ph name="QUANTITY"/> КБ/с</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY"/> ГБ/с</translation>
 <translation id="436869212180315161">Нажать</translation>
+<translation id="2297836609126180313"><ph name="QUANTITY"/> ТБ/с</translation>
 <translation id="6040143037577758943">Закрыть</translation>
+<translation id="6142413573757616983"><ph name="QUANTITY"/> Б/с</translation>
 <translation id="7000311294523403548">Веб-страница без имени</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6907759265145635167"><ph name="QUANTITY"/> ПБ/с</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="5941711191222866238">Свернуть</translation>
 <translation id="8328145009876646418">Левый край</translation>

@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך האישור שהוצג על ידי השרת מכיל שגיאות. Google Chrome אינו יכול להשתמש באישור המכיל שגיאות ואינו יכול לאמת את זהות האתר שאליו ניסית להתחבר. ההתחברות שלך אינה בטוחה ומומלץ לא להמשיך.</translation>
 <translation id="8738921060445980047">גרסה לא ידועה.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
+<translation id="2748463065602559597">אתה מציג דף Google Chrome מאובטח.</translation>
 <translation id="3324235665723428530">לא ניתן להשתמש בפרופיל שלך מכיוון שהוא מגיע מגירסה חדשה יותר של Google Chrome. \n\nיתכן שתכונות מסוימות לא יהיו זמינות. אנא ציין ספריית פרופיל אחרת או השתמש בגירסה חדשה יותר של .Chrome</translation>
 <translation id="9073088951656332330">לא נמצאה התקנה של Google Chrome או Google Chrome Frame שיש לעדכן.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7436949144778751379">Google Chrome דורש Windows XP ואילך. ייתכן שחלק מהתכונות לא יפעלו.</translation>
 <translation id="7100330187273168372">Google Chrome אינו יכול לקרוא ולכתוב אל ספריית המידע שלו:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">גלריית העיצובים של Google Chrome</translation>
 <translation id="7938170099933661772">לא ניתן להציג את התצוגה המקדימה של ההדפסה ב-Google Chrome כאשר מציג ה-PDF המובנה מושבת. כדי לראות את התצוגה המקדימה, בקר בכתובת <ph name="BEGIN_LINK"/>chrome://plugins<ph name="END_LINK"/>, הפוך את &quot;מציג ה-PDF של Chrome&quot; לפעיל ונסה שוב.</translation>
 <translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="2290095356545025170">האם אתה בטוח שאתה רוצה להסיר את Google Chrome?</translation>
+<translation id="1243097286641060337">לא ניתן לעדכן את Google Chrome או את Google Chrome Frame בשל הגדרות המדיניות הקבוצתית של Google Update. השתמש בעורך המדיניות הקבוצתית כדי להגדיר את דריסת מדיניות העדכון עבור היישום Google Chrome Binaries ונסה שוב.</translation>
 <translation id="6087062680442281307">Google Chrome הוא דפדפן אינטרנט המפעיל דפי אינטרנט ויישומים במהירות הבזק. הוא מהיר, יציב וקל לשימוש. גלוש באינטרנט בבטחה עם הגנה נגד תוכנות זדוניות והתחזות המובנית ב-Google Chrome.</translation>
 <translation id="5941830788786076944">הפוך את Google Chrome לדפדפן ברירת המחדל</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">אותרה התנגשות עם יישום מותקן אחר.</translation>
 <translation id="7018032895891496381">Google Chrome משתמש במנוע חיפוש המוגדר כברירת מחדל, שמוגדר כרגע ל-<ph name="PAGE_TITLE"/>. האם ברצונך לשמור על מנוע החיפוש המוגדר כברירת מחדל?</translation>
 <translation id="7161904924553537242">ברוך הבא ל-Google Chrome</translation>
+<translation id="5211087808649701653">פתח תיבת דו-שיח להדפסה מקורית</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">דף זה מציג מידע על הקריסות האחרונות בלבד אם <ph name="BEGIN_LINK"/>תפעיל את אפשרות הדיווח על קריסות<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome אינו מגיב. להפעיל מחדש עכשיו?</translation>

@@ -51,6 +51,7 @@
 Връзката ви не е защитена и не трябва да продължавате по-нататък.</translation>
 <translation id="8738921060445980047">Непозната версия.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
+<translation id="2748463065602559597">Преглеждате защитена страница в Google Chrome.</translation>
 <translation id="3324235665723428530">Не можете да използвате профила си, тъй като той е от по-нова версия на Google Chrome.\n\nВъзможно е някои функции да са недостъпни. Моля посочете директория на друг профил или използвайте по-нова версия на Chrome.</translation>
 <translation id="9073088951656332330">Няма намерена инсталация за актуализиране на Google Chrome или Google Chrome Frame.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -64,9 +65,11 @@
 <translation id="3847841918622877581">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви.</translation>
 <translation id="7436949144778751379">Google Chrome изисква Windows XP или по-нова версия. Някои функции може да не работят.</translation>
 <translation id="7100330187273168372">Google Chrome не може да чете и записва в директорията си с данни:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Галерия с теми за Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome не може да покаже визуализацията за печат, когато вграденият визуализатор на PDF е деактивиран. За да я видите, моля, посетете <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, активирайте „Визуализатор на PDF в Chrome“ и опитайте отново.</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome или Google Chrome Frame не могат да бъдат актуализирани заради несъответстващи настройки на груповите ни правила за актуализиране.  Използвайте редактора за тези правила, за да отмените това за актуализиране на приложението Google Chrome Binaries и опитайте отново.</translation>
 <translation id="6087062680442281307">Google Chrome е уеб браузър, който зарежда уеб страници и изпълнява приложения със светкавична скорост. Той е бърз, стабилен и лесен за употреба. Сърфирайте в мрежата по-безопасно с вградената защита на Google Chrome срещу злонамерен софтуер и фишинг.</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -78,6 +81,7 @@
 <translation id="2712549016134575851">Установен е конфликт с друго инсталирано приложение.</translation>
 <translation id="7018032895891496381">Google Chrome използва търсещата ви машина по подразбиране, която понастоящем е <ph name="PAGE_TITLE"/>. Искате ли да я запазите?</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
+<translation id="5211087808649701653">Стартиране на стандартния диалогов прозорец за отпечатване</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">В тази страница се показва информация за скорошните сривове само ако сте <ph name="BEGIN_LINK"/>активирали изпращането на сигнали за сривове<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome блокира. Да се стартира ли отново сега?</translation>

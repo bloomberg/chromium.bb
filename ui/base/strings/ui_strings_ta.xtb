@@ -9,11 +9,14 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">ரத்துசெய்</translation>
 <translation id="7222373446505536781">F11</translation>
+<translation id="1761785978543082658"><ph name="QUANTITY"/> பை</translation>
 <translation id="3660179305079774227">மேல்நோக்கிய அம்பு</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY"/> மெ.பை/வி</translation>
 <translation id="3990502903496589789">வலது விளிம்பு</translation>
 <translation id="932327136139879170">முகப்பு</translation>
 <translation id="3909791450649380159">வெட்&amp;டு</translation>
 <translation id="5076340679995252485">&amp;ஒட்டு</translation>
+<translation id="7460907917090416791"><ph name="QUANTITY"/> டெ.பை</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="3234408098842461169">கீழ்நோக்கிய அம்பு</translation>
 <translation id="3087734570205094154">கீழே</translation>
@@ -21,10 +24,13 @@
 <translation id="8210608804940886430">பக்கத்தின் கீழே</translation>
 <translation id="5329858601952122676">&amp;நீக்கு</translation>
 <translation id="6659594942844771486">Tab</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY"/> மெ.பை</translation>
+<translation id="3806858430610674159"><ph name="QUANTITY"/> கி.பை</translation>
 <translation id="2497284189126895209">அனைத்து கோப்புகளும்</translation>
 <translation id="7814458197256864873">&amp;நகலெடு</translation>
 <translation id="3889424535448813030">வலது அம்பு</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
+<translation id="3757388668994797779"><ph name="QUANTITY"/> GB</translation>
 <translation id="1901303067676059328">அ&amp;னைத்தையும் தேர்ந்தெடு</translation>
 <translation id="2168039046890040389">பக்கத்தின் மேலே</translation>
 <translation id="3183922693828471536">இங்கே உருட்டு</translation>
@@ -40,11 +46,17 @@
 <translation id="3157931365184549694">மீட்டமை</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">&amp;செயல்தவிர்</translation>
+<translation id="520299402983819650"><ph name="QUANTITY"/> பெ.பை</translation>
 <translation id="5583640892426849032">Backspace</translation>
+<translation id="2619528525756897123"><ph name="QUANTITY"/> கி.பை/வி</translation>
+<translation id="3740362395218339114"><ph name="QUANTITY"/> ஜி.பை/வி</translation>
 <translation id="436869212180315161">அழுத்து</translation>
+<translation id="2297836609126180313"><ph name="QUANTITY"/> டெ.பை/வி</translation>
 <translation id="6040143037577758943">மூடு</translation>
+<translation id="6142413573757616983"><ph name="QUANTITY"/> பை/வி</translation>
 <translation id="7000311294523403548">தலைப்பிடாத வலைப்பக்கம்</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6907759265145635167"><ph name="QUANTITY"/> பெ.பை/வி</translation>
 <translation id="6965382102122355670">சரி</translation>
 <translation id="5941711191222866238">சிறிதாக்கு</translation>
 <translation id="8328145009876646418">இடதுபுற முனை</translation>

@@ -20,15 +20,18 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
           Ve výchozím nastavení jsou všechna rozšíření na bílé listině. Pokud však byla všechna rozšíření pomocí zásady umístěna na černou listinu, lze tuto zásadu pomocí bílé listiny přepsat.</translation>
 <translation id="3185009703220253572">od verze <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Blokovat obrázky na těchto stránkách</translation>
+<translation id="2908277604670530363">Maximální počet současných připojení k serveru proxy</translation>
 <translation id="3512877396423730277">Kontroluje, zda je na stránce u obsahu třetích stran povoleno vyskakování dialogového okna HTTP Basic Auth. Tato možnost je obvykle vypnuta jako ochrana proti phishingu.</translation>
 <translation id="1438955478865681012">Slouží ke konfiguraci zásad souvisejících s rozšířeními. Uživatel není oprávněn instalovat rozšíření na černé listině, pokud nejsou uvedena na bílé listině. V aplikaci <ph name="PRODUCT_NAME"/> můžete také vynutit automatickou instalaci rozšíření, a to tím, že rozšíření zadáte do seznamu <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Černá listina má vyšší prioritu než seznam vynucených rozšíření.</translation>
 <translation id="4070280487546651935">Určuje klíčové slovo, které v omniboxu spouští vyhledávání tohoto poskytovatele. Nepovinné.</translation>
+<translation id="6036523166753287175">Povolení přechodu přes bránu firewall z hostitele vzdáleného připojení</translation>
 <translation id="1096105751829466145">Výchozí poskytovatel vyhledávání</translation>
 <translation id="7567380065339179813">Povolit pluginy na těchto stránkách</translation>
 <translation id="5290940294294002042">Určete seznam pluginů, které uživatel může povolit nebo zakázat</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) serveru proxy</translation>
 <translation id="1827523283178827583">Použít pevně dané servery proxy</translation>
 <translation id="3021409116652377124">Deaktivovat nástroj pro vyhledávání pluginů</translation>
+<translation id="3288595667065905535">Kanál verzí</translation>
 <translation id="2455652143675149114">Umožňuje určit chování při spuštění.
 
           Pokud zvolíte možnost Otevřít domovskou stránku, při spuštění prohlížeče <ph name="PRODUCT_NAME"/> se vždy otevře domovská stránka.
@@ -49,6 +52,11 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
       Pokud toto nastavení deaktivujete, uživatelé budou moci probudit zařízení se systémem ChromeOS z režimu spánku i bez hesla.
 
       Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé jej v systému <ph name="PRODUCT_OS_NAME"/> nebudou moci změnit ani přepsat.</translation>
+<translation id="8781881969636812184">Povolí použití synchronizačních serverů a serverů STUN, když se vzdálení klienti pokouší připojit k tomuto počítači.
+
+          Pokud je toto nastavení zapnuto, mohou vzdálení klienti tento počítač objevit a připojit se k němu i v případě, že jsou odděleni bránou firewall.
+
+          Pokud je toto nastavení vypnuto a odchozí připojení UDP jsou filtrována bránou firewall, lze se k tomuto počítači připojit pouze z klientských počítačů v místní síti.</translation>
 <translation id="5912364507361265851">Umožnit uživatelům zobrazit hesla ve Správci hesel</translation>
 <translation id="6999540307315670568">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> panel záložek na stránce Nová karta.
 
@@ -177,6 +185,7 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 
           Pokud aktivujete toto nastavení, uživatelé nebudou v prohlížeči <ph name="PRODUCT_NAME"/> moci změnit adresu URL domovské stránky. Jako domovskou stránku si však stále budou moci nastavit stránku Nová karta.</translation>
 <translation id="4423597592074154136">Zadat nastavení serveru proxy ručně</translation>
+<translation id="209586405398070749">Stabilní verze</translation>
 <translation id="3137734558440858947">Umožňuje nastavit, zda mají webové stránky povoleno zobrazovat obrázky. Zobrazování obrázků lze buď povolit všem webovým stránkám, nebo je všem webovým stránkám zakázat.</translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata z černé listiny</translation>
 <translation id="3523486089716697173">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno zobrazovat obrázky.</translation>
@@ -188,6 +197,7 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 <translation id="6022948604095165524">Akce při spuštění</translation>
 <translation id="3704185423155638353">Umožňuje nastavit seznam vzorů adres URL stránek, kterým není povoleno spouštět JavaScript.</translation>
 <translation id="7628741187268592472">Určuje knihovnu GSSAPI, která bude použita pro ověření pomocí protokolu HTTP. Nastavit lze buď pouze název knihovny, nebo celou cestu. Pokud nezadáte žádné nastavení, použije <ph name="PRODUCT_NAME"/> výchozí název knihovny.</translation>
+<translation id="2435100545355792516">Vynutit anonymní režim</translation>
 <translation id="605147781209875705">Tato zásada je zastaralá, použijte místo ní zásadu ProxyMode.
 
           Umožňuje zadat server proxy, který bude prohlížečem <ph name="PRODUCT_NAME"/> používán, a brání uživatelům měnit nastavení serveru proxy.
@@ -215,6 +225,7 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 
           Podrobnější příklady naleznete na následující adrese:
           <ph name="PROXY_HELP_URL"/></translation>
+<translation id="5770738360657678870">Verze pro vývojáře (mohou být nestabilní)</translation>
 <translation id="2959898425599642200">Pravidla vynechání serveru proxy</translation>
 <translation id="7337941689192402544">Nastavit adresář uživatelských dat modulu <ph name="PRODUCT_NAME"/></translation>
 <translation id="5326137997741385453">Slouží ke konfiguraci adresáře, do kterého bude prohlížeč <ph name="PRODUCT_NAME"/> ukládat soubory do mezipaměti na disku. Pokud tuto zásadu nastavíte, bude prohlížeč <ph name="PRODUCT_NAME"/> zadaný adresář používat bez ohledu na to, zda uživatel zadal příznak „--user-data-dir“, nebo ne.</translation>
@@ -236,6 +247,7 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 
       U zásad projektu Chromium začínají klíčem <ph name="CHROMIUM_KEY"/> a u zásad prohlížeče Google Chrome klíčem <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221">Nastavení prohlížeče <ph name="PRODUCT_NAME"/></translation>
+<translation id="4723829699367336876">Povolení přechodu přes bránu firewall z klienta vzdáleného připojení</translation>
 <translation id="9096086085182305205">Bílá listina serverů pro ověřování</translation>
 <translation id="7063895219334505671">Povolit na těchto stránkách vyskakovací okna</translation>
 <translation id="2824715612115726353">Povolit anonymní režim</translation>
@@ -243,7 +255,6 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 <translation id="6157537876488211233">Seznam pravidel vynechání serveru proxy oddělených čárkami</translation>
 <translation id="7091198954851103976">Vždy spustit pluginy, které vyžadují autorizaci.</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
-<translation id="4505337077089958219">Frekvence aktualizace zásad</translation>
 <translation id="996560596616541671">Servery, na které může <ph name="PRODUCT_NAME"/> delegovat ověření.</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="2236488539271255289">Nepovolovat nastavení místních dat žádným webům</translation>
@@ -322,6 +333,13 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 
       Pokud je toto nastavení deaktivováno, uživatelé v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci využívat tisk. Tisk je deaktivován v nabídce Nástroje, v rozšířeních, aplikacích v JavaScriptu apod. V pluginech, které při tisku nepoužívají <ph name="PRODUCT_NAME"/>, bude možné tisknout i nadále. Možnost tisku se může vyskytovat například v kontextové nabídce některých aplikací ve formátu Flash. Tato možnost deaktivována nebude.</translation>
 <translation id="6908640907898649429">Slouží ke konfiguraci výchozího poskytovatele vyhledávání. Můžete uživatelům zvolit výchozího poskytovatele vyhledávání nebo výchozí vyhledávání deaktivovat.</translation>
+<translation id="8621254262912103717">Udává maximální počet souběžných připojení k serveru proxy.
+
+      Některé servery proxy nedokážou zpracovat vysoký počet souběžných připojení na jednoho klienta, což lze vyřešit nastavením této zásady na nižší hodnotu.
+
+      Hodnota této zásady by měla být nižší než 100 a vyšší než 6. Výchozí hodnota je 32.
+
+      Některé webové aplikace jsou známy tím, že v důsledku zablokovaných požadavků GET a využívají mnoho připojení. Snížení hodnoty na méně než 32 může vést k zablokování síťových funkcí prohlížeče. Chcete-li hodnotu snížit pod výchozí hodnotu, děláte to na vlastní riziko.</translation>
 <translation id="681446116407619279">Podporovaná schémata ověření</translation>
 <translation id="4027608872760987929">Aktivovat výchozího poskytovatele vyhledávání</translation>
 <translation id="2223598546285729819">Výchozí nastavení oznámení</translation>
@@ -338,6 +356,9 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 <translation id="4733471537137819387">Zásady související s integrovaným ověřením pomocí protokolu HTTP</translation>
 <translation id="4608714268466689965">Umožňuje nastavit, zda mohou webové stránky zobrazovat oznámení na ploše. Zobrazování oznámení na ploše lze nakonfigurovat tak, že bude ve výchozím nastavení povoleno nebo zakázáno. Také lze nastavit, že se při pokusu webových stránek o zobrazení oznámení na ploše zobrazí uživateli výzva.</translation>
 <translation id="8951350807133946005">Nastavit adresář mezipaměti na disku</translation>
+<translation id="3866571346358522601">Určuje interval (v ms), ve kterém budou službě správy zařízení zasílány požadavky na informace o zásadách pro uživatele.
+
+Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty pro tuto zásadu se pohybují v rozmezí od 1800000 (30 minut) do 86400000 (1 den). Místo hodnot mimo tento rozsah bude použita příslušná mezní hodnota.</translation>
 <translation id="1334051495529796396">Určuje, zda bude vygenerovaný hlavní název služby protokolu Kerberos založen na kanonickém názvu DNS, nebo na původním zadaném názvu.
 
           Pokud toto nastavení aktivujete, vyhledávání záznamů CNAME bude přeskočeno a bude použit zadaný název serveru.
@@ -413,6 +434,12 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 <translation id="5226033722357981948">Určuje, zda má být deaktivován nástroj pro vyhledávání pluginů</translation>
 <translation id="9068358498333390522">Umožňuje nastavit, zda mohou webové stránky zobrazovat vyskakovací okna. Zobrazování vyskakovacích oken lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.</translation>
 <translation id="7194407337890404814">Název výchozího poskytovatele vyhledávání</translation>
+<translation id="1843117931376765605">Obnovovací frekvence zásad pro uživatele</translation>
+<translation id="1630808801738981930">V každé relaci prohlížeče <ph name="PRODUCT_NAME"/> vynutí anonymní režim.
+
+      Pokud je toto nastavení zapnuto, mohou uživatelé otevírat stránky pouze v anonymním režimu.
+
+      Pokud je toto nastavení vypnuto nebo není nakonfigurováno, mohou uživatelé používat prohlížeč i v běžném režimu.</translation>
 <translation id="5535973522252703021">Bílá listina serverů pro delegování ověření protokolu Kerberos</translation>
 <translation id="4554678280250165996">Určuje, která schémata ověření pomocí protokolu HTTP bude <ph name="PRODUCT_NAME"/> podporovat.
 
@@ -423,6 +450,11 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 <translation id="6013842521938070987">Deaktivuje v prohlížeči <ph name="PRODUCT_NAME"/> uvedená schémata protokolů.
 
       Adresy URL, které používají schémata uvedená v tomto seznamu, se nebudou načítat a nebude na ně možné přejít.</translation>
+<translation id="4845434807154973261">Povolí použití synchronizačních serverů a serverů STUN při připojování ke vzdálenému klientu.
+
+          Pokud je toto nastavení zapnuto, může tento počítač objevit vzdálené hostitelské počítače a připojit se k nim i v případě, že jsou odděleny bránou firewall.
+
+          Pokud je toto nastavení vypnuto a odchozí připojení UDP jsou filtrována bránou firewall, může se tento počítač připojit pouze k hostitelským počítačům v místní síti.</translation>
 <translation id="4056910949759281379">Deaktivovat protokol SPDY</translation>
 <translation id="3808945828600697669">Určit seznam deaktivovaných pluginů</translation>
 <translation id="2187975305444384964">Umožňuje nastavit, zda mohou webové stránky sledovat fyzickou polohu uživatele. Sledování fyzické polohy uživatelů lze nakonfigurovat tak, že bude ve výchozím nastavení povoleno nebo zakázáno. Také lze nastavit, že se při pokusu webových stránek o sledování fyzické polohy uživateli zobrazí výzva.</translation>
@@ -432,9 +464,11 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 <translation id="2098658257603918882">Aktivovat odesílání dat o využití nebo selhání</translation>
 <translation id="1151353063931113432">Povolit obrázky na těchto stránkách</translation>
 <translation id="4498075447689127727">Umožňuje nastavit seznam vzorů adres URL stránek, které nemají povoleno otevírat vyskakovací okna.</translation>
+<translation id="5807843250244274844">Určuje, jaký kanál verzí by měl být v zařízení nastaven a uzamčen. Tato zásada je zatím k dispozici v pracovní verzi, uživatelé mohou kanál verzí změnit i v případě, že je určen zásadou.</translation>
 <translation id="1297182715641689552">Použít skript serveru proxy ve formátu PAC</translation>
 <translation id="8631434304112909927">naposledy ve verzi <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Aktivovat návrhy pro vyhledávání</translation>
+<translation id="4906194810004762807">Obnovovací frekvence zásad pro zařízení</translation>
 <translation id="5511702823008968136">Aktivovat panel záložek</translation>
 <translation id="3653673712530669976">Umožňuje nakonfigurovat výchozí modul vykreslení obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME"/>.
          Ve výchozím nastavení vykresluje obsah hostitelský prohlížeč, toto nastavení
@@ -443,6 +477,8 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
       Ve výchozím nastavení vykresluje obsah hostitelský prohlížeč, toto nastavení však můžete přepsat a namísto toho vykreslovat stránky HTML pomocí pluginu <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="4486602758942612946">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit hostitelský prohlížeč.
           Ukázkové vzory naleznete na stránce http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2257451316169619209">Určuje interval (v ms), ve kterém budou službě správy zařízení zasílány požadavky na informace o zásadách pro zařízení. Nastavení této zásady přepíše výchozí hodnotu 3 hodiny. Platné hodnoty pro tuto zásadu se pohybují v rozmezí od 1800000 (30 minut) do 86400000 (1 den). Místo hodnot mimo tento rozsah bude použita příslušná mezní hodnota.</translation>
+<translation id="1734716591049455502">Konfigurace možností vzdáleného přístupu</translation>
 <translation id="4346795218451526495">Určuje seznam pluginů, které může uživatel v prohlížeči <ph name="PRODUCT_NAME"/> aktivovat nebo deaktivovat.
 
       Jako zástupné znaky lze použít znaky „*“ a „?“. Znak „*“ slouží jako zástupný znak pro libovolný počet znaků, zatímco znak „?“ určuje jeden volitelný znak (může tedy zastupovat libovolný znak nebo žádný znak). Řídicí znak je „\“, pokud tedy chcete zadat znaky „*“, „?“ nebo „\“ jako takové, stačí před ně umístit znak „\“.
@@ -455,6 +491,9 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
       Pokud toto nastavení deaktivujete, zastaralé pluginy nebude možné použít a uživatelům se u nich nezobrazí ani žádost o oprávnění ke spuštění.
 
       Pokud toto nastavení není nakonfigurováno, uživatelům se při spouštění zastaralého pluginu zobrazí žádost o oprávnění k této akci.</translation>
+<translation id="2629448496147630947">Konfigurace možností vzdáleného přístupu v prohlížeči <ph name="PRODUCT_NAME"/>.
+
+      Není-li nainstalována webová aplikace Vzdálený přístup, jsou tyto funkce ignorovány.</translation>
 <translation id="407895324478579198">Umožňuje určit seznam rozšíření, která budou instalována na pozadí a bez přispění uživatele.
 
           Každá položka seznamu představuje řetězec, který obsahuje ID rozšíření a adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON"/>). Příklad: <ph name="EXTENSION_POLICY_EXAMPLE"/>. U každé položky načte <ph name="PRODUCT_NAME"/> ze zadané adresy URL rozšíření podle ID a nainstaluje je na pozadí. Na následujících stránkách naleznete informace o tom, jak hostovat rozšíření na vlastním serveru. Informace o adresách URL pro aktualizace: <ph name="LINK_TO_EXTENSION_DOC1"/>. Obecné informace o hostování rozšíření: <ph name="LINK_TO_EXTENSION_DOC2"/>.
@@ -469,9 +508,6 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 <translation id="3780152581321609624">Zahrnout do hlavního názvu služby protokolu Kerberos nestandardní port</translation>
 <translation id="2660846099862559570">Nikdy nepoužívat server proxy</translation>
 <translation id="5512418063782665071">Adresa URL domovské stránky</translation>
-<translation id="8990655542335348641">Určuje dobu (v ms), po kterou budou službě správy zařízení odesílány dotazy týkající se informací o zásadách.
-
-      Nastavením této zásady bude přepsána výchozí hodnota 3 hodiny. Platné hodnoty pro tuto zásadu se pohybují v rozmezí od 30 minut do 1 dne. Hodnoty mimo tento rozsah budou přizpůsobeny vzhledem k příslušné hranici.</translation>
 <translation id="6049075103826767200">Aktivuje funkci anonymního odesílání dat týkajících se využití nebo selhání prohlížeče <ph name="PRODUCT_NAME"/> společnosti Google a brání uživatelům, aby toto nastavení změnili.
 
       Pokud toto nastavení aktivujete, společnosti Google budou odesílány anonymní zprávy týkající se využití nebo selhání.
@@ -488,6 +524,7 @@ Pokud je na černé listině uvedena hodnota *, znamená to, že jsou zakázána
 
        Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je v prohlížeči <ph name="PRODUCT_NAME"/> nebudou moci změnit ani přepsat.</translation>
 <translation id="1948757837129151165">Zásady pro ověření pomocí protokolu HTTP</translation>
+<translation id="5946082169633555022">Verze beta</translation>
 <translation id="817926804885880359">Aktivuje v prohlížeči <ph name="PRODUCT_NAME"/> funkci Automatické vyplňování a umožní uživatelům automaticky vyplňovat pole webových formulářů pomocí uložených informací (například adresa nebo číslo platební karty).
 
       Pokud toto nastavení deaktivujete, uživatelé nebudou mít k funkci Automatické vyplňování přístup.

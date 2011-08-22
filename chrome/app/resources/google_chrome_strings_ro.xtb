@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar certificatul prezentat de server conține erori. Google Chrome nu poate utiliza un certificat cu erori și nu poate valida identitatea site-ului la care ați încercat să vă conectați. Conexiunea dvs. nu este sigură și nu trebuie să mergeți mai departe.</translation>
 <translation id="8738921060445980047">Versiune necunoscută.</translation>
 <translation id="2485422356828889247">Dezinstalați</translation>
+<translation id="2748463065602559597">Acum afişaţi o pagină Google Chrome securizată.</translation>
 <translation id="3324235665723428530">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă.\n\nEste posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune Chrome mai nouă.</translation>
 <translation id="9073088951656332330">Nu s-au găsit instalate versiuni ale Google Chrome sau Google Chrome Frame pentru fi actualizate.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome poate utiliza servicii web pentru îmbunătăţirea experienţei de navigare.</translation>
 <translation id="7436949144778751379">Google Chrome necesită Windows XP sau o versiune ulterioară. Este posibil ca unele funcții să nu fie disponibile.</translation>
 <translation id="7100330187273168372">Google Chrome nu poate citi sau scrie în directorul propriu de date:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Galeria de teme Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome nu poate afişa previzualizarea înainte de printare când vizualizatorul PDF încorporat este dezactivat. Pentru a vedea previzualizarea, accesaţi <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, activaţi opţiunea „Vizualizator PDF Chrome” şi încercaţi din nou.</translation>
 <translation id="6757767188268205357">Doresc să nu mai fiu deranjat</translation>
 <translation id="2290095356545025170">Sunteți sigur că doriți să dezinstalați Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome sau Google Chrome Frame nu poate fi actualizat din cauza setărilor inconsecvente ale Politicilor de grup privind Google Update. Utilizaţi editorul de politici de grup pentru a configura înlocuirea politicii de actualizare pentru Google Chrome Binaries şi încercaţi din nou.</translation>
 <translation id="6087062680442281307">Google Chrome este un browser web care rulează pagini web și aplicații cu o viteză extraordinară. Este rapid, stabil și ușor de utilizat. Navigați în mai mare siguranță pe web beneficiind de protecția împotriva programelor malware și a phishingului încorporată în Google Chrome.</translation>
 <translation id="5941830788786076944">Setați Google Chrome ca browser prestabilit</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">S-a detectat un conflict cu o altă aplicație instalată.</translation>
 <translation id="7018032895891496381">Google Chrome utilizează motorul de căutare prestabilit, setat în prezent la <ph name="PAGE_TITLE"/>. Doriți să păstrați motorul de căutare prestabilit?</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
+<translation id="5211087808649701653">Lansaţi dialogul de printare nativă</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">Această pagină afişează informaţii cu privire la recentele opriri cu eroare numai dacă <ph name="BEGIN_LINK"/>activaţi raportarea opririlor cu eroare<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome nu mai răspunde. Îl reporniţi acum?</translation>

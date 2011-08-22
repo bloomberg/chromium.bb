@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Вы попытались открыть &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако представленный сервером сертификат содержит ошибки. Браузер Google Chrome не может использовать сертификат с ошибками и проверить сайт, с которым вы пытались соединиться. Используемое соединение не является защищенным и продолжать далее не рекомендуется.</translation>
 <translation id="8738921060445980047">Неизвестная версия</translation>
 <translation id="2485422356828889247">Удалить</translation>
+<translation id="2748463065602559597">Вы просматриваете безопасную страницу Google Chrome.</translation>
 <translation id="3324235665723428530">Невозможно использовать ваш профиль, так как он относится к более поздней версии Google Chrome.\n\nНекоторые функции могут быть недоступны. Укажите другой каталог с профилем или воспользуйтесь более поздней версией Chrome.</translation>
 <translation id="9073088951656332330">Не найдены Google Chrome или Google Chrome Frame, обновление невозможно.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Браузер Google Chrome может использовать различные веб-службы, которые делают работу в Интернете более удобной и приятной.</translation>
 <translation id="7436949144778751379">Для работы Google Chrome необходима ОС Windows XP и выше. Некоторые функции могут не работать.</translation>
 <translation id="7100330187273168372">Google Chrome не может выполнить чтение и запись в каталог данных: \n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Галерея тем Google Chrome</translation>
 <translation id="7938170099933661772">В Google Chrome невозможен предварительный просмотр печати, если не активировано встроенное средство просмотра PDF. Подключить его можно на странице <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>.</translation>
 <translation id="6757767188268205357">Больше не спрашивать</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>
+<translation id="1243097286641060337">Не удается обновить Google Chrome или Google Chrome Frame из-за несовместимых настроек политики группы Google Обновлений. С помощью редактора политики группы настройте приоритет политики обновлений для приложения Google Chrome Binaries и повторите попытку.</translation>
 <translation id="6087062680442281307">Google Chrome – это быстрый и удобный браузер для работы с веб-страницами и приложениями. Он надежен и прост в использовании. Вы можете просматривать страницы в Интернете, полагаясь на защиту от вредоносного ПО и фишинга, которая уже встроена в Google Chrome.</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
 <translation id="4990567037958725628">Google Chrome – Канарейка</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Обнаружен конфликт с другим установленным приложением.</translation>
 <translation id="7018032895891496381">Google Chrome использует вашу поисковую систему по умолчанию, сейчас это <ph name="PAGE_TITLE"/>. Продолжить использование этой системы?</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
+<translation id="5211087808649701653">Открыть диалоговое окно оригинальной печати</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">Информация о недавних сбоях отображается на этой странице только при <ph name="BEGIN_LINK"/>включенной функции отчетов о сбоях<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не отвечает. Перезапустить сейчас?</translation>

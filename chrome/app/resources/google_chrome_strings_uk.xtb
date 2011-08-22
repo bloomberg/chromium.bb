@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Ви спробували отримати доступ до &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сертифікат, наданий сервером, містить помилки. Google Chrome не може користуватися сертифікатом з помилками та не може перевірити ідентифікаційну інформацію сайту, з яким ви спробувати встановити з’єднання. Ваше з’єднання не є захищеним, рекомендуємо не продовжувати.</translation>
 <translation id="8738921060445980047">Невідома версія.</translation>
 <translation id="2485422356828889247">Видалити</translation>
+<translation id="2748463065602559597">Ви переглядаєте безпечну сторінку Google Chrome.</translation>
 <translation id="3324235665723428530">Ваш профіль не можна використати, тому що його створено у новішій версії Google Chrome.\n\nДеякі функції можуть не працювати. Вкажіть інший каталог профілю або скористайтеся новішою версією Chrome.</translation>
 <translation id="9073088951656332330">Не знайдено встановлення Google Chrome або Google Chrome Frame для оновлення.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome може використовувати веб-послуги для покращення умов перегляду.</translation>
 <translation id="7436949144778751379">Для роботи Google Chrome потрібно мати ОС Windows XP або новішої версії. Деякі функції можуть не працювати.</translation>
 <translation id="7100330187273168372">Google Chrome не може читати з та записувати у каталог:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Галерея тем Google Chrome</translation>
 <translation id="7938170099933661772">Google Chrome не може показати версію для друку, якщо вимкнено вбудований засіб перегляду файлів PDF. Щоб переглянути версію для друку, перейдіть у розділ <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, увімкніть плагін &quot;Перегляд документів PDF у Chrome&quot; і повторіть спробу.</translation>
 <translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="2290095356545025170">Ви дійсно хочете видалити Google Chrome?</translation>
+<translation id="1243097286641060337">Google Chrome або Google Chrome Frame не можна оновити внаслідок несумісності налаштувань групової політики оновлення Google. Скористайтеся редактором групової політики, щоб налаштувати перевизначення політики оновлення для програми Google Chrome Binaries, і повторіть спробу.</translation>
 <translation id="6087062680442281307">Google Chrome – це веб-переглядач, який із блискавичною швидкістю запускає веб-сторінки та програми. Він швидкий, надійний і зручний у користуванні. Вбудований у Google Chrome захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Виявлено несумісність з іншим встановленим застосунком.</translation>
 <translation id="7018032895891496381">Google Chrome використовує вашу пошукову систему за умовчанням, якою на даний момент є <ph name="PAGE_TITLE"/>. Не змінювати пошукову систему за умовчанням?</translation>
 <translation id="7161904924553537242">Вітаємо у Google Chrome:</translation>
+<translation id="5211087808649701653">Запустити рідне діалогове вікно друку</translation>
 <translation id="8669527147644353129">Помічник Google Chrome</translation>
 <translation id="3444832043240812445">На цій сторінці відображається інформація лише про останні випадки аварійного завершення роботи, якщо <ph name="BEGIN_LINK"/>ввімкнено повідомлення про аварійне завершення роботи<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не відповідає. Перезапустити зараз?</translation>

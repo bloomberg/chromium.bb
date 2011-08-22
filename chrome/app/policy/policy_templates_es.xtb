@@ -20,15 +20,18 @@
           De forma predeterminada, se admiten todas las extensiones, pero si se ha establecido una política que indique que todas las extensiones se deben incluir en la lista negra, se puede utilizar una lista de admisión para anularla.</translation>
 <translation id="3185009703220253572">desde la versión <ph name="SINCE_VERSION"/></translation>
 <translation id="5469825884154817306">Bloquear imágenes de estos sitios</translation>
+<translation id="2908277604670530363">Número máximo de conexiones simultáneas con el servidor proxy</translation>
 <translation id="3512877396423730277">Controla si se permite que el contenido secundario de terceros de una página muestre un cuadro de diálogo emergente de autenticación básica de HTTP. Esta opción suele estar inhabilitada para protegerse de los ataques de phishing.</translation>
 <translation id="1438955478865681012">Configura las políticas relacionadas con las extensiones. Los usuarios solo pueden instalar extensiones de la lista negra si estas se han incluido en la lista de admisión. Se puede forzar la instalación automática de extensiones en <ph name="PRODUCT_NAME"/> si se especifican en <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La lista negra tiene preferencia sobre la lista de extensiones de instalación forzada.</translation>
-<translation id="4070280487546651935">Especifica la palabra clave, que se utiliza como acceso directo en el Omnibox para generar resultados de búsqueda de este proveedor. Esta política es opcional.</translation>
+<translation id="4070280487546651935">Especifica la palabra clave, que se utiliza como acceso directo en el omnibox para generar resultados de búsqueda de este proveedor. Esta política es opcional.</translation>
+<translation id="6036523166753287175">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
 <translation id="1096105751829466145">Proveedor de búsquedas predeterminadas</translation>
 <translation id="7567380065339179813">Permitir complementos en estos sitios</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que los usuarios puedan habilitar o inhabilitar</translation>
 <translation id="1427655258943162134">Dirección o URL de servidor proxy</translation>
 <translation id="1827523283178827583">Utilizar servidores proxy fijos</translation>
 <translation id="3021409116652377124">Inhabilitar el buscador de complementos</translation>
+<translation id="3288595667065905535">Canal de versiones</translation>
 <translation id="2455652143675149114">Permite especificar el comportamiento del navegador al iniciarlo.
 
           Si seleccionas &quot;Abrir la página de inicio&quot;, la página de inicio se abrirá cada vez que inicies <ph name="PRODUCT_NAME"/>.
@@ -49,6 +52,11 @@
       Si inhabilitas esta opción, no se pedirá a los usuarios que introduzcan una contraseña para que los dispositivos Chrome OS salgan del modo de suspensión.
 
       Tanto si habilitas esta opción como si la inhabilitas, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="8781881969636812184">Habilita el uso de servidores de retransmisión y STUN cuando los clientes remotos intentan establecer conexión con este ordenador.
+
+          Si esta opción está habilitada, los clientes remotos pueden detectar estos ordenadores y establecer conexión con ellos incluso si hay un cortafuegos de por medio.
+
+          Si esta opción está inhabilitada y el cortafuegos filtra las conexiones UDP salientes, este ordenador solo permitirá conexiones de ordenadores cliente que se encuentren en la red local.</translation>
 <translation id="5912364507361265851">Permitir que los usuarios muestren contraseñas en el Administrador de contraseñas</translation>
 <translation id="6999540307315670568">Permite habilitar la barra de marcadores en la página Nueva pestaña de <ph name="PRODUCT_NAME"/>.
 
@@ -160,11 +168,11 @@
 <translation id="5883015257301027298">Configuración de cookies predeterminada</translation>
 <translation id="1222189289457045659">Permite habilitar el uso de un proveedor de búsquedas predeterminadas.
 
-          Si habilitas esta opción, se realizarán búsquedas de forma predeterminada cuando los usuarios introduzcan en el Omnibox un texto que no sea una URL.
+          Si habilitas esta opción, se realizarán búsquedas de forma predeterminada cuando los usuarios introduzcan en el omnibox un texto que no sea una URL.
 
           Puedes especificar el proveedor de búsquedas predeterminadas si estableces las otras políticas de búsqueda predeterminadas. Si se deja alguna en blanco, los usuarios podrán seleccionar el proveedor predeterminado.
 
-          Si inhabilitas esta opción, no se realizará ninguna búsqueda cuando los usuarios introduzcan en el Omnibox un texto que no sea una URL.
+          Si inhabilitas esta opción, no se realizará ninguna búsqueda cuando los usuarios introduzcan en el omnibox un texto que no sea una URL.
 
           Tanto si habilitas esta opción como si la inhabilitas, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
@@ -179,6 +187,7 @@
 
           Si habilitas esta opción, los usuarios no podrán cambiar la URL de página de inicio de <ph name="PRODUCT_NAME"/>, pero podrán seleccionar la página Nueva pestaña como página de inicio.</translation>
 <translation id="4423597592074154136">Especificar configuración de proxy manualmente</translation>
+<translation id="209586405398070749">Canal estable</translation>
 <translation id="3137734558440858947">Permite indicar si los sitios web pueden mostrar o no imágenes. Este permiso se concede o se deniega a todos los sitios web.</translation>
 <translation id="9035964157729712237">ID de extensiones que no deben estar incluidas en la lista negra</translation>
 <translation id="3523486089716697173">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar imágenes.</translation>
@@ -190,6 +199,7 @@
 <translation id="6022948604095165524">Acción al iniciar</translation>
 <translation id="3704185423155638353">Permite configurar una lista de patrones de URL para especificar los sitios que no pueden ejecutar JavaScript.</translation>
 <translation id="7628741187268592472">Permite especificar la biblioteca GSSAPI que se debe utilizar para la autenticación HTTP. Puedes definir simplemente el nombre de una biblioteca o una ruta completa. Si no se proporciona ningún parámetro, <ph name="PRODUCT_NAME"/> volverá a utilizar un nombre de biblioteca predeterminado.</translation>
+<translation id="2435100545355792516">Forzar modo de incógnito</translation>
 <translation id="605147781209875705">Esta política está obsoleta, te recomendamos que utilices ProxyMode en su lugar.
 
           Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen la configuración del proxy.
@@ -217,6 +227,7 @@
 
           Puedes consultar ejemplos detallados en la siguiente página:
           <ph name="PROXY_HELP_URL"/></translation>
+<translation id="5770738360657678870">Canal de desarrolladores (puede ser inestable)</translation>
 <translation id="2959898425599642200">Reglas de omisión de proxy</translation>
 <translation id="7337941689192402544">Configurar directorio de datos de usuario de <ph name="PRODUCT_NAME"/></translation>
 <translation id="5326137997741385453">Configura el directorio que <ph name="PRODUCT_NAME"/> utilizará para guardar archivos almacenados en caché en el disco.
@@ -240,6 +251,7 @@
 
       El de las políticas de Chromium empieza por <ph name="CHROMIUM_KEY"/> y el de las de Google Chrome empieza por <ph name="GOOGLE_CHROME_KEY"/>.</translation>
 <translation id="7003746348783715221">Preferencias de <ph name="PRODUCT_NAME"/></translation>
+<translation id="4723829699367336876">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
 <translation id="9096086085182305205">Lista de admisión de servidores de autenticación</translation>
 <translation id="7063895219334505671">Permitir pop-ups en estos sitios</translation>
 <translation id="2824715612115726353">Habilitar modo de incógnito</translation>
@@ -251,7 +263,6 @@
 <translation id="6157537876488211233">Lista de reglas de omisión de proxy separadas por comas</translation>
 <translation id="7091198954851103976">Ejecuta siempre complementos que requieran autorización.</translation>
 <translation id="8870318296973696995">Página de inicio</translation>
-<translation id="4505337077089958219">Frecuencia de actualización de política</translation>
 <translation id="996560596616541671">Servidores en los que puede delegar <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="2236488539271255289">No permitir que ningún sitio establezca datos locales</translation>
@@ -326,7 +337,7 @@
 <translation id="13356285923490863">Nombre de la política</translation>
 <translation id="557658534286111200">Permite habilitar o inhabilitar la edición de marcadores.</translation>
 <translation id="3473585733246847076">Permite definir una lista de patrones de URL para especificar los sitios que pueden establecer cookies.</translation>
-<translation id="2493647325461842868">Permite habilitar las sugerencias de búsqueda del Omnibox de <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
+<translation id="2493647325461842868">Permite habilitar las sugerencias de búsqueda del omnibox de <ph name="PRODUCT_NAME"/> e impide que los usuarios modifiquen esta configuración.
 
       Si habilitas esta opción, se utilizarán sugerencias de búsqueda.
 
@@ -339,6 +350,7 @@
 
       Si esta opción se inhabilita, los usuarios no podrán imprimir desde <ph name="PRODUCT_NAME"/>. Para inhabilitar la impresión, hay que acceder a Herramientas &gt; Extensiones &gt; Aplicaciones JavaScript, etc. Se podrá imprimir desde complementos que ignoren la configuración de <ph name="PRODUCT_NAME"/> al imprimir. Por ejemplo, no se inhabilitará la opción de impresión del menú contextual de algunas aplicaciones Flash.</translation>
 <translation id="6908640907898649429">Permite configurar el proveedor de búsquedas predeterminadas. Puedes especificar el proveedor de búsquedas predeterminadas que utilizarán los usuarios o inhabilitar las búsquedas predeterminadas.</translation>
+<translation id="8621254262912103717">Especifica el número máximo de conexiones simultáneas que se pueden establecer con el servidor proxy. Algunos servidores proxy no admiten un número elevado de conexiones simultáneas por cliente, lo que se puede resolver estableciendo un valor inferior para esta política. El valor de esta política debe ser inferior a 100 y superior a 6 (el valor predeterminado es 32). Algunas aplicaciones web consumen muchas conexiones con las solicitudes GET que se bloquean, por lo que un valor inferior a 32 puede hacer que la red del navegador se bloquee si se abren muchas aplicaciones web. Si estableces un valor inferior al predeterminado, debes hacerlo bajo tu propia responsabilidad.</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
 <translation id="4027608872760987929">Habilitar proveedor de búsquedas predeterminadas</translation>
 <translation id="2223598546285729819">Configuración de notificación predeterminada</translation>
@@ -355,6 +367,7 @@
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación HTTP integrada</translation>
 <translation id="4608714268466689965">Permite establecer si los sitios web pueden mostrar notificaciones de escritorio. Las notificaciones de escritorio se pueden permitir o denegar de forma predeterminada o se puede establecer que los sitios web pidan permiso al usuario cada vez que quieran mostrar notificaciones de escritorio.</translation>
 <translation id="8951350807133946005">Establecer directorio de caché de disco</translation>
+<translation id="3866571346358522601">Permite especificar el período en milisegundos en el que se solicita información sobre políticas de usuarios al servicio de administración de dispositivos. Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1800000 (30 minutos) y 86400000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.</translation>
 <translation id="1334051495529796396">Permite especificar si el SPN de Kerberos se basa en el nombre de dominio canónico o en el nombre que se introdujo originalmente.
 
           Si habilitas esta opción, se omitirá la consulta de nombre canónico y se utilizará el nombre del servidor tal como se haya introducido.
@@ -430,6 +443,8 @@
 <translation id="5226033722357981948">Especificar si se debe inhabilitar el buscador de complementos</translation>
 <translation id="9068358498333390522">Permite establecer si los sitios web pueden mostrar o no pop-ups. La ejecución de pop-ups se permite o se deniega a todos los sitios web.</translation>
 <translation id="7194407337890404814">Nombre del proveedor de búsquedas predeterminadas</translation>
+<translation id="1843117931376765605">Frecuencia con la que se actualiza la política de usuario</translation>
+<translation id="1630808801738981930">Fuerza que cada sesión tenga lugar en modo de incógnito en <ph name="PRODUCT_NAME"/>. Si esta opción está habilitada, los usuarios solo podrán abrir páginas en modo de incógnito. Si está inhabilitada o no se ha configurado, los usuarios también pueden utilizar el navegador en modo normal.</translation>
 <translation id="5535973522252703021">Lista de admisión de servidores de delegación Kerberos</translation>
 <translation id="4554678280250165996">Permite especificar los esquemas de autenticación HTTP admitidos por <ph name="PRODUCT_NAME"/>.
 
@@ -440,6 +455,7 @@
 <translation id="6013842521938070987">Permite inhabilitar los esquemas de protocolo especificados en <ph name="PRODUCT_NAME"/>.
 
       Las URL que utilicen un esquema incluido en la lista no se cargarán y los usuarios no podrán visitarlas.</translation>
+<translation id="4845434807154973261">Habilita el uso de servidores de retransmisión y STUN cuando se establece conexión con un cliente remoto. Si esta opción está habilitada, este ordenador puede detectar hosts remotos y establecer conexión con ellos incluso si hay un cortafuegos de por medio. Si esta opción está inhabilitada y el cortafuegos filtra las conexiones UDP salientes, este ordenador solo podrá establecer conexión con hosts que se encuentren en la red local.</translation>
 <translation id="4056910949759281379">Inhabilitar protocolo SPDY</translation>
 <translation id="3808945828600697669">Especificar una lista de complementos inhabilitados</translation>
 <translation id="2187975305444384964">Permite establecer si los sitios web pueden realizar un seguimiento de la ubicación física de los usuarios. El seguimiento de la ubicación física de los usuarios se puede permitir o denegar de forma predeterminada o se puede establecer que un sitio web pida permiso al usuario siempre que quiera conocer la ubicación física.</translation>
@@ -449,9 +465,11 @@
 <translation id="2098658257603918882">Habilitar informes de uso y de datos sobre fallos</translation>
 <translation id="1151353063931113432">Permitir imágenes en estos sitios</translation>
 <translation id="4498075447689127727">Permite establecer una lista de patrones de URL para especificar sitios que no pueden abrir pop-ups.</translation>
+<translation id="5807843250244274844">Especifica el canal de versiones en el que se debe bloquear este dispositivo. Esta política se encuentra en desarrollo, así que actualmente el usuario puede seguir cambiando el canal de versión incluso si está especificado en la política.</translation>
 <translation id="1297182715641689552">Utilizar una secuencia de comandos .pac de proxy</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Habilitar sugerencias de búsqueda</translation>
+<translation id="4906194810004762807">Frecuencia de actualización de la política del dispositivo</translation>
 <translation id="5511702823008968136">Habilitar barra de marcadores</translation>
 <translation id="3653673712530669976">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME"/>.
           De forma predeterminada, se permite que el navegador del host muestre las páginas HTML,
@@ -461,6 +479,8 @@
       pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME"/> muestre las páginas HTML de forma predeterminada.</translation>
 <translation id="4486602758942612946">Permite personalizar la lista de patrones de URL que siempre debe mostrar el navegador del host.
           Puedes consultar ejemplos de patrones en la página http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="2257451316169619209">Permite especificar el período en milisegundos en el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos. Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 1800000 (30 minutos) y 86400000 (un día). Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.</translation>
+<translation id="1734716591049455502">Configurar opciones de acceso remoto</translation>
 <translation id="4346795218451526495">Permite especificar una lista de complementos que el usuario puede habilitar o inhabilitar en <ph name="PRODUCT_NAME"/>.
 
       Se pueden utilizar los caracteres comodín &quot;*&quot; y &quot;?&quot; para obtener coincidencias de secuencias de caracteres arbitrarios. &quot;*&quot; puede coincidir con un número arbitrario de caracteres y &quot;?&quot; especifica un único carácter opcional (puede coincidir con un carácter o con ninguno). El carácter de escape (&quot;\&quot;) se puede escribir antes de &quot;*&quot;, &quot;?&quot; o &quot;\&quot; para obtener coincidencias con los propios caracteres.
@@ -473,6 +493,9 @@
       Si inhabilitas esta opción, no se utilizarán los complementos obsoletos y no se pedirá permiso a los usuarios para ejecutarlos.
 
       Si no se configura esta opción, se pedirá permiso a los usuarios para ejecutar complementos obsoletos.</translation>
+<translation id="2629448496147630947">Configura las opciones de acceso remoto en <ph name="PRODUCT_NAME"/>.
+
+      Estas funciones se ignoran a menos que se instale la aplicación web de acceso remoto.</translation>
 <translation id="407895324478579198">Permite especificar una lista de extensiones que se podrán instalar automáticamente sin intervención del usuario.
 
           Todos los elementos de la lista son cadenas que contienen un ID de extensión y una URL de actualización delimitados por punto y coma (<ph name="SEMICOLON"/>). Por ejemplo: <ph name="EXTENSION_POLICY_EXAMPLE"/>. <ph name="PRODUCT_NAME"/> recuperará la extensión de la URL correspondiente especificada en el ID de cada elemento y la instalará automáticamente. En las siguientes páginas podrás obtener información sobre cómo alojar extensiones en tu propio servidor. La página <ph name="LINK_TO_EXTENSION_DOC1"/> contiene información sobre las URL de actualización y la página <ph name="LINK_TO_EXTENSION_DOC2"/> incluye información genérica sobre las extensiones.
@@ -487,9 +510,6 @@
 <translation id="3780152581321609624">Incluir un puerto no estándar en SPN de Kerberos</translation>
 <translation id="2660846099862559570">No utilizar nunca un proxy</translation>
 <translation id="5512418063782665071">URL de la página de inicio</translation>
-<translation id="8990655542335348641">Permite especificar el período en milisegundos en el que se solicita información sobre políticas al servicio de gestión de dispositivos.
-
-      Al establecer esta política, se anula el valor predeterminado de tres horas. Los valores válidos están comprendidos entre 30 minutos y un día. Si el valor no está incluido en este intervalo, se redondeará al límite correspondiente.</translation>
 <translation id="6049075103826767200">Permite habilitar el envío anónimo de informes de uso y de datos sobre fallos correspondientes a <ph name="PRODUCT_NAME"/> a Google e impide que los usuarios modifiquen esta configuración.
 
       Si habilitas esta opción, se enviarán informes de uso y datos sobre fallos a Google de forma anónima.
@@ -506,6 +526,7 @@
 
       Tanto si habilitas esta opción como si la inhabilitas, los usuarios no podrán modificarla en <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="1948757837129151165">Políticas de autenticación HTTP</translation>
+<translation id="5946082169633555022">Canal beta</translation>
 <translation id="817926804885880359">Permite habilitar la función Autocompletar de <ph name="PRODUCT_NAME"/> y permite que los usuarios rellenen automáticamente los formularios web utilizando información almacenada anteriormente, como la dirección o la información de la tarjeta de crédito.
 
       Si inhabilitas esta opción, los usuarios no podrán acceder a la función Autocompletar.

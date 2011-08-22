@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">आपण &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने सादर केलेल्या प्रमाणपत्रात त्रुटी आहेत. Google Chrome त्रुटीसह प्रमाणपत्र वापरू शकत नाही आणि आपण ज्या साइटशी कनेक्ट होण्याचा प्रयत्न करीत आहात तिची ओळख सत्यापित करू शकत नाही. आपले कनेक्शन सुरक्षित नाही आणि पुढे जाऊ नये.</translation>
 <translation id="8738921060445980047">अज्ञात आवृत्ती.</translation>
 <translation id="2485422356828889247">अनइन्स्टॉल करणे</translation>
+<translation id="2748463065602559597">आपण सुरक्षित Google Chrome पृष्ठ पहात आहात.</translation>
 <translation id="3324235665723428530">आपले प्रोफाइल वापरले जाऊ शकत नाही कारण ते Google Chrome च्या एक नवीन आवृत्ती कडून आहे.\n\nकाही वैशिष्ट्ये अनुपलब्ध असू शकतात. कृपया एक वेगळी प्रोफाइल निर्देशिका निर्दिष्ट करा किंवा Chromeची नवीन आवृत्ती वापरा.</translation>
 <translation id="9073088951656332330">अपडेट करण्यासाठी Google Chrome किंवा Google Chrome Frame ची कोणतीही स्थापना आढळली नाही.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome आपला ब्राउझिंग अनुभव सुधारण्यासाठी वेब सेवा वापरू शकतो.</translation>
 <translation id="7436949144778751379">Google Chrome साठी Windows XP किंवा नंतरची आवृत्ती आवश्यक आहे. काही वैशिष्ट्ये कार्य करत नाही.</translation>
 <translation id="7100330187273168372">Google Chrome त्याच्या डेटा निर्देशिकेत वाचू आणि लिहू शकत नाही:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome थीम गॅलरी</translation>
 <translation id="7938170099933661772">अंगभूत PDF दर्शक अक्षम असताना Google Chrome मुद्रण पूर्वावलोकन दर्शवू शकत नाही. पूर्वावलोकन पाहण्यासाठी, कृपया <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/> वर भेट द्या, &quot;Chrome PDF दर्शक&quot; सक्षम करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="6757767188268205357">माझा बग नोंदवू नका</translation>
 <translation id="2290095356545025170">आपली खात्री आहे की आपण Google Chrome विस्थापित करू इच्छिता?</translation>
+<translation id="1243097286641060337">Google Chrome किंवा Google Chrome फ्रेम, Google अद्यतन गट धोरण सेटिंग्जच्या खात्यावर अद्यतनित केले जाऊ शकत नाही. Google Chrome Binaries अनुप्रयोगासाठी अद्यतन धोरण अधिलिखित सेट करण्यासाठी गट धोरण संपादकाचा वापर करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="6087062680442281307">Google Chrome एक वेब ब्राउझर आहे जो वेब पृष्ठे आणि अनुप्रयोग विजेच्या गतीने चालवितो. तो जलद, स्थिर आणि वापरण्यास सोपा आहे. Google Chrome मध्ये तयार केलेल्या मालवेयर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
 <translation id="5941830788786076944">Google Chromeला डीफॉल्ट ब्राउझर बनवा</translation>
 <translation id="4990567037958725628">Google Chrome कॅनरी</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">अन्य स्थापित अनुप्रयोगाशी विरोध आढळला आहे.</translation>
 <translation id="7018032895891496381">Google Chrome आपले डीफॉल्ट शोध इंजिन वापरते, जे सध्या <ph name="PAGE_TITLE"/> वर सेट केले आहे. आपण आपले डीफॉल्ट शोध इंजिन ठेवू इच्छिता?</translation>
 <translation id="7161904924553537242">Google Chromeमध्ये आपले स्वागत आहे</translation>
+<translation id="5211087808649701653">मूळ ‍मुद्रण संवाद लाँच करा</translation>
 <translation id="8669527147644353129">Google Chrome मदतनीस</translation>
 <translation id="3444832043240812445">हे पृष्ठ आपण <ph name="BEGIN_LINK"/>कॅश अहवाल सक्षम<ph name="END_LINK"/> केल्यास केवळ आपल्याला अलीकडील क्रॅशची माहिती दर्शविते.</translation>
 <translation id="8614913330719544658">Google Chrome प्रतिसाद देत नाही. त्वरित पुन्हा लाँच करायचा?</translation>

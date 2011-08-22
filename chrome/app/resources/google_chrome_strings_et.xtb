@@ -50,6 +50,7 @@
 <translation id="6009537148180854585">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid serveri esitatud sert sisaldab vigu. Google Chrome ei saa kasutada vigadega serti ega kinnitada saidi identiteeti, millega proovisite ühendust luua. Teie ühendus pole turvaline ning te ei tohiks jätkata.</translation>
 <translation id="8738921060445980047">Tundmatu versioon.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
+<translation id="2748463065602559597">Vaatate turvalist Google Chrome'i lehte.</translation>
 <translation id="3324235665723428530">Teie profiili ei saa kasutada, kuna see pärineb uuemast Google Chrome'i versioonist.\n\nMõned funktsioonid ei pruugi olla kättesaadavad. Palun täpsustage mõni teine profiilikaust või kasutage Chrome'i uuemat versiooni.</translation>
 <translation id="9073088951656332330">Ei leitud ühtegi Google Chrome'i ega Google Chrome Frame'i installi, mida värskendada.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -63,9 +64,11 @@
 <translation id="3847841918622877581">Google Chrome võib teie sirvimiskogemuse täiustamiseks kasutada veebiteenuseid.</translation>
 <translation id="7436949144778751379">Google Chrome nõuab Windows XP-d või uuemat operatsioonisüsteemi. Mõned funktsioonid ei pruugi töötada.</translation>
 <translation id="7100330187273168372">Google Chrome ei suuda oma andmekaustast lugeda ega sinna kirjutada:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="5167270755190684957">Google Chrome'i teemade galerii</translation>
 <translation id="7938170099933661772">Kui sisseehitatud PDF-vaataja on keelatud, ei saa Google Chrome printimise eelvaadet näidata. Eelvaate nägemiseks külastage aadressi <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, lubage „Chrome'i PDF-vaataja” ja proovige uuesti.</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="2290095356545025170">Olete kindel, et soovite Google Chrome'i desinstallida?</translation>
+<translation id="1243097286641060337">Google Chrome'i ja Google Chrome Frame'i ei saa värskendada kontol, mis on vastuolus Google Update'i rühmareeglite seadetega. Kasutage rühmareeglite redigeerijat, et määrata rakenduse Google Chrome Binaries värskendamise reeglite alistus ja proovige uuesti.</translation>
 <translation id="6087062680442281307">Google Chrome on veebibrauser, mis käitab veebilehti ja rakendusi välgukiirusel. See on kiire, töökindel ja lihtsalt kasutatav. Veebisirvimine on turvalisem tänu Google Chrome'i sisseehitatud pahavara- ja andmepüügivastasele kaitsele.</translation>
 <translation id="5941830788786076944">Tee Google Chrome vaikebrauseriks</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
@@ -77,6 +80,7 @@
 <translation id="2712549016134575851">Tuvastatud on konflikt teise installitud rakendusega.</translation>
 <translation id="7018032895891496381">Google Chrome kasutab teie vaikeotsingumootorit, mis praegu on <ph name="PAGE_TITLE"/>. Soovite jätkata sama vaikeotsingumootori kasutamist?</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>
+<translation id="5211087808649701653">Käivita oma-prindidialoog</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="3444832043240812445">Lehel näidatakse vaid teavet hiljutiste krahhide kohta, kui olete <ph name="BEGIN_LINK"/>krahhide aruandluse lubanud<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ei reageeri. Kas soovite kohe taaskäivitada?</translation>
