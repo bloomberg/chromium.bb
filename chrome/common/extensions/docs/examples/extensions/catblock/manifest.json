@@ -1,0 +1,7 @@
+{
+  "name": "CatBlock",
+  "version": "1.0",
+  "description": "I can't has cheezburger!",
+  "permissions": ["experimental"],
+  "background_page": "background.html"
+}
