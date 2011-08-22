@@ -26,7 +26,6 @@ namespace {
 
 static const int kHostPort = 80;
 static const int kNumRetries = 5;
-static const std::string kCreateSessionURL = "/create_session";
 
 // Define a SessionFactory in the anonymouse namespace so we have a
 // shorter name.
