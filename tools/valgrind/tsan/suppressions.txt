@@ -591,3 +591,34 @@
   fun:WebCore::WorkerThread::workerThreadStart
   fun:WTF::threadEntryPoint
 }
+{
+   bug_93757
+   ThreadSanitizer:Race
+   fun:__memset_sse2
+   fun:VisitedLinkMaster::CreateURLTable
+   fun:VisitedLinkMaster::InitFromScratch
+   fun:VisitedLinkMaster::Init
+   fun:ProfileImpl::GetVisitedLinkMaster
+   fun:VisitedLinkEventListener::Observe
+   fun:NotificationService::Notify
+   fun:BrowserRenderProcessHost::OnProcessLaunched
+   fun:ChildProcessLauncher::Context::Notify
+   fun:DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:base::subtle::TaskClosureAdapter::Run
+   fun:base::internal::Invoker1::DoInvoke
+   fun:base::Callback::Run
+   fun:MessageLoop::RunTask
+   fun:MessageLoop::DeferOrRunPendingTask
+   fun:MessageLoop::DoWork
+   fun:base::MessagePumpGlib::RunWithDispatcher
+   fun:base::MessagePumpGlib::Run
+   fun:MessageLoop::RunInternal
+   fun:MessageLoop::RunHandler
+   fun:MessageLoopForUI::Run
+   fun:::RunUIMessageLoop
+   fun:BrowserMain
+   fun:::RunNamedProcessTypeMain
+   fun:ChromeMain
+   fun:main
+}
