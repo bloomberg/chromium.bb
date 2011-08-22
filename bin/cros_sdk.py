@@ -121,7 +121,7 @@ def BootstrapChroot(chroot_path, stage_url, replace):
     cmd.append('--replace')
 
   try:
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
     print 'Running %r failed!' % cmd
     sys.exit(1)
@@ -130,7 +130,7 @@ def BootstrapChroot(chroot_path, stage_url, replace):
 def CreateChroot(sdk_url, sdk_version, chroot_path, replace):
   """Creates a new chroot from a given SDK"""
   if not os.path.exists(SDK_DIR):
-    cros_build_lib.RunCommand(['mkdir', '-p', SDK_DIR])
+    cros_build_lib.RunCommand(['mkdir', '-p', SDK_DIR], print_cmd=False)
 
   # Based on selections, fetch the tarball
   if sdk_url:
@@ -156,7 +156,7 @@ def CreateChroot(sdk_url, sdk_version, chroot_path, replace):
     cmd.append('--replace')
 
   try:
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
     print 'Running %r failed!' % cmd
     sys.exit(1)
@@ -167,7 +167,7 @@ def DeleteChroot(chroot_path):
   cmd = MAKE_CHROOT + ['--chroot', chroot_path,
                        '--delete']
   try:
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
     print 'Running %r failed!' % cmd
     sys.exit(1)
@@ -184,7 +184,7 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
     cmd.append('--')
     cmd.extend(additional_args)
   try:
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.RunCommand(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
     print 'Running %r failed!' % cmd
     sys.exit(1)
