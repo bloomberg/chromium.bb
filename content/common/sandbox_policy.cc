@@ -69,7 +69,6 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"rlhook.dll",                  // Trustware Bufferzone.
   L"rooksdol.dll",                // Trustware Rapport.
   L"rpchromebrowserrecordhelper.dll",  // RealPlayer.
-  L"rpmainbrowserrecordplugin.dll",    // RealPlayer.
   L"r3hook.dll",                  // Kaspersky Internet Security.
   L"sahook.dll",                  // McAfee Site Advisor.
   L"sbrige.dll",                  // Unknown.
@@ -81,10 +80,16 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"syncor11.dll",                // SynthCore Midi interface.
   L"systools.dll",                // Panda Antivirus.
   L"tfwah.dll",                   // Threatfire (PC tools).
-  L"ycwebcamerasource.ax",        // Cyberlink Camera helper.
   L"wblind.dll",                  // Stardock Object desktop.
   L"wbhelp.dll",                  // Stardock Object desktop.
   L"winstylerthemehelper.dll"     // Tuneup utilities 2006.
+};
+
+// The DLLs listed here are known (or under strong suspicion) of causing crashes
+// when they are loaded in the plugin process.
+const wchar_t* const kTroublesomePluginDlls[] = {
+  L"rpmainbrowserrecordplugin.dll",    // RealPlayer.
+  L"ycwebcamerasource.ax"              // Cyberlink Camera helper.
 };
 
 // Adds the policy rules for the path and path\ with the semantic |access|.
@@ -156,11 +161,12 @@ bool IsExpandedModuleName(HMODULE module, const wchar_t* module_name) {
 }
 
 // Adds a single dll by |module_name| into the |policy| blacklist.
-// To minimize the list we only add an unload policy only if the dll is
-// also loaded in this process. All the injected dlls of interest do this.
+// If |check_in_browser| is true we only add an unload policy only if the dll
+// is also loaded in this process.
 void BlacklistAddOneDll(const wchar_t* module_name,
+                        bool check_in_browser,
                         sandbox::TargetPolicy* policy) {
-  HMODULE module = ::GetModuleHandleW(module_name);
+  HMODULE module = check_in_browser ? ::GetModuleHandleW(module_name) : NULL;
   if (!module) {
     // The module could have been loaded with a 8.3 short name. We use
     // the most common case: 'thelongname.dll' becomes 'thelon~1.dll'.
@@ -172,13 +178,15 @@ void BlacklistAddOneDll(const wchar_t* module_name,
       return;
     std::wstring alt_name = name.substr(0, 6) + L"~1";
     alt_name += name.substr(period, name.size());
-    module = ::GetModuleHandleW(alt_name.c_str());
-    if (!module)
-      return;
-    // We found it, but because it only has 6 significant letters, we
-    // want to make sure it is the right one.
-    if (!IsExpandedModuleName(module, module_name))
-      return;
+    if (check_in_browser) {
+      module = ::GetModuleHandleW(alt_name.c_str());
+      if (!module)
+        return;
+      // We found it, but because it only has 6 significant letters, we
+      // want to make sure it is the right one.
+      if (!IsExpandedModuleName(module, module_name))
+        return;
+    }
     // Found a match. We add both forms to the policy.
     policy->AddDllToUnload(alt_name.c_str());
   }
@@ -190,9 +198,16 @@ void BlacklistAddOneDll(const wchar_t* module_name,
 // Adds policy rules for unloaded the known dlls that cause chrome to crash.
 // Eviction of injected DLLs is done by the sandbox so that the injected module
 // does not get a chance to execute any code.
-void AddDllEvictionPolicy(sandbox::TargetPolicy* policy) {
+void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
   for (int ix = 0; ix != arraysize(kTroublesomeDlls); ++ix)
-    BlacklistAddOneDll(kTroublesomeDlls[ix], policy);
+    BlacklistAddOneDll(kTroublesomeDlls[ix], true, policy);
+}
+
+// Same as AddGenericDllEvictionPolicy but specifically for plugins. In this
+// case we add the blacklisted dlls even if they are not loaded in this process.
+void AddPluginDllEvictionPolicy(sandbox::TargetPolicy* policy) {
+  for (int ix = 0; ix != arraysize(kTroublesomePluginDlls); ++ix)
+    BlacklistAddOneDll(kTroublesomePluginDlls[ix], false, policy);
 }
 
 // Returns the object path prepended with the current logon session.
@@ -287,7 +302,7 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
                           sandbox::USER_LIMITED);
   }
 
-  AddDllEvictionPolicy(policy);
+  AddGenericDllEvictionPolicy(policy);
   return true;
 }
 
@@ -311,7 +326,7 @@ void AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
     DLOG(WARNING) << "Failed to apply desktop security to the renderer";
   }
 
-  AddDllEvictionPolicy(policy);
+  AddGenericDllEvictionPolicy(policy);
 }
 
 // The Pepper process as locked-down as a renderer execpt that it can
@@ -438,7 +453,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   }
 
   if (type == ChildProcessInfo::PLUGIN_PROCESS) {
-    AddDllEvictionPolicy(policy);
+    AddGenericDllEvictionPolicy(policy);
+    AddPluginDllEvictionPolicy(policy);
   } else if (type == ChildProcessInfo::GPU_PROCESS) {
     if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
