@@ -6,6 +6,7 @@
 #define AURA_DESKTOP_HOST_H_
 #pragma once
 
+#include "base/message_loop.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -19,7 +20,7 @@ class Desktop;
 
 // DesktopHost bridges between a native window and the embedded Desktop. It
 // provides the accelerated widget and maps events from the native os to aura.
-class DesktopHost {
+class DesktopHost : public MessageLoop::Dispatcher {
  public:
   virtual ~DesktopHost() {}
 

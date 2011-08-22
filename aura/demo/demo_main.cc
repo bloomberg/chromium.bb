@@ -59,6 +59,10 @@ int main(int argc, char** argv) {
   icu_util::Initialize();
   ResourceBundle::InitSharedInstance("en-US");
 
+#if defined(USE_X11)
+  base::MessagePumpX::DisableGtkMessagePump();
+#endif
+
   // Create the DesktopHost and Desktop.
   scoped_ptr<aura::DesktopHost> host(
       aura::DesktopHost::Create(gfx::Rect(200, 200, 1024, 768)));
@@ -96,6 +100,6 @@ int main(int argc, char** argv) {
   host->Show();
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-  MessageLoopForUI::current()->Run(NULL);
+  MessageLoopForUI::current()->Run(host.get());
   return 0;
 }

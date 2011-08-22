@@ -16,6 +16,9 @@ namespace aura {
 
 #if defined(OS_WIN)
 typedef MSG NativeEvent;
+#elif defined(USE_X11)
+typedef union _XEvent XEvent;
+typedef XEvent* NativeEvent;
 #endif
 
 class Event {

@@ -22,6 +22,11 @@ DesktopHostWin::~DesktopHostWin() {
   DestroyWindow(hwnd());
 }
 
+bool DesktopHostWin::Dispatch(const MSG& msg) {
+  // TODO(ben):
+  return true;
+}
+
 void DesktopHostWin::SetDesktop(Desktop* desktop) {
   desktop_ = desktop;
 }

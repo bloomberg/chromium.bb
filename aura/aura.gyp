@@ -21,6 +21,7 @@
       ],
       'sources': [
         'desktop_host.h',
+        'desktop_host_linux.cc',
         'desktop_host_win.cc',
         'desktop_host_win.h',
         'desktop.cc',

@@ -14,8 +14,11 @@ namespace aura {
 
 class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
  public:
-  DesktopHostWin(const gfx::Rect& bounds);
+  explicit DesktopHostWin(const gfx::Rect& bounds);
   virtual ~DesktopHostWin();
+
+  // MessageLoop::Dispatcher:
+  virtual bool Dispatch(const MSG& msg);
 
   // DesktopHost:
   virtual void SetDesktop(Desktop* desktop) OVERRIDE;
