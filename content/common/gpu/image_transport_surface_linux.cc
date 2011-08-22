@@ -27,10 +27,6 @@
 #include "ui/gfx/gl/gl_surface_glx.h"
 #include "ui/gfx/surface/accelerated_surface_linux.h"
 
-#if !defined(GL_DEPTH24_STENCIL8)
-#define GL_DEPTH24_STENCIL8 0x88F0
-#endif
-
 namespace {
 
 // We are backed by an Pbuffer offscreen surface for the purposes of creating a
@@ -60,11 +56,6 @@ class EGLImageTransportSurface : public ImageTransportSurface,
   void ReleaseSurface(scoped_refptr<AcceleratedSurface>& surface);
 
   uint32 fbo_id_;
-  uint32 depth_id_;
-  uint32 stencil_id_;
-  gfx::Size buffer_size_;
-
-  bool depth24_stencil8_supported_;
 
   scoped_refptr<AcceleratedSurface> back_surface_;
   scoped_refptr<AcceleratedSurface> front_surface_;
@@ -109,10 +100,7 @@ class GLXImageTransportSurface : public ImageTransportSurface,
 EGLImageTransportSurface::EGLImageTransportSurface(GpuCommandBufferStub* stub)
     : ImageTransportSurface(stub),
       gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1)),
-      fbo_id_(0),
-      depth_id_(0),
-      stencil_id_(0),
-      depth24_stencil8_supported_(false) {
+      fbo_id_(0) {
 }
 
 EGLImageTransportSurface::~EGLImageTransportSurface() {
@@ -125,16 +113,6 @@ bool EGLImageTransportSurface::Initialize() {
 }
 
 void EGLImageTransportSurface::Destroy() {
-  if (depth_id_) {
-    glDeleteRenderbuffersEXT(1, &depth_id_);
-    depth_id_ = 0;
-  }
-
-  if (stencil_id_) {
-    glDeleteRenderbuffersEXT(1, &stencil_id_);
-    stencil_id_ = 0;
-  }
-
   if (back_surface_.get())
     ReleaseSurface(back_surface_);
   if (front_surface_.get())
@@ -151,9 +129,6 @@ bool EGLImageTransportSurface::IsOffscreen() {
 void EGLImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   if (fbo_id_)
     return;
-
-  depth24_stencil8_supported_ =
-      context->HasExtension("GL_OES_packed_depth_stencil");
 
   glGenFramebuffersEXT(1, &fbo_id_);
   glBindFramebufferEXT(GL_FRAMEBUFFER, fbo_id_);
@@ -185,51 +160,6 @@ void EGLImageTransportSurface::ReleaseSurface(
 void EGLImageTransportSurface::Resize(gfx::Size size) {
   if (back_surface_.get())
     ReleaseSurface(back_surface_);
-
-  if (depth_id_ && buffer_size_ != size) {
-    glDeleteRenderbuffersEXT(1, &depth_id_);
-
-    if (stencil_id_)
-      glDeleteRenderbuffersEXT(1, &stencil_id_);
-
-    depth_id_ = stencil_id_ = 0;
-  }
-
-  if (!depth_id_) {
-    if (depth24_stencil8_supported_) {
-      glGenRenderbuffersEXT(1, &depth_id_);
-      glBindRenderbufferEXT(GL_RENDERBUFFER, depth_id_);
-      glRenderbufferStorageEXT(GL_RENDERBUFFER,
-                               GL_DEPTH24_STENCIL8,
-                               size.width(),
-                               size.height());
-    } else {
-      glGenRenderbuffersEXT(1, &depth_id_);
-      glBindRenderbufferEXT(GL_RENDERBUFFER, depth_id_);
-      glRenderbufferStorageEXT(GL_RENDERBUFFER,
-                               GL_DEPTH_COMPONENT16,
-                               size.width(),
-                               size.height());
-
-      glGenRenderbuffersEXT(1, &stencil_id_);
-      glBindRenderbufferEXT(GL_RENDERBUFFER, stencil_id_);
-      glRenderbufferStorageEXT(GL_RENDERBUFFER,
-                               GL_STENCIL_INDEX8,
-                               size.width(),
-                               size.height());
-    }
-    glBindRenderbufferEXT(GL_RENDERBUFFER, 0);
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
-                                 GL_DEPTH_ATTACHMENT,
-                                 GL_RENDERBUFFER,
-                                 depth_id_);
-    if (stencil_id_)
-      glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
-                                   GL_STENCIL_ATTACHMENT,
-                                   GL_RENDERBUFFER,
-                                   stencil_id_);
-    buffer_size_ = size;
-  }
 
   back_surface_ = new AcceleratedSurface(size);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
