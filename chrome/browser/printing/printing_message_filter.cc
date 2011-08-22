@@ -210,7 +210,7 @@ void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
   PrintMsg_Print_Params params;
   if (!printer_query.get() ||
       printer_query->last_status() != printing::PrintingContext::OK) {
-    memset(&params, 0, sizeof(params));
+    params.Reset();
   } else {
     RenderParamsFromPrintSettings(printer_query->settings(), &params);
     params.document_cookie = printer_query->cookie();
@@ -262,7 +262,7 @@ void PrintingMessageFilter::OnScriptedPrintReply(
   PrintMsg_PrintPages_Params params;
   if (printer_query->last_status() != printing::PrintingContext::OK ||
       !printer_query->settings().dpi()) {
-    memset(&params, 0, sizeof(params));
+    params.Reset();
   } else {
     RenderParamsFromPrintSettings(printer_query->settings(), &params.params);
     params.params.document_cookie = printer_query->cookie();
@@ -298,7 +298,7 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     IPC::Message* reply_msg) {
   PrintMsg_PrintPages_Params params;
   if (printer_query->last_status() != printing::PrintingContext::OK) {
-    memset(&params, 0, sizeof(params));
+    params.Reset();
   } else {
     RenderParamsFromPrintSettings(printer_query->settings(), &params.params);
     params.params.document_cookie = printer_query->cookie();
