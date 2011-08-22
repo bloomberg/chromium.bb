@@ -267,7 +267,7 @@ mach_override_ptr(
 	//	Optionally allocate & return the reentry island.
 	BranchIsland	*reentryIsland = NULL;
 	if( !err && originalFunctionReentryIsland ) {
-		err = allocateBranchIsland( &reentryIsland, kAllocateNormal, NULL);
+		err = allocateBranchIsland( &reentryIsland, kAllocateHigh, NULL);
 		if( !err )
 			*originalFunctionReentryIsland = reentryIsland;
 	}

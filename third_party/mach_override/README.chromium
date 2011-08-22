@@ -19,4 +19,10 @@ implementations at run time.
 
 Local Modifications:
 
-None. All local changes have been upstreamed.
+reentryIsland is allocated in high memory with vm_allocate rather than the
+heap with malloc by changing the allocation policy to kAllocateHigh. It
+appears probable that putting the reentry island in the heap causes its page
+to lose execute permission at some point under some circumstances, which
+results in a crash on Lion. This modification is temoprary to simply test
+out the theory. If proven, the code will be improved somewhat.
+http://crbug.com/93736.
