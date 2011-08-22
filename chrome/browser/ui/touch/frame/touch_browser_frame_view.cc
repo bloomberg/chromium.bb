@@ -100,7 +100,7 @@ TouchBrowserFrameView::~TouchBrowserFrameView() {
 }
 
 int TouchBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
-  if (keyboard_->GetMirroredBounds().Contains(point))
+  if (keyboard_ && keyboard_->GetMirroredBounds().Contains(point))
     return HTCLIENT;
   return OpaqueBrowserFrameView::NonClientHitTest(point);
 }
