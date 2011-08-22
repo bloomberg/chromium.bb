@@ -949,7 +949,8 @@ void ExtensionPrefs::SetToolbarOrder(
 void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
-    bool from_webstore) {
+    bool from_webstore,
+    int page_index) {
   const std::string& id = extension->id();
   CHECK(Extension::IdIsValid(id));
   ScopedExtensionPrefUpdate update(prefs_, id);
@@ -979,8 +980,10 @@ void ExtensionPrefs::OnExtensionInstalled(
     extension_dict->Set(kPrefManifest,
                         extension->manifest_value()->DeepCopy());
   }
+  extension_dict->Set(kPrefPageIndex,
+                      Value::CreateIntegerValue(page_index));
   extension_dict->Set(kPrefAppLaunchIndex,
-                      Value::CreateIntegerValue(GetNextAppLaunchIndex()));
+      Value::CreateIntegerValue(GetNextAppLaunchIndex(page_index)));
   extension_pref_value_map_->RegisterExtension(
       id, install_time, initial_state == Extension::ENABLED);
   content_settings_store_->RegisterExtension(
@@ -1324,7 +1327,7 @@ void ExtensionPrefs::SetAppLaunchIndex(const std::string& extension_id,
                       Value::CreateIntegerValue(index));
 }
 
-int ExtensionPrefs::GetNextAppLaunchIndex() {
+int ExtensionPrefs::GetNextAppLaunchIndex(int on_page) {
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
   if (!extensions)
     return 0;
@@ -1333,7 +1336,8 @@ int ExtensionPrefs::GetNextAppLaunchIndex() {
   for (DictionaryValue::key_iterator extension_id = extensions->begin_keys();
        extension_id != extensions->end_keys(); ++extension_id) {
     int value = GetAppLaunchIndex(*extension_id);
-    if (value > max_value)
+    int page = GetPageIndex(*extension_id);
+    if (page == on_page && value > max_value)
       max_value = value;
   }
   return max_value + 1;

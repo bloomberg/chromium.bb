@@ -578,7 +578,7 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(
-        extension_.get(), Extension::DISABLED, false);
+        extension_.get(), Extension::DISABLED, false, 0);
   }
 
   virtual void Verify() {
@@ -595,26 +595,31 @@ class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
     // No extensions yet.
-    EXPECT_EQ(0, prefs()->GetNextAppLaunchIndex());
+    EXPECT_EQ(0, prefs()->GetNextAppLaunchIndex(0));
 
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
-    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED, false);
+    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
+                                  false, 0);
   }
 
   virtual void Verify() {
     int launch_index = prefs()->GetAppLaunchIndex(extension_->id());
     // Extension should have been assigned a launch index > 0.
     EXPECT_GT(launch_index, 0);
-    EXPECT_EQ(launch_index + 1, prefs()->GetNextAppLaunchIndex());
+    EXPECT_EQ(launch_index + 1, prefs()->GetNextAppLaunchIndex(0));
     // Set a new launch index of one higher and verify.
     prefs()->SetAppLaunchIndex(extension_->id(),
-        prefs()->GetNextAppLaunchIndex());
+                               prefs()->GetNextAppLaunchIndex(0));
     int new_launch_index = prefs()->GetAppLaunchIndex(extension_->id());
     EXPECT_EQ(launch_index + 1, new_launch_index);
 
     // This extension doesn't exist, so it should return -1.
     EXPECT_EQ(-1, prefs()->GetAppLaunchIndex("foo"));
+
+    // The second page doesn't have any apps so its next launch index should
+    // still be 0.
+    EXPECT_EQ(prefs()->GetNextAppLaunchIndex(1), 0);
   }
 
  private:
@@ -625,27 +630,25 @@ TEST_F(ExtensionPrefsAppLaunchIndex, ExtensionPrefsAppLaunchIndex) {}
 class ExtensionPrefsPageIndex : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension_id_ = prefs_.AddExtensionAndReturnId("page_index");
-
-    int page_index = prefs()->GetPageIndex(extension_id_);
-    // Extension should not have been assigned a page
-    EXPECT_EQ(page_index, -1);
-
-    // Set the page index
-    prefs()->SetPageIndex(extension_id_, 2);
+    extension_ = prefs_.AddExtension("page_index");
+    // Install to page 3 (index 2).
+    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
+                                  false, 2);
+    EXPECT_EQ(2, prefs()->GetPageIndex(extension_->id()));
   }
 
   virtual void Verify() {
+    // Set the page index.
+    prefs()->SetPageIndex(extension_->id(), 1);
     // Verify the page index.
-    int page_index = prefs()->GetPageIndex(extension_id_);
-    EXPECT_EQ(page_index, 2);
+    EXPECT_EQ(1, prefs()->GetPageIndex(extension_->id()));
 
     // This extension doesn't exist, so it should return -1.
     EXPECT_EQ(-1, prefs()->GetPageIndex("foo"));
   }
 
  private:
-  std::string extension_id_;
+  scoped_refptr<Extension> extension_;
 };
 TEST_F(ExtensionPrefsPageIndex, ExtensionPrefsPageIndex) {}
 
@@ -654,7 +657,8 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
   virtual void Initialize() {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
-    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED, false);
+    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
+                                  false, 0);
   }
 
   virtual void Verify() {
@@ -804,7 +808,7 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
     Extension* extensions[] = {ext1_, ext2_, ext3_};
     for (int i = 0; i < 3; ++i) {
       if (ext == extensions[i] && !installed[i]) {
-        prefs()->OnExtensionInstalled(ext, Extension::ENABLED, false);
+        prefs()->OnExtensionInstalled(ext, Extension::ENABLED, false, 0);
         installed[i] = true;
         break;
       }

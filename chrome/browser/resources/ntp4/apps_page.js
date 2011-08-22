@@ -415,6 +415,17 @@ cr.define('ntp4', function() {
       this.appendTile(new App(appData), animate);
     },
 
+    /** @inheritdoc */
+    doDragOver: function(e) {
+      var tile = ntp4.getCurrentlyDraggingTile();
+      if (!tile.querySelector('.app')) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      } else {
+        TilePage.prototype.doDragOver.call(this, e);
+      }
+    },
+
     /** @inheritDoc */
     shouldAcceptDrag: function(e) {
       return ntp4.getCurrentlyDraggingTile() ||
@@ -431,7 +442,7 @@ cr.define('ntp4', function() {
               currentlyDraggingTile,
               this.tileElements_[index]);
           this.tileMoved(currentlyDraggingTile);
-        } else if (tileContents.classList.contains('most-visited')) {
+        } else if (currentlyDraggingTile.querySelector('.most-visited')) {
           this.generateAppForLink(tileContents.data);
         }
       } else {
@@ -485,7 +496,8 @@ cr.define('ntp4', function() {
     generateAppForLink: function(data) {
       assert(data.url != undefined);
       assert(data.title != undefined);
-      chrome.send('generateAppForLink', [data.url, data.title]);
+      var pageIndex = ntp4.getAppsPageIndex(this);
+      chrome.send('generateAppForLink', [data.url, data.title, pageIndex]);
     },
 
     /** @inheritDoc */

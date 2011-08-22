@@ -115,6 +115,13 @@ class AppLauncherHandler : public WebUIMessageHandler,
   static void RegisterUserPrefs(PrefService* pref_service);
 
  private:
+  struct AppInstallInfo {
+    bool is_bookmark_app;
+    string16 title;
+    GURL app_url;
+    int page_index;
+  };
+
   // Records a web store launch in the appropriate histograms. |promo_active|
   // specifies if the web store promotion was active.
   static void RecordWebStoreLaunch(bool promo_active);
@@ -184,7 +191,7 @@ class AppLauncherHandler : public WebUIMessageHandler,
   bool ignore_changes_;
 
   // Hold state for favicon requests.
-  CancelableRequestConsumerTSimple<WebApplicationInfo*> favicon_consumer_;
+  CancelableRequestConsumerTSimple<AppInstallInfo*> favicon_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);
 };

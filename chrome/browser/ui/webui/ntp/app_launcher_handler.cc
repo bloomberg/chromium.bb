@@ -156,7 +156,7 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   int app_launch_index = prefs->GetAppLaunchIndex(extension->id());
   if (app_launch_index == -1) {
     // Make sure every app has a launch index (some predate the launch index).
-    app_launch_index = prefs->GetNextAppLaunchIndex();
+    app_launch_index = prefs->GetNextAppLaunchIndex(0);
     prefs->SetAppLaunchIndex(extension->id(), app_launch_index);
   }
   value->SetInteger("app_launch_index", app_launch_index);
@@ -690,32 +690,32 @@ void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
 void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   std::string url;
   CHECK(args->GetString(0, &url));
+  GURL launch_url(url);
 
   string16 title;
   CHECK(args->GetString(1, &title));
 
-  GURL launch_url(url);
-
-  scoped_ptr<WebApplicationInfo> web_app(new WebApplicationInfo);
-  web_app->is_bookmark_app = true;
-  web_app->title = title;
-  web_app->app_url = launch_url;
+  double page_index;
+  CHECK(args->GetDouble(2, &page_index));
 
   Profile* profile = Profile::FromWebUI(web_ui_);
   FaviconService* favicon_service =
       profile->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (!favicon_service) {
     LOG(ERROR) << "No favicon service";
-    scoped_refptr<CrxInstaller> installer(
-        extension_service_->MakeCrxInstaller(NULL));
-    installer->InstallWebApp(*web_app);
     return;
   }
+
+  scoped_ptr<AppInstallInfo> install_info(new AppInstallInfo());
+  install_info->is_bookmark_app = true;
+  install_info->title = title;
+  install_info->app_url = launch_url;
+  install_info->page_index = static_cast<int>(page_index);
 
   FaviconService::Handle h = favicon_service->GetFaviconForURL(
       launch_url, history::FAVICON, &favicon_consumer_,
       NewCallback(this, &AppLauncherHandler::OnFaviconForApp));
-  favicon_consumer_.SetClientData(favicon_service, h, web_app.release());
+  favicon_consumer_.SetClientData(favicon_service, h, install_info.release());
 }
 
 void AppLauncherHandler::HandleRecordAppLaunchByURL(
@@ -734,8 +734,13 @@ void AppLauncherHandler::HandleRecordAppLaunchByURL(
 
 void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
                                          history::FaviconData data) {
-  scoped_ptr<WebApplicationInfo> web_app(
+  scoped_ptr<AppInstallInfo> install_info(
       favicon_consumer_.GetClientDataForCurrentRequest());
+  scoped_ptr<WebApplicationInfo> web_app(new WebApplicationInfo());
+  web_app->is_bookmark_app = install_info->is_bookmark_app;
+  web_app->title = install_info->title;
+  web_app->app_url = install_info->app_url;
+
   WebApplicationInfo::IconInfo icon;
   web_app->icons.push_back(icon);
   if (data.is_valid() && gfx::PNGCodec::Decode(data.image_data->front(),
@@ -750,6 +755,7 @@ void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
 
   scoped_refptr<CrxInstaller> installer(
       extension_service_->MakeCrxInstaller(NULL));
+  installer->set_page_index(install_info->page_index);
   installer->InstallWebApp(*web_app);
 }
 
@@ -760,7 +766,7 @@ void AppLauncherHandler::RegisterUserPrefs(PrefService* pref_service) {
                                  PrefService::UNSYNCABLE_PREF);
 }
 
-// static
+// statiic
 void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
                             extension_misc::APP_LAUNCH_NTP_WEBSTORE,

@@ -153,6 +153,10 @@ class CrxInstaller
     install_cause_ = install_cause;
   }
 
+  void set_page_index(int page_index) {
+    page_index_ = page_index;
+  }
+
  private:
   friend class ExtensionUpdaterTest;
 
@@ -238,6 +242,9 @@ class CrxInstaller
   // The extension we're installing. We own this and either pass it off to
   // ExtensionService on success, or delete it on failure.
   scoped_refptr<const Extension> extension_;
+
+  // The index of the NTP apps page |extension_| will be shown on.
+  int page_index_;
 
   // A parsed copy of the unmodified original manifest, before any
   // transformations like localization have taken place.

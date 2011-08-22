@@ -64,7 +64,7 @@ void SyncExtensionHelper::InstallExtension(
   ASSERT_TRUE(extension.get()) << "Could not get extension " << name
                                << " (profile = " << profile << ")";
   profile->GetExtensionService()->OnExtensionInstalled(
-      extension, extension->UpdatesFromGallery());
+      extension, extension->UpdatesFromGallery(), 0);
 }
 
 void SyncExtensionHelper::UninstallExtension(

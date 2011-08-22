@@ -335,8 +335,6 @@ cr.define('ntp4', function() {
    */
   function appAdded(app) {
     var pageIndex = app.page_index || 0;
-    assert(pageIndex == 0, 'pageIndex != 0 not implemented');
-
     var page = appsPages[pageIndex];
     cardSlider.selectCardByValue(page);
     page.appendApp(app, true);

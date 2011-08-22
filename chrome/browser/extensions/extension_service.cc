@@ -190,7 +190,7 @@ void SimpleExtensionLoadPrompt::ShowPrompt() {
 void SimpleExtensionLoadPrompt::InstallUIProceed() {
   if (extension_service_.get())
     extension_service_->OnExtensionInstalled(
-        extension_, false);  // Not from web store.
+        extension_, false, 0);  // Not from web store.
   delete this;
 }
 
@@ -2161,11 +2161,11 @@ void ExtensionService::OnLoadSingleExtension(const Extension* extension,
     prompt->ShowPrompt();
     return;  // continues in SimpleExtensionLoadPrompt::InstallUI*
   }
-  OnExtensionInstalled(extension, false);  // Not from web store.
+  OnExtensionInstalled(extension, false, 0);  // Not from web store.
 }
 
 void ExtensionService::OnExtensionInstalled(
-    const Extension* extension, bool from_webstore) {
+    const Extension* extension, bool from_webstore, int page_index) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ensure extension is deleted unless we transfer ownership.
@@ -2222,7 +2222,8 @@ void ExtensionService::OnExtensionInstalled(
   extension_prefs_->OnExtensionInstalled(
       extension,
       initial_enable ? Extension::ENABLED : Extension::DISABLED,
-      from_webstore);
+      from_webstore,
+      page_index);
 
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.

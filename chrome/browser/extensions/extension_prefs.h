@@ -103,7 +103,8 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Called when an extension is installed, so that prefs get created.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
-                            bool from_webstore);
+                            bool from_webstore,
+                            int page_index);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,
@@ -273,8 +274,8 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void SetAppLaunchIndex(const std::string& extension_id, int index);
 
   // Gets the next available application launch index. This is 1 higher than the
-  // highest current application launch index found.
-  int GetNextAppLaunchIndex();
+  // highest current application launch index found for the page |on_page|.
+  int GetNextAppLaunchIndex(int on_page);
 
   // Sets the order the apps should be displayed in the app launcher.
   void SetAppLauncherOrder(const std::vector<std::string>& extension_ids);
