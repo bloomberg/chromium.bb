@@ -11,7 +11,7 @@
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
 
-static pa_sample_format_t BitsToFormat(int bits_per_sample) {
+static pa_sample_format_t BitsToPASampleFormat(int bits_per_sample) {
   switch (bits_per_sample) {
     // Unsupported sample formats shown for reference.  I am assuming we want
     // signed and little endian because that is what we gave to ALSA.
@@ -34,6 +34,70 @@ static pa_sample_format_t BitsToFormat(int bits_per_sample) {
     default:
       return PA_SAMPLE_INVALID;
   }
+}
+
+static pa_channel_position ChromiumToPAChannelPosition(Channels channel) {
+  switch (channel) {
+    // PulseAudio does not differentiate between left/right and
+    // stereo-left/stereo-right, both translate to front-left/front-right.
+    case LEFT:
+    case STEREO_LEFT:
+      return PA_CHANNEL_POSITION_FRONT_LEFT;
+    case RIGHT:
+    case STEREO_RIGHT:
+      return PA_CHANNEL_POSITION_FRONT_RIGHT;
+    case CENTER:
+      return PA_CHANNEL_POSITION_FRONT_CENTER;
+    case LFE:
+      return PA_CHANNEL_POSITION_LFE;
+    case BACK_LEFT:
+      return PA_CHANNEL_POSITION_REAR_LEFT;
+    case BACK_RIGHT:
+      return PA_CHANNEL_POSITION_REAR_RIGHT;
+    case LEFT_OF_CENTER:
+      return PA_CHANNEL_POSITION_FRONT_LEFT_OF_CENTER;
+    case RIGHT_OF_CENTER:
+      return PA_CHANNEL_POSITION_FRONT_RIGHT_OF_CENTER;
+    case BACK_CENTER:
+      return PA_CHANNEL_POSITION_REAR_CENTER;
+    case SIDE_LEFT:
+      return PA_CHANNEL_POSITION_SIDE_LEFT;
+    case SIDE_RIGHT:
+      return PA_CHANNEL_POSITION_SIDE_RIGHT;
+    case CHANNELS_MAX:
+      return PA_CHANNEL_POSITION_INVALID;
+  }
+  NOTREACHED();
+}
+
+static pa_channel_map ChannelLayoutToPAChannelMap(
+    ChannelLayout channel_layout) {
+  // Initialize channel map.
+  pa_channel_map channel_map;
+  pa_channel_map_init(&channel_map);
+
+  channel_map.channels = ChannelLayoutToChannelCount(channel_layout);
+
+  // All channel maps have the same size array of channel positions.
+  for (unsigned int channel = 0; channel != CHANNELS_MAX; ++channel) {
+    int channel_position = kChannelOrderings[channel_layout][channel];
+    if (channel_position > -1) {
+      channel_map.map[channel_position] = ChromiumToPAChannelPosition(
+          static_cast<Channels>(channel));
+    } else {
+      // PulseAudio expects unused channels in channel maps to be filled with
+      // PA_CHANNEL_POSITION_MONO.
+      channel_map.map[channel_position] = PA_CHANNEL_POSITION_MONO;
+    }
+  }
+
+  // Fill in the rest of the unused channels.
+  for (unsigned int channel = CHANNELS_MAX; channel != PA_CHANNELS_MAX;
+       ++channel) {
+    channel_map.map[channel] = PA_CHANNEL_POSITION_MONO;
+  }
+
+  return channel_map;
 }
 
 static size_t MicrosecondsToBytes(
@@ -66,7 +130,7 @@ PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
                                                MessageLoop* message_loop)
     : channel_layout_(params.channel_layout),
       channel_count_(ChannelLayoutToChannelCount(channel_layout_)),
-      sample_format_(BitsToFormat(params.bits_per_sample)),
+      sample_format_(BitsToPASampleFormat(params.bits_per_sample)),
       sample_rate_(params.sample_rate),
       bytes_per_frame_(params.channels * params.bits_per_sample / 8),
       manager_(manager),
@@ -121,13 +185,23 @@ bool PulseAudioOutputStream::Open() {
     }
   }
 
-  // Set sample specifications and open playback stream.
+  // Set sample specifications.
   pa_sample_spec pa_sample_specifications;
   pa_sample_specifications.format = sample_format_;
   pa_sample_specifications.rate = sample_rate_;
   pa_sample_specifications.channels = channel_count_;
+
+  // Get channel mapping and open playback stream.
+  pa_channel_map* map = NULL;
+  pa_channel_map source_channel_map = ChannelLayoutToPAChannelMap(
+      channel_layout_);
+  if (source_channel_map.channels != 0) {
+    // The source data uses a supported channel map so we will use it rather
+    // than the default channel map (NULL).
+    map = &source_channel_map;
+  }
   playback_handle_ = pa_stream_new(pa_context_, "Playback",
-                                   &pa_sample_specifications, NULL);
+                                   &pa_sample_specifications, map);
 
   // Initialize client buffer.
   uint32 output_packet_size = frames_per_packet_ * bytes_per_frame_;
@@ -237,7 +311,6 @@ bool PulseAudioOutputStream::BufferPacketFromSource() {
   if (packet_size == 0)
     return false;
 
-  // TODO(slock): Swizzling and downmixing.
   media::AdjustVolume(packet->GetWritableData(),
                       packet_size,
                       channel_count_,
