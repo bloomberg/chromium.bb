@@ -18,6 +18,7 @@ from idl_option import GetOption, Option, ParseOptions
 from idl_outfile import IDLOutFile
 from idl_parser import ParseFiles
 from idl_c_proto import CGen
+from idl_generator import Generator
 
 Option('dstroot', 'Base directory of output', default='../c')
 Option('guard', 'Include guard prefix', default='ppapi/c')
@@ -34,7 +35,7 @@ def IDLToHeader(filenode, relpath=None, prefix=None):
   return name
 
 
-def GenerateHeader(filenode, pref, inline=True):
+def GenerateHeader(filenode, release, pref, inline=True):
   name = filenode.GetProperty('NAME')
 #  if name == 'pp_stdint.idl':  return
 
@@ -66,7 +67,7 @@ def GenerateHeader(filenode, pref, inline=True):
     if label.GetName() == GetOption('label'):
       cgen.SetVersionMap(label)
 
-  deps = filenode.GetDeps('M14')
+  deps = filenode.GetDeps(release)
   # Generate set of includes
   includes = set([])
   for dep in deps:
@@ -87,7 +88,6 @@ def GenerateHeader(filenode, pref, inline=True):
     out.Write('#include "%s"\n' % include)
 
   # Generate all interface defines
-  release = 'M14'
   out.Write('\n')
   for node in filenode.GetListOf('Interface'):
     out.Write( cgen.InterfaceDefs(node) )
@@ -144,133 +144,60 @@ def GenerateHeader(filenode, pref, inline=True):
     out.Write(cgen.CommentLines(['*',' @}', '']) + '\n')
 
   out.Write('#endif  /* %s */\n\n' % def_guard)
-  out.Close()
+  return out.Close()
 
+class HGen(Generator):
+  def __init__(self):
+    Generator.__init__(self, 'C Header', 'cgen', 'Generate the C headers.')
 
-def GenerateFileTest(cfile, filenode, pref):
-  tests = []
-  original = IDLToHeader(filenode, relpath='')
-  savename = IDLToHeader(filenode, relpath='', prefix=pref)
-  cfile.Write('/* Test %s */\n' % filenode.GetProperty('NAME'))
-  cfile.Write('#include "%s"\n' % original)
-  cfile.Write('#include "%s"\n' % savename)
-
-  # For all children (excluding copyright notice)
-  for node in filenode.children[1:]:
-    # Test enums by assigning all enum items to themselves. Unfortunately this
-    # will not catch cases where the '.h' has enums that the IDL does not.
-    if node.IsA('Enum'):
-      tests.append('test_%s' % node.GetProperty('NAME'))
-      cfile.Write('int test_%s() {\n' % node.GetProperty('NAME'))
-      cfile.Write('  int errors = 0;\n')
-      for enum in node.GetListOf('EnumItem'):
-        cfile.Write('  errors += VERIFY_ENUM(%s, %s%s);\n' %
-            (enum.GetProperty('NAME'), pref, enum.GetProperty('NAME')))
-      cfile.Write('  if (errors) printf("Failure in %s:%s.\\n");\n' %
-          (filenode.GetName(), node.GetName()))
-      cfile.Write('  return errors;\n}\n\n')
-      continue
-
-    # Use a structure asignment to verify equivilency
-    if node.IsA('Interface', 'Struct'):
-      tests.append('test_%s' % node.GetName())
-      rtype1 = cgen.GetTypeName(node)
-      rtype2 = cgen.GetTypeName(node, prefix='tst_')
-      cfile.Write('int test_%s() {\n' % node.GetName())
-      cfile.Write('  int errors = 0;\n');
-      cmp_structs = '  %s A;\n  %s B;\n' % (rtype1, rtype2)
-      cfile.Write(cmp_structs)
-      cfile.Write('  memset(&A, 0, sizeof(A));\n')
-      cfile.Write('  memset(&B, 1, sizeof(B));\n')
-      for member in node.GetListOf('Member', 'Function'):
-        if member.GetOneOf('Array'):
-          cfile.Write('  memcpy(A.%s, B.%s, sizeof(A.%s));\n' %
-                      (member.GetName(), member.GetName(), member.GetName()))
-        else:
-          cfile.Write('  A.%s = B.%s;\n' % (member.GetName(), member.GetName()))
-      cfile.Write('  errors += (sizeof(A) != sizeof(B)) ? 1 : 0;\n')
-      cfile.Write('  errors += (memcmp(&A, &B, sizeof(A))) ? 1 : 0;\n')
-      cfile.Write('  return (sizeof(A) == sizeof(B));\n}\n')
-      continue
-
-  cfile.Write('\n\n')
-  return tests
-
-def GenerateBaseTest(cfile):
-  for inc in ['<stdio.h>','<string.h>','"pp_stdint.h"']:
-    cfile.Write('#include %s\n' % inc)
-  cfile.Write('\n')
-  cfile.Write('#define VERIFY_ENUM(orig, idl) Check(#orig, orig, idl)\n\n')
-  cfile.Write('int Check(const char *name, int v1, int v2) {\n')
-  cfile.Write('  if (v1 == v2) return 0;\n')
-  cfile.Write('  printf("Mismatch enum %s : %d vs %d\\n", name, v1, v2);\n')
-  cfile.Write('  return 1;\n}\n\n')
-
-
-def Main(args):
-  filenames = ParseOptions(args)
-  ast = ParseFiles(filenames)
-  testFuncs = []
-  skipList = []
-
-  outdir = GetOption('dstroot')
-
-  if GetOption('test'):
-    prefix = 'tst_'
-    cfile = IDLOutFile(os.path.join(outdir, 'test.c'))
-    GenerateBaseTest(cfile)
-  else:
+  def GenerateVersion(self, ast, release, options):
+    outdir = GetOption('dstroot')
+    skipList= []
     prefix = ''
     cfile = None
+    cnt = 0
 
-  for filenode in ast.GetListOf('File'):
-    if GetOption('verbose'):
-      print "Working on %s" % filenode
+    for filenode in ast.GetListOf('File'):
+      if GetOption('verbose'):
+        print "Working on %s" % filenode
 
-    # If this file has errors, skip it
-    if filenode.GetProperty('ERRORS') > 0:
-      skipList.append(filenode)
-      continue
+      # If this file has errors, skip it
+      if filenode.GetProperty('ERRORS') > 0:
+        skipList.append(filenode)
+        continue
 
-    GenerateHeader(filenode, prefix, inline=not cfile)
-    if cfile: GenerateFileTest(cfile, filenode, prefix)
+      if GenerateHeader(filenode, release, prefix):
+        cnt = cnt + 1
 
-  if cfile:
-    cfile.Write('int main(int argc, const char *args[]) {\n')
-    cfile.Write('  int errors = 0;\n');
-    for testname in testFuncs:
-      cfile.Write('  errors += %s();\n' % testname)
+    for filenode in skipList:
+      errcnt = filenode.GetProperty('ERRORS')
+      ErrOut.Log('%s : Skipped because of %d errors.' % (
+          filenode.GetName(), errcnt))
 
-    cfile.Write('  printf("Found %d error(s) in the IDL.\\n", errors);\n')
-    cfile.Write('  return errors;\n}\n\n')
-    cfile.Close()
+    if skipList:
+      return -len(skipList)
 
-  # TODO(noelallen) Add a standard test
-    if not skipList:
-      args = ['gcc', '-o', 'tester', '%s/test.c' % outdir, '-I%s' % outdir,
-              '-I../c', '-I../..', '-DPPAPI_INSTANCE_REMOVE_SCRIPTING']
-      InfoOut.Log('Running: %s' % ' '.join(args))
-      ret = subprocess.call(args)
-      if ret:
-        ErrOut.Log('Failed to compile.')
-        return -1
-      InfoOut.Log('Running: ./tester')
-      ret = subprocess.call('./tester')
-      if ret > 0:
-        ErrOut.Log('Found %d errors.' % ret)
-        return ret
-      InfoOut.Log('Success!')
-      return 0
+    if GetOption('diff'):
+      return -cnt
+    return cnt
 
-  for filenode in skipList:
-    errcnt = filenode.GetProperty('ERRORS')
-    ErrOut.Log('%s : Skipped because of %d errors.' % (
-        filenode.GetName(), errcnt))
 
-  if not skipList:
-    InfoOut.Log('Processed %d files.' % len(ast.GetListOf('File')))
-  return len(skipList)
+hgen = HGen()
+
+def Main(args):
+  # Default invocation will verify the golden files are unchanged.
+  if not args:
+    args = ['--wnone', '--diff', '--test', '--dstroot=.']
+
+  ParseOptions(args)
+  idldir = os.path.split(sys.argv[0])[0]
+  idldir = os.path.join(idldir, 'test_cgen', '*.idl')
+  filenames = glob.glob(idldir)
+
+  ast = ParseFiles(filenames)
+  return hgen.GenerateVersion(ast, 'M14', {})
 
 if __name__ == '__main__':
-  sys.exit(Main(sys.argv[1:]))
+  retval = Main(sys.argv[1:])
+  sys.exit(retval)
 

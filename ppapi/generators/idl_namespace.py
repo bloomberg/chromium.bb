@@ -18,7 +18,6 @@ from idl_log import ErrOut, InfoOut, WarnOut
 from idl_version import IDLVersion
 
 Option('label', 'Use the specifed label blocks.', default='Chrome')
-Option('version', 'Use the specified version', default='M14')
 Option('namespace_debug', 'Use the specified version')
 
 

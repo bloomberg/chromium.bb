@@ -105,13 +105,13 @@ class CGen(object):
     self.dbg_depth = 0
     self.vmin = 0.0
     self.vmax = 1e100
-    self.release = 'M14'
+    self.release = GetOption('release')
 
   def SetVersionMap(self, node):
     self.vmin = 0.0
     self.vmax = 1e100
     for version in node.GetListOf('LabelItem'):
-      if version.GetName() == GetOption('version'):
+      if version.GetName() == GetOption('release'):
         self.vmin = float(version.GetProperty('VALUE'))
         self.vmax = float(version.GetProperty('VALUE'))
 
@@ -385,7 +385,6 @@ class CGen(object):
 
   def InterfaceDefs(self, node):
     out = ''
-    release = 'M14'
     name = node.GetName()
     macro = node.GetProperty('macro')
     if not macro:
@@ -396,7 +395,7 @@ class CGen(object):
         strver = str(vers).replace('.', '_')
         out += self.GetDefine('%s_%s' % (macro, strver),
                               '"%s;%s"' % (name, vers))
-        if label.GetRelease(vers) == release:
+        if label.GetRelease(vers) == self.release:
           out += self.GetDefine(macro, '%s_%s' % (macro, strver))
       out += '\n'
     return out
@@ -478,7 +477,7 @@ class CGen(object):
 
       label = node.GetLabel()
       if label:
-        lver = label.GetVersion('M14')
+        lver = label.GetVersion(self.release)
 
         # Verify that we are in a valid version.
         if node_max <= lver: return ''
