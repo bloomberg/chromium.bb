@@ -174,22 +174,31 @@ bool HasDeprecatedArguments(const std::wstring& command_line) {
 
 #if defined(OS_LINUX)
 static void AdjustLinuxOOMScore(const std::string& process_type) {
-  const int kMiscScore = 7;
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, we want plugins to die after the renderers.  If this
-  // works well for ChromeOS, we may do it for Linux as well.
-  const int kPluginScore = 4;
-#else
-  const int kPluginScore = 10;
-#endif
+  // Browsers and zygotes should still be killable, but killed last.
+  const int kZygoteScore = 0;
+  // The minimum amount to bump a score by.  This is large enough that
+  // even if it's translated into the old values, it will still go up
+  // by at least one.
+  const int kScoreBump = 100;
+  // This is the lowest score that renderers and extensions start with
+  // in the OomPriorityManager.
+  const int kRendererScore = chrome::kLowestRendererOomScore;
+  // For "miscellaneous" things, we want them after renderers,
+  // but before plugins.
+  const int kMiscScore = kRendererScore - kScoreBump;
+  // We want plugins to die after the renderers.
+  const int kPluginScore = kMiscScore - kScoreBump;
   int score = -1;
+
+  DCHECK(kMiscScore > 0);
+  DCHECK(kPluginScore > 0);
 
   if (process_type == switches::kPluginProcess ||
       process_type == switches::kPpapiPluginProcess) {
     score = kPluginScore;
   } else if (process_type == switches::kPpapiBrokerProcess) {
-    // Kill the broker before the plugin.
-    score = kPluginScore + 1;
+    // The broker should be killed before the PPAPI plugin.
+    score = kPluginScore + kScoreBump;
   } else if (process_type == switches::kUtilityProcess ||
              process_type == switches::kWorkerProcess ||
              process_type == switches::kGpuProcess ||
@@ -197,19 +206,25 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
     score = kMiscScore;
   } else if (process_type == switches::kProfileImportProcess) {
     NOTIMPLEMENTED();
+    score = kZygoteScore;
 #ifndef DISABLE_NACL
   } else if (process_type == switches::kNaClLoaderProcess) {
     score = kPluginScore;
 #endif
   } else if (process_type == switches::kZygoteProcess ||
              process_type.empty()) {
-    // Pass - browser / zygote process stays at 0.
+    // For zygotes and unlabeled process types, we want to still make
+    // them killable by the OOM killer.
+    score = kZygoteScore;
   } else if (process_type == switches::kExtensionProcess ||
              process_type == switches::kRendererProcess) {
     LOG(WARNING) << "process type '" << process_type << "' "
-                 << "should go through the zygote.";
-    // When debugging, these process types can end up being run directly.
-    return;
+                 << "should be created through the zygote.";
+    // When debugging, these process types can end up being run
+    // directly, but this isn't the typical path for assigning the OOM
+    // score for them.  Still, we want to assign a score that is
+    // somewhat representative for debugging.
+    score = kRendererScore;
   } else {
     NOTREACHED() << "Unknown process type";
   }
@@ -220,7 +235,7 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
 
 void SetupCRT(const CommandLine& command_line) {
 #if defined(OS_WIN)
-#ifdef _CRTDBG_MAP_ALLOC
+#if defined(_CRTDBG_MAP_ALLOC)
   _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
 #else
@@ -535,7 +550,7 @@ int RunNamedProcessTypeMain(const std::string& process_type,
 #endif
 #if !defined(DISABLE_NACL)
     { switches::kNaClLoaderProcess, NaClMain },
-#ifdef _WIN64  // The broker process is used only on Win64.
+#if defined(_WIN64)  // The broker process is used only on Win64.
     { switches::kNaClBrokerProcess, NaClBrokerMain },
 #endif
 #endif  // DISABLE_NACL
