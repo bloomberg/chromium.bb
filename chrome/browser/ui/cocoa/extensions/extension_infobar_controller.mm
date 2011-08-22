@@ -223,7 +223,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
   [[NSNotificationCenter defaultCenter]
       addObserver:self
-         selector:@selector(adjustWidthToFitWindow)
+         selector:@selector(adjustExtensionViewSize)
              name:NSWindowDidResizeNotification
            object:window_];
 }
