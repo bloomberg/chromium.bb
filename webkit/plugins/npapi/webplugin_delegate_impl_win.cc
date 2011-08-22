@@ -1183,6 +1183,9 @@ bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
   focus_event.wParam = 0;
   focus_event.lParam = 0;
 
+  if (GetQuirks() & PLUGIN_QUIRK_PATCH_GETKEYSTATE)
+    ClearSavedKeyState();
+
   instance()->NPP_HandleEvent(&focus_event);
   return true;
 }
@@ -1300,6 +1303,13 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   NPEvent np_event;
   if (!NPEventFromWebInputEvent(event, &np_event)) {
     return false;
+  }
+
+  if (GetQuirks() & PLUGIN_QUIRK_PATCH_GETKEYSTATE) {
+    if (np_event.event == WM_KEYDOWN)
+      SetSavedKeyState(np_event.wParam);
+    else if (np_event.event == WM_KEYUP)
+      UnsetSavedKeyState(np_event.wParam);
   }
 
   HWND last_focus_window = NULL;
