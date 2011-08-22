@@ -884,22 +884,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void ExecuteJavascriptJSON(
       base::DictionaryValue* args, IPC::Message* reply_message);
 
-  // Executes javascript in the specified frame of a render view.
-  // Uses the JSON interface. Waits for a result from the
-  // |DOMAutomationController|. The javascript must send a string.
-  // Example:
-  //   input: { "view": {
-  //              "render_process_id": 1,
-  //              "render_view_id": 2,
-  //            }
-  //            "frame_xpath": "//frames[1]",
-  //            "javascript":
-  //                "window.domAutomationController.send(window.name)",
-  //           }
-  //   output: { "result": "My Window Name" }
-  void ExecuteJavascriptInRenderView(
-      base::DictionaryValue* args, IPC::Message* reply_message);
-
   // Goes forward in the specified tab. Uses the JSON interface.
   // Example:
   //   input: { "windex": 1, "tab_index": 1 }

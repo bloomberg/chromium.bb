@@ -57,7 +57,6 @@ class BalloonCollection;
 class Browser;
 class Extension;
 class ExtensionProcessManager;
-class ExtensionService;
 class NavigationController;
 class Profile;
 class RenderViewHost;
@@ -314,7 +313,6 @@ class ExtensionUninstallObserver : public NotificationObserver {
 class ExtensionReadyNotificationObserver : public NotificationObserver {
  public:
   ExtensionReadyNotificationObserver(ExtensionProcessManager* manager,
-                                     ExtensionService* service,
                                      AutomationProvider* automation,
                                      int id,
                                      IPC::Message* reply_message);
@@ -328,7 +326,6 @@ class ExtensionReadyNotificationObserver : public NotificationObserver {
  private:
   NotificationRegistrar registrar_;
   ExtensionProcessManager* manager_;
-  ExtensionService* service_;
   base::WeakPtr<AutomationProvider> automation_;
   int id_;
   scoped_ptr<IPC::Message> reply_message_;

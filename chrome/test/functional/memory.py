@@ -56,7 +56,7 @@ class MemoryTest(pyauto.PyUITest):
       The integer process identifier (PID) for the specified process, or
       None if the PID cannot be identified.
     """
-    info = self.GetBrowserInfo()['extension_views']
+    info = self.GetBrowserInfo()['extension_processes']
     pid = [x['pid'] for x in info if x['name'] == '%s' % name]
     if pid:
       return pid[0]

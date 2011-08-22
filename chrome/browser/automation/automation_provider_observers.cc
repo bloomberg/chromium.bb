@@ -28,7 +28,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/history/history_types.h"
@@ -68,7 +67,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/json_value_serializer.h"
 #include "content/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -525,10 +523,9 @@ void ExtensionUninstallObserver::Observe(
 }
 
 ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
-    ExtensionProcessManager* manager, ExtensionService* service,
-    AutomationProvider* automation, int id, IPC::Message* reply_message)
+    ExtensionProcessManager* manager, AutomationProvider* automation, int id,
+    IPC::Message* reply_message)
     : manager_(manager),
-      service_(service),
       automation_(automation->AsWeakPtr()),
       id_(id),
       reply_message_(reply_message),
@@ -564,12 +561,6 @@ void ExtensionReadyNotificationObserver::Observe(
     case chrome::NOTIFICATION_EXTENSION_LOADED:
       extension_ = Details<const Extension>(details).ptr();
       if (!DidExtensionHostsStopLoading(manager_))
-        return;
-      // For some reason, the background ExtensionHost is not yet
-      // created at this point so just checking whether all ExtensionHosts
-      // are loaded is not sufficient. If background page is not ready,
-      // we wait for NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING.
-      if(!service_->IsBackgroundPageReady(extension_))
         return;
       break;
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
@@ -1149,20 +1140,7 @@ void DomOperationMessageSender::OnDomOperationCompleted(
   if (automation_) {
     if (use_json_interface_) {
       DictionaryValue dict;
-      // Wrap |json| in an array before deserializing because valid JSON has an
-      // array or an object as the root.
-      std::string new_json(json);
-      new_json.insert(0, "[");
-      new_json.append("]");
-      JSONStringValueSerializer deserializer(new_json);
-      Value* root = deserializer.Deserialize(NULL, NULL);
-      DCHECK(root);
-
-      Value* value = NULL;
-      DCHECK(root->IsType(Value::TYPE_LIST));
-      static_cast<ListValue*>(root)->Get(0, &value);
-      DCHECK(value);
-      dict.Set("result", value);
+      dict.SetString("result", json);
       AutomationJSONReply(automation_, reply_message_.release())
           .SendSuccess(&dict);
     } else {
