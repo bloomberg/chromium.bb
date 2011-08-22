@@ -237,11 +237,10 @@ cr.define('ntp4', function() {
     // The most tiles we will show in a row.
     maxColCount: 4,
 
-    // TODO(estade): Change these to real values.
     // The smallest a tile can be.
     minTileWidth: 122,
-    // The biggest a tile can be.
-    maxTileWidth: 240,
+    // The biggest a tile can be. 212 (max thumbnail width) + 2.
+    maxTileWidth: 214,
   };
   TilePage.initGridValues(mostVisitedPageGridValues);
 

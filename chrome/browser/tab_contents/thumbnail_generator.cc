@@ -79,7 +79,16 @@ SkBitmap GetBitmapForBackingStore(
   if (!backing_store->CopyFromBackingStore(gfx::Rect(backing_store->size()),
                                            &temp_canvas))
     return result;
-  const SkBitmap& bmp = skia::GetTopDevice(temp_canvas)->accessBitmap(false);
+  const SkBitmap& bmp_with_scrollbars =
+      skia::GetTopDevice(temp_canvas)->accessBitmap(false);
+  // Clip the edgemost 15 pixels as that will commonly hold a scrollbar, which
+  // looks bad in thumbnails.
+  SkIRect scrollbarless_rect =
+      { 0, 0,
+        std::max(1, bmp_with_scrollbars.width() - 15),
+        std::max(1, bmp_with_scrollbars.height() - 15) };
+  SkBitmap bmp;
+  bmp_with_scrollbars.extractSubset(&bmp, scrollbarless_rect);
 
   // Check if a clipped thumbnail is requested.
   if (options & ThumbnailGenerator::kClippedThumbnail) {

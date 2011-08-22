@@ -95,9 +95,13 @@ html[dir=rtl] .most-visited .close-button {
 
 .thumbnail {
   background: no-repeat;
-  /* The extra 2% hides the scrollbar in the screenshot. */
-  background-size: 102%;
+  background-size: 100%;
   border-radius: 3px;
+  /* These max dimensions are not necessary, as the sizing logic in the .js
+   * should be sufficient, but they're here for extra insurance. We never want
+   * to scale a thumbnail larger than this size. */
+  max-height: 132px;
+  max-width: 212px;
   -webkit-transition: opacity 0.15s;
 }
 
