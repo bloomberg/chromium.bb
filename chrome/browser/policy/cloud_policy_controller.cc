@@ -98,9 +98,8 @@ void CloudPolicyController::Retry() {
   DoWork();
 }
 
-void CloudPolicyController::StopAutoRetry() {
-  scheduler_->CancelDelayedWork();
-  backend_.reset();
+void CloudPolicyController::Reset() {
+  SetState(STATE_TOKEN_UNAVAILABLE);
 }
 
 void CloudPolicyController::HandlePolicyResponse(
@@ -283,7 +282,8 @@ void CloudPolicyController::DoWork() {
 void CloudPolicyController::SetState(
     CloudPolicyController::ControllerState new_state) {
   state_ = new_state;
-  backend_.reset();  // Discard any pending requests.
+
+  backend_.reset();  // Stop any pending requests.
 
   base::Time now(base::Time::NowFromSystemTime());
   base::Time refresh_at;

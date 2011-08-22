@@ -34,6 +34,17 @@ void CloudPolicyCacheBase::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void CloudPolicyCacheBase::Reset() {
+  last_policy_refresh_time_ = base::Time();
+  is_unmanaged_ = false;
+  mandatory_policy_.Clear();
+  recommended_policy_.Clear();
+  public_key_version_.version = 0;
+  public_key_version_.valid = false;
+  InformNotifier(CloudPolicySubsystem::UNENROLLED,
+                 CloudPolicySubsystem::NO_DETAILS);
+}
+
 const PolicyMap* CloudPolicyCacheBase::policy(PolicyLevel level) {
   switch (level) {
     case POLICY_LEVEL_MANDATORY:

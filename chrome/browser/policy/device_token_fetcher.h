@@ -49,8 +49,8 @@ class DeviceTokenFetcher
 
   virtual void SetUnmanagedState();
 
-  // Disables the auto-retry-on-error behavior of this token fetcher.
-  void StopAutoRetry();
+  // Cancels any pending work on this fetcher and resets it to inactive state.
+  void Reset();
 
   // DeviceManagementBackend::DeviceRegisterResponseDelegate method overrides:
   virtual void HandleRegisterResponse(

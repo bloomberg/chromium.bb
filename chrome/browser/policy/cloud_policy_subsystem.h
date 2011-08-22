@@ -88,9 +88,9 @@ class CloudPolicySubsystem
   PolicySubsystemState state();
   ErrorDetails error_details();
 
-  // Stops all auto-retrying error handling behavior inside the policy
-  // subsystem.
-  void StopAutoRetry();
+  // Resets the subsystem back to unenrolled state and cancels any pending
+  // retry operations.
+  void Reset();
 
   // Registers cloud policy related prefs.
   static void RegisterPrefs(PrefService* pref_service);

@@ -90,9 +90,8 @@ void DeviceTokenFetcher::SetUnmanagedState() {
   SetState(STATE_UNMANAGED);
 }
 
-void DeviceTokenFetcher::StopAutoRetry() {
-  scheduler_->CancelDelayedWork();
-  backend_.reset();
+void DeviceTokenFetcher::Reset() {
+  SetState(STATE_INACTIVE);
 }
 
 void DeviceTokenFetcher::HandleRegisterResponse(
@@ -152,6 +151,8 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
   state_ = state;
   if (state_ != STATE_TEMPORARY_ERROR)
     effective_token_fetch_error_delay_ms_ = kTokenFetchErrorDelayMilliseconds;
+
+  backend_.reset();  // Stop any pending requests.
 
   base::Time delayed_work_at;
   switch (state_) {

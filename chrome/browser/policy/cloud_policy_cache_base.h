@@ -73,6 +73,10 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   // Accessor for the underlying PolicyMaps.
   const PolicyMap* policy(PolicyLevel level);
 
+  // Resets the cache, clearing the policy currently stored in memory and the
+  // last refresh time.
+  void Reset();
+
   // true if the cache contains data that is ready to be served as policies.
   // This should mean that this method turns true as soon as a round-trip to
   // the local policy storage is complete. The creation of the Profile is

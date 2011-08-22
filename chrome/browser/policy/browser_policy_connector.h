@@ -67,11 +67,10 @@ class BrowserPolicyConnector : public NotificationObserver {
     return user_cloud_policy_subsystem_.get();
   }
 
-  // Used to set the credentials stored in the data store associated
-  // with this policy connector.
-  void SetDeviceCredentials(const std::string& owner_email,
-                            const std::string& token,
-                            TokenType token_type);
+  // Triggers registration for device policy.
+  void RegisterForDevicePolicy(const std::string& owner_email,
+                               const std::string& token,
+                               TokenType token_type);
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).
@@ -83,10 +82,9 @@ class BrowserPolicyConnector : public NotificationObserver {
   // Returns the enterprise domain if device is managed.
   std::string GetEnterpriseDomain();
 
-  // Exposes the StopAutoRetry() method of the CloudPolicySubsystem managed
-  // by this connector, which can be used to disable automatic
-  // retrying behavior.
-  void DeviceStopAutoRetry();
+  // Reset the device policy machinery. This stops any automatic retry behavior
+  // and clears the error flags, so potential retries have a chance to succeed.
+  void ResetDevicePolicy();
 
   // Initiates a policy fetch after a successful device registration.
   void FetchDevicePolicy();
@@ -95,7 +93,7 @@ class BrowserPolicyConnector : public NotificationObserver {
   // services are already constructed.
   void ScheduleServiceInitialization(int64 delay_milliseconds);
 
-  // Initializes the user cloud policy infrasturcture.
+  // Initializes the user cloud policy infrastructure.
   // TODO(sfeuz): Listen to log-out or going-away messages of TokenService and
   // reset the backend at that point.
   void InitializeUserPolicy(const std::string& user_name,

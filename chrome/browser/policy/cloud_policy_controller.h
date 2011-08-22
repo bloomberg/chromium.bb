@@ -41,9 +41,8 @@ class CloudPolicyController
   // Triggers an immediate retry of of the current operation.
   void Retry();
 
-  // Stops all auto-retrying error handling behavior inside the policy
-  // subsystem.
-  void StopAutoRetry();
+  // Stops any pending activity and resets the controller to unenrolled state.
+  void Reset();
 
   // DevicePolicyResponseDelegate implementation:
   virtual void HandlePolicyResponse(
