@@ -92,7 +92,14 @@ void Panel::SetBounds(const gfx::Rect& bounds) {
 // close on the first attempt.
 void Panel::Close() {
   native_panel_->ClosePanel();
+
+// TODO(dimich): Only implemented fully async on Mac. Need to update other
+// platforms. The panel should be removed from PanelManager when and if it
+// was actually closed. The closing can be cancelled because of onbeforeunload
+// handler on the web page.
+#if !defined(OS_MACOSX)
   manager()->Remove(this);
+#endif
 }
 
 void Panel::Activate() {

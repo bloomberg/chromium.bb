@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "content/common/native_web_keyboard_event.h"
 
@@ -103,13 +104,7 @@ void PanelBrowserWindowCocoa::ClosePanel() {
       return;
 
   NSWindow* window = [controller_ window];
-  NSRect frame = [window frame];
-  frame.size.height = kMinimumWindowSize;
-  // TODO(dimich): make this async. Currently, multiple panels will serially
-  // (and annoyingly) close when user exits Chrome.
-  [window setFrame:frame display:YES animate:YES];
-  browser_->OnWindowClosing();
-  DestroyPanelBrowser();  // not immediately, though.
+  [window performClose:controller_];
 }
 
 void PanelBrowserWindowCocoa::ActivatePanel() {
@@ -176,9 +171,13 @@ Browser* PanelBrowserWindowCocoa::GetPanelBrowser() const {
 
 void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
   [controller_ close];
-  controller_ = NULL;
 }
 
+void PanelBrowserWindowCocoa::didCloseNativeWindow() {
+  DCHECK(!isClosed());
+  panel_->manager()->Remove(panel_.get());
+  controller_ = NULL;
+}
 // NativePanelTesting implementation.
 
 // static
