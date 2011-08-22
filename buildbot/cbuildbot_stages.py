@@ -547,7 +547,8 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def HandleSuccess(self):
     # We only promote for the pfq, not chrome pfq.
-    if self._build_config['build_type'] == constants.PFQ_TYPE:
+    if (self._build_config['build_type'] == constants.PFQ_TYPE and
+        self._build_config['master']):
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
 
   def _PerformStage(self):
