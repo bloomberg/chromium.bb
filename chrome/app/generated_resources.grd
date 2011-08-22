@@ -6830,6 +6830,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR" desc="The error message displayed for SSL protocol errors.">
         SSL protocol error.
       </message>
+
+      <message name="IDS_ERRORPAGES_HEADING_PINNING_FAILURE" desc="Title of the error page for a certificate which doesn't match the built-in pins for that name">
+        Incorrect certificate for host.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE" desc="Details of the error page for a certificate which doesn't match the built-in pins for that name">
+        The server presented a certificate that doesn't match built-in expectations. These expectations are included for certain, high-security web sites in order to protect you.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_PINNING_FAILURE" desc="Description of the error page for a certificate which doesn't match the built-in pins for that name">
+        The server's certificate appears to be a forgery.
+      </message>
+
       <message name="IDS_ERRORPAGES_DETAILS_SSL_UNSAFE_NEGOTIATION" desc="The error message displayed when the SSL renegotiation extension is missing.">
         The SSL renegotiation extension was missing from the secure handshake. For some sites, which are known to support the renegotiation extension, Chrome requires a more secure handshake to prevent a class of known attacks. The omission of this extension suggests that your connection was intercepted and manipulated in transit.
       </message>
