@@ -5,19 +5,6 @@
 
 Import('env')
 
-# TODO(mseaborn): fix this test.
-#
-# This test breaks on atom, where nacl-gcc is not available.  Instead,
-# it should build w/ nacl-gcc on the builder (vista bots) and have the
-# executable as an explicit output that gets copied over to the atom
-# bots.
-#
-
-import os
-
-if os.environ.get('COMPUTERNAME') == 'NACL-ATOM1':
-  Return()
-
 if 'TRUSTED_ENV' not in env:
   Return()
 
