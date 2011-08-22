@@ -5042,13 +5042,13 @@
    bug_90644_a
    Memcheck:Leak
    fun:malloc
-   fun:_ZN2pp5proxy12_GLOBAL__N_18MemAllocEj
+   fun:_ZN*pp*5proxy12_GLOBAL__N_18MemAllocEj
    fun:_ZN5ppapi11CharSetImpl14CharSetToUTF16EPK14PPB_Memory_DevPKcjS5_26PP_CharSet_ConversionErrorPj
-   fun:_ZN2pp5proxy17PPB_CharSet_Proxy14CharSetToUTF16EiPKcjS3_26PP_CharSet_ConversionErrorPj
+   fun:_ZN*pp*5proxy17PPB_CharSet_Proxy14CharSetToUTF16EiPKcjS3_26PP_CharSet_ConversionErrorPj
    fun:_ZN5ppapi5thunk12_GLOBAL__N_114CharSetToUTF16EiPKcjS3_26PP_CharSet_ConversionErrorPj
    ...
    fun:_Z24PP_RunCompletionCallbackP21PP_CompletionCallbacki
-   fun:_ZN2pp5proxy12_GLOBAL__N_115CallbackWrapperE21PP_CompletionCallbacki
+   fun:_ZN*pp*5proxy12_GLOBAL__N_115CallbackWrapperE21PP_CompletionCallbacki
    fun:_Z18DispatchToFunctionIPFv21PP_CompletionCallbackiES0_iEvT_RK6Tuple2IT0_T1_E
    fun:_ZN16RunnableFunctionIPFv21PP_CompletionCallbackiE6Tuple2IS0_iEE3RunEv
    fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
@@ -5064,6 +5064,16 @@
    fun:_ZN2pp5proxy27PluginVarSerializationRules23BeginReceiveCallerOwnedERK6PP_VarPKSsPNS0_10DispatcherE
    fun:_ZN2pp5proxy31SerializedVarVectorReceiveInput3GetEPNS0_10DispatcherEPj
    fun:_ZN2pp5proxy15PPP_Class_Proxy9OnMsgCallExxNS0_25SerializedVarReceiveInputENS0_31SerializedVarVectorReceiveInputENS0_21SerializedVarOutParamENS0_24SerializedVarReturnValueE
+}
+{
+   bug_90644_c
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN5ppapi5proxy12_GLOBAL__N_18MemAllocEj
+   fun:_ZN5ppapi11CharSetImpl14CharSetToUTF16EPK14PPB_Memory_DevPKcjS5_26PP_CharSet_ConversionErrorPj
+   fun:_ZN5ppapi5proxy17PPB_CharSet_Proxy14CharSetToUTF16EiPKcjS3_26PP_CharSet_ConversionErrorPj
+   fun:_ZN5ppapi5thunk12_GLOBAL__N_114CharSetToUTF16EiPKcjS3_26PP_CharSet_ConversionErrorPj
+   fun:_ZN11TestCharSet18TestCharSetToUTF16Ev
 }
 {
    bug_90671
