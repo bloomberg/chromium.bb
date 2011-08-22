@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SIGNAL_H__
@@ -177,17 +177,6 @@ enum NaClSignalResult NaClSignalHandlerFind(int signal_number, void *ctx);
  */
 void NaClSignalHandlerInitPlatform(void);
 void NaClSignalHandlerFiniPlatform(void);
-
-
-#if (NACL_WINDOWS && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && \
-     NACL_BUILD_SUBARCH == 64)
-
-void NaClPatchWindowsExceptionDispatcher();
-
-extern char NaCl_exception_dispatcher_exit_fast[];
-extern char NaCl_exception_dispatcher_exit_fast_end[];
-
-#endif
 
 
 EXTERN_C_END

@@ -31,6 +31,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
+#include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 
 static int const kSrpcFd = 5;
 

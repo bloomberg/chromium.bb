@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 
 
 /*
