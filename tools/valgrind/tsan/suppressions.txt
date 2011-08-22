@@ -577,18 +577,6 @@
   fun:prerender::PrerenderManager::~PrerenderManager
 }
 {
-  bug_92889
-  ThreadSanitizer:Race
-  fun:base::TimeTicks::operator=
-  fun:ResourceDispatcherHost::OnUserGesture
-  fun:TabContents::OnUserGesture
-  fun:browser::Navigate
-  fun:Browser::OpenURLFromTab
-  fun:Browser::OpenURL
-  fun:TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete
-  fun:DispatchToMethod
-}
-{
   bug_93708
   ThreadSanitizer:Race
   fun:WTF::StringImplBase::ref

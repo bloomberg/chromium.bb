@@ -18,6 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cert_store.h"
 #include "content/browser/child_process_security_policy.h"
@@ -310,6 +311,10 @@ ResourceDispatcherHost::ResourceDispatcherHost(
       delegate_(NULL),
       allow_cross_origin_auth_prompt_(false) {
   resource_queue_.Initialize(resource_queue_delegates);
+
+  ANNOTATE_BENIGN_RACE(
+      &last_user_gesture_time_,
+      "We don't care about the precise value, see http://crbug.com/92889");
 }
 
 ResourceDispatcherHost::~ResourceDispatcherHost() {
