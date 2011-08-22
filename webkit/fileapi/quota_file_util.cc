@@ -35,11 +35,12 @@ bool CanCopy(
   base::PlatformFileInfo dest_file_info;
   if (!file_util::GetFileInfo(dest_file_path, &dest_file_info))
     dest_file_info.size = 0;
+  int64 growth_local = src_file_info.size - dest_file_info.size;
   if (allowed_bytes_growth != QuotaFileUtil::kNoLimit &&
-      src_file_info.size - dest_file_info.size > allowed_bytes_growth)
+      growth_local > 0 && growth_local > allowed_bytes_growth)
     return false;
   if (growth != NULL)
-    *growth = src_file_info.size - dest_file_info.size;
+    *growth = growth_local;
 
   return true;
 }
@@ -183,7 +184,8 @@ base::PlatformFileError QuotaFileUtil::Truncate(
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   growth = length - file_info.size;
-  if (allowed_bytes_growth != kNoLimit && growth > allowed_bytes_growth)
+  if (allowed_bytes_growth != kNoLimit &&
+      growth > 0 && growth > allowed_bytes_growth)
     return base::PLATFORM_FILE_ERROR_NO_SPACE;
 
   base::PlatformFileError error = underlying_file_util_->Truncate(
