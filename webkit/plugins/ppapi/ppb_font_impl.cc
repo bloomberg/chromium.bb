@@ -30,7 +30,7 @@ namespace {
 // False means the input was invalid.
 bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
                         WebKitForwarding::Font::TextRun* output) {
-  scoped_refptr<StringVar> text_string(StringVar::FromPPVar(run->text));
+  StringVar* text_string = StringVar::FromPPVar(run->text);
   if (!text_string)
     return false;
 
@@ -45,7 +45,7 @@ bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
 PPB_Font_Impl::PPB_Font_Impl(PluginInstance* instance,
                              const PP_FontDescription_Dev& desc)
     : Resource(instance) {
-  scoped_refptr<StringVar> face_name(StringVar::FromPPVar(desc.face));
+  StringVar* face_name = StringVar::FromPPVar(desc.face);
 
   WebKitForwarding::Font* result = NULL;
   instance->module()->GetWebKitForwarding()->CreateFontForwarding(

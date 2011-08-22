@@ -33,7 +33,7 @@ namespace {
 
 // Returns the PP_Module associated with the given string, or 0 on failure.
 PP_Module GetModuleFromVar(PP_Var string_var) {
-  scoped_refptr<StringVar> str(StringVar::FromPPVar(string_var));
+  StringVar* str = StringVar::FromPPVar(string_var);
   if (!str)
     return 0;
   return str->pp_module();
@@ -72,7 +72,7 @@ PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
   if (!instance)
     return PP_MakeNull();
 
-  scoped_refptr<StringVar> relative_string(StringVar::FromPPVar(relative));
+  StringVar* relative_string = StringVar::FromPPVar(relative);
   if (!relative_string)
     return PP_MakeNull();
 
@@ -89,7 +89,7 @@ PP_Bool IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
 }
 
 PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) {
-  scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
+  StringVar* url_string = StringVar::FromPPVar(url);
   if (!url_string)
     return PP_FALSE;
 

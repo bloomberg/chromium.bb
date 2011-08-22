@@ -33,7 +33,7 @@ void HistogramCustomTimes(PP_Var name,
                           uint32_t bucket_count) {
   RETURN_IF_BAD_ARGS(name, sample, min, max, bucket_count);
 
-  scoped_refptr<StringVar> name_string(StringVar::FromPPVar(name));
+  StringVar* name_string = StringVar::FromPPVar(name);
   if (name_string == NULL)
     return;
   base::Histogram* counter =
@@ -52,7 +52,7 @@ void HistogramCustomCounts(PP_Var name,
                            uint32_t bucket_count) {
   RETURN_IF_BAD_ARGS(name, sample, min, max, bucket_count);
 
-  scoped_refptr<StringVar> name_string(StringVar::FromPPVar(name));
+  StringVar* name_string = StringVar::FromPPVar(name);
   if (name_string == NULL)
     return;
   base::Histogram* counter =
@@ -70,7 +70,7 @@ void HistogramEnumeration(PP_Var name,
                           int32_t boundary_value) {
   RETURN_IF_BAD_ARGS(name, sample, 1, boundary_value, boundary_value + 1);
 
-  scoped_refptr<StringVar> name_string(StringVar::FromPPVar(name));
+  StringVar* name_string = StringVar::FromPPVar(name);
   if (name_string == NULL)
     return;
   base::Histogram* counter =

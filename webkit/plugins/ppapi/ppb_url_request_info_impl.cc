@@ -220,7 +220,7 @@ PP_Bool PPB_URLRequestInfo_Impl::SetProperty(PP_URLRequestProperty property,
           SetIntegerProperty(property, var.value.as_int));
       break;
     case PP_VARTYPE_STRING: {
-      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+      StringVar* string = StringVar::FromPPVar(var);
       if (string)
         result = PP_FromBool(SetStringProperty(property, string->value()));
       break;

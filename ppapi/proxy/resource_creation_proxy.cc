@@ -211,7 +211,7 @@ PP_Resource ResourceCreationProxy::CreateKeyboardInputEvent(
   data.event_modifiers = modifiers;
   data.key_code = key_code;
   if (character_text.type == PP_VARTYPE_STRING) {
-    scoped_refptr<StringVar> text_str(StringVar::FromPPVar(character_text));
+    StringVar* text_str = StringVar::FromPPVar(character_text);
     if (!text_str)
       return 0;
     data.character_text = text_str->value();

@@ -604,7 +604,7 @@ string16 PluginInstance::GetSelectedText(bool html) {
 
   PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(),
                                                            PP_FromBool(html));
-  scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
+  StringVar* string = StringVar::FromPPVar(rv);
   // Release the ref the plugin transfered to us.
   ResourceTracker::Get()->GetVarTracker()->ReleaseVar(rv);
   if (!string)
@@ -622,7 +622,7 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
   p.x = point.x();
   p.y = point.y();
   PP_Var rv = plugin_pdf_interface_->GetLinkAtPosition(pp_instance(), p);
-  scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
+  StringVar* string = StringVar::FromPPVar(rv);
   // Release the ref the plugin transfered to us.
   ResourceTracker::Get()->GetVarTracker()->ReleaseVar(rv);
   if (!string)
@@ -1438,7 +1438,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
     return PP_MakeUndefined();
 
   // Convert the script into an inconvenient NPString object.
-  scoped_refptr<StringVar> script_string(StringVar::FromPPVar(script));
+  StringVar* script_string = StringVar::FromPPVar(script);
   if (!script_string) {
     try_catch.SetException("Script param to ExecuteScript must be a string.");
     return PP_MakeUndefined();

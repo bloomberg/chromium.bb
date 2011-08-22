@@ -30,7 +30,7 @@ PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
-  scoped_refptr<StringVar> str(StringVar::FromPPVar(var));
+  StringVar* str = StringVar::FromPPVar(var);
   if (str) {
     *len = static_cast<uint32_t>(str->value().size());
     return str->value().c_str();

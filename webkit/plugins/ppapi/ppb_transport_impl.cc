@@ -142,7 +142,7 @@ int32_t PPB_Transport_Impl::ReceiveRemoteAddress(PP_Var address) {
   if (!p2p_transport_.get())
     return PP_ERROR_FAILED;
 
-  scoped_refptr<StringVar> address_str = StringVar::FromPPVar(address);
+  StringVar* address_str = StringVar::FromPPVar(address);
   if (!address_str)
     return PP_ERROR_BADARGUMENT;
 

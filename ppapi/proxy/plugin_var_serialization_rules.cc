@@ -28,8 +28,8 @@ PP_Var PluginVarSerializationRules::SendCallerOwned(const PP_Var& var,
 
   // Retrieve the string to use for IPC.
   if (var.type == PP_VARTYPE_STRING) {
-    scoped_refptr<StringVar> string_var(StringVar::FromPPVar(var));
-    if (string_var.get())
+    StringVar* string_var = StringVar::FromPPVar(var);
+    if (string_var)
       *str_val = string_var->value();
     else
       NOTREACHED() << "Trying to send unknown string over IPC.";
@@ -116,8 +116,8 @@ PP_Var PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var,
     return var_tracker_->GetHostObject(var);
 
   if (var.type == PP_VARTYPE_STRING) {
-    scoped_refptr<StringVar> string_var(StringVar::FromPPVar(var));
-    if (string_var.get())
+    StringVar* string_var = StringVar::FromPPVar(var);
+    if (string_var)
       *str_val = string_var->value();
     else
       NOTREACHED() << "Trying to send unknown string over IPC.";

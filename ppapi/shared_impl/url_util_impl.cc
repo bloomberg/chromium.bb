@@ -44,7 +44,7 @@ void ConvertComponents(const url_parse::Parsed& input,
 PP_Var URLUtilImpl::Canonicalize(PP_Module pp_module,
                                  PP_Var url,
                                  PP_URLComponents_Dev* components) {
-  scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
+  StringVar* url_string = StringVar::FromPPVar(url);
   if (!url_string)
     return PP_MakeNull();
   return GenerateURLReturn(pp_module, GURL(url_string->value()), components);
@@ -55,8 +55,8 @@ PP_Var URLUtilImpl::ResolveRelativeToURL(PP_Module pp_module,
                                          PP_Var base_url,
                                          PP_Var relative,
                                          PP_URLComponents_Dev* components) {
-  scoped_refptr<StringVar> base_url_string(StringVar::FromPPVar(base_url));
-  scoped_refptr<StringVar> relative_string(StringVar::FromPPVar(relative));
+  StringVar* base_url_string = StringVar::FromPPVar(base_url);
+  StringVar* relative_string = StringVar::FromPPVar(relative);
   if (!base_url_string || !relative_string)
     return PP_MakeNull();
 
@@ -70,8 +70,8 @@ PP_Var URLUtilImpl::ResolveRelativeToURL(PP_Module pp_module,
 
 // static
 PP_Bool URLUtilImpl::IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
-  scoped_refptr<StringVar> url_a_string(StringVar::FromPPVar(url_a));
-  scoped_refptr<StringVar> url_b_string(StringVar::FromPPVar(url_b));
+  StringVar* url_a_string = StringVar::FromPPVar(url_a);
+  StringVar* url_b_string = StringVar::FromPPVar(url_b);
   if (!url_a_string || !url_b_string)
     return PP_FALSE;
 

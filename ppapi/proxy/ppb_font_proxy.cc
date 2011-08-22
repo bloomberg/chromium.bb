@@ -30,7 +30,7 @@ namespace {
 
 bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
                         WebKitForwarding::Font::TextRun* output) {
-  scoped_refptr<StringVar> str(StringVar::FromPPVar(run->text));
+  StringVar* str = StringVar::FromPPVar(run->text);
   if (!str)
     return false;
 
@@ -97,7 +97,7 @@ Font::Font(const HostResource& resource,
     : Resource(resource),
       webkit_event_(false, false) {
   TRACE_EVENT0("ppapi proxy", "Font::Font");
-  scoped_refptr<StringVar> face(StringVar::FromPPVar(desc.face));
+  StringVar* face = StringVar::FromPPVar(desc.face);
 
   PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   WebKitForwarding* forwarding = dispatcher->GetWebKitForwarding();
@@ -106,7 +106,7 @@ Font::Font(const HostResource& resource,
                     base::Bind(&WebKitForwarding::CreateFontForwarding,
                                base::Unretained(forwarding),
                                &webkit_event_, desc,
-                               face.get() ? face->value() : std::string(),
+                               face ? face->value() : std::string(),
                                dispatcher->preferences(),
                                &font_forwarding_));
 }

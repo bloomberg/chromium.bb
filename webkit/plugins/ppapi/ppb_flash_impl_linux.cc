@@ -46,7 +46,7 @@ PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance,
     return PP_FALSE;
 
   // Set up the typeface.
-  scoped_refptr<StringVar> face_name(StringVar::FromPPVar(font_desc->face));
+  StringVar* face_name = StringVar::FromPPVar(font_desc->face);
   if (!face_name)
     return PP_FALSE;
   int style = SkTypeface::kNormal;

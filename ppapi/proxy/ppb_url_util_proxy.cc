@@ -36,7 +36,7 @@ PP_Var ConvertComponentsAndReturnURL(PP_Var url,
   if (!components)
     return url;  // Common case - plugin doesn't care about parsing.
 
-  scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
+  StringVar* url_string = StringVar::FromPPVar(url);
   if (!url_string)
     return url;
 

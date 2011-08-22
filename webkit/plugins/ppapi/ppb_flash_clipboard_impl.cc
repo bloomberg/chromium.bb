@@ -99,7 +99,7 @@ PP_Var ReadPlainText(PP_Instance instance_id,
 int32_t WritePlainText(PP_Instance instance_id,
                        PP_Flash_Clipboard_Type clipboard_type,
                        PP_Var text) {
-  scoped_refptr<StringVar> text_string(StringVar::FromPPVar(text));
+  StringVar* text_string = StringVar::FromPPVar(text);
   if (!text_string)
     return PP_ERROR_BADARGUMENT;
 

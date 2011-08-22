@@ -68,7 +68,7 @@ bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
       DOUBLE_TO_NPVARIANT(var.value.as_double, *result);
       break;
     case PP_VARTYPE_STRING: {
-      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+      StringVar* string = StringVar::FromPPVar(var);
       if (!string) {
         VOID_TO_NPVARIANT(*result);
         return false;
@@ -182,7 +182,7 @@ PP_Var VarFromUtf8(PP_Module module, const char* data, uint32_t len) {
 }
 
 const char* VarToUtf8(PP_Var var, uint32_t* len) {
-  scoped_refptr<StringVar> str(StringVar::FromPPVar(var));
+  StringVar* str = StringVar::FromPPVar(var);
   if (!str) {
     *len = 0;
     return NULL;

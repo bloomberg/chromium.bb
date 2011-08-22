@@ -197,8 +197,8 @@ PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent(
   data.event_modifiers = modifiers;
   data.key_code = key_code;
   if (character_text.type == PP_VARTYPE_STRING) {
-    scoped_refptr<StringVar> string_var(StringVar::FromPPVar(character_text));
-    if (!string_var.get())
+    StringVar* string_var = StringVar::FromPPVar(character_text);
+    if (!string_var)
       return 0;
     data.character_text = string_var->value();
   }

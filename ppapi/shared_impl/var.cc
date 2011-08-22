@@ -37,7 +37,7 @@ std::string Var::PPVarToLogString(PP_Var var) {
     case PP_VARTYPE_DOUBLE:
       return base::DoubleToString(var.value.as_double);
     case PP_VARTYPE_STRING: {
-      scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+      StringVar* string(StringVar::FromPPVar(var));
       if (!string)
         return "[Invalid string]";
 
@@ -139,14 +139,14 @@ PP_Var StringVar::StringToPPVar(PP_Module module,
 }
 
 // static
-scoped_refptr<StringVar> StringVar::FromPPVar(PP_Var var) {
+StringVar* StringVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_STRING)
-    return scoped_refptr<StringVar>();
+    return NULL;
   scoped_refptr<Var> var_object(
       TrackerBase::Get()->GetVarTracker()->GetVar(var));
   if (!var_object)
-    return scoped_refptr<StringVar>();
-  return scoped_refptr<StringVar>(var_object->AsStringVar());
+    return NULL;
+  return var_object->AsStringVar();
 }
 
 }  // namespace ppapi

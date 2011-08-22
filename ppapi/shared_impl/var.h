@@ -84,7 +84,7 @@ class Var : public base::RefCounted<Var> {
 //   return StringVar::StringToPPVar(module, my_string);
 //
 // Converting a PP_Var to a string:
-//   scoped_refptr<StringVar> string(StringVar::FromPPVar(var));
+//   StringVar* string = StringVar::FromPPVar(var);
 //   if (!string)
 //     return false;  // Not a string or an invalid var.
 //   DoSomethingWithTheString(string->value());
@@ -112,7 +112,7 @@ class StringVar : public Var {
 
   // Helper function that converts a PP_Var to a string. This will return NULL
   // if the PP_Var is not of string type or the string is invalid.
-  static scoped_refptr<StringVar> FromPPVar(PP_Var var);
+  static StringVar* FromPPVar(PP_Var var);
 
  private:
   std::string value_;

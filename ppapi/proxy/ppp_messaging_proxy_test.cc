@@ -128,13 +128,13 @@ TEST_F(PPP_Messaging_ProxyTest, SendMessages) {
   EXPECT_EQ(expected_instance, received_instance);
   EXPECT_EQ(expected_var.type, received_var.type);
 
-  scoped_refptr<StringVar> received_string(StringVar::FromPPVar(received_var));
-  ASSERT_TRUE(received_string.get());
+  StringVar* received_string = StringVar::FromPPVar(received_var);
+  ASSERT_TRUE(received_string);
   EXPECT_EQ(kTestString, received_string->value());
   // Now release the var, and the string should go away (because the ref
   // count should be one).
   plugin().var_tracker().ReleaseVar(received_var);
-  EXPECT_FALSE(StringVar::FromPPVar(received_var).get());
+  EXPECT_FALSE(StringVar::FromPPVar(received_var));
 }
 
 }  // namespace proxy
