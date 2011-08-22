@@ -281,13 +281,15 @@ var CardSlider = (function() {
      *     current position to new position.
      */
     selectCard: function(newCardIndex, opt_animate) {
-      var isChangingCard = newCardIndex >= 0 &&
-          newCardIndex < this.cards_.length &&
-          newCardIndex != this.currentCard;
+      var isChangingCard =
+          !this.cards_[newCardIndex].classList.contains('selected-card');
+
       if (isChangingCard) {
+        this.currentCardValue.classList.remove('selected-card');
         // If we have a new card index and it is valid then update the left
         // position and current card index.
         this.currentCard_ = newCardIndex;
+        this.currentCardValue.classList.add('selected-card');
       }
 
       this.transformToCurrentCard_(opt_animate);

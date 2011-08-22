@@ -326,6 +326,8 @@ cr.define('ntp4', function() {
     // Mark the current page
     dots[cardSlider.currentCard].classList.add('selected');
     logEvent('apps.layout: ' + (Date.now() - startTime));
+
+    document.documentElement.classList.remove('starting-up');
   }
 
   /**

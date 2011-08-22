@@ -154,6 +154,10 @@
   -webkit-animation: blipout 0.3s;
 }
 
+.tile-page:not(.selected-card) * {
+  -webkit-transition: none !important;
+}
+
 /** Scrollbars ****************************************************************/
 
 .tile-page-content::-webkit-scrollbar {

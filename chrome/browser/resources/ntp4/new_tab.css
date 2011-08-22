@@ -162,6 +162,10 @@ html[dir='rtl'] #attribution {
   margin-top: 4px;
 }
 
+.starting-up * {
+  -webkit-transition: none !important;
+}
+
 /* Trash. *********************************************************************/
 
 #trash {
