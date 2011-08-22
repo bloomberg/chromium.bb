@@ -575,6 +575,13 @@ bool NativeNetworkParser::ParseValue(PropertyIndex index,
       network->set_save_credentials(save_credentials);
       return true;
     }
+    case PROPERTY_INDEX_PROXY_CONFIG: {
+      std::string proxy_config;
+      if (!value.GetAsString(&proxy_config))
+        return false;
+      network->set_proxy_config(proxy_config);
+      return true;
+    }
     default:
       break;
   }

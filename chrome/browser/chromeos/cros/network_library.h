@@ -716,6 +716,7 @@ class Network {
   }
   void set_profile_path(const std::string& path) { profile_path_ = path; }
   void set_profile_type(NetworkProfileType type) { profile_type_ = type; }
+  void set_proxy_config(const std::string& proxy) { proxy_config_ = proxy; }
 
   std::string device_path_;
   std::string name_;
