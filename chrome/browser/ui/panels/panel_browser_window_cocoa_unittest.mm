@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/app/chrome_command_ids.h"  // IDC_*
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -50,6 +51,15 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
     EXPECT_EQ(NSWidth(content_frame), NSWidth(titlebar_frame));
     EXPECT_EQ(NSMaxY(content_frame), NSMinY(titlebar_frame));
     EXPECT_EQ(NSHeight([[titlebar superview] bounds]), NSMaxY(titlebar_frame));
+  }
+
+  NSMenuItem* CreateMenuItem(NSMenu* menu, int command_id) {
+    NSMenuItem* item =
+      [menu addItemWithTitle:@""
+                      action:@selector(commandDispatch:)
+               keyEquivalent:@""];
+    [item setTag:command_id];
+    return item;
   }
 
  private:
@@ -247,3 +257,37 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewClose) {
   EXPECT_EQ(0, manager->num_panels());
 }
 
+// Verify some menu items being properly enabled/disabled for panels.
+TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
+  Panel* panel = CreateTestPanel("Test Panel");
+  panel->Show();
+
+  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  NSMenuItem* close_tab_menu_item = CreateMenuItem(menu, IDC_CLOSE_TAB);
+  NSMenuItem* close_window_menu_item = CreateMenuItem(menu, IDC_CLOSE_WINDOW);
+  NSMenuItem* find_menu_item = CreateMenuItem(menu, IDC_FIND);
+  NSMenuItem* find_previous_menu_item = CreateMenuItem(menu, IDC_FIND_PREVIOUS);
+  NSMenuItem* find_next_menu_item = CreateMenuItem(menu, IDC_FIND_NEXT);
+  NSMenuItem* fullscreen_menu_item = CreateMenuItem(menu, IDC_FULLSCREEN);
+  NSMenuItem* presentation_menu_item =
+      CreateMenuItem(menu, IDC_PRESENTATION_MODE);
+  NSMenuItem* bookmarks_menu_item = CreateMenuItem(menu, IDC_SYNC_BOOKMARKS);
+
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelWindowControllerCocoa* panel_controller = native_window->controller_;
+  for (NSMenuItem *item in [menu itemArray])
+    [item setTarget:panel_controller];
+
+  [menu update];  // Trigger validation of menu items.
+  EXPECT_FALSE([close_tab_menu_item isEnabled]);
+  EXPECT_TRUE([close_window_menu_item isEnabled]);
+  EXPECT_TRUE([find_menu_item isEnabled]);
+  EXPECT_TRUE([find_previous_menu_item isEnabled]);
+  EXPECT_TRUE([find_next_menu_item isEnabled]);
+  EXPECT_FALSE([fullscreen_menu_item isEnabled]);
+  EXPECT_FALSE([presentation_menu_item isEnabled]);
+  EXPECT_FALSE([bookmarks_menu_item isEnabled]);
+
+  panel->Close();
+}

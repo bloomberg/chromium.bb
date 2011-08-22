@@ -8,12 +8,15 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/ui/browser.h"
+#import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
+#include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
 const int kMinimumWindowSize = 1;
@@ -114,5 +117,63 @@ const int kMinimumWindowSize = 1;
 
 - (PanelTitlebarViewCocoa*)titlebarView {
   return titlebar_view_;
+}
+
+// Called to validate menu and toolbar items when this window is key. All the
+// items we care about have been set with the |-commandDispatch:| or
+// |-commandDispatchUsingKeyModifiers:| actions and a target of FirstResponder
+// in IB. If it's not one of those, let it continue up the responder chain to be
+// handled elsewhere.
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  SEL action = [item action];
+  BOOL enable = NO;
+  if (action == @selector(commandDispatch:) ||
+      action == @selector(commandDispatchUsingKeyModifiers:)) {
+    NSInteger tag = [item tag];
+    CommandUpdater* command_updater = windowShim_->browser()->command_updater();
+    if (command_updater->SupportsCommand(tag)) {
+      enable = command_updater->IsCommandEnabled(tag);
+      // Disable commands that do not apply to Panels.
+      switch (tag) {
+        case IDC_CLOSE_TAB:
+        case IDC_FULLSCREEN:
+        case IDC_PRESENTATION_MODE:
+        case IDC_SYNC_BOOKMARKS:
+          enable = NO;
+          break;
+        default:
+          // Special handling for the contents of the Text Encoding submenu. On
+          // Mac OS, instead of enabling/disabling the top-level menu item, we
+          // enable/disable the submenu's contents (per Apple's HIG).
+          EncodingMenuController encoding_controller;
+          if (encoding_controller.DoesCommandBelongToEncodingMenu(tag)) {
+            enable &= command_updater->IsCommandEnabled(IDC_ENCODING_MENU) ?
+                YES : NO;
+          }
+      }
+    }
+  }
+  return enable;
+}
+
+// Called when the user picks a menu or toolbar item when this window is key.
+// Calls through to the browser object to execute the command. This assumes that
+// the command is supported and doesn't check, otherwise it would have been
+// disabled in the UI in validateUserInterfaceItem:.
+- (void)commandDispatch:(id)sender {
+  DCHECK(sender);
+  windowShim_->browser()->ExecuteCommand([sender tag]);
+}
+
+// Same as |-commandDispatch:|, but executes commands using a disposition
+// determined by the key flags.
+- (void)commandDispatchUsingKeyModifiers:(id)sender {
+  DCHECK(sender);
+  NSEvent* event = [NSApp currentEvent];
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEventWithFlags(
+          event, [event modifierFlags]);
+  windowShim_->browser()->ExecuteCommandWithDisposition(
+      [sender tag], disposition);
 }
 @end
