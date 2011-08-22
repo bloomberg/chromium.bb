@@ -2568,14 +2568,6 @@ error::Error GLES2DecoderImpl::HandleGetMaxValueInBufferCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
-    uint32 immediate_data_size, const gles2::ResizeCHROMIUM& c) {
-  GLuint width = static_cast<GLuint>(c.width);
-  GLuint height = static_cast<GLuint>(c.height);
-  DoResizeCHROMIUM(width, height);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleSetSurfaceCHROMIUM(
     uint32 immediate_data_size, const gles2::SetSurfaceCHROMIUM& c) {
   GLint surface_id = static_cast<GLint>(c.surface_id);

@@ -1727,7 +1727,8 @@ _FUNCTION_INFO = {
                   'GLsizei stride, GLuint offset',
   },
   'ResizeCHROMIUM': {
-      'decoder_func': 'DoResizeCHROMIUM',
+      'type': 'Custom',
+      'impl_func': False,
       'unit_test': False,
       'extension': True,
       'chromium': True,

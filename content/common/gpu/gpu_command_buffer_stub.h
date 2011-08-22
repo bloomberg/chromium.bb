@@ -112,7 +112,6 @@ class GpuCommandBufferStub
                                 IPC::Message* reply_message);
   void OnDestroyTransferBuffer(int32 id, IPC::Message* reply_message);
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
-  void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
   void OnCreateVideoDecoder(const std::vector<int32>& configs,
                             IPC::Message* reply_message);
@@ -122,12 +121,7 @@ class GpuCommandBufferStub
   void OnCommandProcessed();
   void OnParseError();
 
-#if defined(OS_MACOSX)
-  void OnSetWindowSize(const gfx::Size& size);
-  void SwapBuffersCallback();
-#endif  // defined(OS_MACOSX)
-
-  void ResizeCallback(gfx::Size size);
+  void OnResize(gfx::Size size);
   void ReportState();
 
   // The lifetime of objects of this class is managed by a GpuChannel. The

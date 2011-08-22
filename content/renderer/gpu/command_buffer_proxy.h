@@ -77,9 +77,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void SetSwapBuffersCallback(Callback0::Type* callback);
   void SetChannelErrorCallback(Callback0::Type* callback);
 
-  // Asynchronously resizes an offscreen frame buffer.
-  void ResizeOffscreenFrameBuffer(const gfx::Size& size);
-
   // Set a task that will be invoked the next time the window becomes invalid
   // and needs to be repainted. Takes ownership of task.
   void SetNotifyRepaintTask(Task* task);
@@ -93,10 +90,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   scoped_refptr<GpuVideoDecodeAcceleratorHost> CreateVideoDecoder(
       const std::vector<int32>& configs,
       media::VideoDecodeAccelerator::Client* client);
-
-#if defined(OS_MACOSX)
-  virtual void SetWindowSize(const gfx::Size& size);
-#endif
 
  private:
 

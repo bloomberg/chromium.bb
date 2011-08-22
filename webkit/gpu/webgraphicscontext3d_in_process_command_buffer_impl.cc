@@ -102,13 +102,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
       const int32* attrib_list,
       const GURL& active_arl);
 
-#if defined(OS_MACOSX)
-  // On Mac OS X only, view GLInProcessContexts actually behave like offscreen
-  // GLInProcessContexts, and require an explicit resize operation which is
-  // slightly different from that of offscreen GLInProcessContexts.
-  void ResizeOnscreen(const gfx::Size& size);
-#endif
-
   // Create a GLInProcessContext that renders to an offscreen frame buffer. If
   // parent is not NULL, that GLInProcessContext can access a copy of the
   // created GLInProcessContext's frame buffer that is updated every time
@@ -124,13 +117,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
       const char* allowed_extensions,
       const int32* attrib_list,
       const GURL& active_url);
-
-  // Resize an offscreen frame buffer. The resize occurs on the next call to
-  // SwapBuffers. This is to avoid waiting until all pending GL calls have been
-  // executed by the GPU process. Everything rendered up to the call to
-  // SwapBuffers will be lost. A lost GLInProcessContext will be reported if the
-  // resize fails.
-  void ResizeOffscreen(const gfx::Size& size);
 
   // For an offscreen frame buffer GLInProcessContext, return the texture ID
   // with respect to the parent GLInProcessContext. Returns zero if
@@ -199,7 +185,6 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   GLES2CmdHelper* gles2_helper_;
   int32 transfer_buffer_id_;
   GLES2Implementation* gles2_implementation_;
-  gfx::Size size_;
   Error last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContext);
@@ -266,13 +251,6 @@ GLInProcessContext* GLInProcessContext::CreateViewContext(
 #endif
 }
 
-#if defined(OS_MACOSX)
-void GLInProcessContext::ResizeOnscreen(const gfx::Size& size) {
-  DCHECK(size.width() > 0 && size.height() > 0);
-  size_ = size;
-}
-#endif
-
 GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
     GLInProcessContext* parent,
     const gfx::Size& size,
@@ -296,16 +274,6 @@ GLInProcessContext* GLInProcessContext::CreateOffscreenContext(
 #else
   return NULL;
 #endif
-}
-
-void GLInProcessContext::ResizeOffscreen(const gfx::Size& size) {
-  DCHECK(size.width() > 0 && size.height() > 0);
-  if (size_ != size) {
-    gpu_scheduler_->ResizeOffscreenFrameBuffer(size);
-    // TODO(gman): See if the next line is needed.
-    gles2_implementation_->ResizeCHROMIUM(size.width(),  size.height());
-    size_ = size;
-  }
 }
 
 void GLInProcessContext::PumpCommands() {
@@ -548,8 +516,6 @@ bool GLInProcessContext::Initialize(bool onscreen,
       true,
       false);
 
-  size_ = size;
-
   return true;
 }
 
@@ -766,17 +732,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::reshape(
   // TODO(gmam): See if we can comment this in.
   // ClearContext();
 
-  if (web_view_) {
-#if defined(OS_MACOSX)
-    context_->ResizeOnscreen(gfx::Size(width, height));
-#else
-    gl_->ResizeCHROMIUM(width, height);
-#endif
-  } else {
-    context_->ResizeOffscreen(gfx::Size(width, height));
-    // Force a SwapBuffers to get the framebuffer to resize.
-    context_->SwapBuffers();
-  }
+  gl_->ResizeCHROMIUM(width, height);
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
   scanline_.reset(new uint8[width * 4]);
@@ -1638,4 +1594,3 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
 }  // namespace webkit
 
 #endif  // defined(ENABLE_GPU)
-

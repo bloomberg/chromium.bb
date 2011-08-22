@@ -1254,10 +1254,7 @@ void* MapTexSubImage2DCHROMIUM(
 
 void UnmapTexSubImage2DCHROMIUM(const void* mem);
 
-void ResizeCHROMIUM(GLuint width, GLuint height) {
-  GPU_CLIENT_LOG("[" << this << "] glResizeCHROMIUM(" << width << ", " << height << ")");  // NOLINT
-  helper_->ResizeCHROMIUM(width, height);
-}
+void ResizeCHROMIUM(GLuint width, GLuint height);
 
 const GLchar* GetRequestableExtensionsCHROMIUM();
 

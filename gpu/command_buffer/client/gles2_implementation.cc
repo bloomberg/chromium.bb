@@ -2482,6 +2482,12 @@ void GLES2Implementation::UnmapTexSubImage2DCHROMIUM(const void* mem) {
   mapped_textures_.erase(it);
 }
 
+void GLES2Implementation::ResizeCHROMIUM(GLuint width, GLuint height) {
+  GPU_CLIENT_LOG("[" << this << "] glResizeCHROMIUM("
+                 << width << ", " << height << ")");
+  helper_->ResizeCHROMIUM(width, height);
+}
+
 const GLchar* GLES2Implementation::GetRequestableExtensionsCHROMIUM() {
   GPU_CLIENT_LOG("[" << this << "] glGetRequestableExtensionsCHROMIUM()");
   TRACE_EVENT0("gpu",
@@ -2625,4 +2631,3 @@ void GLES2Implementation::GetProgramInfoCHROMIUM(
 
 }  // namespace gles2
 }  // namespace gpu
-
