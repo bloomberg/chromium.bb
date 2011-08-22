@@ -136,6 +136,9 @@ need to be translated for each locale.-->
     <output filename="ui_strings_lv.pak" type="data_package" lang="lv" />
     <output filename="ui_strings_ml.pak" type="data_package" lang="ml" />
     <output filename="ui_strings_mr.pak" type="data_package" lang="mr" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="ui_strings_ms.pak" type="data_package" lang="ms" />
+    </if>
     <output filename="ui_strings_nl.pak" type="data_package" lang="nl" />
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
@@ -207,6 +210,7 @@ need to be translated for each locale.-->
     <file path="ui_strings_lv.xtb" lang="lv" />
     <file path="ui_strings_ml.xtb" lang="ml" />
     <file path="ui_strings_mr.xtb" lang="mr" />
+    <file path="../../../third_party/launchpad_translations/ui_strings_ms.xtb" lang="ms" />
     <file path="ui_strings_nl.xtb" lang="nl" />
     <file path="ui_strings_no.xtb" lang="no" />
     <file path="ui_strings_pl.xtb" lang="pl" />

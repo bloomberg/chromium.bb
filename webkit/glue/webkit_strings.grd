@@ -166,6 +166,9 @@ below:
     <output filename="webkit_strings_lv.pak" type="data_package" lang="lv" />
     <output filename="webkit_strings_ml.pak" type="data_package" lang="ml" />
     <output filename="webkit_strings_mr.pak" type="data_package" lang="mr" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="webkit_strings_ms.pak" type="data_package" lang="ms" />
+    </if>
     <output filename="webkit_strings_nl.pak" type="data_package" lang="nl" />
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
@@ -235,6 +238,7 @@ below:
     <file path="resources/webkit_strings_lv.xtb" lang="lv" />
     <file path="resources/webkit_strings_ml.xtb" lang="ml" />
     <file path="resources/webkit_strings_mr.xtb" lang="mr" />
+    <file path="../../third_party/launchpad_translations/webkit_strings_ms.xtb" lang="ms" />
     <file path="resources/webkit_strings_nl.xtb" lang="nl" />
     <file path="resources/webkit_strings_no.xtb" lang="no" />
     <file path="resources/webkit_strings_pl.xtb" lang="pl" />

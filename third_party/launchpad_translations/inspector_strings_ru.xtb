@@ -237,4 +237,93 @@
 <translation id="5037676449506322593">Выделить всё</translation>
 <translation id="5056412143720059012"><ph name="BYTES"/> принято</translation>
 <translation id="5077392757361473280">Изменить точку прерывания...</translation>
+<translation id="3517236167311284147">Использовать небольшие строки ресурсов.</translation>
+<translation id="3642708027166879471">С блоком</translation>
+<translation id="3684450102844331538">Приостановлено на \&quot;<ph name="NAME"/>\&quot; Event Listener.</translation>
+<translation id="4047216625641135770">Обозначить</translation>
+<translation id="4062427243989761924">Этот запрос не содержит подробных сведений о тайминге.</translation>
+<translation id="5154917547274118687">Память</translation>
+<translation id="5201810533706869030">Объекты</translation>
+<translation id="5299075592160799973"><ph name="NUMBER"/> сообщений командного окна не показано.</translation>
+<translation id="5327248766486351172">Название</translation>
+<translation id="5328580414682635314">В сравнении с <ph name="PROFILE_NAME"/></translation>
+<translation id="5336126575388085039">Код</translation>
+<translation id="5378158564957061833">Удалить точку прерывания</translation>
+<translation id="5476516521619370280">Точка прерывания в строке <ph name="LINE_NUMBER"/> будет остановлена, только если выражение истинно:</translation>
+<translation id="5492281286267442590">Метод</translation>
+<translation id="5546435790121932843">Изменить атрибут</translation>
+<translation id="5616977921640201471">Цвета RGB</translation>
+<translation id="5646376287012673985">Местоположение</translation>
+<translation id="5747552184818312860">Срок действия до</translation>
+<translation id="594041821969834346">Соответствующие правила CSS</translation>
+<translation id="5997661785897230805">Все панели</translation>
+<translation id="6040034394100792317">''' (повторено <ph name="TIMES"/> раз)</translation>
+<translation id="6053666381828300479">Событие GC</translation>
+<translation id="6066146739703818767">поле</translation>
+<translation id="6122191549521593678">В сети</translation>
+<translation id="6127423179437546633">Не получено ни одного запроса. Чтобы увидеть подробную информацию о работе сети, обновите страницу.</translation>
+<translation id="6270944267518310103">Ожидание</translation>
+<translation id="6314007596429871800">Временные файлы приложения</translation>
+<translation id="6322316724724460534"><ph name="USED"/> из <ph name="TOTAL"/></translation>
+<translation id="6332070367953727318">Все запросы XHR</translation>
+<translation id="6366894209607468950">ID таймера</translation>
+<translation id="643403007434239442">Сбросить таймер</translation>
+<translation id="6512256785841114303">удалён</translation>
+<translation id="6643016212128521049">Очистить</translation>
+<translation id="667999046851023355">Документ</translation>
+<translation id="67190643267692835">Установить таймер</translation>
+<translation id="681391154581908334">Приостановлено на XMLHttpRequest.</translation>
+<translation id="6841186874966388268">Ошибки</translation>
+<translation id="6847736500082831849">Запросить URL</translation>
+<translation id="6875606269029079781">Событие DOMContent</translation>
+<translation id="6965628487811068511">Псевдо ::<ph name="NAME"/> элемент</translation>
+<translation id="6965978654500191972">Устройство</translation>
+<translation id="7025575154794296384">Предупреждения</translation>
+<translation id="7109444055018722651">Вычисленный стиль</translation>
+<translation id="7247652327135976256">Очистить результаты аудита.</translation>
+<translation id="7255513090217522383">Передача</translation>
+<translation id="7267405484336523498">Щёлкните для изменения цветового формата</translation>
+<translation id="7338790140396171603">Перейти к строке</translation>
+<translation id="7401459497329391984">Точки прерывания DOM</translation>
+<translation id="7445029764808004633">Изменить текст</translation>
+<translation id="7460943792763833940">Экспортировать все в формат HAR</translation>
+<translation id="7505152414826719222">Локальное хранилище</translation>
+<translation id="7583948862126372804">Количество</translation>
+<translation id="7641927189292683247">Назначить таймер</translation>
+<translation id="7677748775835891962"><ph name="BYTES"/> передано</translation>
+<translation id="7702907602086592255">Домен</translation>
+<translation id="7759590037707568265">Копировать как HTML</translation>
+<translation id="7767313639108918004">Цвета в формате HSL</translation>
+<translation id="7791267293787079395">Файловая система</translation>
+<translation id="7791543448312431591">Добавить</translation>
+<translation id="7805768142964895445">Состояние</translation>
+<translation id="7846634333498149051">Клавиатура</translation>
+<translation id="7872270543903644114">Удалить таймер</translation>
+<translation id="7915699402739018958">Задействовать все точки прерывания.</translation>
+<translation id="7982789257301363584">Сеть</translation>
+<translation id="8003193230778528533">Поиск DNS</translation>
+<translation id="8049189770492311300">Таймер</translation>
+<translation id="8076715171404191890">Скрыть обзор изменений.</translation>
+<translation id="8168435359814927499">Содержимое</translation>
+<translation id="8186909905596845015">Загрузка</translation>
+<translation id="8198713139034504582">Сеанс</translation>
+<translation id="8260864402787962391">Мышь</translation>
+<translation id="8420328773017483742">Прерывать при изменении атрибутов</translation>
+<translation id="8456328144826979587">Атрибут изменён</translation>
+<translation id="8461914792118322307">Прокси-сервер</translation>
+<translation id="859900712158819228">URL содержит \&quot;<ph name="SUBSTRING"/>\&quot;</translation>
+<translation id="8640569549673874036">Показать с изменениями.</translation>
+<translation id="8696985166948174571">Все узлы</translation>
+<translation id="8721192439366781236">Сценарий</translation>
+<translation id="8859469458671597381">Обезопасить журнал во время навигации</translation>
+<translation id="8885335402904131721">Корневое местоположение файловой системы недоступно.</translation>
+<translation id="8911461501537433420">Добавить атрибут</translation>
+<translation id="8969720035800604570"><ph name="SIZE"/>МБ</translation>
+<translation id="8988793062306956622">Загрузка (<ph name="LOADED"/> из <ph name="TOTAL"/>)</translation>
+<translation id="9024433186021205539">Дерево (Сверху-вниз)</translation>
+<translation id="9065203028668620118">Изменить</translation>
+<translation id="9089819584697017929">ПРОФИЛИ ЦПУ</translation>
+<translation id="9094024956608024774">Точки прерывания XHR</translation>
+<translation id="9137833494350751475">Сведения о временных файлах приложения не найдены.</translation>
+<translation id="981121421437150478">Автономный режим</translation>
 </translationbundle>

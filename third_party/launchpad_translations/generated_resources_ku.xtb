@@ -33,7 +33,6 @@
 <translation id="112343676265501403">Zêdebariyên pêvekan</translation>
 <translation id="1125520545229165057">Dvorak (Hsu)</translation>
 <translation id="1131850611586448366">Hate ragihandin ku malpera li ser navnîşana <ph name="HOST_NAME"/>ê malpereke &quot;sextekar&quot; e. Malperên sextekar, gelek deman xwe wekî saziyên ewle yên wekî bankayan nîşan didin ji hewlê didin ku agahiyên taybet ên kesan bi dest bixin.</translation>
-<translation id="1134009406053225289">Di pencereyeke nepen de veke</translation>
 <translation id="1135328998467923690">Pakêt tune ye: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="1139892513581762545">Hilpekînên kêlekê</translation>
 <translation id="114140604515785785">Pelrêça kakil a pêvekê:</translation>
@@ -78,7 +77,6 @@
 <translation id="1244147615850840081">Ragirker</translation>
 <translation id="1254593899333212300">Girêdana rasterast a înternetê</translation>
 <translation id="1272079795634619415">Sekinandin</translation>
-<translation id="1273291576878293349">Hemû bijareyan di paceya veşartî de veke</translation>
 <translation id="1275018677838892971">Di malpera li ser navnîşana <ph name="HOST_NAME"/>ê de hin hêmanên ku wekî &quot;sextekariya&quot; webê hatine raporkiin hene. Malperên sextekariyê bi piranî xwe wekî malperên ewle yên bankayan nîşan didin û hewl didin ku agahiyên we yên nepen û şîfreyên we bi dest bixin.</translation>
 <translation id="1275718070701477396">Hilbijartî</translation>
 <translation id="1285320974508926690">Vê malperê tu caran wernegerîne</translation>
@@ -87,7 +85,6 @@
 <translation id="1313405956111467313">Veavakirina bixweber ya proksyê</translation>
 <translation id="131461803491198646">Tora malê, ne di gerê de ye</translation>
 <translation id="1317130519471511503">Bireseran mîheng bike...</translation>
-<translation id="1319824869167805246">Hemû bijareyan di pencereya nû de nîşan bide</translation>
 <translation id="1325040735987616223">Rojanekirina pergalê</translation>
 <translation id="1335588927966684346">Bernameya alîkar:</translation>
 <translation id="1336254985736398701">&amp;Agahiyên rûpelê nîşan bide</translation>
@@ -137,12 +134,9 @@
 <translation id="215753907730220065">Ji moda dîmender tije derkeve</translation>
 <translation id="2354001756790975382">Bijareyên din</translation>
 <translation id="2557899542277210112">Ji bo vekirina lezgîn, bijareyên xwe têxe vê derê.</translation>
-<translation id="2979639724566107830">Di paceyeke nû de veke</translation>
-<translation id="2989805286512600854">Di hilpekîna nû de veke</translation>
 <translation id="3118319026408854581">Alîkariya <ph name="PRODUCT_NAME"/></translation>
 <translation id="345693547134384690">&amp;Wêneyî di hilpekîna nû de veke</translation>
 <translation id="3936390757709632190">&amp;Audîoyê di hilpekîna nû de veke</translation>
-<translation id="4195643157523330669">Di hilpekîna nû de veke</translation>
 <translation id="443008484043213881">Amûr</translation>
 <translation id="4643612240819915418">&amp;Vîdeoyê di hilpekîna nû de veke</translation>
 <translation id="4759238208242260848">Daxistin</translation>
@@ -156,7 +150,6 @@
 <translation id="7554791636758816595">Hilpekîna nû</translation>
 <translation id="7649070708921625228">Alîkarî</translation>
 <translation id="7861215335140947162">&amp;Daxistin</translation>
-<translation id="8027581147000338959">Di paceyeke nû de veke</translation>
 <translation id="8349305172487531364">Darika bijareyan</translation>
 <translation id="8487693399751278191">Bijareyan niha bîne...</translation>
 <translation id="8795916974678578410">Paceya nû</translation>

@@ -106,6 +106,9 @@ so we include the original license below:
     <output filename="inspectorStrings_lv.js" type="js_map_format" lang="lv" />
     <output filename="inspectorStrings_ml.js" type="js_map_format" lang="ml" />
     <output filename="inspectorStrings_mr.js" type="js_map_format" lang="mr" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="inspectorStrings_ms.js" type="js_map_format" lang="ms" />
+    </if>
     <output filename="inspectorStrings_nl.js" type="js_map_format" lang="nl" />
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
@@ -135,6 +138,7 @@ so we include the original license below:
   <translations>
     <if expr="pp_ifdef('use_third_party_translations')">
       <file path="../../third_party/launchpad_translations/inspector_strings_ast.xtb" lang="ast" />
+      <file path="../../third_party/launchpad_translations/inspector_strings_bn.xtb" lang="bn" />
       <file path="../../third_party/launchpad_translations/inspector_strings_bs.xtb" lang="bs" />
       <file path="../../third_party/launchpad_translations/inspector_strings_ca.xtb" lang="ca" />
       <file path="../../third_party/launchpad_translations/inspector_strings_ca-valencia.xtb" lang="ca@valencia" />
@@ -154,6 +158,7 @@ so we include the original license below:
       <file path="../../third_party/launchpad_translations/inspector_strings_ka.xtb" lang="ka" />
       <file path="../../third_party/launchpad_translations/inspector_strings_ku.xtb" lang="ku" />
       <file path="../../third_party/launchpad_translations/inspector_strings_kw.xtb" lang="kw" />
+      <file path="../../third_party/launchpad_translations/inspector_strings_ms.xtb" lang="ms" />
       <file path="../../third_party/launchpad_translations/inspector_strings_nl.xtb" lang="nl" />
       <file path="../../third_party/launchpad_translations/inspector_strings_no.xtb" lang="no" />
       <file path="../../third_party/launchpad_translations/inspector_strings_pt-BR.xtb" lang="pt-BR" />

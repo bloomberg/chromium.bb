@@ -56,7 +56,6 @@
 <translation id="112818052757437142">The directory named &quot;$1&quot; already exists. Please choose a different name.</translation>
 <translation id="1128987120443782698">The storage device has a capacity of <ph name="DEVICE_CAPACITY"/>. Please insert a SD card or USB memory stick with at least 4GB of capacity.</translation>
 <translation id="1131850611586448366">The website at <ph name="HOST_NAME"/> has been reported as a “phishing” site.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
-<translation id="1134009406053225289">Open in incognito window</translation>
 <translation id="1135328998467923690">Package is invalid: '<ph name="ERROR_CODE"/>'.</translation>
 <translation id="1139892513581762545">Side Tabs</translation>
 <translation id="114140604515785785">Extension root directory:</translation>
@@ -108,7 +107,6 @@
 <translation id="1244147615850840081">Carrier</translation>
 <translation id="1254593899333212300">Direct Internet connection</translation>
 <translation id="1272079795634619415">Stop</translation>
-<translation id="1273291576878293349">Open all bookmarks in incognito window</translation>
 <translation id="1275018677838892971">The website at <ph name="HOST_NAME"/> contains elements from sites which have been reported as “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
 <translation id="1275718070701477396">Selected</translation>
 <translation id="1282227640663454719">The form signature <ph name="FORM_SIGNATURE"/> is for <ph name="FORM_URL"/>.</translation>
@@ -123,7 +121,6 @@
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="131461803491198646">Home network, not roaming</translation>
 <translation id="1317130519471511503">Edit items...</translation>
-<translation id="1319824869167805246">Open All Bookmarks in New Window</translation>
 <translation id="1325040735987616223">System Update</translation>
 <translation id="1335588927966684346">Utility:</translation>
 <translation id="1335810654854159539">Some preferences have been disabled by your administrator.</translation>
@@ -256,8 +253,6 @@
 <translation id="16620462294541761">Sorry, your password could not be verified. Please try again.</translation>
 <translation id="166278006618318542">Subject Public Key Algorithm</translation>
 <translation id="1662837784918284394">(none)</translation>
-<translation id="1664314758578115406">Add page...</translation>
-<translation id="1664712100580477121">Are you sure you want to burn image to folowing device:</translation>
 <translation id="1665770420914915777">Use the New Tab page</translation>
 <translation id="1666788816626221136">You have certificates on file that do not fit in any of the other categories:</translation>
 <translation id="1674989413181946727">Computer-wide SSL settings:</translation>
@@ -293,7 +288,6 @@
 <translation id="1734072960870006811">Fax</translation>
 <translation id="1737968601308870607">File bug</translation>
 <translation id="1741763547273950878">The page at <ph name="SITE"/></translation>
-<translation id="1742300158964248589">Image burn did not succeed!</translation>
 <translation id="1751752860232137596">Enable the experimental smooth scrolling implementation.</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
 <translation id="1753682364559456262">Manage image blocking...</translation>
@@ -323,7 +317,6 @@
 <translation id="1801827354178857021">Period</translation>
 <translation id="1803557475693955505">Could not load background page '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="1804251416207250805">Disable sending hyperlink auditing pings.</translation>
-<translation id="1808792122276977615">Add Page...</translation>
 <translation id="1810107444790159527">List box</translation>
 <translation id="1812631533912615985">Unpin tabs</translation>
 <translation id="1813278315230285598">Services</translation>
@@ -462,4 +455,52 @@
 <translation id="2149951639139208969">Open address in new tab</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="2151576029659734873">Invalid tab index entered.</translation>
+<translation id="1051694321716046412">Customise user...</translation>
+<translation id="1344187865832782101">New! Chrome is now syncing your Omnibox History and Foreign Sessions.</translation>
+<translation id="1417363496376480406">Manage user</translation>
+<translation id="1478897831827830200">Tracing</translation>
+<translation id="1483904542716422841">Use OAuth to authenticate Sync operations.</translation>
+<translation id="1493892686965953381">Waiting for <ph name="LOAD_STATE_PARAMETER"/>...</translation>
+<translation id="1630086885871290594">Lyricist</translation>
+<translation id="1790550373387225389">Enter Presentation Mode</translation>
+<translation id="1832546148887467272">Switch to <ph name="NEW_GOOGLE_HOST"/></translation>
+<translation id="2152580633399033274">Show all images (recommended)</translation>
+<translation id="2154710561487035718">Copy URL</translation>
+<translation id="2155931291251286316">Always allow pop-ups from <ph name="HOST"/></translation>
+<translation id="215753907730220065">Exit Full Screen</translation>
+<translation id="2158448795143567596">Enables canvas elements to use 3D graphics via the WebGL API.</translation>
+<translation id="2159017110205600596">Customise...</translation>
+<translation id="2159087636560291862">In this case, the certificate has not been verified by a third party that your computer trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN"/> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2"/>. You should not proceed past this point.</translation>
+<translation id="2167276631610992935">Javascript</translation>
+<translation id="2168039046890040389">Page Up</translation>
+<translation id="2168725742002792683">File extensions</translation>
+<translation id="2175607476662778685">Quick launch bar</translation>
+<translation id="2176444992480806665">Send last active tab screen shot</translation>
+<translation id="2178614541317717477">CA Compromise</translation>
+<translation id="2179052183774520942">Add Search Engine</translation>
+<translation id="2181257377760181418">Enables an in-tab preview of a print operation.</translation>
+<translation id="2183426022964444701">Select extension root directory.</translation>
+<translation id="2187895286714876935">Server Certificate Import Error</translation>
+<translation id="2189470649391435617">Resize right</translation>
+<translation id="219008588003277019">Native Client module: <ph name="NEXE_NAME"/></translation>
+<translation id="2190355936436201913">(empty)</translation>
+<translation id="2192505247865591433">From:</translation>
+<translation id="2192664328428693215">Ask me when a site wants to show desktop notifications (recommended)</translation>
+<translation id="2195729137168608510">Email Protection</translation>
+<translation id="2200129049109201305">Skip syncing encrypted data?</translation>
+<translation id="220138918934036434">Hide button</translation>
+<translation id="2202898655984161076">There was a problem listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME"/>.</translation>
+<translation id="2210840298541351314">Print Preview</translation>
+<translation id="2213819743710253654">Page Action</translation>
+<translation id="2214283295778284209"><ph name="SITE"/> is not available</translation>
+<translation id="2218515861914035131">Paste as plain text</translation>
+<translation id="2224551243087462610">Edit folder name</translation>
+<translation id="2230051135190148440">CHAP</translation>
+<translation id="2231233239095101917">Script on the page used too much memory. Reload to enable scripts again.</translation>
+<translation id="2231238007119540260">If you delete a server certificate, you restore the usual security checks for that server and require it uses a valid certificate.</translation>
+<translation id="2231990265377706070">Exclamation point</translation>
+<translation id="2232876851878324699">The file contained one certificate, which was not imported:</translation>
+<translation id="2233320200890047564">Indexed Databases</translation>
+<translation id="2240852107813849027">asdfghjkl;</translation>
+<translation id="2246340272688122454">Downloading recovery image...</translation>
 </translationbundle>

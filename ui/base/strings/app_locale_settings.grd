@@ -125,6 +125,9 @@
     <output filename="app_locale_settings_lv.pak" type="data_package" lang="lv" />
     <output filename="app_locale_settings_ml.pak" type="data_package" lang="ml" />
     <output filename="app_locale_settings_mr.pak" type="data_package" lang="mr" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="app_locale_settings_ms.pak" type="data_package" lang="ms" />
+    </if>
     <output filename="app_locale_settings_nl.pak" type="data_package" lang="nl" />
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->

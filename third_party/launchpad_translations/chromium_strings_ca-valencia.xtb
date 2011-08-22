@@ -90,7 +90,6 @@
 <translation id="7503101070699687603">Amfitrió de connectors del Chromium</translation>
 <translation id="7641113255207688324">El Chromium no és el vostre navegador per defecte.</translation>
 <translation id="7747138024166251722">L'instaŀlador no ha pogut crear un directori temporal. Comproveu que teniu espai suficient al disc i els permisos per instaŀlar programari.</translation>
-<translation id="786596160034915371">Este ordinador ja té una versió més recent del Chromium. Si el programari no està funcionant, desinstaŀleu el Chromium i torneu-lo a baixar.</translation>
 <translation id="8046283042877435986">Este lloc vos recomana el Chromium Frame (ja instaŀlat).</translation>
 <translation id="8422904359318093226">El Chromium s'està comportant de forma estranya.</translation>
 <translation id="8453117565092476964">L'arxiu de l'instaŀlador està malmés o no és vàlid. Torneu a baixar el Chromium.</translation>
@@ -105,5 +104,4 @@
 <translation id="8974095189086268230">El Chromium OS s'ha creat gràcies a <ph name="BEGIN_LINK_CROS_OSS"/>programari de codi obert<ph name="END_LINK_CROS_OSS"/> addicional.</translation>
 <translation id="9013262824292842194">El Chromium necessita el Windows Vista o el Windows XP SP2 o superior.</translation>
 <translation id="9191268552238695869">Un administrador ha instaŀlat el Chromium en este sistema i està disponible per a tots els usuaris. El Chromium a nivell de sistema reemplaçarà ara la vostra instaŀlació a nivell d'usuari.</translation>
-<translation id="980185455267101462">Este ordinador ja té una versió més recent del Chromium Frame. Si el programari no funciona, desinstaŀleu el Chromium Frame i baixeu-lo de nou.</translation>
 </translationbundle>

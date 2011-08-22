@@ -72,7 +72,6 @@
 <translation id="7503101070699687603">Chromium pluginen ostalaria</translation>
 <translation id="7641113255207688324">Chromium ez da zure nabigatzaile lehenetsia.</translation>
 <translation id="7747138024166251722">Instalatzaileak ezin izan du behin-behineko direktorioa sortu. Begiratu ea diskoan tokirik dagoen eta softwarea instalatzeko baimenik duzun.</translation>
-<translation id="786596160034915371">Ordenagailu honek Chromium-en bertsio berriagoa dauka. Softwareak ongi funtzionatzen ez badu, desinstalatu Chromium eta deskarga ezazu berriro.</translation>
 <translation id="8422904359318093226">Chromium gaizki portatzen ari da</translation>
 <translation id="8453117565092476964">Instalatzailearen fitxategia hondatuta dago edo baliogabea da. Mesedez deskargatu Chromium berriro.</translation>
 <translation id="8621669128220841554">Instalazioak huts egin du zehaztu gabeko errore baten ondorioz. Mesedez deskargatu Chromium berriro.</translation>
@@ -85,7 +84,6 @@
 <translation id="9013262824292842194">Chromium-ek Windows Vista edo Windows XP SP2 edo berriagoa behar du.</translation>
 <translation id="911206726377975832">Zure nabigatze-datuek ere ezabatu?</translation>
 <translation id="9191268552238695869">Administratzaile batek Chromium instalatu du sistema honetan, eta erabiltzaile guztiek erabil dezakete. Sistema-maila Chromium-ek erabiltzaile-mailan instalatutakoa ordeztuko du orain.</translation>
-<translation id="980185455267101462">Ordenagailu honek Chromium Frame-n bertsio berriagoa dauka instalatuta. Softwareak funtzionatzen ez badu, desinstalatu Chromium Frame eta deskargatu berriro.</translation>
 <translation id="985602178874221306">Chromium egileak</translation>
 <translation id="1293235220023151515">Gatazka eragiten duen Chromium-en instalazioa aurkitu da sisteman. Desinstala ezazu eta saiatu berriro.</translation>
 <translation id="2927042866129133279">Baliogabeko argumentuak. Chromium Frame ezin da modu zuzenean instalatu Chromium instalatu gabe.</translation>
@@ -107,5 +105,5 @@
 <translation id="6714487516757221107">Ezin da eguneratu, ez baita Chromium-en edo Chromium Frame-n instalaziorik aurkitu.</translation>
 <translation id="8628626585870903697">Chromium-ek ez dauka Inprimatze-aurrebistarako beharrezkoa den PDF ikusgailua.</translation>
 <translation id="3748537968684000502">Chromium-en orri seguru bat ari zara ikusten.</translation>
-<translation id="5763345311842154236">Chromium gaien galeria</translation>
+<translation id="7099619729220467157">Chromum-en fitxa-orri berria birmoldatu egin da. Mugitu atalen artean etiketa hauetan klik eginez. Chromium-ek zure hobespena gogoratuko du hurrengorako.</translation>
 </translationbundle>

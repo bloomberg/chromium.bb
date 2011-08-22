@@ -74,7 +74,6 @@
 <translation id="7503101070699687603">Anfitrión pa complementos de Chromium</translation>
 <translation id="7641113255207688324">Chromium nun ye'l to restolador predetermináu.</translation>
 <translation id="7747138024166251722">L'instalador nun pudo crear un direutorio temporal. Comprueba si tienes espaciu llibre en discu y permisu pa instalar software.</translation>
-<translation id="786596160034915371">Esti equipu yá tien una versión más reciente de Chromium. Si'l software nun funciona, desinstala Chromium y descárgalu otra vegada.</translation>
 <translation id="8046283042877435986">Esti sitiu recomienda Chromium Frame (yá instaláu).</translation>
 <translation id="8422904359318093226">Chromium ta funcionando mal</translation>
 <translation id="8453117565092476964">L'archivador del instalador ta frañáu o nun ye válidu. Descarga Chromium de nueves.</translation>
@@ -88,7 +87,6 @@
 <translation id="9013262824292842194">Chromium requier Windows Vista o Windows XP con SP2 o superior.</translation>
 <translation id="911206726377975832">¿Desaniciar tamién los datos de navegación?</translation>
 <translation id="9191268552238695869">Un alministrador instaló Chromium nesti sistema y ta disponible pa tolos usuarios. Agora, la versión de Chromium a nivel de sistema va trocar la to instalación a nivel d'usuariu.</translation>
-<translation id="980185455267101462">Esti equipu yá tien una versión más reciente de Chromium Frame. Si'l software nun ta funcionando, desinstala Chromium Frame y descárgalu de nueves.</translation>
 <translation id="985602178874221306">Los autores de Chromium</translation>
 <translation id="205900032229966545">Intentasti llegar a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero'l sirvidor presentó un certificáu caducáu. Nun hai información disponible qu'indique si'l certificáu vióse comprometíu dende la so expiración. Esto implica que Chromium nun puede garantizar que teas comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y non con un atacante. Nun tendríes de siguir.</translation>
 <translation id="2682584270762546522">Intentasti llegar a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero'l sirvidor presentó un certificáu caducáu. Nun hai información disponible qu'indique si se pue tener confianza nel certificáu. Chromium nun puede garantizar que teas comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; y non con un atacante. Deberíes asegurate de que'l reló y la estaya horaria del to equipu seyan les correutes. Si nun son correutes, configúrales bien, y anova esta páxina, Si son correutes, nun debieras siguir.</translation>
@@ -106,6 +104,5 @@
 <translation id="6714487516757221107">Nun s'alcontró una instalación de Chromium o Chromium Frame p'anovar.</translation>
 <translation id="3748537968684000502">Tas viendo una páxina segura de Chromium.</translation>
 <translation id="5211087808649701653">Llanzar diálogu d'imprentación nativu</translation>
-<translation id="5763345311842154236">Galería de temes de Chromium</translation>
 <translation id="8628626585870903697">Chromium nun incluye el visor PDF requeríu pal funcionamientu de la vista previa d'imprentación.</translation>
 </translationbundle>

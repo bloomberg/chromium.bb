@@ -84,7 +84,6 @@
 <translation id="7503101070699687603">Servizio Chromium Plug-In</translation>
 <translation id="7641113255207688324">Chromium non è il browser predefinito.</translation>
 <translation id="7747138024166251722">L'installer non ha potuto creare una directory temporanea. Controllare lo spazio libero ed i permessi di installazione software.</translation>
-<translation id="786596160034915371">Questo computer ha già la versione di Chromium più recente. Se il programma non funzionasse, rimuoverlo e scaricarlo di nuovo.</translation>
 <translation id="8046283042877435986">Questo sito raccomanda Chromium Frame (già installato).</translation>
 <translation id="8422904359318093226">Chromium si comporta in modo anomalo</translation>
 <translation id="8453117565092476964">L'archivio dell'installer è corrotto o non valido. Scaricare Chromium di nuovo.</translation>
@@ -98,6 +97,5 @@
 <translation id="9013262824292842194">Chromium richiede Windows Vista o Windows XP con SP2 o successivo.</translation>
 <translation id="911206726377975832">Cancellare anche i dati di navigazione?</translation>
 <translation id="9191268552238695869">Un amministratore ha installato Chromium nel sistema, ed è disponibile per tutti gli utenti. Chromium a livello di sistema sostituirà adesso l'installazione a livello utente.</translation>
-<translation id="980185455267101462">Questo computer ha già una versione recente di Chromium Frame. Se il software non funzionasse, rimuoverlo e scaricarlo di nuovo.</translation>
 <translation id="985602178874221306">Gli Autori di Chromium</translation>
 </translationbundle>

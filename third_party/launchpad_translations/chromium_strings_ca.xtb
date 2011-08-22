@@ -68,7 +68,6 @@
 <translation id="7483335560992089831">No es pot instaŀlar la mateixa versió del Chromium que s'està executant actualment. Tanqueu el Chromium i proveu de nou.</translation>
 <translation id="7641113255207688324">El Chromium no és el vostre navegador per defecte.</translation>
 <translation id="7747138024166251722">L'instaŀlador no ha pogut crear un directori temporal. Comproveu que teniu espai suficient al disc i els permisos per instaŀlar programari.</translation>
-<translation id="786596160034915371">Aquest ordinador ja té una versió més recent del Chromium. Si el programari no està funcionant, desinstaŀleu el Chromium i torneu-lo a baixar.</translation>
 <translation id="8046283042877435986">Aquest lloc us recomana el Chromium Frame (ja instaŀlat).</translation>
 <translation id="8422904359318093226">El Chromium s'està comportant de forma estranya.</translation>
 <translation id="8453117565092476964">L'arxiu de l'instaŀlador està malmès o no és vàlid. Torneu a baixar el Chromium.</translation>
@@ -79,7 +78,6 @@
 <translation id="8770560772173120024">El Chromium està important les adreces d'interès.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
 <translation id="911206726377975832">Voleu eliminar també les dades de navegació?</translation>
-<translation id="980185455267101462">Aquest ordinador ja té una versió més recent del Chromium Frame. Si el programari no funciona, desinstaŀleu el Chromium Frame i baixeu-lo de nou.</translation>
 <translation id="985602178874221306">Els autors del Chromium</translation>
 <translation id="2682584270762546522">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat que encara no és vàlid. No hi ha cap informació disponible sobre si el certificat és de confiança. El Chromium no pot garantir amb seguretat que esteu comunicant-vos amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no amb un atacant. Assegureu-vos que el rellotge i el fus horari estan establerts correctament al vostre sistema. Si no ho estan, haureu de corregir els possibles errors i actualitzar aquesta pàgina. Si ho estan, no hauríeu de continuar.</translation>
 <translation id="2886012850691518054">Opcional: Ajudeu a millorar el Chromium enviant automàticament estadístiques d'ús i informes d'error a Google.</translation>

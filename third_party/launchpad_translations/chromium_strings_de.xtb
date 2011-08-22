@@ -65,7 +65,6 @@
 <translation id="7483335560992089831">Dieselbe Chromium-Version, die schon verwendet wird, kann nicht installiert werden. Bitte schließen Sie Chromium und versuchen Sie es noch einmal.</translation>
 <translation id="7641113255207688324">Chromium ist zur Zeit nicht Ihr Standardbrowser.</translation>
 <translation id="7747138024166251722">Der Installer konnte keinen temporären Ordner erstellen. Bitte prüfen Sie, ob genug Speicher auf der Festplatte verfügbar ist, und ob Sie die Rechte besitzen, Software zu installieren.</translation>
-<translation id="786596160034915371">Auf diesem Rechner wird bereits eine aktuellere Version von Chromium verwendet. Sollte das Programm nicht arbeiten, deinstallieren Sie es bitte und laden Sie es noch einmal herunter.</translation>
 <translation id="8422904359318093226">Chromium verhält sich fehlerhaft</translation>
 <translation id="8453117565092476964">Das Archiv des Installers ist beschädigt. Bitte laden Sie Chromium noch einmal herunter.</translation>
 <translation id="8621669128220841554">Die Installation konnte aufgrund eines unbekannten Fehlers nicht beendet werden. Bitte laden Sie Chromium erneut herunter.</translation>
@@ -77,7 +76,6 @@
 <translation id="9013262824292842194">Chromium benötigt Windows Vista oder Windows XP mit SP2 oder höher.</translation>
 <translation id="911206726377975832">Auch ihre Surfdaten löschen?</translation>
 <translation id="9191268552238695869">Ein Administrator hat Chromium auf diesem System installiert, und es ist von allen Benutzern ausführbar. Die systemweite Version von Chromium wird ihre benutzereigene Version nun ersetzen.</translation>
-<translation id="980185455267101462">Auf diesem Rechner wird bereits eine aktuellere Version von Chromium Frame verwendet. Wenn das Programm nicht funktioniert, deinstallieren Sie es bitte und laden Chromium Frame erneut herunter.</translation>
 <translation id="985602178874221306">Die Autoren von Chromium</translation>
 <translation id="1293235220023151515">Auf dem System wurde eine Installation von Chromium vorgefunden, die einen Konflikt mit dieser Version verursacht. Bitte deinstallieren Sie die bestehende Version und versuchen es dann erneut.</translation>
 <translation id="2927042866129133279">Ungültige Argumente. Chromium Frame kann nicht im Bereitschaftsmodus installiert werden, ohne auch Chromium zu installieren.</translation>
@@ -107,5 +105,4 @@
 <translation id="8628626585870903697">Chromium enthält den PDF-Betrachter nicht, der für die Druckvorschau benötigt wird.</translation>
 <translation id="872034308864968620">Chromium im Hintergrund laufen lassen</translation>
 <translation id="3748537968684000502">Du siehst eine Chromium Security Seite</translation>
-<translation id="5763345311842154236">Chromium-Designgalerie</translation>
 </translationbundle>

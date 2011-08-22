@@ -13,7 +13,6 @@
 <translation id="1110155001042129815">Սպասե՛ք</translation>
 <translation id="1122198203221319518">&amp;Գործիքներ</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
-<translation id="1134009406053225289">Բացել պատուհանը ծպտյալ աշխատակերպում</translation>
 <translation id="1146498888431277930">SSL կապակցման սխալ</translation>
 <translation id="1154228249304313899">Բացել այս էջը՝</translation>
 <translation id="1165039591588034296">Սխալ</translation>
@@ -104,7 +103,6 @@
 <translation id="1242521815104806351">Կապի մասին մանրամասներ</translation>
 <translation id="1254593899333212300">Ուղիղ կապակցում</translation>
 <translation id="1272079795634619415">Կանգ</translation>
-<translation id="1273291576878293349">Բացել բոլոր ներդիրները ծպտյալ աշխատակերպի պատուհանում</translation>
 <translation id="1275018677838892971"><ph name="HOST_NAME"/> ոստայն կայքը բովանդակում է այլ կայքերի տարրեր, որոնք մեր տվյալներով հանդիսանում են ձկնորսական։ Ձկնորսական կայքերը խարդախությամբ օգտվողներից ստանում են անձնական կամ ֆինանսական տեղեկությունը, ձեւացնելով յուր կայքերը որպես վստահելի կազմակերպությունների, օրինակ դրամատների, կայքեր։</translation>
 <translation id="1275718070701477396">Ընտրված է</translation>
 <translation id="1285320974508926690">Երբեք չթարգմանել այս կայքը</translation>
@@ -118,7 +116,6 @@
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="131461803491198646">Տան ցանց, առանց ռոումինգի</translation>
 <translation id="1317130519471511503">Խմբագրել տարրերը...</translation>
-<translation id="1319824869167805246">Բացել բոլոր էջանիշերը նոր պատուհանում</translation>
 <translation id="1325040735987616223">Համակարգի թարմացում</translation>
 <translation id="1335588927966684346">Օժանդակ ծրագիր՝</translation>
 <translation id="1336254985736398701">Տեսնել էջի մասին տեղեկուտյունը</translation>
@@ -242,8 +239,6 @@
 <translation id="16620462294541761">Ավաղ, չհաջողվեց հաստատել գաղտնաբառը։ Փորձե՛ք դարձյալ։</translation>
 <translation id="166278006618318542">Սուբյեկտի բաց բանալու ալգորիթմը</translation>
 <translation id="1662837784918284394">(ոչինչ)</translation>
-<translation id="1664314758578115406">Ավելացնել էջ...</translation>
-<translation id="1664712100580477121">Դուք իրո՞ք կամենում եք գրառել պատկերը հետեւյալ սարքի վրա՝</translation>
 <translation id="1665770420914915777">Բացել արագ մուտքի էջը</translation>
 <translation id="1666788816626221136">Դուք ունեք վկայագրեր, որոնք չեն համապատասխանում հետեւյալ դասերից ոչ մեկին՝</translation>
 <translation id="1674989413181946727">Համակարգչի SSL կարգավորումները՝</translation>
@@ -278,7 +273,6 @@
 <translation id="1734072960870006811">Ֆաքս</translation>
 <translation id="1737968601308870607">Հայտնել սխալի մասին</translation>
 <translation id="1741763547273950878"><ph name="SITE"/> կայքի էջի վրա</translation>
-<translation id="1742300158964248589">Չհաջողվե՛ց գրառել պատկերը։</translation>
 <translation id="175196451752279553">Վեր&amp;աբացել փակված ներդիրը</translation>
 <translation id="1753682364559456262">Պատկերների արգելափակման կառավարում...</translation>
 <translation id="1753905327828125965">Հաճախ այցելվողները</translation>
@@ -301,7 +295,6 @@
 <translation id="179767530217573436">վերջին 4 շաբաթ</translation>
 <translation id="1800035677272595847">Ձկնորսություն</translation>
 <translation id="1801827354178857021">Ժամանակամիջոց</translation>
-<translation id="1808792122276977615">Ավելացնել էջ...</translation>
 <translation id="1810107444790159527">Ցանկ</translation>
 <translation id="1812631533912615985">Վերացնել ներդիրները</translation>
 <translation id="1813278315230285598">Ծառայություններ</translation>
@@ -611,7 +604,6 @@
 <translation id="2587203970400270934">Օպերատորի կոդը՝</translation>
 <translation id="2589855374197350858">Գաղտնագրված տվյալների տեսակներ</translation>
 <translation id="2592884116796016067">Այս էջի բաժիններից մեկում (HTML WebWorker) տեղի ունեցավ խորտակում, որը կարող էր վնասել նրա աշխատանքին։</translation>
-<translation id="2600306978737826651">Չհաջողվեց ներբեռնել պատկերը։ Գրառումը չեղարկվե՛լ է։</translation>
 <translation id="2604243255129603442">Համակարգը ստիպված էր անջատել <ph name="NAME_OF_EXTENSION"/>։ Եթե Դուք անջատեք էջանիշերի համաժամացումը, այն նորից կարելի կլինի միացնել «Գործիքներ» ընտրացանկի «Ըընդլայնումներ» էջում։</translation>
 <translation id="2607101320794533334">Տեղեկություն սուբյեկտի բաց բանալու մասին</translation>
 <translation id="2608770217409477136">Օգտագործել լռելյայն կայանքները</translation>
@@ -757,13 +749,11 @@
 <translation id="2972557485845626008">Մանրածրագիր</translation>
 <translation id="2972581237482394796">&amp;Վերարկել</translation>
 <translation id="297870353673992530">DNS սպասարկիչ՝</translation>
-<translation id="2979639724566107830">Բացել նոր պատուհանում</translation>
 <translation id="298068999958468740">Համակարգչի վրա ընտրեք նշոցները, որը կամենում եք համաժամացնել։</translation>
 <translation id="2983818520079887040">Կարգավորումներ...</translation>
 <translation id="2987775926667433828">Չիներեն ավանդական</translation>
 <translation id="2988488679308982380">Չհաջողվեց տեղադրել փաթեթը՝ «<ph name="ERROR_CODE"/>»</translation>
 <translation id="2989786307324390836">Եզակի երկուական վկայագիր DER կոդավորմամբ</translation>
-<translation id="2989805286512600854">Բացել նոր ներդիրում</translation>
 <translation id="300544934591011246">Նախորդ գաղտնաբառը</translation>
 <translation id="3009731429620355204">Նիստեր</translation>
 <translation id="3011284594919057757">Տեղեկություն Flash֊ի մասին</translation>
@@ -837,7 +827,6 @@
 <translation id="3129140854689651517">Գտնել տեքստ</translation>
 <translation id="3129687551880844787">Նիստերի պահպանում</translation>
 <translation id="3140353188828248647">Շարժագիծը հասցեատողի մեջ</translation>
-<translation id="314141447227043789">Պատկերը ներբեռնվել է։</translation>
 <translation id="3154015489111064513">Օգտագործել DHCP</translation>
 <translation id="3157931365184549694">Վերականգնել</translation>
 <translation id="3160041952246459240">Դուք ունեք վկայագրեր, որոնք նույնացնում են հետեւյալ սպասարկիչները՝</translation>
@@ -910,16 +899,13 @@
 <translation id="3473105180351527598">Միացնել պաշտպանությունը ձկնորսությունից եւ վնասական բովանդակությունից</translation>
 <translation id="3496213124478423963">Փոքրացնել</translation>
 <translation id="3511307672085573050">Պատճենել հղման հասցեն</translation>
-<translation id="3524915994314972210">Սպասվում է ներբեռնման սկիզբը...</translation>
 <translation id="3551320343578183772">Փակել ներդիրը</translation>
 <translation id="362276910939193118">Ցույց տալ ամբողջ պատմությունը</translation>
 <translation id="3625870480639975468">Սկզբնական չափերը</translation>
 <translation id="3778740492972734840">&amp;Մշակողի գործիքներ</translation>
-<translation id="38385141699319881">Պատկերի ներբեռնում...</translation>
 <translation id="3936390757709632190">&amp;Բացել ձայնագրությունը նոր ներդիրում</translation>
 <translation id="3994878504415702912">&amp;Տեքստի չափը</translation>
 <translation id="4088820693488683766">Որոնման կայանքները</translation>
-<translation id="4195643157523330669">Բացել նոր ներդիրում</translation>
 <translation id="4265682251887479829">Չե՞ք կարող գտնել պետքականը։</translation>
 <translation id="4307992518367153382">Հիմնական</translation>
 <translation id="4322394346347055525">Փակել այլ ներդիրները</translation>
@@ -930,7 +916,6 @@
 <translation id="4517036173149081027">Փակել եւ չեղարկել ներբեռնումը</translation>
 <translation id="4608500690299898628">&amp;Գտնել...</translation>
 <translation id="4643612240819915418">&amp;Բացել տեսանյութը նոր ներդիրում</translation>
-<translation id="4665674675433053715">Փորձնական էջ «նոր ներդիր»</translation>
 <translation id="4756388243121344051">&amp;Պատմություն</translation>
 <translation id="4759238208242260848">Ներբեռնումներ</translation>
 <translation id="4767443964295394154">Ներբեռնումների տեղադրությունը</translation>
@@ -982,7 +967,6 @@
 <translation id="6686490380836145850">Փակել ներդիրներն աջից</translation>
 <translation id="6824564591481349393">Պատճենել էլփոստի հասցեն</translation>
 <translation id="68541483639528434">Փակել այլ ներդիրները</translation>
-<translation id="703748601351783580">Բացել բոլոր էջանիշերը նոր պատուհանում</translation>
 <translation id="7268365133021434339">Փակել ներդիրները</translation>
 <translation id="7339898014177206373">Նոր պատուհան</translation>
 <translation id="7369847606959702983">Վարկային քարտ (այլ)</translation>
@@ -997,9 +981,7 @@
 <translation id="7849264908733290972">Բացել պատկերակը նոր ներդիրում</translation>
 <translation id="7861215335140947162">&amp;Ներբեռնումներ</translation>
 <translation id="7951780829309373534">Անհնար է դնել «$1»՝ $2</translation>
-<translation id="8027581147000338959">Բացել նոր պատուհանում</translation>
 <translation id="8064671687106936412">Բանալի՝</translation>
-<translation id="8067791725177197206">Շարունակել »</translation>
 <translation id="8080048886850452639">Պ&amp;ատճենել ձայնագրության URL֊ն</translation>
 <translation id="8116972784401310538">&amp;Էջանիշերի կառավարիչ</translation>
 <translation id="8205333955675906842">Տառատեսակ առանց ծայրատների</translation>
@@ -1009,7 +991,6 @@
 <translation id="8480417584335382321">Էջի խոշորացում՝</translation>
 <translation id="8487678622945914333">Խոշորացնել</translation>
 <translation id="8494234776635784157">Ոստայնի բովանդակությունը</translation>
-<translation id="8506299468868975633">Պատկերի ներբեռնումը դադարեցվել է</translation>
 <translation id="8562413501751825163">Փակե՛ք Firefox֊ը ներմուծելուց առաջ</translation>
 <translation id="8584280235376696778">&amp;Բացել տեսանյութը նոր ներդիրում</translation>
 <translation id="8637688295594795546">Մատչելի է համակարգի թարմացումը։ Պատրաստվում է ներբեռնմանը...</translation>
@@ -1050,4 +1031,5 @@
 <translation id="3359256513598016054">Վկայագրերի քաղականության սահմանափակումները</translation>
 <translation id="335985608243443814">Զննել...</translation>
 <translation id="3368922792935385530">Կապակցված է</translation>
+<translation id="7983301409776629893">Միշտ թարգմանել <ph name="ORIGINAL_LANGUAGE"/>֊ից <ph name="TARGET_LANGUAGE"/></translation>
 </translationbundle>

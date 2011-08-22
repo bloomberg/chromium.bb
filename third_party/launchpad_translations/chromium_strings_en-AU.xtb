@@ -60,7 +60,6 @@
 <translation id="5398878173008909840">There is a new version of Chromium available.</translation>
 <translation id="5498103559159810756">Chromium uses your default search engine, which is currently set to <ph name="PAGE_TITLE"/>. Do you want to keep your default search engine?</translation>
 <translation id="5559945513746540383">Chromium is not installed or it failed to find installation directory. Please download Chromium again.</translation>
-<translation id="5763345311842154236">Chromium Themes Gallery</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5947389362804196214">Your preferences can not be read.\n\nSome features may be unavailable and changes to preferences won't be saved.</translation>
@@ -90,7 +89,6 @@
 <translation id="7503101070699687603">Chromium Plugin Host</translation>
 <translation id="7641113255207688324">Chromium isn't your default browser.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
-<translation id="786596160034915371">This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and download it again.</translation>
 <translation id="8046283042877435986">This site recommends Chromium Frame (already installed).</translation>
 <translation id="8422904359318093226">Chromium is misbehaving</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
@@ -106,6 +104,6 @@
 <translation id="9013262824292842194">Chromium requires Windows Vista or Windows XP with SP2 or higher.</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="9191268552238695869">An administrator has installed Chromium on this system, and it is available for all users. The system-level Chromium will replace your user-level installation now.</translation>
-<translation id="980185455267101462">This computer already has a more recent version of Chromium Frame. If the software is not working, please uninstall Chromium Frame and download it again.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
+<translation id="7099619729220467157">Chromium's New Tab page has been remodelled. Switch between sections by clicking these labels. Chrome will remember your preference for next time.</translation>
 </translationbundle>

@@ -131,6 +131,9 @@ be available for now. -->
     <output filename="chromium_strings_lv.pak" type="data_package" lang="lv" />
     <output filename="chromium_strings_ml.pak" type="data_package" lang="ml" />
     <output filename="chromium_strings_mr.pak" type="data_package" lang="mr" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="chromium_strings_ms.pak" type="data_package" lang="ms" />
+    </if>
     <output filename="chromium_strings_nl.pak" type="data_package" lang="nl" />
     <output filename="chromium_strings_nb.pak" type="data_package" lang="no" />
     <!-- 'no' for Norwegian Bokmål. It should be 'nb'. -->
@@ -184,6 +187,7 @@ be available for now. -->
       <file path="../../third_party/launchpad_translations/chromium_strings_ku.xtb" lang="ku" />
       <file path="../../third_party/launchpad_translations/chromium_strings_kw.xtb" lang="kw" />
       <file path="../../third_party/launchpad_translations/chromium_strings_lt.xtb" lang="lt" />
+      <file path="../../third_party/launchpad_translations/chromium_strings_ms.xtb" lang="ms" />
       <file path="../../third_party/launchpad_translations/chromium_strings_nl.xtb" lang="nl" />
       <file path="../../third_party/launchpad_translations/chromium_strings_no.xtb" lang="no" />
       <file path="../../third_party/launchpad_translations/chromium_strings_pt-BR.xtb" lang="pt-BR" />

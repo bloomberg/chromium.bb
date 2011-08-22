@@ -134,6 +134,9 @@ are declared in build/common.gypi.
     <output filename="generated_resources_lv.pak" type="data_package" lang="lv" />
     <output filename="generated_resources_ml.pak" type="data_package" lang="ml" />
     <output filename="generated_resources_mr.pak" type="data_package" lang="mr" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <output filename="generated_resources_ms.pak" type="data_package" lang="ms" />
+    </if>
     <output filename="generated_resources_nl.pak" type="data_package" lang="nl" />
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
@@ -205,6 +208,7 @@ are declared in build/common.gypi.
     <file path="resources/generated_resources_lv.xtb" lang="lv" />
     <file path="resources/generated_resources_ml.xtb" lang="ml" />
     <file path="resources/generated_resources_mr.xtb" lang="mr" />
+    <file path="../../third_party/launchpad_translations/generated_resources_ms.xtb" lang="ms" />
     <file path="resources/generated_resources_nl.xtb" lang="nl" />
     <file path="resources/generated_resources_no.xtb" lang="no" />
     <file path="resources/generated_resources_pl.xtb" lang="pl" />
