@@ -58,16 +58,21 @@ void SmsObserver::UpdateObservers(NetworkLibrary* library) {
 
   // Add monitors for new networks.
   for (CellularNetworkVector::const_iterator it_network = networks.begin();
-      it_network != networks.end(); ++it_network) {
-    ObserversMap::iterator it_observer =
-        observers_.find((*it_network)->device_path());
+       it_network != networks.end(); ++it_network) {
+    const std::string& device_path((*it_network)->device_path());
+    if (device_path.empty()) {
+      LOG(WARNING) << "Cellular Network has empty device path: "
+                   << (*it_network)->name();
+      continue;
+    }
+    ObserversMap::iterator it_observer = observers_.find(device_path);
     if (it_observer == observers_.end()) {
-      VLOG(1) << "Add SMS monitor for " << (*it_network)->device_path();
-      observers_.insert(ObserversMap::value_type((*it_network)->device_path(),
-          chromeos::MonitorSMS((*it_network)->device_path().c_str(),
-                     &StaticCallback, this)));
+      VLOG(1) << "Add SMS monitor for " << device_path;
+      chromeos::SMSMonitor monitor =
+          chromeos::MonitorSMS(device_path.c_str(), &StaticCallback, this);
+      observers_.insert(ObserversMap::value_type(device_path, monitor));
     } else {
-      VLOG(1) << "Already has SMS monitor for " << (*it_network)->device_path();
+      VLOG(1) << "Already has SMS monitor for " << device_path;
     }
   }
 }
