@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bubble/bubble_border.h"
+#include "views/bubble/bubble_border.h"
+
+#include <algorithm>  // for std::max
 
 #include "base/logging.h"
 #include "grit/ui_resources.h"
@@ -11,6 +13,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
+
+namespace views {
 
 // static
 SkBitmap* BubbleBorder::left_ = NULL;
@@ -442,3 +446,5 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   path.addRoundRect(rect, radius, radius);
   canvas->AsCanvasSkia()->drawPath(path, paint);
 }
+
+}  // namespace views

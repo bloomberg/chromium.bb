@@ -390,7 +390,8 @@ void ExtensionInstalledBubble::ShowInternal() {
   views::View::ConvertPointToScreen(reference_view, &origin);
   gfx::Rect bounds = reference_view->bounds();
   bounds.set_origin(origin);
-  BubbleBorder::ArrowLocation arrow_location = BubbleBorder::TOP_RIGHT;
+  views::BubbleBorder::ArrowLocation arrow_location =
+      views::BubbleBorder::TOP_RIGHT;
 
   // For omnibox keyword bubbles, move the arrow to point to the left edge
   // of the omnibox, just to the right of the icon.
@@ -398,7 +399,7 @@ void ExtensionInstalledBubble::ShowInternal() {
     bounds.set_origin(
         browser_view->GetLocationBarView()->GetLocationEntryOrigin());
     bounds.set_width(0);
-    arrow_location = BubbleBorder::TOP_LEFT;
+    arrow_location = views::BubbleBorder::TOP_LEFT;
   }
 
   bubble_content_ = new InstalledBubbleContent(

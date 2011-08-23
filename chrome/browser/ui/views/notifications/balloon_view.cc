@@ -13,7 +13,6 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_options_menu_model.h"
-#include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -30,6 +29,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
+#include "views/bubble/bubble_border.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/text_button.h"
@@ -104,7 +104,8 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
   // as it is owned by the balloon.
   set_parent_owned(false);
 
-  BubbleBorder* bubble_border = new BubbleBorder(BubbleBorder::FLOAT);
+  views::BubbleBorder* bubble_border =
+      new views::BubbleBorder(views::BubbleBorder::FLOAT);
   set_border(bubble_border);
 }
 
@@ -380,7 +381,7 @@ void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,
                                       gfx::Path* path) const {
   // This rounds the corners, and we also cut out a circle for the close
   // button, since we can't guarantee the ordering of two top-most windows.
-  SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
+  SkScalar radius = SkIntToScalar(views::BubbleBorder::GetCornerRadius());
   SkScalar spline_radius = radius -
       SkScalarMul(radius, (SK_ScalarSqrt2 - SK_Scalar1) * 4 / 3);
   SkScalar left = SkIntToScalar(0);
@@ -404,7 +405,7 @@ void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,
 
 void BalloonViewImpl::GetFrameMask(const gfx::Rect& rect,
                                    gfx::Path* path) const {
-  SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
+  SkScalar radius = SkIntToScalar(views::BubbleBorder::GetCornerRadius());
   SkScalar spline_radius = radius -
       SkScalarMul(radius, (SK_ScalarSqrt2 - SK_Scalar1) * 4 / 3);
   SkScalar left = SkIntToScalar(rect.x());

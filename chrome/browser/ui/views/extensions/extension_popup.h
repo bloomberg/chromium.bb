@@ -9,10 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/browser_bubble.h"
-#include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "content/common/notification_observer.h"
 #include "googleurl/src/gurl.h"
+#include "views/bubble/bubble_border.h"
 
 
 class Browser;
@@ -55,7 +55,7 @@ class ExtensionPopup : public BrowserBubble,
   // finish loading in order to minimize UI flashing and resizing.
   static ExtensionPopup* Show(const GURL& url, Browser* browser,
                               const gfx::Rect& relative_to,
-                              BubbleBorder::ArrowLocation arrow_location,
+                              views::BubbleBorder::ArrowLocation arrow_location,
                               bool inspect_with_devtools,
                               Observer* observer);
 
@@ -101,7 +101,7 @@ class ExtensionPopup : public BrowserBubble,
   ExtensionPopup(ExtensionHost* host,
                  views::Widget* frame,
                  const gfx::Rect& relative_to,
-                 BubbleBorder::ArrowLocation arrow_location,
+                 views::BubbleBorder::ArrowLocation arrow_location,
                  bool inspect_with_devtools,
                  Observer* observer);
 

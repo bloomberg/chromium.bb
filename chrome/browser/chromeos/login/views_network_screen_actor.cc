@@ -97,7 +97,7 @@ void ViewsNetworkScreenActor::ShowError(const string16& message) {
     bubble_ = MessageBubble::Show(
         network_control->GetWidget(),
         network_control->GetScreenBounds(),
-        BubbleBorder::LEFT_TOP,
+        views::BubbleBorder::LEFT_TOP,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
         UTF16ToWide(message),
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)),

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/pinned_contents_info_bubble.h"
 
-#include "chrome/browser/ui/views/bubble/bubble_border.h"
+#include "views/bubble/bubble_border.h"
 
 void PinnedContentsBorderContents::SizeAndGetBounds(
     const gfx::Rect& position_relative_to,
-    BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::ArrowLocation arrow_location,
     bool allow_bubble_offscreen,
     const gfx::Size& contents_size,
     gfx::Rect* contents_bounds,
@@ -37,7 +37,7 @@ void PinnedContentsBorderContents::SizeAndGetBounds(
 PinnedContentsInfoBubble* PinnedContentsInfoBubble::Show(
     views::Widget* parent,
     const gfx::Rect& position_relative_to,
-    BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::ArrowLocation arrow_location,
     const gfx::Point& bubble_anchor,
     views::View* contents,
     BubbleDelegate* delegate) {

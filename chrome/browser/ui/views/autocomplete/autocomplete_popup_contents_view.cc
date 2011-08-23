@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
-#include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -25,6 +24,7 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "unicode/ubidi.h"
+#include "views/bubble/bubble_border.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/layout/grid_layout.h"
@@ -241,7 +241,8 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
   // The following little dance is required because set_border() requires a
   // pointer to a non-const object.
-  BubbleBorder* bubble_border = new BubbleBorder(BubbleBorder::NONE);
+  views::BubbleBorder* bubble_border =
+      new views::BubbleBorder(views::BubbleBorder::NONE);
   bubble_border_ = bubble_border;
   set_border(bubble_border);
   // The contents is owned by the LocationBarView.
@@ -597,7 +598,7 @@ void AutocompletePopupContentsView::MakeContentsPath(
            SkIntToScalar(bounding_rect.right()),
            SkIntToScalar(bounding_rect.bottom()));
 
-  SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
+  SkScalar radius = SkIntToScalar(views::BubbleBorder::GetCornerRadius());
   path->addRoundRect(rect, radius, radius);
 }
 

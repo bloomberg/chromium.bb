@@ -39,6 +39,7 @@
         '../ui/gfx/compositor/compositor.gyp:compositor',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
       ],
       'defines': [
         'VIEWS_IMPLEMENTATION',
@@ -55,6 +56,8 @@
         'background.h',
         'border.cc',
         'border.h',
+        'bubble/bubble_border.cc',
+        'bubble/bubble_border.h',
         'context_menu_controller.h',
         'controls/button/button.cc',
         'controls/button/button.h',
@@ -450,6 +453,7 @@
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
         'views',
       ],
       'include_dirs': [
@@ -487,6 +491,7 @@
         'widget/widget_unittest.cc',
 
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -547,6 +552,7 @@
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:gfx_resources',
         '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
         'views',
       ],
       'include_dirs': [
@@ -593,6 +599,7 @@
         'test/test_views_delegate.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -692,6 +699,7 @@
         '../ui/ui.gyp:gfx_resources',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
         'views',
         'views_desktop_lib',
       ],
@@ -704,6 +712,7 @@
         'desktop/desktop_views_delegate.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
