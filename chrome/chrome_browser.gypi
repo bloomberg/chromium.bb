@@ -2103,6 +2103,8 @@
         'browser/sync/glue/synced_window_delegate.h',
         'browser/sync/glue/sync_backend_host.cc',
         'browser/sync/glue/sync_backend_host.h',
+        'browser/sync/glue/sync_backend_registrar.cc',
+        'browser/sync/glue/sync_backend_registrar.h',
         'browser/sync/glue/synced_session_tracker.cc',
         'browser/sync/glue/synced_session_tracker.h',
         'browser/sync/glue/theme_change_processor.cc',

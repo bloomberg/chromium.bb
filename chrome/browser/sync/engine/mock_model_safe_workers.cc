@@ -7,10 +7,8 @@
 namespace browser_sync {
 
 ModelSafeGroup MockUIModelWorker::GetModelSafeGroup() { return GROUP_UI; }
-bool MockUIModelWorker::CurrentThreadIsWorkThread() { return true; }
 
 ModelSafeGroup MockDBModelWorker::GetModelSafeGroup() { return GROUP_DB; }
-bool MockDBModelWorker::CurrentThreadIsWorkThread() { return true; }
 
 MockModelSafeWorkerRegistrar::~MockModelSafeWorkerRegistrar() {}
 

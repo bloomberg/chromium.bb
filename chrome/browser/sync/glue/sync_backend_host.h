@@ -13,18 +13,13 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
-#include "chrome/browser/sync/js/js_backend.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/weak_handle.h"
@@ -32,12 +27,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
 
-class CancelableTask;
+class MessageLoop;
 class Profile;
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace browser_sync {
 
@@ -46,7 +37,9 @@ struct SyncSessionSnapshot;
 }
 
 class ChangeProcessor;
+class JsBackend;
 class JsEventHandler;
+class SyncBackendRegistrar;
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
 // the entity that created it and, presumably, is interested in sync-related
@@ -113,12 +106,10 @@ class SyncFrontend {
 // syncapi element, the SyncManager, on its own thread. This class handles
 // dispatch of potentially blocking calls to appropriate threads and ensures
 // that the SyncFrontend is only accessed on the UI loop.
-class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
+class SyncBackendHost {
  public:
   typedef sync_api::SyncManager::Status::Summary StatusSummary;
   typedef sync_api::SyncManager::Status Status;
-  typedef std::map<ModelSafeGroup,
-                   scoped_refptr<browser_sync::ModelSafeWorker> > WorkerMap;
 
   // Create a SyncBackendHost with a reference to the |frontend| that it serves
   // and communicates to via the SyncFrontend interface (on the same thread
@@ -219,10 +210,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // GAIA) has confirmed the username is authentic.
   string16 GetAuthenticatedUsername() const;
 
-  // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<browser_sync::ModelSafeWorker*>* out);
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
-
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
   // ONLY CALL THIS IF OnInitializationComplete was called!
@@ -241,6 +228,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Could mean we've downloaded and loaded Nigori objects, or we bootstrapped
   // using a token previously received.
   bool IsCryptographerReady(const sync_api::BaseTransaction* trans) const;
+
+  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const;
 
  protected:
   // An enum representing the steps to initializing the SyncBackendHost.
@@ -265,25 +254,29 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         syncable::ModelType model_type,
         const sync_api::BaseTransaction* trans,
         const sync_api::SyncManager::ChangeRecord* changes,
-        int change_count);
-    virtual void OnChangesComplete(syncable::ModelType model_type);
+        int change_count) OVERRIDE;
+    virtual void OnChangesComplete(
+        syncable::ModelType model_type) OVERRIDE;
     virtual void OnSyncCycleCompleted(
-        const sessions::SyncSessionSnapshot* snapshot);
+        const sessions::SyncSessionSnapshot* snapshot) OVERRIDE;
     virtual void OnInitializationComplete(
-        const WeakHandle<JsBackend>& js_backend);
-    virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
+        const WeakHandle<JsBackend>& js_backend) OVERRIDE;
+    virtual void OnAuthError(
+        const GoogleServiceAuthError& auth_error) OVERRIDE;
     virtual void OnPassphraseRequired(
-        sync_api::PassphraseRequiredReason reason);
-    virtual void OnPassphraseAccepted(const std::string& bootstrap_token);
-    virtual void OnStopSyncingPermanently();
-    virtual void OnUpdatedToken(const std::string& token);
-    virtual void OnClearServerDataFailed();
-    virtual void OnClearServerDataSucceeded();
+        sync_api::PassphraseRequiredReason reason) OVERRIDE;
+    virtual void OnPassphraseAccepted(
+        const std::string& bootstrap_token) OVERRIDE;
+    virtual void OnStopSyncingPermanently() OVERRIDE;
+    virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
+    virtual void OnClearServerDataFailed() OVERRIDE;
+    virtual void OnClearServerDataSucceeded() OVERRIDE;
     virtual void OnEncryptionComplete(
-        const syncable::ModelTypeSet& encrypted_types);
+        const syncable::ModelTypeSet& encrypted_types) OVERRIDE;
 
     struct DoInitializeOptions {
       DoInitializeOptions(
+          SyncBackendRegistrar* registrar,
           const WeakHandle<JsEventHandler>& event_handler,
           const GURL& service_url,
           const scoped_refptr<net::URLRequestContextGetter>&
@@ -294,6 +287,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
           bool setup_for_test_mode);
       ~DoInitializeOptions();
 
+      SyncBackendRegistrar* registrar;
       WeakHandle<JsEventHandler> event_handler;
       GURL service_url;
       scoped_refptr<net::URLRequestContextGetter> request_context_getter;
@@ -387,25 +381,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         const WeakHandle<JsBackend>& js_backend,
         bool success);
 
-#if defined(UNIT_TEST)
-    // Special form of initialization that does not try and authenticate the
-    // last known user (since it will fail in test mode) and does some extra
-    // setup to nudge the syncapi into a usable state.
-    void DoInitializeForTest(
-        const std::string& test_user,
-        const scoped_refptr<net::URLRequestContextGetter>& getter,
-        bool delete_sync_data_folder) {
-      // Construct dummy credentials for test.
-      sync_api::SyncCredentials credentials;
-      credentials.email = test_user;
-      credentials.sync_token = "token";
-      DoInitialize(DoInitializeOptions(WeakHandle<JsEventHandler>(),
-                                       GURL(), getter, credentials,
-                                       delete_sync_data_folder,
-                                       "", true));
-    }
-#endif
-
    private:
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
     friend class SyncBackendHostForProfileSyncTest;
@@ -464,6 +439,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
 
+    // Our parent's registrar (not owned).  Non-NULL only between
+    // calls to DoInitialize() and DoShutdown().
+    SyncBackendRegistrar* registrar_;
+
     // The timer used to periodically call SaveChanges.
     base::RepeatingTimer<Core> save_changes_timer_;
 
@@ -514,8 +493,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   InitializationState initialization_state_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SyncBackendHostTest, GetPendingConfigModeState);
-
   struct PendingConfigureDataTypesState {
     PendingConfigureDataTypesState();
     ~PendingConfigureDataTypesState();
@@ -533,28 +510,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     sync_api::ConfigureReason reason;
   };
 
-  UIModelWorker* ui_worker();
-
-  // Return change processor for a particular model (return NULL on failure).
-  ChangeProcessor* GetProcessor(syncable::ModelType modeltype);
-
-  // Like GetProcessor(), but |registrar_lock_| must already be
-  // held.
-  ChangeProcessor* GetProcessorUnsafe(syncable::ModelType modeltype);
-
-  // Return true if a model lives on the current thread.
-  bool IsCurrentThreadSafeForModel(syncable::ModelType model_type) const;
-
-  // Helper function for ConfigureDataTypes() that fills in |state|.
-  // Does not take ownership of |routing_info|.
-  static void GetPendingConfigModeState(
-      const syncable::ModelTypeSet& types_to_add,
-      const syncable::ModelTypeSet& types_to_remove,
-      base::Callback<void(bool)> ready_task,
-      ModelSafeRoutingInfo* routing_info,
-      sync_api::ConfigureReason reason,
-      PendingConfigureDataTypesState* state);
-
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialization_state_ == INITIALIZED; }
 
@@ -569,37 +524,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   sync_notifier::SyncNotifierFactory sync_notifier_factory_;
 
-  // This is state required to implement ModelSafeWorkerRegistrar.
-  struct {
-    // We maintain ownership of all workers.  In some cases, we need to ensure
-    // shutdown occurs in an expected sequence by Stop()ing certain workers.
-    // They are guaranteed to be valid because we only destroy elements of
-    // |workers_| after the syncapi has been destroyed.  Unless a worker is no
-    // longer needed because all types that get routed to it have been disabled
-    // (from syncing). In that case, we'll destroy on demand *after* routing
-    // any dependent types to GROUP_PASSIVE, so that the syncapi doesn't call
-    // into garbage.  If a key is present, it means at least one ModelType that
-    // routes to that model safe group is being synced.
-    WorkerMap workers;
-    browser_sync::ModelSafeRoutingInfo routing_info;
-  } registrar_;
-
-  // The user can incur changes to registrar_ at any time from the UI thread.
-  // The syncapi needs to periodically get a consistent snapshot of the state,
-  // and it does so from a different thread.  Therefore, we protect creation,
-  // destruction, and re-routing events by acquiring this lock.  Note that the
-  // SyncBackendHost may read (on the UI thread or sync thread) from registrar_
-  // without acquiring the lock (which is typically "read ModelSafeWorker
-  // pointer value", and then invoke methods), because lifetimes are managed on
-  // the UI thread.  Of course, this comment only applies to ModelSafeWorker
-  // impls that are themselves thread-safe, such as UIModelWorker.
-  mutable base::Lock registrar_lock_;
+  scoped_ptr<SyncBackendRegistrar> registrar_;
 
   // The frontend which we serve (and are owned by).
   SyncFrontend* frontend_;
-
-  // The change processors that handle the different data types.
-  std::map<syncable::ModelType, ChangeProcessor*> processors_;
 
   // Path of the folder that stores the sync data files.
   FilePath sync_data_folder_path_;

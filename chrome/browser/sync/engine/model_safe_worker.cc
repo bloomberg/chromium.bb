@@ -83,9 +83,4 @@ ModelSafeGroup ModelSafeWorker::GetModelSafeGroup() {
   return GROUP_PASSIVE;
 }
 
-bool ModelSafeWorker::CurrentThreadIsWorkThread() {
-  // The passive group is not the work thread for any browser model.
-  return false;
-}
-
 }  // namespace browser_sync

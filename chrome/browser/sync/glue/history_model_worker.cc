@@ -55,9 +55,4 @@ ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {
   return GROUP_HISTORY;
 }
 
-bool HistoryModelWorker::CurrentThreadIsWorkThread() {
-  // TODO(ncarter): How to determine this?
-  return true;
-}
-
 }  // namespace browser_sync

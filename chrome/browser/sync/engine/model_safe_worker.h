@@ -55,12 +55,6 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
 
   virtual ModelSafeGroup GetModelSafeGroup();
 
-  // Check the current thread and see if it's the thread associated with
-  // this worker.  If this returns true, then it should be safe to operate
-  // on models that are in this worker's group.  If this returns false,
-  // such work should not be attempted.
-  virtual bool CurrentThreadIsWorkThread();
-
  private:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;
 

@@ -39,9 +39,4 @@ ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
   return GROUP_PASSWORD;
 }
 
-bool PasswordModelWorker::CurrentThreadIsWorkThread() {
-  // TODO(ncarter): How to determine this?
-  return true;
-}
-
 }  // namespace browser_sync

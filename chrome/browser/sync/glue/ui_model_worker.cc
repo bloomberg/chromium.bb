@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,10 +96,6 @@ void UIModelWorker::Stop() {
 
 ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
   return GROUP_UI;
-}
-
-bool UIModelWorker::CurrentThreadIsWorkThread() {
-  return BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 
 void UIModelWorker::CallDoWorkAndSignalTask::Run() {

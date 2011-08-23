@@ -388,7 +388,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // sync_ui_util::ConstructAboutInformation() and by some test
   // classes.  Figure out a different way to expose this info and
   // remove this function.
-  void GetModelSafeRoutingInfo(browser_sync::ModelSafeRoutingInfo* out);
+  void GetModelSafeRoutingInfo(
+      browser_sync::ModelSafeRoutingInfo* out) const;
 
   // Overridden by tests.
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.

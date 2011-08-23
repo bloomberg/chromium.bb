@@ -4,9 +4,12 @@
 
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 
+#include "base/compiler_specific.h"
+
 namespace browser_sync {
 
-ChangeProcessorMock::ChangeProcessorMock() : ChangeProcessor(NULL) {}
+ChangeProcessorMock::ChangeProcessorMock()
+    : ChangeProcessor(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
 ChangeProcessorMock::~ChangeProcessorMock() {}
 

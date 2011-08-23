@@ -73,7 +73,7 @@ class TestProfileSyncService : public ProfileSyncService {
 
   virtual ~TestProfileSyncService();
 
-  void SetInitialSyncEndedForEnabledTypes();
+  void SetInitialSyncEndedForAllTypes();
 
   virtual void OnBackendInitialized(
       const browser_sync::WeakHandle<browser_sync::JsBackend>& backend,

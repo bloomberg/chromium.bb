@@ -9,13 +9,13 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-class Profile;
 
 namespace browser_sync {
 
-class ChangeProcessorMock : public ChangeProcessor {
+class ChangeProcessorMock
+    : public ChangeProcessor, public UnrecoverableErrorHandler {
  public:
   ChangeProcessorMock();
   virtual ~ChangeProcessorMock();
@@ -26,6 +26,8 @@ class ChangeProcessorMock : public ChangeProcessor {
   MOCK_METHOD1(StartImpl, void(Profile* profile));
   MOCK_METHOD0(StopImpl, void());
   MOCK_CONST_METHOD0(IsRunning, bool());
+  MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
+                                          const std::string&));
 };
 
 }  // namespace browser_sync

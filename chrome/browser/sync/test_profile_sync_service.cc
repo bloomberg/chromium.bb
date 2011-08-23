@@ -61,17 +61,9 @@ void SyncBackendHostForProfileSyncTest::
     SimulateSyncCycleCompletedInitialSyncEnded(
     const tracked_objects::Location& location) {
   syncable::ModelTypeBitSet sync_ended;
-  ModelSafeRoutingInfo enabled_types;
-  GetModelSafeRoutingInfo(&enabled_types);
+  if (!fail_initial_download_)
+    sync_ended.set();
   std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
-  for (ModelSafeRoutingInfo::const_iterator i = enabled_types.begin();
-       i != enabled_types.end(); ++i) {
-    sync_ended.set(i->first);
-  }
-
-  if (fail_initial_download_)
-    sync_ended.reset();
-
   core_->HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
       sync_ended, download_progress_markers, false, false, 0, 0, 0, false,
@@ -86,15 +78,12 @@ sync_api::HttpPostProviderFactory*
 
 void SyncBackendHostForProfileSyncTest::InitCore(
     const Core::DoInitializeOptions& options) {
-  std::string user = "testuser@gmail.com";
-  sync_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(core_.get(),
-                        &SyncBackendHost::Core::DoInitializeForTest,
-                        user,
-                        options.request_context_getter,
-                        options.delete_sync_data_folder));
-
+  Core::DoInitializeOptions test_options = options;
+  test_options.credentials.email = "testuser@gmail.com";
+  test_options.credentials.sync_token = "token";
+  test_options.restored_key_for_bootstrapping = "";
+  test_options.setup_for_test_mode = true;
+  SyncBackendHost::InitCore(test_options);
   // TODO(akalin): Figure out a better way to do this.
   if (synchronous_init_) {
     // The SyncBackend posts a task to the current loop when
@@ -163,7 +152,7 @@ TestProfileSyncService::TestProfileSyncService(
 
 TestProfileSyncService::~TestProfileSyncService() {}
 
-void TestProfileSyncService::SetInitialSyncEndedForEnabledTypes() {
+void TestProfileSyncService::SetInitialSyncEndedForAllTypes() {
   UserShare* user_share = GetUserShare();
   DirectoryManager* dir_manager = user_share->dir_manager.get();
 
@@ -171,11 +160,10 @@ void TestProfileSyncService::SetInitialSyncEndedForEnabledTypes() {
   if (!dir.good())
     FAIL();
 
-  ModelSafeRoutingInfo enabled_types;
-  backend_->GetModelSafeRoutingInfo(&enabled_types);
-  for (ModelSafeRoutingInfo::const_iterator i = enabled_types.begin();
-       i != enabled_types.end(); ++i) {
-    dir->set_initial_sync_ended_for_type(i->first, true);
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
+    dir->set_initial_sync_ended_for_type(
+        syncable::ModelTypeFromInt(i), true);
   }
 }
 
@@ -213,7 +201,7 @@ void TestProfileSyncService::OnBackendInitialized(
         send_passphrase_required = true;
       }
 
-      SetInitialSyncEndedForEnabledTypes();
+      SetInitialSyncEndedForAllTypes();
     }
   }
 

@@ -581,9 +581,6 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     entry_ = entry;
     scoped_ptr<Callback0::Type> c(NewCallback((FakeServerUpdater *)this,
                                               &FakeServerUpdater::Update));
-    std::vector<browser_sync::ModelSafeWorker*> workers;
-    service_->GetBackendForTest()->GetWorkers(&workers);
-
     ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
          NewRunnableMethod(this, &FakeServerUpdater::Update))) {
@@ -596,9 +593,6 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     entry_ = entry;
     scoped_ptr<Callback0::Type> c(NewCallback((FakeServerUpdater *)this,
                                               &FakeServerUpdater::Update));
-    std::vector<browser_sync::ModelSafeWorker*> workers;
-    service_->GetBackendForTest()->GetWorkers(&workers);
-
     ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     is_finished_.Reset();
     if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,

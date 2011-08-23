@@ -32,7 +32,6 @@ namespace browser_sync {
 namespace {
 
 using testing::_;
-using testing::AnyNumber;
 using testing::AtLeast;
 using testing::AtMost;
 using testing::Return;
@@ -162,23 +161,7 @@ TEST_F(ProfileSyncServiceTest,
   StartSyncServiceAndSetInitialSyncEnded(true, false, false, true);
 
   StrictMock<MockJsEventHandler> event_handler;
-  EXPECT_CALL(event_handler,
-              HandleJsEvent("onTransactionStart", _)).Times(AnyNumber());
-  EXPECT_CALL(event_handler,
-              HandleJsEvent("onTransactionEnd", _)).Times(AnyNumber());
-  EXPECT_CALL(event_handler,
-              HandleJsEvent("onServiceStateChanged",
-                            HasDetails(JsEventDetails()))).Times(AtLeast(3));
-  // For some reason, these events may or may not fire.
-  //
-  // TODO(akalin): Figure out exactly why there's non-determinism
-  // here, and if possible remove it.
-  EXPECT_CALL(event_handler, HandleJsEvent("onChangesApplied", _))
-      .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onChangesComplete", _))
-      .Times(AtMost(1));
-  EXPECT_CALL(event_handler, HandleJsEvent("onNotificationStateChange", _))
-      .Times(AtMost(1));
+  EXPECT_CALL(event_handler, HandleJsEvent(_, _)).Times(AtLeast(1));
 
   EXPECT_EQ(NULL, service_->GetBackendForTest());
   EXPECT_FALSE(service_->sync_initialized());

@@ -17,13 +17,11 @@ namespace browser_sync {
 class MockUIModelWorker : public ModelSafeWorker {
  public:
   virtual ModelSafeGroup GetModelSafeGroup();
-  virtual bool CurrentThreadIsWorkThread();
 };
 
 class MockDBModelWorker : public ModelSafeWorker {
  public:
   virtual ModelSafeGroup GetModelSafeGroup();
-  virtual bool CurrentThreadIsWorkThread();
 };
 
 class MockModelSafeWorkerRegistrar : public ModelSafeWorkerRegistrar {
