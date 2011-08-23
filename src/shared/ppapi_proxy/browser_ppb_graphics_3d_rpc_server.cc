@@ -69,6 +69,7 @@ bool ValidateAndCopyAttribList(nacl_abi_size_t in_attrib_list_count,
   if (!ValidateAttribList(in_attrib_list_count, in_attrib_list))
     return false;
   // Copy input list to output list.
+  // Note: attrib lists can be zero sized.
   for (nacl_abi_size_t i = 0; i < in_attrib_list_count; ++i)
     out_attrib_list[i] = in_attrib_list[i];
   return true;
@@ -89,6 +90,8 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_Create(
   DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_Create(...)\n");
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  if (num_attrib_list == 0)
+    attrib_list = NULL;
   if (!ValidateAttribList(num_attrib_list, attrib_list))
     return;
   *graphics3d_id = ppapi_proxy::PPBGraphics3DInterface()->Create(
@@ -106,6 +109,10 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribs(
   DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttrib(...)\n");
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  if (in_attrib_list_count == 0)
+    in_attrib_list = NULL;
+  if (*out_attrib_list_count == 0)
+    *out_attrib_list = NULL;
   if (!ValidateAndCopyAttribList(in_attrib_list_count, in_attrib_list,
                                  out_attrib_list_count, out_attrib_list))
     return;
@@ -123,6 +130,8 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_SetAttribs(
   DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_SetAttrib(...)\n");
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  if (attrib_list_count == 0)
+    attrib_list = NULL;
   if (!ValidateAttribList(attrib_list_count, attrib_list))
     return;
   *pp_error = ppapi_proxy::PPBGraphics3DInterface()->SetAttribs(
@@ -179,16 +188,16 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_CreateRaw(
     NaClSrpcClosure* done,
     PP_Instance instance,
     PP_Resource share_context,
-    nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+    nacl_abi_size_t attrib_list_size, int32_t* attrib_list,
     PP_Resource* resource_id) {
   DebugPrintf("PPB_Graphics3DTrusted_CreateRaw: instance: %"NACL_PRIu32"\n",
               instance);
-
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  if (!ValidateAttribList(attrib_list_bytes, attrib_list))
+  if (attrib_list_size == 0)
+    attrib_list = NULL;
+  if (!ValidateAttribList(attrib_list_size, attrib_list))
     return;
-
   *resource_id = ppapi_proxy::PPBGraphics3DTrustedInterface()->CreateRaw(
       instance, share_context, attrib_list);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -239,14 +248,16 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_GetState(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     PP_Resource resource_id,
-    nacl_abi_size_t* state_bytes, char* state) {
+    nacl_abi_size_t* state_size, char* state) {
   DebugPrintf("PPB_Graphics3DTrusted_GetState\n");
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  if (*state_size != sizeof(PP_Graphics3DTrustedState))
+    return;
   PP_Graphics3DTrustedState trusted_state =
       ppapi_proxy::PPBGraphics3DTrustedInterface()->GetState(resource_id);
   *reinterpret_cast<PP_Graphics3DTrustedState*>(state) = trusted_state;
-  *state_bytes = sizeof(trusted_state);
+  *state_size = sizeof(trusted_state);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -268,17 +279,18 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_FlushSync(
     NaClSrpcClosure* done,
     PP_Resource resource_id,
     int32_t put_offset,
-    nacl_abi_size_t* state_bytes, char* state) {
+    nacl_abi_size_t* state_size, char* state) {
   DebugPrintf("PPB_Graphics3DTrusted_FlushSync\n");
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  if (*state_size != sizeof(PP_Graphics3DTrustedState))
+    return;
   PP_Graphics3DTrustedState trusted_state =
       ppapi_proxy::PPBGraphics3DTrustedInterface()->FlushSync(resource_id,
                                                               put_offset);
   *reinterpret_cast<PP_Graphics3DTrustedState*>(state) = trusted_state;
-  *state_bytes = sizeof(trusted_state);
+  *state_size = sizeof(trusted_state);
   rpc->result = NACL_SRPC_RESULT_OK;
-
 }
 
 void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_CreateTransferBuffer(
