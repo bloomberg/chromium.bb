@@ -113,7 +113,12 @@ class AudioRendererImplTest
  public:
   static void SetUpTestCase() {
     // Set low latency mode, as it soon would be on by default.
-    AudioRendererImpl::set_latency_type(AudioRendererImpl::kLowLatency);
+    if (AudioRendererImpl::latency_type() ==
+        AudioRendererImpl::kUninitializedLatency) {
+      AudioRendererImpl::set_latency_type(AudioRendererImpl::kLowLatency);
+    }
+    DCHECK_EQ(AudioRendererImpl::kLowLatency,
+              AudioRendererImpl::latency_type());
   }
 
   // IPC::Channel::Listener implementation.
@@ -325,3 +330,18 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_ConsumeAudioSamples) {
   renderer_->ConsumeAudioSamples(buffer);
   renderer_->Stop(media::NewExpectedCallback());
 }
+
+TEST_F(AudioRendererImplTest, UpdateEarliestEndTime) {
+  renderer_->SetPlaybackRate(1.0f);
+  WaitForIOThreadCompletion();
+  base::Time time_now = base::Time();  // Null time by default.
+  renderer_->set_earliest_end_time(time_now);
+  renderer_->UpdateEarliestEndTime(renderer_->bytes_per_second(),
+                                   base::TimeDelta::FromMilliseconds(100),
+                                   time_now);
+  int time_delta = (renderer_->earliest_end_time() - time_now).InMilliseconds();
+  EXPECT_EQ(1100, time_delta);
+  renderer_->Stop(media::NewExpectedCallback());
+  WaitForIOThreadCompletion();
+}
+

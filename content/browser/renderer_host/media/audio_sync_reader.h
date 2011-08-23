@@ -12,9 +12,7 @@
 #include "media/audio/audio_output_controller.h"
 
 namespace base {
-
 class SharedMemory;
-
 }
 
 // A AudioOutputController::SyncReader implementation using SyncSocket. This

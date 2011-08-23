@@ -349,9 +349,9 @@ void WebMediaPlayerImpl::setVisible(bool visible) {
 }
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
-        COMPILE_ASSERT(int(WebKit::WebMediaPlayer::webkit_name) == \
-                       int(media::chromium_name), \
-                       mismatching_enums)
+    COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayer::webkit_name) == \
+                   static_cast<int>(media::chromium_name), \
+                   mismatching_enums)
 COMPILE_ASSERT_MATCHING_ENUM(None, NONE);
 COMPILE_ASSERT_MATCHING_ENUM(MetaData, METADATA);
 COMPILE_ASSERT_MATCHING_ENUM(Auto, AUTO);

@@ -4,11 +4,15 @@
 
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 
+#include <algorithm>
+
 #include "base/process_util.h"
 #include "base/shared_memory.h"
+#include "media/audio/audio_buffers_state.h"
+#include "media/audio/audio_util.h"
 
 AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory)
-      : shared_memory_(shared_memory) {
+    : shared_memory_(shared_memory) {
 }
 
 AudioSyncReader::~AudioSyncReader() {
@@ -20,9 +24,21 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
 }
 
 uint32 AudioSyncReader::Read(void* data, uint32 size) {
-  uint32 read_size = std::min(size, shared_memory_->created_size());
+  uint32 max_size = media::PacketSizeSizeInBytes(
+      shared_memory_->created_size());
+  uint32 read_size = std::min(media::GetActualDataSizeInBytes(shared_memory_,
+                                                              max_size),
+                              size);
+
+  // Get the data from the buffer.
   memcpy(data, shared_memory_->memory(), read_size);
-  memset(shared_memory_->memory(), 0, shared_memory_->created_size());
+
+  // Zero out the entire buffer.
+  memset(shared_memory_->memory(), 0, max_size);
+
+  // Store max length of data into buffer, in case client does not do that.
+  media::SetActualDataSizeInBytes(shared_memory_, max_size, max_size);
+
   return read_size;
 }
 

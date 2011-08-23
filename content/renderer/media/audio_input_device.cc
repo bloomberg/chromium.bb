@@ -54,8 +54,8 @@ bool AudioInputDevice::Start() {
   params.samples_per_packet = buffer_size_;
 
   ChildProcess::current()->io_message_loop()->PostTask(
-    FROM_HERE,
-    NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread, params));
+      FROM_HERE,
+      NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread, params));
 
   return true;
 }
@@ -158,7 +158,7 @@ void AudioInputDevice::Run() {
 
   while (sizeof(pending_data) == socket_->Receive(&pending_data,
                                                   sizeof(pending_data)) &&
-                                                  pending_data >= 0) {
+         pending_data >= 0) {
     // TODO(henrika): investigate the provided |pending_data| value
     // and ensure that it is actually an accurate delay estimation.
 

@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 
+#include <algorithm>
+
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 
