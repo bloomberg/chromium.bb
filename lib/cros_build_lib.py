@@ -359,8 +359,12 @@ def ReinterpretPathForChroot(path):
   return new_path
 
 
-def GetGitRepoRevision(cwd):
-  result = RunCommand(['git', 'rev-parse', 'HEAD'], cwd=cwd,
+def GetGitRepoRevision(cwd, branch='HEAD'):
+  """Find the revision of a branch.
+
+  Defaults to current branch.
+  """
+  result = RunCommand(['git', 'rev-parse', branch], cwd=cwd,
                       redirect_stdout=True)
   return result.output.strip()
 

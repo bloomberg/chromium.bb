@@ -70,8 +70,18 @@ class GerritPatch(Patch):
     self.gerrit_number = patch_dict['number']
     self.url = patch_dict['url']
 
-  def Apply(self, buildroot):
-    """Implementation of Patch.Apply()."""
+  def _RebasePatchOnto(self, rebase_onto, buildroot, project_dir):
+    """Rebase patch fetched from gerrit onto a revision.
+
+    When the function completes, the constants.PATCH_BRANCH branch will be
+    pointing to the rebased change.
+
+    Arguments:
+    rebase_onto: The revision or branch name to base the contents of the patch
+                 on.
+    buildroot: The buildroot.
+    project_dir: Directory of the project that is being patched.
+    """
     if self.internal:
       url_prefix = constants.GERRIT_INT_SSH_URL
     else:
@@ -79,17 +89,35 @@ class GerritPatch(Patch):
 
     url = os.path.join(url_prefix, self.project)
 
+    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
+    cros_lib.RunCommand(['git', 'checkout', '--no-track',
+                         '-b', constants.PATCH_BRANCH, 'FETCH_HEAD'],
+                         cwd=project_dir)
+    cros_lib.RunCommand(
+        ['git', 'rebase', '--onto', rebase_onto,
+         _GetProjectManifestBranch(buildroot, self.project),
+         constants.PATCH_BRANCH],
+        cwd=project_dir
+    )
+
+  def Apply(self, buildroot):
+    """Implementation of Patch.Apply()."""
     project_dir = cros_lib.GetProjectDir(buildroot, self.project)
 
     try:
-      cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
-      cros_lib.RunCommand(['git', 'checkout', '--no-track',
-                           '-b', constants.PATCH_BRANCH,
-                           'FETCH_HEAD'], cwd=project_dir)
+     if cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
+        revision = cros_lib.GetGitRepoRevision(project_dir,
+                                               constants.PATCH_BRANCH)
+        # Checkout to detached HEAD so we can delete the branch.
+        cros_lib.RunCommand(['git', 'checkout', revision], cwd=project_dir)
+        cros_lib.RunCommand(['git', 'branch', '-D', constants.PATCH_BRANCH],
+                            cwd=project_dir)
+        self._RebasePatchOnto(revision, buildroot, project_dir)
+     else:
+        manifest_default_branch = cros_lib.GetManifestDefaultBranch(buildroot)
+        self._RebasePatchOnto('m/' + manifest_default_branch, buildroot,
+                              project_dir)
 
-      manifest_default_branch = cros_lib.GetManifestDefaultBranch(buildroot)
-      cros_lib.RunCommand(['git', 'rebase', 'm/' + manifest_default_branch],
-                          cwd=project_dir)
     except cros_lib.RunCommandError as e:
       cros_lib.RunCommand(['git', 'rebase', '--abort'], cwd=project_dir,
                           error_ok=True)
