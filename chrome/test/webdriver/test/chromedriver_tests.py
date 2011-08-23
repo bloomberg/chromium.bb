@@ -675,7 +675,8 @@ class FileUploadControlTest(ChromeDriverTest):
     super(FileUploadControlTest, self).setUp()
     self._driver = self.GetNewDriver()
 
-  def testSetFilePathToFileUploadControl(self):
+  # See crbug.com/93909.
+  def DISABLED_testSetFilePathToFileUploadControl(self):
     """Verify a file path is set to the file upload control."""
     self._driver.get(GetTestDataUrl() + '/upload.html')
 
@@ -709,7 +710,8 @@ class FileUploadControlTest(ChromeDriverTest):
     self.assertRaises(WebDriverException, fileupload_single.send_keys,
                       filepaths[0], filepaths[1], filepaths[2], filepaths[3])
 
-  def testSetMultipleFilePathsToFileUploadControl(self):
+  # See crbug.com/93909.
+  def DISABLED_testSetMultipleFilePathsToFileUploadControl(self):
     """Verify multiple file paths are set to the file upload control."""
     self._driver.get(GetTestDataUrl() + '/upload.html')
 
