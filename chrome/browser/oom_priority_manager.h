@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ namespace browser {
 // The OomPriorityManager periodically checks (see
 // ADJUSTMENT_INTERVAL_SECONDS in the source) the status of renderers
 // and adjusts the out of memory (OOM) adjustment value (in
-// /proc/<pid>/oom_adj) of the renderers so that they match the
+// /proc/<pid>/oom_score_adj) of the renderers so that they match the
 // algorithm embedded here for priority in being killed upon OOM
 // conditions.
 //
@@ -32,6 +32,7 @@ class OomPriorityManager {
  private:
   struct RendererStats {
     bool is_pinned;
+    bool is_selected;
     base::TimeTicks last_selected;
     size_t memory_used;
     base::ProcessHandle renderer_handle;

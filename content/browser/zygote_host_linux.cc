@@ -272,28 +272,35 @@ pid_t ZygoteHost::ForkRequest(
       return base::kNullProcessHandle;
   }
 
-  const int kRendererScore = 5;
-  AdjustRendererOOMScore(pid, kRendererScore);
+  // This is just a starting score for a renderer or extension (the
+  // only types of processes that will be started this way).  It will
+  // get adjusted as time goes on.  (This is the same value as
+  // chrome::kLowestRendererOomScore in chrome/chrome_constants.h, but
+  // that's not something we can include here.)
+  const int kLowestRendererOomScore = 300;
+  AdjustRendererOOMScore(pid, kLowestRendererOomScore);
 
   return pid;
 }
 
 void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
-  // 1) You can't change the oom_adj of a non-dumpable process (EPERM) unless
-  //    you're root. Because of this, we can't set the oom_adj from the browser
-  //    process.
+  // 1) You can't change the oom_score_adj of a non-dumpable process
+  //    (EPERM) unless you're root. Because of this, we can't set the
+  //    oom_adj from the browser process.
   //
-  // 2) We can't set the oom_adj before entering the sandbox because the
-  //    zygote is in the sandbox and the zygote is as critical as the browser
-  //    process. Its oom_adj value shouldn't be changed.
+  // 2) We can't set the oom_score_adj before entering the sandbox
+  //    because the zygote is in the sandbox and the zygote is as
+  //    critical as the browser process. Its oom_adj value shouldn't
+  //    be changed.
   //
-  // 3) A non-dumpable process can't even change its own oom_adj because it's
-  //    root owned 0644. The sandboxed processes don't even have /proc, but one
-  //    could imagine passing in a descriptor from outside.
+  // 3) A non-dumpable process can't even change its own oom_score_adj
+  //    because it's root owned 0644. The sandboxed processes don't
+  //    even have /proc, but one could imagine passing in a descriptor
+  //    from outside.
   //
   // So, in the normal case, we use the SUID binary to change it for us.
   // However, Fedora (and other SELinux systems) don't like us touching other
-  // process's oom_adj values
+  // process's oom_score_adj (or oom_adj) values
   // (https://bugzilla.redhat.com/show_bug.cgi?id=581256).
   //
   // The offical way to get the SELinux mode is selinux_getenforcemode, but I
@@ -319,9 +326,13 @@ void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
     if (IsHeapProfilerRunning())
       return;
 #endif
+    // The command line switch used for supplying the OOM adjustment score
+    // to the setuid sandbox.
+    static const char kAdjustOOMScoreSwitch[] = "--adjust-oom-score";
+
     std::vector<std::string> adj_oom_score_cmdline;
     adj_oom_score_cmdline.push_back(sandbox_binary_);
-    adj_oom_score_cmdline.push_back(base::kAdjustOOMScoreSwitch);
+    adj_oom_score_cmdline.push_back(kAdjustOOMScoreSwitch);
     adj_oom_score_cmdline.push_back(base::Int64ToString(pid));
     adj_oom_score_cmdline.push_back(base::IntToString(score));
 

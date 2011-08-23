@@ -177,6 +177,11 @@ const bool kEnableTouchIcon = true;
 const bool kEnableTouchIcon = false;
 #endif
 
+#if defined(OS_LINUX)
+extern const int kLowestRendererOomScore = 300;
+extern const int kHighestRendererOomScore = 1000;
+#endif
+
 }  // namespace chrome
 
 #undef FPL
