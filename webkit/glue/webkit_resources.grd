@@ -52,6 +52,9 @@
       <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB" file="resources\mediaplayer_volume_slider_thumb.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER" file="resources\mediaplayer_volume_slider_thumb_hover.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN" file="resources\mediaplayer_volume_slider_thumb_down.png" type="BINDATA" />
+      <if expr="is_macosx">
+        <include name="IDR_OVERHANG_PATTERN" file="resources\overhang_pattern.png" type="BINDATA" />
+      </if>
       <include name="IDC_PAN_EAST" file="resources\pan_east.cur" type="CURSOR" />
       <include name="IDC_PAN_MIDDLE" file="resources\pan_middle.cur" type="CURSOR" />
       <include name="IDC_PAN_NORTH" file="resources\pan_north.cur" type="CURSOR" />
