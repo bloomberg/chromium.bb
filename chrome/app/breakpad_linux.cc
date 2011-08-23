@@ -781,6 +781,9 @@ void EnableNonBrowserCrashDumping() {
 void InitCrashReporter() {
   // Determine the process type and take appropriate action.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(switches::kDisableBreakpad))
+    return;
+
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty()) {
