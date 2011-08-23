@@ -159,10 +159,14 @@ function launchNativePrintDialog() {
  */
 function onInitiatorTabCrashed(initiatorTabURL) {
   disableInputElementsInSidebar();
-  displayErrorMessageWithButton(
-      localStrings.getString('initiatorTabCrashed'),
-      localStrings.getString('reopenPage'),
-      function() { chrome.send('reloadCrashedInitiatorTab'); });
+  if (initiatorTabURL) {
+    displayErrorMessageWithButton(
+        localStrings.getString('initiatorTabCrashed'),
+        localStrings.getString('reopenPage'),
+        function() { chrome.send('reloadCrashedInitiatorTab'); });
+  } else {
+    displayErrorMessage(localStrings.getString('initiatorTabCrashed'));
+  }
 }
 
 /**
@@ -172,10 +176,14 @@ function onInitiatorTabCrashed(initiatorTabURL) {
  */
 function onInitiatorTabClosed(initiatorTabURL) {
   disableInputElementsInSidebar();
-  displayErrorMessageWithButton(
-      localStrings.getString('initiatorTabClosed'),
-      localStrings.getString('reopenPage'),
-      function() { window.location = initiatorTabURL; });
+  if (initiatorTabURL) {
+    displayErrorMessageWithButton(
+        localStrings.getString('initiatorTabClosed'),
+        localStrings.getString('reopenPage'),
+        function() { window.location = initiatorTabURL; });
+  } else {
+    displayErrorMessage(localStrings.getString('initiatorTabClosed'));
+  }
 }
 
 /**
