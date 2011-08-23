@@ -5,7 +5,6 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PanelAppBrowserTest : public ExtensionBrowserTest {
@@ -27,45 +25,18 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
   }
 
   void LoadAndLaunchExtension(const char* name) {
-    // Opening panels on a Mac causes NSWindowController of the Panel window
-    // to be autoreleased. We need a pool drained after it's done so the test
-    // can close correctly. The NSWindowController of the Panel window controls
-    // lifetime of the Browser object so we want to release it as soon as
-    // possible. In real Chrome, this is done by message pump.
-    // On non-Mac platform, this is an empty class.
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-    EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
+    ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
     ExtensionService* service = browser()->profile()->GetExtensionService();
     const Extension* extension = service->GetExtensionById(
         last_loaded_extension_id_, false);
-    EXPECT_TRUE(extension);
-
-    size_t browser_count = BrowserList::size();
+    ASSERT_TRUE(extension);
 
     Browser::OpenApplication(
         browser()->profile(),
         extension,
-        // Overriding manifest to open in a panel.
-        extension_misc::LAUNCH_PANEL,
+        extension_misc::LAUNCH_PANEL,  // Override manifest, open in panel.
         NEW_WINDOW);
-
-    // Now we have a new browser instance.
-    EXPECT_EQ(browser_count + 1, BrowserList::size());
-  }
-
-  void CloseWindowAndWait(Browser* browser) {
-    // Closing a browser window may involve several async tasks. Need to use
-    // message pump and wait for the notification.
-    size_t browser_count = BrowserList::size();
-    ui_test_utils::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(browser));
-    browser->CloseWindow();
-    signal.Wait();
-    // Now we have one less browser instance.
-    EXPECT_EQ(browser_count - 1, BrowserList::size());
   }
 };
 
@@ -75,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, OpenAppInPanel) {
 
   // No Panels initially.
   PanelManager* panel_manager = PanelManager::GetInstance();
-  ASSERT_EQ(0, panel_manager->num_panels()); // No panels initially.
+  EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
   LoadAndLaunchExtension("app_with_panel_container");
 
@@ -96,8 +67,6 @@ IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, OpenAppInPanel) {
   // Now also check that PanelManager has one new Panel under management.
   EXPECT_EQ(1, panel_manager->num_panels());
 
-  CloseWindowAndWait(new_browser);
-
+  new_browser->CloseWindow();
   EXPECT_EQ(0, panel_manager->num_panels());
-  EXPECT_EQ(1u, BrowserList::size());
 }

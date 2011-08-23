@@ -8,11 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -20,9 +17,7 @@
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,14 +30,6 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
   }
 
   Panel* CreateTestPanel(const std::string& panel_name) {
-    // Opening panels on a Mac causes NSWindowController of the Panel window
-    // to be autoreleased. We need a pool drained after it's done so the test
-    // can close correctly.
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-    PanelManager* manager = PanelManager::GetInstance();
-    int panels_count = manager->num_panels();
-
     Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                    panel_name,
                                                    gfx::Rect(),
@@ -52,26 +39,7 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
         new TestTabContents(browser_helper_.profile(), NULL));
     panel_browser->AddTab(tab_contents, PageTransition::LINK);
 
-    // We just created one new panel.
-    EXPECT_EQ(panels_count + 1, manager->num_panels());
-
-    Panel* panel = static_cast<Panel*>(panel_browser->window());
-    EXPECT_TRUE(panel);
-    EXPECT_TRUE(panel->native_panel());  // Native panel is created right away.
-    PanelBrowserWindowCocoa* native_window =
-        static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
-    EXPECT_EQ(panel, native_window->panel_);  // Back pointer initialized.
-
-    // Window should not load before Show().
-    // Note: Loading the wnidow causes Cocoa to autorelease a few objects.
-    // This is the reason we do this within the scope of the
-    // ScopedNSAutoreleasePool.
-    EXPECT_FALSE([native_window->controller_ isWindowLoaded]);
-    panel->Show();
-    EXPECT_TRUE([native_window->controller_ isWindowLoaded]);
-    EXPECT_TRUE([native_window->controller_ window]);
-
-    return panel;
+    return static_cast<Panel*>(panel_browser->window());
   }
 
   void VerifyTitlebarLocation(NSView* contentView, NSView* titlebar) {
@@ -83,20 +51,6 @@ class PanelBrowserWindowCocoaTest : public CocoaTest {
     EXPECT_EQ(NSWidth(content_frame), NSWidth(titlebar_frame));
     EXPECT_EQ(NSMaxY(content_frame), NSMinY(titlebar_frame));
     EXPECT_EQ(NSHeight([[titlebar superview] bounds]), NSMaxY(titlebar_frame));
-  }
-
-  void ClosePanelAndWait(Browser* browser) {
-    EXPECT_TRUE(browser);
-    // Closing a browser window may involve several async tasks. Need to use
-    // message pump and wait for the notification.
-    size_t browser_count = BrowserList::size();
-    ui_test_utils::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(browser));
-    browser->CloseWindow();
-    signal.Wait();
-    // Now we have one less browser instance.
-    EXPECT_EQ(browser_count - 1, BrowserList::size());
   }
 
   NSMenuItem* CreateMenuItem(NSMenu* menu, int command_id) {
@@ -117,32 +71,45 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
   EXPECT_EQ(0, manager->num_panels());  // No panels initially.
 
   Panel* panel = CreateTestPanel("Test Panel");
-  ASSERT_TRUE(panel);
+  EXPECT_TRUE(panel);
+  EXPECT_TRUE(panel->native_panel());  // Native panel is created right away.
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+
+  EXPECT_EQ(panel, native_window->panel_);  // Back pointer initialized.
+  EXPECT_EQ(1, manager->num_panels());
+
+  // Window should not load before Show()
+  EXPECT_FALSE([native_window->controller_ isWindowLoaded]);
+  panel->Show();
+  EXPECT_TRUE([native_window->controller_ isWindowLoaded]);
+  EXPECT_TRUE([native_window->controller_ window]);
 
   gfx::Rect bounds = panel->GetBounds();
   EXPECT_TRUE(bounds.width() > 0);
   EXPECT_TRUE(bounds.height() > 0);
 
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
-  ASSERT_TRUE(native_window);
   // NSWindows created by NSWindowControllers don't have this bit even if
   // their NIB has it. The controller's lifetime is the window's lifetime.
   EXPECT_EQ(NO, [[native_window->controller_ window] isReleasedWhenClosed]);
 
-  ASSERT_TRUE(panel->browser());
-  ClosePanelAndWait(panel->browser());
+  panel->Close();
   EXPECT_EQ(0, manager->num_panels());
-  // Final Close() destroys the controller, which destroys the NSWindow.
-  // CocoaTest base class verifies that there is no remaining open windows
-  // after the test.
+  // Close() destroys the controller, which destroys the NSWindow. CocoaTest
+  // base class verifies that there is no remaining open windows after the test.
   EXPECT_FALSE(native_window->controller_);
 }
 
 TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
+  PanelManager* manager = PanelManager::GetInstance();
   Panel* panel1 = CreateTestPanel("Test Panel 1");
   Panel* panel2 = CreateTestPanel("Test Panel 2");
   Panel* panel3 = CreateTestPanel("Test Panel 3");
+  EXPECT_EQ(3, manager->num_panels());
+
+  panel1->Show();
+  panel2->Show();
+  panel3->Show();
 
   gfx::Rect bounds1 = panel1->GetBounds();
   gfx::Rect bounds2 = panel2->GetBounds();
@@ -156,22 +123,31 @@ TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
   EXPECT_EQ(bounds2.y(), bounds3.y());
 
   // After panel2 is closed, panel3 should take its place.
-  ClosePanelAndWait(panel2->browser());
+  panel2->Close();
   bounds3 = panel3->GetBounds();
   EXPECT_EQ(bounds2, bounds3);
+  EXPECT_EQ(2, manager->num_panels());
 
   // After panel1 is closed, panel3 should take its place.
-  ClosePanelAndWait(panel1->browser());
+  panel1->Close();
   EXPECT_EQ(bounds1, panel3->GetBounds());
+  EXPECT_EQ(1, manager->num_panels());
 
-  ClosePanelAndWait(panel3->browser());
+  panel3->Close();
+  EXPECT_EQ(0, manager->num_panels());
 }
 
 // Same test as AssignedBounds, but checks actual bounds on native OS windows.
 TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
+  PanelManager* manager = PanelManager::GetInstance();
   Panel* panel1 = CreateTestPanel("Test Panel 1");
   Panel* panel2 = CreateTestPanel("Test Panel 2");
   Panel* panel3 = CreateTestPanel("Test Panel 3");
+  EXPECT_EQ(3, manager->num_panels());
+
+  panel1->Show();
+  panel2->Show();
+  panel3->Show();
 
   PanelBrowserWindowCocoa* native_window1 =
       static_cast<PanelBrowserWindowCocoa*>(panel1->native_panel());
@@ -190,27 +166,31 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
   EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
 
   // After panel2 is closed, panel3 should take its place.
-  ClosePanelAndWait(panel2->browser());
+  panel2->Close();
   bounds3 = [[native_window3->controller_ window] frame];
   EXPECT_EQ(bounds2.origin.x, bounds3.origin.x);
   EXPECT_EQ(bounds2.origin.y, bounds3.origin.y);
   EXPECT_EQ(bounds2.size.width, bounds3.size.width);
   EXPECT_EQ(bounds2.size.height, bounds3.size.height);
+  EXPECT_EQ(2, manager->num_panels());
 
   // After panel1 is closed, panel3 should take its place.
-  ClosePanelAndWait(panel1->browser());
+  panel1->Close();
   bounds3 = [[native_window3->controller_ window] frame];
   EXPECT_EQ(bounds1.origin.x, bounds3.origin.x);
   EXPECT_EQ(bounds1.origin.y, bounds3.origin.y);
   EXPECT_EQ(bounds1.size.width, bounds3.size.width);
   EXPECT_EQ(bounds1.size.height, bounds3.size.height);
+  EXPECT_EQ(1, manager->num_panels());
 
-  ClosePanelAndWait(panel3->browser());
+  panel3->Close();
+  EXPECT_EQ(0, manager->num_panels());
 }
 
 // Verify the titlebar is being created.
 TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewCreate) {
   Panel* panel = CreateTestPanel("Test Panel");
+  panel->Show();
 
   PanelBrowserWindowCocoa* native_window =
       static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
@@ -219,12 +199,13 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewCreate) {
   EXPECT_TRUE(titlebar);
   EXPECT_EQ(native_window->controller_, [titlebar controller]);
 
-  ClosePanelAndWait(panel->browser());
+  panel->Close();
 }
 
 // Verify the sizing of titlebar - should be affixed on top of regular titlebar.
 TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
   Panel* panel = CreateTestPanel("Test Panel");
+  panel->Show();
 
   PanelBrowserWindowCocoa* native_window =
       static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
@@ -255,12 +236,14 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
   // Verify the titlebar is still on top of regular titlebar.
   VerifyTitlebarLocation(contentView, titlebar);
 
-  ClosePanelAndWait(panel->browser());
+  panel->Close();
 }
 
 // Verify closing behavior of titlebar close button.
 TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewClose) {
+  PanelManager* manager = PanelManager::GetInstance();
   Panel* panel = CreateTestPanel("Test Panel");
+  panel->Show();
 
   PanelBrowserWindowCocoa* native_window =
       static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
@@ -268,20 +251,16 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewClose) {
   PanelTitlebarViewCocoa* titlebar = [native_window->controller_ titlebarView];
   EXPECT_TRUE(titlebar);
 
-  PanelManager* manager = PanelManager::GetInstance();
   EXPECT_EQ(1, manager->num_panels());
-  // Simulate clicking Close Button and wait until the Panel closes.
-  ui_test_utils::WindowedNotificationObserver signal(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      Source<Browser>(panel->browser()));
+  // Simulate clicking Close Button. This should close the Panel as well.
   [titlebar simulateCloseButtonClick];
-  signal.Wait();
   EXPECT_EQ(0, manager->num_panels());
 }
 
 // Verify some menu items being properly enabled/disabled for panels.
 TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
   Panel* panel = CreateTestPanel("Test Panel");
+  panel->Show();
 
   scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
   NSMenuItem* close_tab_menu_item = CreateMenuItem(menu, IDC_CLOSE_TAB);
@@ -310,5 +289,5 @@ TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
   EXPECT_FALSE([presentation_menu_item isEnabled]);
   EXPECT_FALSE([bookmarks_menu_item isEnabled]);
 
-  ClosePanelAndWait(panel->browser());
+  panel->Close();
 }

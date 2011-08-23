@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,14 +45,6 @@ class PanelBrowserTest : public InProcessBrowserTest {
 
  protected:
   Panel* CreatePanel(const std::string& name, const gfx::Rect& bounds) {
-    // Opening panels on a Mac causes NSWindowController of the Panel window
-    // to be autoreleased. We need a pool drained after it's done so the test
-    // can close correctly. The NSWindowController of the Panel window controls
-    // lifetime of the Browser object so we want to release it as soon as
-    // possible. In real Chrome, this is done by message pump.
-    // On non-Mac platform, this is an empty class.
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
     Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
                                                    name,
                                                    bounds,
@@ -69,19 +60,6 @@ class PanelBrowserTest : public InProcessBrowserTest {
     MessageLoopForUI::current()->RunAllPending();
 
     return panel;
-  }
-
-  void CloseWindowAndWait(Browser* browser) {
-    // Closing a browser window may involve several async tasks. Need to use
-    // message pump and wait for the notification.
-    size_t browser_count = BrowserList::size();
-    ui_test_utils::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        Source<Browser>(browser));
-    browser->CloseWindow();
-    signal.Wait();
-    // Now we have one less browser instance.
-    EXPECT_EQ(browser_count - 1, BrowserList::size());
   }
 
   // Creates a testing extension.
@@ -303,8 +281,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   EXPECT_GT(bounds.width(), 0);
   EXPECT_GT(bounds.height(), 0);
 
-  CloseWindowAndWait(panel->browser());
-
+  panel->Close();
   EXPECT_EQ(0, panel_manager->num_panels());
 }
 
@@ -316,7 +293,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanelOnOverflow) {
+// TODO(jianli): Investigate and enable it for Mac.
+#ifdef OS_MACOSX
+#define MAYBE_CreatePanelOnOverflow DISABLED_CreatePanelOnOverflow
+#else
+#define MAYBE_CreatePanelOnOverflow CreatePanelOnOverflow
+#endif
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_CreatePanelOnOverflow) {
   TestCreatePanelOnOverflow();
 }
 
