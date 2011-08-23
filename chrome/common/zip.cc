@@ -4,6 +4,8 @@
 
 #include "chrome/common/zip.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_split.h"
@@ -262,8 +264,8 @@ static bool AddEntryToZip(zipFile zip_file, const FilePath& path,
   return success;
 }
 
-bool Zip(const FilePath& src_dir, const FilePath& dest_file,
-         bool include_hidden_files) {
+static bool Zip(const FilePath& src_dir, const FilePath& dest_file,
+                const base::Callback<bool(const FilePath&)>& filter_cb) {
   DCHECK(file_util::DirectoryExists(src_dir));
 
 #if defined(OS_WIN)
@@ -296,8 +298,9 @@ bool Zip(const FilePath& src_dir, const FilePath& dest_file,
           file_util::FileEnumerator::DIRECTORIES));
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
-    if (!include_hidden_files && path.BaseName().value()[0] == '.')
+    if (!filter_cb.Run(path)) {
       continue;
+    }
 
     if (!AddEntryToZip(zip_file, path, src_dir)) {
       success = false;
@@ -311,4 +314,23 @@ bool Zip(const FilePath& src_dir, const FilePath& dest_file,
   }
 
   return success;
+}
+
+static bool FilterNoFiles(const FilePath& file_path) {
+  return true;
+}
+
+bool Zip(const FilePath& src_dir, const FilePath& dest_file) {
+  return Zip(src_dir, dest_file, base::Bind(&FilterNoFiles));
+}
+
+static bool FilterHiddenFiles(bool include_hidden_files,
+                              const FilePath& file_path) {
+  return !(!include_hidden_files && file_path.BaseName().value()[0] == '.');
+}
+
+bool Zip(const FilePath& src_dir, const FilePath& dest_file,
+         bool include_hidden_files) {
+  return Zip(src_dir, dest_file,
+             base::Bind(&FilterHiddenFiles, include_hidden_files));
 }
