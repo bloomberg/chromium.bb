@@ -102,33 +102,33 @@ class Var {
   ///
   /// @param[in] other The <code>Var</code> to be compared to this Var.
   ///
-  /// @return True if the <code>other</code> <code>Var</code> is the same as
+  /// @return true if the <code>other</code> <code>Var</code> is the same as
   /// this <code>Var</code>, otherwise false.
   bool operator==(const Var& other) const;
 
   /// This function determines if this <code>Var</code> is an undefined value.
   ///
-  /// @return True if this <code>Var</code> is undefined, otherwise false.
+  /// @return true if this <code>Var</code> is undefined, otherwise false.
   bool is_undefined() const { return var_.type == PP_VARTYPE_UNDEFINED; }
 
   /// This function determines if this <code>Var</code> is a null value.
   ///
-  /// @return True if this <code>Var</code> is null, otherwise False.
+  /// @return true if this <code>Var</code> is null, otherwise false.
   bool is_null() const { return var_.type == PP_VARTYPE_NULL; }
 
   /// This function determines if this <code>Var</code> is a bool value.
   ///
-  /// @return True if this <code>Var</code> is a bool, otherwise False.
+  /// @return true if this <code>Var</code> is a bool, otherwise false.
   bool is_bool() const { return var_.type == PP_VARTYPE_BOOL; }
 
   /// This function determines if this <code>Var</code> is a string value.
   ///
-  /// @return True if this <code>Var</code> is a string, otherwise False.
+  /// @return true if this <code>Var</code> is a string, otherwise false.
   bool is_string() const { return var_.type == PP_VARTYPE_STRING; }
 
   /// This function determines if this <code>Var</code> is an object.
   ///
-  /// @return True if this  <code>Var</code> is an object, otherwise False.
+  /// @return true if this  <code>Var</code> is an object, otherwise false.
   bool is_object() const { return var_.type == PP_VARTYPE_OBJECT; }
 
   /// This function determines if this <code>Var</code> is an integer value.
@@ -138,7 +138,7 @@ class Var {
   /// optimization inside the runtime). So most of the time, you will want
   /// to check is_number().
   ///
-  /// @return True if this <code>Var</code> is an integer, otherwise False.
+  /// @return true if this <code>Var</code> is an integer, otherwise false.
   bool is_int() const { return var_.type == PP_VARTYPE_INT32; }
 
   /// This function determines if this <code>Var</code> is a double value.
@@ -148,13 +148,13 @@ class Var {
   /// optimization inside the runtime). So most of the time, you will want to
   /// check is_number().
   ///
-  /// @return True if this <code>Var</code> is a double, otherwise False.
+  /// @return true if this <code>Var</code> is a double, otherwise false.
   bool is_double() const { return var_.type == PP_VARTYPE_DOUBLE; }
 
   /// This function determines if this <code>Var</code> is a number.
   ///
-  /// @return True if this <code>Var</code> is an int32 or double number,
-  /// otherwise False.
+  /// @return true if this <code>Var</code> is an int32 or double number,
+  /// otherwise false.
   bool is_number() const {
     return var_.type == PP_VARTYPE_INT32 ||
            var_.type == PP_VARTYPE_DOUBLE;

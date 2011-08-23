@@ -42,7 +42,7 @@ class URLRequestInfo : public Resource {
   /// property to set.
   /// @param[in] value A <code>Var</code> containing the property value.
   ///
-  /// @return True if successful, false if any of the
+  /// @return true if successful, false if any of the
   /// parameters are invalid.
   bool SetProperty(PP_URLRequestProperty property, const Var& value);
 
@@ -52,7 +52,7 @@ class URLRequestInfo : public Resource {
   /// @param[in] data A pointer to a buffer holding the data.
   /// @param[in] len The length, in bytes, of the data.
   ///
-  /// @return True if successful, false if any of the
+  /// @return true if successful, false if any of the
   /// parameters are invalid.
   bool AppendDataToBody(const void* data, uint32_t len);
 
@@ -70,7 +70,7 @@ class URLRequestInfo : public Resource {
   /// since the given time. If expected_last_modified_time is 0, then no
   /// validation is performed.
   ///
-  /// @return True if successful, false if any of the
+  /// @return true if successful, false if any of the
   /// parameters are invalid.
   bool AppendFileToBody(const FileRef& file_ref,
                         PP_Time expected_last_modified_time = 0);
@@ -93,7 +93,7 @@ class URLRequestInfo : public Resource {
   /// since the given time. If expected_last_modified_time is 0, then no
   /// validation is performed.
   ///
-  /// @return True if successful, false if any of the
+  /// @return true if successful, false if any of the
   /// parameters are invalid.
   bool AppendFileRangeToBody(const FileRef& file_ref,
                              int64_t start_offset,
@@ -105,7 +105,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] url_string A <code>Var</code> containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetURL(const Var& url_string) {
     return SetProperty(PP_URLREQUESTPROPERTY_URL, url_string);
   }
@@ -119,7 +119,7 @@ class URLRequestInfo : public Resource {
   /// @param[in] method_string A <code>Var</code> containing the property
   /// value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetMethod(const Var& method_string) {
     return SetProperty(PP_URLREQUESTPROPERTY_METHOD, method_string);
   }
@@ -134,7 +134,7 @@ class URLRequestInfo : public Resource {
   /// @param[in] headers_string A <code>Var</code> containing the property
   /// value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetHeaders(const Var& headers_string) {
     return SetProperty(PP_URLREQUESTPROPERTY_HEADERS, headers_string);
   }
@@ -148,7 +148,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] enable A <code>bool</code> containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetStreamToFile(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, enable);
   }
@@ -162,7 +162,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] enable A <code>bool</code> containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetFollowRedirects(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS, enable);
   }
@@ -176,7 +176,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] enable A <code>bool</code> containing the property value.
   ////
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetRecordDownloadProgress(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS, enable);
   }
@@ -189,7 +189,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] enable A <code>bool</code> containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetRecordUploadProgress(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS, enable);
   }
@@ -207,7 +207,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] url A <code>Var</code> containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetCustomReferrerURL(const Var& url) {
     return SetProperty(PP_URLREQUESTPROPERTY_CUSTOMREFERRERURL, url);
   }
@@ -224,7 +224,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] enable A <code>bool</code> containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetAllowCrossOriginRequests(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_ALLOWCROSSORIGINREQUESTS, enable);
   }
@@ -239,7 +239,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] enable A <code>bool</code> containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetAllowCredentials(bool enable) {
     return SetProperty(PP_URLREQUESTPROPERTY_ALLOWCREDENTIALS, enable);
   }
@@ -260,7 +260,7 @@ class URLRequestInfo : public Resource {
   /// property value. To use the default content transfer encoding, set
   /// <code>content_transfer_encoding</code> to an undefined <code>Var</code>.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetCustomContentTransferEncoding(const Var& content_transfer_encoding) {
     return SetProperty(PP_URLREQUESTPROPERTY_CUSTOMCONTENTTRANSFERENCODING,
                        content_transfer_encoding);
@@ -281,7 +281,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] size An int32_t containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetPrefetchBufferUpperThreshold(int32_t size) {
     return SetProperty(PP_URLREQUESTPROPERTY_PREFETCHBUFFERUPPERTHRESHOLD,
                        size);
@@ -303,7 +303,7 @@ class URLRequestInfo : public Resource {
   ///
   /// @param[in] size An int32_t containing the property value.
   ///
-  /// @return True if successful, false if the parameter is invalid.
+  /// @return true if successful, false if the parameter is invalid.
   bool SetPrefetchBufferLowerThreshold(int32_t size) {
     return SetProperty(PP_URLREQUESTPROPERTY_PREFETCHBUFFERLOWERTHRESHOLD,
                        size);
