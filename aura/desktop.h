@@ -21,6 +21,7 @@ class Compositor;
 
 namespace aura {
 
+class MouseEvent;
 class Window;
 
 // Desktop is responsible for hosting a set of windows.
@@ -31,6 +32,9 @@ class Desktop {
 
   // Draws the necessary set of windows.
   void Draw();
+
+  // Handles a mouse event. Returns true if handled.
+  bool OnMouseEvent(const MouseEvent& event);
 
   // Compositor we're drawing to.
   ui::Compositor* compositor() { return compositor_.get(); }

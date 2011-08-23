@@ -23,6 +23,7 @@ class Layer;
 namespace aura {
 
 class Desktop;
+class MouseEvent;
 class WindowDelegate;
 
 // Aura window implementation. Interesting events are sent to the
@@ -72,6 +73,9 @@ class Window {
   void AddChild(Window* child);
   void RemoveChild(Window* child);
   Window* parent() { return parent_; }
+
+  // Handles a mouse event. Returns true if handled.
+  bool OnMouseEvent(const MouseEvent& event);
 
  private:
   typedef std::vector<Window*> Windows;

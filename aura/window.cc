@@ -82,6 +82,10 @@ void Window::RemoveChild(Window* child) {
   children_.erase(i);
 }
 
+bool Window::OnMouseEvent(const MouseEvent& event) {
+  return true;
+}
+
 void Window::UpdateLayerCanvas() {
   if (needs_paint_all_) {
     needs_paint_all_ = false;

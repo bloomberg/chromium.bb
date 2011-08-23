@@ -5,6 +5,7 @@
 #include "aura/desktop_host_win.h"
 
 #include "aura/desktop.h"
+#include "aura/event.h"
 #include "base/message_loop.h"
 
 namespace aura {
@@ -49,6 +50,15 @@ gfx::Size DesktopHostWin::GetSize() {
 void DesktopHostWin::OnClose() {
   // TODO: this obviously shouldn't be here.
   MessageLoopForUI::current()->Quit();
+}
+
+LRESULT DesktopHostWin::OnMouseRange(UINT message,
+                                     WPARAM w_param,
+                                     LPARAM l_param) {
+  MSG msg = { hwnd(), message, w_param, l_param, 0,
+              { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
+  SetMsgHandled(desktop_->OnMouseEvent(MouseEvent(msg)));
+  return 0;
 }
 
 void DesktopHostWin::OnPaint(HDC dc) {

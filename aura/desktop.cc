@@ -26,4 +26,8 @@ void Desktop::Draw() {
   compositor_->NotifyEnd();
 }
 
+bool Desktop::OnMouseEvent(const MouseEvent& event) {
+  return window_->OnMouseEvent(event);
+}
+
 }  // namespace aura

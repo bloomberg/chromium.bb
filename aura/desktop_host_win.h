@@ -28,11 +28,16 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
 
  private:
   BEGIN_MSG_MAP_EX(DesktopHostWin)
+    // Range handlers must go first!
+    MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
+    MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
+
     MSG_WM_CLOSE(OnClose)
     MSG_WM_PAINT(OnPaint)
   END_MSG_MAP()
 
   void OnClose();
+  LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   void OnPaint(HDC dc);
 
   Desktop* desktop_;
