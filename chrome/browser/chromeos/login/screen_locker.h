@@ -157,7 +157,7 @@ class ScreenLocker : public LoginStatusConsumer,
   // Shows error_info_ bubble with the |message| and |arrow_location| specified.
   // Assumes that UI controls were locked before that.
   void ShowErrorBubble(const std::wstring& message,
-                       BubbleBorder::ArrowLocation arrow_location);
+                       views::BubbleBorder::ArrowLocation arrow_location);
 
   // Stops screen saver.
   void StopScreenSaver();

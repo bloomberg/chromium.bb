@@ -510,8 +510,8 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
   gfx::Rect rect = reference_view->bounds();
   rect.set_origin(origin);
 
-  BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
-      BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
+  views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
+      views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
 
   popup_ = ExtensionPopup::Show(button->GetPopupUrl(), browser_, rect,
                                 arrow_location, inspect_with_devtools,

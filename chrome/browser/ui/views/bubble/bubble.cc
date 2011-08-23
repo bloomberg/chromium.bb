@@ -50,7 +50,7 @@ std::wstring BubbleDelegate::accessible_name() {
 // static
 Bubble* Bubble::Show(views::Widget* parent,
                      const gfx::Rect& position_relative_to,
-                     BubbleBorder::ArrowLocation arrow_location,
+                     views::BubbleBorder::ArrowLocation arrow_location,
                      views::View* contents,
                      BubbleDelegate* delegate) {
   Bubble* bubble = new Bubble;
@@ -68,7 +68,7 @@ Bubble* Bubble::Show(views::Widget* parent,
 Bubble* Bubble::ShowFocusless(
     views::Widget* parent,
     const gfx::Rect& position_relative_to,
-    BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::ArrowLocation arrow_location,
     views::View* contents,
     BubbleDelegate* delegate,
     bool show_while_screen_is_locked) {
@@ -144,7 +144,7 @@ Bubble::Bubble()
 #if defined(OS_CHROMEOS)
       show_while_screen_is_locked_(false),
 #endif
-      arrow_location_(BubbleBorder::NONE),
+      arrow_location_(views::BubbleBorder::NONE),
       contents_(NULL),
       accelerator_registered_(false) {
 }
@@ -159,7 +159,7 @@ Bubble::Bubble(views::Widget::InitParams::Type type,
       fade_away_on_close_(false),
       type_(type),
       show_while_screen_is_locked_(show_while_screen_is_locked),
-      arrow_location_(BubbleBorder::NONE),
+      arrow_location_(views::BubbleBorder::NONE),
       contents_(NULL) {
 }
 #endif
@@ -169,7 +169,7 @@ Bubble::~Bubble() {
 
 void Bubble::InitBubble(views::Widget* parent,
                         const gfx::Rect& position_relative_to,
-                        BubbleBorder::ArrowLocation arrow_location,
+                        views::BubbleBorder::ArrowLocation arrow_location,
                         views::View* contents,
                         BubbleDelegate* delegate) {
   delegate_ = delegate;

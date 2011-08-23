@@ -113,13 +113,14 @@ void MessageBubble::LinkClicked(views::Link* source, int event_flags) {
 }
 
 // static
-MessageBubble* MessageBubble::Show(views::Widget* parent,
-                                   const gfx::Rect& position_relative_to,
-                                   BubbleBorder::ArrowLocation arrow_location,
-                                   SkBitmap* image,
-                                   const std::wstring& text,
-                                   const std::wstring& help,
-                                   MessageBubbleDelegate* delegate) {
+MessageBubble* MessageBubble::Show(
+    views::Widget* parent,
+    const gfx::Rect& position_relative_to,
+    views::BubbleBorder::ArrowLocation arrow_location,
+    SkBitmap* image,
+    const std::wstring& text,
+    const std::wstring& help,
+    MessageBubbleDelegate* delegate) {
   std::vector<std::wstring> links;
   if (!help.empty())
     links.push_back(help);
@@ -136,7 +137,7 @@ MessageBubble* MessageBubble::Show(views::Widget* parent,
 MessageBubble* MessageBubble::ShowWithLinks(
     views::Widget* parent,
     const gfx::Rect& position_relative_to,
-    BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::ArrowLocation arrow_location,
     SkBitmap* image,
     const std::wstring& text,
     const std::vector<std::wstring>& links,
@@ -154,7 +155,7 @@ MessageBubble* MessageBubble::ShowWithLinks(
 MessageBubble* MessageBubble::ShowNoGrab(
     views::Widget* parent,
     const gfx::Rect& position_relative_to,
-    BubbleBorder::ArrowLocation arrow_location,
+    views::BubbleBorder::ArrowLocation arrow_location,
     SkBitmap* image,
     const std::wstring& text,
     const std::wstring& help,

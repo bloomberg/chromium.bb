@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BUBBLE_BORDER_WIDGET_WIN_H_
 #pragma once
 
-#include "chrome/browser/ui/views/bubble/bubble_border.h"
+#include "views/bubble/bubble_border.h"
 #include "views/widget/native_widget_win.h"
 
 class BorderContents;
@@ -30,9 +30,10 @@ class BorderWidgetWin : public views::NativeWidgetWin {
   // contents should use. |arrow_location| is prefered arrow location,
   // the function tries to preserve the location and direction, in case of RTL
   // arrow location is mirrored.
-  virtual gfx::Rect SizeAndGetBounds(const gfx::Rect& position_relative_to,
-                                     BubbleBorder::ArrowLocation arrow_location,
-                                     const gfx::Size& contents_size);
+  virtual gfx::Rect SizeAndGetBounds(
+      const gfx::Rect& position_relative_to,
+      views::BubbleBorder::ArrowLocation arrow_location,
+      const gfx::Size& contents_size);
 
   // Simple accessors.
   BorderContents* border_contents() { return border_contents_; }
