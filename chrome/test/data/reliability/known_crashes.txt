@@ -201,3 +201,6 @@ PREFIX: webcore::htmlsourcetracker::sourcefortoken___webcore::htmldocumentparser
 
 # 93971
 PREFIX: chromeurlrequestcontextgetter::geturlrequestcontext___`anonymous namespace'::rendererurlrequestcontextselector::getrequestcontext___resourcedispatcherhost::ondidloadresourcefrommemorycache
+
+# 93974
+PREFIX: `anonymous namespace'::purecall____purecall___content::resourcecontext::request_context___resourcedispatcherhost::beginrequest___resourcedispatcherhost::onrequestresource
