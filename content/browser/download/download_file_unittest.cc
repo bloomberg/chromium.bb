@@ -6,8 +6,6 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/download/download_util.h"
-#include "chrome/browser/download/mock_download_manager_delegate.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
@@ -15,6 +13,7 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mock_download_manager.h"
+#include "content/browser/download/mock_download_manager_delegate.h"
 #include "net/base/file_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
