@@ -144,12 +144,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (IBAction)closeTab:(id)sender {
-  if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) &&
-      [[self target] respondsToSelector:@selector(closeOtherTabs:)]) {
-    [[self target] performSelector:@selector(closeOtherTabs:)
-                        withObject:[self view]];
-    return;
-  }
   if ([[self target] respondsToSelector:@selector(closeTab:)]) {
     [[self target] performSelector:@selector(closeTab:)
                         withObject:[self view]];

@@ -728,16 +728,6 @@ private:
   }
 }
 
-// Called when the user closes all tabs except for the current tab.
-// Invoke the |CommandCloseOtherTabs| context menu command.
-- (void)closeOtherTabs:(id)sender {
-  int index = [self modelIndexForTabView:sender];
-  if (tabStripModel_->ContainsIndex(index)) {
-    tabStripModel_->ExecuteContextMenuCommand(
-        index, TabStripModel::CommandCloseOtherTabs);
-  }
-}
-
 // Dispatch context menu commands for the given tab controller.
 - (void)commandDispatch:(TabStripModel::ContextMenuCommand)command
           forController:(TabController*)controller {

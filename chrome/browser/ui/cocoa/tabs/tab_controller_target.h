@@ -16,7 +16,6 @@
 @protocol TabControllerTarget
 - (void)selectTab:(id)sender;
 - (void)closeTab:(id)sender;
-- (void)closeOtherTabs:(id)sender;
 
 // Dispatch context menu commands for the given tab controller.
 - (void)commandDispatch:(TabStripModel::ContextMenuCommand)command
