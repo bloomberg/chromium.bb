@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   // the pending RVH to be destroyed.
   ui_test_utils::WaitForNotification(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
-  EXPECT_EQ(url.spec(), WideToUTF8(browser()->toolbar_model()->GetText()));
+  EXPECT_EQ(url.spec(), UTF16ToUTF8(browser()->toolbar_model()->GetText()));
 
   // Clear the beforeunload handler so the test can easily exit.
   browser()->GetSelectedTabContents()->render_view_host()->

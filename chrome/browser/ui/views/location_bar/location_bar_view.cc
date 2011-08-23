@@ -361,7 +361,7 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
 
   page_action_view->image_view()->set_preview_enabled(preview_enabled);
   page_action_view->UpdateVisibility(contents,
-      GURL(WideToUTF8(model_->GetText())));
+      GURL(model_->GetText()));
   Layout();
   SchedulePaint();
 }
@@ -958,7 +958,7 @@ void LocationBarView::RefreshPageActionViews() {
 
   TabContents* contents = GetTabContentsFromDelegate(delegate_);
   if (!page_action_views_.empty() && contents) {
-    GURL url = GURL(WideToUTF8(model_->GetText()));
+    GURL url = GURL(model_->GetText());
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {

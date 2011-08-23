@@ -34,7 +34,7 @@ ToolbarModel::~ToolbarModel() {
 }
 
 // ToolbarModel Implementation.
-std::wstring ToolbarModel::GetText() const {
+string16 ToolbarModel::GetText() const {
   GURL url(chrome::kAboutBlankURL);
   std::string languages;  // Empty if we don't have a |navigation_controller|.
 
@@ -56,11 +56,9 @@ std::wstring ToolbarModel::GetText() const {
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at
   // the space.
-  return UTF16ToWideHack(
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url,
-          net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
-                         UnescapeRule::NORMAL, NULL, NULL, NULL)));
+  return AutocompleteInput::FormattedStringWithEquivalentMeaning(
+      url, net::FormatUrl(url, languages, net::kFormatUrlOmitAll,
+                          UnescapeRule::NORMAL, NULL, NULL, NULL));
 }
 
 ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {

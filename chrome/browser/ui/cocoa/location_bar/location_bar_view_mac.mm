@@ -356,8 +356,7 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
     return;
 
   decoration->set_preview_enabled(preview_enabled);
-  decoration->UpdateVisibility(contents,
-      GURL(WideToUTF8(toolbar_model_->GetText())));
+  decoration->UpdateVisibility(contents, GURL(toolbar_model_->GetText()));
 }
 
 NSPoint LocationBarViewMac::GetPageActionBubblePoint(
@@ -560,7 +559,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   if (!contents)
     return;
 
-  GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
+  GURL url = GURL(toolbar_model_->GetText());
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
     page_action_decorations_[i]->UpdateVisibility(
         toolbar_model_->input_in_progress() ? NULL : contents, url);

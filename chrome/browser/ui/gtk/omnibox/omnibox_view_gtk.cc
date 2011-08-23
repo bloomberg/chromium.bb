@@ -462,7 +462,7 @@ void OmniboxViewGtk::SaveStateToTab(TabContents* tab) {
 void OmniboxViewGtk::Update(const TabContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
-      model_->UpdatePermanentText(WideToUTF16Hack(toolbar_model_->GetText()));
+      model_->UpdatePermanentText(toolbar_model_->GetText());
 
   ToolbarModel::SecurityLevel security_level =
         toolbar_model_->GetSecurityLevel();

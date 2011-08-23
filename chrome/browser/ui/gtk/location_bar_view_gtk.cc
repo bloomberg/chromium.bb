@@ -660,7 +660,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
   TabContents* contents = GetTabContents();
   if (!page_action_views_.empty() && contents) {
-    GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
+    GURL url = GURL(toolbar_model_->GetText());
 
     for (size_t i = 0; i < page_action_views_.size(); i++) {
       page_action_views_[i]->UpdateVisibility(
