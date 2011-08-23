@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,6 +34,7 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/notification_source.h"
+#include "content/common/notification_details.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -72,6 +74,10 @@ ChromeWebUIDataSource* CreateHistory2UIHTMLSource() {
                              IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
   source->AddLocalizedString("deletewarning",
                              IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING);
+  source->AddLocalizedString("actionMenuDescription",
+                             IDS_HISTORY_ACTION_MENU_DESCRIPTION);
+  source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
+  source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
   source->set_json_path("strings.js");
   source->add_resource_path("history2.js", IDR_HISTORY2_JS);
   source->set_default_resource(IDR_HISTORY2_HTML);
@@ -176,7 +182,11 @@ void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
 
   // Get day to delete data from.
   int visit_time = 0;
-  ExtractIntegerValue(args, &visit_time);
+  if (!ExtractIntegerValue(args, &visit_time)) {
+    LOG(ERROR) << "Unable to extract integer argument.";
+    web_ui_->CallJavascriptFunction("deleteFailed");
+    return;
+  }
   base::Time::Exploded exploded;
   base::Time::FromTimeT(
       static_cast<time_t>(visit_time)).LocalExplode(&exploded);
@@ -185,7 +195,7 @@ void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
   base::Time end_time = begin_time + base::TimeDelta::FromDays(1);
 
   // Get URLs.
-  std::set<GURL> urls;
+  DCHECK(urls_to_be_deleted_.empty());
   for (ListValue::const_iterator v = args->begin() + 1;
        v != args->end(); ++v) {
     if ((*v)->GetType() != Value::TYPE_STRING)
@@ -194,13 +204,14 @@ void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const ListValue* args) {
     string16 string16_value;
     if (!string_value->GetAsString(&string16_value))
       continue;
-    urls.insert(GURL(string16_value));
+
+    urls_to_be_deleted_.insert(GURL(string16_value));
   }
 
   HistoryService* hs =
       Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
-      urls, begin_time, end_time, &cancelable_delete_consumer_,
+      urls_to_be_deleted_, begin_time, end_time, &cancelable_delete_consumer_,
       NewCallback(this, &BrowsingHistoryHandler2::RemoveComplete));
 }
 
@@ -269,7 +280,9 @@ void BrowsingHistoryHandler2::QueryComplete(
 }
 
 void BrowsingHistoryHandler2::RemoveComplete() {
-  // Some Visits were deleted from history. Reload the list.
+  urls_to_be_deleted_.clear();
+
+  // Notify the page that the deletion request succeeded.
   web_ui_->CallJavascriptFunction("deleteComplete");
 }
 
@@ -349,9 +362,12 @@ void BrowsingHistoryHandler2::Observe(int type,
     NOTREACHED();
     return;
   }
-
-  // Some URLs were deleted from history. Reload the list.
-  web_ui_->CallJavascriptFunction("historyDeleted");
+  history::URLsDeletedDetails* deletedDetails =
+      Details<history::URLsDeletedDetails>(details).ptr();
+  if (deletedDetails->urls != urls_to_be_deleted_) {
+    // Notify the page that someone else deleted from the history.
+    web_ui_->CallJavascriptFunction("historyDeleted");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -32,10 +32,31 @@ var historyView;
 var localStrings;
 var pageState;
 var deleteQueue = [];
-var deleteInFlight = false;
 var selectionAnchor = -1;
+var activePage = null;
 var idToCheckbox = [];
 
+const MenuButton = cr.ui.MenuButton;
+const Command = cr.ui.Command;
+const Menu = cr.ui.Menu;
+
+function createDropDownBgImage(canvasName, colorSpec) {
+  var ctx = document.getCSSCanvasContext('2d', canvasName, 6, 4);
+  ctx.fillStyle = ctx.strokeStyle = colorSpec;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(6, 0);
+  ctx.lineTo(3, 3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  return ctx;
+}
+
+// Create the canvases to be used as the drop down button background images.
+var arrow = createDropDownBgImage('drop-down-arrow', 'hsl(214, 91%, 85%)');
+var hoverArrow = createDropDownBgImage('drop-down-arrow-hover', '#6A86DE');
+var activeArrow = createDropDownBgImage('drop-down-arrow-active', 'white');
 
 ///////////////////////////////////////////////////////////////////////////////
 // Page:
@@ -83,13 +104,34 @@ function Page(result, continued, model, id) {
 Page.prototype.getResultDOM = function(searchResultFlag) {
   var node = createElementWithClassName('li', 'entry');
   var time = createElementWithClassName('div', 'time');
-  var domain = createElementWithClassName('span', 'domain');
+  var entryBox = createElementWithClassName('div', 'entry-box');
+  var domain = createElementWithClassName('div', 'domain');
+  var dropDown = createElementWithClassName('button', 'drop-down');
+  dropDown.value = 'Open action menu';
+  dropDown.title = localStrings.getString('actionMenuDescription');
+  dropDown.setAttribute('menu', '#action-menu');
+  cr.ui.decorate(dropDown, MenuButton);
+
+  // Keep track of the drop down that triggered the menu, so we know
+  // which element to apply the command to.
+  // TODO(dubroy): Ideally we'd use 'activate', but MenuButton swallows it.
+  var self = this;
+  var setActivePage = function(e) {
+    activePage = self;
+  };
+  dropDown.addEventListener('mousedown', setActivePage);
+  dropDown.addEventListener('focus', setActivePage);
+
   domain.style.backgroundImage =
     'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
   domain.textContent = this.domain_;
-  node.appendChild(time);
-  node.appendChild(domain);
-  node.appendChild(this.getTitleDOM_());
+  // Use a wrapper div so that the entry contents will be shinkwrapped.
+  entryBox.appendChild(time);
+  entryBox.appendChild(domain);
+  entryBox.appendChild(this.getTitleDOM_());
+  entryBox.appendChild(dropDown);
+  node.appendChild(entryBox);
+
   if (searchResultFlag) {
     time.textContent = this.dateShort;
     var snippet = createElementWithClassName('div', 'snippet');
@@ -109,6 +151,12 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
     }
     time.appendChild(document.createTextNode(this.dateTimeOfDay));
   }
+
+  if (typeof this.domNode_ != 'undefined') {
+      console.error('Already generated node for page.');
+  }
+  this.domNode_ = node;
+
   return node;
 };
 
@@ -125,22 +173,8 @@ Page.prototype.getDomainFromURL_ = function(url) {
 };
 
 /**
- * Truncates a string to a maximum lenth (including ... if truncated)
- * @param {string} The string to be truncated
- * @param {number} The length to truncate the string to
- * @return (string) The truncated string
- */
-Page.prototype.truncateString_ = function(str, maxLength) {
-  if (str.length > maxLength) {
-    return str.substr(0, maxLength - 3) + '...';
-  } else {
-    return str;
-  }
-};
-
-/**
- * Add child text nodes to a node such that occurrences of the spcified text is
- * highligted.
+ * Add child text nodes to a node such that occurrences of the specified text is
+ * highlighted.
  * @param {Node} node The node under which new text nodes will be made as
  *     children.
  * @param {string} content Text to be added beneath |node| as one or more
@@ -172,19 +206,16 @@ Page.prototype.addHighlightedText_ = function(node, content, highlightText) {
  * @return {DOMObject} DOM representation for the title block.
  */
 Page.prototype.getTitleDOM_ = function() {
-  var node = document.createElement('span');
-  node.className = 'title';
+  var node = createElementWithClassName('div', 'title');
   var link = document.createElement('a');
   link.href = this.url_;
   link.id = "id-" + this.id_;
 
-  var content = this.truncateString_(this.title_, 80);
+  // Add a tooltip, since it might be ellipsized.
+  // TODO(dubroy): Find a way to show the tooltip only when necessary.
+  link.title = this.title_;
 
-  // If we have truncated the title, add a tooltip.
-  if (content.length != this.title_.length) {
-    link.title = this.title_;
-  }
-  this.addHighlightedText_(link, content, this.model_.getSearchText());
+  this.addHighlightedText_(link, this.title_, this.model_.getSearchText());
   node.appendChild(link);
 
   if (this.starred_) {
@@ -194,6 +225,26 @@ Page.prototype.getTitleDOM_ = function() {
 
   return node;
 };
+
+/**
+ * Launch a search for more history entries from the same domain.
+ */
+Page.prototype.showMoreFromSite_ = function() {
+  setSearch(this.domain_);
+};
+
+/**
+ * Remove the page from the history.
+ */
+Page.prototype.removeFromHistory_ = function() {
+  var self = this;
+  var onSuccessCallback = function() {
+    removeEntryFromView(self.domNode_);
+  };
+  queueURLsForDeletion(this.time, [this.url_], onSuccessCallback);
+  deleteNextInQueue();
+};
+
 
 // Page, private, static: -----------------------------------------------------
 
@@ -930,6 +981,15 @@ function load() {
     setSearch(this.term.value);
     return false;
   };
+
+  $('remove-page').addEventListener('activate', function(e) {
+    activePage.removeFromHistory_();
+    activePage = null;
+  });
+  $('more-from-site').addEventListener('activate', function(e) {
+    activePage.showMoreFromSite_();
+    activePage = null;
+  });
 }
 
 /**
@@ -969,10 +1029,13 @@ function toggleEditMode() {
  * Delete the next item in our deletion queue.
  */
 function deleteNextInQueue() {
-  if (!deleteInFlight && deleteQueue.length) {
-    deleteInFlight = true;
+  if (deleteQueue.length > 0) {
+    // Call the native function to remove history entries.
+    // First arg is a time in seconds (passed as String) identifying the day.
+    // Remaining args are URLs of history entries from that day to delete.
+    var timeInSeconds = Math.floor(deleteQueue[0].date.getTime() / 1000);
     chrome.send('removeURLsOnOneDay',
-                [String(deleteQueue[0])].concat(deleteQueue[1]));
+                [String(timeInSeconds)].concat(deleteQueue[0].urls));
   }
 }
 
@@ -985,51 +1048,60 @@ function openClearBrowsingData() {
 }
 
 /**
+ * Queue a set of URLs from the same day for deletion.
+ * @param {Date} date A date indicating the day the URLs were visited.
+ * @param {Array} urls Array of URLs from the same day to be deleted.
+ * @param {Function} opt_callback An optional callback to be executed when
+ *        the deletion is complete.
+ */
+function queueURLsForDeletion(date, urls, opt_callback) {
+  deleteQueue.push({ 'date': date, 'urls': urls, 'callback': opt_callback });
+}
+
+/**
  * Collect IDs from checked checkboxes and send to Chrome for deletion.
  */
 function removeItems() {
-  var checkboxes = document.getElementsByTagName('input');
-  var ids = [];
+  var checked = document.querySelectorAll(
+      'input[type=checkbox]:checked:not([disabled])');
+  var urls = [];
   var disabledItems = [];
   var queue = [];
   var date = new Date();
-  for (var i = 0; i < checkboxes.length; i++) {
-    if (checkboxes[i].type == 'checkbox' && checkboxes[i].checked &&
-        !checkboxes[i].disabled) {
-      var cbDate = new Date(checkboxes[i].time);
-      if (date.getFullYear() != cbDate.getFullYear() ||
-          date.getMonth() != cbDate.getMonth() ||
-          date.getDate() != cbDate.getDate()) {
-        if (ids.length > 0) {
-          queue.push(date.valueOf() / 1000);
-          queue.push(ids);
-        }
-        ids = [];
-        date = cbDate;
+
+  for (var i = 0; i < checked.length; i++) {
+    var checkbox = checked[i];
+    var cbDate = new Date(checkbox.time);
+    if (date.getFullYear() != cbDate.getFullYear() ||
+        date.getMonth() != cbDate.getMonth() ||
+        date.getDate() != cbDate.getDate()) {
+      if (urls.length > 0) {
+        queue.push([date, urls]);
       }
-      var link = $('id-' + checkboxes[i].name);
-      checkboxes[i].disabled = true;
-      link.style.textDecoration = 'line-through';
-      disabledItems.push(checkboxes[i]);
-      ids.push(link.href);
+      urls = [];
+      date = cbDate;
     }
+    var link = $('id-' + checkbox.name);
+    checkbox.disabled = true;
+    link.classList.add('to-be-removed');
+    disabledItems.push(checkbox);
+    urls.push(link.href);
   }
-  if (ids.length > 0) {
-    queue.push(date.valueOf() / 1000);
-    queue.push(ids);
+  if (urls.length > 0) {
+    queue.push([date, urls]);
   }
-  if (queue.length > 0) {
-    if (confirm(localStrings.getString('deletewarning'))) {
-      deleteQueue = deleteQueue.concat(queue);
-      deleteNextInQueue();
-    } else {
-      // If the remove is cancelled, return the checkboxes to their
-      // enabled, non-line-through state.
-      for (var i = 0; i < disabledItems.length; i++) {
-        var link = $('id-' + disabledItems[i].name);
-        disabledItems[i].disabled = false;
-        link.style.textDecoration = '';
-      }
+  if (checked.length > 0 && confirm(localStrings.getString('deletewarning'))) {
+    for (var i = 0; i < queue.length; i++) {
+      queueURLsForDeletion(queue[i][0], queue[i][1]);
+    }
+    deleteNextInQueue();
+  } else {
+    // If the remove is cancelled, return the checkboxes to their
+    // enabled, non-line-through state.
+    for (var i = 0; i < disabledItems.length; i++) {
+      var link = $('id-' + disabledItems[i].name);
+      disabledItems[i].disabled = false;
+      link.classList.remove('to-be-removed');
     }
   }
   return false;
@@ -1053,6 +1125,32 @@ function checkboxClicked(event) {
   this.focus();
 }
 
+/**
+ * Removes a single entry from the view. Also removes gaps before and after
+ * entry if necessary.
+ */
+function removeEntryFromView(entry) {
+  var nextEntry = entry.nextSibling;
+  var previousEntry = entry.previousSibling;
+  entry.parentNode.removeChild(entry);
+
+  // if there is no previous entry, and the next entry is a gap, remove it
+  if (!previousEntry && nextEntry && nextEntry.className == 'gap') {
+    nextEntry.parentNode.removeChild(nextEntry);
+  }
+
+  // if there is no next entry, and the previous entry is a gap, remove it
+  if (!nextEntry && previousEntry && previousEntry.className == 'gap') {
+    previousEntry.parentNode.removeChild(previousEntry);
+  }
+
+  // if both the next and previous entries are gaps, remove one
+  if (nextEntry && nextEntry.className == 'gap' &&
+      previousEntry && previousEntry.className == 'gap') {
+    nextEntry.parentNode.removeChild(nextEntry);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Chrome callbacks:
 /**
@@ -1066,13 +1164,14 @@ function historyResult(info, results) {
  * Our history system calls this function when a deletion has finished.
  */
 function deleteComplete() {
-  window.console.log('Delete complete');
-  deleteInFlight = false;
-  if (deleteQueue.length > 2) {
-    deleteQueue = deleteQueue.slice(2);
+  if (deleteQueue.length > 0) {
+    // Remove the successfully deleted entry from the queue.
+    if (deleteQueue[0].callback)
+      deleteQueue[0].callback();
+    deleteQueue.splice(0, 1);
     deleteNextInQueue();
   } else {
-    deleteQueue = [];
+    console.error('Received deleteComplete but queue is empty.');
   }
 }
 
@@ -1082,21 +1181,28 @@ function deleteComplete() {
  */
 function deleteFailed() {
   window.console.log('Delete failed');
+
   // The deletion failed - try again later.
-  deleteInFlight = false;
+  // TODO(dubroy): We should probably give up at some point.
   setTimeout(deleteNextInQueue, 500);
 }
 
 /**
- * We're called when something is deleted (either by us or by someone
- * else).
+ * Called when the history is deleted by someone else.
  */
 function historyDeleted() {
   window.console.log('History deleted');
   var anyChecked = document.querySelector('.entry input:checked') != null;
+  // Reload the page, unless the user is actively editing.
+  // TODO(dubroy): We should just reload the page & restore the checked items.
   if (!(historyView.getEditMode() && anyChecked))
     historyView.reload();
 }
 
 // Add handlers to HTML elements.
 document.addEventListener('DOMContentLoaded', load);
+
+// This event lets us enable and disable menu items before the menu is shown.
+document.addEventListener('canExecute', function(e) {
+  e.canExecute = true;
+});

@@ -338,6 +338,15 @@ are declared in build/common.gypi.
       <message name="IDS_HISTORY_CONTINUED" desc="Shown after the date if the data is continued from the previous page">
         (Cont.)
       </message>
+      <message name="IDS_HISTORY_ACTION_MENU_DESCRIPTION" desc="Text used to identify the history entry drop-down menu for screen readers">
+        Actions
+      </message>
+      <message name="IDS_HISTORY_REMOVE_PAGE" desc="Command in the history entry drop-down menu. Removes a page from the history.">
+        Remove from history
+      </message>
+      <message name="IDS_HISTORY_MORE_FROM_SITE" desc="Command in the history entry drop-down menu. Shows more history entries from the same site.">
+        More from this site
+      </message>
 
       <!-- Generic terms -->
       <message name="IDS_OK" desc="Used for Ok on buttons">

@@ -93,6 +93,9 @@ class BrowsingHistoryHandler2 : public WebUIMessageHandler,
   // Our consumer for delete requests to the history service.
   CancelableRequestConsumerT<int, 0> cancelable_delete_consumer_;
 
+  // The list of URLs that are in the process of being deleted.
+  std::set<GURL> urls_to_be_deleted_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler2);
 };
 
