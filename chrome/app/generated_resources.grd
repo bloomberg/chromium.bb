@@ -9898,7 +9898,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sync Error
       </message>
       <message name="IDS_SYNC_BOOKMARK_BAR_ERROR_DESC" desc="The detailed description of the error to associate with the bookmark bar error button.">
-        Your account sign-in details are out of date. Click to re-enter your password.
+        Please update your sync passphrase.
       </message>
 
       <!-- Translate Info Bar -->
