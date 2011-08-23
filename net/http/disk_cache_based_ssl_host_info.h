@@ -79,7 +79,9 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
 
   std::string key() const;
 
-  void DoLoop(int rv);
+  void OnIOComplete(int rv);
+
+  int DoLoop(int rv);
 
   int DoGetBackendComplete(int rv);
   int DoOpenComplete(int rv);
@@ -112,8 +114,8 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;
   CompletionCallback* user_callback_;
-  scoped_refptr<net::IOBuffer> read_buffer_;
-  scoped_refptr<net::IOBuffer> write_buffer_;
+  scoped_refptr<IOBuffer> read_buffer_;
+  scoped_refptr<IOBuffer> write_buffer_;
   std::string data_;
 };
 

@@ -41,7 +41,7 @@ DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
     : SSLHostInfo(hostname, ssl_config, cert_verifier),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       callback_(new CallbackImpl(weak_ptr_factory_.GetWeakPtr(),
-                                 &DiskCacheBasedSSLHostInfo::DoLoop)),
+                                 &DiskCacheBasedSSLHostInfo::OnIOComplete)),
       state_(GET_BACKEND),
       ready_(false),
       hostname_(hostname),
@@ -98,7 +98,17 @@ std::string DiskCacheBasedSSLHostInfo::key() const {
   return "sslhostinfo:" + hostname_;
 }
 
-void DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
+void DiskCacheBasedSSLHostInfo::OnIOComplete(int rv) {
+  rv = DoLoop(rv);
+  if (rv != ERR_IO_PENDING) {
+    CompletionCallback* callback = user_callback_;
+    user_callback_ = NULL;
+    if (callback)
+      callback->Run(rv);
+  }
+}
+
+int DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
   do {
     switch (state_) {
       case GET_BACKEND:
@@ -142,6 +152,8 @@ void DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
         NOTREACHED();
     }
   } while (rv != ERR_IO_PENDING && state_ != NONE);
+
+  return rv;
 }
 
 int DiskCacheBasedSSLHostInfo::DoGetBackendComplete(int rv) {
@@ -167,7 +179,7 @@ int DiskCacheBasedSSLHostInfo::DoOpenComplete(int rv) {
 
 int DiskCacheBasedSSLHostInfo::DoReadComplete(int rv) {
   if (rv > 0)
-    data_ = std::string(read_buffer_->data(), rv);
+    data_.assign(read_buffer_->data(), rv);
 
   state_ = WAIT_FOR_DATA_READY_DONE;
   return OK;
@@ -227,23 +239,15 @@ int DiskCacheBasedSSLHostInfo::DoCreate() {
 }
 
 int DiskCacheBasedSSLHostInfo::DoWaitForDataReadyDone() {
-  CompletionCallback* callback;
-
   DCHECK(!ready_);
   state_ = NONE;
   ready_ = true;
-  callback = user_callback_;
-  user_callback_ = NULL;
   // We close the entry because, if we shutdown before ::Persist is called,
   // then we might leak a cache reference, which causes a DCHECK on shutdown.
   if (entry_)
     entry_->Close();
   entry_ = NULL;
   Parse(data_);
-
-  if (callback)
-    callback->Run(OK);
-
   return OK;
 }
 
