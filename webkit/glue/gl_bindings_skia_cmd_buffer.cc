@@ -16,134 +16,108 @@
 namespace webkit_glue {
 
 void BindSkiaToCommandBufferGL() {
-  static GrGLInterface cmd_buffer_interface = {
-    kES2_GrGLBinding,
-
-    kProbe_GrGLCapability,   // NPOTRenderTargetSupport
-    kProbe_GrGLCapability,   // MinRenderTargetHeight
-    kProbe_GrGLCapability,   // MinRenderTargetWidth
-
-    glActiveTexture,
-    glAttachShader,
-    glBindAttribLocation,
-    glBindBuffer,
-    glBindTexture,
-    glBlendColor,
-    glBlendFunc,
-    glBufferData,
-    glBufferSubData,
-    glClear,
-    glClearColor,
-    glClearStencil,
-    NULL,  // glClientActiveTexture
-    NULL,  // glColor4ub
-    glColorMask,
-    NULL,  // glColorPointer
-    glCompileShader,
-    glCompressedTexImage2D,
-    glCreateProgram,
-    glCreateShader,
-    glCullFace,
-    glDeleteBuffers,
-    glDeleteProgram,
-    glDeleteShader,
-    glDeleteTextures,
-    glDepthMask,
-    glDisable,
-    NULL,  // glDisableClientState
-    glDisableVertexAttribArray,
-    glDrawArrays,
-    NULL,  // glDrawBuffer
-    NULL,  // glDrawBuffers
-    glDrawElements,
-    glEnable,
-    NULL,  // glEnableClientState
-    glEnableVertexAttribArray,
-    glFrontFace,
-    glGenBuffers,
-    glGenTextures,
-    glGetBufferParameteriv,
-    glGetError,
-    glGetIntegerv,
-    glGetProgramInfoLog,
-    glGetProgramiv,
-    glGetShaderInfoLog,
-    glGetShaderiv,
-    glGetString,
-    NULL,  // glGetTexLevelParameteriv
-    glGetUniformLocation,
-    glLineWidth,
-    glLinkProgram,
-    NULL,  // glLoadMatrixf
-    NULL,  // glMatrixMode
-    glPixelStorei,
-    NULL,  // glPointSize
-    NULL,  // glReadBuffer
-    glReadPixels,
-    glScissor,
-    NULL,  // glShadeModel
-    glShaderSource,
-    glStencilFunc,
-    glStencilFuncSeparate,
-    glStencilMask,
-    glStencilMaskSeparate,
-    glStencilOp,
-    glStencilOpSeparate,
-    NULL,  // glTexCoordPointer
-    NULL,  // glTexEnvi
-    glTexImage2D,
-    glTexParameteri,
-    glTexSubImage2D,
-    glUniform1f,
-    glUniform1i,
-    glUniform1fv,
-    glUniform1iv,
-    glUniform2f,
-    glUniform2i,
-    glUniform2fv,
-    glUniform2iv,
-    glUniform3f,
-    glUniform3i,
-    glUniform3fv,
-    glUniform3iv,
-    glUniform4f,
-    glUniform4i,
-    glUniform4fv,
-    glUniform4iv,
-    glUniformMatrix2fv,
-    glUniformMatrix3fv,
-    glUniformMatrix4fv,
-    glUseProgram,
-    glVertexAttrib4fv,
-    glVertexAttribPointer,
-    NULL,  // glVertexPointer
-    glViewport,
-    glBindFramebuffer,
-    glBindRenderbuffer,
-    glCheckFramebufferStatus,
-    glDeleteFramebuffers,
-    glDeleteRenderbuffers,
-    glFramebufferRenderbuffer,
-    glFramebufferTexture2D,
-    glGenFramebuffers,
-    glGenRenderbuffers,
-    glGetFramebufferAttachmentParameteriv,
-    glGetRenderbufferParameteriv,
-    glRenderbufferStorage,
-    glRenderbufferStorageMultisampleEXT,
-    glBlitFramebufferEXT,
-    NULL,  // glResolveMultisampleFramebuffer
-    NULL,  // glMapBuffer
-    NULL,  // glUnmapBuffer
-    NULL,  // glBindFragDataLocationIndexed
-
-    GrGLInterface::kStaticInitEndGuard
-  };
-  static bool host_StubGL_initialized = false;
-  if (!host_StubGL_initialized) {
-    GrGLSetGLInterface(&cmd_buffer_interface);
-    host_StubGL_initialized = true;
+  static SkAutoTUnref<GrGLInterface> cmd_buffer_interface;
+  if (NULL == cmd_buffer_interface.get()) {
+    GrGLInterface* interface = new GrGLInterface;
+    cmd_buffer_interface.reset(interface);
+    interface->fBindingsExported = kES2_GrGLBinding;
+    interface->fActiveTexture = glActiveTexture;
+    interface->fAttachShader = glAttachShader;
+    interface->fBindAttribLocation = glBindAttribLocation;
+    interface->fBindBuffer = glBindBuffer;
+    interface->fBindTexture = glBindTexture;
+    interface->fBlendColor = glBlendColor;
+    interface->fBlendFunc = glBlendFunc;
+    interface->fBufferData = glBufferData;
+    interface->fBufferSubData = glBufferSubData;
+    interface->fClear = glClear;
+    interface->fClearColor = glClearColor;
+    interface->fClearStencil = glClearStencil;
+    interface->fColorMask = glColorMask;
+    interface->fCompileShader = glCompileShader;
+    interface->fCompressedTexImage2D = glCompressedTexImage2D;
+    interface->fCreateProgram = glCreateProgram;
+    interface->fCreateShader = glCreateShader;
+    interface->fCullFace = glCullFace;
+    interface->fDeleteBuffers = glDeleteBuffers;
+    interface->fDeleteProgram = glDeleteProgram;
+    interface->fDeleteShader = glDeleteShader;
+    interface->fDeleteTextures = glDeleteTextures;
+    interface->fDepthMask = glDepthMask;
+    interface->fDisable = glDisable;
+    interface->fDisableVertexAttribArray = glDisableVertexAttribArray;
+    interface->fDrawArrays = glDrawArrays;
+    interface->fDrawElements = glDrawElements;
+    interface->fEnable = glEnable;
+    interface->fEnableVertexAttribArray = glEnableVertexAttribArray;
+    interface->fFrontFace = glFrontFace;
+    interface->fGenBuffers = glGenBuffers;
+    interface->fGenTextures = glGenTextures;
+    interface->fGetBufferParameteriv = glGetBufferParameteriv;
+    interface->fGetError = glGetError;
+    interface->fGetIntegerv = glGetIntegerv;
+    interface->fGetProgramInfoLog = glGetProgramInfoLog;
+    interface->fGetProgramiv = glGetProgramiv;
+    interface->fGetShaderInfoLog = glGetShaderInfoLog;
+    interface->fGetShaderiv = glGetShaderiv;
+    interface->fGetString = glGetString;
+    interface->fGetUniformLocation = glGetUniformLocation;
+    interface->fLineWidth = glLineWidth;
+    interface->fLinkProgram = glLinkProgram;
+    interface->fPixelStorei = glPixelStorei;
+    interface->fReadPixels = glReadPixels;
+    interface->fScissor = glScissor;
+    interface->fShaderSource = glShaderSource;
+    interface->fStencilFunc = glStencilFunc;
+    interface->fStencilFuncSeparate = glStencilFuncSeparate;
+    interface->fStencilMask = glStencilMask;
+    interface->fStencilMaskSeparate = glStencilMaskSeparate;
+    interface->fStencilOp = glStencilOp;
+    interface->fStencilOpSeparate = glStencilOpSeparate;
+    interface->fTexImage2D = glTexImage2D;
+    interface->fTexParameteri = glTexParameteri;
+    interface->fTexSubImage2D = glTexSubImage2D;
+    interface->fUniform1f = glUniform1f;
+    interface->fUniform1i = glUniform1i;
+    interface->fUniform1fv = glUniform1fv;
+    interface->fUniform1iv = glUniform1iv;
+    interface->fUniform2f = glUniform2f;
+    interface->fUniform2i = glUniform2i;
+    interface->fUniform2fv = glUniform2fv;
+    interface->fUniform2iv = glUniform2iv;
+    interface->fUniform3f = glUniform3f;
+    interface->fUniform3i = glUniform3i;
+    interface->fUniform3fv = glUniform3fv;
+    interface->fUniform3iv = glUniform3iv;
+    interface->fUniform4f = glUniform4f;
+    interface->fUniform4i = glUniform4i;
+    interface->fUniform4fv = glUniform4fv;
+    interface->fUniform4iv = glUniform4iv;
+    interface->fUniformMatrix2fv = glUniformMatrix2fv;
+    interface->fUniformMatrix3fv = glUniformMatrix3fv;
+    interface->fUniformMatrix4fv = glUniformMatrix4fv;
+    interface->fUseProgram = glUseProgram;
+    interface->fVertexAttrib4fv = glVertexAttrib4fv;
+    interface->fVertexAttribPointer = glVertexAttribPointer;
+    interface->fViewport = glViewport;
+    interface->fBindFramebuffer = glBindFramebuffer;
+    interface->fBindRenderbuffer = glBindRenderbuffer;
+    interface->fCheckFramebufferStatus = glCheckFramebufferStatus;
+    interface->fDeleteFramebuffers = glDeleteFramebuffers;
+    interface->fDeleteRenderbuffers = glDeleteRenderbuffers;
+    interface->fFramebufferRenderbuffer = glFramebufferRenderbuffer;
+    interface->fFramebufferTexture2D = glFramebufferTexture2D;
+    interface->fGenFramebuffers = glGenFramebuffers;
+    interface->fGenRenderbuffers = glGenRenderbuffers;
+    interface->fGetFramebufferAttachmentParameteriv =
+      glGetFramebufferAttachmentParameteriv;
+    interface->fGetRenderbufferParameteriv = glGetRenderbufferParameteriv;
+    interface->fRenderbufferStorage = glRenderbufferStorage;
+    interface->fRenderbufferStorageMultisample =
+      glRenderbufferStorageMultisampleEXT;
+    interface->fBlitFramebuffer = glBlitFramebufferEXT;
   }
+  GrGLSetDefaultGLInterface(cmd_buffer_interface.get());
 }
 
 }  // namespace webkit_glue
