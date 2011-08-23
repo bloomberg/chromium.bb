@@ -124,7 +124,7 @@ class PhoneField : public FormField {
   static struct Parser {
     RegexType regex;       // Field matching reg-ex.
     PhonePart phone_part;  // Index of the field.
-    int max_size;          // Max size of the field to match. 0 means any.
+    size_t max_size;       // Max size of the field to match. 0 means any.
   } phone_field_grammars_[];
 
   DISALLOW_COPY_AND_ASSIGN(PhoneField);

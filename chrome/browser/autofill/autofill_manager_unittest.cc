@@ -2102,70 +2102,125 @@ TEST_F(AutofillManagerTest, FillAutofilledForm) {
 
 // Test that we correctly fill a phone number split across multiple fields.
 TEST_F(AutofillManagerTest, FillPhoneNumber) {
-  // Set up our form data.
-  FormData form;
-  form.name = ASCIIToUTF16("MyPhoneForm");
-  form.method = ASCIIToUTF16("POST");
-  form.origin = GURL("http://myform.com/phone_form.html");
-  form.action = GURL("http://myform.com/phone_submit.html");
-  form.user_submitted = true;
+  // In one form, rely on the maxlength attribute to imply phone number parts.
+  // In the other form, rely on the autocompletetype attribute.
+  FormData form_with_maxlength;
+  form_with_maxlength.name = ASCIIToUTF16("MyMaxlengthPhoneForm");
+  form_with_maxlength.method = ASCIIToUTF16("POST");
+  form_with_maxlength.origin = GURL("http://myform.com/phone_form.html");
+  form_with_maxlength.action = GURL("http://myform.com/phone_submit.html");
+  form_with_maxlength.user_submitted = true;
+  FormData form_with_autocompletetype = form_with_maxlength;
+  form_with_autocompletetype.name = ASCIIToUTF16("MyAutocompletetypePhoneForm");
+
+  struct {
+    const char* label;
+    const char* name;
+    size_t max_length;
+    const char* autocomplete_type;
+  } test_fields[] = {
+    { "country code", "country_code", 1, "phone-country-code" },
+    { "area code", "area_code", 3, "phone-area-code" },
+    { "phone", "phone_prefix", 3, "phone-local-prefix" },
+    { "-", "phone_suffix", 4, "phone-local-suffix" },
+    { "Phone Extension", "ext", 3, "phone-extension" }
+  };
 
   FormField field;
-  autofill_test::CreateTestFormField(
-      "country code", "country code", "", "text", &field);
-  field.max_length = 1;
-  form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "area code", "area code", "", "text", &field);
-  field.max_length = 3;
-  form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "phone", "phone prefix", "1", "text", &field);
-  field.max_length = 3;
-  form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "-", "phone suffix", "", "text", &field);
-  field.max_length = 4;
-  form.fields.push_back(field);
-  autofill_test::CreateTestFormField(
-      "Phone Extension", "ext", "", "text", &field);
-  field.max_length = 3;
-  form.fields.push_back(field);
+  const size_t default_max_length = field.max_length;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_fields); ++i) {
+    autofill_test::CreateTestFormField(
+        test_fields[i].label, test_fields[i].name, "", "text", &field);
+    field.max_length = test_fields[i].max_length;
+    field.autocomplete_type = string16();
+    form_with_maxlength.fields.push_back(field);
 
-  std::vector<FormData> forms(1, form);
+    field.max_length = default_max_length;
+    field.autocomplete_type = ASCIIToUTF16(test_fields[i].autocomplete_type);
+    form_with_autocompletetype.fields.push_back(field);
+  }
+
+  std::vector<FormData> forms;
+  forms.push_back(form_with_maxlength);
+  forms.push_back(form_with_autocompletetype);
   FormsSeen(forms);
 
-  AutofillProfile *work_profile = autofill_manager_->GetProfileWithGUID(
+  // We should be able to fill prefix and suffix fields for US numbers.
+  AutofillProfile* work_profile = autofill_manager_->GetProfileWithGUID(
       "00000000-0000-0000-0000-000000000002");
   ASSERT_TRUE(work_profile != NULL);
+  work_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("16505554567"));
 
   GUIDPair guid(work_profile->guid(), 0);
   GUIDPair empty(std::string(), 0);
 
-  char test_data[] = "16505554567890123456";
-  for (int i = arraysize(test_data) - 1; i >= 0; --i) {
-    test_data[i] = 0;
-    SCOPED_TRACE(StringPrintf("Testing phone: %s", test_data));
-    work_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16(test_data));
-    // The page ID sent to the AutofillManager from the RenderView, used to send
-    // an IPC message back to the renderer.
-    int page_id = 100 - i;
-    FillAutofillFormData(
-        page_id, form, *form.fields.begin(),
-        autofill_manager_->PackGUIDs(empty, guid));
-    page_id = 0;
-    FormData results;
-    EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results));
+  int page_id = 1;
+  FillAutofillFormData(page_id, form_with_maxlength,
+                       *form_with_maxlength.fields.begin(),
+                       autofill_manager_->PackGUIDs(empty, guid));
+  page_id = 0;
+  FormData results1;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results1));
+  EXPECT_EQ(1, page_id);
 
-    if (i != 11) {
-      // The only parsable phone is 16505554567.
-      EXPECT_EQ(string16(), results.fields[2].value);
-      EXPECT_EQ(string16(), results.fields[3].value);
-    } else {
-      EXPECT_EQ(ASCIIToUTF16("555"), results.fields[2].value);
-      EXPECT_EQ(ASCIIToUTF16("4567"), results.fields[3].value);
-    }
-  }
+  ASSERT_EQ(5U, results1.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("1"), results1.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("650"), results1.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("555"), results1.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("4567"), results1.fields[3].value);
+  EXPECT_EQ(string16(), results1.fields[4].value);
+
+  page_id = 2;
+  FillAutofillFormData(page_id, form_with_autocompletetype,
+                       *form_with_autocompletetype.fields.begin(),
+                       autofill_manager_->PackGUIDs(empty, guid));
+  page_id = 0;
+  FormData results2;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results2));
+  EXPECT_EQ(2, page_id);
+
+  ASSERT_EQ(5U, results2.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("1"), results2.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("650"), results2.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("555"), results2.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("4567"), results2.fields[3].value);
+  EXPECT_EQ(string16(), results2.fields[4].value);
+
+  // We should not be able to fill prefix and suffix fields for international
+  // numbers.
+  work_profile->SetInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("United Kingdom"));
+  work_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("447700954321"));
+  page_id = 3;
+  FillAutofillFormData(page_id, form_with_maxlength,
+                       *form_with_maxlength.fields.begin(),
+                       autofill_manager_->PackGUIDs(empty, guid));
+  page_id = 0;
+  FormData results3;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results3));
+  EXPECT_EQ(3, page_id);
+
+  ASSERT_EQ(5U, results3.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("44"), results3.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("7700"), results3.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("954321"), results3.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("954321"), results3.fields[3].value);
+  EXPECT_EQ(string16(), results3.fields[4].value);
+
+  page_id = 4;
+  FillAutofillFormData(page_id, form_with_autocompletetype,
+                       *form_with_autocompletetype.fields.begin(),
+                       autofill_manager_->PackGUIDs(empty, guid));
+  page_id = 0;
+  FormData results4;
+  EXPECT_TRUE(GetAutofillFormDataFilledMessage(&page_id, &results4));
+  EXPECT_EQ(4, page_id);
+
+  ASSERT_EQ(5U, results4.fields.size());
+  EXPECT_EQ(ASCIIToUTF16("44"), results4.fields[0].value);
+  EXPECT_EQ(ASCIIToUTF16("7700"), results4.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("954321"), results4.fields[2].value);
+  EXPECT_EQ(ASCIIToUTF16("954321"), results4.fields[3].value);
+  EXPECT_EQ(string16(), results4.fields[4].value);
 }
 
 // Test that we can still fill a form when a field has been removed from it.

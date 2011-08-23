@@ -29,7 +29,7 @@ struct FormField {
   string16 value;
   string16 form_control_type;
   string16 autocomplete_type;
-  int max_length;
+  size_t max_length;
   bool is_autofilled;
 
   // For the HTML snippet |<option value="US">United States</option>|, the

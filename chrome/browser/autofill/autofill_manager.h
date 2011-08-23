@@ -167,24 +167,25 @@ class AutofillManager : public TabContentsObserver,
                                 std::vector<string16>* icons,
                                 std::vector<int>* unique_ids);
 
-  // Set |field| argument's value based on |type| and contents of the
-  // |credit_card|.
-  void FillCreditCardFormField(const CreditCard* credit_card,
+  // Set |field|'s value based on |type| and contents of the |credit_card|.
+  void FillCreditCardFormField(const CreditCard& credit_card,
                                AutofillFieldType type,
                                webkit_glue::FormField* field);
 
-  // Set |field| argument's value based on |type| and contents of the |profile|.
-  // The |variant| parameter specifies which value in a multi-valued profile.
-  void FillFormField(const AutofillProfile* profile,
-                     AutofillFieldType type,
+  // Set |field|'s value based on |cached_field|'s type and contents of the
+  // |profile|.  The |variant| parameter specifies which value in a multi-valued
+  // profile.
+  void FillFormField(const AutofillProfile& profile,
+                     const AutofillField& cached_field,
                      size_t variant,
                      webkit_glue::FormField* field);
 
-  // Set |field| argument's value for phone/fax number based on contents of the
-  // |profile|. |type| is the type of the phone.
-  // The |variant| parameter specifies which value in a multi-valued profile.
-  void FillPhoneNumberField(const AutofillProfile* profile,
-                            AutofillFieldType type,
+  // Set |field|'s value for phone/fax number based on contents of the
+  // |profile|.  The |cached_field| specifies the type of the phone and whether
+  // this is a phone prefix or suffix.  The |variant| parameter specifies which
+  // value in a multi-valued profile.
+  void FillPhoneNumberField(const AutofillProfile& profile,
+                            const AutofillField& cached_field,
                             size_t variant,
                             webkit_glue::FormField* field);
 

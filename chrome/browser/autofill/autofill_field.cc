@@ -35,7 +35,8 @@ AutofillField::AutofillField(const webkit_glue::FormField& field,
     : webkit_glue::FormField(field),
       unique_name_(unique_name),
       server_type_(NO_SERVER_DATA),
-      heuristic_type_(UNKNOWN_TYPE) {
+      heuristic_type_(UNKNOWN_TYPE),
+      phone_part_(IGNORED) {
 }
 
 AutofillField::~AutofillField() {}

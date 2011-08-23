@@ -87,48 +87,47 @@ std::string EncodeFieldTypes(const FieldTypeSet& available_field_types) {
   return data_presence;
 }
 
-bool ConvertToAutofillFieldType(const AutofillField& field,
-                                const string16& autocomplete_type,
-                                AutofillFieldType* autofill_type) {
+bool UpdateFromAutocompleteType(const string16& autocomplete_type,
+                                AutofillField* field) {
   if (autocomplete_type == ASCIIToUTF16("given-name")) {
-    *autofill_type = NAME_FIRST;
+    field->set_heuristic_type(NAME_FIRST);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("middle-name")) {
-    *autofill_type = NAME_MIDDLE;
+    field->set_heuristic_type(NAME_MIDDLE);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("middle-initial")) {
-    *autofill_type = NAME_MIDDLE_INITIAL;
+    field->set_heuristic_type(NAME_MIDDLE_INITIAL);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("surname")) {
-    *autofill_type = NAME_LAST;
+    field->set_heuristic_type(NAME_LAST);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("full-name")) {
-    *autofill_type = NAME_FULL;
+    field->set_heuristic_type(NAME_FULL);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("street-address") ||
       autocomplete_type == ASCIIToUTF16("address-line1")) {
-    *autofill_type = ADDRESS_HOME_LINE1;
+    field->set_heuristic_type(ADDRESS_HOME_LINE1);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("address-line2")) {
-    *autofill_type = ADDRESS_HOME_LINE2;
+    field->set_heuristic_type(ADDRESS_HOME_LINE2);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("locality") ||
       autocomplete_type == ASCIIToUTF16("city")) {
-    *autofill_type = ADDRESS_HOME_CITY;
+    field->set_heuristic_type(ADDRESS_HOME_CITY);
     return true;
   }
 
@@ -136,116 +135,132 @@ bool ConvertToAutofillFieldType(const AutofillField& field,
       autocomplete_type == ASCIIToUTF16("state") ||
       autocomplete_type == ASCIIToUTF16("province") ||
       autocomplete_type == ASCIIToUTF16("region")) {
-    *autofill_type = ADDRESS_HOME_STATE;
+    field->set_heuristic_type(ADDRESS_HOME_STATE);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("postal-code")) {
-    *autofill_type = ADDRESS_HOME_ZIP;
+    field->set_heuristic_type(ADDRESS_HOME_ZIP);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("country")) {
-    *autofill_type = ADDRESS_HOME_COUNTRY;
+    field->set_heuristic_type(ADDRESS_HOME_COUNTRY);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("organization")) {
-    *autofill_type = COMPANY_NAME;
+    field->set_heuristic_type(COMPANY_NAME);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("email")) {
-    *autofill_type = EMAIL_ADDRESS;
+    field->set_heuristic_type(EMAIL_ADDRESS);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("phone-full")) {
-    *autofill_type = PHONE_HOME_WHOLE_NUMBER;
+    field->set_heuristic_type(PHONE_HOME_WHOLE_NUMBER);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("phone-country-code")) {
-    *autofill_type = PHONE_HOME_COUNTRY_CODE;
+    field->set_heuristic_type(PHONE_HOME_COUNTRY_CODE);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("phone-national")) {
-    *autofill_type = PHONE_HOME_CITY_AND_NUMBER;
+    field->set_heuristic_type(PHONE_HOME_CITY_AND_NUMBER);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("phone-area-code")) {
-    *autofill_type = PHONE_HOME_CITY_CODE;
+    field->set_heuristic_type(PHONE_HOME_CITY_CODE);
     return true;
   }
 
-  // TODO(isherman): We should more fully support "phone-local-prefix" and
-  // "phone-local-suffix": http://crbug.com/92121
-  if (autocomplete_type == ASCIIToUTF16("phone-local") ||
-      autocomplete_type == ASCIIToUTF16("phone-local-prefix") ||
-      autocomplete_type == ASCIIToUTF16("phone-local-suffix")) {
-    *autofill_type = PHONE_HOME_NUMBER;
+  if (autocomplete_type == ASCIIToUTF16("phone-local")) {
+    field->set_heuristic_type(PHONE_HOME_NUMBER);
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("phone-local-prefix")) {
+    field->set_heuristic_type(PHONE_HOME_NUMBER);
+    field->set_phone_part(AutofillField::PHONE_PREFIX);
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("phone-local-suffix")) {
+    field->set_heuristic_type(PHONE_HOME_NUMBER);
+    field->set_phone_part(AutofillField::PHONE_SUFFIX);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("fax-full")) {
-    *autofill_type = PHONE_FAX_WHOLE_NUMBER;
+    field->set_heuristic_type(PHONE_FAX_WHOLE_NUMBER);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("fax-country-code")) {
-    *autofill_type = PHONE_FAX_COUNTRY_CODE;
+    field->set_heuristic_type(PHONE_FAX_COUNTRY_CODE);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("fax-national")) {
-    *autofill_type = PHONE_FAX_CITY_AND_NUMBER;
+    field->set_heuristic_type(PHONE_FAX_CITY_AND_NUMBER);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("fax-area-code")) {
-    *autofill_type = PHONE_FAX_CITY_CODE;
+    field->set_heuristic_type(PHONE_FAX_CITY_CODE);
     return true;
   }
 
-  // TODO(isherman): We should more fully support "fax-local-prefix" and
-  // "fax-local-suffix": http://crbug.com/92121
-  if (autocomplete_type == ASCIIToUTF16("fax-local") ||
-      autocomplete_type == ASCIIToUTF16("fax-local-prefix") ||
-      autocomplete_type == ASCIIToUTF16("fax-local-suffix")) {
-    *autofill_type = PHONE_FAX_NUMBER;
+  if (autocomplete_type == ASCIIToUTF16("fax-local")) {
+    field->set_heuristic_type(PHONE_FAX_NUMBER);
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("fax-local-prefix")) {
+    field->set_heuristic_type(PHONE_FAX_NUMBER);
+    field->set_phone_part(AutofillField::PHONE_PREFIX);
+    return true;
+  }
+
+  if (autocomplete_type == ASCIIToUTF16("fax-local-suffix")) {
+    field->set_heuristic_type(PHONE_FAX_NUMBER);
+    field->set_phone_part(AutofillField::PHONE_SUFFIX);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("cc-full-name")) {
-    *autofill_type = CREDIT_CARD_NAME;
+    field->set_heuristic_type(CREDIT_CARD_NAME);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("cc-number")) {
-    *autofill_type = CREDIT_CARD_NUMBER;
+    field->set_heuristic_type(CREDIT_CARD_NUMBER);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("cc-exp-month")) {
-    *autofill_type = CREDIT_CARD_EXP_MONTH;
+    field->set_heuristic_type(CREDIT_CARD_EXP_MONTH);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("cc-exp-year")) {
-    if (field.max_length == 2)
-      *autofill_type = CREDIT_CARD_EXP_2_DIGIT_YEAR;
+    if (field->max_length == 2)
+      field->set_heuristic_type(CREDIT_CARD_EXP_2_DIGIT_YEAR);
     else
-      *autofill_type = CREDIT_CARD_EXP_4_DIGIT_YEAR;
+      field->set_heuristic_type(CREDIT_CARD_EXP_4_DIGIT_YEAR);
     return true;
   }
 
   if (autocomplete_type == ASCIIToUTF16("cc-exp")) {
-    if (field.max_length == 5)
-      *autofill_type = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
+    if (field->max_length == 5)
+      field->set_heuristic_type(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
     else
-      *autofill_type = CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
+      field->set_heuristic_type(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
     return true;
   }
 
@@ -878,11 +893,8 @@ void FormStructure::ParseAutocompletetypeAttributes(bool* found_attribute,
     // Look for specified types.
     for (std::vector<string16>::const_iterator type = types.begin();
          type != types.end(); ++type) {
-      AutofillFieldType autofill_type = UNKNOWN_TYPE;
-      if (ConvertToAutofillFieldType(**field, *type, &autofill_type)) {
-        (*field)->set_heuristic_type(autofill_type);
+      if (UpdateFromAutocompleteType(*type, *field))
         break;
-      }
     }
   }
 }

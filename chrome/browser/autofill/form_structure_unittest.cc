@@ -47,8 +47,6 @@ class FormStructureTest {
   }
 };
 
-namespace {
-
 TEST(FormStructureTest, FieldCount) {
   FormData form;
   form.method = ASCIIToUTF16("post");
@@ -374,6 +372,49 @@ TEST(FormStructureTest, HeuristicsAutocompletetype) {
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
   EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+}
+
+// Verify that we can correctly process the |autocompletetype| attribute for
+// phone number types (especially phone prefixes and suffixes).
+TEST(FormStructureTest, HeuristicsAutocompletetypePhones) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+
+  FormField field;
+  field.form_control_type = ASCIIToUTF16("text");
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("field1");
+  field.autocomplete_type = ASCIIToUTF16("phone-local");
+  form.fields.push_back(field);
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("field2");
+  field.autocomplete_type = ASCIIToUTF16("phone-local-prefix");
+  form.fields.push_back(field);
+
+  field.label = string16();
+  field.name = ASCIIToUTF16("field3");
+  field.autocomplete_type = ASCIIToUTF16("fax-local-suffix");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable(true));
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(3U, form_structure->field_count());
+  EXPECT_EQ(3U, form_structure->autofill_count());
+
+  EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(AutofillField::IGNORED, form_structure->field(0)->phone_part());
+  EXPECT_EQ(PHONE_HOME_NUMBER, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(AutofillField::PHONE_PREFIX,
+            form_structure->field(1)->phone_part());
+  EXPECT_EQ(PHONE_FAX_NUMBER, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(AutofillField::PHONE_SUFFIX,
+            form_structure->field(2)->phone_part());
 }
 
 // If at least one field includes the |autocompletetype| attribute, we should
@@ -1991,5 +2032,3 @@ TEST(FormStructureTest, CheckFormSignature) {
       std::string("https://login.facebook.com&login_form&email&first")),
       form_structure->FormSignature());
 }
-
-}  // namespace

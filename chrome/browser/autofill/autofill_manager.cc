@@ -501,11 +501,12 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
         if (profile) {
           DCHECK_NE(AutofillType::CREDIT_CARD,
                     AutofillType(field_type).group());
-          FillFormField(profile, field_type, profile_guid.second, &(*iter));
+          FillFormField(*profile, *autofill_field, profile_guid.second,
+                        &(*iter));
         } else {
           DCHECK_EQ(AutofillType::CREDIT_CARD,
                     AutofillType(field_type).group());
-          FillCreditCardFormField(credit_card, field_type, &(*iter));
+          FillCreditCardFormField(*credit_card, field_type, &(*iter));
         }
         break;
       }
@@ -539,7 +540,8 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     if (k >= form_structure->field_count())
       continue;
 
-    AutofillFieldType field_type = form_structure->field(k)->type();
+    const AutofillField* cached_field = form_structure->field(k);
+    AutofillFieldType field_type = cached_field->type();
     FieldTypeGroup field_group_type = AutofillType(field_type).group();
     if (field_group_type != AutofillType::NO_GROUP) {
       if (profile) {
@@ -548,14 +550,14 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
         // fill from, then take the multi-profile "variant" into account.
         // Otherwise fill with the default (zeroth) variant.
         if (result.fields[j] == field) {
-          FillFormField(profile, field_type, profile_guid.second,
+          FillFormField(*profile, *cached_field, profile_guid.second,
                         &result.fields[j]);
         } else {
-          FillFormField(profile, field_type, 0, &result.fields[j]);
+          FillFormField(*profile, *cached_field, 0, &result.fields[j]);
         }
       } else {
         DCHECK_EQ(AutofillType::CREDIT_CARD, field_group_type);
-        FillCreditCardFormField(credit_card, field_type, &result.fields[j]);
+        FillCreditCardFormField(*credit_card, field_type, &result.fields[j]);
       }
     }
 
@@ -911,78 +913,76 @@ void AutofillManager::GetCreditCardSuggestions(FormStructure* form,
   }
 }
 
-void AutofillManager::FillCreditCardFormField(const CreditCard* credit_card,
+void AutofillManager::FillCreditCardFormField(const CreditCard& credit_card,
                                               AutofillFieldType type,
                                               webkit_glue::FormField* field) {
-  DCHECK(credit_card);
   DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
 
   if (field->form_control_type == ASCIIToUTF16("select-one")) {
-    autofill::FillSelectControl(*credit_card, type, field);
+    autofill::FillSelectControl(credit_card, type, field);
   } else if (field->form_control_type == ASCIIToUTF16("month")) {
     // HTML5 input="month" consists of year-month.
     string16 year =
-        credit_card->GetCanonicalizedInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-    string16 month = credit_card->GetCanonicalizedInfo(CREDIT_CARD_EXP_MONTH);
+        credit_card.GetCanonicalizedInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
+    string16 month = credit_card.GetCanonicalizedInfo(CREDIT_CARD_EXP_MONTH);
     if (!year.empty() && !month.empty()) {
       // Fill the value only if |credit_card| includes both year and month
       // information.
       field->value = year + ASCIIToUTF16("-") + month;
     }
   } else {
-    field->value = credit_card->GetCanonicalizedInfo(type);
+    field->value = credit_card.GetCanonicalizedInfo(type);
   }
 }
 
-void AutofillManager::FillFormField(const AutofillProfile* profile,
-                                    AutofillFieldType type,
+void AutofillManager::FillFormField(const AutofillProfile& profile,
+                                    const AutofillField& cached_field,
                                     size_t variant,
                                     webkit_glue::FormField* field) {
-  DCHECK(profile);
+  AutofillFieldType type = cached_field.type();
   DCHECK_NE(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
 
   if (AutofillType(type).subgroup() == AutofillType::PHONE_NUMBER) {
-    FillPhoneNumberField(profile, type, variant, field);
+    FillPhoneNumberField(profile, cached_field, variant, field);
   } else {
     if (field->form_control_type == ASCIIToUTF16("select-one")) {
-      autofill::FillSelectControl(*profile, type, field);
+      autofill::FillSelectControl(profile, type, field);
     } else {
       std::vector<string16> values;
-      profile->GetCanonicalizedMultiInfo(type, &values);
+      profile.GetCanonicalizedMultiInfo(type, &values);
       DCHECK(variant < values.size());
       field->value = values[variant];
     }
   }
 }
 
-void AutofillManager::FillPhoneNumberField(const AutofillProfile* profile,
-                                           AutofillFieldType type,
+void AutofillManager::FillPhoneNumberField(const AutofillProfile& profile,
+                                           const AutofillField& cached_field,
                                            size_t variant,
                                            webkit_glue::FormField* field) {
+  std::vector<string16> values;
+  profile.GetCanonicalizedMultiInfo(cached_field.type(), &values);
+  DCHECK(variant < values.size());
+
   // If we are filling a phone number, check to see if the size field
   // matches the "prefix" or "suffix" sizes and fill accordingly.
-  std::vector<string16> values;
-  profile->GetCanonicalizedMultiInfo(type, &values);
-  DCHECK(variant < values.size());
   string16 number = values[variant];
-  bool has_valid_suffix_and_prefix = (number.length() ==
-      static_cast<size_t>(PhoneNumber::kPrefixLength +
-                          PhoneNumber::kSuffixLength));
-  if (has_valid_suffix_and_prefix &&
-      field->max_length == PhoneNumber::kPrefixLength) {
-    number = number.substr(PhoneNumber::kPrefixOffset,
-                           PhoneNumber::kPrefixLength);
-    field->value = number;
-  } else if (has_valid_suffix_and_prefix &&
-             field->max_length == PhoneNumber::kSuffixLength) {
-    number = number.substr(PhoneNumber::kSuffixOffset,
-                           PhoneNumber::kSuffixLength);
-    field->value = number;
-  } else {
-    field->value = number;
+  if (number.length() ==
+          (PhoneNumber::kPrefixLength + PhoneNumber::kSuffixLength)) {
+    if (cached_field.phone_part() == AutofillField::PHONE_PREFIX ||
+        field->max_length == PhoneNumber::kPrefixLength) {
+      number = number.substr(PhoneNumber::kPrefixOffset,
+                             PhoneNumber::kPrefixLength);
+    } else if (cached_field.phone_part() == AutofillField::PHONE_SUFFIX ||
+               field->max_length == PhoneNumber::kSuffixLength) {
+      number = number.substr(PhoneNumber::kSuffixOffset,
+                             PhoneNumber::kSuffixLength);
+    }
   }
+
+  field->value = number;
 }
 
 void AutofillManager::ParseForms(const std::vector<FormData>& forms) {

@@ -15,6 +15,12 @@
 
 class AutofillField : public webkit_glue::FormField {
  public:
+  enum PhonePart {
+    IGNORED = 0,
+    PHONE_PREFIX = 1,
+    PHONE_SUFFIX = 2,
+  };
+
   AutofillField();
   AutofillField(const webkit_glue::FormField& field,
                 const string16& unique_name);
@@ -26,6 +32,7 @@ class AutofillField : public webkit_glue::FormField {
   AutofillFieldType heuristic_type() const { return heuristic_type_; }
   AutofillFieldType server_type() const { return server_type_; }
   const FieldTypeSet& possible_types() const { return possible_types_; }
+  PhonePart phone_part() const { return phone_part_; }
 
   // Sets the heuristic type of this field, validating the input.
   void set_section(const string16& section) { section_ = section; }
@@ -34,6 +41,7 @@ class AutofillField : public webkit_glue::FormField {
   void set_possible_types(const FieldTypeSet& possible_types) {
     possible_types_ = possible_types;
   }
+  void set_phone_part(PhonePart part) { phone_part_ = part; }
 
   // This function automatically chooses between server and heuristic autofill
   // type, depending on the data available.
@@ -66,6 +74,9 @@ class AutofillField : public webkit_glue::FormField {
 
   // The set of possible types for this field.
   FieldTypeSet possible_types_;
+
+  // Used to track whether this field is a phone prefix or suffix.
+  PhonePart phone_part_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillField);
 };

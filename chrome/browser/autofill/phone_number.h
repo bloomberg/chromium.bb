@@ -43,10 +43,10 @@ class PhoneNumber : public FormGroup {
                                     const string16& value) OVERRIDE;
 
   // Size and offset of the prefix and suffix portions of phone numbers.
-  static const int kPrefixOffset = 0;
-  static const int kPrefixLength = 3;
-  static const int kSuffixOffset = 3;
-  static const int kSuffixLength = 4;
+  static const size_t kPrefixOffset = 0;
+  static const size_t kPrefixLength = 3;
+  static const size_t kSuffixOffset = 3;
+  static const size_t kSuffixLength = 4;
 
   // The following functions should return the field type for each part of the
   // phone number.  Currently, these are either fax or home phone number types.
