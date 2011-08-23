@@ -1791,7 +1791,9 @@ FileManager.prototype = {
 
       // TODO(dgozman): rescan directory, only if it contains mounted points,
       // when mounts location will be decided.
-      if (event.status == 'success')
+      if (event.status == 'success' ||
+          event.status == 'error_unknown_filesystem' ||
+          event.status == 'error_unsuported_filesystem')
         self.rescanDirectory_();
     });
   };

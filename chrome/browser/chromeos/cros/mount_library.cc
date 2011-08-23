@@ -435,14 +435,22 @@ class MountLibraryImpl : public MountLibrary {
 
     FireMountCompleted(MOUNTING, error_code, mount_info);
 
-    if (error_code == MOUNT_ERROR_NONE &&
+    // If the device is corrupted but it's still possible to format it, it will
+    // be fake mounted.
+    // TODO(sidor): Write more general condition when it will possible.
+    bool mount_corrupted_device =
+        (error_code == MOUNT_ERROR_UNKNOWN_FILESYSTEM ||
+         error_code == MOUNT_ERROR_UNSUPORTED_FILESYSTEM) &&
+        mount_info.mount_type == MOUNT_TYPE_DEVICE;
+
+    if ((error_code == MOUNT_ERROR_NONE || mount_corrupted_device) &&
         mount_points_.find(mount_info.mount_path) == mount_points_.end()) {
       mount_points_.insert(MountPointMap::value_type(
                                mount_info.mount_path.c_str(),
                                mount_info));
     }
 
-    if (error_code == MOUNT_ERROR_NONE &&
+    if ((error_code == MOUNT_ERROR_NONE || mount_corrupted_device) &&
         mount_info.mount_type == MOUNT_TYPE_DEVICE &&
         !mount_info.source_path.empty() &&
         !mount_info.mount_path.empty()) {
