@@ -166,12 +166,11 @@ cr.define('ntp4', function() {
     dots = dotList.getElementsByClassName('dot');
     tilePages = pageList.getElementsByClassName('tile-page');
     appsPages = pageList.getElementsByClassName('apps-page');
+
     pageSwitcherStart = getRequiredElement('page-switcher-start');
-    pageSwitcherStart.addEventListener('click', onPageSwitcherClicked);
-    pageSwitcherStart.addEventListener('mousewheel', onPageSwitcherScrolled);
+    ntp4.initializePageSwitcher(pageSwitcherStart);
     pageSwitcherEnd = getRequiredElement('page-switcher-end');
-    pageSwitcherEnd.addEventListener('click', onPageSwitcherClicked);
-    pageSwitcherEnd.addEventListener('mousewheel', onPageSwitcherScrolled);
+    ntp4.initializePageSwitcher(pageSwitcherEnd);
 
     // Initialize the cardSlider without any cards at the moment
     var sliderFrame = getRequiredElement('card-slider-frame');
@@ -181,6 +180,7 @@ cr.define('ntp4', function() {
     // Ensure the slider is resized appropriately with the window
     window.addEventListener('resize', function() {
       cardSlider.resize(sliderFrame.offsetWidth);
+      updatePageSwitchers();
     });
 
     // Handle the page being changed
@@ -426,7 +426,7 @@ cr.define('ntp4', function() {
     if (infoBubble)
       window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
 
-    eventTracker.add(page, 'scrollbarchange', onPageScrollbarChange);
+    eventTracker.add(page, 'pagelayout', onPageLayout);
   }
 
   /**
@@ -450,7 +450,7 @@ cr.define('ntp4', function() {
     if (infoBubble)
       window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
 
-    eventTracker.add(page, 'scrollbarchange', onPageScrollbarChange);
+    eventTracker.add(page, 'pagelayout', onPageLayout);
   }
 
   /**
@@ -520,10 +520,10 @@ cr.define('ntp4', function() {
   };
 
   /**
-   * Callback for the 'scrollbarchange' event.
+   * Callback for the 'pagelayout' event.
    * @param {Event} e The event.
    */
-  function onPageScrollbarChange(e) {
+  function onPageLayout(e) {
     if (Array.prototype.indexOf.call(tilePages, e.currentTarget) !=
         cardSlider.currentCard) {
       return;

@@ -98,6 +98,8 @@ cr.define('ntp4', function() {
       setCurrentlyDraggingTile(this);
 
       e.dataTransfer.effectAllowed = 'copyMove';
+      if (this.firstChild.setDragData)
+        this.firstChild.setDragData(e.dataTransfer);
 
       // The drag clone is the node we use as a representation during the drag.
       // It's attached to the top level document element so that it floats above
@@ -404,6 +406,8 @@ cr.define('ntp4', function() {
 
       this.addEventListener('DOMNodeInsertedIntoDocument',
                             this.onNodeInsertedIntoDocument_);
+
+      this.addEventListener('mousewheel', this.onMouseWheel_);
       this.content_.addEventListener('scroll', this.onScroll_.bind(this));
 
       this.dragWrapper_ = new DragWrapper(this.tileGrid_, this);
@@ -543,15 +547,16 @@ cr.define('ntp4', function() {
 
       // We need to update the top margin as well.
       this.updateTopMargin_();
+
+      this.firePageLayoutEvent_();
     },
 
     /**
-     * Dispatches the custom scrollbarchange event.
+     * Dispatches the custom pagelayout event.
+     * @private
      */
-    fireScrollbarChangeEvent_: function() {
-      var event = document.createEvent('Event');
-      event.initEvent('scrollbarchange', true, true);
-      this.dispatchEvent(event);
+    firePageLayoutEvent_: function() {
+      cr.dispatchSimpleEvent(this, 'pagelayout', true, true);
     },
 
     /**
@@ -726,6 +731,7 @@ cr.define('ntp4', function() {
     /**
      * Handles final setup that can only happen after |this| is inserted into
      * the page.
+     * @private
      */
     onNodeInsertedIntoDocument_: function(e) {
       this.calculateLayoutValues_();
@@ -735,6 +741,7 @@ cr.define('ntp4', function() {
     /**
      * Called when the height of |this| has changed: update the size of
      * tileGrid.
+     * @private
      */
     heightChanged_: function() {
       // The tile grid will expand to the bottom footer, or enough to hold all
@@ -746,17 +753,34 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Scrolls the page by the given amount, vertically.
-     * @param {number} y The scroll amount, in pixels, where positive is down
-     *     and negative is up.
+     * Scrolls the page in response to a mousewheel event.
+     * @param {Event} e The mousewheel event.
      */
-    scrollBy: function(y) {
-      this.content_.scrollTop += y;
+    handleMouseWheel: function(e) {
+      this.content_.scrollTop -= e.wheelDeltaY / 3;
+    },
+
+    /**
+     * Handles mouse wheels on |this|. We handle this explicitly because we want
+     * a consistent experience whether the user scrolls on the page or on the
+     * page switcher (handleMouseWheel provides a common conversion factor
+     * between wheel delta and scroll delta).
+     * @param {Event} e The mousewheel event.
+     * @private
+     */
+    onMouseWheel_: function(e) {
+      if (e.wheelDeltaY == 0)
+        return;
+
+      this.handleMouseWheel(e);
+      e.preventDefault();
+      e.stopPropagation();
     },
 
     /**
      * Handler for the 'scroll' event on |content_|.
      * @param {Event} e The scroll event.
+     * @private
      */
     onScroll_: function(e) {
       this.queueUpdateScrollbars_();
@@ -764,6 +788,7 @@ cr.define('ntp4', function() {
 
     /**
      * ID of scrollbar update timer. If 0, there's no scrollbar re-calc queued.
+     * @private
      */
     scrollbarUpdate_: 0,
 
@@ -772,6 +797,7 @@ cr.define('ntp4', function() {
      * coalescing of multiple updates, and second, because action like
      * repositioning a tile can require a delay before they affect values
      * like clientHeight.
+     * @private
      */
     queueUpdateScrollbars_: function() {
       if (this.scrollbarUpdate_)
@@ -784,6 +810,7 @@ cr.define('ntp4', function() {
     /**
      * Does the work of calculating the visibility, height and position of the
      * scrollbar thumb (there is no track or buttons).
+     * @private
      */
     doUpdateScrollbars_: function() {
       this.scrollbarUpdate_ = 0;
@@ -807,7 +834,7 @@ cr.define('ntp4', function() {
 
       this.scrollbar_.style.top = thumbTop + 'px';
       this.scrollbar_.style.height = thumbHeight + 'px';
-      this.fireScrollbarChangeEvent_();
+      this.firePageLayoutEvent_();
     },
 
     /**
@@ -840,7 +867,6 @@ cr.define('ntp4', function() {
     /**
      * Thunk for dragleave events fired on |tileGrid_|.
      * @param {Event} e A MouseEvent for the drag.
-     * @private
      */
     doDragLeave: function(e) {
       this.cleanupDrag();
@@ -849,7 +875,6 @@ cr.define('ntp4', function() {
     /**
      * Performs all actions necessary when a drag enters the tile page.
      * @param {Event} e A mouseover event for the drag enter.
-     * @private
      */
     doDragEnter: function(e) {
 
@@ -874,7 +899,6 @@ cr.define('ntp4', function() {
      * Performs all actions necessary when the user moves the cursor during
      * a drag over the tile page.
      * @param {Event} e A mouseover event for the drag over.
-     * @private
      */
     doDragOver: function(e) {
       e.preventDefault();
@@ -893,7 +917,6 @@ cr.define('ntp4', function() {
     /**
      * Performs all actions necessary when the user completes a drop.
      * @param {Event} e A mouseover event for the drag drop.
-     * @private
      */
     doDrop: function(e) {
       e.stopPropagation();
@@ -909,9 +932,11 @@ cr.define('ntp4', function() {
               this.tileElements_[adjustedIndex]);
           this.tileMoved(currentlyDraggingTile);
         } else {
-          var originalPage = currentlyDraggingTile.tilePage;
+          var originalPage = currentlyDraggingTile ?
+              currentlyDraggingTile.tilePage : null;
           this.addDragData(e.dataTransfer, adjustedIndex);
-          originalPage.cleanupDrag();
+          if (originalPage)
+            originalPage.cleanupDrag();
         }
 
         // Dropping the icon may cause topMargin to change, but changing it
@@ -939,7 +964,6 @@ cr.define('ntp4', function() {
 
     /**
      * Makes sure all the tiles are in the right place after a drag is over.
-     * @private
      */
     cleanupDrag: function() {
       for (var i = 0; i < this.tileElements_.length; i++) {

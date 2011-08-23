@@ -229,6 +229,15 @@ cr.define('ntp4', function() {
     finalizeDrag: function() {
       this.parentNode.classList.remove('finishing-drag');
     },
+
+    /**
+     * Called when a drag is starting on the tile. Updates dataTransfer with
+     * data for this tile (for dragging outside of the NTP).
+     */
+    setDragData: function(dataTransfer) {
+      dataTransfer.setData('Text', this.data_.title);
+      dataTransfer.setData('URL', this.data_.url);
+    },
   };
 
   var mostVisitedPageGridValues = {

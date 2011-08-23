@@ -184,7 +184,7 @@ cr.define('ntp4', function() {
 
       if (!this.dragWrapper_.isCurrentDragTarget)
         e.dataTransfer.dropEffect = 'none';
-      else if (ntp4.getCurrentlyDraggingTile)
+      else if (ntp4.getCurrentlyDraggingTile())
         e.dataTransfer.dropEffect = 'move';
       else
         e.dataTransfer.dropEffect = 'copy';
@@ -198,10 +198,9 @@ cr.define('ntp4', function() {
      */
     doDrop: function(e) {
       e.stopPropagation();
-      if (ntp4.getCurrentlyDraggingTile) {
+      var tile = ntp4.getCurrentlyDraggingTile();
+      if (tile && tile.tilePage != this.page_)
         this.page_.appendDraggingTile();
-        this.page_.cleanupDrag();
-      }
       // TODO(estade): handle non-tile drags.
 
       this.cancelDelayedSwitch_();

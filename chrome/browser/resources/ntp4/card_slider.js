@@ -129,8 +129,8 @@ var CardSlider = (function() {
 
       this.mouseWheelScrollAmount_ = 0;
       this.scrollClearTimeout_ = null;
-      this.container_.addEventListener('mousewheel',
-                                       this.onMouseWheel_.bind(this));
+      this.frame_.addEventListener('mousewheel',
+                                   this.onMouseWheel_.bind(this));
 
       if (document.documentElement.getAttribute('touchui')) {
         this.container_.addEventListener(TouchHandler.EventType.TOUCH_START,
