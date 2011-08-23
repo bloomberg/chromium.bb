@@ -37,6 +37,7 @@
       ],
       'sources': [
         '../base/test/run_all_unittests.cc',
+        'bus_unittest.cc',
         'message_unittest.cc',
         'end_to_end_async_unittest.cc',
         'end_to_end_sync_unittest.cc',

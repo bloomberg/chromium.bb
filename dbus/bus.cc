@@ -212,22 +212,36 @@ ObjectProxy* Bus::GetObjectProxy(const std::string& service_name,
                                  const std::string& object_path) {
   AssertOnOriginThread();
 
+  // Check if we already have the requested object proxy.
+  const std::string key = service_name + object_path;
+  ObjectProxyTable::iterator iter = object_proxy_table_.find(key);
+  if (iter != object_proxy_table_.end()) {
+    return iter->second;
+  }
+
   scoped_refptr<ObjectProxy> object_proxy =
       new ObjectProxy(this, service_name, object_path);
-  object_proxies_.push_back(object_proxy);
+  object_proxy_table_[key] = object_proxy;
 
-  return object_proxy;
+  return object_proxy.get();
 }
 
 ExportedObject* Bus::GetExportedObject(const std::string& service_name,
                                        const std::string& object_path) {
   AssertOnOriginThread();
 
+  // Check if we already have the requested exported object.
+  const std::string key = service_name + object_path;
+  ExportedObjectTable::iterator iter = exported_object_table_.find(key);
+  if (iter != exported_object_table_.end()) {
+    return iter->second;
+  }
+
   scoped_refptr<ExportedObject> exported_object =
       new ExportedObject(this, service_name, object_path);
-  exported_objects_.push_back(exported_object);
+  exported_object_table_[key] = exported_object;
 
-  return exported_object;
+  return exported_object.get();
 }
 
 bool Bus::Connect() {
@@ -260,8 +274,9 @@ void Bus::ShutdownAndBlock() {
   AssertOnDBusThread();
 
   // Unregister the exported objects.
-  for (size_t i = 0; i < exported_objects_.size(); ++i) {
-    exported_objects_[i]->Unregister();
+  for (ExportedObjectTable::iterator iter = exported_object_table_.begin();
+       iter != exported_object_table_.end(); ++iter) {
+    iter->second->Unregister();
   }
 
   // Release all service names.
@@ -278,8 +293,9 @@ void Bus::ShutdownAndBlock() {
   }
 
   // Detach from the remote objects.
-  for (size_t i = 0; i < object_proxies_.size(); ++i) {
-    object_proxies_[i]->Detach();
+  for (ObjectProxyTable::iterator iter = object_proxy_table_.begin();
+       iter != object_proxy_table_.end(); ++iter) {
+    iter->second->Detach();
   }
 
   // Private connection should be closed.

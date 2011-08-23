@@ -7,6 +7,7 @@
 #define DBUS_BUS_H_
 #pragma once
 
+#include <map>
 #include <set>
 #include <string>
 #include <dbus/dbus.h>
@@ -55,8 +56,8 @@ class ObjectProxy;
 // Note that it's hard to tell if a libdbus function is actually blocking
 // or not (ex. dbus_bus_request_name() internally calls
 // dbus_connection_send_with_reply_and_block(), which is a blocking
-// call). To err on the side, we consider all libdbus functions that deal
-// with the connection to dbus-damoen to be blocking.
+// call). To err on the safe side, we consider all libdbus functions that
+// deal with the connection to dbus-damoen to be blocking.
 //
 // EXAMPLE USAGE:
 //
@@ -164,8 +165,15 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   explicit Bus(const Options& options);
 
   // Gets the object proxy for the given service name and the object path.
-  // The caller must not delete the returned object. The bus will own the
-  // object. Never returns NULL.
+  // The caller must not delete the returned object.
+  //
+  // Returns an existing object proxy if the bus object already owns the
+  // object proxy for the given service name and the object path.
+  // Never returns NULL.
+  //
+  // The bus will own all object proxies created by the bus, to ensure
+  // that the object proxies are detached from remote objects at the
+  // shutdown time of the bus.
   //
   // The object proxy is used to call methods of remote objects, and
   // receive signals from them.
@@ -178,8 +186,15 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
                                       const std::string& object_path);
 
   // Gets the exported object for the given service name and the object
-  // path. The caller must not delete the returned object. The bus will
-  // own the object. Never returns NULL.
+  // path. The caller must not delete the returned object.
+  //
+  // Returns an existing exported object if the bus object already owns
+  // the exported object for the given service name and the object path.
+  // Never returns NULL.
+  //
+  // The bus will own all exported objects created by the bus, to ensure
+  // that the exported objects are unregistered at the shutdown time of
+  // the bus.
   //
   // The exported object is used to export methods of local objects, and
   // send signal from them.
@@ -416,8 +431,19 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   std::set<std::string> registered_object_paths_;
   std::set<DBusHandleMessageFunction> filter_functions_added_;
 
-  std::vector<scoped_refptr<dbus::ObjectProxy> > object_proxies_;
-  std::vector<scoped_refptr<dbus::ExportedObject> > exported_objects_;
+  // ObjectProxyTable is used to hold the object proxies created by the
+  // bus object. Key is a concatenated string of service name + object path,
+  // like "org.chromium.TestService/org/chromium/TestObject".
+  typedef std::map<std::string,
+                   scoped_refptr<dbus::ObjectProxy> > ObjectProxyTable;
+  ObjectProxyTable object_proxy_table_;
+
+  // ExportedObjectTable is used to hold the exported objects created by
+  // the bus object. Key is a concatenated string of service name +
+  // object path, like "org.chromium.TestService/org/chromium/TestObject".
+  typedef std::map<std::string,
+                   scoped_refptr<dbus::ExportedObject> > ExportedObjectTable;
+  ExportedObjectTable exported_object_table_;
 
   bool async_operations_are_set_up_;
 
