@@ -4,13 +4,116 @@
 
 #include "content/renderer/gpu/gpu_channel_host.h"
 
+#include "base/message_loop_proxy.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
 #include "content/renderer/gpu/gpu_surface_proxy.h"
 #include "content/renderer/gpu/transport_texture_service.h"
+#include "content/renderer/render_process.h"
 #include "content/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_sync_message_filter.h"
+
+using base::AutoLock;
+using base::MessageLoopProxy;
+
+GpuChannelHost::Listener::Listener(
+    base::WeakPtr<IPC::Channel::Listener> listener,
+    scoped_refptr<base::MessageLoopProxy> loop)
+    : listener_(listener),
+      loop_(loop) {
+
+}
+
+GpuChannelHost::Listener::~Listener() {
+
+}
+
+void GpuChannelHost::Listener::DispatchMessage(const IPC::Message& msg) {
+  if (listener_.get())
+    listener_->OnMessageReceived(msg);
+}
+
+void GpuChannelHost::Listener::DispatchError() {
+  if (listener_.get())
+    listener_->OnChannelError();
+}
+
+GpuChannelHost::MessageFilter::MessageFilter(GpuChannelHost* parent)
+    : parent_(parent) {
+  DetachFromThread();
+}
+
+GpuChannelHost::MessageFilter::~MessageFilter() {
+
+}
+
+void GpuChannelHost::MessageFilter::AddRoute(
+    int route_id,
+    base::WeakPtr<IPC::Channel::Listener> listener,
+    scoped_refptr<MessageLoopProxy> loop) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(listeners_.find(route_id) == listeners_.end());
+  listeners_[route_id] = new GpuChannelHost::Listener(listener, loop);
+}
+
+void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
+  DCHECK(CalledOnValidThread());
+  ListenerMap::iterator it = listeners_.find(route_id);
+  if (it != listeners_.end())
+    listeners_.erase(it);
+}
+
+bool GpuChannelHost::MessageFilter::OnMessageReceived(
+    const IPC::Message& message) {
+  DCHECK(CalledOnValidThread());
+
+  // Never handle sync message replies or we will deadlock here.
+  if (message.is_reply())
+    return false;
+
+  DCHECK(message.routing_id() != MSG_ROUTING_CONTROL);
+
+  ListenerMap::iterator it = listeners_.find(message.routing_id());
+
+  if (it != listeners_.end()) {
+    const scoped_refptr<GpuChannelHost::Listener>& listener = it->second;
+    listener->loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(
+            listener.get(),
+            &GpuChannelHost::Listener::DispatchMessage,
+            message));
+  }
+
+  return true;
+}
+
+void GpuChannelHost::MessageFilter::OnChannelError() {
+  DCHECK(CalledOnValidThread());
+
+  // Inform all the proxies that an error has occurred. This will be reported
+  // via OpenGL as a lost context.
+  for (ListenerMap::iterator it = listeners_.begin();
+       it != listeners_.end();
+       it++) {
+    const scoped_refptr<GpuChannelHost::Listener>& listener = it->second;
+    listener->loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(
+            listener.get(),
+            &GpuChannelHost::Listener::DispatchError));
+  }
+
+  listeners_.clear();
+
+  ChildThread* main_thread = RenderProcess::current()->main_thread();
+  MessageLoop* main_loop = main_thread->message_loop();
+  main_loop->PostTask(FROM_HERE,
+                      NewRunnableMethod(parent_,
+                                        &GpuChannelHost::OnChannelError));
+}
 
 GpuChannelHost::GpuChannelHost()
     : state_(kUnconnected),
@@ -23,11 +126,26 @@ GpuChannelHost::~GpuChannelHost() {
 void GpuChannelHost::Connect(
     const IPC::ChannelHandle& channel_handle,
     base::ProcessHandle renderer_process_for_gpu) {
-  // Open a channel to the GPU process.
+  DCHECK(RenderThread::current());
+  // Open a channel to the GPU process. We pass NULL as the main listener here
+  // since we need to filter everything to route it to the right thread.
   channel_.reset(new IPC::SyncChannel(
-      channel_handle, IPC::Channel::MODE_CLIENT, this,
+      channel_handle, IPC::Channel::MODE_CLIENT, NULL,
       ChildProcess::current()->io_message_loop_proxy(), true,
       ChildProcess::current()->GetShutDownEvent()));
+
+  sync_filter_ = new IPC::SyncMessageFilter(
+      ChildProcess::current()->GetShutDownEvent());
+
+  channel_->AddFilter(sync_filter_.get());
+
+  channel_->AddFilter(transport_texture_service_.get());
+
+  channel_filter_ = new MessageFilter(this);
+
+  // Install the filter last, because we intercept all leftover
+  // messages.
+  channel_->AddFilter(channel_filter_.get());
 
   // It is safe to send IPC messages before the channel completes the connection
   // and receives the hello message from the GPU process. The messages get
@@ -51,43 +169,27 @@ void GpuChannelHost::SetStateLost() {
   state_ = kLost;
 }
 
-bool GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(message.routing_id() != MSG_ROUTING_CONTROL);
-
-  return router_.RouteMessage(message);
-}
-
-void GpuChannelHost::OnChannelConnected(int32 peer_pid) {
-  channel_->AddFilter(transport_texture_service_.get());
-}
-
 void GpuChannelHost::OnChannelError() {
   state_ = kLost;
 
   // Channel is invalid and will be reinitialized if this host is requested
   // again.
   channel_.reset();
-
-  // Inform all the proxies that an error has occured. This will be reported via
-  // OpenGL as a lost context.
-  for (ProxyMap::iterator iter = proxies_.begin();
-       iter != proxies_.end(); iter++) {
-    router_.RemoveRoute(iter->first);
-    iter->second->OnChannelError();
-  }
-
-  // The proxies are reference counted so this will not result in their
-  // destruction if the client still holds a reference. The proxy will report
-  // a lost context, indicating to the client that it needs to be recreated.
-  proxies_.clear();
 }
 
 bool GpuChannelHost::Send(IPC::Message* message) {
   // The GPU process never sends synchronous IPCs so clear the unblock flag to
   // preserve order.
   message->set_unblock(false);
-  if (channel_.get())
-    return channel_->Send(message);
+
+  // Unfortunately a sync filter cannot be used on the main (listener) thread.
+  // TODO: Is that true even when we don't install a listener?
+  if (RenderThread::current()) {
+    if (channel_.get())
+      return channel_->Send(message);
+  } else {
+    return sync_filter_->Send(message);
+  }
 
   // Callee takes ownership of message, regardless of whether Send is
   // successful. See IPC::Message::Sender.
@@ -102,6 +204,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
     const std::vector<int32>& attribs,
     const GURL& active_url) {
 #if defined(ENABLE_GPU)
+  AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
     return NULL;
@@ -125,7 +228,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
     return NULL;
 
   CommandBufferProxy* command_buffer = new CommandBufferProxy(this, route_id);
-  router_.AddRoute(route_id, command_buffer);
+  AddRoute(route_id, command_buffer->AsWeakPtr());
   proxies_[route_id] = command_buffer;
   return command_buffer;
 #else
@@ -137,6 +240,7 @@ GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
     int command_buffer_route_id,
     const std::vector<int32>& configs,
     media::VideoDecodeAccelerator::Client* client) {
+  AutoLock lock(context_lock_);
   ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
   DCHECK(it != proxies_.end());
   CommandBufferProxy* proxy = it->second;
@@ -150,6 +254,7 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
     const std::vector<int32>& attribs,
     const GURL& active_url) {
 #if defined(ENABLE_GPU)
+  AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
     return NULL;
@@ -171,7 +276,7 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
     return NULL;
 
   CommandBufferProxy* command_buffer = new CommandBufferProxy(this, route_id);
-  router_.AddRoute(route_id, command_buffer);
+  AddRoute(route_id, command_buffer->AsWeakPtr());
   proxies_[route_id] = command_buffer;
   return command_buffer;
 #else
@@ -179,38 +284,30 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
 #endif
 }
 
-void GpuChannelHost::AddRoute(int32 route_id,
-                              IPC::Channel::Listener* listener) {
-  router_.AddRoute(route_id, listener);
-}
-
-void GpuChannelHost::RemoveRoute(int32 route_id) {
-  router_.RemoveRoute(route_id);
-}
-
 void GpuChannelHost::DestroyCommandBuffer(CommandBufferProxy* command_buffer) {
 #if defined(ENABLE_GPU)
+  AutoLock lock(context_lock_);
   Send(new GpuChannelMsg_DestroyCommandBuffer(command_buffer->route_id()));
 
   // Check the proxy has not already been removed after a channel error.
   int route_id = command_buffer->route_id();
-  if (proxies_.find(command_buffer->route_id()) != proxies_.end()) {
+  if (proxies_.find(command_buffer->route_id()) != proxies_.end())
     proxies_.erase(route_id);
-    router_.RemoveRoute(route_id);
-  }
-
+  RemoveRoute(route_id);
   delete command_buffer;
 #endif
 }
 
-GpuSurfaceProxy* GpuChannelHost::CreateOffscreenSurface(const gfx::Size& size) {
+GpuSurfaceProxy* GpuChannelHost::CreateOffscreenSurface(
+    const gfx::Size& size) {
 #if defined(ENABLE_GPU)
+  AutoLock lock(context_lock_);
   int route_id;
   if (!Send(new GpuChannelMsg_CreateOffscreenSurface(size, &route_id)))
     return NULL;
 
   scoped_ptr<GpuSurfaceProxy> surface(new GpuSurfaceProxy(this, route_id));
-  router_.AddRoute(route_id, surface.get());
+  AddRoute(route_id, surface->AsWeakPtr());
 
   return surface.release();
 #endif
@@ -218,10 +315,31 @@ GpuSurfaceProxy* GpuChannelHost::CreateOffscreenSurface(const gfx::Size& size) {
 
 void GpuChannelHost::DestroySurface(GpuSurfaceProxy* surface) {
 #if defined(ENABLE_GPU)
+  AutoLock lock(context_lock_);
   Send(new GpuChannelMsg_DestroySurface(surface->route_id()));
-  if (router_.ResolveRoute(surface->route_id()))
-    router_.RemoveRoute(surface->route_id());
 
+  RemoveRoute(surface->route_id());
   delete surface;
 #endif
+}
+
+void GpuChannelHost::AddRoute(
+    int route_id, base::WeakPtr<IPC::Channel::Listener> listener) {
+  DCHECK(MessageLoopProxy::current());
+
+  MessageLoopProxy* io_loop = RenderProcess::current()->io_message_loop_proxy();
+  io_loop->PostTask(FROM_HERE,
+                    NewRunnableMethod(
+                        channel_filter_.get(),
+                        &GpuChannelHost::MessageFilter::AddRoute,
+                        route_id, listener, MessageLoopProxy::current()));
+}
+
+void GpuChannelHost::RemoveRoute(int route_id) {
+  MessageLoopProxy* io_loop = RenderProcess::current()->io_message_loop_proxy();
+  io_loop->PostTask(FROM_HERE,
+                    NewRunnableMethod(
+                        channel_filter_.get(),
+                        &GpuChannelHost::MessageFilter::RemoveRoute,
+                        route_id));
 }

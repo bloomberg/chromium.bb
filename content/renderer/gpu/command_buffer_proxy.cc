@@ -401,7 +401,7 @@ CommandBufferProxy::CreateVideoDecoder(
       decoder_route_id, decoder_host)).second;
   DCHECK(inserted);
 
-  channel_->AddRoute(decoder_route_id, decoder_host.get());
+  channel_->AddRoute(decoder_route_id, decoder_host->AsWeakPtr());
 
   return decoder_host;
 }

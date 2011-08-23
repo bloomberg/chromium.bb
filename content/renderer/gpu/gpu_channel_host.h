@@ -10,12 +10,17 @@
 #include <vector>
 
 #include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/common/gpu/gpu_info.h"
 #include "content/common/message_router.h"
 #include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -25,10 +30,17 @@ class GpuSurfaceProxy;
 class GURL;
 class TransportTextureService;
 
+namespace base {
+class MessageLoopProxy;
+}
+
+namespace IPC {
+class SyncMessageFilter;
+}
+
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding GpuChannel.
-class GpuChannelHost : public IPC::Channel::Listener,
-                       public IPC::Message::Sender,
+class GpuChannelHost : public IPC::Message::Sender,
                        public base::RefCountedThreadSafe<GpuChannelHost> {
  public:
   enum State {
@@ -58,10 +70,7 @@ class GpuChannelHost : public IPC::Channel::Listener,
   void set_gpu_info(const GPUInfo& gpu_info);
   const GPUInfo& gpu_info() const;
 
-  // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
+  void OnChannelError();
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
@@ -102,29 +111,77 @@ class GpuChannelHost : public IPC::Channel::Listener,
     return transport_texture_service_.get();
   }
 
-  // Called to add/remove a listener for a particular message routing ID.
-  void AddRoute(int32 route_id, IPC::Channel::Listener* listener);
-  void RemoveRoute(int32 route_id);
+  // Add a route for the current message loop.
+  void AddRoute(int route_id, base::WeakPtr<IPC::Channel::Listener> listener);
+  void RemoveRoute(int route_id);
 
  private:
+  // An shim class for working with listeners between threads.
+  // It is used to post a task to the thread that owns the listener,
+  // and where it's safe to dereference the weak pointer.
+  class Listener :
+    public base::RefCountedThreadSafe<Listener> {
+   public:
+    Listener(base::WeakPtr<IPC::Channel::Listener> listener,
+                       scoped_refptr<base::MessageLoopProxy> loop);
+    virtual ~Listener();
+
+    void DispatchMessage(const IPC::Message& msg);
+    void DispatchError();
+
+    scoped_refptr<base::MessageLoopProxy> loop() { return loop_; }
+
+   private:
+    base::WeakPtr<IPC::Channel::Listener> listener_;
+    scoped_refptr<base::MessageLoopProxy> loop_;
+  };
+
+  // A filter used internally to route incoming messages from the IO thread
+  // to the correct message loop.
+  class MessageFilter : public IPC::ChannelProxy::MessageFilter,
+                        public base::NonThreadSafe {
+   public:
+    MessageFilter(GpuChannelHost* parent);
+    virtual ~MessageFilter();
+
+    void AddRoute(int route_id,
+                  base::WeakPtr<IPC::Channel::Listener> listener,
+                  scoped_refptr<base::MessageLoopProxy> loop);
+    void RemoveRoute(int route_id);
+
+    // IPC::ChannelProxy::MessageFilter implementation:
+    virtual bool OnMessageReceived(const IPC::Message& msg);
+    virtual void OnChannelError();
+
+   private:
+    GpuChannelHost* parent_;
+
+    typedef base::hash_map<int,
+        scoped_refptr<GpuChannelHost::Listener> > ListenerMap;
+    ListenerMap listeners_;
+  };
+
   State state_;
 
   GPUInfo gpu_info_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
+  scoped_refptr<MessageFilter> channel_filter_;
 
-  // Used to implement message routing functionality to CommandBufferProxy
-  // objects
-  MessageRouter router_;
-
-  // Keep track of all the registered CommandBufferProxies to
-  // inform about OnChannelError
+  // Used to look up a proxy from its routing id.
   typedef base::hash_map<int, CommandBufferProxy*> ProxyMap;
   ProxyMap proxies_;
+
+  // A lock to guard against concurrent access to members like the proxies map
+  // for calls from contexts that may live on the compositor or main thread.
+  mutable base::Lock context_lock_;
 
   // This is a MessageFilter to intercept IPC messages related to transport
   // textures. These messages are routed to TransportTextureHost.
   scoped_refptr<TransportTextureService> transport_texture_service_;
+
+  // A filter for sending messages from thread other than the main thread.
+  scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

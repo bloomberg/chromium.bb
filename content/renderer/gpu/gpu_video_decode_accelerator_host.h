@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "ipc/ipc_channel.h"
 #include "media/video/video_decode_accelerator.h"
@@ -18,7 +19,8 @@ class GpuChannelHost;
 class GpuVideoDecodeAcceleratorHost
     : public IPC::Channel::Listener,
       public media::VideoDecodeAccelerator,
-      public base::NonThreadSafe {
+      public base::NonThreadSafe,
+      public base::SupportsWeakPtr<GpuVideoDecodeAcceleratorHost> {
  public:
   // |channel| is used to send IPC messages to GPU process.
   GpuVideoDecodeAcceleratorHost(GpuChannelHost* channel,

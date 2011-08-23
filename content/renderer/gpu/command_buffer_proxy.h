@@ -14,6 +14,7 @@
 #include "base/callback_old.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
@@ -34,7 +35,8 @@ class Task;
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
 class CommandBufferProxy : public gpu::CommandBuffer,
-                           public IPC::Channel::Listener {
+                           public IPC::Channel::Listener,
+                           public base::SupportsWeakPtr<CommandBufferProxy> {
  public:
   CommandBufferProxy(GpuChannelHost* channel, int route_id);
   virtual ~CommandBufferProxy();

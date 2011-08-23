@@ -8,6 +8,7 @@
 
 #if defined(ENABLE_GPU)
 
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 
@@ -16,7 +17,8 @@ class Size;
 }
 
 // Client side proxy that forwards messages to a GpuSurfaceStub.
-class GpuSurfaceProxy : public IPC::Channel::Listener {
+class GpuSurfaceProxy : public IPC::Channel::Listener,
+                        public base::SupportsWeakPtr<GpuSurfaceProxy> {
  public:
   GpuSurfaceProxy(IPC::Channel::Sender* channel, int route_id);
   virtual ~GpuSurfaceProxy();
