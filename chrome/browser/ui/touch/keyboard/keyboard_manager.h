@@ -46,7 +46,8 @@ class KeyboardManager
 #if defined(OS_CHROMEOS)
       public chromeos::input_method::InputMethodManager::VirtualKeyboardObserver,
 #endif
-      public NotificationObserver {
+      public NotificationObserver,
+      public views::Widget::Observer {
  public:
   // Returns the singleton object.
   static KeyboardManager* GetInstance();
@@ -66,10 +67,13 @@ class KeyboardManager
   KeyboardManager();
   virtual ~KeyboardManager();
 
+  // Sets the target widget, adds/removes Widget::Observer, reparents etc.
+  void SetTarget(Widget* target);
+
   // Overridden from views::Widget.
   virtual bool OnKeyEvent(const views::KeyEvent& event) OVERRIDE;
 
-  // Overridden from ui::AnimationDelegate:
+  // Overridden from ui::AnimationDelegate.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
@@ -77,7 +81,7 @@ class KeyboardManager
   virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
   virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
 
-  // Overridden from TabContentsObserver
+  // Overridden from TabContentsObserver.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
@@ -87,23 +91,28 @@ class KeyboardManager
                                 int index,
                                 bool user_gesture);
 
-  // ExtensionFunctionDispatcher::Delegate implementation
+  // Overridden from ExtensionFunctionDispatcher::Delegate.
   virtual Browser* GetBrowser() OVERRIDE;
   virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE;
   virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
 
 #if defined(OS_CHROMEOS)
-  // input_method::InputMethodManager::VirtualKeyboardObserver implementation.
+  // Overridden from input_method::InputMethodManager::VirtualKeyboardObserver.
   virtual void VirtualKeyboardChanged(
       chromeos::input_method::InputMethodManager* manager,
       const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
       const std::string& virtual_keyboard_layout);
 #endif
 
-  // NotificationObserver implementation:
+  // Overridden from NotificationObserver.
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
+
+  // Overridden from views::Widget::Observer.
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
 
   // The animation.
   scoped_ptr<ui::SlideAnimation> animation_;

@@ -114,6 +114,8 @@ KeyboardManager::KeyboardManager()
 }
 
 KeyboardManager::~KeyboardManager() {
+  if (target_)
+    target_->RemoveObserver(this);
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::GetInstance();
@@ -123,10 +125,7 @@ KeyboardManager::~KeyboardManager() {
 }
 
 void KeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
-  target_ = widget;
-  // TODO(sad): There needs to be some way to:
-  //   - reset |target_| when it is destroyed
-  //   - make |target_| the parent of this Widget
+  SetTarget(widget);
 
   gfx::Rect rect = target_->GetWindowScreenBounds();
   rect.set_y(rect.y() + rect.height() - keyboard_height_);
@@ -146,6 +145,20 @@ void KeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
 
 void KeyboardManager::Hide() {
   animation_->Hide();
+}
+
+void KeyboardManager::SetTarget(views::Widget* target) {
+  if (target_)
+    target_->RemoveObserver(this);
+
+  target_ = target;
+
+  if (target_) {
+    // TODO(sad): Make |target_| the parent widget.
+    target_->AddObserver(this);
+  } else if (IsVisible()) {
+    Hide();
+  }
 }
 
 bool KeyboardManager::OnKeyEvent(const views::KeyEvent& event) {
@@ -347,6 +360,21 @@ void KeyboardManager::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void KeyboardManager::OnWidgetClosing(Widget* widget) {
+  if (target_ == widget)
+    SetTarget(NULL);
+}
+
+void KeyboardManager::OnWidgetVisibilityChanged(Widget* widget, bool visible) {
+  if (target_ == widget && !visible)
+    SetTarget(NULL);
+}
+
+void KeyboardManager::OnWidgetActivationChanged(Widget* widget, bool active) {
+  if (target_ == widget && !active)
+    SetTarget(NULL);
 }
 
 // static
