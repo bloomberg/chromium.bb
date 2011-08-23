@@ -571,7 +571,7 @@ cr.define('cr.ui', function() {
         function onFocus() {
           input.removeEventListener('focus', onFocus);
           // 20 = the padding and border of the tree-row
-          cr.ui.limitInputWidth(input, rowElement, 20);
+          cr.ui.limitInputWidth(input, rowElement, 100);
         }
         input.addEventListener('focus', onFocus);
         input.focus();
