@@ -294,7 +294,6 @@ class PepperPluginDelegateImpl
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void SetContentRestriction(int restrictions) OVERRIDE;
-  virtual void HasUnsupportedFeature() OVERRIDE;
   virtual void SaveURLAs(const GURL& url) OVERRIDE;
   virtual P2PSocketDispatcher* GetP2PSocketDispatcher() OVERRIDE;
   virtual webkit_glue::P2PTransport* CreateP2PTransport() OVERRIDE;
@@ -303,6 +302,8 @@ class PepperPluginDelegateImpl
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size)
       OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
+
+  int GetRoutingId() const;
 
  private:
   void PublishInitialPolicy(

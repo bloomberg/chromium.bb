@@ -433,7 +433,7 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebIntentDispatch,
                         OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Snapshot, OnSnapshot)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PDFHasUnsupportedFeature,
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidBlockDisplayingInsecureContent,
                         OnDidBlockDisplayingInsecureContent)

@@ -1422,11 +1422,6 @@ void PepperPluginDelegateImpl::SetContentRestriction(int restrictions) {
       render_view_->routing_id(), restrictions));
 }
 
-void PepperPluginDelegateImpl::HasUnsupportedFeature() {
-  render_view_->Send(new ViewHostMsg_PDFHasUnsupportedFeature(
-      render_view_->routing_id()));
-}
-
 void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
   render_view_->Send(new ViewHostMsg_SaveURLAs(
       render_view_->routing_id(), url));
@@ -1475,6 +1470,10 @@ base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
 
 ppapi::Preferences PepperPluginDelegateImpl::GetPreferences() {
   return ppapi::Preferences(render_view_->webkit_preferences());
+}
+
+int PepperPluginDelegateImpl::GetRoutingId() const {
+  return render_view_->routing_id();
 }
 
 void PepperPluginDelegateImpl::PublishInitialPolicy(

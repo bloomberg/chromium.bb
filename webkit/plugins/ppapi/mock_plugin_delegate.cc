@@ -256,9 +256,6 @@ void MockPluginDelegate::DidStopLoading() {
 void MockPluginDelegate::SetContentRestriction(int restrictions) {
 }
 
-void MockPluginDelegate::HasUnsupportedFeature() {
-}
-
 void MockPluginDelegate::SaveURLAs(const GURL& url) {
 }
 

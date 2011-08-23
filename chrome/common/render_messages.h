@@ -288,6 +288,14 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
                     bool /* enable_phishing_detection */)
 
+// JavaScript related messages -----------------------------------------------
+
+// Notify the JavaScript engine in the render to change its parameters
+// while performing stress testing.
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_JavaScriptStressTestControl,
+                    int /* cmd */,
+                    int /* param */)
+
 //-----------------------------------------------------------------------------
 // TabContents messages
 // These are messages sent from the renderer to the browser process.
@@ -520,10 +528,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
                     int32 /* page_id */,
                     bool  /* result */)
 
-// JavaScript related messages -----------------------------------------------
+// The currently displayed PDF has an unsupported feature.
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)
 
-// Notify the JavaScript engine in the render to change its parameters
-// while performing stress testing.
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_JavaScriptStressTestControl,
-                    int /* cmd */,
-                    int /* param */)

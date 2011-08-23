@@ -2010,9 +2010,6 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,
                     int /* restrictions */)
 
-// The currently displayed PDF has an unsupported feature.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_PDFHasUnsupportedFeature)
-
 // Brings up SaveAs... dialog to save specified URL.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SaveURLAs,
                     GURL /* url */)

@@ -418,9 +418,6 @@ class PluginDelegate {
   // Sets restrictions on how the content can be used (i.e. no print/copy).
   virtual void SetContentRestriction(int restrictions) = 0;
 
-  // Tells the browser that the PDF has an unsupported feature.
-  virtual void HasUnsupportedFeature() = 0;
-
   // Tells the browser to bring up SaveAs dialog to save specified URL.
   virtual void SaveURLAs(const GURL& url) = 0;
 

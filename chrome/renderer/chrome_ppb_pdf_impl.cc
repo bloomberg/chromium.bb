@@ -7,7 +7,9 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/common/render_messages.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
@@ -320,7 +322,12 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
   if (!instance->IsFullPagePlugin())
     return;
 
-  instance->delegate()->HasUnsupportedFeature();
+  PepperPluginDelegateImpl* pepper_delegate =
+      static_cast<PepperPluginDelegateImpl*>(instance->delegate());
+
+  RenderThread::current()->Send(
+      new ChromeViewHostMsg_PDFHasUnsupportedFeature(
+          pepper_delegate->GetRoutingId()));
 }
 
 void SaveAs(PP_Instance instance_id) {
