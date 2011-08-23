@@ -84,8 +84,10 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview() {
 
 void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
     const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
-  if (params.page_count <= 0)
+  if (params.page_count <= 0) {
+    NOTREACHED();
     return;
+  }
 
   TabContents* print_preview_tab = GetPrintPreviewTab();
   if (!print_preview_tab || !print_preview_tab->web_ui())
@@ -98,26 +100,12 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
 
 void PrintPreviewMessageHandler::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params) {
-  RenderViewHost* rvh = tab_contents()->render_view_host();
   TabContents* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_ui()) {
-    // Can't find print preview tab means we should abort.
-    rvh->Send(new PrintMsg_AbortPreview(rvh->routing_id()));
+  if (!print_preview_tab || !print_preview_tab->web_ui())
     return;
-  }
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  bool has_pending = print_preview_ui->HasPendingRequests();
-  if (has_pending) {
-    // Cancel. Next print preview request will cancel the current one. Just do
-    // the required maintenance work here.
-    StopWorker(print_preview_ui->document_cookie());
-    print_preview_ui->OnPrintPreviewCancelled();
-    return;
-  }
-
-  int requested_preview_page_index = INVALID_PAGE_INDEX;
   int page_number = params.page_number;
 
   if (page_number == FIRST_PAGE_INDEX)
@@ -130,17 +118,18 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
     print_preview_ui->SetPrintPreviewDataForIndex(page_number, data_bytes);
     print_preview_ui->OnDidPreviewPage(page_number, params.preview_request_id);
-    // TODO(kmadhusu): Query |PrintPreviewUI| and update
-    // |requested_preview_page_index| accordingly.
   }
-
-  rvh->Send(new PrintMsg_ContinuePreview(rvh->routing_id(),
-                                         requested_preview_page_index));
 }
 
 void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     const PrintHostMsg_DidPreviewDocument_Params& params) {
+  // Always try to stop the worker.
   StopWorker(params.document_cookie);
+
+  if (params.expected_pages_count <= 0) {
+    NOTREACHED();
+    return;
+  }
 
   // Get the print preview tab.
   TabContents* print_preview_tab = GetPrintPreviewTab();
@@ -206,6 +195,11 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
   }
 }
 
+void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
+  // Always need to stop the worker.
+  StopWorker(document_cookie);
+}
+
 bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -220,6 +214,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnPagesReadyForPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewCancelled,
+                        OnPrintPreviewCancelled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

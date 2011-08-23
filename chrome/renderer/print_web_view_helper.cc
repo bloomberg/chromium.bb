@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
@@ -40,6 +39,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_POSIX)
+#include "base/process_util.h"
 #include "content/common/view_messages.h"
 #endif
 
@@ -461,8 +461,6 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
     IPC_MESSAGE_HANDLER(PrintMsg_ResetScriptedPrintCount,
                         ResetScriptedPrintCount)
-    IPC_MESSAGE_HANDLER(PrintMsg_ContinuePreview, OnContinuePreview)
-    IPC_MESSAGE_HANDLER(PrintMsg_AbortPreview, OnAbortPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PreviewPrintingRequestCancelled,
                         DisplayPrintJobError)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -585,7 +583,9 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
 
   // PDF printer device supports alpha blending.
   print_pages_params_->params.supports_alpha_blend = true;
-  if (!CreatePreviewDocument())
+  if (CreatePreviewDocument())
+    DidFinishPrinting(OK);
+  else
     DidFinishPrinting(FAIL_PREVIEW);
 }
 
@@ -600,42 +600,22 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   params.document_cookie = print_pages_params_->params.document_cookie;
   params.preview_request_id = print_pages_params_->params.preview_request_id;
   Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params));
-  PreviewPageRendered(printing::INVALID_PAGE_INDEX, NULL);
-  return true;
-}
+  if (CheckForCancel())
+    return false;
 
-void PrintWebViewHelper::OnContinuePreview(int requested_preview_page_index) {
-  // Spurious message. We already finished/cancelled/aborted the print preview.
-  if (!print_preview_context_.IsBusy())
-    return;
   int page_number;
-#if defined(USE_SKIA)
-  if (requested_preview_page_index >= printing::FIRST_PAGE_INDEX) {
-    page_number = requested_preview_page_index;
-  } else
-#endif
-  {
-    page_number = print_preview_context_.GetNextPageNumber();
-  }
-
-  if (page_number >= printing::FIRST_PAGE_INDEX) {
-    // Continue generating the print preview.
-    RenderPreviewPage(page_number);
-    return;
-  }
+  while ((page_number = print_preview_context_.GetNextPageNumber()) >= 0) {
+    if (!RenderPreviewPage(page_number))
+      return false;
+    if (CheckForCancel())
+      return false;
+  };
 
   // Finished generating preview. Finalize the document.
-  if (FinalizePreviewDocument()) {
-    print_preview_context_.Finished();
-    DidFinishPrinting(OK);
-  } else {
-    DidFinishPrinting(FAIL_PREVIEW);
-  }
-}
-
-void PrintWebViewHelper::OnAbortPreview() {
-  DidFinishPrinting(ABORT_PREVIEW);
-  return;
+  if (!FinalizePreviewDocument())
+    return false;
+  print_preview_context_.Finished();
+  return true;
 }
 
 bool PrintWebViewHelper::FinalizePreviewDocument() {
@@ -750,12 +730,11 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
     DCHECK(is_preview_);
     store_print_pages_params = false;
     int cookie = print_pages_params_->params.document_cookie;
-    Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
+    if (notify_browser_of_print_failure_)
+      Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
+    else
+      Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
     print_preview_context_.Failed();
-  } else if (result == ABORT_PREVIEW) {
-    DCHECK(is_preview_);
-    store_print_pages_params = false;
-    print_preview_context_.Abort();
   }
 
   if (print_web_view_) {
@@ -993,17 +972,6 @@ bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
   return true;
 }
 
-bool PrintWebViewHelper::UpdatePrintSettingsRequestId(
-    const DictionaryValue& job_settings,
-    PrintMsg_Print_Params* params) {
-  if (!job_settings.GetInteger(printing::kPreviewRequestID,
-                               &(params->preview_request_id))) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
-}
-
 bool PrintWebViewHelper::UpdatePrintSettings(
     const DictionaryValue& job_settings) {
   PrintMsg_PrintPages_Params settings;
@@ -1014,12 +982,14 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   if (settings.params.dpi < kMinDpi || !settings.params.document_cookie)
     return false;
 
-  if (!UpdatePrintSettingsRequestId(job_settings, &(settings.params)))
-    return false;
-
-  if (!job_settings.GetBoolean(printing::kIsFirstRequest,
+  if (!job_settings.GetString(printing::kPreviewUIAddr,
+                              &(settings.params.preview_ui_addr)) ||
+      !job_settings.GetInteger(printing::kPreviewRequestID,
+                               &(settings.params.preview_request_id)) ||
+      !job_settings.GetBoolean(printing::kIsFirstRequest,
                                &(settings.params.is_first_request))) {
     NOTREACHED();
+    return false;
   }
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
@@ -1129,9 +1099,6 @@ bool PrintWebViewHelper::IsScriptInitiatedPrintTooFrequent(
     }
   }
 
-  if (!too_frequent && print_preview_context_.IsBusy())
-    too_frequent = true;
-
   if (!too_frequent)
     return false;
 
@@ -1167,40 +1134,56 @@ void PrintWebViewHelper::RequestPrintPreview() {
   Send(new PrintHostMsg_RequestPrintPreview(routing_id()));
 }
 
-void PrintWebViewHelper::PreviewPageRendered(int page_number,
+bool PrintWebViewHelper::CheckForCancel() {
+  bool cancel = false;
+  Send(new PrintHostMsg_CheckForCancel(
+      routing_id(),
+      print_pages_params_->params.preview_ui_addr,
+      print_pages_params_->params.preview_request_id,
+      &cancel));
+  if (cancel)
+    notify_browser_of_print_failure_ = false;
+  return cancel;
+}
+
+bool PrintWebViewHelper::PreviewPageRendered(int page_number,
                                              printing::Metafile* metafile) {
-  if ((page_number == printing::INVALID_PAGE_INDEX && metafile) ||
-       (page_number >= printing::FIRST_PAGE_INDEX && !metafile &&
-        print_preview_context_.IsModifiable())) {
-    NOTREACHED();
-    DidFinishPrinting(FAIL_PREVIEW);
-    return;
+  DCHECK_GE(page_number, printing::FIRST_PAGE_INDEX);
+
+  // For non-modifiable files, |metafile| should be NULL, so do not bother
+  // sending a message.
+  if (!print_preview_context_.IsModifiable()) {
+    DCHECK(!metafile);
+    return true;
   }
 
-  uint32 buf_size = 0;
+  if (!metafile) {
+    NOTREACHED();
+    return false;
+  }
+
   PrintHostMsg_DidPreviewPage_Params preview_page_params;
   // Get the size of the resulting metafile.
-  if (metafile) {
-    buf_size = metafile->GetDataSize();
-    DCHECK_GT(buf_size, 0u);
-    if (!CopyMetafileDataToSharedMem(
-            metafile, &(preview_page_params.metafile_data_handle))) {
-      DidFinishPrinting(FAIL_PREVIEW);
-      return;
-    }
+  uint32 buf_size = metafile->GetDataSize();
+  DCHECK_GT(buf_size, 0u);
+  if (!CopyMetafileDataToSharedMem(
+      metafile, &(preview_page_params.metafile_data_handle))) {
+    return false;
   }
   preview_page_params.data_size = buf_size;
   preview_page_params.page_number = page_number;
   preview_page_params.preview_request_id =
       print_pages_params_->params.preview_request_id;
+
   Send(new PrintHostMsg_DidPreviewPage(routing_id(), preview_page_params));
+  return true;
 }
 
 PrintWebViewHelper::PrintPreviewContext::PrintPreviewContext()
     : frame_(NULL),
       total_page_count_(0),
       actual_page_count_(0),
-      current_page_number_(0),
+      current_page_index_(0),
       state_(UNINITIALIZED) {
 }
 
@@ -1210,8 +1193,6 @@ PrintWebViewHelper::PrintPreviewContext::~PrintPreviewContext() {
 void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
     WebKit::WebFrame* web_frame) {
   DCHECK(web_frame);
-  if (IsReadyToRender())
-    return;
   state_ = INITIALIZED;
   frame_ = web_frame;
   node_.reset();
@@ -1220,8 +1201,6 @@ void PrintWebViewHelper::PrintPreviewContext::InitWithFrame(
 void PrintWebViewHelper::PrintPreviewContext::InitWithNode(
     const WebKit::WebNode& web_node) {
   DCHECK(!web_node.isNull());
-  if (IsReadyToRender())
-    return;
   state_ = INITIALIZED;
   frame_ = web_node.document().frame();
   node_.reset(new WebNode(web_node));
@@ -1254,23 +1233,20 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   if (total_page_count_ == 0)
     return false;
 
-  current_page_number_ = 0;
+  current_page_index_ = 0;
   if (pages.empty()) {
     actual_page_count_ = total_page_count_;
-    rendered_pages_ = std::vector<PreviewPageInfo>(total_page_count_,
-                                                   std::make_pair(false, -1));
+    for (int i = 0; i < actual_page_count_; ++i)
+      pages_to_render_.push_back(i);
   } else {
     actual_page_count_ = pages.size();
-    rendered_pages_ = std::vector<PreviewPageInfo>(total_page_count_,
-                                                   std::make_pair(true, -1));
     for (int i = 0; i < actual_page_count_; ++i) {
       int page_number = pages[i];
       if (page_number < printing::FIRST_PAGE_INDEX ||
           page_number >= total_page_count_) {
         return false;
       }
-      rendered_pages_[page_number].first = false;
-      rendered_pages_[page_number].second = i;
+      pages_to_render_.push_back(page_number);
     }
   }
 
@@ -1317,37 +1293,20 @@ void PrintWebViewHelper::PrintPreviewContext::Finished() {
 }
 
 void PrintWebViewHelper::PrintPreviewContext::Failed() {
-  DCHECK(IsBusy());
+  DCHECK(state_ == INITIALIZED || state_ == RENDERING);
   state_ = INITIALIZED;
   ClearContext();
 }
 
-void PrintWebViewHelper::PrintPreviewContext::Abort() {
-  state_ = UNINITIALIZED;
-  ClearContext();
-  frame_ = NULL;
-  node_.reset();
-}
-
 int PrintWebViewHelper::PrintPreviewContext::GetNextPageNumber() {
   DCHECK_EQ(RENDERING, state_);
-  for (int i = 0; i < total_page_count_; i++) {
-    if (!rendered_pages_[current_page_number_].first)
-      break;
-    current_page_number_ = (current_page_number_ + 1) % total_page_count_;
-  }
-  if (rendered_pages_[current_page_number_].first)
-    return printing::INVALID_PAGE_INDEX;
-  rendered_pages_[current_page_number_].first = true;
-  return current_page_number_;
+  if (current_page_index_ >= actual_page_count_)
+    return -1;
+  return pages_to_render_[current_page_index_++];
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsReadyToRender() const {
   return state_ != UNINITIALIZED;
-}
-
-bool PrintWebViewHelper::PrintPreviewContext::IsBusy() const {
-  return state_ == INITIALIZED || state_ == RENDERING;
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
@@ -1369,6 +1328,7 @@ WebKit::WebNode* PrintWebViewHelper::PrintPreviewContext::node() const {
 }
 
 int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {
+  DCHECK(IsReadyToRender());
   return total_page_count_;
 }
 
@@ -1390,5 +1350,5 @@ PrintWebViewHelper::PrintPreviewContext::GetPrintCanvasSize() const {
 void PrintWebViewHelper::PrintPreviewContext::ClearContext() {
   prep_frame_view_.reset();
   metafile_.reset();
-  rendered_pages_.clear();
+  pages_to_render_.clear();
 }

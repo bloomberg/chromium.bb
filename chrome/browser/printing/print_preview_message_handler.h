@@ -34,11 +34,11 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   void OnRequestPrintPreview();
   void OnDidGetPreviewPageCount(
       const PrintHostMsg_DidGetPreviewPageCount_Params& params);
-  // |page_number| is 0-based.
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
   void OnPagesReadyForPreview(
       const PrintHostMsg_DidPreviewDocument_Params& params);
   void OnPrintPreviewFailed(int document_cookie);
+  void OnPrintPreviewCancelled(int document_cookie);
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);
 };

@@ -4,15 +4,19 @@
 
 #include "chrome/browser/printing/printing_message_filter.h"
 
+#include <string>
+
 #include "base/process_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
-#include "content/common/view_messages.h"
 
 #if defined(OS_CHROMEOS)
 #include <fcntl.h>
+
+#include <map>
 
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -108,6 +112,7 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_UpdatePrintSettings,
                                     OnUpdatePrintSettings)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_CheckForCancel, OnCheckForCancel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -312,4 +317,12 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     print_job_manager_->QueuePrinterQuery(printer_query.get());
   else
     printer_query->StopWorker();
+}
+
+void PrintingMessageFilter::OnCheckForCancel(const std::string& preview_ui_addr,
+                                             int preview_request_id,
+                                             bool* cancel) {
+  PrintPreviewUI::GetCurrentPrintPreviewStatus(preview_ui_addr,
+                                               preview_request_id,
+                                               cancel);
 }

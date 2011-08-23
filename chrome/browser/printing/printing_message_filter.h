@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_PRINTING_PRINTING_MESSAGE_FILTER_H_
 #pragma once
 
+#include <string>
+
 #include "content/browser/browser_message_filter.h"
 
 #if defined(OS_WIN)
@@ -76,6 +78,10 @@ class PrintingMessageFilter : public BrowserMessageFilter {
   void OnUpdatePrintSettingsReply(
       scoped_refptr<printing::PrinterQuery> printer_query,
       IPC::Message* reply_msg);
+
+  void OnCheckForCancel(const std::string& preview_ui_addr,
+                        int preview_request_id,
+                        bool* cancel);
 
   printing::PrintJobManager* print_job_manager_;
 

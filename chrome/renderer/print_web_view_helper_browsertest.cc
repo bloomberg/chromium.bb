@@ -29,6 +29,10 @@ const char kHelloWorldHTML[] = "<body><p>Hello World!</p></body>";
 const char kPrintWithJSHTML[] =
     "<body>Hello<script>window.print()</script>World</body>";
 
+// A longer web page.
+const char kLongPageHTML[] =
+    "<body><img src=\"\" width=10 height=10000 /></body>";
+
 // A web page to simulate the print preview page.
 const char kPrintPreviewHTML[] =
     "<body><p id=\"pdf-viewer\">Hello World!</p></body>";
@@ -41,6 +45,7 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
   dict->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
   dict->SetInteger(printing::kSettingCopies, 1);
   dict->SetString(printing::kSettingDeviceName, "dummy");
+  dict->SetString(printing::kPreviewUIAddr, "0xb33fbeef");
   dict->SetInteger(printing::kPreviewRequestID, 12345);
   dict->SetBoolean(printing::kIsFirstRequest, true);
   dict->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
@@ -305,6 +310,13 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   }
 
  protected:
+  void VerifyPrintPreviewCancelled(bool did_cancel) {
+    bool print_preview_cancelled =
+        (render_thread_.sink().GetUniqueMessageMatching(
+            PrintHostMsg_PrintPreviewCancelled::ID) != NULL);
+    EXPECT_EQ(did_cancel, print_preview_cancelled);
+  }
+
   void VerifyPrintPreviewFailed(bool did_fail) {
     bool print_preview_failed = (render_thread_.sink().GetUniqueMessageMatching(
         PrintHostMsg_PrintPreviewFailed::ID) != NULL);
@@ -346,14 +358,8 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   CreatePrintSettingsDictionary(&dict);
   PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
 
-  // Need to finish simulating print preview.
-  // Generate the page and finalize it.
-  PrintWebViewHelper::Get(view_)->OnContinuePreview(
-      printing::INVALID_PAGE_INDEX);
-  PrintWebViewHelper::Get(view_)->OnContinuePreview(
-      printing::INVALID_PAGE_INDEX);
-
   EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
+  VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(false);
@@ -370,7 +376,27 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
   PrintWebViewHelper::Get(view_)->OnPrintPreview(empty_dict);
 
   EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
+  VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(true);
+  VerifyPrintPreviewGenerated(false);
+  VerifyPagesPrinted(false);
+}
+
+// Tests that cancelling print preview works.
+TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
+  LoadHTML(kLongPageHTML);
+
+  const int kCancelPage = 3;
+  render_thread_.set_print_preview_cancel_page_number(kCancelPage);
+  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
+
+  EXPECT_EQ(kCancelPage, render_thread_.print_preview_pages_remaining());
+  VerifyPrintPreviewCancelled(true);
+  VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
   VerifyPagesPrinted(false);
 }

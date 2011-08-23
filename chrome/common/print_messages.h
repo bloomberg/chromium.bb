@@ -5,6 +5,7 @@
 // IPC messages for printing.
 // Multiply-included message file, hence no include guard.
 
+#include <string>
 #include <vector>
 
 #include "base/values.h"
@@ -34,6 +35,7 @@ struct PrintMsg_Print_Params {
   int document_cookie;
   bool selection_only;
   bool supports_alpha_blend;
+  std::string preview_ui_addr;
   int preview_request_id;
   bool is_first_request;
   bool display_header_footer;
@@ -93,10 +95,15 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
   // Does the printer support alpha blending?
   IPC_STRUCT_TRAITS_MEMBER(supports_alpha_blend)
 
-  // The id of the preview request, used only for print preview.
+  // *** Parameters below are used only for print preview. ***
+
+  // The print preview ui associated with this request.
+  IPC_STRUCT_TRAITS_MEMBER(preview_ui_addr)
+
+  // The id of the preview request.
   IPC_STRUCT_TRAITS_MEMBER(preview_request_id)
 
-  // True if this is the first preview request, used only for print preview.
+  // True if this is the first preview request.
   IPC_STRUCT_TRAITS_MEMBER(is_first_request)
 
   // Specifies if the header and footer should be rendered.
@@ -264,16 +271,6 @@ IPC_MESSAGE_ROUTED0(PrintMsg_PrintForSystemDialog)
 // Tells a renderer to stop blocking script initiated printing.
 IPC_MESSAGE_ROUTED0(PrintMsg_ResetScriptedPrintCount)
 
-// Tells a renderer to continue generating the print preview.
-// Use |requested_preview_page_index| to request a specific preview page data.
-// |requested_preview_page_index| is 1-based or |printing::INVALID_PAGE_INDEX|
-// to render the next page.
-IPC_MESSAGE_ROUTED1(PrintMsg_ContinuePreview,
-                    int /* requested_preview_page_index */)
-
-// Tells a renderer to abort the print preview and reset all state.
-IPC_MESSAGE_ROUTED0(PrintMsg_AbortPreview)
-
 // Messages sent from the renderer to the browser.
 
 #if defined(OS_WIN)
@@ -344,6 +341,12 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPreviewPage,
                     PrintHostMsg_DidPreviewPage_Params /* params */)
 
+// Asks the browser whether the print preview has been cancelled.
+IPC_SYNC_MESSAGE_ROUTED2_1(PrintHostMsg_CheckForCancel,
+                           std::string /* print preview ui address */,
+                           int /* request id */,
+                           bool /* print preview cancelled */)
+
 // Sends back to the browser the complete rendered document for print preview
 // that was requested by a PrintMsg_PrintPreview message. The memory handle in
 // this message is already valid in the browser process.
@@ -356,4 +359,8 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintingFailed,
 
 // Tell the browser print preview failed.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewFailed,
+                    int /* document cookie */)
+
+// Tell the browser print preview was cancelled.
+IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewCancelled,
                     int /* document cookie */)

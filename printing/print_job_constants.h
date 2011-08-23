@@ -9,6 +9,7 @@ namespace printing {
 
 extern const char kIsFirstRequest[];
 extern const char kPreviewRequestID[];
+extern const char kPreviewUIAddr[];
 extern const char kSettingCloudPrintId[];
 extern const char kSettingCollate[];
 extern const char kSettingColor[];
@@ -34,7 +35,6 @@ extern const char kSettingPrintToPDF[];
 
 extern const int FIRST_PAGE_INDEX;
 extern const int COMPLETE_PREVIEW_DOCUMENT_INDEX;
-extern const int INVALID_PAGE_INDEX;
 
 // Print job duplex mode values.
 enum DuplexMode {

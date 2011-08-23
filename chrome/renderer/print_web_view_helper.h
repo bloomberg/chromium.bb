@@ -142,18 +142,12 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Initialize the print preview document.
   bool CreatePreviewDocument();
 
-  // Continue generating the print preview. |requested_preview_page_index|
-  // specifies the browser requested preview page index. It is 1-based or
-  // |printing::INVALID_PAGE_INDEX| to continue with next page.
-  void OnContinuePreview(int requested_preview_page_index);
   // Renders a print preview page. |page_number| is 0-based.
-  void RenderPreviewPage(int page_number);
+  // Returns true if print preview should continue, false on failure.
+  bool RenderPreviewPage(int page_number);
+
   // Finalize the print preview document.
   bool FinalizePreviewDocument();
-
-  // Abort the preview to put |print_preview_context_| into the 'UNINITIALIZED'
-  // state.
-  void OnAbortPreview();
 
   // Print / preview the node under the context menu.
   void OnPrintNodeUnderContextMenu();
@@ -172,7 +166,6 @@ class PrintWebViewHelper : public RenderViewObserver,
     OK,
     FAIL_PRINT,
     FAIL_PREVIEW,
-    ABORT_PREVIEW,
   };
 
   // Notification when printing is done - signal tear-down/free resources.
@@ -190,11 +183,6 @@ class PrintWebViewHelper : public RenderViewObserver,
       WebKit::WebFrame* frame,
       WebKit::WebNode* node,
       scoped_ptr<PrepareFrameAndViewForPrint>* prepare);
-
-  // Parse the request id out of |job_settings| and store it in |params|.
-  // Returns false on failure.
-  bool UpdatePrintSettingsRequestId(const base::DictionaryValue& job_settings,
-                                    PrintMsg_Print_Params* params);
 
   // Update the current print settings with new |job_settings|. |job_settings|
   // dictionary contains print job details such as printer name, number of
@@ -305,10 +293,16 @@ class PrintWebViewHelper : public RenderViewObserver,
 
   void RequestPrintPreview();
 
-  // Notify the browser a print preview page has been rendered.
-  // |page_number| is 0-based or |printing::INVALID_PAGE_INDEX| to check
-  // for pending preview requests.
-  void PreviewPageRendered(int page_number, printing::Metafile* metafile);
+  // Checks whether print preview should continue or not.
+  // Returns true if cancelling, false if continuing.
+  bool CheckForCancel();
+
+  // Notifies the browser a print preview page has been rendered.
+  // |page_number| is 0-based.
+  // For a valid |page_number| with modifiable content,
+  // |metafile| is the rendered page. Otherwise |metafile| is NULL.
+  // Returns true if print preview should continue, false on failure.
+  bool PreviewPageRendered(int page_number, printing::Metafile* metafile);
 
   WebKit::WebView* print_web_view_;
 
@@ -360,13 +354,9 @@ class PrintWebViewHelper : public RenderViewObserver,
     // Cleanup after print preview fails.
     void Failed();
 
-    // Abort the print preview.
-    void Abort();
-
     // Helper functions
     int GetNextPageNumber();
     bool IsReadyToRender() const;
-    bool IsBusy() const;
     bool IsModifiable() const;
 
     // Getters
@@ -403,12 +393,9 @@ class PrintWebViewHelper : public RenderViewObserver,
     int actual_page_count_;
 
     // The current page to render.
-    int current_page_number_;
+    int current_page_index_;
 
-    // |rendered_pages_| tracks which pages need to be printed as well as
-    // the page slot it should be printed in. See GetPageSlotForPage.
-    typedef std::pair<bool, int> PreviewPageInfo;
-    std::vector<PreviewPageInfo> rendered_pages_;
+    std::vector<int> pages_to_render_;
 
     base::TimeDelta document_render_time_;
     base::TimeTicks begin_time_;

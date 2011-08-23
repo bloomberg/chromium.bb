@@ -18,11 +18,12 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
     max_shrink(0),
     desired_dpi(0),
     document_cookie(0),
-    selection_only(0),
-    supports_alpha_blend(0),
+    selection_only(false),
+    supports_alpha_blend(false),
+    preview_ui_addr(),
     preview_request_id(0),
-    is_first_request(0),
-    display_header_footer(0),
+    is_first_request(false),
+    display_header_footer(false),
     date(),
     title(),
     url() {
@@ -31,20 +32,21 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
 PrintMsg_Print_Params::~PrintMsg_Print_Params() {}
 
 void PrintMsg_Print_Params::Reset() {
-  dpi = 0;
-  max_shrink = 0;
-  min_shrink = 0;
-  desired_dpi = 0;
-  selection_only = 0;
-  document_cookie = 0;
-  page_size = gfx::Size();
   page_size = gfx::Size();
   printable_size = gfx::Size();
-  margin_left = 0;
   margin_top = 0;
-  is_first_request = 0;
+  margin_left = 0;
+  dpi = 0;
+  min_shrink = 0;
+  max_shrink = 0;
+  desired_dpi = 0;
+  document_cookie = 0;
+  selection_only = false;
+  supports_alpha_blend = false;
+  preview_ui_addr = std::string();
   preview_request_id = 0;
-  display_header_footer = 0;
+  is_first_request = false;
+  display_header_footer = false;
   date = string16();
   title = string16();
   url = string16();
@@ -60,4 +62,3 @@ void PrintMsg_PrintPages_Params::Reset() {
   params.Reset();
   pages = std::vector<int>();
 }
-

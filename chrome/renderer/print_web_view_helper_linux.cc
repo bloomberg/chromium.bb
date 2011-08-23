@@ -16,7 +16,6 @@
 #include "skia/ext/vector_canvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "ui/gfx/point.h"
 
 #if !defined(OS_CHROMEOS)
 #include "base/process_util.h"
@@ -25,7 +24,7 @@
 using WebKit::WebFrame;
 using WebKit::WebNode;
 
-void PrintWebViewHelper::RenderPreviewPage(int page_number) {
+bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   PrintMsg_PrintPage_Params page_params;
   page_params.params = print_preview_context_.print_params();
   page_params.page_number = page_number;
@@ -43,7 +42,7 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
     page_metafile.reset(
         print_preview_context_.metafile()->GetMetafileForCurrentPage());
   }
-  PreviewPageRendered(page_number, page_metafile.get());
+  return PreviewPageRendered(page_number, page_metafile.get());
 }
 
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,

@@ -477,12 +477,20 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
+  int request_id = -1;
+  if (!settings->GetInteger(printing::kPreviewRequestID, &request_id))
+    return;
+
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  print_preview_ui->OnPrintPreviewRequest(request_id);
+  // Add an additional key in order to identify |print_preview_ui| later on
+  // when calling PrintPreviewUI::GetCurrentPrintPreviewStatus() on the IO
+  // thread.
+  settings->SetString(printing::kPreviewUIAddr,
+                      print_preview_ui->GetPrintPreviewUIAddress());
 
   // Increment request count.
   ++regenerate_preview_request_count_;
-
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
-  print_preview_ui->OnPrintPreviewRequest();
 
   TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab) {
@@ -874,11 +882,6 @@ void PrintPreviewHandler::OnTabDestroyed() {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
   wrapper->print_view_manager()->set_observer(NULL);
-
-  // Tell the initiator tab to stop rendering the print preview, if any,
-  // since the preview tab is gone.
-  RenderViewHost* rvh = initiator_tab->render_view_host();
-  rvh->Send(new PrintMsg_AbortPreview(rvh->routing_id()));
 }
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,

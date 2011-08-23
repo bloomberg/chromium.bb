@@ -59,7 +59,7 @@ void PrintWebViewHelper::PrintPageInternal(
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
-void PrintWebViewHelper::RenderPreviewPage(int page_number) {
+bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   float scale_factor = print_preview_context_.frame()->getPrintPageShrink(0);
   PrintMsg_Print_Params printParams = print_preview_context_.print_params();
   gfx::Rect content_area(printParams.margin_left, printParams.margin_top,
@@ -73,8 +73,7 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
   if (print_preview_context_.IsModifiable()) {
     draft_metafile.reset(new printing::PreviewMetafile);
     if (!draft_metafile->Init()) {
-      DidFinishPrinting(FAIL_PREVIEW);
-      return;
+      return false;
     }
     initial_render_metafile = draft_metafile.get();
   }
@@ -118,7 +117,7 @@ void PrintWebViewHelper::RenderPreviewPage(int page_number) {
 #endif
   }
 
-  PreviewPageRendered(page_number, draft_metafile.get());
+  return PreviewPageRendered(page_number, draft_metafile.get());
 }
 
 void PrintWebViewHelper::RenderPage(

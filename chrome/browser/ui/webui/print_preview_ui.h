@@ -41,9 +41,18 @@ class PrintPreviewUI : public ChromeWebUI {
   void SetInitiatorTabURLAndTitle(const std::string& initiator_url,
                                   const string16& initiator_tab_title);
 
-  // Notifies the Web UI that there is a print preview request. There should be
-  // a matching call to OnPreviewDataIsAvailable() or OnPrintPreviewFailed().
-  void OnPrintPreviewRequest();
+  // Determines whether to cancel a print preview request based on
+  // |preview_ui_addr| and |request_id|.
+  // Can be called from any thread.
+  static void GetCurrentPrintPreviewStatus(const std::string& preview_ui_addr,
+                                           int request_id,
+                                           bool* cancel);
+
+  // Returns a string to uniquely identify this PrintPreviewUI.
+  std::string GetPrintPreviewUIAddress() const;
+
+  // Notifies the Web UI of a print preview request with |request_id|.
+  void OnPrintPreviewRequest(int request_id);
 
   // Notifies the Web UI about the page count of the request preview.
   void OnDidGetPreviewPageCount(
@@ -68,9 +77,6 @@ class PrintPreviewUI : public ChromeWebUI {
   // Notifies the Web UI that the print preview failed to render.
   void OnPrintPreviewFailed();
 
-  // Notifies the Web UI that the print preview request has been cancelled.
-  void OnPrintPreviewCancelled();
-
   // Notifies the Web UI that initiator tab is closed, so we can disable all the
   // controls that need the initiator tab for generating the preview data.
   void OnInitiatorTabClosed();
@@ -81,16 +87,9 @@ class PrintPreviewUI : public ChromeWebUI {
   // Notifies the Web UI renderer that file selection has been cancelled.
   void OnFileSelectionCancelled();
 
-  // Returns true if there are pending requests.
-  bool HasPendingRequests();
-
-  int document_cookie();
-
  private:
   // Returns the Singleton instance of the PrintPreviewDataService.
   PrintPreviewDataService* print_preview_data_service();
-
-  void DecrementRequestCount();
 
   base::TimeTicks initial_preview_start_time_;
 
@@ -99,12 +98,6 @@ class PrintPreviewUI : public ChromeWebUI {
 
   // Weak pointer to the WebUI handler.
   PrintPreviewHandler* handler_;
-
-  // The number of print preview requests in flight.
-  uint32 request_count_;
-
-  // Document cookie from the initiator renderer.
-  int document_cookie_;
 
   // Store the |initiator_url| in order to display an accurate error message
   // when the initiator tab is closed/crashed.
