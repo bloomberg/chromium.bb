@@ -194,19 +194,7 @@ hooks = [
     'action':
          [
     'python',
-    'src/build/download_nacl_toolchains.py',
-    '--x86-version',
-    '6494',
-    '--nacl-newlib-only',
-    '--file-hash',
-    'mac_x86_newlib',
-    '1b0855435c03c435a011c6105a509624b2a4edaa',
-    '--file-hash',
-    'win_x86_newlib',
-    '5038a47b5a9a49acdc36cbe311aec7bce575c164',
-    '--file-hash',
-    'linux_x86_newlib',
-    '01e245dc6dca16bea5cf840dbc77e3aa138f234f'
+    'src/build/gyp_chromium'
 ],
     'pattern':
          '.'
@@ -215,7 +203,36 @@ hooks = [
     'action':
          [
     'python',
-    'src/build/gyp_chromium'
+    'src/build/download_nacl_irt.py',
+    '--nacl_revision',
+    '6499',
+    '--file_hash',
+    'x86_32',
+    '3da71eefa07c815a1aed9dc3a379fc41efda4b6b',
+    '--file_hash',
+    'x86_64',
+    '147077c09e87ff2db20d32af2054bfb4de343c20'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
+    'src/build/download_nacl_toolchains.py',
+    '--x86-version',
+    '6429',
+    '--nacl-newlib-only',
+    '--file-hash',
+    'mac_x86_newlib',
+    'be4cc2baf6eb34c8fe155a1bb61e2acd8ca1e924',
+    '--file-hash',
+    'win_x86_newlib',
+    '56667d7f653b1005cd5116de3d8e9faf346053cf',
+    '--file-hash',
+    'linux_x86_newlib',
+    '5e4876a1fa53c7701cdbeef969a99b3ff0b0ddc5'
 ],
     'pattern':
          '.'
