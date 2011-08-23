@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 // Implements the target interface for the tab, which gets sent messages when
 // the tab is clicked on by the user and when its close box is clicked.
@@ -20,10 +21,12 @@
  @private
   bool selected_;
   bool closed_;
+  bool closedOtherTabs_;
   scoped_nsobject<TabStripDragController> dragController_;
 }
 - (bool)selected;
 - (bool)closed;
+- (bool)closedOtherTabs;
 @end
 
 @implementation TabControllerTestTarget
@@ -40,11 +43,17 @@
 - (bool)closed {
   return closed_;
 }
+- (bool)closedOtherTabs {
+  return closedOtherTabs_;
+}
 - (void)selectTab:(id)sender {
   selected_ = true;
 }
 - (void)closeTab:(id)sender {
   closed_ = true;
+}
+- (void)closeOtherTabs:(id)sender {
+  closedOtherTabs_ = true;
 }
 - (void)mouseTimer:(NSTimer*)timer {
   // Fire the mouseUp to break the TabView drag loop.
@@ -52,7 +61,7 @@
   NSWindow* window = [timer userInfo];
   NSEvent* up = [NSEvent mouseEventWithType:NSLeftMouseUp
                                    location:[current locationInWindow]
-                              modifierFlags:0
+                              modifierFlags:[current modifierFlags]
                                   timestamp:[current timestamp]
                                windowNumber:[window windowNumber]
                                     context:nil
@@ -125,6 +134,46 @@ TEST_F(TabControllerTest, Close) {
   [controller closeTab:nil];
   EXPECT_TRUE([target closed]);
 
+  [[controller view] removeFromSuperview];
+}
+
+// Tests sending it a closeTab message with a mousedown event and ensuring
+// that the target/action get called. closeOtherTabs message should be called
+// when the tab is clicked with option key.
+TEST_F(TabControllerTest, CloseOtherTabs) {
+  NSWindow* window = test_window();
+  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  [[window contentView] addSubview:[controller view]];
+
+  scoped_nsobject<TabControllerTestTarget> target(
+      [[TabControllerTestTarget alloc] init]);
+  EXPECT_FALSE([target closedOtherTabs]);
+  [controller setTarget:target];
+  [controller setAction:@selector(closeTab:)];
+  EXPECT_EQ(target.get(), [controller target]);
+  EXPECT_EQ(@selector(closeTab:), [controller action]);
+
+  // Create a mouse event with |NSAlternateKeyMask| and mock NSApp so that
+  // [NSApp currentEvent] returns the event.
+  NSEvent* current = [NSApp currentEvent];
+  NSEvent* down = [NSEvent mouseEventWithType:NSLeftMouseDown
+                                     location:[current locationInWindow]
+                                modifierFlags:NSAlternateKeyMask
+                                    timestamp:[current timestamp]
+                                 windowNumber:[window windowNumber]
+                                      context:nil
+                                  eventNumber:0
+                                   clickCount:1
+                                     pressure:1.0];
+  // OCMock will swap NSApp internally and will restore it when the mock gets
+  // deallocated. This happens when the autorelease pool drains at the end of
+  // the test.
+  id fakeApp = [OCMockObject partialMockForObject:NSApp];
+  [[[fakeApp stub] andReturn:down] currentEvent];
+
+  [controller closeTab:nil];
+  EXPECT_TRUE([target closedOtherTabs]);
+  EXPECT_FALSE([target closed]);
   [[controller view] removeFromSuperview];
 }
 
