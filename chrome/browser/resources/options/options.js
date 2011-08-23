@@ -28,6 +28,7 @@ var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
 var SyncSetupOverlay = options.SyncSetupOverlay;
+var VirtualKeyboardManager = options.VirtualKeyboardManager;
 
 /**
  * DOMContentLoaded handler, sets up the page.
@@ -97,6 +98,10 @@ function load() {
                         templateData.languagePinyinPageTabTitle,
                         'languagePinyinPage'),
         LanguageOptions.getInstance());
+    if (cr.isTouch) {
+      OptionsPage.registerSubPage(VirtualKeyboardManager.getInstance(),
+                                  LanguageOptions.getInstance());
+    }
     OptionsPage.register(InternetOptions.getInstance());
   }
   OptionsPage.register(AdvancedOptions.getInstance());

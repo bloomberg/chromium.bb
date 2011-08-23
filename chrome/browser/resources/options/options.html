@@ -46,6 +46,9 @@
   <link rel="stylesheet" href="chromeos/proxy.css">
   <link rel="stylesheet" href="chromeos/system_options_page.css">
 </if>
+<if expr="pp_ifdef('chromeos') and pp_ifdef('touchui')">
+  <link rel="stylesheet" href="chromeos/virtual_keyboard.css">
+</if>
 
 <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
   <link rel="stylesheet" href="certificate_manager.css">
@@ -153,6 +156,9 @@
                <include src="chromeos/language_hangul_options.html">
                <include src="chromeos/language_mozc_options.html">
                <include src="chromeos/language_pinyin_options.html">
+             </if>
+             <if expr="pp_ifdef('chromeos') and pp_ifdef('touchui')">
+               <include src="chromeos/virtual_keyboard.html">
              </if>
              <include src="cookies_view.html">
              <if expr="pp_ifdef('enable_register_protocol_handler')">

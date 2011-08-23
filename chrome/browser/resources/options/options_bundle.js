@@ -24,6 +24,8 @@
   <include src="chromeos/proxy_rules_list.js"></include>
   <include src="chromeos/accounts_user_list.js"></include>
   <include src="chromeos/accounts_user_name_edit.js"></include>
+  <include src="chromeos/virtual_keyboard.js"></include>
+  <include src="chromeos/virtual_keyboard_list.js"></include>
   var AboutPage = options.AboutPage;
   var AccountsOptions = options.AccountsOptions;
   var ChangePictureOptions = options.ChangePictureOptions;
