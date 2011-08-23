@@ -122,7 +122,7 @@
     "description": "Footer text displayed at the host after an access code has been generated, but before a client connects."
   },
   "HELP": {
-    "message": "Help?",
+    "message": "Help",
     "description": "Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ."
   },
   "INSTRUCTIONS_SHARE_ABOVE": {

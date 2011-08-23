@@ -389,6 +389,12 @@ function updateStatistics() {
   window.setTimeout(updateStatistics, 1000);
 }
 
+function showToolbarPreview_() {
+  var toolbar = document.getElementById('session-toolbar');
+  addClass(toolbar, 'toolbar-preview');
+  window.setTimeout(removeClass, 3000, toolbar, 'toolbar-preview');
+}
+
 function onClientStateChange_(oldState) {
   var state = remoting.session.state;
   if (state == remoting.ClientSession.State.CREATED) {
@@ -400,6 +406,7 @@ function onClientStateChange_(oldState) {
   } else if (state == remoting.ClientSession.State.INITIALIZING) {
     remoting.debug.log('Initializing connection');
   } else if (state == remoting.ClientSession.State.CONNECTED) {
+    showToolbarPreview_();
     remoting.setMode(remoting.AppMode.IN_SESSION);
     updateStatistics();
     var accessCode = document.getElementById('access-code-entry');
