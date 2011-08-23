@@ -272,7 +272,8 @@ class Instance {
   bool BindGraphics(const Graphics2D& graphics);
 
   /// Binds the given Graphics3D as the current display surface.
-  /// See BindGraphics(const Graphics2D& graphics).
+  /// Refer to <code>BindGraphics(const Graphics2D& graphics)</code> for
+  /// further information.
   ///
   /// @param[in] graphics A <code>Graphics3D_Dev</code> to bind.
   ///
@@ -282,7 +283,9 @@ class Instance {
   bool BindGraphics(const Graphics3D_Dev& graphics);
 
   /// Binds the given Surface3D as the current display surface.
-  /// See BindGraphics(const Graphics2D& graphics).
+  /// Refer to <code>BindGraphics(const Graphics2D& graphics)</code> for
+  /// further information.
+  ///
   /// @param[in] graphics A <code>Surface3D_Dev</code> to bind.
   ///
   /// @return true if bind was successful or false if the device was not the

@@ -22,7 +22,8 @@ namespace pp {
 /// additionally handle the necessary callbacks on top of the PaintAggregator
 /// functionality.
 ///
-/// See http://code.google.com/p/ppapi/wiki/2DPaintingModel
+/// Refer to <code>http://code.google.com/p/ppapi/wiki/2DPaintingModel</code>
+/// for further information.
 class PaintAggregator {
  public:
   struct PaintUpdate {
@@ -93,7 +94,7 @@ class PaintAggregator {
   /// PendingUpdate if InvalidateRect or ScrollRect were called and
   /// ClearPendingUpdate was not called.
   ///
-  /// @return True if there is a pending update, otherwise false.
+  /// @return true if there is a pending update, otherwise false.
   bool HasPendingUpdate() const;
 
   /// This function clears a pending update.

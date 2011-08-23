@@ -159,8 +159,9 @@ struct PPB_AudioConfig {
    * @param[in] config A <code>PP_Resource</code> containing the audio config
    * resource.
    * @return A <code>uint32_t</code> containing sample frame count or
-   * 0 if the resource is invalid. See <code>RecommendSampleFrameCount</code>
-   * for more on sample frame counts.
+   * 0 if the resource is invalid. Refer to
+   * <code>RecommendSampleFrameCount</code> for more information on sample
+   * frame counts.
    */
   uint32_t (*GetSampleFrameCount)(PP_Resource config);
 };

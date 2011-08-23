@@ -180,11 +180,12 @@ class PaintManager {
   }
 
   /// Setter function for setting the maximum number of paint rects. If we
-  /// exceed this limit, then we'll start combining paint rects (see
-  /// CombinePaintRects(). This limiting can be important since there is
-  /// typically some overhead in deciding what to paint. If your module is fast
-  /// at doing these computations, raise this threshold, if your module is
-  /// slow, lower it (probably requires some tuning to find the right value).
+  /// exceed this limit, then we'll start combining paint rects (refer to
+  /// CombinePaintRects() for further information). This limiting can be
+  /// important since there is typically some overhead in deciding what to
+  /// paint. If your module is fast at doing these computations, raise this
+  /// threshold, if your module is slow, lower it (probably requires some
+  /// tuning to find the right value).
   ///
   /// @param[in] max_rects The maximum number of paint rects.
   void set_max_paint_rects(size_t max_rects) {
