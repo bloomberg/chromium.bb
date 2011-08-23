@@ -4,9 +4,10 @@
 
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
 
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/geolocation/access_token_store.h"
 #include "content/browser/geolocation/location_provider.h"
+#include "content/common/content_client.h"
 
 // GeolocationArbitratorDependencyFactory
 GeolocationArbitratorDependencyFactory::
@@ -16,7 +17,9 @@ GeolocationArbitratorDependencyFactory::
 // DefaultGeolocationArbitratorDependencyFactory
 net::URLRequestContextGetter*
 DefaultGeolocationArbitratorDependencyFactory::GetContextGetter() {
-  return Profile::Deprecated::GetDefaultRequestContext();
+  // Deprecated; see http://crbug.com/92363
+  return content::GetContentClient()->browser()->
+      GetDefaultRequestContextDeprecatedCrBug64339();
 }
 
 DefaultGeolocationArbitratorDependencyFactory::GetTimeNow

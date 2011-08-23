@@ -702,6 +702,11 @@ FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
   return download_util::GetDefaultDownloadDirectory();
 }
 
+net::URLRequestContextGetter*
+ChromeContentBrowserClient::GetDefaultRequestContextDeprecatedCrBug64339() {
+  return Profile::Deprecated::GetDefaultRequestContext();
+}
+
 #if defined(OS_LINUX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {

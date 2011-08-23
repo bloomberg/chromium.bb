@@ -227,6 +227,11 @@ FilePath MockContentBrowserClient::GetDefaultDownloadDirectory() {
   return FilePath();
 }
 
+net::URLRequestContextGetter*
+MockContentBrowserClient::GetDefaultRequestContextDeprecatedCrBug64339() {
+  return NULL;
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 int MockContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {

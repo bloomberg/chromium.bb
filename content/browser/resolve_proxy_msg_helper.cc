@@ -5,8 +5,9 @@
 #include "content/browser/resolve_proxy_msg_helper.h"
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/content_browser_client.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/content_client.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -90,8 +91,10 @@ bool ResolveProxyMsgHelper::GetProxyService(net::ProxyService** out) const {
   }
 
   // If there is no default request context (say during shut down).
+  // Deprecated; see http://crbug.com/92361
   net::URLRequestContextGetter* context_getter =
-      Profile::Deprecated::GetDefaultRequestContext();
+      content::GetContentClient()->browser()->
+          GetDefaultRequestContextDeprecatedCrBug64339();
   if (!context_getter)
     return false;
 
@@ -103,9 +106,12 @@ bool ResolveProxyMsgHelper::GetProxyService(net::ProxyService** out) const {
 ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
   // Clear all pending requests if the ProxyService is still alive (if we have a
   // default request context or override).
+  // Deprecated; see http://crbug.com/92361
+  net::URLRequestContextGetter* context_getter =
+      content::GetContentClient()->browser()->
+          GetDefaultRequestContextDeprecatedCrBug64339();
   if (!pending_requests_.empty() &&
-      (Profile::Deprecated::GetDefaultRequestContext() ||
-       proxy_service_override_)) {
+      (context_getter || proxy_service_override_)) {
     PendingRequest req = pending_requests_.front();
     proxy_service_->CancelPacRequest(req.pac_req);
   }

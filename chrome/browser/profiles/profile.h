@@ -20,6 +20,10 @@ namespace base {
 class Time;
 }
 
+namespace chrome {
+class ChromeContentBrowserClient;
+}
+
 namespace chromeos {
 class LibCrosServiceLibraryImpl;
 class ResetDefaultProxyConfigServiceTask;
@@ -141,18 +145,16 @@ class Profile : public content::BrowserContext {
 
     friend class AutofillDownloadManager;
     friend class ChromePluginMessageFilter;
-    friend class DefaultGeolocationArbitratorDependencyFactory;
     friend class BrowserListTabContentsProvider;
     friend class LiveSyncTest;
     friend class MetricsService;
-    friend class ResolveProxyMsgHelper;
     friend class SafeBrowsingServiceTestHelper;
     friend class SdchDictionaryFetcher;
     friend class Toolbar5Importer;
     friend class TranslateManager;
+    friend class chrome::ChromeContentBrowserClient;
     friend class chromeos::LibCrosServiceLibraryImpl;
     friend class chromeos::ResetDefaultProxyConfigServiceTask;
-    friend class speech_input::SpeechRecognizer;
 
     static net::URLRequestContextGetter* GetDefaultRequestContext() {
       return Profile::GetDefaultRequestContext();

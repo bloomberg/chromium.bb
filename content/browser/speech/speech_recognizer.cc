@@ -5,8 +5,9 @@
 #include "content/browser/speech/speech_recognizer.h"
 
 #include "base/time.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
+#include "content/common/content_client.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using media::AudioInputController;
@@ -223,8 +224,11 @@ void SpeechRecognizer::HandleOnData(string* data) {
     // This was the first audio packet recorded, so start a request to the
     // server to send the data and inform the delegate.
     delegate_->DidStartReceivingAudio(caller_id_);
-    request_.reset(new SpeechRecognitionRequest(
-        Profile::Deprecated::GetDefaultRequestContext(), this));
+    // Deprecated; see http://crbug.com/92366
+    net::URLRequestContextGetter* context_getter =
+        content::GetContentClient()->browser()->
+            GetDefaultRequestContextDeprecatedCrBug64339();
+    request_.reset(new SpeechRecognitionRequest(context_getter, this));
     request_->Start(language_, grammar_, censor_results_, hardware_info_,
                     origin_url_, encoder_->mime_type());
   }
