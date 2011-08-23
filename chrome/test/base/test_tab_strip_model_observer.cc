@@ -6,6 +6,7 @@
 
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/common/notification_source.h"
 
 TestTabStripModelObserver::TestTabStripModelObserver(
     TabStripModel* tab_strip_model,
@@ -22,5 +23,5 @@ TestTabStripModelObserver::~TestTabStripModelObserver() {
 
 void TestTabStripModelObserver::TabInsertedAt(
     TabContentsWrapper* contents, int index, bool foreground) {
-  RegisterAsObserver(&contents->controller());
+  RegisterAsObserver(Source<NavigationController>(&contents->controller()));
 }

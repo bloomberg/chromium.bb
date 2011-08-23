@@ -38,7 +38,7 @@ TestNavigationObserver::JsInjectionReadyObserver::~JsInjectionReadyObserver() {
 }
 
 TestNavigationObserver::TestNavigationObserver(
-    NavigationController* controller,
+    const NotificationSource& source,
     TestNavigationObserver::JsInjectionReadyObserver*
         js_injection_ready_observer,
     int number_of_navigations)
@@ -53,7 +53,7 @@ TestNavigationObserver::TestNavigationObserver(
     registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED,
                    NotificationService::AllSources());
   }
-  RegisterAsObserver(controller);
+  RegisterAsObserver(source);
 }
 
 TestNavigationObserver::~TestNavigationObserver() {
@@ -85,16 +85,13 @@ TestNavigationObserver::TestNavigationObserver(
 }
 
 void TestNavigationObserver::RegisterAsObserver(
-    NavigationController* controller) {
+    const NotificationSource& source) {
   // Register for events to know when we've finished loading the page and are
   // ready to quit the current message loop to return control back to the
   // waiting test.
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 Source<NavigationController>(controller));
-  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 Source<NavigationController>(controller));
-  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 Source<NavigationController>(controller));
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+  registrar_.Add(this, content::NOTIFICATION_LOAD_START, source);
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
 }
 
 void TestNavigationObserver::Observe(

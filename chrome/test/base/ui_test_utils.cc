@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/base/bookmark_load_observer.h"
+#include "chrome/test/test_navigation_observer.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -55,68 +56,6 @@
 namespace ui_test_utils {
 
 namespace {
-
-// Used to block until a navigation completes.
-// TODO(gbillock): this should be merged with TestNavigationObserver
-class NavigationNotificationObserver : public NotificationObserver {
- public:
-  NavigationNotificationObserver(const NotificationSource& source,
-                                 int number_of_navigations)
-      : navigation_started_(false),
-        navigations_completed_(0),
-        number_of_navigations_(number_of_navigations),
-        running_(false),
-        done_(false) {
-    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
-    registrar_.Add(this, content::NOTIFICATION_LOAD_START, source);
-    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
-  }
-
-  void Run() {
-    if (!done_) {
-      running_ = true;
-      RunMessageLoop();
-    }
-  }
-
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED ||
-        type == content::NOTIFICATION_LOAD_START) {
-      navigation_started_ = true;
-    } else if (type == content::NOTIFICATION_LOAD_STOP) {
-      if (navigation_started_ &&
-          ++navigations_completed_ == number_of_navigations_) {
-        navigation_started_ = false;
-        done_ = true;
-        if (running_)
-          MessageLoopForUI::current()->Quit();
-      }
-    }
-  }
-
- private:
-  NotificationRegistrar registrar_;
-
-  // If true the navigation has started.
-  bool navigation_started_;
-
-  // The number of navigations that have been completed.
-  int navigations_completed_;
-
-  // The number of navigations to wait for.
-  int number_of_navigations_;
-
-  // Calls to Observe() can happen early, before the user calls Run(), or
-  // after.  When we've seen all the navigations we're looking for, we set
-  // done_ to true; then when Run() is called we'll never need to run the
-  // event loop.  Also, we don't need to quit the event loop when we're
-  // done if we never had to start an event loop.
-  bool running_;
-  bool done_;
-  DISALLOW_COPY_AND_ASSIGN(NavigationNotificationObserver);
-};
 
 class DOMOperationObserver : public NotificationObserver {
  public:
@@ -336,9 +275,9 @@ void WaitForNavigation(NavigationController* controller) {
 
 void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations) {
-  NavigationNotificationObserver observer(
-      Source<NavigationController>(controller), number_of_navigations);
-  observer.Run();
+  TestNavigationObserver observer(
+      Source<NavigationController>(controller), NULL, number_of_navigations);
+  observer.WaitForObservation();
 }
 
 void WaitForNewTab(Browser* browser) {
@@ -390,9 +329,9 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 void NavigateToURL(browser::NavigateParams* params) {
-  NavigationNotificationObserver observer(NotificationService::AllSources(), 1);
+  TestNavigationObserver observer(NotificationService::AllSources(), NULL, 1);
   browser::Navigate(params);
-  observer.Run();
+  observer.WaitForObservation();
 }
 
 void NavigateToURL(Browser* browser, const GURL& url) {
@@ -410,9 +349,10 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     int number_of_navigations,
     WindowOpenDisposition disposition,
     int browser_test_flags) {
-  NavigationNotificationObserver same_tab_observer(
+  TestNavigationObserver same_tab_observer(
       Source<NavigationController>(
           &browser->GetSelectedTabContents()->controller()),
+      NULL,
       number_of_navigations);
 
   std::set<Browser*> initial_browsers;
@@ -445,7 +385,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     tab_contents = browser->GetSelectedTabContents();
   }
   if (disposition == CURRENT_TAB) {
-    same_tab_observer.Run();
+    same_tab_observer.WaitForObservation();
     return;
   } else if (tab_contents) {
     NavigationController* controller = &tab_contents->controller();

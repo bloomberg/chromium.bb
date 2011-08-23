@@ -39,7 +39,7 @@ class TestNavigationObserver : public NotificationObserver {
   // OnEntryCommitted() after |number_of_navigations| navigations.
   // Note: |js_injection_ready_observer| is owned by the caller and should be
   // valid until this class is destroyed.
-  TestNavigationObserver(NavigationController* controller,
+  TestNavigationObserver(const NotificationSource& source,
                          JsInjectionReadyObserver* js_injection_ready_observer,
                          int number_of_navigations);
 
@@ -56,8 +56,8 @@ class TestNavigationObserver : public NotificationObserver {
       JsInjectionReadyObserver* js_injection_ready_observer,
       int number_of_navigations);
 
-  // Register this TestNavigationObserver as an observer of the |controller|.
-  void RegisterAsObserver(NavigationController* controller);
+  // Register this TestNavigationObserver as an observer of the |source|.
+  void RegisterAsObserver(const NotificationSource& source);
 
  private:
   // NotificationObserver:
