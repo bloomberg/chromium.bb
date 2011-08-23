@@ -49,6 +49,7 @@ class IPCWebSocketStreamHandleBridge
   virtual ~IPCWebSocketStreamHandleBridge();
 
   void DoConnect(const GURL& url);
+  void DoClose();
   int socket_id_;
 
   ChildThread* child_thread_;
@@ -99,7 +100,10 @@ bool IPCWebSocketStreamHandleBridge::Send(
 
 void IPCWebSocketStreamHandleBridge::Close() {
   DVLOG(1) << "Close socket_id" << socket_id_;
-  child_thread_->Send(new SocketStreamHostMsg_Close(socket_id_));
+  AddRef();  // Released in DoClose().
+  child_thread_->message_loop()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &IPCWebSocketStreamHandleBridge::DoClose));
 }
 
 void IPCWebSocketStreamHandleBridge::OnConnected(int max_pending_send_allowed) {
@@ -148,6 +152,11 @@ void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
     LOG(ERROR) << "IPC SocketStream_Connect failed.";
     OnClosed();
   }
+}
+
+void IPCWebSocketStreamHandleBridge::DoClose() {
+  child_thread_->Send(new SocketStreamHostMsg_Close(socket_id_));
+  Release();
 }
 
 SocketStreamDispatcher::SocketStreamDispatcher() {
