@@ -172,6 +172,11 @@ TEST_F(CertVerifierTest, FullCache) {
   time_service->set_current_time(current_time);
   CertVerifier verifier(time_service);
 
+  // Reduce the maximum cache size in this test so that we can fill up the
+  // cache quickly.
+  const unsigned kCacheSize = 5;
+  verifier.set_max_cache_entries(kCacheSize);
+
   FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
@@ -191,8 +196,6 @@ TEST_F(CertVerifierTest, FullCache) {
   ASSERT_EQ(1u, verifier.requests());
   ASSERT_EQ(0u, verifier.cache_hits());
   ASSERT_EQ(0u, verifier.inflight_joins());
-
-  const unsigned kCacheSize = 256;
 
   for (unsigned i = 0; i < kCacheSize; i++) {
     std::string hostname = base::StringPrintf("www%d.example.com", i + 1);
