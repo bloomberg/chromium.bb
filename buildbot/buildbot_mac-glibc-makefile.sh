@@ -45,10 +45,12 @@ elif (($?>1)); then
   exit 100
 fi
 
+echo @@@BUILD_STEP setup source@@@
+(cd tools; ./buildbot_patch-toolchain-tries.sh)
+
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
-  ./buildbot_patch-toolchain-tries.sh
   make -j8 buildbot-build-with-glibc
 )
 

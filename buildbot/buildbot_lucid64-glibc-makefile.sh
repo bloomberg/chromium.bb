@@ -28,10 +28,12 @@ rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.t* "$this_toolchain" .tmp ||
   echo already_clean
 
+echo @@@BUILD_STEP setup source@@@
+(cd tools; ./buildbot_patch-toolchain-tries.sh)
+
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
-  ./buildbot_patch-toolchain-tries.sh
   make -j8 buildbot-build-with-glibc
   if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
     make install-glibc INST_GLIBC_PREFIX="$PWD"

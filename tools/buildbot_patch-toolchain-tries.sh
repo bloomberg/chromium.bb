@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 for i in binutils gcc gdb glibc linux-headers-for-nacl newlib; do
   (
     if [ -s "toolchain-try.$i.patch" ]; then
+      echo "@@@BUILD_STEP $i try patch@@@"
       make "pinned-src-$i"
       cd "SRC/$i"
       patch -p1 < ../../"toolchain-try.$i.patch"
