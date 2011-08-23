@@ -76,6 +76,7 @@ def SyncFlavor(flavor, url, dst, hash):
 
 
 def Main():
+  parent_dir = os.path.dirname(os.path.dirname(__file__))
   parser = optparse.OptionParser()
   parser.add_option(
       '-b', '--base-url', dest='base_url',
@@ -89,6 +90,10 @@ def Main():
       '--arm-version', dest='arm_version',
       default='latest',
       help='which version of the toolchain to download for arm')
+  parser.add_option(
+      '--toolchain-dir', dest='toolchain_dir',
+      default=os.path.join(parent_dir, 'toolchain'),
+      help='(optional) location of toolchain directory')
   parser.add_option(
       '--file-hash', dest='file_hashes', action='append', nargs=2, default=[],
       metavar='ARCH HASH',
@@ -116,8 +121,7 @@ def Main():
       version = options.x86_version
     url = toolchainbinaries.EncodeToolchainUrl(options.base_url, version,
                                                flavor)
-    parent_dir = os.path.dirname(os.path.dirname(__file__))
-    dst = os.path.join(parent_dir, 'toolchain', flavor)
+    dst = os.path.join(options.toolchain_dir, flavor)
     if version == 'latest':
       print flavor + ': downloading latest version...'
     else:
@@ -132,16 +136,16 @@ def Main():
     # List a bogus hash if none is specified so we get an error listing the
     # correct hash if its missing.
     if options.file_hashes:
-      hash = 'unspecified'  # bogus default.
+      hash_value = 'unspecified'  # bogus default.
       for arch, hval in options.file_hashes:
         if arch == flavor:
-          hash = hval
+          hash_value = hval
           break
     else:
-      hash = None
+      hash_value = None
 
     try:
-      SyncFlavor(flavor, url, dst, hash)
+      SyncFlavor(flavor, url, dst, hash_value)
     except sync_tgz.HashError, e:
       print str(e)
       print '-' * 70
