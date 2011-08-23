@@ -295,18 +295,15 @@ void EventBindings::HandleContextCreated(
     return;
 
   bool content_script = isolated_world_id != 0;
-
-  v8::HandleScope handle_scope;
   ContextList& contexts = GetContexts();
 
-  v8::Persistent<v8::Context> persistent_context =
-      v8::Persistent<v8::Context>::New(context);
-
+  v8::Persistent<v8::Context> persistent_context;
   std::string extension_id;
 
   if (content_script) {
     // Content script contexts can get GCed before their frame goes away, so
     // set up a GC callback.
+    persistent_context = v8::Persistent<v8::Context>::New(context);
     persistent_context.MakeWeak(NULL, &ContextWeakReferenceCallback);
     extension_id =
         extension_dispatcher->user_script_slave()->
@@ -334,6 +331,8 @@ void EventBindings::HandleContextCreated(
       // so we give a fake extension id;
       extension_id = kTestingExtensionId;
     }
+
+    persistent_context = v8::Persistent<v8::Context>::New(context);
   }
 
   contexts.push_back(linked_ptr<ContextInfo>(
@@ -341,6 +340,7 @@ void EventBindings::HandleContextCreated(
 
   // Content scripts get initialized in user_script_slave.cc.
   if (!content_script) {
+    v8::HandleScope handle_scope;
     v8::Handle<v8::Value> argv[1];
     argv[0] = v8::String::New(extension_id.c_str());
     CallFunctionInContext(context, "dispatchOnLoad", arraysize(argv), argv);
