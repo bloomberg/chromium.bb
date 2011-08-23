@@ -2,21 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/mock_ffmpeg.h"
+#include "media/base/media.h"
+#include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_h264_bitstream_converter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
-using ::testing::Invoke;
-using ::testing::Return;
-using ::testing::StrictMock;
-
 namespace media {
-
-// Forward declarations for fake FFmpeg packet handling functions.
-static void fake_av_destruct_packet(AVPacket* pkt);
-static void fake_av_init_packet(AVPacket* pkt);
-static int fake_av_new_packet(AVPacket* pkt, int size);
 
 // Test data arrays.
 static const uint8 kHeaderDataOkWithFieldLen4[] = {
@@ -268,14 +259,6 @@ static const uint8 kPacketDataOkWithFieldLen4[] = {
 class FFmpegH264BitstreamConverterTest : public testing::Test {
  protected:
   FFmpegH264BitstreamConverterTest() {
-    // Set up the ffmpeg mock and use our local fake functions to do the
-    // actual implementation for packet allocation / freeing.
-    ON_CALL(ffmpeg_mock_, AVInitPacket(_))
-        .WillByDefault(Invoke(fake_av_init_packet));
-    ON_CALL(ffmpeg_mock_, AVNewPacket(_, _))
-        .WillByDefault(Invoke(fake_av_new_packet));
-    ON_CALL(ffmpeg_mock_, AVDestructPacket(_))
-        .WillByDefault(Invoke(fake_av_destruct_packet));
     // Set up AVCConfigurationRecord correctly for tests.
     // It's ok to do const cast here as data in kHeaderDataOkWithFieldLen4 is
     // never written to.
@@ -288,15 +271,9 @@ class FFmpegH264BitstreamConverterTest : public testing::Test {
 
   void CreatePacket(AVPacket* packet, const uint8* data, uint32 data_size) {
     // Create new packet sized of |data_size| from |data|.
-    EXPECT_CALL(ffmpeg_mock_, AVNewPacket(_, _));
-    EXPECT_CALL(ffmpeg_mock_, AVInitPacket(_));
     EXPECT_EQ(av_new_packet(packet, data_size), 0);
     memcpy(packet->data, data, data_size);
   }
-
-  // FFmpeg mock implementation. We want strict mock since we will strictly
-  // define the order of calls and do not want any extra calls.
-  StrictMock<MockFFmpeg> ffmpeg_mock_;
 
   // Variable to hold valid dummy context for testing.
   AVCodecContext test_context_;
@@ -317,13 +294,9 @@ TEST_F(FFmpegH264BitstreamConverterTest, Conversion_Success) {
 
   // Try out the actual conversion (should be successful and allocate new
   // packet and destroy the old one).
-  EXPECT_CALL(ffmpeg_mock_, AVNewPacket(_, _));
-  EXPECT_CALL(ffmpeg_mock_, AVInitPacket(_));
-  EXPECT_CALL(ffmpeg_mock_, AVDestructPacket(_));
   EXPECT_TRUE(converter.ConvertPacket(&test_packet));
 
   // Clean-up the test packet.
-  EXPECT_CALL(ffmpeg_mock_, AVDestructPacket(_));
   av_destruct_packet(&test_packet);
 
   // Converter will be automatically cleaned up.
@@ -344,38 +317,9 @@ TEST_F(FFmpegH264BitstreamConverterTest, Conversion_SuccessBigPacket) {
 
   // Try out the actual conversion (should be successful and allocate new
   // packet and destroy the old one as we do NOT support in place transform).
-  EXPECT_CALL(ffmpeg_mock_, AVNewPacket(_, _));
-  EXPECT_CALL(ffmpeg_mock_, AVInitPacket(_));
-  EXPECT_CALL(ffmpeg_mock_, AVDestructPacket(_));
   EXPECT_TRUE(converter.ConvertPacket(&test_packet));
 
   // Clean-up the test packet.
-  EXPECT_CALL(ffmpeg_mock_, AVDestructPacket(_));
-  av_destruct_packet(&test_packet);
-
-  // Converter will be automatically cleaned up.
-}
-
-TEST_F(FFmpegH264BitstreamConverterTest, Conversion_FailureOutOfMem) {
-  FFmpegH264BitstreamConverter converter(&test_context_);
-
-  // Initialization should be always successful.
-  EXPECT_TRUE(converter.Initialize());
-
-  // Create new packet.
-  AVPacket test_packet;
-  CreatePacket(&test_packet, kPacketDataOkWithFieldLen4,
-               sizeof(kPacketDataOkWithFieldLen4));
-
-  // Try out the actual conversion (should be successful and allocate new
-  // packet and destroy the old one).
-  EXPECT_CALL(ffmpeg_mock_, AVNewPacket(_, _))
-      .WillOnce(Return(-1));
-  EXPECT_FALSE(converter.ConvertPacket(&test_packet))
-      << "ConvertPacket() did not return expected failure due to out of mem";
-
-  // Clean-up the test packet.
-  EXPECT_CALL(ffmpeg_mock_, AVDestructPacket(_));
   av_destruct_packet(&test_packet);
 
   // Converter will be automatically cleaned up.
@@ -404,39 +348,9 @@ TEST_F(FFmpegH264BitstreamConverterTest, Conversion_FailureNullParams) {
   EXPECT_FALSE(converter.ConvertPacket(&test_packet));
 
   // Clean-up the test packet.
-  EXPECT_CALL(ffmpeg_mock_, AVDestructPacket(_));
   av_destruct_packet(&test_packet);
 
   // Converted will be automatically cleaned up.
 }
 
-static void fake_av_destruct_packet(AVPacket* pkt) {
-  free(pkt->data);
-  pkt->data = NULL;
-  pkt->size = 0;
-}
-
-static void fake_av_init_packet(AVPacket* pkt) {
-  pkt->pts = AV_NOPTS_VALUE;
-  pkt->dts = AV_NOPTS_VALUE;
-  pkt->pos = -1;
-  pkt->duration = 0;
-  pkt->convergence_duration = 0;
-  pkt->flags = 0;
-  pkt->stream_index = 0;
-  pkt->destruct= NULL;
-}
-
-static int fake_av_new_packet(AVPacket* pkt, int size) {
-  uint8* data = reinterpret_cast<uint8*>(malloc(size));
-  av_init_packet(pkt);
-  pkt->data = data;
-  pkt->size = size;
-  pkt->destruct = av_destruct_packet;
-  if (data == NULL)
-    return AVERROR(ENOMEM);
-  return 0;
-}
-
 }  // namespace media
-

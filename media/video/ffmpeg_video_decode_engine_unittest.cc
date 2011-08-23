@@ -5,9 +5,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "media/base/data_buffer.h"
-#include "media/base/mock_ffmpeg.h"
 #include "media/base/mock_task.h"
 #include "media/base/pipeline.h"
+#include "media/base/test_data_util.h"
+#include "media/filters/ffmpeg_glue.h"
 #include "media/video/ffmpeg_video_decode_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,36 +17,20 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::ReturnNull;
+using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 
 namespace media {
 
-static const int kWidth = 320;
-static const int kHeight = 240;
+static const size_t kWidth = 320;
+static const size_t kHeight = 240;
 static const int kSurfaceWidth = 522;
 static const int kSurfaceHeight = 288;
 static const AVRational kFrameRate = { 100, 1 };
 
-static void InitializeFrame(uint8_t* data, int width, AVFrame* frame) {
-  frame->data[0] = data;
-  frame->data[1] = data;
-  frame->data[2] = data;
-  frame->linesize[0] = width;
-  frame->linesize[1] = width / 2;
-  frame->linesize[2] = width / 2;
-}
-
-ACTION_P(DecodeComplete, decoder) {
-  decoder->set_video_frame(arg0);
-}
-
 ACTION_P2(DemuxComplete, engine, buffer) {
   engine->ConsumeVideoSample(buffer);
-}
-
-ACTION_P(SaveInitializeResult, engine) {
-  engine->set_video_codec_info(arg0);
 }
 
 class FFmpegVideoDecodeEngineTest
@@ -53,26 +38,19 @@ class FFmpegVideoDecodeEngineTest
       public VideoDecodeEngine::EventHandler {
  public:
   FFmpegVideoDecodeEngineTest()
-      : config_(kCodecH264, kWidth, kHeight, kSurfaceWidth, kSurfaceHeight,
+      : config_(kCodecVP8, kWidth, kHeight, kSurfaceWidth, kSurfaceHeight,
                 kFrameRate.num, kFrameRate.den, NULL, 0) {
+    CHECK(FFmpegGlue::GetInstance());
 
     // Setup FFmpeg structures.
     frame_buffer_.reset(new uint8[kWidth * kHeight]);
-    memset(&yuv_frame_, 0, sizeof(yuv_frame_));
-    InitializeFrame(frame_buffer_.get(), kWidth, &yuv_frame_);
-
-    memset(&codec_context_, 0, sizeof(codec_context_));
-    memset(&codec_, 0, sizeof(codec_));
-
-    buffer_ = new DataBuffer(1);
 
     test_engine_.reset(new FFmpegVideoDecodeEngine());
 
-    video_frame_ = VideoFrame::CreateFrame(VideoFrame::YV12,
-                                           kWidth,
-                                           kHeight,
-                                           kNoTimestamp,
-                                           kNoTimestamp);
+    ReadTestDataFile("vp8-I-frame-320x240", &i_frame_buffer_);
+    ReadTestDataFile("vp8-corrupt-I-frame", &corrupt_i_frame_buffer_);
+
+    end_of_stream_buffer_ = new DataBuffer(0);
   }
 
   ~FFmpegVideoDecodeEngineTest() {
@@ -80,46 +58,57 @@ class FFmpegVideoDecodeEngineTest
   }
 
   void Initialize() {
-    EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
-        .WillOnce(Return(&codec_context_));
-    EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_H264))
-        .WillOnce(Return(&codec_));
-    EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
-        .WillOnce(Return(&yuv_frame_));
-    EXPECT_CALL(mock_ffmpeg_, AVCodecOpen(&codec_context_, &codec_))
-        .WillOnce(Return(0));
-    EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
-        .WillOnce(Return(0));
-    EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
-        .Times(1);
-    EXPECT_CALL(mock_ffmpeg_, AVFree(&codec_context_))
-        .Times(1);
-
+    VideoCodecInfo info;
     EXPECT_CALL(*this, OnInitializeComplete(_))
-       .WillOnce(SaveInitializeResult(this));
+        .WillOnce(SaveArg<0>(&info));
     test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
-    EXPECT_TRUE(info_.success);
+    EXPECT_TRUE(info.success);
   }
 
-  void Decode() {
-    EXPECT_CALL(mock_ffmpeg_, AVInitPacket(_));
-    EXPECT_CALL(mock_ffmpeg_,
-                AVCodecDecodeVideo2(&codec_context_, &yuv_frame_, _, _))
-        .WillOnce(DoAll(SetArgumentPointee<2>(1),  // Simulate 1 byte frame.
-                        Return(0)));
+  // Decodes the single compressed frame in |buffer| and writes the
+  // uncompressed output to |video_frame|. This method works with single
+  // and multithreaded decoders. End of stream buffers are used to trigger
+  // the frame to be returned in the multithreaded decoder case.
+  void DecodeASingleFrame(const scoped_refptr<Buffer>& buffer,
+                          scoped_refptr<VideoFrame>* video_frame) {
+    EXPECT_CALL(*this, ProduceVideoSample(_))
+        .WillOnce(DemuxComplete(test_engine_.get(), buffer))
+        .WillRepeatedly(DemuxComplete(test_engine_.get(),
+                                      end_of_stream_buffer_));
+
+    EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
+        .WillOnce(SaveArg<0>(video_frame));
+    CallProduceVideoFrame();
+  }
+
+  // Decodes |i_frame_buffer_| and then decodes the data contained in
+  // the file named |test_file_name|. This function expects both buffers
+  // to decode to frames that are the same size.
+  void DecodeIFrameThenTestFile(const std::string& test_file_name) {
+    Initialize();
+
+    scoped_refptr<VideoFrame> video_frame_a;
+    scoped_refptr<VideoFrame> video_frame_b;
+
+    scoped_refptr<Buffer> buffer;
+    ReadTestDataFile(test_file_name, &buffer);
 
     EXPECT_CALL(*this, ProduceVideoSample(_))
-        .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-    EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
-        .WillOnce(DecodeComplete(this));
-    test_engine_->ProduceVideoFrame(video_frame_);
-  }
+        .WillOnce(DemuxComplete(test_engine_.get(), i_frame_buffer_))
+        .WillOnce(DemuxComplete(test_engine_.get(), buffer))
+        .WillRepeatedly(DemuxComplete(test_engine_.get(),
+                                      end_of_stream_buffer_));
 
-  void ChangeDimensions(int width, int height) {
-    frame_buffer_.reset(new uint8[width * height]);
-    InitializeFrame(frame_buffer_.get(), width, &yuv_frame_);
-    codec_context_.width = width;
-    codec_context_.height = height;
+    EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
+        .WillOnce(SaveArg<0>(&video_frame_a))
+        .WillOnce(SaveArg<0>(&video_frame_b));
+    CallProduceVideoFrame();
+    CallProduceVideoFrame();
+
+    EXPECT_EQ(kWidth, video_frame_a->width());
+    EXPECT_EQ(kHeight, video_frame_a->height());
+    EXPECT_EQ(kWidth, video_frame_b->width());
+    EXPECT_EQ(kHeight, video_frame_b->height());
   }
 
   // VideoDecodeEngine::EventHandler implementation.
@@ -135,27 +124,21 @@ class FFmpegVideoDecodeEngineTest
   MOCK_METHOD0(OnSeekComplete, void());
   MOCK_METHOD0(OnError, void());
 
-  // Used by gmock actions.
-  void set_video_frame(scoped_refptr<VideoFrame> video_frame) {
-    video_frame_ = video_frame;
-  }
-
-  void set_video_codec_info(const VideoCodecInfo& info) {
-    info_ = info;
+  void CallProduceVideoFrame() {
+    test_engine_->ProduceVideoFrame(VideoFrame::CreateFrame(VideoFrame::YV12,
+                                                            kWidth,
+                                                            kHeight,
+                                                            kNoTimestamp,
+                                                            kNoTimestamp));
   }
 
  protected:
   VideoDecoderConfig config_;
-  VideoCodecInfo info_;
-  scoped_refptr<VideoFrame> video_frame_;
   scoped_ptr<FFmpegVideoDecodeEngine> test_engine_;
   scoped_array<uint8_t> frame_buffer_;
-  StrictMock<MockFFmpeg> mock_ffmpeg_;
-
-  AVFrame yuv_frame_;
-  AVCodecContext codec_context_;
-  AVCodec codec_;
-  scoped_refptr<DataBuffer> buffer_;
+  scoped_refptr<Buffer> i_frame_buffer_;
+  scoped_refptr<Buffer> corrupt_i_frame_buffer_;
+  scoped_refptr<Buffer> end_of_stream_buffer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecodeEngineTest);
@@ -166,150 +149,136 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_Normal) {
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_FindDecoderFails) {
+  VideoDecoderConfig config(kUnknown, kWidth, kHeight, kSurfaceWidth,
+                            kSurfaceHeight, kFrameRate.num, kFrameRate.den,
+                            NULL, 0);
   // Test avcodec_find_decoder() returning NULL.
-  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
-      .WillOnce(Return(&codec_context_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_H264))
-      .WillOnce(ReturnNull());
-  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
-      .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
-      .WillOnce(Return(0));
-  EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
-      .Times(1);
-  EXPECT_CALL(mock_ffmpeg_, AVFree(&codec_context_))
-      .Times(1);
-
+  VideoCodecInfo info;
   EXPECT_CALL(*this, OnInitializeComplete(_))
-     .WillOnce(SaveInitializeResult(this));
-  test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
-  EXPECT_FALSE(info_.success);
+     .WillOnce(SaveArg<0>(&info));
+  test_engine_->Initialize(MessageLoop::current(), this, NULL, config);
+  EXPECT_FALSE(info.success);
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
-  // Test avcodec_open() failing.
-  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocContext())
-      .WillOnce(Return(&codec_context_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecFindDecoder(CODEC_ID_H264))
-      .WillOnce(Return(&codec_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecAllocFrame())
-      .WillOnce(Return(&yuv_frame_));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecOpen(&codec_context_, &codec_))
-      .WillOnce(Return(-1));
-  EXPECT_CALL(mock_ffmpeg_, AVCodecClose(&codec_context_))
-      .WillOnce(Return(0));
-  EXPECT_CALL(mock_ffmpeg_, AVFree(&yuv_frame_))
-      .Times(1);
-  EXPECT_CALL(mock_ffmpeg_, AVFree(&codec_context_))
-      .Times(1);
-
+  // Specify Theora w/o extra data so that avcodec_open() fails.
+  VideoDecoderConfig config(kCodecTheora, kWidth, kHeight, kSurfaceWidth,
+                            kSurfaceHeight, kFrameRate.num, kFrameRate.den,
+                            NULL, 0);
+  VideoCodecInfo info;
   EXPECT_CALL(*this, OnInitializeComplete(_))
-     .WillOnce(SaveInitializeResult(this));
-  test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
-  EXPECT_FALSE(info_.success);
+     .WillOnce(SaveArg<0>(&info));
+  test_engine_->Initialize(MessageLoop::current(), this, NULL, config);
+  EXPECT_FALSE(info.success);
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   Initialize();
 
-  // We rely on FFmpeg for timestamp and duration reporting.  The one tricky
-  // bit is calculating the duration when |repeat_pict| > 0.
-  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(123);
-  const base::TimeDelta kDuration = base::TimeDelta::FromMicroseconds(15000);
-  yuv_frame_.repeat_pict = 1;
-  yuv_frame_.reordered_opaque = kTimestamp.InMicroseconds();
+  // We rely on FFmpeg for timestamp and duration reporting.
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(0);
+  const base::TimeDelta kDuration = base::TimeDelta::FromMicroseconds(10000);
 
   // Simulate decoding a single frame.
-  Decode();
+  scoped_refptr<VideoFrame> video_frame;
+  DecodeASingleFrame(i_frame_buffer_, &video_frame);
 
-  // |video_frame_| timestamp is 0 because we set the timestamp based off
+  // |video_frame| timestamp is 0 because we set the timestamp based off
   // the buffer timestamp.
-  EXPECT_EQ(0, video_frame_->GetTimestamp().ToInternalValue());
+  ASSERT_TRUE(video_frame);
+  EXPECT_EQ(0, video_frame->GetTimestamp().ToInternalValue());
   EXPECT_EQ(kDuration.ToInternalValue(),
-            video_frame_->GetDuration().ToInternalValue());
+            video_frame->GetDuration().ToInternalValue());
 }
 
+
+// Verify current behavior for 0 byte frames. FFmpeg simply ignores
+// the 0 byte frames.
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_0ByteFrame) {
   Initialize();
 
-  // Expect a bunch of avcodec calls.
-  EXPECT_CALL(mock_ffmpeg_, AVInitPacket(_))
-      .Times(2);
-  EXPECT_CALL(mock_ffmpeg_,
-              AVCodecDecodeVideo2(&codec_context_, &yuv_frame_, _, _))
-      .WillOnce(DoAll(SetArgumentPointee<2>(0),  // Simulate 0 byte frame.
-                      Return(0)))
-      .WillOnce(DoAll(SetArgumentPointee<2>(1),  // Simulate 1 byte frame.
-                      Return(0)));
+  scoped_refptr<DataBuffer> zero_byte_buffer = new DataBuffer(1);
+
+  scoped_refptr<VideoFrame> video_frame_a;
+  scoped_refptr<VideoFrame> video_frame_b;
+  scoped_refptr<VideoFrame> video_frame_c;
 
   EXPECT_CALL(*this, ProduceVideoSample(_))
-      .WillOnce(DemuxComplete(test_engine_.get(), buffer_))
-      .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-  EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
-      .WillOnce(DecodeComplete(this));
-  test_engine_->ProduceVideoFrame(video_frame_);
+      .WillOnce(DemuxComplete(test_engine_.get(), i_frame_buffer_))
+      .WillOnce(DemuxComplete(test_engine_.get(), zero_byte_buffer))
+      .WillOnce(DemuxComplete(test_engine_.get(), i_frame_buffer_))
+      .WillRepeatedly(DemuxComplete(test_engine_.get(),
+                                    end_of_stream_buffer_));
 
-  EXPECT_TRUE(video_frame_.get());
+  EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
+      .WillOnce(SaveArg<0>(&video_frame_a))
+      .WillOnce(SaveArg<0>(&video_frame_b))
+      .WillOnce(SaveArg<0>(&video_frame_c));
+  CallProduceVideoFrame();
+  CallProduceVideoFrame();
+  CallProduceVideoFrame();
+
+  EXPECT_TRUE(video_frame_a);
+  EXPECT_TRUE(video_frame_b);
+  EXPECT_FALSE(video_frame_c);
 }
+
 
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_DecodeError) {
   Initialize();
 
-  // Expect a bunch of avcodec calls.
-  EXPECT_CALL(mock_ffmpeg_, AVInitPacket(_));
-  EXPECT_CALL(mock_ffmpeg_,
-              AVCodecDecodeVideo2(&codec_context_, &yuv_frame_, _, _))
-      .WillOnce(Return(-1));
-
   EXPECT_CALL(*this, ProduceVideoSample(_))
-      .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
+      .WillOnce(DemuxComplete(test_engine_.get(), corrupt_i_frame_buffer_))
+      .WillRepeatedly(DemuxComplete(test_engine_.get(), i_frame_buffer_));
   EXPECT_CALL(*this, OnError());
 
-  test_engine_->ProduceVideoFrame(video_frame_);
+  CallProduceVideoFrame();
 }
 
-TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_LargerWidth) {
+// Multi-threaded decoders have different behavior than single-threaded
+// decoders at the end of the stream. Multithreaded decoders hide errors
+// that happen on the last |codec_context_->thread_count| frames to avoid
+// prematurely signalling EOS. This test just exposes that behavior so we can
+// detect if it changes.
+TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_DecodeErrorAtEndOfStream) {
   Initialize();
-  ChangeDimensions(kWidth * 2, kHeight);
-  Decode();
+
+  EXPECT_CALL(*this, ProduceVideoSample(_))
+      .WillOnce(DemuxComplete(test_engine_.get(), corrupt_i_frame_buffer_))
+      .WillRepeatedly(DemuxComplete(test_engine_.get(), end_of_stream_buffer_));
+
+  scoped_refptr<VideoFrame> video_frame;
+  EXPECT_CALL(*this, ConsumeVideoFrame(_, _))
+      .WillOnce(SaveArg<0>(&video_frame));
+  CallProduceVideoFrame();
+
+  EXPECT_FALSE(video_frame);
 }
 
+// Decode |i_frame_buffer_| and then a frame with a larger width and verify
+// the output size didn't change.
+// TODO(acolwell): Fix InvalidRead detected by Valgrind
+//TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_LargerWidth) {
+//  DecodeIFrameThenTestFile("vp8-I-frame-640x240");
+//}
+
+// Decode |i_frame_buffer_| and then a frame with a smaller width and verify
+// the output size didn't change.
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_SmallerWidth) {
-  Initialize();
-  ChangeDimensions(kWidth / 2, kHeight);
-  Decode();
+  DecodeIFrameThenTestFile("vp8-I-frame-160x240");
 }
 
-TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_LargerHeight) {
-  Initialize();
-  ChangeDimensions(kWidth, kHeight * 2);
-  Decode();
-}
+// Decode |i_frame_buffer_| and then a frame with a larger height and verify
+// the output size didn't change.
+// TODO(acolwell): Fix InvalidRead detected by Valgrind
+//TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_LargerHeight) {
+//  DecodeIFrameThenTestFile("vp8-I-frame-320x480");
+//}
 
+// Decode |i_frame_buffer_| and then a frame with a smaller height and verify
+// the output size didn't change.
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_SmallerHeight) {
-  Initialize();
-  ChangeDimensions(kWidth, kHeight / 2);
-  Decode();
-}
-
-TEST_F(FFmpegVideoDecodeEngineTest, GetSurfaceFormat) {
-  Initialize();
-
-  // YV12 formats.
-  codec_context_.pix_fmt = PIX_FMT_YUV420P;
-  EXPECT_EQ(VideoFrame::YV12, test_engine_->GetSurfaceFormat());
-  codec_context_.pix_fmt = PIX_FMT_YUVJ420P;
-  EXPECT_EQ(VideoFrame::YV12, test_engine_->GetSurfaceFormat());
-
-  // YV16 formats.
-  codec_context_.pix_fmt = PIX_FMT_YUV422P;
-  EXPECT_EQ(VideoFrame::YV16, test_engine_->GetSurfaceFormat());
-  codec_context_.pix_fmt = PIX_FMT_YUVJ422P;
-  EXPECT_EQ(VideoFrame::YV16, test_engine_->GetSurfaceFormat());
-
-  // Invalid value.
-  codec_context_.pix_fmt = PIX_FMT_NONE;
-  EXPECT_EQ(VideoFrame::INVALID, test_engine_->GetSurfaceFormat());
+  DecodeIFrameThenTestFile("vp8-I-frame-320x120");
 }
 
 }  // namespace media
