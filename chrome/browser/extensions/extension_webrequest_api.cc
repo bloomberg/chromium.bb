@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_id_map.h"
 #include "chrome/browser/extensions/extension_webrequest_api_constants.h"
+#include "chrome/browser/extensions/extension_webrequest_time_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/extensions/extension.h"
@@ -431,7 +432,8 @@ ExtensionWebRequestEventRouter* ExtensionWebRequestEventRouter::GetInstance() {
   return Singleton<ExtensionWebRequestEventRouter>::get();
 }
 
-ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter() {
+ExtensionWebRequestEventRouter::ExtensionWebRequestEventRouter()
+    : request_time_tracker_(new ExtensionWebRequestTimeTracker) {
 }
 
 ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
@@ -449,6 +451,10 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
   if (!HasWebRequestScheme(request->url()))
     return net::OK;
+
+  request_time_tracker_->LogRequestStartTime(request->identifier(),
+                                             base::Time::Now(),
+                                             request->url());
 
   bool is_main_frame = false;
   int64 frame_id = -1;
@@ -734,6 +740,9 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   if (!HasWebRequestScheme(request->url()))
     return;
 
+  request_time_tracker_->LogRequestEndTime(request->identifier(),
+                                           base::Time::Now());
+
   DCHECK(request->status().status() == net::URLRequestStatus::SUCCESS);
 
   DCHECK(!GetAndSetSignaled(request->identifier(), kOnCompleted));
@@ -785,6 +794,9 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   if (!HasWebRequestScheme(request->url()))
     return;
 
+  request_time_tracker_->LogRequestEndTime(request->identifier(),
+                                           base::Time::Now());
+
   DCHECK(request->status().status() == net::URLRequestStatus::FAILED ||
          request->status().status() == net::URLRequestStatus::CANCELED);
 
@@ -821,6 +833,9 @@ void ExtensionWebRequestEventRouter::OnURLRequestDestroyed(
     void* profile, net::URLRequest* request) {
   blocked_requests_.erase(request->identifier());
   signaled_requests_.erase(request->identifier());
+
+  request_time_tracker_->LogRequestEndTime(request->identifier(),
+                                           base::Time::Now());
 }
 
 bool ExtensionWebRequestEventRouter::DispatchEvent(
@@ -893,7 +908,7 @@ void ExtensionWebRequestEventRouter::OnEventHandled(
   if (found != listeners_[profile][event_name].end())
     found->blocked_requests.erase(request_id);
 
-  DecrementBlockCount(profile, event_name, request_id, response);
+  DecrementBlockCount(profile, extension_id, event_name, request_id, response);
 }
 
 void ExtensionWebRequestEventRouter::AddEventListener(
@@ -949,7 +964,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   // Unblock any request that this event listener may have been blocking.
   for (std::set<uint64>::iterator it = found->blocked_requests.begin();
        it != found->blocked_requests.end(); ++it) {
-    DecrementBlockCount(profile, event_name, *it, NULL);
+    DecrementBlockCount(profile, extension_id, event_name, *it, NULL);
   }
 
   listeners_[profile][event_name].erase(listener);
@@ -1237,6 +1252,7 @@ void ExtensionWebRequestEventRouter::MergeOnBeforeSendHeadersResponses(
 
 void ExtensionWebRequestEventRouter::DecrementBlockCount(
     void* profile,
+    const std::string& extension_id,
     const std::string& event_name,
     uint64 request_id,
     EventResponse* response) {
@@ -1256,11 +1272,13 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
         CalculateDelta(&blocked_request, response));
   }
 
+  base::TimeDelta block_time =
+      base::Time::Now() - blocked_request.blocking_time;
+  request_time_tracker_->IncrementExtensionBlockTime(
+      extension_id, request_id, block_time);
+
   if (num_handlers_blocking == 0) {
-    // TODO(mpcomplete): it would be better if we accumulated the blocking times
-    // for a given request over all events.
-    HISTOGRAM_TIMES("Extensions.NetworkDelay",
-                     base::Time::Now() - blocked_request.blocking_time);
+    request_time_tracker_->IncrementTotalBlockTime(request_id, block_time);
 
     EventResponseDeltas::iterator i;
     EventResponseDeltas& deltas = blocked_request.response_deltas;
@@ -1298,6 +1316,13 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       LOG(ERROR) << "Extension " << *conflict_iter << " was ignored in "
                     "webRequest API because of conflicting request "
                     "modifications.";
+    }
+
+    if (canceled) {
+      request_time_tracker_->SetRequestCanceled(request_id);
+    } else if (blocked_request.new_url &&
+               !blocked_request.new_url->is_empty()) {
+      request_time_tracker_->SetRequestRedirected(request_id);
     }
 
     // This signals a failed request to subscribers of onErrorOccurred in case

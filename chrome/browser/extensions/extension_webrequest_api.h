@@ -22,6 +22,7 @@
 #include "webkit/glue/resource_type.h"
 
 class ExtensionInfoMap;
+class ExtensionWebRequestTimeTracker;
 class GURL;
 
 namespace base {
@@ -301,6 +302,7 @@ class ExtensionWebRequestEventRouter {
   // method assumes ownership.
   void DecrementBlockCount(
       void* profile,
+      const std::string& extension_id,
       const std::string& event_name,
       uint64 request_id,
       EventResponse* response);
@@ -348,6 +350,10 @@ class ExtensionWebRequestEventRouter {
   // A map of original profile -> corresponding incognito profile (and vice
   // versa).
   CrossProfileMap cross_profile_map_;
+
+  // Keeps track of time spent waiting on extensions using the blocking
+  // webRequest API.
+  scoped_ptr<ExtensionWebRequestTimeTracker> request_time_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
