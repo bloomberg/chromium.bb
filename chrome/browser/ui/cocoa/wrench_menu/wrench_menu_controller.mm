@@ -167,17 +167,14 @@ class ZoomLevelObserver : public NotificationObserver {
     // The custom views within the Wrench menu are abnormal and keep the menu
     // open after a target-action.  Close the menu manually.
     [menu_ cancelTracking];
-    [self dispatchCommandInternal:tag];
-  }
-}
 
-- (void)dispatchCommandInternal:(NSInteger)tag {
-  // Executing certain commands from the nested run loop of the menu can lead
-  // to wonky behavior (e.g. http://crbug.com/49716). To avoid this, schedule
-  // the dispatch on the outermost run loop.
-  [self performSelector:@selector(performCommandDispatch:)
-             withObject:[NSNumber numberWithInt:tag]
-             afterDelay:0.0];
+    // Executing certain commands from the nested run loop of the menu can lead
+    // to wonky behavior (e.g. http://crbug.com/49716). To avoid this, schedule
+    // the dispatch on the outermost run loop.
+    [self performSelector:@selector(performCommandDispatch:)
+               withObject:[NSNumber numberWithInt:tag]
+               afterDelay:0.0];
+  }
 }
 
 // Used to perform the actual dispatch on the outermost runloop.

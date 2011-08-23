@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_link_infobar_delegate.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -197,8 +198,7 @@ TEST_F(LinkInfoBarControllerTest, ShowAndClickLink) {
 
   // Spin the runloop because the invocation for closing the infobar is done on
   // a 0-timer delayed selector.
-  [[NSRunLoop currentRunLoop] runUntilDate:
-      [NSDate dateWithTimeIntervalSinceNow:0.1]];
+  chrome::testing::NSRunLoopRunAllPending();
 
   ASSERT_TRUE(delegate_closed());
   EXPECT_TRUE(closed_delegate_link_clicked_);

@@ -61,14 +61,4 @@ class ZoomLevelObserver;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-@interface WrenchMenuController (UnitTesting)
-// |-dispatchWrenchMenuCommand:| calls this after it has determined the tag of
-// the sender. The default implementation executes the command on the outermost
-// run loop using |-performSelector...withDelay:|. This is not desirable in
-// unit tests because it's hard to test around run loops in a deterministic
-// manner. To avoid those headaches, tests should provide an alternative
-// implementation.
-- (void)dispatchCommandInternal:(NSInteger)tag;
-@end
-
 #endif  // CHROME_BROWSER_UI_COCOA_WRENCH_MENU_WRENCH_MENU_CONTROLLER_H_

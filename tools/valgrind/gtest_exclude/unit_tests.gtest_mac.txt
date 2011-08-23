@@ -13,11 +13,6 @@ ProcessInfoSnapshotMacTest.EffectiveVsRealUserIDTest
 # Following tests do not pass memcheck test.
 # See http://crbug.com/30393.
 NSMenuItemAdditionsTest.TestMOnDifferentLayouts
-# See http://crbug.com/30394.
-PrefsControllerTest.GetPrefsViewForPage
-PrefsControllerTest.GetToolbarItemForPage
-PrefsControllerTest.ShowAndClose
-PrefsControllerTest.SwitchToPage
 
 # Hangs
 # See http://crbug.com/75733
@@ -33,9 +28,6 @@ MacSandboxTest.FileAccess
 # http://crbug.com/87769
 BalloonControllerTest.ShowAndCloseTest
 BalloonControllerTest.SizesTest
-
-# http://crbug.com/87839
-LinkInfoBarControllerTest.ShowAndClickLink
 
 # http://crbug.com/89030
 ConnectionTesterTest.DeleteWhileInProgress

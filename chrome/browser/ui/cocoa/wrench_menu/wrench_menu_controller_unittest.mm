@@ -7,20 +7,13 @@
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-// Override to avoid dealing with run loops in the testing environment.
-@implementation WrenchMenuController (UnitTesting)
-- (void)dispatchCommandInternal:(NSInteger)tag {
-  [self wrenchMenuModel]->ExecuteCommand(tag);
-}
-@end
-
 
 namespace {
 
@@ -79,6 +72,7 @@ TEST_F(WrenchMenuControllerTest, DispatchSimple) {
   [controller() setModel:&fake_model_];
 
   [controller() dispatchWrenchMenuCommand:button.get()];
+  chrome::testing::NSRunLoopRunAllPending();
 }
 
 }  // namespace
