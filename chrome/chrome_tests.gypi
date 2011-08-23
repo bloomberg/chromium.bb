@@ -1669,7 +1669,6 @@
         'browser/sync/glue/data_type_manager_mock.h',
         'browser/sync/glue/database_model_worker_unittest.cc',
         'browser/sync/glue/extension_data_type_controller_unittest.cc',
-        'browser/sync/glue/extension_util_unittest.cc',
         'browser/sync/glue/frontend_data_type_controller_mock.cc',
         'browser/sync/glue/frontend_data_type_controller_mock.h',
         'browser/sync/glue/frontend_data_type_controller_unittest.cc',

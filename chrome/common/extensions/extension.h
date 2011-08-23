@@ -105,6 +105,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     TYPE_PACKAGED_APP
   };
 
+  enum SyncType {
+    SYNC_TYPE_NONE = 0,
+    SYNC_TYPE_EXTENSION,
+    SYNC_TYPE_APP
+  };
+
   // An NPAPI plugin included in the extension.
   struct PluginInfo {
     FilePath path;  // Path to the plugin.
@@ -473,6 +479,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns true if this extension or app includes areas within |origin|.
   bool OverlapsWithOrigin(const GURL& origin) const;
+
+  // Returns the sync bucket to use for this extension.
+  SyncType GetSyncType() const;
 
   // Accessors:
 

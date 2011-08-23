@@ -42,14 +42,16 @@ class TestExtensionService : public ExtensionServiceInterface {
     const std::vector<std::string>& blacklist) OVERRIDE;
   virtual void CheckAdminBlacklist() OVERRIDE;
   virtual void CheckForUpdatesSoon() OVERRIDE;
-  virtual bool GetSyncData(
-      const Extension& extension, ExtensionFilter filter,
-      ExtensionSyncData* extension_sync_data) const OVERRIDE;
-  virtual std::vector<ExtensionSyncData> GetSyncDataList(
-      ExtensionFilter filter) const OVERRIDE;
-  virtual void ProcessSyncData(
-      const ExtensionSyncData& extension_sync_data,
-      ExtensionFilter filter) OVERRIDE;
+
+  virtual SyncError MergeDataAndStartSyncing(
+      syncable::ModelType type,
+      const SyncDataList& initial_sync_data,
+      SyncChangeProcessor* sync_processor) OVERRIDE;
+  virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
+  virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
+  virtual SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const SyncChangeList& change_list) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SERVICE_H_
