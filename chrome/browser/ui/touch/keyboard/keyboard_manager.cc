@@ -251,7 +251,8 @@ void KeyboardManager::Observe(int type,
 
       TabContentsViewTouch* view =
           static_cast<TabContentsViewTouch*>(tab_contents->view());
-      views::View* focused = view->GetFocusManager()->GetFocusedView();
+      views::FocusManager* fmanager = view->GetFocusManager();
+      views::View* focused = fmanager ? fmanager->GetFocusedView() : NULL;
       views::TextInputClient* input =
           focused ? focused->GetTextInputClient() : NULL;
       // Show the keyboard if the focused view supports text-input.
