@@ -10,6 +10,7 @@
 #include "skia/ext/image_operations.h"
 
 // TODO(pkasting): skia/ext should not depend on base/!
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stack_container.h"
@@ -368,6 +369,9 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
 SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
                                          int dest_width, int dest_height,
                                          const SkIRect& dest_subset) {
+  TRACE_EVENT2("skia", "ImageOperations::ResizeSubpixel",
+               "src_pixels", source.width()*source.height(),
+               "dst_pixels", dest_width*dest_height);
   // Currently only works on Linux/BSD because these are the only platforms
   // where SkFontHost::GetSubpixelOrder is defined.
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -471,6 +475,9 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
                                       ResizeMethod method,
                                       int dest_width, int dest_height,
                                       const SkIRect& dest_subset) {
+  TRACE_EVENT2("skia", "ImageOperations::ResizeBasic",
+               "src_pixels", source.width()*source.height(),
+               "dst_pixels", dest_width*dest_height);
   // Ensure that the ResizeMethod enumeration is sound.
   SkASSERT(((RESIZE_FIRST_QUALITY_METHOD <= method) &&
             (method <= RESIZE_LAST_QUALITY_METHOD)) ||
