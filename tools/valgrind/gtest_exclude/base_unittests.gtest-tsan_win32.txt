@@ -12,3 +12,6 @@ WMIUtilTest.*
 
 # Too slow under TSan
 ConditionVariableTest.LargeFastTaskTest
+
+# Fails under TSan: http://crbug.com/93843
+MessageLoopTest.RecursiveDenial3
