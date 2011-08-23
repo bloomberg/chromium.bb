@@ -2005,6 +2005,7 @@
         '../content/browser/download/download_file_unittest.cc',
         '../content/browser/download/mock_download_manager.h',
         '../content/browser/download/save_package_unittest.cc',
+        '../content/browser/geolocation/device_data_provider_unittest.cc',
         '../content/browser/geolocation/geolocation_provider_unittest.cc',
         '../content/browser/geolocation/gps_location_provider_unittest_linux.cc',
         '../content/browser/geolocation/location_arbitrator_unittest.cc',

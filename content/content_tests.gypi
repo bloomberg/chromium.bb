@@ -77,7 +77,6 @@
         'browser/device_orientation/provider_unittest.cc',
         'browser/download/base_file_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',
-        'browser/geolocation/device_data_provider_unittest.cc',
         'browser/geolocation/gateway_data_provider_common_unittest.cc',
         'browser/gpu/gpu_blacklist_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
