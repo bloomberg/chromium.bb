@@ -605,11 +605,12 @@ string16 PluginInstance::GetSelectedText(bool html) {
   PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(),
                                                            PP_FromBool(html));
   StringVar* string = StringVar::FromPPVar(rv);
+  string16 selection;
+  if (string)
+    selection = UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
   ResourceTracker::Get()->GetVarTracker()->ReleaseVar(rv);
-  if (!string)
-    return string16();
-  return UTF8ToUTF16(string->value());
+  return selection;
 }
 
 string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
@@ -623,11 +624,12 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
   p.y = point.y();
   PP_Var rv = plugin_pdf_interface_->GetLinkAtPosition(pp_instance(), p);
   StringVar* string = StringVar::FromPPVar(rv);
+  string16 link;
+  if (string)
+    link = UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
   ResourceTracker::Get()->GetVarTracker()->ReleaseVar(rv);
-  if (!string)
-    return string16();
-  return UTF8ToUTF16(string->value());
+  return link;
 }
 
 void PluginInstance::Zoom(double factor, bool text_only) {
