@@ -17,7 +17,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.google.com/support/chromeos/*", "http://www.google.com/support/chromeos/*"],
-      "js": ["/javascript/contentscript.js"],
+      "js": ["javascript/contentscript.js"],
       "run_at": "document_end",
       "all_frames": true
     }
