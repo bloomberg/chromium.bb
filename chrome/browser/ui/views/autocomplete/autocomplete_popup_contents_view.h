@@ -19,15 +19,12 @@
 class AutocompleteEditModel;
 struct AutocompleteMatch;
 class AutocompleteResultView;
+class BubbleBorder;
 class Profile;
 
 namespace gfx {
 class CanvasSkia;
 class Insets;
-}
-
-namespace views {
-class BubbleBorder;
 }
 
 // A view representing the contents of the autocomplete popup.
@@ -151,7 +148,7 @@ class AutocompletePopupContentsView : public views::View,
   views::View* location_bar_;
 
   // Our border, which can compute our desired bounds.
-  const views::BubbleBorder* bubble_border_;
+  const BubbleBorder* bubble_border_;
 
   // The font that we should use for result rows. This is based on the font used
   // by the edit that created us.

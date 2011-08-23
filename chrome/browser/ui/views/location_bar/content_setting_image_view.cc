@@ -142,8 +142,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
               parent_->browser(), tab_contents, profile,
               content_setting_image_model_->get_content_settings_type()),
           profile, tab_contents->tab_contents());
-  bubble_ = Bubble::Show(GetWidget(), screen_bounds,
-                         views::BubbleBorder::TOP_RIGHT,
+  bubble_ = Bubble::Show(GetWidget(), screen_bounds, BubbleBorder::TOP_RIGHT,
                          bubble_contents, this);
   bubble_contents->set_bubble(bubble_);
 }
@@ -243,3 +242,4 @@ void ContentSettingImageView::AnimateToState(double state) {
   parent_->Layout();
   parent_->SchedulePaint();
 }
+

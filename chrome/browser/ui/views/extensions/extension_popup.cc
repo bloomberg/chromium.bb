@@ -38,13 +38,12 @@ const int ExtensionPopup::kMinHeight = 25;
 const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
-ExtensionPopup::ExtensionPopup(
-    ExtensionHost* host,
-    views::Widget* frame,
-    const gfx::Rect& relative_to,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    bool inspect_with_devtools,
-    Observer* observer)
+ExtensionPopup::ExtensionPopup(ExtensionHost* host,
+                               views::Widget* frame,
+                               const gfx::Rect& relative_to,
+                               BubbleBorder::ArrowLocation arrow_location,
+                               bool inspect_with_devtools,
+                               Observer* observer)
     : BrowserBubble(host->view(),
                     frame,
                     relative_to,
@@ -177,7 +176,7 @@ ExtensionPopup* ExtensionPopup::Show(
     const GURL& url,
     Browser* browser,
     const gfx::Rect& relative_to,
-    views::BubbleBorder::ArrowLocation arrow_location,
+    BubbleBorder::ArrowLocation arrow_location,
     bool inspect_with_devtools,
     Observer* observer) {
   ExtensionProcessManager* manager =

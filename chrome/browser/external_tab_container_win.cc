@@ -594,8 +594,7 @@ void ExternalTabContainer::ShowPageInfo(Profile* profile,
   PageInfoBubbleView* page_info_bubble =
       new ExternalTabPageInfoBubbleView(this, NULL, profile, url,
                                         ssl, show_history);
-  Bubble* bubble = Bubble::Show(GetWidget(), bounds,
-                                views::BubbleBorder::TOP_LEFT,
+  Bubble* bubble = Bubble::Show(GetWidget(), bounds, BubbleBorder::TOP_LEFT,
                                 page_info_bubble, page_info_bubble);
   page_info_bubble->set_bubble(bubble);
 }

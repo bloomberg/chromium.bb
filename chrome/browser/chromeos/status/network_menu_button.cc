@@ -417,7 +417,7 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
     mobile_data_bubble_ = MessageBubble::ShowWithLinks(
         GetWidget(),
         button_bounds,
-        views::BubbleBorder::TOP_RIGHT ,
+        BubbleBorder::TOP_RIGHT ,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_NOTIFICATION_3G),
         notification_text,
         links,

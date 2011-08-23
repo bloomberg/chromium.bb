@@ -849,7 +849,7 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
     msg += ASCIIToUTF16("\n") +
         l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
 
-  ShowErrorBubble(UTF16ToWide(msg), views::BubbleBorder::BOTTOM_LEFT);
+  ShowErrorBubble(UTF16ToWide(msg), BubbleBorder::BOTTOM_LEFT);
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginFailure(error);
@@ -1012,9 +1012,8 @@ void ScreenLocker::ShowErrorMessage(const std::wstring& message,
   }
   screen_lock_view_->SetSignoutEnabled(sign_out_only);
   // Make sure that active Sign Out button is not hidden behind the bubble.
-  ShowErrorBubble(
-      message, sign_out_only ?
-      views::BubbleBorder::BOTTOM_RIGHT : views::BubbleBorder::BOTTOM_LEFT);
+  ShowErrorBubble(message, sign_out_only ?
+      BubbleBorder::BOTTOM_RIGHT : BubbleBorder::BOTTOM_LEFT);
 }
 
 void ScreenLocker::OnGrabInputs() {
@@ -1171,9 +1170,8 @@ void ScreenLocker::OnWindowManagerReady() {
     ScreenLockReady();
 }
 
-void ScreenLocker::ShowErrorBubble(
-    const std::wstring& message,
-    views::BubbleBorder::ArrowLocation arrow_location) {
+void ScreenLocker::ShowErrorBubble(const std::wstring& message,
+                                   BubbleBorder::ArrowLocation arrow_location) {
   if (error_info_)
     error_info_->Close();
 

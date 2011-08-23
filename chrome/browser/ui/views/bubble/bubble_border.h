@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_BUBBLE_BUBBLE_BORDER_H_
-#define VIEWS_BUBBLE_BUBBLE_BORDER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_BUBBLE_BORDER_H_
+#define CHROME_BROWSER_UI_VIEWS_BUBBLE_BORDER_H_
 #pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
@@ -12,11 +12,9 @@
 
 class SkBitmap;
 
-namespace views {
-
 // Renders a border, with optional arrow, and a custom dropshadow.
 // This can be used to produce floating "bubble" objects with rounded corners.
-class VIEWS_EXPORT BubbleBorder : public views::Border {
+class BubbleBorder : public views::Border {
  public:
   // Possible locations for the (optional) arrow.
   // 0 bit specifies left or right.
@@ -171,6 +169,4 @@ class BubbleBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(BubbleBackground);
 };
 
-}  // namespace views
-
-#endif  // VIEWS_BUBBLE_BUBBLE_BORDER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_BUBBLE_BORDER_H_

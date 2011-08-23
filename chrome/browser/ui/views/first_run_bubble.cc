@@ -479,12 +479,11 @@ void FirstRunMinimalBubbleView::FocusWillChange(View* focused_before,
 // FirstRunBubble -------------------------------------------------------------
 
 // static
-FirstRunBubble* FirstRunBubble::Show(
-    Profile* profile,
-    views::Widget* parent,
-    const gfx::Rect& position_relative_to,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    FirstRun::BubbleType bubble_type) {
+FirstRunBubble* FirstRunBubble::Show(Profile* profile,
+                                     views::Widget* parent,
+                                     const gfx::Rect& position_relative_to,
+                                     BubbleBorder::ArrowLocation arrow_location,
+                                     FirstRun::BubbleType bubble_type) {
   FirstRunBubble* bubble = new FirstRunBubble();
   FirstRunBubbleViewBase* view = NULL;
 

@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "views/bubble/bubble_border.h"
+#include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
@@ -47,7 +47,7 @@ BubbleFrameView::BubbleFrameView(views::Widget* frame,
       title_(NULL),
       close_button_(NULL),
       throbber_(NULL) {
-  set_border(new views::BubbleBorder(views::BubbleBorder::NONE));
+  set_border(new BubbleBorder(BubbleBorder::NONE));
 
   if (widget_delegate->ShouldShowWindowTitle()) {
     title_ = new views::Label(widget_delegate->GetWindowTitle());
@@ -218,7 +218,7 @@ void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
   SkRect rect;
   rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
-  SkScalar radius = SkIntToScalar(views::BubbleBorder::GetCornerRadius());
+  SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
   path.addRoundRect(rect, radius, radius);
   canvas->AsCanvasSkia()->drawPath(path, paint);
 

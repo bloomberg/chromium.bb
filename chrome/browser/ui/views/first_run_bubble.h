@@ -17,11 +17,10 @@ class Profile;
 class FirstRunBubble : public Bubble,
                        public BubbleDelegate {
  public:
-  static FirstRunBubble* Show(
-      Profile* profile, views::Widget* parent,
-      const gfx::Rect& position_relative_to,
-      views::BubbleBorder::ArrowLocation arrow_location,
-      FirstRun::BubbleType bubble_type);
+  static FirstRunBubble* Show(Profile* profile, views::Widget* parent,
+                              const gfx::Rect& position_relative_to,
+                              BubbleBorder::ArrowLocation arrow_location,
+                              FirstRun::BubbleType bubble_type);
 
  private:
   FirstRunBubble();

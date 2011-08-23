@@ -20,7 +20,7 @@ class PinnedContentsBorderContents : public BorderContents {
   // BorderContents overrides:
   virtual void SizeAndGetBounds(
       const gfx::Rect& position_relative_to,  // In screen coordinates
-      views::BubbleBorder::ArrowLocation arrow_location,
+      BubbleBorder::ArrowLocation arrow_location,
       bool allow_bubble_offscreen,
       const gfx::Size& contents_size,
       gfx::Rect* contents_bounds,             // Returned in window coordinates
@@ -47,7 +47,7 @@ class PinnedContentsInfoBubble : public Bubble {
   static PinnedContentsInfoBubble* Show(
       views::Widget* parent,
       const gfx::Rect& position_relative_to,
-      views::BubbleBorder::ArrowLocation arrow_location,
+      BubbleBorder::ArrowLocation arrow_location,
       const gfx::Point& bubble_anchor_,
       views::View* contents,
       BubbleDelegate* delegate);
