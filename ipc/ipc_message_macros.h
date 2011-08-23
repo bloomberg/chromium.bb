@@ -150,10 +150,10 @@
 //
 // Once the types have been declared / registered, message definitions follow.
 // "Sync" messages are just synchronous calls, the Send() call doesn't return
-// until a reply comes back.  Input parameters are first (const TYPE&), and
-// To declare a sync message, use the IPC_SYNC_ macros.  The numbers at the
-// end show how many input/output parameters there are (i.e. 1_2 is 1 in, 2
-// out). The caller does a Send([route id, ], in1, &out1, &out2).
+// until a reply comes back.  To declare a sync message, use the IPC_SYNC_
+// macros.  The numbers at the end show how many input/output parameters there
+// are (i.e. 1_2 is 1 in, 2 out).  Input parameters are first, followed by
+// output parameters.  The caller uses Send([route id, ], in1, &out1, &out2).
 // The receiver's handler function will be
 //     void OnSyncMessageName(const type1& in1, type2* out1, type3* out2)
 //
