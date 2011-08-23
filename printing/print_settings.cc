@@ -18,6 +18,10 @@ PrintSettings::PrintSettings()
       desired_dpi(72),
       selection_only(false),
       use_overlays(true),
+      date(),
+      title(),
+      url(),
+      display_header_footer(false),
       dpi_(0),
       landscape_(false),
       supports_alpha_blend_(true) {
@@ -32,6 +36,10 @@ void PrintSettings::Clear() {
   max_shrink = 2.;
   desired_dpi = 72;
   selection_only = false;
+  date = string16();
+  title = string16();
+  url = string16();
+  display_header_footer = false;
   printer_name_.clear();
   device_name_.clear();
   page_setup_device_units_.Clear();
