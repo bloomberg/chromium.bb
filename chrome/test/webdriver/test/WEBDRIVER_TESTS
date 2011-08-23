@@ -59,8 +59,6 @@
     '-text_handling_tests.TextHandlingTests.testShouldBeAbleToSetMoreThanOneLineOfTextInATextArea',
     # See issue 1225 on the webdriver OSS tracker.
     '-text_handling_tests.TextHandlingTests.testShouldReturnEmptyStringWhenTagIsSelfClosing',
-    # crbug.com/92597.
-    '-text_handling_tests.TextHandlingTests.testShouldTreatANonBreakingSpaceAsAnyOtherWhitespaceCharacterWhenCollapsingWhitespace',
     'typing_tests',
     'visibility_tests',
   ],

@@ -826,15 +826,13 @@
       'sources': [
         '../third_party/mongoose/mongoose.c',
         '../third_party/mongoose/mongoose.h',
+        '../third_party/webdriver/atoms.cc',
         '../third_party/webdriver/atoms.h',
       ],
     },
     {
-      # chromedriver is the chromium impelmentation of the WebDriver
-      # wire protcol.  A description of the WebDriver and examples can
-      # be found at: http://seleniumhq.org/docs/09_webdriver.html.
-      # The documention of the protocol implemented is at:
-      # http://code.google.com/p/selenium/wiki/JsonWireProtocol
+      # chromedriver is the chromium implementation of WebDriver.
+      # See http://www.chromium.org/developers/testing/webdriver-for-chrome
       'target_name': 'chromedriver_lib',
       'type': 'static_library',
       'dependencies': [

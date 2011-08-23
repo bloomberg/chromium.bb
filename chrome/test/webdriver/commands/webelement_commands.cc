@@ -96,7 +96,7 @@ void ElementClearCommand::ExecutePost(Response* const response) {
   args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
-      "(%s).apply(null, arguments);", atoms::CLEAR);
+      "(%s).apply(null, arguments);", atoms::asString(atoms::CLEAR).c_str());
 
   Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
@@ -129,7 +129,8 @@ void ElementCssCommand::ExecuteGet(Response* const response) {
   }
 
   std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_EFFECTIVE_STYLE);
+      "return (%s).apply(null, arguments);",
+      atoms::asString(atoms::GET_EFFECTIVE_STYLE).c_str());
 
   ListValue args;
   args.Append(element.ToValue());
@@ -187,7 +188,8 @@ void ElementEnabledCommand::ExecuteGet(Response* const response) {
   args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::IS_ENABLED);
+      "return (%s).apply(null, arguments);",
+      atoms::asString(atoms::IS_ENABLED).c_str());
 
   Value* result = NULL;
   Error* error = session_->ExecuteScript(script, &args, &result);
@@ -251,7 +253,8 @@ bool ElementLocationCommand::DoesGet() {
 
 void ElementLocationCommand::ExecuteGet(Response* const response) {
   std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_LOCATION);
+      "return (%s).apply(null, arguments);",
+      atoms::asString(atoms::GET_LOCATION).c_str());
 
   ListValue args;
   args.Append(element.ToValue());
@@ -393,10 +396,8 @@ bool ElementSubmitCommand::DoesPost() {
 }
 
 void ElementSubmitCommand::ExecutePost(Response* const response) {
-  // TODO(jleyba): We need to wait for any post-submit navigation events to
-  // complete before responding to the client.
   std::string script = base::StringPrintf(
-      "(%s).apply(null, arguments);", atoms::SUBMIT);
+      "(%s).apply(null, arguments);", atoms::asString(atoms::SUBMIT).c_str());
 
   ListValue args;
   args.Append(element.ToValue());
@@ -425,7 +426,8 @@ bool ElementToggleCommand::DoesPost() {
 
 void ElementToggleCommand::ExecutePost(Response* const response) {
   std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::TOGGLE);
+      "return (%s).apply(null, arguments);",
+      atoms::asString(atoms::TOGGLE).c_str());
 
   ListValue args;
   args.Append(element.ToValue());
@@ -615,7 +617,8 @@ void ElementTextCommand::ExecuteGet(Response* const response) {
   args.Append(element.ToValue());
 
   std::string script = base::StringPrintf(
-      "return (%s).apply(null, arguments);", atoms::GET_TEXT);
+      "return (%s).apply(null, arguments);",
+      atoms::asString(atoms::GET_TEXT).c_str());
 
   Error* error = session_->ExecuteScript(script, &args,
                                          &unscoped_result);

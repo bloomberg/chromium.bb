@@ -141,7 +141,8 @@ Error* Session::ExecuteScript(const FrameId& frame_id,
   std::string jscript = base::StringPrintf(
       "window.domAutomationController.send((%s).apply(null,"
       "[function(){%s\n},%s,true]));",
-      atoms::EXECUTE_SCRIPT, script.c_str(), args_as_json.c_str());
+      atoms::asString(atoms::EXECUTE_SCRIPT).c_str(), script.c_str(),
+      args_as_json.c_str());
 
   return ExecuteScriptAndParseValue(frame_id, jscript, value);
 }
@@ -194,7 +195,7 @@ Error* Session::ExecuteAsyncScript(const FrameId& frame_id,
   // appropriate JSON structure.
   std::string jscript = base::StringPrintf(
       "(%s).apply(null, [function(){%s},%s,%d,%s,true]);",
-      atoms::EXECUTE_ASYNC_SCRIPT,
+      atoms::asString(atoms::EXECUTE_ASYNC_SCRIPT).c_str(),
       script.c_str(),
       args_as_json.c_str(),
       timeout_ms,
@@ -811,21 +812,23 @@ Error* Session::GetElementRegionInView(
 Error* Session::GetElementSize(const FrameId& frame_id,
                                const ElementId& element,
                                Size* size) {
-  return ExecuteScriptAndParse(frame_id,
-                               atoms::GET_SIZE,
-                               "getSize",
-                               CreateListValueFrom(element),
-                               CreateDirectValueParser(size));
+  return ExecuteScriptAndParse(
+      frame_id,
+      atoms::asString(atoms::GET_SIZE),
+      "getSize",
+      CreateListValueFrom(element),
+      CreateDirectValueParser(size));
 }
 
 Error* Session::GetElementFirstClientRect(const FrameId& frame_id,
                                           const ElementId& element,
                                           Rect* rect) {
-  return ExecuteScriptAndParse(frame_id,
-                               atoms::GET_FIRST_CLIENT_RECT,
-                               "getFirstClientRect",
-                               CreateListValueFrom(element),
-                               CreateDirectValueParser(rect));
+  return ExecuteScriptAndParse(
+      frame_id,
+      atoms::asString(atoms::GET_FIRST_CLIENT_RECT),
+      "getFirstClientRect",
+      CreateListValueFrom(element),
+      CreateDirectValueParser(rect));
 }
 
 Error* Session::GetElementEffectiveStyle(
@@ -833,11 +836,12 @@ Error* Session::GetElementEffectiveStyle(
     const ElementId& element,
     const std::string& prop,
     std::string* value) {
-  return ExecuteScriptAndParse(frame_id,
-                               atoms::GET_EFFECTIVE_STYLE,
-                               "getEffectiveStyle",
-                               CreateListValueFrom(element, prop),
-                               CreateDirectValueParser(value));
+  return ExecuteScriptAndParse(
+      frame_id,
+      atoms::asString(atoms::GET_EFFECTIVE_STYLE),
+      "getEffectiveStyle",
+      CreateListValueFrom(element, prop),
+      CreateDirectValueParser(value));
 }
 
 Error* Session::GetElementBorder(const FrameId& frame_id,
@@ -863,21 +867,23 @@ Error* Session::IsElementDisplayed(const FrameId& frame_id,
                                    const ElementId& element,
                                    bool ignore_opacity,
                                    bool* is_displayed) {
-  return ExecuteScriptAndParse(frame_id,
-                               atoms::IS_DISPLAYED,
-                               "isDisplayed",
-                               CreateListValueFrom(element, ignore_opacity),
-                               CreateDirectValueParser(is_displayed));
+  return ExecuteScriptAndParse(
+      frame_id,
+      atoms::asString(atoms::IS_DISPLAYED),
+      "isDisplayed",
+      CreateListValueFrom(element, ignore_opacity),
+      CreateDirectValueParser(is_displayed));
 }
 
 Error* Session::IsElementEnabled(const FrameId& frame_id,
                                  const ElementId& element,
                                  bool* is_enabled) {
-  return ExecuteScriptAndParse(frame_id,
-                               atoms::IS_ENABLED,
-                               "isEnabled",
-                               CreateListValueFrom(element),
-                               CreateDirectValueParser(is_enabled));
+  return ExecuteScriptAndParse(
+      frame_id,
+      atoms::asString(atoms::IS_ENABLED),
+      "isEnabled",
+      CreateListValueFrom(element),
+      CreateDirectValueParser(is_enabled));
 }
 
 Error* Session::IsOptionElementSelected(const FrameId& frame_id,
@@ -885,7 +891,7 @@ Error* Session::IsOptionElementSelected(const FrameId& frame_id,
                                         bool* is_selected) {
   return ExecuteScriptAndParse(
       frame_id,
-      atoms::IS_SELECTED,
+      atoms::asString(atoms::IS_SELECTED),
       "isSelected",
       CreateListValueFrom(element),
       CreateDirectValueParser(is_selected));
@@ -894,11 +900,12 @@ Error* Session::IsOptionElementSelected(const FrameId& frame_id,
 Error* Session::SetOptionElementSelected(const FrameId& frame_id,
                                          const ElementId& element,
                                          bool selected) {
-  return ExecuteScriptAndParse(frame_id,
-                               atoms::SET_SELECTED,
-                               "setSelected",
-                               CreateListValueFrom(element, selected),
-                               CreateDirectValueParser(kSkipParsing));
+  return ExecuteScriptAndParse(
+      frame_id,
+      atoms::asString(atoms::SET_SELECTED),
+      "setSelected",
+      CreateListValueFrom(element, selected),
+      CreateDirectValueParser(kSkipParsing));
 }
 
 Error* Session::ToggleOptionElement(const FrameId& frame_id,
@@ -949,11 +956,12 @@ Error* Session::GetClickableLocation(const ElementId& element,
 Error* Session::GetAttribute(const ElementId& element,
                              const std::string& key,
                              Value** value) {
-  return ExecuteScriptAndParse(current_target_,
-                               atoms::GET_ATTRIBUTE,
-                               "getAttribute",
-                               CreateListValueFrom(element, key),
-                               CreateDirectValueParser(value));
+  return ExecuteScriptAndParse(
+      current_target_,
+      atoms::asString(atoms::GET_ATTRIBUTE),
+      "getAttribute",
+      CreateListValueFrom(element, key),
+      CreateDirectValueParser(value));
 }
 
 Error* Session::WaitForAllTabsToStopLoading() {
@@ -1277,14 +1285,14 @@ Error* Session::ExecuteFindElementScriptAndParse(
   if (find_one) {
     error = ExecuteScriptAndParse(
           frame_id,
-          atoms::FIND_ELEMENT,
+          atoms::asString(atoms::FIND_ELEMENT),
           "findElement",
           CreateListValueFrom(&locator_dict, root_element),
           new FindElementParser(&temp_elements));
   } else {
     error = ExecuteScriptAndParse(
           frame_id,
-          atoms::FIND_ELEMENTS,
+          atoms::asString(atoms::FIND_ELEMENTS),
           "findElements",
           CreateListValueFrom(&locator_dict, root_element),
           new FindElementsParser(&temp_elements));
@@ -1322,7 +1330,7 @@ Error* Session::VerifyElementIsClickable(
   std::string message;
   Error* error = ExecuteScriptAndParse(
       frame_id,
-      atoms::IS_ELEMENT_CLICKABLE,
+      atoms::asString(atoms::IS_ELEMENT_CLICKABLE),
       "isElementClickable",
       CreateListValueFrom(element, location),
       new IsElementClickableParser(&clickable, &message));
@@ -1350,7 +1358,7 @@ Error* Session::GetElementRegionInViewHelper(
   Point temp_location;
   Error* error = ExecuteScriptAndParse(
       frame_id,
-      atoms::GET_LOCATION_IN_VIEW,
+      atoms::asString(atoms::GET_LOCATION_IN_VIEW),
       "getLocationInView",
       CreateListValueFrom(element, center, region),
       CreateDirectValueParser(&temp_location));
@@ -1391,7 +1399,7 @@ Error* Session::GetScreenShot(std::string* png) {
 Error* Session::GetBrowserConnectionState(bool* online) {
   return ExecuteScriptAndParse(
       current_target_,
-      atoms::IS_ONLINE,
+      atoms::asString(atoms::IS_ONLINE),
       "isOnline",
       new ListValue(),
       CreateDirectValueParser(online));
@@ -1400,7 +1408,7 @@ Error* Session::GetBrowserConnectionState(bool* online) {
 Error* Session::GetAppCacheStatus(int* status) {
   return ExecuteScriptAndParse(
       current_target_,
-      atoms::GET_APPCACHE_STATUS,
+      atoms::asString(atoms::GET_APPCACHE_STATUS),
       "getAppcacheStatus",
       new ListValue(),
       CreateDirectValueParser(status));
