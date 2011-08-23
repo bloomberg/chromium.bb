@@ -134,6 +134,9 @@ void IncognitoUserPrefStore::ReportValueChanged(const std::string& key) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
 }
 
+void IncognitoUserPrefStore::CheckIfValueDestroyed(const std::string& key) {
+}
+
 void IncognitoUserPrefStore::OnPrefValueChanged(const std::string& key) {
   if (!overlay_.GetValue(key, NULL))
     ReportValueChanged(key);

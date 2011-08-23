@@ -2272,6 +2272,11 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement,
                                 PrefService::UNSYNCABLE_PREF);
+  // TODO(sky): remove this. It's used in tracking 91396.
+#if defined(OS_WIN)
+  prefs->CheckIfValueDestroyed(prefs::kBrowserWindowPlacement,
+                               base::Value::TYPE_DICTIONARY);
+#endif
   prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement,
                                 PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kImportBookmarks,

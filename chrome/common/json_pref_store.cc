@@ -148,6 +148,7 @@ JsonPrefStore::JsonPrefStore(const FilePath& filename,
 }
 
 JsonPrefStore::~JsonPrefStore() {
+  ResetCheckIfValueDestroyed(prefs_.get());
   CommitPendingWrite();
 }
 
@@ -180,29 +181,20 @@ PrefStore::ReadResult JsonPrefStore::GetMutableValue(const std::string& key,
 }
 
 void JsonPrefStore::SetValue(const std::string& key, Value* value) {
-  DCHECK(value);
-  scoped_ptr<Value> new_value(value);
-  Value* old_value = NULL;
-  prefs_->Get(key, &old_value);
-  if (!old_value || !value->Equals(old_value)) {
-    prefs_->Set(key, new_value.release());
-    FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
-  }
+  SetValueImpl(key, value, SET_VALUE_NOTIFY);
 }
 
 void JsonPrefStore::SetValueSilently(const std::string& key, Value* value) {
-  DCHECK(value);
-  scoped_ptr<Value> new_value(value);
-  Value* old_value = NULL;
-  prefs_->Get(key, &old_value);
-  if (!old_value || !value->Equals(old_value))
-    prefs_->Set(key, new_value.release());
+  SetValueImpl(key, value, SET_VALUE_DONT_NOTIFY);
 }
 
 void JsonPrefStore::RemoveValue(const std::string& key) {
-  if (prefs_->Remove(key, NULL)) {
+  Value* value = NULL;
+  bool path_existed = prefs_->Remove(key, &value);
+  scoped_ptr<Value> owned_value(value);
+  ResetCheckIfValueDestroyed(value);
+  if (path_existed)
     FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
-  }
 }
 
 bool JsonPrefStore::ReadOnly() const {
@@ -232,6 +224,7 @@ void JsonPrefStore::OnFileRead(Value* value_owned,
       break;
     case PREF_READ_ERROR_NONE:
       DCHECK(value.get());
+      ResetCheckIfValueDestroyed(prefs_.get());
       prefs_.reset(static_cast<DictionaryValue*>(value.release()));
       break;
     case PREF_READ_ERROR_NO_FILE:
@@ -310,6 +303,13 @@ void JsonPrefStore::ReportValueChanged(const std::string& key) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
 }
 
+void JsonPrefStore::CheckIfValueDestroyed(const std::string& key) {
+  Value* value = NULL;
+  CHECK_EQ(READ_OK, GetMutableValue(key, &value));
+  CHECK(value);
+  value->set_check_on_delete(true);
+}
+
 bool JsonPrefStore::SerializeData(std::string* output) {
   // TODO(tc): Do we want to prune webkit preferences that match the default
   // value?
@@ -317,4 +317,53 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   serializer.set_pretty_print(true);
   scoped_ptr<DictionaryValue> copy(prefs_->DeepCopyWithoutEmptyChildren());
   return serializer.Serialize(*(copy.get()));
+}
+
+void JsonPrefStore::SetValueImpl(const std::string& key,
+                                 Value* value,
+                                 SetValueType type) {
+  DCHECK(value);
+  scoped_ptr<Value> new_value(value);
+  Value* old_value = NULL;
+  prefs_->Get(key, &old_value);
+  ResetCheckIfValueDestroyed(old_value);
+  if (!old_value || !value->Equals(old_value)) {
+    prefs_->Set(key, new_value.release());
+    if (type == SET_VALUE_NOTIFY)
+      ReportValueChanged(key);
+  }
+}
+
+// static
+void JsonPrefStore::ResetCheckIfValueDestroyed(Value* value) {
+  if (!value)
+    return;
+
+  value->set_check_on_delete(false);
+
+  switch (value->GetType()) {
+    case Value::TYPE_DICTIONARY: {
+      DictionaryValue* dictionary = static_cast<DictionaryValue*>(value);
+      for (DictionaryValue::key_iterator i = dictionary->begin_keys();
+           i != dictionary->end_keys(); ++i) {
+        Value* child_value = NULL;
+        dictionary->GetWithoutPathExpansion(*i, &child_value);
+        ResetCheckIfValueDestroyed(child_value);
+      }
+      break;
+    }
+
+    case Value::TYPE_LIST: {
+      ListValue* list = static_cast<ListValue*>(value);
+      for (size_t i = 0; i < list->GetSize(); ++i) {
+        Value* child_value = NULL;
+        list->Get(i, &child_value);
+        ResetCheckIfValueDestroyed(child_value);
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
 }

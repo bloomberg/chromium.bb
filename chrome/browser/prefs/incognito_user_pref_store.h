@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chrome/browser/prefs/pref_value_map.h"
@@ -38,17 +39,19 @@ class IncognitoUserPrefStore : public PersistentPrefStore,
 
   // Methods of PersistentPrefStore.
   virtual ReadResult GetMutableValue(const std::string& key,
-                                     base::Value** result);
-  virtual void SetValue(const std::string& key, base::Value* value);
-  virtual void SetValueSilently(const std::string& key, base::Value* value);
-  virtual void RemoveValue(const std::string& key);
-  virtual bool ReadOnly() const;
-  virtual PrefReadError ReadPrefs();
-  virtual void ReadPrefsAsync(ReadErrorDelegate* delegate);
-  virtual bool WritePrefs();
-  virtual void ScheduleWritePrefs();
-  virtual void CommitPendingWrite();
-  virtual void ReportValueChanged(const std::string& key);
+                                     base::Value** result) OVERRIDE;
+  virtual void SetValue(const std::string& key, base::Value* value) OVERRIDE;
+  virtual void SetValueSilently(const std::string& key,
+                                base::Value* value) OVERRIDE;
+  virtual void RemoveValue(const std::string& key) OVERRIDE;
+  virtual bool ReadOnly() const OVERRIDE;
+  virtual PrefReadError ReadPrefs() OVERRIDE;
+  virtual void ReadPrefsAsync(ReadErrorDelegate* delegate) OVERRIDE;
+  virtual bool WritePrefs() OVERRIDE;
+  virtual void ScheduleWritePrefs() OVERRIDE;
+  virtual void CommitPendingWrite() OVERRIDE;
+  virtual void ReportValueChanged(const std::string& key) OVERRIDE;
+  virtual void CheckIfValueDestroyed(const std::string& key) OVERRIDE;
 
  private:
   // Methods of PrefStore::Observer.
