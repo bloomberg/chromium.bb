@@ -136,15 +136,21 @@ found in the LICENSE file.
 
         <div data-ui-mode="host.share-failed" class="message">
           <span id="unable-to-get-token" class="error-state"
-               i18n-content="ERROR_UNABLE_TO_GET_TOKEN">
+                i18n-content="ERROR_UNABLE_TO_GET_TOKEN">
           </span>
-          <div class="centered-button">
-            <button type="button" class="big-button"
-                    onclick="remoting.setMode('host.unshared');"
-                    i18n-content="OK">
-            </button>
-          </div>
         </div> <!-- host.share-failed -->
+
+        <div data-ui-mode="host.share-finished" class="message"
+             i18n-content="MESSAGE_SESSION_FINISHED">
+        </div> <!-- host.share-finished -->
+
+        <div class="centered-button"
+             data-ui-mode="host.share-failed host.share-finished">
+          <button type="button" class="big-button"
+                  onclick="remoting.setMode('host.unshared');"
+                  i18n-content="OK">
+          </button>
+        </div>
 
         <div id="host-plugin-container"></div>
 

@@ -146,8 +146,8 @@
     "description": "Text shown while generating an access code."
   },
   "MESSAGE_SESSION_FINISHED": {
-    "message": "You are no longer connected to the remote desktop.",
-    "description": "Message displayed when the client has disconnected."
+    "message": "Your Chromoting session has ended.",
+    "description": "Message displayed when the client or host has disconnected."
   },
   "MESSAGE_SHARED": {
     "message": "Your desktop is currently being shared with $user$.",

@@ -31,6 +31,7 @@ remoting.AppMode = {
     HOST_WAITING_FOR_CONNECTION: 'host.waiting-for-connection',
     HOST_SHARED: 'host.shared',
     HOST_SHARE_FAILED: 'host.share-failed',
+    HOST_SHARE_FINISHED: 'host.share-finished',
   IN_SESSION: 'in-session'
 };
 
@@ -324,7 +325,7 @@ function onStateChanged_() {
       // If an error is being displayed, then the plugin should not be able to
       // hide it by setting the state. Errors must be dismissed by the user
       // clicking OK, which puts the app into mode HOST_UNSHARED.
-      remoting.setMode(remoting.AppMode.HOST_UNSHARED);
+      remoting.setMode(remoting.AppMode.HOST_SHARE_FINISHED);
     }
     plugin.parentNode.removeChild(plugin);
   } else if (state == plugin.ERROR) {
@@ -619,14 +620,16 @@ remoting.disconnect = function() {
  * @return {(string|void)} The prompt string if a connection is active.
  */
 remoting.promptClose = function() {
-  // Prompt to close if the host is in any state other than unshared, or if the
-  // client is connecting or has already connected.
-  if ((remoting.getMajorMode() == remoting.AppMode.HOST &&
-       remoting.currentMode != remoting.AppMode.HOST_UNSHARED) ||
-      remoting.getMajorMode() == remoting.AppMode.IN_SESSION ||
-      remoting.currentMode == remoting.AppMode.CLIENT_CONNECTING) {
-    var result = chrome.i18n.getMessage('CLOSE_PROMPT');
-    return result;
+  switch (remoting.currentMode) {
+    case remoting.AppMode.CLIENT_CONNECTING:
+    case remoting.AppMode.HOST_WAITING_FOR_CODE:
+    case remoting.AppMode.HOST_WAITING_FOR_CONNECTION:
+    case remoting.AppMode.HOST_SHARED:
+    case remoting.AppMode.IN_SESSION:
+      var result = chrome.i18n.getMessage('CLOSE_PROMPT');
+      return result;
+    default:
+      return NULL;
   }
 }
 
