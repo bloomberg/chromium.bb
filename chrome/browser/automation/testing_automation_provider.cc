@@ -45,7 +45,9 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/save_package_file_picker.h"
+#include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/history/top_sites.h"
@@ -104,6 +106,7 @@
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/common/common_param_traits.h"
 #include "content/common/notification_service.h"
+#include "content/common/view_types.h"
 #include "net/base/cookie_store.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/events.h"
@@ -1291,6 +1294,30 @@ void TestingAutomationProvider::GetFullscreenBubbleVisibility(int handle,
   }
 }
 
+namespace {
+
+void ExecuteJavascriptInRenderViewFrame(
+    const string16& frame_xpath,
+    const string16& script,
+    IPC::Message* reply_message,
+    RenderViewHost* render_view_host) {
+  // Set the routing id of this message with the controller.
+  // This routing id needs to be remembered for the reverse
+  // communication while sending back the response of
+  // this javascript execution.
+  std::string set_automation_id;
+  base::SStringPrintf(&set_automation_id,
+                      "window.domAutomationController.setAutomationId(%d);",
+                      reply_message->routing_id());
+
+  render_view_host->ExecuteJavascriptInWebFrame(
+      frame_xpath, UTF8ToUTF16(set_automation_id));
+  render_view_host->ExecuteJavascriptInWebFrame(
+      frame_xpath, script);
+}
+
+}  // namespace
+
 void TestingAutomationProvider::ExecuteJavascript(
     int handle,
     const std::wstring& frame_xpath,
@@ -1303,20 +1330,10 @@ void TestingAutomationProvider::ExecuteJavascript(
     return;
   }
 
-  // Set the routing id of this message with the controller.
-  // This routing id needs to be remembered for the reverse
-  // communication while sending back the response of
-  // this javascript execution.
-  std::string set_automation_id;
-  base::SStringPrintf(&set_automation_id,
-                      "window.domAutomationController.setAutomationId(%d);",
-                      reply_message->routing_id());
-
   new DomOperationMessageSender(this, reply_message, false);
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      WideToUTF16Hack(frame_xpath), UTF8ToUTF16(set_automation_id));
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      WideToUTF16Hack(frame_xpath), WideToUTF16Hack(script));
+  ExecuteJavascriptInRenderViewFrame(WideToUTF16Hack(frame_xpath),
+                                     WideToUTF16Hack(script), reply_message,
+                                     tab_contents->render_view_host());
 }
 
 void TestingAutomationProvider::GetConstrainedWindowCount(int handle,
@@ -2164,6 +2181,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::NavigateToURL;
   handler_map["ExecuteJavascript"] =
       &TestingAutomationProvider::ExecuteJavascriptJSON;
+  handler_map["ExecuteJavascriptInRenderView"] =
+      &TestingAutomationProvider::ExecuteJavascriptInRenderView;
   handler_map["GoForward"] =
       &TestingAutomationProvider::GoForward;
   handler_map["GoBack"] =
@@ -2771,7 +2790,7 @@ void TestingAutomationProvider::GetBrowserInfo(
 
   // Add all extension processes in a list of dictionaries, one dictionary
   // item per extension process.
-  ListValue* extension_processes = new ListValue;
+  ListValue* extension_views = new ListValue;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i) {
@@ -2787,13 +2806,43 @@ void TestingAutomationProvider::GetBrowserInfo(
         continue;
       DictionaryValue* item = new DictionaryValue;
       item->SetString("name", ex_host->extension()->name());
+      item->SetString("extension_id", ex_host->extension()->id());
       item->SetInteger(
           "pid",
           base::GetProcId(ex_host->render_process_host()->GetHandle()));
-      extension_processes->Append(item);
+      DictionaryValue* view = new DictionaryValue;
+      view->SetInteger(
+          "render_process_id",
+          ex_host->render_process_host()->id());
+      view->SetInteger(
+          "render_view_id",
+          ex_host->render_view_host()->routing_id());
+      item->Set("view", view);
+      std::string type;
+      switch (ex_host->extension_host_type()) {
+        case ViewType::EXTENSION_BACKGROUND_PAGE:
+          type = "EXTENSION_BACKGROUND_PAGE";
+          break;
+        case ViewType::EXTENSION_POPUP:
+          type = "EXTENSION_POPUP";
+          break;
+        case ViewType::EXTENSION_INFOBAR:
+          type = "EXTENSION_INFOBAR";
+          break;
+        case ViewType::EXTENSION_DIALOG:
+          type = "EXTENSION_DIALOG";
+          break;
+        default:
+          type = "unknown";
+          break;
+      }
+      item->SetString("view_type", type);
+      item->SetString("url", ex_host->GetURL().spec());
+      item->SetBoolean("loaded", ex_host->did_stop_loading());
+      extension_views->Append(item);
     }
   }
-  return_value->Set("extension_processes", extension_processes);
+  return_value->Set("extension_views", extension_views);
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
@@ -5735,20 +5784,49 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
     return;
   }
 
-  // Set the routing id of this message with the controller.
-  // This routing id needs to be remembered for the reverse
-  // communication while sending back the response of
-  // this javascript execution.
-  std::string set_automation_id;
-  base::SStringPrintf(&set_automation_id,
-                      "window.domAutomationController.setAutomationId(%d);",
-                      reply_message->routing_id());
+  new DomOperationMessageSender(this, reply_message, true);
+  ExecuteJavascriptInRenderViewFrame(frame_xpath, javascript, reply_message,
+                                     tab_contents->render_view_host());
+}
+
+void TestingAutomationProvider::ExecuteJavascriptInRenderView(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  string16 frame_xpath, javascript, extension_id, url_text;
+  std::string error;
+  int render_process_id, render_view_id;
+  if (!args->GetString("frame_xpath", &frame_xpath)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'frame_xpath' missing or invalid");
+    return;
+  }
+  if (!args->GetString("javascript", &javascript)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'javascript' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("view.render_process_id", &render_process_id)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'view.render_process_id' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("view.render_view_id", &render_view_id)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'view.render_view_id' missing or invalid");
+    return;
+  }
+
+  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
+                                               render_view_id);
+  if(!rvh) {
+    AutomationJSONReply(this, reply_message).SendError(
+            "A RenderViewHost object was not found with the given view ID.");
+    return;
+  }
 
   new DomOperationMessageSender(this, reply_message, true);
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      frame_xpath, UTF8ToUTF16(set_automation_id));
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      frame_xpath, javascript);
+  ExecuteJavascriptInRenderViewFrame(frame_xpath, javascript, reply_message,
+                                     rvh);
 }
 
 void TestingAutomationProvider::GoForward(

@@ -27,8 +27,7 @@ class ProcessCountTest(pyauto.PyUITest):
     actual_count = (
         1 +  # Browser process.
         sum([len(tab_info['tabs']) for tab_info in info['windows']]) +
-        len(info['child_processes']) +
-        len(info['extension_processes']))
+        len(info['child_processes']) + len(info['extension_views']))
 
     self.assertEqual(actual_count, expected_count,
                      msg='Number of processes should be %d, but was %d.' %

@@ -1253,10 +1253,16 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         u'child_processes': [ { u'name': u'Shockwave Flash',
                                 u'pid': 93766,
                                 u'type': u'Plug-in'}],
-        # There's one extension process per extension.
-        u'extension_processes': [
-          { u'name': u'Webpage Screenshot', u'pid': 93938},
-          { u'name': u'Google Voice (by Google)', u'pid': 93852}],
+        u'extension_views': [ {
+          u'name': u'Webpage Screenshot',
+          u'pid': 93938,
+          u'extension_id': u'dgcoklnmbeljaehamekjpeidmbicddfj',
+          u'url': u'chrome-extension://dgcoklnmbeljaehamekjpeidmbicddfj/'
+                    'bg.html',
+          u'view': {
+            u'render_process_id': 2,
+            u'render_view_id': 1},
+          u'view_type': u'EXTENSION_BACKGROUND_PAGE'}]
         u'properties': {
           u'BrowserProcessExecutableName': u'Chromium',
           u'BrowserProcessExecutablePath': u'Chromium.app/Contents/MacOS/'
@@ -2233,6 +2239,43 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'find_next' : find_next,
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
+  def ExecuteJavascriptInRenderView(self, js, view, frame_xpath=''):
+    """Executes a script in the specified frame of an render view.
+
+    The invoked javascript function must send a result back via the
+    domAutomationController.send function, or this function will never return.
+
+    Args:
+      js: script to be executed
+      view: A dictionary representing a unique id for the render view as
+      returned for example by
+      self.GetBrowserInfo()['extension_views'][]['view'].
+      Example:
+      { 'render_process_id': 1,
+        'render_view_id' : 2}
+
+      frame_xpath: XPath of the frame to execute the script. Default is no
+      frame. Example:
+      '//frames[1]'
+
+    Returns:
+      a value that was sent back via the domAutomationController.send method
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'ExecuteJavascriptInRenderView',
+      'javascript' : js,
+      'view' : view,
+      'frame_xpath' : frame_xpath,
+    }
+    result = self._GetResultFromJSONRequest(cmd_dict)['result']
+    # Wrap result in an array before deserializing because valid JSON has an
+    # array or an object as the root.
+    json_string = '[' + result + ']'
+    return json.loads(json_string)[0]
 
   def CallJavascriptFunc(self, function, args=[], tab_index=0, windex=0):
     """Executes a script which calls a given javascript function.
