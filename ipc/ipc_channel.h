@@ -171,19 +171,6 @@ class IPC_EXPORT Channel : public Message::Sender {
   void ResetToAcceptingConnectionState();
 #endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
-#if defined(OS_LINUX)
-  // Configures the channel to defer OnChannelConnected() until we know the
-  // global PID of the peer.  On Linux, with sandboxed renderers, the browser
-  // cannot use the process id sent by the renderer in the hello message,
-  // because the renderer is in its own private PID namespace.  With these
-  // renderers we need to defer our call to OnChannelConnected(peer_pid) until
-  // we know the global PID.
-  void SetNeedsOverridePeerPid();
-
-  // Overrides the peer PID and calls OnChannelConnected() if necessary.
-  void OverridePeerPid(int32 peer_pid);
-#endif  // defined(OS_LINUX)
-
   // Returns true if a named server channel is initialized on the given channel
   // ID. Even if true, the server may have already accepted a connection.
   static bool IsNamedServerInitialized(const std::string& channel_id);

@@ -377,7 +377,6 @@ SyncChannel::SyncChannel(
     WaitableEvent* shutdown_event)
     : ChannelProxy(
           channel_handle, mode, ipc_message_loop,
-          false /* needs_override_peer_pid */,
           new SyncContext(listener, ipc_message_loop, shutdown_event),
           create_pipe_now),
       sync_messages_with_no_timeout_allowed_(true) {

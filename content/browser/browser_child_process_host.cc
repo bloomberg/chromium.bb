@@ -83,10 +83,6 @@ void BrowserChildProcessHost::Launch(
   content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line, id());
 
-#if defined(OS_LINUX)
-  channel()->SetNeedsOverridePeerPid();
-#endif
-
   child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)
       exposed_dir,
@@ -171,16 +167,11 @@ BrowserChildProcessHost::ClientHook::ClientHook(BrowserChildProcessHost* host)
 }
 
 void BrowserChildProcessHost::ClientHook::OnProcessLaunched() {
-  base::ProcessHandle child_handle = host_->child_process_->GetHandle();
-  if (!child_handle) {
+  if (!host_->child_process_->GetHandle()) {
     host_->OnChildDied();
     return;
   }
-  host_->set_handle(child_handle);
-#if defined(OS_LINUX)
-  int32 child_pid = base::GetProcId(child_handle);
-  host_->channel()->OverridePeerPid(child_pid);
-#endif
+  host_->set_handle(host_->child_process_->GetHandle());
   host_->OnProcessLaunched();
 }
 

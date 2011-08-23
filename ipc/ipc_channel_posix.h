@@ -62,10 +62,6 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   bool HasAcceptedConnection() const;
   bool GetClientEuid(uid_t* client_euid) const;
   void ResetToAcceptingConnectionState();
-#if defined(OS_LINUX)
-  void SetNeedsOverridePeerPid();
-  void OverridePeerPid(int32 peer_pid);
-#endif  // defined(OS_LINUX)
   static bool IsNamedServerInitialized(const std::string& channel_id);
 
  private:
@@ -150,10 +146,6 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
 
   // True if we are responsible for unlinking the unix domain socket file.
   bool must_unlink_;
-
-  // See IPC::Channel::SetNeedsOverridePeerPid() header comment for details.
-  bool needs_override_peer_pid_;
-  int32 override_peer_pid_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelImpl);
 };

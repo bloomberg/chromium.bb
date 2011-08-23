@@ -309,9 +309,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
 #endif  // IPC_USES_READWRITE
       pipe_name_(channel_handle.name),
       listener_(listener),
-      must_unlink_(false),
-      needs_override_peer_pid_(false),
-      override_peer_pid_(0) {
+      must_unlink_(false) {
   memset(input_buf_, 0, sizeof(input_buf_));
   memset(input_cmsg_buf_, 0, sizeof(input_cmsg_buf_));
   if (!CreatePipe(channel_handle)) {
@@ -729,14 +727,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
             CHECK(descriptor.auto_close);
           }
 #endif  // IPC_USES_READWRITE
-          if (needs_override_peer_pid_) {
-            // If we already have the peer PID, use it.  Otherwise we'll call
-            // OnChannelConnected() in OverridePeerPid() below.
-            if (override_peer_pid_ != 0)
-              listener_->OnChannelConnected(override_peer_pid_);
-          } else {
-            listener_->OnChannelConnected(pid);
-          }
+          listener_->OnChannelConnected(pid);
         } else {
           listener_->OnMessageReceived(m);
         }
@@ -1002,27 +993,6 @@ void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
   input_overflow_fds_.clear();
 }
 
-#if defined(OS_LINUX)
-void Channel::ChannelImpl::SetNeedsOverridePeerPid() {
-  needs_override_peer_pid_ = true;
-}
-
-void Channel::ChannelImpl::OverridePeerPid(int32 peer_pid) {
-  DCHECK(needs_override_peer_pid_);
-  override_peer_pid_ = peer_pid;
-
-  // The browser learns the global PID of the renderers on the UI thread, and
-  // must post the data to the IO thread for us to use it here.  Therefore
-  // there is a race between the IPC channel processing the hello message
-  // and this function being called.  If fd_pipe_ != -1 then we've already
-  // received the hello message and we skipped OnChannelConnected() above,
-  // so call it here.
-  if (fd_pipe_ != -1) {
-    listener_->OnChannelConnected(peer_pid);
-  }
-}
-#endif  // defined(OS_LINUX)
-
 // static
 bool Channel::ChannelImpl::IsNamedServerInitialized(
     const std::string& channel_id) {
@@ -1237,16 +1207,6 @@ bool Channel::GetClientEuid(uid_t* client_euid) const {
 void Channel::ResetToAcceptingConnectionState() {
   channel_impl_->ResetToAcceptingConnectionState();
 }
-
-#if defined(OS_LINUX)
-void Channel::SetNeedsOverridePeerPid() {
-  channel_impl_->SetNeedsOverridePeerPid();
-}
-
-void Channel::OverridePeerPid(int32 peer_pid) {
-  channel_impl_->OverridePeerPid(peer_pid);
-}
-#endif  // defined(OS_LINUX)
 
 // static
 bool Channel::IsNamedServerInitialized(const std::string& channel_id) {

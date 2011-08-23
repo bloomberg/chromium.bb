@@ -118,8 +118,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
   ChannelProxy(const IPC::ChannelHandle& channel_handle,
                Channel::Mode mode,
                Channel::Listener* listener,
-               base::MessageLoopProxy* ipc_thread_loop,
-               bool needs_override_peer_pid);
+               base::MessageLoopProxy* ipc_thread_loop);
 
   virtual ~ChannelProxy();
 
@@ -162,11 +161,6 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
   bool GetClientEuid(uid_t* client_euid) const;
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_LINUX)
-  // Calls through to the underlying channel's method.
-  void OverridePeerPid(int32 peer_pid);
-#endif  // defined(OS_LINUX)
-
  protected:
   class Context;
   // A subclass uses this constructor if it needs to add more information
@@ -175,7 +169,6 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
   ChannelProxy(const IPC::ChannelHandle& channel_handle,
                Channel::Mode mode,
                base::MessageLoopProxy* ipc_thread_loop,
-               bool needs_override_peer_pid,
                Context* context,
                bool create_pipe_now);
 
@@ -224,16 +217,12 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
 
     // Create the Channel
     void CreateChannel(const IPC::ChannelHandle& channel_handle,
-                       const Channel::Mode& mode,
-                       bool needs_override_peer_pid);
+                       const Channel::Mode& mode);
 
     // Methods called on the IO thread.
     void OnSendMessage(Message* message_ptr);
     void OnAddFilter();
     void OnRemoveFilter(MessageFilter* filter);
-#if defined(OS_LINUX)
-    void OnOverridePeerPid(int32 peer_pid);
-#endif
 
     // Methods called on the listener thread.
     void AddFilter(MessageFilter* filter);
@@ -268,8 +257,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
   friend class SendTask;
 
   void Init(const IPC::ChannelHandle& channel_handle, Channel::Mode mode,
-            base::MessageLoopProxy* ipc_thread_loop, bool create_pipe_now,
-            bool needs_override_peer_pid);
+            base::MessageLoopProxy* ipc_thread_loop, bool create_pipe_now);
 
   // By maintaining this indirection (ref-counted) to our internal state, we
   // can safely be destroyed while the background thread continues to do stuff

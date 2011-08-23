@@ -47,8 +47,7 @@ void ServiceProcessControl::ConnectInternal() {
   const IPC::ChannelHandle channel_id = GetServiceProcessChannel();
   channel_.reset(new IPC::ChannelProxy(
       channel_id, IPC::Channel::MODE_NAMED_CLIENT, this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      false /* needs_override_peer_pid */));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 }
 
 void ServiceProcessControl::RunConnectDoneTasks() {

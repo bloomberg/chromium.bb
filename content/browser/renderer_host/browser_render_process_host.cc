@@ -280,16 +280,9 @@ bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
   // Setup the IPC channel.
   const std::string channel_id =
       ChildProcessInfo::GenerateRandomChannelID(this);
-#if defined(OS_LINUX)
-  // See IPC::Channel::SetNeedsOverridePeerPid() for details.
-  const bool needs_override_peer_pid = true;
-#else
-  const bool needs_override_peer_pid = false;
-#endif
   channel_.reset(new IPC::ChannelProxy(
       channel_id, IPC::Channel::MODE_SERVER, this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      needs_override_peer_pid));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
   // Call the embedder first so that their IPC filters have priority.
   content::GetContentClient()->browser()->BrowserRenderProcessHostCreated(this);
@@ -898,17 +891,8 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   if (deleting_soon_)
     return;
 
-  if (child_process_launcher_.get()) {
+  if (child_process_launcher_.get())
     child_process_launcher_->SetProcessBackgrounded(backgrounded_);
-#if defined(OS_LINUX)
-    // Inform the IPC subsystem of the global PID for this sandboxed renderer.
-    if (channel_.get()) {
-      base::ProcessHandle child_handle = child_process_launcher_->GetHandle();
-      base::ProcessId child_pid = base::GetProcId(child_handle);
-      channel_->OverridePeerPid(child_pid);
-    }
-#endif
-  }
 
   if (max_page_id_ != -1)
     Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
