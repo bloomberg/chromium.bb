@@ -382,7 +382,14 @@ GnomeKeyringResult GKRMethod::WaitResult() {
 GnomeKeyringResult GKRMethod::WaitResult(PasswordFormList* forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   event_.Wait();
-  forms->swap(forms_);
+  if (forms->empty()) {
+    // Normal case. Avoid extra allocation by swapping.
+    forms->swap(forms_);
+  } else {
+    // Rare case. Append forms_ to *forms.
+    forms->insert(forms->end(), forms_.begin(), forms_.end());
+    forms_.clear();
+  }
   return result_;
 }
 

@@ -539,6 +539,40 @@ TEST_F(NativeBackendGnomeTest, AddDuplicateLogin) {
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
 }
 
+TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
+  // Pretend that the migration has already taken place.
+  profile_->GetPrefs()->SetBoolean(prefs::kPasswordsUseLocalProfileId, true);
+
+  NativeBackendGnome backend(42, profile_->GetPrefs());
+  backend.Init();
+
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      NewRunnableMethod(&backend,
+                        &NativeBackendGnome::AddLogin,
+                        form_google_));
+
+  // Send the same request twice with the same list both times.
+  std::vector<PasswordForm*> form_list;
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      NewRunnableMethod(&backend,
+                        &NativeBackendGnome::GetAutofillableLogins,
+                        &form_list));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      NewRunnableMethod(&backend,
+                        &NativeBackendGnome::GetAutofillableLogins,
+                        &form_list));
+
+  RunBothThreads();
+
+  // Quick check that we got two results back.
+  EXPECT_EQ(2u, form_list.size());
+  STLDeleteElements(&form_list);
+
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+}
+
 // TODO(mdm): add more basic (i.e. non-migration) tests here at some point.
 
 TEST_F(NativeBackendGnomeTest, MigrateOneLogin) {
