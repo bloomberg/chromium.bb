@@ -9,8 +9,8 @@
 #include "base/stl_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_manager_delegate.h"
@@ -316,9 +316,9 @@ void DownloadFileManager::RenameCompletingDownloadFile(
     // not exists yet, so the second file gets the same name.
     // This should not happen in the SAFE case, and we check for that in the UI
     // thread.
-    uniquifier = download_util::GetUniquePathNumber(new_path);
+    uniquifier = DownloadFile::GetUniquePathNumber(new_path);
     if (uniquifier > 0) {
-      download_util::AppendNumberToPath(&new_path, uniquifier);
+      DownloadFile::AppendNumberToPath(&new_path, uniquifier);
     }
   }
 

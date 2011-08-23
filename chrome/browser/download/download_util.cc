@@ -18,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -34,6 +33,7 @@
 #include "chrome/common/time_format.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_types.h"
@@ -88,13 +88,6 @@ namespace download_util {
 // How many times to cycle the complete animation. This should be an odd number
 // so that the animation ends faded out.
 static const int kCompleteAnimationCycles = 5;
-
-// The maximum number of 'uniquified' files we will try to create.
-// This is used when the filename we're trying to download is already in use,
-// so we create a new unique filename by appending " (nnn)" before the
-// extension, where 1 <= nnn <= kMaxUniqueFiles.
-// Also used by code that cleans up said files.
-static const int kMaxUniqueFiles = 100;
 
 namespace {
 
@@ -587,56 +580,14 @@ void UpdateAppIconDownloadProgress(int download_count,
 }
 #endif
 
-// Appends the passed the number between parenthesis the path before the
-// extension.
-void AppendNumberToPath(FilePath* path, int number) {
-  *path = path->InsertBeforeExtensionASCII(StringPrintf(" (%d)", number));
-}
-
-// Attempts to find a number that can be appended to that path to make it
-// unique. If |path| does not exist, 0 is returned.  If it fails to find such
-// a number, -1 is returned.
-int GetUniquePathNumber(const FilePath& path) {
-  if (!file_util::PathExists(path))
-    return 0;
-
-  FilePath new_path;
-  for (int count = 1; count <= kMaxUniqueFiles; ++count) {
-    new_path = FilePath(path);
-    AppendNumberToPath(&new_path, count);
-
-    if (!file_util::PathExists(new_path))
-      return count;
-  }
-
-  return -1;
-}
-
 int GetUniquePathNumberWithCrDownload(const FilePath& path) {
-  if (!file_util::PathExists(path) &&
-      !file_util::PathExists(GetCrDownloadPath(path)))
-    return 0;
-
-  FilePath new_path;
-  for (int count = 1; count <= kMaxUniqueFiles; ++count) {
-    new_path = FilePath(path);
-    AppendNumberToPath(&new_path, count);
-
-    if (!file_util::PathExists(new_path) &&
-        !file_util::PathExists(GetCrDownloadPath(new_path)))
-      return count;
-  }
-
-  return -1;
+  return DownloadFile::GetUniquePathNumberWithSuffix(
+      path, FILE_PATH_LITERAL(".crdownload"));  
 }
 
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {
-  FilePath::StringType file_name;
-  base::SStringPrintf(
-      &file_name,
-      PRFilePathLiteral FILE_PATH_LITERAL(".crdownload"),
-      suggested_path.value().c_str());
-  return FilePath(file_name);
+  return DownloadFile::AppendSuffixToPath(
+      suggested_path, FILE_PATH_LITERAL(".crdownload"));
 }
 
 }  // namespace download_util

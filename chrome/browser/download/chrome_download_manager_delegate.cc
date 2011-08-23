@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_status_updater.h"
@@ -100,6 +101,22 @@ void ChromeDownloadManagerDelegate::ChooseDownloadPath(
   // Deletes itself.
   new DownloadFilePicker(
       download_manager_, tab_contents, suggested_path, data);
+}
+
+bool ChromeDownloadManagerDelegate::OverrideIntermediatePath(
+    DownloadItem* item,
+    FilePath* intermediate_path) {
+  if (item->IsDangerous()) {
+    // The download is not safe.  It's name is already set to an intermediate
+    // name, so no need to override.
+    return false;
+  }
+
+  // The download is a safe download.  We need to rename it to its intermediate
+  // '.crdownload' path.  The final name after user confirmation will be set
+  // from DownloadItem::OnDownloadCompleting.
+  *intermediate_path = download_util::GetCrDownloadPath(item->full_path());
+  return true;
 }
 
 TabContents* ChromeDownloadManagerDelegate::
@@ -405,8 +422,8 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
     }
     // We know the final path, build it if necessary.
     if (state.path_uniquifier > 0) {
-      download_util::AppendNumberToPath(&(state.suggested_path),
-                                        state.path_uniquifier);
+      DownloadFile::AppendNumberToPath(&(state.suggested_path),
+                                       state.path_uniquifier);
       // Setting path_uniquifier to 0 to make sure we don't try to unique it
       // later on.
       state.path_uniquifier = 0;

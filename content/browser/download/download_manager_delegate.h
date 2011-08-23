@@ -33,6 +33,12 @@ class DownloadManagerDelegate {
                                   const FilePath& suggested_path,
                                   void* data) = 0;
 
+  // Allows the embedder to override the file path for the download while it's
+  // progress. Return false to leave the filename as item->full_path(), or
+  // return true and set |intermediate_path| with the intermediate path.
+  virtual bool OverrideIntermediatePath(DownloadItem* item,
+                                        FilePath* intermediate_path) = 0;
+
   // Called when the download system wants to alert a TabContents that a
   // download has started, but the TabConetnts has gone away. This lets an
   // delegate return an alternative TabContents. The delegate can return NULL.

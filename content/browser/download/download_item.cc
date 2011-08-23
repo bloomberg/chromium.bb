@@ -14,9 +14,9 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
+#include "content/browser/download/download_file.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager.h"
@@ -692,7 +692,7 @@ FilePath DownloadItem::GetTargetFilePath() const {
 FilePath DownloadItem::GetFileNameToReportUser() const {
   if (state_info_.path_uniquifier > 0) {
     FilePath name(state_info_.target_name);
-    download_util::AppendNumberToPath(&name, state_info_.path_uniquifier);
+    DownloadFile::AppendNumberToPath(&name, state_info_.path_uniquifier);
     return name;
   }
   return state_info_.target_name;

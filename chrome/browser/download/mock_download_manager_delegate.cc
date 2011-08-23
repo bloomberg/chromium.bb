@@ -20,6 +20,12 @@ void MockDownloadManagerDelegate::ChooseDownloadPath(
     void* data) {
 }
 
+bool MockDownloadManagerDelegate::OverrideIntermediatePath(
+    DownloadItem* item,
+    FilePath* intermediate_path) {
+  return false;
+}
+
 TabContents* MockDownloadManagerDelegate::
     GetAlternativeTabContentsToNotifyForDownload() {
   return NULL;

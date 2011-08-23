@@ -17,11 +17,11 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/download/download_file.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
@@ -353,12 +353,12 @@ bool CreateShortcutTask::CreateShortcut() {
     FilePath shortcut_file = shortcut_paths[i].Append(file_name).
         ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
 
-    int unique_number = download_util::GetUniquePathNumber(shortcut_file);
+    int unique_number = DownloadFile::GetUniquePathNumber(shortcut_file);
     if (unique_number == -1) {
       success = false;
       continue;
     } else if (unique_number > 0) {
-      download_util::AppendNumberToPath(&shortcut_file, unique_number);
+      DownloadFile::AppendNumberToPath(&shortcut_file, unique_number);
     }
 
     success &= file_util::CreateShortcutLink(chrome_exe.value().c_str(),

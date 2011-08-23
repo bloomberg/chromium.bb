@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/task.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_util.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
@@ -319,20 +318,8 @@ void DownloadManager::ContinueDownloadWithPath(DownloadItem* download,
 
   // Rename to intermediate name.
   FilePath download_path;
-  if (download->IsDangerous()) {
-    // The download is not safe.  We can now rename the file to its
-    // tentative name using RenameInProgressDownloadFile.
-    // NOTE: The |Rename| below will be a no-op for dangerous files, as we're
-    // renaming it to the same name.
+  if (!delegate_->OverrideIntermediatePath(download, &download_path))
     download_path = download->full_path();
-  } else {
-    // The download is a safe download.  We need to
-    // rename it to its intermediate '.crdownload' path.  The final
-    // name after user confirmation will be set from
-    // DownloadItem::OnDownloadCompleting.
-    download_path =
-        download_util::GetCrDownloadPath(download->full_path());
-  }
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

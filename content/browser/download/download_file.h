@@ -36,6 +36,26 @@ class DownloadFile : public BaseFile {
 
   virtual std::string DebugString() const;
 
+  // Appends the passed the number between parenthesis the path before the
+  // extension.
+  static void AppendNumberToPath(FilePath* path, int number);
+
+  // Attempts to find a number that can be appended to that path to make it
+  // unique. If |path| does not exist, 0 is returned.  If it fails to find such
+  // a number, -1 is returned.
+  static int GetUniquePathNumber(const FilePath& path);
+
+  static FilePath AppendSuffixToPath(const FilePath& path,
+                                     const FilePath::StringType& suffix);
+
+  // Same as GetUniquePathNumber, except that it also checks the existence
+  // of it with the given suffix.
+  // If |path| does not exist, 0 is returned.  If it fails to find such
+  // a number, -1 is returned.
+  static int GetUniquePathNumberWithSuffix(
+      const FilePath& path,
+      const FilePath::StringType& suffix);
+
  private:
   // The unique identifier for this download, assigned at creation by
   // the DownloadFileManager for its internal record keeping.

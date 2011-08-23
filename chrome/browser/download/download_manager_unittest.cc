@@ -568,10 +568,10 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
 
   // Construct the unique file name that normally would be created, but
   // which we will override.
-  int uniquifier = download_util::GetUniquePathNumber(new_path);
+  int uniquifier = DownloadFile::GetUniquePathNumber(new_path);
   FilePath unique_new_path = new_path;
   EXPECT_NE(0, uniquifier);
-  download_util::AppendNumberToPath(&unique_new_path, uniquifier);
+  DownloadFile::AppendNumberToPath(&unique_new_path, uniquifier);
 
   // Normally, the download system takes ownership of info, and is
   // responsible for deleting it.  In these unit tests, however, we
