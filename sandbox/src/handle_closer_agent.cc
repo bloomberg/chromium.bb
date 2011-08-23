@@ -92,7 +92,7 @@ bool HandleCloserAgent::CloseHandles() {
       if (NT_SUCCESS(0) && size == type_info_buffer.size())
         rc = STATUS_INFO_LENGTH_MISMATCH;
     }
-    if (!NT_SUCCESS(rc)) {
+    if (!NT_SUCCESS(rc) || !type_info->Name.Buffer) {
       ++invalid_count;
       continue;
     }
