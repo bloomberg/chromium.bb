@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_type.h"
-#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
 
 class AutofillField;
@@ -23,14 +22,17 @@ class AddressField : public FormField {
  public:
   static FormField* Parse(AutofillScanner* scanner);
 
-  // Tries to determine the billing/shipping type of this address.
-  AddressType FindType() const;
-
  protected:
   // FormField:
   virtual bool ClassifyField(FieldTypeMap* map) const OVERRIDE;
 
  private:
+  enum AddressType {
+    kGenericAddress = 0,
+    kBillingAddress,
+    kShippingAddress
+  };
+
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddress);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddressBilling);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseOneLineAddressShipping);
@@ -62,6 +64,9 @@ class AddressField : public FormField {
   // Looks for an address type in the given text, which the caller must
   // convert to lowercase.
   static AddressType AddressTypeFromText(const string16& text);
+
+  // Tries to determine the billing/shipping type of this address.
+  AddressType FindType() const;
 
   const AutofillField* company_;   // optional
   const AutofillField* address1_;

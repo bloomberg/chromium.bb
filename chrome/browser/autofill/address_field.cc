@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
+#include "chrome/browser/autofill/field_types.h"
 #include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -88,7 +89,7 @@ FormField* AddressField::Parse(AutofillScanner* scanner) {
   return NULL;
 }
 
-AddressType AddressField::FindType() const {
+AddressField::AddressType AddressField::FindType() const {
   // First look at the field name, which itself will sometimes contain
   // "bill" or "ship".
   if (company_) {
@@ -305,7 +306,8 @@ bool AddressField::ParseState(AutofillScanner* scanner,
                              &address_field->state_);
 }
 
-AddressType AddressField::AddressTypeFromText(const string16 &text) {
+AddressField::AddressType AddressField::AddressTypeFromText(
+    const string16 &text) {
   if (text.find(l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_TYPE_SAME_AS_RE))
           != string16::npos ||
       text.find(l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_TYPE_USE_MY_RE))

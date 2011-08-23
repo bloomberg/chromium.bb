@@ -8,12 +8,6 @@
 
 #include <set>
 
-enum AddressType {
-  kGenericAddress = 0,
-  kBillingAddress,
-  kShippingAddress
-};
-
 // NOTE: This list MUST not be modified.  The server aggregates and stores these
 // types over several versions, so we must remain fully compatible with the
 // Autofill server, which is itself backward-compatible.  The list must be kept
