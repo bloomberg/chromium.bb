@@ -26,7 +26,8 @@ namespace ppapi_proxy {
 
 namespace {
 
-const int32 kTransferBufferSize = 512 * 1024;
+const int32 kRingBufferSize = 4096 * 1024;
+const int32 kTransferBufferSize = 4096 * 1024;
 
 int32_t GetNumAttribs(const int32_t* attrib_list) {
   int32_t num = 0;
@@ -172,9 +173,11 @@ bool PluginGraphics3D::InitFromBrowserResource(PP_Resource res) {
 
   // Create and initialize the objects required to issue GLES2 calls.
   command_buffer_.reset(new CommandBufferNacl(res, PluginCore::GetInterface()));
-  command_buffer_->Initialize(kTransferBufferSize);
+  command_buffer_->Initialize(kRingBufferSize);
   gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_.get()));
   gpu::Buffer buffer = command_buffer_->GetRingBuffer();
+  DebugPrintf("PluginGraphics3D::InitFromBrowserResource: buffer size: %d\n",
+      buffer.size);
   if (gles2_helper_->Initialize(buffer.size)) {
     // Request id -1 to signify 'don't care'
     int32 transfer_buffer_id =
