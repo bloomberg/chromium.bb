@@ -98,6 +98,17 @@ def main(argv):
     print 'Cannot find the src directory.'
     return 1
 
+  nacl_download_path = os.path.join(
+      GetSourceDirectory(), 'build', 'download_nacl_irt.py')
+  nacl_cwd = os.path.join(GetSourceDirectory(), '..')
+  if subprocess.call(['python', nacl_download_path], cwd=nacl_cwd) != 0:
+    # The error is not fatal - NaCl is still experimental.
+    print 'Failed to download NaCl integrated runtime files.'
+    print 'The NaCl-enabled build will fail. You can pass -Ddisable_nacl=1'
+    print 'to gyp as a workaround. For more info see'
+    print ('http://groups.google.com/a/chromium.org/group/chromium-dev/'
+           'browse_thread/thread/1fe6e2c3f9e78c2b')
+
   output_fullname = args[0] + '.tar.bz2'
   output_basename = os.path.basename(args[0])
 
