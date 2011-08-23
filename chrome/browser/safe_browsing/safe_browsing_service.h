@@ -42,6 +42,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace safe_browsing {
+class ClientSideDetectionService;
+}
+
 // Construction needs to happen on the main thread.
 class SafeBrowsingService
     : public base::RefCountedThreadSafe<SafeBrowsingService>,
@@ -251,6 +255,11 @@ class SafeBrowsingService
     return enabled_ && enable_download_protection_;
   }
 
+  safe_browsing::ClientSideDetectionService*
+      safe_browsing_detection_service() const {
+    return csd_service_.get();
+  }
+
   // Preference handling.
   static void RegisterPrefs(PrefService* prefs);
 
@@ -372,6 +381,10 @@ class SafeBrowsingService
   // the user checks the "Enable SafeBrowsing" option in the Advanced options
   // UI.
   void Start();
+
+  // Stops the SafeBrowsingService. This can be called when the safe browsing
+  // preference is disabled.
+  void Stop();
 
   // Called on the db thread to close the database.  See CloseDatabase().
   void OnCloseDatabase();
@@ -521,6 +534,10 @@ class SafeBrowsingService
 
   // Used to track creation and destruction of profiles on the UI thread.
   NotificationRegistrar prefs_registrar_;
+
+  // The ClientSideDetectionService is managed by the SafeBrowsingService,
+  // since its running state and lifecycle depends on SafeBrowsingService's.
+  scoped_ptr<safe_browsing::ClientSideDetectionService> csd_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

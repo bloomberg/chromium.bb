@@ -25,7 +25,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Mock;
+using ::testing::StrictMock;
 
 namespace safe_browsing {
 namespace {
@@ -35,6 +38,17 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
   virtual ~MockClientSideDetectionService() {}
 
   MOCK_METHOD1(EndFetchModel, void(ClientModelStatus));
+  MOCK_METHOD1(ScheduleFetchModel, void(int64));
+
+  void Schedule(int64) {
+    // Ignore the delay when testing.
+    StartFetchModel();
+  }
+
+  void Disable(int) {
+    // Ignore the status.
+    SetEnabled(false);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSideDetectionService);
@@ -43,6 +57,7 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
 ACTION(QuitCurrentMessageLoop) {
   MessageLoop::current()->Quit();
 }
+
 }  // namespace
 
 class ClientSideDetectionServiceTest : public TestingBrowserProcessTest {
@@ -172,6 +187,8 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
   // the real EndFetchModel.  It would reschedule a reload which might
   // make the test flaky.
   MockClientSideDetectionService service;
+  EXPECT_CALL(service, ScheduleFetchModel(_)).Times(1);
+  service.SetEnabled(true);
 
   // The model fetch failed.
   SetModelFetchResponse("blamodel", false /* failure */);
@@ -281,6 +298,7 @@ TEST_F(ClientSideDetectionServiceTest, FetchModelTest) {
 TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
   SetModelFetchResponse("bogus model", true /* success */);
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
+  csd_service_->SetEnabled(true);
   EXPECT_TRUE(csd_service_.get() != NULL);
   // We delete the client-side detection service class even though the callbacks
   // haven't run yet.
@@ -293,6 +311,7 @@ TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
 TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   SetModelFetchResponse("bogus model", true /* success */);
   csd_service_.reset(ClientSideDetectionService::Create(NULL));
+  csd_service_->SetEnabled(true);
 
   GURL url("http://a.com/");
   float score = 0.4f;  // Some random client score.
@@ -559,4 +578,72 @@ TEST_F(ClientSideDetectionServiceTest, ModelHasValidHashIds) {
   rule->set_feature(2, 1);
   EXPECT_TRUE(ClientSideDetectionService::ModelHasValidHashIds(model));
 }
+
+TEST_F(ClientSideDetectionServiceTest, SetEnabled) {
+  // Check that the model isn't downloaded until the service is enabled.
+  csd_service_.reset(ClientSideDetectionService::Create(NULL));
+  EXPECT_FALSE(csd_service_->enabled());
+  EXPECT_TRUE(csd_service_->model_fetcher_.get() == NULL);
+
+  // Use a MockClientSideDetectionService for the rest of the test, to avoid
+  // the scheduling delay.
+  MockClientSideDetectionService* service =
+      new StrictMock<MockClientSideDetectionService>();
+  csd_service_.reset(service);
+  EXPECT_FALSE(csd_service_->enabled());
+  EXPECT_TRUE(csd_service_->model_fetcher_.get() == NULL);
+  // No calls expected yet.
+  Mock::VerifyAndClearExpectations(service);
+
+  ClientSideModel model;
+  model.set_version(10);
+  model.set_max_words_per_term(4);
+  SetModelFetchResponse(model.SerializeAsString(), true /* success */);
+  EXPECT_CALL(*service, ScheduleFetchModel(_))
+      .WillOnce(Invoke(service, &MockClientSideDetectionService::Schedule));
+  EXPECT_CALL(*service, EndFetchModel(
+      ClientSideDetectionService::MODEL_SUCCESS))
+      .WillOnce(QuitCurrentMessageLoop());
+  csd_service_->SetEnabled(true);
+  EXPECT_TRUE(csd_service_->model_fetcher_.get() != NULL);
+  msg_loop_.Run();  // EndFetchModel will quit the message loop.
+  Mock::VerifyAndClearExpectations(service);
+
+  // Check that enabling again doesn't request the model.
+  csd_service_->SetEnabled(true);
+  // No calls expected.
+  Mock::VerifyAndClearExpectations(service);
+
+  // Check that disabling the service cancels pending requests.
+  EXPECT_CALL(*service, ScheduleFetchModel(_))
+      .WillOnce(Invoke(service, &MockClientSideDetectionService::Schedule));
+  csd_service_->SetEnabled(false);
+  csd_service_->SetEnabled(true);
+  Mock::VerifyAndClearExpectations(service);
+  EXPECT_TRUE(csd_service_->model_fetcher_.get() != NULL);
+  csd_service_->SetEnabled(false);
+  EXPECT_TRUE(csd_service_->model_fetcher_.get() == NULL);
+  msg_loop_.RunAllPending();
+  // No calls expected.
+  Mock::VerifyAndClearExpectations(service);
+
+  // Requests always return false when the service is disabled.
+  ClientPhishingResponse response;
+  response.set_phishy(true);
+  SetClientReportPhishingResponse(response.SerializeAsString(),
+                                  true /* success */);
+  EXPECT_FALSE(SendClientReportPhishingRequest(GURL("http://a.com/"), 0.4f));
+
+  // Pending requests also return false if the service is disabled before they
+  // report back.
+  EXPECT_CALL(*service, ScheduleFetchModel(_))
+      .WillOnce(Invoke(service, &MockClientSideDetectionService::Schedule));
+  EXPECT_CALL(*service, EndFetchModel(
+      ClientSideDetectionService::MODEL_NOT_CHANGED))
+      .WillOnce(Invoke(service, &MockClientSideDetectionService::Disable));
+  csd_service_->SetEnabled(true);
+  EXPECT_FALSE(SendClientReportPhishingRequest(GURL("http://a.com/"), 0.4f));
+  Mock::VerifyAndClearExpectations(service);
+}
+
 }  // namespace safe_browsing

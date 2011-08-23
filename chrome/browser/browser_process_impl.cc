@@ -48,7 +48,6 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
-#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
@@ -135,7 +134,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_browser_policy_connector_(false),
       created_notification_ui_manager_(false),
       created_safe_browsing_service_(false),
-      created_safe_browsing_detection_service_(false),
       module_ref_count_(0),
       did_start_(false),
       checked_for_new_frames_(false),
@@ -180,14 +178,18 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
   // We need to destroy the MetricsService, GoogleURLTracker,
   // IntranetRedirectDetector, and SafeBrowsing ClientSideDetectionService
-  // before the io_thread_ gets destroyed, since their destructors can call the
-  // URLFetcher destructor, which does a PostDelayedTask operation on the IO
-  // thread. (The IO thread will handle that URLFetcher operation before going
-  // away.)
+  // (owned by the SafeBrowsingService) before the io_thread_ gets destroyed,
+  // since their destructors can call the URLFetcher destructor, which does a
+  // PostDelayedTask operation on the IO thread.
+  // (The IO thread will handle that URLFetcher operation before going away.)
   metrics_service_.reset();
   google_url_tracker_.reset();
   intranet_redirect_detector_.reset();
-  safe_browsing_detection_service_.reset();
+#if defined(ENABLE_SAFE_BROWSING)
+  if (safe_browsing_service_.get()) {
+    safe_browsing_service()->ShutDown();
+  }
+#endif
 
   // Need to clear the desktop notification balloons before the io_thread_ and
   // before the profiles, since if there are any still showing we will access
@@ -212,11 +214,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
     devtools_legacy_handler_->Stop();
     devtools_legacy_handler_ = NULL;
   }
-
-#if defined(ENABLE_SAFE_BROWSING)
-  if (safe_browsing_service_.get())
-    safe_browsing_service()->ShutDown();
-#endif
 
   if (resource_dispatcher_host_.get()) {
     // Cancel pending requests and prevent new requests.
@@ -626,9 +623,9 @@ SafeBrowsingService* BrowserProcessImpl::safe_browsing_service() {
 safe_browsing::ClientSideDetectionService*
     BrowserProcessImpl::safe_browsing_detection_service() {
   DCHECK(CalledOnValidThread());
-  if (!created_safe_browsing_detection_service_)
-    CreateSafeBrowsingDetectionService();
-  return safe_browsing_detection_service_.get();
+  if (safe_browsing_service())
+    return safe_browsing_service()->safe_browsing_detection_service();
+  return NULL;
 }
 
 bool BrowserProcessImpl::plugin_finder_disabled() const {
@@ -985,35 +982,6 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
 #if defined(ENABLE_SAFE_BROWSING)
   safe_browsing_service_ = SafeBrowsingService::CreateSafeBrowsingService();
   safe_browsing_service_->Initialize();
-#endif
-}
-
-void BrowserProcessImpl::CreateSafeBrowsingDetectionService() {
-  DCHECK(safe_browsing_detection_service_.get() == NULL);
-  // Set this flag to true so that we don't retry indefinitely to
-  // create the service class if there was an error.
-  created_safe_browsing_detection_service_ = true;
-
-#if defined(ENABLE_SAFE_BROWSING)
-  if (IsSafeBrowsingDetectionServiceEnabled()) {
-    safe_browsing_detection_service_.reset(
-        safe_browsing::ClientSideDetectionService::Create(
-            g_browser_process->system_request_context()));
-  }
-#endif
-}
-
-bool BrowserProcessImpl::IsSafeBrowsingDetectionServiceEnabled() {
-  // The safe browsing client-side detection is enabled only if the switch is
-  // not disabled and when safe browsing related stats are allowed to be
-  // collected.
-#if defined(ENABLE_SAFE_BROWSING) && !defined(OS_CHROMEOS)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableClientSidePhishingDetection) &&
-      safe_browsing_service() &&
-      safe_browsing_service()->CanReportStats();
-#else
-  return false;
 #endif
 }
 

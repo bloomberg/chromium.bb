@@ -63,7 +63,8 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
 
 ClientSideDetectionService::ClientSideDetectionService(
     net::URLRequestContextGetter* request_context_getter)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : enabled_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       request_context_getter_(request_context_getter) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
@@ -86,15 +87,37 @@ ClientSideDetectionService* ClientSideDetectionService::Create(
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.InitPrivateNetworksFailed", 1);
     return NULL;
   }
-  // We fetch the model at every browser restart.  In a lot of cases the model
-  // will be in the cache so it won't actually be fetched from the network.
-  // We delay the first model fetch to avoid slowing down browser startup.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      service->method_factory_.NewRunnableMethod(
-          &ClientSideDetectionService::StartFetchModel),
-      kInitialClientModelFetchDelayMs);
   return service.release();
+}
+
+void ClientSideDetectionService::SetEnabled(bool enabled) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (enabled == enabled_)
+    return;
+  enabled_ = enabled;
+  if (enabled_) {
+    // Refresh the model when the service is enabled.  This can happen when the
+    // preference is toggled, or early during startup if the preference is
+    // already enabled. In a lot of cases the model will be in the cache so it
+    // won't actually be fetched from the network.
+    // We delay the first model fetch to avoid slowing down browser startup.
+    ScheduleFetchModel(kInitialClientModelFetchDelayMs);
+  } else {
+    // Cancel pending requests.
+    model_fetcher_.reset();
+    // Invoke pending callbacks with a false verdict.
+    for (std::map<const URLFetcher*, ClientReportInfo*>::iterator it =
+             client_phishing_reports_.begin();
+         it != client_phishing_reports_.end(); ++it) {
+      ClientReportInfo* info = it->second;
+      if (info->callback.get())
+        info->callback->Run(info->phishing_url, false);
+    }
+    STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
+                                   client_phishing_reports_.end());
+    client_phishing_reports_.clear();
+    cache_.clear();
+  }
 }
 
 void ClientSideDetectionService::SendClientReportPhishingRequest(
@@ -198,15 +221,25 @@ void ClientSideDetectionService::SendModelToRenderers() {
   }
 }
 
+void ClientSideDetectionService::ScheduleFetchModel(int64 delay_ms) {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &ClientSideDetectionService::StartFetchModel),
+      delay_ms);
+}
+
 void ClientSideDetectionService::StartFetchModel() {
-  // Start fetching the model either from the cache or possibly from the
-  // network if the model isn't in the cache.
-  model_fetcher_.reset(URLFetcher::Create(0 /* ID is not used */,
-                                          GURL(kClientModelUrl),
-                                          URLFetcher::GET,
-                                          this));
-  model_fetcher_->set_request_context(request_context_getter_.get());
-  model_fetcher_->Start();
+  if (enabled_) {
+    // Start fetching the model either from the cache or possibly from the
+    // network if the model isn't in the cache.
+    model_fetcher_.reset(URLFetcher::Create(0 /* ID is not used */,
+                                            GURL(kClientModelUrl),
+                                            URLFetcher::GET,
+                                            this));
+    model_fetcher_->set_request_context(request_context_getter_.get());
+    model_fetcher_->Start();
+  }
 }
 
 void ClientSideDetectionService::EndFetchModel(ClientModelStatus status) {
@@ -230,11 +263,7 @@ void ClientSideDetectionService::EndFetchModel(ClientModelStatus status) {
   model_max_age_.reset();
 
   // Schedule the next model reload.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &ClientSideDetectionService::StartFetchModel),
-      delay_ms);
+  ScheduleFetchModel(delay_ms);
 }
 
 void ClientSideDetectionService::StartClientReportPhishingRequest(
@@ -243,6 +272,12 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ClientPhishingRequest> request(verdict);
   scoped_ptr<ClientReportPhishingRequestCallback> cb(callback);
+
+  if (!enabled_) {
+    if (cb.get())
+      cb->Run(GURL(request->url()), false);
+    return;
+  }
 
   std::string request_data;
   if (!request->SerializeToString(&request_data)) {

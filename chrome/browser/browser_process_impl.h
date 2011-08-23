@@ -259,10 +259,6 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_safe_browsing_service_;
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
 
-  bool created_safe_browsing_detection_service_;
-  scoped_ptr<safe_browsing::ClientSideDetectionService>
-     safe_browsing_detection_service_;
-
   unsigned int module_ref_count_;
   bool did_start_;
 
