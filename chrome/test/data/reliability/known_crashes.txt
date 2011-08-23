@@ -197,4 +197,4 @@ PREFIX: messageloop::calculatedelayedruntime___messageloop::posttask___media::ff
 REGEX: (^|`anonymous namespace'::purecall____purecall___)renderviewhost::onmessagereceived___browserrenderprocesshost::onchannelerror___(`anonymous namespace'|base::subtle)::taskclosureadapter::run___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::runwithdispatcher___messageloop::runinternal___messageloopforui::run___`anonymous namespace'::runuimessageloop___browsermain___`anonymous namespace'::runnamedprocesstypemain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
 
 # 93459
-PREFIX: webcore::htmlsourcetracker::sourcefortoken___webcore::htmldocumentparser::sourcefortoken___webcore::xssauditor::eraseattributeifinjected___webcore::xssauditor::filterscripttoken___webcore::xssauditor::filtertokeninitial___webcore::xssauditor::filtertoken___webcore::htmldocumentparser::pumptokenizer___webcore
+PREFIX: webcore::htmlsourcetracker::sourcefortoken___webcore::htmldocumentparser::sourcefortoken___webcore::xssauditor::eraseattributeifinjected___webcore
