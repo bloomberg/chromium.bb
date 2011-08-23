@@ -131,7 +131,7 @@ void SettingLevelBubble::ShowBubble(double percent, bool enabled) {
 
     bubble_ = Bubble::ShowFocusless(parent_widget,
                                     position_relative_to,
-                                    views::BubbleBorder::FLOAT,
+                                    BubbleBorder::FLOAT,
                                     view_,  // contents
                                     this,   // delegate
                                     true);  // show while screen is locked

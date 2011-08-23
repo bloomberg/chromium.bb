@@ -15,7 +15,6 @@ static const int kTopMargin = 6;
 static const int kRightMargin = 6;
 static const int kBottomMargin = 9;
 
-
 BorderContents::BorderContents()
     : bubble_border_(NULL),
       content_margins_(kTopMargin, kLeftMargin, kBottomMargin, kRightMargin) {
@@ -23,15 +22,14 @@ BorderContents::BorderContents()
 
 void BorderContents::Init() {
   // Default arrow location.
-  views::BubbleBorder::ArrowLocation arrow_location =
-      views::BubbleBorder::TOP_LEFT;
+  BubbleBorder::ArrowLocation arrow_location = BubbleBorder::TOP_LEFT;
   if (base::i18n::IsRTL())
-    arrow_location = views::BubbleBorder::horizontal_mirror(arrow_location);
+    arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
   DCHECK(!bubble_border_);
 
-  bubble_border_ = new views::BubbleBorder(arrow_location);
+  bubble_border_ = new BubbleBorder(arrow_location);
   set_border(bubble_border_);
-  set_background(new views::BubbleBackground(bubble_border_));
+  set_background(new BubbleBackground(bubble_border_));
 }
 
 void BorderContents::SetBackgroundColor(SkColor color) {
@@ -40,13 +38,13 @@ void BorderContents::SetBackgroundColor(SkColor color) {
 
 void BorderContents::SizeAndGetBounds(
     const gfx::Rect& position_relative_to,
-    views::BubbleBorder::ArrowLocation arrow_location,
+    BubbleBorder::ArrowLocation arrow_location,
     bool allow_bubble_offscreen,
     const gfx::Size& contents_size,
     gfx::Rect* contents_bounds,
     gfx::Rect* window_bounds) {
   if (base::i18n::IsRTL())
-    arrow_location = views::BubbleBorder::horizontal_mirror(arrow_location);
+    arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
   bubble_border_->set_arrow_location(arrow_location);
   // Set the border.
   set_border(bubble_border_);
@@ -95,7 +93,7 @@ void BorderContents::MirrorArrowIfOffScreen(
     const gfx::Rect& position_relative_to,
     const gfx::Rect& monitor_bounds,
     const gfx::Size& local_contents_size,
-    views::BubbleBorder::ArrowLocation* arrow_location,
+    BubbleBorder::ArrowLocation* arrow_location,
     gfx::Rect* window_bounds) {
   // If the bounds don't fit, move the arrow to its mirrored position to see if
   // it improves things.
@@ -103,11 +101,10 @@ void BorderContents::MirrorArrowIfOffScreen(
   if (ComputeOffScreenInsets(monitor_bounds, *window_bounds,
                              &offscreen_insets) &&
       GetInsetsLength(offscreen_insets, vertical) > 0) {
-    views::BubbleBorder::ArrowLocation original_arrow_location =
-        *arrow_location;
-     *arrow_location =
-         vertical ? views::BubbleBorder::vertical_mirror(*arrow_location) :
-                    views::BubbleBorder::horizontal_mirror(*arrow_location);
+    BubbleBorder::ArrowLocation original_arrow_location = *arrow_location;
+    *arrow_location =
+        vertical ? BubbleBorder::vertical_mirror(*arrow_location) :
+                   BubbleBorder::horizontal_mirror(*arrow_location);
 
     // Change the arrow and get the new bounds.
     bubble_border_->set_arrow_location(*arrow_location);

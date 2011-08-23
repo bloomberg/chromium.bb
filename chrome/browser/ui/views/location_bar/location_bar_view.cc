@@ -52,7 +52,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/skia_util.h"
-#include "views/bubble/bubble_border.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/drag_utils.h"
@@ -719,8 +718,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     paint.setAntiAlias(true);
     // The round corners of the omnibox match the round corners of the dropdown
     // below, and all our other bubbles.
-    const SkScalar radius(SkIntToScalar(
-        views::BubbleBorder::GetCornerRadius()));
+    const SkScalar radius(SkIntToScalar(BubbleBorder::GetCornerRadius()));
     bounds.Inset(kNormalHorizontalEdgeThickness, 0);
     canvas->AsCanvasSkia()->drawRoundRect(gfx::RectToSkRect(bounds), radius,
                                           radius, paint);
@@ -1009,8 +1007,7 @@ void LocationBarView::ShowFirstRunBubbleInternal(
     origin.set_x(width() - origin.x());
   views::View::ConvertPointToScreen(this, &origin);
   FirstRunBubble::Show(browser_->profile(), GetWidget(),
-                       gfx::Rect(origin, gfx::Size()),
-                       views::BubbleBorder::TOP_LEFT, bubble_type);
+      gfx::Rect(origin, gfx::Size()), BubbleBorder::TOP_LEFT, bubble_type);
 #endif
 }
 

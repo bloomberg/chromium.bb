@@ -32,7 +32,7 @@ void BorderWidgetWin::InitBorderWidgetWin(BorderContents* border_contents,
 
 gfx::Rect BorderWidgetWin::SizeAndGetBounds(
     const gfx::Rect& position_relative_to,
-    views::BubbleBorder::ArrowLocation arrow_location,
+    BubbleBorder::ArrowLocation arrow_location,
     const gfx::Size& contents_size) {
   // Ask the border view to calculate our bounds (and our contents').
   gfx::Rect contents_bounds;

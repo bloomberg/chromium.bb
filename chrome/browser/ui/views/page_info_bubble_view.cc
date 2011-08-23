@@ -499,7 +499,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
       new PageInfoBubbleView(parent, profile, url, ssl, show_history);
   Bubble* bubble =
       Bubble::Show(browser_view->GetWidget(), bounds,
-                   views::BubbleBorder::TOP_LEFT,
+                   BubbleBorder::TOP_LEFT,
                    page_info_bubble, page_info_bubble);
   page_info_bubble->set_bubble(bubble);
 }

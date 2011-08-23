@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_BUBBLE_H_
 #pragma once
 
-#include "views/bubble/bubble_border.h"
+#include "chrome/browser/ui/views/bubble/bubble_border.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 
@@ -48,7 +48,7 @@ class BrowserBubble {
   BrowserBubble(views::View* view,
                 views::Widget* frame,
                 const gfx::Rect& relative_to,
-                views::BubbleBorder::ArrowLocation arrow_location);
+                BubbleBorder::ArrowLocation arrow_location);
   virtual ~BrowserBubble();
 
   // Call manually if you need to detach the bubble from tracking the browser's
@@ -121,7 +121,7 @@ class BrowserBubble {
   gfx::Rect relative_to_;
 
   // Arrow location of this bubble.
-  views::BubbleBorder::ArrowLocation arrow_location_;
+  BubbleBorder::ArrowLocation arrow_location_;
 
   // The bounds relative to the frame.
   gfx::Rect bounds_;

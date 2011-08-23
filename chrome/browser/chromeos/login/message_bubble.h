@@ -42,7 +42,7 @@ class MessageBubble : public Bubble,
   // |links| is an optional vector of links texts.
   static MessageBubble* Show(views::Widget* parent,
                              const gfx::Rect& position_relative_to,
-                             views::BubbleBorder::ArrowLocation arrow_location,
+                             BubbleBorder::ArrowLocation arrow_location,
                              SkBitmap* image,
                              const std::wstring& text,
                              const std::wstring& help,
@@ -53,7 +53,7 @@ class MessageBubble : public Bubble,
   static MessageBubble* ShowWithLinks(
       views::Widget* parent,
       const gfx::Rect& position_relative_to,
-      views::BubbleBorder::ArrowLocation arrow_location,
+      BubbleBorder::ArrowLocation arrow_location,
       SkBitmap* image,
       const std::wstring& text,
       const std::vector<std::wstring>& links,
@@ -62,14 +62,13 @@ class MessageBubble : public Bubble,
   // Create and show bubble which does not grab pointer.  This creates
   // a TYPE_CHILD NativeWidgetGtk and |position_relative_to| must be in parent's
   // coordinates.
-  static MessageBubble* ShowNoGrab(
-      views::Widget* parent,
-      const gfx::Rect& position_relative_to,
-      views::BubbleBorder::ArrowLocation arrow_location,
-      SkBitmap* image,
-      const std::wstring& text,
-      const std::wstring& help,
-      MessageBubbleDelegate* delegate);
+  static MessageBubble* ShowNoGrab(views::Widget* parent,
+                                   const gfx::Rect& position_relative_to,
+                                   BubbleBorder::ArrowLocation arrow_location,
+                                   SkBitmap* image,
+                                   const std::wstring& text,
+                                   const std::wstring& help,
+                                   MessageBubbleDelegate* delegate);
 
   // Overridden from NativeWidgetGtk.
   virtual void Close() OVERRIDE;

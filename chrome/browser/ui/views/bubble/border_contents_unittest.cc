@@ -15,7 +15,7 @@ class TestBorderContents : public BorderContents {
     monitor_bounds_ = bounds;
   }
 
-  views::BubbleBorder* bubble_border() const { return bubble_border_; }
+  BubbleBorder* bubble_border() const { return bubble_border_; }
 
  protected:
   virtual gfx::Rect GetMonitorBounds(const gfx::Rect& rect) {
@@ -44,16 +44,16 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   border_contents.set_monitor_bounds(gfx::Rect(0, 0, 1000, 1000));
   border_contents.SizeAndGetBounds(
       gfx::Rect(100, 100, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::TOP_LEFT,
+      BubbleBorder::TOP_LEFT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   // The arrow shouldn't have changed from TOP_LEFT.
-  views::BubbleBorder::ArrowLocation arrow_location =
+  BubbleBorder::ArrowLocation arrow_location =
       border_contents.bubble_border()->arrow_location();
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_GT(window_bounds.x(), xposition);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
@@ -61,15 +61,15 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   // Test bubble not fitting on left.
   border_contents.SizeAndGetBounds(
       gfx::Rect(100, 100, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::TOP_RIGHT,
+      BubbleBorder::TOP_RIGHT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   arrow_location = border_contents.bubble_border()->arrow_location();
   // The arrow should have changed to TOP_LEFT.
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_GT(window_bounds.x(), xposition);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
@@ -77,15 +77,15 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   // Test bubble not fitting on left or top.
   border_contents.SizeAndGetBounds(
       gfx::Rect(100, 100, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::BOTTOM_RIGHT,
+      BubbleBorder::BOTTOM_RIGHT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   arrow_location = border_contents.bubble_border()->arrow_location();
   // The arrow should have changed to TOP_LEFT.
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_GT(window_bounds.x(), xposition);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
@@ -93,15 +93,15 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   // Test bubble not fitting on top.
   border_contents.SizeAndGetBounds(
       gfx::Rect(100, 100, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::BOTTOM_LEFT,
+      BubbleBorder::BOTTOM_LEFT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   arrow_location = border_contents.bubble_border()->arrow_location();
   // The arrow should have changed to TOP_LEFT.
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_GT(window_bounds.x(), xposition);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
@@ -109,15 +109,15 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   // Test bubble not fitting on top and right.
   border_contents.SizeAndGetBounds(
       gfx::Rect(900, 100, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::BOTTOM_LEFT,
+      BubbleBorder::BOTTOM_LEFT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   arrow_location = border_contents.bubble_border()->arrow_location();
   // The arrow should have changed to TOP_RIGHT.
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_FALSE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_FALSE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
@@ -125,15 +125,15 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
  // Test bubble not fitting on right.
   border_contents.SizeAndGetBounds(
       gfx::Rect(900, 100, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::TOP_LEFT,
+      BubbleBorder::TOP_LEFT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   arrow_location = border_contents.bubble_border()->arrow_location();
   // The arrow should have changed to TOP_RIGHT.
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_FALSE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_FALSE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
   EXPECT_GT(window_bounds.y(), 100 + 50 - 10);  // -10 to roughly compensate for
                                                 // arrow overlap.
@@ -141,15 +141,15 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   // Test bubble not fitting on bottom and right.
   border_contents.SizeAndGetBounds(
       gfx::Rect(900, 900, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::TOP_LEFT,
+      BubbleBorder::TOP_LEFT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   arrow_location = border_contents.bubble_border()->arrow_location();
   // The arrow should have changed to BOTTOM_RIGHT.
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_FALSE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_FALSE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_FALSE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_FALSE(BubbleBorder::is_arrow_on_left(arrow_location));
   EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
   EXPECT_LT(window_bounds.y(), 900 - 500 - 15);  // -15 to roughly compensate
                                                  // for arrow height.
@@ -157,15 +157,15 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   // Test bubble not fitting at the bottom.
   border_contents.SizeAndGetBounds(
       gfx::Rect(100, 900, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::TOP_LEFT,
+      BubbleBorder::TOP_LEFT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   arrow_location = border_contents.bubble_border()->arrow_location();
   // The arrow should have changed to BOTTOM_LEFT.
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_FALSE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_FALSE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   // The window should be right aligned with the position_relative_to.
   EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
   EXPECT_LT(window_bounds.y(), 900 - 500 - 15);  // -15 to roughly compensate
@@ -174,15 +174,15 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
   // Test bubble not fitting at the bottom and left.
   border_contents.SizeAndGetBounds(
       gfx::Rect(100, 900, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::TOP_RIGHT,
+      BubbleBorder::TOP_RIGHT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
   arrow_location = border_contents.bubble_border()->arrow_location();
   // The arrow should have changed to BOTTOM_LEFT.
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_FALSE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_FALSE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
   // The window should be right aligned with the position_relative_to.
   EXPECT_LT(window_bounds.x(), 900 + 50 - 500);
   EXPECT_LT(window_bounds.y(), 900 - 500 - 15);  // -15 to roughly compensate
@@ -199,18 +199,18 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBoundsDontMoveArrow) {
   border_contents.set_monitor_bounds(gfx::Rect(0, 0, 1000, 1000));
   border_contents.SizeAndGetBounds(
       gfx::Rect(400, 100, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::TOP_LEFT,
+      BubbleBorder::TOP_LEFT,
       false,                        // |allow_bubble_offscreen|
       gfx::Size(500, 700),          // |contents_size|
       &contents_bounds, &window_bounds);
 
   // The arrow should not have changed, as it would make it the bubble even more
   // offscreen.
-  views::BubbleBorder::ArrowLocation arrow_location =
+  BubbleBorder::ArrowLocation arrow_location =
       border_contents.bubble_border()->arrow_location();
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_left(arrow_location));
 }
 
 // Test that the 'allow offscreen' prevents the bubble from moving.
@@ -222,17 +222,17 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBoundsAllowOffscreen) {
   border_contents.set_monitor_bounds(gfx::Rect(0, 0, 1000, 1000));
   border_contents.SizeAndGetBounds(
       gfx::Rect(100, 900, 50, 50),  // |position_relative_to|
-      views::BubbleBorder::TOP_RIGHT,
+      BubbleBorder::TOP_RIGHT,
       true,                         // |allow_bubble_offscreen|
       gfx::Size(500, 500),          // |contents_size|
       &contents_bounds, &window_bounds);
 
   // The arrow should not have changed (eventhough the bubble does not fit).
-  views::BubbleBorder::ArrowLocation arrow_location =
+  BubbleBorder::ArrowLocation arrow_location =
       border_contents.bubble_border()->arrow_location();
-  EXPECT_TRUE(views::BubbleBorder::has_arrow(arrow_location));
-  EXPECT_TRUE(views::BubbleBorder::is_arrow_on_top(arrow_location));
-  EXPECT_FALSE(views::BubbleBorder::is_arrow_on_left(arrow_location));
+  EXPECT_TRUE(BubbleBorder::has_arrow(arrow_location));
+  EXPECT_TRUE(BubbleBorder::is_arrow_on_top(arrow_location));
+  EXPECT_FALSE(BubbleBorder::is_arrow_on_left(arrow_location));
   // The coordinates should be pointing to 'positive relative to' from
   // TOP_RIGHT.
   EXPECT_LT(window_bounds.x(), 100 + 50 - 500);
