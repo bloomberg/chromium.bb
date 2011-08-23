@@ -249,6 +249,12 @@ class FileSystemOperation {
   // requesting process.
   base::ProcessHandle peer_handle_;
 
+  // Used to keep a virtual path around while we check for quota.
+  // If an operation needs only one path, use src_virtual_path_, even if it's a
+  // write.
+  FilePath src_virtual_path_;
+  FilePath dest_virtual_path_;
+
   // Options for CreateFile and CreateDirectory.
   bool exclusive_;
   bool recursive_;

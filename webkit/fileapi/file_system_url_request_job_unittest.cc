@@ -147,7 +147,6 @@ class FileSystemURLRequestJobTest : public testing::Test {
         sandbox_provider()->GetFileSystemFileUtil();
     FileSystemOperationContext context(file_system_context_, file_util);
     context.set_src_origin_url(GURL("http://remote"));
-    context.set_src_virtual_path(path);
     context.set_src_type(fileapi::kFileSystemTypeTemporary);
     context.set_allowed_bytes_growth(1024);
 
@@ -165,7 +164,6 @@ class FileSystemURLRequestJobTest : public testing::Test {
         sandbox_provider()->GetFileSystemFileUtil();
     FileSystemOperationContext context(file_system_context_, file_util);
     context.set_src_origin_url(GURL("http://remote"));
-    context.set_src_virtual_path(path);
     context.set_src_type(fileapi::kFileSystemTypeTemporary);
     context.set_allowed_bytes_growth(1024);
 

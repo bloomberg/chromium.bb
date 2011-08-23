@@ -74,19 +74,17 @@ void FileSystemOperation::CreateFile(const GURL& path,
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateFile;
 #endif
-  FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
   FileSystemFileUtil* file_system_file_util;
   if (!VerifyFileSystemPathForWrite(
-      path, true /* create */, &origin_url, &type, &virtual_path,
+      path, true /* create */, &origin_url, &type, &src_virtual_path_,
       &file_system_file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  file_system_operation_context_.set_src_virtual_path(virtual_path);
   if (!file_system_operation_context_.src_file_system_file_util())
     file_system_operation_context_.set_src_file_system_file_util(
         file_system_file_util);
@@ -109,7 +107,7 @@ void FileSystemOperation::DelayedCreateFileForQuota(
   FileSystemFileUtilProxy::EnsureFileExists(
       file_system_operation_context_,
       proxy_,
-      file_system_operation_context_.src_virtual_path(),
+      src_virtual_path_,
       callback_factory_.NewCallback(
           exclusive_ ? &FileSystemOperation::DidEnsureFileExistsExclusive
                      : &FileSystemOperation::DidEnsureFileExistsNonExclusive));
@@ -122,20 +120,18 @@ void FileSystemOperation::CreateDirectory(const GURL& path,
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCreateDirectory;
 #endif
-  FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
   FileSystemFileUtil* file_system_file_util;
 
   if (!VerifyFileSystemPathForWrite(
-      path, true /* create */, &origin_url, &type, &virtual_path,
+      path, true /* create */, &origin_url, &type, &src_virtual_path_,
       &file_system_file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  file_system_operation_context_.set_src_virtual_path(virtual_path);
   if (!file_system_operation_context_.src_file_system_file_util())
     file_system_operation_context_.set_src_file_system_file_util(
         file_system_file_util);
@@ -159,7 +155,7 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
   FileSystemFileUtilProxy::CreateDirectory(
       file_system_operation_context_,
       proxy_,
-      file_system_operation_context_.src_virtual_path(),
+      src_virtual_path_,
       exclusive_,
       recursive_,
       callback_factory_.NewCallback(
@@ -172,8 +168,6 @@ void FileSystemOperation::Copy(const GURL& src_path,
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationCopy;
 #endif
-  FilePath virtual_path_0;
-  FilePath virtual_path_1;
   GURL src_origin_url;
   GURL dest_origin_url;
   FileSystemType src_type;
@@ -182,9 +176,9 @@ void FileSystemOperation::Copy(const GURL& src_path,
   FileSystemFileUtil* dest_file_system_file_util;
 
   if (!VerifyFileSystemPathForRead(src_path, &src_origin_url, &src_type,
-        &virtual_path_0, &src_file_system_file_util) ||
+        &src_virtual_path_, &src_file_system_file_util) ||
       !VerifyFileSystemPathForWrite(dest_path, true /* create */,
-          &dest_origin_url, &dest_type, &virtual_path_1,
+          &dest_origin_url, &dest_type, &dest_virtual_path_,
           &dest_file_system_file_util)) {
     delete this;
     return;
@@ -193,8 +187,6 @@ void FileSystemOperation::Copy(const GURL& src_path,
   file_system_operation_context_.set_dest_origin_url(dest_origin_url);
   file_system_operation_context_.set_src_type(src_type);
   file_system_operation_context_.set_dest_type(dest_type);
-  file_system_operation_context_.set_src_virtual_path(virtual_path_0);
-  file_system_operation_context_.set_dest_virtual_path(virtual_path_1);
   if (!file_system_operation_context_.src_file_system_file_util())
     file_system_operation_context_.set_src_file_system_file_util(
         src_file_system_file_util);
@@ -219,8 +211,8 @@ void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
   FileSystemFileUtilProxy::Copy(
       file_system_operation_context_,
       proxy_,
-      file_system_operation_context_.src_virtual_path(),
-      file_system_operation_context_.dest_virtual_path(),
+      src_virtual_path_,
+      dest_virtual_path_,
       callback_factory_.NewCallback(
         &FileSystemOperation::DidFinishFileOperation));
 }
@@ -231,8 +223,6 @@ void FileSystemOperation::Move(const GURL& src_path,
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationMove;
 #endif
-  FilePath virtual_path_0;
-  FilePath virtual_path_1;
   GURL src_origin_url;
   GURL dest_origin_url;
   FileSystemType src_type;
@@ -241,9 +231,9 @@ void FileSystemOperation::Move(const GURL& src_path,
   FileSystemFileUtil* dest_file_system_file_util;
 
   if (!VerifyFileSystemPathForWrite(src_path, false, &src_origin_url, &src_type,
-        &virtual_path_0, &src_file_system_file_util) ||
+        &src_virtual_path_, &src_file_system_file_util) ||
       !VerifyFileSystemPathForWrite(dest_path, true /* create */,
-          &dest_origin_url, &dest_type, &virtual_path_1,
+          &dest_origin_url, &dest_type, &dest_virtual_path_,
           &dest_file_system_file_util)) {
     delete this;
     return;
@@ -252,8 +242,6 @@ void FileSystemOperation::Move(const GURL& src_path,
   file_system_operation_context_.set_dest_origin_url(dest_origin_url);
   file_system_operation_context_.set_src_type(src_type);
   file_system_operation_context_.set_dest_type(dest_type);
-  file_system_operation_context_.set_src_virtual_path(virtual_path_0);
-  file_system_operation_context_.set_dest_virtual_path(virtual_path_1);
   if (!file_system_operation_context_.src_file_system_file_util())
     file_system_operation_context_.set_src_file_system_file_util(
         src_file_system_file_util);
@@ -278,8 +266,8 @@ void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
   FileSystemFileUtilProxy::Move(
       file_system_operation_context_,
       proxy_,
-      file_system_operation_context_.src_virtual_path(),
-      file_system_operation_context_.dest_virtual_path(),
+      src_virtual_path_,
+      dest_virtual_path_,
       callback_factory_.NewCallback(
         &FileSystemOperation::DidFinishFileOperation));
 }
@@ -423,18 +411,16 @@ void FileSystemOperation::Write(
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationWrite;
 #endif
-  FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
   FileSystemFileUtil* file_system_file_util;
   if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
-      &type, &virtual_path, &file_system_file_util)) {
+      &type, &src_virtual_path_, &file_system_file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  file_system_operation_context_.set_src_virtual_path(virtual_path);
   if (!file_system_operation_context_.src_file_system_file_util())
     file_system_operation_context_.set_src_file_system_file_util(
         file_system_file_util);
@@ -461,7 +447,7 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
   FileSystemFileUtilProxy::CreateOrOpen(
       file_system_operation_context_,
       proxy_,
-      file_system_operation_context_.src_virtual_path(),
+      src_virtual_path_,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
           base::PLATFORM_FILE_ASYNC,
       callback_factory_.NewCallback(
@@ -473,18 +459,16 @@ void FileSystemOperation::Truncate(const GURL& path, int64 length) {
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationTruncate;
 #endif
-  FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
   FileSystemFileUtil* file_system_file_util;
   if (!VerifyFileSystemPathForWrite(path, false /* create */, &origin_url,
-      &type, &virtual_path, &file_system_file_util)) {
+      &type, &src_virtual_path_, &file_system_file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  file_system_operation_context_.set_src_virtual_path(virtual_path);
   if (!file_system_operation_context_.src_file_system_file_util())
     file_system_operation_context_.set_src_file_system_file_util(
         file_system_file_util);
@@ -507,7 +491,7 @@ void FileSystemOperation::DelayedTruncateForQuota(quota::QuotaStatusCode status,
   FileSystemFileUtilProxy::Truncate(
       file_system_operation_context_,
       proxy_,
-      file_system_operation_context_.src_virtual_path(),
+      src_virtual_path_,
       length_, callback_factory_.NewCallback(
           &FileSystemOperation::DidFinishFileOperation));
 }
@@ -549,7 +533,6 @@ void FileSystemOperation::OpenFile(const GURL& path,
 #endif
 
   peer_handle_ = peer_handle;
-  FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
   FileSystemFileUtil* file_system_file_util;
@@ -566,20 +549,19 @@ void FileSystemOperation::OpenFile(const GURL& path,
        base::PLATFORM_FILE_DELETE_ON_CLOSE |
        base::PLATFORM_FILE_WRITE_ATTRIBUTES)) {
     if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
-        &type, &virtual_path, &file_system_file_util)) {
+        &type, &src_virtual_path_, &file_system_file_util)) {
       delete this;
       return;
     }
   } else {
-    if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path,
-        &file_system_file_util)) {
+    if (!VerifyFileSystemPathForRead(path, &origin_url, &type,
+        &src_virtual_path_, &file_system_file_util)) {
       delete this;
       return;
     }
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  file_system_operation_context_.set_src_virtual_path(virtual_path);
   if (!file_system_operation_context_.src_file_system_file_util())
     file_system_operation_context_.set_src_file_system_file_util(
         file_system_file_util);
@@ -603,7 +585,7 @@ void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
   FileSystemFileUtilProxy::CreateOrOpen(
       file_system_operation_context_,
       proxy_,
-      file_system_operation_context_.src_virtual_path(),
+      src_virtual_path_,
       file_flags_,
       callback_factory_.NewCallback(
           &FileSystemOperation::DidOpenFile));
@@ -642,7 +624,6 @@ void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation_ptr) {
   }
 }
 
-// TODO(ericu): Obfuscation integration.
 bool FileSystemOperation::GetUsageAndQuotaThenCallback(
     const GURL& origin_url,
     quota::QuotaManager::GetUsageAndQuotaCallback* callback) {

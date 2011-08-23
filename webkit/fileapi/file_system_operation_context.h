@@ -63,22 +63,6 @@ class FileSystemOperationContext {
     return dest_origin_url_;
   }
 
-  void set_src_virtual_path(const FilePath& path) {
-    src_virtual_path_ = path;
-  }
-
-  const FilePath& src_virtual_path() const {
-    return src_virtual_path_;
-  }
-
-  void set_dest_virtual_path(const FilePath& path) {
-    dest_virtual_path_ = path;
-  }
-
-  const FilePath& dest_virtual_path() const {
-    return dest_virtual_path_;
-  }
-
   FileSystemType src_type() const {
     return src_type_;
   }

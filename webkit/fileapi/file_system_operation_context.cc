@@ -30,7 +30,6 @@ FileSystemOperationContext::CreateInheritedContextForDest() const {
   context->set_src_origin_url(dest_origin_url_);
   context->set_src_type(dest_type_);
   context->set_allowed_bytes_growth(allowed_bytes_growth_);
-  context->set_src_virtual_path(dest_virtual_path_);
   return context;
 }
 

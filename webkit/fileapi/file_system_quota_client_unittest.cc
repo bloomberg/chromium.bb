@@ -139,7 +139,6 @@ class FileSystemQuotaClientTest : public testing::Test {
     FileSystemOperationContext* context =
         new FileSystemOperationContext(file_system_context_, file_util);
     context->set_src_origin_url(GURL(origin_url));
-    context->set_src_virtual_path(virtual_path);
     context->set_src_type(QuotaStorageTypeToFileSystemType(type));
     context->set_allowed_bytes_growth(100000000);
     return context;
