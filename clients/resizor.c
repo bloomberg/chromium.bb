@@ -49,8 +49,11 @@ struct resizor {
 };
 
 static void
-frame_callback(struct wl_surface *surface, void *data, uint32_t time)
+frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
+	static const struct wl_callback_listener listener = {
+		frame_callback
+	};
 	struct resizor *resizor = data;
 	double force, height;
 
@@ -75,6 +78,14 @@ frame_callback(struct wl_surface *surface, void *data, uint32_t time)
 	window_set_child_size(resizor->window, resizor->width, height + 0.5);
 
 	window_schedule_redraw(resizor->window);
+
+	if (callback)
+		wl_callback_destroy(callback);
+
+	if (fabs(resizor->height.previous - resizor->height.target) > 0.1) {
+		callback = wl_surface_frame(window_get_wl_surface(resizor->window));
+		wl_callback_add_listener(callback, &listener, resizor);
+	}
 }
 
 static void
@@ -104,12 +115,6 @@ resizor_draw(struct resizor *resizor)
 	cairo_surface_destroy(surface);
 
 	window_flush(resizor->window);
-
-	if (fabs(resizor->height.previous - resizor->height.target) > 0.1) {
-		wl_display_frame_callback(display_get_display(resizor->display),
-					  window_get_wl_surface(resizor->window),
-					  frame_callback, resizor);
-	}
 }
 
 static void
@@ -141,11 +146,11 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	switch (sym) {
 	case XK_Down:
 		resizor->height.target = 400;
-		frame_callback(window_get_wl_surface(window), resizor, 0);
+		frame_callback(resizor, NULL, 0);
 		break;
 	case XK_Up:
 		resizor->height.target = 200;
-		frame_callback(window_get_wl_surface(window), resizor, 0);
+		frame_callback(resizor, NULL, 0);
 		break;
 	}
 }

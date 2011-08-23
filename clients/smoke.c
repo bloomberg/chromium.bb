@@ -173,8 +173,11 @@ static void render(struct smoke *smoke)
 }
 
 static void
-frame_callback(struct wl_surface *surface, void *data, uint32_t time)
+frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
+	static const struct wl_callback_listener listener = {
+		frame_callback,
+	};
 	struct smoke *smoke = data;
 
 	diffuse(smoke, time / 30, smoke->b[0].u, smoke->b[1].u);
@@ -199,12 +202,15 @@ frame_callback(struct wl_surface *surface, void *data, uint32_t time)
 
 	render(smoke);
 
+	if (callback)
+		wl_callback_destroy(callback);
+
 	display_surface_damage(smoke->display, smoke->surface,
 			       0, 0, smoke->width, smoke->height);
 	window_damage(smoke->window, 0, 0, smoke->width, smoke->height);
-	wl_display_frame_callback(display_get_display(smoke->display),
-				  window_get_wl_surface(smoke->window),
-				  frame_callback, smoke);
+
+	callback = wl_surface_frame(window_get_wl_surface(smoke->window));
+	wl_callback_add_listener(callback, &listener, smoke);
 }
 
 static int
@@ -290,10 +296,7 @@ int main(int argc, char *argv[])
 				  smoke_motion_handler);
 
 	window_set_user_data(smoke.window, &smoke);
-	wl_display_frame_callback(display_get_display(d),
-				  window_get_wl_surface(smoke.window),
-				  frame_callback, &smoke);
-
+	frame_callback(&smoke, NULL, 0);
 	display_run(d);
 
 	return 0;

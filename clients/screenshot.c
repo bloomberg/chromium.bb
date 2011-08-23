@@ -81,36 +81,17 @@ handle_global(struct wl_display *display, uint32_t id,
 	static int visual_count;
 
 	if (strcmp(interface, "wl_output") == 0) {
-		output = wl_output_create(display, id, 1);
+		output = wl_display_bind(display, id, &wl_output_interface);
 		wl_output_add_listener(output, &output_listener, NULL);
 	} else if (strcmp(interface, "wl_shm") == 0) {
-		shm = wl_shm_create(display, id, 1);
+		shm = wl_display_bind(display, id, &wl_shm_interface);
 	} else if (strcmp(interface, "wl_visual") == 0) {
 		if  (visual_count++ == 1)
-			visual = wl_visual_create(display, id, 1);
+			visual = wl_display_bind(display, id,
+						 &wl_visual_interface);
 	} else if (strcmp(interface, "screenshooter") == 0) {
-		screenshooter = screenshooter_create(display, id, 1);
+		screenshooter = wl_display_bind(display, id, &screenshooter_interface);
 	}
-}
-
-static void
-sync_callback(void *data)
-{
-   int *done = data;
-
-   *done = 1;
-}
-
-static void
-roundtrip(struct wl_display *display)
-{
-	int done;
-
-	done = 0;
-	wl_display_sync_callback(display, sync_callback, &done);
-	wl_display_iterate(display, WL_DISPLAY_WRITABLE);
-	while (!done)
-		wl_display_iterate(display, WL_DISPLAY_READABLE);
 }
 
 static struct wl_buffer *
@@ -183,7 +164,7 @@ int main(int argc, char *argv[])
 
 	wl_display_add_global_listener(display, handle_global, &screenshooter);
 	wl_display_iterate(display, WL_DISPLAY_READABLE);
-	roundtrip(display);
+	wl_display_roundtrip(display);
 	if (screenshooter == NULL) {
 		fprintf(stderr, "display doesn't support screenshooter\n");
 		return -1;
@@ -191,7 +172,7 @@ int main(int argc, char *argv[])
 
 	buffer = create_shm_buffer(output_width, output_height, &data);
 	screenshooter_shoot(screenshooter, output, buffer);
-	roundtrip(display);
+	wl_display_roundtrip(display);
 
 	write_png(output_width, output_height, data);
 

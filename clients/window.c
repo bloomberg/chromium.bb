@@ -670,15 +670,20 @@ static void
 window_attach_surface(struct window *window);
 
 static void
-free_surface(void *data)
+free_surface(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
 
+	wl_callback_destroy(callback);
 	cairo_surface_destroy(window->pending_surface);
 	window->pending_surface = NULL;
 	if (window->cairo_surface)
 		window_attach_surface(window);
 }
+
+static const struct wl_callback_listener free_surface_listener = {
+	free_surface
+};
 
 static void
 window_get_resize_dx_dy(struct window *window, int *x, int *y)
@@ -702,6 +707,7 @@ window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_buffer *buffer;
+	struct wl_callback *cb;
 #ifdef HAVE_CAIRO_EGL
 	struct egl_window_surface_data *data;
 #endif
@@ -735,8 +741,8 @@ window_attach_surface(struct window *window)
 
 		wl_surface_attach(window->surface, buffer, x, y);
 		window->server_allocation = window->allocation;
-		wl_display_sync_callback(display->display, free_surface,
-					 window);
+		cb = wl_display_sync(display->display);
+		wl_callback_add_listener(cb, &free_surface_listener, window);
 		break;
 	default:
 		return;
@@ -1575,14 +1581,16 @@ compositor_handle_visual(void *data,
 
 	switch (token) {
 	case WL_COMPOSITOR_VISUAL_ARGB32:
-		d->argb_visual = wl_visual_create(d->display, id, 1);
+		d->argb_visual =
+			wl_display_bind(d->display, id, &wl_visual_interface);
 		break;
 	case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
 		d->premultiplied_argb_visual =
-			wl_visual_create(d->display, id, 1);
+			wl_display_bind(d->display, id, &wl_visual_interface);
 		break;
 	case WL_COMPOSITOR_VISUAL_XRGB32:
-		d->rgb_visual = wl_visual_create(d->display, id, 1);
+		d->rgb_visual =
+			wl_display_bind(d->display, id, &wl_visual_interface);
 		break;
 	}
 }
@@ -1637,7 +1645,8 @@ display_add_input(struct display *d, uint32_t id)
 
 	memset(input, 0, sizeof *input);
 	input->display = d;
-	input->input_device = wl_input_device_create(d->display, id, 1);
+	input->input_device =
+		wl_display_bind(d->display, id, &wl_input_device_interface);
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
 	wl_list_insert(d->input_list.prev, &input->link);
@@ -1744,7 +1753,8 @@ add_selection_offer(struct display *d, uint32_t id)
 	if (offer == NULL)
 		return;
 
-	offer->offer = wl_selection_offer_create(d->display, id, 1);
+	offer->offer =
+		wl_display_bind(d->display, id, &wl_selection_offer_interface);
 	offer->display = d;
 	wl_array_init(&offer->types);
 	offer->input = NULL;
@@ -1760,19 +1770,20 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	struct display *d = data;
 
 	if (strcmp(interface, "wl_compositor") == 0) {
-		d->compositor = wl_compositor_create(display, id, 1);
+		d->compositor =
+			wl_display_bind(display, id, &wl_compositor_interface);
 		wl_compositor_add_listener(d->compositor,
 					   &compositor_listener, d);
 	} else if (strcmp(interface, "wl_output") == 0) {
-		d->output = wl_output_create(display, id, 1);
+		d->output = wl_display_bind(display, id, &wl_output_interface);
 		wl_output_add_listener(d->output, &output_listener, d);
 	} else if (strcmp(interface, "wl_input_device") == 0) {
 		display_add_input(d, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
-		d->shell = wl_shell_create(display, id, 1);
+		d->shell = wl_display_bind(display, id, &wl_shell_interface);
 		wl_shell_add_listener(d->shell, &shell_listener, d);
 	} else if (strcmp(interface, "wl_shm") == 0) {
-		d->shm = wl_shm_create(display, id, 1);
+		d->shm = wl_display_bind(display, id, &wl_shm_interface);
 	} else if (strcmp(interface, "wl_selection_offer") == 0) {
 		add_selection_offer(d, id);
 	} else if (d->global_handler) {
