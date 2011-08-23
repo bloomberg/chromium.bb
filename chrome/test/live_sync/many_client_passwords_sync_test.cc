@@ -5,12 +5,30 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_passwords_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/passwords_helper.h"
+
+using passwords_helper::AddLogin;
+using passwords_helper::AllProfilesContainSamePasswordFormsAsVerifier;
+using passwords_helper::CreateTestPasswordForm;
+using passwords_helper::GetPasswordCount;
+using passwords_helper::GetPasswordStore;
+using passwords_helper::GetVerifierPasswordCount;
+using passwords_helper::GetVerifierPasswordStore;
 
 using webkit_glue::PasswordForm;
 
+class ManyClientPasswordsSyncTest : public LiveSyncTest {
+ public:
+  ManyClientPasswordsSyncTest() : LiveSyncTest(MANY_CLIENT) {}
+  virtual ~ManyClientPasswordsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ManyClientPasswordsSyncTest);
+};
+
 // TODO(rsimha): Enable once http://crbug.com/69604 is fixed.
-IN_PROC_BROWSER_TEST_F(ManyClientLivePasswordsSyncTest, DISABLED_Sanity) {
+IN_PROC_BROWSER_TEST_F(ManyClientPasswordsSyncTest, DISABLED_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);

@@ -4,15 +4,33 @@
 
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_passwords_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/passwords_helper.h"
+
+using passwords_helper::AddLogin;
+using passwords_helper::CreateTestPasswordForm;
+using passwords_helper::GetPasswordCount;
+using passwords_helper::GetPasswordStore;
+using passwords_helper::GetVerifierPasswordCount;
+using passwords_helper::GetVerifierPasswordStore;
+using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 
 using webkit_glue::PasswordForm;
 
+class SingleClientPasswordsSyncTest : public LiveSyncTest {
+ public:
+  SingleClientPasswordsSyncTest() : LiveSyncTest(SINGLE_CLIENT) {}
+  virtual ~SingleClientPasswordsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientPasswordsSyncTest);
+};
+
 // TODO(sync): Enable after MockKeychain is fixed. http://crbug.com/89808.
 #if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(SingleClientLivePasswordsSyncTest, DISABLED_Sanity) {
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, DISABLED_Sanity) {
 #else
-IN_PROC_BROWSER_TEST_F(SingleClientLivePasswordsSyncTest, Sanity) {
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, Sanity) {
 #endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 

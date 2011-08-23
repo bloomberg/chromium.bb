@@ -6,14 +6,22 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
-#include "chrome/test/live_sync/live_passwords_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/passwords_helper.h"
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
+
+using passwords_helper::AddLogin;
+using passwords_helper::CreateTestPasswordForm;
+using passwords_helper::GetLogins;
+using passwords_helper::GetPasswordCount;
+using passwords_helper::GetPasswordStore;
+using passwords_helper::UpdateLogin;
 
 static const int kNumPasswords = 150;
 
-class PasswordsSyncPerfTest : public TwoClientLivePasswordsSyncTest {
+class PasswordsSyncPerfTest : public LiveSyncTest {
  public:
-  PasswordsSyncPerfTest() : password_number_(0) {}
+  PasswordsSyncPerfTest() : LiveSyncTest(TWO_CLIENT), password_number_(0) {}
 
   // Adds |num_logins| new unique passwords to |profile|.
   void AddLogins(int profile, int num_logins);
@@ -52,7 +60,7 @@ void PasswordsSyncPerfTest::UpdateLogins(int profile) {
 }
 
 void PasswordsSyncPerfTest::RemoveLogins(int profile) {
-  LivePasswordsSyncTest::RemoveLogins(GetPasswordStore(profile));
+  passwords_helper::RemoveLogins(GetPasswordStore(profile));
 }
 
 webkit_glue::PasswordForm PasswordsSyncPerfTest::NextLogin() {

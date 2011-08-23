@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "content/browser/cancelable_request.h"
 
+class PasswordStore;
 class PasswordStoreConsumer;
 class Task;
 
@@ -26,6 +27,12 @@ class PasswordModelWorker;
 
 namespace webkit_glue {
 struct PasswordForm;
+};
+
+namespace passwords_helper {
+void AddLogin(PasswordStore* store, const webkit_glue::PasswordForm& form);
+void RemoveLogin(PasswordStore* store, const webkit_glue::PasswordForm& form);
+void UpdateLogin(PasswordStore* store, const webkit_glue::PasswordForm& form);
 };
 
 // Interface for storing form passwords in a platform-specific secure way.
@@ -121,7 +128,12 @@ class PasswordStore
   friend class browser_sync::PasswordDataTypeController;
   friend class browser_sync::PasswordModelAssociator;
   friend class browser_sync::PasswordModelWorker;
-  friend class LivePasswordsSyncTest;
+  friend void passwords_helper::AddLogin(PasswordStore*,
+                                         const webkit_glue::PasswordForm&);
+  friend void passwords_helper::RemoveLogin(PasswordStore*,
+                                            const webkit_glue::PasswordForm&);
+  friend void passwords_helper::UpdateLogin(PasswordStore*,
+                                            const webkit_glue::PasswordForm&);
 
   virtual ~PasswordStore();
 

@@ -277,4 +277,6 @@ class LiveSyncTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };
 
+DISABLE_RUNNABLE_METHOD_REFCOUNT(LiveSyncTest);
+
 #endif  // CHROME_TEST_LIVE_SYNC_LIVE_SYNC_TEST_H_

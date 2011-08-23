@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/live_sync/live_passwords_sync_test.h"
+#include "chrome/test/live_sync/passwords_helper.h"
 
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -12,18 +12,22 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/live_sync/sync_datatype_helper.h"
 #include "content/browser/browser_thread.h"
 
 using webkit_glue::PasswordForm;
+using sync_datatype_helper::test;
 
 const std::string kFakeSignonRealm = "http://fake-signon-realm.google.com/";
 const char* kIndexedFakeOrigin = "http://fake-signon-realm.google.com/%d";
+
+namespace {
 
 // We use a WaitableEvent to wait when logins are added, removed, or updated
 // instead of running the UI message loop because of a restriction that
 // prevents a DB thread from initiating a quit of the UI message loop.
 void PasswordStoreCallback(base::WaitableEvent* wait_event) {
-  // Wake up LivePasswordsSyncTest::AddLogin.
+  // Wake up passwords_helper::AddLogin.
   wait_event->Signal();
 }
 
@@ -44,7 +48,7 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
       result_->push_back(**it);
     }
 
-    // Quit the message loop to wake up LivePasswordsSyncTest::GetLogins.
+    // Quit the message loop to wake up passwords_helper::GetLogins.
     MessageLoopForUI::current()->Quit();
   }
 
@@ -54,24 +58,11 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreConsumerHelper);
 };
 
-LivePasswordsSyncTest::LivePasswordsSyncTest(TestType test_type)
-    : LiveSyncTest(test_type) {}
+}  // namespace
 
-void LivePasswordsSyncTest::CleanUpOnMainThread() {
-  CleanupTestPasswordForms();
-  LiveSyncTest::CleanUpOnMainThread();
-}
+namespace passwords_helper {
 
-bool LivePasswordsSyncTest::SetupClients() {
-  if (LiveSyncTest::SetupClients()) {
-    CleanupTestPasswordForms();
-    return true;
-  }
-  return false;
-}
-
-void LivePasswordsSyncTest::AddLogin(PasswordStore* store,
-                                     const PasswordForm& form) {
+void AddLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
   base::WaitableEvent wait_event(true, false);
   store->AddLogin(form);
@@ -79,8 +70,7 @@ void LivePasswordsSyncTest::AddLogin(PasswordStore* store,
   wait_event.Wait();
 }
 
-void LivePasswordsSyncTest::UpdateLogin(PasswordStore* store,
-                                        const PasswordForm& form) {
+void UpdateLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
   base::WaitableEvent wait_event(true, false);
   store->UpdateLogin(form);
@@ -88,8 +78,7 @@ void LivePasswordsSyncTest::UpdateLogin(PasswordStore* store,
   wait_event.Wait();
 }
 
-void LivePasswordsSyncTest::GetLogins(PasswordStore* store,
-                                      std::vector<PasswordForm>& matches) {
+void GetLogins(PasswordStore* store, std::vector<PasswordForm>& matches) {
   ASSERT_TRUE(store);
   PasswordForm matcher_form;
   matcher_form.signon_realm = kFakeSignonRealm;
@@ -98,8 +87,7 @@ void LivePasswordsSyncTest::GetLogins(PasswordStore* store,
   ui_test_utils::RunMessageLoop();
 }
 
-void LivePasswordsSyncTest::RemoveLogin(PasswordStore* store,
-                                         const PasswordForm& form) {
+void RemoveLogin(PasswordStore* store, const PasswordForm& form) {
   ASSERT_TRUE(store);
   base::WaitableEvent wait_event(true, false);
   store->RemoveLogin(form);
@@ -107,7 +95,7 @@ void LivePasswordsSyncTest::RemoveLogin(PasswordStore* store,
   wait_event.Wait();
 }
 
-void LivePasswordsSyncTest::RemoveLogins(PasswordStore* store) {
+void RemoveLogins(PasswordStore* store) {
   std::vector<PasswordForm> forms;
   GetLogins(store, forms);
   for (std::vector<PasswordForm>::iterator it = forms.begin();
@@ -116,23 +104,20 @@ void LivePasswordsSyncTest::RemoveLogins(PasswordStore* store) {
   }
 }
 
-void LivePasswordsSyncTest::SetPassphrase(int index,
-                                          const std::string& passphrase,
-                                          bool is_creation) {
-  GetProfile(index)->GetProfileSyncService("")->SetPassphrase(
+void SetPassphrase(int index, const std::string& passphrase, bool is_creation) {
+  test()->GetProfile(index)->GetProfileSyncService("")->SetPassphrase(
       passphrase, true, is_creation);
 }
 
-PasswordStore* LivePasswordsSyncTest::GetPasswordStore(int index) {
-  return GetProfile(index)->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+PasswordStore* GetPasswordStore(int index) {
+  return test()->GetProfile(index)->GetPasswordStore(Profile::IMPLICIT_ACCESS);
 }
 
-PasswordStore* LivePasswordsSyncTest::GetVerifierPasswordStore() {
-  return verifier()->GetPasswordStore(Profile::IMPLICIT_ACCESS);
+PasswordStore* GetVerifierPasswordStore() {
+  return test()->verifier()->GetPasswordStore(Profile::IMPLICIT_ACCESS);
 }
 
-bool LivePasswordsSyncTest::ProfileContainsSamePasswordFormsAsVerifier(
-    int index) {
+bool ProfileContainsSamePasswordFormsAsVerifier(int index) {
   std::vector<PasswordForm> verifier_forms;
   std::vector<PasswordForm> forms;
   GetLogins(GetVerifierPasswordStore(), verifier_forms);
@@ -153,8 +138,7 @@ bool LivePasswordsSyncTest::ProfileContainsSamePasswordFormsAsVerifier(
   return result;
 }
 
-bool LivePasswordsSyncTest::ProfilesContainSamePasswordForms(int index_a,
-                                                             int index_b) {
+bool ProfilesContainSamePasswordForms(int index_a, int index_b) {
   std::vector<PasswordForm> forms_a;
   std::vector<PasswordForm> forms_b;
   GetLogins(GetPasswordStore(index_a), forms_a);
@@ -175,8 +159,8 @@ bool LivePasswordsSyncTest::ProfilesContainSamePasswordForms(int index_a,
   return result;
 }
 
-bool LivePasswordsSyncTest::AllProfilesContainSamePasswordFormsAsVerifier() {
-  for (int i = 0; i < num_clients(); ++i) {
+bool AllProfilesContainSamePasswordFormsAsVerifier() {
+  for (int i = 0; i < test()->num_clients(); ++i) {
     if (!ProfileContainsSamePasswordFormsAsVerifier(i)) {
       LOG(ERROR) << "Profile " << i << " does not contain the same password "
                                        " forms as the verifier.";
@@ -186,8 +170,8 @@ bool LivePasswordsSyncTest::AllProfilesContainSamePasswordFormsAsVerifier() {
   return true;
 }
 
-bool LivePasswordsSyncTest::AllProfilesContainSamePasswordForms() {
-  for (int i = 1; i < num_clients(); ++i) {
+bool AllProfilesContainSamePasswordForms() {
+  for (int i = 1; i < test()->num_clients(); ++i) {
     if (!ProfilesContainSamePasswordForms(0, i)) {
       LOG(ERROR) << "Profile " << i << " does not contain the same password "
                                        " forms as Profile 0.";
@@ -197,19 +181,19 @@ bool LivePasswordsSyncTest::AllProfilesContainSamePasswordForms() {
   return true;
 }
 
-int LivePasswordsSyncTest::GetPasswordCount(int index) {
+int GetPasswordCount(int index) {
   std::vector<PasswordForm> forms;
   GetLogins(GetPasswordStore(index), forms);
   return forms.size();
 }
 
-int LivePasswordsSyncTest::GetVerifierPasswordCount() {
+int GetVerifierPasswordCount() {
   std::vector<PasswordForm> verifier_forms;
   GetLogins(GetVerifierPasswordStore(), verifier_forms);
   return verifier_forms.size();
 }
 
-PasswordForm LivePasswordsSyncTest::CreateTestPasswordForm(int index) {
+PasswordForm CreateTestPasswordForm(int index) {
   PasswordForm form;
   form.signon_realm = kFakeSignonRealm;
   form.origin = GURL(base::StringPrintf(kIndexedFakeOrigin, index));
@@ -218,7 +202,4 @@ PasswordForm LivePasswordsSyncTest::CreateTestPasswordForm(int index) {
   return form;
 }
 
-void LivePasswordsSyncTest::CleanupTestPasswordForms() {
-  RemoveLogins(GetVerifierPasswordStore());
-  ASSERT_EQ(0, GetVerifierPasswordCount());
-}
+}  // namespace passwords_helper
