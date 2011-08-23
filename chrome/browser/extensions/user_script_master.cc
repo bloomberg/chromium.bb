@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/user_script_master.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -18,8 +19,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_service.h"
 
@@ -137,10 +140,13 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 }
 
 void UserScriptMaster::ScriptReloader::StartLoad(
-    const UserScriptList& user_scripts) {
+    const UserScriptList& user_scripts,
+    const ExtensionsInfo& extensions_info_) {
   // Add a reference to ourselves to keep ourselves alive while we're running.
   // Balanced by NotifyMaster().
   AddRef();
+
+  this->extensions_info_ = extensions_info_;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
@@ -160,7 +166,8 @@ void UserScriptMaster::ScriptReloader::NotifyMaster(
   Release();
 }
 
-static bool LoadScriptContent(UserScript::File* script_file) {
+static bool LoadScriptContent(UserScript::File* script_file,
+                              const SubstitutionMap* localization_messages) {
   std::string content;
   const FilePath& path = ExtensionResource::GetFilePath(
       script_file->extension_root(), script_file->relative_path());
@@ -175,6 +182,16 @@ static bool LoadScriptContent(UserScript::File* script_file) {
     return false;
   }
 
+  // Localize the content.
+  if (localization_messages) {
+    std::string error;
+    ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
+        *localization_messages, &content, &error);
+    if (!error.empty()) {
+      LOG(WARNING) << "Failed to replace messages in script: " << error;
+    }
+  }
+
   // Remove BOM from the content.
   std::string::size_type index = content.find(kUtf8ByteOrderMark);
   if (index == 0) {
@@ -186,22 +203,35 @@ static bool LoadScriptContent(UserScript::File* script_file) {
   return true;
 }
 
-// static
 void UserScriptMaster::ScriptReloader::LoadUserScripts(
     UserScriptList* user_scripts) {
   for (size_t i = 0; i < user_scripts->size(); ++i) {
     UserScript& script = user_scripts->at(i);
+    scoped_ptr<SubstitutionMap> localization_messages(
+        GetLocalizationMessages(script.extension_id()));
     for (size_t k = 0; k < script.js_scripts().size(); ++k) {
       UserScript::File& script_file = script.js_scripts()[k];
       if (script_file.GetContent().empty())
-        LoadScriptContent(&script_file);
+        LoadScriptContent(&script_file, NULL);
     }
     for (size_t k = 0; k < script.css_scripts().size(); ++k) {
       UserScript::File& script_file = script.css_scripts()[k];
       if (script_file.GetContent().empty())
-        LoadScriptContent(&script_file);
+        LoadScriptContent(&script_file, localization_messages.get());
     }
   }
+}
+
+SubstitutionMap* UserScriptMaster::ScriptReloader::GetLocalizationMessages(
+    std::string extension_id) {
+  if (extensions_info_.find(extension_id) == extensions_info_.end()) {
+    return NULL;
+  }
+
+  return extension_file_util::LoadExtensionMessageBundleSubstitutionMap(
+      extensions_info_[extension_id].first,
+      extension_id,
+      extensions_info_[extension_id].second);
 }
 
 // Pickle user scripts and return pointer to the shared memory.
@@ -238,14 +268,14 @@ static base::SharedMemory* Serialize(const UserScriptList& scripts) {
   return shared_memory.release();
 }
 
-// This method will be called from the file thread
+// This method will be called on the file thread.
 void UserScriptMaster::ScriptReloader::RunLoad(
     const UserScriptList& user_scripts) {
   LoadUserScripts(const_cast<UserScriptList*>(&user_scripts));
 
   // Scripts now contains list of up-to-date scripts. Load the content in the
   // shared memory and let the master know it's ready. We need to post the task
-  // back even if no scripts ware found to balance the AddRef/Release calls
+  // back even if no scripts ware found to balance the AddRef/Release calls.
   BrowserThread::PostTask(
       master_thread_id_, FROM_HERE,
       NewRunnableMethod(
@@ -311,6 +341,9 @@ void UserScriptMaster::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add any content scripts inside the extension.
       const Extension* extension = Details<const Extension>(details).ptr();
+      extensions_info_[extension->id()] =
+          ExtensionSet::ExtensionPathAndDefaultLocale(
+              extension->path(), extension->default_locale());
       bool incognito_enabled = profile_->GetExtensionService()->
           IsIncognitoEnabled(extension->id());
       const UserScriptList& scripts = extension->content_scripts();
@@ -327,6 +360,7 @@ void UserScriptMaster::Observe(int type,
       // Remove any content scripts.
       const Extension* extension =
           Details<UnloadedExtensionInfo>(details)->extension;
+      extensions_info_.erase(extension->id());
       UserScriptList new_user_scripts;
       for (UserScriptList::iterator iter = user_scripts_.begin();
            iter != user_scripts_.end(); ++iter) {
@@ -364,7 +398,7 @@ void UserScriptMaster::StartLoad() {
   if (!script_reloader_)
     script_reloader_ = new ScriptReloader(this);
 
-  script_reloader_->StartLoad(user_scripts_);
+  script_reloader_->StartLoad(user_scripts_, extensions_info_);
 }
 
 void UserScriptMaster::SendUpdate(RenderProcessHost* process,

@@ -327,25 +327,14 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::map<std::string, std::string> dictionary_map;
-  if (!default_locale.empty()) {
-    // Touch disk only if extension is localized.
-    std::string error;
-    scoped_ptr<ExtensionMessageBundle> bundle(
-        extension_file_util::LoadExtensionMessageBundle(
-            extension_path, default_locale, &error));
-
-    if (bundle.get())
-      dictionary_map = *bundle->dictionary();
-  }
-
-  // Add @@extension_id reserved message here, so it's available to
-  // non-localized extensions too.
-  dictionary_map.insert(
-      std::make_pair(ExtensionMessageBundle::kExtensionIdKey, extension_id));
+  scoped_ptr<ExtensionMessageBundle::SubstitutionMap> dictionary_map(
+      extension_file_util::LoadExtensionMessageBundleSubstitutionMap(
+          extension_path,
+          extension_id,
+          default_locale));
 
   ExtensionHostMsg_GetMessageBundle::WriteReplyParams(
-      reply_msg, dictionary_map);
+      reply_msg, *dictionary_map);
   Send(reply_msg);
 }
 

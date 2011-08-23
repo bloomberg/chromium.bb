@@ -10,6 +10,7 @@
 #include <map>
 
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 
 class Extension;
 class ExtensionMessageBundle;
@@ -65,6 +66,14 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
     const FilePath& extension_path,
     const std::string& default_locale,
     std::string* error);
+
+// Loads the extension message bundle substitution map. Contains at least
+// extension_id item.
+ExtensionMessageBundle::SubstitutionMap*
+    LoadExtensionMessageBundleSubstitutionMap(
+    const FilePath& extension_path,
+    const std::string& extension_id,
+    const std::string& default_locale);
 
 // We need to reserve the namespace of entries that start with "_" for future
 // use by Chrome.

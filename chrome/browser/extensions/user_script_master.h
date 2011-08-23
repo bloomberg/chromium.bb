@@ -6,10 +6,16 @@
 #define CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_MASTER_H_
 #pragma once
 
+#include <map>
+#include <string>
+
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/user_script.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
@@ -21,6 +27,9 @@ class StringPiece;
 
 class Profile;
 class RenderProcessHost;
+
+typedef std::map<std::string, ExtensionSet::ExtensionPathAndDefaultLocale>
+    ExtensionsInfo;
 
 // Manages a segment of shared memory that contains the user scripts the user
 // has installed.  Lives on the UI thread.
@@ -67,7 +76,8 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
 
     // Start loading of scripts.
     // Will always send a message to the master upon completion.
-    void StartLoad(const UserScriptList& external_scripts);
+    void StartLoad(const UserScriptList& external_scripts,
+                   const ExtensionsInfo& extension_info_);
 
     // The master is going away; don't call it back.
     void DisownMaster() {
@@ -75,7 +85,6 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
     }
 
    private:
- private:
     FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, SkipBOMAtTheBeginning);
     FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, LeaveBOMNotAtTheBeginning);
     friend class base::RefCountedThreadSafe<UserScriptMaster::ScriptReloader>;
@@ -98,11 +107,18 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
     // tied to the caller.
     void RunLoad(const UserScriptList& user_scripts);
 
-    static void LoadUserScripts(UserScriptList* user_scripts);
+    void LoadUserScripts(UserScriptList* user_scripts);
+
+    // Uses extensions_info_ to build a map of localization messages.
+    // Returns NULL if |extension_id| is invalid.
+    SubstitutionMap* GetLocalizationMessages(std::string extension_id);
 
     // A pointer back to our master.
     // May be NULL if DisownMaster() is called.
     UserScriptMaster* master_;
+
+    // Maps extension info needed for localization to an extension ID.
+    ExtensionsInfo extensions_info_;
 
     // The message loop to call our master back on.
     // Expected to always outlive us.
@@ -132,6 +148,9 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
 
   // List of scripts from currently-installed extensions we should load.
   UserScriptList user_scripts_;
+
+  // Maps extension info needed for localization to an extension ID.
+  ExtensionsInfo extensions_info_;
 
   // If the extensions service has finished loading its initial set of
   // extensions.

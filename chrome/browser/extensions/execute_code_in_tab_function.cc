@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 
-#include "base/callback.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,7 +16,10 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -117,13 +119,60 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   scoped_refptr<FileReader> file_reader(new FileReader(
       resource_, NewCallback(this, &ExecuteCodeInTabFunction::DidLoadFile)));
   file_reader->Start();
-  AddRef();  // Keep us alive until DidLoadFile is called.
+  AddRef();  // Keep us alive until DidLoadAndLocalizeFile is called.
 
   return true;
 }
 
 void ExecuteCodeInTabFunction::DidLoadFile(bool success,
                                            const std::string& data) {
+  std::string function_name = name();
+  const Extension* extension = GetExtension();
+
+  // Check if the file is CSS and needs localization.
+  if (success &&
+      function_name == TabsInsertCSSFunction::function_name() &&
+      extension != NULL &&
+      data.find(ExtensionMessageBundle::kMessageBegin) != std::string::npos) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &ExecuteCodeInTabFunction::LocalizeCSS,
+                          data,
+                          extension->id(),
+                          extension->path(),
+                          extension->default_locale()));
+  } else {
+    DidLoadAndLocalizeFile(success, data);
+  }
+}
+
+void ExecuteCodeInTabFunction::LocalizeCSS(
+    const std::string& data,
+    const std::string& extension_id,
+    const FilePath& extension_path,
+    const std::string& extension_default_locale) {
+  scoped_ptr<SubstitutionMap> localization_messages(
+      extension_file_util::LoadExtensionMessageBundleSubstitutionMap(
+          extension_path, extension_id, extension_default_locale));
+
+  // We need to do message replacement on the data, so it has to be mutable.
+  std::string css_data = data;
+  std::string error;
+  ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
+      *localization_messages, &css_data, &error);
+
+  // Call back DidLoadAndLocalizeFile on the UI thread. The success parameter
+  // is always true, because if loading had failed, we wouldn't have had
+  // anything to localize.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &ExecuteCodeInTabFunction::DidLoadAndLocalizeFile,
+                        true, css_data));
+}
+
+void ExecuteCodeInTabFunction::DidLoadAndLocalizeFile(bool success,
+                                                      const std::string& data) {
   if (success) {
     Execute(data);
   } else {

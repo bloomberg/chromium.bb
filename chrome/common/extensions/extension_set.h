@@ -6,6 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_SET_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,8 @@
 // Only one extension can be in the set with a given ID.
 class ExtensionSet {
  public:
+  typedef std::pair<FilePath, std::string> ExtensionPathAndDefaultLocale;
+
   ExtensionSet();
   ~ExtensionSet();
 

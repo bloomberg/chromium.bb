@@ -20,6 +20,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "content/common/json_value_serializer.h"
@@ -398,6 +400,29 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
           error);
 
   return message_bundle;
+}
+
+SubstitutionMap* LoadExtensionMessageBundleSubstitutionMap(
+    const FilePath& extension_path,
+    const std::string& extension_id,
+    const std::string& default_locale) {
+  SubstitutionMap* returnValue = new SubstitutionMap();
+  if (!default_locale.empty()) {
+    // Touch disk only if extension is localized.
+    std::string error;
+    scoped_ptr<ExtensionMessageBundle> bundle(
+        LoadExtensionMessageBundle(extension_path, default_locale, &error));
+
+    if (bundle.get())
+      *returnValue = *bundle->dictionary();
+  }
+
+  // Add @@extension_id reserved message here, so it's available to
+  // non-localized extensions too.
+  returnValue->insert(
+      std::make_pair(ExtensionMessageBundle::kExtensionIdKey, extension_id));
+
+  return returnValue;
 }
 
 static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
