@@ -44,6 +44,11 @@ GURL MockContentBrowserClient::GetEffectiveURL(
   return GURL();
 }
 
+bool MockContentBrowserClient::ShouldUseProcessPerSite(
+    BrowserContext* browser_context, const GURL& effective_url) {
+  return false;
+}
+
 bool MockContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
   return false;
 }

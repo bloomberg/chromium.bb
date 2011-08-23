@@ -66,6 +66,8 @@ class WebUIFactory;
 // the observer interfaces.)
 class ContentBrowserClient {
  public:
+  virtual ~ContentBrowserClient() {}
+
   // Notifies that a new RenderHostView has been created.
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) = 0;
 

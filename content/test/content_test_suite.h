@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/test/test_suite.h"
+#include "base/win/scoped_com_initializer.h"
 
 class ContentTestSuite : public base::TestSuite {
  public:
@@ -16,6 +17,9 @@ class ContentTestSuite : public base::TestSuite {
 
  protected:
   virtual void Initialize() OVERRIDE;
+
+ private:
+  base::win::ScopedCOMInitializer com_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentTestSuite);
 };

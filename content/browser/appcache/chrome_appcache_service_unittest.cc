@@ -6,8 +6,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +29,7 @@ const char kNormalManifest[] = "http://www.normal.com/cache.manifest";
 
 namespace appcache {
 
-class ChromeAppCacheServiceTest : public TestingBrowserProcessTest {
+class ChromeAppCacheServiceTest : public testing::Test {
  public:
   ChromeAppCacheServiceTest()
       : message_loop_(MessageLoop::TYPE_IO),

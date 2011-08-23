@@ -25,6 +25,8 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual WebUIFactory* GetWebUIFactory() OVERRIDE;
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
                                const GURL& url) OVERRIDE;
+  virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
+                                       const GURL& effective_url) OVERRIDE;
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name) OVERRIDE;

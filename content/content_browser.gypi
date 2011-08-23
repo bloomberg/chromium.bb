@@ -346,7 +346,6 @@
         'browser/renderer_host/media/media_stream_provider.h',
         'browser/renderer_host/media/media_stream_requester.h',
         'browser/renderer_host/media/media_stream_settings_requester.h',
-        'browser/renderer_host/media/mock_media_observer.h',
         'browser/renderer_host/media/video_capture_controller.cc',
         'browser/renderer_host/media/video_capture_controller.h',
         'browser/renderer_host/media/video_capture_controller_event_handler.cc',
