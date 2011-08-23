@@ -24,6 +24,7 @@ BUG_OFF LINUX X86 : fast/borders/borderRadiusSolid03.html = IMAGE
 BUG_OFF LINUX X86 : fast/borders/different-color-borders.html = IMAGE
 BUG_OFF LINUX X86 : fast/box-shadow/border-radius-big.html = IMAGE
 BUG_OFF LINUX X86 : fast/box-shadow/inset-with-extraordinary-radii-and-border.html = IMAGE
+BUG_OFF LINUX X86 : fast/canvas/canvas-composite-transformclip.html = IMAGE
 BUG_OFF LINUX X86 : fast/canvas/canvas-text-alignment.html = IMAGE
 BUG_OFF LINUX X86 : fast/canvas/canvas_arc_largeangles.html = TEXT
 BUG_OFF LINUX X86 : fast/canvas/fillrect_gradient.html = IMAGE
@@ -402,3 +403,5 @@ BUG_OFF MAC : svg/dynamic-updates/SVGFECompositeElement-dom-k4-attr.html = TIMEO
 BUG_OFF MAC : svg/text/text-font-invalid.html = TIMEOUT
 BUG_OFF MAC : tables/mozilla_expected_failures/marvin/backgr_position-table-row-group.html = TIMEOUT
 BUG_OFF MAC : transforms/2d/set-transform-and-top.html = TIMEOUT
+BUG_OFF WIN : fast/url/standard-url.html = TEXT
+
