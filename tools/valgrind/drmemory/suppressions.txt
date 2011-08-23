@@ -834,21 +834,6 @@ UNINITIALIZED READ
 ...
 *!testing_internal::DefaultPrintNonContainerTo<policy::FailedRequestParams>
 
-# http://crbug.com/90961
-LEAK
-*!operator new
-*!cricket::Connection::Ping
-*!cricket::P2PTransportChannel::OnPing
-*!cricket::P2PTransportChannel::OnMessage
-*!talk_base::MessageQueue::Dispatch
-*!talk_base::Thread::ProcessMessages
-*!talk_base::Thread::Run
-*!remoting::`anonymous namespace'::JingleMessagePump::Run
-...
-*!remoting::protocol::`anonymous namespace'::RunMessageLoopWithTimeout
-*!remoting::protocol::JingleSessionTest::InitiateConnection
-*!remoting::protocol::JingleSessionTest_ConnectBadChannelAuth_Test::TestBody
-
 # http://crbug.com/91465
 LEAK
 *!generic_cpp_alloc
