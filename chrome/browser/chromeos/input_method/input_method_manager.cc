@@ -325,12 +325,15 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   virtual bool SetVirtualKeyboardPreference(const std::string& input_method_id,
                                             const GURL& extention_url) {
-    return virtual_keyboard_selector_.SetUserPreference(
+    const bool result = virtual_keyboard_selector_.SetUserPreference(
         input_method_id, extention_url);
+    UpdateVirtualKeyboardUI();
+    return result;
   }
 
   virtual void ClearAllVirtualKeyboardPreferences() {
-    return virtual_keyboard_selector_.ClearAllUserPreferences();
+    virtual_keyboard_selector_.ClearAllUserPreferences();
+    UpdateVirtualKeyboardUI();
   }
 
   static InputMethodManagerImpl* GetInstance() {
@@ -670,7 +673,10 @@ class InputMethodManagerImpl : public InputMethodManager,
                                          current_input_method_,
                                          num_active_input_methods));
 
-    // Update virtual keyboard.
+    UpdateVirtualKeyboardUI();
+  }
+
+  void UpdateVirtualKeyboardUI() {
 #if defined(TOUCH_UI)
     const input_method::VirtualKeyboard* virtual_keyboard = NULL;
     std::string virtual_keyboard_layout = "";

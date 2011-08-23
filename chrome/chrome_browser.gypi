@@ -3608,6 +3608,8 @@
         'browser/ui/webui/options/chromeos/system_settings_provider.h',
         'browser/ui/webui/options/chromeos/user_image_source.cc',
         'browser/ui/webui/options/chromeos/user_image_source.h',
+        'browser/ui/webui/options/chromeos/virtual_keyboard_manager_handler.cc',
+        'browser/ui/webui/options/chromeos/virtual_keyboard_manager_handler.h',
         'browser/ui/webui/options/clear_browser_data_handler.cc',
         'browser/ui/webui/options/clear_browser_data_handler.h',
         'browser/ui/webui/options/content_settings_handler.cc',

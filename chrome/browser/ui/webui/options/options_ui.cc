@@ -70,6 +70,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/system_options_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/options/chromeos/virtual_keyboard_manager_handler.h"
 #endif
 
 #if defined(USE_NSS)
@@ -238,6 +239,8 @@ OptionsUI::OptionsUI(TabContents* contents)
                           new chromeos::LanguageMozcHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::LanguagePinyinHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::VirtualKeyboardManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new chromeos::ProxyHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::ChangePictureOptionsHandler());

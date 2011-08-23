@@ -7195,6 +7195,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Restart
         </message>
       </if>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_BUTTON"
+               desc="The label for the virtual keyboard button for customizing virtual keyboard settings">
+        Change virtual keyboard settings...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_SETTINGS_TITLE"
+               desc="The label for the virtual keyboard manager page">
+        Virtual Keyboard Settings
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_LAYOUT_COLUMN_TITLE"
+               desc="The label for the virtual keyboard manager page">
+        Layout
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_KEYBOARD_COLUMN_TITLE"
+               desc="The label for the virtual keyboard manager page">
+        Virtual Keyboard
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DEFAULT_VIRTUAL_KEYBOARD"
+               desc="The label for a default virtual keyboard in a drop down menu">
+        Default
+      </message>
       <message name="IDS_OPTIONS_LANGUAGES_ADD_TITLE" desc="The title for the add language dialog.">
         Add language:
       </message>
