@@ -20,6 +20,7 @@ namespace dbus {
 class Bus;
 class MethodCall;
 class Response;
+class Signal;
 
 // ObjectProxy is used to communicate with remote objects, mainly for
 // calling methods of these objects.
@@ -47,6 +48,17 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   // Called when the response is returned. Used for CallMethod().
   typedef base::Callback<void(Response*)> ResponseCallback;
 
+  // Called when a signal is received. Signal* is the incoming signal.
+  typedef base::Callback<void (Signal*)> SignalCallback;
+
+  // Called when the object proxy is connected to the signal.
+  // Parameters:
+  // - the interface name.
+  // - the signal name.
+  // - whether it was successful or not.
+  typedef base::Callback<void (const std::string&, const std::string&, bool)>
+      OnConnectedCallback;
+
   // Calls the method of the remote object and blocks until the response
   // is returned.
   //
@@ -70,6 +82,28 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   virtual void CallMethod(MethodCall* method_call,
                           int timeout_ms,
                           ResponseCallback callback);
+
+  // Requests to connect to the signal from the remote object.
+  //
+  // |signal_callback| will be called in the origin thread, when the
+  // signal is received from the remote object. As it's called in the
+  // origin thread, |signal_callback| can safely reference objects in the
+  // origin thread (i.e. UI thread in most cases).
+  //
+  // |on_connected_callback| is called when the object proxy is connected
+  // to the signal, or failed to be connected, in the origin thread.
+  //
+  // Must be called in the origin thread.
+  virtual void ConnectToSignal(const std::string& interface_name,
+                               const std::string& signal_name,
+                               SignalCallback signal_callback,
+                               OnConnectedCallback on_connected_callback);
+
+  // Detaches from the remote object. The Bus object will take care of
+  // detaching so you don't have to do this manually.
+  //
+  // BLOCKING CALL.
+  virtual void Detach();
 
  private:
   friend class base::RefCountedThreadSafe<ObjectProxy>;
@@ -104,9 +138,45 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   static void OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
                                            void* user_data);
 
+  // Helper function for ConnectToSignal().
+  void ConnectToSignalInternal(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      SignalCallback signal_callback,
+      OnConnectedCallback on_connected_callback);
+
+  // Called when the object proxy is connected to the signal, or failed.
+  void OnConnected(OnConnectedCallback on_connected_callback,
+                   const std::string& interface_name,
+                   const std::string& signal_name,
+                   bool success);
+
+  // Handles the incoming request messages and dispatches to the signal
+  // callbacks.
+  DBusHandlerResult HandleMessage(DBusConnection* connection,
+                                  DBusMessage* raw_message);
+
+  // Runs the method. Helper function for HandleMessage().
+  void RunMethod(SignalCallback signal_callback, Signal* signal);
+
+  // Redirects the function call to HandleMessage().
+  static DBusHandlerResult HandleMessageThunk(DBusConnection* connection,
+                                              DBusMessage* raw_message,
+                                              void* user_data);
+
   Bus* bus_;
   std::string service_name_;
   std::string object_path_;
+
+  // True if the message filter was added.
+  bool filter_added_;
+
+  // The method table where keys are absolute signal names (i.e. interface
+  // name + signal name), and values are the corresponding callbacks.
+  typedef std::map<std::string, SignalCallback> MethodTable;
+  MethodTable method_table_;
+
+  std::vector<std::string> match_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectProxy);
 };

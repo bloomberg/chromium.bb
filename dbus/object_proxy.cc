@@ -7,11 +7,25 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
+
+namespace {
+
+// Gets the absolute signal name by concatenating the interface name and
+// the signal name. Used for building keys for method_table_ in
+// ObjectProxy.
+std::string GetAbsoluteSignalName(
+    const std::string& interface_name,
+    const std::string& signal_name) {
+  return interface_name + "." + signal_name;
+}
+
+}  // namespace
 
 namespace dbus {
 
@@ -20,7 +34,8 @@ ObjectProxy::ObjectProxy(Bus* bus,
                          const std::string& object_path)
     : bus_(bus),
       service_name_(service_name),
-      object_path_(object_path) {
+      object_path_(object_path),
+      filter_added_(false) {
 }
 
 ObjectProxy::~ObjectProxy() {
@@ -80,6 +95,37 @@ void ObjectProxy::CallMethod(MethodCall* method_call,
                                   callback);
   // Wait for the response in the D-Bus thread.
   bus_->PostTaskToDBusThread(FROM_HERE, task);
+}
+
+void ObjectProxy::ConnectToSignal(const std::string& interface_name,
+                                  const std::string& signal_name,
+                                  SignalCallback signal_callback,
+                                  OnConnectedCallback on_connected_callback) {
+  bus_->AssertOnOriginThread();
+
+  bus_->PostTaskToDBusThread(FROM_HERE,
+                             base::Bind(&ObjectProxy::ConnectToSignalInternal,
+                                        this,
+                                        interface_name,
+                                        signal_name,
+                                        signal_callback,
+                                        on_connected_callback));
+}
+
+void ObjectProxy::Detach() {
+  bus_->AssertOnDBusThread();
+
+  if (filter_added_)
+    bus_->RemoveFilterFunction(&ObjectProxy::HandleMessageThunk, this);
+
+  for (size_t i = 0; i < match_rules_.size(); ++i) {
+    ScopedDBusError error;
+    bus_->RemoveMatch(match_rules_[i], error.get());
+    if (error.is_set()) {
+      // There is nothing we can do to recover, so just print the error.
+      LOG(ERROR) << "Failed to remove match rule: " << match_rules_[i];
+    }
+  }
 }
 
 ObjectProxy::OnPendingCallIsCompleteData::OnPendingCallIsCompleteData(
@@ -192,6 +238,135 @@ void ObjectProxy::OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
   self->OnPendingCallIsComplete(pending_call,
                                 data->response_callback);
   delete data;
+}
+
+void ObjectProxy::ConnectToSignalInternal(
+    const std::string& interface_name,
+    const std::string& signal_name,
+    SignalCallback signal_callback,
+    OnConnectedCallback on_connected_callback) {
+  bus_->AssertOnDBusThread();
+
+  // Check if the object is already connected to the signal.
+  const std::string absolute_signal_name =
+      GetAbsoluteSignalName(interface_name, signal_name);
+  if (method_table_.find(absolute_signal_name) != method_table_.end()) {
+    LOG(ERROR) << "The object proxy is already connected to "
+               << absolute_signal_name;
+    return;
+  }
+
+  // Will become true, if everything is successful.
+  bool success = false;
+
+  if (bus_->Connect() && bus_->SetUpAsyncOperations()) {
+    // We should add the filter only once. Otherwise, HandleMessage() will
+    // be called more than once.
+    if (!filter_added_) {
+      bus_->AddFilterFunction(&ObjectProxy::HandleMessageThunk, this);
+      filter_added_ = true;
+    }
+    // Add a match rule so the signal goes through HandleMessage().
+    const std::string match_rule =
+        base::StringPrintf("type='signal', interface='%s', path='%s'",
+                           interface_name.c_str(),
+                           object_path_.c_str());
+    ScopedDBusError error;
+    bus_->AddMatch(match_rule, error.get());;
+    if (error.is_set()) {
+      LOG(ERROR) << "Failed to add match rule: " << match_rule;
+    } else {
+      // Store the match rule, so that we can remove this in Detach().
+      match_rules_.push_back(match_rule);
+      // Add the signal callback to the method table.
+      method_table_[absolute_signal_name] = signal_callback;
+      success = true;
+    }
+  }
+
+  // Run on_connected_callback in the origin thread.
+  bus_->PostTaskToOriginThread(
+      FROM_HERE,
+      base::Bind(&ObjectProxy::OnConnected,
+                 this,
+                 on_connected_callback,
+                 interface_name,
+                 signal_name,
+                 success));
+}
+
+void ObjectProxy::OnConnected(OnConnectedCallback on_connected_callback,
+                              const std::string& interface_name,
+                              const std::string& signal_name,
+                              bool success) {
+  bus_->AssertOnOriginThread();
+
+  on_connected_callback.Run(interface_name, signal_name, success);
+}
+
+DBusHandlerResult ObjectProxy::HandleMessage(
+    DBusConnection* connection,
+    DBusMessage* raw_message) {
+  bus_->AssertOnDBusThread();
+  if (dbus_message_get_type(raw_message) != DBUS_MESSAGE_TYPE_SIGNAL)
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+  // raw_message will be unrefed on exit of the function. Increment the
+  // reference so we can use it in Signal.
+  dbus_message_ref(raw_message);
+  scoped_ptr<Signal> signal(
+      Signal::FromRawMessage(raw_message));
+
+  // The signal is not coming from the remote object we are attaching to.
+  if (signal->GetPath() != object_path_)
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+  const std::string interface = signal->GetInterface();
+  const std::string member = signal->GetMember();
+
+  // Check if we know about the method.
+  const std::string absolute_signal_name = GetAbsoluteSignalName(
+      interface, member);
+  MethodTable::const_iterator iter = method_table_.find(absolute_signal_name);
+  if (iter == method_table_.end()) {
+    // Don't know about the method.
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  if (bus_->HasDBusThread()) {
+    // Post a task to run the method in the origin thread.
+    // Transfer the ownership of |signal| to RunMethod().
+    // |released_signal| will be deleted in RunMethod().
+    Signal* released_signal = signal.release();
+    bus_->PostTaskToOriginThread(FROM_HERE,
+                                 base::Bind(&ObjectProxy::RunMethod,
+                                            this,
+                                            iter->second,
+                                            released_signal));
+  } else {
+    // If the D-Bus thread is not used, just call the method directly. We
+    // don't need the complicated logic to wait for the method call to be
+    // complete.
+    iter->second.Run(signal.get());
+  }
+
+  return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+void ObjectProxy::RunMethod(SignalCallback signal_callback,
+                            Signal* signal) {
+  bus_->AssertOnOriginThread();
+
+  signal_callback.Run(signal);
+  delete signal;
+}
+
+DBusHandlerResult ObjectProxy::HandleMessageThunk(
+    DBusConnection* connection,
+    DBusMessage* raw_message,
+    void* user_data) {
+  ObjectProxy* self = reinterpret_cast<ObjectProxy*>(user_data);
+  return self->HandleMessage(connection, raw_message);
 }
 
 }  // namespace dbus

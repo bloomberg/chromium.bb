@@ -52,6 +52,17 @@ class EndToEndAsyncTest : public testing::Test {
     object_proxy_ = bus_->GetObjectProxy("org.chromium.TestService",
                                          "/org/chromium/TestObject");
     ASSERT_TRUE(bus_->HasDBusThread());
+
+    // Connect to the "Test" signal from the remote object.
+    object_proxy_->ConnectToSignal(
+        "org.chromium.TestInterface",
+        "Test",
+        base::Bind(&EndToEndAsyncTest::OnTestSignal,
+                   base::Unretained(this)),
+        base::Bind(&EndToEndAsyncTest::OnConnected,
+                   base::Unretained(this)));
+    // Wait until the object proxy is connected to the signal.
+    message_loop_.Run();
   }
 
   void TearDown() {
@@ -111,12 +122,36 @@ class EndToEndAsyncTest : public testing::Test {
     message_loop_.Quit();
   }
 
+  // Called when the "Test" signal is received, in the main thread.
+  // Copy the string payload to |test_signal_string_|.
+  void OnTestSignal(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    ASSERT_TRUE(reader.PopString(&test_signal_string_));
+    message_loop_.Quit();
+  }
+
+  // Called when connected to the signal.
+  void OnConnected(const std::string& interface_name,
+                   const std::string& signal_name,
+                   bool success) {
+    ASSERT_TRUE(success);
+    message_loop_.Quit();
+  }
+
+  // Wait for the hey signal to be received.
+  void WaitForTestSignal() {
+    // OnTestSignal() will quit the message loop.
+    message_loop_.Run();
+  }
+
   MessageLoop message_loop_;
   std::vector<std::string> response_strings_;
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> bus_;
   dbus::ObjectProxy* object_proxy_;
   scoped_ptr<dbus::TestService> test_service_;
+  // Text message from "Test" signal.
+  std::string test_signal_string_;
 };
 
 TEST_F(EndToEndAsyncTest, Echo) {
@@ -197,4 +232,14 @@ TEST_F(EndToEndAsyncTest, BrokenMethod) {
 
   // Should fail because the method is broken.
   ASSERT_EQ("", response_strings_[0]);
+}
+
+TEST_F(EndToEndAsyncTest, TestSignal) {
+  const char kMessage[] = "hello, world";
+  // Send the test signal from the exported object.
+  test_service_->SendTestSignal(kMessage);
+  // Receive the signal with the object proxy. The signal is handeled in
+  // EndToEndAsyncTest::OnTestSignal() in the main thread.
+  WaitForTestSignal();
+  ASSERT_EQ(kMessage, test_signal_string_);
 }

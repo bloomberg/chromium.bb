@@ -66,6 +66,21 @@ bool TestService::HasDBusThread() {
   return bus_->HasDBusThread();
 }
 
+void TestService::SendTestSignal(const std::string& message) {
+  message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&TestService::SendTestSignalInternal,
+                 base::Unretained(this),
+                 message));
+}
+
+void TestService::SendTestSignalInternal(const std::string& message) {
+  dbus::Signal signal("org.chromium.TestInterface", "Test");
+  dbus::MessageWriter writer(&signal);
+  writer.AppendString(message);
+  exported_object_->SendSignal(&signal);
+}
+
 void TestService::ShutdownInternal() {
   bus_->Shutdown(base::Bind(&TestService::OnShutdown,
                             base::Unretained(this)));

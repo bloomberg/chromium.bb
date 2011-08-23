@@ -24,6 +24,7 @@ namespace dbus {
 class Bus;
 class MethodCall;
 class Response;
+class Signal;
 
 // ExportedObject is used to export objects and methods to other D-Bus
 // clients.
@@ -55,8 +56,8 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
   //
   // |method_call_callback| will be called in the origin thread, when the
   // exported method is called. As it's called in the origin thread,
-  // callback| can safely reference objects in the origin thread (i.e. UI
-  // thread in most cases).
+  // |method_callback| can safely reference objects in the origin thread
+  // (i.e. UI thread in most cases).
   //
   // BLOCKING CALL.
   virtual bool ExportMethodAndBlock(const std::string& interface_name,
@@ -74,6 +75,10 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
                             const std::string& method_name,
                             MethodCallCallback method_call_callback,
                             OnExportedCallback on_exported_callback);
+
+  // Requests to send the signal from this object. The signal will be sent
+  // asynchronously from the message loop in the D-Bus thread.
+  virtual void SendSignal(Signal* signal);
 
   // Unregisters the object from the bus. The Bus object will take care of
   // unregistering so you don't have to do this manually.
@@ -96,6 +101,9 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
                   const std::string& interface_name,
                   const std::string& method_name,
                   bool success);
+
+  // Helper function for SendSignal().
+  void SendSignalInternal(void* signal_message);
 
   // Registers this object to the bus.
   // Returns true on success, or the object is already registered.

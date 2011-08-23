@@ -332,6 +332,31 @@ MethodCall* MethodCall::FromRawMessage(DBusMessage* raw_message) {
 }
 
 //
+// Signal implementation.
+//
+Signal::Signal(const std::string& interface_name,
+               const std::string& method_name)
+    : Message() {
+  reset_raw_message(dbus_message_new(DBUS_MESSAGE_TYPE_SIGNAL));
+
+  SetInterface(interface_name);
+  SetMember(method_name);
+}
+
+Signal* Signal::FromRawMessage(DBusMessage* raw_message) {
+  DCHECK_EQ(DBUS_MESSAGE_TYPE_SIGNAL, dbus_message_get_type(raw_message));
+
+  const char* interface = dbus_message_get_interface(raw_message);
+  const char* member = dbus_message_get_member(raw_message);
+  std::string interface_string = interface ? interface : "";
+  std::string member_string = member ? member : "";
+
+  Signal* signal = new Signal(interface_string, member_string);
+  signal->reset_raw_message(raw_message);
+  return signal;
+}
+
+//
 // Response implementation.
 //
 

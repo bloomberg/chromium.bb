@@ -136,6 +136,29 @@ class MethodCall : public Message {
   DISALLOW_COPY_AND_ASSIGN(MethodCall);
 };
 
+// Signal is a type of message used to send a signal.
+class Signal : public Message {
+ public:
+  // Creates a signal message for the specified interface name and the
+  // method name.
+  //
+  // For instance, to send "PropertiesChanged" signal of
+  // DBUS_INTERFACE_INTROSPECTABLE interface
+  // ("org.freedesktop.DBus.Introspectable"), create a signal like this:
+  //
+  //   Signal signal(DBUS_INTERFACE_INTROSPECTABLE, "PropertiesChanged");
+  //
+  // The constructor creates the internal raw_message_, so the client
+  // doesn't need to set this with reset_raw_message().
+  Signal(const std::string& interface_name,
+         const std::string& method_name);
+
+  // Returns a newly created SIGNAL from the given raw message of the type
+  // DBUS_MESSAGE_TYPE_SIGNAL. The caller must delete the returned
+  // object. Takes the ownership of |raw_message|.
+  static Signal* FromRawMessage(DBusMessage* raw_message);
+};
+
 // Response is a type of message used for receiving a response from a
 // method via D-Bus.
 class Response : public Message {

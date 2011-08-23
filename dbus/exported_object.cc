@@ -51,6 +51,14 @@ bool ExportedObject::ExportMethodAndBlock(
     MethodCallCallback method_call_callback) {
   bus_->AssertOnDBusThread();
 
+  // Check if the method is already exported.
+  const std::string absolute_method_name =
+      GetAbsoluteMethodName(interface_name, method_name);
+  if (method_table_.find(absolute_method_name) != method_table_.end()) {
+    LOG(ERROR) << absolute_method_name << " is already exported";
+    return false;
+  }
+
   if (!bus_->Connect())
     return false;
   if (!bus_->SetUpAsyncOperations())
@@ -60,12 +68,7 @@ bool ExportedObject::ExportMethodAndBlock(
   if (!Register())
     return false;
 
-  const std::string absolute_method_name =
-      GetAbsoluteMethodName(interface_name, method_name);
-  if (method_table_.find(absolute_method_name) != method_table_.end()) {
-    LOG(ERROR) << absolute_method_name << " is already exported";
-    return false;
-  }
+  // Add the method callback to the method table.
   method_table_[absolute_method_name] = method_call_callback;
 
   return true;
@@ -84,6 +87,25 @@ void ExportedObject::ExportMethod(const std::string& interface_name,
                                   method_call_callback,
                                   on_exported_calback);
   bus_->PostTaskToDBusThread(FROM_HERE, task);
+}
+
+void ExportedObject::SendSignal(Signal* signal) {
+  // For signals, the object path should be set to the path to the sender
+  // object, which is this exported object here.
+  signal->SetPath(object_path_);
+
+  // Increment the reference count so we can safely reference the
+  // underlying signal message until the signal sending is complete. This
+  // will be unref'ed in SendSignalInternal().
+  DBusMessage* signal_message = signal->raw_message();
+  dbus_message_ref(signal_message);
+
+  // Bind() won't compile if we pass signal_message. See the comment at
+  // ObjectProxy::CallMethod() for details.
+  bus_->PostTaskToDBusThread(FROM_HERE,
+                             base::Bind(&ExportedObject::SendSignalInternal,
+                                        this,
+                                        static_cast<void*>(signal_message)));
 }
 
 void ExportedObject::Unregister() {
@@ -122,6 +144,14 @@ void ExportedObject::OnExported(OnExportedCallback on_exported_callback,
   bus_->AssertOnOriginThread();
 
   on_exported_callback.Run(interface_name, method_name, success);
+}
+
+void ExportedObject::SendSignalInternal(void* in_signal_message) {
+  DBusMessage* signal_message =
+      static_cast<DBusMessage*>(in_signal_message);
+  uint32 serial = 0;
+  bus_->Send(signal_message, &serial);
+  dbus_message_unref(signal_message);
 }
 
 bool ExportedObject::Register() {

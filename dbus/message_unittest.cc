@@ -392,6 +392,35 @@ TEST(MessageTest, MethodCall_FromRawMessage) {
   EXPECT_EQ("SomeMethod", method_call->GetMember());
 }
 
+TEST(MessageTest, Signal) {
+  dbus::Signal signal("com.example.Interface", "SomeSignal");
+  EXPECT_TRUE(signal.raw_message() != NULL);
+  EXPECT_EQ(dbus::Message::MESSAGE_SIGNAL, signal.GetMessageType());
+  signal.SetPath("/com/example/Object");
+
+  dbus::MessageWriter writer(&signal);
+  writer.AppendString("payload");
+
+  EXPECT_EQ("path: /com/example/Object\n"
+            "interface: com.example.Interface\n"
+            "member: SomeSignal\n"
+            "signature: s\n"
+            "\n"
+            "string \"payload\"\n",
+            signal.ToString());
+}
+
+TEST(MessageTest, Signal_FromRawMessage) {
+  DBusMessage* raw_message = dbus_message_new(DBUS_MESSAGE_TYPE_SIGNAL);
+  dbus_message_set_interface(raw_message, "com.example.Interface");
+  dbus_message_set_member(raw_message, "SomeSignal");
+
+  scoped_ptr<dbus::Signal> signal(
+      dbus::Signal::FromRawMessage(raw_message));
+  EXPECT_EQ("com.example.Interface", signal->GetInterface());
+  EXPECT_EQ("SomeSignal", signal->GetMember());
+}
+
 TEST(MessageTest, Response) {
   dbus::Response response;
   EXPECT_TRUE(response.raw_message() == NULL);

@@ -20,7 +20,10 @@ class Response;
 
 // The test service is used for end-to-end tests.  The service runs in a
 // separate thread, so it does not interfere the test code that runs in
-// the main thread. Methods such as Echo() and SlowEcho() are exported.
+// the main thread.
+//
+// The test service exports an object with methods such as Echo() and
+// SlowEcho(). The object has ability to send "Test" signal.
 class TestService : public base::Thread {
  public:
   // Options for the test service.
@@ -56,8 +59,14 @@ class TestService : public base::Thread {
   // Returns true if the bus has the D-Bus thread.
   bool HasDBusThread();
 
+  // Sends "Test" signal with the given message from the exported object.
+  void SendTestSignal(const std::string& message);
+
  private:
-  // Helper function used in Shutdown().
+  // Helper function for SendTestSignal().
+  void SendTestSignalInternal(const std::string& message);
+
+  // Helper function for Shutdown().
   void ShutdownInternal();
 
   // Called when a method is exported.

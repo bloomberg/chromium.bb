@@ -4,8 +4,6 @@
 //
 // TODO(satorux):
 // - Handle "disconnected" signal.
-// - Add support for signal sending
-// - Add support for signal monitoring
 // - Collect metrics (ex. # of method calls, method call time, etc.)
 
 #include "dbus/bus.h"
@@ -203,6 +201,9 @@ Bus::Bus(const Options& options)
 Bus::~Bus() {
   DCHECK(!connection_);
   DCHECK(owned_service_names_.empty());
+  DCHECK(match_rules_added_.empty());
+  DCHECK(filter_functions_added_.empty());
+  DCHECK(registered_object_paths_.empty());
   DCHECK_EQ(0, num_pending_watches_);
   DCHECK_EQ(0, num_pending_timeouts_);
 }
@@ -274,6 +275,11 @@ void Bus::ShutdownAndBlock() {
   if (!owned_service_names_.empty()) {
     LOG(ERROR) << "Failed to release all service names. # of services left: "
                << owned_service_names_.size();
+  }
+
+  // Detach from the remote objects.
+  for (size_t i = 0; i < object_proxies_.size(); ++i) {
+    object_proxies_[i]->Detach();
   }
 
   // Private connection should be closed.
@@ -404,6 +410,73 @@ void Bus::SendWithReply(DBusMessage* request,
   CHECK(success) << "Unable to allocate memory";
 }
 
+void Bus::Send(DBusMessage* request, uint32* serial) {
+  DCHECK(connection_);
+  AssertOnDBusThread();
+
+  const bool success = dbus_connection_send(connection_, request, serial);
+  CHECK(success) << "Unable to allocate memory";
+}
+
+void Bus::AddFilterFunction(DBusHandleMessageFunction filter_function,
+                            void* user_data) {
+  DCHECK(connection_);
+  AssertOnDBusThread();
+
+  if (filter_functions_added_.find(filter_function) !=
+      filter_functions_added_.end()) {
+    LOG(ERROR) << "Filter function already exists: " << filter_function;
+    return;
+  }
+
+  const bool success = dbus_connection_add_filter(
+      connection_, filter_function, user_data, NULL);
+  CHECK(success) << "Unable to allocate memory";
+  filter_functions_added_.insert(filter_function);
+}
+
+void Bus::RemoveFilterFunction(DBusHandleMessageFunction filter_function,
+                               void* user_data) {
+  DCHECK(connection_);
+  AssertOnDBusThread();
+
+  if (filter_functions_added_.find(filter_function) ==
+      filter_functions_added_.end()) {
+    LOG(ERROR) << "Requested to remove an unknown filter function: "
+               << filter_function;
+    return;
+  }
+
+  dbus_connection_remove_filter(connection_, filter_function, user_data);
+  filter_functions_added_.erase(filter_function);
+}
+
+void Bus::AddMatch(const std::string& match_rule, DBusError* error) {
+  DCHECK(connection_);
+  AssertOnDBusThread();
+
+  if (match_rules_added_.find(match_rule) != match_rules_added_.end()) {
+    LOG(ERROR) << "Match rule already exists: " << match_rule;
+    return;
+  }
+
+  dbus_bus_add_match(connection_, match_rule.c_str(), error);
+  match_rules_added_.insert(match_rule);
+}
+
+void Bus::RemoveMatch(const std::string& match_rule, DBusError* error) {
+  DCHECK(connection_);
+  AssertOnDBusThread();
+
+  if (match_rules_added_.find(match_rule) == match_rules_added_.end()) {
+    LOG(ERROR) << "Requested to remove an unknown match rule: " << match_rule;
+    return;
+  }
+
+  dbus_bus_remove_match(connection_, match_rule.c_str(), error);
+  match_rules_added_.erase(match_rule);
+}
+
 bool Bus::TryRegisterObjectPath(const std::string& object_path,
                                 const DBusObjectPathVTable* vtable,
                                 void* user_data,
@@ -411,22 +484,34 @@ bool Bus::TryRegisterObjectPath(const std::string& object_path,
   DCHECK(connection_);
   AssertOnDBusThread();
 
-  return dbus_connection_try_register_object_path(
+  DCHECK(registered_object_paths_.find(object_path) ==
+         registered_object_paths_.end())
+      << "Object path already registered: " << object_path;
+
+  const bool success = dbus_connection_try_register_object_path(
       connection_,
       object_path.c_str(),
       vtable,
       user_data,
       error);
+  if (success)
+    registered_object_paths_.insert(object_path);
+  return success;
 }
 
 void Bus::UnregisterObjectPath(const std::string& object_path) {
   DCHECK(connection_);
   AssertOnDBusThread();
 
+  DCHECK(registered_object_paths_.find(object_path) !=
+         registered_object_paths_.end())
+      << "Requested to unregister an unknown object path: " << object_path;
+
   const bool success = dbus_connection_unregister_object_path(
       connection_,
       object_path.c_str());
   CHECK(success) << "Unable to allocate memory";
+  registered_object_paths_.erase(object_path);
 }
 
 void Bus::ShutdownInternal(OnShutdownCallback callback) {

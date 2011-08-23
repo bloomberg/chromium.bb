@@ -167,7 +167,8 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // The caller must not delete the returned object. The bus will own the
   // object. Never returns NULL.
   //
-  // The object proxy is used to call remote methods.
+  // The object proxy is used to call methods of remote objects, and
+  // receive signals from them.
   //
   // |service_name| looks like "org.freedesktop.NetworkManager", and
   // |object_path| looks like "/org/freedesktop/NetworkManager/Devices/0".
@@ -180,7 +181,8 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // path. The caller must not delete the returned object. The bus will
   // own the object. Never returns NULL.
   //
-  // The exported object is used to export objects to other D-Bus clients.
+  // The exported object is used to export methods of local objects, and
+  // send signal from them.
   //
   // Must be called in the origin thread.
   virtual ExportedObject* GetExportedObject(const std::string& service_name,
@@ -240,14 +242,73 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
                                              int timeout_ms,
                                              DBusError* error);
 
-  // Requests to send a message to the bus.
+  // Requests to send a message to the bus. The reply is handled with
+  // |pending_call| at a later time.
   //
   // BLOCKING CALL.
   virtual void SendWithReply(DBusMessage* request,
                              DBusPendingCall** pending_call,
                              int timeout_ms);
 
-  // Tries to register the object path.
+  // Requests to send a message to the bus. The message serial number will
+  // be stored in |serial|.
+  //
+  // BLOCKING CALL.
+  virtual void Send(DBusMessage* request, uint32* serial);
+
+  // Adds the message filter function. |filter_function| will be called
+  // when incoming messages are received.
+  //
+  // When a new incoming message arrives, filter functions are called in
+  // the order that they were added until the the incoming message is
+  // handled by a filter function.
+  //
+  // The same filter function must not be added more than once.
+  //
+  // BLOCKING CALL.
+  virtual void AddFilterFunction(DBusHandleMessageFunction filter_function,
+                                 void* user_data);
+
+  // Removes the message filter previously added by AddFilterFunction().
+  //
+  // BLOCKING CALL.
+  virtual void RemoveFilterFunction(DBusHandleMessageFunction filter_function,
+                                    void* user_data);
+
+  // Adds the match rule. Messages that match the rule will be processed
+  // by the filter functions added by AddFilterFunction().
+  //
+  // You cannot specify which filter function to use for a match rule.
+  // Instead, you should check if an incoming message is what you are
+  // interested in, in the filter functions.
+  //
+  // The same match rule must not be added more than once.
+  //
+  // The match rule looks like:
+  // "type='signal', interface='org.chromium.SomeInterface'".
+  //
+  // See "Message Bus Message Routing" section in the D-Bus specification
+  // for details about match rules:
+  // http://dbus.freedesktop.org/doc/dbus-specification.html#message-bus-routing
+  //
+  // BLOCKING CALL.
+  virtual void AddMatch(const std::string& match_rule, DBusError* error);
+
+  // Removes the match rule previously added by AddMatch().
+  //
+  // BLOCKING CALL.
+  virtual void RemoveMatch(const std::string& match_rule, DBusError* error);
+
+  // Tries to register the object path. Returns true on success.
+  // Returns false if the object path is already registered.
+  //
+  // |message_function| in |vtable| will be called every time when a new
+  // |message sent to the object path arrives.
+  //
+  // The same object path must not be added more than once.
+  //
+  // See also documentation of |dbus_connection_try_register_object_path| at
+  // http://dbus.freedesktop.org/doc/api/html/group__DBusConnection.html
   //
   // BLOCKING CALL.
   virtual bool TryRegisterObjectPath(const std::string& object_path,
@@ -349,6 +410,12 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   base::PlatformThreadId dbus_thread_id_;
 
   std::set<std::string> owned_service_names_;
+  // The following sets are used to check if rules/object_paths/filters
+  // are properly cleaned up before destruction of the bus object.
+  std::set<std::string> match_rules_added_;
+  std::set<std::string> registered_object_paths_;
+  std::set<DBusHandleMessageFunction> filter_functions_added_;
+
   std::vector<scoped_refptr<dbus::ObjectProxy> > object_proxies_;
   std::vector<scoped_refptr<dbus::ExportedObject> > exported_objects_;
 
