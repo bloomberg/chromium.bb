@@ -12,6 +12,7 @@
 #include "chrome/common/print_messages.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
+#include "printing/page_size_margins.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 #if defined(USE_SKIA)
@@ -147,7 +148,7 @@ void PrintWebViewHelper::RenderPage(
     CGContextRef canvas_ptr = cgContext;
 #endif
 
-    PageSizeMargins page_layout_in_points;
+    printing::PageSizeMargins page_layout_in_points;
     GetPageSizeAndMarginsInPoints(frame, page_number,
                                   print_pages_params_->params,
                                   &page_layout_in_points);

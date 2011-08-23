@@ -14,6 +14,8 @@ struct PrintHostMsg_DidPreviewPage_Params;
 
 namespace printing {
 
+struct PageSizeMargins;
+
 // TabContents offloads print preview message handling to
 // PrintPreviewMessageHandler. This object has the same life time as the
 // TabContents that owns it.
@@ -32,6 +34,8 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
 
   // Message handlers.
   void OnRequestPrintPreview();
+  void OnDidGetDefaultPageLayout(
+      const printing::PageSizeMargins& page_layout_in_points);
   void OnDidGetPreviewPageCount(
       const PrintHostMsg_DidGetPreviewPageCount_Params& params);
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);

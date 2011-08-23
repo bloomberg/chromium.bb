@@ -48,6 +48,7 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
   dict->SetString(printing::kPreviewUIAddr, "0xb33fbeef");
   dict->SetInteger(printing::kPreviewRequestID, 12345);
   dict->SetBoolean(printing::kIsFirstRequest, true);
+  dict->SetBoolean(printing::kSettingDefaultMarginsSelected, true);
   dict->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
 }
 

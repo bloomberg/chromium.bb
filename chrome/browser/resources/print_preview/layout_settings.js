@@ -89,7 +89,7 @@ cr.define('print_preview', function() {
     onLayoutButtonClick_: function() {
       // If the chosen layout is same as before, nothing needs to be done.
       if (this.hasChanged_())
-        setDefaultValuesAndRegeneratePreview();
+        setDefaultValuesAndRegeneratePreview(true);
     },
 
     /**

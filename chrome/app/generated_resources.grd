@@ -4239,13 +4239,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_SHORTCUTS_PROVIDER_DESCRIPTION" desc=" Description of the 'Enable better ranking of previously selected shortcuts in omnibox' lab.">
         Remembers commonly selected autocomplete results based on the omnibox search term and offers those URLs the next time that same search term is typed.
-      </message>      
+      </message>
       <message name="IDS_FLAGS_MEMORY_WIDGET_NAME" desc="Name of the 'Show memory status' lab.">
         Show memory status
       </message>
       <message name="IDS_FLAGS_MEMORY_WIDGET_DESCRIPTION" desc="Description of the 'Show memory status' lab.">
         Shows the amount of free memory in the status area. Click on the menu for more information about system memory.
-      </message>      
+      </message>
       <message name="IDS_FLAGS_DOWNLOADS_NEW_UI_NAME" desc="Name of the 'New Downloads UI' lab.">
         New Downloads UI
       </message>
@@ -6027,6 +6027,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER" desc="Checkbox label that provides a choice to print the headers and footers.">
         Headers and footers
+      </message>
+      <message name="IDS_PRINT_PREVIEW_MARGINS_LABEL" desc="Margins option label. Provides user the option to change the margins of the printed page.">
+        Margins
+      </message>
+      <message name="IDS_PRINT_PREVIEW_DEFAULT_MARGINS" desc="Option that specifies the page be printed with default margins.">
+        Default
+      </message>
+      <message name="IDS_PRINT_PREVIEW_NO_MARGINS" desc="Option that specifies the page be printed with no margins.">
+        None
+      </message>
+      <message name="IDS_PRINT_PREVIEW_CUSTOM_MARGINS" desc="Option that specifies the page be printed with user-specified custom margins.">
+        Custom
       </message>
 
       <!-- Load State -->
@@ -9221,7 +9233,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Album
       </message>
       <message name="IDS_FILE_BROWSER_ID3_BPM" desc="BPM ">
-        BPM 
+        BPM
       </message>
       <message name="IDS_FILE_BROWSER_ID3_COMPOSER" desc="Composer">
         Composer

@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_restriction.h"
+#include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 
 namespace {
@@ -195,6 +196,17 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
   }
 }
 
+void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
+    const PageSizeMargins& page_layout_in_points) {
+  TabContents* print_preview_tab = GetPrintPreviewTab();
+  if (!print_preview_tab)
+    return;
+
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+  print_preview_ui->OnDidGetDefaultPageLayout(page_layout_in_points);
+}
+
 void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
   // Always need to stop the worker.
   StopWorker(document_cookie);
@@ -214,6 +226,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnPagesReadyForPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDefaultPageLayout,
+                        OnDidGetDefaultPageLayout)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewCancelled,
                         OnPrintPreviewCancelled)
     IPC_MESSAGE_UNHANDLED(handled = false)

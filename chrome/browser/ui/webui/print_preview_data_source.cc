@@ -98,6 +98,10 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("optionsLabel", IDS_PRINT_PREVIEW_OPTIONS_LABEL);
   AddLocalizedString("optionHeaderFooter",
                      IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER);
+  AddLocalizedString("marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL);
+  AddLocalizedString("defaultMargins", IDS_PRINT_PREVIEW_DEFAULT_MARGINS);
+  AddLocalizedString("noMargins", IDS_PRINT_PREVIEW_NO_MARGINS);
+  AddLocalizedString("customMargins", IDS_PRINT_PREVIEW_CUSTOM_MARGINS);
 
   set_json_path("strings.js");
   add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);

@@ -51,6 +51,9 @@ var copiesSettings;
 // Object holding all the layout related settings.
 var layoutSettings;
 
+// Object holding all the margin related settings.
+var marginSettings;
+
 // Object holding all the header footer related settings.
 var headerFooterSettings;
 
@@ -107,6 +110,7 @@ function onLoad() {
   pageSettings = print_preview.PageSettings.getInstance();
   copiesSettings = print_preview.CopiesSettings.getInstance();
   layoutSettings = print_preview.LayoutSettings.getInstance();
+  marginSettings = print_preview.MarginSettings.getInstance();
   headerFooterSettings = print_preview.HeaderFooterSettings.getInstance();
   colorSettings = print_preview.ColorSettings.getInstance();
   printHeader.addEventListeners();
@@ -114,6 +118,7 @@ function onLoad() {
   copiesSettings.addEventListeners();
   headerFooterSettings.addEventListeners();
   layoutSettings.addEventListeners();
+  marginSettings.addEventListeners();
   colorSettings.addEventListeners();
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
@@ -224,7 +229,7 @@ function updateControlsWithSelectedPrinterCapabilities() {
     lastSelectedPrinterIndex = selectedIndex;
 
     // Regenerate the preview data based on selected printer settings.
-    setDefaultValuesAndRegeneratePreview();
+    setDefaultValuesAndRegeneratePreview(true);
   }
 }
 
@@ -255,7 +260,7 @@ function doUpdateCloudPrinterCapabilities(printer) {
   lastSelectedPrinterIndex = selectedIndex;
 
   // Regenerate the preview data based on selected printer settings.
-  setDefaultValuesAndRegeneratePreview();
+  setDefaultValuesAndRegeneratePreview(true);
 }
 
 /**
@@ -325,6 +330,8 @@ function getSettings() {
        'printToPDF': printToPDF,
        'isFirstRequest' : false,
        'headerFooterEnabled': headerFooterSettings.hasHeaderFooter(),
+       'defaultMarginsSelected': marginSettings.isDefaultMarginsSelected(),
+       'margins': marginSettings.customMargins,
        'requestID': -1};
 
   var printerList = $('printer-list');
@@ -837,6 +844,10 @@ function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId,
   cr.dispatchSimpleEvent(document, 'updateSummary');
 }
 
+function onDidGetDefaultPageLayout(pageLayout) {
+  // TODO(aayushkumar): Do something here!
+}
+
 /**
  * Called when no pipelining previewed pages.
  * @param {string} previewUid Preview unique identifier.
@@ -956,8 +967,11 @@ window.addEventListener('DOMContentLoaded', onLoad);
 
 /**
  * Sets the default values and sends a request to regenerate preview data.
+ * Resets the margin options only if |resetMargins| is true.
  */
-function setDefaultValuesAndRegeneratePreview() {
+function setDefaultValuesAndRegeneratePreview(resetMargins) {
+  if (resetMargins)
+    marginSettings.resetMarginsIfNeeded();
   pageSettings.resetState();
   requestPrintPreview();
 }
@@ -972,3 +986,4 @@ function setDefaultValuesAndRegeneratePreview() {
 <include src="header_footer_settings.js"/>
 <include src="layout_settings.js"/>
 <include src="color_settings.js"/>
+<include src="margin_settings.js"/>

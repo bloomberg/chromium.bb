@@ -12,6 +12,7 @@
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"
+#include "printing/page_size_margins.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "skia/ext/platform_device.h"
@@ -149,7 +150,7 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
 Metafile* PrintWebViewHelper::RenderPage(
     const PrintMsg_Print_Params& params, float* scale_factor, int page_number,
     bool is_preview, WebFrame* frame, Metafile* metafile) {
-  PageSizeMargins page_layout_in_points;
+  printing::PageSizeMargins page_layout_in_points;
   GetPageSizeAndMarginsInPoints(frame, page_number, params,
                                 &page_layout_in_points);
 

@@ -17,7 +17,10 @@
 #include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "chrome/common/print_messages.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
+
+using printing::PageSizeMargins;
 
 namespace {
 
@@ -152,6 +155,26 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
   StringValue title(initiator_tab_title_);
   CallJavascriptFunction("onDidGetPreviewPageCount", count, modifiable,
                          request_id, title);
+}
+
+void PrintPreviewUI::OnDidGetDefaultPageLayout(
+    const PageSizeMargins& page_layout) {
+  if (page_layout.margin_top < 0 || page_layout.margin_left < 0 ||
+      page_layout.margin_bottom < 0 || page_layout.margin_right < 0 ||
+      page_layout.content_width < 0 || page_layout.content_height < 0) {
+    NOTREACHED();
+    return;
+  }
+
+  base::DictionaryValue layout;
+  layout.SetDouble(printing::kSettingMarginTop, page_layout.margin_top);
+  layout.SetDouble(printing::kSettingMarginLeft, page_layout.margin_left);
+  layout.SetDouble(printing::kSettingMarginBottom, page_layout.margin_bottom);
+  layout.SetDouble(printing::kSettingMarginRight, page_layout.margin_right);
+  layout.SetDouble(printing::kSettingContentWidth, page_layout.content_width);
+  layout.SetDouble(printing::kSettingContentHeight, page_layout.content_height);
+
+  CallJavascriptFunction("onDidGetDefaultPageLayout", layout);
 }
 
 void PrintPreviewUI::OnDidPreviewPage(int page_number,

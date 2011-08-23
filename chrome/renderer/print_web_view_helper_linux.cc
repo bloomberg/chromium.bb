@@ -13,6 +13,7 @@
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/metafile_skia_wrapper.h"
+#include "printing/page_size_margins.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -180,7 +181,7 @@ void PrintWebViewHelper::PrintPageInternal(
     const gfx::Size& canvas_size,
     WebFrame* frame,
     printing::Metafile* metafile) {
-  PageSizeMargins page_layout_in_points;
+  printing::PageSizeMargins page_layout_in_points;
   GetPageSizeAndMarginsInPoints(frame, params.page_number, params.params,
                                 &page_layout_in_points);
 

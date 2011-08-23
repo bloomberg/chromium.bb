@@ -46,6 +46,7 @@
         'page_range.h',
         'page_setup.cc',
         'page_setup.h',
+        'page_size_margins.h',
         'pdf_metafile_cairo_linux.cc',
         'pdf_metafile_cairo_linux.h',
         'pdf_metafile_cg_mac.cc',

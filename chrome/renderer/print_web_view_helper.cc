@@ -23,6 +23,7 @@
 #include "content/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile_impl.h"
+#include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -58,9 +59,11 @@ using base::mac::ScopedCFTypeRef;
 #endif
 using printing::ConvertPixelsToPoint;
 using printing::ConvertPixelsToPointDouble;
+using printing::ConvertPointsToPixelDouble;
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
 using printing::GetHeaderFooterSegmentWidth;
+using printing::PageSizeMargins;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDocument;
 using WebKit::WebElement;
@@ -104,18 +107,23 @@ bool PrintMsg_Print_Params_IsEmpty(const PrintMsg_Print_Params& params) {
          !params.supports_alpha_blend;
 }
 
-bool PrintMsg_Print_Params_IsEqual(
-    const PrintMsg_PrintPages_Params& oldParams,
-    const PrintMsg_PrintPages_Params& newParams) {
-  return oldParams.params.desired_dpi == newParams.params.desired_dpi &&
-         oldParams.params.max_shrink == newParams.params.max_shrink &&
-         oldParams.params.min_shrink == newParams.params.min_shrink &&
-         oldParams.params.dpi == newParams.params.dpi &&
-         oldParams.params.printable_size == newParams.params.printable_size &&
-         oldParams.params.selection_only == newParams.params.selection_only &&
+bool PageLayoutIsEqual(const PrintMsg_PrintPages_Params& oldParams,
+                       const PrintMsg_PrintPages_Params& newParams) {
+  return oldParams.params.printable_size == newParams.params.printable_size &&
          oldParams.params.page_size == newParams.params.page_size &&
          oldParams.params.margin_top == newParams.params.margin_top &&
          oldParams.params.margin_left == newParams.params.margin_left &&
+         oldParams.params.desired_dpi == newParams.params.desired_dpi &&
+         oldParams.params.dpi == newParams.params.dpi;
+}
+
+bool PrintMsg_Print_Params_IsEqual(
+    const PrintMsg_PrintPages_Params& oldParams,
+    const PrintMsg_PrintPages_Params& newParams) {
+  return PageLayoutIsEqual(oldParams, newParams) &&
+         oldParams.params.max_shrink == newParams.params.max_shrink &&
+         oldParams.params.min_shrink == newParams.params.min_shrink &&
+         oldParams.params.selection_only == newParams.params.selection_only &&
          oldParams.params.supports_alpha_blend ==
              newParams.params.supports_alpha_blend &&
          oldParams.pages.size() == newParams.pages.size() &&
@@ -136,6 +144,77 @@ void CalculatePrintCanvasSize(const PrintMsg_Print_Params& print_params,
 
   result->set_height(ConvertUnit(print_params.printable_size.height(), dpi,
                                  print_params.desired_dpi));
+}
+
+// Get the margins option selected and set custom margins appropriately.
+void SetCustomMarginsIfSelected(const DictionaryValue& job_settings,
+                                PrintMsg_PrintPages_Params* settings) {
+  bool default_margins_selected;
+  if (!job_settings.GetBoolean(printing::kSettingDefaultMarginsSelected,
+                               &default_margins_selected)) {
+    NOTREACHED();
+    default_margins_selected = true;
+  }
+
+  if (default_margins_selected)
+    return;
+
+  DictionaryValue* custom_margins;
+  if (!job_settings.GetDictionary(printing::kSettingMargins,
+                                  &custom_margins)) {
+    NOTREACHED();
+    return;
+  }
+
+  double custom_margin_top_in_points = 0;
+  double custom_margin_left_in_points = 0;
+  double custom_margin_right_in_points = 0;
+  double custom_margin_bottom_in_points = 0;
+  if (!custom_margins->GetDouble(printing::kSettingMarginTop,
+                                 &custom_margin_top_in_points) ||
+      !custom_margins->GetDouble(printing::kSettingMarginLeft,
+                                 &custom_margin_left_in_points) ||
+      !custom_margins->GetDouble(printing::kSettingMarginRight,
+                                 &custom_margin_right_in_points) ||
+      !custom_margins->GetDouble(printing::kSettingMarginBottom,
+                                 &custom_margin_bottom_in_points)) {
+    NOTREACHED();
+    return;
+  }
+
+  int dpi = GetDPI(&settings->params);
+  double custom_margin_top_in_dots = ConvertUnitDouble(
+      custom_margin_top_in_points, printing::kPointsPerInch, dpi);
+  double custom_margin_left_in_dots = ConvertUnitDouble(
+      custom_margin_left_in_points, printing::kPointsPerInch, dpi);
+  double custom_margin_right_in_dots = ConvertUnitDouble(
+      custom_margin_right_in_points, printing::kPointsPerInch, dpi);
+  double custom_margin_bottom_in_dots = ConvertUnitDouble(
+      custom_margin_bottom_in_points, printing::kPointsPerInch, dpi);
+
+
+  if (custom_margin_left_in_dots < 0 || custom_margin_right_in_dots < 0 ||
+      custom_margin_top_in_dots < 0 || custom_margin_bottom_in_dots < 0) {
+    NOTREACHED();
+    return;
+  }
+
+  if (settings->params.page_size.width() < custom_margin_left_in_dots +
+          custom_margin_right_in_dots ||
+      settings->params.page_size.height() < custom_margin_top_in_dots +
+          custom_margin_bottom_in_dots) {
+    NOTREACHED();
+    return;
+  }
+
+  settings->params.margin_top = custom_margin_top_in_dots;
+  settings->params.margin_left = custom_margin_left_in_dots;
+  settings->params.printable_size.set_width(
+      settings->params.page_size.width() - custom_margin_right_in_dots -
+          custom_margin_left_in_dots);
+  settings->params.printable_size.set_height(
+      settings->params.page_size.height() - custom_margin_bottom_in_dots -
+          custom_margin_top_in_dots);
 }
 
 // Get the (x, y) coordinate from where printing of the current text should
@@ -981,6 +1060,17 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   if (settings.params.dpi < kMinDpi || !settings.params.document_cookie)
     return false;
+
+  // Send default page layout to browser process.
+  PageSizeMargins default_page_layout;
+  GetPageSizeAndMarginsInPoints(NULL, -1, settings.params,
+                                &default_page_layout);
+  if (!old_print_pages_params_.get() ||
+      !PageLayoutIsEqual(*old_print_pages_params_, settings)) {
+    Send(new PrintHostMsg_DidGetDefaultPageLayout(routing_id(),
+                                                  default_page_layout));
+  }
+  SetCustomMarginsIfSelected(job_settings, &settings);
 
   if (!job_settings.GetString(printing::kPreviewUIAddr,
                               &(settings.params.preview_ui_addr)) ||

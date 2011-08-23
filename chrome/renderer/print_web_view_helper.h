@@ -29,6 +29,9 @@ struct PrintMsg_PrintPages_Params;
 namespace base {
 class DictionaryValue;
 }
+namespace printing {
+struct PageSizeMargins;
+}
 #if defined(USE_SKIA)
 namespace skia {
 class VectorCanvas;
@@ -79,16 +82,6 @@ class PrepareFrameAndViewForPrint {
   bool finished_;
 
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
-};
-
-// Struct that holds margin and content area sizes of a page in points.
-struct PageSizeMargins {
-  double content_width;
-  double content_height;
-  double margin_top;
-  double margin_right;
-  double margin_bottom;
-  double margin_left;
 };
 
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
@@ -252,7 +245,7 @@ class PrintWebViewHelper : public RenderViewObserver,
       WebKit::WebFrame* frame,
       int page_index,
       const PrintMsg_Print_Params& default_params,
-      PageSizeMargins* page_layout_in_points);
+      printing::PageSizeMargins* page_layout_in_points);
 
   static void UpdatePrintableSizeInPrintParameters(
       WebKit::WebFrame* frame,
@@ -267,7 +260,7 @@ class PrintWebViewHelper : public RenderViewObserver,
       int page_number,
       int total_pages,
       float webkit_scale_factor,
-      const PageSizeMargins& page_layout_in_points,
+      const printing::PageSizeMargins& page_layout_in_points,
       const base::DictionaryValue& header_footer_info);
 
   bool GetPrintFrame(WebKit::WebFrame** frame);

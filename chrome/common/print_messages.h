@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "base/shared_memory.h"
 #include "ipc/ipc_message_macros.h"
+#include "printing/page_size_margins.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -128,6 +129,15 @@ IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)
   // according to the layout specified in PrintMsg_Print_Params.
   IPC_STRUCT_MEMBER(int, page_number)
 IPC_STRUCT_END()
+
+IPC_STRUCT_TRAITS_BEGIN(printing::PageSizeMargins)
+  IPC_STRUCT_TRAITS_MEMBER(content_width)
+  IPC_STRUCT_TRAITS_MEMBER(content_height)
+  IPC_STRUCT_TRAITS_MEMBER(margin_left)
+  IPC_STRUCT_TRAITS_MEMBER(margin_right)
+  IPC_STRUCT_TRAITS_MEMBER(margin_top)
+  IPC_STRUCT_TRAITS_MEMBER(margin_bottom)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PrintMsg_PrintPages_Params)
   // Parameters to render the page as a printed page. It must always be the same
@@ -336,6 +346,11 @@ IPC_MESSAGE_ROUTED0(PrintHostMsg_RequestPrintPreview)
 // Notify the browser the number of pages in the print preview document.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetPreviewPageCount,
                     PrintHostMsg_DidGetPreviewPageCount_Params /* params */)
+
+// Notify the browser of the default page layout according to the currently
+// selected printer and page size.
+IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetDefaultPageLayout,
+                    printing::PageSizeMargins /* page layout in points */)
 
 // Notify the browser a print preview page has been rendered.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_DidPreviewPage,

@@ -24,8 +24,18 @@ const char kSettingCollate[] = "collate";
 // Print out color: true for color, false for grayscale.
 const char kSettingColor[] = "color";
 
+// Key that specifies the height of the content area of the page.
+const char kSettingContentHeight[] = "contentHeight";
+
+// Key that specifies the width of the content area of the page.
+const char kSettingContentWidth[] = "contentWidth";
+
 // Number of copies.
 const char kSettingCopies[] = "copies";
+
+// Key that specifies if the default margins have been selected or not.
+// True if selected, false if not.
+const char kSettingDefaultMarginsSelected[] = "defaultMarginsSelected";
 
 // Device name: Unique printer identifier.
 const char kSettingDeviceName[] = "deviceName";
@@ -70,6 +80,21 @@ const char kSettingHeaderFooterURL[] = "url";
 
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
+
+// Key that specifies the bottom margin of the page.
+const char kSettingMarginBottom[] = "marginBottom";
+
+// Key that specifies the left margin of the page.
+const char kSettingMarginLeft[] = "marginLeft";
+
+// Key that specifies the right margin of the page.
+const char kSettingMarginRight[] = "marginRight";
+
+// Key that specifies the top margin of the page.
+const char kSettingMarginTop[] = "marginTop";
+
+// Key that specifies the array of custom margins as set by the user.
+const char kSettingMargins[] = "margins";
 
 // A page range.
 const char kSettingPageRange[] = "pageRange";

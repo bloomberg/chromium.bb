@@ -18,6 +18,10 @@ class PrintPreviewDataService;
 class PrintPreviewHandler;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 
+namespace printing {
+struct PageSizeMargins;
+}
+
 class PrintPreviewUI : public ChromeWebUI {
  public:
   explicit PrintPreviewUI(TabContents* contents);
@@ -57,6 +61,11 @@ class PrintPreviewUI : public ChromeWebUI {
   // Notifies the Web UI about the page count of the request preview.
   void OnDidGetPreviewPageCount(
       const PrintHostMsg_DidGetPreviewPageCount_Params& params);
+
+  // Notifies the Web UI of the default page layout according to the currently
+  // selected printer and page size.
+  void OnDidGetDefaultPageLayout(
+      const printing::PageSizeMargins& page_layout);
 
   // Notifies the Web UI that the 0-based page |page_number| has been rendered.
   // |preview_request_id| indicates wich request resulted in this response.
