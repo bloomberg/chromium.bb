@@ -1637,7 +1637,7 @@
    fun:TabContentsWrapper::RegisterUserPrefs
 }
 {
-   bug_90369
+   bug_90369_a
    Heapcheck:Leak
    fun:std::string::_Rep::_S_create
    fun:std::string::_Rep::_M_clone
@@ -1645,6 +1645,16 @@
    fun:std::string::append
    fun:FilePath::Append
    fun:ProfileManagerTest_CreateProfilesAsync_Test::TestBody
+}
+{
+   bug_90369_b
+   Heapcheck:Leak
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::reserve
+   fun:std::string::append
+   fun:FilePath::Append
+   fun:ProfileManagerTest_CreateProfileAsyncMultipleRequests_Test::TestBody
 }
 {
    bug_90381_a
