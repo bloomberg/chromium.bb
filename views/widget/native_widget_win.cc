@@ -373,7 +373,6 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       accessibility_view_events_index_(-1),
       accessibility_view_events_(kMaxAccessibilityViewEvents),
       previous_cursor_(NULL),
-      is_input_method_win_(false),
       fullscreen_(false),
       force_hidden_count_(0),
       lock_updates_(false),
@@ -386,9 +385,6 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
-  // We need to delete the input method before calling DestroyRootView(),
-  // because it'll set focus_manager_ to NULL.
-  input_method_.reset();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
   else
@@ -625,17 +621,8 @@ bool NativeWidgetWin::HasMouseCapture() const {
   return GetCapture() == hwnd();
 }
 
-InputMethod* NativeWidgetWin::GetInputMethodNative() {
-  return input_method_.get();
-}
-
-void NativeWidgetWin::ReplaceInputMethod(InputMethod* input_method) {
-  input_method_.reset(input_method);
-  if (input_method) {
-    input_method->set_delegate(this);
-    input_method->Init(GetWidget());
-  }
-  is_input_method_win_ = false;
+InputMethod* NativeWidgetWin::CreateInputMethod() {
+  return views::Widget::IsPureViews() ? new InputMethodWin(this) : NULL;
 }
 
 void NativeWidgetWin::CenterWindow(const gfx::Size& size) {
@@ -841,11 +828,6 @@ void NativeWidgetWin::Close() {
 }
 
 void NativeWidgetWin::CloseNow() {
-  // Destroys the input method before closing the window so that it can be
-  // detached from the widget correctly.
-  input_method_.reset();
-  is_input_method_win_ = false;
-
   // We may already have been destroyed if the selection resulted in a tab
   // switch which will have reactivated the browser window and closed us, so
   // we need to check to see if we're still a window before trying to destroy
@@ -1133,9 +1115,14 @@ LRESULT NativeWidgetWin::OnWndProc(UINT message, WPARAM w_param,
     MessageLoopForUI::current()->RemoveObserver(this);
     OnFinalMessage(window);
   }
-  if (message == WM_ACTIVATE)
+
+  // Only top level widget should store/restore focus.
+  if (message == WM_ACTIVATE && GetWidget()->is_top_level())
     PostProcessActivateMessage(this, LOWORD(w_param));
   if (message == WM_ENABLE && restore_focus_when_enabled_) {
+    // This path should be executed only for top level as
+    // restore_focus_when_enabled_ is set in PostProcessActivateMessage.
+    DCHECK(GetWidget()->is_top_level());
     restore_focus_when_enabled_ = false;
     GetWidget()->GetFocusManager()->RestoreFocusedView();
   }
@@ -1266,14 +1253,6 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 
   delegate_->OnNativeWidgetCreated();
 
-  // delegate_->OnNativeWidgetCreated() creates the focus manager for top-level
-  // widget. Only top-level widget should have an input method.
-  if (delegate_->HasFocusManager() && views::Widget::IsPureViews()) {
-    input_method_.reset(new InputMethodWin(this));
-    input_method_->Init(GetWidget());
-    is_input_method_win_ = true;
-  }
-
   // Get access to a modifiable copy of the system menu.
   GetSystemMenu(hwnd(), false);
   return 0;
@@ -1388,39 +1367,15 @@ void NativeWidgetWin::OnHScroll(int scroll_type,
 LRESULT NativeWidgetWin::OnImeMessages(UINT message,
                                        WPARAM w_param,
                                        LPARAM l_param) {
-  if (!is_input_method_win_) {
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (!input_method || input_method->IsMock()) {
     SetMsgHandled(FALSE);
     return 0;
   }
 
-  InputMethodWin* ime = static_cast<InputMethodWin*>(input_method_.get());
+  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
   BOOL handled = FALSE;
-  LRESULT result = 0;
-  switch (message) {
-    case WM_IME_SETCONTEXT:
-      result = ime->OnImeSetContext(message, w_param, l_param, &handled);
-      break;
-    case WM_IME_STARTCOMPOSITION:
-      result = ime->OnImeStartComposition(message, w_param, l_param, &handled);
-      break;
-    case WM_IME_COMPOSITION:
-      result = ime->OnImeComposition(message, w_param, l_param, &handled);
-      break;
-    case WM_IME_ENDCOMPOSITION:
-      result = ime->OnImeEndComposition(message, w_param, l_param, &handled);
-      break;
-    case WM_CHAR:
-    case WM_SYSCHAR:
-      result = ime->OnChar(message, w_param, l_param, &handled);
-      break;
-    case WM_DEADCHAR:
-    case WM_SYSDEADCHAR:
-      result = ime->OnDeadChar(message, w_param, l_param, &handled);
-      break;
-    default:
-      NOTREACHED() << "Unknown IME message:" << message;
-      break;
-  }
+  LRESULT result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
 
   SetMsgHandled(handled);
   return result;
@@ -1453,8 +1408,10 @@ void NativeWidgetWin::OnInitMenuPopup(HMENU menu,
 
 void NativeWidgetWin::OnInputLangChange(DWORD character_set,
                                         HKL input_language_id) {
-  if (is_input_method_win_) {
-    static_cast<InputMethodWin*>(input_method_.get())->OnInputLangChange(
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+
+  if (input_method && !input_method->IsMock()) {
+    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
         character_set, input_language_id);
   }
 }
@@ -1464,8 +1421,9 @@ LRESULT NativeWidgetWin::OnKeyEvent(UINT message,
                                     LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
   KeyEvent key(msg);
-  if (input_method_.get())
-    input_method_->DispatchKeyEvent(key);
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->DispatchKeyEvent(key);
   else
     DispatchKeyEventPostIME(key);
   return 0;
@@ -1473,8 +1431,9 @@ LRESULT NativeWidgetWin::OnKeyEvent(UINT message,
 
 void NativeWidgetWin::OnKillFocus(HWND focused_window) {
   delegate_->OnNativeBlur(focused_window);
-  if (input_method_.get())
-    input_method_->OnBlur();
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->OnBlur();
   SetMsgHandled(FALSE);
 }
 
@@ -1901,8 +1860,9 @@ LRESULT NativeWidgetWin::OnSetCursor(UINT message,
 
 void NativeWidgetWin::OnSetFocus(HWND focused_window) {
   delegate_->OnNativeFocus(focused_window);
-  if (input_method_.get())
-    input_method_->OnFocus();
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->OnFocus();
   SetMsgHandled(FALSE);
 }
 
@@ -2172,10 +2132,7 @@ void NativeWidgetWin::ExecuteSystemMenuCommand(int command) {
 // static
 void NativeWidgetWin::PostProcessActivateMessage(NativeWidgetWin* widget,
                                                  int activation_state) {
-  if (!widget->delegate_->HasFocusManager()) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(widget->GetWidget()->is_top_level());
   FocusManager* focus_manager = widget->GetWidget()->GetFocusManager();
   if (WA_INACTIVE == activation_state) {
     // We might get activated/inactivated without being enabled, so we need to

@@ -57,26 +57,33 @@ const View* NativeWidgetViews::GetView() const {
 }
 
 void NativeWidgetViews::OnActivate(bool active) {
+  // TODO(oshima): find out if we should check toplevel here.
   if (active_ == active)
     return;
   active_ = active;
   delegate_->OnNativeWidgetActivationChanged(active);
-  InputMethod* input_method = GetInputMethodNative();
+
   // TODO(oshima): Focus change should be separated from window activation.
   // This will be fixed when we have WM API.
-  if (active) {
-    input_method->OnFocus();
-    // See description of got_initial_focus_in_ for details on this.
-    GetWidget()->GetFocusManager()->RestoreFocusedView();
-  } else {
-    input_method->OnBlur();
-    GetWidget()->GetFocusManager()->StoreFocusedView();
+  Widget* widget = GetWidget();
+  if (widget->is_top_level()) {
+    InputMethod* input_method = widget->GetInputMethodDirect();
+    if (active) {
+      input_method->OnFocus();
+      // See description of got_initial_focus_in_ for details on this.
+      widget->GetFocusManager()->RestoreFocusedView();
+    } else {
+      input_method->OnBlur();
+      widget->GetFocusManager()->StoreFocusedView();
+    }
   }
   view_->SchedulePaint();
 }
 
 bool NativeWidgetViews::OnKeyEvent(const KeyEvent& key_event) {
-  GetInputMethodNative()->DispatchKeyEvent(key_event);
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  DCHECK(input_method);
+  input_method->DispatchKeyEvent(key_event);
   return true;
 }
 
@@ -227,24 +234,12 @@ bool NativeWidgetViews::HasMouseCapture() const {
   return WindowManager::Get()->HasMouseCapture(GetWidget());
 }
 
-InputMethod* NativeWidgetViews::GetInputMethodNative() {
-  if (!input_method_.get()) {
+InputMethod* NativeWidgetViews::CreateInputMethod() {
 #if defined(HAVE_IBUS)
-    input_method_.reset(static_cast<InputMethod*>(new InputMethodIBus(this)));
+  return new InputMethodIBus(this);
 #else
-    // TODO(suzhe|oshima): Figure out what to do on windows.
-    input_method_.reset(new MockInputMethod(this));
+  return new MockInputMethod(this);
 #endif
-    input_method_->Init(GetWidget());
-  }
-  return input_method_.get();
-}
-
-void NativeWidgetViews::ReplaceInputMethod(InputMethod* input_method) {
-  CHECK(input_method);
-  input_method_.reset(input_method);
-  input_method->set_delegate(this);
-  input_method->Init(GetWidget());
 }
 
 void NativeWidgetViews::CenterWindow(const gfx::Size& size) {
@@ -334,9 +329,6 @@ void NativeWidgetViews::Close() {
 }
 
 void NativeWidgetViews::CloseNow() {
-  // reset input_method before destroying widget.
-  input_method_.reset();
-
   delete view_;
   view_ = NULL;
 }

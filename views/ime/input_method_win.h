@@ -37,9 +37,15 @@ class InputMethodWin : public InputMethodBase {
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
 
+  // Handles IME messages.
+  LRESULT OnImeMessages(UINT message, WPARAM wparam, LPARAM lparam,
+                        BOOL* handled);
+
   // Message handlers. The native widget is responsible for forwarding following
   // messages to the input method.
   void OnInputLangChange(DWORD character_set, HKL input_language_id);
+
+ private:
   LRESULT OnImeSetContext(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
   LRESULT OnImeStartComposition(
@@ -55,7 +61,7 @@ class InputMethodWin : public InputMethodBase {
   LRESULT OnDeadChar(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
 
- private:
+
   // Overridden from InputMethodBase.
   virtual void FocusedViewWillChange() OVERRIDE;
   virtual void FocusedViewDidChange() OVERRIDE;

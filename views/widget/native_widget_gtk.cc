@@ -393,7 +393,6 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
 NativeWidgetGtk::~NativeWidgetGtk() {
   // We need to delete the input method before calling DestroyRootView(),
   // because it'll set focus_manager_ to NULL.
-  input_method_.reset();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
     DCHECK(widget_ == NULL);
     delete delegate_;
@@ -961,33 +960,21 @@ bool NativeWidgetGtk::HasMouseCapture() const {
   return GTK_WIDGET_HAS_GRAB(window_contents_) || has_pointer_grab_;
 }
 
-InputMethod* NativeWidgetGtk::GetInputMethodNative() {
-  if (!input_method_.get()) {
-    // Create input method when it is requested by a child view.
-    // TODO(suzhe): Always enable input method when we start to use
-    // RenderWidgetHostViewViews in normal ChromeOS.
-    if (!child_ && views::Widget::IsPureViews()) {
+InputMethod* NativeWidgetGtk::CreateInputMethod() {
+  // Create input method when pure views is enabled.
+  // TODO(suzhe): Always enable input method when we start to use
+  // RenderWidgetHostViewViews in normal ChromeOS.
+  if (views::Widget::IsPureViews()) {
 #if defined(HAVE_IBUS)
-      input_method_.reset(InputMethodIBus::IsInputMethodIBusEnabled() ?
-                          static_cast<InputMethod*>(new InputMethodIBus(this)) :
-                          static_cast<InputMethod*>(new InputMethodGtk(this)));
+    return InputMethodIBus::IsInputMethodIBusEnabled() ?
+        static_cast<InputMethod*>(new InputMethodIBus(this)) :
+        static_cast<InputMethod*>(new InputMethodGtk(this));
 #else
-      input_method_.reset(new InputMethodGtk(this));
+    return new InputMethodGtk(this);
 #endif
-      input_method_->Init(GetWidget());
-      if (has_focus_)
-        input_method_->OnFocus();
-    }
   }
-  return input_method_.get();
-}
-
-void NativeWidgetGtk::ReplaceInputMethod(InputMethod* input_method) {
-  input_method_.reset(input_method);
-  if (input_method) {
-    input_method->set_delegate(this);
-    input_method->Init(GetWidget());
-  }
+  // GTK's textfield handles IME.
+  return NULL;
 }
 
 void NativeWidgetGtk::CenterWindow(const gfx::Size& size) {
@@ -1163,7 +1150,6 @@ void NativeWidgetGtk::Close() {
 
 void NativeWidgetGtk::CloseNow() {
   if (widget_) {
-    input_method_.reset();
     gtk_widget_destroy(widget_);  // Triggers OnDestroy().
   }
 }
@@ -1648,12 +1634,13 @@ gboolean NativeWidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
 
   should_handle_menu_key_release_ = false;
 
-  if (child_)
+  if (!GetWidget()->is_top_level())
     return false;
 
   // Only top-level Widget should have an InputMethod instance.
-  if (input_method_.get())
-    input_method_->OnFocus();
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->OnFocus();
 
   // See description of got_initial_focus_in_ for details on this.
   if (!got_initial_focus_in_) {
@@ -1671,19 +1658,21 @@ gboolean NativeWidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
     return false;  // This is the second focus-out event in a row, ignore it.
   has_focus_ = false;
 
-  if (child_)
+  if (GetWidget()->is_top_level())
     return false;
 
   // Only top-level Widget should have an InputMethod instance.
-  if (input_method_.get())
-    input_method_->OnBlur();
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->OnBlur();
   return false;
 }
 
 gboolean NativeWidgetGtk::OnEventKey(GtkWidget* widget, GdkEventKey* event) {
   KeyEvent key(reinterpret_cast<NativeEvent>(event));
-  if (input_method_.get())
-    input_method_->DispatchKeyEvent(key);
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->DispatchKeyEvent(key);
   else
     DispatchKeyEventPostIME(key);
 
@@ -2192,7 +2181,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     parent_gtkwidget = gtk_widget_get_parent(parent_gtkwidget);
   } while (parent_gtkwidget);
 
-  return widget;
+  return widget && widget->GetWidget()->is_top_level() ? widget : NULL;
 }
 
 // static

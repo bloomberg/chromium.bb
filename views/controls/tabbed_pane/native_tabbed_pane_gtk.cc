@@ -169,7 +169,6 @@ void NativeTabbedPaneGtk::DoAddTabAtIndex(int index,
   }
 
   GtkWidget* page = page_container->GetNativeView();
-
   // increment ref count not to delete on remove below
   g_object_ref(page);
   // detach parent from the page so that we can add it to notebook

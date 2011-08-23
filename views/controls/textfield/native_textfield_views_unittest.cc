@@ -181,7 +181,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     model_->ClearEditHistory();
 
     input_method_ = new MockInputMethod();
-    widget_->native_widget_private()->ReplaceInputMethod(input_method_);
+    widget_->ReplaceInputMethod(input_method_);
 
     // Assumes the Widget is always focused.
     input_method_->OnFocus();

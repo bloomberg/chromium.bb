@@ -14,7 +14,6 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/size.h"
 #include "views/focus/focus_manager.h"
-#include "views/ime/input_method_delegate.h"
 #include "views/widget/native_widget_private.h"
 #include "views/widget/widget.h"
 
@@ -42,8 +41,7 @@ class NativeWidgetDelegate;
 
 // Widget implementation for GTK.
 class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
-                                     public ui::ActiveWindowWatcherX::Observer,
-                                     public internal::InputMethodDelegate {
+                                     public ui::ActiveWindowWatcherX::Observer {
  public:
   explicit NativeWidgetGtk(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetGtk();
@@ -166,8 +164,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   virtual void SetMouseCapture() OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;
   virtual bool HasMouseCapture() const OVERRIDE;
-  virtual InputMethod* GetInputMethodNative() OVERRIDE;
-  virtual void ReplaceInputMethod(InputMethod* input_method) OVERRIDE;
+  virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
                                                 bool* maximized) const OVERRIDE;
@@ -433,8 +430,6 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // If the widget has ever been painted. This is used to guarantee
   // that window manager shows the window only after the window is painted.
   bool painted_;
-
-  scoped_ptr<InputMethod> input_method_;
 
   // The compositor for accelerated drawing.
   scoped_refptr<ui::Compositor> compositor_;

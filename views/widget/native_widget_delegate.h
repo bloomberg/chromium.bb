@@ -20,6 +20,8 @@ enum TouchStatus;
 #endif
 
 namespace views {
+class InputMethod;
+
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +100,11 @@ class VIEWS_EXPORT NativeWidgetDelegate {
 
   // Runs the specified native command. Returns true if the command is handled.
   virtual bool ExecuteCommand(int command_id) = 0;
+
+  // Returns the input method of the widget this delegate is associated with.
+  // Note that this does not use the top level widget, so may return NULL
+  // if the widget doesn't have input method.
+  virtual InputMethod* GetInputMethodDirect() = 0;
 
   //
   virtual Widget* AsWidget() = 0;

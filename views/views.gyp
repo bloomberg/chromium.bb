@@ -239,6 +239,8 @@
         'focus/external_focus_tracker.h',
         'focus/focus_manager.cc',
         'focus/focus_manager.h',
+        'focus/focus_manager_factory.cc',
+        'focus/focus_manager_factory.h',
         'focus/focus_search.cc',
         'focus/focus_search.h',
         'focus/focus_util_win.cc',

@@ -114,7 +114,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
     ASSERT_TRUE(combobox_view_);
 
     input_method_ = new MockInputMethod();
-    widget_->native_widget_private()->ReplaceInputMethod(input_method_);
+    widget_->ReplaceInputMethod(input_method_);
 
     // Assumes the Widget is always focused.
     input_method_->OnFocus();
@@ -164,4 +164,3 @@ TEST_F(NativeComboboxViewsTest, KeyTest) {
 }
 
 }  // namespace views
-

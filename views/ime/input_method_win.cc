@@ -99,6 +99,37 @@ bool InputMethodWin::IsActive() {
   return active_;
 }
 
+LRESULT InputMethodWin::OnImeMessages(
+    UINT message, WPARAM w_param, LPARAM l_param, BOOL* handled) {
+  LRESULT result = 0;
+  switch (message) {
+    case WM_IME_SETCONTEXT:
+      result = OnImeSetContext(message, w_param, l_param, handled);
+      break;
+    case WM_IME_STARTCOMPOSITION:
+      result = OnImeStartComposition(message, w_param, l_param, handled);
+      break;
+    case WM_IME_COMPOSITION:
+      result = OnImeComposition(message, w_param, l_param, handled);
+      break;
+    case WM_IME_ENDCOMPOSITION:
+      result = OnImeEndComposition(message, w_param, l_param, handled);
+      break;
+    case WM_CHAR:
+    case WM_SYSCHAR:
+      result = OnChar(message, w_param, l_param, handled);
+      break;
+    case WM_DEADCHAR:
+    case WM_SYSDEADCHAR:
+      result = OnDeadChar(message, w_param, l_param, handled);
+      break;
+    default:
+      NOTREACHED() << "Unknown IME message:" << message;
+      break;
+  }
+  return result;
+}
+
 void InputMethodWin::FocusedViewWillChange() {
   ConfirmCompositionText();
 }

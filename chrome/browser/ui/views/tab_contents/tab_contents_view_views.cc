@@ -169,8 +169,10 @@ void TabContentsViewViews::Focus() {
   }
 
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
-  GetFocusManager()->FocusNativeView(rwhv ? rwhv->GetNativeView()
-                                          : GetNativeView());
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager)
+    focus_manager->FocusNativeView(rwhv ? rwhv->GetNativeView()
+                                   : GetNativeView());
 }
 
 void TabContentsViewViews::SetInitialFocus() {

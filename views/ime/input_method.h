@@ -102,6 +102,9 @@ class VIEWS_EXPORT InputMethod {
   // ui::TEXT_INPUT_TYPE_NONE if there is no focused text input client.
   virtual ui::TextInputType GetTextInputType() const = 0;
 
+  // Returns true if the input method is a mock and not real.
+  virtual bool IsMock() const = 0;
+
   // TODO(suzhe): Support mouse/touch event.
 };
 

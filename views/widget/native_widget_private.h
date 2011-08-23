@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
+#include "views/ime/input_method_delegate.h"
 #include "views/widget/native_widget.h"
 
 namespace gfx {
@@ -36,7 +37,8 @@ namespace internal {
 //             NativeWidget implementations. This file should not be included
 //             in code that does not fall into one of these use cases.
 //
-class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
+class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
+                                         public internal::InputMethodDelegate {
  public:
   virtual ~NativeWidgetPrivate() {}
 
@@ -129,12 +131,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // Note that all widgets in a widget hierarchy share the same input method.
   // TODO(suzhe): rename to GetInputMethod() when NativeWidget implementation
   // class doesn't inherit Widget anymore.
-  virtual InputMethod* GetInputMethodNative() = 0;
+  virtual InputMethod* CreateInputMethod() = 0;
 
-  // Sets a different InputMethod instance to this native widget. The instance
-  // must not be initialized, the ownership will be assumed by the native
-  // widget. It's only for testing purpose.
-  virtual void ReplaceInputMethod(InputMethod* input_method) = 0;
 
   // Centers the window and sizes it to the specified size.
   virtual void CenterWindow(const gfx::Size& size) = 0;

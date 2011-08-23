@@ -10,7 +10,6 @@
 
 #include "base/message_loop.h"
 #include "ui/gfx/transform.h"
-#include "views/ime/input_method_delegate.h"
 #include "views/widget/native_widget_private.h"
 
 namespace views {
@@ -27,8 +26,7 @@ class NativeWidgetView;
 //
 //  A NativeWidget implementation that uses another View as its native widget.
 //
-class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate,
-                                       public internal::InputMethodDelegate {
+class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
  public:
   explicit NativeWidgetViews(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetViews();
@@ -77,8 +75,7 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate,
   virtual void SetMouseCapture() OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;
   virtual bool HasMouseCapture() const OVERRIDE;
-  virtual InputMethod* GetInputMethodNative() OVERRIDE;
-  virtual void ReplaceInputMethod(InputMethod* input_method) OVERRIDE;
+  virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
                                                 bool* maximized) const OVERRIDE;
@@ -163,8 +160,6 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate,
   Widget::InitParams::Ownership ownership_;
 
   bool delete_native_view_;
-
-  scoped_ptr<InputMethod> input_method_;
 
   std::map<const char*, void*> window_properties_;
 

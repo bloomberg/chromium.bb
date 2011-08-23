@@ -21,7 +21,6 @@
 #include "base/win/scoped_comptr.h"
 #include "ui/base/win/window_impl.h"
 #include "views/focus/focus_manager.h"
-#include "views/ime/input_method_delegate.h"
 #include "views/layout/layout_manager.h"
 #include "views/widget/native_widget_private.h"
 
@@ -86,9 +85,8 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 //
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
-                                     public internal::NativeWidgetPrivate,
                                      public MessageLoopForUI::Observer,
-                                     public internal::InputMethodDelegate {
+                                     public internal::NativeWidgetPrivate {
  public:
   explicit NativeWidgetWin(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetWin();
@@ -216,8 +214,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void SetMouseCapture() OVERRIDE;
   virtual void ReleaseMouseCapture() OVERRIDE;
   virtual bool HasMouseCapture() const OVERRIDE;
-  virtual InputMethod* GetInputMethodNative() OVERRIDE;
-  virtual void ReplaceInputMethod(InputMethod* input_method) OVERRIDE;
+  virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
                                                 bool* maximized) const OVERRIDE;
@@ -609,11 +606,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   gfx::NativeCursor previous_cursor_;
 
   ViewProps props_;
-
-  scoped_ptr<InputMethod> input_method_;
-
-  // Indicates if the |input_method_| is an InputMethodWin instance.
-  bool is_input_method_win_;
 
   // True if we're in fullscreen mode.
   bool fullscreen_;

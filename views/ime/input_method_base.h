@@ -48,6 +48,7 @@ class VIEWS_EXPORT InputMethodBase : public InputMethod,
 
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
+  virtual bool IsMock() const OVERRIDE;
 
   // Overridden from FocusChangeListener. Derived classes shouldn't override
   // this method. Override FocusedViewWillChange() and FocusedViewDidChange()

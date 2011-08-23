@@ -11,6 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "views/controls/menu/menu_controller.h"
+#include "views/focus/focus_manager_factory.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method.h"
 #include "views/views_delegate.h"
@@ -104,7 +105,8 @@ Widget::InitParams::InitParams()
       double_buffer(false),
       parent(NULL),
       parent_widget(NULL),
-      native_widget(NULL) {
+      native_widget(NULL),
+      top_level(false) {
 }
 
 Widget::InitParams::InitParams(Type type)
@@ -123,7 +125,8 @@ Widget::InitParams::InitParams(Type type)
       double_buffer(false),
       parent(NULL),
       parent_widget(NULL),
-      native_widget(NULL) {
+      native_widget(NULL),
+      top_level(false) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,7 +152,8 @@ Widget::Widget()
       widget_closed_(false),
       saved_maximized_state_(false),
       minimum_size_(100, 100),
-      focus_on_creation_(true) {
+      focus_on_creation_(true),
+      is_top_level_(false) {
 }
 
 Widget::~Widget() {
@@ -159,7 +163,6 @@ Widget::~Widget() {
   }
 
   DestroyRootView();
-
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET)
     delete native_widget_;
 }
@@ -275,6 +278,10 @@ bool Widget::IsDebugPaintEnabled() {
 }
 
 void Widget::Init(const InitParams& params) {
+  is_top_level_ = params.top_level ||
+      (!params.child &&
+       params.type != InitParams::TYPE_CONTROL &&
+       params.type != InitParams::TYPE_TOOLTIP);
   widget_delegate_ =
       params.delegate ? params.delegate : new DefaultWidgetDelegate(this);
   ownership_ = params.ownership;
@@ -361,6 +368,12 @@ Widget* Widget::GetTopLevelWidget() {
 }
 
 const Widget* Widget::GetTopLevelWidget() const {
+  // GetTopLevelNativeWidget doesn't work during destruction because
+  // property is gone after gobject gets deleted. Short circuit here
+  // for toplevel so that InputMethod can remove itself from
+  // focus manager.
+  if (is_top_level())
+    return this;
   return native_widget_->GetTopLevelWidget();
 }
 
@@ -432,7 +445,7 @@ void Widget::Close() {
     // |FormManager::ViewRemoved()| calls are fouled.  We clear focus here
     // to avoid these redundant steps and to avoid accessing deleted views
     // that may have been in focus.
-    if (GetTopLevelWidget() == this && focus_manager_.get())
+    if (is_top_level() && focus_manager_.get())
       focus_manager_->SetFocusedView(NULL);
 
     native_widget_->Close();
@@ -579,16 +592,12 @@ ThemeProvider* Widget::GetThemeProvider() const {
 
 FocusManager* Widget::GetFocusManager() {
   Widget* toplevel_widget = GetTopLevelWidget();
-  if (toplevel_widget && toplevel_widget != this)
-    return toplevel_widget->focus_manager_.get();
-
-  return focus_manager_.get();
+  return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
 }
 
 InputMethod* Widget::GetInputMethod() {
   Widget* toplevel_widget = GetTopLevelWidget();
-  return toplevel_widget ?
-      toplevel_widget->native_widget_->GetInputMethodNative() : NULL;
+  return toplevel_widget ? toplevel_widget->GetInputMethodDirect() : NULL;
 }
 
 void Widget::RunShellDrag(View* view, const ui::OSExchangeData& data,
@@ -832,11 +841,8 @@ void Widget::OnNativeWidgetVisibilityChanged(bool visible) {
 }
 
 void Widget::OnNativeWidgetCreated() {
-  if (GetTopLevelWidget() == this) {
-    // Only the top level Widget in a native widget hierarchy has a focus
-    // manager.
-    focus_manager_.reset(new FocusManager(this));
-  }
+  if (is_top_level())
+    focus_manager_.reset(FocusManagerFactory::Create(this));
 
   native_widget_->SetAccessibleRole(
       widget_delegate_->GetAccessibleWindowRole());
@@ -968,6 +974,12 @@ bool Widget::ExecuteCommand(int command_id) {
   return widget_delegate_->ExecuteWindowsCommand(command_id);
 }
 
+InputMethod* Widget::GetInputMethodDirect() {
+  if (!input_method_.get() && is_top_level())
+    ReplaceInputMethod(native_widget_->CreateInputMethod());
+  return input_method_.get();
+}
+
 Widget* Widget::AsWidget() {
   return this;
 }
@@ -1006,7 +1018,8 @@ internal::RootView* Widget::CreateRootView() {
 
 void Widget::DestroyRootView() {
   root_view_.reset();
-
+  // Input method has to be destroyed before focus manager.
+  input_method_.reset();
   // Defer focus manager's destruction. This is for the case when the
   // focus manager is referenced by a child NativeWidgetGtk (e.g. TabbedPane in
   // a dialog). When gtk_widget_destroy is called on the parent, the destroy
@@ -1017,10 +1030,6 @@ void Widget::DestroyRootView() {
   FocusManager* focus_manager = focus_manager_.release();
   if (focus_manager)
     MessageLoop::current()->DeleteSoon(FROM_HERE, focus_manager);
-}
-
-void Widget::ReplaceFocusManager(FocusManager* focus_manager) {
-  focus_manager_.reset(focus_manager);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1096,6 +1105,16 @@ bool Widget::GetSavedBounds(gfx::Rect* bounds, bool* maximize) {
     return true;
   }
   return false;
+}
+
+void Widget::ReplaceInputMethod(InputMethod* input_method) {
+  input_method_.reset(input_method);
+  // TODO(oshima): Gtk's textfield doesn't need views InputMethod.
+  // Remove this check once gtk is removed.
+  if (input_method) {
+    input_method->set_delegate(native_widget_);
+    input_method->Init(this);
+  }
 }
 
 namespace internal {

@@ -26,6 +26,7 @@
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/accelerator_handler.h"
+#include "views/focus/focus_manager_factory.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
@@ -94,7 +95,8 @@ const int kHelpLinkID = count++;
 const int kThumbnailContainerID = count++;  // 45
 const int kThumbnailStarID = count++;
 const int kThumbnailSuperStarID = count++;
-}
+
+}  // namespace
 
 namespace views {
 
@@ -136,7 +138,7 @@ class FocusManagerTest : public testing::Test, public WidgetDelegate {
 
   void FocusNativeView(gfx::NativeView native_view) {
 #if defined(OS_WIN)
-  ::SendMessage(native_view, WM_SETFOCUS, NULL, NULL);
+    ::SendMessage(native_view, WM_SETFOCUS, NULL, NULL);
 #else
     gint return_val;
     GdkEventFocus event;
@@ -290,6 +292,8 @@ class BorderView : public NativeViewHost {
         params.parent = parent->GetWidget()->GetNativeView();
 #elif defined(TOOLKIT_USES_GTK)
         params.parent = native_view();
+#else
+        NOTREACHED();
 #endif
         widget_->Init(params);
         widget_->SetFocusTraversableParentView(this);
@@ -372,7 +376,8 @@ class FocusTraversalTest : public FocusManagerTest {
     View* view = GetContentsView()->GetViewByID(id);
     if (view)
       return view;
-    view = style_tab_->GetSelectedTab()->GetViewByID(id);
+    if (style_tab_)
+      view = style_tab_->GetSelectedTab()->GetViewByID(id);
     if (view)
       return view;
     view = search_border_view_->GetContentsRootView()->GetViewByID(id);
@@ -914,47 +919,32 @@ class TestTabbedPane : public TabbedPane {
   }
 };
 
+#if !defined(TOUCH_UI)
+// TODO(oshima):  replace TOUCH_UI with PURE_VIEWS
+
 // Tests that NativeControls do set the focus View appropriately on the
 // FocusManager.
 TEST_F(FocusManagerTest, FAILS_FocusNativeControls) {
-  TestNativeButton* button = new TestNativeButton(L"Press me");
-  TestCheckbox* checkbox = new TestCheckbox(L"Checkbox");
-  TestRadioButton* radio_button = new TestRadioButton(L"RadioButton");
   TestTextfield* textfield = new TestTextfield();
-  TestCombobox* combobox = new TestCombobox();
   TestTabbedPane* tabbed_pane = new TestTabbedPane();
-  TestNativeButton* tab_button = new TestNativeButton(L"tab button");
+  TestTextfield* textfield2 = new TestTextfield();
 
-  content_view_->AddChildView(button);
-  content_view_->AddChildView(checkbox);
-  content_view_->AddChildView(radio_button);
   content_view_->AddChildView(textfield);
-  content_view_->AddChildView(combobox);
   content_view_->AddChildView(tabbed_pane);
-  tabbed_pane->AddTab(L"Awesome tab", tab_button);
+
+  tabbed_pane->AddTab(L"Awesome textfield", textfield2);
 
   // Simulate the native view getting the native focus (such as by user click).
-  FocusNativeView(button->TestGetNativeControlView());
-  EXPECT_EQ(button, GetFocusManager()->GetFocusedView());
-
-  FocusNativeView(checkbox->TestGetNativeControlView());
-  EXPECT_EQ(checkbox, GetFocusManager()->GetFocusedView());
-
-  FocusNativeView(radio_button->TestGetNativeControlView());
-  EXPECT_EQ(radio_button, GetFocusManager()->GetFocusedView());
-
   FocusNativeView(textfield->TestGetNativeControlView());
   EXPECT_EQ(textfield, GetFocusManager()->GetFocusedView());
-
-  FocusNativeView(combobox->TestGetNativeControlView());
-  EXPECT_EQ(combobox, GetFocusManager()->GetFocusedView());
 
   FocusNativeView(tabbed_pane->TestGetNativeControlView());
   EXPECT_EQ(tabbed_pane, GetFocusManager()->GetFocusedView());
 
-  FocusNativeView(tab_button->TestGetNativeControlView());
-  EXPECT_EQ(tab_button, GetFocusManager()->GetFocusedView());
+  FocusNativeView(textfield2->TestGetNativeControlView());
+  EXPECT_EQ(textfield2, GetFocusManager()->GetFocusedView());
 }
+#endif
 
 // On linux, we don't store/restore focused view because gtk handles
 // this (and pure views will be the same).
@@ -1038,6 +1028,10 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
 }
 #endif
 
+#if !defined(TOUCH_UI)
+// TODO(oshima): There is no tabbed pane in pure views. Replace it
+// with different implementation.
+
 TEST_F(FocusManagerTest, ContainsView) {
   View* view = new View();
   scoped_ptr<View> detached_view(new View());
@@ -1058,6 +1052,7 @@ TEST_F(FocusManagerTest, ContainsView) {
   EXPECT_TRUE(GetFocusManager()->ContainsView(tab_button));
   EXPECT_FALSE(GetFocusManager()->ContainsView(detached_view.get()));
 }
+#endif
 
 TEST_F(FocusTraversalTest, NormalTraversal) {
   const int kTraversalIDs[] = { kTopCheckBoxID,  kAppleTextfieldID,
@@ -1597,6 +1592,7 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = hwnd;
   params.bounds = gfx::Rect(0, 0, 100, 100);
+  params.top_level = true;  // This is top level in views hierarchy.
   widget1->Init(params);
 
   // Get the focus manager directly from the first window.  Should exist
@@ -1607,6 +1603,7 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
   // Create another view window parented to the first view window.
   scoped_ptr<Widget> widget2(new Widget);
   params.parent = widget1->GetNativeView();
+  params.top_level = false;  // This is child widget.
   widget2->Init(params);
 
   // Access the shared focus manager directly from the second window.
@@ -1654,6 +1651,24 @@ class FocusManagerDtorTest : public FocusManagerTest {
     }
 
     DtorTrackVector* dtor_tracker_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(FocusManagerDtorTracked);
+  };
+
+  class TestFocusManagerFactory : public FocusManagerFactory {
+   public:
+    TestFocusManagerFactory(DtorTrackVector* dtor_tracker)
+        : dtor_tracker_(dtor_tracker) {
+    }
+
+    FocusManager* CreateFocusManager(Widget* widget) OVERRIDE {
+      return new FocusManagerDtorTracked(widget, dtor_tracker_);
+    }
+
+   private:
+    DtorTrackVector* dtor_tracker_;
+    DISALLOW_COPY_AND_ASSIGN(TestFocusManagerFactory);
   };
 
   class NativeButtonDtorTracked : public NativeTextButton {
@@ -1672,31 +1687,28 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
   class WindowDtorTracked : public Widget {
    public:
-    WindowDtorTracked(WidgetDelegate* widget_delegate,
-                      DtorTrackVector* dtor_tracker)
+    WindowDtorTracked(DtorTrackVector* dtor_tracker)
         : dtor_tracker_(dtor_tracker) {
-      tracked_focus_manager_ = new FocusManagerDtorTracked(this, dtor_tracker_);
-      Widget::InitParams params;
-      params.delegate = widget_delegate;
-      params.bounds = gfx::Rect(0, 0, 100, 100);
-      Init(params);
-      ReplaceFocusManager(tracked_focus_manager_);
     }
 
     virtual ~WindowDtorTracked() {
       dtor_tracker_->push_back("WindowDtorTracked");
     }
 
-    FocusManagerDtorTracked* tracked_focus_manager_;
     DtorTrackVector* dtor_tracker_;
   };
 
- public:
   virtual void SetUp() {
+    FocusManagerFactory::Install(new TestFocusManagerFactory(&dtor_tracker_));
     // Create WindowDtorTracked that uses FocusManagerDtorTracked.
-    window_ = new WindowDtorTracked(this, &dtor_tracker_);
-    ASSERT_TRUE(GetFocusManager() == static_cast<WindowDtorTracked*>(
-        window_)->tracked_focus_manager_);
+    window_ = new WindowDtorTracked(&dtor_tracker_);
+    Widget::InitParams params;
+    params.delegate = this;
+    params.bounds = gfx::Rect(0, 0, 100, 100);
+    window_->Init(params);
+
+    tracked_focus_manager_ =
+        static_cast<FocusManagerDtorTracked*>(GetFocusManager());
     window_->Show();
   }
 
@@ -1705,8 +1717,10 @@ class FocusManagerDtorTest : public FocusManagerTest {
       window_->Close();
       message_loop()->RunAllPending();
     }
+    FocusManagerFactory::Install(NULL);
   }
 
+  FocusManager* tracked_focus_manager_;
   DtorTrackVector dtor_tracker_;
 };
 

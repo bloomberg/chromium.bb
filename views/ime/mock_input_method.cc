@@ -106,6 +106,10 @@ bool MockInputMethod::IsActive() {
   return active_;
 }
 
+bool MockInputMethod::IsMock() const {
+  return true;
+}
+
 void MockInputMethod::FocusedViewWillChange() {
   TextInputClient* client = GetTextInputClient();
   if (client && client->HasCompositionText())
