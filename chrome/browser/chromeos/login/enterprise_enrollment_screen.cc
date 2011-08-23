@@ -123,7 +123,6 @@ bool EnterpriseEnrollmentScreen::GetInitialUser(std::string* user) {
         // this means we might only want to reenroll with the DMServer so lock
         // the username to what has been stored in the InstallAttrs already.
         *user = value;
-        actor_->SetEditableUser(false);
         return true;
       }
     }
@@ -281,6 +280,7 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
 
   switch (g_browser_process->browser_policy_connector()->LockDevice(user_)) {
     case policy::EnterpriseInstallAttributes::LOCK_SUCCESS: {
+      actor_->SetEditableUser(false);
       // Proceed with policy fetch.
       policy::BrowserPolicyConnector* connector =
           g_browser_process->browser_policy_connector();

@@ -43,14 +43,12 @@ input[type='submit'] {
 }
 
 #email-readonly {
-  display: none;
   font-size: 10pt;
   font-weight: bold;
 }
 
 div.errormsg {
   color: red;
-  display: none;
   font-size: smaller;
 }
 
@@ -109,7 +107,6 @@ font.errormsgspacer {
 #top-blurb-error {
   background-color: #eeb939;
   border-radius: 4px;
-  display: block;
   font-size: 11pt;
   font-weight: bold;
   margin-bottom: 10px;
@@ -125,10 +122,6 @@ font.errormsgspacer {
   background-color: #fff;
   border: #c3d9ff 1px solid;
   padding: 2px;
-}
-
-.access-code-row {
-  display: none;
 }
 
 .access-code-row > td {
@@ -155,14 +148,6 @@ font.errormsgspacer {
 .gaia-le-fpwd,
 .gaia-le-chusr {
   font-size: 70%;
-}
-
-#error-custom {
-  display: none;
-}
-
-#captcha-div {
-  display: none;
 }
 
 #password-row {

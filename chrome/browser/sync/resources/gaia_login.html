@@ -9,7 +9,7 @@
   <div>
     <div id="top-blurb-error">
       <span id="error-signing-in" i18n-content="errorsigningin"></span>
-      <span id="error-custom"></span>
+      <span id="error-custom" hidden></span>
     </div>
     <form id="gaia-login-form">
       <div id="gaia-login-box">
@@ -51,16 +51,16 @@
                     <td>
                       <input id="email" type="text" name="email" size="18"
                           value="" class='gaia-le-val'>
-                      <span id="email-readonly"></span>
+                      <span id="email-readonly" hidden></span>
                     </td>
                   </tr>
-                  <tr id="access-code-label-row" class="access-code-row">
+                  <tr id="access-code-label-row" class="access-code-row" hidden>
                     <td colspan="2">
                       <span class="gaia-le-lbl"
                           i18n-content="enteraccesscode"></span>
                     </td>
                   </tr>
-                  <tr id="access-code-help-row" class="access-code-row">
+                  <tr id="access-code-help-row" class="access-code-row" hidden>
                     <td colspan="2" class="gaia-le-fpwd">
                       <a i18n-values="href:getaccesscodeurl"
                           i18n-content="getaccesscodehelp" target="_blank">
@@ -69,7 +69,7 @@
                   <tr>
                     <td></td>
                     <td>
-                      <div id="errormsg-0-email" class="errormsg"
+                      <div id="errormsg-0-email" class="errormsg" hidden
                           i18n-content="cannotbeblank">
                       </div>
                     </td>
@@ -84,7 +84,7 @@
                           class="gaia-le-val">
                     </td>
                   </tr>
-                  <tr id="access-code-input-row" class="access-code-row">
+                  <tr id="access-code-input-row" class="access-code-row" hidden>
                     <td colspan="2">
                       <input id="access-code" type="password" name="accessCode"
                           size="18" class="gaia-le-val">
@@ -94,16 +94,16 @@
                     <td></td>
                     <td>
                       <div class="errormsgspacer">
-                        <div id="errormsg-0-password" class="errormsg"
+                        <div id="errormsg-0-password" class="errormsg" hidden
                             i18n-content="cannotbeblank">
                         </div>
-                        <div id="errormsg-1-password" class="errormsg">
+                        <div id="errormsg-1-password" class="errormsg" hidden>
                           <span i18n-content="invalidcredentials"></span>
                           <!-- Brackets are intentional -->
                           [<a i18n-values="href:invalidpasswordhelpurl"
                                target="_blank">?</a>]
                         </div>
-                        <div id="errormsg-0-access-code" class="errormsg"
+                        <div id="errormsg-0-access-code" class="errormsg" hidden
                             i18n-content="invalidaccesscode">
                         </div>
                       </div>
@@ -111,7 +111,7 @@
                   </tr>
                   <tr>
                     <td colspan="2">
-                      <div id="captcha-div">
+                      <div id="captcha-div" hidden>
                         <table cellpadding="1" cellspacing="0" border="0">
                           <tbody>
                             <tr>
@@ -145,7 +145,7 @@
                   </tr>
                   <tr>
                     <td colspan="2" align="center">
-                      <div id="errormsg-0-connection" class="errormsg"
+                      <div id="errormsg-0-connection" class="errormsg" hidden
                           i18n-content="couldnotconnect">
                       </div>
                     </td>
@@ -156,7 +156,8 @@
                           cellspacing="0">
                         <tr>
                           <td>
-                            <div id="logging-in-throbber" class="throbber">
+                            <div id="logging-in-throbber" hidden>
+                              <div class="throbber"></div>
                             </div>
                           </td>
                           <td class="no-vertical-padding">
