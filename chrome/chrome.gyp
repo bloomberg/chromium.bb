@@ -1713,6 +1713,33 @@
               '<@(locales)',
             ],
           },
+          {
+              'action_name': 'repack_pseudo_locales',
+              'variables': {
+                'conditions': [
+                  ['branding=="Chrome"', {
+                    'branding_flag': ['-b', 'google_chrome',],
+                  }, {  # else: branding!="Chrome"
+                    'branding_flag': ['-b', 'chromium',],
+                  }],
+                ],
+              },
+              'inputs': [
+                'tools/build/repack_locales.py',
+                '<!@pymod_do_main(repack_locales -i <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) <(pseudo_locales))'
+              ],
+              'outputs': [
+                '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) <(pseudo_locales))'
+              ],
+              'action': [
+                '<@(repack_locales_cmd)',
+                '<@(branding_flag)',
+                '-g', '<(grit_out_dir)',
+                '-s', '<(SHARED_INTERMEDIATE_DIR)',
+                '-x', '<(INTERMEDIATE_DIR)',
+                '<@(pseudo_locales)',
+              ],
+            },
         ],
         # We'll install the resource files to the product directory.
         'copies': [
@@ -1722,6 +1749,12 @@
               '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) <(locales))'
             ],
           },
+          {
+              'destination': '<(PRODUCT_DIR)/pseudo_locales',
+              'files': [
+                '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) <(pseudo_locales))'
+              ],
+            },
           {
             'destination': '<(PRODUCT_DIR)',
             'files': [
