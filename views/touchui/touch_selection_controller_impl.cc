@@ -161,18 +161,10 @@ void TouchSelectionControllerImpl::SelectionChanged(const gfx::Point& p1,
 
   if (dragging_handle_) {
     // We need to reposition only the selection handle that is being dragged.
-    // The other handle stays the same.
-    SelectionHandleView* fixed_handle = selection_handle_1_.get();
-    if (fixed_handle == dragging_handle_)
-      fixed_handle = selection_handle_2_.get();
-
-    gfx::Point fixed_handle_pos = fixed_handle->GetScreenPosition();
-    fixed_handle_pos.Offset(kSelectionHandleRadius, 0);
-
-    if (fixed_handle_pos == screen_pos_1)
-      dragging_handle_->SetScreenPosition(screen_pos_2);
-    else
-      dragging_handle_->SetScreenPosition(screen_pos_1);
+    // The other handle stays the same. Also, the selection handle being dragged
+    // will always be at the end of selection, while the other handle will be at
+    // the start.
+    dragging_handle_->SetScreenPosition(screen_pos_2);
   } else {
     // Check if there is any selection at all.
     if (screen_pos_1 == screen_pos_2) {

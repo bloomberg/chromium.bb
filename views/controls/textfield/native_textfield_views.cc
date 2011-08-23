@@ -1002,8 +1002,8 @@ void NativeTextfieldViews::OnCaretBoundsChanged() {
       sel.selection_start(), gfx::SelectionModel::LEADING);
   gfx::Rect start_cursor = render_text->GetCursorBounds(start_sel, false);
   gfx::Rect end_cursor = render_text->GetCursorBounds(sel, false);
-  gfx::Point start(start_cursor.x(), start_cursor.bottom());
-  gfx::Point end(end_cursor.x(), end_cursor.bottom());
+  gfx::Point start(start_cursor.x(), start_cursor.bottom() - 1);
+  gfx::Point end(end_cursor.x(), end_cursor.bottom() - 1);
   touch_selection_controller_->SelectionChanged(start, end);
 }
 
