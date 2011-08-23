@@ -36,16 +36,57 @@ const int kMessageSize = 1024;
 const int kMessages = 100;
 const int kTestDataSize = kMessages * kMessageSize;
 
+class RateLimiter {
+ public:
+  virtual ~RateLimiter() { };
+  // Returns true if the new packet needs to be dropped, false otherwise.
+  virtual bool DropNextPacket() = 0;
+};
+
+class LeakyBucket : public RateLimiter {
+ public:
+  // |rate| is in drops per second.
+  LeakyBucket(double volume, double rate)
+      : volume_(volume),
+        rate_(rate),
+        level_(0.0),
+        last_update_(base::TimeTicks::HighResNow()) {
+  }
+
+  virtual ~LeakyBucket() { }
+
+  virtual bool DropNextPacket() OVERRIDE {
+    base::TimeTicks now = base::TimeTicks::HighResNow();
+    double interval = (now - last_update_).InSecondsF();
+    last_update_ = now;
+    level_ = level_ + 1.0 - interval * rate_;
+    if (level_ > volume_) {
+      level_ = volume_;
+      return true;
+    } else if (level_ < 0.0) {
+      level_ = 0.0;
+    }
+    return false;
+  }
+
+ private:
+  double volume_;
+  double rate_;
+  double level_;
+  base::TimeTicks last_update_;
+};
+
 class FakeSocket : public net::Socket {
  public:
   FakeSocket()
       : read_callback_(NULL),
-        loss_rate_(0.0) {
+        rate_limiter_(NULL),
+        latency_ms_(0) {
   }
   virtual ~FakeSocket() { }
 
   void AppendInputPacket(const std::vector<char>& data) {
-    if ((static_cast<double>(rand()) / RAND_MAX) < loss_rate_)
+    if (rate_limiter_ && rate_limiter_->DropNextPacket())
       return;  // Lose the packet.
 
     if (read_callback_) {
@@ -64,7 +105,11 @@ class FakeSocket : public net::Socket {
     peer_socket_ = peer_socket;
   }
 
-  void set_loss_rate(double value) { loss_rate_ = value; };
+  void set_rate_limiter(RateLimiter* rate_limiter) {
+    rate_limiter_ = rate_limiter;
+  };
+
+  void set_latency(int latency_ms) { latency_ms_ = latency_ms; };
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
@@ -91,9 +136,9 @@ class FakeSocket : public net::Socket {
                     net::CompletionCallback* callback) OVERRIDE {
     DCHECK(buf);
     if (peer_socket_) {
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+      MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
           peer_socket_, &FakeSocket::AppendInputPacket,
-          std::vector<char>(buf->data(), buf->data() + buf_len)));
+          std::vector<char>(buf->data(), buf->data() + buf_len)), latency_ms_);
     }
 
     return buf_len;
@@ -116,7 +161,8 @@ class FakeSocket : public net::Socket {
   std::deque<std::vector<char> > incoming_packets_;
 
   FakeSocket* peer_socket_;
-  double loss_rate_;
+  RateLimiter* rate_limiter_;
+  int latency_ms_;
 };
 
 class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
@@ -298,9 +344,18 @@ TEST_F(PseudoTcpAdapterTest, DataTransfer) {
   tester->CheckResults();
 }
 
-TEST_F(PseudoTcpAdapterTest, LossyChannel) {
-  host_socket_->set_loss_rate(0.1);
-  client_socket_->set_loss_rate(0.1);
+TEST_F(PseudoTcpAdapterTest, LimitedChannel) {
+  const int kLatencyMs = 20;
+  const int kPacketsPerSecond = 400;
+  const int kBurstPackets = 10;
+
+  LeakyBucket host_limiter(kBurstPackets, kPacketsPerSecond);
+  host_socket_->set_latency(kLatencyMs);
+  host_socket_->set_rate_limiter(&host_limiter);
+
+  LeakyBucket client_limiter(kBurstPackets, kPacketsPerSecond);
+  host_socket_->set_latency(kLatencyMs);
+  client_socket_->set_rate_limiter(&client_limiter);
 
   TestCompletionCallback host_connect_cb;
   TestCompletionCallback client_connect_cb;
