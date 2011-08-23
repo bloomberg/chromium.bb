@@ -257,4 +257,28 @@ TEST_F(VisitDatabaseTest, VisitSource) {
   EXPECT_EQ(SOURCE_EXTENSION, sources[matches[0].visit_id]);
 }
 
+TEST_F(VisitDatabaseTest, GetIndexedVisits) {
+  // Add non-indexed visits.
+  int url_id = 111;
+  VisitRow visit_info1(url_id, Time::Now(), 0, PageTransition::LINK, 0);
+  ASSERT_TRUE(AddVisit(&visit_info1, SOURCE_BROWSED));
+
+  VisitRow visit_info2(url_id, Time::Now(), 0, PageTransition::TYPED, 0);
+  ASSERT_TRUE(AddVisit(&visit_info2, SOURCE_SYNCED));
+
+  std::vector<VisitRow> visits;
+  EXPECT_TRUE(GetVisitsForURL(url_id, &visits));
+  EXPECT_EQ(static_cast<size_t>(2), visits.size());
+  EXPECT_TRUE(GetIndexedVisitsForURL(url_id, &visits));
+  EXPECT_EQ(static_cast<size_t>(0), visits.size());
+
+  VisitRow visit_info3(url_id, Time::Now(), 2, PageTransition::TYPED, 0);
+  visit_info3.is_indexed = true;
+  ASSERT_TRUE(AddVisit(&visit_info3, SOURCE_SYNCED));
+  EXPECT_TRUE(GetVisitsForURL(url_id, &visits));
+  EXPECT_EQ(static_cast<size_t>(3), visits.size());
+  EXPECT_TRUE(GetIndexedVisitsForURL(url_id, &visits));
+  EXPECT_EQ(static_cast<size_t>(1), visits.size());
+}
+
 }  // namespace history

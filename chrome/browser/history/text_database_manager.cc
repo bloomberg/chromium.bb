@@ -281,32 +281,26 @@ bool TextDatabaseManager::AddPageData(const GURL& url,
   // anything in the main database, but we don't bother looking through the
   // archived database.
   VisitVector visits;
-  visit_database_->GetVisitsForURL(url_id, &visits);
-  size_t our_visit_row_index = visits.size();
+  visit_database_->GetIndexedVisitsForURL(url_id, &visits);
   for (size_t i = 0; i < visits.size(); i++) {
-    // While we're going trough all the visits, also find our row so we can
-    // avoid another DB query.
-    if (visits[i].visit_id == visit_id) {
-      our_visit_row_index = i;
-    } else if (visits[i].is_indexed) {
       visits[i].is_indexed = false;
       visit_database_->UpdateVisitRow(visits[i]);
       DeletePageData(visits[i].visit_time, url, NULL);
-    }
   }
 
   if (visit_id) {
-    // We're supposed to update the visit database.
-    if (our_visit_row_index >= visits.size()) {
-      NOTREACHED() << "We should always have found a visit when given an ID.";
+    // We're supposed to update the visit database, so load the visit.
+    VisitRow row;
+    if (!visit_database_->GetRowForVisit(visit_id, &row)) {
+      NOTREACHED() << "Could not find requested visit #" << visit_id;
       return false;
     }
 
-    DCHECK(visit_time == visits[our_visit_row_index].visit_time);
+    DCHECK(visit_time == row.visit_time);
 
     // Update the visit database to reference our addition.
-    visits[our_visit_row_index].is_indexed = true;
-    if (!visit_database_->UpdateVisitRow(visits[our_visit_row_index]))
+    row.is_indexed = true;
+    if (!visit_database_->UpdateVisitRow(row))
       return false;
   }
 

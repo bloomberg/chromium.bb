@@ -55,6 +55,11 @@ class VisitDatabase {
   // may still be no matches).
   bool GetVisitsForURL(URLID url_id, VisitVector* visits);
 
+  // Fills in the given vector with all of the visits for the given page ID that
+  // have the |is_indexed| field set to true, in no particular order.
+  // Returns true on success (although there may still be no matches).
+  bool GetIndexedVisitsForURL(URLID url_id, VisitVector* visits);
+
   // Fills all visits in the time range [begin, end) to the given vector. Either
   // time can be is_null(), in which case the times in that direction are
   // unbounded.

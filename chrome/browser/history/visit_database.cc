@@ -243,6 +243,21 @@ bool VisitDatabase::GetVisitsForURL(URLID url_id, VisitVector* visits) {
   return true;
 }
 
+bool VisitDatabase::GetIndexedVisitsForURL(URLID url_id, VisitVector* visits) {
+  visits->clear();
+
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT" HISTORY_VISIT_ROW_FIELDS
+      "FROM visits "
+      "WHERE url=? AND is_indexed=1"));
+   if (!statement)
+    return false;
+
+  statement.BindInt64(0, url_id);
+  FillVisitVector(statement, visits);
+  return true;
+}
+
 void VisitDatabase::GetAllVisitsInRange(base::Time begin_time,
                                         base::Time end_time,
                                         int max_results,
