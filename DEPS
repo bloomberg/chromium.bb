@@ -79,8 +79,8 @@ deps = {
     (Var("native_client_trunk") + "/src/third_party/scons-2.0.1@" +
      Var("tools_rev")),
   "third_party/simplejson":
-    (Var("native_client_trunk") + "/src/third_party/simplejson@" +
-     Var("tools_rev")),
+    (Var("chromium_trunk") + "/tools/build/third_party/simplejson@" +
+     Var("chrome_rev")),
   "third_party/tlslite":
     Var("chromium_trunk") + "/src/third_party/tlslite@" + Var("chrome_rev"),
   "third_party/zlib":
