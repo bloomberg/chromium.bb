@@ -99,11 +99,15 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(shutil, 'rmtree')
 
     cros_lib.RunCommand(['gzip', '-df', gzipped_test_tarball])
-    cros_lib.RunCommand(['tar',
-                         'xf',
-                         test_tarball,
-                         '--directory=%s' % temp_dir,
-                         '--wildcards', '*.dmp'])
+    cros_lib.RunCommand(
+        ['tar',
+         'xf',
+         test_tarball,
+         '--directory=%s' % temp_dir,
+         '--wildcards', '*.dmp'],
+         error_ok=True,
+         exit_code=True,
+         redirect_stderr=True).AndReturn(cros_lib.CommandResult())
     cros_lib.RunCommand('minidump_stackwalk %s %s > %s.txt 2> /dev/null' %
                         (dump_file, symbol_dir, dump_file),
                         cwd=cwd,

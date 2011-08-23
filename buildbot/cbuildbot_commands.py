@@ -409,29 +409,35 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball):
   # a compressed tarball.
   cros_lib.RunCommand(['gzip', '-df', gzipped_test_tarball])
   test_tarball = os.path.splitext(gzipped_test_tarball)[0] + '.tar'
-  cros_lib.RunCommand(['tar',
-                       'xf',
-                       test_tarball,
-                       '--directory=%s' % temp_dir,
-                       '--wildcards', '*.dmp'])
 
-  symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug', 'breakpad')
-  for dir, subdirs, files in os.walk(temp_dir):
-    for file in files:
-      minidump = cros_lib.ReinterpretPathForChroot(os.path.join(dir, file))
-      cwd = os.path.join(buildroot, 'src', 'scripts')
-      cros_lib.RunCommand('minidump_stackwalk %s %s > %s.txt 2> /dev/null' %
-                          (minidump, symbol_dir, minidump),
-                          cwd=cwd,
-                          enter_chroot=True,
-                          error_ok=True,
-                          shell=True)
-
-  cros_lib.RunCommand(['tar',
-                       'uf',
-                       test_tarball,
-                       '--directory=%s' % temp_dir,
-                       '.'])
+  # Do our best to generate the symbols but if we fail, don't break the
+  # build process.
+  tar_cmd = cros_lib.RunCommand(['tar',
+                                 'xf',
+                                 test_tarball,
+                                 '--directory=%s' % temp_dir,
+                                 '--wildcards', '*.dmp'],
+                                error_ok=True,
+                                exit_code=True,
+                                redirect_stderr=True)
+  if not tar_cmd.returncode:
+    symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug',
+                              'breakpad')
+    for dir, subdirs, files in os.walk(temp_dir):
+      for file in files:
+        minidump = cros_lib.ReinterpretPathForChroot(os.path.join(dir, file))
+        cwd = os.path.join(buildroot, 'src', 'scripts')
+        cros_lib.RunCommand('minidump_stackwalk %s %s > %s.txt 2> /dev/null' %
+                            (minidump, symbol_dir, minidump),
+                            cwd=cwd,
+                            enter_chroot=True,
+                            error_ok=True,
+                            shell=True)
+    cros_lib.RunCommand(['tar',
+                         'uf',
+                         test_tarball,
+                         '--directory=%s' % temp_dir,
+                         '.'])
   cros_lib.RunCommand('gzip -c %s > %s' % (test_tarball, gzipped_test_tarball),
                       shell=True)
   os.unlink(test_tarball)
