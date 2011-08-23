@@ -184,6 +184,11 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // NOTE: all calls to this object *MUST* be executed in message_loop_.
   Client* client_;
 
+  // These two members are only used during Initialization.
+  // OMX_VIDEO_AVCProfile requested during Initialization.
+  uint32 profile_;
+  bool component_name_is_nvidia_h264ext_;
+
   // Method to handle events
   void EventHandlerCompleteTask(OMX_EVENTTYPE event,
                                 OMX_U32 data1,

@@ -5,6 +5,7 @@
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
 
 #include "base/debug/trace_event.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "content/common/gpu/gpu_channel.h"
@@ -45,6 +46,38 @@ static bool AreOMXFunctionPointersInitialized() {
           omx_free_handle && omx_deinit);
 }
 
+// Maps the media::H264Profile members to the OMX_VIDEO_AVCPROFILETYPE members.
+static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
+  switch (profile) {
+    case media::H264PROFILE_NONE:
+      return OMX_VIDEO_AVCProfileMax;
+    case media::H264PROFILE_BASELINE:
+      return OMX_VIDEO_AVCProfileBaseline;
+    case media::H264PROFILE_MAIN:
+      return OMX_VIDEO_AVCProfileMain;
+    case media::H264PROFILE_EXTENDED:
+      return OMX_VIDEO_AVCProfileExtended;
+    case media::H264PROFILE_HIGH:
+      return OMX_VIDEO_AVCProfileHigh;
+    case media::H264PROFILE_HIGH10PROFILE:
+      return OMX_VIDEO_AVCProfileHigh10;
+    case media::H264PROFILE_HIGH422PROFILE:
+      return OMX_VIDEO_AVCProfileHigh422;
+    case media::H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return OMX_VIDEO_AVCProfileHigh444;
+    // Below enums don't have equivalent enum in Openmax.
+    case media::H264PROFILE_SCALABLEBASELINE:
+    case media::H264PROFILE_SCALABLEHIGH:
+    case media::H264PROFILE_STEREOHIGH:
+    case media::H264PROFILE_MULTIVIEWHIGH:
+      // Nvidia OMX video decoder requires the same resources (as that of the
+      // High profile) in every profile higher to the Main profile.
+      return OMX_VIDEO_AVCProfileHigh444;
+  }
+  NOTREACHED();
+  return OMX_VIDEO_AVCProfileMax;
+}
+
 // Helper macros for dealing with failure.  If |result| evaluates false, emit
 // |log| to ERROR, register |error| with the decoder, and return |ret_val|
 // (which may be omitted for functions that return void).
@@ -76,7 +109,9 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       input_buffers_at_component_(0),
       output_port_(0),
       output_buffers_at_component_(0),
-      client_(client) {
+      client_(client),
+      profile_(OMX_VIDEO_AVCProfileMax),
+      component_name_is_nvidia_h264ext_(false) {
   RETURN_ON_FAILURE(AreOMXFunctionPointersInitialized(),
                     "Failed to load openmax library", PLATFORM_FAILURE,);
   RETURN_ON_OMX_FAILURE(omx_init(), "Failed to init OpenMAX core",
@@ -126,6 +161,9 @@ bool OmxVideoDecodeAccelerator::VerifyConfigs(
          v == media::H264PROFILE_HIGH)) ||
         (n == media::VIDEOATTRIBUTEKEY_VIDEOCOLORFORMAT &&
          v == media::VIDEOCOLORFORMAT_RGBA)) {
+      if (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_PROFILE) {
+        profile_ = v;
+      }
       continue;
     }
     return false;
@@ -188,6 +226,10 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
                         "Failed to OMX_GetHandle on: " << component.get(),
                         PLATFORM_FAILURE, false);
   client_state_ = OMX_StateLoaded;
+
+  component_name_is_nvidia_h264ext_ = !strcmp(
+      reinterpret_cast<char *>(component.get()),
+      "OMX.Nvidia.h264ext.decode");
 
   // Get the port information. This will obtain information about the number of
   // ports and index of the first port.
@@ -271,7 +313,6 @@ bool OmxVideoDecodeAccelerator::CreateComponent() {
     buffer->nOutputPortIndex = output_port_;
     CHECK(fake_output_buffers_.insert(buffer).second);
   }
-
   return true;
 }
 
@@ -473,6 +514,27 @@ void OmxVideoDecodeAccelerator::BeginTransitionToState(
 void OmxVideoDecodeAccelerator::OnReachedIdleInInitializing() {
   DCHECK_EQ(client_state_, OMX_StateLoaded);
   client_state_ = OMX_StateIdle;
+  // Query the resources with the component.
+  if (component_name_is_nvidia_h264ext_) {
+    OMX_INDEXTYPE  extension_index;
+    OMX_ERRORTYPE result = OMX_GetExtensionIndex(
+        component_handle_,
+        const_cast<char*>("OMX.Nvidia.index.config.checkresources"),
+        &extension_index);
+    RETURN_ON_OMX_FAILURE(result,
+                          "Failed to get the extension",
+                          PLATFORM_FAILURE,);
+    OMX_VIDEO_PARAM_PROFILELEVELTYPE video_profile_level;
+    InitParam(*this, &video_profile_level);
+    video_profile_level.eProfile = MapH264ProfileToOMXAVCProfile(profile_);
+    RETURN_ON_FAILURE(video_profile_level.eProfile != OMX_VIDEO_AVCProfileMax,
+                      "Unexpected profile", INVALID_ARGUMENT,);
+    result = OMX_SetConfig(component_handle_, extension_index,
+                           &video_profile_level);
+    RETURN_ON_OMX_FAILURE(result,
+                          "Resource Allocation failed",
+                          PLATFORM_FAILURE,);
+  }
   BeginTransitionToState(OMX_StateExecuting);
 }
 

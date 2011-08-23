@@ -58,8 +58,9 @@ namespace {
 // - |minFPSwithRender| and |minFPSnoRender| are minimum frames/second speeds
 //   expected to be achieved with and without rendering to the screen, resp.
 //   (the latter tests just decode speed).
+// - |profile| is the media::H264Profile set during Initialization.
 // An empty value for a numeric field means "ignore".
-const char* test_video_data = "test-25fps.h264:320:240:250:258:50:175";
+const char* test_video_data = "test-25fps.h264:320:240:250:258:50:175:1";
 
 // Parse |data| into its constituent parts and set the various output fields
 // accordingly.  CHECK-fails on unexpected or missing required data.
@@ -70,14 +71,16 @@ void ParseTestVideoData(std::string data,
                         int* num_frames,
                         int* num_NALUs,
                         int* min_fps_render,
-                        int* min_fps_no_render) {
+                        int* min_fps_no_render,
+                        int* profile) {
   std::vector<std::string> elements;
   base::SplitString(data, ':', &elements);
   CHECK_GE(elements.size(), 1U) << data;
-  CHECK_LE(elements.size(), 7U) << data;
+  CHECK_LE(elements.size(), 8U) << data;
   *file_name = elements[0];
   *width = *height = *num_frames = *num_NALUs = -1;
   *min_fps_render = *min_fps_no_render = -1;
+  *profile = -1;
   if (!elements[1].empty())
     CHECK(base::StringToInt(elements[1], width));
   if (!elements[2].empty())
@@ -90,6 +93,8 @@ void ParseTestVideoData(std::string data,
     CHECK(base::StringToInt(elements[5], min_fps_render));
   if (!elements[6].empty())
     CHECK(base::StringToInt(elements[6], min_fps_no_render));
+  if (!elements[7].empty())
+    CHECK(base::StringToInt(elements[7], profile));
 }
 
 
@@ -464,7 +469,8 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
                         int num_NALUs_per_decode,
                         int num_in_flight_decodes,
                         int reset_after_frame_num,
-                        int delete_decoder_state);
+                        int delete_decoder_state,
+                        int profile);
   virtual ~EglRenderingVDAClient();
   void CreateDecoder();
 
@@ -526,6 +532,7 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
   PictureBufferById picture_buffers_by_id_;
   base::TimeTicks initialize_done_ticks_;
   base::TimeTicks last_frame_delivered_ticks_;
+  int profile_;
 };
 
 EglRenderingVDAClient::EglRenderingVDAClient(
@@ -536,7 +543,8 @@ EglRenderingVDAClient::EglRenderingVDAClient(
     int num_NALUs_per_decode,
     int num_in_flight_decodes,
     int reset_after_frame_num,
-    int delete_decoder_state)
+    int delete_decoder_state,
+    int profile)
     : rendering_helper_(rendering_helper),
       rendering_window_id_(rendering_window_id),
       encoded_data_(encoded_data), num_NALUs_per_decode_(num_NALUs_per_decode),
@@ -545,7 +553,8 @@ EglRenderingVDAClient::EglRenderingVDAClient(
       note_(note), reset_after_frame_num_(reset_after_frame_num),
       delete_decoder_state_(delete_decoder_state),
       state_(CS_CREATED),
-      num_decoded_frames_(0), num_done_bitstream_buffers_(0) {
+      num_decoded_frames_(0), num_done_bitstream_buffers_(0),
+      profile_(profile) {
   CHECK_GT(num_NALUs_per_decode, 0);
   CHECK_GT(num_in_flight_decodes, 0);
 }
@@ -572,7 +581,11 @@ void EglRenderingVDAClient::CreateDecoder() {
     media::VIDEOATTRIBUTEKEY_VIDEOCOLORFORMAT, media::VIDEOCOLORFORMAT_RGBA,
   };
   std::vector<int32> config(
-      config_array, config_array + arraysize(config_array));
+    config_array, config_array + arraysize(config_array));
+  if (profile_ != -1) {
+    config.push_back(media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_PROFILE);
+    config.push_back(profile_);
+  }
   CHECK(decoder_->Initialize(config));
 }
 
@@ -798,7 +811,7 @@ static void AssertWaitForStateOrDeleted(ClientStateNotification* note,
 
 // We assert the exact number of concurrent decoders we expect to succeed and
 // that one more than that fails initialization.
-enum { kMaxSupportedNumConcurrentDecoders = 5 };
+enum { kMaxSupportedNumConcurrentDecoders = 3 };
 
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.
@@ -817,10 +830,10 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
 
   std::string test_video_file;
   int frame_width, frame_height;
-  int num_frames, num_NALUs, min_fps_render, min_fps_no_render;
+  int num_frames, num_NALUs, min_fps_render, min_fps_no_render, profile;
   ParseTestVideoData(test_video_data, &test_video_file, &frame_width,
                      &frame_height, &num_frames, &num_NALUs,
-                     &min_fps_render, &min_fps_no_render);
+                     &min_fps_render, &min_fps_no_render, &profile);
   min_fps_render /= num_concurrent_decoders;
   min_fps_no_render /= num_concurrent_decoders;
 
@@ -862,7 +875,7 @@ TEST_P(OmxVideoDecodeAcceleratorTest, TestSimpleDecode) {
         &rendering_helper, index,
         note, data_str, num_NALUs_per_decode,
         num_in_flight_decodes,
-        reset_after_frame_num, delete_decoder_state);
+        reset_after_frame_num, delete_decoder_state, profile);
     clients[index] = client;
 
     rendering_thread.message_loop()->PostTask(
