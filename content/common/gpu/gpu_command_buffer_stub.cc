@@ -199,10 +199,15 @@ void GpuCommandBufferStub::OnInitialize(
           NewCallback(channel_, &GpuChannel::OnScheduled));
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
+      // On TOUCH_UI, the ImageTransportSurface handles co-ordinating the
+      // resize with the browser process. The ImageTransportSurface sets it's
+      // own resize callback, so we shouldn't do it here.
+#if !defined(TOUCH_UI)
       if (handle_ != gfx::kNullPluginWindow) {
         scheduler_->SetResizeCallback(
             NewCallback(this, &GpuCommandBufferStub::OnResize));
       }
+#endif
       if (watchdog_)
         scheduler_->SetCommandProcessedCallback(
             NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
