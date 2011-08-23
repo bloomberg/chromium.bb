@@ -5,6 +5,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -279,12 +280,19 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   browser->window()->Show();
 }
 
+#if defined(OS_POSIX)
+// On SIGTERM (sent by the runner on timeouts), dump a stack trace (to make
+// debugging easier) and also exit with a known error code (so that the test
+// framework considers this a failure -- http://crbug.com/57578).
+static void DumpStackTraceSignalHandler(int signal) {
+  base::debug::StackTrace().PrintBacktrace();
+  _exit(128 + signal);
+}
+#endif  // defined(OS_POSIX)
+
 void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #if defined(OS_POSIX)
-  // Restore default signal handler for SIGTERM, so when the out-of-process
-  // test runner tries to terminate us, we don't catch it and possibly make it
-  // look like a success (http://crbug.com/57578).
-  signal(SIGTERM, SIG_DFL);
+  signal(SIGTERM, DumpStackTraceSignalHandler);
 #endif  // defined(OS_POSIX)
 
   // On Mac, without the following autorelease pool, code which is directly
