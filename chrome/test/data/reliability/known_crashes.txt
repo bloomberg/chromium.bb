@@ -198,3 +198,6 @@ REGEX: (^|`anonymous namespace'::purecall____purecall___)renderviewhost::onmessa
 
 # 93459
 PREFIX: webcore::htmlsourcetracker::sourcefortoken___webcore::htmldocumentparser::sourcefortoken___webcore::xssauditor::eraseattributeifinjected___webcore
+
+# 93971
+PREFIX: chromeurlrequestcontextgetter::geturlrequestcontext___`anonymous namespace'::rendererurlrequestcontextselector::getrequestcontext___resourcedispatcherhost::ondidloadresourcefrommemorycache
