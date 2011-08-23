@@ -11,10 +11,10 @@
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/ui/gtk/global_menu_owner.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
 class Profile;
@@ -114,7 +114,7 @@ class GlobalBookmarkMenu : public GlobalMenuOwner,
   GdkPixbuf* default_favicon_;
   GdkPixbuf* default_folder_;
 
-  OwnedWidgetGtk bookmark_menu_;
+  ui::OwnedWidgetGtk bookmark_menu_;
 
   ScopedRunnableMethodFactory<GlobalBookmarkMenu> method_factory_;
 

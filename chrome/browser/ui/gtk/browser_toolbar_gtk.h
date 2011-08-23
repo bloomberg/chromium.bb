@@ -14,12 +14,12 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/models/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -202,7 +202,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // A GtkEntry that isn't part of the hierarchy. We keep this for native
   // rendering.
-  OwnedWidgetGtk offscreen_entry_;
+  ui::OwnedWidgetGtk offscreen_entry_;
 
   // Manages the home button drop signal handler.
   scoped_ptr<ui::GtkSignalRegistrar> drop_handler_;

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
+
+namespace ui {
 
 OwnedWidgetGtk::~OwnedWidgetGtk() {
   Destroy();
@@ -39,3 +41,5 @@ void OwnedWidgetGtk::Destroy() {
   DCHECK_EQ(G_OBJECT(widget)->ref_count, 1U);
   g_object_unref(widget);
 }
+
+}  // namespace ui

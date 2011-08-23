@@ -46,15 +46,18 @@
 //   gtk_destroy_widget(widget);  // Ask all code to destroy their references.
 //   g_object_unref(widget);  // Destroy the initial reference we had claimed.
 
-#ifndef CHROME_BROWSER_UI_GTK_OWNED_WIDGET_GTK_H_
-#define CHROME_BROWSER_UI_GTK_OWNED_WIDGET_GTK_H_
+#ifndef UI_BASE_GTK_OWNED_WIDGET_GTK_H_
+#define UI_BASE_GTK_OWNED_WIDGET_GTK_H_
 #pragma once
 
 #include "base/basictypes.h"
+#include "ui/base/ui_export.h"
 
 typedef struct _GtkWidget GtkWidget;
 
-class OwnedWidgetGtk {
+namespace ui {
+
+class UI_EXPORT OwnedWidgetGtk {
  public:
   // Create an instance that isn't managing any ownership.
   OwnedWidgetGtk() : widget_(NULL) { }
@@ -88,4 +91,6 @@ class OwnedWidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(OwnedWidgetGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_OWNED_WIDGET_GTK_H_
+}  // namespace ui
+
+#endif  // UI_BASE_GTK_OWNED_WIDGET_GTK_H_

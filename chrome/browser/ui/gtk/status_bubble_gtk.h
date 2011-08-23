@@ -13,13 +13,13 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/point.h"
 
 class GtkThemeService;
@@ -119,13 +119,13 @@ class StatusBubbleGtk : public StatusBubble,
   GtkThemeService* theme_service_;
 
   // The toplevel event box.
-  OwnedWidgetGtk container_;
+  ui::OwnedWidgetGtk container_;
 
   // The GtkAlignment holding |label_|.
   GtkWidget* padding_;
 
   // The GtkLabel holding the text.
-  OwnedWidgetGtk label_;
+  ui::OwnedWidgetGtk label_;
 
   // The status text we want to display when there are no URLs to display.
   std::string status_text_;

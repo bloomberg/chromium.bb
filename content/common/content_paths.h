@@ -17,6 +17,9 @@ enum {
   // Path and filename to the executable to use for child processes.
   CHILD_PROCESS_EXE = PATH_START,
 
+  // Valid only in development environment
+  DIR_TEST_DATA,
+
   PATH_END
 };
 

@@ -49,7 +49,7 @@ class FullscreenExitBubbleGtk : public FullscreenExitBubble {
   GtkFloatingContainer* container_;
 
   // The widget that contains the link.
-  OwnedWidgetGtk link_container_;
+  ui::OwnedWidgetGtk link_container_;
 
   // The widget that animates the slide-out of fullscreen exit bubble.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;

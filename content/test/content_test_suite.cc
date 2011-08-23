@@ -8,9 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/common/content_client.h"
+#include "content/common/content_paths.h"
 #include "content/common/notification_service.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace {
 
@@ -59,6 +61,9 @@ ContentTestSuite::~ContentTestSuite() {
 
 void ContentTestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+  content::RegisterPathProvider();
+  ui::RegisterPathProvider();
 
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();

@@ -8,8 +8,8 @@
 
 typedef struct _GtkWidget GtkWidget;
 
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class TabContents;
 
@@ -31,7 +31,7 @@ class SadTabGtk {
   void OnLinkButtonClick();
 
   TabContents* tab_contents_;
-  OwnedWidgetGtk event_box_;
+  ui::OwnedWidgetGtk event_box_;
   Kind kind_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabGtk);

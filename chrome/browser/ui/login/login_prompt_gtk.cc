@@ -147,7 +147,7 @@ class LoginHandlerGtk : public LoginHandler,
 
   // The GtkWidgets that form our visual hierarchy:
   // The root container we pass to our parent.
-  OwnedWidgetGtk root_;
+  ui::OwnedWidgetGtk root_;
 
   // GtkEntry widgets that the user types into.
   GtkWidget* username_entry_;

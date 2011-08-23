@@ -11,11 +11,11 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/gtk/global_menu_owner.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
 
@@ -104,7 +104,7 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
 
   // The history menu. We keep this since we need to rewrite parts of it
   // periodically.
-  OwnedWidgetGtk history_menu_;
+  ui::OwnedWidgetGtk history_menu_;
 
   history::TopSites* top_sites_;
   CancelableRequestConsumer top_sites_consumer_;

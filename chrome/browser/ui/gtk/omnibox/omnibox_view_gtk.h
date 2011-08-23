@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/common/notification_observer.h"
@@ -24,6 +23,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -368,7 +368,7 @@ class OmniboxViewGtk : public OmniboxView,
 
   // The widget we expose, used for vertically centering the real text edit,
   // since the height will change based on the font / font size, etc.
-  OwnedWidgetGtk alignment_;
+  ui::OwnedWidgetGtk alignment_;
 
   // The actual text entry which will be owned by the alignment_.  The
   // reference will be set to NULL upon destruction to tell if the gtk

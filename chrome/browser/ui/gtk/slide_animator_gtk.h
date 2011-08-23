@@ -18,8 +18,8 @@
 #include <gtk/gtk.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 namespace ui {
 class SlideAnimation;
@@ -99,7 +99,7 @@ class SlideAnimatorGtk : public ui::AnimationDelegate {
   scoped_ptr<ui::SlideAnimation> animation_;
 
   // The top level widget of the SlideAnimatorGtk. It is a GtkFixed.
-  OwnedWidgetGtk widget_;
+  ui::OwnedWidgetGtk widget_;
 
   // The widget passed to us at construction time, and the only direct child of
   // |widget_|.

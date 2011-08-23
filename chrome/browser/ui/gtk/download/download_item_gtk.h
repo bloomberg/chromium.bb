@@ -13,13 +13,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/icon_manager.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/download/download_item.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class BaseDownloadItemModel;
 class DownloadShelfContextMenuGtk;
@@ -154,11 +154,11 @@ class DownloadItemGtk : public DownloadItem::Observer,
   DownloadShelfGtk* parent_shelf_;
 
   // The widget that contains the body and menu dropdown.
-  OwnedWidgetGtk hbox_;
+  ui::OwnedWidgetGtk hbox_;
 
   // The widget that contains the name of the download and the progress
   // animation.
-  OwnedWidgetGtk body_;
+  ui::OwnedWidgetGtk body_;
 
   // The widget that contains the texts of |name_label_| and |status_label_|.
   GtkWidget* text_stack_;
@@ -188,7 +188,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The widget that contains the animation progress and the file's icon
   // (as well as the complete animation).
-  OwnedWidgetGtk progress_area_;
+  ui::OwnedWidgetGtk progress_area_;
 
   // In degrees. Only used for downloads with no known total size.
   int progress_angle_;
@@ -206,7 +206,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
   GtkWidget* dangerous_label_;
 
   // An hbox for holding components of the dangerous download dialog.
-  OwnedWidgetGtk dangerous_hbox_;
+  ui::OwnedWidgetGtk dangerous_hbox_;
   int dangerous_hbox_start_width_;
   int dangerous_hbox_full_width_;
 

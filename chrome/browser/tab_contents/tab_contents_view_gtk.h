@@ -13,11 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/gtk/focus_store_gtk.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class ConstrainedWindowGtk;
 class RenderViewContextMenuGtk;
@@ -135,7 +135,7 @@ class TabContentsViewGtk : public TabContentsView,
 
 
   // Contains |expanded_| as its GtkBin member.
-  OwnedWidgetGtk floating_;
+  ui::OwnedWidgetGtk floating_;
 
   // This container holds the tab's web page views. It is a GtkExpandedContainer
   // so that we can control the size of the web pages.

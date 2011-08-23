@@ -15,13 +15,13 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/overflow_button.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
@@ -175,10 +175,10 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   ExtensionToolbarModel* model_;
 
   // Contains the drag gripper, browser action buttons, and overflow chevron.
-  OwnedWidgetGtk hbox_;
+  ui::OwnedWidgetGtk hbox_;
 
   // Contains the browser action buttons.
-  OwnedWidgetGtk button_hbox_;
+  ui::OwnedWidgetGtk button_hbox_;
 
   // The overflow button for chrome theme mode.
   scoped_ptr<CustomDrawButton> overflow_button_;

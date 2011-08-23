@@ -65,6 +65,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/libjingle/libjingle.gyp:libjingle',
+        '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
         '..',
@@ -79,6 +80,7 @@
         'browser/download/download_status_updater_unittest.cc',
         'browser/geolocation/gateway_data_provider_common_unittest.cc',
         'browser/gpu/gpu_blacklist_unittest.cc',
+        'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
         'browser/renderer_host/media/audio_renderer_host_unittest.cc',
         'browser/renderer_host/media/media_stream_dispatcher_host_unittest.cc',
@@ -111,6 +113,11 @@
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+        ['chromeos==1', {
+          'sources/': [
+            ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
           ],
         }],
       ],

@@ -13,11 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/native_widget_types.h"
 
 class BaseDownloadItemModel;
@@ -107,11 +107,11 @@ class DownloadShelfGtk : public DownloadShelf,
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
 
   // |items_hbox_| holds the download items.
-  OwnedWidgetGtk items_hbox_;
+  ui::OwnedWidgetGtk items_hbox_;
 
   // |shelf_| is the second highest level widget. See the constructor
   // for an explanation of the widget layout.
-  OwnedWidgetGtk shelf_;
+  ui::OwnedWidgetGtk shelf_;
 
   // Top level event box which draws the one pixel border.
   GtkWidget* top_border_;

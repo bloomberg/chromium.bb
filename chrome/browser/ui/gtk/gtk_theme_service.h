@@ -12,10 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "ui/base/gtk/gtk_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/color_utils.h"
 
 class CairoCachedSurface;
@@ -259,9 +259,9 @@ class GtkThemeService : public ThemeService {
   // their colors).
   GtkWidget* fake_window_;
   GtkWidget* fake_frame_;
-  OwnedWidgetGtk fake_label_;
-  OwnedWidgetGtk fake_entry_;
-  OwnedWidgetGtk fake_menu_item_;
+  ui::OwnedWidgetGtk fake_label_;
+  ui::OwnedWidgetGtk fake_entry_;
+  ui::OwnedWidgetGtk fake_menu_item_;
 
   // A list of diferent types of widgets that we hold on to these to notify
   // them of theme changes. We do not own these and listen for their

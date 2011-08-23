@@ -9,11 +9,11 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class RenderViewHost;
 class StatusBubbleGtk;
@@ -98,7 +98,7 @@ class TabContentsContainerGtk : public NotificationObserver,
   // GtkBin and a GtkFixed, |floating_| has |expanded_| as its one "real" child,
   // and the various things that hang off the bottom (status bubble, etc) have
   // their positions manually set in OnSetFloatingPosition.
-  OwnedWidgetGtk floating_;
+  ui::OwnedWidgetGtk floating_;
 
   // We insert and remove TabContents GtkWidgets into this expanded_. This
   // should not be a GtkVBox since there were errors with timing where the vbox

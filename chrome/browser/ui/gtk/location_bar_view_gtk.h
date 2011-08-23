@@ -22,7 +22,6 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/common/notification_observer.h"
@@ -32,6 +31,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class OmniboxViewGtk;
@@ -178,13 +178,13 @@ class LocationBarViewGtk : public AutocompleteEditController,
     scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
     // The widgets for this content settings view.
-    OwnedWidgetGtk alignment_;
-    OwnedWidgetGtk event_box_;
+    ui::OwnedWidgetGtk alignment_;
+    ui::OwnedWidgetGtk event_box_;
     GtkWidget* hbox_;
-    OwnedWidgetGtk image_;
+    ui::OwnedWidgetGtk image_;
 
     // Explanatory text ("popup blocked").
-    OwnedWidgetGtk label_;
+    ui::OwnedWidgetGtk label_;
 
     // The owning LocationBarViewGtk.
     const LocationBarViewGtk* parent_;
@@ -266,8 +266,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
     ImageLoadingTracker tracker_;
 
     // The widgets for this page action.
-    OwnedWidgetGtk event_box_;
-    OwnedWidgetGtk image_;
+    ui::OwnedWidgetGtk event_box_;
+    ui::OwnedWidgetGtk image_;
 
     // The tab id we are currently showing the icon for.
     int current_tab_id_;
@@ -350,10 +350,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
   bool ShouldOnlyShowLocation();
 
   // The outermost widget we want to be hosted.
-  OwnedWidgetGtk hbox_;
+  ui::OwnedWidgetGtk hbox_;
 
   // Star button.
-  OwnedWidgetGtk star_;
+  ui::OwnedWidgetGtk star_;
   GtkWidget* star_image_;
   bool starred_;
 
@@ -368,11 +368,11 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* security_info_label_;
 
   // Content setting icons.
-  OwnedWidgetGtk content_setting_hbox_;
+  ui::OwnedWidgetGtk content_setting_hbox_;
   ScopedVector<ContentSettingImageViewGtk> content_setting_views_;
 
   // Extension page action icons.
-  OwnedWidgetGtk page_action_hbox_;
+  ui::OwnedWidgetGtk page_action_hbox_;
   ScopedVector<PageActionViewGtk> page_action_views_;
 
   // The widget that contains our tab hints and the location bar.

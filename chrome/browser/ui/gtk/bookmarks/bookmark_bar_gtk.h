@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/ui/gtk/menu_bar_helper.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -27,6 +26,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
@@ -314,7 +314,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
 
   // Contains |bookmark_hbox_|. Event box exists to prevent leakage of
   // background color from the toplevel application window's GDK window.
-  OwnedWidgetGtk event_box_;
+  ui::OwnedWidgetGtk event_box_;
 
   // Used to detached the bookmark bar when on the NTP.
   GtkWidget* ntp_padding_box_;
@@ -334,7 +334,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   scoped_ptr<BookmarkBarInstructionsGtk> instructions_gtk_;
 
   // GtkToolbar which contains all the bookmark buttons.
-  OwnedWidgetGtk bookmark_toolbar_;
+  ui::OwnedWidgetGtk bookmark_toolbar_;
 
   // The button that shows extra bookmarks that don't fit on the bookmark
   // bar.

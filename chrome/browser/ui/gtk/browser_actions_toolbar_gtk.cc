@@ -332,7 +332,7 @@ class BrowserActionButton : public NotificationObserver,
   scoped_ptr<CustomDrawButton> button_;
 
   // The top level widget (parent of |button_|).
-  OwnedWidgetGtk alignment_;
+  ui::OwnedWidgetGtk alignment_;
 
   // The one image subwidget in |button_|. We keep this out so we don't alter
   // the widget hierarchy while changing the button image because changing the

@@ -12,12 +12,12 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
@@ -395,7 +395,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   static SkColor unselected_title_color_;
 
   // The GtkDrawingArea we draw the tab on.
-  OwnedWidgetGtk tab_;
+  ui::OwnedWidgetGtk tab_;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.

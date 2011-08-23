@@ -10,10 +10,10 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/gtk/global_bookmark_menu.h"
 #include "chrome/browser/ui/gtk/global_history_menu.h"
-#include "chrome/browser/ui/gtk/owned_widget_gtk.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/gtk/owned_widget_gtk.h"
 
 class Browser;
 struct GlobalMenuBarCommand;
@@ -80,7 +80,7 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
   NotificationRegistrar registrar_;
 
   // Our menu bar widget.
-  OwnedWidgetGtk menu_bar_;
+  ui::OwnedWidgetGtk menu_bar_;
 
   // Listens to the TabRestoreService and the HistoryService and keeps the
   // history menu fresh.
