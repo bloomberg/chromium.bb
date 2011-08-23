@@ -4028,6 +4028,7 @@
             # investigate why.
             # 'ui_tests',
             'unit_tests',
+            'sync_unit_tests',
           ],  # 'dependencies'
           'conditions': [
             ['OS=="win"', {
