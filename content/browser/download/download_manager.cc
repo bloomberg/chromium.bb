@@ -288,7 +288,7 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info) {
                                             browser_context_->IsOffTheRecord());
   int32 download_id = info->download_id;
   DCHECK(!ContainsKey(in_progress_, download_id));
-  DCHECK(!ContainsKey(active_downloads_, download_id));
+  CHECK(!ContainsKey(active_downloads_, download_id));
   downloads_.insert(download);
   active_downloads_[download_id] = download;
 }
@@ -405,10 +405,10 @@ void DownloadManager::AssertQueueStateConsistent(DownloadItem* download) {
     }
   }
 
-  CHECK(ContainsKey(active_downloads_, download->id()) ==
-        (download->state() == DownloadItem::IN_PROGRESS));
-  CHECK(ContainsKey(in_progress_, download->id()) ==
-        (download->state() == DownloadItem::IN_PROGRESS));
+  if (ContainsKey(active_downloads_, download->id()))
+    CHECK_EQ(DownloadItem::IN_PROGRESS, download->state());
+  if (DownloadItem::IN_PROGRESS == download->state())
+    CHECK(ContainsKey(active_downloads_, download->id()));
 }
 
 bool DownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {
@@ -475,6 +475,7 @@ void DownloadManager::DownloadCompleted(int32 download_id) {
   DCHECK(download);
   delegate_->UpdateItemInPersistentStore(download);
   active_downloads_.erase(download_id);
+  AssertQueueStateConsistent(download);
 }
 
 void DownloadManager::OnDownloadRenamedToFinalName(int download_id,
@@ -522,6 +523,7 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
     active_downloads_.erase(download_id);
     UpdateDownloadProgress();  // Reflect removal from in_progress_.
     delegate_->UpdateItemInPersistentStore(download);
+    AssertQueueStateConsistent(download);
   }
 
   DownloadCancelledInternal(download_id, download->request_handle());
@@ -771,7 +773,7 @@ void DownloadManager::OnPersistentStoreQueryComplete(
     std::vector<DownloadPersistentStoreInfo>* entries) {
   for (size_t i = 0; i < entries->size(); ++i) {
     DownloadItem* download = new DownloadItem(this, entries->at(i));
-    DCHECK(!ContainsKey(history_downloads_, download->db_handle()));
+    CHECK(!ContainsKey(history_downloads_, download->db_handle()));
     downloads_.insert(download);
     history_downloads_[download->db_handle()] = download;
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
@@ -792,7 +794,7 @@ void DownloadManager::AddDownloadItemToHistory(DownloadItem* download,
   DCHECK(download->db_handle() == DownloadItem::kUninitializedHandle);
   download->set_db_handle(db_handle);
 
-  DCHECK(!ContainsKey(history_downloads_, download->db_handle()));
+  CHECK(!ContainsKey(history_downloads_, download->db_handle()));
   history_downloads_[download->db_handle()] = download;
 
   // Show in the appropriate browser UI.
@@ -840,7 +842,7 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
   if (download->IsInProgress()) {
     MaybeCompleteDownload(download);
   } else {
-    DCHECK(download->IsCancelled())
+    CHECK(download->IsCancelled())
         << " download = " << download->DebugString(true);
     in_progress_.erase(download_id);
     active_downloads_.erase(download_id);
