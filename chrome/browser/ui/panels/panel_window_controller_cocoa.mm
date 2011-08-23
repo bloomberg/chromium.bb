@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
@@ -99,14 +100,6 @@ const int kMinimumWindowSize = 1;
   [findBarCocoaController positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
 }
 
-- (void)closePanel {
-  windowShim_->panel()->Close();
-}
-
-- (void)windowWillClose:(NSNotification*)notification {
-  [self autorelease];
-}
-
 - (NSView*)tabContentsView {
   TabContents* contents = windowShim_->browser()->GetSelectedTabContents();
   CHECK(contents);
@@ -176,4 +169,47 @@ const int kMinimumWindowSize = 1;
   windowShim_->browser()->ExecuteCommandWithDisposition(
       [sender tag], disposition);
 }
+
+// Handler for the custom Close button.
+- (void)closePanel {
+  windowShim_->panel()->Close();
+}
+
+// Called when the user wants to close the panel or from the shutdown process.
+// The Browser object is in control of whether or not we're allowed to close. It
+// may defer closing due to several states, such as onbeforeUnload handlers
+// needing to be fired. If closing is deferred, the Browser will handle the
+// processing required to get us to the closing state and (by watching for
+// all the tabs going away) will again call to close the window when it's
+// finally ready.
+// This callback is only called if the standard Close button is enabled in XIB.
+- (BOOL)windowShouldClose:(id)sender {
+  Browser* browser = windowShim_->browser();
+  // Give beforeunload handlers the chance to cancel the close before we hide
+  // the window below.
+  if (!browser->ShouldCloseWindow())
+    return NO;
+
+  if (!browser->tabstrip_model()->empty()) {
+    // Tab strip isn't empty. Make browser to close all the tabs, allowing the
+    // renderer to shut down and call us back again.
+    // The tab strip of Panel is not visible and contains only one tab but
+    // it still has to be closed.
+    browser->OnWindowClosing();
+    return NO;
+  }
+
+  // the tab strip is empty, it's ok to close the window
+  return YES;
+}
+
+// When windowShouldClose returns YES (or if controller receives direct 'close'
+// signal), window will be unconditionally closed. Clean up.
+- (void)windowWillClose:(NSNotification*)notification {
+  DCHECK(windowShim_->browser()->tabstrip_model()->empty());
+
+  windowShim_->didCloseNativeWindow();
+  [self autorelease];
+}
+
 @end

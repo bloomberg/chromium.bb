@@ -56,6 +56,11 @@ class PanelBrowserWindowCocoa : public NativePanel {
   Panel* panel() { return panel_.get(); }
   Browser* browser() const { return browser_.get(); }
 
+  // Callback from PanelWindowControllerCocoa that native window was actually
+  // closed. The window may not close right away because of onbeforeunload
+  // handlers.
+  void didCloseNativeWindow();
+
  private:
   friend class PanelBrowserWindowCocoaTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, CreateClose);
