@@ -44,6 +44,11 @@ net::SSLClientSocket* CreateSSLClientSocket(
   cert_and_status.der_cert = der_cert;
   ssl_config.allowed_bad_certs.push_back(cert_and_status);
 
+  // Revocation checking is not needed because we use self-signed
+  // certs. Disable it so that SSL layer doesn't try to initialize
+  // OCSP (OCSP works only on IO thread).
+  ssl_config.rev_checking_enabled = false;
+
   // SSLClientSocket takes ownership of the adapter.
   net::HostPortPair host_and_port(
       ContentDescription::kChromotingContentName, 0);

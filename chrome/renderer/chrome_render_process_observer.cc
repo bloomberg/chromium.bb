@@ -31,7 +31,6 @@
 #include "media/base/media_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
-#include "net/ocsp/nss_ocsp.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
@@ -377,12 +376,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
     crypto::DisableNSSForkCheck();
     crypto::ForceNSSNoDBInit();
     crypto::EnsureNSSInit();
-
-    // Disable OCSP. OCSP needs to make HTTP requests, and currently
-    // it doesn't work in sandbox. SSL is used in renderer process
-    // only for peer-to-peer connections with self-signed certs. OCSP
-    // is not useful in this case, thus it is safe to disable it.
-    net::DisableOCSP();
   }
 #elif defined(OS_WIN)
   // crypt32.dll is used to decode X509 certificates for Chromoting.
