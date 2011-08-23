@@ -836,6 +836,7 @@ void Widget::OnNativeBlur(gfx::NativeView focused_view) {
 }
 
 void Widget::OnNativeWidgetVisibilityChanged(bool visible) {
+  GetRootView()->PropagateVisibilityNotifications(GetRootView(), visible);
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnWidgetVisibilityChanged(this, visible));
 }
