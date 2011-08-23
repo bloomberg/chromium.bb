@@ -254,18 +254,34 @@
         <h1 class="page_title">chrome.experimental.* APIs</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
+        <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a>h2Name</a>
+              <a href="#overview">
+List of APIs
+</a>
               <ol>
-                <li>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#using">How to use experimental APIs</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#other">More APIs</a>
+              <ol>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li>
+              <li style="display: none; ">
                 <a href="#apiReference">API reference</a>
                 <ol>
                   <li>
@@ -313,6 +329,29 @@
 
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><div id="pageData-name" class="pageData">chrome.experimental.* APIs</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+
+<p>
+Before you start, <strong>choose the right version of this page.</strong>
+You should read either:
+</p>
+
+<ul>
+  <li> <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">Most recent experimental APIs</a>
+  </li><li> <a href="http://code.google.com/chrome/extensions/dev/experimental.html">Dev channel experimental APIs</a></li>
+</ul>
+
+<p>
+For information about browser versions such as
+Canary (bleeding edge) and the Dev channel, see
+<a href="http://www.chromium.org/getting-involved/dev-channel">Chrome Release Channels</a>.
+For details about channel-specific docs,
+see <a href="docs.html#versions">Doc versions</a>.
+</p>
+
+<h2 id="overview">
+List of APIs
+</h2>
 
 <p>
 We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
@@ -330,35 +369,47 @@ on the following experimental APIs:
   <a href="experimental.devtools.resources.html">experimental.devtools.resources</a></li><li>
   <a href="experimental.infobars.html">experimental.infobars</a></li><li>
   <a href="experimental.permissions.html">experimental.permissions</a></li><li>
-  <a href="experimental.processes.html">experimental.processes</a></li><li>
   <a href="experimental.settings.html">experimental.settings</a></li><li>
-  <a href="experimental.sidebar.html">experimental.sidebar</a></li><li>
   <a href="experimental.webNavigation.html">experimental.webNavigation</a></li><li>
   <a href="experimental.webRequest.html">experimental.webRequest</a></li>
 </ul>
+
+<p>
+Pay special attention to the following APIs,
+which we expect to finalize soon:
+<b>devtools</b>,
+<b>infobars</b>,
+<b>permissions</b>,
+<b>webNavigation</b>.
+For examples of using the experimental APIs, see
+<a href="samples.html#experimental">Samples</a>.
+</p>
 
 <p class="warning">
 <b>Caution:</b>
 Don't depend on these experimental APIs.
 They might disappear,
 and they <em>will</em> change.
-Also, the Chrome Developer Dashboard doesn't allow you to
+Also, the Chrome Web Store doesn't allow you to
 upload extensions that use experimental APIs.
 </p>
+
 
 <h2 id="using">How to use experimental APIs</h2>
 
 <ol>
   <li>
-    Make sure you're using the
-<a href="http://www.chromium.org/getting-involved/dev-channel">Dev channel</a>
-    of Google Chrome.
+    Make sure you're using either
+    <a href="http://tools.google.com/dlpage/chromesxs">Canary</a>
+    (which you can use at the same time as other Chrome channels) or the
+<a href="http://www.chromium.org/getting-involved/dev-channel">Dev channel</a>.
     Although the experimental APIs might work in other versions,
     we need your feedback on the latest incarnation of the APIs,
-    which you can find on the Dev channel.
+    which you can find in Canary and on the Dev channel.
   </li>
   <li>
-    Using the
+    Using either the
+    <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">most recent API documentation</a> (if you're using Canary) or the
     <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
     write the code for your extension.
   </li>
@@ -403,7 +454,7 @@ upload extensions that use experimental APIs.
   </li>
 </ol>
 
-<h2 id="other">More information</h2>
+<h2 id="other">More APIs</h2>
 
 <p>
 For information on the standard APIs that extensions can use, see

@@ -4382,6 +4382,7 @@
   },
   {
     "namespace": "experimental.processes",
+    "nodoc": true,
     "types": [
       {
         "id": "Process",
@@ -5895,6 +5896,7 @@
   },
   {
     "namespace": "experimental.sidebar",
+    "nodoc": true,
     "types": [],
     "functions": [
       {
