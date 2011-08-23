@@ -649,13 +649,10 @@ void WebKitClientImpl::SuspendSharedTimer() {
 
 void WebKitClientImpl::ResumeSharedTimer() {
   // The shared timer may have fired or been adjusted while we were suspended.
-  if (--shared_timer_suspended_ == 0 && !shared_timer_.IsRunning())
-#ifdef WEBKIT_USE_MONOTONIC_CLOCK_FOR_TIMER_SCHEDULING
+  if (--shared_timer_suspended_ == 0 && !shared_timer_.IsRunning()) {
     setSharedTimerFireInterval(
         monotonicallyIncreasingTime() - shared_timer_fire_time_);
-#else
-    setSharedTimerFireTime(shared_timer_fire_time_);
-#endif
+  }
 }
 
 }  // namespace webkit_glue
