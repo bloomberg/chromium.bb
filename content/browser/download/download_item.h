@@ -27,11 +27,8 @@
 #include "base/timer.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_state_info.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
-class CrxInstaller;
 class DownloadFileManager;
 class DownloadManager;
 struct DownloadCreateInfo;
@@ -42,7 +39,7 @@ struct DownloadPersistentStoreInfo;
 // Destination tab's download view, may refer to a given DownloadItem.
 //
 // This is intended to be used only on the UI thread.
-class DownloadItem : public NotificationObserver {
+class DownloadItem {
  public:
   enum DownloadState {
     // Download is actively progressing.
@@ -135,11 +132,6 @@ class DownloadItem : public NotificationObserver {
   // Notifies our observers periodically.
   void UpdateObservers();
 
-  // NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // Returns true if it is OK to open a folder which this file is inside.
   bool CanShowInFolder();
 
@@ -177,6 +169,10 @@ class DownloadItem : public NotificationObserver {
   // Called by external code (SavePackage) using the DownloadItem interface
   // to display progress when the DownloadItem should be considered complete.
   void MarkAsComplete();
+
+  // Called by the delegate after it delayed completing the download in 
+  // DownloadManagerDelegate::ShouldCompleteDownload.
+  void CompleteDelayedDownload();
 
   // Called when all data has been saved. Only has display effects.
   void OnAllDataSaved(int64 size);
@@ -298,9 +294,6 @@ class DownloadItem : public NotificationObserver {
     return state_info_.prompt_user_for_save_location;
   }
   bool is_otr() const { return is_otr_; }
-  bool is_extension_install() const {
-    return state_info_.is_extension_install;
-  }
   const FilePath& suggested_path() const { return state_info_.suggested_path; }
   bool is_temporary() const { return is_temporary_; }
   void set_opened(bool opened) { opened_ = opened; }
@@ -329,13 +322,6 @@ class DownloadItem : public NotificationObserver {
     return state_info_.target_name != full_path_.BaseName();
   }
 
-  // Is a CRX installer running on this download?
-  bool IsCrxInstallRuning() const {
-    return (is_extension_install() &&
-            all_data_saved() &&
-            state_ == IN_PROGRESS);
-  }
-
   std::string DebugString(bool verbose) const;
 
 #ifdef UNIT_TEST
@@ -358,10 +344,6 @@ class DownloadItem : public NotificationObserver {
   // Start/stop sending periodic updates to our observers
   void StartProgressTimer();
   void StopProgressTimer();
-
-  // Call to install this item as a CRX. Should only be called on
-  // items which are CRXes. Use is_extension_install() to check.
-  void StartCrxInstall();
 
   // Call to transition state; all state transitions should go through this.
   void TransitionTo(DownloadState new_state);
@@ -485,8 +467,8 @@ class DownloadItem : public NotificationObserver {
   // only.
   bool open_enabled_;
 
-  // DownloadItem observes CRX installs it initiates.
-  NotificationRegistrar registrar_;
+  // Did the delegate delay calling Complete on this download?
+  bool delegate_delayed_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItem);
 };

@@ -172,7 +172,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     // In the SUID sandbox, the real zygote is forked from the sandbox.
     // We need to look for it.
     // But first, wait for the zygote to tell us it's running.
-    // The sending code is in chrome/browser/zygote_main_linux.cc.
+    // The sending code is in content/browser/zygote_main_linux.cc.
     std::vector<int> fds_vec;
     const int kExpectedLength = sizeof(kZygoteMagic);
     char buf[kExpectedLength];

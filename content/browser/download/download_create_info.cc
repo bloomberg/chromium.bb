@@ -27,8 +27,7 @@ DownloadCreateInfo::DownloadCreateInfo(const FilePath& path,
       download_id(download_id),
       has_user_gesture(has_user_gesture),
       db_handle(0),
-      prompt_user_for_save_location(false),
-      is_extension_install(false) {
+      prompt_user_for_save_location(false) {
 }
 
 DownloadCreateInfo::DownloadCreateInfo()
@@ -39,8 +38,7 @@ DownloadCreateInfo::DownloadCreateInfo()
       download_id(-1),
       has_user_gesture(false),
       db_handle(0),
-      prompt_user_for_save_location(false),
-      is_extension_install(false) {
+      prompt_user_for_save_location(false) {
 }
 
 DownloadCreateInfo::~DownloadCreateInfo() {

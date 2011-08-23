@@ -163,7 +163,7 @@ void DownloadManager::SearchDownloads(const string16& query,
        it != history_downloads_.end(); ++it) {
     DownloadItem* download_item = it->second;
 
-    if (download_item->is_temporary() || download_item->is_extension_install())
+    if (download_item->is_temporary())
       continue;
 
     // Display Incognito downloads only in Incognito window, and vice versa.

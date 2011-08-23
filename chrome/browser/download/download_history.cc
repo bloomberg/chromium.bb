@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_history.h"
 
 #include "base/logging.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/download/download_item.h"
@@ -73,7 +74,8 @@ void DownloadHistory::AddEntry(
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (download_item->is_otr() || download_item->is_extension_install() ||
+  if (download_item->is_otr() ||
+      ChromeDownloadManagerDelegate::IsExtensionDownload(download_item) ||
       download_item->is_temporary() || !hs) {
     callback->RunWithParams(
         history::DownloadCreateRequest::TupleType(download_item->id(),

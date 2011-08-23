@@ -7,11 +7,15 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "content/browser/download/download_manager_delegate.h"
+#include "content/common/notification_observer.h"
+#include "content/common/notification_registrar.h"
 
+class CrxInstaller;
 class DownloadHistory;
 class DownloadItem;
 class DownloadManager;
@@ -19,12 +23,29 @@ class DownloadPrefs;
 class Profile;
 struct DownloadStateInfo;
 
+#if defined(COMPILER_GCC)
+namespace __gnu_cxx {
+
+template<>
+struct hash<CrxInstaller*> {
+  std::size_t operator()(CrxInstaller* const& p) const {
+    return reinterpret_cast<std::size_t>(p);
+  }
+};
+
+}  // namespace __gnu_cxx
+#endif
+
 // This is the Chrome side helper for the download system.
 class ChromeDownloadManagerDelegate
     : public base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>,
-      public DownloadManagerDelegate {
+      public DownloadManagerDelegate,
+      public NotificationObserver {
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
+
+  // Returns true if the given item is for an extension download.
+  static bool IsExtensionDownload(const DownloadItem* item);
 
   void SetDownloadManager(DownloadManager* dm);
 
@@ -35,6 +56,8 @@ class ChromeDownloadManagerDelegate
                                   void* data) OVERRIDE;
   virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
+  virtual bool ShouldOpenDownload(DownloadItem* item) OVERRIDE;
+  virtual bool ShouldCompleteDownload(DownloadItem* item) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
   virtual void AddItemToPersistentStore(DownloadItem* item) OVERRIDE;
   virtual void UpdateItemInPersistentStore(DownloadItem* item) OVERRIDE;
@@ -59,6 +82,11 @@ class ChromeDownloadManagerDelegate
  private:
   friend class base::RefCountedThreadSafe<ChromeDownloadManagerDelegate>;
   virtual ~ChromeDownloadManagerDelegate();
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   // Callback function after url is checked with safebrowsing service.
   void CheckDownloadUrlDone(int32 download_id, bool is_dangerous_url);
@@ -95,6 +123,12 @@ class ChromeDownloadManagerDelegate
   scoped_refptr<DownloadManager> download_manager_;
   scoped_ptr<DownloadPrefs> download_prefs_;
   scoped_ptr<DownloadHistory> download_history_;
+
+  // Maps from pending extension installations to DownloadItem IDs.
+  typedef base::hash_map<CrxInstaller*, int> CrxInstallerMap;
+  CrxInstallerMap crx_installers_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };

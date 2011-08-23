@@ -111,7 +111,7 @@ class Zygote {
 
     if (g_suid_sandbox_active) {
       // Let the ZygoteHost know we are ready to go.
-      // The receiving code is in chrome/browser/zygote_host_linux.cc.
+      // The receiving code is in content/browser/zygote_host_linux.cc.
       std::vector<int> empty;
       bool r = UnixDomainSocket::SendMsg(kBrowserDescriptor, kZygoteMagic,
                                          sizeof(kZygoteMagic), empty);

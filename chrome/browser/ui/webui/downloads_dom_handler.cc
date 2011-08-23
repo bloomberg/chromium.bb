@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_util.h"
@@ -186,6 +187,14 @@ void DownloadsDOMHandler::ModelChanged() {
   }
 
   sort(download_items_.begin(), download_items_.end(), DownloadItemSorter());
+
+  // Remove any extension downloads.
+  for (size_t i = 0; i < download_items_.size();) {
+    if (ChromeDownloadManagerDelegate::IsExtensionDownload(download_items_[i]))
+      download_items_.erase(download_items_.begin() + i);
+    else
+      i++;
+  }
 
   // Add ourself to all download items as an observer.
   for (OrderedDownloads::iterator it = download_items_.begin();

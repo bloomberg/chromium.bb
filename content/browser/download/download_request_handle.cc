@@ -5,9 +5,9 @@
 #include "content/browser/download/download_request_handle.h"
 
 #include "base/stringprintf.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/tab_util.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
@@ -52,8 +52,12 @@ DownloadRequestHandle::DownloadRequestHandle(ResourceDispatcherHost* rdh,
 }
 
 TabContents* DownloadRequestHandle::GetTabContents() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return tab_util::GetTabContentsByID(child_id_, render_view_id_);
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(child_id_, render_view_id_);
+  if (!render_view_host)
+    return NULL;
+
+  return render_view_host->delegate()->GetAsTabContents();
 }
 
 DownloadManager* DownloadRequestHandle::GetDownloadManager() const {

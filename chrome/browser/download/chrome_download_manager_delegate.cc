@@ -10,6 +10,7 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_file_picker.h"
 #include "chrome/browser/download/download_history.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/download/download_safe_browsing_client.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_package_file_picker.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -31,6 +33,7 @@
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -40,6 +43,15 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
 }
 
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
+}
+
+bool ChromeDownloadManagerDelegate::IsExtensionDownload(
+    const DownloadItem* item) {
+  if (item->prompt_user_for_save_location())
+    return false;
+
+  return (item->mime_type() == Extension::kMimeType) ||
+      UserScript::IsURLUserScript(item->GetURL(), item->mime_type());
 }
 
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
@@ -109,6 +121,36 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);
   return download_prefs_->IsAutoOpenEnabledForExtension(extension);
+}
+
+bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
+  if (!IsExtensionDownload(item))
+    return true;
+
+  download_crx_util::OpenChromeExtension(profile_, *item);
+  return false;
+}
+
+bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
+  if (!IsExtensionDownload(item))
+    return true;
+
+  scoped_refptr<CrxInstaller> crx_installer =
+      download_crx_util::OpenChromeExtension(profile_, *item);
+
+  // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
+  // will call CompleteDelayedDownload() on this item.  If this DownloadItem is
+  // not around when CRX_INSTALLER_DONE fires, Complete() will not be called.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                 Source<CrxInstaller>(crx_installer.get()));
+
+  crx_installers_[crx_installer.get()] = item->id();
+  // The status text and percent complete indicator will change now
+  // that we are installing a CRX.  Update observers so that they pick
+  // up the change.
+  item->UpdateObservers();
+  return false;
 }
 
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {
@@ -216,6 +258,26 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
           &ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone));
 }
 
+// NotificationObserver implementation.
+void ChromeDownloadManagerDelegate::Observe(
+    int type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_CRX_INSTALLER_DONE);
+
+  registrar_.Remove(this,
+                    chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                    source);
+
+  CrxInstaller* installer = Source<CrxInstaller>(source).ptr();
+  int download_id = crx_installers_[installer];
+  crx_installers_.erase(installer);
+
+  DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
+  if (item)
+    item->CompleteDelayedDownload();
+}
+
 void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     int32 download_id,
     bool visited_referrer_before) {
@@ -229,13 +291,6 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   // Check whether this download is for an extension install or not.
   // Allow extensions to be explicitly saved.
   DownloadStateInfo state = download->state_info();
-  if (!state.prompt_user_for_save_location) {
-    if (UserScript::IsURLUserScript(download->GetURL(),
-        download->mime_type()) ||
-        (download->mime_type() == Extension::kMimeType)) {
-      state.is_extension_install = true;
-    }
-  }
 
   if (state.force_file_name.empty()) {
     FilePath generated_name;
@@ -252,7 +307,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
       //    "save as...".
       // 2) Filetypes marked "always open." If the user just wants this file
       //    opened, don't bother asking where to keep it.
-      if (!state.is_extension_install &&
+      if (!IsExtensionDownload(download) &&
           !ShouldOpenFileBasedOnExtension(generated_name))
         state.prompt_user_for_save_location = true;
     }
@@ -413,7 +468,7 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
       (!state.has_user_gesture || !visited_referrer_before))
     return true;
 
-  if (state.is_extension_install) {
+  if (IsExtensionDownload(&download)) {
     // Extensions that are not from the gallery are considered dangerous.
     ExtensionService* service = profile_->GetExtensionService();
     if (!service || !service->IsDownloadFromGallery(download.GetURL(),

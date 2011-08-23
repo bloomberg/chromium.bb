@@ -30,6 +30,14 @@ bool MockDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   return false;
 }
 
+bool MockDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
+  return true;
+}
+
+bool MockDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
+  return true;
+}
+
 bool MockDownloadManagerDelegate::GenerateFileHash() {
   return false;
 }

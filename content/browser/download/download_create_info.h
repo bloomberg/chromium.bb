@@ -95,9 +95,6 @@ struct DownloadCreateInfo {
   // The original name for a dangerous download.
   FilePath original_name;
 
-  // Whether this download is for extension install or not.
-  bool is_extension_install;
-
   // The charset of the referring page where the download request comes from.
   // It's used to construct a suggested filename.
   std::string referrer_charset;

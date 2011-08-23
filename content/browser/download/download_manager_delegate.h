@@ -35,36 +35,45 @@ class DownloadManagerDelegate {
 
   // Called when the download system wants to alert a TabContents that a
   // download has started, but the TabConetnts has gone away. This lets an
-  // embedder return an alternative TabContents. The embedder can return NULL.
+  // delegate return an alternative TabContents. The delegate can return NULL.
   virtual TabContents* GetAlternativeTabContentsToNotifyForDownload() = 0;
 
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) = 0;
 
+  // Allows the delegate to override the opening of a download. If it returns
+  // true then it's reponsible for opening the item.
+  virtual bool ShouldOpenDownload(DownloadItem* item) = 0;
+
+  // Allows the delegate to override completing the download. The delegate needs
+  // to call DownloadItem::CompleteDelayedDownload when it's done with the item,
+  // and is responsible for opening it.
+  virtual bool ShouldCompleteDownload(DownloadItem* item) = 0;
+
   // Returns true if we need to generate a binary hash for downloads.
   virtual bool GenerateFileHash() = 0;
 
-  // Notifies the embedder that a new download item is created. The
-  // DownloadManager waits for the embedder to add information about this
-  // download to its persistent store. When the embedder is done, it calls
+  // Notifies the delegate that a new download item is created. The
+  // DownloadManager waits for the delegate to add information about this
+  // download to its persistent store. When the delegate is done, it calls
   // DownloadManager::OnDownloadItemAddedToPersistentStore.
   virtual void AddItemToPersistentStore(DownloadItem* item) = 0;
 
-  // Notifies the embedder that information about the given download has change,
+  // Notifies the delegate that information about the given download has change,
   // so that it can update its persistent store.
   virtual void UpdateItemInPersistentStore(DownloadItem* item) = 0;
 
-  // Notifies the embedder that path for the download item has changed, so that
+  // Notifies the delegate that path for the download item has changed, so that
   // it can update its persistent store.
   virtual void UpdatePathForItemInPersistentStore(
       DownloadItem* item,
       const FilePath& new_path) = 0;
 
-  // Notifies the embedder that it should remove the download item from its
+  // Notifies the delegate that it should remove the download item from its
   // persistent store.
   virtual void RemoveItemFromPersistentStore(DownloadItem* item) = 0;
 
-  // Notifies the embedder to remove downloads from the given time range.
+  // Notifies the delegate to remove downloads from the given time range.
   virtual void RemoveItemsFromPersistentStoreBetween(
       const base::Time remove_begin,
       const base::Time remove_end) = 0;

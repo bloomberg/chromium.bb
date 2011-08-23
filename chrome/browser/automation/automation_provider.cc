@@ -260,8 +260,6 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
   dl_item_value->SetBoolean("is_paused", download->is_paused());
   dl_item_value->SetBoolean("open_when_complete",
                             download->open_when_complete());
-  dl_item_value->SetBoolean("is_extension_install",
-                            download->is_extension_install());
   dl_item_value->SetBoolean("is_temporary", download->is_temporary());
   dl_item_value->SetBoolean("is_otr", download->is_otr());  // incognito
   dl_item_value->SetString("state", state_to_string[download->state()]);

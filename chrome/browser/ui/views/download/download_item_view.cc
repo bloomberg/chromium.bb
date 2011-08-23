@@ -15,6 +15,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -215,7 +216,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     drop_down_state_ = DANGEROUS;
     save_button_ = new views::NativeTextButton(this,
         UTF16ToWide(l10n_util::GetStringUTF16(
-            download->is_extension_install() ?
+            ChromeDownloadManagerDelegate::IsExtensionDownload(download) ?
                 IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_CONFIRM_DOWNLOAD)));
     save_button_->set_ignore_minimum_size(true);
     discard_button_ = new views::NativeTextButton(
@@ -262,7 +263,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
       // The download file has dangerous file type (e.g.: an executable).
       DCHECK(download->GetDangerType() == DownloadItem::DANGEROUS_FILE);
       warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
-      if (download->is_extension_install()) {
+      if (ChromeDownloadManagerDelegate::IsExtensionDownload(download)) {
         dangerous_label =
             l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
       } else {

@@ -33,6 +33,7 @@
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -3427,7 +3428,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
 #if defined(OS_CHROMEOS)
     // Don't show content browser for extension/theme downloads from gallery.
     ExtensionService* service = profile_->GetExtensionService();
-    if (!download->is_extension_install() ||
+    if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
         (service == NULL) ||
         !service->IsDownloadFromGallery(download->GetURL(),
                                         download->referrer_url())) {
@@ -3447,7 +3448,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
     // window is minimized, we're in a unit test, etc.).
     TabContents* shelf_tab = shelf->browser()->GetSelectedTabContents();
     if ((download->total_bytes() > 0) &&
-        (!download->is_extension_install() ||
+        (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
          ExtensionService::IsDownloadFromMiniGallery(download->GetURL())) &&
         platform_util::IsVisible(shelf_tab->GetNativeView()) &&
         ui::Animation::ShouldRenderRichAnimation()) {

@@ -20,8 +20,7 @@ struct DownloadStateInfo {
                     bool prompt_user_for_save_location,
                     int uniquifier,
                     bool dangerous_file,
-                    bool dangerous_url,
-                    bool extension_install);
+                    bool dangerous_url);
 
   // Indicates if the download is dangerous.
   bool IsDangerous() const;
@@ -51,9 +50,6 @@ struct DownloadStateInfo {
 
   // If safebrowsing believes this URL leads to malware.
   bool is_dangerous_url;
-
-  // True if this download is for extension install.
-  bool is_extension_install;
 
   // True if this download's file name was specified initially.
   FilePath force_file_name;

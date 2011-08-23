@@ -1112,7 +1112,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         u'file_name': u'file.txt',
         u'full_path': u'/path/to/file.txt',
         u'id': 0,
-        u'is_extension_install': False,
         u'is_otr': False,
         u'is_paused': False,
         u'is_temporary': False,

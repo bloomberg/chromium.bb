@@ -14,13 +14,7 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
-#include "chrome/browser/download/download_crx_util.h"
-#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/download/download_create_info.h"
@@ -30,7 +24,6 @@
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
-#include "content/common/notification_source.h"
 
 // A DownloadItem normally goes through the following states:
 //      * Created (when download starts)
@@ -145,7 +138,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       is_temporary_(false),
       all_data_saved_(false),
       opened_(false),
-      open_enabled_(true) {
+      open_enabled_(true),
+      delegate_delayed_complete_(false) {
   if (IsInProgress())
     state_ = CANCELLED;
   if (IsComplete())
@@ -159,8 +153,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
                            bool is_otr)
     : state_info_(info.original_name, info.save_info.file_path,
                   info.has_user_gesture, info.prompt_user_for_save_location,
-                  info.path_uniquifier, false, false,
-                  info.is_extension_install),
+                  info.path_uniquifier, false, false),
       request_handle_(info.request_handle),
       download_id_(info.download_id),
       full_path_(info.path),
@@ -257,8 +250,7 @@ bool DownloadItem::CanShowInFolder() {
 }
 
 bool DownloadItem::CanOpenDownload() {
-  return !Extension::IsExtension(state_info_.target_name) &&
-    !file_externally_removed_;
+  return !file_externally_removed_;
 }
 
 bool DownloadItem::ShouldOpenFileBasedOnExtension() {
@@ -291,14 +283,8 @@ void DownloadItem::OpenDownload() {
   if (!open_enabled_)
     return;
 
-  if (is_extension_install()) {
-    download_crx_util::OpenChromeExtension(
-        Profile::FromBrowserContext(download_manager_->browser_context()),
-        *this);
-    return;
-  }
-
-  content::GetContentClient()->browser()->OpenItem(full_path());
+  if (download_manager_->delegate()->ShouldOpenDownload(this))
+    content::GetContentClient()->browser()->OpenItem(full_path());
 }
 
 void DownloadItem::ShowDownloadInShell() {
@@ -392,6 +378,11 @@ void DownloadItem::MarkAsComplete() {
   TransitionTo(COMPLETE);
 }
 
+void DownloadItem::CompleteDelayedDownload() {
+  auto_opened_ = true;
+  Completed();
+}
+
 void DownloadItem::OnAllDataSaved(int64 size) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -418,9 +409,8 @@ void DownloadItem::Completed() {
   download_manager_->DownloadCompleted(id());
   download_stats::RecordDownloadCompleted(start_tick_);
 
-  if (is_extension_install()) {
-    // Extensions should already have been unpacked and opened.
-    DCHECK(auto_opened_);
+  if (auto_opened_) {
+    // If it was already handled by the delegate, do nothing.
   } else if (open_when_complete() ||
              ShouldOpenFileBasedOnExtension() ||
              is_temporary()) {
@@ -433,31 +423,6 @@ void DownloadItem::Completed() {
     auto_opened_ = true;
     UpdateObservers();
   }
-}
-
-void DownloadItem::StartCrxInstall() {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DCHECK(is_extension_install());
-  DCHECK(all_data_saved_);
-
-  scoped_refptr<CrxInstaller> crx_installer =
-      download_crx_util::OpenChromeExtension(
-          Profile::FromBrowserContext(download_manager_->browser_context()),
-          *this);
-
-  // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
-  // will call Completed() on this item.  If this DownloadItem is not
-  // around when CRX_INSTALLER_DONE fires, Complete() will not be called.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                 Source<CrxInstaller>(crx_installer.get()));
-
-  // The status text and percent complete indicator will change now
-  // that we are installing a CRX.  Update observers so that they pick
-  // up the change.
-  UpdateObservers();
 }
 
 void DownloadItem::TransitionTo(DownloadState new_state) {
@@ -484,26 +449,6 @@ void DownloadItem::UpdateTarget() {
 
   if (state_info_.target_name.value().empty())
     state_info_.target_name = full_path_.BaseName();
-}
-
-// NotificationObserver implementation.
-void DownloadItem::Observe(int type,
-                           const NotificationSource& source,
-                           const NotificationDetails& details) {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DCHECK(type == chrome::NOTIFICATION_CRX_INSTALLER_DONE);
-
-  // No need to listen for CRX_INSTALLER_DONE anymore.
-  registrar_.Remove(this,
-                    chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                    source);
-
-  auto_opened_ = true;
-  DCHECK(all_data_saved_);
-
-  Completed();
 }
 
 void DownloadItem::Interrupted(int64 size, int os_error) {
@@ -580,11 +525,9 @@ int64 DownloadItem::CurrentSpeed() const {
 }
 
 int DownloadItem::PercentComplete() const {
-  // We don't have an accurate way to estimate the time to unpack a CRX.
-  // The slowest part is re-encoding images, and time to do this depends on
-  // the contents of the image.  If a CRX is being unpacked, indicate that
-  // we do not know how close to completion we are.
-  if (IsCrxInstallRuning() || total_bytes_ <= 0)
+  // If the delegate is delaying completion of the download, then we have no
+  // idea how long it will take.
+  if (delegate_delayed_complete_ || total_bytes_ <= 0)
     return -1;
 
   return static_cast<int>(received_bytes_ * 100.0 / total_bytes_);
@@ -637,7 +580,6 @@ void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
     return;
   }
 
-  DCHECK(!is_extension_install());
   Completed();
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -657,13 +599,11 @@ void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
 
   Rename(full_path);
 
-  if (is_extension_install()) {
-    StartCrxInstall();
-    // Completed() will be called when the installer finishes.
-    return;
+  if (download_manager_->delegate()->ShouldCompleteDownload(this)) {
+    Completed();
+  } else {
+    delegate_delayed_complete_ = true;
   }
-
-  Completed();
 }
 
 bool DownloadItem::MatchesQuery(const string16& query) const {
@@ -830,7 +770,6 @@ std::string DownloadItem::DebugString(bool verbose) const {
         " total_bytes = %" PRId64
         " received_bytes = %" PRId64
         " is_paused = %c"
-        " is_extension_install = %c"
         " is_otr = %c"
         " safety_state = %s"
         " url_chain = \n\t\"%s\"\n\t"
@@ -840,7 +779,6 @@ std::string DownloadItem::DebugString(bool verbose) const {
         total_bytes(),
         received_bytes(),
         is_paused() ? 'T' : 'F',
-        is_extension_install() ? 'T' : 'F',
         is_otr() ? 'T' : 'F',
         DebugSafetyStateString(safety_state()),
         url_list.c_str(),
