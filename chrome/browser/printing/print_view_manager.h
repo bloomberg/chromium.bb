@@ -60,6 +60,9 @@ class PrintViewManager : public NotificationObserver,
   // must be NULL if |observer| is non-NULL.
   void set_observer(PrintViewManagerObserver* observer);
 
+  // Reset |is_title_overridden_| to false.
+  void ResetTitleOverride();
+
   // PrintedPagesSource implementation.
   virtual string16 RenderSourceName();
   virtual GURL RenderSourceUrl();

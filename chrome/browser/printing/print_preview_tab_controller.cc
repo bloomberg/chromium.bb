@@ -64,6 +64,12 @@ void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
   }
 }
 
+void ResetPreviewTabOverrideTitle(TabContents* preview_tab) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab);
+  wrapper->print_view_manager()->ResetTitleOverride();
+}
+
 }  // namespace
 
 namespace printing {
@@ -199,6 +205,7 @@ void PrintPreviewTabController::OnTabContentsDestroyed(TabContents* tab) {
     preview_tab_map_[preview_tab] = NULL;
   }
 
+  ResetPreviewTabOverrideTitle(preview_tab);
   RemoveObservers(tab);
 }
 
@@ -213,6 +220,8 @@ void PrintPreviewTabController::OnNavEntryCommitted(
     // Don't update/erase the map entry if the page has not changed.
     if (transition_type == PageTransition::RELOAD ||
         nav_type == NavigationType::SAME_PAGE) {
+      if (source_tab_is_preview_tab)
+        SetInitiatorTabURLAndTitle(preview_tab);
       return;
     }
 
@@ -222,17 +231,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
         nav_type == NavigationType::NEW_PAGE &&
         source_tab_is_preview_tab) {
       waiting_for_new_preview_page_ = false;
-      // Set the initiator tab url and title.
-      TabContents* initiator_tab = GetInitiatorTab(tab);
-      if (initiator_tab && preview_tab->web_ui()) {
-        PrintPreviewUI* print_preview_ui =
-            static_cast<PrintPreviewUI*>(preview_tab->web_ui());
-        TabContentsWrapper* wrapper =
-            TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
-        print_preview_ui->SetInitiatorTabURLAndTitle(
-            initiator_tab->GetURL().spec(),
-            wrapper->print_view_manager()->RenderSourceName());
-      }
+      SetInitiatorTabURLAndTitle(preview_tab);
       return;
     }
 
@@ -245,6 +244,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
   }
 
   RemoveObservers(tab);
+  ResetPreviewTabOverrideTitle(preview_tab);
   if (source_tab_is_preview_tab) {
     // Remove the initiator tab's observers before erasing the mapping.
     TabContents* initiator_tab = GetInitiatorTab(tab);
@@ -278,6 +278,7 @@ void PrintPreviewTabController::EraseInitiatorTabInfo(
 
   RemoveObservers(it->second);
   preview_tab_map_[preview_tab] = NULL;
+  ResetPreviewTabOverrideTitle(preview_tab);
 }
 
 TabContents* PrintPreviewTabController::GetInitiatorTab(
@@ -332,6 +333,20 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
   AddObservers(preview_tab->tab_contents());
 
   return preview_tab->tab_contents();
+}
+
+void PrintPreviewTabController::SetInitiatorTabURLAndTitle(
+    TabContents* preview_tab) {
+  TabContents* initiator_tab = GetInitiatorTab(preview_tab);
+  if (initiator_tab && preview_tab->web_ui()) {
+    PrintPreviewUI* print_preview_ui =
+        static_cast<PrintPreviewUI*>(preview_tab->web_ui());
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
+    print_preview_ui->SetInitiatorTabURLAndTitle(
+        initiator_tab->GetURL().spec(),
+        wrapper->print_view_manager()->RenderSourceName());
+  }
 }
 
 void PrintPreviewTabController::AddObservers(TabContents* tab) {

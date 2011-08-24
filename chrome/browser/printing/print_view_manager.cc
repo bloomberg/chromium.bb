@@ -104,6 +104,10 @@ void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
   observer_ = observer;
 }
 
+void PrintViewManager::ResetTitleOverride() {
+  is_title_overridden_ = false;
+}
+
 void PrintViewManager::StopNavigation() {
   // Cancel the current job, wait for the worker to finish.
   TerminatePrintJob(true);

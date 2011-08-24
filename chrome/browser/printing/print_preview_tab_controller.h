@@ -92,6 +92,10 @@ class PrintPreviewTabController
   // Creates a new print preview tab.
   TabContents* CreatePrintPreviewTab(TabContents* initiator_tab);
 
+  // Helper function to store the initiator tab(title and url) information
+  // in |PrintPreviewUI|.
+  void SetInitiatorTabURLAndTitle(TabContents* preview_tab);
+
   // Adds/Removes observers for notifications from |tab|.
   void AddObservers(TabContents* tab);
   void RemoveObservers(TabContents* tab);

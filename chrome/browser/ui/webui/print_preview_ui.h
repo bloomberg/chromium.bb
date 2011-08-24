@@ -97,6 +97,9 @@ class PrintPreviewUI : public ChromeWebUI {
   void OnFileSelectionCancelled();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerUnitTest,
+                           TitleAfterReload);
+
   // Returns the Singleton instance of the PrintPreviewDataService.
   PrintPreviewDataService* print_preview_data_service();
 
