@@ -3,23 +3,41 @@
 <head>
   <style type="text/css">
     body {
-      margin: 0px;
+      margin: 10px 10px 0 10px;
+      -webkit-user-select: none;
     }
 
-    #buttons {
-      text-align: right;
+    form {
+      margin: 0;
     }
 
-    html[dir='rtl'] #buttons {
-      text-align: left;
+    #explanation {
+      cursor: default;
+    }
+
+    #fields {
+      padding: 10px 0;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #username-label-cell,
+    #password-label-cell {
+      text-align: end;
+      -webkit-padding-end: 5px;
     }
 
     #username,
     #password {
-      width: 220px;
+      width: 150px;
     }
+
+    #buttons {
+      text-align: end;
+    }
+
   </style>
-  <script type="text/javascript">
+  <script>
     function $(o) {
       return document.getElementById(o);
     }
@@ -41,59 +59,66 @@
       chrome.send('DialogClose', [result]);
     }
 
+    function cancel() {
+      disableControls();
+      chrome.send('DialogClose');
+    }
+
+    function handleSubmit(e) {
+      sendCredentialsAndClose();
+      e.preventDefault();
+    }
+
+    function handleKeyDown(e) {
+      if (e.keyCode == 27) {  // Escape
+        cancel();
+        e.preventDefault();
+      }
+    }
+
     function setAutofillCredentials(username, password) {
       $('username').value = username;
       $('password').value = password;
     }
 
-    function handleKeyDown(event) {
-      if (event.keyCode == 13) {  // Enter.
-        $('login').onclick();
-      } else if (event.keyCode == 27) {  // Escape.
-        $('cancel').onclick();
-      }
-    }
-
     function load() {
+      document.addEventListener('keydown', handleKeyDown);
       $('explanation').textContent = chrome.dialogArguments;
-
-      $('cancel').onclick = function() {
-        disableControls();
-        chrome.send('DialogClose', ['']);
-      };
-
-      $('login').onclick = function() {
-        sendCredentialsAndClose();
-      };
-
+      $('form').onsubmit = handleSubmit;
+      $('cancel').onclick = cancel;
       $('username').focus();
 
       chrome.send('GetAutofill', ['']);
     }
 
     document.addEventListener('DOMContentLoaded', load);
-    document.addEventListener('keydown', handleKeyDown);
   </script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <div id="explanation"></div>
-  <table>
-    <tr>
-      <td i18n-content="username"></td>
-      <td>
-        <input id="username" type="text">
-      </td>
-    </tr>
-    <tr>
-      <td i18n-content="password"></td>
-      <td>
-        <input id="password" name="password" type="password">
-      </td>
-    </tr>
-  </table>
-  <div id="buttons">
-    <input id="cancel" type="button" i18n-values="value:cancel">
-    <input id="login" type="button" i18n-values="value:signin">
-  </div>
+  <form id="form">
+    <table id="fields">
+      <tr>
+        <td id="username-label-cell">
+          <label for="username" i18n-content="username"></label>
+        </td>
+        <td>
+          <input id="username" type="text">
+        </td>
+      </tr>
+      <tr>
+        <td id="password-label-cell">
+          <label for="password" i18n-content="password"></label>
+        </td>
+        <td>
+          <input id="password" name="password" type="password">
+        </td>
+      </tr>
+    </table>
+    <div id="buttons">
+      <input id="cancel" type="button" i18n-values="value:cancel">
+      <input id="login" type="submit" i18n-values="value:signin">
+    </div>
+  </form>
 </body>
 </html>

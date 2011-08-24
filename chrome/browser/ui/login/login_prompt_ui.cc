@@ -150,7 +150,7 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
   std::string autofill_password_;
 
   static const int kDialogWidth = 400;
-  static const int kDialogHeight = 130;
+  static const int kDialogHeight = 160;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerHtmlDelegate);
 };
