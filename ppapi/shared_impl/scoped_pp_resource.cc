@@ -54,7 +54,7 @@ PP_Resource ScopedPPResource::Release() {
   CallRelease();
 
   PP_Resource ret = id_;
-  id_ = NULL;
+  id_ = 0;
   return ret;
 }
 

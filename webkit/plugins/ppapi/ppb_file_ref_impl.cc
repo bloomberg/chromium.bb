@@ -54,8 +54,8 @@ void TrimTrailingSlash(std::string* path) {
 }  // namespace
 
 PPB_FileRef_Impl::PPB_FileRef_Impl()
-    : Resource(NULL),
-      file_system_(NULL) {
+    : Resource(0),
+      file_system_() {
 }
 
 PPB_FileRef_Impl::PPB_FileRef_Impl(
