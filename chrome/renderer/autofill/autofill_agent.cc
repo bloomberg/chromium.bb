@@ -141,10 +141,6 @@ void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
     string16 substring = value;
     substring = substring.substr(0, element.maxLength());
     element.setValue(substring, true);
-
-    WebFrame* webframe = node.document().frame();
-    if (webframe)
-      webframe->notifiyPasswordListenerOfAutocomplete(element);
   } else {
     // Fill the values for the whole form.
     FillAutofillFormData(node, unique_id, AUTOFILL_FILL);
