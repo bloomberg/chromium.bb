@@ -65,11 +65,11 @@ cr.define('login', function() {
      * Whether Gaia is loading.
      * @type {boolean}
      */
-    get gaiaLoading() {
+    get loading() {
       return !$('gaia-loading').hidden;
     },
-    set gaiaLoading(loading) {
-      if (loading == this.gaiaLoading)
+    set loading(loading) {
+      if (loading == this.loading)
         return;
 
       this.showLoadingUI_(loading);
@@ -94,7 +94,7 @@ cr.define('login', function() {
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
 
-      this.gaiaLoading = true;
+      this.loading = true;
     },
 
     /**
@@ -116,8 +116,9 @@ cr.define('login', function() {
       var msg = e.data;
       if (msg.method == 'completeLogin' && this.isAuthExtMessage_(e)) {
         chrome.send('completeLogin', [msg.email, msg.password] );
+        this.loading = true;
       } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
-        this.gaiaLoading = false;
+        this.loading = false;
       }
     },
 
