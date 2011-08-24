@@ -197,8 +197,7 @@ void SettingLevelBubble::BubbleClosing(Bubble* bubble, bool) {
   StopAnimation();
   bubble_ = NULL;
   view_ = NULL;
-  current_percent_ = -1.0;
-  target_percent_ = -1.0;
+  current_percent_ = target_percent_;
   target_time_ = TimeTicks();
   last_animation_update_time_ = TimeTicks();
   last_target_update_time_ = TimeTicks();
