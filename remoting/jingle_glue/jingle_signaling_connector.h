@@ -5,6 +5,8 @@
 #ifndef REMOTING_JINGLE_GLUE_JINGLE_SIGNALING_CONNECTOR_H_
 #define REMOTING_JINGLE_GLUE_JINGLE_SIGNALING_CONNECTOR_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -45,13 +47,14 @@ class JingleSignalingConnector : public SignalStrategy::Listener,
   virtual bool OnIncomingStanza(const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
-  void OnResponse(const buzz::XmlElement* stanza);
+  typedef std::map<std::string, buzz::XmlElement*> IqRequestsMap;
 
   void OnOutgoingMessage(cricket::SessionManager* manager,
                          const buzz::XmlElement* stanza);
 
   SignalStrategy* signal_strategy_;
   cricket::SessionManager* session_manager_;
+  IqRequestsMap pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSignalingConnector);
 };
