@@ -80,6 +80,19 @@ class PerHoverThresholdHistograms {
   base::Histogram* time_hover_until_click_;
 };
 
+enum PAGEVIEW_EVENTS {
+  PAGEVIEW_EVENT_NEW_URL = 0,
+  PAGEVIEW_EVENT_TOP_SITE_NEW_URL = 1,
+  PAGEVIEW_EVENT_LOAD_START = 2,
+  PAGEVIEW_EVENT_TOP_SITE_LOAD_START = 3,
+  PAGEVIEW_EVENT_MAX = 4
+};
+
+void RecordPageviewEvent(PAGEVIEW_EVENTS event) {
+  UMA_HISTOGRAM_ENUMERATION("Prerender.PageviewEvents",
+                            event, PAGEVIEW_EVENT_MAX);
+}
+
 }  // namespace
 
 class PrerenderObserver::HoverData {
@@ -180,6 +193,9 @@ PrerenderObserver::~PrerenderObserver() {
 
 void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url,
                                                         bool has_opener_set) {
+  RecordPageviewEvent(PAGEVIEW_EVENT_NEW_URL);
+  if (IsTopSite(url))
+    RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_NEW_URL);
   if (!tab_->delegate())
     return;  // PrerenderManager needs a delegate to handle the swap.
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
@@ -205,6 +221,10 @@ void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                           bool has_opener_set,
                                                           const GURL& url) {
   if (is_main_frame) {
+    RecordPageviewEvent(PAGEVIEW_EVENT_LOAD_START);
+    if (IsTopSite(url))
+      RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_LOAD_START);
+
     // Record the beginning of a new PPLT navigation.
     pplt_load_start_ = base::TimeTicks::Now();
 
@@ -301,6 +321,11 @@ void PrerenderObserver::MaybeLogCurrentHover(bool was_used) {
   }
 
   current_hover_url_ = GURL();
+}
+
+bool PrerenderObserver::IsTopSite(const GURL& url) {
+  PrerenderManager* pm = MaybeGetPrerenderManager();
+  return (pm && pm->IsTopSite(url));
 }
 
 }  // namespace prerender
