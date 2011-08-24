@@ -254,6 +254,15 @@
       'sources': [
         'sel_main.c',
       ],
+      'conditions': [
+        ['OS=="linux"', {
+          'link_settings': {
+            'libraries': [
+              '-ldl',
+            ],
+          },
+        }],
+      ],
     },
     # no tests are built here; see service_runtime_test.gyp
   ],

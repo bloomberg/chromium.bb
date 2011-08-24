@@ -192,6 +192,7 @@ if env.Bit('linux'):
     ldr_inputs += ['linux/nacl_signal_64.c']
   else:
     raise Exception("Unsupported target")
+  env.Append(LIBS=['dl'])
 
 if env.Bit('mac'):
   ldr_inputs += ['posix/nacl_signal.c']

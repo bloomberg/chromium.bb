@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
@@ -28,6 +29,49 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
+
+/*
+ * Find sandbox memory pre-reserved by the nacl_helper in chrome. The
+ * nacl_helper, if present, reserves the bottom 1G of the address space
+ * for use by Native Client.
+ *
+ * NOTE: num_bytes is currently ignored. It should be 1GB on Linux and
+ * 1GB plus a few pages on ARM. TODO(bradchen): deal with num_bytes.
+ *
+ * Out parameter p should be either:
+ *   0: reserved memory was not found
+ *   less than 128K: indicates the bottom 1G was reserved.
+ */
+int   NaCl_find_prereserved_sandbox_memory(void   **p,
+                                           size_t num_bytes) {
+  typedef uintptr_t (base_addr_func)();
+  void *nacl_helper_so = dlopen(NULL, RTLD_LAZY | RTLD_NOLOAD);
+  base_addr_func *nacl_helper_get_base_addr;
+  uintptr_t tmpint;
+  uintptr_t base_addr;
+
+  UNREFERENCED_PARAMETER(num_bytes);
+  NaClLog(2, "NaCl_find_preserved_sandbox_memory(p, 0x%08"NACL_PRIxPTR")\n",
+          num_bytes);
+  *p = 0;
+  if (!nacl_helper_so) {
+    return 0;
+  }
+  tmpint = (uintptr_t) dlsym(nacl_helper_so, "nacl_helper_get_1G_address");
+  nacl_helper_get_base_addr = (base_addr_func*) tmpint;
+
+  if (NULL == nacl_helper_get_base_addr) {
+    return 0;
+  }
+  base_addr = nacl_helper_get_base_addr();
+  if (0 == base_addr) {
+    return 0;
+  }
+  NaClLog(2, "NaCl_find_preserved_sandbox_memory() at 0x%08"NACL_PRIxPTR"\n",
+          base_addr);
+  *p = (void *) base_addr;
+  return 1;
+}
 
 void NaCl_page_free(void     *p,
                     size_t   size) {

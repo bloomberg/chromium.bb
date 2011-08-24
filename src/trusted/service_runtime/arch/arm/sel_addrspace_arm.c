@@ -11,36 +11,73 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 
-#define POST_ADDR_SPACE_GUARD_SIZE  (2 * NACL_PAGESIZE)
-
 /*
  * On ARM, we cheat slightly: we add two pages to the requested allocation!
  * This accomodates the guard region we require at the top end of untrusted
  * memory.
  */
+#define POST_ADDR_SPACE_GUARD_SIZE  (2 * NACL_PAGESIZE)
+
+/* NOTE: This routine is almost identical to the x86_32 version.
+ */
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
-  CHECK(mem);
+#if NACL_LINUX
+  const void *ONE_MEGABYTE = (void *)(1024*1024);
+#endif
+  int result;
+
+  CHECK(NULL != mem);
 
   addrsp_size += POST_ADDR_SPACE_GUARD_SIZE;
+#if NACL_LINUX
+  /*
+   * When creating a zero-based sandbox, we do not allocate the first 64K of
+   * pages beneath the trampolines, because -- on Linux at least -- we cannot.
+   * Instead, we allocate starting at the trampolines, and then coerce the
+   * "mem" out parameter.
+   */
   addrsp_size -= NACL_TRAMPOLINE_START;
-
-  *mem = (void *) NACL_TRAMPOLINE_START;
-  if (NaCl_page_alloc_at_addr(mem, addrsp_size) != 0) {
+  /*
+   * On 32 bit Linux, a 1 gigabyte block of address space may be reserved at
+   * the zero-end of the address space during process creation, to address
+   * sandbox layout requirements on ARM and performance issues on Intel ATOM.
+   * Look for this pre-reserved block and if found, pass its address to the
+   * page allocation function.
+   */
+  if (NaCl_find_prereserved_sandbox_memory(mem, addrsp_size)) {
+    /* Sanity check zero sandbox base address.
+     * It should be within a few pages above the 64KB boundary. See
+     * chrome/nacl/nacl_helper_bootstrap.c in the Chromium repository
+     * for more details.
+     */
+    if (0 == *mem || ONE_MEGABYTE < *mem) {
+      NaClLog(LOG_ERROR, "NaClAllocateSpace:"
+                         "  Can't handle sandbox at high address"
+                         " 0x%08"NACL_PRIxPTR"\n",
+              (uintptr_t)*mem);
+      return LOAD_NO_MEMORY;
+    }
+  } else {
+    /* Zero-based sandbox not pre-reserved. Try anyways.
+     * TODO(bradchen): delete once new code is working.
+     */
+    *mem = (void *) NACL_TRAMPOLINE_START;
+  }
+  result = NaCl_page_alloc_at_addr(mem, addrsp_size);
+  *mem = 0;
+#else
+# error "I only know how to allocate memory for ARM on Linux."
+#endif
+  if (0 != result) {
     NaClLog(2,
-        "NaClAllocateSpace: NaCl_page_alloc_at_addr 0x%08"NACL_PRIxPTR
-        " failed\n",
-        (uintptr_t) *mem);
+            "NaClAllocateSpace: NaCl_page_alloc_at_addr 0x%08"NACL_PRIxPTR
+            " failed\n",
+            (uintptr_t) *mem);
     return LOAD_NO_MEMORY;
   }
   NaClLog(4, "NaClAllocateSpace: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
           (uintptr_t) *mem,
           addrsp_size);
-
-  /*
-   * makes sel_ldr think that the module's address space is at 0x0, this where
-   * it should be
-   */
-  *mem = 0x0;
 
   return LOAD_OK;
 }
@@ -73,6 +110,7 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
            "size 0x%08x, end 0x%08"NACL_PRIxPTR"\n"),
           0, NACL_SYSCALL_START_ADDR,
           NACL_SYSCALL_START_ADDR);
+
   if (!NaClVmmapAdd(&nap->mem_map,
                     nap->mem_start >> NACL_PAGESHIFT,
                     NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
