@@ -209,7 +209,6 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   // Test focussed drawing.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   [field_ display];
-  [test_window() clearPretendKeyWindowAndFirstResponder];
 }
 
 TEST_F(AutocompleteTextFieldObserverTest, FlagsChanged) {

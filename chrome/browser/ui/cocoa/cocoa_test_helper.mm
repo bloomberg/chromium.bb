@@ -85,6 +85,7 @@ void CocoaTest::BootstrapCocoa() {
 void CocoaTest::TearDown() {
   called_tear_down_ = true;
   // Call close on our test_window to clean it up if one was opened.
+  [test_window_ clearPretendKeyWindowAndFirstResponder];
   [test_window_ close];
   test_window_ = nil;
 
