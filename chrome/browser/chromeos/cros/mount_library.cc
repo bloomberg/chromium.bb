@@ -728,10 +728,16 @@ class MountLibraryImpl : public MountLibrary {
   }
 
   const char* FilePathToDevicePath(const char* file_path) {
+    int failed = (file_path[0] == '!') ? 1 : 0;
     for (MountLibrary::DiskMap::iterator it = disks_.begin();
          it != disks_.end(); ++it) {
-      if (it->second->file_path().compare(file_path) == 0)
-        return it->second->device_path().c_str();
+      if (it->second->file_path().compare(file_path + failed) == 0) {
+        if (failed) {
+          return (std::string("!") + it->second->device_path()).c_str();
+        } else {
+          return it->second->device_path().c_str();
+        }
+      }
     }
     return NULL;
   }

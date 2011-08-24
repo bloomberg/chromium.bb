@@ -182,9 +182,17 @@ void ExtensionFileBrowserEventRouter::DeviceChanged(
   } else if (event == chromeos::MOUNT_DEVICE_SCANNED) {
     OnDeviceScanned(device_path);
   } else if (event == chromeos::MOUNT_FORMATTING_STARTED) {
-    OnFormattingStarted(device_path);
+    if (device_path[0] == '!') {
+      OnFormattingStarted(device_path.substr(1), false);
+    } else {
+      OnFormattingStarted(device_path, true);
+    }
   } else if (event == chromeos::MOUNT_FORMATTING_FINISHED) {
-    OnFormattingFinished(device_path);
+    if (device_path[0] == '!') {
+      OnFormattingFinished(device_path.substr(1), false);
+    } else {
+      OnFormattingFinished(device_path, true);
+    }
   }
 }
 void ExtensionFileBrowserEventRouter::MountCompleted(
@@ -421,28 +429,22 @@ void ExtensionFileBrowserEventRouter::OnDeviceScanned(
 }
 
 void ExtensionFileBrowserEventRouter::OnFormattingStarted(
-    const std::string& device_path) {
-  if (device_path[0] == '!') {
-    ShowFileBrowserNotification("FORMAT_FINISHED", device_path.substr(1),
-        IDR_PAGEINFO_WARNING_MAJOR,
-        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE),
-        l10n_util::GetStringUTF16(IDS_FORMATTING_STARTED_FAILURE_MESSAGE));
-  } else {
+    const std::string& device_path, bool success) {
+  if (success) {
     ShowFileBrowserNotification("FORMAT", device_path, IDR_PAGEINFO_INFO,
         l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_PENDING_TITLE),
         l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE));
+  } else {
+    ShowFileBrowserNotification("FORMAT_FINISHED", device_path,
+        IDR_PAGEINFO_WARNING_MAJOR,
+        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE),
+        l10n_util::GetStringUTF16(IDS_FORMATTING_STARTED_FAILURE_MESSAGE));
   }
 }
 
 void ExtensionFileBrowserEventRouter::OnFormattingFinished(
-    const std::string& device_path) {
-  if (device_path[0] == '!') {
-    HideFileBrowserNotification("FORMAT", device_path.substr(1));
-    ShowFileBrowserNotification("FORMAT_FINISHED", device_path.substr(1),
-        IDR_PAGEINFO_WARNING_MAJOR,
-        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE),
-        l10n_util::GetStringUTF16(IDS_FORMATTING_FINISHED_FAILURE_MESSAGE));
-  } else {
+    const std::string& device_path, bool success) {
+  if (success) {
     HideFileBrowserNotification("FORMAT", device_path);
     ShowFileBrowserNotification("FORMAT_FINISHED", device_path,
         IDR_PAGEINFO_INFO,
@@ -459,6 +461,12 @@ void ExtensionFileBrowserEventRouter::OnFormattingFinished(
     lib->MountPath(device_path.c_str(),
                    chromeos::MOUNT_TYPE_DEVICE,
                    chromeos::MountPathOptions());  // Unused.
+  } else {
+    HideFileBrowserNotification("FORMAT", device_path);
+    ShowFileBrowserNotification("FORMAT_FINISHED", device_path,
+        IDR_PAGEINFO_WARNING_MAJOR,
+        l10n_util::GetStringUTF16(IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE),
+        l10n_util::GetStringUTF16(IDS_FORMATTING_FINISHED_FAILURE_MESSAGE));
   }
 }
 

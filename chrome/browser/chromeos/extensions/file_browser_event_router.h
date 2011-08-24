@@ -97,8 +97,8 @@ class ExtensionFileBrowserEventRouter
   void OnDeviceAdded(const std::string& device_path);
   void OnDeviceRemoved(const std::string& device_path);
   void OnDeviceScanned(const std::string& device_path);
-  void OnFormattingStarted(const std::string& device_path);
-  void OnFormattingFinished(const std::string& device_path);
+  void OnFormattingStarted(const std::string& device_path, bool success);
+  void OnFormattingFinished(const std::string& device_path, bool success);
 
   // Finds first notifications corresponding to the same device. Ensures that
   // we don't pop up multiple notifications for the same device.
