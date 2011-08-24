@@ -7,10 +7,10 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
@@ -19,14 +19,17 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_service.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "views/ime/text_input_client.h"
+#include "views/ime/text_input_type_tracker.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/virtual_keyboard_selector.h"
 #endif
 
@@ -41,7 +44,94 @@ const char kOnTextInputTypeChanged[] =
 
 // TODO(sad): Is the default profile always going to be the one we want?
 
-KeyboardManager::KeyboardManager()
+class KeyboardWidget
+    : public views::Widget,
+      public ui::AnimationDelegate,
+      public TabContentsObserver,
+      public ExtensionFunctionDispatcher::Delegate,
+#if defined(OS_CHROMEOS)
+      public chromeos::input_method::InputMethodManager::VirtualKeyboardObserver,
+#endif
+      public NotificationObserver,
+      public views::Widget::Observer,
+      public views::TextInputTypeObserver {
+ public:
+  KeyboardWidget();
+  virtual ~KeyboardWidget();
+
+  // Show the keyboard for the target widget. The events from the keyboard will
+  // be sent to |widget|.
+  // TODO(sad): Allow specifying the type of keyboard to show.
+  void ShowKeyboardForWidget(views::Widget* widget);
+
+  // Overridden from views::Widget
+  void Hide() OVERRIDE;
+
+ private:
+  // Sets the target widget, adds/removes Widget::Observer, reparents etc.
+  void SetTarget(Widget* target);
+
+  // Overridden from views::Widget.
+  virtual bool OnKeyEvent(const views::KeyEvent& event) OVERRIDE;
+
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+
+  // Overridden from TabContentsObserver.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  void OnRequest(const ExtensionHostMsg_Request_Params& params);
+
+  // Overridden from TextInputTypeObserver.
+  virtual void TextInputTypeChanged(ui::TextInputType type,
+                                    views::Widget *widget) OVERRIDE;
+
+  // Overridden from ExtensionFunctionDispatcher::Delegate.
+  virtual Browser* GetBrowser() OVERRIDE;
+  virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE;
+  virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
+
+#if defined(OS_CHROMEOS)
+  // Overridden from input_method::InputMethodManager::VirtualKeyboardObserver.
+  virtual void VirtualKeyboardChanged(
+      chromeos::input_method::InputMethodManager* manager,
+      const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
+      const std::string& virtual_keyboard_layout);
+#endif
+
+  // Overridden from NotificationObserver.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
+
+  // Overridden from views::Widget::Observer.
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
+
+  // The animation.
+  scoped_ptr<ui::SlideAnimation> animation_;
+
+  // Interpolated transform used during animation.
+  scoped_ptr<ui::InterpolatedTransform> transform_;
+
+  // The DOM view to host the keyboard.
+  DOMView* dom_view_;
+
+  ExtensionFunctionDispatcher extension_dispatcher_;
+
+  // The widget the events from the keyboard should be directed to.
+  views::Widget* target_;
+
+  // Height of the keyboard.
+  int keyboard_height_;
+
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardWidget);
+};
+
+KeyboardWidget::KeyboardWidget()
     : views::Widget::Widget(),
       dom_view_(new DOMView),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -92,7 +182,7 @@ KeyboardManager::KeyboardManager()
 #endif
 }
 
-KeyboardManager::~KeyboardManager() {
+KeyboardWidget::~KeyboardWidget() {
   if (target_)
     target_->RemoveObserver(this);
   views::TextInputTypeTracker::GetInstance()->RemoveTextInputTypeObserver(this);
@@ -101,10 +191,11 @@ KeyboardManager::~KeyboardManager() {
       chromeos::input_method::InputMethodManager::GetInstance();
   manager->RemoveVirtualKeyboardObserver(this);
 #endif
+
   // TODO(sad): Do anything else?
 }
 
-void KeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
+void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
   SetTarget(widget);
 
   gfx::Rect rect = target_->GetWindowScreenBounds();
@@ -123,11 +214,11 @@ void KeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
   Show();
 }
 
-void KeyboardManager::Hide() {
+void KeyboardWidget::Hide() {
   animation_->Hide();
 }
 
-void KeyboardManager::SetTarget(views::Widget* target) {
+void KeyboardWidget::SetTarget(views::Widget* target) {
   if (target_)
     target_->RemoveObserver(this);
 
@@ -141,37 +232,36 @@ void KeyboardManager::SetTarget(views::Widget* target) {
   }
 }
 
-bool KeyboardManager::OnKeyEvent(const views::KeyEvent& event) {
+bool KeyboardWidget::OnKeyEvent(const views::KeyEvent& event) {
   return target_ ? target_->OnKeyEvent(event) : false;
 }
 
-void KeyboardManager::AnimationProgressed(const ui::Animation* animation) {
+void KeyboardWidget::AnimationProgressed(const ui::Animation* animation) {
   GetRootView()->SetTransform(
       transform_->Interpolate(animation_->GetCurrentValue()));
 }
 
-void KeyboardManager::AnimationEnded(const ui::Animation* animation) {
+void KeyboardWidget::AnimationEnded(const ui::Animation* animation) {
   if (animation_->GetCurrentValue() < 0.01)
     Widget::Hide();
 }
 
-bool KeyboardManager::OnMessageReceived(const IPC::Message& message) {
+bool KeyboardWidget::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(KeyboardManager, message)
+  IPC_BEGIN_MESSAGE_MAP(KeyboardWidget, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void KeyboardManager::OnRequest(
-    const ExtensionHostMsg_Request_Params& request) {
+void KeyboardWidget::OnRequest(const ExtensionHostMsg_Request_Params& request) {
   extension_dispatcher_.Dispatch(request,
       dom_view_->tab_contents()->render_view_host());
 }
 
-void KeyboardManager::TextInputTypeChanged(ui::TextInputType type,
-                                           views::Widget *widget) {
+void KeyboardWidget::TextInputTypeChanged(ui::TextInputType type,
+                                          views::Widget *widget) {
   // Send onTextInputTypeChanged event to keyboard extension.
   ListValue args;
   switch (type) {
@@ -228,23 +318,23 @@ void KeyboardManager::TextInputTypeChanged(ui::TextInputType type,
     ShowKeyboardForWidget(widget);
 }
 
-Browser* KeyboardManager::GetBrowser() {
+Browser* KeyboardWidget::GetBrowser() {
   // TODO(sad): Find a better way. Perhaps just return NULL, and fix
   // SendKeyboardEventInputFunction::GetTopLevelWidget to somehow interact with
   // the WM to find the top level widget?
   return BrowserList::GetLastActive();
 }
 
-gfx::NativeView KeyboardManager::GetNativeViewOfHost() {
+gfx::NativeView KeyboardWidget::GetNativeViewOfHost() {
   return dom_view_->native_view();
 }
 
-TabContents* KeyboardManager::GetAssociatedTabContents() const {
+TabContents* KeyboardWidget::GetAssociatedTabContents() const {
   return dom_view_->tab_contents();
 }
 
 #if defined(OS_CHROMEOS)
-void KeyboardManager::VirtualKeyboardChanged(
+void KeyboardWidget::VirtualKeyboardChanged(
     chromeos::input_method::InputMethodManager* manager,
     const chromeos::input_method::VirtualKeyboard& virtual_keyboard,
     const std::string& virtual_keyboard_layout) {
@@ -254,9 +344,9 @@ void KeyboardManager::VirtualKeyboardChanged(
 }
 #endif
 
-void KeyboardManager::Observe(int type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
+void KeyboardWidget::Observe(int type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED: {
       Hide();
@@ -293,11 +383,7 @@ void KeyboardManager::Observe(int type,
     }
 
     case content::NOTIFICATION_APP_EXITING: {
-      // Ideally KeyboardManager would Close itself, but that ends up destroying
-      // the singleton object, which causes a crash when all the singleton
-      // objects are destroyed from the AtExitManager. So just destroy the
-      // RootView here.
-      DestroyRootView();
+      CloseNow();
       break;
     }
 
@@ -306,19 +392,41 @@ void KeyboardManager::Observe(int type,
   }
 }
 
-void KeyboardManager::OnWidgetClosing(Widget* widget) {
+void KeyboardWidget::OnWidgetClosing(Widget* widget) {
   if (target_ == widget)
     SetTarget(NULL);
 }
 
-void KeyboardManager::OnWidgetVisibilityChanged(Widget* widget, bool visible) {
+void KeyboardWidget::OnWidgetVisibilityChanged(Widget* widget, bool visible) {
   if (target_ == widget && !visible)
     SetTarget(NULL);
 }
 
-void KeyboardManager::OnWidgetActivationChanged(Widget* widget, bool active) {
+void KeyboardWidget::OnWidgetActivationChanged(Widget* widget, bool active) {
   if (target_ == widget && !active)
     SetTarget(NULL);
+}
+
+KeyboardManager::KeyboardManager()
+    : keyboard_(new KeyboardWidget()) {
+  keyboard_->AddObserver(this);
+}
+
+KeyboardManager::~KeyboardManager() {
+  DCHECK(!keyboard_);
+}
+
+void KeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
+  keyboard_->ShowKeyboardForWidget(widget);
+}
+
+void KeyboardManager::Hide() {
+  keyboard_->Hide();
+}
+
+void KeyboardManager::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(keyboard_, widget);
+  keyboard_ = NULL;
 }
 
 // static
