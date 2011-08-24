@@ -955,6 +955,23 @@ class XcodeSettings(object):
     self.configname = None
     return ldflags
 
+  def GetPerTargetSettings(self):
+    """Gets a list of all the per-target settings. This will only fetch keys
+    whose values are the same across all configurations."""
+    first_pass = True
+    result = {}
+    for configname in sorted(self.xcode_settings.keys()):
+      if first_pass:
+        result = dict(self.xcode_settings[configname])
+        first_pass = False
+      else:
+        for key, value in self.xcode_settings[configname].iteritems():
+          if key not in result:
+            continue
+          elif result[key] != value:
+            del result[key]
+    return result
+
   def GetPerTargetSetting(self, setting, default=None):
     """Tries to get xcode_settings.setting from spec. Assumes that the setting
        has the same value in all configurations and throws otherwise."""
@@ -1531,7 +1548,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     path = generator_default_variables['PRODUCT_DIR']
     dest_plist = os.path.join(path, self.xcode_settings.GetBundlePlistPath())
     dest_plist = QuoteSpaces(dest_plist)
-    self.WriteXcodeEnv(dest_plist, spec)  # plists can contain envvars.
+    extra_settings = self.xcode_settings.GetPerTargetSettings()
+    # plists can contain envvars and substitute them into the file..
+    self.WriteXcodeEnv(dest_plist, spec, additional_settings=extra_settings)
     self.WriteDoCmd([dest_plist], [info_plist], 'mac_tool,,,copy-info-plist',
                     part_of_all=True)
     bundle_deps.append(dest_plist)
@@ -2186,8 +2205,13 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     return env
 
 
-  def WriteXcodeEnv(self, target, spec, target_relative_path=False):
-    env = self.GetXcodeEnv(spec, target_relative_path)
+  def WriteXcodeEnv(self,
+                    target,
+                    spec,
+                    target_relative_path=False,
+                    additional_settings={}):
+    env = additional_settings
+    env.update(self.GetXcodeEnv(spec, target_relative_path))
     # For
     #  foo := a\ b
     # the escaped space does the right thing. For
@@ -2195,6 +2219,11 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     # it does not -- the backslash is written to the env as literal character.
     # Hence, unescape all spaces here.
     for k in env:
+      # Values that are not strings but are, for example, lists or tuples such
+      # as LDFLAGS or CFLAGS, should not be written out because they are
+      # not needed and it's undefined how multi-valued keys should be written.
+      if not isinstance(env[k], str):
+        continue
       v = env[k].replace(r'\ ', ' ')
       self.WriteLn('%s: export %s := %s' % (target, k, v))
 
