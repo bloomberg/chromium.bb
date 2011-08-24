@@ -4065,14 +4065,17 @@ void RenderView::postAccessibilityNotification(
     const WebAccessibilityObject& obj,
     WebAccessibilityNotification notification) {
   if (!accessibility_.get() && webview()) {
-    // Load complete should be our first notification sent.
-    // TODO(ctguil): Investigate if a different notification is a WebCore bug.
-    if (notification != WebKit::WebAccessibilityNotificationLoadComplete)
-      return;
-
     // Create and initialize our accessibility cache
     accessibility_.reset(WebAccessibilityCache::create());
     accessibility_->initialize(webview());
+
+    // Load complete should be our first notification sent. Send it manually
+    // in cases where we don't get it first to avoid focus problems.
+    // TODO(ctguil): Investigate if a different notification is a WebCore bug.
+    if (notification != WebKit::WebAccessibilityNotificationLoadComplete) {
+      postAccessibilityNotification(accessibility_->getObjectById(1000),
+          WebKit::WebAccessibilityNotificationLoadComplete);
+    }
   }
 
   if (!accessibility_->isCached(obj)) {
