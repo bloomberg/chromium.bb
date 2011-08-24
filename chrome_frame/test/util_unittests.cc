@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::win::RegKey;
-using chrome_frame_test::TempRegKeyOverride;
 
 const wchar_t kChannelName[] = L"-dev";
 const wchar_t kSuffix[] = L"-fix";
@@ -31,23 +30,16 @@ TEST(SimpleUtilTests, GetTempInternetFiles) {
 class UtilTests : public testing::Test {
  protected:
   void SetUp() {
-    TempRegKeyOverride::DeleteAllTempKeys();
     DeleteAllSingletons();
-
-    hklm_pol_.reset(new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_fake"));
-    hkcu_pol_.reset(new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_fake"));
   }
 
   void TearDown() {
-    hkcu_pol_.reset(NULL);
-    hklm_pol_.reset(NULL);
-    TempRegKeyOverride::DeleteAllTempKeys();
+    registry_virtualization_.RemoveAllOverrides();
   }
 
   // This is used to manage life cycle of PolicySettings singleton.
   // base::ShadowingAtExitManager at_exit_manager_;
-  scoped_ptr<TempRegKeyOverride> hklm_pol_;
-  scoped_ptr<TempRegKeyOverride> hkcu_pol_;
+  chrome_frame_test::ScopedVirtualizeHklmAndHkcu registry_virtualization_;
 };
 
 TEST_F(UtilTests, GetModuleVersionTest) {

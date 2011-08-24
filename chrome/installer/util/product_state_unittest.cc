@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include "base/utf_string_conversions.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -16,6 +17,7 @@
 
 using base::win::RegKey;
 using installer::ProductState;
+using registry_util::RegistryOverrideManager;
 
 class ProductStateTest : public testing::Test {
  protected:
@@ -48,7 +50,7 @@ void ProductStateTest::SetUpTestCase() {
       BrowserDistribution::CHROME_BROWSER);
 
   // And we'll play in HKCU here:
-  temp_key_path_.assign(TempRegKeyOverride::kTempTestKeyPath)
+  temp_key_path_.assign(RegistryOverrideManager::kTempTestKeyPath)
       .append(1, L'\\')
       .append(L"ProductStateTest");
 }
@@ -68,7 +70,7 @@ void ProductStateTest::SetUp() {
   system_install_ = true;
   overridden_ = (system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER);
 
-  // Override for test purposes.  We don't use TempRegKeyOverride
+  // Override for test purposes.  We don't use ScopedRegistryKeyOverride
   // directly because it doesn't suit itself to our use here.
   RegKey temp_key;
   EXPECT_EQ(ERROR_SUCCESS,
@@ -94,7 +96,7 @@ void ProductStateTest::TearDown() {
   system_install_ = false;
 
   // Shotgun approach to clearing out data we may have written.
-  TempRegKeyOverride::DeleteAllTempKeys();
+  RegistryOverrideManager::DeleteAllTempKeys();
 
   testing::Test::TearDown();
 }

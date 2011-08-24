@@ -51,9 +51,6 @@ const wchar_t kChromeLauncher[] = L"chrome_launcher.exe";
 const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 const int kChromeFrameVeryLongNavigationTimeoutInSeconds = 30;
 
-const wchar_t TempRegKeyOverride::kTempTestKeyPath[] =
-    L"Software\\Chromium\\TempTestKeys";
-
 // Callback function for EnumThreadWindows.
 BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {
   int& count = *reinterpret_cast<int*>(param);
@@ -616,40 +613,16 @@ base::ProcessHandle StartCrashService() {
   }
 }
 
-TempRegKeyOverride::TempRegKeyOverride(HKEY override, const wchar_t* temp_name)
-    : override_(override), temp_name_(temp_name) {
-  DCHECK(temp_name && lstrlenW(temp_name));
-  std::wstring key_path(kTempTestKeyPath);
-  key_path += L"\\" + temp_name_;
-  EXPECT_EQ(ERROR_SUCCESS, temp_key_.Create(HKEY_CURRENT_USER, key_path.c_str(),
-                                            KEY_ALL_ACCESS));
-  EXPECT_EQ(ERROR_SUCCESS,
-            ::RegOverridePredefKey(override_, temp_key_.Handle()));
-}
-
-TempRegKeyOverride::~TempRegKeyOverride() {
-  ::RegOverridePredefKey(override_, NULL);
-  // The temp key will be deleted via a call to DeleteAllTempKeys().
-}
-
-// static
-void TempRegKeyOverride::DeleteAllTempKeys() {
-  base::win::RegKey key;
-  if (key.Open(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS) == ERROR_SUCCESS) {
-    key.DeleteKey(kTempTestKeyPath);
-  }
-}
-
 ScopedVirtualizeHklmAndHkcu::ScopedVirtualizeHklmAndHkcu() {
-  TempRegKeyOverride::DeleteAllTempKeys();
-  hklm_.reset(new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_fake"));
-  hkcu_.reset(new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_fake"));
+  override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, L"hklm_fake");
+  override_manager_.OverrideRegistry(HKEY_CURRENT_USER, L"hkcu_fake");
 }
 
 ScopedVirtualizeHklmAndHkcu::~ScopedVirtualizeHklmAndHkcu() {
-  hkcu_.reset(NULL);
-  hklm_.reset(NULL);
-  TempRegKeyOverride::DeleteAllTempKeys();
+}
+
+void ScopedVirtualizeHklmAndHkcu::RemoveAllOverrides() {
+  override_manager_.RemoveAllOverrides();
 }
 
 bool KillProcesses(const std::wstring& executable_name, int exit_code,

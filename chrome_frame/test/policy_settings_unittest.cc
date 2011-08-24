@@ -16,7 +16,6 @@
 
 using base::win::RegKey;
 using chrome_frame_test::ScopedVirtualizeHklmAndHkcu;
-using chrome_frame_test::TempRegKeyOverride;
 
 namespace {
 

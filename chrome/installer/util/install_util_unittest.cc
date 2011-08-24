@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
@@ -13,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::win::RegKey;
+using registry_util::RegistryOverrideManager;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::StrEq;
@@ -76,7 +78,8 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
 
   // Update the stage when there's no "ap" value.
   {
-    TempRegKeyOverride override(root, L"root_inst_res");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_inst_res");
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE);
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
                                       installer::BUILDING);
@@ -86,11 +89,11 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
                   .ReadValue(google_update::kRegApField, &value));
     EXPECT_EQ(L"-stage:building", value);
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 
   // Update the stage when there is an "ap" value.
   {
-    TempRegKeyOverride override(root, L"root_inst_res");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_inst_res");
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(google_update::kRegApField, L"2.0-dev");
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -101,11 +104,11 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
                   .ReadValue(google_update::kRegApField, &value));
     EXPECT_EQ(L"2.0-dev-stage:building", value);
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 
   // Clear the stage.
   {
-    TempRegKeyOverride override(root, L"root_inst_res");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_inst_res");
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
       .WriteValue(google_update::kRegApField, L"2.0-dev-stage:building");
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -116,7 +119,6 @@ TEST_F(InstallUtilTest, UpdateInstallerStageAP) {
                   .ReadValue(google_update::kRegApField, &value));
     EXPECT_EQ(L"2.0-dev", value);
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 }
 
 TEST_F(InstallUtilTest, UpdateInstallerStage) {
@@ -126,7 +128,8 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
 
   // Update the stage when there's no "InstallerExtraCode1" value.
   {
-    TempRegKeyOverride override(root, L"root_inst_res");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_inst_res");
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .DeleteValue(installer::kInstallerExtraCode1);
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -137,11 +140,11 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
                   .ReadValueDW(installer::kInstallerExtraCode1, &value));
     EXPECT_EQ(static_cast<DWORD>(installer::BUILDING), value);
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 
   // Update the stage when there is an "InstallerExtraCode1" value.
   {
-    TempRegKeyOverride override(root, L"root_inst_res");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_inst_res");
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(installer::kInstallerExtraCode1,
                     static_cast<DWORD>(installer::UNPACKING));
@@ -153,11 +156,11 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
                   .ReadValueDW(installer::kInstallerExtraCode1, &value));
     EXPECT_EQ(static_cast<DWORD>(installer::BUILDING), value);
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 
   // Clear the stage.
   {
-    TempRegKeyOverride override(root, L"root_inst_res");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_inst_res");
     RegKey(root, state_key_path.c_str(), KEY_SET_VALUE)
         .WriteValue(installer::kInstallerExtraCode1, static_cast<DWORD>(5));
     InstallUtil::UpdateInstallerStage(system_level, state_key_path,
@@ -167,7 +170,6 @@ TEST_F(InstallUtilTest, UpdateInstallerStage) {
               RegKey(root, state_key_path.c_str(), KEY_QUERY_VALUE)
                   .ReadValueDW(installer::kInstallerExtraCode1, &value));
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 }
 
 TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
@@ -179,7 +181,8 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
   const wchar_t value[] = L"hi mom";
 
   {
-    TempRegKeyOverride override(root, L"root_key");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_key");
     // Nothing to delete if the keys aren't even there.
     {
       MockRegistryValuePredicate pred;
@@ -245,7 +248,6 @@ TEST_F(InstallUtilTest, DeleteRegistryKeyIf) {
                           KEY_QUERY_VALUE).Valid());
     }
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 }
 
 TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
@@ -255,7 +257,8 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
   const wchar_t value[] = L"hi mom";
 
   {
-    TempRegKeyOverride override(root, L"root_key");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_key");
     // Nothing to delete if the key isn't even there.
     {
       MockRegistryValuePredicate pred;
@@ -308,10 +311,10 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
                           KEY_QUERY_VALUE).ValueExists(value_name));
     }
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 
   {
-    TempRegKeyOverride override(root, L"root_key");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_key");
     // Default value matches: delete.
     {
       MockRegistryValuePredicate pred;
@@ -327,7 +330,6 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
                           KEY_QUERY_VALUE).ValueExists(L""));
     }
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 }
 
 TEST_F(InstallUtilTest, ValueEquals) {

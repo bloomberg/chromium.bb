@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
@@ -35,6 +36,7 @@ using base::win::RegKey;
 using installer::InstallationState;
 using installer::InstallerState;
 using installer::MasterPreferences;
+using registry_util::RegistryOverrideManager;
 
 class InstallerStateTest : public TestWithTempDirAndDeleteTempOverrideKeys {
  protected:
@@ -343,8 +345,10 @@ TEST_F(InstallerStateTest, WithProduct) {
 
   HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   EXPECT_EQ(root, installer_state.root_key());
+
   {
-    TempRegKeyOverride override(root, L"root_pit");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_pit");
     BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BROWSER);
     RegKey chrome_key(root, dist->GetVersionKey().c_str(), KEY_ALL_ACCESS);
@@ -376,7 +380,8 @@ TEST_F(InstallerStateTest, InstallerResult) {
 
   // check results for a fresh install of single Chrome
   {
-    TempRegKeyOverride override(root, L"root_inst_res");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_inst_res");
     CommandLine cmd_line = CommandLine::FromString(L"setup.exe --system-level");
     const MasterPreferences prefs(cmd_line);
     InstallationState machine_state;
@@ -403,11 +408,11 @@ TEST_F(InstallerStateTest, InstallerResult) {
         key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
     EXPECT_EQ(launch_cmd, value);
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 
   // check results for a fresh install of multi Chrome
   {
-    TempRegKeyOverride override(root, L"root_inst_res");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_inst_res");
     CommandLine cmd_line = CommandLine::FromString(
         L"setup.exe --system-level --multi-install --chrome");
     const MasterPreferences prefs(cmd_line);
@@ -435,7 +440,6 @@ TEST_F(InstallerStateTest, InstallerResult) {
     EXPECT_EQ(launch_cmd, value);
     key.Close();
   }
-  TempRegKeyOverride::DeleteAllTempKeys();
 }
 
 // Test GetCurrentVersion when migrating single Chrome to multi

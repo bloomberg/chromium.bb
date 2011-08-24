@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 
@@ -285,21 +286,6 @@ class CloseIeAtEndOfScope {
 // during test runs.
 base::ProcessHandle StartCrashService();
 
-class TempRegKeyOverride {
- public:
-  static const wchar_t kTempTestKeyPath[];
-
-  TempRegKeyOverride(HKEY override, const wchar_t* temp_name);
-  ~TempRegKeyOverride();
-
-  static void DeleteAllTempKeys();
-
- protected:
-  HKEY override_;
-  base::win::RegKey temp_key_;
-  std::wstring temp_name_;
-};
-
 // Used in tests where we reference the registry and don't want to run into
 // problems where existing registry settings might conflict with the
 // expectations of the test.
@@ -308,9 +294,12 @@ class ScopedVirtualizeHklmAndHkcu {
   ScopedVirtualizeHklmAndHkcu();
   ~ScopedVirtualizeHklmAndHkcu();
 
+  // Removes all overrides and deletes all temporary test keys used by the
+  // overrides.
+  void RemoveAllOverrides();
+
  protected:
-  scoped_ptr<TempRegKeyOverride> hklm_;
-  scoped_ptr<TempRegKeyOverride> hkcu_;
+  registry_util::RegistryOverrideManager override_manager_;
 };
 
 // Attempts to kill all the processes on the current machine that were launched

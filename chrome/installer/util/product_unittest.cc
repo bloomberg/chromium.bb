@@ -5,6 +5,7 @@
 #include "chrome/installer/util/product_unittest.h"
 
 #include "base/logging.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -16,6 +17,7 @@
 using base::win::RegKey;
 using installer::Product;
 using installer::MasterPreferences;
+using registry_util::RegistryOverrideManager;
 
 void TestWithTempDir::SetUp() {
   // Name a subdirectory of the user temp directory.
@@ -30,41 +32,11 @@ void TestWithTempDir::TearDown() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void TestWithTempDirAndDeleteTempOverrideKeys::SetUp() {
-  TempRegKeyOverride::DeleteAllTempKeys();
   TestWithTempDir::SetUp();
 }
 
 void TestWithTempDirAndDeleteTempOverrideKeys::TearDown() {
   TestWithTempDir::TearDown();
-  TempRegKeyOverride::DeleteAllTempKeys();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-const wchar_t TempRegKeyOverride::kTempTestKeyPath[] =
-    L"Software\\Chromium\\TempTestKeys";
-
-TempRegKeyOverride::TempRegKeyOverride(HKEY override, const wchar_t* temp_name)
-    : override_(override), temp_name_(temp_name) {
-  DCHECK(temp_name && lstrlenW(temp_name));
-  std::wstring key_path(kTempTestKeyPath);
-  key_path += L"\\" + temp_name_;
-  EXPECT_EQ(ERROR_SUCCESS,
-      temp_key_.Create(HKEY_CURRENT_USER, key_path.c_str(), KEY_ALL_ACCESS));
-  EXPECT_EQ(ERROR_SUCCESS,
-            ::RegOverridePredefKey(override_, temp_key_.Handle()));
-}
-
-TempRegKeyOverride::~TempRegKeyOverride() {
-  ::RegOverridePredefKey(override_, NULL);
-  // The temp key will be deleted via a call to DeleteAllTempKeys().
-}
-
-// static
-void TempRegKeyOverride::DeleteAllTempKeys() {
-  RegKey key;
-  if (key.Open(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS) == ERROR_SUCCESS) {
-    key.DeleteKey(kTempTestKeyPath);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +82,8 @@ TEST_F(ProductTest, ProductInstallBasic) {
 
   HKEY root = installer_state.root_key();
   {
-    TempRegKeyOverride override(root, L"root_pit");
+    RegistryOverrideManager override_manager;
+    override_manager.OverrideRegistry(root, L"root_pit");
 
     // Let's pretend chrome is installed.
     RegKey version_key(root, distribution->GetVersionKey().c_str(),
