@@ -88,6 +88,9 @@ void ParamTraits<ContentSettingsType>::Log(const param_type& p,
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       setting_type = "CONTENT_SETTINGS_TYPE_NOTIFICATIONS";
       break;
+    case CONTENT_SETTINGS_TYPE_INTENTS:
+      setting_type = "CONTENT_SETTINGS_TYPE_INTENTS";
+      break;
     default:
       setting_type = "UNKNOWN";
       break;

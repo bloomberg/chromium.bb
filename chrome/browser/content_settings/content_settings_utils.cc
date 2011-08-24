@@ -24,6 +24,7 @@ const bool kRequiresResourceIdentifier[CONTENT_SETTINGS_NUM_TYPES] = {
   false,  // CONTENT_SETTINGS_TYPE_POPUPS
   false,  // Not used for Geolocation
   false,  // Not used for Notifications
+  false,  // Not used for Intents.
 };
 
 const char* kPatternSeparator = ",";
