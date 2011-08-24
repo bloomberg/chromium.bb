@@ -3470,17 +3470,6 @@
    fun:_ZN13PluginChannel13MessageFilter17OnMessageReceivedERKN3IPC7MessageE
 }
 {
-   Bug_69934_c
-   Memcheck:Addr4
-   fun:_ZN12NPObjectStub8OnInvokeEbRK18NPIdentifier_ParamRKSt6vectorI15NPVariant_ParamSaIS4_EEPN3IPC7MessageE
-   fun:_Z16DispatchToMethodI12NPObjectStubMS0_FvbRK18NPIdentifier_ParamRKSt6vectorI15NPVariant_ParamSaIS5_EEPN3IPC7MessageEEbS1_S7_RSB_EvPT_T0_RK6Tuple3IT1_T2_T3_EP6Tuple1IT4_E
-   fun:_ZN3IPC16MessageWithReplyI6Tuple3Ib18NPIdentifier_ParamSt6vectorI15NPVariant_ParamSaIS4_EEE6Tuple2IRS4_RbEE18DispatchDelayReplyI12NPObjectStubMSE_FvbRKS2_RKS6_PNS_7MessageEEEEbPKSJ_PT_T0_
-   fun:_ZN12NPObjectStub17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN13MessageRouter12RouteMessageERKN3IPC7MessageE
-   fun:_ZN17PluginChannelBase17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN13PluginChannel17OnMessageReceivedERKN3IPC7MessageE
-}
-{
    Bug_70062
    Memcheck:Leak
    fun:calloc
