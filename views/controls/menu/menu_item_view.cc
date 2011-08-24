@@ -130,6 +130,14 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
     return false;
   }
 
+  MenuItemView* root_menu_item = GetRootMenuItem();
+  if (root_menu_item->canceled_) {
+    // TODO(sky): if |canceled_| is true, controller->exit_type() should be
+    // something other than EXIT_NONE, but crash reports seem to indicate
+    // otherwise. Figure out why this is needed.
+    return false;
+  }
+
   CHECK(GetDelegate());
   gfx::Point location(p);
   ConvertPointToScreen(this, &location);
