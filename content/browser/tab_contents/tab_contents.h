@@ -504,9 +504,6 @@ class TabContents : public PageNavigator,
   void AddObserver(TabContentsObserver* observer);
   void RemoveObserver(TabContentsObserver* observer);
 
-  // From RenderViewHostDelegate.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -566,8 +563,6 @@ class TabContents : public PageNavigator,
                           int maximum_percent,
                           bool remember);
   void OnFocusedNodeChanged(bool is_editable_node);
-  // Called when a file selection is to be done.
-  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
   void OnEnumerateDirectory(int request_id, const FilePath& path);
 
   // Changes the IsLoading state and notifies delegate as needed
@@ -709,6 +704,9 @@ class TabContents : public PageNavigator,
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void RunFileChooser(RenderViewHost* render_view_host,
+                              const ViewHostMsg_RunFileChooser_Params& params);
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

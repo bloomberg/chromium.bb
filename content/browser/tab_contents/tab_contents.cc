@@ -294,7 +294,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SaveURLAs, OnSaveURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -305,6 +304,12 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
   }
 
   return handled;
+}
+
+void TabContents::RunFileChooser(
+    RenderViewHost* render_view_host,
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  delegate()->RunFileChooser(this, params);
 }
 
 RenderProcessHost* TabContents::GetRenderProcessHost() const {
@@ -1085,11 +1090,6 @@ void TabContents::OnFocusedNodeChanged(bool is_editable_node) {
       content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
       Source<TabContents>(this),
       Details<const bool>(&is_editable_node));
-}
-
-void TabContents::OnRunFileChooser(
-    const ViewHostMsg_RunFileChooser_Params& params) {
-  delegate()->RunFileChooser(this, params);
 }
 
 void TabContents::OnEnumerateDirectory(int request_id,

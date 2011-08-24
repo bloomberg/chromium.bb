@@ -583,6 +583,17 @@ void ExtensionHost::HandleMouseUp() {
 void ExtensionHost::HandleMouseActivate() {
 }
 
+void ExtensionHost::RunFileChooser(
+    RenderViewHost* render_view_host,
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  // This object is destroyed when the file selection is performed or
+  // cancelled.
+  FileSelectHelper* file_select_helper = new FileSelectHelper(profile());
+  file_select_helper->RunFileChooser(render_view_host,
+                                     GetAssociatedTabContents(),
+                                     params);
+}
+
 void ExtensionHost::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
@@ -763,7 +774,6 @@ ViewType::Type ExtensionHost::GetRenderViewType() const {
 bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHost, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -788,12 +798,4 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
         render_view_host->routing_id(),
         kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow));
   }
-}
-
-void ExtensionHost::OnRunFileChooser(
-    const ViewHostMsg_RunFileChooser_Params& params) {
-  if (file_select_helper_.get() == NULL)
-    file_select_helper_.reset(new FileSelectHelper(profile()));
-  file_select_helper_->RunFileChooser(render_view_host_,
-                                      GetAssociatedTabContents(), params);
 }

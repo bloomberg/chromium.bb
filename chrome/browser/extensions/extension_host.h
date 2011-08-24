@@ -148,6 +148,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void HandleMouseLeave() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
+  virtual void RunFileChooser(RenderViewHost* render_view_host,
+                              const ViewHostMsg_RunFileChooser_Params& params);
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
@@ -222,7 +224,6 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual gfx::NativeView GetNativeViewOfHost();
 
   // Message handlers.
-  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
@@ -280,9 +281,6 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Used to measure how long it's been since the host was created.
   PerfTimer since_created_;
-
-  // FileSelectHelper, lazily created.
-  scoped_ptr<FileSelectHelper> file_select_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHost);
 };

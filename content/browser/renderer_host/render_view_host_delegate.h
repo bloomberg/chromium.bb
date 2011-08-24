@@ -39,6 +39,7 @@ struct WebDropData;
 struct WebMenuItem;
 class WebKeyboardEvent;
 struct WebPreferences;
+struct ViewHostMsg_RunFileChooser_Params;
 
 namespace content {
 class BrowserContext;
@@ -365,6 +366,11 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual void HandleMouseLeave() {}
   virtual void HandleMouseUp() {}
   virtual void HandleMouseActivate() {}
+
+  // Called when a file selection is to be done.
+  virtual void RunFileChooser(
+      RenderViewHost* render_view_host,
+      const ViewHostMsg_RunFileChooser_Params& params) {}
 
  protected:
   virtual ~RenderViewHostDelegate() {}

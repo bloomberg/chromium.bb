@@ -718,10 +718,9 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
-    // NOTE: Do not add a message handler that just calls the delegate!
-    // Dispatch the message directly there instead.
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -1357,3 +1356,9 @@ void RenderViewHost::OnMsgShowPopup(
   }
 }
 #endif
+
+void RenderViewHost::OnRunFileChooser(
+    const ViewHostMsg_RunFileChooser_Params& params) {
+  delegate_->RunFileChooser(this, params);
+}
+

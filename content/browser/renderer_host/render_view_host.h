@@ -41,6 +41,7 @@ struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;
 struct UserMetricsAction;
+struct ViewHostMsg_RunFileChooser_Params;
 
 namespace base {
 class ListValue;
@@ -474,6 +475,8 @@ class RenderViewHost : public RenderWidgetHost {
 #if defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
+
+  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
 
  private:
   friend class TestRenderViewHost;
