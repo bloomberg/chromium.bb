@@ -409,7 +409,13 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
   result.setConfig(SkBitmap::kARGB_8888_Config, dest_subset.width(),
                    dest_subset.height());
   result.allocPixels();
+  if (!result.readyToDraw())
+    return img;
+
   SkAutoLockPixels locker(img);
+  if (!img.readyToDraw())
+    return img;
+
   uint32* src_row = img.getAddr32(0, 0);
   uint32* dst_row = result.getAddr32(0, 0);
   for (int y = 0; y < dest_subset.height(); y++) {
@@ -503,6 +509,8 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
            (method <= ImageOperations::RESIZE_LAST_ALGORITHM_METHOD));
 
   SkAutoLockPixels locker(source);
+  if (!source.readyToDraw())
+      return SkBitmap();
 
   ResizeFilter filter(method, source.width(), source.height(),
                       dest_width, dest_height, dest_subset);
@@ -519,6 +527,9 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
   result.setConfig(SkBitmap::kARGB_8888_Config,
                    dest_subset.width(), dest_subset.height());
   result.allocPixels();
+  if (!result.readyToDraw())
+    return SkBitmap();
+
   BGRAConvolve2D(source_subset, static_cast<int>(source.rowBytes()),
                  !source.isOpaque(), filter.x_filter(), filter.y_filter(),
                  static_cast<int>(result.rowBytes()),
