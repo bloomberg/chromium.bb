@@ -172,45 +172,4 @@
    fun:scoped_ptr::reset
    fun:media::FFmpegVideoDecodeEngineTest::~FFmpegVideoDecodeEngineTest
 }
-{
-   bug_93932_b
-   ThreadSanitizer:Race
-   ...
-   fun:ff_thread_decode_frame
-   fun:avcodec_decode_video2
-   fun:media::FFmpegVideoDecodeEngine::DecodeFrame
-   fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
-   fun:media::DemuxCompleteActionP2::gmock_Impl::gmock_PerformImpl
-   fun:testing::internal::ActionHelper::Perform
-   fun:media::DemuxCompleteActionP2::gmock_Impl::Perform
-   fun:testing::Action::Perform
-   fun:testing::internal::ActionResultHolder::PerformAction
-   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
-   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
-   fun:testing::internal::FunctionMockerBase::InvokeWith
-   fun:testing::internal::FunctionMocker::Invoke
-   fun:media::FFmpegVideoDecodeEngineTest::ProduceVideoSample
-   fun:media::FFmpegVideoDecodeEngine::ReadInput
-}
-{
-   bug_93932_c
-   ThreadSanitizer:Race
-   fun:Replace_memcpy
-   fun:memcpy
-   fun:media::CopyPlane
-   fun:media::Copy*Plane
-   fun:media::FFmpegVideoDecodeEngine::DecodeFrame
-   fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
-   fun:media::DemuxCompleteActionP2::gmock_Impl::gmock_PerformImpl
-   fun:testing::internal::ActionHelper::Perform
-   fun:media::DemuxCompleteActionP2::gmock_Impl::Perform
-   fun:testing::Action::Perform
-   fun:testing::internal::ActionResultHolder::PerformAction
-   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
-   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
-   fun:testing::internal::FunctionMockerBase::InvokeWith
-   fun:testing::internal::FunctionMocker::Invoke
-   fun:media::FFmpegVideoDecodeEngineTest::ProduceVideoSample
-   fun:media::FFmpegVideoDecodeEngine::ReadInput
-}
 
