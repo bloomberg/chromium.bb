@@ -66,7 +66,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://textfields': { 'title': 'chrome://textfields', 'CSP': False },
     'chrome://version': { 'title': 'About Version' },
     'chrome://view-http-cache': {},
-    'chrome://workers': { 'title': 'Workers', 'CSP': False },
+    'chrome://workers': { 'title': 'Workers' },
   }
   broken_special_url_tabs = {
     # crashed under debug when invoked from location bar (bug 88223).

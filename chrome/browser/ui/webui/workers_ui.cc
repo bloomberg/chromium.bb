@@ -34,26 +34,23 @@ static const char kPidField[]  = "pid";
 
 namespace {
 
-class WorkersUIHTMLSource : public ChromeURLDataManager::DataSource {
+class WorkersUIHTMLSource : public ChromeWebUIDataSource {
  public:
   WorkersUIHTMLSource();
 
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id);
-
-  virtual std::string GetMimeType(const std::string&) const;
-
  private:
   ~WorkersUIHTMLSource() {}
-
   void SendSharedWorkersData(int request_id);
-
   DISALLOW_COPY_AND_ASSIGN(WorkersUIHTMLSource);
 };
 
 WorkersUIHTMLSource::WorkersUIHTMLSource()
-    : DataSource(chrome::kChromeUIWorkersHost, NULL) {
+    : ChromeWebUIDataSource(chrome::kChromeUIWorkersHost, NULL) {
+  add_resource_path("workers.js", IDR_WORKERS_INDEX_JS);
+  set_default_resource(IDR_WORKERS_INDEX_HTML);
 }
 
 void WorkersUIHTMLSource::StartDataRequest(const std::string& path,
@@ -62,21 +59,8 @@ void WorkersUIHTMLSource::StartDataRequest(const std::string& path,
   if (path == kWorkersDataFile) {
     SendSharedWorkersData(request_id);
   } else {
-    int idr = IDR_WORKERS_INDEX_HTML;
-    scoped_refptr<RefCountedStaticMemory> response(
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(idr));
-    SendResponse(request_id, response);
+    ChromeWebUIDataSource::StartDataRequest(path, is_incognito, request_id);
   }
-}
-
-std::string WorkersUIHTMLSource::GetMimeType(const std::string& path) const {
-  if (EndsWith(path, ".css", false))
-    return "text/css";
-  if (EndsWith(path, ".js", false))
-    return "application/javascript";
-  if (EndsWith(path, ".json", false))
-    return "plain/text";
-  return "text/html";
 }
 
 void WorkersUIHTMLSource::SendSharedWorkersData(int request_id) {

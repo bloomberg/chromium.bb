@@ -17,7 +17,8 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_WORKERS_INDEX_HTML" file="workers/index.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_WORKERS_INDEX_HTML" file="workers/index.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_WORKERS_INDEX_JS" file="workers/workers.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

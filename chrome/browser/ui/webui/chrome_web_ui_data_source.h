@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
@@ -19,6 +20,7 @@
 class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
  public:
   explicit ChromeWebUIDataSource(const std::string& source_name);
+  ChromeWebUIDataSource(const std::string& source_name, MessageLoop* loop);
 
   // Adds a string and its equivalent to our dictionary.
   void AddString(const std::string& name, const string16& value);
