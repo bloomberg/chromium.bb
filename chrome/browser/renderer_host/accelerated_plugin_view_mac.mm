@@ -6,77 +6,26 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#import "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/browser/browser_thread.h"
 #include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @implementation AcceleratedPluginView
-@synthesize cachedSize = cachedSize_;
 
 - (void)drawView {
-  TRACE_EVENT1("browser", "AcceleratedPluginViewMac::drawView",
-      "frameNum", swapBuffersCount_);
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  TRACE_EVENT0("browser", "AcceleratedPluginViewMac::drawView");
 
   if (renderWidgetHostView_) {
     // TODO(thakis): Pixel or view coordinates for size?
     renderWidgetHostView_->DrawAcceleratedSurfaceInstance(
-        cglContext_, pluginHandle_, [self cachedSize]);
+        cglContext_, pluginHandle_, [super frame].size);
   }
 
   CGLFlushDrawable(cglContext_);
   CGLSetCurrentContext(0);
-}
-
-// Note: cglContext_ lock must be held during this call.
-- (void)ackSwapBuffers:(uint64)swapBuffersCount {
-  if (swapBuffersCount > acknowledgedSwapBuffersCount_) {
-    acknowledgedSwapBuffersCount_ = swapBuffersCount;
-    bool sendAck = (rendererId_ != 0 || routeId_ != 0);
-    if (sendAck && renderWidgetHostView_) {
-      renderWidgetHostView_->AcknowledgeSwapBuffers(
-          rendererId_,
-          routeId_,
-          gpuHostId_,
-          acknowledgedSwapBuffersCount_);
-    }
-  }
-}
-
-- (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime {
-  TRACE_EVENT0("browser", "AcceleratedPluginView::getFrameForTime");
-  // There is no autorelease pool when this method is called because it will be
-  // called from a background thread.
-  base::mac::ScopedNSAutoreleasePool pool;
-
-  uint64 currentSwapBuffersCount = swapBuffersCount_;
-  if (currentSwapBuffersCount == acknowledgedSwapBuffersCount_) {
-    return kCVReturnSuccess;
-  }
-
-  // Called on a background thread. Synchronized via the CGL context lock.
-  CGLLockContext(cglContext_);
-
-  [self drawView];
-  [self ackSwapBuffers:currentSwapBuffersCount];
-
-  CGLUnlockContext(cglContext_);
-
-  return kCVReturnSuccess;
-}
-
-// This is the renderer output callback function
-static CVReturn DrawOneAcceleratedPluginCallback(
-    CVDisplayLinkRef displayLink,
-    const CVTimeStamp* now,
-    const CVTimeStamp* outputTime,
-    CVOptionFlags flagsIn,
-    CVOptionFlags* flagsOut,
-    void* displayLinkContext) {
-  CVReturn result =
-      [(AcceleratedPluginView*)displayLinkContext getFrameForTime:outputTime];
-  return result;
 }
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
@@ -84,12 +33,6 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   if ((self = [super initWithFrame:NSZeroRect])) {
     renderWidgetHostView_ = r;
     pluginHandle_ = pluginHandle;
-    cachedSize_ = NSZeroSize;
-    swapBuffersCount_ = 0;
-    acknowledgedSwapBuffersCount_ = 0;
-    rendererId_ = 0;
-    routeId_ = 0;
-    gpuHostId_ = 0;
 
     [self setAutoresizingMask:NSViewMaxXMargin|NSViewMinYMargin];
 
@@ -130,21 +73,6 @@ static CVReturn DrawOneAcceleratedPluginCallback(
       swapInterval = 1;
     [glContext_ setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
-    // Set up a display link to do OpenGL rendering on a background thread.
-    CVReturn rt = CVDisplayLinkCreateWithActiveCGDisplays(&displayLink_);
-    if (rt != kCVReturnSuccess)
-      LOG(ERROR) << "CVDisplayLinkCreateWithActiveCGDisplays failed";
-
-    rt = CVDisplayLinkSetOutputCallback(
-        displayLink_, &DrawOneAcceleratedPluginCallback, self);
-    if (rt != kCVReturnSuccess)
-      LOG(ERROR) << "CVDisplayLinkSetOutputCallback failed";
-
-    rt = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
-        displayLink_, cglContext_, cglPixelFormat_);
-    if (rt != kCVReturnSuccess)
-      LOG(ERROR) << "CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext failed";
-
     [[NSNotificationCenter defaultCenter]
          addObserver:self
             selector:@selector(globalFrameDidChange:)
@@ -155,13 +83,6 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)dealloc {
-  CVDisplayLinkRelease(displayLink_);
-
-  // Ack pending swaps (if any):
-  CGLLockContext(cglContext_);
-  [self ackSwapBuffers:swapBuffersCount_];
-  CGLUnlockContext(cglContext_);
-
   if (renderWidgetHostView_)
     renderWidgetHostView_->DeallocFakePluginWindowHandle(pluginHandle_);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -172,43 +93,13 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   cutoutRects_.reset([cutout_rects copy]);
 }
 
-- (void)updateSwapBuffersCount:(uint64)count
-                  fromRenderer:(int)rendererId
-                       routeId:(int32)routeId
-                     gpuHostId:(int)gpuHostId {
-  if (rendererId == 0 && routeId == 0) {
-    // This notification is coming from a plugin process, for which we
-    // don't have flow control implemented right now. Fake up a swap
-    // buffers count so that we can at least skip useless renders.
-    ++swapBuffersCount_;
-  } else {
-    rendererId_ = rendererId;
-    routeId_ = routeId;
-    gpuHostId_ = gpuHostId;
-    swapBuffersCount_ = count;
-  }
-  // If this view is not visible, we have to ack now. Otherwise,
-  // the ack will not be sent until the tab is made visible, which means it will
-  // look like the tab is loading (busy cursor) until it is clicked.
-  if (![self window]) {
-    // Ack pending swaps (if any):
-    CGLLockContext(cglContext_);
-    [self ackSwapBuffers:swapBuffersCount_];
-    CGLUnlockContext(cglContext_);
-  }
-}
-
 - (void)onRenderWidgetHostViewGone {
   if (!renderWidgetHostView_)
     return;
 
-  CGLLockContext(cglContext_);
-  // Ack pending swaps (if any):
-  [self ackSwapBuffers:swapBuffersCount_];
   // Deallocate the plugin handle while we still can.
   renderWidgetHostView_->DeallocFakePluginWindowHandle(pluginHandle_);
   renderWidgetHostView_ = NULL;
-  CGLUnlockContext(cglContext_);
 }
 
 - (void)drawRect:(NSRect)rect {
@@ -248,9 +139,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     NSRectFillList(dirtyRects, dirtyRectCount);
   }
 
-  CGLLockContext(cglContext_);
   [self drawView];
-  CGLUnlockContext(cglContext_);
 }
 
 - (void)rightMouseDown:(NSEvent*)event {
@@ -263,8 +152,6 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)globalFrameDidChange:(NSNotification*)notification {
-  globalFrameDidChangeCGLLockCount_++;
-  CGLLockContext(cglContext_);
   // This call to -update can call -globalFrameDidChange: again, see
   // http://crbug.com/55754 comments 22 and 24.
   [glContext_ update];
@@ -273,16 +160,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   CGLSetCurrentContext(cglContext_);
   NSSize size = [self frame].size;
   glViewport(0, 0, size.width, size.height);
-
   CGLSetCurrentContext(0);
-  CGLUnlockContext(cglContext_);
-  globalFrameDidChangeCGLLockCount_--;
-
-  if (globalFrameDidChangeCGLLockCount_ == 0) {
-    // Make sure the view is synchronized with the correct display.
-    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
-       displayLink_, cglContext_, cglPixelFormat_);
-  }
 }
 
 - (void)prepareForGLRendering {
@@ -319,20 +197,6 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
   TRACE_EVENT1("browser", "AcceleratedPluginView::viewWillMoveToWindow",
                "newWindow", newWindow);
-  // Stop the display link thread while the view is not visible.
-  if (newWindow) {
-    if (!CVDisplayLinkIsRunning(displayLink_))
-      CVDisplayLinkStart(displayLink_);
-  } else {
-    if (CVDisplayLinkIsRunning(displayLink_))
-      CVDisplayLinkStop(displayLink_);
-
-    // Ack pending swaps (if any):
-    CGLLockContext(cglContext_);
-    [self ackSwapBuffers:swapBuffersCount_];
-    CGLUnlockContext(cglContext_);
-  }
-
   // Inform the window hosting this accelerated view that it needs to be
   // transparent.
   if (![self isHiddenOrHasHiddenAncestor]) {
@@ -359,18 +223,6 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
     [static_cast<id>([self window]) underlaySurfaceAdded];
   }
-}
-
-- (void)setFrame:(NSRect)frameRect {
-  TRACE_EVENT0("browser", "AcceleratedPluginViewMac::setFrame");
-  [self setCachedSize:frameRect.size];
-  [super setFrame:frameRect];
-}
-
-- (void)setFrameSize:(NSSize)newSize {
-  TRACE_EVENT0("browser", "AcceleratedPluginView::newSize");
-  [self setCachedSize:newSize];
-  [super setFrameSize:newSize];
 }
 
 - (BOOL)acceptsFirstResponder {

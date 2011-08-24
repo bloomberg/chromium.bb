@@ -927,23 +927,27 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     int32 route_id,
     int gpu_host_id,
     uint64 swap_buffers_count) {
-  TRACE_EVENT0("browser",
-      "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
+  TRACE_EVENT1("browser",
+      "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped",
+      "frameNum", swap_buffers_count);
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AcceleratedPluginView* view = ViewForPluginWindowHandle(window);
   DCHECK(view);
-  if (!view)
-    return;
+  if (view) {
+    plugin_container_manager_.SetSurfaceWasPaintedTo(window, surface_id);
 
-  plugin_container_manager_.SetSurfaceWasPaintedTo(window, surface_id);
+    // The surface is hidden until its first paint, to not show gargabe.
+    if (plugin_container_manager_.SurfaceShouldBeVisible(window))
+      [view setHidden:NO];
+    [view drawView];
+  }
 
-  // The surface is hidden until its first paint, to not show gargabe.
-  if (plugin_container_manager_.SurfaceShouldBeVisible(window))
-    [view setHidden:NO];
-  [view updateSwapBuffersCount:swap_buffers_count
-                  fromRenderer:renderer_id
-                       routeId:route_id
-                     gpuHostId:gpu_host_id];
+  if (renderer_id != 0 || route_id != 0) {
+    AcknowledgeSwapBuffers(renderer_id,
+                           route_id,
+                           gpu_host_id,
+                           swap_buffers_count);
+  }
 }
 
 void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
@@ -1808,9 +1812,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
           renderWidgetHostView_->ViewForPluginWindowHandle(root_handle);
       DCHECK(view);
       if (view && ![view isHidden]) {
-        NSRect frame = [view frame];
-        frame.size = [view cachedSize];
-        gpuRect = [self flipNSRectToRect:frame];
+        gpuRect = [self flipNSRectToRect:[view frame]];
       }
     }
 
