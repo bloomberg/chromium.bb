@@ -252,32 +252,15 @@ bool GetCurrentTabTitle(const Browser* browser, string16* title) {
   return true;
 }
 
-bool WaitForNavigationInCurrentTab(Browser* browser) {
-  TabContents* tab_contents = browser->GetSelectedTabContents();
-  if (!tab_contents)
-    return false;
-  WaitForNavigation(&tab_contents->controller());
-  return true;
-}
-
-bool WaitForNavigationsInCurrentTab(Browser* browser,
-                                    int number_of_navigations) {
-  TabContents* tab_contents = browser->GetSelectedTabContents();
-  if (!tab_contents)
-    return false;
-  WaitForNavigations(&tab_contents->controller(), number_of_navigations);
-  return true;
-}
-
-void WaitForNavigation(NavigationController* controller) {
-  WaitForNavigations(controller, 1);
-}
-
 void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations) {
   TestNavigationObserver observer(
       Source<NavigationController>(controller), NULL, number_of_navigations);
   observer.WaitForObservation();
+}
+
+void WaitForNavigation(NavigationController* controller) {
+  WaitForNavigations(controller, 1);
 }
 
 void WaitForNewTab(Browser* browser) {
@@ -808,20 +791,6 @@ void WindowedNotificationObserver::Wait() {
                 !sources_seen_.empty())) {
     return;
   }
-
-  running_ = true;
-  ui_test_utils::RunMessageLoop();
-}
-
-void WindowedNotificationObserver::WaitFor(const NotificationSource& source) {
-  if (waiting_for_ != NotificationService::AllSources()) {
-    LOG(FATAL) << "WaitFor called when already waiting on a specific source."
-               << "Use Wait in this case.";
-  }
-
-  waiting_for_ = source;
-  if (sources_seen_.count(waiting_for_.map_key()) > 0)
-    return;
 
   running_ = true;
   ui_test_utils::RunMessageLoop();

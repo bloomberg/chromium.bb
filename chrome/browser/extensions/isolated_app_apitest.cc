@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
@@ -115,8 +116,12 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppApiTest, MAYBE_CookieIsolation) {
   // Check that isolation persists even if the tab crashes and is reloaded.
   browser()->SelectNumberedTab(1);
   ui_test_utils::CrashTab(tab1);
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->controller()));
   browser()->Reload(CURRENT_TAB);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  observer.Wait();
   EXPECT_TRUE(HasCookie(tab1, "app1=3"));
   EXPECT_FALSE(HasCookie(tab1, "app2"));
   EXPECT_FALSE(HasCookie(tab1, "normalPage"));

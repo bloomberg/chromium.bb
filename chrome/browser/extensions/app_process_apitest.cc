@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -417,8 +418,12 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
 
   // Crash the tab and reload it, chrome.app.isInstalled should still be true.
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(
+          &browser()->GetSelectedTabContentsWrapper()->controller()));
   browser()->Reload(CURRENT_TAB);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  observer.Wait();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       contents->render_view_host(), L"",
       L"window.domAutomationController.send(chrome.app.isInstalled)",

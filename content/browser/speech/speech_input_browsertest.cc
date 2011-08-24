@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,19 +141,21 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
     mouse_event.y = 0;
     mouse_event.clickCount = 1;
     TabContents* tab_contents = browser()->GetSelectedTabContents();
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(&tab_contents->controller()));
     tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
     mouse_event.type = WebKit::WebInputEvent::MouseUp;
     tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+    observer.Wait();
   }
 
   void RunSpeechInputTest(const FilePath::CharType* filename) {
-    LoadAndStartSpeechInputTest(filename);
-
     // The fake speech input manager would receive the speech input
     // request and return the test string as recognition result. The test page
     // then sets the URL fragment as 'pass' if it received the expected string.
-    TabContents* tab_contents = browser()->GetSelectedTabContents();
-    ui_test_utils::WaitForNavigations(&tab_contents->controller(), 1);
+    LoadAndStartSpeechInputTest(filename);
+
     EXPECT_EQ("pass", browser()->GetSelectedTabContents()->GetURL().ref());
   }
 

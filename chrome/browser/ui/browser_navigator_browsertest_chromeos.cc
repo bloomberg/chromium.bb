@@ -63,11 +63,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_LargePopup) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
   p.window_bounds = gfx::Rect(0, 0, 10000, 10000);
-  browser::Navigate(&p);
-  // Wait for page to load.
-  ui_test_utils::WaitForNavigationInCurrentTab(p.browser);
+  ui_test_utils::NavigateToURL(&p);
 
-  // Navigate() should have opened a new tab.
+  // NavigateToURL() should have opened a new tab.
   EXPECT_EQ(browser(), p.browser);
 
   // We should have one window with two tabs.
@@ -83,21 +81,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_LargePopupFromPopup) {
   browser::NavigateParams p1(MakeNavigateParams());
   p1.disposition = NEW_POPUP;
   p1.window_bounds = gfx::Rect(0, 0, 200, 200);
-  browser::Navigate(&p1);
-
-  // Wait for page to load.
-  ui_test_utils::WaitForNavigationInCurrentTab(p1.browser);
+  ui_test_utils::NavigateToURL(&p1);
 
   // Open a large popup from the popup.
   browser::NavigateParams p2(MakeNavigateParams(p1.browser));
   p2.disposition = NEW_POPUP;
   p2.window_bounds = gfx::Rect(0, 0, 10000, 10000);
-  browser::Navigate(&p2);
+  ui_test_utils::NavigateToURL(&p2);
 
-  // Wait for page to load.
-  ui_test_utils::WaitForNavigationInCurrentTab(p2.browser);
-
-  // Navigate() should have opened a new tab in the primary browser.
+  // NavigateToURL() should have opened a new tab in the primary browser.
   EXPECT_EQ(browser(), p2.browser);
 
   // We should have two windows. browser() should have two tabs.

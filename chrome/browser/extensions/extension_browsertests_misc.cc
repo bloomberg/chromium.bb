@@ -724,8 +724,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), L"", L"testPluginWorks()", &result));
   EXPECT_FALSE(result);
-  browser()->Reload(CURRENT_TAB);
-  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(
+            &browser()->GetSelectedTabContentsWrapper()->controller()));
+    browser()->Reload(CURRENT_TAB);
+    observer.Wait();
+  }
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), L"", L"testPluginWorks()", &result));
   EXPECT_TRUE(result);
@@ -744,8 +750,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   ASSERT_TRUE(LoadExtension(extension_dir));
   EXPECT_EQ(size_before + 1, service->extensions()->size());
-  browser()->Reload(CURRENT_TAB);
-  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        Source<NavigationController>(
+            &browser()->GetSelectedTabContentsWrapper()->controller()));
+    browser()->Reload(CURRENT_TAB);
+    observer.Wait();
+  }
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), L"", L"testPluginWorks()", &result));
   EXPECT_TRUE(result);

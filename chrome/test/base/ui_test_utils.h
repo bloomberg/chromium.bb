@@ -88,33 +88,17 @@ void RunAllPendingInMessageLoop();
 // Puts the current tab title in |title|. Returns true on success.
 bool GetCurrentTabTitle(const Browser* browser, string16* title);
 
-// Waits for the current tab to complete the navigation. Returns true on
-// success. TODO(gbillock): remove this race hazard.
-// Use WindowedNotificationObserver instead.
-bool WaitForNavigationInCurrentTab(Browser* browser);
-
-// Waits for the current tab to complete the specified number of navigations.
-// Returns true on success. TODO(gbillock): remove this race hazard.
-// Use WindowedNotificationObserver instead.
-bool WaitForNavigationsInCurrentTab(Browser* browser,
-                                    int number_of_navigations);
-
 // Waits for |controller| to complete a navigation. This blocks until
 // the navigation finishes. TODO(gbillock): remove this race hazard.
 // Use WindowedNotificationObserver instead.
 void WaitForNavigation(NavigationController* controller);
 
-// Waits for |controller| to complete a navigation. This blocks until
-// the specified number of navigations complete. TODO(gbillock): remove this
-// race hazard.
-// Use WindowedNotificationObserver instead.
-void WaitForNavigations(NavigationController* controller,
-                        int number_of_navigations);
-
-// Waits for a new tab to be added to |browser|.
+// Waits for a new tab to be added to |browser|. TODO(gbillock): remove this
+// race hazard. Use WindowedNotificationObserver instead.
 void WaitForNewTab(Browser* browser);
 
-// Waits for a |browser_action| to be updated.
+// Waits for a |browser_action| to be updated. TODO(gbillock): remove this race
+// hazard. Use WindowedNotificationObserver instead.
 void WaitForBrowserActionUpdated(ExtensionAction* browser_action);
 
 // Waits for a load stop for the specified |tab|'s controller, if the tab is
@@ -415,26 +399,6 @@ class WindowedNotificationObserver : public NotificationObserver {
   // emitted between the construction of this object and this call then it
   // returns immediately.
   void Wait();
-
-  // WaitFor waits until the given notification type is received from the
-  // given object. If the notification was emitted between the construction of
-  // this object and this call then it returns immediately.
-  //
-  // Use this variant when you supply AllSources to the constructor but want
-  // to wait for notification from a specific observer.
-  //
-  // Beware that this is inheriently plagued by ABA issues. Consider:
-  //   WindowedNotificationObserver is created, listening for notifications from
-  //     all sources
-  //   Object A is created with address x and fires a notification
-  //   Object A is freed
-  //   Object B is created with the same address
-  //   WaitFor is called with the address of B
-  //
-  // In this case, WaitFor will return immediately because of the
-  // notification from A (because they shared an address), despite being
-  // different objects.
-  void WaitFor(const NotificationSource& source);
 
   // NotificationObserver:
   virtual void Observe(int type,

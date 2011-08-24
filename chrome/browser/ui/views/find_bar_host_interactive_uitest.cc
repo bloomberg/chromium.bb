@@ -162,8 +162,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
   EXPECT_TRUE(ASCIIToUTF16("a") == find_bar->GetFindSelectedText());
 
   // Open another tab (tab B).
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
+  observer.Wait();
 
   // Make sure Find box is open.
   browser()->Find();

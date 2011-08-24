@@ -650,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
 }
 
 // Disabled, http://crbug.com/69475.
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -680,10 +680,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
 
   // Press Ctrl/Cmd+T, which will open a new tab. It cannot be suppressed.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlOrCmdT));
-
-  ASSERT_NO_FATAL_FAILURE(
-      wait_for_new_tab.WaitFor(Source<TabContentsWrapper>(
-      browser()->GetTabContentsWrapperAt(1))));
+  wait_for_new_tab.Wait();
 
   int result_length;
   ASSERT_NO_FATAL_FAILURE(GetResultLength(0, &result_length));
