@@ -146,6 +146,12 @@ class InfobarTest(pyauto.PyUITest):
 
   def testPluginCrashForMultiTabs(self):
     """Verify plugin crash infobar shows up only on the tabs using plugin."""
+    if self.IsMac():
+      # On Mac 10.5, flash files loaded too quickly after firing browser ends
+      # up getting downloaded, which seems to indicate that the plugin hasn't
+      # been registered yet.
+      # Hack to register Flash plugin on Mac 10.5.  crbug.com/94123
+      self.GetPluginsInfo()
     non_flash_url = self.GetFileURLForDataPath('english_page.html')
     flash_url = self.GetFileURLForDataPath('plugin', 'FlashSpin.swf')
     # False = Non flash url, True = Flash url

@@ -63,6 +63,12 @@ class ProcessCountTest(pyauto.PyUITest):
 
   def testProcessCountCombination(self):
     """Verifies process count with a combination of tabs/windows/extensions."""
+    if self.IsMac():
+      # On Mac 10.5, flash files loaded too quickly after firing browser ends
+      # up getting downloaded, which seems to indicate that the plugin hasn't
+      # been registered yet.
+      # Hack to register Flash plugin on Mac 10.5.  crbug.com/94123
+      self.GetPluginsInfo()
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'page_action.crx'))
     self.assertTrue(self.InstallExtension(crx_file_path, False),

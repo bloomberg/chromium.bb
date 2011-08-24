@@ -104,6 +104,12 @@ class FlashTest(pyauto.PyUITest):
 
   def testFlashIncognitoMode(self):
     """Verify we can play flash on an incognito window."""
+    if self.IsMac():
+      # On Mac 10.5, flash files loaded too quickly after firing browser ends
+      # up getting downloaded, which seems to indicate that the plugin hasn't
+      # been registered yet.
+      # Hack to register Flash plugin on Mac 10.5.  crbug.com/94123
+      self.GetPluginsInfo()
     # Verify no flash process is currently running
     self._AssertFlashProcessNotPresent()
     flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
