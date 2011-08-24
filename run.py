@@ -140,6 +140,8 @@ def SetupArch(arch, is_dynamic, allow_build = True):
                                          'x86_64-nacl', libdir))
 
   env.sel_ldr = FindOrBuildSelLdr(allow_build = allow_build)
+  env.irt = os.path.join(env.nacl_root, 'scons-out',
+                         'nacl_irt-%s/staging/irt.nexe' % arch)
 
 
 def main(argv):
@@ -181,8 +183,11 @@ def main(argv):
   # Setup architecture-specific environment variables
   SetupArch(arch, is_dynamic)
 
+  # Add irt to sel_ldr arguments
+  sel_ldr_args = ['-B', env.irt]
+
   # Setup sel_ldr arguments
-  sel_ldr_args = sel_ldr_options + ['--']
+  sel_ldr_args += sel_ldr_options + ['--']
 
   if is_dynamic:
     sel_ldr_args += [env.runnable_ld,
