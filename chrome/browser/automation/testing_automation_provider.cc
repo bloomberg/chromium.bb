@@ -2408,6 +2408,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetAutofillProfile;
   browser_handler_map["FillAutofillProfile"] =
       &TestingAutomationProvider::FillAutofillProfile;
+  browser_handler_map["SubmitAutofillForm"] =
+      &TestingAutomationProvider::SubmitAutofillForm;
   browser_handler_map["AutofillTriggerSuggestions"] =
       &TestingAutomationProvider::AutofillTriggerSuggestions;
   browser_handler_map["AutofillHighlightSuggestion"] =
@@ -4474,6 +4476,64 @@ void TestingAutomationProvider::FillAutofillProfile(
     return;
   }
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::SubmitAutofillForm(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
+  int tab_index;
+  if (!args->GetInteger("tab_index", &tab_index)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'tab_index' missing or invalid.");
+    return;
+  }
+  TabContentsWrapper* tab_contents =
+      browser->GetTabContentsWrapperAt(tab_index);
+  if (!tab_contents) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("No such tab at index %d", tab_index));
+    return;
+  }
+
+  string16 frame_xpath, javascript;
+  if (!args->GetString("frame_xpath", &frame_xpath)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'frame_xpath' missing or invalid.");
+    return;
+  }
+  if (!args->GetString("javascript", &javascript)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("'javascript' missing or invalid.");
+    return;
+  }
+
+  PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
+      ->GetPersonalDataManager();
+  if (!pdm) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("No PersonalDataManager.");
+    return;
+  }
+
+  // This observer will delete itself.
+  new AutofillFormSubmittedObserver(this, reply_message, pdm);
+
+  // Set the routing id of this message with the controller.
+  // This routing id needs to be remembered for the reverse
+  // communication while sending back the response of
+  // this javascript execution.
+  std::string set_automation_id;
+  base::SStringPrintf(&set_automation_id,
+                      "window.domAutomationController.setAutomationId(%d);",
+                      reply_message->routing_id());
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      frame_xpath, UTF8ToUTF16(set_automation_id));
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      frame_xpath, javascript);
 }
 
 void TestingAutomationProvider::AutofillTriggerSuggestions(

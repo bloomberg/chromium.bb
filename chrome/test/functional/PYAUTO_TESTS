@@ -78,11 +78,6 @@
       # ==================================================
       # crbug.com/83686
       '-autofill.AutofillTest.testFillProfileCrazyCharacters',
-      # crbug.com/89784
-      '-autofill.AutofillTest.testProfileSavedWithValidCountryPhone',
-      # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
-      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # Browser crash when clearing browsing history and downloads together.
       # crbug.com/88128
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
@@ -129,8 +124,11 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/89081
+      # crbug.com/88210
       '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
+      # crbug.com/81271
+      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',	
+      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
       # crbug.com/91225
@@ -282,6 +280,9 @@
       # ==================================================
       # crbug.com/90882
       '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
+      # crbug.com/81271
+      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',	
+      '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # Flaky: crosbug.com/14394
       '-browsing_data.BrowsingDataTest.testClearHistoryAndDownloads',
       # Downloads panel stays even after declining a download.

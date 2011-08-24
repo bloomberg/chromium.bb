@@ -647,6 +647,13 @@ class TestingAutomationProvider : public AutomationProvider,
                            base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
+  // Injects Javascript into a specified frame that is assumed to submit
+  // Autofill data via a webpage form, then waits for Autofill's personal data
+  // manager to finish processing the data.
+  void SubmitAutofillForm(Browser* browser,
+                          base::DictionaryValue* args,
+                          IPC::Message* reply_message);
+
   // Causes the autofill popup to be displayed in an already-focused webpage
   // form field.  Waits until the popup is displayed before returning.
   void AutofillTriggerSuggestions(Browser* browser,

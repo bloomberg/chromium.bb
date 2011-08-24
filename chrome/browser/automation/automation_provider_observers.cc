@@ -47,6 +47,7 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -569,7 +570,7 @@ void ExtensionReadyNotificationObserver::Observe(
       // created at this point so just checking whether all ExtensionHosts
       // are loaded is not sufficient. If background page is not ready,
       // we wait for NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING.
-      if(!service_->IsBackgroundPageReady(extension_))
+      if (!service_->IsBackgroundPageReady(extension_))
         return;
       break;
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
@@ -2249,7 +2250,7 @@ void AutofillChangedObserver::Observe(
     NOTREACHED();
   }
 
-  if (num_profiles_ == 0 && num_credit_cards_ == 0) {
+  if (num_profiles_ <= 0 && num_credit_cards_ <= 0) {
     registrar_.RemoveAll();  // Must be done from the DB thread.
 
     // Notify the UI thread that we're done listening for all relevant
@@ -2268,6 +2269,85 @@ void AutofillChangedObserver::IndicateDone() {
                         reply_message_.release()).SendSuccess(NULL);
   }
   Release();
+}
+
+AutofillFormSubmittedObserver::AutofillFormSubmittedObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    PersonalDataManager* pdm)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      pdm_(pdm),
+      tab_contents_(NULL) {
+  pdm_->SetObserver(this);
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+                 NotificationService::AllSources());
+}
+
+AutofillFormSubmittedObserver::~AutofillFormSubmittedObserver() {
+  pdm_->RemoveObserver(this);
+
+  if (tab_contents_) {
+    InfoBarDelegate* infobar = NULL;
+    if (tab_contents_->infobar_count() > 0 &&
+        (infobar = tab_contents_->GetInfoBarDelegateAt(0))) {
+      tab_contents_->RemoveInfoBar(infobar);
+    }
+  }
+}
+
+void AutofillFormSubmittedObserver::OnPersonalDataChanged() {
+  if (automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+  }
+  delete this;
+}
+
+void AutofillFormSubmittedObserver::OnInsufficientFormData() {
+  if (automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendSuccess(NULL);
+  }
+  delete this;
+}
+
+void AutofillFormSubmittedObserver::Observe(
+    int type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED);
+  // Accept in the infobar.
+  tab_contents_ = Source<TabContentsWrapper>(source).ptr();
+  InfoBarDelegate* infobar = NULL;
+  if (!(infobar = tab_contents_->GetInfoBarDelegateAt(0))) {
+    if (automation_) {
+      AutomationJSONReply(
+          automation_, reply_message_.release()).SendError(
+              "Could not identify the infobar delegate.");
+    }
+    delete this;
+    return;
+  }
+  ConfirmInfoBarDelegate* confirm_infobar;
+  if (!(confirm_infobar = infobar->AsConfirmInfoBarDelegate())) {
+    if (automation_) {
+      AutomationJSONReply(
+          automation_, reply_message_.release()).SendError(
+              "Infobar is not a confirm infobar.");
+    }
+    delete this;
+    return;
+  }
+  if (!(confirm_infobar->Accept())) {
+    if (automation_) {
+      AutomationJSONReply(
+          automation_, reply_message_.release()).SendError(
+              "Could not accept in the infobar.");
+    }
+    delete this;
+    return;
+  }
 }
 
 namespace {

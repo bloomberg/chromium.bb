@@ -13,6 +13,7 @@ class PersonalDataManagerObserver {
  public:
   // Notifies the observer that the PersonalDataManager changed in some way.
   virtual void OnPersonalDataChanged() = 0;
+  virtual void OnInsufficientFormData() {}
 
  protected:
   virtual ~PersonalDataManagerObserver() {}

@@ -1695,8 +1695,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
   def GetAutofillProfile(self, tab_index=0, window_index=0):
-    """Return the profile including all profiles and credit cards currently
-       saved as a list of dictionaries.
+    """Returns all autofill profile and credit card information.
 
     The format of the returned dictionary is described above in
     FillAutofillProfile. The general format is:
@@ -1715,6 +1714,29 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'tab_index': tab_index
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+
+  def SubmitAutofillForm(self, js, frame_xpath='', tab_index=0, windex=0):
+    """Submits a webpage autofill form and waits for autofill to be updated.
+
+    This function should be called when submitting autofill profiles via
+    webpage forms.  It waits until the autofill data has been updated internally
+    before returning.
+
+    Args:
+      js: The string Javascript code that can be injected into the given webpage
+          to submit an autofill form.  This Javascript MUST submit the form.
+      frame_xpath: The string xpath for the frame in which to inject javascript.
+      tab_index: Integer index of the tab to work on; defaults to 0 (first tab).
+      windex: Integer index of the browser window to use; defaults to 0
+              (first window).
+    """
+    cmd_dict = {  # Prepare command for the json interface.
+      'command': 'SubmitAutofillForm',
+      'javascript': js,
+      'frame_xpath': frame_xpath,
+      'tab_index': tab_index,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
   def AutofillTriggerSuggestions(self, field_id=None, tab_index=0, windex=0):
     """Focuses a webpage form field and triggers the autofill popup in it.

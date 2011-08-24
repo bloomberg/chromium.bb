@@ -318,7 +318,13 @@ bool PersonalDataManager::ImportFormData(
   }
   *imported_credit_card = local_imported_credit_card.release();
 
-  return imported_profile.get() || *imported_credit_card;
+  if (imported_profile.get() || *imported_credit_card) {
+    return true;
+  } else {
+    FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
+                      OnInsufficientFormData());
+    return false;
+  }
 }
 
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {

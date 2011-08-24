@@ -17,6 +17,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -1457,6 +1459,36 @@ class AutofillChangedObserver
   base::WaitableEvent done_event_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillChangedObserver);
+};
+
+// Observes when an Autofill form submitted via a webpage has been processed.
+// This observer also takes care of accepting any infobars that appear as a
+// result of submitting the webpage form (submitting credit card information
+// causes a confirm infobar to appear).
+class AutofillFormSubmittedObserver
+    : public PersonalDataManagerObserver,
+      public NotificationObserver {
+ public:
+  AutofillFormSubmittedObserver(AutomationProvider* automation,
+                                IPC::Message* reply_message,
+                                PersonalDataManager* pdm);
+  virtual ~AutofillFormSubmittedObserver();
+
+  // PersonalDataManagerObserver interface.
+  virtual void OnPersonalDataChanged() OVERRIDE;
+  virtual void OnInsufficientFormData() OVERRIDE;
+
+  // NotificationObserver interface.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+  PersonalDataManager* pdm_;
+  TabContentsWrapper* tab_contents_;
 };
 
 // Allows the automation provider to wait until all the notification
