@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 
 #ifdef OS_MACOSX
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/cocoa/window_restore_utils.h"
 #endif
 
@@ -107,7 +108,9 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
 
 #ifdef OS_MACOSX
-  if (TypeIsDefaultValue(prefs)) {
+  // During first run the calling code relies on |DEFAULT| session preference
+  // value to avoid session restore.  That is respected here.
+  if (!FirstRun::IsChromeFirstRun() && TypeIsDefaultValue(prefs)) {
     // |DEFAULT| really means "Don't restore".  The actual default value could
     // change, so explicitly set both.
     if (restore_utils::IsWindowRestoreEnabled())
