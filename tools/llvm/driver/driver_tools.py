@@ -120,7 +120,7 @@ INITIAL_ENV = {
   'SEL_UNIVERSAL_PREFIX': '${USE_EMULATOR ? ${EMULATOR}}',
   'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
   'SEL_UNIVERSAL_FLAGS' : '--abort_on_error -B ${IRT_BLOB} ' +
-                          '${USE_EMULATOR ? -Q --command-prefix ${EMULATOR}}',
+                          '${USE_EMULATOR ? -Q --command_prefix ${EMULATOR}}',
 
   'IRT_STAGING'         : '${IRT_STAGING_%ARCH%}',
   'IRT_STAGING_X8632'   : '${SCONS_OUT}/nacl_irt-x86-32/staging',

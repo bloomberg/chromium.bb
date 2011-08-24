@@ -3189,6 +3189,17 @@ def DumpEnvironmentInfo(selected_envs):
         if "Revision:" in line:
           print "PNACL : %s" % line
 
+def PnaclSetEmulatorForSandboxedTranslator(selected_envs):
+  # Slip in emulator flags if necessary, for the sandboxed pnacl translator
+  # on ARM, once emulator is actually known (vs in naclsdk.py, where it
+  # is not yet known).
+  for env in selected_envs:
+    if (env.Bit('bitcode')
+        and env.Bit('use_sandboxed_translator')
+        and env.UsingEmulator()):
+      # This must modify the LINK command itself, since LINKFLAGS may
+      # be filtered (e.g., in barebones tests).
+      env['LINK'] = env.get('LINK') + ' --pnacl-use-emulator'
 
 # ----------------------------------------------------------
 # Blank out defaults.
@@ -3219,8 +3230,13 @@ if nacl_env in selected_envs:
 if nacl_irt_test_env in selected_envs and nacl_env not in selected_envs:
   selected_envs.append(nacl_env)
 
+
 DumpEnvironmentInfo(selected_envs)
 LinkTrustedEnv(selected_envs)
+# This must happen after LinkTrustedEnv, since that is where TRUSTED_ENV
+# is finally set, and env.UsingEmulator() checks TRUSTED_ENV for the emulator.
+# This must also happen before BuildEnvironments.
+PnaclSetEmulatorForSandboxedTranslator(selected_envs)
 BuildEnvironments(selected_envs)
 
 # Change default to build everything, but not run tests.

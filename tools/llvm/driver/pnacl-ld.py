@@ -523,9 +523,9 @@ def RunLDSRPC():
                                        files,
                                        outfile)
 
-  RunWithLog('${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} -- ' +
-             '${LD_SRPC}', stdin=script,
-             echo_stdout = False, echo_stderr = False)
+  RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
+             '${SEL_UNIVERSAL_FLAGS} -- ${LD_SRPC}',
+             stdin=script, echo_stdout = False, echo_stderr = False)
 
 def MakeSelUniversalScriptForFile(filename):
   """ Return sel_universal script text for sending a commandline argument
