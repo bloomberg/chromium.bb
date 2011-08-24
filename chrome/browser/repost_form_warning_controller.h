@@ -20,14 +20,13 @@ class RepostFormWarningController : public NotificationObserver {
   explicit RepostFormWarningController(TabContents* tab_contents);
   virtual ~RepostFormWarningController();
 
-  // Show the warning dialog.
-  void Show(ConstrainedWindowDelegate* window_delegate);
-
   // Cancel the reload.
   void Cancel();
 
   // Continue the reload.
   void Continue();
+
+  void set_window(ConstrainedWindow* window) { window_ = window; }
 
  private:
   // NotificationObserver implementation.

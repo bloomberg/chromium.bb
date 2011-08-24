@@ -18,7 +18,7 @@
 // a TabContents in a ContraintedHtmlUI.
 class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
                                    public ConstrainedHtmlUIDelegate,
-                                   public ConstrainedWindowDelegate,
+                                   public ConstrainedWindowGtkDelegate,
                                    public HtmlDialogTabContentsDelegate {
  public:
   ConstrainedHtmlDelegateGtk(Profile* profile,
@@ -119,7 +119,7 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedHtmlDelegateGtk* constrained_delegate =
       new ConstrainedHtmlDelegateGtk(profile, delegate);
   ConstrainedWindow* constrained_window =
-      container->CreateConstrainedDialog(constrained_delegate);
+      new ConstrainedWindowGtk(container, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 }

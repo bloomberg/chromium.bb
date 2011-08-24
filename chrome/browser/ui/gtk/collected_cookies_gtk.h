@@ -25,13 +25,13 @@ class CookiesTreeModel;
 // ShowCollectedCookiesDialog() on the delegate of the tab contents wrapper's
 // content settings tab helper.
 
-class CollectedCookiesGtk : public ConstrainedDialogDelegate,
+class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
                                    gtk_tree::TreeAdapter::Delegate,
                                    NotificationObserver {
  public:
   CollectedCookiesGtk(GtkWindow* parent, TabContents* tab_contents);
 
-  // ConstrainedDialogDelegate methods.
+  // ConstrainedWindowGtkDelegate methods.
   virtual GtkWidget* GetWidgetRoot();
   virtual GtkWidget* GetFocusWidget();
   virtual void DeleteDelegate();

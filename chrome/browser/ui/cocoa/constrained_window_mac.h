@@ -109,6 +109,8 @@ class ConstrainedWindowMacDelegateCustomSheet
 //    deleted.
 class ConstrainedWindowMac : public ConstrainedWindow {
  public:
+  ConstrainedWindowMac(TabContents* owner,
+                       ConstrainedWindowMacDelegate* delegate);
   virtual ~ConstrainedWindowMac();
 
   // Overridden from ConstrainedWindow:
@@ -126,9 +128,6 @@ class ConstrainedWindowMac : public ConstrainedWindow {
 
  private:
   friend class ConstrainedWindow;
-
-  ConstrainedWindowMac(TabContents* owner,
-                       ConstrainedWindowMacDelegate* delegate);
 
   // The TabContents that owns and constrains this ConstrainedWindow.
   TabContents* owner_;

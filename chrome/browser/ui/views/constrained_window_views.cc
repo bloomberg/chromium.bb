@@ -576,6 +576,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.parent = owner->GetNativeView();
   params.native_widget = native_constrained_window_->AsNativeWidget();
   Init(params);
+  owner->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
@@ -630,15 +631,4 @@ void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {
 views::internal::NativeWidgetDelegate*
     ConstrainedWindowViews::AsNativeWidgetDelegate() {
   return this;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// ConstrainedWindow, public:
-
-// static
-ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
-    TabContents* parent,
-    views::WidgetDelegate* widget_delegate) {
-  return new ConstrainedWindowViews(parent, widget_delegate);
 }

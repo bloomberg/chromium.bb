@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/login_view.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -28,7 +29,7 @@ using webkit_glue::PasswordForm;
 // This class uses ref counting to ensure that it lives until all InvokeLaters
 // have been called.
 class LoginHandlerWin : public LoginHandler,
-                        public ConstrainedDialogDelegate {
+                        public views::DialogDelegate {
  public:
   LoginHandlerWin(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
       : LoginHandler(auth_info, request) {
@@ -122,7 +123,7 @@ class LoginHandlerWin : public LoginHandler,
     // control).  However, that's OK since any UI interaction in those functions
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
-    SetDialog(GetTabContentsForLogin()->CreateConstrainedDialog(this));
+    SetDialog(new ConstrainedWindowViews(GetTabContentsForLogin(), this));
     NotifyAuthNeeded();
   }
 

@@ -83,13 +83,6 @@ void ConstrainedWindowMacDelegateCustomSheet::RunSheet(
                   contextInfo:NULL];
 }
 
-// static
-ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
-    TabContents* parent,
-    ConstrainedWindowMacDelegate* delegate) {
-  return new ConstrainedWindowMac(parent, delegate);
-}
-
 ConstrainedWindowMac::ConstrainedWindowMac(
     TabContents* owner, ConstrainedWindowMacDelegate* delegate)
     : owner_(owner),
@@ -98,6 +91,8 @@ ConstrainedWindowMac::ConstrainedWindowMac(
       should_be_visible_(false) {
   DCHECK(owner);
   DCHECK(delegate);
+
+  owner->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {}

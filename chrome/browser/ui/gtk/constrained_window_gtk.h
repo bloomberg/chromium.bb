@@ -58,6 +58,8 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
    typedef TabContentsViewGtk TabContentsViewType;
 #endif
 
+  ConstrainedWindowGtk(TabContents* owner,
+                       ConstrainedWindowGtkDelegate* delegate);
   virtual ~ConstrainedWindowGtk();
 
   // Overridden from ConstrainedWindow:
@@ -76,9 +78,6 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
 
  private:
   friend class ConstrainedWindow;
-
-  ConstrainedWindowGtk(TabContents* owner,
-                       ConstrainedWindowGtkDelegate* delegate);
 
   // Signal callbacks.
   CHROMEGTK_CALLBACK_1(ConstrainedWindowGtk, gboolean, OnKeyPress,

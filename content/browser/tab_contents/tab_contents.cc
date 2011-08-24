@@ -647,14 +647,6 @@ void TabContents::ShowPageInfo(const GURL& url,
   delegate_->ShowPageInfo(browser_context(), url, ssl, show_history);
 }
 
-ConstrainedWindow* TabContents::CreateConstrainedDialog(
-      ConstrainedWindowDelegate* delegate) {
-  ConstrainedWindow* window =
-      ConstrainedWindow::CreateConstrainedDialog(this, delegate);
-  AddConstrainedDialog(window);
-  return window;
-}
-
 void TabContents::AddConstrainedDialog(ConstrainedWindow* window) {
   child_windows_.push_back(window);
 

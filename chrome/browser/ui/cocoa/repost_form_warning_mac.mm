@@ -43,17 +43,20 @@ RepostFormWarningMac* RepostFormWarningMac::Create(NSWindow* parent,
                                                   TabContents* tab_contents) {
   return new RepostFormWarningMac(
       parent,
-      new RepostFormWarningController(tab_contents));
+      new RepostFormWarningController(tab_contents),
+      tab_contents);
 }
 
 RepostFormWarningMac::RepostFormWarningMac(
     NSWindow* parent,
-    RepostFormWarningController* controller)
+    RepostFormWarningController* controller,
+    TabContents* tab_contents)
     : ConstrainedWindowMacDelegateSystemSheet(
         [[[RepostDelegate alloc] initWithWarning:controller]
             autorelease],
         @selector(alertDidEnd:returnCode:contextInfo:)),
-      controller_(controller) {
+      controller_(controller),
+      tab_contents_(tab_contents) {
   scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
   [alert setMessageText:
       l10n_util::GetNSStringWithFixup(IDS_HTTP_POST_WARNING_TITLE)];
@@ -66,7 +69,7 @@ RepostFormWarningMac::RepostFormWarningMac(
 
   set_sheet(alert);
 
-  controller->Show(this);
+  controller->set_window(new ConstrainedWindowMac(tab_contents_, this));
 }
 
 RepostFormWarningMac::~RepostFormWarningMac() {

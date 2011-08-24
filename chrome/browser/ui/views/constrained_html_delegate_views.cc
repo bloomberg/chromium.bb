@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -16,7 +17,7 @@
 
 class ConstrainedHtmlDelegateViews : public TabContentsContainer,
                                      public ConstrainedHtmlUIDelegate,
-                                     public ConstrainedWindowDelegate,
+                                     public views::WidgetDelegate,
                                      public HtmlDialogTabContentsDelegate {
  public:
   ConstrainedHtmlDelegateViews(Profile* profile,
@@ -27,7 +28,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
   virtual void OnDialogClose() OVERRIDE;
 
-  // ConstrainedWindowDelegate (aka views::WidgetDelegate) interface.
+  // views::WidgetDelegate interface.
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual views::View* GetContentsView() {
     return this;
@@ -116,7 +117,7 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   ConstrainedHtmlDelegateViews* constrained_delegate =
       new ConstrainedHtmlDelegateViews(profile, delegate);
   ConstrainedWindow* constrained_window =
-      container->CreateConstrainedDialog(constrained_delegate);
+      new ConstrainedWindowViews(container, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 }

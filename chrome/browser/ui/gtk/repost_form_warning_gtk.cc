@@ -54,7 +54,7 @@ RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
   g_signal_connect(ok_, "clicked", G_CALLBACK(OnRefreshThunk), this);
   gtk_box_pack_end(GTK_BOX(buttonBox), ok_, FALSE, TRUE, 0);
 
-  controller_->Show(this);
+  controller_->set_window(new ConstrainedWindowGtk(tab_contents, this));
 }
 
 GtkWidget* RepostFormWarningGtk::GetWidgetRoot() {

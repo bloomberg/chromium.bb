@@ -11,6 +11,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
@@ -93,7 +94,7 @@ CollectedCookiesMac::CollectedCookiesMac(NSWindow* parent,
 
   set_sheet([sheet_controller_ window]);
 
-  window_ = tab_contents->CreateConstrainedDialog(this);
+  window_ = new ConstrainedWindowMac(tab_contents, this);
 }
 
 CollectedCookiesMac::~CollectedCookiesMac() {

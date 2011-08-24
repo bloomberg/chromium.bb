@@ -75,6 +75,8 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
                    this);
   g_signal_connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
+
+  owner->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
@@ -153,11 +155,4 @@ void ConstrainedWindowGtk::OnHierarchyChanged(GtkWidget* sender,
     return;
 
   FocusConstrainedWindow();
-}
-
-// static
-ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
-    TabContents* parent,
-    ConstrainedWindowGtkDelegate* delegate) {
-  return new ConstrainedWindowGtk(parent, delegate);
 }

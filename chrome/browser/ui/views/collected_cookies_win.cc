@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_details.h"
@@ -181,7 +182,7 @@ CollectedCookiesWin::CollectedCookiesWin(gfx::NativeWindow parent_window,
 
   Init();
 
-  window_ = tab_contents_->CreateConstrainedDialog(this);
+  window_ = new ConstrainedWindowViews(tab_contents_, this);
 }
 
 CollectedCookiesWin::~CollectedCookiesWin() {
@@ -355,7 +356,7 @@ views::View* CollectedCookiesWin::CreateBlockedPane() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ConstrainedDialogDelegate implementation.
+// views::DialogDelegate implementation.
 
 std::wstring CollectedCookiesWin::GetWindowTitle() const {
   return UTF16ToWide(

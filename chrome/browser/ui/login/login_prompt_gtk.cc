@@ -114,7 +114,7 @@ class LoginHandlerGtk : public LoginHandler,
     TabContents* requesting_contents = GetTabContentsForLogin();
     DCHECK(requesting_contents);
 
-    SetDialog(requesting_contents->CreateConstrainedDialog(this));
+    SetDialog(new ConstrainedWindowGtk(requesting_contents, this));
     NotifyAuthNeeded();
   }
 

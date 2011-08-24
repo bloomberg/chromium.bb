@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -129,7 +130,7 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  window_ = tab_contents_->CreateConstrainedDialog(this);
+  window_ = new ConstrainedWindowViews(tab_contents_, this);
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.

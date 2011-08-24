@@ -37,7 +37,7 @@ enum {
 // SSLClientCertificateSelector
 
 class SSLClientCertificateSelector : public SSLClientAuthObserver,
-                                     public ConstrainedDialogDelegate {
+                                     public ConstrainedWindowGtkDelegate {
  public:
   explicit SSLClientCertificateSelector(
       TabContents* parent,
@@ -50,7 +50,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   // SSLClientAuthObserver implementation:
   virtual void OnCertSelectedByNotification();
 
-  // ConstrainedDialogDelegate implementation:
+  // ConstrainedWindowGtkDelegate implementation:
   virtual GtkWidget* GetWidgetRoot() { return root_widget_.get(); }
   virtual GtkWidget* GetFocusWidget();
   virtual void DeleteDelegate();
@@ -195,7 +195,7 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Show() {
   DCHECK(!window_);
-  window_ = parent_->CreateConstrainedDialog(this);
+  window_ = new ConstrainedWindowGtk(parent_, this);
 }
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {

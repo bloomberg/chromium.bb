@@ -181,8 +181,9 @@ void ShowSSLClientCertificateSelector(
     CFRelease(sslPolicy);
   }
 
-  window_ =
-      parent->CreateConstrainedDialog(new ConstrainedSFChooseIdentityPanel(
+  window_ = new ConstrainedWindowMac(
+      parent,
+      new ConstrainedSFChooseIdentityPanel(
           panel, self,
           @selector(sheetDidEnd:returnCode:context:),
           identities_, title));

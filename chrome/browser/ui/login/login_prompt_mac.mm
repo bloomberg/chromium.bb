@@ -71,7 +71,7 @@ class LoginHandlerMac : public LoginHandler,
     // control).  However, that's OK since any UI interaction in those functions
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
-    SetDialog(GetTabContentsForLogin()->CreateConstrainedDialog(this));
+    SetDialog(new ConstrainedWindowMac(GetTabContentsForLogin(), this));
 
     NotifyAuthNeeded();
   }

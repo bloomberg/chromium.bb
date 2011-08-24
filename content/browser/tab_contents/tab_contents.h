@@ -293,12 +293,9 @@ class TabContents : public PageNavigator,
 
   // Window management ---------------------------------------------------------
 
-  // Create a new window constrained to this TabContents' clip and visibility.
-  // The window is initialized by using the supplied delegate to obtain basic
-  // window characteristics, and the supplied view for the content. Note that
-  // the returned ConstrainedWindow might not yet be visible.
-  ConstrainedWindow* CreateConstrainedDialog(
-      ConstrainedWindowDelegate* delegate);
+  // Adds the given window to the list of child windows. The window will notify
+  // via WillClose() when it is being destroyed.
+  void AddConstrainedDialog(ConstrainedWindow* window);
 
   // Adds a new tab or window with the given already-created contents.
   void AddNewContents(TabContents* new_contents,
@@ -741,10 +738,6 @@ class TabContents : public PageNavigator,
   // InitWithExistingID.
   virtual bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host);
-
-  // Adds the given window to the list of child windows. The window will notify
-  // via WillClose() when it is being destroyed.
-  void AddConstrainedDialog(ConstrainedWindow* window);
 
   // Stores random bits of data for others to associate with this object.
   // WARNING: this needs to be deleted after NavigationController.

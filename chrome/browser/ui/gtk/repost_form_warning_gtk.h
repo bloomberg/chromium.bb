@@ -19,11 +19,11 @@ class RepostFormWarningController;
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class RepostFormWarningGtk : public ConstrainedDialogDelegate {
+class RepostFormWarningGtk : public ConstrainedWindowGtkDelegate {
  public:
   RepostFormWarningGtk(GtkWindow* parent, TabContents* tab_contents);
 
-  // ConstrainedDialogDelegate methods
+  // ConstrainedWindowGtkDelegate methods
   virtual GtkWidget* GetWidgetRoot();
   virtual GtkWidget* GetFocusWidget();
   virtual void DeleteDelegate();

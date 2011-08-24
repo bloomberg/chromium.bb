@@ -8,28 +8,6 @@
 
 #include "build/build_config.h"
 
-// The different platform specific subclasses use different delegates for their
-// dialogs.
-#if defined(OS_WIN)
-namespace views {
-class WidgetDelegate;
-class DialogDelegate;
-}
-typedef views::WidgetDelegate ConstrainedWindowDelegate;
-typedef views::DialogDelegate ConstrainedDialogDelegate;
-#elif defined(OS_MACOSX)
-class ConstrainedWindowMacDelegate;
-class ConstrainedWindowMacDelegateSystemSheet;
-typedef ConstrainedWindowMacDelegate ConstrainedWindowDelegate;
-typedef ConstrainedWindowMacDelegateSystemSheet ConstrainedDialogDelegate;
-#elif defined(TOOLKIT_USES_GTK)
-class ConstrainedWindowGtkDelegate;
-typedef ConstrainedWindowGtkDelegate ConstrainedWindowDelegate;
-typedef ConstrainedWindowGtkDelegate ConstrainedDialogDelegate;
-#endif
-
-class TabContents;
-
 ///////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindow
 //
@@ -38,13 +16,6 @@ class TabContents;
 //
 class ConstrainedWindow {
  public:
-  // Create a Constrained Window that contains a platform specific client
-  // area. Typical uses include the HTTP Basic Auth prompt. The caller must
-  // provide a delegate to describe the content area and to respond to events.
-  static ConstrainedWindow* CreateConstrainedDialog(
-      TabContents* owner,
-      ConstrainedWindowDelegate* delegate);
-
   // Makes the Constrained Window visible. Only one Constrained Window is shown
   // at a time per tab.
   virtual void ShowConstrainedWindow() = 0;

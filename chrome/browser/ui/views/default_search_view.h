@@ -37,7 +37,7 @@ class View;
 class DefaultSearchView
     : public views::View,
       public views::ButtonListener,
-      public ConstrainedDialogDelegate {
+      public views::DialogDelegate {
  public:
   // Takes ownership of |proposed_default_turl|.
   static void Show(TabContents* tab_contents,
@@ -55,7 +55,7 @@ class DefaultSearchView
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // ConstrainedDialogDelegate:
+  // views::DialogDelegate:
   // TODO(beng): Figure out why adding OVERRIDE to these methods annoys Clang.
   virtual std::wstring GetWindowTitle() const;
   virtual views::View* GetInitiallyFocusedView();

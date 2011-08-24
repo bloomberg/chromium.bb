@@ -130,7 +130,7 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
       new ConstrainedHtmlDelegateMac(profile, delegate);
   // Deleted when ConstrainedHtmlDelegateMac::OnDialogClose() runs.
   ConstrainedWindow* constrained_window =
-      overshadowed->CreateConstrainedDialog(constrained_delegate);
+      new ConstrainedWindowMac(overshadowed, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_window;
 }

@@ -30,6 +30,7 @@ class TextButton;
 }
 
 class CertificateSelectorTableModel;
+class TabContents;
 
 class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public views::DialogDelegateView,

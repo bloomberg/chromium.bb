@@ -12,9 +12,8 @@
 #include "ui/gfx/rect.h"
 #include "views/widget/widget.h"
 
-class ConstrainedTabContentsWindowDelegate;
-class ConstrainedWindowAnimation;
-class ConstrainedWindowFrameView;
+class TabContents;
+
 namespace views {
 namespace internal {
 class NativeWidgetDelegate;

@@ -32,7 +32,7 @@ class TextButton;
 // cookies of the current tab contents. To display the dialog, invoke
 // ShowCollectedCookiesDialog() on the delegate of the tab contents wrapper's
 // content settings tab helper.
-class CollectedCookiesWin : public ConstrainedDialogDelegate,
+class CollectedCookiesWin : public views::DialogDelegate,
                             public NotificationObserver,
                             public views::ButtonListener,
                             public views::TabbedPaneListener,
@@ -43,7 +43,7 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
   CollectedCookiesWin(gfx::NativeWindow parent_window,
                       TabContents* tab_contents);
 
-  // ConstrainedDialogDelegate:
+  // views::DialogDelegate:
   virtual std::wstring GetWindowTitle() const OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual std::wstring GetDialogButtonLabel(

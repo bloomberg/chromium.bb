@@ -28,11 +28,6 @@ RepostFormWarningController::~RepostFormWarningController() {
   Cancel();
 }
 
-void RepostFormWarningController::Show(
-    ConstrainedWindowDelegate* window_delegate) {
-  window_ = tab_contents_->CreateConstrainedDialog(window_delegate);
-}
-
 void RepostFormWarningController::Cancel() {
   if (tab_contents_) {
     tab_contents_->controller().CancelPendingReload();
