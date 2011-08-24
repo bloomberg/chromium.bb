@@ -517,8 +517,11 @@ extern const char kRemoteAccessClientFirewallTraversal[];
 extern const char kRemoteAccessHostFirewallTraversal[];
 
 extern const char kCloudPrintServiceURL[];
+extern const char kCloudPrintSigninURL[];
 extern const char kCloudPrintDialogWidth[];
 extern const char kCloudPrintDialogHeight[];
+extern const char kCloudPrintSigninDialogWidth[];
+extern const char kCloudPrintSigninDialogHeight[];
 extern const char kCloudPrintProxyEnabled[];
 extern const char kCloudPrintProxyId[];
 extern const char kCloudPrintAuthToken[];

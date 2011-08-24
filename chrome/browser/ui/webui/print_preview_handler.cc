@@ -29,6 +29,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/cloud_print_signin_dialog.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
 #if !defined(OS_CHROMEOS)
@@ -426,7 +427,7 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("morePrinters",
       NewCallback(this, &PrintPreviewHandler::HandleShowSystemDialog));
   web_ui_->RegisterMessageCallback("signIn",
-      NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
+      NewCallback(this, &PrintPreviewHandler::HandleSignin));
   web_ui_->RegisterMessageCallback("addCloudPrinter",
       NewCallback(this, &PrintPreviewHandler::HandleManageCloudPrint));
   web_ui_->RegisterMessageCallback("manageCloudPrinters",
@@ -648,6 +649,10 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
       NewRunnableMethod(task.get(),
                         &PrintSystemTaskProxy::GetPrinterCapabilities,
                         printer_name));
+}
+
+void PrintPreviewHandler::HandleSignin(const ListValue*) {
+  cloud_print_signin_dialog::CreateCloudPrintSigninDialog(preview_tab());
 }
 
 void PrintPreviewHandler::HandleManageCloudPrint(const ListValue*) {

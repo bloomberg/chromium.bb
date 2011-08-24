@@ -15,6 +15,10 @@
 #include "googleurl/src/gurl.h"
 
 const char kDefaultCloudPrintServiceURL[] = "https://www.google.com/cloudprint";
+const char kDefaultCloudPrintSigninURL[] =
+    "https://www.google.com/accounts/ServiceLogin?"
+    "service=cloudprint&continue=https%3A%2F%2Fwww.google.com%2Fcloudprint";
+
 const char kLearnMoreURL[] =
     "https://www.google.com/support/cloudprint";
 const char kTestPageURL[] =
@@ -23,11 +27,16 @@ const char kTestPageURL[] =
 void CloudPrintURL::RegisterPreferences() {
   DCHECK(profile_);
   PrefService* pref_service = profile_->GetPrefs();
-  if (pref_service->FindPreference(prefs::kCloudPrintServiceURL))
-    return;
-  pref_service->RegisterStringPref(prefs::kCloudPrintServiceURL,
-                                   kDefaultCloudPrintServiceURL,
-                                   PrefService::UNSYNCABLE_PREF);
+  if (!pref_service->FindPreference(prefs::kCloudPrintServiceURL)) {
+    pref_service->RegisterStringPref(prefs::kCloudPrintServiceURL,
+                                     kDefaultCloudPrintServiceURL,
+                                     PrefService::UNSYNCABLE_PREF);
+  }
+  if (!pref_service->FindPreference(prefs::kCloudPrintSigninURL)) {
+    pref_service->RegisterStringPref(prefs::kCloudPrintSigninURL,
+                                     kDefaultCloudPrintSigninURL,
+                                     PrefService::UNSYNCABLE_PREF);
+  }
 }
 
 // Returns the root service URL for the cloud print service.  The default is to
@@ -45,6 +54,15 @@ GURL CloudPrintURL::GetCloudPrintServiceURL() {
         profile_->GetPrefs()->GetString(prefs::kCloudPrintServiceURL));
   }
   return cloud_print_service_url;
+}
+
+GURL CloudPrintURL::GetCloudPrintSigninURL() {
+  DCHECK(profile_);
+  RegisterPreferences();
+
+  GURL cloud_print_signin_url = GURL(
+      profile_->GetPrefs()->GetString(prefs::kCloudPrintSigninURL));
+  return google_util::AppendGoogleLocaleParam(cloud_print_signin_url);
 }
 
 GURL CloudPrintURL::GetCloudPrintServiceDialogURL() {

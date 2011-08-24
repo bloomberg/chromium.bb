@@ -3467,6 +3467,8 @@
         'browser/ui/webui/chromeos/sim_unlock_ui.h',
         'browser/ui/webui/chromeos/system_info_ui.cc',
         'browser/ui/webui/chromeos/system_info_ui.h',
+        'browser/ui/webui/cloud_print_signin_dialog.cc',
+        'browser/ui/webui/cloud_print_signin_dialog.h',
         'browser/ui/webui/collected_cookies_ui_delegate.cc',
         'browser/ui/webui/collected_cookies_ui_delegate.h',
         'browser/ui/webui/constrained_html_ui.cc',

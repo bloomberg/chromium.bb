@@ -93,6 +93,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // is unused.
   void HandleShowSystemDialog(const base::ListValue* args);
 
+  // Brings up a dialog to allow the user to sign into cloud print.
+  // |args| is unused.
+  void HandleSignin(const base::ListValue* args);
+
   // Brings up a web page to allow the user to configure cloud print.
   // |args| is unused.
   void HandleManageCloudPrint(const base::ListValue* args);

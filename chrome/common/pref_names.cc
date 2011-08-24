@@ -1411,9 +1411,16 @@ const char kRemoteAccessHostFirewallTraversal[] =
 // The root URL of the cloud print service.
 const char kCloudPrintServiceURL[] = "cloud_print.service_url";
 
+// The URL to use to sign in to cloud print.
+const char kCloudPrintSigninURL[] = "cloud_print.signin_url";
+
 // The last requested size of the dialog as it was closed.
 const char kCloudPrintDialogWidth[] = "cloud_print.dialog_size.width";
 const char kCloudPrintDialogHeight[] = "cloud_print.dialog_size.height";
+const char kCloudPrintSigninDialogWidth[] =
+    "cloud_print.signin_dialog_size.width";
+const char kCloudPrintSigninDialogHeight[] =
+    "cloud_print.signin_dialog_size.height";
 
 // The list of BackgroundContents that should be loaded when the browser
 // launches.
