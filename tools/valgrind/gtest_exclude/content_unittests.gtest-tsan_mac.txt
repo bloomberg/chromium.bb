@@ -1,2 +1,0 @@
-# Times out, http://crbug.com/93425
-GeolocationGatewayDataProviderCommonTest.StartThread

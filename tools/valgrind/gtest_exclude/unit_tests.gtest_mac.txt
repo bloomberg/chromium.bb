@@ -34,4 +34,3 @@ ConnectionTesterTest.DeleteWhileInProgress
 
 # http://crbug.com/93245
 GeolocationWifiDataProviderCommonTest.*
-GeolocationGatewayDataProviderCommonTest.*
