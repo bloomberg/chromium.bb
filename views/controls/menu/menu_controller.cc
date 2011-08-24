@@ -267,8 +267,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   possible_drag_ = false;
   drag_in_progress_ = false;
 
-  // TODO(sky): remove volatile. Used in tracking 90860.
-  volatile bool nested_menu = showing_;
+  bool nested_menu = showing_;
   if (showing_) {
     // Only support nesting of blocking_run menus, nesting of
     // blocking/non-blocking shouldn't be needed.

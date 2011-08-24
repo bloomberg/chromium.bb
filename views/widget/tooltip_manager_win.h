@@ -90,8 +90,6 @@ class TooltipManagerWin : public TooltipManager {
   // Updates the tooltip for the specified location.
   void UpdateTooltip(const gfx::Point& location);
 
-  const Widget* widget() const { return widget_; }
-
   // Tooltip control window.
   HWND tooltip_hwnd_;
 

@@ -130,14 +130,6 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
     return false;
   }
 
-  volatile MenuItemView* root_menu_item = GetRootMenuItem();
-  if (root_menu_item->canceled_) {
-    // TODO(sky): if |canceled_| is true, controller->exit_type() should be
-    // something other than EXIT_NONE, but crash reports seem to indicate
-    // otherwise. Used in tracking 90860.
-    return false;
-  }
-
   CHECK(GetDelegate());
   gfx::Point location(p);
   ConvertPointToScreen(this, &location);
@@ -216,8 +208,7 @@ void MenuItemView::RunMenuAt(Widget* parent,
     controller->Cancel(MenuController::EXIT_ALL);
     controller = NULL;
   }
-  // TODO(sky): remove volatile, used in tracking 90860.
-  volatile bool owns_controller = false;
+  bool owns_controller = false;
   if (!controller) {
     // No menus are showing, show one.
     controller = new MenuController(true);

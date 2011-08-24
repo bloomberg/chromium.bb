@@ -12,7 +12,6 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/point.h"
-#include "views/widget/widget.h"
 
 namespace views {
 
@@ -81,8 +80,6 @@ void AeroTooltipManager::OnTimer() {
 
   // Set the position and visibility.
   if (!tooltip_showing_) {
-    // TODO(sky): remove widget_visible, used in tracking 90860.
-    volatile bool widget_visibile = widget()->IsVisible();
     ::SendMessage(tooltip_hwnd_, TTM_POPUP, 0, 0);
     ::SendMessage(tooltip_hwnd_, TTM_TRACKPOSITION, 0, MAKELPARAM(pt.x, pt.y));
     ::SendMessage(tooltip_hwnd_, TTM_TRACKACTIVATE, true, (LPARAM)&toolinfo_);
