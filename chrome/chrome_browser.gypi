@@ -2004,6 +2004,7 @@
         'browser/spellchecker/spellcheck_message_filter.h',
         'browser/spellchecker/spellcheck_profile.cc',
         'browser/spellchecker/spellcheck_profile.h',
+        'browser/spellchecker/spellcheck_profile_provider.h',
         'browser/spellchecker/spellchecker_linux.cc',
         'browser/spellchecker/spellchecker_mac.mm',
         'browser/spellchecker/spellchecker_platform_engine.h',

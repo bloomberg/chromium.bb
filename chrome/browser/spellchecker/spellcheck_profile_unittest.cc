@@ -14,7 +14,7 @@ namespace {
 
 class MockSpellCheckHost : public SpellCheckHost {
  public:
-  MOCK_METHOD0(UnsetObserver, void());
+  MOCK_METHOD0(UnsetProfile, void());
   MOCK_METHOD1(InitForRenderer, void(RenderProcessHost* process));
   MOCK_METHOD1(AddWord, void(const std::string& word));
   MOCK_CONST_METHOD0(GetDictionaryFile, const base::PlatformFile&());
@@ -34,7 +34,7 @@ class TestingSpellCheckProfile : public SpellCheckProfile {
   }
 
   virtual SpellCheckHost* CreateHost(
-      SpellCheckHostObserver* observer,
+      SpellCheckProfileProvider* profile,
       const std::string& language,
       net::URLRequestContextGetter* request_context,
       SpellCheckHostMetrics* metrics) {
@@ -51,7 +51,7 @@ class TestingSpellCheckProfile : public SpellCheckProfile {
   }
 
   void SetHostToBeCreated(MockSpellCheckHost* host) {
-    EXPECT_CALL(*host, UnsetObserver()).Times(1);
+    EXPECT_CALL(*host, UnsetProfile()).Times(1);
     EXPECT_CALL(*host, IsReady()).WillRepeatedly(testing::Return(true));
     returning_from_create_ = host;
   }

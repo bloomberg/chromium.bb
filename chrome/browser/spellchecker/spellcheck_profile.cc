@@ -22,7 +22,7 @@ SpellCheckProfile::SpellCheckProfile()
 
 SpellCheckProfile::~SpellCheckProfile() {
   if (host_.get())
-    host_->UnsetObserver();
+    host_->UnsetProfile();
 }
 
 SpellCheckHost* SpellCheckProfile::GetHost() {
@@ -44,7 +44,7 @@ SpellCheckProfile::ReinitializeResult SpellCheckProfile::ReinitializeHost(
 
   bool host_deleted = false;
   if (host_.get()) {
-    host_->UnsetObserver();
+    host_->UnsetProfile();
     host_ = NULL;
     host_deleted = true;
   }
@@ -59,12 +59,12 @@ SpellCheckProfile::ReinitializeResult SpellCheckProfile::ReinitializeHost(
 }
 
 SpellCheckHost* SpellCheckProfile::CreateHost(
-    SpellCheckHostObserver* observer,
+    SpellCheckProfileProvider* provider,
     const std::string& language,
     net::URLRequestContextGetter* request_context,
     SpellCheckHostMetrics* metrics) {
   return SpellCheckHost::Create(
-      observer, language, request_context, metrics);
+      provider, language, request_context, metrics);
 }
 
 bool SpellCheckProfile::IsTesting() const {

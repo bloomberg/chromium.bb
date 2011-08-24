@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/spellchecker/spellcheck_host_observer.h"
+#include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
 
 class Profile;
 class SpellCheckHost;
@@ -39,7 +39,7 @@ class URLRequestContextGetter;
 // The class is intended to be owned and managed by ProfileImpl internally.
 // Any usable APIs are provided by SpellCheckHost interface,
 // which can be retrieved from Profile::GetSpellCheckHost().
-class SpellCheckProfile : public SpellCheckHostObserver {
+class SpellCheckProfile : public SpellCheckProfileProvider {
  public:
   // Return value of ReinitializeHost()
   enum ReinitializeResult {
@@ -81,7 +81,7 @@ class SpellCheckProfile : public SpellCheckHostObserver {
   // This should be called only if the metrics recording is active.
   void StartRecordingMetrics(bool spellcheck_enabled);
 
-  // SpellCheckHostObserver implementation.
+  // SpellCheckProfileProvider implementation.
   virtual void SpellCheckHostInitialized(CustomWordList* custom_words);
   virtual const CustomWordList& GetCustomWords() const;
   virtual void CustomWordAddedLocally(const std::string& word);
@@ -89,7 +89,7 @@ class SpellCheckProfile : public SpellCheckHostObserver {
  protected:
   // Only tests should override this.
   virtual SpellCheckHost* CreateHost(
-      SpellCheckHostObserver* observer,
+      SpellCheckProfileProvider* provider,
       const std::string& language,
       net::URLRequestContextGetter* request_context,
       SpellCheckHostMetrics* metrics);
@@ -106,6 +106,8 @@ class SpellCheckProfile : public SpellCheckHostObserver {
 
   // In-memory cache of the custom words file.
   scoped_ptr<CustomWordList> custom_words_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpellCheckProfile);
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PROFILE_H_

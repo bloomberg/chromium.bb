@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
-#include "chrome/browser/spellchecker/spellcheck_host_observer.h"
+#include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "content/common/url_fetcher.h"
@@ -28,7 +28,7 @@
 // To download a dictionary and initialize it without blocking the UI thread,
 // this class also implements the URLFetcher::Delegate() interface. This
 // initialization status is notified to the UI thread through the
-// SpellCheckHostObserver interface.
+// SpellCheckProfileProvider interface.
 //
 // We expect a profile creates an instance of this class through a factory
 // method, SpellCheckHost::Create() and uses only the SpellCheckHost interface
@@ -41,7 +41,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
                            public URLFetcher::Delegate,
                            public NotificationObserver {
  public:
-  SpellCheckHostImpl(SpellCheckHostObserver* observer,
+  SpellCheckHostImpl(SpellCheckProfileProvider* profile,
                      const std::string& language,
                      net::URLRequestContextGetter* request_context_getter,
                      SpellCheckHostMetrics* metrics);
@@ -49,7 +49,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   void Initialize();
 
   // SpellCheckHost implementation
-  virtual void UnsetObserver();
+  virtual void UnsetProfile();
   virtual void InitForRenderer(RenderProcessHost* process);
   virtual void AddWord(const std::string& word);
   virtual const base::PlatformFile& GetDictionaryFile() const;
@@ -57,7 +57,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   virtual bool IsUsingPlatformChecker() const;
 
  private:
-  typedef SpellCheckHostObserver::CustomWordList CustomWordList;
+  typedef SpellCheckProfileProvider::CustomWordList CustomWordList;
 
   // These two classes can destruct us.
   friend class BrowserThread;
@@ -79,15 +79,15 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   void InitializeOnFileThread();
 
-  // Inform |observer_| that initialization has finished.
+  // Inform |profile_| that initialization has finished.
   // |custom_words| holds the custom word list which was
   // loaded at the file thread.
-  void InformObserverOfInitializationWithCustomWords(
+  void InformProfileOfInitializationWithCustomWords(
       CustomWordList* custom_words);
 
-  // An alternative version of InformObserverOfInitializationWithCustomWords()
+  // An alternative version of InformProfileOfInitializationWithCustomWords()
   // which implies empty |custom_words|.
-  void InformObserverOfInitialization();
+  void InformProfileOfInitialization();
 
   // If |dictionary_file_| is missing, we attempt to download it.
   void DownloadDictionary();
@@ -111,7 +111,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
                                   const net::ResponseCookies& cookies,
                                   const std::string& data);
 
-  // NotificationObserver implementation.
+  // NotificationProfile implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -125,7 +125,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   bool VerifyBDict(const FilePath& path) const;
 
   // May be NULL.
-  SpellCheckHostObserver* observer_;
+  SpellCheckProfileProvider* profile_;
 
   // The desired location of the dictionary file (whether or not t exists yet).
   FilePath bdict_file_path_;
@@ -160,6 +160,8 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // An optional metrics counter given by the constructor.
   SpellCheckHostMetrics* metrics_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpellCheckHostImpl);
 };
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_HOST_IMPL_H_

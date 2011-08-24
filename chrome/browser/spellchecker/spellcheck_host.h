@@ -21,7 +21,7 @@ class WaitableEvent;
 class Profile;
 class RenderProcessHost;
 class SpellCheckHostMetrics;
-class SpellCheckHostObserver;
+class SpellCheckProfileProvider;
 
 namespace net {
 class URLRequestContextGetter;
@@ -36,7 +36,7 @@ class URLRequestContextGetter;
 // * Listing available languages for a Profile object;
 // * Accepting an observer to reacting the state change of the object.
 //   You can also remove the observer from the SpellCheckHost object.
-//   The object should implement SpellCheckHostObserver interface.
+//   The object should implement SpellCheckProfileProvider interface.
 //
 // The following snippet describes how to use this class,
 //   std::vector<std::string> languages;
@@ -63,14 +63,14 @@ class SpellCheckHost
 
   // Creates the instance of SpellCheckHost implementation object.
   static scoped_refptr<SpellCheckHost> Create(
-      SpellCheckHostObserver* observer,
+      SpellCheckProfileProvider* profile,
       const std::string& language,
       net::URLRequestContextGetter* request_context_getter,
       SpellCheckHostMetrics* metrics);
 
-  // Clears an observer which is set on creation.
+  // Clears a profile which is set on creation.
   // Used to prevent calling back to a deleted object.
-  virtual void UnsetObserver() = 0;
+  virtual void UnsetProfile() = 0;
 
   // Pass the renderer some basic intialization information. Note that the
   // renderer will not load Hunspell until it needs to.
