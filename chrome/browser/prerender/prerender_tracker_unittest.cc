@@ -78,7 +78,7 @@ class PrerenderTrackerTest : public testing::Test {
 };
 
 // Check that a non-existant RenderView is handled correctly.
-TEST_F(PrerenderTrackerTest, FLAKY_PrerenderTrackerNull) {
+TEST_F(PrerenderTrackerTest, PrerenderTrackerNull) {
   FinalStatus final_status;
   EXPECT_FALSE(prerender_tracker()->TryUse(0, 0));
   EXPECT_FALSE(prerender_tracker()->TryCancel(0, 0, FINAL_STATUS_HTTPS));
