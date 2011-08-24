@@ -2359,6 +2359,8 @@
         'browser/ui/cocoa/browser_window_controller_private.h',
         'browser/ui/cocoa/browser_window_controller_private.mm',
         'browser/ui/cocoa/browser_window_factory.mm',
+	'browser/ui/cocoa/browser_window_utils.h',
+	'browser/ui/cocoa/browser_window_utils.mm',
         'browser/ui/cocoa/bubble_view.h',
         'browser/ui/cocoa/bubble_view.mm',
         'browser/ui/cocoa/bug_report_window_controller.h',
