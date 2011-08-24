@@ -108,6 +108,10 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   // processed so that GDK doesn't get to them.
   void InitializeEventsToCapture(void);
 
+  // The event source for X events (used only when GTK event processing is
+  // disabled).
+  GSource* x_source_;
+
   // The event source for GDK events.
   GSource* gdksource_;
 
