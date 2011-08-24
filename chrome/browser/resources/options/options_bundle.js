@@ -68,6 +68,10 @@
 </if>
 <include src="import_data_overlay.js"></include>
 <include src="instant_confirm_overlay.js"></include>
+<if expr="pp_ifdef('enable_web_intents')">
+  <include src="intents_list.js"></include>
+  <include src="intents_view.js"></include>
+</if>
 <include src="language_add_language_overlay.js"></include>
 <include src="language_list.js"></include>
 <include src="language_options.js"></include>
