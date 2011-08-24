@@ -41,7 +41,7 @@ deps = {
     'src/third_party/cacheinvalidation/files/src/google':
         Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@2bd4562d201c4e0426771543ddaf4bdc16f91d6e',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/deps/ffmpeg/source.git@09b503920e78fec158cba1d1077a26cbbcf74419',
+        Var('git_url') + '/chromium/deps/ffmpeg/source.git@26e6c8ac949c3a28122fb1a8248bc57d9c461185',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@1cde08e295604898d14367eda0414ade8121ec43',
     'src/third_party/hunspell':
@@ -71,11 +71,11 @@ deps = {
     'src/third_party/sfntly/src/sfntly':
         Var('git_url') + '/external/sfntly/cpp/src/sfntly.git@7febf0c3b90ff02d218507d86e2ea7bd907cd35a',
     'src/third_party/skia/gpu':
-        Var('git_url') + '/external/skia/gpu.git@4df18f72a0810eb25fd0f2cea8df75a68d4c613c',
+        Var('git_url') + '/external/skia/gpu.git@bcea08a616803506338feef4497a36cf009a3e4c',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@a244157250c91c9cb57a3e6ca7b64e0d35daebcb',
+        Var('git_url') + '/external/skia/include.git@b5fa1d3b9d1165abaf41e842f0372c46fe39d276',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@94fb6900ae582251ee637f46d47702e9e0f38ef7',
+        Var('git_url') + '/external/skia/src.git@454aadd1dba42a701e7bb9bc73f7c7e76a99700f',
     'src/third_party/skia/third_party/glu':
         Var('git_url') + '/external/skia/third_party/glu.git@c988402115946ed3cb7fb347f6eef4a8cec543e2',
     'src/third_party/snappy/src':
@@ -144,7 +144,7 @@ deps_os = {
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@06a117a90c15174436bfa20ceebbfdf43b7eb820',
         'src/third_party/ffmpeg/binaries/chromium/win/ia32':
-            Var('git_url') + '/chromium/deps/ffmpeg/binaries/win.git@3c7e8f74a13e5691041862884f4e7122e9cec85b',
+            Var('git_url') + '/chromium/deps/ffmpeg/binaries/win.git@70a0e0fcfaa17aa71ec403c3c7ae78afa91fb1d7',
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@856e79c6109d4f0abe93c01d4c22419e33c9bee7',
         'src/third_party/mingw-w64/mingw/bin':
