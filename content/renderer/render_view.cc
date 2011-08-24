@@ -4417,11 +4417,16 @@ void RenderView::zoomLimitsChanged(double minimum_level, double maximum_level) {
 
 void RenderView::zoomLevelChanged() {
   bool remember = !webview()->mainFrame()->document().isPluginDocument();
-
+#if defined(TOUCH_UI)
+  float zoom_level =
+      WebView::zoomFactorToZoomLevel(webview()->pageScaleFactor());
+#else
+  float zoom_level = webview()->zoomLevel();
+#endif
   // Tell the browser which url got zoomed so it can update the menu and the
   // saved values if necessary
   Send(new ViewHostMsg_DidZoomURL(
-      routing_id_, webview()->zoomLevel(), remember,
+      routing_id_, zoom_level, remember,
       GURL(webview()->mainFrame()->document().url())));
 }
 
