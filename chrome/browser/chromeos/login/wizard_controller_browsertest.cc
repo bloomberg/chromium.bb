@@ -4,10 +4,10 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/mock_enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
-#include "chrome/browser/chromeos/login/mock_enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/mock_eula_screen.h"
 #include "chrome/browser/chromeos/login/mock_network_screen.h"
 #include "chrome/browser/chromeos/login/mock_update_screen.h"

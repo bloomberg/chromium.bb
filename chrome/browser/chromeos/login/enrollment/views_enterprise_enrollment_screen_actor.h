@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_VIEWS_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_VIEWS_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_VIEWS_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_VIEWS_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/enterprise_enrollment_screen_actor.h"
-#include "chrome/browser/chromeos/login/enterprise_enrollment_view.h"
+#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 
 namespace chromeos {
@@ -48,4 +48,4 @@ class ViewsEnterpriseEnrollmentScreenActor
 };
 
 }  // namespace chromeos
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEWS_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_VIEWS_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_

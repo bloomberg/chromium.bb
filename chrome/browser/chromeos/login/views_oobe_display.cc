@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/views_enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/views_enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/views_eula_screen_actor.h"
 #include "chrome/browser/chromeos/login/views_network_screen_actor.h"
 #include "chrome/browser/chromeos/login/views_oobe_display.h"

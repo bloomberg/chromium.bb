@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
-#include "chrome/browser/chromeos/login/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
@@ -41,8 +41,8 @@
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
-using chromeos::UserManager;
 using chromeos::UpdateLibrary;
+using chromeos::UserManager;
 
 namespace {
 
