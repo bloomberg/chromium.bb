@@ -59,6 +59,7 @@ class TabContentsWrapperDelegate;
 class TabSpecificContentSettings;
 class ThumbnailGenerator;
 class TranslateTabHelper;
+class WebIntentPickerController;
 
 namespace safe_browsing {
 class ClientSideDetectionHost;
@@ -195,6 +196,10 @@ class TabContentsWrapper : public TabContentsObserver,
     return restore_tab_helper_.get();
   }
 
+  WebIntentPickerController* web_intent_picker_controller() {
+    return web_intent_picker_controller_.get();
+  }
+
   // Overrides -----------------------------------------------------------------
 
   // TabContentsObserver overrides:
@@ -326,6 +331,9 @@ class TabContentsWrapper : public TabContentsObserver,
 
   // Handles print job for this contents.
   scoped_ptr<printing::PrintViewManager> print_view_manager_;
+
+  // Handles displaying a web intents picker to the user.
+  scoped_ptr<WebIntentPickerController> web_intent_picker_controller_;
 
   // Handles IPCs related to SafeBrowsing client-side phishing detection.
   scoped_ptr<safe_browsing::ClientSideDetectionHost>
