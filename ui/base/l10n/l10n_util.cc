@@ -36,7 +36,8 @@
 
 namespace {
 
-static const FilePath::CharType kLocaleFileExtension[] = ".pak";
+static const FilePath::CharType kLocaleFileExtension[] =
+    FILE_PATH_LITERAL(".pak");
 
 static const char* const kAcceptLanguageList[] = {
   "af",     // Afrikaans
