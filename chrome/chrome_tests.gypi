@@ -2657,6 +2657,11 @@
             'browser/ui/webui/print_preview.js',
           ],
         }],
+        ['touchui==1', {
+          'sources': [
+            'browser/ui/touch/keyboard/keyboard_manager_browsertest.cc',
+          ],
+        }],
         ['file_manager_extension==0', {
           'sources!': [
             'browser/ui/views/file_manager_dialog_browsertest.cc',

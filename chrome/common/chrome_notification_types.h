@@ -847,6 +847,11 @@ enum {
   NOTIFICATION_WEB_STORE_PROMO_LOADED,
 
 #if defined(TOUCH_UI)
+  // Sent when the keyboard visibility has changed. Used for testing purposes
+  // only. Source is the keyboard manager, and Details is a boolean indicating
+  // whether the keyboard is visibile or not.
+  NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
+
   // Sent when an API for hiding the keyboard is invoked from JavaScript code.
   NOTIFICATION_HIDE_KEYBOARD_INVOKED,
 

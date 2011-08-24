@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -212,10 +212,22 @@ void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
 
   MoveToTop();
   Show();
+
+  bool visible = true;
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
+      Source<KeyboardWidget>(this),
+      Details<bool>(&visible));
 }
 
 void KeyboardWidget::Hide() {
   animation_->Hide();
+
+  bool visible = false;
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
+      Source<KeyboardWidget>(this),
+      Details<bool>(&visible));
 }
 
 void KeyboardWidget::SetTarget(views::Widget* target) {

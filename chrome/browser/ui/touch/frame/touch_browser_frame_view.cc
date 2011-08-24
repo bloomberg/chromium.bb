@@ -10,7 +10,6 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/ime/text_input_client.h"
-#include "views/window/hit_test.h"
 
 // static
 const char TouchBrowserFrameView::kViewClassName[] =
