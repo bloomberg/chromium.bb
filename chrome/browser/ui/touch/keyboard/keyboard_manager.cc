@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/touch/keyboard/keyboard_manager.h"
 
+#include "base/json/json_writer.h"
+#include "base/values.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -31,22 +34,8 @@ namespace {
 
 const int kDefaultKeyboardHeight = 300;
 const int kKeyboardSlideDuration = 300;  // In milliseconds
-
-PropertyAccessor<bool>* GetFocusedStateAccessor() {
-  static PropertyAccessor<bool> state;
-  return &state;
-}
-
-// Returns whether the keyboard visibility should be affected by this tab.
-bool TabContentsCanAffectKeyboard(const TabContents* tab_contents) {
-  // There may not be a browser, e.g. for the login window. But if there is
-  // a browser, then |tab_contents| should be the active tab.
-  Browser* browser = Browser::GetBrowserForController(
-      &tab_contents->controller(), NULL);
-  return browser == NULL ||
-        (browser == BrowserList::GetLastActive() &&
-         browser->GetSelectedTabContents() == tab_contents);
-}
+const char kOnTextInputTypeChanged[] =
+    "experimental.input.onTextInputTypeChanged";
 
 }  // namespace
 
@@ -82,17 +71,7 @@ KeyboardManager::KeyboardManager()
   animation_->SetTweenType(ui::Tween::LINEAR);
   animation_->SetSlideDuration(kKeyboardSlideDuration);
 
-  // Start listening to notifications to maintain the keyboard visibility, size
-  // etc.
-  registrar_.Add(this,
-                 content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 NotificationService::AllSources());
+  views::TextInputTypeTracker::GetInstance()->AddTextInputTypeObserver(this);
   registrar_.Add(this,
                  chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
                  NotificationService::AllSources());
@@ -116,6 +95,7 @@ KeyboardManager::KeyboardManager()
 KeyboardManager::~KeyboardManager() {
   if (target_)
     target_->RemoveObserver(this);
+  views::TextInputTypeTracker::GetInstance()->RemoveTextInputTypeObserver(this);
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::GetInstance();
@@ -175,14 +155,6 @@ void KeyboardManager::AnimationEnded(const ui::Animation* animation) {
     Widget::Hide();
 }
 
-void KeyboardManager::OnBrowserAdded(const Browser* browser) {
-  browser->tabstrip_model()->AddObserver(this);
-}
-
-void KeyboardManager::OnBrowserRemoved(const Browser* browser) {
-  browser->tabstrip_model()->RemoveObserver(this);
-}
-
 bool KeyboardManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(KeyboardManager, message)
@@ -198,27 +170,62 @@ void KeyboardManager::OnRequest(
       dom_view_->tab_contents()->render_view_host());
 }
 
-void KeyboardManager::ActiveTabChanged(TabContentsWrapper* old_contents,
-                                       TabContentsWrapper* new_contents,
-                                       int index,
-                                       bool user_gesture) {
-  TabContents* contents = new_contents->tab_contents();
-  if (!TabContentsCanAffectKeyboard(contents))
-    return;
+void KeyboardManager::TextInputTypeChanged(ui::TextInputType type,
+                                           views::Widget *widget) {
+  // Send onTextInputTypeChanged event to keyboard extension.
+  ListValue args;
+  switch (type) {
+    case ui::TEXT_INPUT_TYPE_NONE: {
+      args.Append(Value::CreateStringValue("none"));
+      break;
+    }
+    case ui::TEXT_INPUT_TYPE_TEXT: {
+      args.Append(Value::CreateStringValue("text"));
+      break;
+    }
+    case ui::TEXT_INPUT_TYPE_PASSWORD: {
+      args.Append(Value::CreateStringValue("password"));
+      break;
+    }
+    case ui::TEXT_INPUT_TYPE_SEARCH: {
+      args.Append(Value::CreateStringValue("search"));
+      break;
+    }
+    case ui::TEXT_INPUT_TYPE_EMAIL: {
+      args.Append(Value::CreateStringValue("email"));
+      break;
+    }
+    case ui::TEXT_INPUT_TYPE_NUMBER: {
+      args.Append(Value::CreateStringValue("number"));
+      break;
+    }
+    case ui::TEXT_INPUT_TYPE_TELEPHONE: {
+      args.Append(Value::CreateStringValue("tel"));
+      break;
+    }
+    case ui::TEXT_INPUT_TYPE_URL: {
+      args.Append(Value::CreateStringValue("url"));
+      break;
+    }
+    default: {
+      NOTREACHED();
+      args.Append(Value::CreateStringValue("none"));
+      break;
+    }
+  }
 
-  // If the tab contents does not have the focus, then it should not affect the
-  // keyboard visibility.
-  views::View* view = static_cast<TabContentsViewTouch*>(contents->view());
-  views::FocusManager* fmanager = view ? view->GetFocusManager() : NULL;
-  if (!fmanager || !view->Contains(fmanager->GetFocusedView()))
-    return;
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
 
-  bool* editable = GetFocusedStateAccessor()->GetProperty(
-      contents->property_bag());
-  if (editable && *editable)
-    ShowKeyboardForWidget(view->GetWidget());
-  else
+  Profile* profile =
+      Profile::FromBrowserContext(dom_view_->tab_contents()->browser_context());
+  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
+      kOnTextInputTypeChanged, json_args, NULL, GURL());
+
+  if (type == ui::TEXT_INPUT_TYPE_NONE)
     Hide();
+  else
+    ShowKeyboardForWidget(widget);
 }
 
 Browser* KeyboardManager::GetBrowser() {
@@ -251,70 +258,7 @@ void KeyboardManager::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      // When a navigation happens, we want to hide the keyboard if the focus is
-      // in the web-page. Otherwise, the keyboard visibility should not change.
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
-      TabContents* tab_contents = controller->tab_contents();
-      GetFocusedStateAccessor()->SetProperty(tab_contents->property_bag(),
-                                             false);
-      if (!TabContentsCanAffectKeyboard(tab_contents))
-        break;
-
-      TabContentsViewTouch* view =
-          static_cast<TabContentsViewTouch*>(tab_contents->view());
-      views::FocusManager* fmanager = view->GetFocusManager();
-      views::View* focused = fmanager ? fmanager->GetFocusedView() : NULL;
-      views::TextInputClient* input =
-          focused ? focused->GetTextInputClient() : NULL;
-      // Show the keyboard if the focused view supports text-input.
-      if (input && input->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
-        ShowKeyboardForWidget(focused->GetWidget());
-      else
-        Hide();
-      break;
-    }
-
-    case content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE: {
-      // If the focus in the page moved to an editable field, then the keyboard
-      // should be visible, otherwise not.
-      TabContents* tab_contents = Source<TabContents>(source).ptr();
-      const bool editable = *Details<const bool>(details).ptr();
-      GetFocusedStateAccessor()->SetProperty(tab_contents->property_bag(),
-          editable);
-      if (!TabContentsCanAffectKeyboard(tab_contents))
-        break;
-
-      if (editable) {
-        TabContentsViewTouch* view =
-            static_cast<TabContentsViewTouch*>(tab_contents->view());
-        ShowKeyboardForWidget(view->GetWidget());
-      } else {
-        Hide();
-      }
-
-      break;
-    }
-
-    case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      // Tab content was destroyed. Forget everything about it.
-      GetFocusedStateAccessor()->DeleteProperty(
-          Source<TabContents>(source).ptr()->property_bag());
-      break;
-    }
-
     case chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED: {
-      // The keyboard is hiding itself.
-      Browser* browser = BrowserList::GetLastActive();
-      if (browser) {
-        TabContents* tab_contents = browser->GetSelectedTabContents();
-        if (tab_contents) {
-          GetFocusedStateAccessor()->SetProperty(tab_contents->property_bag(),
-              false);
-        }
-      }
-
       Hide();
       break;
     }

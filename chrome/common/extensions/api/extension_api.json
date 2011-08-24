@@ -3406,6 +3406,19 @@
             "description": "Name of the MenuItem which was activated"
           }
         ]
+      },
+      {
+        "name": "onTextInputTypeChanged",
+        "type": "function",
+        "description": "This event is sent to the virtual keyboard when the text input type is changed.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "type",
+            "enum": ["none", "text", "password", "search", "email", "number", "tel", "url"],
+            "description": "Type of the current focused input field."
+          }
+        ]
       }
     ]
   },

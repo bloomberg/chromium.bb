@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/text_input_type.h"
+#include "views/views_export.h"
 
 namespace views {
 
@@ -28,7 +29,7 @@ class TextInputTypeObserver {
 };
 
 // This class is for tracking the text input type of focused widget.
-class TextInputTypeTracker {
+class VIEWS_EXPORT TextInputTypeTracker {
  public:
   // Returns the singleton instance.
   static TextInputTypeTracker* GetInstance();

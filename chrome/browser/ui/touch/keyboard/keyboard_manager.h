@@ -8,11 +8,10 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_observer.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "views/ime/text_input_type_tracker.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
@@ -39,15 +38,14 @@ class ExtensionHostMsg_Request_Params;
 class KeyboardManager
     : public views::Widget,
       public ui::AnimationDelegate,
-      public BrowserList::Observer,
       public TabContentsObserver,
-      public TabStripModelObserver,
       public ExtensionFunctionDispatcher::Delegate,
 #if defined(OS_CHROMEOS)
       public chromeos::input_method::InputMethodManager::VirtualKeyboardObserver,
 #endif
       public NotificationObserver,
-      public views::Widget::Observer {
+      public views::Widget::Observer,
+      public views::TextInputTypeObserver {
  public:
   // Returns the singleton object.
   static KeyboardManager* GetInstance();
@@ -77,19 +75,13 @@ class KeyboardManager
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
-  // Overridden from BrowserList::Observer.
-  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
-
   // Overridden from TabContentsObserver.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
-  // Overridden from TabStripModelObserver.
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
-                                int index,
-                                bool user_gesture);
+  // Overridden from TextInputTypeObserver.
+  virtual void TextInputTypeChanged(ui::TextInputType type,
+                                    views::Widget *widget) OVERRIDE;
 
   // Overridden from ExtensionFunctionDispatcher::Delegate.
   virtual Browser* GetBrowser() OVERRIDE;
