@@ -838,20 +838,6 @@ SyncableService* PrefService::GetSyncableService() {
   return pref_sync_associator_.get();
 }
 
-void PrefService::CheckIfValueDestroyed(const char* path,
-                                        base::Value::Type type) {
-  // Make sure the value exists.
-  Value* value = GetMutableUserPref(path, type);
-  if (!value) {
-    const Preference* pref = FindPreference(path);
-    CHECK(pref);
-    CHECK_EQ(type, pref->GetType());
-    CHECK(false);
-  }
-
-  user_pref_store_->CheckIfValueDestroyed(path);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // PrefService::Preference
 

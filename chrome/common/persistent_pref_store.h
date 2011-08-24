@@ -87,10 +87,6 @@ class PersistentPrefStore : public PrefStore {
 
   // Lands any pending writes to disk.
   virtual void CommitPendingWrite() = 0;
-
-  // TODO(sky): remove this. It's used in tracking 91396.
-  // Used for debugging. Crashes if the value at |key| is unexpected deleted.
-  virtual void CheckIfValueDestroyed(const std::string& key) = 0;
 };
 
 #endif  // CHROME_COMMON_PERSISTENT_PREF_STORE_H_

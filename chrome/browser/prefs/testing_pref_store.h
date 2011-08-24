@@ -29,19 +29,17 @@ class TestingPrefStore : public PersistentPrefStore {
 
   // PersistentPrefStore overrides:
   virtual ReadResult GetMutableValue(const std::string& key,
-                                     base::Value** result) OVERRIDE;
-  virtual void ReportValueChanged(const std::string& key) OVERRIDE;
-  virtual void SetValue(const std::string& key, base::Value* value) OVERRIDE;
-  virtual void SetValueSilently(const std::string& key,
-                                base::Value* value) OVERRIDE;
-  virtual void RemoveValue(const std::string& key) OVERRIDE;
-  virtual bool ReadOnly() const OVERRIDE;
-  virtual PersistentPrefStore::PrefReadError ReadPrefs() OVERRIDE;
-  virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) OVERRIDE;
-  virtual bool WritePrefs() OVERRIDE;
-  virtual void ScheduleWritePrefs() OVERRIDE {}
-  virtual void CommitPendingWrite() OVERRIDE {}
-  virtual void CheckIfValueDestroyed(const std::string& key) OVERRIDE {}
+                                     base::Value** result);
+  virtual void ReportValueChanged(const std::string& key);
+  virtual void SetValue(const std::string& key, base::Value* value);
+  virtual void SetValueSilently(const std::string& key, base::Value* value);
+  virtual void RemoveValue(const std::string& key);
+  virtual bool ReadOnly() const;
+  virtual PersistentPrefStore::PrefReadError ReadPrefs();
+  virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate);
+  virtual bool WritePrefs();
+  virtual void ScheduleWritePrefs() {}
+  virtual void CommitPendingWrite() {}
 
   // Marks the store as having completed initialization.
   void SetInitializationCompleted();

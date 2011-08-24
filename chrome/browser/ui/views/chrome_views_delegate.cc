@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,17 +32,13 @@ namespace {
 // been initialized.
 // TODO(mirandac): This function will also separate windows by profile in a
 // multi-profile environment.
-// TODO(sky): remove is_incognito. Used in tracking 91396.
-PrefService* GetPrefsForWindow(const views::Widget* window,
-                               bool* is_incognito) {
+PrefService* GetPrefsForWindow(const views::Widget* window) {
   Profile* profile = reinterpret_cast<Profile*>(
       window->GetNativeWindowProperty(Profile::kProfileKey));
-  *is_incognito = false;
   if (!profile) {
     // Use local state for windows that have no explicit profile.
     return g_browser_process->local_state();
   }
-  *is_incognito = profile->IsOffTheRecord();
   return profile->GetPrefs();
 }
 
@@ -67,18 +62,13 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
                                               const std::wstring& window_name,
                                               const gfx::Rect& bounds,
                                               bool maximized) {
-  bool is_incognito = false;
-  PrefService* prefs = GetPrefsForWindow(window, &is_incognito);
+  PrefService* prefs = GetPrefsForWindow(window);
   if (!prefs)
     return;
 
-  volatile browser_shutdown::ShutdownType shutdown_type =
-      browser_shutdown::GetShutdownType();
-  CHECK(prefs->FindPreference(WideToUTF8(window_name).c_str())) <<
-      is_incognito << " " << shutdown_type;
+  DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
   DictionaryPrefUpdate update(prefs, WideToUTF8(window_name).c_str());
   DictionaryValue* window_preferences = update.Get();
-  CHECK(window_preferences) << is_incognito << " " << shutdown_type;
   window_preferences->SetInteger("left", bounds.x());
   window_preferences->SetInteger("top", bounds.y());
   window_preferences->SetInteger("right", bounds.right());

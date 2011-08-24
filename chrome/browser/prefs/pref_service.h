@@ -293,11 +293,6 @@ class PrefService : public base::NonThreadSafe {
   // TODO(zea): Have PrefService implement SyncableService directly.
   SyncableService* GetSyncableService();
 
-  // TODO(sky): remove this. It's used in tracking 91396.
-  // Used for debugging. Crashes if the value at |path| is deleted out from
-  // under us.
-  void CheckIfValueDestroyed(const char* path, base::Value::Type type);
-
  protected:
   // Construct a new pref service, specifying the pref sources as explicit
   // PrefStore pointers. This constructor is what CreatePrefService() ends up
