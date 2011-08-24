@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prerender/prerender_condition.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -27,19 +26,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/cancelable_request.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 #include "content/common/notification_service.h"
 
 namespace prerender {
@@ -170,58 +165,6 @@ struct PrerenderManager::PendingContentsData {
   Origin origin_;
 };
 
-class PrerenderManager::MostVisitedSites : public NotificationObserver {
- public:
-  explicit MostVisitedSites(Profile* profile) :
-      profile_(profile) {
-    history::TopSites* ts = profile_->GetTopSites();
-    if (ts) {
-      registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
-                     Source<history::TopSites>(ts));
-    }
-
-    UpdateMostVisited();
-  }
-
-  void UpdateMostVisited() {
-    history::TopSites* ts = profile_->GetTopSites();
-    if (ts) {
-      ts->GetMostVisitedURLs(
-          &topsites_consumer_,
-          NewCallback(this,
-                      &prerender::PrerenderManager::MostVisitedSites::
-                      OnMostVisitedURLsAvailable));
-    }
-  }
-
-  void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data) {
-    urls_.clear();
-    for (int i = 0; i < static_cast<int>(data.size()); i++)
-      urls_.insert(data[i].url);
-  }
-
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
-    DCHECK_EQ(type, chrome::NOTIFICATION_TOP_SITES_CHANGED);
-    UpdateMostVisited();
-  }
-
-  bool IsTopSite(const GURL& url) {
-    return (urls_.count(url) > 0);
-  }
-
- private:
-  CancelableRequestConsumer topsites_consumer_;
-  Profile* profile_;
-  NotificationRegistrar registrar_;
-  std::set<GURL> urls_;
-};
-
-bool PrerenderManager::IsTopSite(const GURL& url) {
-  return most_visited_->IsTopSite(url);
-}
-
 PrerenderManager::PrerenderManager(Profile* profile,
                                    PrerenderTracker* prerender_tracker)
     : enabled_(true),
@@ -232,8 +175,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
       runnable_method_factory_(this),
       prerender_history_(new PrerenderHistory(kHistoryLength)),
-      histograms_(new PrerenderHistograms()),
-      most_visited_(new MostVisitedSites(profile)) {
+      histograms_(new PrerenderHistograms()) {
   // There are some assumptions that the PrerenderManager is on the UI thread.
   // Any other checks simply make sure that the PrerenderManager is accessed on
   // the same thread that it was created on.

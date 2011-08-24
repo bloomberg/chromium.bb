@@ -61,8 +61,6 @@ class PrerenderObserver : public TabContentsObserver {
   // Also resets the hover to no hover.
   void MaybeLogCurrentHover(bool was_used);
 
-  bool IsTopSite(const GURL& url);
-
   // TabContentsWrapper we're created for.
   TabContentsWrapper* tab_;
 
