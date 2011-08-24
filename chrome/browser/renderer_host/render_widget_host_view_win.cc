@@ -1861,19 +1861,6 @@ void RenderWidgetHostViewWin::ShutdownHost() {
   // Do not touch any members at this point, |this| has been deleted.
 }
 
-// static
-RenderWidgetHostView*
-    RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
-        gfx::NativeView native_view) {
-  if (views::Widget::IsPureViews()) {
-    // TODO(beng): Figure out what to do for Windows/v.o.v.
-    return NULL;
-  }
-  return ::IsWindow(native_view) ?
-      reinterpret_cast<RenderWidgetHostView*>(
-          ViewProp::GetValue(native_view, kRenderWidgetHostViewKey)) : NULL;
-}
-
 void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
                                                       const gfx::Rect& pos,
                                                       DWORD ex_style) {

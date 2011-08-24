@@ -72,11 +72,6 @@ class RenderWidgetHostView {
   // going to be a regular RenderWidgetHost or a RenderViewHost (a subclass).
   static RenderWidgetHostView* CreateViewForWidget(RenderWidgetHost* widget);
 
-  // Retrieves the RenderWidgetHostView corresponding to the specified
-  // |native_view|, or NULL if there is no such instance.
-  static RenderWidgetHostView* GetRenderWidgetHostViewFromNativeView(
-      gfx::NativeView native_view);
-
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

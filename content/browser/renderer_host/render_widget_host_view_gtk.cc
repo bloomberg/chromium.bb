@@ -1199,12 +1199,3 @@ void RenderWidgetHostViewGtk::set_last_mouse_down(GdkEventButton* event) {
 
   last_mouse_down_ = temp;
 }
-
-// static
-RenderWidgetHostView*
-    RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
-        gfx::NativeView widget) {
-  gpointer user_data = g_object_get_data(G_OBJECT(widget),
-                                         kRenderWidgetHostViewKey);
-  return reinterpret_cast<RenderWidgetHostView*>(user_data);
-}

@@ -278,16 +278,6 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
   return new RenderWidgetHostViewMac(widget);
 }
 
-// static
-RenderWidgetHostView* RenderWidgetHostView::
-    GetRenderWidgetHostViewFromNativeView(gfx::NativeView native_view) {
-  // TODO(port)
-  NOTREACHED() <<
-      "RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView not"
-      "implemented";
-  return NULL;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, public:
 

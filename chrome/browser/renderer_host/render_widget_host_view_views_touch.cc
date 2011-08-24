@@ -180,16 +180,6 @@ ui::TouchStatus RenderWidgetHostViewViews::OnTouchEvent(
   return status;
 }
 
-// static
-RenderWidgetHostView*
-    RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
-        gfx::NativeView widget) {
-  // TODO(beng): Figure out what to do here for Windows/v.o.v.
-  gpointer user_data = g_object_get_data(G_OBJECT(widget),
-                                         kRenderWidgetHostViewKey);
-  return reinterpret_cast<RenderWidgetHostView*>(user_data);
-}
-
 gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
   // On TOUCH_UI builds, the GPU process renders to an offscreen surface
   // (created by the GPU process), which is later displayed by the browser.
