@@ -95,12 +95,6 @@ bool FilePathPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 // hasn't been called.
 bool ListPrefMatches(const char* pref_name) WARN_UNUSED_RESULT;
 
-// Encrypts the Preferences datatype.
-bool EnableEncryption(int index);
-
-// Checks if Preferences are encrypted.
-bool IsEncrypted(int index);
-
 }  // namespace preferences_helper
 
 #endif  // CHROME_TEST_LIVE_SYNC_PREFERENCES_HELPER_H_

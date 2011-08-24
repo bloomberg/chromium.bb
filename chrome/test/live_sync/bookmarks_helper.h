@@ -33,12 +33,6 @@ const BookmarkNode* GetOtherNode(int index) WARN_UNUSED_RESULT;
 // Used to access the bookmarks within the verifier sync profile.
 BookmarkModel* GetVerifierBookmarkModel() WARN_UNUSED_RESULT;
 
-// Encrypt Bookmarks datatype.
-bool EnableEncryption(int index);
-
-// Check if Bookmarks are encrypted.
-bool IsEncrypted(int index);
-
 // Adds a URL with address |url| and title |title| to the bookmark bar of
 // profile |profile|. Returns a pointer to the node that was added.
 const BookmarkNode* AddURL(

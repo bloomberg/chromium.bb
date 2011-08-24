@@ -15,7 +15,6 @@ using bookmarks_helper::AllModelsMatchVerifier;
 using bookmarks_helper::ContainsDuplicateBookmarks;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::CreateFavicon;
-using bookmarks_helper::EnableEncryption;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetOtherNode;
 using bookmarks_helper::GetUniqueNodeByURL;
@@ -24,7 +23,6 @@ using bookmarks_helper::IndexedSubfolderName;
 using bookmarks_helper::IndexedSubsubfolderName;
 using bookmarks_helper::IndexedURL;
 using bookmarks_helper::IndexedURLTitle;
-using bookmarks_helper::IsEncrypted;
 using bookmarks_helper::Move;
 using bookmarks_helper::Remove;
 using bookmarks_helper::ReverseChildOrder;
@@ -1686,10 +1684,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::BOOKMARKS));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
@@ -1698,11 +1696,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::BOOKMARKS));
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
@@ -1711,11 +1709,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(EnableEncryption(0));
-  ASSERT_TRUE(EnableEncryption(1));
+  ASSERT_TRUE(EnableEncryption(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(EnableEncryption(1, syncable::BOOKMARKS));
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
 
@@ -1724,16 +1722,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::BOOKMARKS));
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(1), GURL(IndexedURL(1))) != NULL);
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllModelsMatchVerifier());
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
@@ -1742,10 +1740,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::BOOKMARKS));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::BOOKMARKS));
+  ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_TRUE(AddURL(0, IndexedURLTitle(1), GURL(IndexedURL(1))) != NULL);

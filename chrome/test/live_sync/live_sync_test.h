@@ -92,6 +92,10 @@ class LiveSyncTest : public InProcessBrowserTest {
   // and manages its lifetime.
   Profile* GetProfile(int index) WARN_UNUSED_RESULT;
 
+  // Returns a pointer to a particular browser. Callee owns the object
+  // and manages its lifetime.
+  Browser* GetBrowser(int index) WARN_UNUSED_RESULT;
+
   // Returns a pointer to a particular sync client. Callee owns the object
   // and manages its lifetime.
   ProfileSyncServiceHarness* GetClient(int index) WARN_UNUSED_RESULT;
@@ -125,6 +129,12 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // Disable outgoing network connections for the given profile.
   virtual void DisableNetwork(Profile* profile);
+
+  // Encrypts the datatype |type| for profile |index|.
+  bool EnableEncryption(int index, syncable::ModelType type);
+
+  // Checks if the datatype |type| is encrypted for profile |index|.
+  bool IsEncrypted(int index, syncable::ModelType type);
 
   // Disable notifications for the current test.  Must be called
   // before the test server is started (i.e., before either of
@@ -242,6 +252,11 @@ class LiveSyncTest : public InProcessBrowserTest {
   // data contained within its own subdirectory under the chrome user data
   // directory.
   ScopedVector<Profile> profiles_;
+
+  // Collection of pointers to the browser objects used by a test. One browser
+  // instance is created for each sync profile. Browser object lifetime is
+  // managed by BrowserList, so we don't use a ScopedVector here.
+  std::vector<Browser*> browsers_;
 
   // Collection of sync clients used by a test. A sync client is associated with
   // a sync profile, and implements methods that sync the contents of the

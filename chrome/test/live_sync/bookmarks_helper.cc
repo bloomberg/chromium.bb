@@ -267,14 +267,6 @@ BookmarkModel* GetVerifierBookmarkModel() {
   return test()->verifier()->GetBookmarkModel();
 }
 
-bool EnableEncryption(int index) {
-  return test()->GetClient(index)->EnableEncryptionForType(syncable::BOOKMARKS);
-}
-
-bool IsEncrypted(int index) {
-  return test()->GetClient(index)->IsTypeEncrypted(syncable::BOOKMARKS);
-}
-
 const BookmarkNode* AddURL(int profile,
                            const std::wstring& title,
                            const GURL& url) {

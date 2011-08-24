@@ -193,13 +193,4 @@ bool ListPrefMatches(const char* pref_name) {
   return true;
 }
 
-bool EnableEncryption(int index) {
-  return test()->GetClient(index)->EnableEncryptionForType(
-      syncable::PREFERENCES);
-}
-
-bool IsEncrypted(int index) {
-  return test()->GetClient(index)->IsTypeEncrypted(syncable::PREFERENCES);
-}
-
 }  // namespace preferences_helper

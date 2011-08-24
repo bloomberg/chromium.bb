@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -228,10 +229,18 @@ Profile* LiveSyncTest::MakeProfile(const FilePath::StringType name) {
 
 Profile* LiveSyncTest::GetProfile(int index) {
   if (profiles_.empty())
-    LOG(FATAL) << "SetupSync() has not yet been called.";
+    LOG(FATAL) << "SetupClients() has not yet been called.";
   if (index < 0 || index >= static_cast<int>(profiles_.size()))
     LOG(FATAL) << "GetProfile(): Index is out of bounds.";
   return profiles_[index];
+}
+
+Browser* LiveSyncTest::GetBrowser(int index) {
+  if (browsers_.empty())
+    LOG(FATAL) << "SetupClients() has not yet been called.";
+  if (index < 0 || index >= static_cast<int>(browsers_.size()))
+    LOG(FATAL) << "GetBrowser(): Index is out of bounds.";
+  return browsers_[index];
 }
 
 ProfileSyncServiceHarness* LiveSyncTest::GetClient(int index) {
@@ -255,21 +264,26 @@ void LiveSyncTest::DisableVerifier() {
 bool LiveSyncTest::SetupClients() {
   if (num_clients_ <= 0)
     LOG(FATAL) << "num_clients_ incorrectly initialized.";
-  if (!profiles_.empty() || !clients_.empty())
+  if (!profiles_.empty() || !browsers_.empty() || !clients_.empty())
     LOG(FATAL) << "SetupClients() has already been called.";
 
   // Start up a sync test server if one is needed.
   SetUpTestServerIfRequired();
 
-  // Create the required number of sync profiles and clients.
+  // Create the required number of sync profiles, browsers and clients.
   for (int i = 0; i < num_clients_; ++i) {
     profiles_.push_back(MakeProfile(
         base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
     EXPECT_FALSE(GetProfile(i) == NULL) << "GetProfile(" << i << ") failed.";
+
+    browsers_.push_back(Browser::Create(GetProfile(i)));
+    EXPECT_FALSE(GetBrowser(i) == NULL) << "GetBrowser(" << i << ") failed.";
+
     clients_.push_back(
         new ProfileSyncServiceHarness(GetProfile(i), username_, password_,
                                       enable_notifications_));
     EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
+
     ui_test_utils::WaitForBookmarkModelToLoad(
         GetProfile(i)->GetBookmarkModel());
   }
@@ -297,6 +311,14 @@ bool LiveSyncTest::SetupSync() {
 }
 
 void LiveSyncTest::CleanUpOnMainThread() {
+  // Close all browser windows.
+  BrowserList::CloseAllBrowsers();
+  ui_test_utils::RunAllPendingInMessageLoop();
+
+  // All browsers should be closed at this point, or else we could see memory
+  // corruption in QuitBrowser().
+  CHECK_EQ(0U, BrowserList::size());
+
   profiles_.reset();
   clients_.reset();
   verifier_.reset(NULL);
@@ -487,6 +509,14 @@ void LiveSyncTest::DisableNetwork(Profile* profile) {
   SetProxyConfig(profile->GetRequestContext(), config);
   // TODO(rsimha): Remove this line once http://crbug.com/53857 is fixed.
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+}
+
+bool LiveSyncTest::EnableEncryption(int index, syncable::ModelType type) {
+  return GetClient(index)->EnableEncryptionForType(type);
+}
+
+bool LiveSyncTest::IsEncrypted(int index, syncable::ModelType type) {
+  return GetClient(index)->IsTypeEncrypted(type);
 }
 
 void LiveSyncTest::DisableNotifications() {

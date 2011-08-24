@@ -15,10 +15,8 @@ using preferences_helper::ChangeBooleanPref;
 using preferences_helper::ChangeIntegerPref;
 using preferences_helper::ChangeListPref;
 using preferences_helper::ChangeStringPref;
-using preferences_helper::EnableEncryption;
 using preferences_helper::GetPrefs;
 using preferences_helper::IntegerPrefMatches;
-using preferences_helper::IsEncrypted;
 using preferences_helper::ListPrefMatches;
 using preferences_helper::StringPrefMatches;
 
@@ -599,10 +597,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
                        SingleClientEnabledEncryption) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::PREFERENCES));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::PREFERENCES));
+  ASSERT_TRUE(IsEncrypted(1, syncable::PREFERENCES));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
@@ -612,10 +610,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
       prefs::kHomePageIsNewTabPage));
 
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::PREFERENCES));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::PREFERENCES));
+  ASSERT_TRUE(IsEncrypted(1, syncable::PREFERENCES));
   ASSERT_TRUE(BooleanPrefMatches(
       prefs::kHomePageIsNewTabPage));
 }
@@ -624,11 +622,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
                        BothClientsEnabledEncryption) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_TRUE(EnableEncryption(0));
-  ASSERT_TRUE(EnableEncryption(1));
+  ASSERT_TRUE(EnableEncryption(0, syncable::PREFERENCES));
+  ASSERT_TRUE(EnableEncryption(1, syncable::PREFERENCES));
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::PREFERENCES));
+  ASSERT_TRUE(IsEncrypted(1, syncable::PREFERENCES));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
@@ -638,13 +636,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
       prefs::kHomePageIsNewTabPage));
   ASSERT_TRUE(StringPrefMatches(prefs::kHomePage));
 
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::PREFERENCES));
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
   ChangeStringPref(1, prefs::kHomePage,
                                       "http://www.google.com/1");
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::PREFERENCES));
+  ASSERT_TRUE(IsEncrypted(1, syncable::PREFERENCES));
   ASSERT_TRUE(BooleanPrefMatches(
       prefs::kHomePageIsNewTabPage));
   ASSERT_TRUE(StringPrefMatches(prefs::kHomePage));
@@ -657,10 +655,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
       prefs::kHomePageIsNewTabPage));
 
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::PREFERENCES));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(IsEncrypted(0));
-  ASSERT_TRUE(IsEncrypted(1));
+  ASSERT_TRUE(IsEncrypted(0, syncable::PREFERENCES));
+  ASSERT_TRUE(IsEncrypted(1, syncable::PREFERENCES));
   ASSERT_TRUE(BooleanPrefMatches(
       prefs::kHomePageIsNewTabPage));
 

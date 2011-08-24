@@ -6,13 +6,19 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/test/live_sync/performance/sync_timing_helper.h"
-#include "chrome/test/live_sync/live_sessions_sync_test.h"
+#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/sessions_helper.h"
+
+using sessions_helper::GetLocalSession;
+using sessions_helper::GetSessionData;
+using sessions_helper::OpenMultipleTabs;
+using sessions_helper::WaitForTabsToLoad;
 
 static const int kNumTabs = 150;
 
-class SessionsSyncPerfTest: public TwoClientLiveSessionsSyncTest {
+class SessionsSyncPerfTest: public LiveSyncTest {
  public:
-  SessionsSyncPerfTest() : url_number_(0) {}
+  SessionsSyncPerfTest() : LiveSyncTest(TWO_CLIENT), url_number_(0) {}
 
   // Opens |num_tabs| new tabs on |profile|.
   void AddTabs(int profile, int num_tabs);
@@ -67,7 +73,7 @@ void SessionsSyncPerfTest::RemoveTabs(int profile) {
 int SessionsSyncPerfTest::GetTabCount(int profile) {
   int tab_count = 0;
   const SyncedSession* local_session;
-  std::vector<const SyncedSession*> sessions;
+  SyncedSessionVector sessions;
 
   if (!GetLocalSession(profile, &local_session)) {
     VLOG(1) << "GetLocalSession returned false";
@@ -81,10 +87,11 @@ int SessionsSyncPerfTest::GetTabCount(int profile) {
   }
 
   sessions.push_back(local_session);
-  for (std::vector<const SyncedSession*>::const_iterator it = sessions.begin();
+  for (SyncedSessionVector::const_iterator it = sessions.begin();
        it != sessions.end(); ++it) {
-    for (std::vector<SessionWindow*>::const_iterator win_it =
-             (*it)->windows.begin(); win_it != (*it)->windows.end(); ++win_it) {
+    for (SessionWindowVector::const_iterator win_it = (*it)->windows.begin();
+         win_it != (*it)->windows.end();
+         ++win_it) {
       tab_count += (*win_it)->tabs.size();
     }
   }

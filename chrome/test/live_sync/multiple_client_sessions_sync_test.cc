@@ -2,14 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_vector.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/test/live_sync/live_sessions_sync_test.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/test/live_sync/live_sync_test.h"
+#include "chrome/test/live_sync/sessions_helper.h"
 
-IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest, AllChanged) {
+using sessions_helper::CheckForeignSessionsAgainst;
+using sessions_helper::CheckInitialState;
+using sessions_helper::OpenTabAndGetLocalWindows;
+
+class MultipleClientSessionsSyncTest : public LiveSyncTest {
+ public:
+  MultipleClientSessionsSyncTest() : LiveSyncTest(MULTIPLE_CLIENT) {}
+  virtual ~MultipleClientSessionsSyncTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MultipleClientSessionsSyncTest);
+};
+
+IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest, AllChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  std::vector<std::vector<SessionWindow*>* > client_windows;
+  ScopedVector<SessionWindowVector> client_windows;
 
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_TRUE(CheckInitialState(i));
@@ -17,10 +32,10 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest, AllChanged) {
 
   // Open tabs on all clients and retain window information.
   for (int i = 0; i < num_clients(); ++i) {
-    std::vector<SessionWindow*>* new_windows =
-        InitializeNewWindowWithTab(i, GURL(StringPrintf("about:bubba%i", i)));
-    ASSERT_TRUE(new_windows);
-    client_windows.push_back(new_windows);
+    SessionWindowVector* windows = new SessionWindowVector();
+    ASSERT_TRUE(OpenTabAndGetLocalWindows(
+        i, GURL(StringPrintf("about:bubba%i", i)), *windows));
+    client_windows.push_back(windows);
   }
 
   // Wait for sync.
@@ -29,21 +44,21 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest, AllChanged) {
   // Get foreign session data from all clients and check it against all
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows));
+    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows.get()));
   }
 }
 
-IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest,
+IN_PROC_BROWSER_TEST_F(MultipleClientSessionsSyncTest,
                        EncryptedAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  std::vector<std::vector<SessionWindow*>* > client_windows;
+  ScopedVector<SessionWindowVector> client_windows;
 
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_TRUE(CheckInitialState(i));
   }
 
   // Enable encryption on client 0, should propagate to all other clients.
-  ASSERT_TRUE(EnableEncryption(0));
+  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
 
   // Wait for sync.
   // TODO(zea): Fix sync completion detection so we don't need this. For now,
@@ -53,10 +68,10 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest,
 
   // Open tabs on all clients and retain window information.
   for (int i = 0; i < num_clients(); ++i) {
-    std::vector<SessionWindow*>* new_windows =
-        InitializeNewWindowWithTab(i, GURL(StringPrintf("about:bubba%i", i)));
-    ASSERT_TRUE(new_windows);
-    client_windows.push_back(new_windows);
+    SessionWindowVector* windows = new SessionWindowVector();
+    ASSERT_TRUE(OpenTabAndGetLocalWindows(
+        i, GURL(StringPrintf("about:bubba%i", i)), *windows));
+    client_windows.push_back(windows);
   }
 
   // Wait for sync.
@@ -65,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLiveSessionsSyncTest,
   // Get foreign session data from all clients and check it against all
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(IsEncrypted(i));
-    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows));
+    ASSERT_TRUE(IsEncrypted(i, syncable::SESSIONS));
+    ASSERT_TRUE(CheckForeignSessionsAgainst(i, client_windows.get()));
   }
 }
