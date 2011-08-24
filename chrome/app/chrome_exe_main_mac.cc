@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 
 extern "C" {
 int ChromeMain(int argc, char** argv);
-}
+}  // extern "C"
 
 __attribute__((visibility("default")))
 int main(int argc, char* argv[]) {

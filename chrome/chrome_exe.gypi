@@ -16,7 +16,7 @@
           'app/breakpad_win.cc',
           'app/breakpad_win.h',
           'app/chrome_exe_main_gtk.cc',
-          'app/chrome_exe_main_mac.mm',
+          'app/chrome_exe_main_mac.cc',
           'app/chrome_exe_main_win.cc',
           'app/chrome_exe_resource.h',
           'app/client_util.cc',
@@ -397,6 +397,14 @@
                 'tools/build/mac/make_more_helpers.sh',
                 '<(version_full)',
                 '<(mac_product_name)',
+              ],
+            },
+            {
+              # Make sure there isn't any Objective-C in the browser app's
+              # executable.
+              'postbuild_name': 'Verify No Objective-C',
+              'action': [
+                'tools/build/mac/verify_no_objc.sh',
               ],
             },
           ],  # postbuilds

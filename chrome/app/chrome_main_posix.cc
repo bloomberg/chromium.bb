@@ -46,7 +46,7 @@ namespace chrome_main {
 void LowLevelInit(void* instance) {
 #if defined(OS_MACOSX)
   // TODO(mark): Some of these things ought to be handled in
-  // chrome_exe_main_mac.mm.  Under the current architecture, nothing
+  // chrome_exe_main_mac.cc.  Under the current architecture, nothing
   // in chrome_exe_main can rely directly on chrome_dll code on the
   // Mac, though, so until some of this code is refactored to avoid
   // such a dependency, it lives here.  See also the TODO(mark)

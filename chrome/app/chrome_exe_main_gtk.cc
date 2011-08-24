@@ -11,9 +11,9 @@
 // order to make it easy to update the app from GoogleUpdate. We don't need
 // that extra layer with on linux.
 //
-// TODO(tc): This is similar to chrome_exe_main_mac.mm.  After it's
+// TODO(tc): This is similar to chrome_exe_main_mac.cc.  After it's
 // more clear what needs to go here, we should evaluate whether or not
-// to merge this file with chrome_exe_main_mac.mm.
+// to merge this file with chrome_exe_main_mac.cc.
 
 extern "C" {
 int ChromeMain(int argc, const char** argv);

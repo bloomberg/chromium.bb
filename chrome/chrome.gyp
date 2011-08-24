@@ -943,15 +943,15 @@
             'infoplist_strings_tool',
           ],
           'sources': [
-            # chrome_exe_main_mac.mm's main() is the entry point for
+            # chrome_exe_main_mac.cc's main() is the entry point for
             # the "chrome" (browser app) target.  All it does is jump
             # to chrome_dll's ChromeMain.  This is appropriate for
             # helper processes too, because the logic to discriminate
             # between process types at run time is actually directed
             # by the --type command line argument processed by
-            # ChromeMain.  Sharing chrome_exe_main_mac.mm with the
+            # ChromeMain.  Sharing chrome_exe_main_mac.cc with the
             # browser app will suffice for now.
-            'app/chrome_exe_main_mac.mm',
+            'app/chrome_exe_main_mac.cc',
             'app/helper-Info.plist',
           ],
           # TODO(mark): Come up with a fancier way to do this.  It should only
@@ -1016,6 +1016,14 @@
                          '-s0',
                          '<(branding)',
                          '<(mac_bundle_id)'],
+            },
+            {
+              # Make sure there isn't any Objective-C in the helper app's
+              # executable.
+              'postbuild_name': 'Verify No Objective-C',
+              'action': [
+                'tools/build/mac/verify_no_objc.sh',
+              ],
             },
           ],
           'conditions': [
