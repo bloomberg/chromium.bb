@@ -112,7 +112,7 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribs(
   if (in_attrib_list_count == 0)
     in_attrib_list = NULL;
   if (*out_attrib_list_count == 0)
-    *out_attrib_list = NULL;
+    out_attrib_list = NULL;
   if (!ValidateAndCopyAttribList(in_attrib_list_count, in_attrib_list,
                                  out_attrib_list_count, out_attrib_list))
     return;
