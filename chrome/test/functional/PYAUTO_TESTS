@@ -185,7 +185,7 @@
       '-downloads.DownloadsTest.testSaveDangerousFile',
       '-instant.InstantTest.testInstantNavigation',  # crbug.com/69090
       # crbug.com/93956
-       '-find_in_page.FindMatchTests.testSearchInPDF'
+       '-find_in_page.FindMatchTests.testSearchInPDF',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
