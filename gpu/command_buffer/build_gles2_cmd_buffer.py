@@ -5870,23 +5870,25 @@ const PPB_OpenGLES2_Dev* OpenGLES2Impl::GetInterface() {
 
   def WritePepperGLES2NaClProxy(self, filename):
     """Writes the Pepper OpenGLES interface implementation for NaCl."""
-
     file = CWriter(filename)
     file.Write(_LICENSE)
     file.Write(_DO_NOT_EDIT_WARNING)
 
     file.Write("#include \"native_client/src/shared/ppapi_proxy"
-        "/plugin_context_3d.h\"\n\n")
+        "/plugin_ppb_graphics_3d.h\"\n\n")
 
     file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"")
-    file.Write("\n#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n\n")
+    file.Write("\n#include \"native_client/src/third_party"
+        "/ppapi/c/dev/ppb_opengles_dev.h\"\n\n")
 
-    file.Write("using ppapi_proxy::PluginContext3D;\n")
+    file.Write("using ppapi_proxy::PluginGraphics3D;\n")
     file.Write("using ppapi_proxy::PluginResource;\n\n")
     file.Write("namespace {\n\n")
 
     for func in self.original_functions:
       if not func.IsCoreGLFunction():
+        continue
+      if func.IsType("UnknownCommand"):
         continue
       args = func.MakeTypedOriginalArgString("")
       if len(args) != 0:
@@ -5896,7 +5898,7 @@ const PPB_OpenGLES2_Dev* OpenGLES2Impl::GetInterface() {
       return_string = "return "
       if func.return_type == "void":
         return_string = ""
-      file.Write("  %sPluginContext3D::implFromResource(context)->"
+      file.Write("  %sPluginGraphics3D::implFromResource(context)->"
                  "%s(%s);\n" %
                  (return_string,
                   func.original_name,
@@ -5906,12 +5908,13 @@ const PPB_OpenGLES2_Dev* OpenGLES2Impl::GetInterface() {
     file.Write("\n} // namespace\n\n")
 
     file.Write("const PPB_OpenGLES2_Dev* "
-               "PluginContext3D::GetOpenGLESInterface() {\n")
+               "PluginGraphics3D::GetOpenGLESInterface() {\n")
 
     file.Write("  const static struct PPB_OpenGLES2_Dev ppb_opengles = {\n")
     file.Write("    &")
     file.Write(",\n    &".join(
-      f.name for f in self.original_functions if f.IsCoreGLFunction()))
+      f.name for f in self.original_functions if (f.IsCoreGLFunction() and
+        not f.IsType("UnknownCommand"))))
     file.Write("\n")
     file.Write("  };\n")
     file.Write("  return &ppb_opengles;\n")
