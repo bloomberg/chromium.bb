@@ -91,8 +91,6 @@ FilePath ChildProcessHost::GetChildPath(int flags) {
 
   child_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kBrowserSubprocessPath);
-  if (!child_path.empty())
-    return child_path;
 
 #if defined(OS_LINUX)
   // Use /proc/self/exe rather than our known binary path so updates
@@ -100,13 +98,14 @@ FilePath ChildProcessHost::GetChildPath(int flags) {
   // When running under Valgrind, forking /proc/self/exe ends up forking the
   // Valgrind executable, which then crashes. However, it's almost safe to
   // assume that the updates won't happen while testing with Valgrind tools.
-  if (flags & CHILD_ALLOW_SELF && !RunningOnValgrind())
-    return FilePath("/proc/self/exe");
+  if (child_path.empty() && flags & CHILD_ALLOW_SELF && !RunningOnValgrind())
+    child_path = FilePath("/proc/self/exe");
 #endif
 
   // On most platforms, the child executable is the same as the current
   // executable.
-  PathService::Get(content::CHILD_PROCESS_EXE, &child_path);
+  if (child_path.empty())
+    PathService::Get(content::CHILD_PROCESS_EXE, &child_path);
 
 #if defined(OS_MACOSX)
   DCHECK(!(flags & CHILD_NO_PIE && flags & CHILD_ALLOW_HEAP_EXECUTION));
