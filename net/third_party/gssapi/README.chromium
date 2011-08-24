@@ -1,0 +1,18 @@
+Name: gssapi
+URL: https://hg.mozilla.org/mozilla-central/file/05f3c68e73c9/extensions/auth/gssapi.h
+InfoURL: http://web.mit.edu/Kerberos/krb5-1.7/krb5-1.7.1/doc/krb5-install.html
+Version: krb5-1.8.1
+License: OpenVision Technologies
+
+Description:
+This is Chromium's copy of the Mozilla gssapi header.
+
+Originally obtained from Mozilla's Mercurial repository
+on 11 May 2010.
+
+The LICENSE from the header has been copied here.
+
+Local Modifications:
+There are no local changes to the code itself.
+
+A gssapi.gyp file has been added for building with Chromium.
