@@ -478,7 +478,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
   blocking_page->Show();
 }
 
-void ChromeContentBrowserClient::ShowClientCertificateRequestDialog(
+void ChromeContentBrowserClient::SelectClientCertificate(
     int render_process_id,
     int render_view_id,
     SSLClientAuthHandler* handler) {
@@ -491,7 +491,7 @@ void ChromeContentBrowserClient::ShowClientCertificateRequestDialog(
 
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  wrapper->ssl_helper()->ShowClientCertificateRequestDialog(handler);
+  wrapper->ssl_helper()->SelectClientCertificate(handler);
 }
 
 void ChromeContentBrowserClient::AddNewCertificate(

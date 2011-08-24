@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_MOCK_CONTENT_BROWSER_CLIENT_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "content/browser/content_browser_client.h"
 
@@ -61,7 +63,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
       SSLCertErrorHandler* handler,
       bool overridable,
       Callback2<SSLCertErrorHandler*, bool>::Type* callback) OVERRIDE;
-  virtual void ShowClientCertificateRequestDialog(
+  virtual void SelectClientCertificate(
       int render_process_id,
       int render_view_id,
       SSLClientAuthHandler* handler) OVERRIDE;

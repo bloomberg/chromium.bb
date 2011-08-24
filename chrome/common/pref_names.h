@@ -540,6 +540,7 @@ extern const char kManagedDefaultPluginsSetting[];
 extern const char kManagedDefaultPopupsSetting[];
 extern const char kManagedDefaultGeolocationSetting[];
 extern const char kManagedDefaultNotificationsSetting[];
+extern const char kManagedDefaultAutoSelectCertificateSetting[];
 
 extern const char kManagedCookiesAllowedForUrls[];
 extern const char kManagedCookiesBlockedForUrls[];
@@ -552,6 +553,7 @@ extern const char kManagedPluginsAllowedForUrls[];
 extern const char kManagedPluginsBlockedForUrls[];
 extern const char kManagedPopupsAllowedForUrls[];
 extern const char kManagedPopupsBlockedForUrls[];
+extern const char kManagedAutoSelectCertificateForUrls[];
 
 #if defined(OS_CHROMEOS)
 extern const char kSignedSettingsTempStorage[];

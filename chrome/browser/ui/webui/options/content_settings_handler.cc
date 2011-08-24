@@ -399,6 +399,11 @@ void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
   for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
        type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
+    // The content settings type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE
+    // is supposed to be set by policy only. Hence there is no user facing UI
+    // for this content type and we skip it here.
+    if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
+      continue;
     UpdateExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
   }
 }
@@ -628,7 +633,7 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     rv = args->GetString(arg_i++, &embedding_origin);
     DCHECK(rv);
 
-   profile->GetHostContentSettingsMap()->
+    profile->GetHostContentSettingsMap()->
         SetContentSetting(ContentSettingsPattern::FromString(origin),
                           ContentSettingsPattern::FromString(embedding_origin),
                           CONTENT_SETTINGS_TYPE_GEOLOCATION,

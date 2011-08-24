@@ -1516,6 +1516,8 @@ const char kManagedDefaultGeolocationSetting[] =
     "profile.managed_default_content_settings.geolocation";
 const char kManagedDefaultNotificationsSetting[] =
     "profile.managed_default_content_settings.notifications";
+const char kManagedDefaultAutoSelectCertificateSetting[] =
+    "profile.managed_default_content_settings.auto_select_certificate";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
@@ -1541,6 +1543,8 @@ const char kManagedPopupsAllowedForUrls[] =
     "profile.managed_popups_allowed_for_urls";
 const char kManagedPopupsBlockedForUrls[] =
     "profile.managed_popups_blocked_for_urls";
+const char kManagedAutoSelectCertificateForUrls[] =
+    "profile.managed_auto_select_certificate_for_urls";
 
 // Set to true if the user created a login item so we should not modify it when
 // uninstalling background apps.

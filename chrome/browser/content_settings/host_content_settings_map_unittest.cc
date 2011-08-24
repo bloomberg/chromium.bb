@@ -28,8 +28,12 @@ namespace {
 bool SettingsEqual(const ContentSettings& settings1,
                    const ContentSettings& settings2) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (settings1.settings[i] != settings2.settings[i])
+    if (settings1.settings[i] != settings2.settings[i]) {
+      LOG(ERROR) << "type: " << i
+                 << " [expected: " << settings1.settings[i]
+                 << " actual: " << settings2.settings[i] << "]";
       return false;
+    }
   }
   return true;
 }
@@ -153,6 +157,8 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
   desired_settings.settings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
+      CONTENT_SETTING_ASK;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE] =
       CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
@@ -602,6 +608,8 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
       CONTENT_SETTING_ASK;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE] =
+      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -794,6 +802,8 @@ TEST_F(HostContentSettingsMapTest, NonDefaultSettings) {
        ContentSettingsPattern::FromString("[*.]example.com");
 
   ContentSettings desired_settings(CONTENT_SETTING_DEFAULT);
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE] =
+      CONTENT_SETTING_ASK;
   ContentSettings settings =
     host_content_settings_map->GetNonDefaultContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));

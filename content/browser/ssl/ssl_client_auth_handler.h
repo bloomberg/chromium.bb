@@ -29,8 +29,7 @@ class SSLClientAuthHandler
   SSLClientAuthHandler(net::URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info);
 
-  // Asks the user to select a certificate and resumes the URL request with that
-  // certificate.
+  // Selects a certificate and resumes the URL request with that certificate.
   // Should only be called on the IO thread.
   void SelectCertificate();
 
@@ -62,9 +61,9 @@ class SSLClientAuthHandler
   // Called on the IO thread.
   void DoCertificateSelected(net::X509Certificate* cert);
 
-  // Calls the SSL helper on the UI thread.
-  void ShowClientCertificateRequestDialog(int render_process_host_id,
-                                          int render_view_host_id);
+  // Selects a client certificate on the UI thread.
+  void DoSelectCertificate(int render_process_host_id,
+                           int render_view_host_id);
 
   // The net::URLRequest that triggered this client auth.
   net::URLRequest* request_;

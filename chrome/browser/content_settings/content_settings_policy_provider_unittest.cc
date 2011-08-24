@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/content_settings_policy_provider.h"
 
+#include <string>
+
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
@@ -127,6 +129,18 @@ TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
   provider.ShutdownOnUIThread();
 }
 
+TEST_F(PolicyDefaultProviderTest, AutoSelectCertificate) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+  PolicyDefaultProvider provider(prefs);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            provider.ProvideDefaultSetting(
+                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE));
+
+  provider.ShutdownOnUIThread();
+}
+
 class PolicyProviderTest : public TestingBrowserProcessTest {
  public:
   PolicyProviderTest()
@@ -223,4 +237,40 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
   provider.ShutdownOnUIThread();
 }
 
+TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  PolicyProvider provider(prefs, NULL);
+  GURL google_url("https://mail.google.com");
+  // Tests the default setting for auto selecting certificates
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            provider.GetContentSetting(
+                google_url,
+                google_url,
+                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+                std::string()));
+
+  // Set the content settings pattern list for origins to auto select
+  // certificates.
+  ListValue* value = new ListValue();
+  value->Append(Value::CreateStringValue("[*.]google.com"));
+  prefs->SetManagedPref(prefs::kManagedAutoSelectCertificateForUrls,
+                        value);
+  GURL youtube_url("https://www.youtube.com");
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            provider.GetContentSetting(
+                youtube_url,
+                youtube_url,
+                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+                std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            provider.GetContentSetting(
+                google_url,
+                google_url,
+                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+                std::string()));
+
+  provider.ShutdownOnUIThread();
+}
 }  // namespace content_settings

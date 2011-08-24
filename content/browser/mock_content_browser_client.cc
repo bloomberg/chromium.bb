@@ -128,7 +128,7 @@ void MockContentBrowserClient::AllowCertificateError(
     Callback2<SSLCertErrorHandler*, bool>::Type* callback) {
 }
 
-void MockContentBrowserClient::ShowClientCertificateRequestDialog(
+void MockContentBrowserClient::SelectClientCertificate(
     int render_process_id,
     int render_view_id,
     SSLClientAuthHandler* handler) {

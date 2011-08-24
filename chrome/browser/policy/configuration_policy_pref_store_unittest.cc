@@ -86,7 +86,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyEnabledPlugins,
                     prefs::kPluginsEnabledPlugins),
         TypeAndName(kPolicyDisabledSchemes,
-                    prefs::kDisabledSchemes)));
+                    prefs::kDisabledSchemes),
+        TypeAndName(kPolicyAutoSelectCertificateForUrls,
+                    prefs::kManagedAutoSelectCertificateForUrls)));
 
 // Test cases for string-valued policy settings.
 class ConfigurationPolicyPrefStoreStringTest
@@ -288,7 +290,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyPolicyRefreshRate,
                     prefs::kUserPolicyRefreshRate),
         TypeAndName(kPolicyMaxConnectionsPerProxy,
-                    prefs::kMaxConnectionsPerProxy)));
+                    prefs::kMaxConnectionsPerProxy),
+        TypeAndName(kPolicyDefaultAutoSelectCertificateSetting,
+                    prefs::kManagedDefaultAutoSelectCertificateSetting)));
 
 // Test cases for the proxy policy settings.
 class ConfigurationPolicyPrefStoreProxyTest : public testing::Test {

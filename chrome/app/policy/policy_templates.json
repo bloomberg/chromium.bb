@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 101
+#   For your editing convenience: highest ID currently used: 103
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1270,6 +1270,38 @@
           'id': 54,
           'caption': '''Default geolocation setting''',
           'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked everytime a website requests the pysical location.''',
+        },
+        {
+          'name': 'DefaultAutoSelectCertificateSetting',
+          'type': 'int-enum',
+          'items': [
+            {
+              'name': 'AllowAutoSelectCertificate',
+              'value': 1,
+              'caption': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to automatically select client certificates.'''
+            },
+            {
+              'name': 'AskAutoSelectCertificate',
+              'value': 3,
+              'caption': '''Asks the user to select a certificate whenever a site requests a client certificate.''',
+            },
+          ],
+          'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
+          'features': {'dynamic_refresh': 1},
+          'example_value': 1,
+          'id': 102,
+          'caption': '''Default setting for selecting client certificates''',
+          'desc': '''Allows you to set whether a client certificate should be automatically selected by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> (if possible), the user should be asked to select a client certificate or no certificates should be sent to sites requesting client certificates.''',
+        },
+        {
+          'name': 'AutoSelectCertificateForUrls',
+          'type': 'list',
+          'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
+          'features': {'dynamic_refresh': 1},
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
+          'id': 103,
+          'caption': '''Automatically select client certificates for these sites''',
+          'desc': '''Allows you to specify a list of url patterns that specify sites for which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> should automatically select a client certificates, if the site requests a certificate.''',
         },
         {
           'name': 'CookiesAllowedForUrls',

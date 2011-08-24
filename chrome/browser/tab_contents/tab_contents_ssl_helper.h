@@ -20,10 +20,8 @@ class TabContentsSSLHelper {
   explicit TabContentsSSLHelper(TabContentsWrapper* tab_contents);
   virtual ~TabContentsSSLHelper();
 
-  // Displays a dialog to select client certificates from |request_info|,
-  // returning them to |handler|.
-  void ShowClientCertificateRequestDialog(
-      scoped_refptr<SSLClientAuthHandler> handler);
+  // Selects the client certificate to submit and returns it to the |handler|.
+  void SelectClientCertificate(scoped_refptr<SSLClientAuthHandler> handler);
 
   // Called when |handler| encounters an error in verifying a received client
   // certificate. Note that, because CAs often will not send us intermediate
@@ -52,6 +50,11 @@ class TabContentsSSLHelper {
       scoped_refptr<SSLAddCertHandler> handler);
 
  private:
+  // Displays a dialog for selecting a client certificate and returns it to
+  // the |handler|.
+  void ShowClientCertificateRequestDialog(
+      scoped_refptr<SSLClientAuthHandler> handler);
+
   TabContentsWrapper* tab_contents_;
 
   class SSLAddCertData;

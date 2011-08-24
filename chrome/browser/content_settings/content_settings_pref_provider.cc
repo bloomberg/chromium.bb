@@ -45,6 +45,7 @@ const char* kResourceTypeNames[] = {
   NULL,
   NULL,  // Not used for Notifications
   NULL,  // Not used for Intents.
+  NULL,
 };
 COMPILE_ASSERT(arraysize(kResourceTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                resource_type_names_incorrect_size);
@@ -59,6 +60,7 @@ const ContentSetting kDefaultSettings[] = {
   CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_GEOLOCATION
   CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_NOTIFICATIONS
   CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_INTENTS
+  CONTENT_SETTING_ASK,    // CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE
 };
 COMPILE_ASSERT(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
                default_settings_incorrect_size);
@@ -75,6 +77,7 @@ const char* kTypeNames[] = {
   // for notifications added next.
   "notifications",  // Only used for default Notifications settings.
   "intents",
+  "auto-select-certificate"
 };
 COMPILE_ASSERT(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
                type_names_incorrect_size);

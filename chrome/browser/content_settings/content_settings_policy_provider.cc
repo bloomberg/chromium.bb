@@ -37,6 +37,8 @@ const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
   prefs::kManagedDefaultPopupsSetting,
   prefs::kManagedDefaultGeolocationSetting,
   prefs::kManagedDefaultNotificationsSetting,
+  NULL,
+  prefs::kManagedDefaultAutoSelectCertificateSetting,
 };
 
 struct PrefsForManagedContentSettingsMapEntry {
@@ -48,6 +50,10 @@ struct PrefsForManagedContentSettingsMapEntry {
 const PrefsForManagedContentSettingsMapEntry
     kPrefsForManagedContentSettingsMap[] = {
   {
+    prefs::kManagedAutoSelectCertificateForUrls,
+    CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+    CONTENT_SETTING_ALLOW
+  }, {
     prefs::kManagedCookiesAllowedForUrls,
     CONTENT_SETTINGS_TYPE_COOKIES,
     CONTENT_SETTING_ALLOW
@@ -120,6 +126,8 @@ PolicyDefaultProvider::PolicyDefaultProvider(PrefService* prefs)
   pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultGeolocationSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultNotificationsSetting, this);
+  pref_change_registrar_.Add(
+      prefs::kManagedDefaultAutoSelectCertificateSetting, this);
 }
 
 PolicyDefaultProvider::~PolicyDefaultProvider() {
@@ -170,6 +178,9 @@ void PolicyDefaultProvider::Observe(int type,
       UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
     } else if (*name == prefs::kManagedDefaultNotificationsSetting) {
       UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    } else if (*name == prefs::kManagedDefaultAutoSelectCertificateSetting) {
+      UpdateManagedDefaultSetting(
+          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
@@ -241,6 +252,9 @@ void PolicyDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kManagedDefaultNotificationsSetting,
                              CONTENT_SETTING_DEFAULT,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kManagedDefaultAutoSelectCertificateSetting,
+                             CONTENT_SETTING_ASK,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -248,6 +262,8 @@ void PolicyDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
 
 // static
 void PolicyProvider::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterListPref(prefs::kManagedAutoSelectCertificateForUrls,
+                          PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedCookiesAllowedForUrls,
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kManagedCookiesBlockedForUrls,
@@ -279,6 +295,7 @@ PolicyProvider::PolicyProvider(PrefService* prefs,
   ReadManagedContentSettings(false);
 
   pref_change_registrar_.Init(prefs_);
+  pref_change_registrar_.Add(prefs::kManagedAutoSelectCertificateForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedCookiesBlockedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedCookiesAllowedForUrls, this);
   pref_change_registrar_.Add(prefs::kManagedCookiesSessionOnlyForUrls, this);
@@ -330,10 +347,12 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       ContentSettingsType content_type =
           kPrefsForManagedContentSettingsMap[i].content_type;
       // If only one pattern was defined auto expand it to a pattern pair.
+      ContentSettingsPattern secondary_pattern =
+          !pattern_pair.second.IsValid() ? ContentSettingsPattern::Wildcard()
+                                         : pattern_pair.second;
       rules->push_back(MakeTuple(
           pattern_pair.first,
-          !pattern_pair.second.IsValid() ? ContentSettingsPattern::Wildcard()
-                                         : pattern_pair.second,
+          secondary_pattern,
           content_type,
           ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
           kPrefsForManagedContentSettingsMap[i].setting));
@@ -436,7 +455,8 @@ void PolicyProvider::Observe(int type,
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     DCHECK_EQ(prefs_, Source<PrefService>(source).ptr());
     std::string* name = Details<std::string>(details).ptr();
-    if (*name == prefs::kManagedCookiesAllowedForUrls ||
+    if (*name == prefs::kManagedAutoSelectCertificateForUrls ||
+        *name == prefs::kManagedCookiesAllowedForUrls ||
         *name == prefs::kManagedCookiesBlockedForUrls ||
         *name == prefs::kManagedCookiesSessionOnlyForUrls ||
         *name == prefs::kManagedImagesAllowedForUrls ||

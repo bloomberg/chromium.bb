@@ -46,7 +46,7 @@ void SSLClientAuthHandler::SelectCertificate() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &SSLClientAuthHandler::ShowClientCertificateRequestDialog,
+          this, &SSLClientAuthHandler::DoSelectCertificate,
           render_process_host_id, render_view_host_id));
 }
 
@@ -94,9 +94,9 @@ void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
   }
 }
 
-void SSLClientAuthHandler::ShowClientCertificateRequestDialog(
+void SSLClientAuthHandler::DoSelectCertificate(
     int render_process_host_id, int render_view_host_id) {
-  content::GetContentClient()->browser()->ShowClientCertificateRequestDialog(
+  content::GetContentClient()->browser()->SelectClientCertificate(
       render_process_host_id, render_view_host_id, this);
 }
 

@@ -186,6 +186,23 @@ TEST_F(PrefDefaultProviderTest, MigrateDefaultGeolocationContentSetting) {
   provider.ShutdownOnUIThread();
 }
 
+TEST_F(PrefDefaultProviderTest, AutoSubmitCertificateContentSetting) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+
+  PrefDefaultProvider provider(prefs, false);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            provider.ProvideDefaultSetting(
+                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE));
+  provider.UpdateDefaultSetting(
+      CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            provider.ProvideDefaultSetting(
+                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE));
+  provider.ShutdownOnUIThread();
+}
+
 // ////////////////////////////////////////////////////////////////////////////
 // PrefProviderTest
 //
@@ -685,6 +702,36 @@ TEST_F(PrefProviderTest, SyncObsoleteGeolocationPref) {
                                    secondary_url,
                                    CONTENT_SETTING_BLOCK);
 
+  provider.ShutdownOnUIThread();
+}
+
+TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
+  TestingProfile profile;
+  TestingPrefService* prefs = profile.GetTestingPrefService();
+  GURL primary_url("https://www.example.com");
+  GURL secondary_url("https://www.sample.com");
+
+  PrefProvider provider(prefs, false);
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            provider.GetContentSetting(
+                primary_url,
+                primary_url,
+                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+                std::string()));
+
+  provider.SetContentSetting(
+      ContentSettingsPattern::FromURL(primary_url),
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            provider.GetContentSetting(
+                primary_url,
+                secondary_url,
+                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+                std::string()));
   provider.ShutdownOnUIThread();
 }
 
