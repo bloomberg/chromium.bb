@@ -15,4 +15,5 @@ node = env.CommandSelLdrTestNacl('computed_goto_test.out', prog)
 # generate correct code for this program.
 # See http://code.google.com/p/nativeclient/issues/detail?id=1423
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_computed_goto_test',
-                       is_broken=env.Bit('bitcode'))
+                       #is_broken=env.Bit('bitcode'))
+                       is_broken=False)
