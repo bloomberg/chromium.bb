@@ -2195,6 +2195,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if self.is_mac_bundle:
       env['CONTENTS_FOLDER_PATH'] = \
         self.xcode_settings.GetBundleContentsFolderPath()
+      env['UNLOCALIZED_RESOURCES_FOLDER_PATH'] = \
+          self.xcode_settings.GetBundleResourceFolder()
       env['INFOPLIST_PATH'] = self.xcode_settings.GetBundlePlistPath()
 
       # TODO(thakis): Remove this.
@@ -2212,19 +2214,33 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                     additional_settings={}):
     env = additional_settings
     env.update(self.GetXcodeEnv(spec, target_relative_path))
-    # For
-    #  foo := a\ b
-    # the escaped space does the right thing. For
-    #  export foo := a\ b
-    # it does not -- the backslash is written to the env as literal character.
-    # Hence, unescape all spaces here.
+
+    # Keys whose values will not have $(builddir) replaced with $(abs_builddir).
+    # These have special substitution rules in some cases; see above in
+    # GetXcodeEnv() for the full rationale.
+    keys_to_not_absolutify = ('PRODUCT_NAME', 'FULL_PRODUCT_NAME')
+
+    # Perform some transformations that are required to mimic Xcode behavior.
     for k in env:
       # Values that are not strings but are, for example, lists or tuples such
       # as LDFLAGS or CFLAGS, should not be written out because they are
       # not needed and it's undefined how multi-valued keys should be written.
       if not isinstance(env[k], str):
         continue
+
+      # For
+      #  foo := a\ b
+      # the escaped space does the right thing. For
+      #  export foo := a\ b
+      # it does not -- the backslash is written to the env as literal character.
+      # Hence, unescape all spaces here.
       v = env[k].replace(r'\ ', ' ')
+
+      # Xcode works purely with absolute paths. When writing env variables to
+      # mimic its usage, replace $(builddir) with $(abs_builddir).
+      if k not in keys_to_not_absolutify:
+        v = v.replace('$(builddir)', '$(abs_builddir)')
+
       self.WriteLn('%s: export %s := %s' % (target, k, v))
 
 
