@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_GTK_FLOATING_CONTAINER_H_
-#define CHROME_BROWSER_UI_GTK_GTK_FLOATING_CONTAINER_H_
+#ifndef UI_BASE_GTK_GTK_FLOATING_CONTAINER_H_
+#define UI_BASE_GTK_GTK_FLOATING_CONTAINER_H_
 #pragma once
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+
+#include "ui/base/ui_export.h"
 
 // A specialized container, which is a cross between a GtkBin and a
 // GtkFixed. This container dervies from GtkBin and the implementation of
@@ -75,13 +77,14 @@ struct _GtkFloatingContainerChild {
   gint y;
 };
 
-GType      gtk_floating_container_get_type() G_GNUC_CONST;
-GtkWidget* gtk_floating_container_new();
-void       gtk_floating_container_add_floating(GtkFloatingContainer* container,
-                                               GtkWidget* widget);
+UI_EXPORT GType      gtk_floating_container_get_type() G_GNUC_CONST;
+UI_EXPORT GtkWidget* gtk_floating_container_new();
+UI_EXPORT void       gtk_floating_container_add_floating(
+    GtkFloatingContainer* container,
+    GtkWidget* widget);
 // Use gtk_container_remove to remove all widgets; both widgets added with
 // gtk_container_add() and gtk_floating_container_add_floating().
 
 G_END_DECLS
 
-#endif  // CHROME_BROWSER_UI_GTK_GTK_FLOATING_CONTAINER_H_
+#endif  // UI_BASE_GTK_GTK_FLOATING_CONTAINER_H_

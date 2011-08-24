@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/gtk/fullscreen_exit_bubble_gtk.h"
 
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/ui/gtk/gtk_floating_container.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
+#include "ui/base/gtk/gtk_floating_container.h"
 #include "ui/base/l10n/l10n_util.h"
 
 FullscreenExitBubbleGtk::FullscreenExitBubbleGtk(
