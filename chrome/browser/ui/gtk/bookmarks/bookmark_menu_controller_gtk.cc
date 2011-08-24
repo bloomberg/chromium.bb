@@ -142,8 +142,7 @@ void BookmarkMenuController::NavigateToMenuItem(
 void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
                                        int start_child_index,
                                        GtkWidget* menu) {
-  DCHECK(!parent->child_count() ||
-         start_child_index < parent->child_count());
+  DCHECK(parent->empty() || start_child_index < parent->child_count());
 
   signals_.Connect(menu, "button-press-event",
                    G_CALLBACK(OnMenuButtonPressedOrReleasedThunk), this);

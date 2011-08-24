@@ -358,8 +358,7 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
                                      int start_child_index,
                                      MenuItemView* menu,
                                      int* next_menu_id) {
-  DCHECK(!parent->child_count() ||
-         start_child_index < parent->child_count());
+  DCHECK(parent->empty() || start_child_index < parent->child_count());
   for (int i = start_child_index; i < parent->child_count(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
     int id = *next_menu_id;
