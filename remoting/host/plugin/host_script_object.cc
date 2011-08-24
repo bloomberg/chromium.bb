@@ -651,22 +651,26 @@ void HostNPScriptObject::LocalizeStrings() {
   LocalizeString("@@bidi_dir", &direction);
   ui_strings.direction = UTF16ToUTF8(direction) == "rtl" ?
       remoting::UiStrings::RTL : remoting::UiStrings::LTR;
-  LocalizeString("PRODUCT_NAME", &ui_strings.product_name);
-  LocalizeString("DISCONNECT_BUTTON", &ui_strings.disconnect_button_text);
+  LocalizeString(/*i18n-content*/"PRODUCT_NAME", &ui_strings.product_name);
+  LocalizeString(/*i18n-content*/"DISCONNECT_BUTTON",
+                 &ui_strings.disconnect_button_text);
   LocalizeString(
 #if defined(OS_WIN)
-      "DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS",
+      /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS",
 #elif defined(OS_MAC)
-      "DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X",
+      /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_MAC_OS_X",
 #else
-      "DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX",
+      /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX",
 #endif
       &ui_strings.disconnect_button_text_plus_shortcut);
-  LocalizeString("CONTINUE_PROMPT", &ui_strings.continue_prompt);
-  LocalizeString("CONTINUE_BUTTON", &ui_strings.continue_button_text);
-  LocalizeString("STOP_SHARING_BUTTON",
+  LocalizeString(/*i18n-content*/"CONTINUE_PROMPT",
+                 &ui_strings.continue_prompt);
+  LocalizeString(/*i18n-content*/"CONTINUE_BUTTON",
+                 &ui_strings.continue_button_text);
+  LocalizeString(/*i18n-content*/"STOP_SHARING_BUTTON",
                  &ui_strings.stop_sharing_button_text);
-  LocalizeString("MESSAGE_SHARED", &ui_strings.disconnect_message);
+  LocalizeString(/*i18n-content*/"MESSAGE_SHARED",
+                 &ui_strings.disconnect_message);
 
   host_->SetUiStrings(ui_strings);
 }

@@ -235,6 +235,7 @@
       ],
       'sources': [
         'webapp/build-webapp.py',
+        'webapp/verify-webapp.py',
         '<@(remoting_it2me_files)',
         '<@(remoting_it2me_os_files)',
         '<@(remoting_it2me_locale_files)',
@@ -246,6 +247,30 @@
       # seem to guarantee the ordering of 2 copies statements
       # when the actual project is generated.
       'actions': [
+        {
+          'action_name': 'Verify It2Me WebApp i18n',
+          'inputs': [
+            'webapp/verify-webapp.py',
+            'webapp/me2mom/_locales/en/messages.json',
+            'webapp/me2mom/choice.html',
+            'webapp/me2mom/manifest.json',
+            'webapp/me2mom/remoting.js',
+            'host/plugin/host_script_object.cc',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/remoting/it2me_verified.stamp',
+          ],
+          'action': [
+            'python',
+            'webapp/verify-webapp.py',
+            '<(PRODUCT_DIR)/remoting/it2me_verified.stamp',
+            'webapp/me2mom/_locales/en/messages.json',
+            'webapp/me2mom/choice.html',
+            'webapp/me2mom/manifest.json',
+            'webapp/me2mom/remoting.js',
+            'host/plugin/host_script_object.cc',
+         ],
+        },
         {
           'action_name': 'Build It2Me WebApp',
           'output_dir': '<(PRODUCT_DIR)/remoting/it2me.webapp',

@@ -40,11 +40,11 @@ remoting.HOST_PLUGIN_ID = 'host-plugin-id';
 
 /** @enum {string} */
 remoting.ClientError = {
-  NO_RESPONSE: 'ERROR_NO_RESPONSE',
-  INVALID_ACCESS_CODE: 'ERROR_INVALID_ACCESS_CODE',
-  MISSING_PLUGIN: 'ERROR_MISSING_PLUGIN',
-  OAUTH_FETCH_FAILED: 'ERROR_AUTHENTICATION_FAILED',
-  OTHER_ERROR: 'ERROR_GENERIC'
+  NO_RESPONSE: /*i18n-content*/'ERROR_NO_RESPONSE',
+  INVALID_ACCESS_CODE: /*i18n-content*/'ERROR_INVALID_ACCESS_CODE',
+  MISSING_PLUGIN: /*i18n-content*/'ERROR_MISSING_PLUGIN',
+  OAUTH_FETCH_FAILED: /*i18n-content*/'ERROR_AUTHENTICATION_FAILED',
+  OTHER_ERROR: /*i18n-content*/'ERROR_GENERIC'
 };
 
 /**
@@ -626,7 +626,7 @@ remoting.promptClose = function() {
     case remoting.AppMode.HOST_WAITING_FOR_CONNECTION:
     case remoting.AppMode.HOST_SHARED:
     case remoting.AppMode.IN_SESSION:
-      var result = chrome.i18n.getMessage('CLOSE_PROMPT');
+      var result = chrome.i18n.getMessage(/*i18n-content*/'CLOSE_PROMPT');
       return result;
     default:
       return NULL;
