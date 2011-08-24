@@ -1006,6 +1006,13 @@ terminal_draw_contents(struct terminal *terminal)
 }
 
 static void
+terminal_write(struct terminal *terminal, const char *data, size_t length)
+{
+	if (write(terminal->master, data, length) < 0)
+		abort();
+}
+
+static void
 resize_handler(struct window *window,
 	       int32_t pixel_width, int32_t pixel_height, void *data)
 {
@@ -1403,7 +1410,7 @@ handle_escape(struct terminal *terminal)
 		terminal->last_char.byte[0] = 0;
 		break;
 	case 'c':    /* Primary DA */
-		write(terminal->master, "\e[?6c", 5);
+		terminal_write(terminal, "\e[?6c", 5);
 		break;
 	case 'd':    /* VPA */
 		x = set[0] ? args[0] : 1;
@@ -1454,13 +1461,13 @@ handle_escape(struct terminal *terminal)
 	case 'n':    /* DSR */
 		i = set[0] ? args[0] : 0;
 		if (i == 0 || i == 5) {
-			write(terminal->master, "\e[0n", 4);
+			terminal_write(terminal, "\e[0n", 4);
 		} else if (i == 6) {
 			snprintf(response, MAX_RESPONSE, "\e[%d;%dR",
 			         terminal->origin_mode ?
 				     terminal->row+terminal->margin_top : terminal->row+1,
 				 terminal->column+1);
-			write(terminal->master, response, strlen(response));
+			terminal_write(terminal, response, strlen(response));
 		}
  		break;
 	case 'r':
@@ -1514,23 +1521,23 @@ handle_escape(struct terminal *terminal)
 			window_get_child_allocation(terminal->window, &allocation);
 			snprintf(response, MAX_RESPONSE, "\e[3;%d;%dt",
 				 allocation.x, allocation.y);
-			write(terminal->master, response, strlen(response));
+			terminal_write(terminal, response, strlen(response));
 			break;
 		case 14: /* report px */
 			window_get_child_allocation(terminal->window, &allocation);
 			snprintf(response, MAX_RESPONSE, "\e[4;%d;%dt",
 				 allocation.height, allocation.width);
-			write(terminal->master, response, strlen(response));
+			terminal_write(terminal, response, strlen(response));
 			break;
 		case 18: /* report ch */
 			snprintf(response, MAX_RESPONSE, "\e[9;%d;%dt",
 				 terminal->height, terminal->width);
-			write(terminal->master, response, strlen(response));
+			terminal_write(terminal, response, strlen(response));
 			break;
 		case 21: /* report title */
 			snprintf(response, MAX_RESPONSE, "\e]l%s\e\\",
 				 window_get_title(terminal->window));
-			write(terminal->master, response, strlen(response));
+			terminal_write(terminal, response, strlen(response));
 			break;
 		default:
 			if (args[0] >= 24)
@@ -2204,7 +2211,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	}
 
 	if (state && len > 0)
-		write(terminal->master, ch, len);
+		terminal_write(terminal, ch, len);
 }
 
 static void
