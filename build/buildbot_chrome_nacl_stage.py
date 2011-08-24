@@ -8,6 +8,7 @@
 
 import optparse
 import os.path
+import re
 import shutil
 import subprocess
 import sys
@@ -15,31 +16,34 @@ import sys
 import chromebinaries
 
 # Copied from buildbot/buildbot_lib.py
-def TryToCleanContents(path):
+def TryToCleanContents(path, file_name_filter=lambda fn: True):
   """
   Remove the contents of a directory without touching the directory itself.
   Ignores all failures.
   """
   if os.path.exists(path):
     for fn in os.listdir(path):
-      TryToCleanPath(os.path.join(path, fn))
+      TryToCleanPath(os.path.join(path, fn), file_name_filter)
 
 
 # Copied from buildbot/buildbot_lib.py
-def TryToCleanPath(path):
+def TryToCleanPath(path, file_name_filter=lambda fn: True):
   """
   Removes a file or directory.
   Ignores all failures.
   """
-  print 'Trying to remove %s' % path
   if os.path.exists(path):
-    if os.path.isdir(path):
-      shutil.rmtree(path, ignore_errors=True)
+    if file_name_filter(path):
+      print 'Trying to remove %s' % path
+      if os.path.isdir(path):
+        shutil.rmtree(path, ignore_errors=True)
+      else:
+        try:
+          os.remove(path)
+        except Exception:
+          pass
     else:
-      try:
-        os.remove(path)
-      except Exception:
-        pass
+      print 'Skipping %s' % path
 
 
 def FindChrome(src_dir, options):
@@ -73,12 +77,19 @@ def FindChrome(src_dir, options):
 
 # TODO(ncbray): this is somewhat unsafe.  We should fix the underlying problem.
 def CleanTempDir():
+  # Only delete files and directories like:
+  # a) C:\temp\83C4.tmp
+  # b) /tmp/.org.chromium.Chromium.EQrEzl
+  file_name_re = re.compile(
+      r'[\\/]([0-9a-fA-F]+\.tmp|\.org\.chrom\w+\.Chrom\w+\..+)$')
+  file_name_filter = lambda fn: file_name_re.search(fn) is not None
+
   path = os.environ.get('TMP', os.environ.get('TEMP', '/tmp'))
   if len(path) >= 4 and os.path.isdir(path):
     print
     print "Cleaning out the temp directory."
     print
-    TryToCleanContents(path)
+    TryToCleanContents(path, file_name_filter)
   else:
     print
     print "Cannot find temp directory, not cleaning it."

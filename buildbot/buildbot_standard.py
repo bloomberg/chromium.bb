@@ -7,6 +7,7 @@
 from __future__ import with_statement
 
 import os.path
+import re
 import sys
 
 from buildbot_lib import (
@@ -189,7 +190,13 @@ def BuildScript(status, context):
     print 'Making sure %s exists...' % tmp_dir
     EnsureDirectoryExists(tmp_dir)
     print 'Cleaning up the contents of %s...' % tmp_dir
-    TryToCleanContents(tmp_dir)
+    # Only delete files and directories like:
+    # a) C:\temp\83C4.tmp
+    # b) /tmp/.org.chromium.Chromium.EQrEzl
+    file_name_re = re.compile(
+        r'[\\/]([0-9a-fA-F]+\.tmp|\.org\.chrom\w+\.Chrom\w+\..+)$')
+    file_name_filter = lambda fn: file_name_re.search(fn) is not None
+    TryToCleanContents(tmp_dir, file_name_filter)
 
   # Skip over hooks when run inside the toolchain build because
   # download_toolchains would overwrite the toolchain build.

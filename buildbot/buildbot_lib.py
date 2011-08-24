@@ -89,30 +89,33 @@ def EnsureDirectoryExists(path):
     os.makedirs(path)
 
 
-def TryToCleanContents(path):
+def TryToCleanContents(path, file_name_filter=lambda fn: True):
   """
   Remove the contents of a directory without touching the directory itself.
   Ignores all failures.
   """
   if os.path.exists(path):
     for fn in os.listdir(path):
-      TryToCleanPath(os.path.join(path, fn))
+      TryToCleanPath(os.path.join(path, fn), file_name_filter)
 
 
-def TryToCleanPath(path):
+def TryToCleanPath(path, file_name_filter=lambda fn: True):
   """
   Removes a file or directory.
   Ignores all failures.
   """
-  print 'Trying to remove %s' % path
   if os.path.exists(path):
-    if os.path.isdir(path):
-      shutil.rmtree(path, ignore_errors=True)
+    if file_name_filter(path):
+      print 'Trying to remove %s' % path
+      if os.path.isdir(path):
+        shutil.rmtree(path, ignore_errors=True)
+      else:
+        try:
+          os.remove(path)
+        except Exception:
+          pass
     else:
-      try:
-        os.remove(path)
-      except Exception:
-        pass
+      print 'Skipping %s' % path
 
 
 def Retry(op, *args):
