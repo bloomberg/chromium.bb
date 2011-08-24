@@ -13,10 +13,10 @@
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
-#include "ui/base/ui_base_paths.h"
 
 namespace {
 
