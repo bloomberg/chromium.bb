@@ -65,6 +65,7 @@
         ['OS=="win"', {
           'sources' : [
             '../../win/exception_patch/exit_fast.S',
+            '../../win/exception_patch/intercept.S',
             '../../win/exception_patch/ntdll_patch.c',
             '../../win/nacl_signal_64.c',
             'sel_addrspace_win_x86_64.c',

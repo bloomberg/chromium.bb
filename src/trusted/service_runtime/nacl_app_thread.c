@@ -50,7 +50,7 @@ void WINAPI NaClThreadLauncher(void *state) {
 
   NaClVmHoleThreadStackIsSafe(natp->nap);
 
-  NaClStackSafetyNowOnUntrustedStack();  /* real soon now! */
+  NaClStackSafetyNowOnUntrustedStack();
 
   /*
    * Notify the debug stub, that a new thread is availible.

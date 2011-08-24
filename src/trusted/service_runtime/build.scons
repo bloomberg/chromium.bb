@@ -176,6 +176,7 @@ if env.Bit('windows'):
   elif env.Bit('target_x86_64'):
     ldr_inputs += [
       'win/exception_patch/exit_fast.S',
+      'win/exception_patch/intercept.S',
       'win/exception_patch/ntdll_patch.c',
       'win/nacl_signal_64.c',
     ]
@@ -251,26 +252,26 @@ else:
   # Unknown architecture
   raise AssertionError('Unknown architecture')
 
+sel_ldr_libs = ['sel',
+                'env_cleanser',
+                'nacl_error_code',
+                'manifest_proxy',
+                'simple_service',
+                'thread_interface',
+                'gio_wrapped_desc',
+                'nonnacl_srpc',
+                'nrd_xfer',
+                'nacl_perf_counter',
+                'nacl_base',
+                'imc',
+                'container',
+                'platform',
+                'platform_qual_lib',
+                VALIDATOR_LIB,
+                ] + DEBUG_LIBS
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
   sel_main_obj = env.ComponentObject('sel_main.c')
-  sel_ldr_libs = ['sel',
-                  'env_cleanser',
-                  'nacl_error_code',
-                  'manifest_proxy',
-                  'simple_service',
-                  'thread_interface',
-                  'gio_wrapped_desc',
-                  'nonnacl_srpc',
-                  'nrd_xfer',
-                  'nacl_perf_counter',
-                  'nacl_base',
-                  'imc',
-                  'container',
-                  'platform',
-                  'platform_qual_lib',
-                  VALIDATOR_LIB,
-                  ] + DEBUG_LIBS
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_obj,
                                       EXTRA_LIBS=sel_ldr_libs)
 
@@ -510,6 +511,22 @@ if env.Bit('windows') and env.Bit('target_x86_64'):
       exit_status='trusted_segfault',
       stdout_golden=env.File('win/exception_patch/ntdll_test.stdout'))
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_patch_ntdll_test')
+
+  intercept_test_prog = env.ComponentProgram(
+      'ntdll_intercept_test', 'win/exception_patch/intercept_test.c',
+      EXTRA_LIBS=sel_ldr_libs)
+  node = env.CommandTest(
+      'ntdll_intercept_test.out',
+      command=[intercept_test_prog, 'test_intercept'],
+      exit_status='trusted_segfault',
+      stdout_golden=env.File('win/exception_patch/intercept_test.stdout'))
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_ntdll_intercept_test')
+  node = env.CommandTest(
+      'ntdll_fallback_test.out',
+      command=[intercept_test_prog, 'test_fallback'],
+      exit_status='trusted_segfault',
+      stdout_golden=env.File('win/exception_patch/fallback_test.stdout'))
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_ntdll_fallback_test')
 
 
 check_test_exe = env.ComponentProgram('nacl_check_test',

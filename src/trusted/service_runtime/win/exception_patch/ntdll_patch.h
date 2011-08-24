@@ -15,8 +15,14 @@
 
 void NaClPatchWindowsExceptionDispatcher();
 
+uint8_t *NaClGetKiUserExceptionDispatcher();
+
 extern char NaCl_exception_dispatcher_exit_fast[];
 extern char NaCl_exception_dispatcher_exit_fast_end[];
+
+extern char NaCl_exception_dispatcher_intercept[];
+extern char NaCl_exception_dispatcher_intercept_tls_index[];
+extern char NaCl_exception_dispatcher_intercept_end[];
 
 #endif
 
