@@ -210,10 +210,10 @@ void FileManagerUtil::ShowFullTabUrl(Profile*,
   }
 
   std::string url = chrome::kChromeUIFileManagerURL;
-  url += '#' + EscapeUrlEncodedData(virtual_path.value(), false);
+  url += "#/" + EscapeUrlEncodedData(virtual_path.value(), false);
 
   UserMetrics::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
-  browser->ShowSingletonTab(GURL(url));
+  browser->ShowSingletonTabRespectRef(GURL(url));
 }
 
 void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {

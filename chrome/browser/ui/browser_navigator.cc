@@ -293,6 +293,7 @@ NavigateParams::NavigateParams(
       window_action(NO_ACTION),
       user_gesture(true),
       path_behavior(RESPECT),
+      ref_behavior(IGNORE_REF),
       browser(a_browser),
       profile(NULL) {
 }
@@ -308,6 +309,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       window_action(NO_ACTION),
       user_gesture(true),
       path_behavior(RESPECT),
+      ref_behavior(IGNORE_REF),
       browser(a_browser),
       profile(NULL) {
 }
@@ -501,7 +503,8 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
         params->browser->GetTabContentsWrapperAt(tab_index);
 
     url_canon::Replacements<char> replacements;
-    replacements.ClearRef();
+    if (params->ref_behavior == browser::NavigateParams::IGNORE_REF)
+      replacements.ClearRef();
     if (params->path_behavior == browser::NavigateParams::IGNORE_AND_NAVIGATE ||
         params->path_behavior == browser::NavigateParams::IGNORE_AND_STAY_PUT) {
       replacements.ClearPath();

@@ -149,6 +149,16 @@ struct NavigateParams {
   // Default is RESPECT.
   PathBehavior path_behavior;
 
+  // What to do with the ref component of the URL for singleton navigations.
+  enum RefBehavior {
+    // Two URLs with differing refs are same.
+    IGNORE_REF,
+    // Two URLs with differing refs are different.
+    RESPECT_REF,
+  };
+  // Default is IGNORE.
+  RefBehavior ref_behavior;
+
   // [in]  Specifies a Browser object where the navigation could occur or the
   //       tab could be added. Navigate() is not obliged to use this Browser if
   //       it is not compatible with the operation being performed. If NULL,

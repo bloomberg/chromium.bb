@@ -1257,6 +1257,12 @@ void Browser::ShowSingletonTab(const GURL& url) {
   browser::Navigate(&params);
 }
 
+void Browser::ShowSingletonTabRespectRef(const GURL& url) {
+  browser::NavigateParams params(GetSingletonTabNavigateParams(url));
+  params.ref_behavior = browser::NavigateParams::RESPECT_REF;
+  browser::Navigate(&params);
+}
+
 void Browser::ShowSingletonTabOverwritingNTP(
     const browser::NavigateParams& params) {
   browser::NavigateParams local_params(params);
@@ -2112,7 +2118,8 @@ void Browser::OpenSearchEngineOptionsDialog() {
 #if defined(FILE_MANAGER_EXTENSION)
 void Browser::OpenFileManager() {
   UserMetrics::RecordAction(UserMetricsAction("OpenFileManager"));
-  ShowSingletonTab(GURL(chrome::kChromeUIFileManagerURL));
+  ShowSingletonTabRespectRef(GURL(
+      std::string(chrome::kChromeUIFileManagerURL) + "#/"));
 }
 #endif
 
