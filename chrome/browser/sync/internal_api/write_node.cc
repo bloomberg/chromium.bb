@@ -123,6 +123,7 @@ void WriteNode::SetIsFolder(bool folder) {
 }
 
 void WriteNode::SetTitle(const std::wstring& title) {
+  sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
   std::string server_legal_name;
   SyncAPINameToServerName(title, &server_legal_name);
 
@@ -132,17 +133,18 @@ void WriteNode::SetTitle(const std::wstring& title) {
     return;  // Skip redundant changes.
 
   // Only set NON_UNIQUE_NAME to the title if we're not encrypted.
-  if (GetEntitySpecifics().has_encrypted())
-    entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
-  else
+  if (specifics.has_encrypted()) {
+    if (old_name != kEncryptedString)
+      entry_->Put(syncable::NON_UNIQUE_NAME, kEncryptedString);
+  } else {
     entry_->Put(syncable::NON_UNIQUE_NAME, server_legal_name);
+  }
 
   // For bookmarks, we also set the title field in the specifics.
   // TODO(zea): refactor bookmarks to not need this functionality.
   if (GetModelType() == syncable::BOOKMARKS) {
-    sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
-    new_value.set_title(server_legal_name);
-    SetBookmarkSpecifics(new_value);  // Does it's own encryption checking.
+    specifics.MutableExtension(sync_pb::bookmark)->set_title(server_legal_name);
+    SetEntitySpecifics(specifics);  // Does it's own encryption checking.
   }
 
   MarkForSyncing();

@@ -15,6 +15,7 @@
 
 namespace browser_sync {
 class Cryptographer;
+class TestBookmarkModelAssociator;
 }
 
 namespace syncable {
@@ -167,6 +168,9 @@ class WriteNode : public BaseNode {
   virtual const BaseTransaction* GetTransaction() const;
 
  private:
+  friend class browser_sync::TestBookmarkModelAssociator;
+  FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, EncryptBookmarksWithLegacyData);
+
   void* operator new(size_t size);  // Node is meant for stack use only.
 
   // Helper to set model type. This will clear any specifics data.

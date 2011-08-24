@@ -92,12 +92,26 @@ bool BaseNode::DecryptIfNecessary() {
     return true;
   }
 
-  // We assume any node with the encrypted field set has encrypted data.
-  if (!specifics.has_encrypted())
+  // We assume any node with the encrypted field set has encrypted data and if
+  // not we have no work to do, with the exception of bookmarks. For bookmarks
+  // we must make sure the bookmarks data has the title field supplied. If not,
+  // we fill the unencrypted_data_ with a copy of the bookmark specifics that
+  // follows the new bookmarks format.
+  if (!specifics.has_encrypted()) {
+    if (GetModelType() == syncable::BOOKMARKS &&
+        !specifics.GetExtension(sync_pb::bookmark).has_title() &&
+        !GetTitle().empty()) {  // Last check ensures this isn't a new node.
+      // We need to fill in the title.
+      std::string title = GetTitle();
+      VLOG(1) << "Reading from legacy bookmark, manually returning title "
+              << title;
+      unencrypted_data_.CopyFrom(specifics);
+      unencrypted_data_.MutableExtension(sync_pb::bookmark)->set_title(title);
+    }
     return true;
+  }
 
-  const sync_pb::EncryptedData& encrypted =
-      specifics.encrypted();
+  const sync_pb::EncryptedData& encrypted = specifics.encrypted();
   std::string plaintext_data = GetTransaction()->GetCryptographer()->
       DecryptToString(encrypted);
   if (plaintext_data.length() == 0 ||
@@ -116,13 +130,34 @@ const sync_pb::EntitySpecifics& BaseNode::GetUnencryptedSpecifics(
     const syncable::Entry* entry) const {
   const sync_pb::EntitySpecifics& specifics = entry->Get(SPECIFICS);
   if (specifics.has_encrypted()) {
-    DCHECK(syncable::GetModelTypeFromSpecifics(unencrypted_data_) !=
-           syncable::UNSPECIFIED);
+    DCHECK_NE(syncable::GetModelTypeFromSpecifics(unencrypted_data_),
+              syncable::UNSPECIFIED);
     return unencrypted_data_;
   } else {
-    DCHECK(syncable::GetModelTypeFromSpecifics(unencrypted_data_) ==
-           syncable::UNSPECIFIED);
-    return specifics;
+    // Due to the change in bookmarks format, we need to check to see if this is
+    // a legacy bookmarks (and has no title field in the proto). If it is, we
+    // return the unencrypted_data_, which was filled in with the title by
+    // DecryptIfNecessary().
+    if (GetModelType() == syncable::BOOKMARKS) {
+      const sync_pb::BookmarkSpecifics& bookmark_specifics =
+          specifics.GetExtension(sync_pb::bookmark);
+      if (bookmark_specifics.has_title() ||
+          GetTitle().empty() ||  // For the empty node case
+          !GetEntry()->Get(syncable::UNIQUE_SERVER_TAG).empty()) {
+        // It's possible we previously had to convert and set
+        // |unencrypted_data_| but then wrote our own data, so we allow
+        // |unencrypted_data_| to be non-empty.
+        return specifics;
+      } else {
+        DCHECK_EQ(syncable::GetModelTypeFromSpecifics(unencrypted_data_),
+                  syncable::BOOKMARKS);
+        return unencrypted_data_;
+      }
+    } else {
+      DCHECK_EQ(syncable::GetModelTypeFromSpecifics(unencrypted_data_),
+                syncable::UNSPECIFIED);
+      return specifics;
+    }
   }
 }
 

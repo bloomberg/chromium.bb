@@ -1433,4 +1433,69 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
 
 }  // namespace
 
+// Friended by WriteNode, so can't be in an anonymouse namespace.
+TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
+  EXPECT_TRUE(SetUpEncryption());
+  std::string title = "Google";
+  std::string url = "http://www.google.com";
+
+  // Create a bookmark using the legacy format.
+  int64 node1 = MakeNode(sync_manager_.GetUserShare(),
+           syncable::BOOKMARKS,
+           "testtag");
+  {
+    WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    WriteNode node(&trans);
+    EXPECT_TRUE(node.InitByIdLookup(node1));
+
+    sync_pb::EntitySpecifics entity_specifics;
+    entity_specifics.MutableExtension(sync_pb::bookmark)->set_url(url);
+    node.SetEntitySpecifics(entity_specifics);
+
+    // Set the old style title.
+    syncable::MutableEntry* node_entry = node.entry_;
+    node_entry->Put(syncable::NON_UNIQUE_NAME, title);
+  }
+
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    ReadNode node(&trans);
+    EXPECT_TRUE(node.InitByIdLookup(node1));
+    EXPECT_EQ(syncable::BOOKMARKS, node.GetModelType());
+    EXPECT_EQ(title, node.GetTitle());
+    EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
+    EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
+  }
+
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
+                                                   syncable::BOOKMARKS,
+                                                   false /* not encrypted */));
+  }
+
+  ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::BOOKMARKS);
+  encrypted_types.insert(syncable::PASSWORDS);  // Always there.
+  EXPECT_CALL(observer_, OnEncryptionComplete(encrypted_types));
+  sync_manager_.EncryptDataTypes(encrypted_types);
+
+  {
+    ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+    EXPECT_EQ(encrypted_types, GetEncryptedTypes(&trans));
+    EXPECT_TRUE(syncable::VerifyDataTypeEncryption(trans.GetWrappedTrans(),
+                                                   trans.GetCryptographer(),
+                                                   syncable::BOOKMARKS,
+                                                   true /* is encrypted */));
+
+    ReadNode node(&trans);
+    EXPECT_TRUE(node.InitByIdLookup(node1));
+    EXPECT_EQ(syncable::BOOKMARKS, node.GetModelType());
+    EXPECT_EQ(title, node.GetTitle());
+    EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
+    EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
+  }
+}
+
 }  // namespace browser_sync
