@@ -31,6 +31,12 @@ cr.define('mobile', function() {
   SimUnlock.ERROR_PUK = 'incorrectPuk';
   SimUnlock.ERROR_OK = 'ok';
 
+  // Misc constants.
+  SimUnlock.PIN_MIN_LENGTH = 4;
+  SimUnlock.PUK_LENGTH = 8;
+  SimUnlock.DOM_VK_9 = 57;
+  SimUnlock.DOM_VK_TAB = 9;
+
   SimUnlock.localStrings_ = new LocalStrings();
 
   SimUnlock.prototype = {
@@ -110,6 +116,7 @@ cr.define('mobile', function() {
                 'enterPukWarning', tries);
             $('puk-warning-msg').textContent = pukMessage;
           }
+          $('enter-puk-confirm').disabled = true;
           $('locked-puk-overlay').hidden = false;
           $('puk-input').focus();
           break;
@@ -133,6 +140,10 @@ cr.define('mobile', function() {
     },
 
     newPinEntered_: function(newPin, newPin2) {
+      if (newPin.length < SimUnlock.PIN_MIN_LENGTH ||
+          newPin2.length < SimUnlock.PIN_MIN_LENGTH) {
+        return;
+      }
       var changePinMode = this.state_ == SimUnlock.SIM_NOT_LOCKED_CHANGE_PIN;
       if (newPin != newPin2) {
         $('choose-pin-error').hidden = false;
@@ -157,6 +168,8 @@ cr.define('mobile', function() {
     },
 
     pukEntered_: function(pukValue) {
+      if (pukValue.length < SimUnlock.PUK_LENGTH)
+        return;
       this.pukValue_ = pukValue;
       this.hideAll_();
       SimUnlock.prepareChoosePinDialog(false);
@@ -198,9 +211,22 @@ cr.define('mobile', function() {
         this.mode_ = SimUnlock.SIM_DIALOG_SET_LOCK_OFF;
     }
 
+    $('pin-input').addEventListener('keydown', function(event) {
+      if (event.keyIdentifier == 'Enter') {
+        SimUnlock.submitPin();
+        return;
+      }
+      if (event.keyCode > SimUnlock.DOM_VK_9 ||
+             (event.shiftKey && event.keyCode != SimUnlock.DOM_VK_TAB)) {
+        event.preventDefault();
+      }
+    });
+    $('pin-input').addEventListener('keyup', function(event) {
+      $('enter-pin-confirm').disabled =
+          this.value.length < SimUnlock.PIN_MIN_LENGTH;
+    });
     $('enter-pin-confirm').addEventListener('click', function(event) {
-      SimUnlock.enablePinDialog(false);
-      chrome.send('enterPinCode', [$('pin-input').value]);
+      SimUnlock.submitPin()
     });
     $('enter-pin-dismiss').addEventListener('click', function(event) {
       SimUnlock.cancel();
@@ -211,11 +237,57 @@ cr.define('mobile', function() {
     $('pin-no-tries-dismiss').addEventListener('click', function(event) {
       SimUnlock.cancel();
     });
+    $('puk-input').addEventListener('keydown', function(event) {
+      if (event.keyIdentifier == 'Enter') {
+        SimUnlock.pukEntered($('puk-input').value);
+        return;
+      }
+      if (event.keyCode > SimUnlock.DOM_VK_9 ||
+             (event.shiftKey && event.keyCode != SimUnlock.DOM_VK_TAB)) {
+        event.preventDefault();
+      }
+    });
+    $('puk-input').addEventListener('keyup', function(event) {
+      $('enter-puk-confirm').disabled =
+          this.value.length < SimUnlock.PUK_LENGTH;
+    });
     $('enter-puk-confirm').addEventListener('click', function(event) {
       SimUnlock.pukEntered($('puk-input').value);
     });
     $('enter-puk-dismiss').addEventListener('click', function(event) {
       SimUnlock.cancel();
+    });
+    $('new-pin-input').addEventListener('keydown', function(event) {
+      if (event.keyIdentifier == 'Enter') {
+        if (this.value != '' && this.value.length >= SimUnlock.PIN_MIN_LENGTH)
+          $('retype-new-pin-input').focus();
+        return;
+      }
+      if (event.keyCode > SimUnlock.DOM_VK_9 ||
+             (event.shiftKey && event.keyCode != SimUnlock.DOM_VK_TAB)) {
+        event.preventDefault();
+      }
+    });
+    $('new-pin-input').addEventListener('keyup', function(event) {
+      $('choose-pin-confirm').disabled =
+          this.value.length < SimUnlock.PIN_MIN_LENGTH ||
+          $('retype-new-pin-input').value.length < SimUnlock.PIN_MIN_LENGTH;
+    });
+    $('retype-new-pin-input').addEventListener('keyup', function(event) {
+      $('choose-pin-confirm').disabled =
+        this.value.length < SimUnlock.PIN_MIN_LENGTH ||
+        $('new-pin-input').value.length < SimUnlock.PIN_MIN_LENGTH;
+    });
+    $('retype-new-pin-input').addEventListener('keydown', function(event) {
+      if (event.keyIdentifier == 'Enter') {
+        SimUnlock.newPinEntered($('new-pin-input').value,
+                                $('retype-new-pin-input').value);
+        return;
+      }
+      if (event.keyCode > SimUnlock.DOM_VK_9 ||
+             (event.shiftKey && event.keyCode != SimUnlock.DOM_VK_TAB)) {
+        event.preventDefault();
+      }
     });
     $('choose-pin-confirm').addEventListener('click', function(event) {
       SimUnlock.newPinEntered($('new-pin-input').value,
@@ -235,7 +307,8 @@ cr.define('mobile', function() {
 
   SimUnlock.enablePinDialog = function(enabled) {
     $('pin-input').disabled = !enabled;
-    $('enter-pin-confirm').disabled = !enabled;
+    // Ok button is initially disabled.
+    $('enter-pin-confirm').disabled = true;
     $('enter-pin-dismiss').disabled = !enabled;
   };
 
@@ -245,6 +318,14 @@ cr.define('mobile', function() {
     $('retype-new-pin-input').disabled = !enabled;
     $('choose-pin-confirm').disabled = !enabled;
     $('choose-pin-dismiss').disabled = !enabled;
+  };
+
+  SimUnlock.submitPin = function() {
+    var pin = $('pin-input').value;
+    if (pin.length < SimUnlock.PIN_MIN_LENGTH)
+      return;
+    SimUnlock.enablePinDialog(false);
+    chrome.send('enterPinCode', [pin]);
   };
 
   SimUnlock.prepareChoosePinDialog = function(changePin) {
