@@ -160,18 +160,17 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableGpuVsync)
   },
+  // Exposed on all platforms until there is a workaround for easy access to
+  // the native print dialog for users that need it. Once that's done, revert
+  // back to:
+  // Only expose this for Chromium builds where users may not have the PDF
+  // plugin. Do not give Google Chrome users the option to disable it here.
+  // Also expose it for Chrome OS where print preview is still experimental.
   {
     "print-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRINT_PREVIEW_NAME,
     IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION,
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
-    // Only expose this for Chromium builds where users may not have the PDF
-    // plugin. Do not give Google Chrome users the option to disable it here.
-    // Also expose it for Chrome OS where print preview is still experimental.
     kOsAll,
-#else
-    0,
-#endif
     SINGLE_VALUE_TYPE(switches::kEnablePrintPreview)
   },
   {
