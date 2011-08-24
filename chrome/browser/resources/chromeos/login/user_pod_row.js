@@ -382,9 +382,11 @@ cr.define('login', function() {
             if (this.pods[i] == pod) {
               pod.classList.remove("faded");
               pod.classList.add("focused");
+              pod.tabIndex = -1;  // Make it not keyboard focusable.
             } else {
               this.pods[i].classList.remove('focused');
               this.pods[i].classList.add('faded');
+              this.pods[i].tabIndex = 0;
             }
           }
           pod.focusInput();
@@ -401,6 +403,7 @@ cr.define('login', function() {
           this.pods[i].classList.remove('focused');
           this.pods[i].classList.remove('faded');
           this.pods[i].activeRemoveButton = false;
+          this.pods[i].tabIndex = 0;
         }
         this.focusedPod_ = undefined;
       }
@@ -480,7 +483,13 @@ cr.define('login', function() {
           e.target.focusInput();
         else
           this.focusPod(e.target);
-      } else if (e.target.parentNode.parentNode != this) {
+      } else if (e.target.parentNode.parentNode == this) {
+        // Focus on a control of a pod.
+        if (!e.target.parentNode.classList.contains('focused')) {
+          this.focusPod(e.target.parentNode);
+          e.target.focus();
+        }
+      } else {
         // Clears pod focus when we reach here. It means new focus is neither
         // on a pod nor on a button/input for a pod.
         this.focusPod();
