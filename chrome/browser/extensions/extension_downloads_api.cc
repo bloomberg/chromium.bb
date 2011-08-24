@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -26,17 +27,61 @@
 
 namespace constants = extension_downloads_api_constants;
 
+bool DownloadsFunctionInterface::RunImplImpl(
+    DownloadsFunctionInterface* pimpl) {
+  CHECK(pimpl);
+  if (!pimpl->ParseArgs()) return false;
+  UMA_HISTOGRAM_ENUMERATION(
+      "Download.ApiFunctions", pimpl->function(), DOWNLOADS_FUNCTION_LAST);
+  pimpl->RunInternal();
+  return true;
+}
+
+SyncDownloadsFunction::SyncDownloadsFunction(
+    DownloadsFunctionInterface::DownloadsFunctionName function)
+  : function_(function) {
+}
+
+SyncDownloadsFunction::~SyncDownloadsFunction() {}
+
+bool SyncDownloadsFunction::RunImpl() {
+  return DownloadsFunctionInterface::RunImplImpl(this);
+}
+
+DownloadsFunctionInterface::DownloadsFunctionName
+SyncDownloadsFunction::function() const {
+  return function_;
+}
+
+AsyncDownloadsFunction::AsyncDownloadsFunction(
+    DownloadsFunctionInterface::DownloadsFunctionName function)
+  : function_(function) {
+}
+
+AsyncDownloadsFunction::~AsyncDownloadsFunction() {}
+
+bool AsyncDownloadsFunction::RunImpl() {
+  return DownloadsFunctionInterface::RunImplImpl(this);
+}
+
+DownloadsFunctionInterface::DownloadsFunctionName
+AsyncDownloadsFunction::function() const {
+  return function_;
+}
+
 DownloadsDownloadFunction::DownloadsDownloadFunction()
-  : save_as_(false),
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_DOWNLOAD),
+    save_as_(false),
     extra_headers_(NULL),
     rdh_(NULL),
     resource_context_(NULL),
     render_process_host_id_(0),
     render_view_host_routing_id_(0) {
 }
+
 DownloadsDownloadFunction::~DownloadsDownloadFunction() {}
 
-bool DownloadsDownloadFunction::RunImpl() {
+bool DownloadsDownloadFunction::ParseArgs() {
   base::DictionaryValue* options = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
   EXTENSION_FUNCTION_VALIDATE(options->GetString(constants::kUrlKey, &url_));
@@ -67,20 +112,34 @@ bool DownloadsDownloadFunction::RunImpl() {
   return false;
 }
 
-DownloadsSearchFunction::DownloadsSearchFunction() {}
+void DownloadsDownloadFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsSearchFunction::DownloadsSearchFunction()
+  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_SEARCH) {
+}
+
 DownloadsSearchFunction::~DownloadsSearchFunction() {}
 
-bool DownloadsSearchFunction::RunImpl() {
+bool DownloadsSearchFunction::ParseArgs() {
   DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
   error_ = constants::kNotImplemented;
   return false;
 }
 
-DownloadsPauseFunction::DownloadsPauseFunction() {}
+void DownloadsSearchFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsPauseFunction::DownloadsPauseFunction()
+  : SyncDownloadsFunction(DOWNLOADS_FUNCTION_PAUSE) {
+}
+
 DownloadsPauseFunction::~DownloadsPauseFunction() {}
 
-bool DownloadsPauseFunction::RunImpl() {
+bool DownloadsPauseFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
@@ -88,10 +147,17 @@ bool DownloadsPauseFunction::RunImpl() {
   return false;
 }
 
-DownloadsResumeFunction::DownloadsResumeFunction() {}
+void DownloadsPauseFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsResumeFunction::DownloadsResumeFunction()
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_RESUME) {
+}
+
 DownloadsResumeFunction::~DownloadsResumeFunction() {}
 
-bool DownloadsResumeFunction::RunImpl() {
+bool DownloadsResumeFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
@@ -99,10 +165,17 @@ bool DownloadsResumeFunction::RunImpl() {
   return false;
 }
 
-DownloadsCancelFunction::DownloadsCancelFunction() {}
+void DownloadsResumeFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsCancelFunction::DownloadsCancelFunction()
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_CANCEL) {
+}
+
 DownloadsCancelFunction::~DownloadsCancelFunction() {}
 
-bool DownloadsCancelFunction::RunImpl() {
+bool DownloadsCancelFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
@@ -110,20 +183,34 @@ bool DownloadsCancelFunction::RunImpl() {
   return false;
 }
 
-DownloadsEraseFunction::DownloadsEraseFunction() {}
+void DownloadsCancelFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsEraseFunction::DownloadsEraseFunction()
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_ERASE) {
+}
+
 DownloadsEraseFunction::~DownloadsEraseFunction() {}
 
-bool DownloadsEraseFunction::RunImpl() {
+bool DownloadsEraseFunction::ParseArgs() {
   DictionaryValue* query_json = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &query_json));
   error_ = constants::kNotImplemented;
   return false;
 }
 
-DownloadsSetDestinationFunction::DownloadsSetDestinationFunction() {}
+void DownloadsEraseFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsSetDestinationFunction::DownloadsSetDestinationFunction()
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_SET_DESTINATION) {
+}
+
 DownloadsSetDestinationFunction::~DownloadsSetDestinationFunction() {}
 
-bool DownloadsSetDestinationFunction::RunImpl() {
+bool DownloadsSetDestinationFunction::ParseArgs() {
   int dl_id = 0;
   std::string path;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
@@ -133,10 +220,17 @@ bool DownloadsSetDestinationFunction::RunImpl() {
   return false;
 }
 
-DownloadsAcceptDangerFunction::DownloadsAcceptDangerFunction() {}
+void DownloadsSetDestinationFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsAcceptDangerFunction::DownloadsAcceptDangerFunction()
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_ACCEPT_DANGER) {
+}
+
 DownloadsAcceptDangerFunction::~DownloadsAcceptDangerFunction() {}
 
-bool DownloadsAcceptDangerFunction::RunImpl() {
+bool DownloadsAcceptDangerFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
@@ -144,10 +238,17 @@ bool DownloadsAcceptDangerFunction::RunImpl() {
   return false;
 }
 
-DownloadsShowFunction::DownloadsShowFunction() {}
+void DownloadsAcceptDangerFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsShowFunction::DownloadsShowFunction()
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_SHOW) {
+}
+
 DownloadsShowFunction::~DownloadsShowFunction() {}
 
-bool DownloadsShowFunction::RunImpl() {
+bool DownloadsShowFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
@@ -155,13 +256,24 @@ bool DownloadsShowFunction::RunImpl() {
   return false;
 }
 
-DownloadsDragFunction::DownloadsDragFunction() {}
+void DownloadsShowFunction::RunInternal() {
+  NOTIMPLEMENTED();
+}
+
+DownloadsDragFunction::DownloadsDragFunction()
+  : AsyncDownloadsFunction(DOWNLOADS_FUNCTION_DRAG) {
+}
+
 DownloadsDragFunction::~DownloadsDragFunction() {}
 
-bool DownloadsDragFunction::RunImpl() {
+bool DownloadsDragFunction::ParseArgs() {
   int dl_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &dl_id));
   VLOG(1) << __FUNCTION__ << " " << dl_id;
   error_ = constants::kNotImplemented;
   return false;
+}
+
+void DownloadsDragFunction::RunInternal() {
+  NOTIMPLEMENTED();
 }
