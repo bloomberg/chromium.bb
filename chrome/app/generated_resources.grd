@@ -13272,6 +13272,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE" desc="The message to display when the cloud print token has expired.">
       The credentials used to share your printers to  <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> have expired. Please click here to re-enter your username and password.
     </message>
+    <message name="IDS_FLAGS_CLOUD_PRINT_NAME">
+      <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>
+    </message>
+    <message name="IDS_FLAGS_CLOUD_PRINT_DESCRIPTION">
+      Enable printing via <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.  Note, that this will likely only work if Print Preview is also enabled.
+    </message>
 
     <!-- Enterprise enrollment dialog -->
     <if expr="pp_ifdef('chromeos')">

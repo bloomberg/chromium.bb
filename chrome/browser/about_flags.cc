@@ -160,14 +160,28 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableGpuVsync)
   },
-  // Only expose this for Chromium builds where users may not have the PDF
-  // plugin. Do not give Google Chrome users the option to disable it here.
   {
     "print-preview",  // FLAGS:RECORD_UMA
     IDS_FLAGS_PRINT_PREVIEW_NAME,
     IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION,
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
+    // Only expose this for Chromium builds where users may not have the PDF
+    // plugin. Do not give Google Chrome users the option to disable it here.
+    // Also expose it for Chrome OS where print preview is still experimental.
     kOsAll,
+#else
+    0,
+#endif
     SINGLE_VALUE_TYPE(switches::kEnablePrintPreview)
+  },
+  {
+    "cloud-print",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_CLOUD_PRINT_NAME,
+    IDS_FLAGS_CLOUD_PRINT_DESCRIPTION,
+    // Define this for all platforms except Chrome OS.
+    // It makes no sense to disable it on Chrome OS.
+    kOsMac | kOsWin | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kEnableCloudPrint)
   },
   // TODO(dspringer): When NaCl is on by default, remove this flag entry.
   {
