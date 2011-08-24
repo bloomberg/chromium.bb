@@ -1,0 +1,36 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* File Comment. */
+
+label Chrome {
+  M13 = 0.0,
+  M14 = 1.0,
+  M15 = 2.0
+};
+
+[version=0.0]
+describe {
+  /** Standard Ints. */
+  int32_t;
+};
+
+
+/* Bogus Struct */
+[version=0.0]
+struct PP_Size {
+  /**
+   * Comment for function
+   */
+  [version=0.0] int32_t Foo(int32_t x);
+  /**
+   * Comment for function
+   */
+  [version=1.0] int32_t Foo(int32_t x, int32_t y);
+  /**
+   * Comment for function
+   */
+  [version=2.0] int32_t Foo(int32_t x, int32_t y, int32_t z);
+};

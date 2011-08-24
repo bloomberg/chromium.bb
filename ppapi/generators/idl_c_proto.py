@@ -26,6 +26,47 @@ class CGenError(Exception):
     return repr(self.value)
 
 
+def CommentLines(lines, tabs=0):
+  # Generate a C style comment block by prepending the block with '<tab>/*'
+  # and adding a '<tab> *' per line.
+  tab = '  ' * tabs
+
+  out = '%s/*' % tab + ('\n%s *' % tab).join(lines)
+
+  # Add a terminating ' */' unless the last line is blank which would mean it
+  # already has ' *'
+  if not lines[-1]:
+    out += '/\n'
+  else:
+    out += ' */\n'
+  return out
+
+def Comment(node, prefix=None, tabs=0):
+  # Generate a comment block from the provided Comment node.
+  comment = node.GetName()
+  lines = comment.split('\n')
+
+  # If an option prefix is provided, then prepend that to the comment
+  # for this node.
+  if prefix:
+    prefix_lines = prefix.split('\n')
+    # If both the prefix and comment start with a blank line ('*') remove
+    # the extra one.
+    if prefix_lines[0] == '*' and lines[0] == '*':
+      lines = prefix_lines + lines[1:]
+    else:
+      lines = prefix_lines + lines;
+  return CommentLines(lines, tabs)
+
+def GetNodeComments(node, prefix=None, tabs=0):
+  # Generate a comment block joining all comment nodes which are children of
+  # the provided node.
+  comment_txt = ''
+  for doc in node.GetListOf('Comment'):
+    comment_txt += Comment(doc, tabs=tabs)
+  return comment_txt
+
+
 class CGen(object):
   # TypeMap
   #
@@ -103,17 +144,6 @@ class CGen(object):
 
   def __init__(self):
     self.dbg_depth = 0
-    self.vmin = 0.0
-    self.vmax = 1e100
-    self.release = GetOption('release')
-
-  def SetVersionMap(self, node):
-    self.vmin = 0.0
-    self.vmax = 1e100
-    for version in node.GetListOf('LabelItem'):
-      if version.GetName() == GetOption('release'):
-        self.vmin = float(version.GetProperty('VALUE'))
-        self.vmax = float(version.GetProperty('VALUE'))
 
   #
   # Debug Logging functions
@@ -152,12 +182,13 @@ class CGen(object):
   #
   # For a given node return the type name by passing mode.
   #
-  def GetTypeName(self, node, prefix=''):
-    self.LogEnter('GetTypeName of %s' % node)
+  def GetTypeName(self, node, release, prefix=''):
+    self.LogEnter('GetTypeName of %s rel=%s' % (node, release))
 
-    # For Members, Params, and Typedef's your want type it refers to
+    # For Members, Params, and Typedefs get the type it refers to otherwise
+    # the node in question is it's own type (struct, union etc...)
     if node.IsA('Member', 'Param', 'Typedef'):
-      typeref = node.GetType(self.release)
+      typeref = node.GetType(release)
     else:
       typeref = node
 
@@ -194,19 +225,20 @@ class CGen(object):
   # For a given node return basic type of that object.  This is
   # either a 'Type', 'Callspec', or 'Array'
   #
-  def GetRootTypeMode(self, node, mode):
+  def GetRootTypeMode(self, node, release, mode):
     self.LogEnter('GetRootType of %s' % node)
     # If it has an array spec, then treat it as an array regardless of type
     if node.GetOneOf('Array'):
       rootType = 'Array'
     # Or if it has a callspec, treat it as a function
     elif node.GetOneOf('Callspec'):
-      rootType, mode = self.GetRootTypeMode(node.GetType(self.release),
+      rootType, mode = self.GetRootTypeMode(node.GetType(release), release,
                                             'return')
 
     # If it's a plain typedef, try that object's root type
     elif node.IsA('Member', 'Param', 'Typedef'):
-      rootType, mode = self.GetRootTypeMode(node.GetType(self.release), mode)
+      rootType, mode = self.GetRootTypeMode(node.GetType(release),
+                                            release, mode)
 
     # If it's an Enum, then it's normal passing rules
     elif node.IsA('Enum'):
@@ -237,10 +269,11 @@ class CGen(object):
     return rootType, mode
 
 
-  def GetTypeByMode(self, node, mode):
-    self.LogEnter('GetTypeByMode of %s mode=%s' % (node, mode))
-    name = self.GetTypeName(node)
-    ntype, mode = self.GetRootTypeMode(node, mode)
+  def GetTypeByMode(self, node, release, mode):
+    self.LogEnter('GetTypeByMode of %s mode=%s release=%s' %
+                  (node, mode, release))
+    name = self.GetTypeName(node, release)
+    ntype, mode = self.GetRootTypeMode(node, release, mode)
     out = CGen.TypeMap[ntype][mode] % name
     self.LogExit('GetTypeByMode %s = %s' % (node, out))
     return out
@@ -264,15 +297,15 @@ class CGen(object):
   #   arrays - A list of array dimensions as [] or [<fixed_num>].
   #   args -  None of not a function, otherwise  a list of parameters.
   #
-  def GetComponents(self, node, mode):
-    self.LogEnter('GetComponents mode %s for %s' % (mode, node))
+  def GetComponents(self, node, release, mode):
+    self.LogEnter('GetComponents mode %s for %s %s' % (mode, node, release))
 
     # Generate passing type by modifying root type
-    rtype = self.GetTypeByMode(node, mode)
+    rtype = self.GetTypeByMode(node, release, mode)
     if node.IsA('Enum', 'Interface', 'Struct'):
       rname = node.GetName()
     else:
-      rname = node.GetType(self.release).GetName()
+      rname = node.GetType(release).GetName()
 
     if rname in CGen.RemapName:
       rname = CGen.RemapName[rname]
@@ -285,7 +318,7 @@ class CGen(object):
       callspec = []
       for param in callnode.GetListOf('Param'):
         mode = self.GetParamMode(param)
-        ptype, pname, parray, pspec = self.GetComponents(param, mode)
+        ptype, pname, parray, pspec = self.GetComponents(param, release, mode)
         callspec.append((ptype, pname, parray, pspec))
     else:
       callspec = None
@@ -317,32 +350,23 @@ class CGen(object):
   #  prefix - A prefix for the object's name
   #  func_as_ptr - Formats a function as a function pointer
   #
-  def GetSignature(self, node, mode, prefix='', func_as_ptr=True):
+  def GetSignature(self, node, release, mode, prefix='', func_as_ptr=True):
     self.LogEnter('GetSignature %s %s as func=%s' % (node, mode, func_as_ptr))
-    rtype, name, arrayspec, callspec = self.GetComponents(node, mode)
+    rtype, name, arrayspec, callspec = self.GetComponents(node, release, mode)
     out = self.Compose(rtype, name, arrayspec, callspec, prefix, func_as_ptr)
     self.LogExit('Exit GetSignature: %s' % out)
     return out
 
-  def GetMacro(self, node):
-    name = node.GetName()
-    name = name.upper()
-    return "%s_INTERFACE" % name
-
-  def GetDefine(self, name, value):
-    out = '#define %s %s' % (name, value)
-    if len(out) > 80:
-      out = '#define %s \\\n    %s' % (name, value)
-    return '%s\n' % out
-
-  # Define an Typedef.
-  def DefineTypedef(self, node, prefix='', comment=False):
-    out = 'typedef %s;\n' % self.GetSignature(node, 'return', prefix, True)
+  # Define a Typedef.
+  def DefineTypedef(self, node, releases, prefix='', comment=False):
+    release = releases[0]
+    out = 'typedef %s;\n' % self.GetSignature(node, release, 'return',
+                                              prefix, True)
     self.Log('DefineTypedef: %s' % out)
     return out
 
   # Define an Enum.
-  def DefineEnum(self, node, prefix='', comment=False):
+  def DefineEnum(self, node, releases, prefix='', comment=False):
     self.LogEnter('DefineEnum %s' % node)
     unnamed =  node.GetProperty('unnamed')
     if unnamed:
@@ -353,12 +377,7 @@ class CGen(object):
     enumlist = []
     for child in node.GetListOf('EnumItem'):
       value = child.GetProperty('VALUE')
-      comment_txt = ''
-      if comment:
-        for comment_node in child.GetListOf('Comment'):
-          comment_txt += self.Comment(comment_node, tabs=1)
-        if comment_txt:
-          comment_txt = '%s' % comment_txt
+      comment_txt = GetNodeComments(child, tabs=1)
       if value:
         item_txt = '%s%s = %s' % (prefix, child.GetName(), value)
       else:
@@ -372,36 +391,15 @@ class CGen(object):
       out = '%s\n%s\n} %s;\n' % (out, ',\n'.join(enumlist), name)
     return out
 
-  def DefineMember(self, node, prefix='', comment=False):
+  def DefineMember(self, node, releases, prefix='', comment=False):
+    release = releases[0]
     self.LogEnter('DefineMember %s' % node)
-
-#    out = ''
-#    if comment:
-#      for doc in node.GetListOf('Comment'):
-#        out += self.Comment(doc)
-    out = '%s;' % self.GetSignature(node, 'store', '', True)
+    out = '%s;' % self.GetSignature(node, release, 'store', '', True)
     self.LogExit('Exit DefineMember')
     return out
 
-  def InterfaceDefs(self, node):
-    out = ''
-    name = node.GetName()
-    macro = node.GetProperty('macro')
-    if not macro:
-      macro = self.GetMacro(node)
-    label = node.GetLabel()
-    if label:
-      for vers in label.versions:
-        strver = str(vers).replace('.', '_')
-        out += self.GetDefine('%s_%s' % (macro, strver),
-                              '"%s;%s"' % (name, vers))
-        if label.GetRelease(vers) == self.release:
-          out += self.GetDefine(macro, '%s_%s' % (macro, strver))
-      out += '\n'
-    return out
-
   # Define a Struct.
-  def DefineStruct(self, node, prefix='', comment=False):
+  def DefineStruct(self, node, releases, prefix='', comment=False):
     out = ''
 
     self.LogEnter('DefineStruct %s' % node)
@@ -413,16 +411,13 @@ class CGen(object):
     # Generate Member Functions
     members = []
     for child in node.GetListOf('Member'):
-      member = self.Define(child, tabs=1, comment=comment)
+      member = self.Define(child, releases, tabs=1, comment=comment)
       if not member:
         continue
       members.append(member)
     out += '%s\n};\n' % '\n'.join(members)
     self.LogExit('Exit DefineStruct')
     return out
-
-  def DefineType(self, node, prefix='', comment=False):
-    return ''
 
   #
   # Copyright and Comment
@@ -431,124 +426,59 @@ class CGen(object):
   #
   def Copyright(self, node, tabs=0):
     lines = node.GetName().split('\n')
-    return self.CommentLines(lines, tabs)
-
-  def Comment(self, node, prefix=None, tabs=0):
-    comment = node.GetName()
-
-    # Ignore comments that do not have a '*' marker
-#    if comment[0] != '*' and not prefix: return ''
-
-    lines = comment.split('\n')
-    if prefix:
-      prefix = prefix.split('\n')
-      if prefix[0] == '*' and lines[0] == '*':
-        lines = prefix + lines[1:]
-      else:
-        lines = prefix + lines;
-    return self.CommentLines(lines, tabs)
-
-  def CommentLines(self, lines, tabs=0):
-    tab = ''.join(['  ' for i in range(tabs)])
-    if lines[-1] == '':
-      return '%s/*' % tab + ('\n%s *' % tab).join(lines) + '/\n'
-    else:
-      return '%s/*' % tab + ('\n%s *' % tab).join(lines) + ' */\n'
+    return CommentLines(lines, tabs)
 
 
   # Define a top level object.
-  def Define(self, node, tabs=0, prefix='', comment=False):
-    if True:
-#    try:
-      self.LogEnter('Define %s tab=%d prefix="%s"' % (node,tabs,prefix))
-
-      node_nim = node.GetProperty('version')
-      node_max = node.GetProperty('deprecate')
-
-      if node_nim is not None:
-        node_nim = float(node_nim)
-      else:
-        node_nim = 0.0
-
-      if node_max is not None:
-        node_max = float(node_max)
-      else:
-        node_max = 1.0e100
-
-      label = node.GetLabel()
-      if label:
-        lver = label.GetVersion(self.release)
-
-        # Verify that we are in a valid version.
-        if node_max <= lver: return ''
-        if node_nim > lver: return ''
-
-      declmap = {
-        'Describe' : CGen.DefineType,
-        'Enum' : CGen.DefineEnum,
-        'Function' : CGen.DefineMember,
-        'Interface' : CGen.DefineStruct,
-        'Member' : CGen.DefineMember,
-        'Struct' : CGen.DefineStruct,
-        'Type' : CGen.DefineType,
-        'Typedef' : CGen.DefineTypedef,
-      }
-
-      if node.cls == 'Inline':
-        return node.GetProperty('VALUE')
-
-      if node.cls == 'Label':
-        return ''
-
-      out = ''
-      comment_txt = ''
-      if comment:
-        for doc in node.GetListOf('Comment'):
-          comment_txt += self.Comment(doc)
-
-      func = declmap.get(node.cls)
-      if not func:
-        ErrOut.Log('Failed to define %s named %s' % (node.cls, node.GetName()))
-
-      define_txt = func(self, node, prefix=prefix, comment=comment)
-      if comment_txt:
-        out += '%s%s' % (comment_txt, define_txt)
-      else:
-        out += define_txt
-
-      tab = ''
-      for i in range(tabs):
-        tab += '  '
-
-      lines = []
-      for line in out.split('\n'):
-        # Add indentation
-        line = '%s%s' % (tab, line)
-        if len(line) > 80:
-          left = line.rfind('(') + 1
-          args = line[left:].split(',')
-          line_max = 0
-          for arg in args:
-            if len(arg) > line_max: line_max = len(arg)
-
-          if left + line_max >= 80:
-            space = '%s    ' % tab
-            args =  (',\n%s' % space).join([arg.strip() for arg in args])
-            lines.append('%s\n%s%s' % (line[:left], space, args))
-          else:
-            space = ' '.join(['' for i in range(left)])
-            args =  (',\n%s' % space).join(args)
-            lines.append('%s%s' % (line[:left], args))
-        else:
-          lines.append(line.rstrip())
-
-  #    out = tab + ('\n%s' % tab).join(out.split('\n')) + '\n'
-      self.LogExit('Exit Define')
-      return '\n'.join(lines)
-#    except:
-    if False:
-      node.Error('Failed to resolve.')
+  def Define(self, node, releases, tabs=0, prefix='', comment=False):
+    if not node.InReleases(releases):
       return ''
+
+    self.LogEnter('Define %s tab=%d prefix="%s"' % (node,tabs,prefix))
+    declmap = {
+      'Enum' : CGen.DefineEnum,
+      'Function' : CGen.DefineMember,
+      'Interface' : CGen.DefineStruct,
+      'Member' : CGen.DefineMember,
+      'Struct' : CGen.DefineStruct,
+      'Typedef' : CGen.DefineTypedef,
+    }
+
+    out = ''
+    func = declmap.get(node.cls)
+    if not func:
+      ErrOut.Log('Failed to define %s named %s' % (node.cls, node.GetName()))
+    define_txt = func(self, node, releases, prefix=prefix, comment=comment)
+
+    comment_txt = GetNodeComments(node, tabs=0)
+    if comment_txt and comment:
+      out += comment_txt
+    out += define_txt
+
+    tab = '  ' * tabs
+    lines = []
+    for line in out.split('\n'):
+      # Add indentation
+      line = tab + line
+      if len(line) > 80:
+        left = line.rfind('(') + 1
+        args = line[left:].split(',')
+        line_max = 0
+        for arg in args:
+          if len(arg) > line_max: line_max = len(arg)
+
+        if left + line_max >= 80:
+          space = '%s    ' % tab
+          args =  (',\n%s' % space).join([arg.strip() for arg in args])
+          lines.append('%s\n%s%s' % (line[:left], space, args))
+        else:
+          space = ' ' * (left - 1)
+          args =  (',\n%s' % space).join(args)
+          lines.append('%s%s' % (line[:left], args))
+      else:
+        lines.append(line.rstrip())
+    self.LogExit('Exit Define')
+    return '\n'.join(lines)
 
 # Clean a string representing an object definition and return then string
 # as a single space delimited set of tokens.
@@ -569,7 +499,7 @@ def TestFile(filenode):
     instr.Dump()
     instr = CleanString(instr.GetName())
 
-    outstr = cgen.Define(node)
+    outstr = cgen.Define(node, releases=['M14'])
     if GetOption('verbose'):
       print outstr + '\n'
     outstr = CleanString(outstr)

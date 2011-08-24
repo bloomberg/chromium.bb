@@ -4,7 +4,9 @@
  * found in the LICENSE file.
  */
 
-/* This file will test that the IDL snippet matches the comment */
+/**
+ * This file will test that the IDL snippet matches the comment. 
+ */
 
 /* struct ist { void* X; }; */
 struct ist {

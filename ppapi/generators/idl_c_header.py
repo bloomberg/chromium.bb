@@ -17,16 +17,14 @@ from idl_ast import IDLAst
 from idl_option import GetOption, Option, ParseOptions
 from idl_outfile import IDLOutFile
 from idl_parser import ParseFiles
-from idl_c_proto import CGen
-from idl_generator import Generator
+from idl_c_proto import CGen, GetNodeComments, CommentLines, Comment
+from idl_generator import Generator, GeneratorByFile
 
 Option('dstroot', 'Base directory of output', default='../c')
 Option('guard', 'Include guard prefix', default='ppapi/c')
 Option('out', 'List of output files', default='')
 
-cgen = CGen()
-
-def IDLToHeader(filenode, relpath=None, prefix=None):
+def GetOutFileName(filenode, relpath=None, prefix=None):
   path, name = os.path.split(filenode.GetProperty('NAME'))
   name = os.path.splitext(name)[0] + '.h'
   if prefix: name = '%s%s' % (prefix, name)
@@ -34,168 +32,198 @@ def IDLToHeader(filenode, relpath=None, prefix=None):
   if relpath: name = os.path.join(relpath, name)
   return name
 
+def WriteGroupMarker(out, node, last_group):
+  # If we are part of a group comment marker...
+  if last_group and last_group != node.cls:
+    pre = CommentLines(['*',' @}', '']) + '\n'
+  else:
+    pre = '\n'
 
-def GenerateHeader(filenode, release, pref, inline=True):
-  name = filenode.GetProperty('NAME')
-#  if name == 'pp_stdint.idl':  return
+  if node.cls in ['Typedef', 'Interface', 'Struct', 'Enum']:
+    if last_group != node.cls:
+      pre += CommentLines(['*',' @addtogroup %ss' % node.cls, ' @{', ''])
+    last_group = node.cls
+  else:
+    last_group = None
+  out.Write(pre)
+  return last_group
 
-  # If we have an 'out' filter list, then check if we should output this file.
-  outlist = GetOption('out')
-  if outlist:
-    outlist = outlist.split(',')
-    if name not in outlist:
-      return
 
-  savename = IDLToHeader(filenode, relpath=GetOption('dstroot'), prefix=pref)
-  out = IDLOutFile(savename)
-
+def GenerateHeader(out, filenode, releases):
   gpath = GetOption('guard')
-  def_guard = IDLToHeader(filenode, relpath=gpath, prefix=pref)
-  def_guard = def_guard.replace('/','_').replace('.','_').upper() + '_'
-  cright_node = filenode.GetChildren()[0]
-  assert(cright_node.IsA('Copyright'))
-
-  fileinfo = filenode.GetChildren()[1]
-  assert(fileinfo.IsA('Comment'))
-
-  out.Write('%s\n' % cgen.Copyright(cright_node))
-  out.Write('/* From %s modified %s. */\n\n'% (
-      filenode.GetProperty('NAME'), filenode.GetProperty('DATETIME')))
-  out.Write('#ifndef %s\n#define %s\n\n' % (def_guard, def_guard))
-
-  for label in filenode.GetListOf('Label'):
-    if label.GetName() == GetOption('label'):
-      cgen.SetVersionMap(label)
-
-  deps = filenode.GetDeps(release)
-  # Generate set of includes
-  includes = set([])
-  for dep in deps:
-    depfile = dep.GetProperty('FILE')
-    if depfile:
-      includes.add(depfile)
-  includes = [IDLToHeader(include, relpath=gpath) for include in includes]
-  includes.append('ppapi/c/pp_macros.h')
-
-  # Assume we need stdint if we "include" C or C++ code
-  if filenode.GetListOf('Include'):
-    includes.append('ppapi/c/pp_stdint.h')
-
-  includes = sorted(set(includes))
-  cur_include = IDLToHeader(filenode, relpath=gpath)
-  for include in includes:
-    if include == cur_include: continue
-    out.Write('#include "%s"\n' % include)
-
-  # Generate all interface defines
-  out.Write('\n')
-  for node in filenode.GetListOf('Interface'):
-    out.Write( cgen.InterfaceDefs(node) )
-
-  # Generate the @file comment
-  out.Write('%s\n' % cgen.Comment(fileinfo, prefix='*\n @file'))
+  cgen = CGen()
+  pref = ''
+  do_comments = True
 
   # Generate definitions.
   last_group = None
-  for node in filenode.GetChildren()[2:]:
-    # If we are part of a group comment marker...
-    if last_group and last_group != node.cls:
-      pre = cgen.CommentLines(['*',' @}', '']) + '\n'
-    else:
-      pre = '\n'
+  top_types = ['Typedef', 'Interface', 'Struct', 'Enum', 'Inline']
+  for node in filenode.GetListOf(*top_types):
+    # Skip if this node is not in this release
+    if not node.InReleases(releases):
+      print "Skiping %s" % node
+      continue
 
-    if node.cls in ['Typedef', 'Interface', 'Struct', 'Enum']:
-      if last_group != node.cls:
-        pre += cgen.CommentLines(['*',' @addtogroup %ss' % node.cls, ' @{', ''])
-      last_group = node.cls
-    else:
-      last_group = None
+    # End/Start group marker
+    if do_comments:
+      last_group = WriteGroupMarker(out, node, last_group)
 
-    if node.IsA('Comment'):
-      item = '%s\n\n' % cgen.Comment(node)
-    elif node.IsA('Inline'):
-      if not inline: continue
+    if node.IsA('Inline'):
+      item = node.GetProperty('VALUE')
+      # If 'C++' use __cplusplus wrapper
       if node.GetName() == 'cc':
-        item = cgen.Define(node, prefix=pref, comment=True)
         item = '#ifdef __cplusplus\n%s\n#endif  // __cplusplus\n\n' % item
-      elif node.GetName() == 'c':
-        item = cgen.Define(node, prefix=pref, comment=True)
-      else:
+      # If not C++ or C, then skip it
+      elif not node.GetName() == 'c':
         continue
-      if not item: continue
-    else:
-      #
-      # Otherwise we are defining a file level object, so generate the
-      # correct document notation.
-      #
-      item = cgen.Define(node, prefix=pref, comment=True)
-      if not item: continue
-      asize = node.GetProperty('assert_size()')
-      if asize:
-        name = '%s%s' % (pref, node.GetName())
-        if node.IsA('Struct'):
-          form = 'PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(%s, %s);\n'
-        else:
-          form = 'PP_COMPILE_ASSERT_SIZE_IN_BYTES(%s, %s);\n'
-        item += form % (name, asize[0])
+      if item: out.Write(item)
+      continue
 
-    if item: out.Write('%s%s' % (pre, item))
+    #
+    # Otherwise we are defining a file level object, so generate the
+    # correct document notation.
+    #
+    item = cgen.Define(node, releases, prefix=pref, comment=True)
+    if not item: continue
+    asize = node.GetProperty('assert_size()')
+    if asize:
+      name = '%s%s' % (pref, node.GetName())
+      if node.IsA('Struct'):
+        form = 'PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(%s, %s);\n'
+      else:
+        form = 'PP_COMPILE_ASSERT_SIZE_IN_BYTES(%s, %s);\n'
+      item += form % (name, asize[0])
+
+    if item: out.Write(item)
   if last_group:
-    out.Write(cgen.CommentLines(['*',' @}', '']) + '\n')
+    out.Write(CommentLines(['*',' @}', '']) + '\n')
 
-  out.Write('#endif  /* %s */\n\n' % def_guard)
-  return out.Close()
 
-class HGen(Generator):
+class HGen(GeneratorByFile):
   def __init__(self):
     Generator.__init__(self, 'C Header', 'cgen', 'Generate the C headers.')
 
-  def GenerateVersion(self, ast, release, options):
-    outdir = GetOption('dstroot')
-    skipList= []
-    prefix = ''
-    cfile = None
-    cnt = 0
+  def GetMacro(self, node):
+    name = node.GetName()
+    name = name.upper()
+    return "%s_INTERFACE" % name
 
-    for filenode in ast.GetListOf('File'):
-      if GetOption('verbose'):
-        print "Working on %s" % filenode
+  def GetDefine(self, name, value):
+    out = '#define %s %s' % (name, value)
+    if len(out) > 80:
+      out = '#define %s \\\n    %s' % (name, value)
+    return '%s\n' % out
 
-      # If this file has errors, skip it
-      if filenode.GetProperty('ERRORS') > 0:
-        skipList.append(filenode)
-        continue
 
-      if GenerateHeader(filenode, release, prefix):
-        cnt = cnt + 1
+  def GetOutFile(self, filenode, options):
+    savename = GetOutFileName(filenode, GetOption('dstroot'))
+    return IDLOutFile(savename)
 
-    for filenode in skipList:
-      errcnt = filenode.GetProperty('ERRORS')
-      ErrOut.Log('%s : Skipped because of %d errors.' % (
-          filenode.GetName(), errcnt))
+  def GenerateHead(self, out, filenode, releases, options):
+    cgen = CGen()
+    gpath = GetOption('guard')
+    release = releases[0]
+    def_guard = GetOutFileName(filenode, relpath=gpath)
+    def_guard = def_guard.replace('/','_').replace('.','_').upper() + '_'
 
-    if skipList:
-      return -len(skipList)
+    cright_node = filenode.GetChildren()[0]
+    assert(cright_node.IsA('Copyright'))
+    fileinfo = filenode.GetChildren()[1]
+    assert(fileinfo.IsA('Comment'))
 
-    if GetOption('diff'):
-      return -cnt
-    return cnt
+    out.Write('%s\n' % cgen.Copyright(cright_node))
+    out.Write('/* From %s modified %s. */\n\n'% (
+        filenode.GetProperty('NAME'), filenode.GetProperty('DATETIME')))
+    out.Write('#ifndef %s\n#define %s\n\n' % (def_guard, def_guard))
+    # Generate set of includes
+
+    deps = set()
+    for release in releases:
+      deps |= filenode.GetDeps(release)
+
+    includes = set([])
+    for dep in deps:
+      depfile = dep.GetProperty('FILE')
+      if depfile:
+        includes.add(depfile)
+    includes = [GetOutFileName(include, relpath=gpath) for include in includes]
+    includes.append('ppapi/c/pp_macros.h')
+
+    # Assume we need stdint if we "include" C or C++ code
+    if filenode.GetListOf('Include'):
+      includes.append('ppapi/c/pp_stdint.h')
+
+    includes = sorted(set(includes))
+    cur_include = GetOutFileName(filenode, relpath=gpath)
+    for include in includes:
+      if include == cur_include: continue
+      out.Write('#include "%s"\n' % include)
+
+    # Generate all interface defines
+    out.Write('\n')
+    for node in filenode.GetListOf('Interface'):
+      idefs = ''
+      name = node.GetName()
+      macro = node.GetProperty('macro')
+      if not macro:
+        macro = self.GetMacro(node)
+      label = node.GetLabel()
+      if label:
+        for vers in label.versions:
+          strver = str(vers).replace('.', '_')
+          idefs += self.GetDefine('%s_%s' % (macro, strver),
+                                  '"%s;%s"' % (name, vers))
+          if label.GetRelease(vers) == releases[-1]:
+            idefs += self.GetDefine(macro, '%s_%s' % (macro, strver))
+        idefs += '\n'
+      out.Write(idefs)
+
+    # Generate the @file comment
+    out.Write('%s\n' % Comment(fileinfo, prefix='*\n @file'))
+
+  def GenerateBody(self, out, filenode, releases, options):
+    GenerateHeader(out, filenode, releases)
+
+  def GenerateTail(self, out, filenode, releases, options):
+    gpath = GetOption('guard')
+    def_guard = GetOutFileName(filenode, relpath=gpath)
+    def_guard = def_guard.replace('/','_').replace('.','_').upper() + '_'
+    out.Write('#endif  /* %s */\n\n' % def_guard)
 
 
 hgen = HGen()
 
 def Main(args):
   # Default invocation will verify the golden files are unchanged.
+  failed = 0
   if not args:
     args = ['--wnone', '--diff', '--test', '--dstroot=.']
 
   ParseOptions(args)
+
   idldir = os.path.split(sys.argv[0])[0]
   idldir = os.path.join(idldir, 'test_cgen', '*.idl')
   filenames = glob.glob(idldir)
+  ast = ParseFiles(filenames)
+  if hgen.GenerateRelease(ast, 'M14', {}):
+    print "Golden file for M14 failed."
+    failed = 1
+  else:
+    print "Golden file for M14 passed."
+
+
+  idldir = os.path.split(sys.argv[0])[0]
+  idldir = os.path.join(idldir, 'test_cgen_range', '*.idl')
+  filenames = glob.glob(idldir)
 
   ast = ParseFiles(filenames)
-  return hgen.GenerateVersion(ast, 'M14', {})
+  if hgen.GenerateRange(ast, ['M13', 'M14', 'M15'], {}):
+    print "Golden file for M13-M15 failed."
+    failed =1
+  else:
+    print "Golden file for M13-M15 passed."
+
+  return failed
 
 if __name__ == '__main__':
   retval = Main(sys.argv[1:])

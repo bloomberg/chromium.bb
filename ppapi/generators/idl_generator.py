@@ -20,7 +20,7 @@ Option('range', 'Which release ranges in the form of MIN,MAX.', default='')
 #
 # Base class for generators.  This class provides a mechanism for
 # adding new generator objects to the IDL driver.  To use this class
-# override the GenerateVersion and GenerateRange members, and
+# override the GenerateRelease and GenerateRange members, and
 # instantiate one copy of the class in the same module which defines it to
 # register the generator.  After the AST is generated, call the static Run
 # member which will check every registered generator to see which ones have
@@ -75,13 +75,15 @@ class Generator(object):
       else:
         vmin = range_list[0]
         vmax = range_list[1]
-        ret = self.GenerateRange(ast, vmin, vmax, options)
-        if not ret:
+        vmin = ast.releases.index(vmin)
+        vmax = ast.releases.index(vmax) + 1
+        ret = self.GenerateRange(ast, ast.releases[vmin:vmax], options)
+        if ret < 0:
           self.Error('Failed to generate range %s : %s.' %(vmin, vmax))
     # Otherwise this should be a single release generation
     else:
       if releasestr:
-        ret = self.GenerateVersion(ast, releasestr, options)
+        ret = self.GenerateRelease(ast, releasestr, options)
         if ret < 0:
           self.Error('Failed to generate release %s.' % releasestr)
         else:
@@ -91,7 +93,7 @@ class Generator(object):
         self.Error('No range or release specified for %s.' % releasestr)
     return self.errors
 
-  def GenerateVersion(self, ast, release, options):
+  def GenerateRelease(self, ast, release, options):
     __pychecker__ = 'unusednames=ast,release,options'
     self.Error("Undefined release generator.")
     return 0
@@ -114,11 +116,65 @@ class Generator(object):
     return fail_count
 
 
+#
+# GeneratorByFile
+#
+# A subclass of Generator for use of generators which have a one to one
+# mapping between IDL sources and output files. To use, derive a new class
+# which defines:
+#
+#  GetOutFile - Returns an IDLOutFile based on filenode (name) and options
+#  GenerateHead - Writes the first part of the file (includes, etc...)
+#  GenerateBody - Writes the body of the file (definitions)
+#  GenerateTail - Writes the end of the file (closing include guard, etc...)
+#
+class GeneratorByFile(Generator):
+  def GenerateRelease(self, ast, release, options):
+    return self.GenerateRange(ast, [release], options)
+
+  def GenerateRange(self, ast, releases, options):
+    # Get list of out files
+    outlist = GetOption('out')
+    if outlist: outlist = outlist.split(',')
+
+    skipList = []
+    cnt = 0
+    for filenode in ast.GetListOf('File'):
+      # Skip this file if not required
+      if outlist and name not in outlist:
+        continue
+
+      # If this file has errors, skip it
+      if filenode.GetProperty('ERRORS') > 0:
+        skipList.append(filenode)
+        continue
+
+      # Create output file
+      out = self.GetOutFile(filenode, options)
+      self.GenerateHead(out, filenode, releases, options)
+      self.GenerateBody(out, filenode, releases, options)
+      self.GenerateTail(out, filenode, releases, options)
+
+      if out.Close(): cnt = cnt + 1
+
+    for filenode in skipList:
+      errcnt = filenode.GetProperty('ERRORS')
+      ErrOut.Log('%s : Skipped because of %d errors.' % (
+          filenode.GetName(), errcnt))
+
+    if skipList:
+      return -len(skipList)
+
+    if GetOption('diff'):
+      return -cnt
+    return cnt
+
+
 check_release = 0
 check_range = 0
 
-class GeneratorVersionTest(Generator):
-  def GenerateVersion(self, ast, release, options = {}):
+class GeneratorReleaseTest(Generator):
+  def GenerateRelease(self, ast, release, options = {}):
     __pychecker__ = 'unusednames=ast,release,options'
     global check_release
     check_map = {
@@ -182,6 +238,6 @@ def Main(args):
 
 
 if __name__ == '__main__':
-  GeneratorVersionTest('Test Gen', 'testgen', 'Generator Class Test.')
+  GeneratorReleaseTest('Test Gen', 'testgen', 'Generator Class Test.')
   sys.exit(Main(sys.argv[1:]))
 

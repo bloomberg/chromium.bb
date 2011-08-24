@@ -4,7 +4,9 @@
  * found in the LICENSE file.
  */
 
-/* This file will test that the IDL snippet matches the comment */
+/**
+ * This file will test that the IDL snippet matches the comment.
+ */
 
 /* typedef uint8_t s_array[3]; */
 typedef uint8_t[3] s_array;

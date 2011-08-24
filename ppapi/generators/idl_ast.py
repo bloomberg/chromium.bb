@@ -78,7 +78,6 @@ class IDLFileTypeResolver(IDLVisitor):
     if node.IsA('File'):
       node.SetProperty('FILE', node)
 
-
     # If this node has a TYPEREF, resolve it to a version list
     typeref = node.property_node.GetPropertyLocal('TYPEREF')
     if typeref:
@@ -90,6 +89,14 @@ class IDLFileTypeResolver(IDLVisitor):
     return filenode
 
 
+class IDLReleaseResolver(IDLVisitor):
+  def VisitFilter(self, node, data):
+    return node.IsA('AST','File', 'Label')
+
+  def Depart(self, node, data, childdata):
+    if node.IsA('Label'):
+      return set([child.name for child in GetListOf('LabelItem')])
+    return childdata
 
 class IDLVersionMapDefault(IDLVersionMap):
   def GetRelease(self, version):
@@ -116,15 +123,6 @@ class IDLAst(IDLNode):
         builtin = filenode
         break
 
-#    if not builtin:
-#      builtin = IDLFile('pp_stdint.idl', [])
-#      extranodes = [builtin]
-
-#    for name in BuiltIn:
-#      nameattr = IDLAttribute('NAME', name)
-#      typenode = IDLNode('Type', 'BuiltIn', 1, 0, [nameattr])
-#      builtin.AddChild(typenode)
-
     IDLNode.__init__(self, 'AST', 'BuiltIn', 1, 0, extranodes + children)
     self.SetProperty('LABEL', IDLVersionMapDefault())
     self.Resolve()
@@ -134,6 +132,13 @@ class IDLAst(IDLNode):
     self.namespace.name = 'AST'
     IDLNamespaceLabelResolver().Visit(self, self.namespace)
     IDLFileTypeResolver().Visit(self, None)
+
+    # Build an ordered list of all releases
+    self.releases = set()
+    for filenode in self.GetListOf('File'):
+      vmap = filenode.GetProperty('LABEL')
+      self.releases |= set(vmap.releases)
+    self.releases = sorted(self.releases)
 
   def SetTypeInfo(self, name, properties):
     node = self.namespace[name]

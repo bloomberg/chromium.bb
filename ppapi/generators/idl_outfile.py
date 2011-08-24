@@ -83,7 +83,7 @@ class IDLOutFile(object):
       if os.path.isfile(filename):
         intext = open(filename, 'r').read()
       else:
-        intext = None
+        intext = ''
 
       if IsEquivelent(intext, outtext):
         if GetOption('verbose'):

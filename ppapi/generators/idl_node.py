@@ -214,6 +214,11 @@ class IDLNode(IDLVersion):
     out =  self.IsVersion(version)
     return out
 
+  def InReleases(self, releases):
+    for rel in releases:
+      if self.IsRelease(rel): return True
+    return False
+
   def GetLabel(self):
     label = self.GetProperty('LABEL')
     if not label:
