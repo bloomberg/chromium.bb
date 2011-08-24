@@ -25,8 +25,8 @@ namespace media {
 
 static const size_t kWidth = 320;
 static const size_t kHeight = 240;
-static const int kSurfaceWidth = 522;
-static const int kSurfaceHeight = 288;
+static const size_t kSurfaceWidth = 522;
+static const size_t kSurfaceHeight = 288;
 static const AVRational kFrameRate = { 100, 1 };
 
 ACTION_P2(DemuxComplete, engine, buffer) {
@@ -105,10 +105,10 @@ class FFmpegVideoDecodeEngineTest
     CallProduceVideoFrame();
     CallProduceVideoFrame();
 
-    EXPECT_EQ(kWidth, video_frame_a->width());
-    EXPECT_EQ(kHeight, video_frame_a->height());
-    EXPECT_EQ(kWidth, video_frame_b->width());
-    EXPECT_EQ(kHeight, video_frame_b->height());
+    EXPECT_EQ(kSurfaceWidth, video_frame_a->width());
+    EXPECT_EQ(kSurfaceHeight, video_frame_a->height());
+    EXPECT_EQ(kSurfaceWidth, video_frame_b->width());
+    EXPECT_EQ(kSurfaceHeight, video_frame_b->height());
   }
 
   // VideoDecodeEngine::EventHandler implementation.

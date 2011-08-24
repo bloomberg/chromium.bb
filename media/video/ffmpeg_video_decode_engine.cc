@@ -114,8 +114,8 @@ void FFmpegVideoDecodeEngine::Initialize(
   for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
     scoped_refptr<VideoFrame> video_frame =
         VideoFrame::CreateFrame(VideoFrame::YV12,
-                                config.width(),
-                                config.height(),
+                                config.surface_width(),
+                                config.surface_height(),
                                 kNoTimestamp,
                                 kNoTimestamp);
     frame_queue_available_.push_back(video_frame);
