@@ -59,22 +59,10 @@
     "chrome.experimental.permissions.onRemoved": "experimental.permissions.html#event-onRemoved",
     "chrome.experimental.permissions.remove": "experimental.permissions.html#method-remove",
     "chrome.experimental.permissions.request": "experimental.permissions.html#method-request",
-    "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab",
-    "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated",
     "chrome.experimental.settings.clear": "experimental.settings.html#method-clear",
     "chrome.experimental.settings.get": "experimental.settings.html#method-get",
     "chrome.experimental.settings.remove": "experimental.settings.html#method-remove",
     "chrome.experimental.settings.set": "experimental.settings.html#method-set",
-    "chrome.experimental.sidebar.collapse": "experimental.sidebar.html#method-collapse",
-    "chrome.experimental.sidebar.expand": "experimental.sidebar.html#method-expand",
-    "chrome.experimental.sidebar.getState": "experimental.sidebar.html#method-getState",
-    "chrome.experimental.sidebar.hide": "experimental.sidebar.html#method-hide",
-    "chrome.experimental.sidebar.navigate": "experimental.sidebar.html#method-navigate",
-    "chrome.experimental.sidebar.onStateChanged": "experimental.sidebar.html#event-onStateChanged",
-    "chrome.experimental.sidebar.setBadgeText": "experimental.sidebar.html#method-setBadgeText",
-    "chrome.experimental.sidebar.setIcon": "experimental.sidebar.html#method-setIcon",
-    "chrome.experimental.sidebar.setTitle": "experimental.sidebar.html#method-setTitle",
-    "chrome.experimental.sidebar.show": "experimental.sidebar.html#method-show",
     "chrome.experimental.webNavigation.getFrame": "experimental.webNavigation.html#method-getFrame",
     "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate",
     "chrome.experimental.webNavigation.onBeforeRetarget": "experimental.webNavigation.html#event-onBeforeRetarget",
@@ -423,6 +411,29 @@
       ],
       "source_hash": "1fa553e390df62a4a1cefcd900eb03764cf88dd0",
       "zip_path": "examples\/api\/devtools\/audits\/broken-links.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.experimental.webRequest.onBeforeRequest"
+      ],
+      "description": "I can't has cheezburger!",
+      "features": [
+        "background_page",
+        "experimental"
+      ],
+      "icon": null,
+      "id": "7f4d3fac7ae1ad4d514a15cd0b2c48c57a58c55e",
+      "name": "CatBlock",
+      "path": "examples\/extensions\/catblock\/",
+      "protocols": [],
+      "search_string": "CATBLOCK I CANT HAS CHEEZBURGER! BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.WEBREQUEST.ONBEFOREREQUEST",
+      "source_files": [
+        "background.html",
+        "loldogs.js",
+        "manifest.json"
+      ],
+      "source_hash": "8d164e0de05f62e751308b546d39ef9eb4587239",
+      "zip_path": "examples\/extensions\/catblock.zip"
     },
     {
       "api_calls": [],
@@ -1609,9 +1620,7 @@
       "zip_path": "examples\/api\/browserAction\/print.zip"
     },
     {
-      "api_calls": [
-        "chrome.experimental.processes.onUpdated"
-      ],
+      "api_calls": [],
       "description": "Adds a browser action that monitors resource usage of all browser processes.",
       "features": [
         "browser_action",
@@ -1624,7 +1633,7 @@
       "name": "Process Monitor",
       "path": "examples\/api\/processes\/process_monitor\/",
       "protocols": [],
-      "search_string": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.EXPERIMENTAL.PROCESSES.ONUPDATED",
+      "search_string": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL POPUP TABS",
       "source_files": [
         "manifest.json",
         "popup.html"
@@ -1739,7 +1748,6 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.processes.getProcessIdForTab",
         "chrome.tabs.get",
         "chrome.tabs.getSelected",
         "chrome.tabs.update",
@@ -1760,7 +1768,7 @@
       "name": "Show Tabs in Process",
       "path": "examples\/api\/processes\/show_tabs\/",
       "protocols": [],
-      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.EXPERIMENTAL.PROCESSES.GETPROCESSIDFORTAB CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
+      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
       "source_files": [
         "manifest.json",
         "popup.html"
