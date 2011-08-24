@@ -433,11 +433,11 @@
             'chrome_version_resources',
             'installer_util',
             'installer_util_strings',
-            'packed_resources',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../sandbox/sandbox.gyp:sandbox',
+            'app/locales/locales.gyp:*',
             'app/policy/cloud_policy_codegen.gyp:policy',
           ],
           'sources': [
