@@ -182,7 +182,6 @@
             # Needed for chrome_main.cc initialization of libraries.
             '../build/linux/system.gyp:dbus-glib',
             '../build/linux/system.gyp:gtk',
-            'packed_resources',
             # Needed to use the master_preferences functions
             'installer_util',
           ],
@@ -435,6 +434,7 @@
           ],
           'dependencies': [
             'packed_extra_resources',
+            'packed_resources',
             # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
             # file decide what to do on a per-OS basis; on Mac, internal plugins
             # go inside the framework, so this dependency is in chrome_dll.gypi.
@@ -471,7 +471,6 @@
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../sandbox/sandbox.gyp:sandbox',
-            'app/locales/locales.gyp:*',
             'app/policy/cloud_policy_codegen.gyp:policy',
           ],
           'sources': [

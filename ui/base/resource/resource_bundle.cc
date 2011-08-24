@@ -4,13 +4,19 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/ui_base_paths.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
@@ -73,6 +79,17 @@ void ResourceBundle::InitSharedInstanceForTest(const FilePath& path) {
 }
 
 /* static */
+DataPack* ResourceBundle::LoadResourcesDataPak(const FilePath& path) {
+  DataPack* datapack = new DataPack;
+  bool success = datapack->Load(path);
+  if (!success) {
+    delete datapack;
+    datapack = NULL;
+  }
+  return datapack;
+}
+
+/* static */
 std::string ResourceBundle::ReloadSharedInstance(
     const std::string& pref_locale) {
   DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";
@@ -100,6 +117,74 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
   // Must call InitSharedInstance before this function.
   CHECK(g_shared_instance_ != NULL);
   return *g_shared_instance_;
+}
+
+#if !defined(OS_MACOSX)
+/* static */
+FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
+  FilePath locale_file_path;
+  PathService::Get(ui::DIR_LOCALES, &locale_file_path);
+  if (locale_file_path.empty())
+    return locale_file_path;
+  if (app_locale.empty())
+    return FilePath();
+  locale_file_path = locale_file_path.AppendASCII(app_locale + ".pak");
+  if (!file_util::PathExists(locale_file_path))
+    return FilePath();
+  return locale_file_path;
+}
+#endif
+
+std::string ResourceBundle::LoadLocaleResources(
+    const std::string& pref_locale) {
+  DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
+  std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+  FilePath locale_file_path;
+  CommandLine *command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLocalePak)) {
+    locale_file_path =
+      command_line->GetSwitchValuePath(switches::kLocalePak);
+  } else {
+    locale_file_path = GetLocaleFilePath(app_locale);
+  }
+  if (locale_file_path.empty()) {
+    // It's possible that there is no locale.pak.
+    NOTREACHED();
+    return std::string();
+  }
+  locale_resources_data_.reset(LoadResourcesDataPak(locale_file_path));
+  CHECK(locale_resources_data_.get()) << "failed to load locale.pak";
+  return app_locale;
+}
+
+void ResourceBundle::UnloadLocaleResources() {
+  locale_resources_data_.reset();
+}
+
+string16 ResourceBundle::GetLocalizedString(int message_id) {
+  // If for some reason we were unable to load a resource pak, return an empty
+  // string (better than crashing).
+  if (!locale_resources_data_.get()) {
+    LOG(WARNING) << "locale resources are not loaded";
+    return string16();
+  }
+
+  base::StringPiece data;
+  if (!locale_resources_data_->GetStringPiece(message_id, &data)) {
+    // Fall back on the main data pack (shouldn't be any strings here except in
+    // unittests).
+    data = GetRawDataResource(message_id);
+    if (data.empty()) {
+      NOTREACHED() << "unable to find resource: " << message_id;
+      return string16();
+    }
+  }
+
+  // Data pack encodes strings as UTF16.
+  DCHECK_EQ(data.length() % 2, 0U);
+  string16 msg(reinterpret_cast<const char16*>(data.data()),
+               data.length() / 2);
+  return msg;
 }
 
 SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
@@ -194,8 +279,7 @@ void ResourceBundle::ReloadFonts() {
 ResourceBundle::ResourceBundle()
     : lock_(new base::Lock),
       resources_data_(NULL),
-      large_icon_resources_data_(NULL),
-      locale_resources_data_(NULL) {
+      large_icon_resources_data_(NULL) {
 }
 
 void ResourceBundle::FreeImages() {

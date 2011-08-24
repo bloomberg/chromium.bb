@@ -521,7 +521,7 @@
             # TODO(jcivelli): ideally the resource needed by views would be
             #                 factored out. (for some reason it pulls in a bunch
             #                 unrelated things like v8, sqlite nss...).
-            '../chrome/app/locales/locales.gyp:en-US',
+            '../chrome/chrome.gyp:packed_resources',
           ],
           'link_settings': {
             'libraries': [
