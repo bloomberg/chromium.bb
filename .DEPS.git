@@ -6,7 +6,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@471c95fe9d3ae340207f713fdf0065705641f2a9'
+         '@763fa4de01d3abd3fb040d99da0bf61f444352cb'
 }
 
 deps = {
@@ -95,7 +95,7 @@ deps = {
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@44efe151b6960bab3db0c85354cc4cce1024219d',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@a32043cac827125b8220076842117c9eb6db66e8',
+        Var('git_url') + '/external/gyp.git@91960399794196a9ed93cbe96f1687ed0e7c2d6d',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@59c6ae4c476750845a529cd407454378ebaaa347',
     'src/v8':
