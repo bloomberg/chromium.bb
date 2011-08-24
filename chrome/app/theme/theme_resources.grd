@@ -192,7 +192,7 @@
         <include name="IDR_PRODUCT_LOGO_16" file="google_chrome/product_logo_16.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_26" file="google_chrome/product_logo_26.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_32" file="google_chrome/product_logo_32.png" type="BINDATA" />
-        <include name="IDR_PRODUCT_LOGO_NAME" file="google_chrome/product_logo_name.png" type="BINDATA" />
+        <include name="IDR_PRODUCT_LOGO_64" file="google_chrome/product_logo_64.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_WHITE" file="google_chrome/product_logo_white.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('_google_chrome')">
@@ -201,7 +201,7 @@
         <include name="IDR_PRODUCT_LOGO_16" file="chromium/product_logo_16.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_26" file="chromium/product_logo_26.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_32" file="chromium/product_logo_32.png" type="BINDATA" />
-        <include name="IDR_PRODUCT_LOGO_NAME" file="chromium/product_logo_name.png" type="BINDATA" />
+        <include name="IDR_PRODUCT_LOGO_64" file="chromium/product_logo_64.png" type="BINDATA" />
       </if>
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
            referenced by installer code; don't remove them unless you know what

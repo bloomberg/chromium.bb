@@ -69,18 +69,14 @@ hr.bottom {
 }
 
 #header {
-  background: url('chrome://theme/IDR_PRODUCT_LOGO_NAME') left center no-repeat;
+  background: url('chrome://theme/IDR_PRODUCT_LOGO_64') left center no-repeat;
+  background-size: 48px;
   color: #737373;
   display: -webkit-box;
   font-size: 20px;
   height: 48px;
   line-height: 48px;
-<if expr="pp_ifdef('_google_chrome')">
-  padding-left: 120px;
-</if>
-<if expr="not pp_ifdef('_google_chrome')">
-  padding-left: 146px;
-</if>
+  padding-left: 54px;
 }
 
 #header span,

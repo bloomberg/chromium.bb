@@ -484,7 +484,7 @@
                 '<(branding_dir)/product_logo_24.png',
                 '<(branding_dir)/product_logo_32.png',
                 '<(branding_dir)/product_logo_48.png',
-                '<(branding_dir)/product_logo_name.png',
+                '<(branding_dir)/product_logo_64.png',
                 '<(branding_dir)/product_logo_128.png',
                 '<(branding_dir)/product_logo_256.png',
                 '<(branding_dir)/product_logo_32.xpm',
