@@ -76,7 +76,12 @@ bool ProfileImportProcessHost::ReportImportItemFinished(
 }
 
 FilePath ProfileImportProcessHost::GetProfileImportProcessCmd() {
-  return GetChildPath(true);
+#if defined(OS_LINUX)
+  int flags = CHILD_ALLOW_SELF;
+#else
+  int flags = CHILD_NORMAL;
+#endif
+  return GetChildPath(flags);
 }
 
 bool ProfileImportProcessHost::StartProcess() {

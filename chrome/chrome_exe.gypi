@@ -273,6 +273,7 @@
           'dependencies': [
             'helper_app',
             'infoplist_strings_tool',
+            'interpose_dependency_shim',
             'chrome_manifest_bundle',
           ],
           'mac_bundle_resources': [
@@ -327,6 +328,7 @@
               'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Versions/<(version_full)',
               'files': [
                 '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
+                '<(PRODUCT_DIR)/libplugin_carbon_interpose.dylib',
               ],
             },
           ],
@@ -364,6 +366,38 @@
               'action': [
                 'tools/build/mac/clean_up_old_versions',
                 '<(version_full)'
+              ],
+            },
+            {
+              # This postbuid step is responsible for creating the following
+              # helpers:
+              #
+              # For unofficial Chromium branding, Chromium Helper EH.app and
+              # Chromium Helper NP.app are created from Chromium Helper.app.
+              # For official Google Chrome branding, Google Chrome Helper
+              # EH.app and Google Chrome Helper NP.app are created from
+              # Google Chrome Helper.app.
+              #
+              # The EH helper is marked for an executable heap. The NP helper
+              # is marked for no PIE (ASLR).
+              #
+              # Normally, applications shipping as part of offical builds with
+              # Google Chrome branding have dsymutil (dwarf-with-dsym,
+              # mac_real_dsym) and dump_syms (mac_breakpad) run on them to
+              # produce a .dSYM bundle and a Breakpad .sym file. This is
+              # unnecessary for the "More Helpers" because they're identical
+              # to the original helper except for the bits in their Mach-O
+              # headers that change to enable or disable special features.
+              # Each .dSYM and Breakpad symbol file is identified by UUID
+              # stored in a Mach-O file's LC_UUID load command. Because the
+              # "More Helpers" share a UUID with the original helper, there's
+              # no need to run dsymutil or dump_syms again. All helpers can
+              # share the same .dSYM and Breakpad symbol file.
+              'postbuild_name': 'Make More Helpers',
+              'action': [
+                'tools/build/mac/make_more_helpers.sh',
+                '<(version_full)',
+                '<(mac_product_name)',
               ],
             },
           ],  # postbuilds

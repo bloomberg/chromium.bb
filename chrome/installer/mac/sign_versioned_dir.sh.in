@@ -42,10 +42,18 @@ versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
+helper_eh_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper EH.app"
+helper_np_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper NP.app"
 
 codesign -s "${codesign_id}" --keychain "${codesign_keychain}" "${framework}"
 codesign -s "${codesign_id}" --keychain "${codesign_keychain}" "${helper_app}"
+codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
+    "${helper_eh_app}"
+codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
+    "${helper_np_app}"
 
 # Verify everything.
 codesign -v "${framework}"
 codesign -v "${helper_app}"
+codesign -v "${helper_eh_app}"
+codesign -v "${helper_np_app}"

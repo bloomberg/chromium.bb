@@ -118,7 +118,13 @@ bool WorkerProcessHost::Init(int render_process_id) {
   if (!CreateChannel())
     return false;
 
-  FilePath exe_path = GetChildPath(true);
+#if defined(OS_LINUX)
+  int flags = CHILD_ALLOW_SELF;
+#else
+  int flags = CHILD_NORMAL;
+#endif
+
+  FilePath exe_path = GetChildPath(flags);
   if (exe_path.empty())
     return false;
 

@@ -145,7 +145,22 @@ bool NaClProcessHost::LaunchSelLdr() {
 #endif  // defined(OS_POSIX)
 
   // Build command line for nacl.
-  FilePath exe_path = GetChildPath(nacl_loader_prefix.empty());
+
+#if defined(OS_MACOSX)
+  // The Native Client process needs to be able to allocate a 1GB contiguous
+  // region to use as the client environment's virtual address space. ASLR
+  // (PIE) interferes with this by making it possible that no gap large enough
+  // to accomodate this request will exist in the child process' address
+  // space. Disable PIE for NaCl processes. See http://crbug.com/90221 and
+  // http://code.google.com/p/nativeclient/issues/detail?id=2043.
+  int flags = CHILD_NO_PIE;
+#elif defined(OS_LINUX)
+  int flags = nacl_loader_prefix.empty() ? CHILD_ALLOW_SELF : CHILD_NORMAL;
+#else
+  int flags = CHILD_NORMAL;
+#endif
+
+  FilePath exe_path = GetChildPath(flags);
   if (exe_path.empty())
     return false;
 

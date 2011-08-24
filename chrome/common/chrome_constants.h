@@ -26,7 +26,17 @@ extern const FilePath::CharType kBrowserProcessExecutablePathChromium[];
 extern const FilePath::CharType kHelperProcessExecutablePathChromium[];
 #if defined(OS_MACOSX)
 extern const FilePath::CharType kFrameworkName[];
-#endif
+
+// The helper .app bundle name and executable name may have one of these
+// suffixes to identify specific features, or it may have no suffix at all.
+// This is a NULL-terminated array of strings. If kHelperFlavorSuffixes
+// contains "EN", "MF", and NULL, it indicates that if the normal helper is
+// named Chromium Helper.app, helper executables could show up at any of
+// Chromium Helper.app/Contents/MacOS/Chromium Helper,
+// Chromium Helper EN.app/Contents/MacOS/Chromium Helper EN, and
+// Chromium Helper MF.app/Contents/MacOS/Chromium Helper MF.
+extern const FilePath::CharType* const kHelperFlavorSuffixes[];
+#endif  // OS_MACOSX
 extern const wchar_t kBrowserAppName[];
 #if defined(OS_WIN)
 extern const wchar_t kStatusTrayWindowClass[];

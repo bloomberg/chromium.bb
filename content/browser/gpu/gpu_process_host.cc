@@ -519,7 +519,14 @@ bool GpuProcessHost::LaunchGpuProcess() {
   CommandLine::StringType gpu_launcher =
       browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
 
-  FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
+#if defined(OS_LINUX)
+  int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
+                                           ChildProcessHost::CHILD_NORMAL;
+#else
+  int child_flags = ChildProcessHost::CHILD_NORMAL;
+#endif
+
+  FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
   if (exe_path.empty())
     return false;
 

@@ -252,7 +252,8 @@ IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
 #endif  // !OS_MACOSX
 
 void ServiceProcessState::CreateAutoRunCommandLine() {
-  FilePath exe_path = ChildProcessHost::GetChildPath(false);
+  FilePath exe_path =
+      ChildProcessHost::GetChildPath(ChildProcessHost::CHILD_NORMAL);
   if (exe_path.empty()) {
     NOTREACHED() << "Unable to get service process binary name.";
   }

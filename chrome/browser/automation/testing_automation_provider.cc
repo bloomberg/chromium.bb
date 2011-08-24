@@ -2774,8 +2774,14 @@ void TestingAutomationProvider::GetBrowserInfo(
   }
   return_value->Set("windows", windows);
 
+#if defined(OS_LINUX)
+  int flags = ChildProcessHost::CHILD_ALLOW_SELF;
+#else
+  int flags = ChildProcessHost::CHILD_NORMAL;
+#endif
+
   return_value->SetString("child_process_path",
-                          ChildProcessHost::GetChildPath(true).value());
+                          ChildProcessHost::GetChildPath(flags).value());
   // Child processes are the processes for plugins and other workers.
   // Add all child processes in a list of dictionaries, one dictionary item
   // per child process.
@@ -5818,7 +5824,7 @@ void TestingAutomationProvider::ExecuteJavascriptInRenderView(
 
   RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
                                                render_view_id);
-  if(!rvh) {
+  if (!rvh) {
     AutomationJSONReply(this, reply_message).SendError(
             "A RenderViewHost object was not found with the given view ID.");
     return;

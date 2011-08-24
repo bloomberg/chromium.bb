@@ -175,7 +175,19 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   CommandLine::StringType plugin_launcher =
       browser_command_line.GetSwitchValueNative(switches::kPluginLauncher);
-  FilePath exe_path = GetChildPath(plugin_launcher.empty());
+
+#if defined(OS_MACOSX)
+  // Run the plug-in process in a mode tolerant of heap execution without
+  // explicit mprotect calls. Some plug-ins still rely on this quaint and
+  // archaic "feature." See http://crbug.com/93551.
+  int flags = CHILD_ALLOW_HEAP_EXECUTION;
+#elif defined(OS_LINUX)
+  int flags = plugin_launcher.empty() ? CHILD_ALLOW_SELF : CHILD_NORMAL;
+#else
+  int flags = CHILD_NORMAL;
+#endif
+
+  FilePath exe_path = GetChildPath(flags);
   if (exe_path.empty())
     return false;
 

@@ -940,7 +940,6 @@
           'mac_bundle': 1,
           'dependencies': [
             'chrome_dll',
-            'interpose_dependency_shim',
             'infoplist_strings_tool',
           ],
           'sources': [
@@ -972,68 +971,24 @@
             'CHROMIUM_SHORT_NAME': '<(branding)',
             'CHROMIUM_STRIP_SAVE_FILE': 'app/app.saves',
             'INFOPLIST_FILE': 'app/helper-Info.plist',
-            # Stop the helper executable from being position-independent
-            # since that turns on ASLR, which breaks NaCl.  ASLR breaks
-            # NaCl's ability to reliably allocate 1GB of address space for
-            # untrusted code to run in.
-            # See http://code.google.com/p/nativeclient/issues/detail?id=2043
-            # TODO(mseaborn): Create a separate helper executable for NaCl
-            # so that the renderer process can still use ASLR.
-	    'OTHER_LDFLAGS!': ['-Wl,-pie'],
           },
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/Contents/MacOS',
-              'files': [
-                '<(PRODUCT_DIR)/libplugin_carbon_interpose.dylib',
-              ],
-            },
-          ],
-          'actions': [
-            {
-              # Generate the InfoPlist.strings file
-              'action_name': 'Generate InfoPlist.strings files',
-              'variables': {
-                'tool_path': '<(PRODUCT_DIR)/infoplist_strings_tool',
-                # Unique dir to write to so the [lang].lproj/InfoPlist.strings
-                # for the main app and the helper app don't name collide.
-                'output_path': '<(INTERMEDIATE_DIR)/helper_infoplist_strings',
-              },
-              'conditions': [
-                [ 'branding == "Chrome"', {
-                  'variables': {
-                     'branding_name': 'google_chrome_strings',
-                  },
-                }, { # else branding!="Chrome"
-                  'variables': {
-                     'branding_name': 'chromium_strings',
-                  },
-                }],
-              ],
-              'inputs': [
-                '<(tool_path)',
-                '<(version_path)',
-                # TODO: remove this helper when we have loops in GYP
-                '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
-              ],
-              'outputs': [
-                # TODO: remove this helper when we have loops in GYP
-                '>!@(<(apply_locales_cmd) -d \'<(output_path)/ZZLOCALE.lproj/InfoPlist.strings\' <(locales))',
-              ],
-              'action': [
-                '<(tool_path)',
-                '-b', '<(branding_name)',
-                '-v', '<(version_path)',
-                '-g', '<(grit_out_dir)',
-                '-o', '<(output_path)',
-                '-t', 'helper',
-                '<@(locales)',
-              ],
-              'message': 'Generating the language InfoPlist.strings files',
-              'process_outputs_as_mac_bundle_resources': 1,
-            },
-          ],
           'postbuilds': [
+            {
+              # The helper doesn't have real localizations, it just has
+              # empty .lproj directories, which is enough to convince Cocoa
+              # that anything running out of the helper .app supports those
+              # languages.
+              'postbuild_name': 'Make Empty Localizations',
+              'variables': {
+                'locale_dirs': [
+                  '>!@(<(apply_locales_cmd) -d ZZLOCALE.lproj <(locales))',
+                ],
+              },
+              'action': [
+                'tools/build/mac/make_locale_dirs.sh',
+                '<@(locale_dirs)',
+              ],
+            },
             {
               # The framework (chrome_dll) defines its load-time path
               # (DYLIB_INSTALL_NAME_BASE) relative to the main executable
@@ -1170,7 +1125,7 @@
           'xcode_settings': {
             'DYLIB_COMPATIBILITY_VERSION': '<(version_mac_dylib)',
             'DYLIB_CURRENT_VERSION': '<(version_mac_dylib)',
-            'DYLIB_INSTALL_NAME_BASE': '@executable_path',
+            'DYLIB_INSTALL_NAME_BASE': '@executable_path/../../..',
           },
           'postbuilds': [
             {

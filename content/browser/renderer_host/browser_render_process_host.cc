@@ -270,10 +270,16 @@ bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
       browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_LINUX)
+  int flags = renderer_prefix.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
+                                        ChildProcessHost::CHILD_NORMAL;
+#else
+  int flags = ChildProcessHost::CHILD_NORMAL;
+#endif
+
   // Find the renderer before creating the channel so if this fails early we
   // return without creating the channel.
-  FilePath renderer_path =
-      ChildProcessHost::GetChildPath(renderer_prefix.empty());
+  FilePath renderer_path = ChildProcessHost::GetChildPath(flags);
   if (renderer_path.empty())
     return false;
 

@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -42,12 +42,16 @@ versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 browser_app="${app_path}"
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
+helper_eh_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper EH.app"
+helper_np_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper NP.app"
 
 codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
     "${browser_app}" --resource-rules "${browser_app_rules}"
 
-# Verify everything. Check the framework and helper app to make sure that the
+# Verify everything. Check the framework and helper apps to make sure that the
 # signatures are present and weren't altered by the signing process.
 codesign -v "${framework}"
 codesign -v "${helper_app}"
+codesign -v "${helper_eh_app}"
+codesign -v "${helper_np_app}"
 codesign -v "${browser_app}"

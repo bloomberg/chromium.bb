@@ -4,8 +4,9 @@
 
 #include "chrome/test/base/chrome_process_util.h"
 
-#include <vector>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/process_util.h"
@@ -59,11 +60,32 @@ const FilePath::CharType* GetRunningBrowserExecutableName() {
   return chrome::kBrowserProcessExecutableName;
 }
 
-const FilePath::CharType* GetRunningHelperExecutableName() {
+std::vector<FilePath::StringType> GetRunningHelperExecutableNames() {
+  FilePath::StringType name;
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding))
-    return chrome::kHelperProcessExecutableNameChromium;
-  return chrome::kHelperProcessExecutableName;
+  if (cmd_line->HasSwitch(switches::kEnableChromiumBranding)) {
+    name = chrome::kHelperProcessExecutableNameChromium;
+  } else {
+    name = chrome::kHelperProcessExecutableName;
+  }
+
+  std::vector<FilePath::StringType> names;
+  names.push_back(name);
+
+#if defined(OS_MACOSX)
+  // The helper might show up as these different flavors depending on the
+  // executable flags required.
+  for (const char* const* suffix = chrome::kHelperFlavorSuffixes;
+       *suffix;
+       ++suffix) {
+    std::string flavor_name(name);
+    flavor_name.append(1, ' ');
+    flavor_name.append(*suffix);
+    names.push_back(flavor_name);
+  }
+#endif
+
+  return names;
 }
 
 ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
@@ -95,12 +117,16 @@ ChromeProcessList GetRunningChromeProcesses(base::ProcessId browser_pid) {
   // on Linux via /proc/self/exe, so they end up with a different
   // name.  We must collect them in a second pass.
   {
-    ChildProcessFilter filter(browser_pid);
-    base::NamedProcessIterator it(GetRunningHelperExecutableName(), &filter);
-    while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
-      result.push_back(process_entry->pid());
+    std::vector<FilePath::StringType> names = GetRunningHelperExecutableNames();
+    for (size_t i = 0; i < names.size(); ++i) {
+      FilePath::StringType name = names[i];
+      ChildProcessFilter filter(browser_pid);
+      base::NamedProcessIterator it(name, &filter);
+      while (const base::ProcessEntry* process_entry = it.NextProcessEntry())
+        result.push_back(process_entry->pid());
+    }
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_POSIX)
 
   result.push_back(browser_pid);
 

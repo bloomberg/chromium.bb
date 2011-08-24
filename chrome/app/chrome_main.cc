@@ -764,11 +764,37 @@ int ChromeMain(int argc, char** argv) {
 
   // The helper's Info.plist marks it as a background only app.
   if (base::mac::IsBackgroundOnlyProcess()) {
-    CHECK(command_line.HasSwitch(switches::kProcessType))
+    CHECK(command_line.HasSwitch(switches::kProcessType) &&
+          !process_type.empty())
         << "Helper application requires --type.";
+
+    // In addition, some helper flavors only work with certain process types.
+    FilePath executable;
+    if (PathService::Get(base::FILE_EXE, &executable) &&
+        executable.value().size() >= 3) {
+      std::string last_three =
+          executable.value().substr(executable.value().size() - 3);
+
+      if (last_three == " EH") {
+        CHECK_EQ(switches::kPluginProcess, process_type)
+            << "Executable-heap process requires --type="
+            << switches::kPluginProcess << ", saw " << process_type;
+      } else if (last_three == " NP") {
+        CHECK_EQ(switches::kNaClLoaderProcess, process_type)
+            << "Non-PIE process requires --type="
+            << switches::kNaClLoaderProcess << ", saw " << process_type;
+      } else {
+        CHECK(process_type != switches::kPluginProcess &&
+              process_type != switches::kNaClLoaderProcess)
+            << "Non-executable-heap PIE process is intolerant of --type="
+            << switches::kPluginProcess << " and "
+            << switches::kNaClLoaderProcess << ", saw " << process_type;
+      }
+    }
   } else {
-    CHECK(!command_line.HasSwitch(switches::kProcessType))
-        << "Main application forbids --type, saw \"" << process_type << "\".";
+    CHECK(!command_line.HasSwitch(switches::kProcessType) &&
+          process_type.empty())
+        << "Main application forbids --type, saw " << process_type;
   }
 
   if (IsCrashReporterEnabled())

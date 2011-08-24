@@ -93,6 +93,12 @@ const FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
 #if defined(OS_MACOSX)
 const FilePath::CharType kFrameworkName[] =
     FPL(PRODUCT_STRING " Framework.framework");
+
+const char* const kHelperFlavorSuffixes[] = {
+  FPL("EH"),  // Executable heap
+  FPL("NP"),  // No PIE
+  NULL
+};
 #endif  // OS_MACOSX
 
 const wchar_t kNaClAppName[] = L"nacl64";

@@ -118,7 +118,14 @@ void ServiceProcessControl::Launch(Task* success_task, Task* failure_task) {
 
   // A service process should have a different mechanism for starting, but now
   // we start it as if it is a child process.
-  FilePath exe_path = ChildProcessHost::GetChildPath(true);
+
+#if defined(OS_LINUX)
+  int flags = ChildProcessHost::CHILD_ALLOW_SELF;
+#else
+  int flags = ChildProcessHost::CHILD_NORMAL;
+#endif
+
+  FilePath exe_path = ChildProcessHost::GetChildPath(flags);
   if (exe_path.empty()) {
     NOTREACHED() << "Unable to get service process binary name.";
   }
