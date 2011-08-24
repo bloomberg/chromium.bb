@@ -15,9 +15,6 @@
 #include "base/atomicops.h"
 #include "base/at_exit.h"
 #include "base/callback.h"
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -1944,8 +1941,7 @@ bool GLES2DecoderImpl::Initialize(
   const char* vendor_str = reinterpret_cast<const char*>(
       glGetString(GL_VENDOR));
   needs_mac_nvidia_driver_workaround_ =
-      vendor_str && strstr(vendor_str, "NVIDIA") &&
-          base::mac::IsOSSnowLeopardOrEarlier();
+      vendor_str && strstr(vendor_str, "NVIDIA");
 #endif
 
   if (!InitializeShaderTranslator()) {
@@ -2530,7 +2526,9 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
     RestoreClearState();
   }
 
-  // Workaround for driver bug on OS X 10.6.x and earlier; crbug.com/89557
+  // Workaround for NVIDIA driver bug on OS X; crbug.com/89557,
+  // crbug.com/94163. TODO(kbr): figure out reproduction so Apple will
+  // fix this.
   if (needs_mac_nvidia_driver_workaround_)
     offscreen_saved_frame_buffer_->Create();
 
