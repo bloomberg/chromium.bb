@@ -253,6 +253,10 @@ bool Module::Write(std::ostream &stream) {
       return ReportError();
   }
 
+#if 0
+  // Bypass all of the "STACK CFI" stuff for the time being to work around
+  // http://code.google.com/p/google-breakpad/issues/detail?id=443.
+  // This should be fine as long as -fomit-frame-pointer is not in use.
   // Write out 'STACK CFI INIT' and 'STACK CFI' records.
   vector<StackFrameEntry *>::const_iterator frame_it;
   for (frame_it = stack_frame_entries_.begin();
@@ -279,6 +283,7 @@ bool Module::Write(std::ostream &stream) {
       stream << endl;
     }
   }
+#endif
 
   return true;
 }
