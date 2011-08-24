@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
-#define CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
+#define CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
 #pragma once
 
 #include "base/file_path.h"
@@ -112,4 +112,4 @@ class DragDownloadFile : public ui::DownloadFileProvider,
   DISALLOW_COPY_AND_ASSIGN(DragDownloadFile);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_

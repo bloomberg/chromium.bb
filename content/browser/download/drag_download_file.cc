@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/drag_download_file.h"
+#include "content/browser/download/drag_download_file.h"
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/browser/browser_context.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_stats.h"

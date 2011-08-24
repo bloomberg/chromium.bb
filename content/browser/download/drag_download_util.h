@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
-#define CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
+#ifndef CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
+#define CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
-#include "chrome/browser/download/drag_download_file.h"
+#include "content/browser/download/drag_download_file.h"
 #include "ui/base/dragdrop/download_file_interface.h"
 
 class FilePath;
@@ -59,4 +59,4 @@ class PromiseFileFinalizer : public ui::DownloadFileObserver {
 
 }  // namespace drag_download_util
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
+#endif  // CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
