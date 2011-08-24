@@ -7,10 +7,6 @@ vars = {
   "webkit_revision": "93643",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  # These hashes need to be updated when nacl_revision is changed.
-  # After changing nacl_revision, run 'gclient runhooks' to get the new values.
-  "nacl_irt_hash_x86_32": "3da71eefa07c815a1aed9dc3a379fc41efda4b6b",
-  "nacl_irt_hash_x86_64": "147077c09e87ff2db20d32af2054bfb4de343c20",
   "nacl_revision": "6499",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
@@ -23,12 +19,12 @@ vars = {
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
   "nacl_toolchain_mac_x86_newlib_hash":
-      "be4cc2baf6eb34c8fe155a1bb61e2acd8ca1e924",
+      "1b0855435c03c435a011c6105a509624b2a4edaa",
   "nacl_toolchain_win_x86_newlib_hash":
-      "56667d7f653b1005cd5116de3d8e9faf346053cf",
+      "5038a47b5a9a49acdc36cbe311aec7bce575c164",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "5e4876a1fa53c7701cdbeef969a99b3ff0b0ddc5",
-  "nacl_toolchain_revision": "6429",
+      "01e245dc6dca16bea5cf840dbc77e3aa138f234f",
+  "nacl_toolchain_revision": "6494",
 
   "libjingle_revision": "77",
   "libvpx_revision": "97420",
@@ -410,20 +406,6 @@ skip_child_includes = [
 
 hooks = [
   {
-    # A change to a .gyp, .gypi, or to GYP itself should run the generator.
-    "pattern": ".",
-    "action": ["python", "src/build/gyp_chromium"],
-  },
-  {
-    # This downloads binaries for Native Client's integrated runtime (IRT)
-    # library, which is built as NaCl untrusted code.
-    "pattern": ".",
-    "action": ["python", "src/build/download_nacl_irt.py",
-               "--nacl_revision", Var("nacl_revision"),
-               "--file_hash", "x86_32", Var("nacl_irt_hash_x86_32"),
-               "--file_hash", "x86_64", Var("nacl_irt_hash_x86_64")],
-  },
-  {
     # This downloads binaries for Native Client's newlib toolchain.
     # Done in lieu of building the toolchain from scratch as it can take
     # anywhere from 30 minutes to 4 hours depending on platform to build.
@@ -439,5 +421,10 @@ hooks = [
          "--file-hash", "linux_x86_newlib",
              Var("nacl_toolchain_linux_x86_newlib_hash"),
     ],
+  },
+  {
+    # A change to a .gyp, .gypi, or to GYP itself should run the generator.
+    "pattern": ".",
+    "action": ["python", "src/build/gyp_chromium"],
   },
 ]
