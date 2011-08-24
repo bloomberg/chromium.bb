@@ -42,11 +42,9 @@ cr.define('options', function() {
       var translated_text = acct_text.textContent;
       var posGoogle = translated_text.indexOf('Google');
       if (posGoogle != -1) {
-        var ltr = templateData['textdirection'] == 'ltr';
         var googleIsAtEndOfSentence = posGoogle != 0;
-        if (googleIsAtEndOfSentence == ltr) {
-          // We're in ltr and in the translation the word 'Google' is AFTER the
-          // word 'Account' OR we're in rtl and 'Google' is BEFORE 'Account'.
+
+        if (googleIsAtEndOfSentence) {
           var logo_td = $('gaia-logo');
           logo_td.parentNode.appendChild(logo_td);
         }
