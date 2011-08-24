@@ -438,6 +438,13 @@ void ExtensionService::OnExternalExtensionUpdateUrlFound(
   external_extension_url_added_ |= true;
 }
 
+// If a download url matches one of these patterns and has a referrer of the
+// webstore, then we're willing to treat that as a gallery download.
+static const char* kAllowedDownloadURLPatterns[] = {
+  "https://clients2.google.com/service/update2*",
+  "https://clients2.googleusercontent.com/crx/*"
+};
+
 bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
                                              const GURL& referrer_url) {
   // Special-case the themes mini-gallery.
@@ -454,6 +461,18 @@ bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
 
   bool referrer_valid = (referrer_extension == webstore_app);
   bool download_valid = (download_extension == webstore_app);
+
+  // We also allow the download to be from a small set of trusted paths.
+  if (!download_valid) {
+    for (size_t i = 0; i < arraysize(kAllowedDownloadURLPatterns); i++) {
+      URLPattern pattern(URLPattern::SCHEME_HTTPS,
+                         kAllowedDownloadURLPatterns[i]);
+      if (pattern.MatchesURL(download_url)) {
+        download_valid = true;
+        break;
+      }
+    }
+  }
 
   // If the command-line gallery URL is set, then be a bit more lenient.
   GURL store_url =
