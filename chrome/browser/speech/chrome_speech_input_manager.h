@@ -56,6 +56,9 @@ class ChromeSpeechInputManager : public SpeechInputManager,
   class OptionalRequestInfo;
 
   struct SpeechInputRequest {
+    SpeechInputRequest();
+    ~SpeechInputRequest();
+
     SpeechInputManagerDelegate* delegate;
     scoped_refptr<SpeechRecognizer> recognizer;
     bool is_active;  // Set to true when recording or recognition is going on.
