@@ -8,6 +8,8 @@
 #define CHROME_COMMON_PREF_NAMES_H_
 #pragma once
 
+#include <stddef.h>
+
 #include "build/build_config.h"
 
 namespace prefs {
@@ -44,6 +46,41 @@ extern const char kWebKitSerifFontFamily[];
 extern const char kWebKitSansSerifFontFamily[];
 extern const char kWebKitCursiveFontFamily[];
 extern const char kWebKitFantasyFontFamily[];
+extern const char kWebKitStandardFontFamilyMap[];
+extern const char kWebKitFixedFontFamilyMap[];
+extern const char kWebKitSerifFontFamilyMap[];
+extern const char kWebKitSansSerifFontFamilyMap[];
+extern const char kWebKitCursiveFontFamilyMap[];
+extern const char kWebKitFantasyFontFamilyMap[];
+
+// ISO 15924 four-letter script codes that per-script font prefs are supported
+// for.
+extern const char* kWebKitScriptsForFontFamilyMaps[];
+extern const size_t kWebKitScriptsForFontFamilyMapsLength;
+
+// Per-script font prefs that have defaults, for easy reference when registering
+// the defaults.
+extern const char kWebKitStandardFontFamilyArabic[];
+extern const char kWebKitFixedFontFamilyArabic[];
+extern const char kWebKitSerifFontFamilyArabic[];
+extern const char kWebKitSansSerifFontFamilyArabic[];
+extern const char kWebKitStandardFontFamilyJapanese[];
+extern const char kWebKitFixedFontFamilyJapanese[];
+extern const char kWebKitSerifFontFamilyJapanese[];
+extern const char kWebKitSansSerifFontFamilyJapanese[];
+extern const char kWebKitStandardFontFamilyKorean[];
+extern const char kWebKitFixedFontFamilyKorean[];
+extern const char kWebKitSerifFontFamilyKorean[];
+extern const char kWebKitSansSerifFontFamilyKorean[];
+extern const char kWebKitStandardFontFamilySimplifiedHan[];
+extern const char kWebKitFixedFontFamilySimplifiedHan[];
+extern const char kWebKitSerifFontFamilySimplifiedHan[];
+extern const char kWebKitSansSerifFontFamilySimplifiedHan[];
+extern const char kWebKitStandardFontFamilyTraditionalHan[];
+extern const char kWebKitFixedFontFamilyTraditionalHan[];
+extern const char kWebKitSerifFontFamilyTraditionalHan[];
+extern const char kWebKitSansSerifFontFamilyTraditionalHan[];
+
 extern const char kWebKitDefaultFontSize[];
 extern const char kWebKitDefaultFixedFontSize[];
 extern const char kWebKitMinimumFontSize[];

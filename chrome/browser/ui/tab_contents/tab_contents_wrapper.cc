@@ -109,7 +109,20 @@ const char* kPrefsToObserve[] = {
 
 const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
 
+// Registers a preference under the path |map_name| for each script used for
+// per-script font prefs.  For example, if |map_name| is "fonts.serif", then
+// "fonts.serif.Arab", "fonts.serif.Hang", etc. are registered.
+void RegisterFontFamilyMap(PrefService* prefs, const char* map_name) {
+  for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
+    const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
+    std::string pref_name_str = base::StringPrintf("%s.%s", map_name, script);
+    const char* pref_name = pref_name_str.c_str();
+    if (!prefs->FindPreference(pref_name))
+      prefs->RegisterStringPref(pref_name, "", PrefService::UNSYNCABLE_PREF);
+  }
 }
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsWrapper, public:
@@ -292,6 +305,66 @@ void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterLocalizedStringPref(prefs::kWebKitFantasyFontFamily,
                                      IDS_FANTASY_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
+
+  // Register per-script font prefs that have defaults.  Currently defaults are
+  // defined only for some scripts and only on Chrome OS to begin with (it is
+  // the easiest since we readily know what fonts are available there).
+  // TODO(falken): add defaults for all platforms and for scripts that should
+  // have defaults.
+#if defined(OS_CHROMEOS)
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamilyArabic,
+      IDS_STANDARD_FONT_FAMILY_ARABIC, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamilyArabic,
+      IDS_SERIF_FONT_FAMILY_ARABIC, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamilyArabic,
+      IDS_SANS_SERIF_FONT_FAMILY_ARABIC, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamilyJapanese,
+      IDS_STANDARD_FONT_FAMILY_JAPANESE, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamilyJapanese,
+      IDS_FIXED_FONT_FAMILY_JAPANESE, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamilyJapanese,
+      IDS_SERIF_FONT_FAMILY_JAPANESE, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamilyJapanese,
+      IDS_SANS_SERIF_FONT_FAMILY_JAPANESE, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamilyKorean,
+      IDS_STANDARD_FONT_FAMILY_KOREAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamilyKorean,
+      IDS_FIXED_FONT_FAMILY_KOREAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamilyKorean,
+      IDS_SERIF_FONT_FAMILY_KOREAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamilyKorean,
+      IDS_SANS_SERIF_FONT_FAMILY_KOREAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(
+      prefs::kWebKitStandardFontFamilySimplifiedHan,
+      IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamilySimplifiedHan,
+      IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamilySimplifiedHan,
+      IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(
+      prefs::kWebKitSansSerifFontFamilySimplifiedHan,
+      IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(
+      prefs::kWebKitStandardFontFamilyTraditionalHan,
+      IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(
+      prefs::kWebKitFixedFontFamilyTraditionalHan,
+      IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(
+      prefs::kWebKitSerifFontFamilyTraditionalHan,
+      IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(
+      prefs::kWebKitSansSerifFontFamilyTraditionalHan,
+      IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, PrefService::UNSYNCABLE_PREF);
+#endif
+
+  RegisterFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitFixedFontFamilyMap);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitSerifFontFamilyMap);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitSansSerifFontFamilyMap);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap);
+  RegisterFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap);
+
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
                                       IDS_DEFAULT_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);

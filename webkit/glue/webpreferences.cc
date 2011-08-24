@@ -4,6 +4,8 @@
 
 #include "webkit/glue/webpreferences.h"
 
+#include <unicode/uchar.h>
+
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
@@ -92,6 +94,60 @@ WebPreferences::WebPreferences()
 WebPreferences::~WebPreferences() {
 }
 
+namespace {
+
+void setStandardFontFamilyWrapper(WebSettings* settings,
+                                  const string16& font,
+                                  UScriptCode script) {
+  settings->setStandardFontFamily(font, script);
+}
+
+void setFixedFontFamilyWrapper(WebSettings* settings,
+                               const string16& font,
+                               UScriptCode script) {
+  settings->setFixedFontFamily(font, script);
+}
+
+void setSerifFontFamilyWrapper(WebSettings* settings,
+                               const string16& font,
+                               UScriptCode script) {
+  settings->setSerifFontFamily(font, script);
+}
+
+void setSansSerifFontFamilyWrapper(WebSettings* settings,
+                                   const string16& font,
+                                   UScriptCode script) {
+  settings->setSansSerifFontFamily(font, script);
+}
+
+void setCursiveFontFamilyWrapper(WebSettings* settings,
+                                 const string16& font,
+                                 UScriptCode script) {
+  settings->setCursiveFontFamily(font, script);
+}
+
+void setFantasyFontFamilyWrapper(WebSettings* settings,
+                                 const string16& font,
+                                 UScriptCode script) {
+  settings->setFantasyFontFamily(font, script);
+}
+
+typedef void (*SetFontFamilyWrapper)(
+    WebKit::WebSettings*, const string16&, UScriptCode);
+
+void ApplyFontsFromMap(const WebPreferences::ScriptFontFamilyMap& map,
+                       SetFontFamilyWrapper setter,
+                       WebSettings* settings) {
+  for (WebPreferences::ScriptFontFamilyMap::const_iterator it = map.begin();
+       it != map.end(); ++it) {
+    int32 script = u_getPropertyValueEnum(UCHAR_SCRIPT, (it->first).c_str());
+    if (script >= 0 && script < USCRIPT_CODE_LIMIT)
+      (*setter)(settings, it->second, (UScriptCode) script);
+  }
+}
+
+}  // namespace
+
 void WebPreferences::Apply(WebView* web_view) const {
   WebSettings* settings = web_view->settings();
   settings->setStandardFontFamily(standard_font_family);
@@ -100,6 +156,16 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setSansSerifFontFamily(sans_serif_font_family);
   settings->setCursiveFontFamily(cursive_font_family);
   settings->setFantasyFontFamily(fantasy_font_family);
+  ApplyFontsFromMap(standard_font_family_map, setStandardFontFamilyWrapper,
+                    settings);
+  ApplyFontsFromMap(fixed_font_family_map, setFixedFontFamilyWrapper, settings);
+  ApplyFontsFromMap(serif_font_family_map, setSerifFontFamilyWrapper, settings);
+  ApplyFontsFromMap(sans_serif_font_family_map, setSansSerifFontFamilyWrapper,
+                    settings);
+  ApplyFontsFromMap(cursive_font_family_map, setCursiveFontFamilyWrapper,
+                    settings);
+  ApplyFontsFromMap(fantasy_font_family_map, setFantasyFontFamilyWrapper,
+                    settings);
   settings->setDefaultFontSize(default_font_size);
   settings->setDefaultFixedFontSize(default_fixed_font_size);
   settings->setMinimumFontSize(minimum_font_size);

@@ -193,6 +193,120 @@
         Impact
       </message>
 
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Arabic script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_ARABIC" use_name_for_id="true">
+        Droid Arabic Naskh
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Arabic script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_ARABIC" use_name_for_id="true">
+        Droid Arabic Kufi
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Arabic script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_ARABIC" use_name_for_id="true">
+        Droid Arabic Naskh
+      </message>
+
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Japanese script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
+        IPAPGothic
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family_map| for
+           Japanese script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_JAPANESE" use_name_for_id="true">
+        IPAGothic
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Japanese script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
+        IPAPMincho
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Japanese script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
+        IPAPGothic
+      </message>
+
+     <!-- The default value for |WebPreference::standard_font_family_map| for
+           Korean script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_KOREAN" use_name_for_id="true">
+        NanumGothic
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family_map| for
+           Korean script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_KOREAN" use_name_for_id="true">
+        Monospace
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Korean script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
+        NanumMyeongjo
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Korean script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_KOREAN" use_name_for_id="true">
+        NanumGothic
+      </message>
+
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Simplified Chinese script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
+        Droid Sans Fallback
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family_map| for
+           Simplified Chinese script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
+        N Song ASC
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Simplified Chinese script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
+        Song ASC
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Simplified Chinese script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN" use_name_for_id="true">
+        Droid Sans Fallback
+      </message>
+
+      <!-- The default value for |WebPreference::standard_font_family_map| for
+           Traditional Chinese script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
+        Droid Sans Fallback
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family_map| for
+           Traditional Chinese script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
+        MingLiU
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family_map| for
+           Traditional Chinese script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
+        PMingLiU
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family_map| for
+           Traditional Chinese script.  -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
+        Droid Sans Fallback
+      </message>
+
       <!-- The default value for |WebPreference::default_font_size| -->
       <message name="IDS_DEFAULT_FONT_SIZE" use_name_for_id="true">
         16

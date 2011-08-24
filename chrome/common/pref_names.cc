@@ -4,6 +4,8 @@
 
 #include "chrome/common/pref_names.h"
 
+#include "base/basictypes.h"
+
 namespace prefs {
 
 // *************** PROFILE PREFS ***************
@@ -110,6 +112,66 @@ const char kWebKitSansSerifFontFamily[] =
     "webkit.webprefs.sansserif_font_family";
 const char kWebKitCursiveFontFamily[] = "webkit.webprefs.cursive_font_family";
 const char kWebKitFantasyFontFamily[] = "webkit.webprefs.fantasy_font_family";
+const char kWebKitStandardFontFamilyMap[] =
+    "webkit.webprefs.fonts.standard";
+const char kWebKitFixedFontFamilyMap[] =
+    "webkit.webprefs.fonts.fixed";
+const char kWebKitSerifFontFamilyMap[] =
+    "webkit.webprefs.fonts.serif";
+const char kWebKitSansSerifFontFamilyMap[] =
+    "webkit.webprefs.fonts.sansserif";
+const char kWebKitCursiveFontFamilyMap[] =
+    "webkit.webprefs.fonts.cursive";
+const char kWebKitFantasyFontFamilyMap[] =
+    "webkit.webprefs.fonts.fantasy";
+
+// TODO(falken): Add all the scripts we should support.
+const char* kWebKitScriptsForFontFamilyMaps[] =
+    { "Arab", "Hang", "Hans", "Hant", "Hrkt" };
+const size_t kWebKitScriptsForFontFamilyMapsLength =
+    arraysize(kWebKitScriptsForFontFamilyMaps);
+
+const char kWebKitStandardFontFamilyArabic[] =
+    "webkit.webprefs.fonts.standard.Arab";
+const char kWebKitFixedFontFamilyArabic[] =
+    "webkit.webprefs.fonts.fixed.Arab";
+const char kWebKitSerifFontFamilyArabic[] =
+    "webkit.webprefs.fonts.serif.Arab";
+const char kWebKitSansSerifFontFamilyArabic[] =
+    "webkit.webprefs.fonts.sansserif.Arab";
+const char kWebKitStandardFontFamilyJapanese[] =
+    "webkit.webprefs.fonts.standard.Hrkt";
+const char kWebKitFixedFontFamilyJapanese[] =
+    "webkit.webprefs.fonts.fixed.Hrkt";
+const char kWebKitSerifFontFamilyJapanese[] =
+    "webkit.webprefs.fonts.serif.Hrkt";
+const char kWebKitSansSerifFontFamilyJapanese[] =
+    "webkit.webprefs.fonts.sansserif.Hrkt";
+const char kWebKitStandardFontFamilyKorean[] =
+    "webkit.webprefs.fonts.standard.Hang";
+const char kWebKitFixedFontFamilyKorean[] =
+    "webkit.webprefs.fonts.fixed.Hang";
+const char kWebKitSerifFontFamilyKorean[] =
+    "webkit.webprefs.fonts.serif.Hang";
+const char kWebKitSansSerifFontFamilyKorean[] =
+    "webkit.webprefs.fonts.sansserif.Hang";
+const char kWebKitStandardFontFamilySimplifiedHan[] =
+    "webkit.webprefs.fonts.standard.Hans";
+const char kWebKitFixedFontFamilySimplifiedHan[] =
+    "webkit.webprefs.fonts.fixed.Hans";
+const char kWebKitSerifFontFamilySimplifiedHan[] =
+    "webkit.webprefs.fonts.serif.Hans";
+const char kWebKitSansSerifFontFamilySimplifiedHan[] =
+    "webkit.webprefs.fonts.sansserif.Hans";
+const char kWebKitStandardFontFamilyTraditionalHan[] =
+    "webkit.webprefs.fonts.standard.Hant";
+const char kWebKitFixedFontFamilyTraditionalHan[] =
+    "webkit.webprefs.fonts.fixed.Hant";
+const char kWebKitSerifFontFamilyTraditionalHan[] =
+    "webkit.webprefs.fonts.serif.Hant";
+const char kWebKitSansSerifFontFamilyTraditionalHan[] =
+    "webkit.webprefs.fonts.sansserif.Hant";
+
 const char kWebKitDefaultFontSize[] = "webkit.webprefs.default_font_size";
 const char kWebKitDefaultFixedFontSize[] =
     "webkit.webprefs.default_fixed_font_size";

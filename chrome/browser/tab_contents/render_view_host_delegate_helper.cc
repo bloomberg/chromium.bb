@@ -38,6 +38,24 @@
 #include "content/common/view_messages.h"
 #include "net/base/network_change_notifier.h"
 
+namespace {
+
+// Fills |map| with the per-script font prefs under path |map_name|.
+void FillFontFamilyMap(const PrefService* prefs,
+                       const char* map_name,
+                       WebPreferences::ScriptFontFamilyMap* map) {
+  for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
+    const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
+    std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
+    std::string font_family = prefs->GetString(pref_name.c_str());
+    if (!font_family.empty())
+      map->push_back(std::make_pair(script, UTF8ToUTF16(font_family)));
+  }
+}
+
+}  // namespace
+
+
 RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllSources());
@@ -318,6 +336,19 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitCursiveFontFamily));
   web_prefs.fantasy_font_family =
       UTF8ToUTF16(prefs->GetString(prefs::kWebKitFantasyFontFamily));
+
+  FillFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap,
+                    &web_prefs.standard_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitFixedFontFamilyMap,
+                    &web_prefs.fixed_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitSerifFontFamilyMap,
+                    &web_prefs.serif_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitSansSerifFontFamilyMap,
+                    &web_prefs.sans_serif_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap,
+                    &web_prefs.cursive_font_family_map);
+  FillFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap,
+                    &web_prefs.fantasy_font_family_map);
 
   web_prefs.default_font_size =
       prefs->GetInteger(prefs::kWebKitDefaultFontSize);
