@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BUBBLE_BUBBLE_H_
 #pragma once
 
-#include "chrome/browser/ui/views/bubble/bubble_border.h"
+#include "views/bubble/bubble_border.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "views/accelerator.h"
 #include "views/view.h"
@@ -93,7 +93,7 @@ class Bubble
   //       pressed (the default behavior).
   static Bubble* Show(views::Widget* parent,
                       const gfx::Rect& position_relative_to,
-                      BubbleBorder::ArrowLocation arrow_location,
+                      views::BubbleBorder::ArrowLocation arrow_location,
                       views::View* contents,
                       BubbleDelegate* delegate);
 
@@ -104,12 +104,13 @@ class Bubble
   // to achieve the focusless effect. If |show_while_screen_is_locked| is true,
   // a property is set telling the window manager to continue showing the bubble
   // even while the screen is locked.
-  static Bubble* ShowFocusless(views::Widget* parent,
-                               const gfx::Rect& position_relative_to,
-                               BubbleBorder::ArrowLocation arrow_location,
-                               views::View* contents,
-                               BubbleDelegate* delegate,
-                               bool show_while_screen_is_locked);
+  static Bubble* ShowFocusless(
+      views::Widget* parent,
+      const gfx::Rect& position_relative_to,
+      views::BubbleBorder::ArrowLocation arrow_location,
+      views::View* contents,
+      BubbleDelegate* delegate,
+      bool show_while_screen_is_locked);
 #endif
 
   // Resizes and potentially moves the Bubble to best accommodate the
@@ -148,7 +149,7 @@ class Bubble
   // Creates the Bubble.
   virtual void InitBubble(views::Widget* parent,
                           const gfx::Rect& position_relative_to,
-                          BubbleBorder::ArrowLocation arrow_location,
+                          views::BubbleBorder::ArrowLocation arrow_location,
                           views::View* contents,
                           BubbleDelegate* delegate);
 
@@ -220,7 +221,7 @@ class Bubble
 #endif
 
   gfx::Rect position_relative_to_;
-  BubbleBorder::ArrowLocation arrow_location_;
+  views::BubbleBorder::ArrowLocation arrow_location_;
 
   views::View* contents_;
 

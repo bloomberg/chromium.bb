@@ -73,6 +73,7 @@ void AvatarMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 
   AvatarMenuBubbleView* bubble_view = new AvatarMenuBubbleView(browser_);
   // Bubble::Show() takes ownership of the view.
-  Bubble::Show(browser_view->GetWidget(), bounds, BubbleBorder::TOP_LEFT,
+  Bubble::Show(browser_view->GetWidget(), bounds,
+               views::BubbleBorder::TOP_LEFT,
                bubble_view, bubble_view);
 }

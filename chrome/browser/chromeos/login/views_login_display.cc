@@ -209,13 +209,13 @@ void ViewsLoginDisplay::ShowError(int error_msg_id,
 
   gfx::Rect bounds =
       controllers_[selected_view_index_]->GetMainInputScreenBounds();
-  BubbleBorder::ArrowLocation arrow;
+  views::BubbleBorder::ArrowLocation arrow;
   if (controllers_[selected_view_index_]->is_new_user()) {
-    arrow = BubbleBorder::LEFT_TOP;
+    arrow = views::BubbleBorder::LEFT_TOP;
   } else {
     // Point info bubble arrow to cursor position (approximately).
     bounds.set_width(kCursorOffset * 2);
-    arrow = BubbleBorder::BOTTOM_LEFT;
+    arrow = views::BubbleBorder::BOTTOM_LEFT;
   }
 
   string16 help_link;

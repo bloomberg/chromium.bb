@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BUBBLE_BORDER_CONTENTS_H_
 #pragma once
 
-#include "chrome/browser/ui/views/bubble/bubble_border.h"
+#include "views/bubble/bubble_border.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/view.h"
 
@@ -30,7 +30,7 @@ class BorderContents : public views::View {
   // bubble shows entirely.
   virtual void SizeAndGetBounds(
       const gfx::Rect& position_relative_to,  // In screen coordinates
-      BubbleBorder::ArrowLocation arrow_location,
+      views::BubbleBorder::ArrowLocation arrow_location,
       bool allow_bubble_offscreen,
       const gfx::Size& contents_size,
       gfx::Rect* contents_bounds,             // Returned in window coordinates
@@ -53,18 +53,19 @@ class BorderContents : public views::View {
     return content_margins_;
   }
 
-  BubbleBorder* bubble_border_;
+  views::BubbleBorder* bubble_border_;
 
  private:
   // Changes |arrow_location| to its mirrored version, vertically if |vertical|
   // is true, horizontally otherwise, if |window_bounds| don't fit in
   // |monitor_bounds|.
-  void MirrorArrowIfOffScreen(bool vertical,
-                              const gfx::Rect& position_relative_to,
-                              const gfx::Rect& monitor_bounds,
-                              const gfx::Size& local_contents_size,
-                              BubbleBorder::ArrowLocation* arrow_location,
-                              gfx::Rect* window_bounds);
+  void MirrorArrowIfOffScreen(
+      bool vertical,
+      const gfx::Rect& position_relative_to,
+      const gfx::Rect& monitor_bounds,
+      const gfx::Size& local_contents_size,
+      views::BubbleBorder::ArrowLocation* arrow_location,
+      gfx::Rect* window_bounds);
 
   // Computes how much |window_bounds| is off-screen of the monitor bounds
   // |monitor_bounds| and puts the values in |offscreen_insets|.
