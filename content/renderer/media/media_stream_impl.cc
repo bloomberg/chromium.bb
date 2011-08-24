@@ -19,6 +19,9 @@ static const int kVideoCaptureFramePerSecond = 30;
 
 static const int kStartOpenSessionId = 1;
 
+// TODO(wjia): remove this string when full media stream code is checked in.
+static const char kRawMediaScheme[] = "mediastream";
+
 }  // namespace
 
 MediaStreamImpl::MediaStreamImpl(VideoCaptureImplManager* vc_manager)
@@ -29,7 +32,7 @@ MediaStreamImpl::~MediaStreamImpl() {}
 
 scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
     const GURL& url, media::MessageLoopFactory* message_loop_factory) {
-  bool raw_media = (url.spec().find(media::kRawMediaScheme) == 0);
+  bool raw_media = (url.spec().find(kRawMediaScheme) == 0);
   media::VideoDecoder* decoder = NULL;
   if (raw_media) {
     media::VideoCapture::VideoCaptureCapability capability;

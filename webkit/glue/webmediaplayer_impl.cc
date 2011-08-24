@@ -18,6 +18,7 @@
 #include "media/base/video_frame.h"
 #include "media/filters/adaptive_demuxer.h"
 #include "media/filters/chunk_demuxer_factory.h"
+#include "media/filters/dummy_demuxer_factory.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -211,6 +212,8 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   DCHECK(proxy_);
 
   if (media_stream_client_) {
+    bool has_video = false;
+    bool has_audio = false;
     scoped_refptr<media::VideoDecoder> new_decoder =
         media_stream_client_->GetVideoDecoder(url, message_loop_factory_.get());
     if (new_decoder.get()) {
@@ -218,7 +221,13 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
       scoped_refptr<media::VideoDecoder> old_videodecoder;
       filter_collection_->SelectVideoDecoder(&old_videodecoder);
       filter_collection_->AddVideoDecoder(new_decoder.get());
+      has_video = true;
     }
+
+    // TODO(wjia): add audio decoder handling when it's available.
+    if (has_video || has_audio)
+      filter_collection_->SetDemuxerFactory(
+          new media::DummyDemuxerFactory(has_video, has_audio));
   }
 
   // Handle any volume changes that occured before load().
