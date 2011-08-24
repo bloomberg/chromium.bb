@@ -8,8 +8,8 @@ import gyp_extract
 
 Import('env')
 
-# Underlay $SOURCE_ROOT/third_party/ppapi in this directory.
-Dir('.').addRepository(Dir('#/src/third_party/ppapi'))
+# Underlay $SOURCE_ROOT/ppapi in this directory.
+Dir('.').addRepository(Dir('#/../ppapi'))
 
 # TODO(ncbray): reenable
 # http://code.google.com/p/nativeclient/issues/detail?id=1643
@@ -17,7 +17,7 @@ env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 
 # Load ppapi_cpp.gypi
 ppapi_cpp_gypi = gyp_extract.LoadGypFile(
-    env.File('$MAIN_DIR/src/third_party/ppapi/ppapi_cpp.gypi').abspath)
+    env.File('$SOURCE_ROOT/ppapi/ppapi_cpp.gypi').abspath)
 
 # From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
 # From ppapi_cpp.gypi:ppapi_cpp:.*\.cc
@@ -31,13 +31,13 @@ libppapi_cpp = env.NaClSdkLibrary('libppapi_cpp', cpp_sources)
 env.AddLibraryToSdk(libppapi_cpp)
 
 env.Append(CPPPATH=[
-    '$MAIN_DIR/src/third_party/ppapi/lib/gl/gles2',
-    '$MAIN_DIR/src/third_party/ppapi/lib/gl/include',
+    '$SOURCE_ROOT/ppapi/lib/gl/gles2',
+    '$SOURCE_ROOT/ppapi/lib/gl/include',
     ])
 
 # Load ppapi_gl.gypi
 ppapi_gl_gypi = gyp_extract.LoadGypFile(
-    env.File('$MAIN_DIR/src/third_party/ppapi/ppapi_gl.gypi').abspath)
+    env.File('$SOURCE_ROOT/ppapi/ppapi_gl.gypi').abspath)
 
 # From ppapi_gl.gypi:ppapi_gles2:.*\.c
 gles2_sources = gyp_extract.GypTargetSources(

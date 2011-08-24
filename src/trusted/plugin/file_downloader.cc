@@ -12,13 +12,13 @@
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/utility.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
-#include "native_client/src/third_party/ppapi/c/trusted/ppb_url_loader_trusted.h"
-#include "native_client/src/third_party/ppapi/cpp/file_io.h"
-#include "native_client/src/third_party/ppapi/cpp/file_ref.h"
-#include "native_client/src/third_party/ppapi/cpp/url_request_info.h"
-#include "native_client/src/third_party/ppapi/cpp/url_response_info.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/cpp/file_io.h"
+#include "ppapi/cpp/file_ref.h"
+#include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/url_response_info.h"
 
 namespace {
 const int32_t kExtensionUrlRequestStatusOk = 200;

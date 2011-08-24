@@ -22,10 +22,10 @@
 #endif
 
 
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
-#include "native_client/src/third_party/ppapi/c/pp_size.h"
-#include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_input_event.h"
+#include "ppapi/c/pp_size.h"
+#include "ppapi/c/ppb_image_data.h"
 
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_check.h"

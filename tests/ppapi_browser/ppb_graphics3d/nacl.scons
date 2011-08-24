@@ -9,7 +9,7 @@ Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
-env.Append(CPPPATH=['$MAIN_DIR/src/third_party/ppapi/lib/gl/include'])
+env.Append(CPPPATH=['$SOURCE_ROOT/ppapi/lib/gl/include'])
 
 nexe = 'ppapi_ppb_graphics3d_${TARGET_FULLARCH}'
 env.Alias('ppapi_ppb_graphics3d${PROGSUFFIX}',

@@ -8,7 +8,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/input_event_data.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
-#include "native_client/src/third_party/ppapi/c/ppb_input_event.h"
+#include "ppapi/c/ppb_input_event.h"
 
 namespace ppapi_proxy {
 

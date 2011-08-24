@@ -9,11 +9,11 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/third_party/ppapi/c/trusted/ppb_file_io_trusted.h"
-#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
-#include "native_client/src/third_party/ppapi/cpp/file_io.h"
-#include "native_client/src/third_party/ppapi/cpp/url_loader.h"
-#include "native_client/src/third_party/ppapi/cpp/instance.h"
+#include "ppapi/c/trusted/ppb_file_io_trusted.h"
+#include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/file_io.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/instance.h"
 
 namespace plugin {
 

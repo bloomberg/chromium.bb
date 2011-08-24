@@ -11,7 +11,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_buffer_dev.h"
+#include "ppapi/c/dev/ppb_buffer_dev.h"
 
 namespace ppapi_proxy {
 

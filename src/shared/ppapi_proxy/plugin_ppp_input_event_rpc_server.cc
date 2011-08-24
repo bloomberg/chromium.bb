@@ -18,10 +18,10 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_resource_tracker.h"
 #include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/pp_resource.h"
-#include "native_client/src/third_party/ppapi/c/pp_var.h"
-#include "native_client/src/third_party/ppapi/c/ppp.h"
-#include "native_client/src/third_party/ppapi/c/ppp_input_event.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppp.h"
+#include "ppapi/c/ppp_input_event.h"
 
 using nacl::scoped_ptr;
 using ppapi_proxy::DebugPrintf;

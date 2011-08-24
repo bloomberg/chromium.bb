@@ -10,7 +10,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_callback.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "srpcgen/ppb_rpc.h"
 #include "srpcgen/upcall.h"
 

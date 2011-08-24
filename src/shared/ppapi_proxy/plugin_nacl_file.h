@@ -7,8 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_NACL_FILE_H
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_NACL_FILE_H
 
-#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_instance.h"
 
 namespace ppapi_proxy {
 

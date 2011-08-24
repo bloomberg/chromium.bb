@@ -8,7 +8,7 @@
 #include "gpu/command_buffer/common/logging.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_core.h"
 
 #include "srpcgen/ppb_rpc.h"
 

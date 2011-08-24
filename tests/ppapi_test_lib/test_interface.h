@@ -47,11 +47,11 @@
 
 #include "native_client/src/include/nacl_string.h"
 
-#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
-#include "native_client/src/third_party/ppapi/c/pp_module.h"
-#include "native_client/src/third_party/ppapi/c/pp_resource.h"
-#include "native_client/src/third_party/ppapi/c/pp_var.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_var.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // These must be implemented by the tester

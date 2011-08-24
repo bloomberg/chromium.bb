@@ -328,7 +328,10 @@ VALID_INCLUDE_PREFIX = [
     'gtest/',
     'native_client/',
     'ppapi/',
+    'srpcgen/',
     'third_party/',
+    'trusted/srpcgen/',
+    'untrusted/srpcgen/',
     ]
 
 

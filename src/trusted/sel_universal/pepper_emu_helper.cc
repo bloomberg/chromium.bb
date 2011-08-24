@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "native_client/src/third_party/ppapi/c/pp_var.h"
+#include "ppapi/c/pp_var.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"

@@ -12,8 +12,8 @@
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/pp_resource.h"
-#include "native_client/src/third_party/ppapi/c/ppp_input_event.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/ppp_input_event.h"
 
 namespace ppapi_proxy {
 

@@ -357,7 +357,7 @@ def PrintClientFile(output, header_name, specs, thread_check):
     AddInclude('native_client/src/shared/ppapi_proxy/browser_globals.h')
   if thread_check:
     AddInclude('native_client/src/shared/ppapi_proxy/plugin_globals.h')
-    AddInclude('native_client/src/third_party/ppapi/c/ppb_core.h')
+    AddInclude('ppapi/c/ppb_core.h')
     AddInclude('native_client/src/shared/platform/nacl_check.h')
   PrintSourceFileTop(output, header_name)
   s = ''
@@ -434,9 +434,9 @@ def main(argv):
       thread_check = True
 
   if ppapi:
-    AddInclude("native_client/src/third_party/ppapi/c/pp_instance.h")
-    AddInclude("native_client/src/third_party/ppapi/c/pp_module.h")
-    AddInclude("native_client/src/third_party/ppapi/c/pp_resource.h")
+    AddInclude("ppapi/c/pp_instance.h")
+    AddInclude("ppapi/c/pp_module.h")
+    AddInclude("ppapi/c/pp_resource.h")
 
   # Convert to forward slash paths if needed
   h_file_name = "/".join(h_file_name.split("\\"))

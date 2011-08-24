@@ -5,9 +5,9 @@
 #ifndef NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_TESTABLE_CALLBACK_H
 #define NATIVE_CLIENT_TESTS_PPAPI_TEST_LIB_TESTABLE_CALLBACK_H
 
-#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
-#include "native_client/src/third_party/ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_stdint.h"
 
 // NOTE: if you use you TestableCallback you will need to enable
 // testing interfaces in PPAPIBrowserTester(), e.g.

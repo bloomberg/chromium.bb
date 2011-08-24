@@ -23,7 +23,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
 
-#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/completion_callback.h"
 
 namespace nacl {
 class DescWrapper;

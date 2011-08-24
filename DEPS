@@ -49,7 +49,7 @@ deps = {
     Var("chromium_trunk") + "/src/tools/perf_expectations@" + Var("chrome_rev"),
   "net/tools/testserver":
     Var("chromium_trunk") + "/src/net/tools/testserver@" + Var("chrome_rev"),
-  "native_client/src/third_party/ppapi":
+  "ppapi":
     Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_ppapi_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
@@ -111,13 +111,13 @@ deps_os = {
 hooks = [
   {
     "pattern": ".",
-    "action": ["python", "native_client/build/gyp_nacl",
-               "native_client/build/all.gyp"],
-  },
-  {
-    "pattern": ".",
     "action": ["python", "native_client/build/download_toolchains.py",
                "--x86-version", Var("x86_toolchain_version"),
                "--arm-version", Var("arm_toolchain_version")],
+  },
+  {
+    "pattern": ".",
+    "action": ["python", "native_client/build/gyp_nacl",
+               "native_client/build/all.gyp"],
   },
 ]

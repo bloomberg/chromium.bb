@@ -9,7 +9,7 @@
 
 #include "native_client/src/include/nacl_memory.h"
 #include "native_client/src/shared/ppapi_proxy/proxy_var.h"
-#include "native_client/src/third_party/ppapi/c/pp_var.h"
+#include "ppapi/c/pp_var.h"
 
 namespace ppapi_proxy {
 

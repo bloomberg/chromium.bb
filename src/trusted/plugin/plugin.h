@@ -27,12 +27,12 @@
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
-#include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
+#include "ppapi/cpp/private/var_private.h"
 // for pp::VarPrivate
-#include "native_client/src/third_party/ppapi/cpp/private/instance_private.h"
-#include "native_client/src/third_party/ppapi/cpp/rect.h"
-#include "native_client/src/third_party/ppapi/cpp/url_loader.h"
-#include "native_client/src/third_party/ppapi/cpp/var.h"
+#include "ppapi/cpp/private/instance_private.h"
+#include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/var.h"
 
 struct NaClSrpcChannel;
 struct NaClDesc;

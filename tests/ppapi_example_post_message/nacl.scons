@@ -12,7 +12,7 @@ env.Prepend(CPPDEFINES=['XP_UNIX'])
 nexe_name = 'ppapi_example_post_message_${TARGET_FULLARCH}'
 obj = env.ComponentObject(
     'post_message',
-    '$MAIN_DIR/src/third_party/ppapi/examples/scripting/post_message.cc'
+    '$SOURCE_ROOT/ppapi/examples/scripting/post_message.cc'
     )
 nexe = env.ComponentProgram(nexe_name, [obj],
                             EXTRA_LIBS=['${PPAPI_LIBS}', 'ppapi_cpp'])

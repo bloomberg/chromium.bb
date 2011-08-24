@@ -6,7 +6,7 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_PPB_PDF_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/third_party/ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppb_pdf.h"
 
 namespace ppapi_proxy {
 

@@ -7,8 +7,8 @@ import gyp_extract
 
 Import('env')
 
-# Underlay $MAIN_DIR/third_party/ppapi in this directory.
-Dir('.').addRepository(Dir('#/src/third_party/ppapi'))
+# Underlay $SOURCE_ROOT/ppapi in this directory.
+Dir('.').addRepository(Dir('#/../ppapi'))
 
 if env.Bit('linux'):
   env.Append(CCFLAGS=['-fPIC'])
@@ -23,7 +23,7 @@ env.FilterOut(CCFLAGS=['-Wswitch-enum'])
 
 # Load ppapi_cpp.gypi
 ppapi_cpp_gypi = gyp_extract.LoadGypFile(
-    env.File('$MAIN_DIR/src/third_party/ppapi/ppapi_cpp.gypi').abspath)
+    env.File('$SOURCE_ROOT/ppapi/ppapi_cpp.gypi').abspath)
 
 # From ppapi_cpp.gypi:ppapi_cpp_objects:.*\.cc
 # From ppapi_cpp.gypi:ppapi_cpp:.*\.cc

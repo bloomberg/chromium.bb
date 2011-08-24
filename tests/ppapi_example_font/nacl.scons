@@ -17,7 +17,7 @@ env.Append(CCFLAGS=['-Wformat=0'])
 nexe_name = 'ppapi_example_font_${TARGET_FULLARCH}'
 obj = env.ComponentObject(
     'simple_font',
-    '$MAIN_DIR/src/third_party/ppapi/examples/font/simple_font.cc'
+    '$SOURCE_ROOT/ppapi/examples/font/simple_font.cc'
     )
 nexe = env.ComponentProgram(nexe_name, [obj],
                             EXTRA_LIBS=['${PPAPI_LIBS}', 'ppapi_cpp'])

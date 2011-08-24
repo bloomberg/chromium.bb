@@ -15,7 +15,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/third_party/ppapi/cpp/var.h"
+#include "ppapi/cpp/var.h"
 
 namespace plugin {
 

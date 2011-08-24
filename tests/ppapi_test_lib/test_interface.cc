@@ -13,12 +13,12 @@
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/internal_utils.h"
 
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
-#include "native_client/src/third_party/ppapi/c/pp_module.h"
-#include "native_client/src/third_party/ppapi/c/pp_var.h"
-#include "native_client/src/third_party/ppapi/c/ppb_instance.h"
-#include "native_client/src/third_party/ppapi/c/ppb_messaging.h"
-#include "native_client/src/third_party/ppapi/c/ppb_var.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_var.h"
 
 void PostTestMessage(nacl::string test_name, nacl::string message) {
   nacl::string test_message = test_name;

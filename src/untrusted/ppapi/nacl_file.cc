@@ -27,10 +27,10 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_nacl_file.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_core.h"
 #include "native_client/src/untrusted/ppapi/nacl_file.h"
-#include "native_client/src/third_party/ppapi/c/pp_bool.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
-#include "native_client/src/third_party/ppapi/c/ppb_core.h"
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/ppb_core.h"
 
 // TODO(nfullagar): Currently, files loaded with LoadUrl() cannot be unloaded;
 //                  nacl_file holds the real descriptor open for the duration

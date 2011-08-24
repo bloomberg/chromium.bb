@@ -1908,8 +1908,6 @@ def MakeBaseTrustedEnv():
       ['NACL_STANDALONE', 1],
       ],
     CPPPATH = [
-      # third_party goes first so we get nacl's ppapi in preference to others.
-      '${MAIN_DIR}/src/third_party',
       '${SOURCE_ROOT}',
     ],
 
@@ -2393,8 +2391,6 @@ nacl_env = MakeArchSpecificEnv().Clone(
 
     # ${SOURCE_ROOT} for #include <ppapi/...>
     CPPPATH = [
-      # third_party goes first so we get nacl's ppapi in preference to others.
-      '${MAIN_DIR}/src/third_party',
       '${SOURCE_ROOT}',
     ],
 

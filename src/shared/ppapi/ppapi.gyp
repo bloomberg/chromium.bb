@@ -21,6 +21,6 @@
   },
   'includes': [
     '../../../build/common.gypi',
-    '../../third_party/ppapi/ppapi_cpp.gypi',
+    '../../../../ppapi/ppapi_cpp.gypi',
   ],
 }

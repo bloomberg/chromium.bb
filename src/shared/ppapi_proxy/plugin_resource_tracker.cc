@@ -12,7 +12,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppb_rpc.h"
-#include "native_client/src/third_party/ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_resource.h"
 
 namespace ppapi_proxy {
 

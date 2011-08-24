@@ -11,7 +11,7 @@
 // The definition of scrollbar depends on the interface version.
 // TODO(brettw) either move all interfaces to this method, or encode all
 // versions explicitly in all interfaces.
-#include "native_client/src/third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
+#include "ppapi/c/dev/ppb_scrollbar_dev.h"
 
 struct PPB_Context3D_Dev;
 struct PPB_Core;

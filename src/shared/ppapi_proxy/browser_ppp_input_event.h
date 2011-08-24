@@ -9,9 +9,9 @@
 
 #include "native_client/src/include/nacl_macros.h"
 // Needed because ppp_instance.h does not include everything it needs.
-#include "native_client/src/third_party/ppapi/c/pp_resource.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
-#include "native_client/src/third_party/ppapi/c/ppb_input_event.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/ppb_input_event.h"
 
 struct PPP_InputEvent;
 

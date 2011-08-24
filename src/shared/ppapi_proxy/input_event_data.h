@@ -6,10 +6,10 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_INPUT_EVENT_DATA_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
-#include "native_client/src/third_party/ppapi/c/pp_macros.h"
-#include "native_client/src/third_party/ppapi/c/pp_rect.h"
-#include "native_client/src/third_party/ppapi/c/ppb_input_event.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_rect.h"
+#include "ppapi/c/ppb_input_event.h"
 
 namespace ppapi_proxy {
 

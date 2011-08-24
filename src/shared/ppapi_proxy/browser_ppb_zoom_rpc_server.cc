@@ -10,9 +10,9 @@
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/pp_point.h"
-#include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_point.h"
+#include "ppapi/c/ppb_image_data.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;

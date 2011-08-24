@@ -10,8 +10,8 @@
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppb_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/ppb_input_event.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_input_event.h"
 
 
 using ppapi_proxy::DebugPrintf;

@@ -12,18 +12,18 @@
 
 #include <nacl/nacl_check.h>
 
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_io.h"
 
-#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
-#include "native_client/src/third_party/ppapi/cpp/instance.h"
-#include "native_client/src/third_party/ppapi/cpp/file_ref.h"
-#include "native_client/src/third_party/ppapi/cpp/file_io.h"
-#include "native_client/src/third_party/ppapi/cpp/module.h"
-#include "native_client/src/third_party/ppapi/cpp/url_response_info.h"
-#include "native_client/src/third_party/ppapi/cpp/url_loader.h"
-#include "native_client/src/third_party/ppapi/cpp/url_request_info.h"
-#include "native_client/src/third_party/ppapi/cpp/var.h"
+#include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/file_ref.h"
+#include "ppapi/cpp/file_io.h"
+#include "ppapi/cpp/module.h"
+#include "ppapi/cpp/url_response_info.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/var.h"
 
 using std::string;
 using std::ostringstream;

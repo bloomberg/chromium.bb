@@ -14,10 +14,10 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_instance_data.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/ppp.h"
-#include "native_client/src/third_party/ppapi/c/pp_resource.h"
-#include "native_client/src/third_party/ppapi/c/pp_var.h"
-#include "native_client/src/third_party/ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppp.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppp_instance.h"
 
 using nacl::scoped_ptr;
 using ppapi_proxy::DebugPrintf;

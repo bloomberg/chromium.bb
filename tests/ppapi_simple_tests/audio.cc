@@ -12,15 +12,15 @@
 #include <nacl/nacl_check.h>
 #include <nacl/nacl_log.h>
 
-#include "native_client/src/third_party/ppapi/c/pp_bool.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/ppb_audio.h"
-#include "native_client/src/third_party/ppapi/c/ppb_audio_config.h"
-#include "native_client/src/third_party/ppapi/cpp/audio.h"
-#include "native_client/src/third_party/ppapi/cpp/audio_config.h"
-#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
-#include "native_client/src/third_party/ppapi/cpp/instance.h"
-#include "native_client/src/third_party/ppapi/cpp/module.h"
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_audio.h"
+#include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/cpp/audio.h"
+#include "ppapi/cpp/audio_config.h"
+#include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/module.h"
 
 const PP_AudioSampleRate kSampleFrequency = PP_AUDIOSAMPLERATE_44100;
 // Buffer size in units of sample frames.

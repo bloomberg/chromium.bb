@@ -7,7 +7,7 @@
 
 #include "native_client/src/trusted/plugin/plugin_error.h"
 
-#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {
 

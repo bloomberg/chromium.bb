@@ -11,11 +11,11 @@
 #include <string>
 
 // NaCl
-#include "native_client/src/third_party/ppapi/cpp/input_event.h"
-#include "native_client/src/third_party/ppapi/cpp/instance.h"
-#include "native_client/src/third_party/ppapi/cpp/module.h"
-#include "native_client/src/third_party/ppapi/cpp/point.h"
-#include "native_client/src/third_party/ppapi/cpp/var.h"
+#include "ppapi/cpp/input_event.h"
+#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/module.h"
+#include "ppapi/cpp/point.h"
+#include "ppapi/cpp/var.h"
 
 namespace {
 const char* const kEventsPropertyName = "events";

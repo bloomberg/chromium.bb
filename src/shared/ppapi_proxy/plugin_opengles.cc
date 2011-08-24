@@ -9,7 +9,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_3d.h"
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_opengles_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 
 using ppapi_proxy::PluginGraphics3D;
 using ppapi_proxy::PluginResource;

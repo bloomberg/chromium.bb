@@ -6,8 +6,8 @@
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/ppp.h"
-#include "native_client/src/third_party/ppapi/c/ppp_messaging.h"
+#include "ppapi/c/ppp.h"
+#include "ppapi/c/ppp_messaging.h"
 #include "srpcgen/ppp_rpc.h"
 
 using ppapi_proxy::DebugPrintf;

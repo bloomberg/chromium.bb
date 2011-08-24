@@ -11,8 +11,8 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/cpp/completion_callback.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {
 

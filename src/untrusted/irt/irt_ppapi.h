@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-#include "native_client/src/third_party/ppapi/c/ppp.h"
+#include "ppapi/c/ppp.h"
 
 struct PP_StartFunctions {
   int32_t (*PPP_InitializeModule)(PP_Module module_id,

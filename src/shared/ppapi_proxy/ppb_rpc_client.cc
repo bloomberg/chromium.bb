@@ -19,10 +19,10 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
-#include "native_client/src/third_party/ppapi/c/pp_module.h"
-#include "native_client/src/third_party/ppapi/c/pp_resource.h"
-#include "native_client/src/third_party/ppapi/c/ppb_core.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/c/ppb_core.h"
 
 NaClSrpcError NaClFileRpcClient::StreamAsFile(
     NaClSrpcChannel* channel,

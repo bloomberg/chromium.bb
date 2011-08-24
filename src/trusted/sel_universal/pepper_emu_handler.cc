@@ -17,9 +17,9 @@
 #include <queue>
 #include <string>
 
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/pp_input_event.h"
-#include "native_client/src/third_party/ppapi/c/pp_size.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_input_event.h"
+#include "ppapi/c/pp_size.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"

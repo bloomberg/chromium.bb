@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/third_party/ppapi/c/dev/ppb_testing_dev.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/pp_errors.h"
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/testable_callback.h"
 

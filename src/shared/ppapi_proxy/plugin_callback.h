@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <map>
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
-#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_completion_callback.h"
 
 namespace ppapi_proxy {
 

@@ -13,10 +13,10 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
-#include "native_client/src/third_party/ppapi/c/ppp.h"
-#include "native_client/src/third_party/ppapi/c/ppp_instance.h"
-#include "native_client/src/third_party/ppapi/c/ppp_messaging.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/ppp.h"
+#include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/ppp_messaging.h"
 
 namespace plugin {
 class Plugin;

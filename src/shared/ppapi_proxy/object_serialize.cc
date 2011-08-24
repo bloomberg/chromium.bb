@@ -19,8 +19,8 @@
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #endif  // __native_client__
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/pp_bool.h"
-#include "native_client/src/third_party/ppapi/c/pp_var.h"
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_var.h"
 
 namespace ppapi_proxy {
 

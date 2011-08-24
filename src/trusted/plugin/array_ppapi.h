@@ -10,9 +10,9 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/third_party/ppapi/cpp/dev/scriptable_object_deprecated.h"
-#include "native_client/src/third_party/ppapi/cpp/instance.h"
-#include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
+#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
+#include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/private/var_private.h"
 
 namespace plugin {
 

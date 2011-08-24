@@ -8,7 +8,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/dev/ppb_memory_dev.h"
 
 namespace ppapi_proxy {
 

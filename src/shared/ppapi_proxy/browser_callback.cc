@@ -13,7 +13,7 @@
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/third_party/ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "srpcgen/ppp_rpc.h"
 

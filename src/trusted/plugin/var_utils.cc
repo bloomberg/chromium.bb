@@ -16,7 +16,7 @@
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
-#include "native_client/src/third_party/ppapi/cpp/dev/scriptable_object_deprecated.h"
+#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 
 namespace plugin {
 

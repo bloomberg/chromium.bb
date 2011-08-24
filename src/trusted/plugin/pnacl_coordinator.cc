@@ -19,7 +19,7 @@
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_errors.h"
 
 namespace {
 

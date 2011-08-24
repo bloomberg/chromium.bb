@@ -15,11 +15,11 @@
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_memory_dev.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/pp_rect.h"
-#include "native_client/src/third_party/ppapi/c/ppb_image_data.h"
-#include "native_client/src/third_party/ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_rect.h"
+#include "ppapi/c/ppb_image_data.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;

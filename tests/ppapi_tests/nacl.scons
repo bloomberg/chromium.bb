@@ -75,7 +75,7 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 def MakeComponentObject(src):
   return env.ComponentObject(
       os.path.splitext(src)[0],
-      os.path.join('${MAIN_DIR}/src/third_party/ppapi/tests', src))
+      os.path.join('$SOURCE_ROOT/ppapi/tests', src))
 
 ppapi_tests_objs = [MakeComponentObject(src) for src in ppapi_tests_sources]
 
@@ -94,12 +94,12 @@ ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
 #       See pyauto_nacl/nacl.scons.
 
 env.Publish(ppapi_tests_target, 'run',
-            ['${MAIN_DIR}/src/third_party/ppapi/tests/test_url_loader_data/*'],
+            ['$SOURCE_ROOT/ppapi/tests/test_url_loader_data/*'],
             subdir='test_url_loader_data')
 
 env.Publish(ppapi_tests_target, 'run',
             [ppapi_tests_nexe,
-             '${MAIN_DIR}/src/third_party/ppapi/tests/test_case.html',
+             '$SOURCE_ROOT/ppapi/tests/test_case.html',
              'test_case.nmf',
-             '${MAIN_DIR}/src/third_party/ppapi/tests/test_image_data',
-             '${MAIN_DIR}/src/third_party/ppapi/tests/test_page.css'])
+             '$SOURCE_ROOT/ppapi/tests/test_image_data',
+             '$SOURCE_ROOT/ppapi/tests/test_page.css'])

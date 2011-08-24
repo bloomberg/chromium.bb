@@ -12,11 +12,11 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 
-#include "native_client/src/third_party/ppapi/c/dev/ppb_console_dev.h"
-#include "native_client/src/third_party/ppapi/c/ppb_var.h"
-#include "native_client/src/third_party/ppapi/cpp/module.h"
-#include "native_client/src/third_party/ppapi/cpp/private/instance_private.h"
-#include "native_client/src/third_party/ppapi/cpp/private/var_private.h"
+#include "ppapi/c/dev/ppb_console_dev.h"
+#include "ppapi/c/ppb_var.h"
+#include "ppapi/cpp/module.h"
+#include "ppapi/cpp/private/instance_private.h"
+#include "ppapi/cpp/private/var_private.h"
 
 using nacl::assert_cast;
 

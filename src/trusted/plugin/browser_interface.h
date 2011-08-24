@@ -16,7 +16,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
-#include "native_client/src/third_party/ppapi/cpp/instance.h"
+#include "ppapi/cpp/instance.h"
 
 namespace pp {
 class InstancePrivate;

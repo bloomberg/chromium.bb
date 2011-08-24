@@ -10,10 +10,10 @@
 #include "base/scoped_ptr.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
-#include "native_client/src/third_party/ppapi/c/dev/pp_graphics_3d_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_graphics_3d_dev.h"
-#include "native_client/src/third_party/ppapi/c/dev/ppb_opengles_dev.h"
-#include "native_client/src/third_party/ppapi/c/pp_instance.h"
+#include "ppapi/c/dev/pp_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
+#include "ppapi/c/pp_instance.h"
 
 namespace gpu {
 class CommandBuffer;
