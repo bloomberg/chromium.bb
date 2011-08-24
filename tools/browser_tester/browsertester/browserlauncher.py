@@ -54,7 +54,7 @@ class LaunchFailure(Exception):
 def GetPlatform():
   if sys.platform == 'darwin':
     platform = 'mac'
-  elif sys.platform == 'linux2':
+  elif sys.platform.startswith('linux'):
     platform = 'linux'
   elif sys.platform in ('cygwin', 'win32'):
     platform = 'windows'
@@ -255,6 +255,12 @@ class ChromeLauncher(BrowserLauncher):
             '--user-data-dir=%s' % self.profile]
     if self.options.ppapi_plugin is None:
       cmd.append('--enable-nacl')
+      if PLATFORM == 'linux':
+        # Sandboxing Chrome on Linux requires a SUIDed helper binary.  This
+        # binary may not be installed, so disable sandboxing to avoid the
+        # corner cases where it may fail.  This is a little scarry, because it
+        # means we are not testing NaCl inside the outer sandbox on Linux.
+        cmd.append('--no-sandbox')
     else:
       cmd.append('--register-pepper-plugins=%s;application/x-nacl'
                  % self.options.ppapi_plugin)
