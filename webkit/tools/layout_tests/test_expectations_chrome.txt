@@ -339,7 +339,7 @@ BUG_OFF LINUX X86 : tables/mozilla_expected_failures/collapsing_borders/bug41262
 BUG_OFF LINUX X86_64 : css3/font-feature-settings-rendering.html = IMAGE+TEXT
 BUG_OFF LINUX X86_64 : editing/pasteboard/copy-standalone-image.html = TEXT
 BUG_OFF LINUX X86_64 : editing/selection/5354455-2.html = IMAGE TIMEOUT
-BUG_OFF LINUX X86_64 : fast/borders/border-radius-circle.html = TIMEOUT
+BUG_OFF LINUX X86_64 : fast/borders/border-radius-circle.html = TIMEOUT IMAGE
 BUG_OFF LINUX X86_64 : fast/canvas/canvas-as-image-incremental-repaint.html = TIMEOUT
 BUG_OFF LINUX X86_64 : fast/filesystem/async-operations.html = TIMEOUT
 BUG_OFF LINUX X86_64 : fast/filesystem/directory-entry-to-uri.html = TIMEOUT
