@@ -377,7 +377,7 @@ main(int argc, char *argv[])
 	struct eventdemo *e;
 
 	/* Connect to the display and have the arguments parsed */
-	d = display_create(&argc, &argv, option_entries, NULL);
+	d = display_create(&argc, &argv, option_entries);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

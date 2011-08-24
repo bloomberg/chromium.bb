@@ -486,8 +486,8 @@ static const struct wl_drag_offer_listener drag_offer_listener = {
 };
 
 static void
-global_handler(struct display *display,
-	       const char *interface, uint32_t id, uint32_t version)
+global_handler(struct wl_display *display, uint32_t id,
+	       const char *interface, uint32_t version, void *data)
 {
 	struct wl_drag_offer *offer;
 	struct dnd_offer *dnd_offer;
@@ -495,8 +495,7 @@ global_handler(struct display *display,
 	if (strcmp(interface, "wl_drag_offer") != 0)
 		return;
 
-	offer = wl_display_bind(display_get_display(display),
-				id, &wl_drag_offer_interface);
+	offer = wl_display_bind(display, id, &wl_drag_offer_interface);
 
 	dnd_offer = malloc(sizeof *dnd_offer);
 	if (dnd_offer == NULL)
@@ -643,6 +642,9 @@ dnd_create(struct display *display)
 	dnd->display = display;
 	dnd->key = 100;
 
+	wl_display_add_global_listener(display_get_display(display),
+				       global_handler, dnd);
+
 	for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
 		x = (i % 4) * (item_width + item_padding) + item_padding;
 		y = (i / 4) * (item_height + item_padding) + item_padding;
@@ -680,7 +682,7 @@ main(int argc, char *argv[])
 {
 	struct display *d;
 
-	d = display_create(&argc, &argv, option_entries, global_handler);
+	d = display_create(&argc, &argv, option_entries);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

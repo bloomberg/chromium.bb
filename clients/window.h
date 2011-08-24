@@ -40,14 +40,8 @@ struct rectangle {
 struct display;
 struct input;
 
-typedef void (*display_global_handler_t)(struct display *display,
-					 const char *interface,
-					 uint32_t id,
-					 uint32_t version);
-
 struct display *
-display_create(int *argc, char **argv[], const GOptionEntry *option_entries,
-	       display_global_handler_t handler);
+display_create(int *argc, char **argv[], const GOptionEntry *option_entries);
 
 struct wl_display *
 display_get_display(struct display *display);

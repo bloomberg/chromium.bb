@@ -79,8 +79,6 @@ struct display {
 	struct xkb_desc *xkb;
 	cairo_surface_t **pointer_surfaces;
 
-	display_global_handler_t global_handler;
-
 	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 	PFNEGLCREATEIMAGEKHRPROC create_image;
 	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
@@ -1786,8 +1784,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		d->shm = wl_display_bind(display, id, &wl_shm_interface);
 	} else if (strcmp(interface, "wl_selection_offer") == 0) {
 		add_selection_offer(d, id);
-	} else if (d->global_handler) {
-		d->global_handler(d, interface, id, version);
 	}
 }
 
@@ -1899,8 +1895,7 @@ init_egl(struct display *d)
 }
 
 struct display *
-display_create(int *argc, char **argv[], const GOptionEntry *option_entries,
-	       display_global_handler_t handler)
+display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 {
 	struct display *d;
 	GOptionContext *context;
@@ -1932,8 +1927,6 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries,
 		return NULL;
 
         memset(d, 0, sizeof *d);
-
-	d->global_handler = handler;
 
 	d->display = wl_display_connect(NULL);
 	if (d->display == NULL) {
