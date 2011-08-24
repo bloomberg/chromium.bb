@@ -9,10 +9,13 @@
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
+#include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/tracker_base.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_audio_config_api.h"
 #include "ppapi/thunk/thunk.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Audio_API;
@@ -23,7 +26,7 @@ namespace ppapi {
 
 // PPB_AudioConfig -------------------------------------------------------------
 
-PPB_AudioConfig_Impl::PPB_AudioConfig_Impl(PluginInstance* instance)
+PPB_AudioConfig_Impl::PPB_AudioConfig_Impl(PP_Instance instance)
     : Resource(instance) {
 }
 
@@ -31,7 +34,7 @@ PPB_AudioConfig_Impl::~PPB_AudioConfig_Impl() {
 }
 
 // static
-PP_Resource PPB_AudioConfig_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_AudioConfig_Impl::Create(PP_Instance instance,
                                          PP_AudioSampleRate sample_rate,
                                          uint32_t sample_frame_count) {
   scoped_refptr<PPB_AudioConfig_Impl> config(
@@ -47,9 +50,8 @@ PPB_AudioConfig_API* PPB_AudioConfig_Impl::AsPPB_AudioConfig_API() {
 
 // PPB_Audio_Impl --------------------------------------------------------------
 
-PPB_Audio_Impl::PPB_Audio_Impl(PluginInstance* instance)
+PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
     : Resource(instance),
-      config_id_(0),
       audio_(NULL),
       create_callback_pending_(false),
       shared_memory_size_for_create_callback_(0) {
@@ -57,9 +59,6 @@ PPB_Audio_Impl::PPB_Audio_Impl(PluginInstance* instance)
 }
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
-  if (config_id_)
-    ResourceTracker::Get()->ReleaseResource(config_id_);
-
   // Calling ShutDown() makes sure StreamCreated cannot be called anymore and
   // releases the audio data associated with the pointer. Note however, that
   // until ShutDown returns, StreamCreated may still be called. This will be
@@ -79,12 +78,12 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
 }
 
 // static
-PP_Resource PPB_Audio_Impl::Create(PluginInstance* instance,
-                                   PP_Resource config_id,
+PP_Resource PPB_Audio_Impl::Create(PP_Instance instance,
+                                   PP_Resource config,
                                    PPB_Audio_Callback audio_callback,
                                    void* user_data) {
   scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
-  if (!audio->Init(config_id, audio_callback, user_data))
+  if (!audio->Init(config, audio_callback, user_data))
     return 0;
   return audio->GetReference();
 }
@@ -93,32 +92,34 @@ PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() {
   return this;
 }
 
-bool PPB_Audio_Impl::Init(PP_Resource config_id,
+bool PPB_Audio_Impl::Init(PP_Resource config,
                           PPB_Audio_Callback callback, void* user_data) {
   // Validate the config and keep a reference to it.
-  EnterResourceNoLock<PPB_AudioConfig_API> enter(config_id, true);
+  EnterResourceNoLock<PPB_AudioConfig_API> enter(config, true);
   if (enter.failed())
     return false;
-  config_id_ = config_id;
-  ResourceTracker::Get()->AddRefResource(config_id);
+  config_ = config;
 
   if (!callback)
     return false;
   SetCallback(callback, user_data);
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return false;
+
   // When the stream is created, we'll get called back on StreamCreated().
   CHECK(!audio_);
-  audio_ = instance()->delegate()->CreateAudio(
-      enter.object()->GetSampleRate(),
-      enter.object()->GetSampleFrameCount(),
-      this);
+  audio_ = plugin_delegate->CreateAudio(enter.object()->GetSampleRate(),
+                                        enter.object()->GetSampleFrameCount(),
+                                        this);
   return audio_ != NULL;
 }
 
 PP_Resource PPB_Audio_Impl::GetCurrentConfig() {
-  // AddRef on behalf of caller.
-  ResourceTracker::Get()->AddRefResource(config_id_);
-  return config_id_;
+  // AddRef on behalf of caller, while keeping a ref for ourselves.
+  ::ppapi::TrackerBase::Get()->GetResourceTracker()->AddRefResource(config_);
+  return config_;
 }
 
 PP_Bool PPB_Audio_Impl::StartPlayback() {
@@ -141,22 +142,23 @@ PP_Bool PPB_Audio_Impl::StopPlayback() {
   return PP_TRUE;
 }
 
-int32_t PPB_Audio_Impl::OpenTrusted(PP_Resource config_id,
+int32_t PPB_Audio_Impl::OpenTrusted(PP_Resource config,
                                     PP_CompletionCallback create_callback) {
-
   // Validate the config and keep a reference to it.
-  EnterResourceNoLock<PPB_AudioConfig_API> enter(config_id, true);
+  EnterResourceNoLock<PPB_AudioConfig_API> enter(config, true);
   if (enter.failed())
-    return false;
-  config_id_ = config_id;
-  ResourceTracker::Get()->AddRefResource(config_id);
+    return PP_ERROR_FAILED;
+  config_ = config;
+
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return PP_ERROR_FAILED;
 
   // When the stream is created, we'll get called back on StreamCreated().
   DCHECK(!audio_);
-  audio_ = instance()->delegate()->CreateAudio(
-      enter.object()->GetSampleRate(),
-      enter.object()->GetSampleFrameCount(),
-      this);
+  audio_ = plugin_delegate->CreateAudio(enter.object()->GetSampleRate(),
+                                        enter.object()->GetSampleFrameCount(),
+                                        this);
   if (!audio_)
     return PP_ERROR_FAILED;
 

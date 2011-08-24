@@ -25,6 +25,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/string.h"
 
 using ppapi::StringVar;
@@ -183,7 +184,7 @@ struct PPB_URLRequestInfo_Impl::BodyItem {
   PP_Time expected_last_modified_time;
 };
 
-PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PluginInstance* instance)
+PPB_URLRequestInfo_Impl::PPB_URLRequestInfo_Impl(PP_Instance instance)
     : Resource(instance),
       stream_to_file_(false),
       follow_redirects_(true),
@@ -292,13 +293,17 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
         FilePath platform_path;
         switch (body_[i].file_ref->file_system()->type()) {
           case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
-          case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
+          case PP_FILESYSTEMTYPE_LOCALPERSISTENT: {
             // TODO(kinuko): remove this sync IPC when we add more generic
             // AppendURLRange solution that works for both Blob/FileSystem URL.
-            instance()->delegate()->SyncGetFileSystemPlatformPath(
-                body_[i].file_ref->GetFileSystemURL(),
-                &platform_path);
+            PluginDelegate* plugin_delegate =
+                ResourceHelper::GetPluginDelegate(this);
+            if (plugin_delegate) {
+              plugin_delegate->SyncGetFileSystemPlatformPath(
+                    body_[i].file_ref->GetFileSystemURL(), &platform_path);
+            }
             break;
+          }
           case PP_FILESYSTEMTYPE_EXTERNAL:
             platform_path = body_[i].file_ref->GetSystemPath();
             break;

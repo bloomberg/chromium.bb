@@ -8,28 +8,29 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/dev/ppb_file_chooser_dev.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_file_chooser_api.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PP_CompletionCallback;
 
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
 class PPB_FileRef_Impl;
 class TrackedCompletionCallback;
 
-class PPB_FileChooser_Impl : public Resource,
+class PPB_FileChooser_Impl : public ::ppapi::Resource,
                              public ::ppapi::thunk::PPB_FileChooser_API {
  public:
-  PPB_FileChooser_Impl(PluginInstance* instance,
+  PPB_FileChooser_Impl(PP_Instance instance,
                        PP_FileChooserMode_Dev mode,
                        const PP_Var& accept_mime_types);
   virtual ~PPB_FileChooser_Impl();
 
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             PP_FileChooserMode_Dev mode,
                             const PP_Var& accept_mime_types);
 

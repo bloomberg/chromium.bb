@@ -23,6 +23,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -150,7 +151,7 @@ struct PPB_Graphics2D_Impl::QueuedOperation {
   scoped_refptr<PPB_ImageData_Impl> replace_image;
 };
 
-PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PluginInstance* instance)
+PPB_Graphics2D_Impl::PPB_Graphics2D_Impl(PP_Instance instance)
     : Resource(instance),
       bound_instance_(NULL),
       offscreen_flush_pending_(false),
@@ -161,7 +162,7 @@ PPB_Graphics2D_Impl::~PPB_Graphics2D_Impl() {
 }
 
 // static
-PP_Resource PPB_Graphics2D_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_Graphics2D_Impl::Create(PP_Instance instance,
                                         const PP_Size& size,
                                         PP_Bool is_always_opaque) {
   scoped_refptr<PPB_Graphics2D_Impl> graphics_2d(
@@ -175,7 +176,7 @@ PP_Resource PPB_Graphics2D_Impl::Create(PluginInstance* instance,
 
 bool PPB_Graphics2D_Impl::Init(int width, int height, bool is_always_opaque) {
   // The underlying PPB_ImageData_Impl will validate the dimensions.
-  image_data_ = new PPB_ImageData_Impl(instance());
+  image_data_ = new PPB_ImageData_Impl(pp_instance());
   if (!image_data_->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
                          width, height, true) ||
       !image_data_->Map()) {
@@ -488,7 +489,10 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
   canvas->save();
   canvas->clipRect(sk_plugin_rect);
 
-  if (instance()->IsFullPagePlugin()) {
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return;
+  if (plugin_instance->IsFullPagePlugin()) {
     // When we're resizing a window with a full-frame plugin, the plugin may
     // not yet have bound a new device, which will leave parts of the
     // background exposed if the window is getting larger. We want this to

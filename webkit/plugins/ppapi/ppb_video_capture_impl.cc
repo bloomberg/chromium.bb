@@ -17,6 +17,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ppapi::thunk::EnterResourceNoLock;
@@ -26,7 +27,7 @@ using ppapi::thunk::PPB_VideoCapture_API;
 namespace webkit {
 namespace ppapi {
 
-PPB_VideoCapture_Impl::PPB_VideoCapture_Impl(PluginInstance* instance)
+PPB_VideoCapture_Impl::PPB_VideoCapture_Impl(PP_Instance instance)
     : Resource(instance),
       buffer_count_hint_(0),
       ppp_videocapture_(NULL),
@@ -39,14 +40,16 @@ PPB_VideoCapture_Impl::~PPB_VideoCapture_Impl() {
 }
 
 bool PPB_VideoCapture_Impl::Init() {
-  ppp_videocapture_ =
-      static_cast<const PPP_VideoCapture_Dev*>(instance()->module()->
-          GetPluginInterface(PPP_VIDEO_CAPTURE_DEV_INTERFACE));
+  PluginInstance* instance = ResourceHelper::GetPluginInstance(this);
+  if (!instance)
+    return false;
+  ppp_videocapture_ = static_cast<const PPP_VideoCapture_Dev*>(
+      instance->module()->GetPluginInterface(PPP_VIDEO_CAPTURE_DEV_INTERFACE));
   if (!ppp_videocapture_)
     return false;
 
   platform_video_capture_.reset(
-      instance()->delegate()->CreateVideoCapture(this));
+      instance->delegate()->CreateVideoCapture(this));
   return !!platform_video_capture_.get();
 }
 
@@ -161,9 +164,7 @@ void PPB_VideoCapture_Impl::OnError(media::VideoCapture* capture,
   // conflicting "master" resolution), or because the browser failed to start
   // the capture.
   status_ = PP_VIDEO_CAPTURE_STATUS_STOPPED;
-  ppp_videocapture_->OnError(instance()->pp_instance(),
-                             ScopedResourceId(this).id,
-                             PP_ERROR_FAILED);
+  ppp_videocapture_->OnError(pp_instance(), pp_resource(), PP_ERROR_FAILED);
 }
 
 void PPB_VideoCapture_Impl::OnBufferReady(
@@ -178,9 +179,7 @@ void PPB_VideoCapture_Impl::OnBufferReady(
           buffer->buffer_size);
       memcpy(buffers_[i].data, buffer->memory_pointer, size);
       platform_video_capture_->FeedBuffer(buffer);
-      ppp_videocapture_->OnBufferReady(instance()->pp_instance(),
-          ScopedResourceId(this).id,
-          i);
+      ppp_videocapture_->OnBufferReady(pp_instance(), pp_resource(), i);
       return;
     }
   }
@@ -208,7 +207,7 @@ void PPB_VideoCapture_Impl::OnDeviceInfoReceived(
 
   buffers_.reserve(buffer_count_hint_);
   for (size_t i = 0; i < buffer_count_hint_; ++i) {
-    resources[i] = PPB_Buffer_Impl::Create(instance(), size);
+    resources[i] = PPB_Buffer_Impl::Create(pp_instance(), size);
     if (!resources[i])
       break;
 
@@ -228,19 +227,14 @@ void PPB_VideoCapture_Impl::OnDeviceInfoReceived(
   if (buffers_.empty()) {
     // We couldn't allocate/map buffers at all. Send an error and stop the
     // capture.
-    ppp_videocapture_->OnError(instance()->pp_instance(),
-                               ScopedResourceId(this).id,
-                               PP_ERROR_NOMEMORY);
+    ppp_videocapture_->OnError(pp_instance(), pp_resource(), PP_ERROR_NOMEMORY);
     status_ = PP_VIDEO_CAPTURE_STATUS_STOPPING;
     platform_video_capture_->StopCapture(this);
     return;
   }
 
-  ppp_videocapture_->OnDeviceInfo(instance()->pp_instance(),
-                                  ScopedResourceId(this).id,
-                                  &info,
-                                  buffers_.size(),
-                                  resources.get());
+  ppp_videocapture_->OnDeviceInfo(pp_instance(), pp_resource(), &info,
+                                  buffers_.size(), resources.get());
 }
 
 void PPB_VideoCapture_Impl::ReleaseBuffers() {
@@ -253,9 +247,7 @@ void PPB_VideoCapture_Impl::ReleaseBuffers() {
 }
 
 void PPB_VideoCapture_Impl::SendStatus() {
-  ppp_videocapture_->OnStatus(instance()->pp_instance(),
-                              ScopedResourceId(this).id,
-                              status_);
+  ppp_videocapture_->OnStatus(pp_instance(), pp_resource(), status_);
 }
 
 PPB_VideoCapture_Impl::BufferInfo::BufferInfo()

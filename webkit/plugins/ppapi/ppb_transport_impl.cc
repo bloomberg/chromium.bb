@@ -16,6 +16,7 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::StringVar;
 using ppapi::thunk::PPB_Transport_API;
@@ -47,7 +48,7 @@ int MapNetError(int result) {
 
 }  // namespace
 
-PPB_Transport_Impl::PPB_Transport_Impl(PluginInstance* instance)
+PPB_Transport_Impl::PPB_Transport_Impl(PP_Instance instance)
     : Resource(instance),
       started_(false),
       writable_(false),
@@ -61,7 +62,7 @@ PPB_Transport_Impl::~PPB_Transport_Impl() {
 }
 
 // static
-PP_Resource PPB_Transport_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_Transport_Impl::Create(PP_Instance instance,
                                        const char* name,
                                        const char* proto) {
   scoped_refptr<PPB_Transport_Impl> t(new PPB_Transport_Impl(instance));
@@ -86,7 +87,10 @@ bool PPB_Transport_Impl::Init(const char* name, const char* proto) {
     return false;
   }
 
-  p2p_transport_.reset(instance()->delegate()->CreateP2PTransport());
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return false;
+  p2p_transport_.reset(plugin_delegate->CreateP2PTransport());
   return p2p_transport_.get() != NULL;
 }
 
@@ -113,8 +117,12 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
 
   started_ = true;
 
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_ERROR_FAILED;
+
   connect_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+      plugin_module->GetCallbackTracker(), pp_resource(), callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -126,15 +134,19 @@ int32_t PPB_Transport_Impl::GetNextAddress(PP_Var* address,
   if (next_address_callback_.get() && !next_address_callback_->completed())
     return PP_ERROR_INPROGRESS;
 
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_ERROR_FAILED;
+
   if (!local_candidates_.empty()) {
-    *address = StringVar::StringToPPVar(instance()->module()->pp_module(),
+    *address = StringVar::StringToPPVar(plugin_module->pp_module(),
                                         local_candidates_.front());
     local_candidates_.pop_front();
     return PP_OK;
   }
 
   next_address_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+      plugin_module->GetCallbackTracker(), pp_resource(), callback);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -162,12 +174,16 @@ int32_t PPB_Transport_Impl::Recv(void* data, uint32_t len,
   if (!channel)
     return PP_ERROR_FAILED;
 
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_ERROR_FAILED;
+
   scoped_refptr<net::IOBuffer> buffer =
       new net::WrappedIOBuffer(static_cast<const char*>(data));
   int result = MapNetError(channel->Read(buffer, len, &channel_read_callback_));
   if (result == PP_OK_COMPLETIONPENDING) {
     recv_callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+        plugin_module->GetCallbackTracker(), pp_resource(), callback);
   }
 
   return result;
@@ -185,13 +201,17 @@ int32_t PPB_Transport_Impl::Send(const void* data, uint32_t len,
   if (!channel)
     return PP_ERROR_FAILED;
 
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_ERROR_FAILED;
+
   scoped_refptr<net::IOBuffer> buffer =
       new net::WrappedIOBuffer(static_cast<const char*>(data));
   int result = MapNetError(channel->Write(buffer, len,
                                           &channel_write_callback_));
   if (result == PP_OK_COMPLETIONPENDING) {
     send_callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+        plugin_module->GetCallbackTracker(), pp_resource(), callback);
   }
 
   return result;
@@ -202,7 +222,11 @@ int32_t PPB_Transport_Impl::Close() {
     return PP_ERROR_FAILED;
 
   p2p_transport_.reset();
-  instance()->module()->GetCallbackTracker()->AbortAll();
+
+
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (plugin_module)
+    plugin_module->GetCallbackTracker()->AbortAll();
   return PP_OK;
 }
 

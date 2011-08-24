@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ppapi/shared_impl/input_event_impl.h"
-#include "webkit/plugins/ppapi/resource.h"
+#include "ppapi/shared_impl/resource.h"
 
 namespace ppapi {
 struct InputEventData;
@@ -12,14 +12,11 @@ struct InputEventData;
 namespace webkit {
 namespace ppapi {
 
-class PPB_InputEvent_Impl : public Resource,
+class PPB_InputEvent_Impl : public ::ppapi::Resource,
                             public ::ppapi::InputEventImpl {
  public:
-  PPB_InputEvent_Impl(PluginInstance* instance,
+  PPB_InputEvent_Impl(PP_Instance instance,
                       const ::ppapi::InputEventData& data);
-
-  static PP_Resource Create(PluginInstance* instance,
-                            const ::ppapi::InputEventData& data);
 
   // Resource overrides.
   virtual ::ppapi::thunk::PPB_InputEvent_API* AsPPB_InputEvent_API() OVERRIDE;

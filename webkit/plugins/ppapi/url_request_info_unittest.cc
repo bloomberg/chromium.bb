@@ -52,7 +52,7 @@ class URLRequestInfoTest : public PpapiUnittest {
     PpapiUnittest::SetUp();
 
     // Must be after our base class's SetUp for the instance to be valid.
-    info_ = new PPB_URLRequestInfo_Impl(instance());
+    info_ = new PPB_URLRequestInfo_Impl(instance()->pp_instance());
   }
 
   static void SetUpTestCase() {

@@ -154,7 +154,7 @@ void WebPluginImpl::didReceiveResponse(
     const WebKit::WebURLResponse& response) {
   DCHECK(!document_loader_);
 
-  document_loader_ = new PPB_URLLoader_Impl(instance_, true);
+  document_loader_ = new PPB_URLLoader_Impl(instance_->pp_instance(), true);
   document_loader_->didReceiveResponse(NULL, response);
 
   if (!instance_->HandleDocumentLoad(document_loader_))

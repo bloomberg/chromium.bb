@@ -9,9 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/shared_impl/image_data_impl.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace skia {
 class PlatformCanvas;
@@ -23,17 +23,17 @@ class SkBitmap;
 namespace webkit {
 namespace ppapi {
 
-class PPB_ImageData_Impl : public Resource,
+class PPB_ImageData_Impl : public ::ppapi::Resource,
                            public ::ppapi::ImageDataImpl,
                            public ::ppapi::thunk::PPB_ImageData_API {
  public:
   // If you call this constructor, you must also call Init before use. Normally
   // you should use the static Create function, but this constructor is needed
   // for some internal uses of ImageData (like Graphics2D).
-  explicit PPB_ImageData_Impl(PluginInstance* instance);
+  explicit PPB_ImageData_Impl(PP_Instance instance);
   virtual ~PPB_ImageData_Impl();
 
-  static PP_Resource Create(PluginInstance* pp_instance,
+  static PP_Resource Create(PP_Instance pp_instance,
                             PP_ImageDataFormat format,
                             const PP_Size& size,
                             PP_Bool init_to_zero);

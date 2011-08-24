@@ -6,8 +6,8 @@
 #define WEBKIT_PLUGINS_PPAPI_MESSAGE_CHANNEL_H_
 
 #include "base/task.h"
+#include "ppapi/shared_impl/resource.h"
 #include "third_party/npapi/bindings/npruntime.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PP_Var;
 

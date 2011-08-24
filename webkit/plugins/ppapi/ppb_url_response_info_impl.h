@@ -8,9 +8,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_url_response_info_api.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace WebKit {
 class WebURLResponse;
@@ -22,10 +23,10 @@ namespace ppapi {
 class PPB_FileRef_Impl;
 
 class PPB_URLResponseInfo_Impl
-    : public Resource,
+    : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_URLResponseInfo_API {
  public:
-  explicit PPB_URLResponseInfo_Impl(PluginInstance* instance);
+  explicit PPB_URLResponseInfo_Impl(PP_Instance instance);
   virtual ~PPB_URLResponseInfo_Impl();
 
   bool Initialize(const WebKit::WebURLResponse& response);

@@ -12,21 +12,21 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_flash_menu_api.h"
 #include "webkit/plugins/ppapi/callbacks.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct WebMenuItem;
 
 namespace webkit {
 namespace ppapi {
 
-class PPB_Flash_Menu_Impl : public Resource,
+class PPB_Flash_Menu_Impl : public ::ppapi::Resource,
                             public ::ppapi::thunk::PPB_Flash_Menu_API {
  public:
   virtual ~PPB_Flash_Menu_Impl();
 
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             const PP_Flash_Menu* menu_data);
 
   // Resource.
@@ -44,7 +44,7 @@ class PPB_Flash_Menu_Impl : public Resource,
   const MenuData& menu_data() const { return menu_data_; }
 
  private:
-  explicit PPB_Flash_Menu_Impl(PluginInstance* instance);
+  explicit PPB_Flash_Menu_Impl(PP_Instance instance);
 
   bool Init(const PP_Flash_Menu* menu_data);
 

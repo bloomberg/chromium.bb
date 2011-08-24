@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_callback_factory.h"
 #include "base/memory/scoped_ptr.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_context_3d_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PPB_Context3DTrusted_Dev;
 
@@ -26,7 +26,7 @@ namespace ppapi {
 
 class PPB_Surface3D_Impl;
 
-class PPB_Context3D_Impl : public Resource,
+class PPB_Context3D_Impl : public ::ppapi::Resource,
                            public ::ppapi::thunk::PPB_Context3D_API {
  public:
   virtual ~PPB_Context3D_Impl();
@@ -86,7 +86,7 @@ class PPB_Context3D_Impl : public Resource,
   }
 
  private:
-  explicit PPB_Context3D_Impl(PluginInstance* instance);
+  explicit PPB_Context3D_Impl(PP_Instance instance);
 
   bool Init(PP_Config3D_Dev config,
             PP_Resource share_context,
@@ -98,9 +98,6 @@ class PPB_Context3D_Impl : public Resource,
   bool CreateImplementation();
   void Destroy();
   void OnContextLost();
-
-  // Plugin instance this context is associated with.
-  PluginInstance* instance_;
 
   // PluginDelegate's 3D Context. Responsible for providing the command buffer.
   // Possibly NULL.

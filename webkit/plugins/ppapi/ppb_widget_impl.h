@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_rect.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_widget_api.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PPB_Widget_Dev;
 
@@ -24,12 +24,11 @@ namespace webkit {
 namespace ppapi {
 
 class PPB_ImageData_Impl;
-class PluginInstance;
 
-class PPB_Widget_Impl : public Resource,
+class PPB_Widget_Impl : public ::ppapi::Resource,
                         public ::ppapi::thunk::PPB_Widget_API {
  public:
-  explicit PPB_Widget_Impl(PluginInstance* instance);
+  explicit PPB_Widget_Impl(PP_Instance instance);
   virtual ~PPB_Widget_Impl();
 
   // Resource overrides.

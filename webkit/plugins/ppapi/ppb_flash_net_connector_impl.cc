@@ -10,14 +10,14 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::thunk::PPB_Flash_NetConnector_API;
 
 namespace webkit {
 namespace ppapi {
 
-PPB_Flash_NetConnector_Impl::PPB_Flash_NetConnector_Impl(
-    PluginInstance* instance)
+PPB_Flash_NetConnector_Impl::PPB_Flash_NetConnector_Impl(PP_Instance instance)
     : Resource(instance) {
 }
 
@@ -48,11 +48,15 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcp(
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;
 
-  int32_t rv = instance()->delegate()->ConnectTcp(this, host, port);
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return false;
+  int32_t rv = plugin_instance->delegate()->ConnectTcp(this, host, port);
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
     callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+        plugin_instance->module()->GetCallbackTracker(),
+        pp_resource(), callback);
     socket_out_ = socket_out;
     local_addr_out_ = local_addr_out;
     remote_addr_out_ = remote_addr_out;
@@ -81,11 +85,15 @@ int32_t PPB_Flash_NetConnector_Impl::ConnectTcpAddress(
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;
 
-  int32_t rv = instance()->delegate()->ConnectTcpAddress(this, addr);
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return false;
+  int32_t rv = plugin_instance->delegate()->ConnectTcpAddress(this, addr);
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
     callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+        plugin_instance->module()->GetCallbackTracker(),
+        pp_resource(), callback);
     socket_out_ = socket_out;
     local_addr_out_ = local_addr_out;
     remote_addr_out_ = remote_addr_out;

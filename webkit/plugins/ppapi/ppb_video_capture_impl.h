@@ -13,10 +13,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/video/capture/video_capture.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_video_capture_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PP_VideoCaptureDeviceInfo_Dev;
 struct PPB_VideoCapture_Dev;
@@ -24,13 +24,11 @@ struct PPB_VideoCapture_Dev;
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
-class PPB_VideoCapture_Impl : public Resource,
+class PPB_VideoCapture_Impl : public ::ppapi::Resource,
                               public ::ppapi::thunk::PPB_VideoCapture_API,
                               public media::VideoCapture::EventHandler {
  public:
-  explicit PPB_VideoCapture_Impl(PluginInstance* instance);
+  explicit PPB_VideoCapture_Impl(PP_Instance instance);
   virtual ~PPB_VideoCapture_Impl();
 
   bool Init();

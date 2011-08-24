@@ -5,8 +5,6 @@
 #ifndef CHROME_RENDERER_CHROME_PPB_PDF_IMPL_H_
 #define CHROME_RENDERER_CHROME_PPB_PDF_IMPL_H_
 
-#include "webkit/plugins/ppapi/resource.h"
-
 struct PPB_PDF;
 
 namespace chrome {

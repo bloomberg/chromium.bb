@@ -6,20 +6,21 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_FLASH_NET_CONNECTOR_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_flash_net_connector_api.h"
 #include "webkit/plugins/ppapi/callbacks.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace webkit {
 namespace ppapi {
 
 class PPB_Flash_NetConnector_Impl
-    : public Resource,
+    : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_Flash_NetConnector_API {
  public:
-  explicit PPB_Flash_NetConnector_Impl(PluginInstance* instance);
+  explicit PPB_Flash_NetConnector_Impl(PP_Instance instance);
   virtual ~PPB_Flash_NetConnector_Impl();
 
   // Resource override.

@@ -70,6 +70,7 @@
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebView;
@@ -626,7 +627,7 @@ void PpapiBrokerImpl::ConnectPluginToBroker(
     scoped_ptr<base::SyncSocket> broker_socket(sockets[0]);
     scoped_ptr<base::SyncSocket> plugin_socket(sockets[1]);
 
-    result = dispatcher_->SendHandleToBroker(client->instance()->pp_instance(),
+    result = dispatcher_->SendHandleToBroker(client->pp_instance(),
                                              broker_socket->handle());
 
     // If the broker has its pipe handle, duplicate the plugin's handle.
@@ -962,7 +963,8 @@ PepperPluginDelegateImpl::ConnectToPpapiBroker(
   // before Connect() adds a reference.
   scoped_refptr<PpapiBrokerImpl> broker_impl;
 
-  webkit::ppapi::PluginModule* plugin_module = client->instance()->module();
+  webkit::ppapi::PluginModule* plugin_module =
+      webkit::ppapi::ResourceHelper::GetPluginModule(client);
   PpapiBroker* broker = plugin_module->GetBroker();
   if (!broker) {
     broker_impl = CreatePpapiBroker(plugin_module);

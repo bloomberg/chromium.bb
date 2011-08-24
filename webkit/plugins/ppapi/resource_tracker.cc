@@ -14,6 +14,7 @@
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "ppapi/shared_impl/tracker_base.h"
+#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -21,8 +22,8 @@
 #include "webkit/plugins/ppapi/ppb_cursor_control_impl.h"
 #include "webkit/plugins/ppapi/ppb_find_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
-#include "webkit/plugins/ppapi/resource.h"
 #include "webkit/plugins/ppapi/resource_creation_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::CheckIdType;
 using ppapi::MakeTypedId;
@@ -65,8 +66,7 @@ struct ResourceTracker::InstanceData {
 ResourceTracker* ResourceTracker::global_tracker_ = NULL;
 ResourceTracker* ResourceTracker::singleton_override_ = NULL;
 
-ResourceTracker::ResourceTracker()
-    : last_resource_id_(0) {
+ResourceTracker::ResourceTracker() {
   // Wire up the new shared resource tracker base to use our implementation.
   ::ppapi::TrackerBase::Init(&GetTrackerBase);
 }
@@ -164,6 +164,20 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
 
 ::ppapi::ResourceTracker* ResourceTracker::GetResourceTracker() {
   return this;
+}
+
+void ResourceTracker::LastPluginRefWasDeleted(::ppapi::Resource* object) {
+  ::ppapi::ResourceTracker::LastPluginRefWasDeleted(object);
+
+  // TODO(brettw) this should be removed when we have the callback tracker
+  // moved to the shared_impl. This will allow the logic to post aborts for
+  // any callbacks directly in the Resource::LastPluginRefWasDeleted function
+  // and we can remove this function altogether.
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(object);
+  if (plugin_module) {
+    plugin_module->GetCallbackTracker()->PostAbortForResource(
+        object->pp_resource());
+  }
 }
 
 void ResourceTracker::AddNPObjectVar(NPObjectVar* object_var) {

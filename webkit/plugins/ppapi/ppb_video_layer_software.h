@@ -6,16 +6,13 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_LAYER_SOFTWARE_H_
 
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
 class PPB_VideoLayer_Software : public PPB_VideoLayer_Impl {
  public:
-  explicit PPB_VideoLayer_Software(PluginInstance* instance);
+  explicit PPB_VideoLayer_Software(PP_Instance instance);
   virtual ~PPB_VideoLayer_Software();
 
   // PPB_VideoLayer_Impl implementations.

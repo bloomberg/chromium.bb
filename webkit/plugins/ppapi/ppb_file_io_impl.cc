@@ -24,6 +24,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/quota_file_io.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ppapi::PPTimeToTime;
@@ -47,7 +48,7 @@ PPB_FileIO_Impl::CallbackEntry::CallbackEntry(const CallbackEntry& entry)
 PPB_FileIO_Impl::CallbackEntry::~CallbackEntry() {
 }
 
-PPB_FileIO_Impl::PPB_FileIO_Impl(PluginInstance* instance)
+PPB_FileIO_Impl::PPB_FileIO_Impl(PP_Instance instance)
     : Resource(instance),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
       file_(base::kInvalidPlatformFileValue),
@@ -80,10 +81,14 @@ int32_t PPB_FileIO_Impl::Open(PP_Resource pp_file_ref,
   if (!PepperFileOpenFlagsToPlatformFileFlags(open_flags, &flags))
     return PP_ERROR_BADARGUMENT;
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return false;
+
   file_system_type_ = file_ref->GetFileSystemType();
   switch (file_system_type_) {
     case PP_FILESYSTEMTYPE_EXTERNAL:
-      if (!instance()->delegate()->AsyncOpenFile(
+      if (!plugin_delegate->AsyncOpenFile(
               file_ref->GetSystemPath(), flags,
               callback_factory_.NewCallback(
                   &PPB_FileIO_Impl::AsyncOpenFileCallback)))
@@ -92,7 +97,7 @@ int32_t PPB_FileIO_Impl::Open(PP_Resource pp_file_ref,
     case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
     case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
       file_system_url_ = file_ref->GetFileSystemURL();
-      if (!instance()->delegate()->AsyncOpenFileSystemURL(
+      if (!plugin_delegate->AsyncOpenFileSystemURL(
               file_system_url_, flags,
               callback_factory_.NewCallback(
                   &PPB_FileIO_Impl::AsyncOpenFileCallback)))
@@ -118,8 +123,12 @@ int32_t PPB_FileIO_Impl::Query(PP_FileInfo* info,
   DCHECK(!info_);  // If |info_|, a callback should be pending (caught above).
   info_ = info;
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return PP_ERROR_FAILED;
+
   if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
-          instance()->delegate()->GetFileThreadMessageLoopProxy(), file_,
+          plugin_delegate->GetFileThreadMessageLoopProxy(), file_,
           callback_factory_.NewCallback(&PPB_FileIO_Impl::QueryInfoCallback)))
     return PP_ERROR_FAILED;
 
@@ -134,8 +143,12 @@ int32_t PPB_FileIO_Impl::Touch(PP_Time last_access_time,
   if (rv != PP_OK)
     return rv;
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return PP_ERROR_FAILED;
+
   if (!base::FileUtilProxy::Touch(
-          instance()->delegate()->GetFileThreadMessageLoopProxy(),
+          plugin_delegate->GetFileThreadMessageLoopProxy(),
           file_, PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
           callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
@@ -153,8 +166,12 @@ int32_t PPB_FileIO_Impl::Read(int64_t offset,
   if (rv != PP_OK)
     return rv;
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return PP_ERROR_FAILED;
+
   if (!base::FileUtilProxy::Read(
-          instance()->delegate()->GetFileThreadMessageLoopProxy(),
+          plugin_delegate->GetFileThreadMessageLoopProxy(),
           file_, offset, bytes_to_read,
           callback_factory_.NewCallback(&PPB_FileIO_Impl::ReadCallback)))
     return PP_ERROR_FAILED;
@@ -171,6 +188,10 @@ int32_t PPB_FileIO_Impl::Write(int64_t offset,
   if (rv != PP_OK)
     return rv;
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return PP_ERROR_FAILED;
+
   if (quota_file_io_.get()) {
     if (!quota_file_io_->Write(
             offset, buffer, bytes_to_write,
@@ -178,7 +199,7 @@ int32_t PPB_FileIO_Impl::Write(int64_t offset,
       return PP_ERROR_FAILED;
   } else {
     if (!base::FileUtilProxy::Write(
-            instance()->delegate()->GetFileThreadMessageLoopProxy(),
+            plugin_delegate->GetFileThreadMessageLoopProxy(),
             file_, offset, buffer, bytes_to_write,
             callback_factory_.NewCallback(&PPB_FileIO_Impl::WriteCallback)))
       return PP_ERROR_FAILED;
@@ -194,6 +215,10 @@ int32_t PPB_FileIO_Impl::SetLength(int64_t length,
   if (rv != PP_OK)
     return rv;
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return PP_ERROR_FAILED;
+
   if (quota_file_io_.get()) {
     if (!quota_file_io_->SetLength(
             length,
@@ -201,7 +226,7 @@ int32_t PPB_FileIO_Impl::SetLength(int64_t length,
       return PP_ERROR_FAILED;
   } else {
     if (!base::FileUtilProxy::Truncate(
-            instance()->delegate()->GetFileThreadMessageLoopProxy(),
+            plugin_delegate->GetFileThreadMessageLoopProxy(),
             file_, length,
             callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
       return PP_ERROR_FAILED;
@@ -216,8 +241,12 @@ int32_t PPB_FileIO_Impl::Flush(PP_CompletionCallback callback) {
   if (rv != PP_OK)
     return rv;
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return PP_ERROR_FAILED;
+
   if (!base::FileUtilProxy::Flush(
-          instance()->delegate()->GetFileThreadMessageLoopProxy(), file_,
+          plugin_delegate->GetFileThreadMessageLoopProxy(), file_,
           callback_factory_.NewCallback(&PPB_FileIO_Impl::StatusCallback)))
     return PP_ERROR_FAILED;
 
@@ -226,9 +255,10 @@ int32_t PPB_FileIO_Impl::Flush(PP_CompletionCallback callback) {
 }
 
 void PPB_FileIO_Impl::Close() {
-  if (file_ != base::kInvalidPlatformFileValue) {
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (file_ != base::kInvalidPlatformFileValue && plugin_delegate) {
     base::FileUtilProxy::Close(
-        instance()->delegate()->GetFileThreadMessageLoopProxy(), file_, NULL);
+        plugin_delegate->GetFileThreadMessageLoopProxy(), file_, NULL);
     file_ = base::kInvalidPlatformFileValue;
     quota_file_io_.reset();
   }
@@ -313,9 +343,13 @@ void PPB_FileIO_Impl::RegisterCallback(OperationType op,
   DCHECK(pending_op_ == OPERATION_NONE ||
          (pending_op_ != OPERATION_EXCLUSIVE && pending_op_ == op));
 
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return;
+
   CallbackEntry entry;
   entry.callback = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+      plugin_module->GetCallbackTracker(), pp_resource(), callback);
   entry.read_buffer = read_buffer;
 
   callbacks_.push(entry);
@@ -358,7 +392,7 @@ void PPB_FileIO_Impl::AsyncOpenFileCallback(
       (file_system_type_ == PP_FILESYSTEMTYPE_LOCALTEMPORARY ||
        file_system_type_ == PP_FILESYSTEMTYPE_LOCALPERSISTENT)) {
     quota_file_io_.reset(new QuotaFileIO(
-        instance(), file_, file_system_url_, file_system_type_));
+        pp_instance(), file_, file_system_url_, file_system_type_));
   }
 
   RunAndRemoveFirstPendingCallback(PlatformFileErrorToPepperError(error_code));

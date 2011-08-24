@@ -13,13 +13,14 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::PPB_Surface3D_API;
 
 namespace webkit {
 namespace ppapi {
 
-PPB_Surface3D_Impl::PPB_Surface3D_Impl(PluginInstance* instance)
+PPB_Surface3D_Impl::PPB_Surface3D_Impl(PP_Instance instance)
     : Resource(instance),
       bound_to_instance_(false),
       swap_initiated_(false),
@@ -32,7 +33,7 @@ PPB_Surface3D_Impl::~PPB_Surface3D_Impl() {
 }
 
 // static
-PP_Resource PPB_Surface3D_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_Surface3D_Impl::Create(PP_Instance instance,
                                        PP_Config3D_Dev config,
                                        const int32_t* attrib_list) {
   scoped_refptr<PPB_Surface3D_Impl> surface(
@@ -71,8 +72,12 @@ int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   if (!context_)
     return PP_ERROR_FAILED;
 
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_ERROR_FAILED;
+
   swap_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+      plugin_module->GetCallbackTracker(), pp_resource(), callback);
   gpu::gles2::GLES2Implementation* impl = context_->gles2_impl();
   if (impl)
     context_->gles2_impl()->SwapBuffers();
@@ -95,8 +100,12 @@ bool PPB_Surface3D_Impl::BindToContext(PPB_Context3D_Impl* context) {
   if (context == context_)
     return true;
 
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return false;
+
   if (!context && bound_to_instance_)
-    instance()->BindGraphics(instance()->pp_instance(), 0);
+    plugin_instance->BindGraphics(pp_instance(), 0);
 
   // Unbind from the current context.
   if (context_ && context_->platform_context())
@@ -106,7 +115,7 @@ bool PPB_Surface3D_Impl::BindToContext(PPB_Context3D_Impl* context) {
     // TODO(alokp): This should be the responsibility of plugins.
     gpu::gles2::GLES2Implementation* impl = context->gles2_impl();
     if (impl) {
-      const gfx::Size& size = instance()->position().size();
+      const gfx::Size& size = plugin_instance->position().size();
       impl->ResizeCHROMIUM(size.width(), size.height());
     }
 
@@ -137,8 +146,12 @@ unsigned int PPB_Surface3D_Impl::GetBackingTextureId() {
 }
 
 void PPB_Surface3D_Impl::OnSwapBuffers() {
-  if (bound_to_instance_) {
-    instance()->CommitBackingTexture();
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return;
+
+  if (bound_to_instance_ && plugin_instance) {
+    plugin_instance->CommitBackingTexture();
     swap_initiated_ = true;
   } else if (swap_callback_.get() && !swap_callback_->completed()) {
     // If we're off-screen, no need to trigger compositing so run the callback
@@ -151,8 +164,9 @@ void PPB_Surface3D_Impl::OnSwapBuffers() {
 }
 
 void PPB_Surface3D_Impl::OnContextLost() {
-  if (bound_to_instance_)
-    instance()->BindGraphics(instance()->pp_instance(), 0);
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (bound_to_instance_ && plugin_instance)
+    plugin_instance->BindGraphics(pp_instance(), 0);
 
   // Send context lost to plugin. This may have been caused by a PPAPI call, so
   // avoid re-entering.
@@ -161,17 +175,19 @@ void PPB_Surface3D_Impl::OnContextLost() {
 }
 
 void PPB_Surface3D_Impl::SendContextLost() {
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+
   // By the time we run this, the instance may have been deleted, or in the
   // process of being deleted. Even in the latter case, we don't want to send a
   // callback after DidDestroy.
-  if (!instance() || !instance()->container())
+  if (!plugin_instance || !plugin_instance->container())
     return;
   const PPP_Graphics3D_Dev* ppp_graphics_3d =
       static_cast<const PPP_Graphics3D_Dev*>(
-          instance()->module()->GetPluginInterface(
+          plugin_instance->module()->GetPluginInterface(
               PPP_GRAPHICS_3D_DEV_INTERFACE));
   if (ppp_graphics_3d)
-    ppp_graphics_3d->Graphics3DContextLost(instance()->pp_instance());
+    ppp_graphics_3d->Graphics3DContextLost(pp_instance());
 }
 
 }  // namespace ppapi

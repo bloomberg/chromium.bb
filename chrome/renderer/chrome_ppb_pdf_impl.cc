@@ -29,15 +29,14 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace chrome {
 
 #if defined(OS_LINUX)
-class PrivateFontFile : public webkit::ppapi::Resource {
+class PrivateFontFile : public ppapi::Resource {
  public:
-  PrivateFontFile(webkit::ppapi::PluginInstance* instance, int fd)
-      : webkit::ppapi::Resource(instance),
-        fd_(fd) {
+  PrivateFontFile(PP_Instance instance, int fd) : Resource(instance), fd_(fd) {
   }
   virtual ~PrivateFontFile() {
   }
@@ -151,12 +150,11 @@ PP_Resource GetResourceImage(PP_Instance instance_id,
   SkBitmap* res_bitmap =
       ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
 
-  webkit::ppapi::PluginInstance* instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
+  // Validate the instance.
+  if (!webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id))
     return 0;
   scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
-      new webkit::ppapi::PPB_ImageData_Impl(instance));
+      new webkit::ppapi::PPB_ImageData_Impl(instance_id));
   if (!image_data->Init(
           webkit::ppapi::PPB_ImageData_Impl::GetNativeImageDataFormat(),
           res_bitmap->width(), res_bitmap->height(), false)) {
@@ -180,9 +178,8 @@ PP_Resource GetFontFileWithFallback(
     const PP_FontDescription_Dev* description,
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX)
-  webkit::ppapi::PluginInstance* instance =
-      webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id);
-  if (!instance)
+  // Validate the instance before using it below.
+  if (!webkit::ppapi::ResourceTracker::Get()->GetInstance(instance_id))
     return 0;
 
   scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
@@ -198,7 +195,7 @@ PP_Resource GetFontFileWithFallback(
   if (fd == -1)
     return 0;
 
-  scoped_refptr<PrivateFontFile> font(new PrivateFontFile(instance, fd));
+  scoped_refptr<PrivateFontFile> font(new PrivateFontFile(instance_id, fd));
 
   return font->GetReference();
 #else

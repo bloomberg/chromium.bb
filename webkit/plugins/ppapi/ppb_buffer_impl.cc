@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::thunk::PPB_Buffer_API;
 using ::ppapi::thunk::PPB_BufferTrusted_API;
@@ -20,15 +21,17 @@ using ::ppapi::thunk::PPB_BufferTrusted_API;
 namespace webkit {
 namespace ppapi {
 
-PPB_Buffer_Impl::PPB_Buffer_Impl(PluginInstance* instance)
-    : Resource(instance), size_(0), map_count_(0) {
+PPB_Buffer_Impl::PPB_Buffer_Impl(PP_Instance instance)
+    : Resource(instance),
+      size_(0),
+      map_count_(0) {
 }
 
 PPB_Buffer_Impl::~PPB_Buffer_Impl() {
 }
 
 // static
-PP_Resource PPB_Buffer_Impl::Create(PluginInstance* instance, uint32_t size) {
+PP_Resource PPB_Buffer_Impl::Create(PP_Instance instance, uint32_t size) {
   scoped_refptr<PPB_Buffer_Impl> buffer(new PPB_Buffer_Impl(instance));
   if (!buffer->Init(size))
     return 0;
@@ -48,11 +51,11 @@ PPB_BufferTrusted_API* PPB_Buffer_Impl::AsPPB_BufferTrusted_API() {
 }
 
 bool PPB_Buffer_Impl::Init(uint32_t size) {
-  if (size == 0 || !instance())
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (size == 0 || !plugin_delegate)
     return false;
   size_ = size;
-  shared_memory_.reset(
-      instance()->delegate()->CreateAnonymousSharedMemory(size));
+  shared_memory_.reset(plugin_delegate->CreateAnonymousSharedMemory(size));
   return shared_memory_.get() != NULL;
 }
 

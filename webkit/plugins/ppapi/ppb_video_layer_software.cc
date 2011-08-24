@@ -7,7 +7,7 @@
 namespace webkit {
 namespace ppapi {
 
-PPB_VideoLayer_Software::PPB_VideoLayer_Software(PluginInstance* instance)
+PPB_VideoLayer_Software::PPB_VideoLayer_Software(PP_Instance instance)
     : PPB_VideoLayer_Impl(instance) {
 }
 

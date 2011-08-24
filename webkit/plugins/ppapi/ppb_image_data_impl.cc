@@ -18,13 +18,14 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::thunk::PPB_ImageData_API;
 
 namespace webkit {
 namespace ppapi {
 
-PPB_ImageData_Impl::PPB_ImageData_Impl(PluginInstance* instance)
+PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance)
     : Resource(instance),
       format_(PP_IMAGEDATAFORMAT_BGRA_PREMUL),
       width_(0),
@@ -35,7 +36,7 @@ PPB_ImageData_Impl::~PPB_ImageData_Impl() {
 }
 
 // static
-PP_Resource PPB_ImageData_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_ImageData_Impl::Create(PP_Instance instance,
                                        PP_ImageDataFormat format,
                                        const PP_Size& size,
                                        PP_Bool init_to_zero) {
@@ -62,8 +63,11 @@ bool PPB_ImageData_Impl::Init(PP_ImageDataFormat format,
       std::numeric_limits<int32>::max())
     return false;  // Prevent overflow of signed 32-bit ints.
 
-  platform_image_.reset(
-      instance()->delegate()->CreateImage2D(width, height));
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return false;
+
+  platform_image_.reset(plugin_delegate->CreateImage2D(width, height));
   format_ = format;
   width_ = width;
   height_ = height;

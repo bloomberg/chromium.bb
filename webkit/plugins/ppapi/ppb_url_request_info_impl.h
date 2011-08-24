@@ -8,10 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/thunk/ppb_url_request_info_api.h"
-#include "webkit/plugins/ppapi/resource.h"
+#include "ppapi/shared_impl/resource.h"
 
 namespace WebKit {
 class WebFrame;
@@ -23,10 +24,10 @@ namespace ppapi {
 
 class PPB_FileRef_Impl;
 
-class PPB_URLRequestInfo_Impl : public Resource,
+class PPB_URLRequestInfo_Impl : public ::ppapi::Resource,
                                 public ::ppapi::thunk::PPB_URLRequestInfo_API {
  public:
-  explicit PPB_URLRequestInfo_Impl(PluginInstance* instance);
+  explicit PPB_URLRequestInfo_Impl(PP_Instance instance);
   virtual ~PPB_URLRequestInfo_Impl();
 
   // Resource overrides.

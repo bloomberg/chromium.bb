@@ -8,9 +8,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/shared_impl/function_group_base.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/webkit_forwarding.h"
 #include "ppapi/thunk/ppb_font_api.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace WebKit {
 class WebFont;
@@ -21,12 +22,12 @@ namespace ppapi {
 
 class PluginInstance;
 
-class PPB_Font_Impl : public Resource,
+class PPB_Font_Impl : public ::ppapi::Resource,
                       public ::ppapi::thunk::PPB_Font_API {
  public:
   virtual ~PPB_Font_Impl();
 
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             const PP_FontDescription_Dev& description);
 
   // Resource.
@@ -48,7 +49,7 @@ class PPB_Font_Impl : public Resource,
                                           uint32_t char_offset) OVERRIDE;
 
  private:
-  PPB_Font_Impl(PluginInstance* instance, const PP_FontDescription_Dev& desc);
+  PPB_Font_Impl(PP_Instance instance, const PP_FontDescription_Dev& desc);
 
   scoped_ptr< ::ppapi::WebKitForwarding::Font> font_forwarding_;
 

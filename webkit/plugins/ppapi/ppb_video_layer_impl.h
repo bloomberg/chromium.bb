@@ -5,8 +5,9 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_LAYER_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_LAYER_IMPL_H_
 
+#include "base/compiler_specific.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_video_layer_api.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PP_Rect;
 struct PP_Size;
@@ -14,14 +15,12 @@ struct PP_Size;
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
-class PPB_VideoLayer_Impl : public Resource,
+class PPB_VideoLayer_Impl : public ::ppapi::Resource,
                             public ::ppapi::thunk::PPB_VideoLayer_API {
  public:
   virtual ~PPB_VideoLayer_Impl();
 
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             PP_VideoLayerMode_Dev mode);
 
   // Resource override.
@@ -30,7 +29,7 @@ class PPB_VideoLayer_Impl : public Resource,
   // Derived classes must implement PPB_VideoLayer_API.
 
  protected:
-  explicit PPB_VideoLayer_Impl(PluginInstance* instance);
+  explicit PPB_VideoLayer_Impl(PP_Instance instance);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoLayer_Impl);

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::thunk::PPB_Broker_API;
 
@@ -31,7 +32,7 @@ int32_t PlatformFileToInt(base::PlatformFile handle) {
 
 // PPB_Broker_Impl ------------------------------------------------------
 
-PPB_Broker_Impl::PPB_Broker_Impl(PluginInstance* instance)
+PPB_Broker_Impl::PPB_Broker_Impl(PP_Instance instance)
     : Resource(instance),
       broker_(NULL),
       connect_callback_(),
@@ -65,15 +66,19 @@ int32_t PPB_Broker_Impl::Connect(PP_CompletionCallback connect_callback) {
     return PP_ERROR_FAILED;
   }
 
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
+
   // The callback must be populated now in case we are connected to the broker
   // and BrokerConnected is called before ConnectToPpapiBroker returns.
   // Because it must be created now, it must be aborted and cleared if
   // ConnectToPpapiBroker fails.
   connect_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), pp_resource(),
+      plugin_instance->module()->GetCallbackTracker(), pp_resource(),
       connect_callback);
 
-  broker_ = instance()->delegate()->ConnectToPpapiBroker(this);
+  broker_ = plugin_instance->delegate()->ConnectToPpapiBroker(this);
   if (!broker_) {
     scoped_refptr<TrackedCompletionCallback> callback;
     callback.swap(connect_callback_);

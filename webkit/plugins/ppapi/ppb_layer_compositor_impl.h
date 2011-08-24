@@ -5,8 +5,9 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_LAYER_COMPOSITOR_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_LAYER_COMPOSITOR_IMPL_H_
 
+#include "base/compiler_specific.h"
 #include "ppapi/thunk/ppb_layer_compositor_api.h"
-#include "webkit/plugins/ppapi/resource.h"
+#include "ppapi/shared_impl/resource.h"
 
 struct PP_Rect;
 struct PP_Size;
@@ -14,13 +15,11 @@ struct PP_Size;
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
 class PPB_LayerCompositor_Impl
-    : public Resource,
+    : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_LayerCompositor_API {
  public:
-  explicit PPB_LayerCompositor_Impl(PluginInstance* instance);
+  explicit PPB_LayerCompositor_Impl(PP_Instance instance);
   virtual ~PPB_LayerCompositor_Impl();
 
   static const PPB_LayerCompositor_Dev* GetInterface();

@@ -58,6 +58,7 @@ class WebPluginContainer;
 
 namespace ppapi {
 struct PPP_Instance_Combined;
+class Resource;
 }
 
 namespace webkit {
@@ -75,7 +76,6 @@ class PPB_ImageData_Impl;
 class PPB_Surface3D_Impl;
 class PPB_URLLoader_Impl;
 class PPB_URLRequestInfo_Impl;
-class Resource;
 
 // Represents one time a plugin appears on one web page.
 //
@@ -372,7 +372,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   gfx::Rect clip_;
 
   // The current device context for painting in 2D or 3D.
-  scoped_refptr<Resource> bound_graphics_;
+  scoped_refptr< ::ppapi::Resource> bound_graphics_;
 
   // We track two types of focus, one from WebKit, which is the focus among
   // all elements of the page, one one from the browser, which is whether the

@@ -7,21 +7,21 @@
 
 #include "base/memory/scoped_callback_factory.h"
 #include "ppapi/shared_impl/graphics_3d_impl.h"
+#include "ppapi/shared_impl/resource.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace webkit {
 namespace ppapi {
 
-class PPB_Graphics3D_Impl : public Resource,
+class PPB_Graphics3D_Impl : public ::ppapi::Resource,
                             public ::ppapi::Graphics3DImpl {
  public:
   virtual ~PPB_Graphics3D_Impl();
 
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             PP_Resource share_context,
                             const int32_t* attrib_list);
-  static PP_Resource CreateRaw(PluginInstance* instance,
+  static PP_Resource CreateRaw(PP_Instance instance,
                                PP_Resource share_context,
                                const int32_t* attrib_list);
 
@@ -63,7 +63,7 @@ class PPB_Graphics3D_Impl : public Resource,
   virtual int32 DoSwapBuffers() OVERRIDE;
 
  private:
-  explicit PPB_Graphics3D_Impl(PluginInstance* instance);
+  explicit PPB_Graphics3D_Impl(PP_Instance instance);
 
   bool Init(PP_Resource share_context,
             const int32_t* attrib_list);

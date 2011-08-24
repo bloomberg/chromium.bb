@@ -57,6 +57,8 @@
         'shared_impl/resource.h',
         'shared_impl/resource_tracker.cc',
         'shared_impl/resource_tracker.h',
+        'shared_impl/scoped_pp_resource.cc',
+        'shared_impl/scoped_pp_resource.h',
         'shared_impl/time_conversion.cc',
         'shared_impl/time_conversion.h',
         'shared_impl/tracker_base.cc',

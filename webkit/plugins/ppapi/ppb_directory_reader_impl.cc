@@ -18,6 +18,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ::ppapi::thunk::EnterResourceNoLock;
@@ -53,7 +54,7 @@ FilePath::StringType UTF8StringToFilePathString(const std::string& str) {
 
 PPB_DirectoryReader_Impl::PPB_DirectoryReader_Impl(
     PPB_FileRef_Impl* directory_ref)
-    : Resource(directory_ref->instance()),
+    : Resource(directory_ref->pp_instance()),
       directory_ref_(directory_ref),
       has_more_(true),
       entry_(NULL) {
@@ -86,11 +87,13 @@ int32_t PPB_DirectoryReader_Impl::GetNextEntry(
     entry_ = NULL;
     return PP_OK;
   }
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
 
-  PluginInstance* instance = directory_ref_->instance();
-  if (!instance->delegate()->ReadDirectory(
+  if (!plugin_instance->delegate()->ReadDirectory(
           directory_ref_->GetFileSystemURL(),
-          new FileCallbacks(instance->module()->AsWeakPtr(),
+          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
                             pp_resource(), callback, NULL, NULL, this)))
     return PP_ERROR_FAILED;
 
@@ -125,7 +128,7 @@ bool PPB_DirectoryReader_Impl::FillUpEntry() {
     if (entry_->file_ref)
       ResourceTracker::Get()->ReleaseResource(entry_->file_ref);
     PPB_FileRef_Impl* file_ref =
-        new PPB_FileRef_Impl(instance(), directory_ref_->file_system(),
+        new PPB_FileRef_Impl(pp_instance(), directory_ref_->file_system(),
                              FilePathStringToUTF8String(dir_entry.name));
     entry_->file_ref = file_ref->GetReference();
     entry_->file_type =

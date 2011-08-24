@@ -10,22 +10,20 @@
 #include "base/shared_memory.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
-#include "webkit/plugins/ppapi/resource.h"
+#include "ppapi/shared_impl/resource.h"
 
 struct PPB_Buffer_Dev;
 
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
-class PPB_Buffer_Impl : public Resource,
+class PPB_Buffer_Impl : public ::ppapi::Resource,
                         public ::ppapi::thunk::PPB_Buffer_API,
                         public ::ppapi::thunk::PPB_BufferTrusted_API {
  public:
   virtual ~PPB_Buffer_Impl();
 
-  static PP_Resource Create(PluginInstance* instance, uint32_t size);
+  static PP_Resource Create(PP_Instance instance, uint32_t size);
 
   virtual PPB_Buffer_Impl* AsPPB_Buffer_Impl();
 
@@ -46,7 +44,7 @@ class PPB_Buffer_Impl : public Resource,
   virtual int32_t GetSharedMemory(int* handle) OVERRIDE;
 
  private:
-  explicit PPB_Buffer_Impl(PluginInstance* instance);
+  explicit PPB_Buffer_Impl(PP_Instance instance);
   bool Init(uint32_t size);
 
   scoped_ptr<base::SharedMemory> shared_memory_;

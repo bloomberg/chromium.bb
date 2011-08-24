@@ -13,7 +13,6 @@
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 using ::ppapi::thunk::PPB_CursorControl_FunctionAPI;
 

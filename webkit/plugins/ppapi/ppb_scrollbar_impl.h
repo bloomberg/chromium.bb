@@ -17,19 +17,17 @@
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
 class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
                            public ::ppapi::thunk::PPB_Scrollbar_API,
                            public WebKit::WebScrollbarClient {
  public:
-  static PP_Resource Create(PluginInstance* instance,
-                            bool vertical);
+  static PP_Resource Create(PP_Instance instance, bool vertical);
 
   virtual ~PPB_Scrollbar_Impl();
 
-  // Resource override.
+  // Resource overrides.
   virtual PPB_Scrollbar_API* AsPPB_Scrollbar_API() OVERRIDE;
+  virtual void InstanceWasDeleted();
 
   // Returns a pointer to the interface implementing PPB_Scrollbar_0_3 that is
   // exposed to the plugin. New code should use the thunk system for the new
@@ -51,7 +49,7 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   virtual void ScrollBy(PP_ScrollBy_Dev unit, int32_t multiplier) OVERRIDE;
 
  private:
-  PPB_Scrollbar_Impl(PluginInstance* instance);
+  explicit PPB_Scrollbar_Impl(PP_Instance instance);
   void Init(bool vertical);
 
   // PPB_Widget private implementation.

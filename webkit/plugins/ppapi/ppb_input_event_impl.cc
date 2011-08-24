@@ -7,6 +7,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::InputEventData;
 using ppapi::InputEventImpl;
@@ -16,16 +17,10 @@ using ppapi::thunk::PPB_InputEvent_API;
 namespace webkit {
 namespace ppapi {
 
-PPB_InputEvent_Impl::PPB_InputEvent_Impl(PluginInstance* instance,
+PPB_InputEvent_Impl::PPB_InputEvent_Impl(PP_Instance instance,
                                          const InputEventData& data)
     : Resource(instance),
       InputEventImpl(data) {
-}
-
-// static
-PP_Resource PPB_InputEvent_Impl::Create(PluginInstance* instance,
-                                        const InputEventData& data) {
-  return (new PPB_InputEvent_Impl(instance, data))->GetReference();
 }
 
 PPB_InputEvent_API* PPB_InputEvent_Impl::AsPPB_InputEvent_API() {
@@ -33,7 +28,10 @@ PPB_InputEvent_API* PPB_InputEvent_Impl::AsPPB_InputEvent_API() {
 }
 
 PP_Var PPB_InputEvent_Impl::StringToPPVar(const std::string& str) {
-  return StringVar::StringToPPVar(instance()->module()->pp_module(), str);
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_MakeUndefined();
+  return StringVar::StringToPPVar(plugin_module->pp_module(), str);
 }
 
 }  // namespace ppapi

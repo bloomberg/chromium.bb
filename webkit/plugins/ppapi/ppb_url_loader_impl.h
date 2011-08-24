@@ -11,11 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace WebKit {
 class WebFrame;
@@ -25,15 +25,14 @@ class WebURL;
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
 class PPB_URLRequestInfo_Impl;
 class PPB_URLResponseInfo_Impl;
 
-class PPB_URLLoader_Impl : public Resource,
+class PPB_URLLoader_Impl : public ::ppapi::Resource,
                            public ::ppapi::thunk::PPB_URLLoader_API,
                            public WebKit::WebURLLoaderClient {
  public:
-  PPB_URLLoader_Impl(PluginInstance* instance, bool main_document_loader);
+  PPB_URLLoader_Impl(PP_Instance instance, bool main_document_loader);
   virtual ~PPB_URLLoader_Impl();
 
   // Resource overrides.

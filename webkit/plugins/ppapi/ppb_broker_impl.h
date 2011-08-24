@@ -9,22 +9,20 @@
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/callbacks.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
-class PPB_Broker_Impl : public Resource,
+class PPB_Broker_Impl : public ::ppapi::Resource,
                         public ::ppapi::thunk::PPB_Broker_API,
                         public base::SupportsWeakPtr<PPB_Broker_Impl> {
  public:
-  explicit PPB_Broker_Impl(PluginInstance* instance);
+  explicit PPB_Broker_Impl(PP_Instance instance);
   virtual ~PPB_Broker_Impl();
 
   // Resource override.

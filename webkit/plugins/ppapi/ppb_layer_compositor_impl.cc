@@ -12,7 +12,7 @@ using ppapi::thunk::PPB_LayerCompositor_API;
 namespace webkit {
 namespace ppapi {
 
-PPB_LayerCompositor_Impl::PPB_LayerCompositor_Impl(PluginInstance* instance)
+PPB_LayerCompositor_Impl::PPB_LayerCompositor_Impl(PP_Instance instance)
     : Resource(instance) {
 }
 

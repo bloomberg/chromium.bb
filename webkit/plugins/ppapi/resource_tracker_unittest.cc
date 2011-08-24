@@ -23,22 +23,6 @@ namespace ppapi {
 
 namespace {
 
-// Tracked Resources -----------------------------------------------------------
-
-class TrackedMockResource : public MockResource {
- public:
-  static int tracked_objects_alive;
-
-  TrackedMockResource(PluginInstance* instance) : MockResource(instance) {
-    tracked_objects_alive++;
-  }
-  ~TrackedMockResource() {
-    tracked_objects_alive--;
-  }
-};
-
-int TrackedMockResource::tracked_objects_alive = 0;
-
 // Tracked NPObjects -----------------------------------------------------------
 
 int g_npobjects_alive = 0;

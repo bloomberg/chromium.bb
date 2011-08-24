@@ -13,7 +13,7 @@ using ppapi::thunk::PPB_VideoLayer_API;
 namespace webkit {
 namespace ppapi {
 
-PPB_VideoLayer_Impl::PPB_VideoLayer_Impl(PluginInstance* instance)
+PPB_VideoLayer_Impl::PPB_VideoLayer_Impl(PP_Instance instance)
     : Resource(instance) {
 }
 
@@ -21,7 +21,7 @@ PPB_VideoLayer_Impl::~PPB_VideoLayer_Impl() {
 }
 
 // static
-PP_Resource PPB_VideoLayer_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_VideoLayer_Impl::Create(PP_Instance instance,
                                         PP_VideoLayerMode_Dev mode) {
   if (mode != PP_VIDEOLAYERMODE_SOFTWARE)
     return 0;

@@ -18,6 +18,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ppapi::PPTimeToTime;
@@ -64,11 +65,10 @@ int32_t Navigate(PP_Resource request_id,
   if (!target)
     return PP_ERROR_BADARGUMENT;
 
-  PluginInstance* instance = request->instance();
-  if (!instance)
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(request);
+  if (!plugin_instance)
     return PP_ERROR_FAILED;
-
-  return instance->Navigate(request, target, from_user_action);
+  return plugin_instance->Navigate(request, target, from_user_action);
 }
 
 void RunMessageLoop(PP_Instance instance) {

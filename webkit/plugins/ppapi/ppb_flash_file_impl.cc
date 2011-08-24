@@ -20,6 +20,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 #if defined(OS_WIN)
@@ -225,7 +226,7 @@ int32_t OpenFileRefFile(PP_Resource file_ref_id,
     return PP_ERROR_BADRESOURCE;
   PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(enter.object());
 
-  PluginInstance* instance = file_ref->instance();
+  PluginInstance* instance = ResourceHelper::GetPluginInstance(file_ref);
   if (!instance)
     return PP_ERROR_FAILED;
 
@@ -245,7 +246,7 @@ int32_t QueryFileRefFile(PP_Resource file_ref_id,
     return PP_ERROR_BADRESOURCE;
   PPB_FileRef_Impl* file_ref = static_cast<PPB_FileRef_Impl*>(enter.object());
 
-  PluginInstance* instance = file_ref->instance();
+  PluginInstance* instance = ResourceHelper::GetPluginInstance(file_ref);
   if (!instance)
     return PP_ERROR_FAILED;
 

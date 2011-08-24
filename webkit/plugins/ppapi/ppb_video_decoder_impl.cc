@@ -15,6 +15,7 @@
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "ppapi/thunk/enter.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -31,11 +32,14 @@ using ppapi::thunk::PPB_VideoDecoder_API;
 namespace webkit {
 namespace ppapi {
 
-PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PluginInstance* instance)
-    : Resource(instance) {
-  ppp_videodecoder_ =
-      static_cast<const PPP_VideoDecoder_Dev*>(instance->module()->
-          GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
+PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
+    : Resource(instance),
+      ppp_videodecoder_(NULL) {
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (plugin_module) {
+    ppp_videodecoder_ = static_cast<const PPP_VideoDecoder_Dev*>(
+        plugin_module->GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
+  }
 }
 
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
@@ -46,7 +50,7 @@ PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
 }
 
 // static
-PP_Resource PPB_VideoDecoder_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_VideoDecoder_Impl::Create(PP_Instance instance,
                                           PP_Resource context3d_id,
                                           const PP_VideoConfigElement* config) {
   if (!context3d_id)
@@ -80,7 +84,13 @@ bool PPB_VideoDecoder_Impl::Init(PP_Resource context3d_id,
       context3d_impl->platform_context()->GetCommandBufferRouteId();
   if (command_buffer_route_id == 0)
     return false;
-  platform_video_decoder_ = instance()->delegate()->CreateVideoDecoder(
+
+
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (!plugin_delegate)
+    return false;
+
+  platform_video_decoder_ = plugin_delegate->CreateVideoDecoder(
       this, command_buffer_route_id);
   if (!platform_video_decoder_)
     return false;
@@ -181,10 +191,8 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
     return;
 
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
-  ScopedResourceId resource(this);
-  ppp_videodecoder_->ProvidePictureBuffers(
-      instance()->pp_instance(), resource.id, requested_num_of_buffers,
-      out_dim);
+  ppp_videodecoder_->ProvidePictureBuffers(pp_instance(), pp_resource(),
+                                           requested_num_of_buffers, out_dim);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
@@ -194,26 +202,20 @@ void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   PP_Picture_Dev output;
   output.picture_buffer_id = picture.picture_buffer_id();
   output.bitstream_buffer_id = picture.bitstream_buffer_id();
-  ScopedResourceId resource(this);
-  ppp_videodecoder_->PictureReady(
-      instance()->pp_instance(), resource.id, output);
+  ppp_videodecoder_->PictureReady(pp_instance(), pp_resource(), output);
 }
 
 void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
   if (!ppp_videodecoder_)
     return;
-
-  ScopedResourceId resource(this);
-  ppp_videodecoder_->DismissPictureBuffer(
-      instance()->pp_instance(), resource.id, picture_buffer_id);
+  ppp_videodecoder_->DismissPictureBuffer(pp_instance(), pp_resource(),
+                                          picture_buffer_id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyEndOfStream() {
   if (!ppp_videodecoder_)
     return;
-
-  ScopedResourceId resource(this);
-  ppp_videodecoder_->EndOfStream(instance()->pp_instance(), resource.id);
+  ppp_videodecoder_->EndOfStream(pp_instance(), pp_resource());
 }
 
 void PPB_VideoDecoder_Impl::NotifyError(
@@ -221,12 +223,11 @@ void PPB_VideoDecoder_Impl::NotifyError(
   if (!ppp_videodecoder_)
     return;
 
-  ScopedResourceId resource(this);
   // TODO(vrk): This is assuming VideoDecodeAccelerator::Error and
   // PP_VideoDecodeError_Dev have identical enum values. There is no compiler
   // assert to guarantee this. We either need to add such asserts or
   // merge these two enums.
-  ppp_videodecoder_->NotifyError(instance()->pp_instance(), resource.id,
+  ppp_videodecoder_->NotifyError(pp_instance(), pp_resource(),
                                  static_cast<PP_VideoDecodeError_Dev>(error));
 }
 

@@ -12,12 +12,13 @@
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/pp_instance.h"
 #include "webkit/quota/quota_types.h"
 
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
+class PluginDelegate;
 
 // This class is created per PPB_FileIO_Impl instance and provides
 // write operations for quota-managed files (i.e. files of
@@ -27,7 +28,7 @@ class QuotaFileIO {
   typedef base::FileUtilProxy::WriteCallback WriteCallback;
   typedef base::FileUtilProxy::StatusCallback StatusCallback;
 
-  QuotaFileIO(PluginInstance* instance,
+  QuotaFileIO(PP_Instance instance,
               base::PlatformFile file,
               const GURL& path_url,
               PP_FileSystemType type);
@@ -54,6 +55,10 @@ class QuotaFileIO {
   bool SetLength(int64_t length, StatusCallback* callback);
   bool WillSetLength(int64_t length, StatusCallback* callback);
 
+  // Returns the plugin delegate or NULL if the resource has outlived the
+  // instance.
+  PluginDelegate* GetPluginDelegate() const;
+
  private:
   class PendingOperationBase;
   class WriteOperation;
@@ -71,7 +76,7 @@ class QuotaFileIO {
   void DidQueryForQuotaCheck();
 
   // The plugin instance that owns this (via PPB_FileIO_Impl).
-  PluginInstance* instance_;
+  PP_Instance pp_instance_;
 
   // The file information associated to this instance.
   base::PlatformFile file_;

@@ -14,6 +14,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/plugins/ppapi/string.h"
 
 using ppapi::StringVar;
@@ -42,15 +43,18 @@ bool PPTextRunToTextRun(const PP_TextRun_Dev* run,
 
 }  // namespace
 
-PPB_Font_Impl::PPB_Font_Impl(PluginInstance* instance,
+PPB_Font_Impl::PPB_Font_Impl(PP_Instance pp_instance,
                              const PP_FontDescription_Dev& desc)
-    : Resource(instance) {
+    : Resource(pp_instance) {
   StringVar* face_name = StringVar::FromPPVar(desc.face);
 
   WebKitForwarding::Font* result = NULL;
-  instance->module()->GetWebKitForwarding()->CreateFontForwarding(
-      NULL, desc, face_name ? face_name->value() : std::string(),
-      instance->delegate()->GetPreferences(), &result);
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (plugin_instance) {
+    plugin_instance->module()->GetWebKitForwarding()->CreateFontForwarding(
+        NULL, desc, face_name ? face_name->value() : std::string(),
+        plugin_instance->delegate()->GetPreferences(), &result);
+  }
   font_forwarding_.reset(result);
 }
 
@@ -58,7 +62,7 @@ PPB_Font_Impl::~PPB_Font_Impl() {
 }
 
 // static
-PP_Resource PPB_Font_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_Font_Impl::Create(PP_Instance instance,
                                   const PP_FontDescription_Dev& description) {
   if (!::ppapi::FontImpl::IsPPFontDescriptionValid(description))
     return 0;
@@ -77,9 +81,13 @@ PP_Bool PPB_Font_Impl::Describe(PP_FontDescription_Dev* description,
   if (!result)
     return PP_FALSE;
 
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_FALSE;
+
   // Convert the string.
-  description->face = StringVar::StringToPPVar(
-      instance()->module()->pp_module(), face);
+  description->face = StringVar::StringToPPVar(plugin_module->pp_module(),
+                                               face);
   return PP_TRUE;
 }
 

@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PPB_Graphics2D;
 
@@ -27,13 +27,12 @@ class PPB_ImageData_Impl;
 class PluginInstance;
 class PluginModule;
 
-class PPB_Graphics2D_Impl
-    : public Resource,
-      public ::ppapi::thunk::PPB_Graphics2D_API {
+class PPB_Graphics2D_Impl : public ::ppapi::Resource,
+                            public ::ppapi::thunk::PPB_Graphics2D_API {
  public:
   virtual ~PPB_Graphics2D_Impl();
 
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             const PP_Size& size,
                             PP_Bool is_always_opaque);
 
@@ -75,7 +74,7 @@ class PPB_Graphics2D_Impl
   PPB_ImageData_Impl* image_data() { return image_data_.get(); }
 
  private:
-  explicit PPB_Graphics2D_Impl(PluginInstance* instance);
+  explicit PPB_Graphics2D_Impl(PP_Instance instance);
 
   bool Init(int width, int height, bool is_always_opaque);
 

@@ -29,6 +29,7 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
@@ -65,6 +66,7 @@
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
+#include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/string.h"
 #include "webkit/plugins/sad_plugin.h"
 
@@ -431,9 +433,8 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
 }
 
 bool PluginInstance::HandleDocumentLoad(PPB_URLLoader_Impl* loader) {
-  Resource::ScopedResourceId resource(loader);
-  return PP_ToBool(instance_interface_->HandleDocumentLoad(pp_instance(),
-                                                           resource.id));
+  return PP_ToBool(instance_interface_->HandleDocumentLoad(
+      pp_instance(), loader->pp_resource()));
 }
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
@@ -460,11 +461,10 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
         else
           rv = true;  // Unfiltered events are assumed to be handled.
         scoped_refptr<PPB_InputEvent_Impl> event_resource(
-            new PPB_InputEvent_Impl(this, events[i]));
-        Resource::ScopedResourceId resource(event_resource);
+            new PPB_InputEvent_Impl(pp_instance(), events[i]));
 
         rv |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
-            pp_instance(), resource.id));
+            pp_instance(), event_resource->pp_resource()));
       }
     }
   }
@@ -1371,7 +1371,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
       static_cast<PPB_Surface3D_Impl*>(enter_surface_3d.object()) : NULL;
 
   if (graphics_2d) {
-    if (graphics_2d->instance() != this)
+    if (graphics_2d->pp_instance() != pp_instance())
       return PP_FALSE;  // Can't bind other instance's contexts.
     if (!graphics_2d->BindToInstance(this))
       return PP_FALSE;  // Can't bind to more than one instance.
@@ -1382,7 +1382,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   } else if (graphics_3d) {
     // Make sure graphics can only be bound to the instance it is
     // associated with.
-    if (graphics_3d->instance() != this)
+    if (graphics_3d->pp_instance() != pp_instance())
       return PP_FALSE;
     if (!graphics_3d->BindToInstance(true))
       return PP_FALSE;
@@ -1392,7 +1392,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   } else if (surface_3d) {
     // Make sure graphics can only be bound to the instance it is
     // associated with.
-    if (surface_3d->instance() != this)
+    if (surface_3d->pp_instance() != pp_instance())
       return PP_FALSE;
     if (!surface_3d->BindToInstance(true))
       return PP_FALSE;

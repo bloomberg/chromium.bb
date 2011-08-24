@@ -15,10 +15,10 @@
 #include "base/platform_file.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_time.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_file_io_api.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PP_CompletionCallback;
 struct PPB_FileIO;
@@ -31,10 +31,10 @@ class PluginModule;
 class PPB_FileRef_Impl;
 class QuotaFileIO;
 
-class PPB_FileIO_Impl : public Resource,
+class PPB_FileIO_Impl : public ::ppapi::Resource,
                         public ::ppapi::thunk::PPB_FileIO_API {
  public:
-  explicit PPB_FileIO_Impl(PluginInstance* instance);
+  explicit PPB_FileIO_Impl(PP_Instance instance);
   virtual ~PPB_FileIO_Impl();
 
   // Resource overrides.

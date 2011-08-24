@@ -13,6 +13,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
 #include "webkit/plugins/ppapi/quota_file_io.h"
 
@@ -101,7 +102,8 @@ class QuotaFileIOTest : public PpapiUnittest {
     ASSERT_NE(base::kInvalidPlatformFileValue, file_);
     ASSERT_FALSE(created);
     quota_file_io_.reset(new QuotaFileIO(
-        instance(), file_, GURL(), PP_FILESYSTEMTYPE_LOCALTEMPORARY));
+        instance()->pp_instance(), file_, GURL(),
+        PP_FILESYSTEMTYPE_LOCALTEMPORARY));
   }
 
   virtual void TearDown() OVERRIDE {

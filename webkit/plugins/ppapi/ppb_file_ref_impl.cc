@@ -19,6 +19,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::PPTimeToTime;
 using ppapi::StringVar;
@@ -58,7 +59,7 @@ PPB_FileRef_Impl::PPB_FileRef_Impl()
 }
 
 PPB_FileRef_Impl::PPB_FileRef_Impl(
-    PluginInstance* instance,
+    PP_Instance instance,
     scoped_refptr<PPB_FileSystem_Impl> file_system,
     const std::string& validated_path)
     : Resource(instance),
@@ -66,7 +67,7 @@ PPB_FileRef_Impl::PPB_FileRef_Impl(
       virtual_path_(validated_path) {
 }
 
-PPB_FileRef_Impl::PPB_FileRef_Impl(PluginInstance* instance,
+PPB_FileRef_Impl::PPB_FileRef_Impl(PP_Instance instance,
                                    const FilePath& external_file_path)
     : Resource(instance),
       file_system_(NULL),
@@ -85,7 +86,7 @@ PP_Resource PPB_FileRef_Impl::Create(PP_Resource pp_file_system,
 
   PPB_FileSystem_Impl* file_system =
       static_cast<PPB_FileSystem_Impl*>(enter.object());
-  if (!file_system->instance())
+  if (!file_system->pp_instance())
     return 0;
 
   if (file_system->type() != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
@@ -97,7 +98,7 @@ PP_Resource PPB_FileRef_Impl::Create(PP_Resource pp_file_system,
     return 0;
   TrimTrailingSlash(&validated_path);
 
-  return (new PPB_FileRef_Impl(file_system->instance(),
+  return (new PPB_FileRef_Impl(file_system->pp_instance(),
                                file_system, validated_path))->GetReference();
 }
 
@@ -139,14 +140,19 @@ PP_Var PPB_FileRef_Impl::GetName() const {
     result = virtual_path_.substr(pos + 1);
   }
 
-  return StringVar::StringToPPVar(instance()->module()->pp_module(), result);
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_MakeUndefined();
+  return StringVar::StringToPPVar(plugin_module->pp_module(), result);
 }
 
 PP_Var PPB_FileRef_Impl::GetPath() const {
   if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
     return PP_MakeUndefined();
-  return StringVar::StringToPPVar(instance()->module()->pp_module(),
-                                  virtual_path_);
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_MakeUndefined();
+  return StringVar::StringToPPVar(plugin_module->pp_module(), virtual_path_);
 }
 
 PP_Resource PPB_FileRef_Impl::GetParent() {
@@ -163,7 +169,7 @@ PP_Resource PPB_FileRef_Impl::GetParent() {
   std::string parent_path = virtual_path_.substr(0, pos);
 
   scoped_refptr<PPB_FileRef_Impl> parent_ref(
-      new PPB_FileRef_Impl(instance(), file_system_, parent_path));
+      new PPB_FileRef_Impl(pp_instance(), file_system_, parent_path));
   return parent_ref->GetReference();
 }
 
@@ -171,9 +177,13 @@ int32_t PPB_FileRef_Impl::MakeDirectory(PP_Bool make_ancestors,
                                         PP_CompletionCallback callback) {
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
-  if (!instance()->delegate()->MakeDirectory(
+
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
+  if (!plugin_instance->delegate()->MakeDirectory(
           GetFileSystemURL(), PP_ToBool(make_ancestors),
-          new FileCallbacks(instance()->module()->AsWeakPtr(),
+          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
                             pp_resource(), callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
@@ -184,11 +194,14 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
                                 PP_CompletionCallback callback) {
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
-  if (!instance()->delegate()->Touch(
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
+  if (!plugin_instance->delegate()->Touch(
           GetFileSystemURL(),
           PPTimeToTime(last_access_time),
           PPTimeToTime(last_modified_time),
-          new FileCallbacks(instance()->module()->AsWeakPtr(),
+          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
                             pp_resource(), callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
@@ -197,9 +210,12 @@ int32_t PPB_FileRef_Impl::Touch(PP_Time last_access_time,
 int32_t PPB_FileRef_Impl::Delete(PP_CompletionCallback callback) {
   if (!IsValidNonExternalFileSystem())
     return PP_ERROR_NOACCESS;
-  if (!instance()->delegate()->Delete(
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
+  if (!plugin_instance->delegate()->Delete(
           GetFileSystemURL(),
-          new FileCallbacks(instance()->module()->AsWeakPtr(),
+          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
                             pp_resource(), callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;
@@ -219,9 +235,12 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
 
   // TODO(viettrungluu): Also cancel when the new file ref is destroyed?
   // http://crbug.com/67624
-  if (!instance()->delegate()->Rename(
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return PP_ERROR_FAILED;
+  if (!plugin_instance->delegate()->Rename(
           GetFileSystemURL(), new_file_ref->GetFileSystemURL(),
-          new FileCallbacks(instance()->module()->AsWeakPtr(),
+          new FileCallbacks(plugin_instance->module()->AsWeakPtr(),
                             pp_resource(), callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
   return PP_OK_COMPLETIONPENDING;

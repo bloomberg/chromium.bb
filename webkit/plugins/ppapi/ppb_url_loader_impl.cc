@@ -29,8 +29,10 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_response_info_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using appcache::WebApplicationCacheHostImpl;
+using ppapi::Resource;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_URLLoader_API;
 using ppapi::thunk::PPB_URLRequestInfo_API;
@@ -51,7 +53,18 @@ using WebKit::WebURLResponse;
 namespace webkit {
 namespace ppapi {
 
-PPB_URLLoader_Impl::PPB_URLLoader_Impl(PluginInstance* instance,
+namespace {
+
+WebFrame* GetFrameForResource(const Resource* resource) {
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(resource);
+  if (!plugin_instance)
+    return NULL;
+  return plugin_instance->container()->element().document().frame();
+}
+
+}  // namespace
+
+PPB_URLLoader_Impl::PPB_URLLoader_Impl(PP_Instance instance,
                                        bool main_document_loader)
     : Resource(instance),
       main_document_loader_(main_document_loader),
@@ -99,7 +112,7 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
   if (loader_.get())
     return PP_ERROR_INPROGRESS;
 
-  WebFrame* frame = instance()->container()->element().document().frame();
+  WebFrame* frame = GetFrameForResource(this);
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request(request->ToWebURLRequest(frame));
@@ -226,12 +239,10 @@ int32_t PPB_URLLoader_Impl::FinishStreamingToFile(
 }
 
 void PPB_URLLoader_Impl::Close() {
-  if (loader_.get()) {
+  if (loader_.get())
     loader_->cancel();
-  } else if (main_document_loader_) {
-    WebFrame* frame = instance()->container()->element().document().frame();
-    frame->stopLoading();
-  }
+  else if (main_document_loader_)
+    GetFrameForResource(this)->stopLoading();
   // TODO(viettrungluu): Check what happens to the callback (probably the
   // wrong thing). May need to post abort here. crbug.com/69457
 }
@@ -362,8 +373,12 @@ void PPB_URLLoader_Impl::RegisterCallback(PP_CompletionCallback callback) {
   DCHECK(callback.func);
   DCHECK(!pending_callback_.get() || pending_callback_->completed());
 
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return;
+
   pending_callback_ = new TrackedCompletionCallback(
-      instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+      plugin_module->GetCallbackTracker(), pp_resource(), callback);
 }
 
 void PPB_URLLoader_Impl::RunCallback(int32_t result) {
@@ -404,7 +419,7 @@ size_t PPB_URLLoader_Impl::FillUserBuffer() {
 
 void PPB_URLLoader_Impl::SaveResponse(const WebURLResponse& response) {
   scoped_refptr<PPB_URLResponseInfo_Impl> response_info(
-      new PPB_URLResponseInfo_Impl(instance()));
+      new PPB_URLResponseInfo_Impl(pp_instance()));
   if (response_info->Initialize(response))
     response_info_ = response_info;
 }
@@ -418,7 +433,7 @@ void PPB_URLLoader_Impl::UpdateStatus() {
     // getting download progress when they happen to set the upload progress
     // flag.
     status_callback_(
-        instance()->pp_instance(), pp_resource(),
+        pp_instance(), pp_resource(),
         RecordUploadProgress() ? bytes_sent_ : -1,
         RecordUploadProgress() ?  total_bytes_to_be_sent_ : -1,
         RecordDownloadProgress() ? bytes_received_ : -1,

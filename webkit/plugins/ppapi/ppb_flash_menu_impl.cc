@@ -12,6 +12,7 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ::ppapi::thunk::PPB_Flash_Menu_API;
 
@@ -94,7 +95,7 @@ bool ConvertMenuData(const PP_Flash_Menu* in_menu,
 
 }  // namespace
 
-PPB_Flash_Menu_Impl::PPB_Flash_Menu_Impl(PluginInstance* instance)
+PPB_Flash_Menu_Impl::PPB_Flash_Menu_Impl(PP_Instance instance)
     : Resource(instance) {
 }
 
@@ -102,7 +103,7 @@ PPB_Flash_Menu_Impl::~PPB_Flash_Menu_Impl() {
 }
 
 // static
-PP_Resource PPB_Flash_Menu_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_Flash_Menu_Impl::Create(PP_Instance instance,
                                         const PP_Flash_Menu* menu_data) {
   scoped_refptr<PPB_Flash_Menu_Impl> menu(new PPB_Flash_Menu_Impl(instance));
   if (!menu->Init(menu_data))
@@ -141,12 +142,17 @@ int32_t PPB_Flash_Menu_Impl::Show(const PP_Point* location,
   if (callback_.get() && !callback_->completed())
     return PP_ERROR_INPROGRESS;
 
-  int32_t rv = instance()->delegate()->ShowContextMenu(
-      instance(), this, gfx::Point(location->x, location->y));
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return false;
+
+  int32_t rv = plugin_instance->delegate()->ShowContextMenu(
+      plugin_instance, this, gfx::Point(location->x, location->y));
   if (rv == PP_OK_COMPLETIONPENDING) {
     // Record callback and output buffers.
     callback_ = new TrackedCompletionCallback(
-        instance()->module()->GetCallbackTracker(), pp_resource(), callback);
+        plugin_instance->module()->GetCallbackTracker(),
+        pp_resource(), callback);
     selected_id_out_ = selected_id_out;
   } else {
     // This should never be completed synchronously successfully.

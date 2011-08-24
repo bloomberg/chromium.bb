@@ -13,10 +13,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/video_decoder_impl.h"
 #include "ppapi/thunk/ppb_video_decoder_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PP_PictureBuffer_Dev;
 struct PP_VideoDecoderConfig_Dev;
@@ -40,16 +40,14 @@ class PPB_Context3D_API;
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
-class PPB_VideoDecoder_Impl : public Resource,
+class PPB_VideoDecoder_Impl : public ::ppapi::Resource,
                               public ::ppapi::VideoDecoderImpl,
                               public media::VideoDecodeAccelerator::Client {
  public:
   virtual ~PPB_VideoDecoder_Impl();
   // See PPB_VideoDecoder_Dev::Create.  Returns 0 on failure to create &
   // initialize.
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             PP_Resource context3d_id,
                             const PP_VideoConfigElement* config);
 
@@ -86,7 +84,7 @@ class PPB_VideoDecoder_Impl : public Resource,
                     const PP_VideoConfigElement* dec_config) OVERRIDE;
 
  private:
-  explicit PPB_VideoDecoder_Impl(PluginInstance* instance);
+  explicit PPB_VideoDecoder_Impl(PP_Instance instance);
 
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.

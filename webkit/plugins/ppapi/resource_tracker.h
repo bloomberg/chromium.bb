@@ -36,7 +36,6 @@ namespace ppapi {
 
 class PluginInstance;
 class PluginModule;
-class Resource;
 class ResourceTrackerTest;
 
 // This class maintains a global list of all live pepper resources. It allows
@@ -57,6 +56,9 @@ class ResourceTracker : public ::ppapi::TrackerBase,
       ::ppapi::proxy::InterfaceID id) OVERRIDE;
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
+
+  // ppapi::ResourceTracker overrides.
+  virtual void LastPluginRefWasDeleted(::ppapi::Resource* object) OVERRIDE;
 
   // PP_Vars -------------------------------------------------------------------
 
@@ -109,7 +111,6 @@ class ResourceTracker : public ::ppapi::TrackerBase,
   PluginInstance* GetInstance(PP_Instance instance);
 
  private:
-  friend class Resource;
   friend class ResourceTrackerTest;
 
   typedef std::set<PP_Resource> ResourceSet;
@@ -155,21 +156,7 @@ class ResourceTracker : public ::ppapi::TrackerBase,
   // See SetSingletonOverride above.
   static ResourceTracker* singleton_override_;
 
-  // Last assigned resource ID.
-  PP_Resource last_resource_id_;
-
   ::ppapi::VarTracker var_tracker_;
-
-  // For each PP_Resource, keep the Resource* (as refptr) and plugin use count.
-  // This use count is different then Resource's RefCount, and is manipulated
-  // using this AddRefResource/UnrefResource. When it drops to zero, we just
-  // remove the resource from this resource tracker, but the resource object
-  // will be alive so long as some scoped_refptr still holds it's
-  // reference. This prevents plugins from forcing destruction of Resource
-  // objects.
-  typedef std::pair<scoped_refptr<Resource>, size_t> ResourceAndRefCount;
-  typedef base::hash_map<PP_Resource, ResourceAndRefCount> ResourceMap;
-  ResourceMap live_resources_;
 
   // Like ResourceAndRefCount but for vars, which are associated with modules.
   typedef std::pair<scoped_refptr< ::ppapi::Var>, size_t> VarAndRefCount;

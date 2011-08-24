@@ -8,8 +8,8 @@
 #include <queue>
 
 #include "base/file_util_proxy.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_directory_reader_api.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 struct PP_CompletionCallback;
 struct PP_DirectoryEntry_Dev;
@@ -21,7 +21,7 @@ namespace ppapi {
 class PPB_FileRef_Impl;
 
 class PPB_DirectoryReader_Impl
-    : public Resource,
+    : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_DirectoryReader_API {
  public:
   explicit PPB_DirectoryReader_Impl(PPB_FileRef_Impl* directory_ref);

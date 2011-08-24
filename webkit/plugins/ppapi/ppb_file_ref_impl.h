@@ -10,24 +10,24 @@
 #include "base/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/ppb_file_ref.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace webkit {
 namespace ppapi {
 
 class PPB_FileSystem_Impl;
-class PluginInstance;
+class PluginDelegate;
 class PluginModule;
 
-class PPB_FileRef_Impl : public Resource,
+class PPB_FileRef_Impl : public ::ppapi::Resource,
                          public ::ppapi::thunk::PPB_FileRef_API {
  public:
   PPB_FileRef_Impl();
-  PPB_FileRef_Impl(PluginInstance* instance,
+  PPB_FileRef_Impl(PP_Instance instance,
                    scoped_refptr<PPB_FileSystem_Impl> file_system,
                    const std::string& validated_path);
-  PPB_FileRef_Impl(PluginInstance* instance,
+  PPB_FileRef_Impl(PP_Instance instance,
                    const FilePath& external_file_path);
   virtual ~PPB_FileRef_Impl();
 

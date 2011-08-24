@@ -115,8 +115,6 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
       PP_Bool scroll_by_page) OVERRIDE;
 
  private:
-  PluginInstance* instance_;
-
   DISALLOW_COPY_AND_ASSIGN(ResourceCreationImpl);
 };
 

@@ -15,6 +15,7 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 #include "webkit/glue/webkit_glue.h"
 
 using ppapi::StringVar;
@@ -50,7 +51,7 @@ bool IsRedirect(int32_t status) {
 
 }  // namespace
 
-PPB_URLResponseInfo_Impl::PPB_URLResponseInfo_Impl(PluginInstance* instance)
+PPB_URLResponseInfo_Impl::PPB_URLResponseInfo_Impl(PP_Instance instance)
     : Resource(instance),
       status_code_(-1) {
 }
@@ -73,7 +74,7 @@ bool PPB_URLResponseInfo_Impl::Initialize(const WebURLResponse& response) {
 
   WebString file_path = response.downloadFilePath();
   if (!file_path.isEmpty()) {
-    body_ = new PPB_FileRef_Impl(instance(),
+    body_ = new PPB_FileRef_Impl(pp_instance(),
                                  webkit_glue::WebStringToFilePath(file_path));
   }
   return true;
@@ -84,7 +85,10 @@ PPB_URLResponseInfo_API* PPB_URLResponseInfo_Impl::AsPPB_URLResponseInfo_API() {
 }
 
 PP_Var PPB_URLResponseInfo_Impl::GetProperty(PP_URLResponseProperty property) {
-  PP_Module pp_module = instance()->module()->pp_module();
+  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+  if (!plugin_module)
+    return PP_MakeUndefined();
+  PP_Module pp_module = plugin_module->pp_module();
   switch (property) {
     case PP_URLRESPONSEPROPERTY_URL:
       return StringVar::StringToPPVar(pp_module, url_);

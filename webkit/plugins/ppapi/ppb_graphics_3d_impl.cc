@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::PPB_Graphics3D_API;
 
@@ -49,7 +50,7 @@ PP_Graphics3DTrustedState PPStateFromGPUState(
 }
 }  // namespace.
 
-PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PluginInstance* instance)
+PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
     : Resource(instance),
       bound_to_instance_(false),
       commit_pending_(false),
@@ -61,7 +62,7 @@ PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
 }
 
 // static
-PP_Resource PPB_Graphics3D_Impl::Create(PluginInstance* instance,
+PP_Resource PPB_Graphics3D_Impl::Create(PP_Instance instance,
                                         PP_Resource share_context,
                                         const int32_t* attrib_list) {
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
@@ -71,7 +72,7 @@ PP_Resource PPB_Graphics3D_Impl::Create(PluginInstance* instance,
   return graphics_3d->GetReference();
 }
 
-PP_Resource PPB_Graphics3D_Impl::CreateRaw(PluginInstance* instance,
+PP_Resource PPB_Graphics3D_Impl::CreateRaw(PP_Instance instance,
                                            PP_Resource share_context,
                                            const int32_t* attrib_list) {
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
@@ -180,12 +181,16 @@ bool PPB_Graphics3D_Impl::Init(PP_Resource share_context,
 
 bool PPB_Graphics3D_Impl::InitRaw(PP_Resource share_context,
                                   const int32_t* attrib_list) {
+  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
+  if (!plugin_instance)
+    return false;
+
   // TODO(alokp): Support shared context.
   DCHECK_EQ(0, share_context);
   if (share_context != 0)
-    return 0;
+    return false;
 
-  platform_context_.reset(instance()->CreateContext3D());
+  platform_context_.reset(plugin_instance->CreateContext3D());
   if (!platform_context_.get())
     return false;
 
@@ -205,7 +210,10 @@ void PPB_Graphics3D_Impl::OnSwapBuffers() {
     // to commit our backing texture so that the graphics appears on the page.
     // When the backing texture will be committed we get notified via
     // ViewFlushedPaint().
-    instance()->CommitBackingTexture();
+    //
+    // Don't need to check for NULL from GetPluginInstance since when we're
+    // bound, we know our instance is valid.
+    ResourceHelper::GetPluginInstance(this)->CommitBackingTexture();
     commit_pending_ = true;
   } else if (HasPendingSwap()) {
     // If we're off-screen, no need to trigger and wait for compositing.
@@ -216,8 +224,10 @@ void PPB_Graphics3D_Impl::OnSwapBuffers() {
 }
 
 void PPB_Graphics3D_Impl::OnContextLost() {
+  // Don't need to check for NULL from GetPluginInstance since when we're
+  // bound, we know our instance is valid.
   if (bound_to_instance_)
-    instance()->BindGraphics(instance()->pp_instance(), 0);
+    ResourceHelper::GetPluginInstance(this)->BindGraphics(pp_instance(), 0);
 
   // Send context lost to plugin. This may have been caused by a PPAPI call, so
   // avoid re-entering.
@@ -229,15 +239,16 @@ void PPB_Graphics3D_Impl::SendContextLost() {
   // By the time we run this, the instance may have been deleted, or in the
   // process of being deleted. Even in the latter case, we don't want to send a
   // callback after DidDestroy.
-  if (!instance() || !instance()->container())
+  PluginInstance* instance = ResourceHelper::GetPluginInstance(this);
+  if (!instance || !instance->container())
     return;
 
   const PPP_Graphics3D_Dev* ppp_graphics_3d =
       static_cast<const PPP_Graphics3D_Dev*>(
-          instance()->module()->GetPluginInterface(
+          instance->module()->GetPluginInterface(
               PPP_GRAPHICS_3D_DEV_INTERFACE));
   if (ppp_graphics_3d)
-    ppp_graphics_3d->Graphics3DContextLost(instance()->pp_instance());
+    ppp_graphics_3d->Graphics3DContextLost(pp_instance());
 }
 
 }  // namespace ppapi

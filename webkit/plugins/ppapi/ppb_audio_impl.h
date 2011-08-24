@@ -15,23 +15,22 @@
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/shared_impl/audio_config_impl.h"
 #include "ppapi/shared_impl/audio_impl.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ppapi/shared_impl/resource.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/resource.h"
 
 namespace webkit {
 namespace ppapi {
 
-class PluginInstance;
-
 // The implementation is actually in AudioConfigImpl.
-class PPB_AudioConfig_Impl : public Resource,
+class PPB_AudioConfig_Impl : public ::ppapi::Resource,
                              public ::ppapi::AudioConfigImpl {
  public:
   virtual ~PPB_AudioConfig_Impl();
 
   // Non-trusted creation.
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             PP_AudioSampleRate sample_rate,
                             uint32_t sample_frame_count);
 
@@ -39,14 +38,14 @@ class PPB_AudioConfig_Impl : public Resource,
   virtual ::ppapi::thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
 
  private:
-  explicit PPB_AudioConfig_Impl(PluginInstance* instance);
+  explicit PPB_AudioConfig_Impl(PP_Instance instance);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_AudioConfig_Impl);
 };
 
 // Some of the backend functionality of this class is implemented by the
 // AudioImpl so it can be shared with the proxy.
-class PPB_Audio_Impl : public Resource,
+class PPB_Audio_Impl : public ::ppapi::Resource,
                        public ::ppapi::AudioImpl,
                        public PluginDelegate::PlatformAudio::Client {
  public:
@@ -54,13 +53,13 @@ class PPB_Audio_Impl : public Resource,
   //
   // Untrusted initialization should just call the static Create() function
   // to properly create & initialize this class.
-  explicit PPB_Audio_Impl(PluginInstance* instance);
+  explicit PPB_Audio_Impl(PP_Instance instance);
 
   virtual ~PPB_Audio_Impl();
 
   // Creation function for untrusted plugins. This handles all initialization
   // and will return 0 on failure.
-  static PP_Resource Create(PluginInstance* instance,
+  static PP_Resource Create(PP_Instance instance,
                             PP_Resource config_id,
                             PPB_Audio_Callback audio_callback,
                             void* user_data);
@@ -88,7 +87,7 @@ class PPB_Audio_Impl : public Resource,
                              base::SyncSocket::Handle socket);
 
   // AudioConfig used for creating this Audio object. We own a ref.
-  PP_Resource config_id_;
+  ::ppapi::ScopedPPResource config_;
 
   // PluginDelegate audio object that we delegate audio IPC through. We don't
   // own this pointer but are responsible for calling Shutdown on it.
