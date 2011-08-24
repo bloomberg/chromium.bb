@@ -91,7 +91,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       unrecoverable_error_detected_(false),
       scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
-      clear_server_data_state_(CLEAR_NOT_STARTED) {
+      clear_server_data_state_(CLEAR_NOT_STARTED),
+      set_backend_encrypted_types_(false) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds
@@ -466,6 +467,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   cached_passphrase_ = CachedPassphrase();
   gaia_password_.clear();
   pending_types_for_encryption_.clear();
+  set_backend_encrypted_types_ = false;
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
   last_attempted_user_email_.clear();
   last_auth_error_ = GoogleServiceAuthError::None();
@@ -784,12 +786,30 @@ void ProfileSyncService::OnPassphraseAccepted() {
 
 void ProfileSyncService::OnEncryptionComplete(
     const syncable::ModelTypeSet& encrypted_types) {
-  if (!pending_types_for_encryption_.empty()) {
-    // The user had chosen to encrypt datatypes. This is the last thing to
-    // complete, so now that we're done notify the UI.
-    wizard_.Step(SyncSetupWizard::DONE);
+  if (set_backend_encrypted_types_) {
+    DCHECK(!pending_types_for_encryption_.empty());
+    // See if all our pending types are now encrypted - it's possible that this
+    // is a delayed notification from a previous attempt to encrypt a subset
+    // of the requested types.
+    bool encryption_complete = true;
+    for (syncable::ModelTypeSet::const_iterator it =
+             pending_types_for_encryption_.begin();
+         it != pending_types_for_encryption_.end();
+         ++it) {
+      if (encrypted_types.count(*it) == 0) {
+        // One of our types is not yet encrypted - keep waiting.
+        encryption_complete = false;
+        break;
+      }
+    }
+    if (encryption_complete) {
+      pending_types_for_encryption_.clear();
+      set_backend_encrypted_types_ = false;
+      // The user had chosen to encrypt datatypes. This is the last thing to
+      // complete, so now that we're done notify the UI.
+      wizard_.Step(SyncSetupWizard::DONE);
+    }
   }
-  pending_types_for_encryption_.clear();
   NotifyObservers();
 }
 
@@ -1236,6 +1256,7 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase,
 
 void ProfileSyncService::set_pending_types_for_encryption(
     const syncable::ModelTypeSet& encrypted_types) {
+  set_backend_encrypted_types_ = false;
   if (encrypted_types.empty()) {
     // We can't unencrypt types.
     VLOG(1) << "No datatypes set for encryption, dropping encryption request.";
@@ -1319,6 +1340,7 @@ void ProfileSyncService::Observe(int type,
         // OnEncryptionComplete). Has no effect if pending_types_for_encryption_
         // matches the encrypted types (and will clear
         // pending_types_for_encryption_).
+        set_backend_encrypted_types_ = true;
         backend_->EncryptDataTypes(pending_types_for_encryption_);
       }
       break;

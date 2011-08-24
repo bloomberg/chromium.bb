@@ -650,6 +650,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // and cached until the syncer either finishes encryption
   // (OnEncryptionComplete) or the user cancels.
   syncable::ModelTypeSet pending_types_for_encryption_;
+  bool set_backend_encrypted_types_;
 
   scoped_ptr<browser_sync::BackendMigrator> migrator_;
 
