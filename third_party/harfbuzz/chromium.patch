@@ -49,19 +49,19 @@ index a216005..7bd3b3b 100644
  			  &mark2_index );
    if ( error )
 diff --git a/src/harfbuzz-shaper.cpp b/src/harfbuzz-shaper.cpp
-index ce4d4ac..0f50799 100644
+index ce4d4ac..5999e08 100644
 --- a/src/harfbuzz-shaper.cpp
 +++ b/src/harfbuzz-shaper.cpp
-@@ -430,7 +430,7 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
+@@ -430,8 +430,6 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
  
      // ### zeroWidth and justification are missing here!!!!!
  
 -    assert(item->num_glyphs <= length);
-+    assert(length <= item->num_glyphs);
- 
+-
  //     qDebug("QScriptEngine::heuristicSetGlyphAttributes, num_glyphs=%d", item->num_glyphs);
      HB_GlyphAttributes *attributes = item->attributes;
-@@ -448,7 +448,6 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
+     unsigned short *logClusters = item->log_clusters;
+@@ -448,7 +446,6 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
          }
          ++glyph_pos;
      }
@@ -69,7 +69,7 @@ index ce4d4ac..0f50799 100644
  
      // first char in a run is never (treated as) a mark
      int cStart = 0;
-@@ -1151,10 +1150,12 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
+@@ -1151,10 +1148,12 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
          return false;
      face->tmpLogClusters = tmpLogClusters;
  
@@ -83,7 +83,7 @@ index ce4d4ac..0f50799 100644
      }
  
  #ifdef OT_DEBUG
-@@ -1190,6 +1191,24 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
+@@ -1190,6 +1189,24 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
      return true;
  }
  
@@ -108,7 +108,7 @@ index ce4d4ac..0f50799 100644
  HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool doLogClusters)
  {
      HB_Face face = item->face;
-@@ -1204,6 +1223,8 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
+@@ -1204,6 +1221,8 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
  
      if (!face->glyphs_substituted && !glyphs_positioned) {
          HB_GetGlyphAdvances(item);
