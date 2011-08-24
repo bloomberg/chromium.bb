@@ -45,6 +45,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
@@ -110,6 +111,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 #include "content/browser/browser_url_handler.h"
+#include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
@@ -2349,6 +2351,41 @@ Browser* Browser::GetBrowserForController(
   return NULL;
 }
 
+// static
+void Browser::RunFileChooserHelper(
+    TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params) {
+  Profile* profile =
+      Profile::FromBrowserContext(tab->browser_context());
+
+  // This object is destroyed when the file selection is performed or
+  // cancelled.
+  FileSelectHelper* file_select_helper = new FileSelectHelper(profile);
+
+  file_select_helper->RunFileChooser(tab->render_view_host(), tab, params);
+}
+
+// static
+void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
+                                       const FilePath& path) {
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  if (!policy->CanReadDirectory(tab->render_view_host()->process()->id(),
+                                path)) {
+    return;
+  }
+
+  Profile* profile =
+      Profile::FromBrowserContext(tab->browser_context());
+
+  // This object is destroyed when the enumeration is performed or
+  // cancelled.
+  FileSelectHelper* file_select_helper = new FileSelectHelper(profile);
+
+  file_select_helper->EnumerateDirectory(request_id,
+                                         tab->render_view_host(),
+                                         path);
+}
+
 void Browser::ExecuteCommandWithDisposition(
   int id, WindowOpenDisposition disposition) {
   // No commands are enabled if there is not yet any selected tab.
@@ -3548,6 +3585,16 @@ void Browser::DidNavigateToPendingEntry(TabContents* tab) {
 
 content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
+}
+
+void Browser::RunFileChooser(TabContents* tab,
+                             const ViewHostMsg_RunFileChooser_Params& params) {
+  Browser::RunFileChooserHelper(tab, params);
+}
+
+void Browser::EnumerateDirectory(TabContents* tab, int request_id,
+                                 const FilePath& path) {
+  Browser::EnumerateDirectoryHelper(tab, request_id, path);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

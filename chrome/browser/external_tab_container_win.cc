@@ -734,6 +734,16 @@ void ExternalTabContainer::ShowRepostFormWarningDialog(
   browser::ShowRepostFormWarningDialog(GetNativeView(), tab_contents);
 }
 
+void ExternalTabContainer::RunFileChooser(
+    TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params) {
+  Browser::RunFileChooserHelper(tab, params);
+}
+
+void ExternalTabContainer::EnumerateDirectory(TabContents* tab, int request_id,
+                                              const FilePath& path) {
+  Browser::EnumerateDirectoryHelper(tab, request_id, path);
+}
+
 bool ExternalTabContainer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExternalTabContainer, message)

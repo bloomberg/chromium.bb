@@ -174,7 +174,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   download_request_limiter_observer_.reset(
       new DownloadRequestLimiterObserver(contents));
-  file_select_observer_.reset(new FileSelectObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
   prerender_observer_.reset(new prerender::PrerenderObserver(this));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));

@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -84,6 +83,8 @@ void FileSelectHelper::FileSelected(const FilePath& path,
   render_view_host_->FilesSelectedInChooser(files);
   // We are done with this showing of the dialog.
   render_view_host_ = NULL;
+  // No members should be accessed from here on.
+  delete this;
 }
 
 void FileSelectHelper::MultiFilesSelected(const std::vector<FilePath>& files,
@@ -96,6 +97,8 @@ void FileSelectHelper::MultiFilesSelected(const std::vector<FilePath>& files,
   render_view_host_->FilesSelectedInChooser(files);
   // We are done with this showing of the dialog.
   render_view_host_ = NULL;
+  // No members should be accessed from here on.
+  delete this;
 }
 
 void FileSelectHelper::FileSelectionCanceled(void* params) {
@@ -108,6 +111,8 @@ void FileSelectHelper::FileSelectionCanceled(void* params) {
 
   // We are done with this showing of the dialog.
   render_view_host_ = NULL;
+  // No members should be accessed from here on.
+  delete this;
 }
 
 void FileSelectHelper::StartNewEnumeration(const FilePath& path,
@@ -159,6 +164,8 @@ void FileSelectHelper::OnListDone(int id, int error) {
     entry->rvh_->FilesSelectedInChooser(entry->results_);
   else
     entry->rvh_->DirectoryEnumerationFinished(id, entry->results_);
+  // No members should be accessed from here on.
+  delete this;
 }
 
 SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
@@ -297,52 +304,3 @@ void FileSelectHelper::Observe(int type,
   render_view_host_ = NULL;
 }
 
-FileSelectObserver::FileSelectObserver(TabContents* tab_contents)
-    : TabContentsObserver(tab_contents) {
-}
-
-FileSelectObserver::~FileSelectObserver() {
-}
-
-bool FileSelectObserver::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(FileSelectObserver, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-void FileSelectObserver::OnRunFileChooser(
-    const ViewHostMsg_RunFileChooser_Params& params) {
-  if (!file_select_helper_.get()) {
-    Profile* profile =
-        Profile::FromBrowserContext(tab_contents()->browser_context());
-    file_select_helper_.reset(new FileSelectHelper(profile));
-  }
-  file_select_helper_->RunFileChooser(tab_contents()->render_view_host(),
-                                      tab_contents(),
-                                      params);
-}
-
-void FileSelectObserver::OnEnumerateDirectory(int request_id,
-                                              const FilePath& path) {
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
-  if (!policy->CanReadDirectory(
-          tab_contents()->render_view_host()->process()->id(),
-          path)) {
-    return;
-  }
-
-  if (!file_select_helper_.get()) {
-    Profile* profile =
-        Profile::FromBrowserContext(tab_contents()->browser_context());
-    file_select_helper_.reset(new FileSelectHelper(profile));
-  }
-  file_select_helper_->EnumerateDirectory(request_id,
-                                          tab_contents()->render_view_host(),
-                                          path);
-}

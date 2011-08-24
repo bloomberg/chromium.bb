@@ -120,25 +120,4 @@ class FileSelectHelper
   DISALLOW_COPY_AND_ASSIGN(FileSelectHelper);
 };
 
-class FileSelectObserver : public TabContentsObserver {
- public:
-  explicit FileSelectObserver(TabContents* tab_contents);
-  virtual ~FileSelectObserver();
-
- private:
-  // TabContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  // Called when a file selection is to be done.
-  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
-
-  // Called when a direction enumeration is to be done.
-  void OnEnumerateDirectory(int request_id, const FilePath& path);
-
-  // FileSelectHelper, lazily created.
-  scoped_ptr<FileSelectHelper> file_select_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileSelectObserver);
-};
-
 #endif  // CHROME_BROWSER_FILE_SELECT_HELPER_H_

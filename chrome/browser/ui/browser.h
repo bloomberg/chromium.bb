@@ -65,6 +65,8 @@ namespace gfx {
 class Point;
 }
 
+struct ViewHostMsg_RunFileChooser_Params;
+
 class Browser : public TabHandlerDelegate,
                 public TabContentsDelegate,
                 public TabContentsWrapperDelegate,
@@ -634,6 +636,14 @@ class Browser : public TabHandlerDelegate,
   // Creates a new Browser if none are available.
   static Browser* GetOrCreateTabbedBrowser(Profile* profile);
 
+  // Helper function to display the file selection dialog.
+  static void RunFileChooserHelper(
+      TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params);
+
+  // Helper function to enumerate a directory.
+  static void EnumerateDirectoryHelper(TabContents* tab, int request_id,
+                                       const FilePath& path);
+
   // Calls ExecuteCommandWithDisposition with the given disposition.
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition);
 
@@ -884,6 +894,12 @@ class Browser : public TabHandlerDelegate,
   virtual void DidNavigateToPendingEntry(TabContents* tab) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
   GetJavaScriptDialogCreator() OVERRIDE;
+  virtual void RunFileChooser(
+      TabContents* tab,
+      const ViewHostMsg_RunFileChooser_Params& params) OVERRIDE;
+  virtual void EnumerateDirectory(TabContents* tab, int request_id,
+                                const FilePath& path) OVERRIDE;
+
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,

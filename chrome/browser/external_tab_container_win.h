@@ -155,7 +155,12 @@ class ExternalTabContainer : public TabContentsDelegate,
                                  bool proceed,
                                  bool* proceed_to_fire_unload);
   virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator();
-  void ShowRepostFormWarningDialog(TabContents* tab_contents);
+  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
+  virtual void RunFileChooser(TabContents* tab,
+                              const ViewHostMsg_RunFileChooser_Params& params);
+  virtual void EnumerateDirectory(TabContents* tab, int request_id,
+                                const FilePath& path);
+
   void RegisterRenderViewHost(RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(RenderViewHost* render_view_host);
 

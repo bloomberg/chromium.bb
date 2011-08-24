@@ -280,6 +280,14 @@ TabContentsDelegate::GetJavaScriptDialogCreator() {
   return JavaScriptDialogCreatorStub::GetInstance();
 }
 
+void TabContentsDelegate::RunFileChooser(
+  TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params) {
+}
+
+void TabContentsDelegate::EnumerateDirectory(TabContents* tab, int request_id,
+                                             const FilePath& path) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
   while (!attached_contents_.empty()) {
     TabContents* tab_contents = *attached_contents_.begin();

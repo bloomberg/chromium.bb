@@ -346,7 +346,6 @@ class TabContentsWrapper : public TabContentsObserver,
 
   scoped_ptr<DownloadRequestLimiterObserver> download_request_limiter_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
-  scoped_ptr<FileSelectObserver> file_select_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;

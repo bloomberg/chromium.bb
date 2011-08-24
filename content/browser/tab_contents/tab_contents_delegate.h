@@ -39,6 +39,8 @@ class HtmlDialogUIDelegate;
 struct NativeWebKeyboardEvent;
 class RenderViewHost;
 class TabContents;
+struct ViewHostMsg_RunFileChooser_Params;
+class FilePath;
 
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
@@ -297,6 +299,16 @@ class TabContentsDelegate {
   // pointer returned is to a stub service that marks all dialogs as suppressed
   // and displays nothing.
   virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator();
+
+  // Called when a file selection is to be done.
+  virtual void RunFileChooser(TabContents* tab,
+                              const ViewHostMsg_RunFileChooser_Params& params);
+
+  // Request to enumerate a directory.  This is equivalent to running the file
+  // chooser in directory-enumeration mode and having the user select the given
+  // directory.
+  virtual void EnumerateDirectory(TabContents* tab, int request_id,
+                                  const FilePath& path);
 
  protected:
   virtual ~TabContentsDelegate();

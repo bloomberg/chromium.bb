@@ -54,6 +54,7 @@ class URLPattern;
 struct ViewHostMsg_FrameNavigate_Params;
 struct WebPreferences;
 class WebUI;
+struct ViewHostMsg_RunFileChooser_Params;
 
 // Describes what goes in the main content area of a tab. TabContents is
 // the only type of TabContents, and these should be merged together.
@@ -568,6 +569,9 @@ class TabContents : public PageNavigator,
                           int maximum_percent,
                           bool remember);
   void OnFocusedNodeChanged(bool is_editable_node);
+  // Called when a file selection is to be done.
+  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
+  void OnEnumerateDirectory(int request_id, const FilePath& path);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
