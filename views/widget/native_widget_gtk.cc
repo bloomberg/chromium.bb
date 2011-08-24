@@ -966,12 +966,16 @@ InputMethod* NativeWidgetGtk::CreateInputMethod() {
   // RenderWidgetHostViewViews in normal ChromeOS.
   if (views::Widget::IsPureViews()) {
 #if defined(HAVE_IBUS)
-    return InputMethodIBus::IsInputMethodIBusEnabled() ?
+    InputMethod* input_method =
+        InputMethodIBus::IsInputMethodIBusEnabled() ?
         static_cast<InputMethod*>(new InputMethodIBus(this)) :
         static_cast<InputMethod*>(new InputMethodGtk(this));
 #else
-    return new InputMethodGtk(this);
+    InputMethod* input_method = new InputMethodGtk(this);
 #endif
+    if (has_focus_)
+      input_method->OnFocus();
+    return input_method;
   }
   // GTK's textfield handles IME.
   return NULL;
@@ -1658,7 +1662,7 @@ gboolean NativeWidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
     return false;  // This is the second focus-out event in a row, ignore it.
   has_focus_ = false;
 
-  if (GetWidget()->is_top_level())
+  if (!GetWidget()->is_top_level())
     return false;
 
   // Only top-level Widget should have an InputMethod instance.

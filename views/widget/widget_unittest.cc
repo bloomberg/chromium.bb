@@ -271,6 +271,34 @@ TEST_F(WidgetTest, GrabUngrab) {
   toplevel->CloseNow();
 }
 
+// Test if a focus manager and an inputmethod work without CHECK failure
+// when window activation changes.
+TEST_F(WidgetTest, ChangeActivation) {
+  Widget* top1 = CreateTopLevelPlatformWidget();
+  // CreateInputMethod before activated
+  top1->GetInputMethod();
+  top1->Show();
+  RunPendingMessages();
+
+  Widget* top2 = CreateTopLevelPlatformWidget();
+  top2->Show();
+  RunPendingMessages();
+
+  top1->Activate();
+  RunPendingMessages();
+
+  // Create InputMethod after deactivated.
+  top2->GetInputMethod();
+  top2->Activate();
+  RunPendingMessages();
+
+  top1->Activate();
+  RunPendingMessages();
+
+  top1->CloseNow();
+  top2->CloseNow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget ownership tests.
 //
