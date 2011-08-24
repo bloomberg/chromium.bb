@@ -40,6 +40,13 @@ class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
 
 class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
  public:
+  SiteInstanceTestBrowserClient() : old_browser_client_(NULL) {
+  }
+
+  virtual TabContentsView* CreateTabContentsView(TabContents* tab_contents) {
+    return old_browser_client_->CreateTabContentsView(tab_contents);
+  }
+
   virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
     return &factory_;
   }
@@ -59,8 +66,13 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
     return url;
   }
 
+  void SetOriginalClient(content::ContentBrowserClient* old_browser_client) {
+    old_browser_client_ = old_browser_client;
+  }
+
  private:
   SiteInstanceTestWebUIFactory factory_;
+  content::ContentBrowserClient* old_browser_client_;
 };
 
 class SiteInstanceTest : public TestingBrowserProcessTest {
@@ -72,6 +84,7 @@ class SiteInstanceTest : public TestingBrowserProcessTest {
 
   virtual void SetUp() {
     old_browser_client_ = content::GetContentClient()->browser();
+    browser_client_.SetOriginalClient(old_browser_client_);
     content::GetContentClient()->set_browser(&browser_client_);
   }
 

@@ -18,6 +18,11 @@ namespace content {
 MockContentBrowserClient::~MockContentBrowserClient() {
 }
 
+TabContentsView* MockContentBrowserClient::CreateTabContentsView(
+    TabContents* tab_contents) {
+  return NULL;
+}
+
 void MockContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
 }

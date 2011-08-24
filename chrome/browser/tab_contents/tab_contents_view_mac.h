@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_MAC_H_
 #pragma once
 
+#if defined(__OBJC__)
+
 #import <Cocoa/Cocoa.h>
 
 #include <string>
@@ -147,5 +149,15 @@ class TabContentsViewMac : public TabContentsView,
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewMac);
 };
+
+#endif  // __OBJC__
+
+// Functions that may be accessed from non-Objective-C C/C++ code.
+class TabContents;
+class TabContentsView;
+
+namespace tab_contents_view_mac {
+TabContentsView* CreateTabContentsView(TabContents* tab_contents);
+}
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_MAC_H_

@@ -170,7 +170,7 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
           this, browser_context, session_storage_namespace)),
       ALLOW_THIS_IN_INITIALIZER_LIST(view_(
-          TabContentsView::Create(this))),
+          content::GetContentClient()->browser()->CreateTabContentsView(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),

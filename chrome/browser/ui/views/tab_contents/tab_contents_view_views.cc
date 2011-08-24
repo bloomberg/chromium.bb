@@ -32,11 +32,6 @@ using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
 
-// static
-TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
-  return new TabContentsViewViews(tab_contents);
-}
-
 TabContentsViewViews::TabContentsViewViews(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       native_tab_contents_view_(NULL),

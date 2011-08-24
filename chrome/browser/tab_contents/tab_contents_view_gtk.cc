@@ -78,11 +78,6 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
 
 }  // namespace
 
-// static
-TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
-  return new TabContentsViewGtk(tab_contents);
-}
-
 TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       floating_(gtk_floating_container_new()),

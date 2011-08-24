@@ -15,6 +15,8 @@ namespace chrome {
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
+  virtual TabContentsView* CreateTabContentsView(
+      TabContents* tab_contents) OVERRIDE;
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void BrowserRenderProcessHostCreated(
       BrowserRenderProcessHost* host) OVERRIDE;

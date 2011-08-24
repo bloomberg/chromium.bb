@@ -35,11 +35,6 @@ using WebKit::WebInputEvent;
 const char TabContentsViewTouch::kViewClassName[] =
     "browser/ui/views/tab_contents/TabContentsViewTouch";
 
-// static
-TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
-  return new TabContentsViewTouch(tab_contents);
-}
-
 TabContentsViewTouch::TabContentsViewTouch(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       sad_tab_(NULL),

@@ -28,6 +28,7 @@ class SSLCertErrorHandler;
 class SSLClientAuthHandler;
 class SkBitmap;
 class TabContents;
+class TabContentsView;
 class WorkerProcessHost;
 struct DesktopNotificationHostMsg_Show_Params;
 struct WebPreferences;
@@ -67,6 +68,8 @@ class WebUIFactory;
 class ContentBrowserClient {
  public:
   virtual ~ContentBrowserClient() {}
+
+  virtual TabContentsView* CreateTabContentsView(TabContents* tab_contents) = 0;
 
   // Notifies that a new RenderHostView has been created.
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) = 0;

@@ -61,9 +61,10 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 @end
 
-// static
-TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
+namespace tab_contents_view_mac {
+TabContentsView* CreateTabContentsView(TabContents* tab_contents) {
   return new TabContentsViewMac(tab_contents);
+}
 }
 
 TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)

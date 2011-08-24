@@ -18,6 +18,8 @@ class MockContentBrowserClient : public ContentBrowserClient {
  public:
   virtual ~MockContentBrowserClient();
 
+  virtual TabContentsView* CreateTabContentsView(
+      TabContents* tab_contents) OVERRIDE;
   virtual void RenderViewHostCreated(
       RenderViewHost* render_view_host) OVERRIDE;
   virtual void BrowserRenderProcessHostCreated(

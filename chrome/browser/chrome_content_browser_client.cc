@@ -61,6 +61,7 @@
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/desktop_notification_messages.h"
 #include "grit/ui_resources.h"
@@ -71,6 +72,16 @@
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/tab_contents/tab_contents_view_mac.h"
+#elif defined(TOUCH_UI)
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
 #endif
 
 #if defined(USE_NSS)
@@ -99,6 +110,21 @@ static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
 }  // namespace
 
 namespace chrome {
+
+TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
+    TabContents* tab_contents) {
+#if defined(TOOLKIT_VIEWS)
+  return new TabContentsViewViews(tab_contents);
+#elif defined(OS_LINUX)
+  return new TabContentsViewGtk(tab_contents);
+#elif defined(OS_MACOSX)
+  return tab_contents_view_mac::CreateTabContentsView(tab_contents);
+#elif defined(TOUCH_UI)
+  return new TabContentsViewTouch(tab_contents);
+#else
+#error Need to create your platform TabContentsView here.
+#endif
+}
 
 void ChromeContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
