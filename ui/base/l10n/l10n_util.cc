@@ -36,11 +36,7 @@
 
 namespace {
 
-#if defined(OS_WIN)
-static const FilePath::CharType kLocaleFileExtension[] = L".dll";
-#elif defined(OS_POSIX)
 static const FilePath::CharType kLocaleFileExtension[] = ".pak";
-#endif
 
 static const char* const kAcceptLanguageList[] = {
   "af",     // Afrikaans
