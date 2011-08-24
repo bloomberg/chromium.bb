@@ -195,7 +195,6 @@ create_surface(struct window *window)
 	struct display *display = window->display;
 	struct wl_visual *visual;
 	EGLBoolean ret;
-	int done = 0;
 	
 	if (!display->premultiplied_argb_visual)
 		wl_display_roundtrip(display->display);

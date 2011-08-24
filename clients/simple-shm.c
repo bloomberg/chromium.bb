@@ -194,7 +194,6 @@ static struct display *
 create_display(void)
 {
 	struct display *display;
-	int i;
 
 	display = malloc(sizeof *display);
 	display->display = wl_display_connect(NULL);
