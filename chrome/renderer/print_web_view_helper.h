@@ -180,7 +180,8 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Update the current print settings with new |job_settings|. |job_settings|
   // dictionary contains print job details such as printer name, number of
   // copies, page range, etc.
-  bool UpdatePrintSettings(const base::DictionaryValue& job_settings);
+  bool UpdatePrintSettings(const base::DictionaryValue& job_settings,
+                           bool is_preview);
 
   // Get final print settings from the user.
   // Return false if the user cancels or on error.

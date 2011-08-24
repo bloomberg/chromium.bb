@@ -576,7 +576,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
   }
 
-  if (!UpdatePrintSettings(job_settings)) {
+  if (!UpdatePrintSettings(job_settings, false)) {
     DidFinishPrinting(FAIL_PRINT);
     return;
   }
@@ -634,7 +634,7 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
     return;
   }
 
-  if (!UpdatePrintSettings(settings)) {
+  if (!UpdatePrintSettings(settings, true)) {
     DidFinishPrinting(FAIL_PREVIEW);
     return;
   }
@@ -1052,48 +1052,50 @@ bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
 }
 
 bool PrintWebViewHelper::UpdatePrintSettings(
-    const DictionaryValue& job_settings) {
+    const DictionaryValue& job_settings, bool is_preview) {
   PrintMsg_PrintPages_Params settings;
 
   Send(new PrintHostMsg_UpdatePrintSettings(routing_id(),
        print_pages_params_->params.document_cookie, job_settings, &settings));
-
   if (settings.params.dpi < kMinDpi || !settings.params.document_cookie)
     return false;
 
-  // Send default page layout to browser process.
-  PageSizeMargins default_page_layout;
-  GetPageSizeAndMarginsInPoints(NULL, -1, settings.params,
-                                &default_page_layout);
-  if (!old_print_pages_params_.get() ||
-      !PageLayoutIsEqual(*old_print_pages_params_, settings)) {
-    Send(new PrintHostMsg_DidGetDefaultPageLayout(routing_id(),
-                                                  default_page_layout));
-  }
-  SetCustomMarginsIfSelected(job_settings, &settings);
+  if (is_preview) {
+    // Validate expected print preview settings.
+    if (!job_settings.GetString(printing::kPreviewUIAddr,
+                                &(settings.params.preview_ui_addr)) ||
+        !job_settings.GetInteger(printing::kPreviewRequestID,
+                                 &(settings.params.preview_request_id)) ||
+        !job_settings.GetBoolean(printing::kIsFirstRequest,
+                                 &(settings.params.is_first_request))) {
+      NOTREACHED();
+      return false;
+    }
 
-  if (!job_settings.GetString(printing::kPreviewUIAddr,
-                              &(settings.params.preview_ui_addr)) ||
-      !job_settings.GetInteger(printing::kPreviewRequestID,
-                               &(settings.params.preview_request_id)) ||
-      !job_settings.GetBoolean(printing::kIsFirstRequest,
-                               &(settings.params.is_first_request))) {
-    NOTREACHED();
-    return false;
+    // Margins: Send default page layout to browser process.
+    PageSizeMargins default_page_layout;
+    GetPageSizeAndMarginsInPoints(NULL, -1, settings.params,
+                                  &default_page_layout);
+    if (!old_print_pages_params_.get() ||
+        !PageLayoutIsEqual(*old_print_pages_params_, settings)) {
+      Send(new PrintHostMsg_DidGetDefaultPageLayout(routing_id(),
+                                                    default_page_layout));
+    }
+    SetCustomMarginsIfSelected(job_settings, &settings);
+
+    // Header/Footer: Set |header_footer_info_|.
+    if (settings.params.display_header_footer) {
+      header_footer_info_.reset(new DictionaryValue());
+      header_footer_info_->SetString(printing::kSettingHeaderFooterDate,
+                                     settings.params.date);
+      header_footer_info_->SetString(printing::kSettingHeaderFooterURL,
+                                     settings.params.url);
+      header_footer_info_->SetString(printing::kSettingHeaderFooterTitle,
+                                     settings.params.title);
+    }
   }
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
-
-  if (print_pages_params_->params.display_header_footer) {
-    header_footer_info_.reset(new DictionaryValue());
-    header_footer_info_->SetString(printing::kSettingHeaderFooterDate,
-                                   print_pages_params_->params.date);
-    header_footer_info_->SetString(printing::kSettingHeaderFooterURL,
-                                   print_pages_params_->params.url);
-    header_footer_info_->SetString(printing::kSettingHeaderFooterTitle,
-                                   print_pages_params_->params.title);
-  }
-
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
   return true;
