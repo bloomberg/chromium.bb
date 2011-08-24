@@ -59,6 +59,11 @@
       'type': 'static_library',
       'variables': {
         'nacl_target': 1,
+        'irt_build_cmd': [
+          'python', 'build_nacl_irt.py', '--outdir', '<(PRODUCT_DIR)',
+        ],
+        'irt_inputs_cmd':
+            'python build_nacl_irt.py --inputs',
       },
       'dependencies': [
         # TODO(gregoryd): chrome_resources and chrome_strings could be
@@ -80,25 +85,56 @@
         ],
       },
       'conditions': [
-        ['target_arch=="ia32"', {
-           'copies': [
-             {
-               'destination': '<(PRODUCT_DIR)',
-               'files': [
-                 '../native_client/irt_binaries/nacl_irt_x86_32.nexe',
-               ],
-             },
-           ],
+        ['OS=="win"', {
+          # Windows needs both the x86-32 and x86-64 IRT.
+          'actions': [
+            {
+              'action_name': 'nacl_irt',
+              'message': 'Building NaCl IRT',
+              'inputs': [
+                '<!@(<(irt_inputs_cmd) --platform=x86-32 --platform=x86-64)',
+              ],
+              'outputs': ['<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
+                          '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe'],
+              'action': [
+                '<@(irt_build_cmd)',
+                '--platform', 'x86-32',
+                '--platform', 'x86-64',
+              ],
+            },
+          ],
         }],
-        ['target_arch=="x64" or OS=="win"', {
-           'copies': [
-             {
-               'destination': '<(PRODUCT_DIR)',
-               'files': [
-                 '../native_client/irt_binaries/nacl_irt_x86_64.nexe',
-               ],
-             },
-           ],
+        ['OS!="win" and target_arch=="ia32" and chromeos==0', {
+          # Linux-x86-32 and OSX need only the x86-32 IRT.
+          'actions': [
+            {
+              'action_name': 'nacl_irt',
+              'message': 'Building NaCl IRT',
+              'inputs': [
+                '<!@(<(irt_inputs_cmd) --platform=x86-32)',
+              ],
+              'outputs': ['<(PRODUCT_DIR)/nacl_irt_x86_32.nexe'],
+              'action': [
+                '<@(irt_build_cmd)', '--platform', 'x86-32',
+              ],
+            },
+          ],
+        }],
+        ['OS!="win" and target_arch=="x64" and chromeos==0', {
+          # Linux-x86-64 needs only the x86-64 IRT.
+          'actions': [
+            {
+              'action_name': 'nacl_irt',
+              'message': 'Building NaCl IRT',
+              'inputs': [
+                '<!@(<(irt_inputs_cmd) --platform=x86-64)',
+              ],
+              'outputs': ['<(PRODUCT_DIR)/nacl_irt_x86_64.nexe'],
+              'action': [
+                '<@(irt_build_cmd)', '--platform', 'x86-64',
+              ],
+            },
+          ],
         }],
       ],
     },
