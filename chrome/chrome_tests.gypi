@@ -1869,7 +1869,6 @@
         'browser/ui/gtk/reload_button_gtk_unittest.cc',
         'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
         'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
-        'browser/ui/intents/intents_model_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
         'browser/ui/omnibox/omnibox_view_unittest.cc',
         'browser/ui/panels/panel_browser_window_cocoa_unittest.mm',

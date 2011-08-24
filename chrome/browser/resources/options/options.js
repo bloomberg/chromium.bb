@@ -17,7 +17,6 @@ var CookiesView = options.CookiesView;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var ImportDataOverlay = options.ImportDataOverlay;
-var IntentsView = options.IntentsView;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var LanguageOptions = options.LanguageOptions;
 var OptionsPage = options.OptionsPage;
@@ -120,11 +119,6 @@ function load() {
     OptionsPage.registerSubPage(HandlerOptions.getInstance(),
                                 ContentSettings.getInstance(),
                                 [$('manage-handlers-button')]);
-  }
-  if (IntentsView && $('manage-intents-button')) {
-    OptionsPage.registerSubPage(IntentsView.getInstance(),
-                                ContentSettings.getInstance(),
-                                [$('manage-intents-button')]);
   }
   OptionsPage.registerSubPage(FontSettings.getInstance(),
                               AdvancedOptions.getInstance(),

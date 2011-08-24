@@ -45,17 +45,11 @@ cr.define('options', function() {
         };
       }
 
-      var manageHandlersButton = $('manage-handlers-button');
+      var manageHandlersButton =
+          this.pageDiv.querySelector('#manage-handlers-button');
       if (manageHandlersButton) {
         manageHandlersButton.onclick = function(event) {
           OptionsPage.navigateToPage('handlers');
-        };
-      }
-
-      var manageIntentsButton = $('manage-intents-button');
-      if (manageIntentsButton) {
-        manageIntentsButton.onclick = function(event) {
-          OptionsPage.navigateToPage('intents');
         };
       }
 
@@ -69,7 +63,7 @@ cr.define('options', function() {
         $('click_to_play').hidden = true;
 
       if (!templateData.enable_web_intents)
-        $('intent-section').hidden = true;
+        $('intent-filter').hidden = true;
     },
   };
 
