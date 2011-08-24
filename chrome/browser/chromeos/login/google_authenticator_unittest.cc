@@ -163,10 +163,6 @@ class GoogleAuthenticatorTest : public TestingBrowserProcessTest {
   std::string username_;
   std::string password_;
   GaiaAuthConsumer::ClientLoginResult result_;
-
-  // Initializes / shuts down a stub CrosLibrary.
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
-
   // Mocks, destroyed by CrosLibrary class.
   MockCryptohomeLibrary* mock_library_;
   MockLibraryLoader* loader_;

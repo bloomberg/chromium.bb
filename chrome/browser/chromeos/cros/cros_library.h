@@ -73,17 +73,7 @@ class CrosLibrary {
     CrosLibrary* library_;
   };
 
-  // Sets the global instance. Must be called before any calls to Get().
-  static void Initialize();
-
-  // Returns true if the global instance has been initialized.
-  static bool Initialized();
-
-  // Destroys the global instance. Must be called before AtExitManager is
-  // destroyed to ensure clean shutdown.
-  static void Shutdown();
-
-  // Gets the global instance. Initialize() must be called first.
+  // This gets the CrosLibrary.
   static CrosLibrary* Get();
 
   BrightnessLibrary* GetBrightnessLibrary();
@@ -101,9 +91,6 @@ class CrosLibrary {
 
   // Getter for Test API that gives access to internal members of this class.
   TestApi* GetTestApi();
-
-  // Returns true if the cros library was loaded (i.e. not a stub).
-  bool LibraryLoaded() { return loaded_; }
 
   // Ensures that the library is loaded, loading it if needed. If the library
   // could not be loaded, returns false.
@@ -193,13 +180,11 @@ class CrosLibrary {
 class ScopedStubCrosEnabler {
  public:
   ScopedStubCrosEnabler() {
-    chromeos::CrosLibrary::Initialize();
     chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
   }
 
   ~ScopedStubCrosEnabler() {
     chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
-    chromeos::CrosLibrary::Shutdown();
   }
 
  private:

@@ -131,12 +131,8 @@ class CryptohomeOpTest : public ::testing::Test {
   TestAttemptState state_;
   scoped_ptr<MockAuthAttemptStateResolver> resolver_;
   scoped_refptr<CryptohomeOp> op_;
-
-  // Initializes / shuts down a stub CrosLibrary.
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
-
-  // Provide a mock for testing cryptohome.
   scoped_ptr<MockCryptohomeLibrary> mock_library_;
+
 };
 
 TEST_F(CryptohomeOpTest, MountSuccess) {

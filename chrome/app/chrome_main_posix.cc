@@ -15,10 +15,6 @@
 #include "chrome/app/breakpad_mac.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#endif
-
 namespace {
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
@@ -72,16 +68,9 @@ void LowLevelInit(void* instance) {
   g_fds->Set(kCrashDumpSignal,
              kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
 #endif
-
-#if defined(OS_CHROMEOS)
-  chromeos::CrosLibrary::Initialize();
-#endif
 }
 
 void LowLevelShutdown() {
-#if defined(OS_CHROMEOS)
-  chromeos::CrosLibrary::Shutdown();
-#endif
 #if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
   // TODO(mark): See the TODO(mark) at InitCrashReporter.
   DestructCrashReporter();

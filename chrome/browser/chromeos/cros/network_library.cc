@@ -119,7 +119,8 @@ static void WipeString(std::string* str) {
 }
 
 static bool EnsureCrosLoaded() {
-  if (!CrosLibrary::Get()->LibraryLoaded()) {
+  if (!CrosLibrary::Get()->EnsureLoaded() ||
+      !CrosLibrary::Get()->GetNetworkLibrary()->IsCros()) {
     return false;
   } else {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
@@ -3098,8 +3099,6 @@ NetworkLibraryImplCros::~NetworkLibraryImplCros() {
 }
 
 void NetworkLibraryImplCros::Init() {
-  CHECK(CrosLibrary::Get()->LibraryLoaded())
-      << "libcros must be loaded before NetworkLibraryImplCros::Init()";
   // First, get the currently available networks. This data is cached
   // on the connman side, so the call should be quick.
   VLOG(1) << "Requesting initial network manager info from libcros.";
@@ -4599,23 +4598,18 @@ void NetworkLibraryImplStub::SetIPConfig(const NetworkIPConfig& ipconfig) {
 
 /////////////////////////////////////////////////////////////////////////////
 
-// In NetworkLibrary, rather than check each call to libcros (calls prefixed
-// here with explicit chromeos::), we check to see whether or not libcros was
-// actually loaded. If not, we return a stub implementation instead.
-// This is for UI and Browser tests that require more functionality than the
-// other CrosLibrary modules provide in their stub implementation.
-// TODO(stevenjb): Fix this to be consistent across all CrosLibrary modules.
-
 // static
 NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {
-  NetworkLibrary* impl;
-  if (stub || !CrosLibrary::Get()->LibraryLoaded())
-    impl = new NetworkLibraryImplStub();
-  else
-    impl = new NetworkLibraryImplCros();
-  impl->Init();
-
-  return impl;
+  // Use static global to avoid recursive GetImpl() call from EnsureCrosLoaded.
+  static NetworkLibrary* network_library = NULL;
+  if (network_library == NULL) {
+    if (stub || !CrosLibrary::Get()->EnsureLoaded())
+      network_library = new NetworkLibraryImplStub();
+    else
+      network_library = new NetworkLibraryImplCros();
+    network_library->Init();
+  }
+  return network_library;
 }
 
 /////////////////////////////////////////////////////////////////////////////
