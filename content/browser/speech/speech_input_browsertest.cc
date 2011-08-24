@@ -166,22 +166,17 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
 
     // Inject the fake manager factory so that the test result is returned to
     // the web page.
-    SpeechInputDispatcherHost::set_manager_accessor(&fakeManagerAccessor);
+    SpeechInputDispatcherHost::set_manager(speech_input_manager_);
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
     speech_input_manager_ = NULL;
   }
 
-  // Factory method.
-  static SpeechInputManager* fakeManagerAccessor() {
-    return speech_input_manager_;
-  }
-
   FakeSpeechInputManager fake_speech_input_manager_;
 
-  // This is used by the static |fakeManagerAccessor|, and it is a pointer
-  // rather than a direct instance per the style guide.
+  // This is used by the static |fakeManager|, and it is a pointer rather than a
+  // direct instance per the style guide.
   static SpeechInputManager* speech_input_manager_;
 };
 

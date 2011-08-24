@@ -206,6 +206,11 @@ net::NetLog* MockContentBrowserClient::GetNetLog() {
   return NULL;
 }
 
+speech_input::SpeechInputManager*
+    MockContentBrowserClient::GetSpeechInputManager() {
+  return NULL;
+}
+
 bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }

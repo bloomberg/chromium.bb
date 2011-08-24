@@ -31,20 +31,13 @@ class SpeechInputManager {
     virtual ~Delegate() {}
   };
 
-  SpeechInputManager() : censor_results_(true) {}
+  SpeechInputManager();
 
   // Invokes the platform provided microphone settings UI in a non-blocking way,
   // via the BrowserThread::FILE thread.
   static void ShowAudioInputSettings();
 
-  // Factory method to access the singleton. We have this method here instead of
-  // using Singleton directly in the calling code to aid tests in injection
-  // mocks.
-  static SpeechInputManager* Get();
-  // Factory method definition useful for tests.
-  typedef SpeechInputManager* (AccessorMethod)();
-
-  virtual ~SpeechInputManager() {}
+  virtual ~SpeechInputManager();
 
   // Handlers for requests from render views.
 
@@ -70,6 +63,7 @@ class SpeechInputManager {
   void set_censor_results(bool censor) { censor_results_ = censor; }
 
   bool censor_results() { return censor_results_; }
+
  private:
   bool censor_results_;
 };

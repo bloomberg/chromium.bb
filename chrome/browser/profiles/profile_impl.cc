@@ -60,6 +60,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/speech/chrome_speech_input_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_profile.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -408,7 +409,7 @@ void ProfileImpl::DoFinalInit() {
     GetSpellCheckProfile()->StartRecordingMetrics(
         GetPrefs()->GetBoolean(prefs::kEnableSpellCheck));
 
-  speech_input::SpeechInputManager::Get()->set_censor_results(
+  speech_input::ChromeSpeechInputManager::GetInstance()->set_censor_results(
       prefs->GetBoolean(prefs::kSpeechInputCensorResults));
 
   FilePath cookie_path = GetPath();
@@ -1456,8 +1457,9 @@ void ProfileImpl::Observe(int type,
           process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
         }
       } else if (*pref_name_in == prefs::kSpeechInputCensorResults) {
-        speech_input::SpeechInputManager::Get()->set_censor_results(
-            prefs->GetBoolean(prefs::kSpeechInputCensorResults));
+        speech_input::ChromeSpeechInputManager::GetInstance()->
+            set_censor_results(prefs->GetBoolean(
+                prefs::kSpeechInputCensorResults));
       } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
         clear_local_state_on_exit_ =
             prefs->GetBoolean(prefs::kClearSiteDataOnExit);

@@ -33,9 +33,9 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
 
-  // Singleton accessor setter useful for tests.
-  static void set_manager_accessor(SpeechInputManager::AccessorMethod* method) {
-    manager_accessor_ = method;
+  // Singleton manager setter useful for tests.
+  static void set_manager(SpeechInputManager* manager) {
+    manager_ = manager;
   }
 
  private:
@@ -53,7 +53,7 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
   int render_process_id_;
   bool may_have_pending_requests_;  // Set if we received any speech IPC request
 
-  static SpeechInputManager::AccessorMethod* manager_accessor_;
+  static SpeechInputManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechInputDispatcherHost);
 };

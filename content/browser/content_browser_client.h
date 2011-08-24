@@ -47,6 +47,10 @@ class URLRequestContextGetter;
 class X509Certificate;
 }
 
+namespace speech_input {
+class SpeechInputManager;
+}
+
 namespace ui {
 class Clipboard;
 }
@@ -243,6 +247,7 @@ class ContentBrowserClient {
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() = 0;
   virtual DevToolsManager* GetDevToolsManager() = 0;
   virtual net::NetLog* GetNetLog() = 0;
+  virtual speech_input::SpeechInputManager* GetSpeechInputManager() = 0;
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible() = 0;

@@ -35,6 +35,7 @@
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/renderer_host/text_input_client_message_filter.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
+#include "chrome/browser/speech/chrome_speech_input_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -663,6 +664,11 @@ DevToolsManager* ChromeContentBrowserClient::GetDevToolsManager() {
 
 net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
+}
+
+speech_input::SpeechInputManager*
+    ChromeContentBrowserClient::GetSpeechInputManager() {
+  return speech_input::ChromeSpeechInputManager::GetInstance();
 }
 
 bool ChromeContentBrowserClient::IsFastShutdownPossible() {

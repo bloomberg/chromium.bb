@@ -5,6 +5,7 @@
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 
 #include "base/lazy_instance.h"
+#include "content/browser/content_browser_client.h"
 #include "content/common/speech_input_messages.h"
 
 namespace speech_input {
@@ -101,8 +102,7 @@ int SpeechInputDispatcherHost::SpeechInputCallers::request_id(int id) {
 
 //-------------------------- SpeechInputDispatcherHost -------------------------
 
-SpeechInputManager::AccessorMethod*
-    SpeechInputDispatcherHost::manager_accessor_ = &SpeechInputManager::Get;
+SpeechInputManager* SpeechInputDispatcherHost::manager_;
 
 SpeechInputDispatcherHost::SpeechInputDispatcherHost(int render_process_id)
     : render_process_id_(render_process_id),
@@ -123,7 +123,9 @@ SpeechInputDispatcherHost::~SpeechInputDispatcherHost() {
 }
 
 SpeechInputManager* SpeechInputDispatcherHost::manager() {
-  return (*manager_accessor_)();
+  if (manager_)
+    return manager_;
+  return content::GetContentClient()->browser()->GetSpeechInputManager();
 }
 
 bool SpeechInputDispatcherHost::OnMessageReceived(

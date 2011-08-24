@@ -2,24 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/speech/speech_input_manager.h"
+#include "chrome/browser/speech/chrome_speech_input_manager.h"
 
-#include <map>
 #include <string>
 
-#include "base/lazy_instance.h"
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/speech/speech_input_bubble_controller.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/speech/speech_recognizer.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,13 +25,11 @@
 
 namespace speech_input {
 
-namespace {
-
 // Asynchronously fetches the PC and audio hardware/driver info if
 // the user has opted into UMA. This information is sent with speech input
 // requests to the server for identifying and improving quality issues with
 // specific device configurations.
-class OptionalRequestInfo
+class ChromeSpeechInputManager::OptionalRequestInfo
     : public base::RefCountedThreadSafe<OptionalRequestInfo> {
  public:
   OptionalRequestInfo() : can_report_metrics_(false) {}
@@ -91,113 +84,31 @@ class OptionalRequestInfo
   DISALLOW_COPY_AND_ASSIGN(OptionalRequestInfo);
 };
 
-class SpeechInputManagerImpl : public SpeechInputManager,
-                               public SpeechInputBubbleControllerDelegate,
-                               public SpeechRecognizerDelegate {
- public:
-  // SpeechInputManager methods.
-  virtual void StartRecognition(SpeechInputManagerDelegate* delegate,
-                                int caller_id,
-                                int render_process_id,
-                                int render_view_id,
-                                const gfx::Rect& element_rect,
-                                const std::string& language,
-                                const std::string& grammar,
-                                const std::string& origin_url);
-  virtual void CancelRecognition(int caller_id);
-  virtual void StopRecording(int caller_id);
-  virtual void CancelAllRequestsWithDelegate(
-      SpeechInputManagerDelegate* delegate);
-
-  // SpeechRecognizer::Delegate methods.
-  virtual void DidStartReceivingAudio(int caller_id);
-  virtual void SetRecognitionResult(int caller_id,
-                                    bool error,
-                                    const SpeechInputResultArray& result);
-  virtual void DidCompleteRecording(int caller_id);
-  virtual void DidCompleteRecognition(int caller_id);
-  virtual void OnRecognizerError(int caller_id,
-                                 SpeechRecognizer::ErrorCode error);
-  virtual void DidCompleteEnvironmentEstimation(int caller_id);
-  virtual void SetInputVolume(int caller_id, float volume, float noise_volume);
-
-  // SpeechInputBubbleController::Delegate methods.
-  virtual void InfoBubbleButtonClicked(int caller_id,
-                                       SpeechInputBubble::Button button);
-  virtual void InfoBubbleFocusChanged(int caller_id);
-
- private:
-  struct SpeechInputRequest {
-    SpeechInputManagerDelegate* delegate;
-    scoped_refptr<SpeechRecognizer> recognizer;
-    bool is_active;  // Set to true when recording or recognition is going on.
-  };
-
-  // Private constructor to enforce singleton.
-  friend struct base::DefaultLazyInstanceTraits<SpeechInputManagerImpl>;
-  SpeechInputManagerImpl();
-  virtual ~SpeechInputManagerImpl();
-
-  bool HasPendingRequest(int caller_id) const;
-  SpeechInputManagerDelegate* GetDelegate(int caller_id) const;
-
-  void CancelRecognitionAndInformDelegate(int caller_id);
-
-  // Starts/restarts recognition for an existing request.
-  void StartRecognitionForRequest(int caller_id);
-
-  typedef std::map<int, SpeechInputRequest> SpeechRecognizerMap;
-  SpeechRecognizerMap requests_;
-  int recording_caller_id_;
-  scoped_refptr<SpeechInputBubbleController> bubble_controller_;
-  scoped_refptr<OptionalRequestInfo> optional_request_info_;
-};
-
-base::LazyInstance<SpeechInputManagerImpl> g_speech_input_manager_impl(
-    base::LINKER_INITIALIZED);
-
-}  // namespace
-
-SpeechInputManager* SpeechInputManager::Get() {
-  return g_speech_input_manager_impl.Pointer();
+ChromeSpeechInputManager* ChromeSpeechInputManager::GetInstance() {
+  return Singleton<ChromeSpeechInputManager>::get();
 }
 
-void SpeechInputManager::ShowAudioInputSettings() {
-  // Since AudioManager::ShowAudioInputSettings can potentially launch external
-  // processes, do that in the FILE thread to not block the calling threads.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableFunction(&SpeechInputManager::ShowAudioInputSettings));
-    return;
-  }
-
-  DCHECK(AudioManager::GetAudioManager()->CanShowAudioInputSettings());
-  if (AudioManager::GetAudioManager()->CanShowAudioInputSettings())
-    AudioManager::GetAudioManager()->ShowAudioInputSettings();
-}
-
-SpeechInputManagerImpl::SpeechInputManagerImpl()
+ChromeSpeechInputManager::ChromeSpeechInputManager()
     : recording_caller_id_(0),
       bubble_controller_(new SpeechInputBubbleController(
           ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
 }
 
-SpeechInputManagerImpl::~SpeechInputManagerImpl() {
+ChromeSpeechInputManager::~ChromeSpeechInputManager() {
   while (requests_.begin() != requests_.end())
     CancelRecognition(requests_.begin()->first);
 }
 
-bool SpeechInputManagerImpl::HasPendingRequest(int caller_id) const {
+bool ChromeSpeechInputManager::HasPendingRequest(int caller_id) const {
   return requests_.find(caller_id) != requests_.end();
 }
 
-SpeechInputManagerDelegate* SpeechInputManagerImpl::GetDelegate(
+SpeechInputManagerDelegate* ChromeSpeechInputManager::GetDelegate(
     int caller_id) const {
   return requests_.find(caller_id)->second.delegate;
 }
 
-void SpeechInputManagerImpl::StartRecognition(
+void ChromeSpeechInputManager::StartRecognition(
     SpeechInputManagerDelegate* delegate,
     int caller_id,
     int render_process_id,
@@ -234,7 +145,7 @@ void SpeechInputManagerImpl::StartRecognition(
   StartRecognitionForRequest(caller_id);
 }
 
-void SpeechInputManagerImpl::StartRecognitionForRequest(int caller_id) {
+void ChromeSpeechInputManager::StartRecognitionForRequest(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
 
   // If we are currently recording audio for another caller, abort that cleanly.
@@ -252,7 +163,7 @@ void SpeechInputManagerImpl::StartRecognitionForRequest(int caller_id) {
   }
 }
 
-void SpeechInputManagerImpl::CancelRecognition(int caller_id) {
+void ChromeSpeechInputManager::CancelRecognition(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   if (requests_[caller_id].is_active)
     requests_[caller_id].recognizer->CancelRecognition();
@@ -262,7 +173,7 @@ void SpeechInputManagerImpl::CancelRecognition(int caller_id) {
   bubble_controller_->CloseBubble(caller_id);
 }
 
-void SpeechInputManagerImpl::CancelAllRequestsWithDelegate(
+void ChromeSpeechInputManager::CancelAllRequestsWithDelegate(
     SpeechInputManagerDelegate* delegate) {
   SpeechRecognizerMap::iterator it = requests_.begin();
   while (it != requests_.end()) {
@@ -276,18 +187,18 @@ void SpeechInputManagerImpl::CancelAllRequestsWithDelegate(
   }
 }
 
-void SpeechInputManagerImpl::StopRecording(int caller_id) {
+void ChromeSpeechInputManager::StopRecording(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   requests_[caller_id].recognizer->StopRecording();
 }
 
-void SpeechInputManagerImpl::SetRecognitionResult(
+void ChromeSpeechInputManager::SetRecognitionResult(
     int caller_id, bool error, const SpeechInputResultArray& result) {
   DCHECK(HasPendingRequest(caller_id));
   GetDelegate(caller_id)->SetRecognitionResult(caller_id, result);
 }
 
-void SpeechInputManagerImpl::DidCompleteRecording(int caller_id) {
+void ChromeSpeechInputManager::DidCompleteRecording(int caller_id) {
   DCHECK(recording_caller_id_ == caller_id);
   DCHECK(HasPendingRequest(caller_id));
   recording_caller_id_ = 0;
@@ -295,13 +206,13 @@ void SpeechInputManagerImpl::DidCompleteRecording(int caller_id) {
   bubble_controller_->SetBubbleRecognizingMode(caller_id);
 }
 
-void SpeechInputManagerImpl::DidCompleteRecognition(int caller_id) {
+void ChromeSpeechInputManager::DidCompleteRecognition(int caller_id) {
   GetDelegate(caller_id)->DidCompleteRecognition(caller_id);
   requests_.erase(caller_id);
   bubble_controller_->CloseBubble(caller_id);
 }
 
-void SpeechInputManagerImpl::OnRecognizerError(
+void ChromeSpeechInputManager::OnRecognizerError(
     int caller_id, SpeechRecognizer::ErrorCode error) {
   if (caller_id == recording_caller_id_)
     recording_caller_id_ = 0;
@@ -335,33 +246,34 @@ void SpeechInputManagerImpl::OnRecognizerError(
   NOTREACHED() << "unknown error " << error;
 }
 
-void SpeechInputManagerImpl::DidStartReceivingAudio(int caller_id) {
+void ChromeSpeechInputManager::DidStartReceivingAudio(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   DCHECK(recording_caller_id_ == caller_id);
   bubble_controller_->SetBubbleRecordingMode(caller_id);
 }
 
-void SpeechInputManagerImpl::DidCompleteEnvironmentEstimation(int caller_id) {
+void ChromeSpeechInputManager::DidCompleteEnvironmentEstimation(int caller_id) {
   DCHECK(HasPendingRequest(caller_id));
   DCHECK(recording_caller_id_ == caller_id);
 }
 
-void SpeechInputManagerImpl::SetInputVolume(int caller_id, float volume,
-                                            float noise_volume) {
+void ChromeSpeechInputManager::SetInputVolume(int caller_id, float volume,
+                                              float noise_volume) {
   DCHECK(HasPendingRequest(caller_id));
   DCHECK_EQ(recording_caller_id_, caller_id);
 
   bubble_controller_->SetBubbleInputVolume(caller_id, volume, noise_volume);
 }
 
-void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(int caller_id) {
+void ChromeSpeechInputManager::CancelRecognitionAndInformDelegate(
+    int caller_id) {
   SpeechInputManagerDelegate* cur_delegate = GetDelegate(caller_id);
   CancelRecognition(caller_id);
   cur_delegate->DidCompleteRecording(caller_id);
   cur_delegate->DidCompleteRecognition(caller_id);
 }
 
-void SpeechInputManagerImpl::InfoBubbleButtonClicked(
+void ChromeSpeechInputManager::InfoBubbleButtonClicked(
     int caller_id, SpeechInputBubble::Button button) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Ignore if the caller id was not in our active recognizers list because the
@@ -377,7 +289,7 @@ void SpeechInputManagerImpl::InfoBubbleButtonClicked(
   }
 }
 
-void SpeechInputManagerImpl::InfoBubbleFocusChanged(int caller_id) {
+void ChromeSpeechInputManager::InfoBubbleFocusChanged(int caller_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Ignore if the caller id was not in our active recognizers list because the
   // user might have clicked more than once, or recognition could have been
