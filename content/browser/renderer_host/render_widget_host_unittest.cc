@@ -6,9 +6,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/timer.h"
-#include "build/build_config.h"
-#include "chrome/test/base/testing_browser_process_test.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -17,6 +14,7 @@
 #include "content/common/notification_registrar.h"
 #include "content/common/notification_source.h"
 #include "content/common/view_messages.h"
+#include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas_skia.h"
@@ -34,8 +32,8 @@ class Size;
 
 class RenderWidgetHostProcess : public MockRenderProcessHost {
  public:
-  explicit RenderWidgetHostProcess(Profile* profile)
-      : MockRenderProcessHost(profile),
+  explicit RenderWidgetHostProcess(content::BrowserContext* browser_context)
+      : MockRenderProcessHost(browser_context),
         current_update_buf_(NULL),
         update_msg_should_reply_(false),
         update_msg_reply_flags_(0) {
@@ -257,8 +255,8 @@ class RenderWidgetHostTest : public TestingBrowserProcessTest {
  protected:
   // testing::Test
   void SetUp() {
-    profile_.reset(new TestingProfile());
-    process_ = new RenderWidgetHostProcess(profile_.get());
+    browser_context_.reset(new TestBrowserContext());
+    process_ = new RenderWidgetHostProcess(browser_context_.get());
     host_.reset(new MockRenderWidgetHost(process_, 1));
     view_.reset(new TestView(host_.get()));
     host_->SetView(view_.get());
@@ -268,7 +266,7 @@ class RenderWidgetHostTest : public TestingBrowserProcessTest {
     view_.reset();
     host_.reset();
     process_ = NULL;
-    profile_.reset();
+    browser_context_.reset();
 
     // Process all pending tasks to avoid leaks.
     MessageLoop::current()->RunAllPending();
@@ -300,7 +298,7 @@ class RenderWidgetHostTest : public TestingBrowserProcessTest {
 
   MessageLoopForUI message_loop_;
 
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
   scoped_ptr<MockRenderWidgetHost> host_;
   scoped_ptr<TestView> view_;
