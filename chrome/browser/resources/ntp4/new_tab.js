@@ -207,6 +207,13 @@ cr.define('ntp4', function() {
     bookmarksPage = new ntp4.BookmarksPage();
     appendTilePage(bookmarksPage, localStrings.getString('bookmarksPage'));
     chrome.send('getBookmarksData');
+
+    var serverpromo = localStrings.getString('serverpromo');
+    if (serverpromo) {
+      showNotification(parseHtmlSubset(serverpromo), [], function() {
+        chrome.send('closePromo');
+      }, 60000);
+    }
   }
 
   /**
@@ -643,7 +650,8 @@ cr.define('ntp4', function() {
 
   /**
    * Shows the notification bubble.
-   * @param {string} text The notification message.
+   * @param {string|Node} message The notification message or node to use as
+   *     message.
    * @param {Array.<{text: string, action: function()}>} links An array of
    *     records describing the links in the notification. Each record should
    *     have a 'text' attribute (the display string) and an 'action' attribute
@@ -651,9 +659,16 @@ cr.define('ntp4', function() {
    * @param {Function} opt_closeHandler The callback invoked if the user
    *     manually dismisses the notification.
    */
-  function showNotification(text, links, opt_closeHandler) {
+  function showNotification(message, links, opt_closeHandler, opt_timeout) {
     window.clearTimeout(notificationTimeout_);
-    document.querySelector('#notification > span').textContent = text;
+
+    var span = document.querySelector('#notification > span');
+    if (typeof message == 'string') {
+      span.textContent = message;
+    } else {
+      span.textContent = '';  // Remove all children.
+      span.appendChild(message);
+    }
 
     var linksBin = $('notificationLinks');
     linksBin.textContent = '';
@@ -677,8 +692,9 @@ cr.define('ntp4', function() {
       hideNotification();
     };
 
+    var timeout = opt_timeout || 10000;
     $('notification').classList.remove('inactive');
-    notificationTimeout_ = window.setTimeout(hideNotification, 10000);
+    notificationTimeout_ = window.setTimeout(hideNotification, timeout);
   }
 
   /**
