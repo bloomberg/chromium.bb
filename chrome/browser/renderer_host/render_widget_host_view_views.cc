@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
@@ -23,6 +22,7 @@
 #include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
@@ -30,6 +30,12 @@
 #include "views/ime/input_method.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include <gtk/gtk.h>
+#include <gtk/gtkwindow.h>
+#include <gdk/gdkx.h>
+#endif
 
 #if defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/accelerated_surface_container_touch.h"
@@ -177,10 +183,23 @@ void RenderWidgetHostViewViews::SetBounds(const gfx::Rect& rect) {
   NOTIMPLEMENTED();
 }
 
-gfx::NativeView RenderWidgetHostViewViews::GetNativeView() {
-  if (GetWidget())
-    return GetWidget()->GetNativeView();
-  return NULL;
+gfx::NativeView RenderWidgetHostViewViews::GetNativeView() const {
+  // TODO(oshima): There is no native view here for RWHVV.
+  // Use top level widget's native view for now. This is not
+  // correct and has to be fixed somehow.
+  return GetWidget() ? GetWidget()->GetNativeView() : NULL;
+}
+
+gfx::NativeViewId RenderWidgetHostViewViews::GetNativeViewId() const {
+#if defined(OS_WIN)
+  // TODO(oshima): Windows uses message filter to handle inquiry for
+  // window/screen info, which requires HWND. Just pass the
+  // browser window's HWND (same as before) for now.
+  return reinterpret_cast<gfx::NativeViewId>(GetNativeView());
+#else
+  return reinterpret_cast<gfx::NativeViewId>(
+      const_cast<RenderWidgetHostViewViews*>(this));
+#endif
 }
 
 void RenderWidgetHostViewViews::MovePluginWindows(
@@ -206,7 +225,7 @@ bool RenderWidgetHostViewViews::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewViews::GetViewBounds() const {
-  return bounds();
+  return GetScreenBounds();
 }
 
 void RenderWidgetHostViewViews::SetIsLoading(bool is_loading) {
@@ -643,9 +662,6 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
                       bounds().width(), bounds().height(),
                       SkXfermode::kClear_Mode);
 
-#if defined(TOOLKIT_USES_GTK)
-  GdkWindow* window = GetInnerNativeView()->window;
-#endif
   DCHECK(!about_to_validate_and_paint_);
 
   // TODO(anicolao): get the damage somehow
@@ -667,7 +683,7 @@ void RenderWidgetHostViewViews::OnPaint(gfx::Canvas* canvas) {
     // Only render the widget if it is attached to a window; there's a short
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
-    if (window) {
+    if (GetInnerNativeView()->window) {
 #endif
       if (!visually_deemphasized_) {
         // In the common case, use XCopyArea. We don't draw more than once, so

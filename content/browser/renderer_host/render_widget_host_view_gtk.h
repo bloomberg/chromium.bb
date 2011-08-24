@@ -60,7 +60,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
-  virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
@@ -102,6 +103,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual void AcceleratedCompositingActivated(bool activated) OVERRIDE;
+  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
+  virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 
   // ui::AnimationDelegate implementation.

@@ -48,8 +48,10 @@
 #include "skia/ext/platform_canvas.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebScreenInfoFactory.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/surface/io_surface_support_mac.h"
@@ -427,8 +429,12 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   }
 }
 
-gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
+gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
   return native_view();
+}
+
+gfx::NativeViewId RenderWidgetHostViewMac::GetNativeViewId() const {
+  return reinterpret_cast<gfx::NativeViewId>(native_view());
 }
 
 void RenderWidgetHostViewMac::MovePluginWindows(
@@ -1026,6 +1032,22 @@ void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
   }
 }
 
+void RenderWidgetHostViewMac::GetScreenInfo(WebKit::WebScreenInfo* results) {
+  *results = WebKit::WebScreenInfoFactory::screenInfo(GetNativeView());
+}
+
+gfx::Rect RenderWidgetHostViewMac::GetRootWindowBounds() {
+  // TODO(shess): In case of !window, the view has been removed from
+  // the view hierarchy because the tab isn't main.  Could retrieve
+  // the information from the main tab for our window.
+  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
+  if (!enclosing_window)
+    return gfx::Rect();
+
+  NSRect bounds = [enclosing_window frame];
+  return FlipNSRectToRectScreen(bounds);
+}
+
 gfx::PluginWindowHandle RenderWidgetHostViewMac::GetCompositingSurface() {
   if (compositing_surface_ == gfx::kNullPluginWindow)
     compositing_surface_ = AllocateFakePluginWindowHandle(
@@ -1088,18 +1110,6 @@ gfx::Rect RenderWidgetHostViewMac::GetViewCocoaBounds() const {
   return gfx::Rect(NSRectToCGRect([cocoa_view_ bounds]));
 }
 
-gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
-  // TODO(shess): In case of !window, the view has been removed from
-  // the view hierarchy because the tab isn't main.  Could retrieve
-  // the information from the main tab for our window.
-  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
-  if (!enclosing_window)
-    return gfx::Rect();
-
-  NSRect bounds = [enclosing_window frame];
-  return FlipNSRectToRectScreen(bounds);
-}
-
 void RenderWidgetHostViewMac::SetActive(bool active) {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_SetActive(
@@ -1121,7 +1131,7 @@ void RenderWidgetHostViewMac::SetWindowVisibility(bool visible) {
 void RenderWidgetHostViewMac::WindowFrameChanged() {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_WindowFrameChanged(
-        render_widget_host_->routing_id(), GetRootWindowRect(),
+        render_widget_host_->routing_id(), GetRootWindowBounds(),
         GetViewBounds()));
   }
 }
@@ -1153,6 +1163,12 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
       DisablePasswordInput();
   }
+}
+
+// static
+void RenderWidgetHostView::GetDefaultScreenInfo(
+    WebKit::WebScreenInfo* results) {
+  *results = WebKit::WebScreenInfoFactory::screenInfo(NULL);
 }
 
 // RenderWidgetHostViewCocoa ---------------------------------------------------

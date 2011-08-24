@@ -352,8 +352,12 @@ void RenderWidgetHostViewWin::SetBounds(const gfx::Rect& rect) {
   EnsureTooltip();
 }
 
-gfx::NativeView RenderWidgetHostViewWin::GetNativeView() {
+gfx::NativeView RenderWidgetHostViewWin::GetNativeView() const {
   return m_hWnd;
+}
+
+gfx::NativeViewId RenderWidgetHostViewWin::GetNativeViewId() const {
+  return reinterpret_cast<gfx::NativeViewId>(m_hWnd);
 }
 
 void RenderWidgetHostViewWin::MovePluginWindows(

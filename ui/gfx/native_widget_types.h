@@ -163,18 +163,6 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
 }
 #endif  // defined(OS_POSIX)
 
-// Convert a NativeView to a NativeViewId.  See the comments at the top of
-// this file.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(USE_WAYLAND)
-static inline NativeViewId IdFromNativeView(NativeView view) {
-  return reinterpret_cast<NativeViewId>(view);
-}
-#elif defined(USE_X11)
-// Not inlined because it involves pulling too many headers.
-UI_EXPORT NativeViewId IdFromNativeView(NativeView view);
-#endif  // defined(USE_X11)
-
-
 // PluginWindowHandle is an abstraction wrapping "the types of windows
 // used by NPAPI plugins".  On Windows it's an HWND, on X it's an X
 // window id.

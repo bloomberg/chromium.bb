@@ -32,7 +32,9 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/content_switches.h"
 #include "content/common/native_web_keyboard_event.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
@@ -90,6 +92,23 @@ GdkCursor* GetMozSpinningCursor() {
     g_object_unref(mask);
   }
   return moz_spinning_cursor;
+}
+
+void GetScreenInfoFromNativeWindow(
+    GdkWindow* gdk_window, WebKit::WebScreenInfo* results) {
+  GdkScreen* screen = gdk_drawable_get_screen(gdk_window);
+  *results = WebKit::WebScreenInfoFactory::screenInfo(
+      gdk_x11_drawable_get_xdisplay(gdk_window),
+      gdk_x11_screen_get_screen_number(screen));
+
+  // TODO(tony): We should move this code into WebScreenInfoFactory.
+  gint monitor_number = gdk_screen_get_monitor_at_window(screen, gdk_window);
+  GdkRectangle monitor_rect;
+  gdk_screen_get_monitor_geometry(screen, monitor_number, &monitor_rect);
+  results->rect = WebKit::WebRect(monitor_rect.x, monitor_rect.y,
+                                  monitor_rect.width, monitor_rect.height);
+  // TODO(tony): Should we query _NET_WORKAREA to get the workarea?
+  results->availableRect = results->rect;
 }
 
 }  // namespace
@@ -665,8 +684,12 @@ void RenderWidgetHostViewGtk::SetBounds(const gfx::Rect& rect) {
   SetSize(rect.size());
 }
 
-gfx::NativeView RenderWidgetHostViewGtk::GetNativeView() {
+gfx::NativeView RenderWidgetHostViewGtk::GetNativeView() const {
   return view_.get();
+}
+
+gfx::NativeViewId RenderWidgetHostViewGtk::GetNativeViewId() const {
+  return GtkNativeViewManager::GetInstance()->GetIdForWidget(view_.get());
 }
 
 void RenderWidgetHostViewGtk::MovePluginWindows(
@@ -1140,10 +1163,36 @@ void RenderWidgetHostViewGtk::AcceleratedCompositingActivated(bool activated) {
   gtk_preserve_window_delegate_resize(widget, activated);
 }
 
+void RenderWidgetHostViewGtk::GetScreenInfo(WebKit::WebScreenInfo* results) {
+  GdkWindow* gdk_window = view_.get()->window;
+  if (!gdk_window) {
+    GdkDisplay* display = gdk_display_get_default();
+    gdk_window = gdk_display_get_default_group(display);
+  }
+  if (!gdk_window)
+    return;
+  GetScreenInfoFromNativeWindow(gdk_window, results);
+}
+
+gfx::Rect RenderWidgetHostViewGtk::GetRootWindowBounds() {
+  GtkWidget* toplevel = gtk_widget_get_toplevel(view_.get());
+  if (!toplevel)
+    return gfx::Rect();
+
+  GdkRectangle frame_extents;
+  GdkWindow* gdk_window = toplevel->window;
+  if (!gdk_window)
+    return gfx::Rect();
+
+  gdk_window_get_frame_extents(gdk_window, &frame_extents);
+  return gfx::Rect(frame_extents.x, frame_extents.y,
+                   frame_extents.width, frame_extents.height);
+}
+
 gfx::PluginWindowHandle RenderWidgetHostViewGtk::GetCompositingSurface() {
   if (compositing_surface_ == gfx::kNullPluginWindow) {
     GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-    gfx::NativeViewId view_id = gfx::IdFromNativeView(GetNativeView());
+    gfx::NativeViewId view_id = GetNativeViewId();
 
     if (!manager->GetPermanentXIDForId(&compositing_surface_, view_id)) {
       DLOG(ERROR) << "Can't find XID for view id " << view_id;
@@ -1198,4 +1247,12 @@ void RenderWidgetHostViewGtk::set_last_mouse_down(GdkEventButton* event) {
     gdk_event_free(reinterpret_cast<GdkEvent*>(last_mouse_down_));
 
   last_mouse_down_ = temp;
+}
+
+// static
+void RenderWidgetHostView::GetDefaultScreenInfo(
+    WebKit::WebScreenInfo* results) {
+  GdkWindow* gdk_window =
+      gdk_display_get_default_group(gdk_display_get_default());
+  GetScreenInfoFromNativeWindow(gdk_window, results);
 }

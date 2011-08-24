@@ -206,7 +206,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
-  virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
@@ -239,7 +240,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE;
   // See comment in RenderWidgetHostView!
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
-  virtual gfx::Rect GetRootWindowRect() OVERRIDE;
   virtual void SetActive(bool active) OVERRIDE;
   virtual void SetWindowVisibility(bool visible) OVERRIDE;
   virtual void WindowFrameChanged() OVERRIDE;
@@ -289,7 +289,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int gpu_host_id,
       uint64 swap_buffers_count);
   virtual void GpuRenderingStateDidChange() OVERRIDE;
-
+  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
+  virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
 
   // Returns |true| if a context menu is currently being shown.

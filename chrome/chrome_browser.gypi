@@ -4601,6 +4601,9 @@
                 ['exclude', '^browser/extensions/extension_input_api.h'],
                 ['exclude', '^browser/extensions/key_identifier_conversion_views.cc'],
                 ['exclude', '^browser/extensions/key_identifier_conversion_views.h'],
+                ['exclude', '^browser/renderer_host/render_widget_host_view_views_gtk.h'],
+                ['exclude', '^browser/renderer_host/render_widget_host_view_views_gtk.cc'],
+
               ],
             }],
             # These GTK files haven't been ported to views, while ChromeOS has

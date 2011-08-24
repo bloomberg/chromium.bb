@@ -3,33 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/render_widget_host.h"
-
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebScreenInfoFactory.h"
-
-using WebKit::WebScreenInfo;
-using WebKit::WebScreenInfoFactory;
-
-void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId view,
-                                          WebScreenInfo* results) {
-  gfx::NativeView native_view = view_ ? view_->GetNativeView() : NULL;
-  *results = WebScreenInfoFactory::screenInfo(native_view);
-}
-
-void RenderWidgetHost::OnMsgGetWindowRect(gfx::NativeViewId window_id,
-                                          gfx::Rect* results) {
-  if (view_) {
-    *results = view_->GetViewBounds();
-  }
-}
-
-void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
-                                              gfx::Rect* results) {
-  if (view_) {
-    *results = view_->GetRootWindowRect();
-  }
-}
 
 void RenderWidgetHost::OnMsgPluginFocusChanged(bool focused, int plugin_id) {
   if (view_)

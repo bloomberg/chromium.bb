@@ -49,6 +49,12 @@ struct WebPluginGeometry;
 }
 }
 
+#if defined(OS_POSIX)
+namespace WebKit {
+struct WebScreenInfo;
+}
+#endif
+
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its
 // associated RenderProcessHost own the "Model" in this case which is the
@@ -101,7 +107,8 @@ class RenderWidgetHostView {
 
   // Retrieves the native view used to contain plugins and identify the
   // renderer in IPC messages.
-  virtual gfx::NativeView GetNativeView() = 0;
+  virtual gfx::NativeView GetNativeView() const = 0;
+  virtual gfx::NativeViewId GetNativeViewId() const = 0;
 
   // Moves all plugin windows as described in the given list.
   virtual void MovePluginWindows(
@@ -203,9 +210,6 @@ class RenderWidgetHostView {
   // Even though this returns an gfx::Rect, the result is NOT IN PIXELS.
   virtual gfx::Rect GetViewCocoaBounds() const = 0;
 
-  // Get the view's window's position on the screen.
-  virtual gfx::Rect GetRootWindowRect() = 0;
-
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;
 
@@ -280,6 +284,12 @@ class RenderWidgetHostView {
 #if defined(OS_WIN)
   virtual void WillWmDestroy() = 0;
   virtual void ShowCompositorHostWindow(bool show) = 0;
+#endif
+
+#if defined(OS_POSIX)
+  static void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
+  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
+  virtual gfx::Rect GetRootWindowBounds() = 0;
 #endif
 
   virtual gfx::PluginWindowHandle GetCompositingSurface() = 0;

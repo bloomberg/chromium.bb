@@ -384,7 +384,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   // Retrieves an id the renderer can use to refer to its view.
   // This is used for various IPC messages, including plugins.
-  gfx::NativeViewId GetNativeViewId();
+  gfx::NativeViewId GetNativeViewId() const;
 
   // Retrieves an id for the surface that the renderer can draw to
   // when accelerated compositing is enabled.

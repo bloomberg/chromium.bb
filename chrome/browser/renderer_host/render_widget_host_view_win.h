@@ -137,7 +137,8 @@ class RenderWidgetHostViewWin
   virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
-  virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;

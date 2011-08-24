@@ -4,11 +4,40 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
+
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_gtk.h"
+
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
+
+namespace {
+
+// TODO(oshima): This is a copy from RenderWidgetHostViewGtk. Replace this
+// with gdk-less implementation.
+void GetScreenInfoFromNativeWindow(
+    GdkWindow* gdk_window, WebKit::WebScreenInfo* results) {
+  GdkScreen* screen = gdk_drawable_get_screen(gdk_window);
+  *results = WebKit::WebScreenInfoFactory::screenInfo(
+      gdk_x11_drawable_get_xdisplay(gdk_window),
+      gdk_x11_screen_get_screen_number(screen));
+
+  // TODO(tony): We should move this code into WebScreenInfoFactory.
+  int monitor_number = gdk_screen_get_monitor_at_window(screen, gdk_window);
+  GdkRectangle monitor_rect;
+  gdk_screen_get_monitor_geometry(screen, monitor_number, &monitor_rect);
+  results->rect = WebKit::WebRect(monitor_rect.x, monitor_rect.y,
+                                  monitor_rect.width, monitor_rect.height);
+  // TODO(tony): Should we query _NET_WORKAREA to get the workarea?
+  results->availableRect = results->rect;
+}
+
+}  // namespace
 
 void RenderWidgetHostViewViews::UpdateCursor(const WebCursor& cursor) {
   // Optimize the common case, where the cursor hasn't changed.
@@ -33,6 +62,17 @@ void RenderWidgetHostViewViews::DestroyPluginContainer(
   // TODO(anicolao): plugin_container_manager_.DestroyPluginContainer(id);
 }
 
+void RenderWidgetHostViewViews::GetScreenInfo(WebKit::WebScreenInfo* results) {
+  views::Widget* widget = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+  if (widget)
+    GetScreenInfoFromNativeWindow(widget->GetNativeView()->window, results);
+}
+
+gfx::Rect RenderWidgetHostViewViews::GetRootWindowBounds() {
+  views::Widget* widget = GetWidget() ? GetWidget()->GetTopLevelWidget() : NULL;
+  return widget ? widget->GetWindowScreenBounds() : gfx::Rect();
+}
+
 void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
     bool activated) {
   // TODO(anicolao): figure out if we need something here
@@ -42,14 +82,12 @@ void RenderWidgetHostViewViews::AcceleratedCompositingActivated(
 
 #if !defined(TOUCH_UI)
 gfx::PluginWindowHandle RenderWidgetHostViewViews::GetCompositingSurface() {
-  GtkNativeViewManager* manager = GtkNativeViewManager::GetInstance();
-  gfx::PluginWindowHandle surface = gfx::kNullPluginWindow;
-  gfx::NativeViewId view_id = gfx::IdFromNativeView(GetInnerNativeView());
-
-  if (!manager->GetXIDForId(&surface, view_id)) {
-    DLOG(ERROR) << "Can't find XID for view id " << view_id;
-  }
-  return surface;
+  // TODO(oshima): The original implementation was broken as
+  // GtkNativeViewManager doesn't know about NativeWidgetGtk. Figure
+  // out if this makes sense without compositor. If it does, then find
+  // out the right way to handle.
+  NOTIMPLEMENTED();
+  return gfx::kNullPluginWindow;
 }
 #endif
 
@@ -77,3 +115,12 @@ void RenderWidgetHostViewViews::ShowCurrentCursor() {
   native_cursor_ = current_cursor_.GetNativeCursor();
 }
 
+#if defined(TOUCH_UI)
+// static
+void RenderWidgetHostView::GetDefaultScreenInfo(
+    WebKit::WebScreenInfo* results) {
+  GdkWindow* gdk_window =
+      gdk_display_get_default_group(gdk_display_get_default());
+  GetScreenInfoFromNativeWindow(gdk_window, results);
+}
+#endif

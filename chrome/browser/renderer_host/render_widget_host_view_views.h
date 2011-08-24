@@ -58,7 +58,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void WasHidden() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
-  virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual void MovePluginWindows(
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual bool HasFocus() OVERRIDE;
@@ -86,6 +87,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+#if defined(OS_POSIX)
+  virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
+  virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
+#endif
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;

@@ -137,8 +137,12 @@ RenderWidgetHost* TestRenderWidgetHostView::GetRenderWidgetHost() const {
   return NULL;
 }
 
-gfx::NativeView TestRenderWidgetHostView::GetNativeView() {
+gfx::NativeView TestRenderWidgetHostView::GetNativeView() const {
   return NULL;
+}
+
+gfx::NativeViewId TestRenderWidgetHostView::GetNativeViewId() const {
+  return 0;
 }
 
 bool TestRenderWidgetHostView::HasFocus() {
@@ -174,10 +178,6 @@ BackingStore* TestRenderWidgetHostView::AllocBackingStore(
 #if defined(OS_MACOSX)
 
 gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {
-  return gfx::Rect();
-}
-
-gfx::Rect TestRenderWidgetHostView::GetRootWindowRect() {
   return gfx::Rect();
 }
 
@@ -233,11 +233,18 @@ void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
 
 void TestRenderWidgetHostView::GpuRenderingStateDidChange() {
 }
+
 #elif defined(OS_WIN)
 void TestRenderWidgetHostView::WillWmDestroy() {
 }
 
 void TestRenderWidgetHostView::ShowCompositorHostWindow(bool show) {
+}
+#endif
+
+#if defined(OS_POSIX)
+gfx::Rect TestRenderWidgetHostView::GetRootWindowBounds() {
+  return gfx::Rect();
 }
 #endif
 

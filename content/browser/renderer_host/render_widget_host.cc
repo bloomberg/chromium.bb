@@ -114,9 +114,9 @@ void RenderWidgetHost::SetView(RenderWidgetHostView* view) {
     process_->SetCompositingSurface(routing_id_, gfx::kNullPluginWindow);
 }
 
-gfx::NativeViewId RenderWidgetHost::GetNativeViewId() {
+gfx::NativeViewId RenderWidgetHost::GetNativeViewId() const {
   if (view_)
-    return gfx::IdFromNativeView(view_->GetNativeView());
+    return view_->GetNativeViewId();
   return 0;
 }
 
@@ -1110,6 +1110,28 @@ void RenderWidgetHost::OnMsgDidActivateAcceleratedCompositing(bool activated) {
     view_->AcceleratedCompositingActivated(activated);
 #endif
 }
+
+#if defined(OS_POSIX)
+void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId window_id,
+                                          WebKit::WebScreenInfo* results) {
+  if (view_)
+    view_->GetScreenInfo(results);
+  else
+    RenderWidgetHostView::GetDefaultScreenInfo(results);
+}
+
+void RenderWidgetHost::OnMsgGetWindowRect(gfx::NativeViewId window_id,
+                                          gfx::Rect* results) {
+  if (view_)
+    *results = view_->GetViewBounds();
+}
+
+void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
+                                              gfx::Rect* results) {
+  if (view_)
+    *results = view_->GetRootWindowBounds();
+}
+#endif
 
 void RenderWidgetHost::PaintBackingStoreRect(
     TransportDIB::Id bitmap,
