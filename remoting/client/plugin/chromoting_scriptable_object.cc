@@ -272,6 +272,22 @@ void ChromotingScriptableObject::SetDesktopSize(int width, int height) {
   LOG(INFO) << "Update desktop size to: " << width << " x " << height;
 }
 
+void ChromotingScriptableObject::SignalLoginChallenge() {
+  plugin_message_loop_->PostTask(
+      FROM_HERE, task_factory_.NewRunnableMethod(
+          &ChromotingScriptableObject::DoSignalLoginChallenge));
+}
+
+void ChromotingScriptableObject::AttachXmppProxy(PepperXmppProxy* xmpp_proxy) {
+  xmpp_proxy_ = xmpp_proxy;
+}
+
+void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
+  plugin_message_loop_->PostTask(
+      FROM_HERE, task_factory_.NewRunnableMethod(
+          &ChromotingScriptableObject::DoSendIq, message_xml));
+}
+
 void ChromotingScriptableObject::AddAttribute(const std::string& name,
                                               Var attribute) {
   property_names_[name] = properties_.size();
@@ -296,31 +312,22 @@ void ChromotingScriptableObject::SignalDesktopSizeChange() {
           &ChromotingScriptableObject::DoSignalDesktopSizeChange));
 }
 
-void ChromotingScriptableObject::SignalLoginChallenge() {
-  plugin_message_loop_->PostTask(
-      FROM_HERE, task_factory_.NewRunnableMethod(
-          &ChromotingScriptableObject::DoSignalLoginChallenge));
-}
-
 void ChromotingScriptableObject::DoSignalConnectionInfoChange() {
   Var exception;
   VarPrivate cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
 
-  // Var() means call the object directly as a function rather than calling
-  // a method in the object.
+  // |this| must not be touched after Call() returns.
   cb.Call(Var(), &exception);
 
   if (!exception.is_undefined())
     LOG(ERROR) << "Exception when invoking connectionInfoUpdate JS callback.";
 }
 
-
 void ChromotingScriptableObject::DoSignalDesktopSizeChange() {
   Var exception;
   VarPrivate cb = GetProperty(Var(kDesktopSizeUpdate), &exception);
 
-  // Var() means call the object directly as a function rather than calling
-  // a method in the object.
+  // |this| must not be touched after Call() returns.
   cb.Call(Var(), &exception);
 
   if (!exception.is_undefined()) {
@@ -333,24 +340,18 @@ void ChromotingScriptableObject::DoSignalLoginChallenge() {
   Var exception;
   VarPrivate cb = GetProperty(Var(kLoginChallenge), &exception);
 
-  // Var() means call the object directly as a function rather than calling
-  // a method in the object.
+  // |this| must not be touched after Call() returns.
   cb.Call(Var(), &exception);
 
   if (!exception.is_undefined())
     LOG(ERROR) << "Exception when invoking loginChallenge JS callback.";
 }
 
-void ChromotingScriptableObject::AttachXmppProxy(PepperXmppProxy* xmpp_proxy) {
-  xmpp_proxy_ = xmpp_proxy;
-}
-
-void ChromotingScriptableObject::SendIq(const std::string& message_xml) {
+void ChromotingScriptableObject::DoSendIq(const std::string& message_xml) {
   Var exception;
   VarPrivate cb = GetProperty(Var(kSendIq), &exception);
 
-  // Var() means call the object directly as a function rather than calling
-  // a method in the object.
+  // |this| must not be touched after Call() returns.
   cb.Call(Var(), Var(message_xml), &exception);
 
   if (!exception.is_undefined())

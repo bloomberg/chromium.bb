@@ -214,13 +214,13 @@ class ChromotingScriptableObject
   void SignalConnectionInfoChange();
   void SignalDesktopSizeChange();
 
-  // Calls to these methods are posted to the plugin thread from
-  // corresponding Signal*() methods. They actually call JavaScript
-  // code. This is necessary becase JavaScript needs to be called with
-  // clean stack - JavaScript event handlers may destroy the plugin.
+  // Calls to these methods are posted to the plugin thread so that we
+  // call JavaScript with clean stack. This is necessary because
+  // JavaScript event handlers may destroy the plugin.
   void DoSignalConnectionInfoChange();
   void DoSignalDesktopSizeChange();
   void DoSignalLoginChallenge();
+  void DoSendIq(const std::string& message_xml);
 
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
