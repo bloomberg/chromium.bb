@@ -23,8 +23,9 @@ struct SSLConfig;
 // DiskCacheBasedSSLHostInfo fetches information about an SSL host from our
 // standard disk cache. Since the information is defined to be non-sensitive,
 // it's ok for us to keep it on disk.
-class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
-                                  public base::NonThreadSafe {
+class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
+    : public SSLHostInfo,
+      public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
   DiskCacheBasedSSLHostInfo(const std::string& hostname,
                             const SSLConfig& ssl_config,
@@ -79,7 +80,9 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
 
   std::string key() const;
 
-  void DoLoop(int rv);
+  void OnIOComplete(int rv);
+
+  int DoLoop(int rv);
 
   int DoGetBackendComplete(int rv);
   int DoOpenComplete(int rv);
@@ -112,8 +115,8 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;
   CompletionCallback* user_callback_;
-  scoped_refptr<net::IOBuffer> read_buffer_;
-  scoped_refptr<net::IOBuffer> write_buffer_;
+  scoped_refptr<IOBuffer> read_buffer_;
+  scoped_refptr<IOBuffer> write_buffer_;
   std::string data_;
 };
 

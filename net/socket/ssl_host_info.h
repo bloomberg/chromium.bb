@@ -15,6 +15,7 @@
 #include "net/base/cert_verify_result.h"
 #include "net/base/completion_callback.h"
 #include "net/base/dnsrr_resolver.h"
+#include "net/base/net_export.h"
 #include "net/socket/ssl_client_socket.h"
 
 namespace net {
@@ -26,7 +27,7 @@ struct SSLConfig;
 // This information may be stored on disk so does not include keys or session
 // information etc. Primarily it's intended for caching the server's
 // certificates.
-class SSLHostInfo {
+class NET_EXPORT_PRIVATE SSLHostInfo {
  public:
   SSLHostInfo(const std::string& hostname,
               const SSLConfig& ssl_config,
