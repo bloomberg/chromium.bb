@@ -23,16 +23,26 @@ generator_default_variables = {
   'STATIC_LIB_SUFFIX': '.a',
   'SHARED_LIB_PREFIX': 'lib',
   'SHARED_LIB_SUFFIX': '.so',
+
+  # Gyp expects the following variables to be expandable by the build
+  # system to the appropriate locations.  Ninja prefers paths to be
+  # known at compile time.  To resolve this, the magic variable
+  # $!PRODUCT_DIR (which begins with a $ so gyp knows it's special,
+  # but is otherwise an invalid ninja/shell variable) is passed to gyp
+  # here but expanded before writing out into the target .ninja files;
+  # see ExpandProduct.
+  #
   # TODO: intermediate dir should *not* be shared between different targets.
   # Unfortunately, whatever we provide here gets written into many different
   # places within the gyp spec so it's difficult to make it target-specific.
   # Apparently we've made it this far with one global path for the make build
-  # we're safe for now.
-  'INTERMEDIATE_DIR': '$b/geni',
-  'SHARED_INTERMEDIATE_DIR': '$b/gen',
-  'PRODUCT_DIR': '$b',
-  'SHARED_LIB_DIR': '$b/lib',
-  'LIB_DIR': '$b',
+  # so we're safe for now, but it's likely the newer $!PRODUCT_DIR hack will
+  # make it easier to make this totally correct.
+  'INTERMEDIATE_DIR': '$!PRODUCT_DIR/geni',
+  'SHARED_INTERMEDIATE_DIR': '$!PRODUCT_DIR/gen',
+  'PRODUCT_DIR': '$!PRODUCT_DIR',
+  'SHARED_LIB_DIR': '$!PRODUCT_DIR/lib',
+  'LIB_DIR': '',
 
   # Special variables that may be used by gyp 'rule' targets.
   # We generate definitions for these variables on the fly when processing a
@@ -44,10 +54,6 @@ generator_default_variables = {
 }
 
 NINJA_BASE = """\
-builddir = %(builddir)s
-# Short alias for builddir.
-b = %(builddir)s
-
 cc = %(cc)s
 cxx = %(cxx)s
 
@@ -106,19 +112,53 @@ def MaybeQuoteShellArgument(arg):
   return arg
 
 
+def InvertRelativePath(path):
+  """Given a relative path like foo/bar, return the inverse relative path:
+  the path from the relative path back to the origin dir.
+
+  E.g. os.path.normpath(os.path.join(path, InvertRelativePath(path)))
+  should always produce the empty string."""
+
+  if not path:
+    return path
+  # Only need to handle relative paths into subdirectories for now.
+  assert '..' not in path, path
+  depth = len(path.split('/'))
+  return '/'.join(['..'] * depth)
+
+
+def ExpandProduct(path, product_dir=None):
+  """Expand $!PRODUCT_DIR in |path|.
+
+  If |product_dir| is None, assumes the cwd is already the product
+  dir.  Otherwise, |product_dir| is the relative path to the product
+  dir.
+  """
+
+  if '$!PRODUCT_DIR' not in path:
+    return path
+
+  if product_dir:
+    path = path.replace('$!PRODUCT_DIR', product_dir)
+  else:
+    path = path.replace('$!PRODUCT_DIR/', '')
+    path = path.replace('$!PRODUCT_DIR', '.')
+  return path
+
+
 # A small discourse on paths as used within the Ninja build:
+# All files we produce (both at gyp and at build time) appear in the
+# build directory (e.g. out/Debug).
 #
 # Paths within a given .gyp file are always relative to the directory
 # containing the .gyp file.  Call these "gyp paths".  This includes
 # sources as well as the starting directory a given gyp rule/action
-# expects to be run from.  We call this directory "base_dir" within
-# the per-.gyp-file NinjaWriter code.
+# expects to be run from.  We call the path from the source root to
+# the gyp file the "base directory" within the per-.gyp-file
+# NinjaWriter code.
 #
-# All paths as written into the .ninja files are relative to the root
-# of the tree.  Call these paths "ninja paths".  We set up the ninja
-# variable "$b" to be the path to the root of the build output,
-# e.g. out/Debug/.  All files we produce (both at gyp and at build
-# time) appear in that output directory.
+# All paths as written into the .ninja files are relative to the build
+# directory.  Call these paths "ninja paths".
 #
 # We translate between these two notions of paths with two helper
 # functions:
@@ -131,22 +171,31 @@ def MaybeQuoteShellArgument(arg):
 #   to the input file name as well as the output target name.
 
 class NinjaWriter:
-  def __init__(self, target_outputs, base_dir, output_file):
+  def __init__(self, target_outputs, base_dir, build_dir, output_file):
+    """
+    base_dir: path from source root to directory containing this gyp file,
+              by gyp semantics, all input paths are relative to this
+    build_dir: path from source root to build output
+    """
+
     self.target_outputs = target_outputs
-    # The root-relative path to the source .gyp file; by gyp
-    # semantics, all input paths are relative to this.
     self.base_dir = base_dir
+    self.build_dir = build_dir
     self.ninja = ninja_syntax.Writer(output_file)
+
+    # Relative path from build output dir to base dir.
+    self.build_to_base = os.path.join(InvertRelativePath(build_dir), base_dir)
+    # Relative path from base dir to build dir.
+    self.base_to_build = os.path.join(InvertRelativePath(base_dir), build_dir)
 
   def GypPathToNinja(self, path):
     """Translate a gyp path to a ninja path.
 
     See the above discourse on path conversions."""
-    if path.startswith('$'):
-      # If the path contains a reference to a ninja variable, we know
-      # it's already relative to the source root.
-      return path
-    return os.path.normpath(os.path.join(self.base_dir, path))
+    if path.startswith('$!'):
+      return ExpandProduct(path)
+    assert '$' not in path, path
+    return os.path.normpath(os.path.join(self.build_to_base, path))
 
   def GypPathToUniqueOutput(self, path, qualified=False):
     """Translate a gyp path to a ninja path for writing output.
@@ -170,8 +219,8 @@ class NinjaWriter:
 
     # Translate the path following this scheme:
     #   Input: foo/bar.gyp, target targ, references baz/out.o
-    #   Output: $b/obj/foo/baz/targ.out.o (if qualified)
-    #           $b/obj/foo/baz/out.o (otherwise)
+    #   Output: obj/foo/baz/targ.out.o (if qualified)
+    #           obj/foo/baz/out.o (otherwise)
     #
     # Why this scheme and not some other one?
     # 1) for a given input, you can compute all derived outputs by matching
@@ -180,7 +229,7 @@ class NinjaWriter:
     path_dir, path_basename = os.path.split(path)
     if qualified:
       path_basename = self.name + '.' + path_basename
-    return os.path.normpath(os.path.join('$b/obj', self.base_dir, path_dir,
+    return os.path.normpath(os.path.join('obj', self.base_dir, path_dir,
                                          path_basename))
 
   def StampPath(self, name):
@@ -230,7 +279,7 @@ class NinjaWriter:
       link_deps = self.WriteSources(config, sources,
                                     sources_predepends or prebuild)
       # Some actions/rules output 'sources' that are already object files.
-      link_deps += [f for f in sources if f.endswith('.o')]
+      link_deps += [self.GypPathToNinja(f) for f in sources if f.endswith('.o')]
 
     # The final output of our target depends on the last output of the
     # above steps.
@@ -264,7 +313,7 @@ class NinjaWriter:
       # First write out a rule for the action.
       name = action['action_name']
       if 'message' in action:
-        description = 'ACTION ' + action['message']
+        description = 'ACTION ' + ExpandProduct(action['message'])
       else:
         description = 'ACTION %s: %s' % (self.name, action['action_name'])
       rule_name = self.WriteNewNinjaRule(name, action['action'], description)
@@ -290,7 +339,7 @@ class NinjaWriter:
       name = rule['rule_name']
       args = rule['action']
       if 'message' in rule:
-        description = 'RULE ' + rule['message']
+        description = 'RULE ' + ExpandProduct(rule['message'])
       else:
         description = 'RULE %s: %s $source' % (self.name, name)
       rule_name = self.WriteNewNinjaRule(name, args, description)
@@ -312,18 +361,25 @@ class NinjaWriter:
       for source in rule.get('rule_sources', []):
         basename = os.path.basename(source)
         root, ext = os.path.splitext(basename)
-        source = self.GypPathToNinja(source)
 
+        # Gather the list of outputs, expanding $vars if possible.
         outputs = []
         for output in rule['outputs']:
           outputs.append(output.replace('$root', root))
+
+        if int(rule.get('process_outputs_as_sources', False)):
+          extra_sources += outputs
 
         extra_bindings = []
         for var in needed_variables:
           if var == 'root':
             extra_bindings.append(('root', root))
           elif var == 'source':
-            extra_bindings.append(('source', source))
+            # '$source' is a parameter to the rule action, which means
+            # it shouldn't be converted to a Ninja path.  But we don't
+            # want $!PRODUCT_DIR in there either.
+            extra_bindings.append(('source',
+                                   ExpandProduct(source, self.base_to_build)))
           elif var == 'ext':
             extra_bindings.append(('ext', ext))
           elif var == 'name':
@@ -332,13 +388,11 @@ class NinjaWriter:
             assert var == None, repr(var)
 
         inputs = map(self.GypPathToNinja, rule.get('inputs', []))
-        self.ninja.build(outputs, rule_name, source,
+        outputs = map(self.GypPathToNinja, outputs)
+        self.ninja.build(outputs, rule_name, self.GypPathToNinja(source),
                          implicit=inputs,
                          order_only=prebuild,
                          variables=extra_bindings)
-
-        if int(rule.get('process_outputs_as_sources', False)):
-          extra_sources += outputs
 
         all_outputs.extend(outputs)
 
@@ -426,9 +480,11 @@ class NinjaWriter:
 
     if output_uses_linker:
       self.WriteVariableList('ldflags',
-                             gyp.common.uniquer(config.get('ldflags', [])))
+                             gyp.common.uniquer(map(ExpandProduct,
+                                                    config.get('ldflags', []))))
       self.WriteVariableList('libs',
-                             gyp.common.uniquer(spec.get('libraries', [])))
+                             gyp.common.uniquer(map(ExpandProduct,
+                                                    spec.get('libraries', []))))
 
     extra_bindings = []
     if command == 'solink':
@@ -438,10 +494,11 @@ class NinjaWriter:
                      implicit=list(implicit_deps),
                      variables=extra_bindings)
 
-    # Write a short name to build this target.  This benefits both the
-    # "build chrome" case as well as the gyp tests, which expect to be
-    # able to run actions and build libraries by their short name.
-    self.ninja.build(self.name, 'phony', output)
+    if self.name != output:
+      # Write a short name to build this target.  This benefits both the
+      # "build chrome" case as well as the gyp tests, which expect to be
+      # able to run actions and build libraries by their short name.
+      self.ninja.build(self.name, 'phony', output)
 
     return output
 
@@ -495,15 +552,15 @@ class NinjaWriter:
 
     if 'product_dir' in spec:
       path = os.path.join(spec['product_dir'], filename)
-      return path
+      return ExpandProduct(path)
 
     # Executables and loadable modules go into the output root,
     # libraries go into shared library dir, and everything else
     # goes into the normal place.
     if spec['type'] in ('executable', 'loadable_module'):
-      return os.path.join('$b', filename)
+      return filename
     elif spec['type'] == 'shared_library':
-      return os.path.join('$b/lib', filename)
+      return os.path.join('lib', filename)
     else:
       return self.GypPathToUniqueOutput(filename)
 
@@ -522,18 +579,13 @@ class NinjaWriter:
     # should be scoped to the subninja.
     rule_name = ('%s.%s' % (self.name, name)).replace(' ', '_')
 
-    cd = ''
     args = args[:]
-    if self.base_dir:
-      # gyp dictates that commands are run from the base directory.
-      # cd into the directory before running, and adjust all paths in
-      # the arguments point to the proper locations.
-      cd = 'cd %s; ' % self.base_dir
-      cdup = '../' * len(self.base_dir.split('/'))
-      for i, arg in enumerate(args):
-        arg = arg.replace('$b', cdup + '$b')
-        arg = arg.replace('$source', cdup + '$source')
-        args[i] = arg
+
+    # gyp dictates that commands are run from the base directory.
+    # cd into the directory before running, and adjust paths in
+    # the arguments to point to the proper locations.
+    cd = 'cd %s; ' % self.build_to_base
+    args = [ExpandProduct(arg, self.base_to_build) for arg in args]
 
     command = cd + gyp.common.EncodePOSIXShellList(args)
     self.ninja.rule(rule_name, command, description)
@@ -578,7 +630,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
   master_ninja = OpenOutput(os.path.join(options.toplevel_dir, builddir,
                                          'build.ninja'))
   master_ninja.write(NINJA_BASE % {
-      'builddir': builddir,
       'cc': os.environ.get('CC', 'gcc'),
       'cxx': os.environ.get('CXX', 'g++'),
       })
@@ -600,12 +651,13 @@ def GenerateOutput(target_list, target_dicts, data, params):
     build_file = gyp.common.RelativePath(build_file, options.depth)
 
     base_path = os.path.dirname(build_file)
-    output_file = os.path.join(builddir, 'obj', base_path, target + '.ninja')
+    output_file = os.path.join('obj', base_path, target + '.ninja')
     spec = target_dicts[qualified_target]
     config = spec['configurations'][config_name]
 
-    writer = NinjaWriter(target_outputs, base_path,
+    writer = NinjaWriter(target_outputs, base_path, builddir,
                          OpenOutput(os.path.join(options.toplevel_dir,
+                                                 builddir,
                                                  output_file)))
     subninjas.add(output_file)
 
