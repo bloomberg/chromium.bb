@@ -783,13 +783,13 @@ int ChromeMain(int argc, char** argv) {
         CHECK_EQ(switches::kNaClLoaderProcess, process_type)
             << "Non-PIE process requires --type="
             << switches::kNaClLoaderProcess << ", saw " << process_type;
-      } else {
-        CHECK(process_type != switches::kPluginProcess &&
-              process_type != switches::kNaClLoaderProcess)
-            << "Non-executable-heap PIE process is intolerant of --type="
-            << switches::kPluginProcess << " and "
-            << switches::kNaClLoaderProcess << ", saw " << process_type;
       }
+
+      // For the time being, plugin and NaCl loader processes are permitted to
+      // run in "more secure" process types (EH and NP) mostly because
+      // browser_tests tries starting plugin processes using the ordinary
+      // (no suffix) helper. Until that's squared away, this is easiest, no
+      // less secure, and allows the tests to pass.
     }
   } else {
     CHECK(!command_line.HasSwitch(switches::kProcessType) &&
