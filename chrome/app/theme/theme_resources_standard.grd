@@ -61,7 +61,7 @@
       <include name="IDR_FORWARD_D" file="forward_d.png" type="BINDATA" />
       <include name="IDR_FORWARD_H" file="forward_h.png" type="BINDATA" />
       <include name="IDR_FORWARD_P" file="forward_p.png" type="BINDATA" />
-      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="geolocation_infobar_icon.png" type="BINDATA" />
+      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="infobar_geolocation.png" type="BINDATA" />
       <include name="IDR_HISTORY_FAVICON" file="history_favicon.png" type="BINDATA" />
       <include name="IDR_HOME" file="home.png" type="BINDATA" />
       <include name="IDR_HOME_H" file="home_h.png" type="BINDATA" />
