@@ -43,6 +43,7 @@ class ProfileSyncFactoryImplTest : public TestingBrowserProcessTest {
     datatypes.push_back(syncable::APPS);
     datatypes.push_back(syncable::AUTOFILL_PROFILE);
     datatypes.push_back(syncable::PASSWORDS);
+    datatypes.push_back(syncable::TYPED_URLS);
     return datatypes;
   }
 

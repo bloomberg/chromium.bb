@@ -138,7 +138,7 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
   // TypedUrl sync is disabled by default.  Register only if
   // explicitly enabled, and if saving history is not disabled.
   if (!profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      command_line_->HasSwitch(switches::kEnableSyncTypedUrls)) {
+      !command_line_->HasSwitch(switches::kDisableSyncTypedUrls)) {
     pss->RegisterDataTypeController(
         new TypedUrlDataTypeController(this, profile_));
   }

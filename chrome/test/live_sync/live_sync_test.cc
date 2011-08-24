@@ -209,10 +209,6 @@ void LiveSyncTest::SetUpCommandLine(CommandLine* cl) {
   if (!cl->HasSwitch(switches::kEnableSyncSessions))
     cl->AppendSwitch(switches::kEnableSyncSessions);
 
-  // TODO(sync): Remove this once typed url sync is enabled by default.
-  if (!cl->HasSwitch(switches::kEnableSyncTypedUrls))
-    cl->AppendSwitch(switches::kEnableSyncTypedUrls);
-
   // Disable non-essential access of external network resources.
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);

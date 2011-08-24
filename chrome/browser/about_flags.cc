@@ -302,13 +302,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSyncSessions)
   },
   {
-    "sync-typed-urls",
-    IDS_FLAGS_SYNC_TYPED_URLS_NAME,
-    IDS_FLAGS_SYNC_TYPED_URLS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSyncTypedUrls)
-  },
-  {
     "enable-smooth-scrolling",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME,
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION,

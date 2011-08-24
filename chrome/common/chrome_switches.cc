@@ -330,6 +330,9 @@ const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 // Disable syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
 
+// Disable syncing browser typed urls.
+const char kDisableSyncTypedUrls[]           = "disable-sync-typed-urls";
+
 // TabCloseableStateWatcher disallows closing of tabs and browsers under certain
 // situations on ChromeOS.  Some tests expect tabs or browsers to close, so we
 // need a switch to disable the watcher.
@@ -507,12 +510,6 @@ const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 // Enables TLS cached info extension.
 const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 
-// Enable syncing browser data to a Google Account.
-const char kEnableSync[]                    = "enable-sync";
-
-// Enable syncing browser autofill.
-const char kEnableSyncAutofill[]            = "enable-sync-autofill";
-
 // Enable OAuth sign-in for sync.
 const char kEnableSyncOAuth[]               = "enable-sync-oauth";
 
@@ -522,10 +519,7 @@ const char kEnableSyncSessions[]            = "enable-sync-sessions";
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]     = "enable-tab-groups-context-menu";
 
-// Enable syncing browser typed urls.
-const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
-
-// Enable syncing browser typed urls.
+// Enable the "synced bookmarks" folder.
 const char kEnableSyncedBookmarksFolder[]   = "enable-synced-bookmarks-folder";
 
 // Enable use of experimental TCP sockets API for sending data in the
