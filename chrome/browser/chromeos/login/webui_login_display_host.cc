@@ -47,7 +47,7 @@ LoginDisplay* WebUILoginDisplayHost::CreateLoginDisplay(
 }
 
 gfx::NativeWindow WebUILoginDisplayHost::GetNativeWindow() const {
-  return NULL;
+  return login_window_ ? login_window_->GetNativeWindow() : NULL;
 }
 
 void WebUILoginDisplayHost::SetOobeProgress(BackgroundView::LoginStep step) {

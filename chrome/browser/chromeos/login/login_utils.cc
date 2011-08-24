@@ -159,21 +159,31 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
  public:
   OAuthLoginVerifier(Profile* user_profile,
                      const std::string& oauth1_token,
-                     const std::string& oauth1_secret)
+                     const std::string& oauth1_secret,
+                     const std::string& username)
       : oauth_fetcher_(this,
             user_profile->GetOffTheRecordProfile()->GetRequestContext(),
             user_profile->GetOffTheRecordProfile(),
             kServiceScopeChromeOS),
         oauth1_token_(oauth1_token),
-        oauth1_secret_(oauth1_secret) {
+        oauth1_secret_(oauth1_secret),
+        username_(username) {
   }
   virtual ~OAuthLoginVerifier() {}
 
   void Start() {
-    oauth_fetcher_.StartOAuthLogin(GaiaConstants::kChromeOSSource,
-                                   GaiaConstants::kContactsService,
-                                   oauth1_token_,
-                                   oauth1_secret_);
+    if (oauth1_token_.empty() || oauth1_secret_.empty()) {
+      // Empty OAuth1 access token or secret probably means that we are
+      // dealing with a legacy ChromeOS account. This should be treated as
+      // invalid/expired token.
+      OnOAuthLoginFailure(GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+    } else {
+      oauth_fetcher_.StartOAuthLogin(GaiaConstants::kChromeOSSource,
+                                     GaiaConstants::kContactsService,
+                                     oauth1_token_,
+                                     oauth1_secret_);
+    }
   }
 
   // GaiaOAuthConsumer implementation:
@@ -187,13 +197,22 @@ class OAuthLoginVerifier : public GaiaOAuthConsumer {
   }
   virtual void OnOAuthLoginFailure(
       const GoogleServiceAuthError& error) OVERRIDE {
-    LOG(WARNING) << "Failed to verify OAuth1 access tokens.";
+    LOG(WARNING) << "Failed to verify OAuth1 access tokens,"
+                 << " error.state=" << error.state();
+
+    // Mark this account's OAuth token state as invalid if the failure is not
+    // caused by network error.
+    if (error.state() != GoogleServiceAuthError::CONNECTION_FAILED) {
+      UserManager::Get()->SaveUserOAuthStatus(username_,
+            UserManager::OAUTH_TOKEN_STATUS_INVALID);
+    }
   }
 
  private:
   GaiaOAuthFetcher oauth_fetcher_;
   std::string oauth1_token_;
   std::string oauth1_secret_;
+  std::string username_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuthLoginVerifier);
 };
@@ -345,6 +364,11 @@ class LoginUtilsImpl : public LoginUtils,
   void StoreOAuth1AccessToken(Profile* user_profile,
                               const std::string& token,
                               const std::string& secret);
+
+  // Verifies OAuth1 token by doing OAuthLogin and fetching credentials.
+  void VerifyOAuth1AccessToken(Profile* user_profile,
+                               const std::string& token,
+                               const std::string& secret);
 
   // Fetch all secondary (OAuth2) tokens given OAuth1 access |token| and
   // |secret|.
@@ -502,7 +526,9 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
         !has_cookies_) {
       // Verify OAuth access token when we find it in the profile and always if
       // if we don't have cookies.
-      authenticator_->VerifyOAuth1AccessToken(oauth1_token, oauth1_secret);
+      // TODO(xiyuan): Change back to use authenticator to verify token when
+      // we support Gaia in lock screen.
+      VerifyOAuth1AccessToken(user_profile, oauth1_token, oauth1_secret);
     } else {
       // If we don't have it, fetch OAuth1 access token.
       // Use off-the-record profile that was used for this step. It should
@@ -886,11 +912,8 @@ void LoginUtilsImpl::OnOAuthGetAccessTokenSuccess(const std::string& token,
   Profile* user_profile = ProfileManager::GetDefaultProfile();
   StoreOAuth1AccessToken(user_profile, token, secret);
 
-  // Kick off verification of OAuth1 access token (via OAuthLogin), this should
-  // let us fetch credentials that will be used to initialize sync engine.
-  FetchCredentials(user_profile, token, secret);
-
-  FetchSecondaryTokens(user_profile->GetOffTheRecordProfile(), token, secret);
+  // Verify OAuth1 token by doing OAuthLogin and fetching credentials.
+  VerifyOAuth1AccessToken(user_profile, token, secret);
 }
 
 void LoginUtilsImpl::FetchSecondaryTokens(Profile* offrecord_profile,
@@ -904,6 +927,12 @@ void LoginUtilsImpl::FetchSecondaryTokens(Profile* offrecord_profile,
 bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
                                            std::string* token,
                                            std::string* secret) {
+  // Skip reading oauth token if user does not have a valid status.
+  if (UserManager::Get()->GetUserOAuthStatus(username_) !=
+      UserManager::OAUTH_TOKEN_STATUS_VALID) {
+    return false;
+  }
+
   PrefService* pref_service = user_profile->GetPrefs();
   std::string encoded_token = pref_service->GetString(prefs::kOAuth1Token);
   std::string encoded_secret = pref_service->GetString(prefs::kOAuth1Secret);
@@ -936,12 +965,23 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
       UserManager::OAUTH_TOKEN_STATUS_VALID);
 }
 
+void LoginUtilsImpl::VerifyOAuth1AccessToken(Profile* user_profile,
+                                             const std::string& token,
+                                             const std::string& secret) {
+  // Kick off verification of OAuth1 access token (via OAuthLogin), this should
+  // let us fetch credentials that will be used to initialize sync engine.
+  FetchCredentials(user_profile, token, secret);
+
+  FetchSecondaryTokens(user_profile->GetOffTheRecordProfile(), token, secret);
+}
+
 void LoginUtilsImpl::FetchCredentials(Profile* user_profile,
                                       const std::string& token,
                                       const std::string& secret) {
   oauth_login_verifier_.reset(new OAuthLoginVerifier(user_profile,
                                                      token,
-                                                     secret));
+                                                     secret,
+                                                     username_));
   oauth_login_verifier_->Start();
 }
 

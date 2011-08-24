@@ -55,7 +55,7 @@ const char kGuestUser[] = "";
 
 base::LazyInstance<UserManager> g_user_manager(base::LINKER_INITIALIZED);
 
-// Stores path to the image in local state. Runs on UI thread.
+// Stores user's OAuthTokenStatus in local state. Runs on UI thread.
 void SaveOAuthTokenStatusToLocalState(const std::string& username,
     UserManager::OAuthTokenStatus oauth_token_status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -65,6 +65,31 @@ void SaveOAuthTokenStatusToLocalState(const std::string& username,
       new base::FundamentalValue(static_cast<int>(oauth_token_status)));
   DVLOG(1) << "Saving user OAuth token status in Local State.";
   local_state->SavePersistentPrefs();
+}
+
+// Gets user's OAuthTokenStatus from local state.
+UserManager::OAuthTokenStatus GetOAuthTokenStatusFromLocalState(
+    const std::string& username) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSkipOAuthLogin)) {
+    // Use OAUTH_TOKEN_STATUS_VALID flag if kSkipOAuthLogin is present.
+    return UserManager::OAUTH_TOKEN_STATUS_VALID;
+  } else {
+    PrefService* local_state = g_browser_process->local_state();
+    const DictionaryValue* prefs_oauth_status =
+        local_state->GetDictionary(kUserOAuthTokenStatus);
+
+    int oauth_token_status = UserManager::OAUTH_TOKEN_STATUS_UNKNOWN;
+    if (prefs_oauth_status &&
+        prefs_oauth_status->GetIntegerWithoutPathExpansion(username,
+            &oauth_token_status)) {
+      return static_cast<UserManager::OAuthTokenStatus>(oauth_token_status);
+    }
+  }
+
+  return UserManager::OAUTH_TOKEN_STATUS_UNKNOWN;
 }
 
 // Stores path to the image in local state. Runs on UI thread.
@@ -281,8 +306,6 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
   PrefService* local_state = g_browser_process->local_state();
   const ListValue* prefs_users = local_state->GetList(kLoggedInUsers);
   const DictionaryValue* prefs_images = local_state->GetDictionary(kUserImages);
-  const DictionaryValue* prefs_oauth_status =
-      local_state->GetDictionary(kUserOAuthTokenStatus);
 
   if (prefs_users) {
     std::map<std::string, size_t> display_name_count;
@@ -294,21 +317,7 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
       if ((*it)->GetAsString(&email)) {
         User user;
         user.set_email(email);
-
-        // Get OAuth token status.
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSkipOAuthLogin)) {
-          // Use OAUTH_TOKEN_STATUS_VALID flag if kSkipOAuthLogin is present.
-          user.set_oauth_token_status(OAUTH_TOKEN_STATUS_VALID);
-        } else {
-          int oauth_token_status = OAUTH_TOKEN_STATUS_UNKNOWN;
-          if (prefs_oauth_status &&
-              prefs_oauth_status->GetIntegerWithoutPathExpansion(email,
-                  &oauth_token_status)) {
-            user.set_oauth_token_status(
-                static_cast<OAuthTokenStatus>(oauth_token_status));
-          }
-        }
+        user.set_oauth_token_status(GetOAuthTokenStatusFromLocalState(email));
 
         std::string image_path;
         // Get account image path.
@@ -518,6 +527,12 @@ void UserManager::SaveUserOAuthStatus(const std::string& username,
                                       OAuthTokenStatus oauth_token_status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SaveOAuthTokenStatusToLocalState(username, oauth_token_status);
+}
+
+UserManager::OAuthTokenStatus UserManager::GetUserOAuthStatus(
+    const std::string& username) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return GetOAuthTokenStatusFromLocalState(username);
 }
 
 void UserManager::SaveUserImagePath(const std::string& username,

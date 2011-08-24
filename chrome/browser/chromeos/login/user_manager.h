@@ -137,6 +137,9 @@ class UserManager : public UserImageLoader::Delegate,
   void SaveUserOAuthStatus(const std::string& username,
                            OAuthTokenStatus oauth_token_status);
 
+  // Gets user's oauth token status in local state preferences.
+  OAuthTokenStatus GetUserOAuthStatus(const std::string& username);
+
   // Saves user image path for the user. Can be used to set default images.
   void SaveUserImagePath(const std::string& username,
                          const std::string& image_path);

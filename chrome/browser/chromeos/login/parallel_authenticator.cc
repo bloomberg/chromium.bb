@@ -135,15 +135,13 @@ bool ParallelAuthenticator::CompleteLogin(Profile* profile,
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(mounter_.get(), &CryptohomeOp::Initiate));
 
-  // For login completion of a new user, we just need to resolve the current
+  // For login completion from extension, we just need to resolve the current
   // auth attempt state, the rest of OAuth related tasks will be done in
   // parallel.
-  if (!UserManager::Get()->IsKnownUser(canonicalized)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-            &ParallelAuthenticator::ResolveLoginCompletionStatus));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(this,
+          &ParallelAuthenticator::ResolveLoginCompletionStatus));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -323,7 +321,12 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
                            login_token,
                            login_captcha,
                            false /* not a new user */));
-  current_online_ = new OnlineAttempt(using_oauth_, reauth_state_.get(),
+  // Always use ClientLogin regardless of using_oauth flag. This is because
+  // we are unable to renew oauth token on lock screen currently and will
+  // stuck with lock screen if we use OAuthLogin here.
+  // TODO(xiyuan): Revisit this after we support Gaia in lock screen.
+  current_online_ = new OnlineAttempt(false /* using_oauth */,
+                                      reauth_state_.get(),
                                       this);
   current_online_->Initiate(profile);
 }
@@ -454,7 +457,14 @@ void ParallelAuthenticator::Resolve() {
       break;
     case OFFLINE_LOGIN:
       VLOG(2) << "Offline login";
-      request_pending = !current_state_->online_complete();
+      // Marking request_pending to false when using OAuth because OAuth related
+      // tasks are performed after user profile is mounted and are not performed
+      // by ParallelAuthenticator.
+      // TODO(xiyuan): Revert this when we support Gaia in lock screen and
+      // start to use ParallelAuthenticator's VerifyOAuth1AccessToken again.
+      request_pending = using_oauth_ ?
+          false :
+          !current_state_->online_complete();
       // Fall through.
     case UNLOCK:
       VLOG(2) << "Unlock";
