@@ -44,13 +44,12 @@ ObjectProxy::~ObjectProxy() {
 // Originally we tried to make |method_call| a const reference, but we
 // gave up as dbus_connection_send_with_reply_and_block() takes a
 // non-const pointer of DBusMessage as the second parameter.
-bool ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
-                                     int timeout_ms,
-                                     Response* response) {
+Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
+                                          int timeout_ms) {
   bus_->AssertOnDBusThread();
 
   if (!bus_->Connect())
-    return false;
+    return NULL;
 
   method_call->SetDestination(service_name_);
   method_call->SetPath(object_path_);
@@ -65,11 +64,10 @@ bool ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
   if (!response_message) {
     LOG(ERROR) << "Failed to call method: "
                << (error.is_set() ? error.message() : "");
-    return false;
+    return NULL;
   }
-  response->reset_raw_message(response_message);
 
-  return true;
+  return Response::FromRawMessage(response_message);
 }
 
 void ObjectProxy::CallMethod(MethodCall* method_call,
@@ -184,50 +182,45 @@ void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
   bus_->AssertOnDBusThread();
 
   DBusMessage* response_message = dbus_pending_call_steal_reply(pending_call);
-
-  if (!response_message) {
-    // This shouldn't happen but just in case.
-    LOG(ERROR) << "The response message is not received for some reason";
-    Response* response = NULL;
-    base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
-                                    this,
-                                    response_callback,
-                                    response);
-    bus_->PostTaskToOriginThread(FROM_HERE, task);
-    return;
-  }
-
-  // The response message will be deleted in RunResponseCallback().
-  Response* response = new Response;
-  response->reset_raw_message(response_message);
+  // |response_message| will be unref'ed in RunResponseCallback().
+  // Bind() won't compile if we pass response_message as-is.
+  // See CallMethod() for details.
   base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
                                   this,
                                   response_callback,
-                                  response);
+                                  static_cast<void*>(response_message));
   bus_->PostTaskToOriginThread(FROM_HERE, task);
 }
 
 void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
-                                      Response* response) {
+                                      void* in_response_message) {
   bus_->AssertOnOriginThread();
+  DBusMessage* response_message =
+      static_cast<DBusMessage*>(in_response_message);
 
-  if (!response) {
+  if (!response_message) {
     // The response is not received.
     response_callback.Run(NULL);
-  } else if (response->GetMessageType() == Message::MESSAGE_ERROR) {
+  } else if (dbus_message_get_type(response_message) ==
+             DBUS_MESSAGE_TYPE_ERROR) {
+    // This will take |response_message| and release (unref) it.
+    scoped_ptr<dbus::ErrorResponse> error_response(
+        dbus::ErrorResponse::FromRawMessage(response_message));
     // Error message may contain the error message as string.
-    dbus::MessageReader reader(response);
+    dbus::MessageReader reader(error_response.get());
     std::string error_message;
     reader.PopString(&error_message);
-    LOG(ERROR) << "Failed to call method: " << response->GetErrorName()
+    LOG(ERROR) << "Failed to call method: " << error_response->GetErrorName()
                << ": " << error_message;
     // We don't give the error message to the callback.
     response_callback.Run(NULL);
   } else {
+    // This will take |response_message| and release (unref) it.
+    scoped_ptr<dbus::Response> response(
+        dbus::Response::FromRawMessage(response_message));
     // The response is successfuly received.
-    response_callback.Run(response);
+    response_callback.Run(response.get());
   }
-  delete response;  // It's ok to delete NULL.
 }
 
 void ObjectProxy::OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,

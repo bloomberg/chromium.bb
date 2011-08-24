@@ -58,14 +58,13 @@ TEST_F(EndToEndSyncTest, Echo) {
   writer.AppendString(kHello);
 
   // Call the method.
-  dbus::Response response;
   const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  const bool success =
-      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms, &response);
-  ASSERT_TRUE(success);
+  scoped_ptr<dbus::Response> response(
+      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
+  ASSERT_TRUE(response.get());
 
   // Check the response. kHello should be echoed back.
-  dbus::MessageReader reader(&response);
+  dbus::MessageReader reader(response.get());
   std::string returned_message;
   ASSERT_TRUE(reader.PopString(&returned_message));
   EXPECT_EQ(kHello, returned_message);
@@ -80,30 +79,27 @@ TEST_F(EndToEndSyncTest, Timeout) {
   writer.AppendString(kHello);
 
   // Call the method with timeout of 0ms.
-  dbus::Response response;
   const int timeout_ms = 0;
-  const bool success =
-      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms, &response);
+  scoped_ptr<dbus::Response> response(
+      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
   // Should fail because of timeout.
-  ASSERT_FALSE(success);
+  ASSERT_FALSE(response.get());
 }
 
 TEST_F(EndToEndSyncTest, NonexistentMethod) {
   dbus::MethodCall method_call("org.chromium.TestInterface", "Nonexistent");
 
-  dbus::Response response;
   const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  const bool success =
-      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms, &response);
-  ASSERT_FALSE(success);
+  scoped_ptr<dbus::Response> response(
+      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
+  ASSERT_FALSE(response.get());
 }
 
 TEST_F(EndToEndSyncTest, BrokenMethod) {
   dbus::MethodCall method_call("org.chromium.TestInterface", "BrokenMethod");
 
-  dbus::Response response;
   const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  const bool success =
-      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms, &response);
-  ASSERT_FALSE(success);
+  scoped_ptr<dbus::Response> response(
+      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
+  ASSERT_FALSE(response.get());
 }

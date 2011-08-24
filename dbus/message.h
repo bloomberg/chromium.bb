@@ -17,8 +17,8 @@ namespace dbus {
 class MessageWriter;
 class MessageReader;
 
-// Message is the base class of D-Bus message types. Client code should
-// usually use sub classes such as MethodCall and Response instead.
+// Message is the base class of D-Bus message types. Client code must use
+// sub classes such as MethodCall and Response instead.
 //
 // The class name Message is very generic, but there should be no problem
 // as the class is inside 'dbus' namespace. We chose to name this way, as
@@ -59,20 +59,15 @@ class Message {
     VARIANT = DBUS_TYPE_VARIANT,
   };
 
-  // Creates a Message. The internal raw message is NULL until it's set
-  // from outside by reset_raw_message().
-  Message();
-  virtual ~Message();
-
   // Returns the type of the message. Returns MESSAGE_INVALID if
   // raw_message_ is NULL.
   MessageType GetMessageType();
 
-  DBusMessage* raw_message() { return raw_message_; }
+  // Returns the type of the message as string like "MESSAGE_METHOD_CALL"
+  // for instance.
+  std::string GetMessageTypeAsString();
 
-  // Resets raw_message_ with the given raw message. Takes the ownership
-  // of raw_message. raw_message_ will be unref'ed in the destructor.
-  void reset_raw_message(DBusMessage* raw_message);
+  DBusMessage* raw_message() { return raw_message_; }
 
   // Sets the destination, the path, the interface, the member, etc.
   void SetDestination(const std::string& destination);
@@ -102,6 +97,14 @@ class Message {
   // debugging.
   std::string ToString();
 
+ protected:
+  // This class cannot be instantiated. Use sub classes instead.
+  Message();
+  virtual ~Message();
+
+  // Initializes the message with the given raw message.
+  void Init(DBusMessage* raw_message);
+
  private:
   // Helper function used in ToString().
   std::string ToStringInternal(const std::string& indent,
@@ -123,8 +126,7 @@ class MethodCall : public Message {
   //
   //   MethodCall method_call(DBUS_INTERFACE_INTROSPECTABLE, "Get");
   //
-  // The constructor creates the internal raw_message_, so the client
-  // doesn't need to set this with reset_raw_message().
+  // The constructor creates the internal raw message.
   MethodCall(const std::string& interface_name,
              const std::string& method_name);
 
@@ -132,6 +134,11 @@ class MethodCall : public Message {
   // type DBUS_MESSAGE_TYPE_METHOD_CALL. The caller must delete the
   // returned object. Takes the ownership of |raw_message|.
   static MethodCall* FromRawMessage(DBusMessage* raw_message);
+
+ private:
+  // Creates a method call message. The internal raw message is NULL.
+  // Only used internally.
+  MethodCall();
 
   DISALLOW_COPY_AND_ASSIGN(MethodCall);
 };
@@ -148,8 +155,7 @@ class Signal : public Message {
   //
   //   Signal signal(DBUS_INTERFACE_INTROSPECTABLE, "PropertiesChanged");
   //
-  // The constructor creates the internal raw_message_, so the client
-  // doesn't need to set this with reset_raw_message().
+  // The constructor creates the internal raw_message_.
   Signal(const std::string& interface_name,
          const std::string& method_name);
 
@@ -157,23 +163,37 @@ class Signal : public Message {
   // DBUS_MESSAGE_TYPE_SIGNAL. The caller must delete the returned
   // object. Takes the ownership of |raw_message|.
   static Signal* FromRawMessage(DBusMessage* raw_message);
+
+ private:
+  // Creates a signal message. The internal raw message is NULL.
+  // Only used internally.
+  Signal();
+
+  DISALLOW_COPY_AND_ASSIGN(Signal);
 };
 
 // Response is a type of message used for receiving a response from a
 // method via D-Bus.
 class Response : public Message {
  public:
-  // Creates a Response message. The internal raw message is NULL.
-  // Classes that implment method calls need to set the raw message once a
-  // response is received from the server. See object_proxy.h.
-  Response();
+  // Returns a newly created Response from the given raw message of the
+  // type DBUS_MESSAGE_TYPE_METHOD_RETURN. The caller must delete the
+  // returned object. Takes the ownership of |raw_message|.
+  static Response* FromRawMessage(DBusMessage* raw_message);
 
   // Returns a newly created Response from the given method call. The
   // caller must delete the returned object. Used for implementing
   // exported methods.
   static Response* FromMethodCall(MethodCall* method_call);
 
+  // Returns a newly creaed Response with an empty payload. The caller
+  // must delete the returned object. Useful for testing.
+  static Response* CreateEmpty();
+
  private:
+  // Creates a Response message. The internal raw message is NULL.
+  Response();
+
   DISALLOW_COPY_AND_ASSIGN(Response);
 };
 
@@ -181,10 +201,10 @@ class Response : public Message {
 // caller of a method.
 class ErrorResponse: public Message {
  public:
-  // Creates a ErrorResponse message. The internal raw message is NULL.
-  // Classes that implment method calls need to set the raw message once a
-  // response is received from the server. See object_proxy.h.
-  ErrorResponse();
+  // Returns a newly created Response from the given raw message of the
+  // type DBUS_MESSAGE_TYPE_METHOD_RETURN. The caller must delete the
+  // returned object. Takes the ownership of |raw_message|.
+  static ErrorResponse* FromRawMessage(DBusMessage* raw_message);
 
   // Returns a newly created ErrorResponse from the given method call, the
   // error name, and the error message.  The error name looks like
@@ -195,6 +215,9 @@ class ErrorResponse: public Message {
                                        const std::string& error_message);
 
  private:
+  // Creates an ErrorResponse message. The internal raw message is NULL.
+  ErrorResponse();
+
   DISALLOW_COPY_AND_ASSIGN(ErrorResponse);
 };
 

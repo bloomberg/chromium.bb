@@ -45,6 +45,11 @@ Message::~Message() {
     dbus_message_unref(raw_message_);
 }
 
+void Message::Init(DBusMessage* raw_message) {
+  DCHECK(!raw_message_);
+  raw_message_ = raw_message;
+}
+
 Message::MessageType Message::GetMessageType() {
   if (!raw_message_)
     return MESSAGE_INVALID;
@@ -52,10 +57,21 @@ Message::MessageType Message::GetMessageType() {
   return static_cast<Message::MessageType>(type);
 }
 
-void Message::reset_raw_message(DBusMessage* raw_message) {
-  if (raw_message_)
-    dbus_message_unref(raw_message_);
-  raw_message_ = raw_message;
+std::string Message::GetMessageTypeAsString() {
+  switch (GetMessageType()) {
+    case MESSAGE_INVALID:
+      return "MESSAGE_INVALID";
+    case MESSAGE_METHOD_CALL:
+      return "MESSAGE_METHOD_CALL";
+    case MESSAGE_METHOD_RETURN:
+      return "MESSAGE_METHOD_RETURN";
+    case MESSAGE_SIGNAL:
+      return "MESSAGE_SIGNAL";
+    case MESSAGE_ERROR:
+      return "MESSAGE_ERROR";
+  }
+  NOTREACHED();
+  return "";
 }
 
 std::string Message::ToStringInternal(const std::string& indent,
@@ -203,6 +219,7 @@ std::string Message::ToString() {
 
   // Generate headers first.
   std::string headers;
+  AppendStringHeader("message_type", GetMessageTypeAsString(), &headers);
   AppendStringHeader("destination", GetDestination(), &headers);
   AppendStringHeader("path", GetPath(), &headers);
   AppendStringHeader("interface", GetInterface(), &headers);
@@ -312,22 +329,20 @@ uint32 Message::GetReplySerial() {
 MethodCall::MethodCall(const std::string& interface_name,
                        const std::string& method_name)
     : Message() {
-  reset_raw_message(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_CALL));
+  Init(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_CALL));
 
   SetInterface(interface_name);
   SetMember(method_name);
 }
 
+MethodCall::MethodCall() : Message() {
+}
+
 MethodCall* MethodCall::FromRawMessage(DBusMessage* raw_message) {
   DCHECK_EQ(DBUS_MESSAGE_TYPE_METHOD_CALL, dbus_message_get_type(raw_message));
 
-  const char* interface = dbus_message_get_interface(raw_message);
-  const char* member = dbus_message_get_member(raw_message);
-  std::string interface_string = interface ? interface : "";
-  std::string member_string = member ? member : "";
-
-  MethodCall* method_call = new MethodCall(interface_string, member_string);
-  method_call->reset_raw_message(raw_message);
+  MethodCall* method_call = new MethodCall;
+  method_call->Init(raw_message);
   return method_call;
 }
 
@@ -337,22 +352,20 @@ MethodCall* MethodCall::FromRawMessage(DBusMessage* raw_message) {
 Signal::Signal(const std::string& interface_name,
                const std::string& method_name)
     : Message() {
-  reset_raw_message(dbus_message_new(DBUS_MESSAGE_TYPE_SIGNAL));
+  Init(dbus_message_new(DBUS_MESSAGE_TYPE_SIGNAL));
 
   SetInterface(interface_name);
   SetMember(method_name);
 }
 
+Signal::Signal() : Message() {
+}
+
 Signal* Signal::FromRawMessage(DBusMessage* raw_message) {
   DCHECK_EQ(DBUS_MESSAGE_TYPE_SIGNAL, dbus_message_get_type(raw_message));
 
-  const char* interface = dbus_message_get_interface(raw_message);
-  const char* member = dbus_message_get_member(raw_message);
-  std::string interface_string = interface ? interface : "";
-  std::string member_string = member ? member : "";
-
-  Signal* signal = new Signal(interface_string, member_string);
-  signal->reset_raw_message(raw_message);
+  Signal* signal = new Signal;
+  signal->Init(raw_message);
   return signal;
 }
 
@@ -363,13 +376,26 @@ Signal* Signal::FromRawMessage(DBusMessage* raw_message) {
 Response::Response() : Message() {
 }
 
-Response* Response::FromMethodCall(MethodCall* method_call) {
+Response* Response::FromRawMessage(DBusMessage* raw_message) {
+  DCHECK_EQ(DBUS_MESSAGE_TYPE_METHOD_RETURN,
+            dbus_message_get_type(raw_message));
+
   Response* response = new Response;
-  response->reset_raw_message(
-      dbus_message_new_method_return(method_call->raw_message()));
+  response->Init(raw_message);
   return response;
 }
 
+Response* Response::FromMethodCall(MethodCall* method_call) {
+  Response* response = new Response;
+  response->Init(dbus_message_new_method_return(method_call->raw_message()));
+  return response;
+}
+
+Response* Response::CreateEmpty() {
+  Response* response = new Response;
+  response->Init(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_RETURN));
+  return response;
+}
 //
 // ErrorResponse implementation.
 //
@@ -377,15 +403,22 @@ Response* Response::FromMethodCall(MethodCall* method_call) {
 ErrorResponse::ErrorResponse() : Message() {
 }
 
+ErrorResponse* ErrorResponse::FromRawMessage(DBusMessage* raw_message) {
+  DCHECK_EQ(DBUS_MESSAGE_TYPE_ERROR, dbus_message_get_type(raw_message));
+
+  ErrorResponse* response = new ErrorResponse;
+  response->Init(raw_message);
+  return response;
+}
+
 ErrorResponse* ErrorResponse::FromMethodCall(
     MethodCall* method_call,
     const std::string& error_name,
     const std::string& error_message) {
   ErrorResponse* response = new ErrorResponse;
-  response->reset_raw_message(
-      dbus_message_new_error(method_call->raw_message(),
-                             error_name.c_str(),
-                             error_message.c_str()));
+  response->Init(dbus_message_new_error(method_call->raw_message(),
+                                        error_name.c_str(),
+                                        error_message.c_str()));
   return response;
 }
 

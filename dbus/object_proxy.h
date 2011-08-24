@@ -60,12 +60,11 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
       OnConnectedCallback;
 
   // Calls the method of the remote object and blocks until the response
-  // is returned.
+  // is returned. Returns NULL on error.
   //
   // BLOCKING CALL.
-  virtual bool CallMethodAndBlock(MethodCall* method_call,
-                                  int timeout_ms,
-                                  Response* response);
+  virtual Response* CallMethodAndBlock(MethodCall* method_call,
+                                       int timeout_ms);
 
   // Requests to call the method of the remote object.
   //
@@ -132,7 +131,7 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
 
   // Runs the response callback with the given response object.
   void RunResponseCallback(ResponseCallback response_callback,
-                           Response* response);
+                           void* response_message);
 
   // Redirects the function call to OnPendingCallIsComplete().
   static void OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
