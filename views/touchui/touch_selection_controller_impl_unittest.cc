@@ -58,7 +58,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     gfx::RenderText* render_text = textfield_view_->GetRenderText();
     gfx::Rect cursor_bounds = render_text->GetCursorBounds(
         gfx::SelectionModel(cursor_pos), false);
-    return gfx::Point(cursor_bounds.x(), cursor_bounds.bottom());
+    return gfx::Point(cursor_bounds.x(), cursor_bounds.bottom() - 1);
   }
 
   TouchSelectionControllerImpl* GetSelectionController() {
