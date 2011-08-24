@@ -70,7 +70,6 @@ PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {
 }
 
 TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
-  // Get/Create preview tab for initiator tab.
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
   if (!tab_controller)

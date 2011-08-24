@@ -596,12 +596,11 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   }
 }
 
-void PrintPreviewHandler::HandleHidePreview(const ListValue* args) {
+void PrintPreviewHandler::HandleHidePreview(const ListValue*) {
   HidePreviewTab();
 }
 
-void PrintPreviewHandler::HandleCancelPendingPrintRequest(
-    const ListValue* args) {
+void PrintPreviewHandler::HandleCancelPendingPrintRequest(const ListValue*) {
   TabContentsWrapper* wrapper = NULL;
   TabContents* initiator_tab = GetInitiatorTab();
   if (initiator_tab) {
@@ -619,8 +618,7 @@ void PrintPreviewHandler::HandleCancelPendingPrintRequest(
   delete TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 }
 
-void PrintPreviewHandler::HandleSaveLastPrinter(
-    const ListValue* args) {
+void PrintPreviewHandler::HandleSaveLastPrinter(const ListValue* args) {
   std::string data_to_save;
   if (args->GetString(0, &data_to_save) && !data_to_save.empty()) {
     if (last_used_printer_name_ == NULL)
@@ -634,8 +632,7 @@ void PrintPreviewHandler::HandleSaveLastPrinter(
   }
 }
 
-void PrintPreviewHandler::HandleGetPrinterCapabilities(
-    const ListValue* args) {
+void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
   std::string printer_name;
   bool ret = args->GetString(0, &printer_name);
   if (!ret || printer_name.empty())
@@ -662,7 +659,7 @@ void PrintPreviewHandler::HandleManageCloudPrint(const ListValue*) {
                    PageTransition::LINK);
 }
 
-void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
+void PrintPreviewHandler::HandleShowSystemDialog(const ListValue*) {
   ReportStats();
   ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
 
@@ -677,7 +674,7 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* args) {
   manager->PrintForSystemDialogNow();
 }
 
-void PrintPreviewHandler::HandleManagePrinters(const ListValue* args) {
+void PrintPreviewHandler::HandleManagePrinters(const ListValue*) {
   ++manage_printers_dialog_request_count_;
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
@@ -695,7 +692,7 @@ void PrintPreviewHandler::HandleReloadCrashedInitiatorTab(const ListValue*) {
   ActivateInitiatorTabAndClosePreviewTab();
 }
 
-void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* args) {
+void PrintPreviewHandler::HandleClosePreviewTab(const ListValue*) {
   ReportStats();
   ReportUserActionHistogram(CANCEL);
 

@@ -29,7 +29,7 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
   virtual void DidStartLoading();
 
  private:
-  // Gets the print preview tab associated with |owner_|.
+  // Gets the print preview tab associated with the TabContents being observed.
   TabContents* GetPrintPreviewTab();
 
   // Message handlers.
