@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -27,6 +25,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_manager_factory.h"
+#include "views/test/views_test_base.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
@@ -100,24 +99,19 @@ const int kThumbnailSuperStarID = count++;
 
 namespace views {
 
-class FocusManagerTest : public testing::Test, public WidgetDelegate {
+class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
  public:
   FocusManagerTest()
       : window_(NULL),
         content_view_(NULL),
         focus_change_listener_(NULL) {
-#if defined(OS_WIN)
-    OleInitialize(NULL);
-#endif
   }
 
   ~FocusManagerTest() {
-#if defined(OS_WIN)
-    OleUninitialize();
-#endif
   }
 
   virtual void SetUp() OVERRIDE {
+    ViewsTestBase::SetUp();
     window_ = Widget::CreateWindowWithBounds(this, bounds());
     InitContentView();
     window_->Show();
@@ -129,7 +123,8 @@ class FocusManagerTest : public testing::Test, public WidgetDelegate {
     window_->Close();
 
     // Flush the message loop to make application verifiers happy.
-    message_loop()->RunAllPending();
+    RunPendingMessages();
+    ViewsTestBase::TearDown();
   }
 
   FocusManager* GetFocusManager() {
@@ -193,8 +188,6 @@ class FocusManagerTest : public testing::Test, public WidgetDelegate {
 #endif
   }
 
-  MessageLoopForUI* message_loop() { return &message_loop_; }
-
   Widget* window_;
   View* content_view_;
 
@@ -256,7 +249,6 @@ class FocusManagerTest : public testing::Test, public WidgetDelegate {
 
  private:
   FocusChangeListener* focus_change_listener_;
-  MessageLoopForUI message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusManagerTest);
 };
@@ -963,13 +955,13 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   content_view_->AddChildView(button);
   button->SetBounds(10, 10, 200, 30);
   content_view_->AddChildView(view);
-  message_loop()->RunAllPending();
+  RunPendingMessages();
 
   TestFocusChangeListener listener;
   AddFocusChangeListener(&listener);
 
   view->RequestFocus();
-  message_loop()->RunAllPending();
+  RunPendingMessages();
   //  MessageLoopForUI::current()->Run(new AcceleratorHandler());
 
   // Visual Studio 2010 has problems converting NULL to the null pointer for
@@ -1699,6 +1691,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
   };
 
   virtual void SetUp() {
+    ViewsTestBase::SetUp();
     FocusManagerFactory::Install(new TestFocusManagerFactory(&dtor_tracker_));
     // Create WindowDtorTracked that uses FocusManagerDtorTracked.
     window_ = new WindowDtorTracked(&dtor_tracker_);
@@ -1715,9 +1708,10 @@ class FocusManagerDtorTest : public FocusManagerTest {
   virtual void TearDown() {
     if (window_) {
       window_->Close();
-      message_loop()->RunAllPending();
+      RunPendingMessages();
     }
     FocusManagerFactory::Install(NULL);
+    ViewsTestBase::TearDown();
   }
 
   FocusManager* tracked_focus_manager_;
@@ -1735,7 +1729,7 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
 
   // Close the window.
   window_->Close();
-  message_loop()->RunAllPending();
+  RunPendingMessages();
 
   // Test window, button and focus manager should all be destructed.
   ASSERT_EQ(3, static_cast<int>(dtor_tracker_.size()));

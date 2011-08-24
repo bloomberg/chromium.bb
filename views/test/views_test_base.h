@@ -9,9 +9,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "views/test/test_views_delegate.h"
 
 namespace views {
+
+class TestViewsDelegate;
 
 // A base class for views unit test. It creates a message loop necessary
 // to drive UI events and takes care of OLE initialization for windows.
@@ -21,18 +24,25 @@ class ViewsTestBase : public testing::Test {
   virtual ~ViewsTestBase();
 
   // testing::Test:
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   void RunPendingMessages() {
     message_loop_.RunAllPending();
   }
 
  protected:
-  TestViewsDelegate& views_delegate() { return views_delegate_; }
+  TestViewsDelegate& views_delegate() const { return *views_delegate_.get(); }
+
+  void set_views_delegate(TestViewsDelegate* views_delegate) {
+    views_delegate_.reset(views_delegate);
+  }
 
  private:
   MessageLoopForUI message_loop_;
-  TestViewsDelegate views_delegate_;
+  scoped_ptr<TestViewsDelegate> views_delegate_;
+  bool setup_called_;
+  bool teardown_called_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsTestBase);
 };

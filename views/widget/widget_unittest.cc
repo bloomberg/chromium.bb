@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/test/test_views_delegate.h"
+#include "views/test/views_test_base.h"
 #include "views/views_delegate.h"
 
 #if defined(OS_WIN)
@@ -80,35 +81,23 @@ class WidgetTestViewsDelegate : public TestViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(WidgetTestViewsDelegate);
 };
 
-class WidgetTest : public testing::Test {
+class WidgetTest : public ViewsTestBase {
  public:
   WidgetTest() {
-#if defined(OS_WIN)
-    OleInitialize(NULL);
-#endif
   }
   virtual ~WidgetTest() {
-#if defined(OS_WIN)
-    OleUninitialize();
-#endif
   }
 
-  virtual void TearDown() {
-    // Flush the message loop because we have pending release tasks
-    // and these tasks if un-executed would upset Valgrind.
-    RunPendingMessages();
+  virtual void SetUp() OVERRIDE {
+    set_views_delegate(new WidgetTestViewsDelegate());
+    ViewsTestBase::SetUp();
   }
 
-  void RunPendingMessages() {
-    message_loop_.RunAllPending();
+  WidgetTestViewsDelegate& widget_views_delegate() const {
+    return static_cast<WidgetTestViewsDelegate&>(views_delegate());
   }
-
- protected:
-  WidgetTestViewsDelegate views_delegate;
 
  private:
-  MessageLoopForUI message_loop_;
-
   DISALLOW_COPY_AND_ASSIGN(WidgetTest);
 };
 
@@ -184,7 +173,7 @@ TEST_F(WidgetTest, GetTopLevelWidget_Synthetic) {
   // Create a hierarchy consisting of a top level platform native widget and a
   // child NativeWidgetViews.
   Widget* toplevel = CreateTopLevelPlatformWidget();
-  views_delegate.set_default_parent_view(toplevel->GetRootView());
+  widget_views_delegate().set_default_parent_view(toplevel->GetRootView());
   Widget* child = CreateChildNativeWidgetViews();
 
   EXPECT_EQ(toplevel, toplevel->GetTopLevelWidget());
@@ -198,7 +187,7 @@ TEST_F(WidgetTest, GetTopLevelWidget_Synthetic) {
 // NativeWidgetViews, and a child of that child, another NativeWidgetViews.
 TEST_F(WidgetTest, GetTopLevelWidget_SyntheticParent) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
-  views_delegate.set_default_parent_view(toplevel->GetRootView());
+  widget_views_delegate().set_default_parent_view(toplevel->GetRootView());
 
   Widget* child1 = CreateChildNativeWidgetViews(); // Will be parented
                                                    // automatically to
@@ -213,10 +202,16 @@ TEST_F(WidgetTest, GetTopLevelWidget_SyntheticParent) {
   // |child1| and |child11| should be destroyed with |toplevel|.
 }
 
+// This is flaky on touch build. See crbug.com/94137.
+#if defined(TOUCH_UI)
+#define MAYBE_GrabUngrab DISABLED_GrabUngrab
+#else
+#define MAYBE_GrabUngrab GrabUngrab
+#endif
 // Tests some grab/ungrab events.
-TEST_F(WidgetTest, GrabUngrab) {
+TEST_F(WidgetTest, MAYBE_GrabUngrab) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
-  views_delegate.set_default_parent_view(toplevel->GetRootView());
+  widget_views_delegate().set_default_parent_view(toplevel->GetRootView());
 
   Widget* child1 = CreateChildNativeWidgetViews(); // Will be parented
                                                    // automatically to
@@ -313,8 +308,10 @@ class WidgetOwnershipTest : public WidgetTest {
   virtual ~WidgetOwnershipTest() {}
 
   virtual void SetUp() {
+    WidgetTest::SetUp();
     desktop_widget_ = CreateTopLevelPlatformWidget();
-    views_delegate.set_default_parent_view(desktop_widget_->GetRootView());
+    widget_views_delegate().set_default_parent_view(
+        desktop_widget_->GetRootView());
   }
 
   virtual void TearDown() {
@@ -668,7 +665,7 @@ class WidgetObserverTest : public WidgetTest,
 
 TEST_F(WidgetObserverTest, ActivationChange) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
-  views_delegate.set_default_parent_view(toplevel->GetRootView());
+  widget_views_delegate().set_default_parent_view(toplevel->GetRootView());
 
   Widget* child1 = NewWidget();
   Widget* child2 = NewWidget();
@@ -686,7 +683,7 @@ TEST_F(WidgetObserverTest, ActivationChange) {
 
 TEST_F(WidgetObserverTest, VisibilityChange) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
-  views_delegate.set_default_parent_view(toplevel->GetRootView());
+  widget_views_delegate().set_default_parent_view(toplevel->GetRootView());
 
   Widget* child1 = NewWidget();
   Widget* child2 = NewWidget();

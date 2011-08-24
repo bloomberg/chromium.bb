@@ -506,7 +506,11 @@
                ],
             }],
             [ 'touchui==1', {
-              'sources!': [ 'focus/accelerator_handler_gtk_unittest.cc' ],
+              'sources!': [
+                'focus/accelerator_handler_gtk_unittest.cc',
+                'controls/table/table_view_unittest.cc',
+                'controls/tabbed_pane/tabbed_pane_unittest.cc'
+              ],
             }],
           ],
         },

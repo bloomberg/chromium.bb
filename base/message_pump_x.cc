@@ -251,7 +251,7 @@ void MessagePumpX::EventDispatcherX(GdkEvent* event, gpointer data) {
   } else if (!pump_x->IsDispatchingEvent()) {
     if (event->type != GDK_NOTHING &&
         pump_x->capture_gdk_events_[event->type]) {
-      NOTREACHED() << "GDK received an event it shouldn't have";
+      NOTREACHED() << "GDK received an event it shouldn't have:" << event->type;
     }
   }
 

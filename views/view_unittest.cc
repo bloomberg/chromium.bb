@@ -1161,6 +1161,7 @@ class DefaultButtonTest : public ViewTest {
   }
 
   virtual void SetUp() OVERRIDE {
+    ViewTest::SetUp();
     test_dialog_ = new TestDialog(NULL);
     Widget* window =
         Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
@@ -1271,6 +1272,7 @@ class ButtonDropDownTest : public ViewTest {
   }
 
   virtual void SetUp() OVERRIDE {
+    ViewTest::SetUp();
     test_dialog_ = new TestDialog(&mock_menu_model_);
     Widget* window =
         Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
@@ -2417,6 +2419,7 @@ class ViewLayerTest : public ViewsTestBase {
   }
 
   virtual void SetUp() OVERRIDE {
+    ViewTest::SetUp();
     old_use_acceleration_ = View::get_use_acceleration_when_possible();
     View::set_use_acceleration_when_possible(true);
 

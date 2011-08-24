@@ -117,13 +117,14 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
   // ::testing::Test:
   virtual void SetUp() {
+    ViewsTestBase::SetUp();
     Widget::SetPureViews(true);
   }
 
   virtual void TearDown() {
-    Widget::SetPureViews(false);
     if (widget_)
       widget_->Close();
+    Widget::SetPureViews(false);
     ViewsTestBase::TearDown();
   }
 
@@ -657,6 +658,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   EXPECT_FALSE(textfield_view_->CanDrop(bad_data));
 }
 
+#if !defined(TOUCH_UI)
 TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello string world"));
@@ -828,6 +830,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
   textfield_view_->OnDragDone();
   EXPECT_EQ(ASCIIToUTF16("hello world"), textfield_->text());
 }
+#endif
 
 TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);

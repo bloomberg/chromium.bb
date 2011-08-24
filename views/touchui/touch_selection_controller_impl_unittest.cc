@@ -23,12 +23,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
         textfield_view_(NULL) {
   }
 
-  virtual void SetUp() {
-    Widget::SetPureViews(true);
-  }
-
   virtual void TearDown() {
-    Widget::SetPureViews(false);
     if (widget_)
       widget_->Close();
     ViewsTestBase::TearDown();
