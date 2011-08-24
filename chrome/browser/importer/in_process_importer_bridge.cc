@@ -74,7 +74,6 @@ void InProcessImporterBridge::SetKeywords(
 
 void InProcessImporterBridge::SetPasswordForm(
     const webkit_glue::PasswordForm& form) {
-  LOG(ERROR) << "InProcessImporterBridge::SetPasswordForm";
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(writer_, &ProfileWriter::AddPasswordForm, form));
