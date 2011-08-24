@@ -115,13 +115,17 @@ bool ExtensionTtsPlatformImplWin::Speak(
 
   HRESULT result = speech_synthesizer_->Speak(
       merged_utterance.c_str(),
-      SPF_ASYNC | SPF_PURGEBEFORESPEAK,
+      SPF_ASYNC,
       &stream_number_);
   return (result == S_OK);
 }
 
 bool ExtensionTtsPlatformImplWin::StopSpeaking() {
   if (speech_synthesizer_ && !paused_) {
+    // Clear the stream number so that any further events relating to this
+    // utterance are ignored.
+    stream_number_ = 0;
+
     speech_synthesizer_->Pause();
     paused_ = true;
   }

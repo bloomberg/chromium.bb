@@ -47,7 +47,8 @@ class ExtensionTtsPlatformImplMac : public ExtensionTtsPlatformImpl {
 
   // Called by ChromeTtsDelegate when we get a callback from the
   // native speech engine.
-  void OnSpeechEvent(TtsEventType event_type,
+  void OnSpeechEvent(NSSpeechSynthesizer* sender,
+                     TtsEventType event_type,
                      int char_index,
                      const std::string& error_message);
 
@@ -79,6 +80,14 @@ bool ExtensionTtsPlatformImplMac::Speak(
     const std::string& utterance,
     const std::string& lang,
     const UtteranceContinuousParameters& params) {
+  // Deliberately construct a new speech synthesizer every time Speak is
+  // called, otherwise there's no way to know whether calls to the delegate
+  // apply to the current utterance or a previous utterance. In
+  // experimentation, the overhead of constructing and destructing a
+  // NSSpeechSynthesizer is minimal.
+  speech_synthesizer_.reset([[NSSpeechSynthesizer alloc] init]);
+  [speech_synthesizer_ setDelegate:delegate_];
+
   utterance_id_ = utterance_id;
   sent_start_event_ = false;
 
@@ -112,11 +121,15 @@ bool ExtensionTtsPlatformImplMac::Speak(
 }
 
 bool ExtensionTtsPlatformImplMac::StopSpeaking() {
-  [speech_synthesizer_ stopSpeaking];
+  if (speech_synthesizer_.get()) {
+    [speech_synthesizer_ stopSpeaking];
+    speech_synthesizer_.reset(nil);
+  }
   return true;
 }
 
 bool ExtensionTtsPlatformImplMac::IsSpeaking() {
+  // Note: this is OK even if speech_synthesizer_ is nil, it will return false.
   return [speech_synthesizer_ isSpeaking];
 }
 
@@ -128,9 +141,16 @@ bool ExtensionTtsPlatformImplMac::SendsEvent(TtsEventType event_type) {
 }
 
 void ExtensionTtsPlatformImplMac::OnSpeechEvent(
+    NSSpeechSynthesizer* sender,
     TtsEventType event_type,
     int char_index,
     const std::string& error_message) {
+  // Don't send events from an utterance that's already completed.
+  // This depends on the fact that we construct a new NSSpeechSynthesizer
+  // each time we call Speak.
+  if (sender != speech_synthesizer_.get())
+    return;
+
   if (event_type == TTS_EVENT_END)
     char_index = utterance_.size();
   ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
@@ -146,14 +166,11 @@ void ExtensionTtsPlatformImplMac::OnSpeechEvent(
 ExtensionTtsPlatformImplMac::ExtensionTtsPlatformImplMac() {
   utterance_id_ = -1;
   sent_start_event_ = true;
-  speech_synthesizer_.reset([[NSSpeechSynthesizer alloc] init]);
 
   delegate_.reset([[ChromeTtsDelegate alloc] initWithPlatformImplMac:this]);
-  [speech_synthesizer_ setDelegate:delegate_];
 }
 
 ExtensionTtsPlatformImplMac::~ExtensionTtsPlatformImplMac() {
-  [speech_synthesizer_ setDelegate:nil];
 }
 
 // static
@@ -172,13 +189,14 @@ ExtensionTtsPlatformImplMac* ExtensionTtsPlatformImplMac::GetInstance() {
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
         didFinishSpeaking:(BOOL)finished_speaking {
-  ttsImplMac_->OnSpeechEvent(TTS_EVENT_END, 0, "");
+  ttsImplMac_->OnSpeechEvent(sender, TTS_EVENT_END, 0, "");
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
             willSpeakWord:(NSRange)character_range
                  ofString:(NSString*)string {
-  ttsImplMac_->OnSpeechEvent(TTS_EVENT_WORD, character_range.location, "");
+  ttsImplMac_->OnSpeechEvent(sender, TTS_EVENT_WORD,
+      character_range.location, "");
 }
 
 - (void)speechSynthesizer:(NSSpeechSynthesizer*)sender
@@ -186,7 +204,8 @@ ExtensionTtsPlatformImplMac* ExtensionTtsPlatformImplMac::GetInstance() {
                  ofString:(NSString*)string
                   message:(NSString*)message {
   std::string message_utf8 = base::SysNSStringToUTF8(message);
-  ttsImplMac_->OnSpeechEvent(TTS_EVENT_ERROR, character_index, message_utf8);
+  ttsImplMac_->OnSpeechEvent(sender, TTS_EVENT_ERROR, character_index,
+      message_utf8);
 }
 
 @end
