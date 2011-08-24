@@ -73,6 +73,8 @@ class FakeSocket : public net::StreamSocket {
 
   net::BoundNetLog net_log_;
 
+  MessageLoop* message_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeSocket);
 };
 
@@ -109,6 +111,8 @@ class FakeUdpSocket : public net::Socket {
   std::vector<std::string> written_packets_;
   std::vector<std::string> input_packets_;
   int input_pos_;
+
+  MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUdpSocket);
 };

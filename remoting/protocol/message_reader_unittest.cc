@@ -1,9 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "net/socket/socket.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/message_reader.h"
@@ -35,6 +40,20 @@ class MockMessageReceivedCallback {
 };
 
 class MessageReaderTest : public testing::Test {
+ public:
+  MessageReaderTest()
+      : other_thread_("SecondTestThread"),
+        run_task_finished_(false, false) {
+  }
+
+  void RunDoneTaskOnOtherThread(CompoundBuffer* buffer, Task* done_task) {
+    other_thread_.message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&MessageReaderTest::RunAndDeleteTask,
+                   base::Unretained(this),
+                   done_task));
+  }
+
  protected:
   virtual void SetUp() {
     reader_ = new MessageReader();
@@ -61,8 +80,12 @@ class MessageReaderTest : public testing::Test {
   void RunAndDeleteTask(Task* task) {
     task->Run();
     delete task;
+    run_task_finished_.Signal();
   }
 
+  MessageLoop message_loop_;
+  base::Thread other_thread_;
+  base::WaitableEvent run_task_finished_;
   scoped_refptr<MessageReader> reader_;
   FakeSocket socket_;
   MockMessageReceivedCallback callback_;
@@ -237,6 +260,35 @@ TEST_F(MessageReaderTest, TwoMessages_Separately) {
   RunAndDeleteTask(done_task);
 
   EXPECT_TRUE(socket_.read_pending());
+}
+
+// Verify that socket operations occur on same thread, even when the OnMessage()
+// callback triggers |done_task| to run on a different thread.
+TEST_F(MessageReaderTest, UseSocketOnCorrectThread) {
+
+  AddMessage(kTestMessage1);
+  other_thread_.Start();
+
+  EXPECT_CALL(callback_, OnMessage(_, _))
+      .Times(1)
+      .WillOnce(Invoke(this, &MessageReaderTest::RunDoneTaskOnOtherThread));
+
+  InitReader();
+
+  run_task_finished_.Wait();
+  message_loop_.RunAllPending();
+
+  // Write another message and verify that we receive it.
+  CompoundBuffer* buffer;
+  Task* done_task;
+  EXPECT_CALL(callback_, OnMessage(_, _))
+      .Times(1)
+      .WillOnce(DoAll(SaveArg<0>(&buffer),
+                      SaveArg<1>(&done_task)));
+  AddMessage(kTestMessage2);
+  EXPECT_TRUE(CompareResult(buffer, kTestMessage2));
+
+  RunAndDeleteTask(done_task);
 }
 
 }  // namespace protocol

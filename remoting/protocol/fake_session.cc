@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 namespace protocol {
@@ -15,13 +16,16 @@ const char kTestJid[] = "host1@gmail.com/chromoting123";
 
 FakeSocket::FakeSocket()
     : read_pending_(false),
-      input_pos_(0) {
+      input_pos_(0),
+      message_loop_(MessageLoop::current()) {
 }
 
 FakeSocket::~FakeSocket() {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
 }
 
 void FakeSocket::AppendInputData(const char* data, int data_size) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   input_data_.insert(input_data_.end(), data, data + data_size);
   // Complete pending read if any.
   if (read_pending_) {
@@ -39,6 +43,7 @@ void FakeSocket::AppendInputData(const char* data, int data_size) {
 
 int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
                      net::CompletionCallback* callback) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   if (input_pos_ < static_cast<int>(input_data_.size())) {
     int result = std::min(buf_len,
                           static_cast<int>(input_data_.size()) - input_pos_);
@@ -56,6 +61,7 @@ int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
 
 int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
                       net::CompletionCallback* callback) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   written_data_.insert(written_data_.end(),
                        buf->data(), buf->data() + buf_len);
   return buf_len;
@@ -71,6 +77,7 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
 }
 
 int FakeSocket::Connect(net::CompletionCallback* callback) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   return net::OK;
 }
 
@@ -79,6 +86,7 @@ void FakeSocket::Disconnect() {
 }
 
 bool FakeSocket::IsConnected() const {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   return true;
 }
 
@@ -100,6 +108,7 @@ int FakeSocket::GetLocalAddress(
 }
 
 const net::BoundNetLog& FakeSocket::NetLog() const {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   return net_log_;
 }
 
@@ -133,13 +142,16 @@ base::TimeDelta FakeSocket::GetConnectTimeMicros() const {
 
 FakeUdpSocket::FakeUdpSocket()
     : read_pending_(false),
-      input_pos_(0) {
+      input_pos_(0),
+      message_loop_(MessageLoop::current()) {
 }
 
 FakeUdpSocket::~FakeUdpSocket() {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
 }
 
 void FakeUdpSocket::AppendInputPacket(const char* data, int data_size) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   input_packets_.push_back(std::string());
   input_packets_.back().assign(data, data + data_size);
 
@@ -156,6 +168,7 @@ void FakeUdpSocket::AppendInputPacket(const char* data, int data_size) {
 
 int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
                         net::CompletionCallback* callback) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   if (input_pos_ < static_cast<int>(input_packets_.size())) {
     int result = std::min(
         buf_len, static_cast<int>(input_packets_[input_pos_].size()));
@@ -173,6 +186,7 @@ int FakeUdpSocket::Read(net::IOBuffer* buf, int buf_len,
 
 int FakeUdpSocket::Write(net::IOBuffer* buf, int buf_len,
                          net::CompletionCallback* callback) {
+  EXPECT_EQ(message_loop_, MessageLoop::current());
   written_packets_.push_back(std::string());
   written_packets_.back().assign(buf->data(), buf->data() + buf_len);
   return buf_len;

@@ -1,9 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "remoting/protocol/message_reader.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -89,14 +91,25 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
 
   pending_messages_ += new_messages.size();
 
+  // TODO(lambroslambrou): MessageLoopProxy::current() will not work from the
+  // plugin thread if this code is compiled into a separate binary.  Fix this.
   for (std::vector<CompoundBuffer*>::iterator it = new_messages.begin();
        it != new_messages.end(); ++it) {
     message_received_callback_->Run(*it, NewRunnableMethod(
-        this, &MessageReader::OnMessageDone, *it));
+        this, &MessageReader::OnMessageDone, *it,
+        base::MessageLoopProxy::current()));
   }
 }
 
-void MessageReader::OnMessageDone(CompoundBuffer* message) {
+void MessageReader::OnMessageDone(
+    CompoundBuffer* message,
+    scoped_refptr<base::MessageLoopProxy> message_loop) {
+  if (!message_loop->BelongsToCurrentThread()) {
+    message_loop->PostTask(
+        FROM_HERE,
+        base::Bind(&MessageReader::OnMessageDone, this, message, message_loop));
+    return;
+  }
   delete message;
   ProcessDoneEvent();
 }
