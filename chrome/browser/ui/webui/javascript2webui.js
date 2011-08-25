@@ -32,6 +32,7 @@ function TEST_F(testFixture, testFunction, testBody) {
   var testGenPreamble = this[testFixture].prototype.testGenPreamble;
   var testGenPostamble = this[testFixture].prototype.testGenPostamble;
   var typedefCppFixture = this[testFixture].prototype.typedefCppFixture;
+  var isAsync = this[testFixture].prototype.isAsync;
 
   if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
     print('typedef ' + typedefCppFixture + ' ' + testFixture + ';');
@@ -51,8 +52,9 @@ function TEST_F(testFixture, testFunction, testBody) {
           '      FILE_PATH_LITERAL("' + browsePrintPreload + '"))),\n' +
           '      "' + testFixture + '", "' + testFunction + '");');
   }
-  print('  ASSERT_TRUE(RunJavascriptTestF("' + testFixture + '", "' +
-        testFunction + '"));');
+  print('  ASSERT_TRUE(RunJavascriptTestF(' + isAsync + ', ' +
+        '"' + testFixture + '", ' +
+        '"' + testFunction + '"));');
   if (testGenPostamble)
     testGenPostamble(testFixture, testFunction);
   print('}');

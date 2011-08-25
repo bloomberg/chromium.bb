@@ -4,128 +4,180 @@
 
 /**
  * @fileoverview Library providing basic test framework functionality.
- **/
+ */
 
 /**
  * Namespace for |Test|.
  * @type {Object}
- **/
+ */
 var testing = {};
-
-/**
- * Hold the currentTestCase across between PreLoad and Run.
- * @type {TestCase}
- **/
-var currentTestCase = null;
-
-/**
- * @type {?string} The string representation of the currently running test
- *     function.
- */
-var currentTestFunction = null;
-
-/**
- * @type {?Array} The arguments of the currently running test.
- */
-var currentTestArguments = null;
-
-(function() {
-  // Provide global objects for generation case.
-  if (this['window'] === undefined)
-    this['window'] = this;
-  if (this['chrome'] === undefined) {
-    this['chrome'] = {
-      send: function() {},
-    };
-  }
-  if (this['console'] === undefined) {
-    this['console'] = {
-      log: print,
-    };
-  }
+(function(window) {
+  /**
+   * Hold the currentTestCase across between preLoad and run.
+   * @type {TestCase}
+   */
+  var currentTestCase = null;
 
   /**
+   * The string representation of the currently running test function.
+   * @type {?string}
+   */
+  var currentTestFunction = null;
+
+  /**
+   * The arguments of the currently running test.
+   * @type {?Array}
+   */
+  var currentTestArguments = null;
+
+ /**
    * This class will be exported as testing.Test, and is provided to hold the
    * fixture's configuration and callback methods for the various phases of
    * invoking a test. It is called "Test" rather than TestFixture to roughly
    * mimic the gtest's class names.
    * @constructor
-   **/
+   */
   function Test() {}
 
   Test.prototype = {
     /**
      * The name of the test.
-     **/
+     */
     name: null,
 
     /**
      * When set to a string value representing a url, generate BrowsePreload
-     * call, which will browse to the url and call fixture.PreLoad of the
+     * call, which will browse to the url and call fixture.preLoad of the
      * currentTestCase.
      * @type {string}
-     **/
+     */
     browsePreload: null,
 
     /**
      * When set to a string value representing an html page in the test
      * directory, generate BrowsePrintPreload call, which will browse to a url
-     * representing the file, cause print, and call fixture.PreLoad of the
+     * representing the file, cause print, and call fixture.preLoad of the
      * currentTestCase.
      * @type {string}
-     **/
+     */
     browsePrintPreload: null,
 
     /**
      * When set to a function, will be called in the context of the test
      * generation inside the function, and before any generated C++.
      * @type {function(string,string)}
-     **/
+     */
     testGenPreamble: null,
 
     /**
      * When set to a function, will be called in the context of the test
      * generation inside the function, and after any generated C++.
      * @type {function(string,string)}
-     **/
+     */
     testGenPostamble: null,
 
     /**
      * When set to a non-null string, auto-generate typedef before generating
      * TEST*: {@code typedef typedefCppFixture testFixture}.
      * @type {string}
-     **/
+     */
     typedefCppFixture: 'WebUIBrowserTest',
 
     /**
      * This should be initialized by the test fixture and can be referenced
-     * during the test run.
-     * @type {Mock4JS.Mock}
-     **/
+     * during the test run. It holds any mocked handler methods.
+     * @type {?Mock4JS.Mock}
+     */
     mockHandler: null,
+
+    /**
+     * This should be initialized by the test fixture and can be referenced
+     * during the test run. It holds any mocked global functions.
+     * @type {?Mock4JS.Mock}
+     */
+    mockGlobals: null,
+
+    /**
+     * Value is passed through call to C++ RunJavascriptF to invoke this test.
+     * @type {boolean}
+     */
+    isAsync: false,
 
     /**
      * Override this method to perform initialization during preload (such as
      * creating mocks and registering handlers).
      * @type {Function}
-     **/
-    PreLoad: function() {},
+     */
+    preLoad: function() {},
 
     /**
      * Override this method to perform tasks before running your test.
      * @type {Function}
-     **/
-    SetUp: function() {},
+     */
+    setUp: function() {},
 
     /**
      * Override this method to perform tasks after running your test. If you
      * create a mock class, you must call Mock4JS.verifyAllMocks() in this
      * phase.
      * @type {Function}
-     **/
-    TearDown: function() {
+     */
+    tearDown: function() {
       Mock4JS.verifyAllMocks();
-    }
+    },
+
+    /**
+     * Called to run the body from the perspective of this fixture.
+     * @type {Function}
+     */
+    runTest: function(testBody) {
+      testBody.call(this);
+    },
+
+    /**
+     * Create a closure function for continuing the test at a later time. May be
+     * used as a listener function.
+     * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
+     *     time.
+     * @param {Function} completion The function to call to complete the test.
+     * @param {...*} var_args Arguments to pass when calling completionAction.
+     * @return {function(): void} Return a function, bound to this test fixture,
+     *     which continues the test.
+     */
+    continueTest: function(whenTestDone, completion) {
+      var savedArgs = new SaveMockArguments();
+      var completionAction = new CallFunctionAction(
+          this, savedArgs, completion,
+          Array.prototype.slice.call(arguments, 2));
+      if (whenTestDone === WhenTestDone.DEFAULT)
+        whenTestDone = WhenTestDone.ASSERT;
+      var runAll = new RunAllAction(
+          true, whenTestDone, [completionAction]);
+      return function() {
+        savedArgs.arguments = Array.prototype.slice.call(arguments);
+        runAll.invoke();
+      };
+    },
+
+    /**
+     * Call this during setUp to defer the call to runTest() until later. The
+     * caller must call the returned function at some point to run the test.
+     * @type {Function}
+     * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
+     *     time.
+     * @param {...*} var_args Arguments to pass when running the
+     *     |currentTestCase|.
+     * @return {function(): void} A function which will run the current body of
+     *     the currentTestCase.
+     */
+    deferRunTest: function(whenTestDone) {
+      if (whenTestDone === WhenTestDone.DEFAULT)
+        whenTestDone = WhenTestDone.ALWAYS;
+
+      return currentTestCase.deferRunTest.apply(
+          currentTestCase, [whenTestDone].concat(
+              Array.prototype.slice.call(arguments, 1)));
+    },
   };
 
   /**
@@ -135,7 +187,7 @@ var currentTestArguments = null;
    * @param {Test} fixture The fixture object for this test case.
    * @param {Function} body The code to run for the test.
    * @constructor
-   **/
+   */
   function TestCase(name, fixture, body) {
     this.name = name;
     this.fixture = fixture;
@@ -143,17 +195,62 @@ var currentTestArguments = null;
   }
 
   TestCase.prototype = {
+    /**
+     * The name of this test.
+     * @type {string}
+     */
     name: null,
+
+    /**
+     * The test fixture to set |this| to when running the test |body|.
+     * @type {testing.Test}
+     */
     fixture: null,
+
+    /**
+     * The test body to execute in runTest().
+     * @type {Function}
+     */
     body: null,
+
+    /**
+     * True when the test fixture will run the test later.
+     * @type {boolean}
+     * @private
+     */
+    deferred_: false,
 
     /**
      * Called at preload time, proxies to the fixture.
      * @type {Function}
-     **/
-    PreLoad: function(name) {
+     */
+    preLoad: function(name) {
       if (this.fixture)
-        this.fixture.PreLoad();
+        this.fixture.preLoad();
+    },
+
+    /**
+     * Called before a test runs.
+     */
+    setUp: function() {
+      if (this.fixture)
+        this.fixture.setUp();
+    },
+
+    /**
+     * Called before a test is torn down (by testDone()).
+     */
+    tearDown: function() {
+      if (this.fixture)
+        this.fixture.tearDown();
+    },
+
+    /**
+     * Called to run this test's body.
+     */
+    runTest: function() {
+      if (this.body && this.fixture)
+        this.fixture.runTest(this.body);
     },
 
     /**
@@ -164,30 +261,60 @@ var currentTestArguments = null;
      * dummy constructor, but tests created with TEST should not rely on |this|
      * being set.
      * @type {Function}
-     **/
-    Run: function() {
-      if (this.fixture)
-        this.fixture.SetUp();
-      if (this.body)
-        this.body.call(this.fixture);
-      if (this.fixture)
-        this.fixture.TearDown();
+     */
+    run: function() {
+      try {
+        this.setUp();
+      } catch(e) {
+        console.error(e.stack);
+      }
+
+      if (!this.deferred_)
+        this.runTest();
+
+      // tearDown called by testDone().
     },
+
+    /**
+     * Cause this TestCase to be deferred (don't call runTest()) until the
+     * returned function is called.
+     * @type {Function}
+     * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
+     *     time.
+     * @param {...*} var_args Arguments to pass when running the
+     *     |currentTestCase|.
+     * @return {function(): void} A function thatwill run this TestCase when
+     *     called.
+     */
+    deferRunTest: function(whenTestDone) {
+      this.deferred_ = true;
+      var savedArgs = new SaveMockArguments();
+      var completionAction = new CallFunctionAction(
+          this, savedArgs, this.runTest,
+          Array.prototype.slice.call(arguments, 1));
+      var runAll = new RunAllAction(
+          true, whenTestDone, [completionAction]);
+      return function() {
+        savedArgs.arguments = Array.prototype.slice.call(arguments);
+        runAll.invoke();
+      };
+    },
+
   };
 
   /**
    * Registry of javascript-defined callbacks for {@code chrome.send}.
    * @type {Object}
-   **/
+   */
   var sendCallbacks = {};
 
   /**
    * Registers the message, object and callback for {@code chrome.send}
    * @param {string} name The name of the message to route to this |callback|.
-   * @param {Object} messageHAndler Pass as |this| when calling the |callback|.
+   * @param {Object} messageHandler Pass as |this| when calling the |callback|.
    * @param {function(...)} callback Called by {@code chrome.send}.
    * @see sendCallbacks
-   **/
+   */
   function registerMessageCallback(name, messageHandler, callback) {
     sendCallbacks[name] = [messageHandler, callback];
   }
@@ -199,15 +326,74 @@ var currentTestArguments = null;
    * @param {Mock4JS.Mock} mockObject The mock to register callbacks against.
    * @param {function(new:Object)} mockClAss Constructor for the mocked class.
    * @see registerMessageCallback
-   **/
+   */
   function registerMockMessageCallbacks(mockObject, mockClass) {
     var mockProxy = mockObject.proxy();
-    for (func in mockClass.prototype) {
-      if (typeof(mockClass.prototype[func]) == 'function') {
-        registerMessageCallback(func,
-                                mockProxy,
-                                mockProxy[func]);
+    for (var func in mockClass.prototype) {
+      if (typeof mockClass.prototype[func] === 'function') {
+        registerMessageCallback(func, mockProxy, mockProxy[func]);
       }
+    }
+  }
+
+  /**
+   * Holds the mapping of name -> global override information.
+   * @type {Object}
+   */
+  var globalOverrides = {};
+
+  /**
+   * When preloading JavaScript libraries, this is true until the
+   * DOMContentLoaded event has been received as globals cannot be overridden
+   * until the page has loaded its JavaScript.
+   * @type {boolean}
+   */
+  var deferGlobalOverrides = false;
+
+  /**
+   * Override the global function |funcName| with its registered mock. This
+   * should not be called twice for the same |funcName|.
+   * @param {string} funcName The name of the global function to override.
+   */
+  function overrideGlobal(funcName) {
+    assertNotEquals(undefined, this[funcName]);
+    var globalOverride = globalOverrides[funcName];
+    assertNotEquals(undefined, globalOverride);
+    assertEquals(undefined, globalOverride.original);
+    globalOverride.original = this[funcName];
+    this[funcName] = globalOverride.callback.bind(globalOverride.object);
+  }
+
+  /**
+   * Registers the global function name, object and callback.
+   * @param {string} name The name of the message to route to this |callback|.
+   * @param {Object} object Pass as |this| when calling the |callback|.
+   * @param {function(...)} callback Called by {@code chrome.send}.
+   */
+  function registerMockGlobal(name, object, callback) {
+    assertEquals(undefined, globalOverrides[name]);
+    globalOverrides[name] = {
+      object: object,
+      callback: callback,
+    };
+
+    if (!deferGlobalOverrides)
+      overrideGlobal(name);
+  }
+
+  /**
+   * Register all methods of {@code mockClass.prototype} as overrides to global
+   * functions of the same name as the method, using the proxy of the
+   * |mockObject| to handle the functions.
+   * @param {Mock4JS.Mock} mockObject The mock to register callbacks against.
+   * @param {function(new:Object)} mockClass Constructor for the mocked class.
+   * @see registerMessageCallback
+   */
+  function registerMockGlobals(mockObject, mockClass) {
+    var mockProxy = mockObject.proxy();
+    for (var func in mockClass.prototype) {
+      if (typeof mockClass.prototype[func] === 'function')
+        registerMockGlobal(func, mockProxy, mockProxy[func]);
     }
   }
 
@@ -215,7 +401,7 @@ var currentTestArguments = null;
    * Overrides {@code chrome.send} for routing messages to javascript
    * functions. Also falls back to sending with the original chrome object.
    * @param {string} messageName The message to route.
-   **/
+   */
   function send(messageName) {
     var callback = sendCallbacks[messageName];
     if (callback != undefined)
@@ -229,7 +415,7 @@ var currentTestArguments = null;
    * of their caller. Assert* methods should |registerCall| and expect* methods
    * should set |isExpect| and |expectName| properties to indicate that the
    * interesting caller is one more level up the stack.
-   **/
+   */
   function CallHelper() {
     this.__proto__ = CallHelper.prototype;
   }
@@ -239,7 +425,7 @@ var currentTestArguments = null;
      * Holds the mapping of (callerCallerString, callerName) -> count of times
      * called.
      * @type {Object.<string, Object.<string, number>>}
-     **/
+     */
     counts_: {},
 
     /**
@@ -248,7 +434,7 @@ var currentTestArguments = null;
      * @param {Function} caller the caller of the assert* routine.
      * @return {{callerName: string, callercallerString: string}} stackInfo
      * @private
-     **/
+     */
     getCallerInfo_: function(caller) {
       var callerName = caller.name;
       var callerCaller = caller.caller;
@@ -265,7 +451,7 @@ var currentTestArguments = null;
 
     /**
      * Register a call to an assertion class.
-     **/
+     */
     registerCall: function() {
       var stackInfo = this.getCallerInfo_(arguments.callee.caller);
       if (!(stackInfo.callerCallerString in this.counts_))
@@ -281,7 +467,7 @@ var currentTestArguments = null;
      * @param {Function} caller The caller of the assert* routine.
      * @return {String} Call signature.
      * @private
-     **/
+     */
     getCall_: function(caller) {
       var stackInfo = this.getCallerInfo_(caller);
       var count =
@@ -304,7 +490,7 @@ var currentTestArguments = null;
     /**
      * Returns the text of the call signature and any |message|.
      * @param {string=} message Addtional message text from caller.
-     **/
+     */
     getCallMessage: function(message) {
       var callMessage = this.getCall_(arguments.callee.caller);
       if (message)
@@ -316,7 +502,7 @@ var currentTestArguments = null;
   /**
    * Help register calls for better error reporting.
    * @type {CallHelper}
-   **/
+   */
   var helper = new CallHelper();
 
   /**
@@ -329,12 +515,18 @@ var currentTestArguments = null;
    * Holds the errors, if any, caught by expects so that the test case can
    * fail. Cleared when results are reported from runTest() or testDone().
    * @type {Array.<Error>}
-   **/
+   */
   var errors = [];
 
   /**
+   * URL to dummy WebUI page for testing framework.
+   * @type {string}
+   */
+  var DUMMY_URL = 'http://DummyURL';
+
+  /**
    * Resets test state by clearing |errors| and |testIsDone| flags.
-   **/
+   */
   function resetTestState() {
     errors.splice(0, errors.length);
     testIsDone = false;
@@ -344,10 +536,18 @@ var currentTestArguments = null;
    * Notifies the running browser test of the test results. Clears |errors|.
    * @param {Array.<boolean, string>=} result When passed, this is used for the
    *     testResult message.
-   **/
+   */
   function testDone(result) {
     if (!testIsDone) {
       testIsDone = true;
+      if (currentTestCase) {
+        try {
+          currentTestCase.tearDown();
+        } catch (e) {
+          errors.push(e);
+        }
+        currentTestCase = null;
+      }
       chrome.send('testResult', result ? result : testResult());
       errors.splice(0, errors.length);
     } else {
@@ -358,7 +558,7 @@ var currentTestArguments = null;
   /**
    * Returns [success, message] & clears |errors|.
    * @return {Array.<boolean, string>}
-   **/
+   */
   function testResult() {
     var result = [true, ''];
     if (errors.length) {
@@ -382,7 +582,7 @@ var currentTestArguments = null;
    * @param {boolean} test The predicate to check against |expected|.
    * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} upon failure.
-   **/
+   */
   function assertTrue(test, message) {
     helper.registerCall();
     if (test !== true)
@@ -395,7 +595,7 @@ var currentTestArguments = null;
    * @param {boolean} test The predicate to check against |expected|.
    * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} upon failure.
-   **/
+   */
   function assertFalse(test, message) {
     helper.registerCall();
     if (test !== false)
@@ -408,7 +608,7 @@ var currentTestArguments = null;
    * @param {number} val1 The number expected to be >= |val2|.
    * @param {number} val2 The number expected to be < |val1|.
    * @param {string=} message The message to include in the Error thrown.
-   **/
+   */
   function assertGE(val1, val2, message) {
     helper.registerCall();
     if (val1 < val2) {
@@ -422,7 +622,7 @@ var currentTestArguments = null;
    * @param {number} val1 The number expected to be > |val2|.
    * @param {number} val2 The number expected to be <= |val1|.
    * @param {string=} message The message to include in the Error thrown.
-   **/
+   */
   function assertGT(val1, val2, message) {
     helper.registerCall();
     if (val1 <= val2) {
@@ -437,7 +637,7 @@ var currentTestArguments = null;
    * @param {*} actual The predicate to check against |expected|.
    * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} upon failure.
-   **/
+   */
   function assertEquals(expected, actual, message) {
     helper.registerCall();
     if (expected != actual) {
@@ -445,7 +645,7 @@ var currentTestArguments = null;
           'Test Error ' + helper.getCallMessage(message) +
           '\nActual: ' + actual + '\nExpected: ' + expected);
     }
-    if (typeof expected != typeof actual) {
+    if (typeof expected !== typeof actual) {
       throw new Error(
           'Test Error (type mismatch) ' + helper.getCallMessage(message) +
           '\nActual Type: ' + typeof actual +
@@ -458,7 +658,7 @@ var currentTestArguments = null;
    * @param {number} val1 The number expected to be <= |val2|.
    * @param {number} val2 The number expected to be > |val1|.
    * @param {string=} message The message to include in the Error thrown.
-   **/
+   */
   function assertLE(val1, val2, message) {
     helper.registerCall();
     if (val1 > val2) {
@@ -472,7 +672,7 @@ var currentTestArguments = null;
    * @param {number} val1 The number expected to be < |val2|.
    * @param {number} val2 The number expected to be >= |val1|.
    * @param {string=} message The message to include in the Error thrown.
-   **/
+   */
   function assertLT(val1, val2, message) {
     helper.registerCall();
     if (val1 >= val2) {
@@ -487,7 +687,7 @@ var currentTestArguments = null;
    * @param {*} actual The predicate to check against |notExpected|.
    * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} upon failure.
-   **/
+   */
   function assertNotEquals(notExpected, actual, message) {
     helper.registerCall();
     if (notExpected === actual) {
@@ -501,7 +701,7 @@ var currentTestArguments = null;
    * Always aborts the current test.
    * @param {string=} message The message to include in the Error thrown.
    * @throws {Error} always.
-   **/
+   */
   function assertNotReached(message) {
     helper.registerCall();
     throw new Error(helper.getCallMessage(message));
@@ -516,7 +716,7 @@ var currentTestArguments = null;
    * @return {Function} A function that applies its arguments to |assertFunc|.
    * @see errors
    * @see runTest
-   **/
+   */
   function createExpect(assertFunc) {
     var expectFunc = function() {
       try {
@@ -543,7 +743,7 @@ var currentTestArguments = null;
    *     necessarily successful results) of this test.
    * @see errors
    * @see runTestFunction
-   **/
+   */
   function runTest(isAsync, testFunction, testArguments) {
     // Avoid eval() if at all possible, since it will not work on pages
     // that have enabled content-security-policy.
@@ -574,7 +774,7 @@ var currentTestArguments = null;
    * @return {Array.<boolean, string>} [test-succeeded, message-if-failed]
    * @see createExpect
    * @see testDone
-   **/
+   */
   function runTestFunction(testFunction, testBody, testArguments) {
     currentTestFunction = testFunction;
     currentTestArguments = testArguments;
@@ -588,7 +788,7 @@ var currentTestArguments = null;
    * @param {string} testFixture The fixture for this test case.
    * @param {string} testName The name for this test case.
    * @return {TestCase} A newly created TestCase.
-   **/
+   */
   function createTestCase(testFixture, testName) {
     var fixtureConstructor = this[testFixture];
     var testBody = fixtureConstructor.testCaseBodies[testName];
@@ -600,7 +800,7 @@ var currentTestArguments = null;
   /**
    * Used by WebUIBrowserTest to preload the javascript libraries at the
    * appropriate time for javascript injection into the current page. This
-   * creates a test case and calls its PreLoad for any early initialization such
+   * creates a test case and calls its preLoad for any early initialization such
    * as registering handlers before the page's javascript runs it's OnLoad
    * method. This is called before the page is loaded, so the |chrome| object is
    * not yet bound and this DOMContentLoaded listener will be called first to
@@ -608,22 +808,30 @@ var currentTestArguments = null;
    * @param {string} testFixture The test fixture name.
    * @param {string} testName The test name.
    * @see sendCallbacks
-   **/
+   */
   function preloadJavascriptLibraries(testFixture, testName) {
+    deferGlobalOverrides = true;
+
     window.addEventListener('DOMContentLoaded', function() {
       var oldChrome = chrome;
       chrome = {
         __proto__: oldChrome,
         send: send,
       };
+
+      // Override globals at load time so they will be defined.
+      assertTrue(deferGlobalOverrides);
+      deferGlobalOverrides = false;
+      for (var funcName in globalOverrides)
+        overrideGlobal(funcName);
     });
     currentTestCase = createTestCase(testFixture, testName);
-    currentTestCase.PreLoad();
+    currentTestCase.preLoad();
   }
 
   /**
    * During generation phase, this outputs; do nothing at runtime.
-   **/
+   */
   function GEN() {}
 
   /**
@@ -633,7 +841,7 @@ var currentTestArguments = null;
    * @param {string} testCaseName The name of the test case.
    * @param {string} testName The name of the test function.
    * @param {Function} testBody The body to execute when running this test.
-   **/
+   */
   function TEST(testCaseName, testName, testBody) {
     var fixtureConstructor = this[testCaseName];
     if (fixtureConstructor === undefined) {
@@ -655,7 +863,7 @@ var currentTestArguments = null;
    * @param {string} testFixture The name of the test fixture class.
    * @param {string} testName The name of the test function.
    * @param {Function} testBody The body to execute when running this test.
-   **/
+   */
   function TEST_F(testFixture, testName, testBody) {
     var fixtureConstructor = this[testFixture];
     if (!fixtureConstructor.prototype.name)
@@ -674,93 +882,372 @@ var currentTestArguments = null;
    * @param {string} testName The name of the test function.
    * @see preloadJavascriptLibraries
    * @see runTest
-   **/
+   */
   function RUN_TEST_F(testFixture, testName) {
-    try {
-      if (!currentTestCase)
-        currentTestCase = createTestCase(testFixture, testName);
-      assertEquals(currentTestCase.name, testName);
-      assertEquals(currentTestCase.fixture.name, testFixture);
-      console.log('Running TestCase ' + testFixture + '.' + testName);
-      currentTestCase.Run();
-    } finally {
-      currentTestCase = null;
-    }
+    if (!currentTestCase)
+      currentTestCase = createTestCase(testFixture, testName);
+    assertEquals(currentTestCase.name, testName);
+    assertEquals(currentTestCase.fixture.name, testFixture);
+    console.log('Running TestCase ' + testFixture + '.' + testName);
+    currentTestCase.run();
   }
 
   /**
-   * CallFunctionAction is provided to allow mocks to have side effects.
-   * @param {Function} func The function to call.
-   * @param {Array} args Any arguments to pass to func.
+   * This Mock4JS matcher object pushes each |actualArgument| parameter to
+   * match() calls onto |args|.
+   * @param {Array} args The array to push |actualArgument| onto.
+   * @param {Object} realMatcher The real matcher check arguments with.
    * @constructor
-   **/
-  function CallFunctionAction(func, args) {
-    this._func = func;
-    this._args = args;
-  }
-
-  CallFunctionAction.prototype = {
-    invoke: function() {
-      return this._func.apply(null, this._args);
-    },
-    describe: function() {
-      return 'calls the given function with arguments ' + this._args;
-    }
-  };
-
-  /**
-   * Syntactic sugar for will() on a Mock4JS.Mock.
-   * @param {Function} func the function to call when the method is invoked.
-   * @param {...*} var_args arguments to pass when calling func.
-   **/
-  function callFunction(func) {
-    return new CallFunctionAction(func,
-                                  Array.prototype.slice.call(arguments, 1));
-  }
-
-  /**
-   * Allow mock stubs() and expects() to know what arguments were passed to the
-   * |realMatcher|.
-   * @param {!Object} realMatcher The real matcher to perform matching with.
-   * @constructor
-   **/
-  function SaveArgumentsMatcher(realMatcher) {
+   * @extends {realMatcher}
+   */
+  function SaveMockArgumentMatcher(args, realMatcher) {
+    this.arguments_ = args;
     this.realMatcher_ = realMatcher;
   }
 
-  SaveArgumentsMatcher.prototype = {
+  SaveMockArgumentMatcher.prototype = {
     /**
-     * Remember the argument passed to this stub invocation.
-     * @type {*}
-     **/
-    argument: undefined,
+     * Holds the arguments to push each |actualArgument| onto.
+     * @type {Array}
+     * @private
+     */
+    arguments_: null,
 
     /**
-     * @type {Object} the object performing the real match.
-     * @private
+     * The real Mock4JS matcher object to check arguments with.
+     * @type {Object}
      */
     realMatcher_: null,
 
     /**
-     * Saves |actualArgument| for later use by the mock stub or expect.
+     * Pushes |actualArgument| onto |arguments_| and call |realMatcher_|. Clears
+     * |arguments_| on non-match.
      * @param {*} actualArgument The argument to match and save.
-     * @return {boolean} value of calling the |realMatcher_|.
-     **/
+     * @return {boolean} Result of calling the |realMatcher|.
+     */
     argumentMatches: function(actualArgument) {
-      this.argument = actualArgument;
-      return this.realMatcher_.argumentMatches.call(this.realMatcher_,
-                                                    actualArgument);
+      this.arguments_.push(actualArgument);
+      var match = this.realMatcher_.argumentMatches(actualArgument);
+      if (!match)
+        this.arguments_.splice(0, this.arguments_.length);
+
+      return match;
     },
 
     /**
-     * Generic description for this Matcher object.
-     * @return {string} description of the matcher for this argument.
-     **/
+     * Proxy to |realMatcher_| for description.
+     * @return {string} Description of this Mock4JS matcher.
+     */
     describe: function() {
-      return 'SaveArguments(' +
-          this.realMatcher_.describe.call(this.realMatcher_) + ')';
+      return this.realMatcher_.describe();
     },
   };
+
+  /**
+   * Actions invoked by Mock4JS's "will()" syntax do not receive arguments from
+   * the mocked method. This class works with SaveMockArgumentMatcher to save
+   * arguments so that the invoked Action can pass arguments through to the
+   * invoked function.
+   * @param {!Object} realMatcher The real matcher to perform matching with.
+   * @constructor
+   */
+  function SaveMockArguments() {
+    this.arguments = [];
+  }
+
+  SaveMockArguments.prototype = {
+    /**
+     * Wraps the |realMatcher| with an object which will push its argument onto
+     * |arguments| and call realMatcher.
+     * @param {Object} realMatcher A Mock4JS matcher object for this argument.
+     * @return {SaveMockArgumentMatcher} A new matcher which will push its
+     *     argument onto |arguments|.
+     */
+    match: function(realMatcher) {
+      return new SaveMockArgumentMatcher(this.arguments, realMatcher);
+    },
+
+    /**
+     * Remember the argument passed to this stub invocation.
+     * @type {Array}
+     */
+    arguments: null,
+  };
+
+  /**
+   * CallFunctionAction is provided to allow mocks to have side effects.
+   * @param {Object} obj The object to set |this| to when calling |func_|.
+   * @param {?SaveMockArguments} savedArgs when non-null, saved arguments are
+   *     passed to |func|.
+   * @param {Function} func The function to call.
+   * @param {Array=} args Any arguments to pass to func.
+   * @constructor
+   */
+  function CallFunctionAction(obj, savedArgs, func, args) {
+    this.obj_ = obj;
+    this.savedArgs_ = savedArgs;
+    this.func_ = func;
+    this.args_ = args ? args : [];
+  }
+
+  CallFunctionAction.prototype = {
+    /**
+     * Set |this| to |obj_| when calling |func_|.
+     * @type {?Object}
+     */
+    obj_: null,
+
+    /**
+     * The SaveMockArguments to hold arguments when invoking |func_|.
+     * @type {?SaveMockArguments}
+     * @private
+     */
+    savedArgs_: null,
+
+    /**
+     * The function to call when invoked.
+     * @type {!Function}
+     * @private
+     */
+    func_: null,
+
+    /**
+     * Arguments to pass to |func_| when invoked.
+     * @type {!Array}
+     */
+    args_: null,
+
+    /**
+     * Accessor for |func_|.
+     * @return {Function} The function to invoke.
+     */
+    get func() {
+      return this.func_;
+    },
+
+    /**
+     * Called by Mock4JS when using .will() to specify actions for stubs() or
+     * expects(). Clears |savedArgs_| so it can be reused.
+     * @return The results of calling |func_| with the concatenation of
+     *     |savedArgs_| and |args_|.
+     */
+    invoke: function() {
+      var prependArgs = [];
+      if (this.savedArgs_) {
+        prependArgs = this.savedArgs_.arguments.splice(
+            0, this.savedArgs_.arguments.length);
+      }
+      return this.func.apply(this.obj_, prependArgs.concat(this.args_));
+    },
+
+    /**
+     * Describe this action to Mock4JS.
+     * @return {string} A description of this action.
+     */
+    describe: function() {
+      return 'calls the given function with saved arguments and ' + this.args_;
+    }
+  };
+
+  /**
+   * Syntactic sugar for use with will() on a Mock4JS.Mock.
+   * @param {Function} func The function to call when the method is invoked.
+   * @param {...*} var_args Arguments to pass when calling func.
+   * @return {CallFunctionAction} Action for use in will.
+   */
+  function callFunction(func) {
+    return new CallFunctionAction(
+        null, null, func, Array.prototype.slice.call(arguments, 1));
+  }
+
+  /**
+   * Syntactic sugar for use with will() on a Mock4JS.Mock.
+   * @param {SaveMockArguments} savedArgs Arguments saved with this object
+   *     are passed to |func|.
+   * @param {Function} func The function to call when the method is invoked.
+   * @param {...*} var_args Arguments to pass when calling func.
+   * @return {CallFunctionAction} Action for use in will.
+   */
+  function callFunctionWithSavedArgs(savedArgs, func) {
+    return new CallFunctionAction(
+        null, savedArgs, func, Array.prototype.slice.call(arguments, 2));
+  }
+
+  /**
+   * CallGlobalAction as a subclass of CallFunctionAction looks up the original
+   * global object in |globalOverrides| using |funcName| as the key. This allows
+   * tests, which need to wait until a global function to be called in order to
+   * start the test to run the original function. When used with runAllActions
+   * or runAllActionsAsync, Mock4JS expectations may call start or continue the
+   * test after calling the original function.
+   * @param {?SaveMockArguments} savedArgs when non-null, saved arguments are
+   *     passed to the global function |funcName|.
+   * @param {string} funcName The name of the global function to call.
+   * @param {Array} args Any arguments to pass to func.
+   * @constructor
+   * @extends {CallFunctionAction}
+   * @see globalOverrides
+   */
+  function CallGlobalAction(savedArgs, funcName, args) {
+    CallFunctionAction.call(this, null, savedArgs, funcName, args);
+  }
+
+  CallGlobalAction.prototype = {
+    __proto__: CallFunctionAction.prototype,
+
+    /**
+     * Fetch and return the original global function to call.
+     * @return {Function} The global function to invoke.
+     * @override
+     */
+    get func() {
+      var func = globalOverrides[this.func_].original;
+      assertNotEquals(undefined, func);
+      return func;
+    },
+  };
+
+  /**
+   * Syntactic sugar for use with will() on a Mock4JS.Mock.
+   * @param {SaveMockArguments} savedArgs Arguments saved with this object
+   *     are passed to the global function |funcName|.
+   * @param {string} funcName The name of a registered mock global function to
+   *     call when the method is invoked.
+   * @param {...*} var_args Arguments to pass when calling func.
+   * @return {CallGlobalAction} Action for use in Mock4JS will().
+   */
+  function callGlobalWithSavedArgs(savedArgs, funcName) {
+    return new CallGlobalAction(
+        savedArgs, funcName, Array.prototype.slice.call(arguments, 2));
+  }
+
+  /**
+   * When to call testDone().
+   * @enum {number}
+   */
+  var WhenTestDone = {
+    /**
+     * Default for the method called.
+     */
+    DEFAULT: -1,
+
+    /**
+     * Never call testDone().
+     */
+    NEVER: 0,
+
+    /**
+     * Call testDone() on assert failure.
+     */
+    ASSERT: 1,
+
+    /**
+     * Call testDone() if there are any assert or expect failures.
+     */
+    EXPECT: 2,
+
+    /**
+     * Always call testDone().
+     */
+    ALWAYS: 3,
+  };
+
+  /**
+   * Runs all |actions|.
+   * @param {boolean} isAsync When true, call testDone() on Errors.
+   * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
+   *     time.
+   * @param {Array.<Object>} actions Actions to run.
+   * @constructor
+   */
+  function RunAllAction(isAsync, whenTestDone, actions) {
+    this.isAsync_ = isAsync;
+    this.whenTestDone_ = whenTestDone;
+    this.actions_ = actions;
+  }
+
+  RunAllAction.prototype = {
+    /**
+     * When true, call testDone() on Errors.
+     * @type {boolean}
+     * @private
+     */
+    isAsync_: false,
+
+    /**
+     * Call testDone() at appropriate time.
+     * @type {WhenTestDone}
+     * @private
+     * @see WhenTestDone
+     */
+    whenTestDone_: WhenTestDone.ASSERT,
+
+    /**
+     * Holds the actions to execute when invoked.
+     * @type {Array}
+     * @private
+     */
+    actions_: null,
+
+    /**
+     * Runs all |actions_|, returning the last one. When running in sync mode,
+     * throws any exceptions to be caught by runTest() or
+     * runTestFunction(). Call testDone() according to |whenTestDone_| setting.
+     */
+    invoke: function() {
+      try {
+        var result;
+        for(var i = 0; i < this.actions_.length; ++i)
+          result = this.actions_[i].invoke();
+
+        if ((this.whenTestDone_ == WhenTestDone.EXPECT && errors.length) ||
+            this.whenTestDone_ == WhenTestDone.ALWAYS)
+          testDone();
+
+        return result;
+      } catch (e) {
+        if (!(e instanceof Error))
+          e = new Error(e.toString());
+
+        if (!this.isAsync_)
+          throw e;
+
+        errors.push(e);
+        if (this.whenTestDone_ != WhenTestDone.NEVER)
+          testDone();
+      }
+    },
+
+    /**
+     * Describe this action to Mock4JS.
+     * @return {string} A description of this action.
+     */
+    describe: function() {
+      return 'Calls all actions: ' + this.actions_;
+    },
+  };
+
+  /**
+   * Syntactic sugar for use with will() on a Mock4JS.Mock.
+   * @param {...Object} var_actions Actions to run.
+   * @return {RunAllAction} Action for use in will.
+   */
+  function runAllActions() {
+    return new RunAllAction(false, WhenTestDone.NEVER,
+                            Array.prototype.slice.call(arguments));
+  }
+
+  /**
+   * Syntactic sugar for use with will() on a Mock4JS.Mock.
+   * @param {WhenTestDone} whenTestDone Call testDone() at the appropriate
+   *     time.
+   * @param {...Object} var_actions Actions to run.
+   * @return {RunAllAction} Action for use in will.
+   */
+  function runAllActionsAsync(whenTestDone) {
+    return new RunAllAction(true, whenTestDone,
+                            Array.prototype.slice.call(arguments, 1));
+  }
 
   // Exports.
   testing.Test = Test;
@@ -775,6 +1262,8 @@ var currentTestArguments = null;
   window.assertNotEquals = assertNotEquals;
   window.assertNotReached = assertNotReached;
   window.callFunction = callFunction;
+  window.callFunctionWithSavedArgs = callFunctionWithSavedArgs;
+  window.callGlobalWithSavedArgs = callGlobalWithSavedArgs;
   window.expectTrue = createExpect(assertTrue);
   window.expectFalse = createExpect(assertFalse);
   window.expectGE = createExpect(assertGE);
@@ -786,15 +1275,20 @@ var currentTestArguments = null;
   window.expectNotReached = createExpect(assertNotReached);
   window.preloadJavascriptLibraries = preloadJavascriptLibraries;
   window.registerMessageCallback = registerMessageCallback;
+  window.registerMockGlobals = registerMockGlobals;
   window.registerMockMessageCallbacks = registerMockMessageCallbacks;
   window.resetTestState = resetTestState;
+  window.runAllActions = runAllActions;
+  window.runAllActionsAsync = runAllActionsAsync;
   window.runTest = runTest;
   window.runTestFunction = runTestFunction;
-  window.SaveArgumentsMatcher = SaveArgumentsMatcher;
+  window.SaveMockArguments = SaveMockArguments;
+  window.DUMMY_URL = DUMMY_URL;
   window.TEST = TEST;
   window.TEST_F = TEST_F;
   window.GEN = GEN;
+  window.WhenTestDone = WhenTestDone;
 
   // Import the Mock4JS helpers.
   Mock4JS.addMockSupport(window);
-})();
+})(('window' in this) ? window : this);

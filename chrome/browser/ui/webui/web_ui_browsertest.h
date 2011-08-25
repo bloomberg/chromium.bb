@@ -60,7 +60,8 @@ class WebUIBrowserTest
                              const ConstValueVector& function_arguments);
 
   // Runs a test fixture that may include calls to functions in test_api.js.
-  bool RunJavascriptTestF(const std::string& test_fixture,
+  bool RunJavascriptTestF(bool is_async,
+                          const std::string& test_fixture,
                           const std::string& test_name);
 
   // Runs a test that may include calls to functions in test_api.js.
@@ -113,10 +114,16 @@ class WebUIBrowserTest
                           const std::string& preload_test_name);
 
  protected:
+  // URL to dummy WebUI page for testing framework.
+  static const char kDummyURL[];
+
   WebUIBrowserTest();
 
-  // Setup test path.
-  virtual void SetUpInProcessBrowserTestFixture();
+  // Set up test path & override for |kDummyURL|.
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+
+  // Tear down override for |kDummyURL|.
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
   // Returns a mock WebUI object under test (if any).
   virtual WebUIMessageHandler* GetMockMessageHandler();

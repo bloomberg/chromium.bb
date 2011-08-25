@@ -6,16 +6,8 @@ function WebUIAssertionsTest() {}
 
 WebUIAssertionsTest.prototype = {
   __proto__: testing.Test.prototype,
-  browsePreload: 'chrome://DummyURL',
-  typedefCppFixture: null,
+  browsePreload: DUMMY_URL,
 };
-
-GEN('#include "chrome/test/data//webui/assertions-inl.h"');
-GEN('');
-GEN('WebUIAssertionsTest::WebUIAssertionsTest() {}');
-GEN('WebUIAssertionsTest::~WebUIAssertionsTest() {}');
-GEN('MockWebUIProvider::MockWebUIProvider() {}');
-GEN('MockWebUIProvider::~MockWebUIProvider() {}');
 
 function testTwoExpects() {
   expectTrue(false);

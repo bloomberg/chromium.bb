@@ -6,17 +6,17 @@
  * Test fixture for print preview WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function PrintPreviewWebUITest() {}
 
 PrintPreviewWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /**
-   * Browse to the sample page, cause print preview & call PreLoad().
+   * Browse to the sample page, cause print preview & call preLoad().
    * @type {string}
    * @override
-   **/
+   */
   browsePrintPreload: 'print_preview_hello_world_test.html',
 
   /**
@@ -24,15 +24,16 @@ PrintPreviewWebUITest.prototype = {
    * behaves correctly.
    * @type {Function}
    * @override
-   **/
-  PreLoad: function() {
+   */
+  preLoad: function() {
     // TODO(scr) remove this after tests pass consistently.
-    console.info('PreLoad');
+    console.info('preLoad');
 
     /**
      * Create a handler class with empty methods to allow mocking to register
      * expectations and for registration of handlers with chrome.send.
-     **/
+     * @constructor
+     */
     function MockPrintPreviewHandler() {}
 
     MockPrintPreviewHandler.prototype = {
@@ -69,14 +70,15 @@ PrintPreviewWebUITest.prototype = {
             disableCopiesOption: true,
           });
         }));
-    mockHandler.stubs().getPreview(NOT_NULL).
-        will(callFunction(function() {
-          updatePrintPreview('title', true, 1, 1);
+    var savedArgs = new SaveMockArguments();
+    mockHandler.stubs().getPreview(savedArgs.match(NOT_NULL)).
+        will(callFunctionWithSavedArgs(savedArgs, function(options) {
+          updatePrintPreview('title', true, 1, JSON.parse(options).requestID);
         }));
 
     mockHandler.stubs().getPrinters().
         will(callFunction(function() {
-          setUseCloudPrint(false, "");
+          setUseCloudPrint(false, '');
           setPrinters([{
               printerName: 'FooName',
               deviceName: 'FooDevice',
@@ -89,6 +91,25 @@ PrintPreviewWebUITest.prototype = {
 
     // Register mock as a handler of the chrome.send messages.
     registerMockMessageCallbacks(mockHandler, MockPrintPreviewHandler);
+
+    /**
+     * Create a class to hold global functions to watch for.
+     * @constructor
+     */
+    function MockGlobals() {}
+
+    MockGlobals.prototype = {
+      updateWithPrinterCapabilities: function(settingInfo) {},
+    };
+
+    var mockGlobals = this.mockGlobals = mock(MockGlobals);
+    mockGlobals.stubs().updateWithPrinterCapabilities(
+        savedArgs.match(ANYTHING)).
+            will(callGlobalWithSavedArgs(
+                savedArgs, 'updateWithPrinterCapabilities'));
+
+    // Register globals to mock out for us.
+    registerMockGlobals(mockGlobals, MockGlobals);
 
     // Override checkCompatiblePluginExists to return a value consistent with
     // the state being tested and stub out the pdf viewer if it doesn't exist,
@@ -111,7 +132,7 @@ PrintPreviewWebUITest.prototype = {
    * Generate a real C++ class; don't typedef.
    * @type {?string}
    * @override
-   **/
+   */
   typedefCppFixture: null,
 
   /**
@@ -150,7 +171,7 @@ PrintPreviewWebUITest.prototype = {
   /**
    * Always return true so tests run on systems without plugin available.
    * @return {boolean} Always true.
-   **/
+   */
   checkCompatiblePluginExists: function() {
     return true;
   },
@@ -176,21 +197,21 @@ GEN('');
  * The expected length of the |printer-list| element.
  * @type {number}
  * @const
- **/
+ */
 var printerListMinLength = 2;
 
 /**
  * The expected index of the "foo" printer returned by the stubbed handler.
  * @type {number}
  * @const
- **/
+ */
 var fooIndex = 0;
 
 /**
  * The expected index of the "bar" printer returned by the stubbed handler.
  * @type {number}
  * @const
- **/
+ */
 var barIndex = 1;
 
 // Test some basic assumptions about the print preview WebUI.
@@ -239,18 +260,18 @@ TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterListCloud', function() {
   var printerList = $('printer-list');
   assertNotEquals(null, printerList);
   var printer = new Object;
-  printer['name'] = "FooCloud";
+  printer['name'] = 'FooCloud';
   for (var i = 0; i < maxCloudPrinters; i++) {
     printer['id'] = String(i);
     addCloudPrinters([printer]);
     expectEquals(localStrings.getString('cloudPrinters'),
                  printerList.options[0].text);
-    expectEquals("FooCloud", printerList.options[i + 1].text);
+    expectEquals('FooCloud', printerList.options[i + 1].text);
     expectEquals(String(i), printerList.options[i + 1].value);
   }
   printer['id'] = maxCloudPrinters + 1;
   addCloudPrinters([printer]);
-  expectEquals("", printerList.options[maxCloudPrinters + 1].text);
+  expectEquals('', printerList.options[maxCloudPrinters + 1].text);
   expectEquals(localStrings.getString('morePrinters'),
                printerList.options[maxCloudPrinters + 2].text);
 });
@@ -259,7 +280,7 @@ TEST_F('PrintPreviewWebUITest', 'FLAKY_TestPrinterListCloud', function() {
  * Verify that |section| visibility matches |visible|.
  * @param {HTMLDivElement} section The section to check.
  * @param {boolean} visible The expected state of visibility.
- **/
+ */
 function checkSectionVisible(section, visible) {
   assertNotEquals(null, section);
   expectEquals(section.classList.contains('visible'), visible,
@@ -317,15 +338,18 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
 });
 
 // Test that changing the selected printer updates the preview.
-TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview',
-       function() {
-  var matchAnythingSave = new SaveArgumentsMatcher(ANYTHING);
-
-  this.mockHandler.expects(once()).getPreview(matchAnythingSave).
-      will(callFunction(function() {
+TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
+  var savedArgs = new SaveMockArguments();
+  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
+      will(callFunctionWithSavedArgs(savedArgs, function(options) {
         updatePrintPreview('title', true, 2,
-                           matchAnythingSave.argument.requestID);
+                           JSON.parse(options).requestID);
       }));
+
+  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
+      savedArgs.match(ANYTHING)).
+          will(callGlobalWithSavedArgs(
+              savedArgs, 'updateWithPrinterCapabilities'));
 
   var printerList = $('printer-list');
   assertNotEquals(null, printerList, 'printerList');
@@ -342,7 +366,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview',
  * Test fixture to test case when no PDF plugin exists.
  * @extends {PrintPreviewWebUITest}
  * @constructor
- **/
+ */
 function PrintPreviewNoPDFWebUITest() {}
 
 PrintPreviewNoPDFWebUITest.prototype = {

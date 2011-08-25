@@ -2616,11 +2616,12 @@
         'test/base/render_view_test.cc',
         'test/base/render_view_test.h',
         'test/base/out_of_proc_test_runner.cc',
-        'test/data/webui/assertions-inl.h',
         'test/data/webui/assertions.js',
+        'test/data/webui/async_gen-inl.h',
+        'test/data/webui/async_gen.js',
         'test/data/webui/ntp4.js',
-        'test/data/webui/print_preview.js',
         'test/data/webui/options.js',
+        'test/data/webui/print_preview.js',
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',

@@ -79,12 +79,17 @@ bool WebUIBrowserTest::RunJavascriptFunction(
       function_name, function_arguments, false, false, NULL);
 }
 
-bool WebUIBrowserTest::RunJavascriptTestF(const std::string& test_fixture,
+bool WebUIBrowserTest::RunJavascriptTestF(bool is_async,
+                                          const std::string& test_fixture,
                                           const std::string& test_name) {
   ConstValueVector args;
   args.push_back(Value::CreateStringValue(test_fixture));
   args.push_back(Value::CreateStringValue(test_name));
-  return RunJavascriptTest("RUN_TEST_F", args);
+
+  if (is_async)
+    return RunJavascriptAsyncTest("RUN_TEST_F", args);
+  else
+    return RunJavascriptTest("RUN_TEST_F", args);
 }
 
 bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name) {
@@ -198,11 +203,34 @@ void WebUIBrowserTest::BrowsePrintPreload(
   tabstrip_observer.WaitForObservation();
 }
 
+const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
+
 WebUIBrowserTest::WebUIBrowserTest()
     : test_handler_(new WebUITestHandler()),
       libraries_preloaded_(false) {}
 
+namespace {
+
+class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
+ public:
+  MockWebUIProvider() {}
+
+  // Returns a new ChromeWebUI
+  WebUI* NewWebUI(TabContents* tab_contents, const GURL& url) OVERRIDE {
+    return new ChromeWebUI(tab_contents);
+  }
+};
+
+base::LazyInstance<MockWebUIProvider> mock_provider_(
+    base::LINKER_INITIALIZED);
+
+}  // namespace
+
 void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
+  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  TestChromeWebUIFactory::AddFactoryOverride(GURL(kDummyURL).host(),
+                                             mock_provider_.Pointer());
+
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_));
   test_data_directory_ = test_data_directory_.Append(kWebUITestFolder);
 
@@ -219,6 +247,11 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   mockPath = mockPath.Append(kMockJS);
   AddLibrary(mockPath);
   AddLibrary(FilePath(kWebUILibraryJS));
+}
+
+void WebUIBrowserTest::TearDownInProcessBrowserTestFixture() {
+  InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+  TestChromeWebUIFactory::RemoveFactoryOverride(GURL(kDummyURL).host());
 }
 
 WebUIMessageHandler* WebUIBrowserTest::GetMockMessageHandler() {
@@ -414,8 +447,6 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
  protected:
   WebUIBrowserAsyncTest() {}
 
-  static const char kDummyURL[];
-
   // Class to synchronize asynchronous javascript activity with the tests.
   class AsyncWebUIMessageHandler : public WebUIMessageHandler {
    public:
@@ -451,33 +482,9 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
   ::testing::StrictMock<AsyncWebUIMessageHandler> message_handler_;
 
  private:
-  // Class to provide a ChromeWebUI for |kDummyURL|.
-  class MockWebUIProvider : public TestChromeWebUIFactory::WebUIProvider {
-   public:
-    MockWebUIProvider() {}
-
-    // Returns a new ChromeWebUI
-    WebUI* NewWebUI(TabContents* tab_contents, const GURL& url) OVERRIDE {
-      return new ChromeWebUI(tab_contents);
-    }
-  };
-
   // Provide this object's handler.
   virtual WebUIMessageHandler* GetMockMessageHandler() OVERRIDE {
     return &message_handler_;
-  }
-
-  // Set up the kDummyURL to be a WebUI page.
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    WebUIBrowserTest::SetUpInProcessBrowserTestFixture();
-    TestChromeWebUIFactory::AddFactoryOverride(GURL(kDummyURL).host(),
-                                               &mock_provider_);
-  }
-
-  // Tear down the kDummyURL WebUI page.
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    WebUIBrowserTest::TearDownInProcessBrowserTestFixture();
-    TestChromeWebUIFactory::RemoveFactoryOverride(GURL(kDummyURL).host());
   }
 
   // Set up and browse to kDummyURL for all tests.
@@ -487,13 +494,8 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
     ui_test_utils::NavigateToURL(browser(), GURL(kDummyURL));
   }
 
-  // Provider for this object.
-  MockWebUIProvider mock_provider_;
-
   DISALLOW_COPY_AND_ASSIGN(WebUIBrowserAsyncTest);
 };
-
-const char WebUIBrowserAsyncTest::kDummyURL[] = "chrome://Dummy";
 
 // Test that assertions fail immediately after assertion fails (no testContinues
 // message). (Sync version).

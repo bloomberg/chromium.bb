@@ -13,7 +13,7 @@ NTP4WebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /**
-   * Browse to the newtab page & call PreLoad().
+   * Browse to the newtab page & call preLoad().
    */
   browsePreload: 'chrome://newtab',
 };

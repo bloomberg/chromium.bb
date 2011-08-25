@@ -6,27 +6,27 @@
  * TestFixture for OptionsPage WebUI testing.
  * @extends {testing.Test}
  * @constructor
- **/
+ */
 function OptionsWebUITest() {}
 
 OptionsWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
   /**
-   * Browse to the options page & call our PreLoad().
-   **/
+   * Browse to the options page & call our preLoad().
+   */
   browsePreload: 'chrome://settings',
 
   /**
    * Register a mock handler to ensure expectations are met and options pages
    * behave correctly.
-   **/
-  PreLoad: function() {
+   */
+  preLoad: function() {
 
     /**
      * Create handler class with empty methods to allow mocking to register
      * expectations and for registration of handlers with chrome.send.
-     **/
+     */
     function MockOptionsHandler() {}
 
     MockOptionsHandler.prototype = {
@@ -73,7 +73,7 @@ TEST_F('OptionsWebUITest', 'MAYBE_testSetBooleanPrefTriggers', function() {
     true,
     'Options_Homepage_HomeButton',
   ];
-  // Note: this expectation is checked in testing::Test::TearDown.
+  // Note: this expectation is checked in testing::Test::tearDown.
   this.mockHandler.expects(once()).setBooleanPref(trueListValue);
 
   // Cause the handler to be called.
