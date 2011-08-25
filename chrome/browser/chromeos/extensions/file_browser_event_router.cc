@@ -210,12 +210,15 @@ void ExtensionFileBrowserEventRouter::MountCompleted(
     chromeos::MountLibrary::Disk* disk =
         mount_lib->disks().find(mount_info.source_path)->second;
 
+    std::string notification_sys_path =
+        disk->system_path().substr(0, disk->system_path().rfind("/block"));
+
     if (!error_code) {
       HideFileBrowserNotification("MOUNT", disk->system_path());
     } else {
       HideFileBrowserNotification("MOUNT", disk->system_path());
       if (!disk->drive_label().empty()) {
-        ShowFileBrowserNotification("MOUNT", disk->system_path(),
+        ShowFileBrowserNotification("MOUNT", notification_sys_path,
             IDR_PAGEINFO_INFO,
             l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_DETECTION_TITLE),
             // TODO(tbarzic): Find more suitable message.
@@ -224,7 +227,7 @@ void ExtensionFileBrowserEventRouter::MountCompleted(
                 ASCIIToUTF16(disk->drive_label()),
                 ASCIIToUTF16(MountErrorToString(error_code))));
       } else {
-        ShowFileBrowserNotification("MOUNT", disk->system_path(),
+        ShowFileBrowserNotification("MOUNT", notification_sys_path,
             IDR_PAGEINFO_INFO,
             l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_DETECTION_TITLE),
             // TODO(tbarzic): Find more suitable message.
