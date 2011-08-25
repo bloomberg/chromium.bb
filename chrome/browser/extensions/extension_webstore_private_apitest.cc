@@ -113,3 +113,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        AppInstallBubble) {
   ASSERT_TRUE(RunInstallTest("app_install_bubble.html", "app.crx"));
 }
+
+// Tests using the iconUrl parameter to the install function.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
+                       IconUrl) {
+  ASSERT_TRUE(RunInstallTest("icon_url.html", "extension.crx"));
+}

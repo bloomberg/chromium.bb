@@ -30,21 +30,27 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
+#include "content/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
 const char kAppInstallBubbleKey[] = "appInstallBubble";
 const char kIconDataKey[] = "iconData";
+const char kIconUrlKey[] = "iconUrl";
 const char kIdKey[] = "id";
 const char kLocalizedNameKey[] = "localizedName";
 const char kLoginKey[] = "login";
 const char kManifestKey[] = "manifest";
 const char kTokenKey[] = "token";
 
+const char kCannotSpecifyIconDataAndUrlError[] =
+    "You cannot specify both icon data and an icon url";
 const char kImageDecodeError[] = "Image decode failed";
+const char kInvalidIconUrlError[] = "Invalid icon url";
 const char kInvalidIdError[] = "Invalid id";
 const char kInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallError[] =
@@ -152,16 +158,23 @@ bool BeginInstallFunction::RunImpl() {
 }
 
 // This is a class to help BeginInstallWithManifestFunction manage sending
-// JSON manifests and base64-encoded icon data to the utility process for
-// parsing.
-class SafeBeginInstallHelper : public UtilityProcessHost::Client {
+// work to the utility process for parsing manifests and fetching/decoding
+// icon data.
+class SafeBeginInstallHelper : public UtilityProcessHost::Client,
+                               public URLFetcher::Delegate {
  public:
+  // Only one of icon_data or icon_url should be non-empty. If icon_url is
+  // non-empty, context_getter should be filled in, but otherwise NULL.
   SafeBeginInstallHelper(BeginInstallWithManifestFunction* client,
+                         const std::string& manifest,
                          const std::string& icon_data,
-                         const std::string& manifest)
+                         const GURL& icon_url,
+                         net::URLRequestContextGetter* context_getter)
       : client_(client),
-        icon_data_(icon_data),
         manifest_(manifest),
+        icon_base64_data_(icon_data),
+        icon_url_(icon_url),
+        context_getter_(context_getter),
         utility_host_(NULL),
         icon_decode_complete_(false),
         manifest_parse_complete_(false),
@@ -169,26 +182,73 @@ class SafeBeginInstallHelper : public UtilityProcessHost::Client {
 
   void Start() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    CHECK(icon_base64_data_.empty() || icon_url_.is_empty());
+
+    if (icon_base64_data_.empty() && icon_url_.is_empty())
+      icon_decode_complete_ = true;
+
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(this,
                           &SafeBeginInstallHelper::StartWorkOnIOThread));
+
+    if (!icon_url_.is_empty()) {
+      CHECK(context_getter_);
+      url_fetcher_.reset(new URLFetcher(icon_url_, URLFetcher::GET, this));
+      url_fetcher_->set_request_context(context_getter_);
+
+      url_fetcher_->Start();
+      // We'll get called back in OnURLFetchComplete.
+    }
   }
 
   void StartWorkOnIOThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
     utility_host_->StartBatchMode();
-    if (icon_data_.empty())
-      icon_decode_complete_ = true;
-    else
-      utility_host_->Send(new ChromeUtilityMsg_DecodeImageBase64(icon_data_));
+
+    if (!icon_base64_data_.empty())
+      utility_host_->Send(
+          new ChromeUtilityMsg_DecodeImageBase64(icon_base64_data_));
+
     utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
   }
 
+  // Implementing the URLFetcher::Delegate interface.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    CHECK(source == url_fetcher_.get());
+    if (source->status().status() != net::URLRequestStatus::SUCCESS ||
+        source->response_code() != 200) {
+      BrowserThread::PostTask(
+          BrowserThread::IO,
+          FROM_HERE,
+          NewRunnableMethod(this,
+                            &SafeBeginInstallHelper::OnDecodeImageFailed));
+    } else {
+      std::string response_data;
+      source->GetResponseAsString(&response_data);
+      fetched_icon_data_.insert(fetched_icon_data_.begin(),
+                                response_data.begin(),
+                                response_data.end());
+      BrowserThread::PostTask(
+          BrowserThread::IO,
+          FROM_HERE,
+          NewRunnableMethod(this,
+                            &SafeBeginInstallHelper::StartFetchedImageDecode));
+    }
+    url_fetcher_.reset();
+  }
+
+  void StartFetchedImageDecode() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    CHECK(utility_host_);
+    utility_host_->Send(new ChromeUtilityMsg_DecodeImage(fetched_icon_data_));
+  }
+
   // Implementing pieces of the UtilityProcessHost::Client interface.
-  virtual bool OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(SafeBeginInstallHelper, message)
       IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Succeeded,
@@ -272,9 +332,20 @@ class SafeBeginInstallHelper : public UtilityProcessHost::Client {
   // The client who we'll report results back to.
   BeginInstallWithManifestFunction* client_;
 
-  // The data to parse.
-  std::string icon_data_;
+  // The manifest to parse.
   std::string manifest_;
+
+  // Only one of these should be non-empty. If |icon_base64_data_| is non-emtpy,
+  // it's a base64-encoded string that needs to be parsed into an SkBitmap. If
+  // |icon_url_| is non-empty, it needs to be fetched and decoded into an
+  // SkBitmap.
+  std::string icon_base64_data_;
+  GURL icon_url_;
+  std::vector<unsigned char> fetched_icon_data_;
+
+  // For fetching the icon, if needed.
+  scoped_ptr<URLFetcher> url_fetcher_;
+  net::URLRequestContextGetter* context_getter_; // Only usable on UI thread.
 
   UtilityProcessHost* utility_host_;
 
@@ -324,8 +395,26 @@ bool BeginInstallWithManifestFunction::RunImpl() {
 
   EXTENSION_FUNCTION_VALIDATE(details->GetString(kManifestKey, &manifest_));
 
+  if (details->HasKey(kIconDataKey) && details->HasKey(kIconUrlKey)) {
+    SetResult(ICON_ERROR);
+    error_ = kCannotSpecifyIconDataAndUrlError;
+    return false;
+  }
+
   if (details->HasKey(kIconDataKey))
     EXTENSION_FUNCTION_VALIDATE(details->GetString(kIconDataKey, &icon_data_));
+
+  GURL icon_url;
+  if (details->HasKey(kIconUrlKey)) {
+    std::string tmp_url;
+    EXTENSION_FUNCTION_VALIDATE(details->GetString(kIconUrlKey, &tmp_url));
+    icon_url = source_url().Resolve(tmp_url);
+    if (!icon_url.is_valid()) {
+      SetResult(INVALID_ICON_URL);
+      error_ = kInvalidIconUrlError;
+      return false;
+    }
+  }
 
   if (details->HasKey(kLocalizedNameKey))
     EXTENSION_FUNCTION_VALIDATE(details->GetString(kLocalizedNameKey,
@@ -335,15 +424,20 @@ bool BeginInstallWithManifestFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(
         kAppInstallBubbleKey, &use_app_installed_bubble_));
 
-  scoped_refptr<SafeBeginInstallHelper> helper =
-      new SafeBeginInstallHelper(this, icon_data_, manifest_);
-  // The helper will call us back via OnParseSucces or OnParseFailure.
+  net::URLRequestContextGetter* context_getter = NULL;
+  if (!icon_url.is_empty())
+    context_getter = profile()->GetRequestContext();
+
+  scoped_refptr<SafeBeginInstallHelper> helper = new SafeBeginInstallHelper(
+      this, manifest_, icon_data_, icon_url, context_getter);
+
+  // The helper will call us back via OnParseSuccess or OnParseFailure.
   helper->Start();
 
-  // Matched with a Release in OnSuccess/OnFailure.
+  // Matched with a Release in OnParseSuccess/OnParseFailure.
   AddRef();
 
-  // The response is sent asynchronously in OnSuccess/OnFailure.
+  // The response is sent asynchronously in OnParseSuccess/OnParseFailure.
   return true;
 }
 
@@ -373,6 +467,9 @@ void BeginInstallWithManifestFunction::SetResult(ResultCode code) {
       break;
     case NO_GESTURE:
       result_.reset(Value::CreateStringValue("no_gesture"));
+      break;
+    case INVALID_ICON_URL:
+      result_.reset(Value::CreateStringValue("invalid_icon_url"));
       break;
     default:
       CHECK(false);

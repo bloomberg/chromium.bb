@@ -7233,6 +7233,11 @@
                 "description": "A string with the contents of the extension's manifest.json file. During the install process, the browser will check that the downloaded extension's manifest matches what was passed in here.",
                 "minLength": 1
               },
+              "iconUrl": {
+                "type": "string",
+                "optional": true,
+                "desciption": "A URL for the image to display in the confirmation dialog"
+              },
               "iconData": {
                 "type": "string",
                 "optional": true,
@@ -7264,7 +7269,7 @@
               {
                 "name": "result",
                 "type": "string",
-                "description": "A string result code, which will be empty upon success. The possible values in the case of errors include 'unknown_error', 'user_cancelled', 'manifest_error', 'icon_error', 'invalid_id', 'permission_denied', and 'no_gesture'."
+                "description": "A string result code, which will be empty upon success. The possible values in the case of errors include 'unknown_error', 'user_cancelled', 'manifest_error', 'icon_error', 'invalid_id', 'permission_denied', 'no_gesture', and 'invalid_icon_url'."
               }
             ]
           }
