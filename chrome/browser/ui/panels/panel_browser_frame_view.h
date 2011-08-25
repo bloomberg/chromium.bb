@@ -16,6 +16,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 class Extension;
@@ -193,7 +194,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   scoped_ptr<MouseWatcher> mouse_watcher_;
   ui::SimpleMenuModel settings_menu_contents_;
   views::MenuModelAdapter settings_menu_adapter_;
-  views::MenuItemView settings_menu_;
+  // Owned by |settings_menu_runner_|.
+  views::MenuItemView* settings_menu_;
+  views::MenuRunner settings_menu_runner_;
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserFrameView);

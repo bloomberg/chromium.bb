@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
 
@@ -26,10 +27,12 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
     : owner_(owner),
       observer_(NULL),
       menu_button_(menu_button),
+      menu_(NULL),
       views_(&views),
       start_index_(start_index),
       for_drop_(false) {
-  menu_.reset(new views::MenuItemView(this));
+  menu_ = new views::MenuItemView(this);
+  menu_runner_.reset(new views::MenuRunner(menu_));
   menu_->set_has_icons(true);
 
   size_t command_id = 1;  // Menu id 0 is reserved, start with 1.
@@ -67,10 +70,10 @@ bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window,
   bounds.set_y(screen_loc.y());
 
   views::MenuItemView::AnchorPosition anchor = views::MenuItemView::TOPRIGHT;
-  if (for_drop) {
-    menu_->RunMenuForDropAt(window, bounds, anchor);
-  } else {
-    menu_->RunMenuAt(window, menu_button_, bounds, anchor, false);
+  // As we maintain our own lifetime we can safely ignore the result.
+  ignore_result(menu_runner_->RunMenuAt(window, menu_button_, bounds, anchor,
+      for_drop_ ? views::MenuRunner::FOR_DROP : 0));
+  if (!for_drop_) {
     // Give the context menu (if any) a chance to execute the user-selected
     // command.
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -102,12 +105,14 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
       new ExtensionContextMenuModel(extension, owner_->browser(), owner_);
   views::MenuModelAdapter context_menu_model_adapter(
       context_menu_contents.get());
-  views::MenuItemView context_menu(&context_menu_model_adapter);
-  context_menu_model_adapter.BuildMenu(&context_menu);
+  views::MenuRunner context_menu_runner(
+      context_menu_model_adapter.CreateMenu());
 
+  // We can ignore the result as we delete ourself.
   // This blocks until the user choses something or dismisses the menu.
-  context_menu.RunMenuAt(menu_button_->GetWidget(),
-      NULL, gfx::Rect(p, gfx::Size()), views::MenuItemView::TOPLEFT, true);
+  ignore_result(context_menu_runner.RunMenuAt(menu_button_->GetWidget(),
+      NULL, gfx::Rect(p, gfx::Size()), views::MenuItemView::TOPLEFT,
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED));
 
   // The user is done with the context menu, so we can close the underlying
   // menu.

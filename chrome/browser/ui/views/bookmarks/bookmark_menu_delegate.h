@@ -141,13 +141,6 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   // Returns the menu whose id is |id|.
   views::MenuItemView* GetMenuByID(int id);
 
-  // Does the work of processing WillRemoveBookmarks. On exit the set of removed
-  // menus is added to |removed_menus|. It's up to the caller to delete the
-  // the menus added to |removed_menus|.
-  void WillRemoveBookmarksImpl(
-      const std::vector<const BookmarkNode*>& bookmarks,
-      std::set<views::MenuItemView*>* removed_menus);
-
   Profile* profile_;
 
   PageNavigator* page_navigator_;

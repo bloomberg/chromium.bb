@@ -9,7 +9,6 @@
 #include <set>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -202,7 +201,7 @@ class ToolbarView : public AccessiblePaneView,
   scoped_ptr<ui::SimpleMenuModel> wrench_menu_model_;
 
   // Wrench menu.
-  scoped_refptr<WrenchMenu> wrench_menu_;
+  scoped_ptr<WrenchMenu> wrench_menu_;
 
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
 
@@ -220,8 +222,8 @@ class PowerMenuButton::StatusView : public View {
 
   void OnMouseReleased(const views::MouseEvent& event) {
     if (event.IsLeftMouseButton()) {
-      DCHECK(menu_button_->menu_);
-      menu_button_->menu_->Cancel();
+      DCHECK(menu_button_->menu_runner_);
+      menu_button_->menu_runner_->Cancel();
     }
   }
 
@@ -243,7 +245,7 @@ PowerMenuButton::PowerMenuButton(StatusAreaHost* host)
       battery_time_to_full_(TimeDelta::FromMicroseconds(kInitialMS)),
       battery_time_to_empty_(TimeDelta::FromMicroseconds(kInitialMS)),
       status_(NULL),
-      menu_(NULL) {
+      menu_runner_(NULL) {
   UpdateIconAndLabelInfo();
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
 }
@@ -315,31 +317,31 @@ void PowerMenuButton::OnLocaleChanged() {
 // PowerMenuButton, views::ViewMenuDelegate implementation:
 
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  menu_ = new views::MenuItemView(this);
-  views::MenuItemView* submenu =
-      menu_->AppendMenuItem(
+  views::MenuItemView* menu = new views::MenuItemView(this);
+  // MenuRunner takes ownership of |menu|.
+  views::MenuRunner menu_runner(menu);
+  views::MenuItemView* submenu = menu->AppendMenuItem(
           POWER_BATTERY_PERCENTAGE_ITEM,
           std::wstring(),
           views::MenuItemView::NORMAL);
   status_ = new StatusView(this);
   submenu->AddChildView(status_);
-  menu_->CreateSubmenu()->set_resize_open_menu(true);
-  menu_->SetMargins(0, 0);
+  menu->CreateSubmenu()->set_resize_open_menu(true);
+  menu->SetMargins(0, 0);
   submenu->SetMargins(0, 0);
-  menu_->ChildrenChanged();
+  menu->ChildrenChanged();
 
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  menu_->RunMenuAt(
-      source->GetWidget()->GetTopLevelWidget(),
-      this,
-      bounds,
-      views::MenuItemView::TOPRIGHT,
-      true);
-  delete menu_;
+  AutoReset<views::MenuRunner*> menu_runner_reseter(&menu_runner_,
+                                                    &menu_runner);
+  if (menu_runner.RunMenuAt(
+          source->GetWidget()->GetTopLevelWidget(), this, bounds,
+          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
   status_ = NULL;
-  menu_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

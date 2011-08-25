@@ -36,6 +36,7 @@
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
@@ -565,35 +566,42 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 // WrenchMenu ------------------------------------------------------------------
 
 WrenchMenu::WrenchMenu(Browser* browser)
-    : browser_(browser),
+    : root_(NULL),
+      browser_(browser),
       selected_menu_model_(NULL),
       selected_index_(0),
       bookmark_menu_(NULL),
       first_bookmark_command_id_(0) {
 }
 
+WrenchMenu::~WrenchMenu() {
+  if (bookmark_menu_delegate_.get()) {
+    BookmarkModel* model = browser_->profile()->GetBookmarkModel();
+    if (model)
+      model->RemoveObserver(this);
+  }
+}
+
 void WrenchMenu::Init(ui::MenuModel* model) {
-  DCHECK(!root_.get());
-  root_.reset(new MenuItemView(this));
+  DCHECK(!root_);
+  root_ = new MenuItemView(this);
   root_->set_has_icons(true);  // We have checks, radios and icons, set this
                                // so we get the taller menu style.
   int next_id = 1;
-  PopulateMenu(root_.get(), model, &next_id);
+  PopulateMenu(root_, model, &next_id);
   first_bookmark_command_id_ = next_id + 1;
+  menu_runner_.reset(new views::MenuRunner(root_));
 }
 
 void WrenchMenu::RunMenu(views::MenuButton* host) {
-  // Up the ref count while the menu is displaying. This way if the window is
-  // deleted while we're running we won't prematurely delete the menu.
-  // TODO(sky): fix this, the menu should really take ownership of the menu
-  // (57890).
-  scoped_refptr<WrenchMenu> dont_delete_while_running(this);
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
   UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
-  root_->RunMenuAt(host->GetWidget(), host, bounds,
-      MenuItemView::TOPRIGHT, true);
+  if (menu_runner_->RunMenuAt(host->GetWidget(), host, bounds,
+          MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model = browser_->profile()->GetBookmarkModel();
     if (model)
@@ -763,9 +771,6 @@ void WrenchMenu::BookmarkModelChanged() {
   DCHECK(bookmark_menu_delegate_.get());
   if (!bookmark_menu_delegate_->is_mutating_model())
     root_->Cancel();
-}
-
-WrenchMenu::~WrenchMenu() {
 }
 
 void WrenchMenu::PopulateMenu(MenuItemView* parent,

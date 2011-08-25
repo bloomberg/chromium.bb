@@ -9,6 +9,7 @@
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/test/test_views_delegate.h"
@@ -247,10 +248,11 @@ class TopMenuModel : public CommonMenuModel {
 class MenuModelAdapterTest : public ViewEventTestBase,
                              public views::ViewMenuDelegate {
  public:
-  MenuModelAdapterTest() :
-      ViewEventTestBase(),
-      button_(NULL),
-      menu_model_adapter_(&top_menu_model_) {
+  MenuModelAdapterTest()
+      : ViewEventTestBase(),
+        button_(NULL),
+        menu_model_adapter_(&top_menu_model_),
+        menu_(NULL) {
     old_views_delegate_ = views::ViewsDelegate::views_delegate;
     views::ViewsDelegate::views_delegate = &views_delegate_;
   }
@@ -264,14 +266,15 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   virtual void SetUp() OVERRIDE {
     button_ = new views::MenuButton(NULL, L"Menu Adapter Test", this, true);
 
-    menu_.reset(new views::MenuItemView(&menu_model_adapter_));
-    menu_model_adapter_.BuildMenu(menu_.get());
+    menu_ = menu_model_adapter_.CreateMenu();
+    menu_runner_.reset(new views::MenuRunner(menu_));
 
     ViewEventTestBase::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
-    menu_.reset(NULL);
+    menu_runner_.reset(NULL);
+    menu_ = NULL;
     ViewEventTestBase::TearDown();
   }
 
@@ -288,12 +291,12 @@ class MenuModelAdapterTest : public ViewEventTestBase,
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(source, &screen_location);
     gfx::Rect bounds(screen_location, source->size());
-    menu_->RunMenuAt(
+    ignore_result(menu_runner_->RunMenuAt(
         source->GetWidget(),
         button_,
         bounds,
         views::MenuItemView::TOPLEFT,
-        true);
+        views::MenuRunner::HAS_MNEMONICS));
   }
 
   // ViewEventTestBase implementation
@@ -321,7 +324,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
     ASSERT_TRUE(topmenu->IsShowing());
     ASSERT_TRUE(top_menu_model_.IsSubmenuShowing());
 
-    menu_model_adapter_.BuildMenu(menu_.get());
+    menu_model_adapter_.BuildMenu(menu_);
 
     MessageLoopForUI::current()->PostTask(
         FROM_HERE,
@@ -366,7 +369,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   views::MenuButton* button_;
   TopMenuModel top_menu_model_;
   views::MenuModelAdapter menu_model_adapter_;
-  scoped_ptr<views::MenuItemView> menu_;
+  views::MenuItemView* menu_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
 };
 
 VIEW_TEST(MenuModelAdapterTest, RebuildMenu)

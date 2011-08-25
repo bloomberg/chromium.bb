@@ -20,6 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 #include "unicode/datefmt.h"
 
@@ -155,12 +156,11 @@ void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  menu_->RunMenuAt(
-      source->GetWidget()->GetTopLevelWidget(),
-      this,
-      bounds,
-      views::MenuItemView::TOPRIGHT,
-      true);
+  if (menu_runner_->RunMenuAt(
+          source->GetWidget()->GetTopLevelWidget(), this, bounds,
+          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 // ClockMenuButton, views::View implementation:
@@ -170,23 +170,26 @@ void ClockMenuButton::OnLocaleChanged() {
 }
 
 void ClockMenuButton::EnsureMenu() {
-  if (!menu_.get()) {
-    menu_.reset(new views::MenuItemView(this));
+  if (menu_runner_.get())
+    return;
 
-    // Text for this item will be set by GetLabel().
-    menu_->AppendDelegateMenuItem(CLOCK_DISPLAY_ITEM);
+  views::MenuItemView* menu = new views::MenuItemView(this);
+  // menu_runner_ takes ownership of menu.
+  menu_runner_.reset(new views::MenuRunner(menu));
 
-    // If options dialog is unavailable, don't show a separator and configure
-    // menu item.
-    if (host_->ShouldOpenButtonOptions(this)) {
-      menu_->AppendSeparator();
+  // Text for this item will be set by GetLabel().
+  menu->AppendDelegateMenuItem(CLOCK_DISPLAY_ITEM);
 
-      const string16 clock_open_options_label =
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG);
-      menu_->AppendMenuItemWithLabel(
-          CLOCK_OPEN_OPTIONS_ITEM,
-          UTF16ToWide(clock_open_options_label));
-    }
+  // If options dialog is unavailable, don't show a separator and configure
+  // menu item.
+  if (host_->ShouldOpenButtonOptions(this)) {
+    menu->AppendSeparator();
+
+    const string16 clock_open_options_label =
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG);
+    menu->AppendMenuItemWithLabel(
+        CLOCK_OPEN_OPTIONS_ITEM,
+        UTF16ToWide(clock_open_options_label));
   }
 }
 

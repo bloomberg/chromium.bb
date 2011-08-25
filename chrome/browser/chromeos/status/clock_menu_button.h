@@ -21,7 +21,7 @@
 #include "views/controls/menu/view_menu_delegate.h"
 
 namespace views {
-class MenuItemView;
+class MenuRunner;
 }
 
 namespace chromeos {
@@ -80,9 +80,7 @@ class ClockMenuButton : public StatusAreaButton,
   base::OneShotTimer<ClockMenuButton> timer_;
 
   // The clock menu.
-  // NOTE: we use a scoped_ptr here as menu calls into 'this' from the
-  // constructor.
-  scoped_ptr<views::MenuItemView> menu_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   PrefChangeRegistrar registrar_;
 

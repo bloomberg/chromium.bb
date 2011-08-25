@@ -22,6 +22,7 @@
 #include "views/controls/focusable_border.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/controls/textfield/textfield_views_model.h"
@@ -298,11 +299,11 @@ void NativeTextfieldViews::ShowContextMenuForView(View* source,
                                                   const gfx::Point& p,
                                                   bool is_mouse_gesture) {
   UpdateContextMenu();
-  context_menu_menu_->RunMenuAt(GetWidget(),
-                                NULL,
-                                gfx::Rect(p, gfx::Size()),
-                                views::MenuItemView::TOPLEFT,
-                                true);
+  if (context_menu_runner_->RunMenuAt(
+          GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
+          views::MenuItemView::TOPLEFT, MenuRunner::HAS_MNEMONICS) ==
+      MenuRunner::MENU_DELETED)
+    return;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -975,11 +976,11 @@ void NativeTextfieldViews::UpdateContextMenu() {
 
     context_menu_delegate_.reset(
         new views::MenuModelAdapter(context_menu_contents_.get()));
-    context_menu_menu_.reset(
-        new views::MenuItemView(context_menu_delegate_.get()));
+    context_menu_runner_.reset(
+        new MenuRunner(new views::MenuItemView(context_menu_delegate_.get())));
   }
 
-  context_menu_delegate_->BuildMenu(context_menu_menu_.get());
+  context_menu_delegate_->BuildMenu(context_menu_runner_->GetMenu());
 }
 
 void NativeTextfieldViews::OnTextInputTypeChanged() {

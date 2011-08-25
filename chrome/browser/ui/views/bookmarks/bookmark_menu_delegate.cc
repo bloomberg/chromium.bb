@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 
-#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -51,7 +50,6 @@ BookmarkMenuDelegate::BookmarkMenuDelegate(Profile* profile,
 
 BookmarkMenuDelegate::~BookmarkMenuDelegate() {
   profile_->GetBookmarkModel()->RemoveObserver(this);
-  STLDeleteValues(&node_to_menu_map_);
 }
 
 void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
@@ -313,9 +311,56 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
     const std::vector<const BookmarkNode*>& bookmarks) {
   DCHECK(!is_mutating_model_);
   is_mutating_model_ = true;
-  std::set<MenuItemView*> removed_menus;
-  WillRemoveBookmarksImpl(bookmarks, &removed_menus);
-  STLDeleteElements(&removed_menus);
+
+  // Remove the observer so that when the remove happens we don't prematurely
+  // cancel the menu. The observer ias added back in DidRemoveBookmarks.
+  profile_->GetBookmarkModel()->RemoveObserver(this);
+
+  // Remove the menu items.
+  std::set<MenuItemView*> changed_parent_menus;
+  for (std::vector<const BookmarkNode*>::const_iterator i = bookmarks.begin();
+       i != bookmarks.end(); ++i) {
+    NodeToMenuIDMap::iterator node_to_menu = node_to_menu_id_map_.find(*i);
+    if (node_to_menu != node_to_menu_id_map_.end()) {
+      MenuItemView* menu = GetMenuByID(node_to_menu->second);
+      DCHECK(menu);  // If there an entry in node_to_menu_id_map_, there should
+                     // be a menu.
+      DCHECK(menu->GetParentMenuItem());
+      changed_parent_menus.insert(menu->GetParentMenuItem());
+      menu->GetParentMenuItem()->RemoveMenuItemAt(
+          menu->parent()->GetIndexOf(menu));
+      node_to_menu_id_map_.erase(node_to_menu);
+    }
+  }
+
+  // All the bookmarks in |bookmarks| should have the same parent. It's possible
+  // to support different parents, but this would need to prune any nodes whose
+  // parent has been removed. As all nodes currently have the same parent, there
+  // is the DCHECK.
+  DCHECK(changed_parent_menus.size() <= 1);
+
+  for (std::set<MenuItemView*>::const_iterator i = changed_parent_menus.begin();
+       i != changed_parent_menus.end(); ++i) {
+    (*i)->ChildrenChanged();
+  }
+
+  // Remove any descendants of the removed nodes in node_to_menu_id_map_.
+  for (NodeToMenuIDMap::iterator i = node_to_menu_id_map_.begin();
+       i != node_to_menu_id_map_.end(); ) {
+    bool ancestor_removed = false;
+    for (std::vector<const BookmarkNode*>::const_iterator j = bookmarks.begin();
+         j != bookmarks.end(); ++j) {
+      if (i->first->HasAncestor(*j)) {
+        ancestor_removed = true;
+        break;
+      }
+    }
+    if (ancestor_removed) {
+      node_to_menu_id_map_.erase(i++);
+    } else {
+      ++i;
+    }
+  }
 }
 
 void BookmarkMenuDelegate::DidRemoveBookmarks() {
@@ -395,57 +440,4 @@ MenuItemView* BookmarkMenuDelegate::GetMenuByID(int id) {
   }
 
   return parent_menu_item_ ? parent_menu_item_->GetMenuItemByID(id) : NULL;
-}
-
-void BookmarkMenuDelegate::WillRemoveBookmarksImpl(
-    const std::vector<const BookmarkNode*>& bookmarks,
-    std::set<views::MenuItemView*>* removed_menus) {
-  // Remove the observer so that when the remove happens we don't prematurely
-  // cancel the menu. The observer ias added back in DidRemoveBookmarks.
-  profile_->GetBookmarkModel()->RemoveObserver(this);
-
-  // Remove the menu items.
-  std::set<MenuItemView*> changed_parent_menus;
-  for (std::vector<const BookmarkNode*>::const_iterator i = bookmarks.begin();
-       i != bookmarks.end(); ++i) {
-    NodeToMenuIDMap::iterator node_to_menu = node_to_menu_id_map_.find(*i);
-    if (node_to_menu != node_to_menu_id_map_.end()) {
-      MenuItemView* menu = GetMenuByID(node_to_menu->second);
-      DCHECK(menu);  // If there an entry in node_to_menu_id_map_, there should
-      // be a menu.
-      removed_menus->insert(menu);
-      changed_parent_menus.insert(menu->GetParentMenuItem());
-      menu->parent()->RemoveChildView(menu);
-      node_to_menu_id_map_.erase(node_to_menu);
-    }
-  }
-
-  // All the bookmarks in |bookmarks| should have the same parent. It's possible
-  // to support different parents, but this would need to prune any nodes whose
-  // parent has been removed. As all nodes currently have the same parent, there
-  // is the DCHECK.
-  DCHECK(changed_parent_menus.size() <= 1);
-
-  for (std::set<MenuItemView*>::const_iterator i = changed_parent_menus.begin();
-       i != changed_parent_menus.end(); ++i) {
-    (*i)->ChildrenChanged();
-  }
-
-  // Remove any descendants of the removed nodes in node_to_menu_id_map_.
-  for (NodeToMenuIDMap::iterator i = node_to_menu_id_map_.begin();
-       i != node_to_menu_id_map_.end(); ) {
-    bool ancestor_removed = false;
-    for (std::vector<const BookmarkNode*>::const_iterator j = bookmarks.begin();
-         j != bookmarks.end(); ++j) {
-      if (i->first->HasAncestor(*j)) {
-        ancestor_removed = true;
-        break;
-      }
-    }
-    if (ancestor_removed) {
-      node_to_menu_id_map_.erase(i++);
-    } else {
-      ++i;
-    }
-  }
 }

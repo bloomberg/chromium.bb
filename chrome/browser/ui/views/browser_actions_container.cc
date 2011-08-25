@@ -46,6 +46,7 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/drag_utils.h"
 #include "views/metrics.h"
 
@@ -255,14 +256,15 @@ void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents_(
       new ExtensionContextMenuModel(extension(), panel_->browser(), panel_));
   views::MenuModelAdapter menu_model_adapter(context_menu_contents_.get());
-  views::MenuItemView menu(&menu_model_adapter);
-  menu_model_adapter.BuildMenu(&menu);
+  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
 
-  context_menu_ = &menu;
+  context_menu_ = menu_runner.GetMenu();
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
-  context_menu_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
-                           views::MenuItemView::TOPLEFT, true);
+  if (menu_runner.RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 
   SetButtonNotPushed();
   context_menu_ = NULL;

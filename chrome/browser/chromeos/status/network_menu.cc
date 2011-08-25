@@ -37,6 +37,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
 
@@ -1029,11 +1030,12 @@ NetworkMenu::NetworkMenu(Delegate* delegate, bool is_browser_mode)
     : delegate_(delegate),
       is_browser_mode_(is_browser_mode),
       refreshing_menu_(false),
+      menu_item_view_(NULL),
       min_width_(kDefaultMinimumWidth) {
   main_menu_model_.reset(new MainMenuModel(this));
   menu_model_adapter_.reset(
       new views::MenuModelAdapter(main_menu_model_.get()));
-  menu_item_view_.reset(new views::MenuItemView(menu_model_adapter_.get()));
+  menu_item_view_ = new views::MenuItemView(menu_model_adapter_.get());
   menu_item_view_->set_has_icons(true);
   menu_item_view_->set_menu_position(
       views::MenuItemView::POSITION_BELOW_BOUNDS);
@@ -1047,7 +1049,7 @@ ui::MenuModel* NetworkMenu::GetMenuModel() {
 }
 
 void NetworkMenu::CancelMenu() {
-  menu_item_view_->Cancel();
+  menu_runner_->Cancel();
 }
 
 void NetworkMenu::UpdateMenu() {
@@ -1057,8 +1059,8 @@ void NetworkMenu::UpdateMenu() {
   main_menu_model_->InitMenuItems(
       is_browser_mode(), delegate_->ShouldOpenButtonOptions());
 
-  menu_model_adapter_->BuildMenu(menu_item_view_.get());
-  SetMenuMargins(menu_item_view_.get(), kTopMargin, kBottomMargin);
+  menu_model_adapter_->BuildMenu(menu_item_view_);
+  SetMenuMargins(menu_item_view_, kTopMargin, kBottomMargin);
   menu_item_view_->ChildrenChanged();
 
   refreshing_menu_ = false;
@@ -1074,9 +1076,10 @@ void NetworkMenu::RunMenu(views::View* source) {
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
   menu_item_view_->GetSubmenu()->set_minimum_preferred_width(min_width_);
-  menu_item_view_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-                             delegate_->GetMenuButton(), bounds,
-                             views::MenuItemView::TOPRIGHT, true);
+  if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
+          delegate_->GetMenuButton(), bounds, views::MenuItemView::TOPRIGHT,
+          views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {

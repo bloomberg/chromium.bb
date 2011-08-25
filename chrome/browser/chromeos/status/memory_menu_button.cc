@@ -15,6 +15,7 @@
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 
 #if defined(USE_TCMALLOC)
@@ -211,38 +212,35 @@ void MemoryMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // View passed in must be a views::MenuButton, i.e. the MemoryMenuButton.
   DCHECK_EQ(source, this);
 
-  EnsureMenu();
-
+  views::MenuRunner menu_runner(CreateMenu());
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  menu_->RunMenuAt(
-      source->GetWidget()->GetTopLevelWidget(),
-      this,
-      bounds,
-      views::MenuItemView::TOPRIGHT,
-      true);
+  if (menu_runner.RunMenuAt(
+          source->GetWidget()->GetTopLevelWidget(), this, bounds,
+          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
-// MemoryMenuButton, views::View implementation:
-
-void MemoryMenuButton::EnsureMenu() {
+views::MenuItemView* MemoryMenuButton::CreateMenu() {
   // Just rebuild the menu each time to ensure the labels are up-to-date.
-  menu_.reset(new views::MenuItemView(this));
+  views::MenuItemView* menu = new views::MenuItemView(this);
   // Text for these items will be set by GetLabel().
-  menu_->AppendDelegateMenuItem(MEM_TOTAL_ITEM);
-  menu_->AppendDelegateMenuItem(MEM_FREE_ITEM);
-  menu_->AppendDelegateMenuItem(MEM_BUFFERS_ITEM);
-  menu_->AppendDelegateMenuItem(MEM_CACHE_ITEM);
-  menu_->AppendDelegateMenuItem(SHMEM_ITEM);
-  menu_->AppendSeparator();
-  menu_->AppendDelegateMenuItem(PURGE_MEMORY_ITEM);
+  menu->AppendDelegateMenuItem(MEM_TOTAL_ITEM);
+  menu->AppendDelegateMenuItem(MEM_FREE_ITEM);
+  menu->AppendDelegateMenuItem(MEM_BUFFERS_ITEM);
+  menu->AppendDelegateMenuItem(MEM_CACHE_ITEM);
+  menu->AppendDelegateMenuItem(SHMEM_ITEM);
+  menu->AppendSeparator();
+  menu->AppendDelegateMenuItem(PURGE_MEMORY_ITEM);
 #if defined(USE_TCMALLOC)
-  menu_->AppendSeparator();
-  menu_->AppendDelegateMenuItem(TOGGLE_PROFILING_ITEM);
+  menu->AppendSeparator();
+  menu->AppendDelegateMenuItem(TOGGLE_PROFILING_ITEM);
   if (IsHeapProfilerRunning())
-    menu_->AppendDelegateMenuItem(DUMP_PROFILING_ITEM);
+    menu->AppendDelegateMenuItem(DUMP_PROFILING_ITEM);
 #endif
+  return menu;
 }
 
 /////////////////////////////////////////////////////////////////////////////

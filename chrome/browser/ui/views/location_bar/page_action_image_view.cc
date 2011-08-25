@@ -17,6 +17,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,
                                          ExtensionAction* page_action)
@@ -143,13 +144,14 @@ void PageActionImageView::ShowContextMenu(const gfx::Point& p,
   scoped_refptr<ExtensionContextMenuModel> context_menu_model(
       new ExtensionContextMenuModel(extension, owner_->browser(), this));
   views::MenuModelAdapter menu_model_adapter(context_menu_model.get());
-  views::MenuItemView menu(&menu_model_adapter);
-  menu_model_adapter.BuildMenu(&menu);
+  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
 
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
-  menu.RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
-                 views::MenuItemView::TOPLEFT, true);
+  if (menu_runner.RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 void PageActionImageView::OnImageLoaded(

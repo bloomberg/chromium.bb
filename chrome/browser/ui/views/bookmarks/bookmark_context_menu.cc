@@ -14,6 +14,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +32,7 @@ BookmarkContextMenu::BookmarkContextMenu(
               this, profile, page_navigator, parent, selection))),
       parent_widget_(parent_widget),
       ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
+      menu_runner_(new views::MenuRunner(menu_)),
       parent_node_(parent),
       observer_(NULL),
       close_on_remove_(close_on_remove) {
@@ -46,10 +48,12 @@ void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
       Source<BookmarkContextMenu>(this),
       NotificationService::NoDetails());
   // width/height don't matter here.
-  views::MenuItemView::AnchorPosition anchor = base::i18n::IsRTL() ?
-      views::MenuItemView::TOPRIGHT : views::MenuItemView::TOPLEFT;
-  menu_->RunMenuAt(parent_widget_, NULL, gfx::Rect(point.x(), point.y(), 0, 0),
-                   anchor, true);
+  if (menu_runner_->RunMenuAt(
+          parent_widget_, NULL, gfx::Rect(point.x(), point.y(), 0, 0),
+          views::MenuItemView::TOPLEFT,
+          (views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED)) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

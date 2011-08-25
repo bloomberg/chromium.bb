@@ -41,6 +41,7 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/hit_test.h"
@@ -511,10 +512,11 @@ void BrowserView::ShowContextMenuForView(views::View* source,
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
     // rebuild menu so it reflects current application state
     InitSystemMenu();
-    system_menu_->RunMenuAt(source->GetWidget(), NULL,
-                            gfx::Rect(p, gfx::Size(0,0)),
-                            views::MenuItemView::TOPLEFT,
-                            true);
+    if (system_menu_runner_->RunMenuAt(source->GetWidget(), NULL,
+            gfx::Rect(p, gfx::Size(0,0)), views::MenuItemView::TOPLEFT,
+            views::MenuRunner::HAS_MNEMONICS) ==
+        views::MenuRunner::MENU_DELETED)
+      return;
   }
 }
 
@@ -620,14 +622,16 @@ void BrowserView::GetAccessiblePanes(
 // BrowserView private.
 
 void BrowserView::InitSystemMenu() {
-  system_menu_.reset(new views::MenuItemView(system_menu_delegate_.get()));
-  system_menu_->AppendDelegateMenuItem(IDC_RESTORE_TAB);
-
-  system_menu_->AppendMenuItemWithLabel(
+  views::MenuItemView* menu =
+      new views::MenuItemView(system_menu_delegate_.get());
+  // MenuRunner takes ownership of menu.
+  system_menu_runner_.reset(new views::MenuRunner(menu));
+  menu->AppendDelegateMenuItem(IDC_RESTORE_TAB);
+  menu->AppendMenuItemWithLabel(
       IDC_NEW_TAB,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_TAB)));
-  system_menu_->AppendSeparator();
-  system_menu_->AppendMenuItemWithLabel(
+  menu->AppendSeparator();
+  menu->AppendMenuItemWithLabel(
       IDC_TASK_MANAGER,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER)));
 }

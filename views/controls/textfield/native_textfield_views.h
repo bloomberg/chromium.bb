@@ -31,8 +31,8 @@ namespace views {
 
 class FocusableBorder;
 class KeyEvent;
-class MenuItemView;
 class MenuModelAdapter;
+class MenuRunner;
 
 // A views/skia only implementation of NativeTextfieldWrapper.
 // No platform specific code is used.
@@ -249,7 +249,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // Context menu and its content list for the textfield.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<views::MenuModelAdapter> context_menu_delegate_;
-  scoped_ptr<views::MenuItemView> context_menu_menu_;
+  scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   scoped_ptr<TouchSelectionController> touch_selection_controller_;
 

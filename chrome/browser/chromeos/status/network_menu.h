@@ -36,6 +36,7 @@ namespace views {
 class MenuItemView;
 class MenuButton;
 class MenuModelAdapter;
+class MenuRunner;
 }
 
 namespace chromeos {
@@ -123,7 +124,8 @@ class NetworkMenu {
   // The network menu.
   scoped_ptr<NetworkMenuModel> main_menu_model_;
   scoped_ptr<views::MenuModelAdapter> menu_model_adapter_;
-  scoped_ptr<views::MenuItemView> menu_item_view_;
+  views::MenuItemView* menu_item_view_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   // Holds minimum width of the menu.
   int min_width_;

@@ -25,6 +25,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
 
@@ -139,6 +140,7 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
           new views::MenuModelAdapter(this))),
       input_method_menu_(
           new views::MenuItemView(input_method_menu_delegate_.get())),
+      input_method_menu_runner_(new views::MenuRunner(input_method_menu_)),
       minimum_input_method_menu_width_(0),
       menu_alignment_(views::MenuItemView::TOPRIGHT),
       pref_service_(pref_service),
@@ -388,8 +390,11 @@ void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  input_method_menu_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-                                NULL, bounds, menu_alignment_, true);
+  if (input_method_menu_runner_->RunMenuAt(
+          source->GetWidget()->GetTopLevelWidget(), NULL, bounds,
+          menu_alignment_, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -536,7 +541,7 @@ void InputMethodMenu::RebuildModel() {
   }
 
   // Rebuild the menu from the model.
-  input_method_menu_delegate_->BuildMenu(input_method_menu_.get());
+  input_method_menu_delegate_->BuildMenu(input_method_menu_);
 }
 
 bool InputMethodMenu::IndexIsInInputMethodList(int index) const {

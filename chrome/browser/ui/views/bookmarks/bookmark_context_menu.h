@@ -10,6 +10,7 @@
 #include "views/controls/menu/menu_delegate.h"
 
 namespace views {
+class MenuRunner;
 class Widget;
 }
 
@@ -42,7 +43,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   // Shows the context menu at the specified point.
   void RunMenuAt(const gfx::Point& point);
 
-  views::MenuItemView* menu() const { return menu_.get(); }
+  views::MenuItemView* menu() const { return menu_; }
 
   void set_observer(BookmarkContextMenuObserver* observer) {
     observer_ = observer;
@@ -69,8 +70,11 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   // The parent of dialog boxes opened from the context menu.
   views::Widget* parent_widget_;
 
-  // The menu itself.
-  scoped_ptr<views::MenuItemView> menu_;
+  // The menu itself. This is owned by |menu_runner_|.
+  views::MenuItemView* menu_;
+
+  // Responsible for running the menu.
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   // The node we're showing the menu for.
   const BookmarkNode* parent_node_;

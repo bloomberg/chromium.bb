@@ -15,6 +15,10 @@ namespace base {
 class TimeDelta;
 }
 
+namespace views {
+class MenuRunner;
+}
+
 class SkBitmap;
 
 namespace chromeos {
@@ -75,8 +79,8 @@ class PowerMenuButton : public StatusAreaButton,
   // The currently showing status view. NULL if menu is not being displayed.
   StatusView* status_;
 
-  // The currently showing menu. NULL if menu is not being displayed.
-  views::MenuItemView* menu_;
+  // If non-null the menu is showing.
+  views::MenuRunner* menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMenuButton);
 };

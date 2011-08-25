@@ -14,6 +14,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/menu/menu_controller_delegate.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/drag_utils.h"
@@ -369,7 +370,7 @@ void MenuController::Cancel(ExitType type) {
   // If the menu has already been destroyed, no further cancellation is
   // needed.  We especially don't want to set the |exit_type_| to a lesser
   // value.
-  if (exit_type_ == EXIT_DESTROYED)
+  if (exit_type_ == EXIT_DESTROYED || exit_type_ == type)
     return;
 
   if (!showing_) {
@@ -391,7 +392,9 @@ void MenuController::Cancel(ExitType type) {
     // triggers deleting us.
     DCHECK(selected);
     showing_ = false;
-    selected->GetRootMenuItem()->DropMenuClosed(true);
+    delegate_->DropMenuClosed(
+        internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+        selected->GetRootMenuItem());
     // WARNING: the call to MenuClosed deletes us.
     return;
   }
@@ -716,8 +719,11 @@ int MenuController::OnPerformDrop(SubmenuView* source,
   if (drop_target->id() == MenuItemView::kEmptyMenuItemViewID)
     drop_target = drop_target->GetParentMenuItem();
 
-  if (!IsBlockingRun())
-    item->GetRootMenuItem()->DropMenuClosed(false);
+  if (!IsBlockingRun()) {
+    delegate_->DropMenuClosed(
+        internal::MenuControllerDelegate::DONT_NOTIFY_DELEGATE,
+        item->GetRootMenuItem());
+  }
 
   // WARNING: the call to MenuClosed deletes us.
 
@@ -806,11 +812,6 @@ void MenuController::SetSelection(MenuItemView* menu_item,
     menu_item->GetWidget()->NotifyAccessibilityEvent(
         menu_item, ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
-}
-
-// static
-void MenuController::SetActiveInstance(MenuController* controller) {
-  active_instance_ = controller;
 }
 
 #if defined(OS_WIN)
@@ -994,7 +995,8 @@ bool MenuController::OnKeyDown(int key_code
   return true;
 }
 
-MenuController::MenuController(bool blocking)
+MenuController::MenuController(bool blocking,
+                               internal::MenuControllerDelegate* delegate)
     : blocking_run_(blocking),
       showing_(false),
       exit_type_(EXIT_NONE),
@@ -1008,11 +1010,15 @@ MenuController::MenuController(bool blocking)
       valid_drop_coordinates_(false),
       showing_submenu_(false),
       menu_button_(NULL),
-      active_mouse_view_(NULL) {
+      active_mouse_view_(NULL),
+      delegate_(delegate) {
+  active_instance_ = this;
 }
 
 MenuController::~MenuController() {
   DCHECK(!showing_);
+  if (active_instance_ == this)
+    active_instance_ = NULL;
   StopShowTimer();
   StopCancelAllTimer();
 }
@@ -1094,6 +1100,8 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
                      screen_point, &anchor, &has_mnemonics, &button);
   if (!alt_menu || (state_.item && state_.item->GetRootMenuItem() == alt_menu))
     return false;
+
+  delegate_->SiblingMenuCreated(alt_menu);
 
   if (!button) {
     // If the delegate returns a menu, they must also return a button.

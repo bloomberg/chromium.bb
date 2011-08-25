@@ -34,6 +34,7 @@
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/widget/widget.h"
 
@@ -120,17 +121,17 @@ class NotificationControlView : public views::View,
     CreateOptionsMenu();
 
     views::MenuModelAdapter menu_model_adapter(options_menu_contents_.get());
-    views::MenuItemView menu(&menu_model_adapter);
-    menu_model_adapter.BuildMenu(&menu);
+    views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
 
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(options_menu_button_,
                                       &screen_location);
-    menu.RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-                   options_menu_button_,
-                   gfx::Rect(screen_location, options_menu_button_->size()),
-                   views::MenuItemView::TOPRIGHT,
-                   true);
+    if (menu_runner.RunMenuAt(
+            source->GetWidget()->GetTopLevelWidget(), options_menu_button_,
+            gfx::Rect(screen_location, options_menu_button_->size()),
+            views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+        views::MenuRunner::MENU_DELETED)
+      return;
   }
 
   // views::ButtonListener implements.

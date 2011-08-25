@@ -214,7 +214,8 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       title_label_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(settings_menu_contents_(this)),
       settings_menu_adapter_(&settings_menu_contents_),
-      settings_menu_(&settings_menu_adapter_) {
+      settings_menu_(new views::MenuItemView(&settings_menu_adapter_)),
+      settings_menu_runner_(settings_menu_) {
   EnsureResourcesInitialized();
   frame_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
@@ -442,9 +443,11 @@ void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
   DCHECK_EQ(settings_button_, source);
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(source, &screen_point);
-  settings_menu_.RunMenuAt(source->GetWidget(),
-      settings_button_, gfx::Rect(screen_point, source->size()),
-      views::MenuItemView::TOPRIGHT, true);
+  if (settings_menu_runner_.RunMenuAt(source->GetWidget(),
+          settings_button_, gfx::Rect(screen_point, source->size()),
+          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 bool PanelBrowserFrameView::IsCommandIdChecked(int command_id) const {
@@ -750,5 +753,5 @@ void PanelBrowserFrameView::EnsureSettingsMenuCreated() {
   settings_menu_contents_.AddItem(
       COMMAND_MANAGE, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS));
 
-  settings_menu_adapter_.BuildMenu(&settings_menu_);
+  settings_menu_adapter_.BuildMenu(settings_menu_);
 }

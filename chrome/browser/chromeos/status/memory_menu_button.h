@@ -20,6 +20,7 @@ struct SystemMemoryInfoKB;
 
 namespace views {
 class MenuItemView;
+class MenuRunner;
 }
 
 namespace chromeos {
@@ -58,17 +59,13 @@ class MemoryMenuButton : public StatusAreaButton,
   // Execute command id for each renderer. Used for heap profiling.
   void SendCommandToRenderers(int id);
 
-  // Create and initialize menu if not already present.
-  void EnsureMenu();
+  // Creates and returns the menu. The caller owns the returned value.
+  views::MenuItemView* CreateMenu();
 
   // Updates text and schedules the timer to fire at the next minute interval.
   void UpdateTextAndSetNextTimer();
 
   base::OneShotTimer<MemoryMenuButton> timer_;
-
-  // NOTE: we use a scoped_ptr here as menu calls into 'this' from the
-  // constructor.
-  scoped_ptr<views::MenuItemView> menu_;
 
   // Raw data from /proc/meminfo
   scoped_ptr<base::SystemMemoryInfoKB> meminfo_;

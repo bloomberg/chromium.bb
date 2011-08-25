@@ -29,6 +29,7 @@ class OSExchangeData;
 
 namespace views {
 class MenuButton;
+class MenuRunner;
 class Widget;
 }  // namespace views
 
@@ -57,11 +58,6 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                          int start_child_index);
 
   void RunMenuAt(BookmarkBarView* bookmark_bar, bool for_drop);
-
-  // Shows the menu.
-  void RunMenuAt(views::MenuButton* button,
-                 views::MenuItemView::AnchorPosition position,
-                 bool for_drop);
 
   // Hides the menu.
   void Cancel();
@@ -118,6 +114,8 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
  private:
   // BookmarkMenuController deletes itself as necessary.
   virtual ~BookmarkMenuController();
+
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   scoped_ptr<BookmarkMenuDelegate> menu_delegate_;
 

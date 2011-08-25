@@ -23,6 +23,7 @@
 #include "ui/gfx/platform_font_gtk.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/widget.h"
 
@@ -38,7 +39,8 @@ const int kMoreLanguagesSubMenu = 200;
 namespace chromeos {
 
 LanguageSwitchMenu::LanguageSwitchMenu()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(menu_(new views::MenuItemView(this))),
+      menu_runner_(new views::MenuRunner(menu_)) {
 }
 
 LanguageSwitchMenu::~LanguageSwitchMenu() {}
@@ -171,8 +173,10 @@ void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   else
     new_pt.set_x(pt.x() - reverse_offset);
 
-  menu_->RunMenuAt(button->GetWidget(), button,
-      gfx::Rect(new_pt, gfx::Size()), views::MenuItemView::TOPLEFT, true);
+  if (menu_runner_->RunMenuAt(button->GetWidget(), button,
+          gfx::Rect(new_pt, gfx::Size()), views::MenuItemView::TOPLEFT,
+          views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

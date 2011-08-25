@@ -13,6 +13,7 @@
 #include "ui/base/models/menu_model.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -155,20 +156,21 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
   if (model_) {
     MenuModelAdapter menu_delegate(model_);
     menu_delegate.set_triggerable_event_flags(triggerable_event_flags());
-    MenuItemView menu(&menu_delegate);
-    menu_delegate.BuildMenu(&menu);
-
-    menu.RunMenuAt(GetWidget(), NULL,
-                   gfx::Rect(menu_position, gfx::Size(0, 0)),
-                   views::MenuItemView::TOPLEFT,
-                   true);
+    MenuRunner runner(menu_delegate.CreateMenu());
+    if (runner.RunMenuAt(GetWidget(), NULL,
+                         gfx::Rect(menu_position, gfx::Size(0, 0)),
+                         MenuItemView::TOPLEFT,
+                         MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
+      return;
   } else {
     MenuDelegate menu_delegate;
-    MenuItemView menu(&menu_delegate);
-    menu.RunMenuAt(GetWidget(), NULL,
-                   gfx::Rect(menu_position, gfx::Size(0, 0)),
-                   views::MenuItemView::TOPLEFT,
-                   true);
+    MenuItemView* menu = new MenuItemView(&menu_delegate);
+    MenuRunner runner(menu);
+    if (runner.RunMenuAt(GetWidget(), NULL,
+                         gfx::Rect(menu_position, gfx::Size(0, 0)),
+                         views::MenuItemView::TOPLEFT,
+                         MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
+      return;
   }
 
   // Need to explicitly clear mouse handler so that events get sent

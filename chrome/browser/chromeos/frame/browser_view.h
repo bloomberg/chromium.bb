@@ -28,6 +28,7 @@ class ImageButton;
 class ImageView;
 class MenuDelegate;
 class MenuItemView;
+class MenuRunner;
 }  // namespace views
 
 namespace chromeos {
@@ -129,7 +130,7 @@ class BrowserView : public ::BrowserView,
   LayoutModeButton* layout_mode_button_;
 
   // System menu.
-  scoped_ptr<views::MenuItemView> system_menu_;
+  scoped_ptr<views::MenuRunner> system_menu_runner_;
   scoped_ptr<views::MenuDelegate> system_menu_delegate_;
 
   // Focused native widget before wrench menu shows up. We need this to properly

@@ -12,6 +12,7 @@
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/widget/widget.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
@@ -176,8 +177,10 @@ void AfterTranslateInfoBar::RunMenu(View* source, const gfx::Point& pt) {
   }
 
   views::MenuModelAdapter menu_model_adapter(menu_model);
-  views::MenuItemView menu(&menu_model_adapter);
-  menu_model_adapter.BuildMenu(&menu);
-  menu.RunMenuAt(source->GetWidget(), NULL, gfx::Rect(pt, gfx::Size()),
-                 views::MenuItemView::TOPRIGHT, true);
+  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
+  if (menu_runner.RunMenuAt(
+          source->GetWidget(), NULL, gfx::Rect(pt, gfx::Size()),
+          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }

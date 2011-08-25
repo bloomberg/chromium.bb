@@ -7,6 +7,7 @@
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/widget/root_view.h"
@@ -30,10 +31,10 @@ class MenuItemViewTestBase : public ViewEventTestBase,
                              public views::ViewMenuDelegate,
                              public views::MenuDelegate {
  public:
-  MenuItemViewTestBase() :
-      ViewEventTestBase(),
-      button_(NULL),
-      menu_(NULL) {
+  MenuItemViewTestBase()
+      : ViewEventTestBase(),
+        button_(NULL),
+        menu_(NULL) {
   }
 
   virtual ~MenuItemViewTestBase() {
@@ -43,14 +44,16 @@ class MenuItemViewTestBase : public ViewEventTestBase,
 
   virtual void SetUp() OVERRIDE {
     button_ = new views::MenuButton(NULL, L"Menu Test", this, true);
-    menu_.reset(new views::MenuItemView(this));
-    BuildMenu(menu_.get());
+    menu_ = new views::MenuItemView(this);
+    BuildMenu(menu_);
+    menu_runner_.reset(new views::MenuRunner(menu_));
 
     ViewEventTestBase::SetUp();
   }
 
   virtual void TearDown() OVERRIDE {
-    menu_.reset(NULL);
+    menu_runner_.reset(NULL);
+    menu_ = NULL;
     ViewEventTestBase::TearDown();
   }
 
@@ -67,12 +70,12 @@ class MenuItemViewTestBase : public ViewEventTestBase,
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(source, &screen_location);
     gfx::Rect bounds(screen_location, source->size());
-    menu_->RunMenuAt(
+    ignore_result(menu_runner_->RunMenuAt(
         source->GetWidget(),
         button_,
         bounds,
         views::MenuItemView::TOPLEFT,
-        true);
+        views::MenuRunner::HAS_MNEMONICS));
   }
 
  protected:
@@ -89,7 +92,8 @@ class MenuItemViewTestBase : public ViewEventTestBase,
   }
 
   views::MenuButton* button_;
-  scoped_ptr<views::MenuItemView> menu_;
+  views::MenuItemView* menu_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
 };
 
 // Simple test for clicking a menu item.  This template class clicks on an
@@ -125,7 +129,7 @@ class MenuItemViewTestBasic : public MenuItemViewTestBase {
 
   // Click on item INDEX.
   void Step1() {
-    ASSERT_TRUE(menu_.get());
+    ASSERT_TRUE(menu_);
 
     views::SubmenuView* submenu = menu_->GetSubmenu();
     ASSERT_TRUE(submenu);
@@ -187,7 +191,7 @@ class MenuItemViewTestInsert : public MenuItemViewTestBase {
 
   // Insert item at INSERT_INDEX and click item at SELECT_INDEX.
   void Step1() {
-    ASSERT_TRUE(menu_.get());
+    ASSERT_TRUE(menu_);
 
     views::SubmenuView* submenu = menu_->GetSubmenu();
     ASSERT_TRUE(submenu);
@@ -208,7 +212,7 @@ class MenuItemViewTestInsert : public MenuItemViewTestBase {
 
   // Check clicked item and complete test.
   void Step2() {
-    ASSERT_TRUE(menu_.get());
+    ASSERT_TRUE(menu_);
 
     views::SubmenuView* submenu = menu_->GetSubmenu();
     ASSERT_TRUE(submenu);
@@ -318,8 +322,8 @@ VIEW_TEST(MenuItemViewTestInsertWithSubmenu1, InsertItemWithSubmenu1)
 template<int REMOVE_INDEX, int SELECT_INDEX>
 class MenuItemViewTestRemove : public MenuItemViewTestBase {
  public:
-  MenuItemViewTestRemove() :
-      last_command_(0) {
+  MenuItemViewTestRemove()
+      : last_command_(0) {
   }
 
   virtual ~MenuItemViewTestRemove() {
@@ -344,7 +348,7 @@ class MenuItemViewTestRemove : public MenuItemViewTestBase {
 
   // Remove item at REMOVE_INDEX and click item at SELECT_INDEX.
   void Step1() {
-    ASSERT_TRUE(menu_.get());
+    ASSERT_TRUE(menu_);
 
     views::SubmenuView* submenu = menu_->GetSubmenu();
     ASSERT_TRUE(submenu);
@@ -363,7 +367,7 @@ class MenuItemViewTestRemove : public MenuItemViewTestBase {
 
   // Check clicked item and complete test.
   void Step2() {
-    ASSERT_TRUE(menu_.get());
+    ASSERT_TRUE(menu_);
 
     views::SubmenuView* submenu = menu_->GetSubmenu();
     ASSERT_TRUE(submenu);
@@ -428,7 +432,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
 
   // Post submenu.
   void Step1() {
-    ASSERT_TRUE(menu_.get());
+    ASSERT_TRUE(menu_);
 
     views::SubmenuView* submenu = menu_->GetSubmenu();
     ASSERT_TRUE(submenu);
@@ -440,7 +444,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
 
   // Remove item at REMOVE_INDEX and select it to exit the menu loop.
   void Step2() {
-    ASSERT_TRUE(menu_.get());
+    ASSERT_TRUE(menu_);
 
     views::SubmenuView* submenu = menu_->GetSubmenu();
     ASSERT_TRUE(submenu);
@@ -457,7 +461,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuItemViewTestBase {
   }
 
   void Step3() {
-    ASSERT_TRUE(menu_.get());
+    ASSERT_TRUE(menu_);
 
     views::SubmenuView* submenu = menu_->GetSubmenu();
     ASSERT_TRUE(submenu);

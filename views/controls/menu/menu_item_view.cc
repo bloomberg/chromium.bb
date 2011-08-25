@@ -19,10 +19,6 @@
 #include "views/controls/menu/menu_separator.h"
 #include "views/controls/menu/submenu_view.h"
 
-#if defined(OS_WIN)
-#include "base/win/win_util.h"
-#endif
-
 namespace views {
 
 namespace {
@@ -98,16 +94,6 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes supplies a
   // NULL delegate.
   Init(NULL, 0, SUBMENU, delegate);
-}
-
-MenuItemView::~MenuItemView() {
-  // TODO(sky): ownership is bit wrong now. In particular if a nested message
-  // loop is running deletion can't be done, otherwise the stack gets
-  // thoroughly screwed. The destructor should be made private, and
-  // MenuController should be the only place handling deletion of the menu.
-  // (57890).
-  delete submenu_;
-  STLDeleteElements(&removed_items_);
 }
 
 void MenuItemView::ChildPreferredSizeChanged(View* child) {
@@ -190,86 +176,6 @@ string16 MenuItemView::GetAccessibleNameForMenuItem(
   }
 
   return accessible_name;
-}
-
-void MenuItemView::RunMenuAt(Widget* parent,
-                             MenuButton* button,
-                             const gfx::Rect& bounds,
-                             AnchorPosition anchor,
-                             bool has_mnemonics) {
-  // Show mnemonics if the button has focus or alt is pressed.
-  bool show_mnemonics = button ? button->HasFocus() : false;
-#if defined(OS_WIN)
-  // We don't currently need this on gtk as showing the menu gives focus to the
-  // button first.
-  if (!show_mnemonics)
-    show_mnemonics = base::win::IsAltPressed();
-#endif
-  PrepareForRun(has_mnemonics, show_mnemonics);
-  int mouse_event_flags;
-
-  MenuController* controller = MenuController::GetActiveInstance();
-  if (controller && !controller->IsBlockingRun()) {
-    // A menu is already showing, but it isn't a blocking menu. Cancel it.
-    // We can get here during drag and drop if the user right clicks on the
-    // menu quickly after the drop.
-    controller->Cancel(MenuController::EXIT_ALL);
-    controller = NULL;
-  }
-  bool owns_controller = false;
-  if (!controller) {
-    // No menus are showing, show one.
-    controller = new MenuController(true);
-    MenuController::SetActiveInstance(controller);
-    owns_controller = true;
-  } else {
-    // A menu is already showing, use the same controller.
-
-    // Don't support blocking from within non-blocking.
-    DCHECK(controller->IsBlockingRun());
-  }
-
-  controller_ = controller;
-
-  // Run the loop.
-  MenuItemView* result =
-      controller->Run(parent, button, this, bounds, anchor, &mouse_event_flags);
-
-  RemoveEmptyMenus();
-
-  controller_ = NULL;
-
-  if (owns_controller) {
-    // We created the controller and need to delete it.
-    if (MenuController::GetActiveInstance() == controller)
-      MenuController::SetActiveInstance(NULL);
-    delete controller;
-  }
-  // Make sure all the windows we created to show the menus have been
-  // destroyed.
-  DestroyAllMenuHosts();
-  if (result && delegate_)
-    delegate_->ExecuteCommand(result->GetCommand(), mouse_event_flags);
-}
-
-void MenuItemView::RunMenuForDropAt(Widget* parent,
-                                    const gfx::Rect& bounds,
-                                    AnchorPosition anchor) {
-  PrepareForRun(false, false);
-
-  // If there is a menu, hide it so that only one menu is shown during dnd.
-  MenuController* current_controller = MenuController::GetActiveInstance();
-  if (current_controller) {
-    current_controller->Cancel(MenuController::EXIT_ALL);
-  }
-
-  // Always create a new controller for non-blocking.
-  controller_ = new MenuController(false);
-
-  // Set the instance, that way it can be canceled by another menu.
-  MenuController::SetActiveInstance(controller_);
-
-  controller_->Run(parent, NULL, this, bounds, anchor, NULL);
 }
 
 void MenuItemView::Cancel() {
@@ -558,6 +464,11 @@ MenuItemView::MenuItemView(MenuItemView* parent,
   Init(parent, command, type, NULL);
 }
 
+MenuItemView::~MenuItemView() {
+  delete submenu_;
+  STLDeleteElements(&removed_items_);
+}
+
 std::string MenuItemView::GetClassName() const {
   return kViewClassName;
 }
@@ -610,23 +521,6 @@ void MenuItemView::Init(MenuItemView* parent,
   MenuDelegate* root_delegate = GetDelegate();
   if (parent && type != EMPTY && root_delegate)
     SetEnabled(root_delegate->IsCommandEnabled(command));
-}
-
-void MenuItemView::DropMenuClosed(bool notify_delegate) {
-  DCHECK(controller_);
-  DCHECK(!controller_->IsBlockingRun());
-  if (MenuController::GetActiveInstance() == controller_)
-    MenuController::SetActiveInstance(NULL);
-  delete controller_;
-  controller_ = NULL;
-
-  RemoveEmptyMenus();
-
-  if (notify_delegate && delegate_) {
-    // Our delegate is null when invoked from the destructor.
-    delegate_->DropMenuClosed(this);
-  }
-  // WARNING: its possible the delegate deleted us at this point.
 }
 
 void MenuItemView::PrepareForRun(bool has_mnemonics, bool show_mnemonics) {

@@ -48,9 +48,11 @@ void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
       static_cast<TabContentsViewViews*>(source_tab_contents_->view());
   views::Widget* parent = tab->GetTopLevelWidget();
 #endif
-  menu_runner_->RunMenuAt(parent, NULL,
-      gfx::Rect(gfx::Point(x, y), gfx::Size()),
-      views::MenuItemView::TOPLEFT, true);
+  if (menu_runner_->RunMenuAt(parent, NULL,
+          gfx::Rect(gfx::Point(x, y), gfx::Size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 #if defined(OS_WIN)

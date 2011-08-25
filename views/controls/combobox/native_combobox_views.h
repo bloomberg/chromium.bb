@@ -19,6 +19,7 @@ namespace views {
 
 class KeyEvent;
 class FocusableBorder;
+class MenuRunner;
 
 // A views/skia only implementation of NativeComboboxWrapper.
 // No platform specific code is used.
@@ -82,8 +83,8 @@ class NativeComboboxViews : public views::View,
   // The reference to the border class. The object is owned by View::border_.
   FocusableBorder* text_border_;
 
-  // Context menu and its content list for the combobox.
-  scoped_ptr<views::MenuItemView> dropdown_list_menu_;
+  // Responsible for showing the context menu.
+  scoped_ptr<MenuRunner> dropdown_list_menu_runner_;
 
   // Is the drop down list showing
   bool dropdown_open_;

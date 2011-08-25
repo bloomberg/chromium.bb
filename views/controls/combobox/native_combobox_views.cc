@@ -18,6 +18,7 @@
 #include "views/border.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/focusable_border.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -163,7 +164,9 @@ void NativeComboboxViews::UpdateFromModel() {
   int max_width = 0;
   const gfx::Font &font = GetFont();
 
-  dropdown_list_menu_.reset(new MenuItemView(this));
+  MenuItemView* menu = new MenuItemView(this);
+  // MenuRunner owns |menu|.
+  dropdown_list_menu_runner_.reset(new MenuRunner(menu));
 
   int num_items = combobox_->model()->GetItemCount();
   for (int i = 0; i < num_items; ++i) {
@@ -173,10 +176,10 @@ void NativeComboboxViews::UpdateFromModel() {
     // text is displayed correctly in right-to-left UIs.
     base::i18n::AdjustStringForLocaleDirection(&text);
 
-    dropdown_list_menu_->AppendMenuItem(i + kFirstMenuItemId, UTF16ToWide(text),
-         MenuItemView::NORMAL);
-     max_width = std::max(max_width, font.GetStringWidth(text));
-   }
+    menu->AppendMenuItem(i + kFirstMenuItemId, UTF16ToWide(text),
+                         MenuItemView::NORMAL);
+    max_width = std::max(max_width, font.GetStringWidth(text));
+  }
 
   content_width_ = max_width;
   content_height_ = font.GetFontSize();
@@ -342,11 +345,11 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
 
 void NativeComboboxViews::ShowDropDownMenu() {
 
-  if (!dropdown_list_menu_.get())
+  if (!dropdown_list_menu_runner_.get())
     UpdateFromModel();
 
   // Extend the menu to the width of the combobox.
-  SubmenuView* submenu = dropdown_list_menu_->CreateSubmenu();
+  SubmenuView* submenu = dropdown_list_menu_runner_->GetMenu()->CreateSubmenu();
   submenu->set_minimum_preferred_width(size().width());
 
   gfx::Rect lb = GetLocalBounds();
@@ -358,8 +361,10 @@ void NativeComboboxViews::ShowDropDownMenu() {
   gfx::Rect bounds(menu_position, lb.size());
 
   dropdown_open_ = true;
-  dropdown_list_menu_->RunMenuAt(NULL, NULL, bounds, MenuItemView::TOPLEFT,
-                                 true);
+  if (dropdown_list_menu_runner_->RunMenuAt(
+          NULL, NULL, bounds, MenuItemView::TOPLEFT,
+          MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
+    return;
   dropdown_open_ = false;
 
   // Need to explicitly clear mouse handler so that events get sent

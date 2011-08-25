@@ -94,7 +94,7 @@ void CompactOptionsBar::RunMenu(views::View* source,
                                 const gfx::Point& /* pt */) {
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
 
-  wrench_menu_ = new WrenchMenu(browser_view_->browser());
+  wrench_menu_.reset(new WrenchMenu(browser_view_->browser()));
   wrench_menu_->Init(wrench_menu_model_.get());
 
   for (size_t i = 0; i < menu_listeners_.size(); ++i)

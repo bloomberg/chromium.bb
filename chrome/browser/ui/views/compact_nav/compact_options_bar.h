@@ -70,7 +70,7 @@ class CompactOptionsBar : public views::View,
   // Button and models for the wrench/app menu.
   views::MenuButton* app_menu_;
   scoped_ptr<ui::SimpleMenuModel> wrench_menu_model_;
-  scoped_refptr<WrenchMenu> wrench_menu_;
+  scoped_ptr<WrenchMenu> wrench_menu_;
   std::vector<views::MenuListener*> menu_listeners_;
 
   // TODO(stevet): Add the BrowserActionsContainer.

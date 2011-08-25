@@ -28,6 +28,7 @@ class SimpleMenuModel;
 namespace views {
 class MenuItemView;
 class MenuModelAdapter;
+class MenuRunner;
 }  // namespace views
 
 namespace chromeos {
@@ -173,7 +174,8 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   // views::MenuDelegate interface required for MenuItemView.
   scoped_ptr<ui::SimpleMenuModel> model_;
   scoped_ptr<views::MenuModelAdapter> input_method_menu_delegate_;
-  scoped_ptr<views::MenuItemView> input_method_menu_;
+  views::MenuItemView* input_method_menu_;
+  scoped_ptr<views::MenuRunner> input_method_menu_runner_;
 
   int minimum_input_method_menu_width_;
 

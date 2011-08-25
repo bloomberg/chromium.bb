@@ -33,12 +33,15 @@ class MenuModel;
 
 namespace views {
 
+namespace internal {
+class MenuRunnerImpl;
+}
+
 class MenuButton;
+struct MenuConfig;
 class MenuController;
 class MenuDelegate;
 class SubmenuView;
-
-struct MenuConfig;
 
 // MenuItemView --------------------------------------------------------------
 
@@ -59,12 +62,8 @@ struct MenuConfig;
 // focus from the hosting window child views do not actually get focus. Instead
 // |SetHotTracked| is used as the user navigates around.
 //
-// There are two ways to show a MenuItemView:
-// 1. Use RunMenuAt. This blocks the caller, executing the selected command
-//    on success.
-// 2. Use RunMenuForDropAt. This is intended for use during a drop session
-//    and does NOT block the caller. Instead the delegate is notified when the
-//    menu closes via the DropMenuClosed method.
+// To show the menu use MenuRunner. See MenuRunner for details on how to run
+// (show) the menu as well as for details on the life time of the menu.
 
 class VIEWS_EXPORT MenuItemView : public View {
  public:
@@ -111,8 +110,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // shown to the user, rather its use as the parent for all menu items.
   explicit MenuItemView(MenuDelegate* delegate);
 
-  virtual ~MenuItemView();
-
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
                               std::wstring* tooltip) OVERRIDE;
@@ -129,20 +126,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // removed and the menu item accelerator text is appended.
   static string16 GetAccessibleNameForMenuItem(
       const string16& item_text, const string16& accelerator_text);
-
-  // Run methods. See description above class for details. Both Run methods take
-  // a rectangle, which is used to position the menu. |has_mnemonics| indicates
-  // whether the items have mnemonics. Mnemonics are identified by way of the
-  // character following the '&'.  The anchor position is specified for non-RTL
-  // languages; the opposite value will be used for RTL.
-  void RunMenuAt(Widget* parent,
-                 MenuButton* button,
-                 const gfx::Rect& bounds,
-                 AnchorPosition anchor,
-                 bool has_mnemonics);
-  void RunMenuForDropAt(Widget* parent,
-                        const gfx::Rect& bounds,
-                        AnchorPosition anchor);
 
   // Hides and cancels the menu. This does nothing if the menu is not open.
   void Cancel();
@@ -288,6 +271,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns the delegate. This returns the delegate of the root menu item.
   MenuDelegate* GetDelegate();
+  void set_delegate(MenuDelegate* delegate) { delegate_ = delegate; }
 
   // Returns the root parent, or this if this has no parent.
   MenuItemView* GetRootMenuItem();
@@ -334,11 +318,16 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
 
+  // MenuRunner owns MenuItemView and should be the only one deleting it.
+  virtual ~MenuItemView();
+
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
+  friend class internal::MenuRunnerImpl;  // For access to ~MenuItemView.
+
   // Calculates all sizes that we can from the OS.
   //
   // This is invoked prior to Running a menu.
@@ -349,10 +338,6 @@ class VIEWS_EXPORT MenuItemView : public View {
             int command,
             MenuItemView::Type type,
             MenuDelegate* delegate);
-
-  // Invoked by the MenuController when the menu closes as the result of
-  // drag and drop run.
-  void DropMenuClosed(bool notify_delegate);
 
   // The RunXXX methods call into this to set up the necessary state before
   // running.
@@ -418,13 +403,14 @@ class VIEWS_EXPORT MenuItemView : public View {
     actual_menu_position_ = actual_menu_position;
   }
 
+  void set_controller(MenuController* controller) { controller_ = controller; }
+
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as
   // as necessary.
   MenuDelegate* delegate_;
 
-  // Returns the controller for the run operation, or NULL if the menu isn't
-  // showing.
+  // The controller for the run operation, or NULL if the menu isn't showing.
   MenuController* controller_;
 
   // Used to detect when Cancel was invoked.

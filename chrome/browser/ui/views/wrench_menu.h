@@ -9,7 +9,6 @@
 #include <map>
 #include <utility>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "ui/base/models/menu_model.h"
@@ -21,15 +20,16 @@ class Browser;
 namespace views {
 class MenuButton;
 class MenuItemView;
+class MenuRunner;
 class View;
 }  // namespace views
 
 // WrenchMenu adapts the WrenchMenuModel to view's menu related classes.
-class WrenchMenu : public base::RefCounted<WrenchMenu>,
-                   public views::MenuDelegate,
+class WrenchMenu : public views::MenuDelegate,
                    public BaseBookmarkModelObserver {
  public:
   explicit WrenchMenu(Browser* browser);
+  virtual ~WrenchMenu();
 
   void Init(ui::MenuModel* model);
 
@@ -72,15 +72,11 @@ class WrenchMenu : public base::RefCounted<WrenchMenu>,
   virtual void BookmarkModelChanged() OVERRIDE;
 
  private:
-  friend class base::RefCounted<WrenchMenu>;
-
   class CutCopyPasteView;
   class ZoomView;
 
   typedef std::pair<ui::MenuModel*,int> Entry;
   typedef std::map<int,Entry> IDToEntry;
-
-  virtual ~WrenchMenu();
 
   // Populates |parent| with all the child menus in |model|. Recursively invokes
   // |PopulateMenu| for any submenu. |next_id| is incremented for every menu
@@ -110,8 +106,10 @@ class WrenchMenu : public base::RefCounted<WrenchMenu>,
     return bookmark_menu_delegate_.get() && id >= first_bookmark_command_id_;
   }
 
-  // The views menu.
-  scoped_ptr<views::MenuItemView> root_;
+  // The views menu. Owned by |menu_runner_|.
+  views::MenuItemView* root_;
+
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   // Maps from the ID as understood by MenuItemView to the model/index pair the
   // item came from.

@@ -32,6 +32,11 @@ class MouseEvent;
 class SubmenuView;
 class View;
 
+namespace internal {
+class MenuControllerDelegate;
+class MenuRunnerImpl;
+}
+
 // MenuController -------------------------------------------------------------
 
 // MenuController is used internally by the various menu classes to manage
@@ -39,10 +44,6 @@ class View;
 // forwarded to the MenuController from SubmenuView and MenuHost.
 class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
  public:
-  friend class MenuHostRootView;
-  friend class MenuItemView;
-  friend class SubmenuView;
-
   // Enumeration of how the menu should exit.
   enum ExitType {
     // Don't exit.
@@ -122,6 +123,11 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   void OnWidgetActivationChanged();
 
  private:
+  friend class internal::MenuRunnerImpl;
+  friend class MenuHostRootView;
+  friend class MenuItemView;
+  friend class SubmenuView;
+
   class MenuScrollTask;
 
   struct SelectByCharDetails;
@@ -209,9 +215,6 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // to show/hide submenus and update state_.
   void SetSelection(MenuItemView* menu_item, int types);
 
-  // Sets the active MenuController.
-  static void SetActiveInstance(MenuController* controller);
-
 #if defined(OS_WIN)
   // Dispatcher method. This returns true if the menu was canceled, or
   // if the message is such that the menu should be closed.
@@ -231,8 +234,9 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   bool OnKeyDown(int key_code);
 #endif
 
-  // Creates a MenuController. If blocking is true, Run blocks the caller
-  explicit MenuController(bool blocking);
+  // Creates a MenuController. If |blocking| is true a nested message loop is
+  // started in |Run|.
+  MenuController(bool blocking, internal::MenuControllerDelegate* delegate);
 
   virtual ~MenuController();
 
@@ -493,6 +497,8 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // If non-null mouse drag events are forwarded to this view. See
   // UpdateActiveMouseView for details.
   View* active_mouse_view_;
+
+  internal::MenuControllerDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };

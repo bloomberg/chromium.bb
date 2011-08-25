@@ -103,6 +103,7 @@
         'controls/menu/menu_config_win.cc',
         'controls/menu/menu_controller.cc',
         'controls/menu/menu_controller.h',
+        'controls/menu/menu_controller_delegate.h',
         'controls/menu/menu_delegate.cc',
         'controls/menu/menu_delegate.h',
         'controls/menu/menu_gtk.cc',
