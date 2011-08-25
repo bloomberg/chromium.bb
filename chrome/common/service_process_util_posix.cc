@@ -13,21 +13,21 @@ namespace {
 int g_signal_socket = -1;
 }
 
-ServiceProcessShutdownMonitor::ServiceProcessShutdownMonitor(
-    Task* shutdown_task)
-    : shutdown_task_(shutdown_task) {
+ServiceProcessTerminateMonitor::ServiceProcessTerminateMonitor(
+    Task* terminate_task)
+    : terminate_task_(terminate_task) {
 }
 
-ServiceProcessShutdownMonitor::~ServiceProcessShutdownMonitor() {
+ServiceProcessTerminateMonitor::~ServiceProcessTerminateMonitor() {
 }
 
-void ServiceProcessShutdownMonitor::OnFileCanReadWithoutBlocking(int fd) {
-  if (shutdown_task_.get()) {
+void ServiceProcessTerminateMonitor::OnFileCanReadWithoutBlocking(int fd) {
+  if (terminate_task_.get()) {
     int buffer;
     int length = read(fd, &buffer, sizeof(buffer));
-    if ((length == sizeof(buffer)) && (buffer == kShutDownMessage)) {
-      shutdown_task_->Run();
-      shutdown_task_.reset();
+    if ((length == sizeof(buffer)) && (buffer == kTerminateMessage)) {
+      terminate_task_->Run();
+      terminate_task_.reset();
     } else if (length > 0) {
       LOG(ERROR) << "Unexpected read: " << buffer;
     } else if (length == 0) {
@@ -38,7 +38,7 @@ void ServiceProcessShutdownMonitor::OnFileCanReadWithoutBlocking(int fd) {
   }
 }
 
-void ServiceProcessShutdownMonitor::OnFileCanWriteWithoutBlocking(int fd) {
+void ServiceProcessTerminateMonitor::OnFileCanWriteWithoutBlocking(int fd) {
   NOTIMPLEMENTED();
 }
 
@@ -48,7 +48,7 @@ void ServiceProcessShutdownMonitor::OnFileCanWriteWithoutBlocking(int fd) {
 static void SigTermHandler(int sig, siginfo_t* info, void* uap) {
   // TODO(dmaclach): add security here to make sure that we are being shut
   //                 down by an appropriate process.
-  int message = ServiceProcessShutdownMonitor::kShutDownMessage;
+  int message = ServiceProcessTerminateMonitor::kTerminateMessage;
   if (write(g_signal_socket, &message, sizeof(message)) < 0) {
     PLOG(ERROR) << "write";
   }
@@ -65,7 +65,7 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
   CHECK(!signal->IsSignaled());
    *success = MessageLoopForIO::current()->WatchFileDescriptor(
       sockets_[0], true, MessageLoopForIO::WATCH_READ,
-      &watcher_, shut_down_monitor_.get());
+      &watcher_, terminate_monitor_.get());
   if (!*success) {
     LOG(ERROR) << "WatchFileDescriptor";
     signal->Signal();
@@ -135,18 +135,18 @@ void ServiceProcessState::CreateState() {
 }
 
 bool ServiceProcessState::SignalReady(
-    base::MessageLoopProxy* message_loop_proxy, Task* shutdown_task) {
+    base::MessageLoopProxy* message_loop_proxy, Task* terminate_task) {
   CHECK(state_);
 
-  scoped_ptr<Task> scoped_shutdown_task(shutdown_task);
+  scoped_ptr<Task> scoped_terminate_task(terminate_task);
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   state_->running_lock_.reset(TakeServiceRunningLock(true));
   if (state_->running_lock_.get() == NULL) {
     return false;
   }
 #endif
-  state_->shut_down_monitor_.reset(
-      new ServiceProcessShutdownMonitor(scoped_shutdown_task.release()));
+  state_->terminate_monitor_.reset(
+      new ServiceProcessTerminateMonitor(scoped_terminate_task.release()));
   if (pipe(state_->sockets_) < 0) {
     PLOG(ERROR) << "pipe";
     return false;

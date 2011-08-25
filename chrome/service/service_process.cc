@@ -210,8 +210,9 @@ bool ServiceProcess::Initialize(MessageLoopForUI* message_loop,
 
   // After the IPC server has started we signal that the service process is
   // ready.
-  if (!state->SignalReady(io_thread_->message_loop_proxy(),
-                          NewRunnableMethod(this, &ServiceProcess::Shutdown))) {
+  if (!service_process_state_->SignalReady(
+      io_thread_->message_loop_proxy(),
+      NewRunnableMethod(this, &ServiceProcess::Terminate))) {
     return false;
   }
 
@@ -241,7 +242,23 @@ bool ServiceProcess::Teardown() {
 // This method is called when a shutdown command is received from IPC channel
 // or there was an error in the IPC channel.
 void ServiceProcess::Shutdown() {
-  // Quit the main message loop.
+#if defined(OS_MACOSX)
+  // On MacOS X the service must be removed from the launchd job list.
+  // http://www.chromium.org/developers/design-documents/service-processes
+  // The best way to do that is to go through the ForceServiceProcessShutdown
+  // path. If it succeeds Terminate() will be called from the handler registered
+  // via service_process_state_->SignalReady().
+  // On failure call Terminate() directly to force the process to actually
+  // terminate.
+  if (!ForceServiceProcessShutdown("", 0)) {
+    Terminate();
+  }
+#else
+  Terminate();
+#endif
+}
+
+void ServiceProcess::Terminate() {
   main_message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 

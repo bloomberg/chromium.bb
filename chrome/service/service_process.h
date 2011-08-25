@@ -29,6 +29,8 @@ class CommandLine;
 
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
+// ServiceProcess Design Notes
+// https://sites.google.com/a/chromium.org/dev/developers/design-documents/service-processes
 class ServiceProcess : public CloudPrintProxy::Client {
  public:
   ServiceProcess();
@@ -99,15 +101,21 @@ class ServiceProcess : public CloudPrintProxy::Client {
  private:
   // Schedule a call to ShutdownIfNeeded.
   void ScheduleShutdownCheck();
+
   // Shuts down the process if no services are enabled and no clients are
   // connected.
   void ShutdownIfNeeded();
+
   // Called exactly ONCE per process instance for each service that gets
   // enabled in this process.
   void OnServiceEnabled();
+
   // Called exactly ONCE per process instance for each service that gets
   // disabled in this process (note that shutdown != disabled).
   void OnServiceDisabled();
+
+  // Terminate forces the service process to quit.
+  void Terminate();
 
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<base::Thread> io_thread_;

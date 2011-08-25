@@ -120,7 +120,8 @@ bool ForceServiceProcessShutdown(const std::string& /* version */,
   CFErrorRef err = NULL;
   bool ret = Launchd::GetInstance()->RemoveJob(label, &err);
   if (!ret) {
-    LOG(ERROR) << "ForceServiceProcessShutdown: " << err;
+    LOG(ERROR) << "ForceServiceProcessShutdown: " << err << " "
+               << base::SysCFStringRefToUTF8(label);
     CFRelease(err);
   }
   return ret;
@@ -177,9 +178,9 @@ bool ServiceProcessState::Initialize() {
   CFErrorRef err = NULL;
   CFDictionaryRef dict =
       Launchd::GetInstance()->CopyDictionaryByCheckingIn(&err);
-
   if (!dict) {
-    LOG(ERROR) << "CopyLaunchdDictionaryByCheckingIn: " << err;
+    LOG(ERROR) << "ServiceProcess must be launched by launchd. "
+               << "CopyLaunchdDictionaryByCheckingIn: " << err;
     CFRelease(err);
     return false;
   }
