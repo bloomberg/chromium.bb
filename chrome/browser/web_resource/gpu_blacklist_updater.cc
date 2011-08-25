@@ -104,7 +104,7 @@ void GpuBlacklistUpdater::InitializeGpuBlacklist() {
           IDR_GPU_BLACKLIST));
   GpuBlacklist* built_in_list = new GpuBlacklist(GetChromeVersionString());
   bool succeed = built_in_list->LoadGpuBlacklist(
-      gpu_blacklist_json.as_string(), true);
+      gpu_blacklist_json.as_string(), GpuBlacklist::kCurrentOsOnly);
   DCHECK(succeed);
   GpuDataManager::GetInstance()->SetBuiltInGpuBlacklist(built_in_list);
 
@@ -121,7 +121,9 @@ void GpuBlacklistUpdater::UpdateGpuBlacklist(
 
   scoped_ptr<GpuBlacklist> gpu_blacklist(
       new GpuBlacklist(GetChromeVersionString()));
-  if (gpu_blacklist->LoadGpuBlacklist(gpu_blacklist_cache, true)) {
+  bool success = gpu_blacklist->LoadGpuBlacklist(
+      gpu_blacklist_cache, GpuBlacklist::kCurrentOsOnly);
+  if (success) {
     GpuDataManager::GetInstance()->UpdateGpuBlacklist(
         gpu_blacklist.release(), preliminary);
   }

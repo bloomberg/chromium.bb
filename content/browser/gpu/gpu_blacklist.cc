@@ -206,11 +206,12 @@ GpuBlacklist::StringInfo::Op GpuBlacklist::StringInfo::StringToOp(
   return kUnknown;
 }
 
+// static
 GpuBlacklist::GpuBlacklistEntry*
 GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     DictionaryValue* value, bool top_level) {
   DCHECK(value);
-  scoped_ptr<GpuBlacklistEntry> entry(new GpuBlacklistEntry());
+  ScopedGpuBlacklistEntry entry(new GpuBlacklistEntry());
 
   size_t dictionary_entry_count = 0;
 
@@ -393,13 +394,18 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
           LOG(WARNING) << "Malformed exceptions entry " << entry->id();
           return NULL;
         }
-        GpuBlacklistEntry* exception = GetGpuBlacklistEntryFromValue(
-            exception_value, false);
+        ScopedGpuBlacklistEntry exception(
+            GetGpuBlacklistEntryFromValue(exception_value, false));
         if (exception == NULL) {
           LOG(WARNING) << "Malformed exceptions entry " << entry->id();
           return NULL;
         }
-        entry->AddException(exception);
+        if (exception->contains_unknown_fields_) {
+          LOG(WARNING) << "Exception with unknown fields " << entry->id();
+          entry->contains_unknown_fields_ = true;
+        } else {
+          entry->AddException(exception);
+        }
       }
       dictionary_entry_count++;
     }
@@ -411,20 +417,17 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
   }
 
   if (value->size() != dictionary_entry_count) {
-    LOG(WARNING) << "Malformed entry " << entry->id();
-    return NULL;
+    LOG(WARNING) << "Entry with unknown fields " << entry->id();
+    entry->contains_unknown_fields_ = true;
   }
   return entry.release();
 }
 
-GpuBlacklist::GpuBlacklistEntry::~GpuBlacklistEntry() {
-  for (size_t i = 0; i < exceptions_.size(); ++i)
-    delete exceptions_[i];
-}
-
 GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
     : id_(0),
-      vendor_id_(0) {
+      vendor_id_(0),
+      contains_unknown_fields_(false),
+      contains_unknown_features_(false) {
 }
 
 bool GpuBlacklist::GpuBlacklistEntry::SetId(uint32 id) {
@@ -514,7 +517,8 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
         flags |= type;
         break;
       case GpuFeatureFlags::kGpuFeatureUnknown:
-        return false;
+        contains_unknown_features_ = true;
+        break;
     }
   }
   feature_flags_.reset(new GpuFeatureFlags());
@@ -586,7 +590,8 @@ GpuFeatureFlags GpuBlacklist::GpuBlacklistEntry::GetGpuFeatureFlags() const {
 }
 
 GpuBlacklist::GpuBlacklist(const std::string& browser_version_string)
-    : max_entry_id_(0) {
+    : max_entry_id_(0),
+      contains_unknown_fields_(false) {
   browser_version_.reset(Version::GetVersionFromString(browser_version_string));
   DCHECK(browser_version_.get() != NULL);
 }
@@ -595,8 +600,8 @@ GpuBlacklist::~GpuBlacklist() {
   Clear();
 }
 
-bool GpuBlacklist::LoadGpuBlacklist(const std::string& json_context,
-                                    bool current_os_only) {
+bool GpuBlacklist::LoadGpuBlacklist(
+    const std::string& json_context, GpuBlacklist::OsFilter os_filter) {
   scoped_ptr<Value> root;
   root.reset(base::JSONReader::Read(json_context, false));
   if (root.get() == NULL || !root->IsType(Value::TYPE_DICTIONARY))
@@ -604,12 +609,12 @@ bool GpuBlacklist::LoadGpuBlacklist(const std::string& json_context,
 
   DictionaryValue* root_dictionary = static_cast<DictionaryValue*>(root.get());
   DCHECK(root_dictionary);
-  return LoadGpuBlacklist(*root_dictionary, current_os_only);
+  return LoadGpuBlacklist(*root_dictionary, os_filter);
 }
 
-bool GpuBlacklist::LoadGpuBlacklist(const DictionaryValue& parsed_json,
-                                    bool current_os_only) {
-  std::vector<GpuBlacklistEntry*> entries;
+bool GpuBlacklist::LoadGpuBlacklist(
+    const DictionaryValue& parsed_json, GpuBlacklist::OsFilter os_filter) {
+  std::vector<ScopedGpuBlacklistEntry> entries;
 
   std::string version_string;
   parsed_json.GetString("version", &version_string);
@@ -622,54 +627,48 @@ bool GpuBlacklist::LoadGpuBlacklist(const DictionaryValue& parsed_json,
     return false;
 
   uint32 max_entry_id = 0;
-  size_t entry_count_expectation = list->GetSize();
+  bool contains_unknown_fields = false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     DictionaryValue* list_item = NULL;
     bool valid = list->GetDictionary(i, &list_item);
-    if (!valid)
-      break;
-    if (list_item == NULL)
-      break;
+    if (!valid || list_item == NULL)
+      return false;
     // Check browser version compatibility: if the entry is not for the
     // current browser version, don't process it.
     BrowserVersionSupport browser_version_support =
         IsEntrySupportedByCurrentBrowserVersion(list_item);
     if (browser_version_support == kMalformed)
-      break;
-    if (browser_version_support == kUnsupported) {
-      entry_count_expectation--;
+      return false;
+    if (browser_version_support == kUnsupported)
       continue;
-    }
     DCHECK(browser_version_support == kSupported);
-    GpuBlacklistEntry* entry =
-        GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(list_item, true);
+    ScopedGpuBlacklistEntry entry(
+        GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(list_item, true));
     if (entry == NULL)
-      break;
+      return false;
     if (entry->id() > max_entry_id)
       max_entry_id = entry->id();
+    // If an unknown field is encountered, skip the entry; if an unknown
+    // feature is encountered, ignore the feature, but keep the entry.
+    if (entry->contains_unknown_fields()) {
+      contains_unknown_fields = true;
+      continue;
+    }
+    if (entry->contains_unknown_features())
+      contains_unknown_fields = true;
     entries.push_back(entry);
   }
 
-  if (entries.size() != entry_count_expectation) {
-    for (size_t i = 0; i < entries.size(); ++i)
-      delete entries[i];
-    return false;
-  }
-
   Clear();
-  // Don't apply GPU blacklist for a non-registered OS.
-  OsType os_filter = GetOsType();
-  if (os_filter != kOsUnknown) {
-    for (size_t i = 0; i < entries.size(); ++i) {
-      OsType entry_os = entries[i]->GetOsType();
-      if (!current_os_only ||
-          entry_os == kOsAny || entry_os == os_filter)
-        blacklist_.push_back(entries[i]);
-      else
-        delete entries[i];
-    }
+  OsType my_os = GetOsType();
+  for (size_t i = 0; i < entries.size(); ++i) {
+    OsType entry_os = entries[i]->GetOsType();
+    if (os_filter == GpuBlacklist::kAllOs ||
+        entry_os == kOsAny || entry_os == my_os)
+      blacklist_.push_back(entries[i]);
   }
   max_entry_id_ = max_entry_id;
+  contains_unknown_fields_ = contains_unknown_fields;
   return true;
 }
 
@@ -865,7 +864,7 @@ Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
       problem_list->Append(problem);
     }
     for (size_t i = 0; i < active_entries_.size(); ++i) {
-      GpuBlacklistEntry* entry = active_entries_[i];
+      ScopedGpuBlacklistEntry entry = active_entries_[i];
       DictionaryValue* problem = new DictionaryValue();
 
       problem->SetString("description", entry->description());
@@ -887,6 +886,10 @@ Value* GpuBlacklist::GetFeatureStatus(bool gpu_access_allowed,
     status->Set("problems", problem_list);
   }
   return status;
+}
+
+size_t GpuBlacklist::num_entries() const {
+  return blacklist_.size();
 }
 
 uint32 GpuBlacklist::max_entry_id() const {
@@ -941,10 +944,10 @@ GpuBlacklist::OsType GpuBlacklist::GetOsType() {
 }
 
 void GpuBlacklist::Clear() {
-  for (size_t i = 0; i < blacklist_.size(); ++i)
-    delete blacklist_[i];
   blacklist_.clear();
   active_entries_.clear();
+  max_entry_id_ = 0;
+  contains_unknown_fields_ = false;
 }
 
 GpuBlacklist::BrowserVersionSupport
