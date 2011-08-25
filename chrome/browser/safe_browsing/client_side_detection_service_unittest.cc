@@ -10,11 +10,14 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
@@ -161,6 +164,21 @@ class ClientSideDetectionServiceTest : public TestingBrowserProcessTest {
     EXPECT_TRUE(csd_service_->GetValidCachedResult(
         GURL("http://fourth.url.com"), &is_phishing));
     EXPECT_TRUE(is_phishing);
+  }
+
+  void AddFeature(const std::string& name, double value,
+                  ClientPhishingRequest* request) {
+    ClientPhishingRequest_Feature* feature = request->add_feature_map();
+    feature->set_name(name);
+    feature->set_value(value);
+  }
+
+  void AddNonModelFeature(const std::string& name, double value,
+                          ClientPhishingRequest* request) {
+    ClientPhishingRequest_Feature* feature =
+        request->add_non_model_feature_map();
+    feature->set_name(name);
+    feature->set_value(value);
   }
 
  protected:
@@ -644,6 +662,93 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabled) {
   csd_service_->SetEnabled(true);
   EXPECT_FALSE(SendClientReportPhishingRequest(GURL("http://a.com/"), 0.4f));
   Mock::VerifyAndClearExpectations(service);
+}
+
+TEST_F(ClientSideDetectionServiceTest, SanitizeRequestForPingback) {
+  ClientPhishingRequest request;
+  request.set_url("http://www.us.host.com/blah");
+  request.set_suffix_prefix_hash("hash");
+  request.set_client_score(0.8f);
+  request.set_is_phishing(true);
+  AddFeature(std::string(features::kUrlTldToken) + "com", 1.0, &request);
+  AddFeature(std::string(features::kUrlDomainToken) + "host", 1.0, &request);
+  AddFeature(std::string(features::kUrlOtherHostToken) + "us", 1.0, &request);
+  AddFeature(std::string(features::kUrlOtherHostToken) + "www", 1.0, &request);
+  AddFeature(features::kUrlNumOtherHostTokensGTOne, 1.0, &request);
+  AddFeature(std::string(features::kUrlPathToken) + "blah", 1.0, &request);
+  AddFeature(features::kPageHasForms, 1.0, &request);
+  AddFeature(std::string(features::kPageTerm) + "term", 1.0, &request);
+  AddFeature(features::kPageImgOtherDomainFreq, 0.5, &request);
+  request.set_model_version(3);
+  AddNonModelFeature(features::kUrlHistoryVisitCount, 5.0, &request);
+  AddNonModelFeature(StringPrintf("%s=http://referrer.com/",
+                                  features::kReferrer),
+                     1.0, &request);
+  AddNonModelFeature(StringPrintf("%s%s=http://redirreferrer.com/",
+                                  features::kRedirectPrefix,
+                                  features::kReferrer),
+                     1.0, &request);
+  AddNonModelFeature(StringPrintf("%s%s=http://hostreferrer.com/",
+                                  features::kHostPrefix, features::kReferrer),
+                     1.0, &request);
+  AddNonModelFeature(StringPrintf("%s%s%s=http://hostredirreferrer.com/",
+                                  features::kHostPrefix,
+                                  features::kRedirectPrefix,
+                                  features::kReferrer),
+                     1.0, &request);
+  AddNonModelFeature(std::string(features::kBadIpFetch) + "1.2.3.4",
+                     1.0, &request);
+  AddNonModelFeature(std::string(features::kSafeBrowsingMaliciousUrl) +
+                     "http://malicious.com/", 1.0, &request);
+  AddNonModelFeature(std::string(features::kSafeBrowsingOriginalUrl) +
+                     "http://original.com/", 1.0, &request);
+
+  csd_service_.reset(ClientSideDetectionService::Create(NULL));
+
+  ClientPhishingRequest sanitized_request;
+  csd_service_->SanitizeRequestForPingback(request, &sanitized_request);
+
+  // For easier debugging, we'll check the output protobuf fields individually.
+  ClientPhishingRequest expected;
+  expected.set_suffix_prefix_hash(request.suffix_prefix_hash());
+  expected.set_client_score(request.client_score());
+  expected.set_is_phishing(request.is_phishing());
+  AddFeature(features::kUrlNumOtherHostTokensGTOne, 1.0, &expected);
+  AddFeature(features::kPageHasForms, 1.0, &expected);
+  AddFeature(features::kPageImgOtherDomainFreq, 0.5, &expected);
+  expected.set_model_version(3);
+  AddNonModelFeature(features::kUrlHistoryVisitCount, 5.0, &expected);
+
+  EXPECT_FALSE(sanitized_request.has_url());
+  EXPECT_EQ(expected.suffix_prefix_hash(),
+            sanitized_request.suffix_prefix_hash());
+  EXPECT_FLOAT_EQ(expected.client_score(), sanitized_request.client_score());
+  EXPECT_EQ(expected.is_phishing(), sanitized_request.is_phishing());
+
+  ASSERT_EQ(expected.feature_map_size(), sanitized_request.feature_map_size());
+  for (int i = 0; i < expected.feature_map_size(); ++i) {
+    EXPECT_EQ(expected.feature_map(i).name(),
+              sanitized_request.feature_map(i).name()) << "Feature " << i;
+    EXPECT_DOUBLE_EQ(expected.feature_map(i).value(),
+                     sanitized_request.feature_map(i).value())
+        << "Feature " << i;
+  }
+  EXPECT_EQ(expected.model_version(), sanitized_request.model_version());
+  ASSERT_EQ(expected.non_model_feature_map_size(),
+            sanitized_request.non_model_feature_map_size());
+  for (int i = 0; i < expected.non_model_feature_map_size(); ++i) {
+    EXPECT_EQ(expected.non_model_feature_map(i).name(),
+              sanitized_request.non_model_feature_map(i).name())
+        << "Non-model feature " << i;
+    EXPECT_DOUBLE_EQ(expected.non_model_feature_map(i).value(),
+                     sanitized_request.non_model_feature_map(i).value())
+        << "Non-model feature " << i;
+  }
+
+  // Also check the serialized forms in case there's a field that we forget
+  // to add above.
+  EXPECT_EQ(expected.SerializeAsString(),
+            sanitized_request.SerializeAsString());
 }
 
 }  // namespace safe_browsing

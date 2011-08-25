@@ -144,6 +144,7 @@ extern const char kEnableOriginBoundCerts[];
 extern const char kEnablePanels[];
 extern const char kEnablePreconnect[];
 extern const char kEnableResourceContentSettings[];
+extern const char kEnableSanitizedClientSidePhishingDetection[];
 extern const char kEnableSearchProviderApiV2[];
 extern const char kEnableShortcutsProvider[];
 extern const char kEnableSmoothScrolling[];

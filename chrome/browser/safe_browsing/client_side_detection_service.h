@@ -24,6 +24,7 @@
 #include "base/basictypes.h"
 #include "base/callback_old.h"
 #include "base/gtest_prod_util.h"
+#include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -36,6 +37,7 @@
 #include "net/base/net_util.h"
 
 class RenderProcessHost;
+class SafeBrowsingService;
 
 namespace base {
 class TimeDelta;
@@ -166,6 +168,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, IsBadIpAddress);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            ModelHasValidHashIds);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
+                           SanitizeRequestForPingback);
 
   // CacheState holds all information necessary to respond to a caller without
   // actually making a HTTP request.
@@ -195,6 +199,14 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   static const base::TimeDelta kReportsInterval;
   static const base::TimeDelta kNegativeCacheInterval;
   static const base::TimeDelta kPositiveCacheInterval;
+
+  // Given a ClientSidePhishingRequest populated by the renderer and browser
+  // feature extractors, sanitizes it so that no data specifically identifying
+  // the URL or page content is included.  This is used when sending a pingback
+  // if the user is not opted in to UMA.
+  void SanitizeRequestForPingback(
+      const ClientPhishingRequest& original_request,
+      ClientPhishingRequest* sanitized_request);
 
   // Starts sending the request to the client-side detection frontends.
   // This method takes ownership of both pointers.
@@ -230,6 +242,10 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // that we consider non-public IP addresses.  Returns true on success.
   bool InitializePrivateNetworks();
 
+  // Initializes the |allowed_features_| hash_set with the features that
+  // can be sent in sanitized pingbacks.
+  void InitializeAllowedFeatures();
+
   // Send the model to the given renderer.
   void SendModelToProcess(RenderProcessHost* process);
 
@@ -255,6 +271,9 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   scoped_ptr<ClientSideModel> model_;
   scoped_ptr<base::TimeDelta> model_max_age_;
   scoped_ptr<URLFetcher> model_fetcher_;
+
+  // This pointer may be NULL if SafeBrowsing is disabled.
+  scoped_refptr<SafeBrowsingService> sb_service_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.
@@ -283,6 +302,9 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
 
   // The network blocks that we consider private IP address ranges.
   std::vector<AddressRange> private_networks_;
+
+  // Features which are allowed to be sent in sanitized pingbacks.
+  base::hash_set<std::string> allowed_features_;
 
   // Map of bad subnets which are copied from the client model and put into
   // this map to speed up lookups.

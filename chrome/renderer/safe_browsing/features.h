@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -71,6 +71,10 @@ class FeatureMap {
 
 namespace features {
 // Constants for the various feature names that we use.
+//
+// IMPORTANT: when adding new features, you must update kAllowedFeatures in
+// chrome/browser/safe_browsing/client_side_detection_service.cc if the feature
+// should be sent in sanitized pingbacks.
 
 ////////////////////////////////////////////////////
 // URL host features

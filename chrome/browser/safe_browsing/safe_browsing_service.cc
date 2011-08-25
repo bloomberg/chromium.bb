@@ -169,7 +169,9 @@ SafeBrowsingService::SafeBrowsingService()
 #if !defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection) &&
-      CanReportStats()) {
+      (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSanitizedClientSidePhishingDetection) ||
+       CanReportStats())) {
     csd_service_.reset(
         safe_browsing::ClientSideDetectionService::Create(
             g_browser_process->system_request_context()));
@@ -899,7 +901,10 @@ void SafeBrowsingService::Start() {
 #else
   enable_csd_whitelist_ =
       (!cmdline->HasSwitch(switches::kDisableClientSidePhishingDetection) &&
-       local_state && local_state->GetBoolean(prefs::kMetricsReportingEnabled));
+       (cmdline->HasSwitch(
+           switches::kEnableSanitizedClientSidePhishingDetection) ||
+        (local_state &&
+         local_state->GetBoolean(prefs::kMetricsReportingEnabled))));
 #endif
 
   BrowserThread::PostTask(
