@@ -60,12 +60,12 @@ bool ParseServerResponse(const std::string& response_body,
     return false;
   }
   DCHECK(hypotheses_value);
-  if (!hypotheses_value->IsType(Value::TYPE_LIST)) {
+  const ListValue* hypotheses_list = hypotheses_value->AsList();
+  if (!hypotheses_list) {
     VLOG(1) << "ParseServerResponse: Unexpected hypotheses type "
             << hypotheses_value->GetType();
     return false;
   }
-  const ListValue* hypotheses_list = static_cast<ListValue*>(hypotheses_value);
 
   size_t index = 0;
   for (; index < hypotheses_list->GetSize(); ++index) {

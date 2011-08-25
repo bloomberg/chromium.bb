@@ -175,11 +175,10 @@ class DomCheckerTest : public UITest {
     if (!value.get())
       return false;
 
-    EXPECT_TRUE(value->IsType(Value::TYPE_LIST));
-    if (!value->IsType(Value::TYPE_LIST))
+    EXPECT_TRUE(value->AsList());
+    ListValue* list_value = value->AsList();
+    if (!list_value)
       return false;
-
-    ListValue* list_value = static_cast<ListValue*>(value.get());
 
     // The parsed JSON object will be an array of strings, each of which is a
     // test failure. Add those strings to the results set.

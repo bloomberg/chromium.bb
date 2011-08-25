@@ -477,13 +477,12 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
 
     scoped_ptr<Value> event_arg_value(
         JSONStringValueSerializer(event_arg_string).Deserialize(NULL, NULL));
-    ASSERT_TRUE(event_arg_value.get() &&
-                event_arg_value->IsType(Value::TYPE_LIST));
+    ASSERT_TRUE(event_arg_value.get());
+    ListValue* list = event_arg_value->AsList();
+    ASSERT_TRUE(list);
 
     DictionaryValue* event_arg_dict = NULL;
-    ASSERT_TRUE(
-        static_cast<ListValue*>(event_arg_value.get())->GetDictionary(
-            0, &event_arg_dict));
+    ASSERT_TRUE(list->GetDictionary(0, &event_arg_dict));
 
     ListValue* request_headers = NULL;
     ASSERT_TRUE(event_arg_dict->GetList(keys::kRequestHeadersKey,

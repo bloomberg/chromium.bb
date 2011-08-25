@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,11 +89,11 @@ bool JavaScriptExecutionController::ExecuteAndParseHelper(
   bool success;
   std::string evaluation_error;
   Value* evaluation_result_value;
-  if (!root_value->IsType(Value::TYPE_LIST)) {
+  ListValue* list = root_value->AsList();
+  if (!list) {
     LOG(ERROR) << "JSON response was not in correct format";
     return false;
   }
-  ListValue* list = static_cast<ListValue*>(root_value.get());
   if (!list->GetBoolean(0, &success) ||
       !list->GetString(1, &evaluation_error) ||
       !list->Remove(2, &evaluation_result_value)) {

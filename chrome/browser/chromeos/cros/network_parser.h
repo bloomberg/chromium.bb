@@ -83,16 +83,17 @@ class NetworkDeviceParser {
   virtual bool UpdateDeviceFromInfo(const DictionaryValue& info,
                                     NetworkDevice* device);
   virtual bool UpdateStatus(const std::string& key,
-                            const Value& value,
+                            Value* value,
                             NetworkDevice* device,
                             PropertyIndex* index);
+
  protected:
   // The NetworkDeviceParser does not take ownership of the |mapper|.
   explicit NetworkDeviceParser(const EnumMapper<PropertyIndex>* mapper);
   virtual ~NetworkDeviceParser();
 
   virtual bool ParseValue(PropertyIndex index,
-                          const Value& value,
+                          Value* value,
                           NetworkDevice* device) = 0;
   virtual ConnectionType ParseType(const std::string& type) = 0;
 
@@ -125,7 +126,7 @@ class NetworkParser {
   // property index for the given key.  |index| is filled in even if
   // the update fails.  Returns false upon failure.
   virtual bool UpdateStatus(const std::string& key,
-                            const Value& value,
+                            Value* value,
                             Network* network,
                             PropertyIndex* index);
  protected:
@@ -134,7 +135,7 @@ class NetworkParser {
   virtual ~NetworkParser();
 
   virtual bool ParseValue(PropertyIndex index,
-                          const Value& value,
+                          Value* value,
                           Network* network) = 0;
   virtual ConnectionType ParseType(const std::string& type) = 0;
   virtual ConnectionType ParseTypeFromDictionary(

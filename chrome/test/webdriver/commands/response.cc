@@ -46,7 +46,7 @@ void Response::SetStatus(ErrorCode status) {
   data_.SetInteger(kStatusKey, status);
 }
 
-const Value* Response::GetValue() const {
+Value* Response::GetValue() const {
   Value* out = NULL;
   LOG_IF(WARNING, !data_.Get(kValueKey, &out))
       << "Accessing unset response value.";  // Should never happen.

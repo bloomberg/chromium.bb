@@ -417,8 +417,7 @@ bool CreateWindowFunction::RunImpl() {
         std::string url_string;
         url_value->GetAsString(&url_string);
         url_strings.push_back(url_string);
-      } else if (url_value->IsType(Value::TYPE_LIST)) {
-        const ListValue* url_list = static_cast<const ListValue*>(url_value);
+      } else if (const ListValue* url_list = url_value->AsList()) {
         for (size_t i = 0; i < url_list->GetSize(); ++i) {
           std::string url_string;
           EXTENSION_FUNCTION_VALIDATE(url_list->GetString(i, &url_string));

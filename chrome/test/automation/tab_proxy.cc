@@ -266,9 +266,9 @@ bool TabProxy::ExecuteAndExtractString(const std::wstring& frame_xpath,
   if (!succeeded)
     return false;
 
-  DCHECK(root->IsType(Value::TYPE_LIST));
+  DCHECK(root->AsList());
   Value* value = NULL;
-  succeeded = static_cast<ListValue*>(root)->Get(0, &value);
+  succeeded = root->AsList()->Get(0, &value);
   if (succeeded) {
     string16 read_value;
     succeeded = value->GetAsString(&read_value);
@@ -291,9 +291,9 @@ bool TabProxy::ExecuteAndExtractBool(const std::wstring& frame_xpath,
     return false;
 
   bool read_value = false;
-  DCHECK(root->IsType(Value::TYPE_LIST));
+  DCHECK(root->AsList());
   Value* value = NULL;
-  succeeded = static_cast<ListValue*>(root)->Get(0, &value);
+  succeeded = root->AsList()->Get(0, &value);
   if (succeeded) {
     succeeded = value->GetAsBoolean(&read_value);
     if (succeeded) {
@@ -314,9 +314,9 @@ bool TabProxy::ExecuteAndExtractInt(const std::wstring& frame_xpath,
     return false;
 
   int read_value = 0;
-  DCHECK(root->IsType(Value::TYPE_LIST));
+  DCHECK(root->AsList());
   Value* value = NULL;
-  succeeded = static_cast<ListValue*>(root)->Get(0, &value);
+  succeeded = root->AsList()->Get(0, &value);
   if (succeeded) {
     succeeded = value->GetAsInteger(&read_value);
     if (succeeded) {

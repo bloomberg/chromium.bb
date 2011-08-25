@@ -152,7 +152,7 @@ void PrepareHttpResponse(const Response& command_response,
     // and kMethodNotAllowed should be detected before creating
     // a command_response, and should thus not need conversion.
     case kSeeOther: {
-      const Value* const value = command_response.GetValue();
+      Value* value = command_response.GetValue();
       std::string location;
       if (!value->GetAsString(&location)) {
         // This should never happen.
@@ -173,8 +173,9 @@ void PrepareHttpResponse(const Response& command_response,
       break;
 
     case kMethodNotAllowed: {
-      const Value* const value = command_response.GetValue();
-      if (!value->IsType(Value::TYPE_LIST)) {
+      Value* value = command_response.GetValue();
+      ListValue* list_value = value->AsList();
+      if (!list_value) {
         // This should never happen.
         http_response->set_status(HttpResponse::kInternalServerError);
         http_response->SetBody(
@@ -183,8 +184,6 @@ void PrepareHttpResponse(const Response& command_response,
         return;
       }
 
-      const ListValue* const list_value =
-          static_cast<const ListValue* const>(value);
       std::vector<std::string> allowed_methods;
       for (size_t i = 0; i < list_value->GetSize(); ++i) {
         std::string method;

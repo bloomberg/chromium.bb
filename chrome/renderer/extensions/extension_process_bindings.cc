@@ -467,12 +467,12 @@ class ExtensionImpl : public ExtensionBase {
 
     // Since we do the serialization in the v8 extension, we should always get
     // valid JSON.
-    if (!value_args.get() || !value_args->IsType(Value::TYPE_LIST)) {
+    if (!value_args.get() || !value_args->AsList()) {
       NOTREACHED() << "Invalid JSON passed to StartRequest.";
       return v8::Undefined();
     }
 
-    return StartRequestCommon(args, static_cast<ListValue*>(value_args.get()));
+    return StartRequestCommon(args, value_args->AsList());
   }
 
   static bool ConvertImageDataToBitmapValue(
