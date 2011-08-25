@@ -21,6 +21,7 @@ include_rules = [
   "+content/common",
   "+content/test",
 
+  "+dbus",
   "+grit",
   "+gpu",
   "+net",

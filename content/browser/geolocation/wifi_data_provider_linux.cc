@@ -8,15 +8,12 @@
 
 #include "content/browser/geolocation/wifi_data_provider_linux.h"
 
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-lowlevel.h>
-#include <dbus/dbus.h>
-#include <dlfcn.h>
-#include <glib.h>
-
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "dbus/bus.h"
+#include "dbus/message.h"
+#include "dbus/object_proxy.h"
 
 namespace {
 // The time periods between successive polls of the wifi data.
@@ -31,67 +28,6 @@ const char kNetworkManagerInterface[] = "org.freedesktop.NetworkManager";
 
 // From http://projects.gnome.org/NetworkManager/developers/spec.html
 enum { NM_DEVICE_TYPE_WIFI = 2 };
-
-// Function type matching dbus_g_bus_get_private so that we can
-// dynamically determine the presence of this symbol (see
-// NetworkManagerWlanApi::Init)
-typedef DBusGConnection* DBusGBusGetPrivateFunc(
-    DBusBusType type, GMainContext* context, GError** error);
-
-// Utility wrappers to make various GLib & DBus structs into scoped objects.
-class ScopedGPtrArrayFree {
- public:
-  void operator()(GPtrArray* x) const {
-    if (x)
-      g_ptr_array_free(x, TRUE);
-  }
-};
-// Use ScopedGPtrArrayPtr as if it were scoped_ptr<GPtrArray>
-typedef scoped_ptr_malloc<GPtrArray, ScopedGPtrArrayFree> ScopedGPtrArrayPtr;
-
-class ScopedGObjectFree {
- public:
-  void operator()(void* x) const {
-    if (x)
-      g_object_unref(x);
-  }
-};
-// Use ScopedDBusGProxyPtr as if it were scoped_ptr<DBusGProxy>
-typedef scoped_ptr_malloc<DBusGProxy, ScopedGObjectFree> ScopedDBusGProxyPtr;
-
-// Use ScopedGValue::v as an instance of GValue with automatic cleanup.
-class ScopedGValue {
- public:
-  ScopedGValue()
-      : v(empty_gvalue()) {
-  }
-  ~ScopedGValue() {
-    g_value_unset(&v);
-  }
-  static GValue empty_gvalue() {
-    GValue value = {0};
-    return value;
-  }
-
-  GValue v;
-};
-
-// Use ScopedDLHandle to automatically clean up after dlopen.
-class ScopedDLHandle {
- public:
-  ScopedDLHandle(void* handle)
-      : handle_(handle) {
-  }
-  ~ScopedDLHandle() {
-    if (handle_)
-      dlclose(handle_);
-  }
-  void* get() {
-    return handle_;
-  }
- private:
-  void *handle_;
-};
 
 // Wifi API binding to NetworkManager, to allow reuse of the polling behavior
 // defined in WifiDataProviderCommon.
@@ -108,41 +44,34 @@ class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   // in which case no other method may be called.
   bool Init();
 
+  // Similar to Init() but can inject the bus object. Used for testing.
+  bool InitWithBus(dbus::Bus* bus);
+
   // WifiDataProviderCommon::WlanApiInterface
-  bool GetAccessPointData(WifiData::AccessPointDataSet* data);
+  //
+  // This function makes blocking D-Bus calls, but it's totally fine as
+  // the code runs in "Geolocation" thread, not the browser's UI thread.
+  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data);
 
  private:
-  // Checks if the last dbus call returned an error.  If it did, logs the error
-  // message, frees it and returns true.
-  // This must be called after every dbus call that accepts |&error_|
-  bool CheckError();
-
   // Enumerates the list of available network adapter devices known to
-  // NetworkManager. Ownership of the array (and contained objects) is returned
-  // to the caller.
-  GPtrArray* GetAdapterDeviceList();
+  // NetworkManager. Return true on success.
+  bool GetAdapterDeviceList(std::vector<std::string>* device_paths);
 
   // Given the NetworkManager path to a wireless adapater, dumps the wifi scan
   // results and appends them to |data|. Returns false if a fatal error is
   // encountered such that the data set could not be populated.
-  bool GetAccessPointsForAdapter(const gchar* adapter_path,
+  bool GetAccessPointsForAdapter(const std::string& adapter_path,
                                  WifiData::AccessPointDataSet* data);
 
   // Internal method used by |GetAccessPointsForAdapter|, given a wifi access
-  // point proxy retrieves the named property into |value_out|. Returns false if
-  // the property could not be read, or is not of type |expected_gvalue_type|.
-  bool GetAccessPointProperty(DBusGProxy* proxy, const char* property_name,
-                              int expected_gvalue_type, GValue* value_out);
+  // point proxy retrieves the named property and returns it. Returns NULL if
+  // the property could not be read.
+  dbus::Response* GetAccessPointProperty(dbus::ObjectProxy* proxy,
+                                         const std::string& property_name);
 
-  // Error from the last dbus call.  NULL when there's no error.  Freed and
-  // cleared by CheckError().
-  GError* error_;
-  // Connection to the dbus system bus.
-  DBusGConnection* connection_;
-  // Main context
-  GMainContext* context_;
-  // Proxy to the network manager dbus service.
-  ScopedDBusGProxyPtr proxy_;
+  scoped_refptr<dbus::Bus> system_bus_;
+  dbus::ObjectProxy* network_manager_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkManagerWlanApi);
 };
@@ -161,102 +90,73 @@ int frquency_in_khz_to_channel(int frequency_khz) {
 }
 
 NetworkManagerWlanApi::NetworkManagerWlanApi()
-    : error_(NULL),
-      connection_(NULL),
-      context_(NULL)
-{
+    : network_manager_proxy_(NULL) {
 }
 
 NetworkManagerWlanApi::~NetworkManagerWlanApi() {
-  proxy_.reset();
-  if (connection_) {
-    dbus_connection_close(dbus_g_connection_get_connection(connection_));
-    dbus_g_connection_unref(connection_);
-  }
-  if (context_)
-    g_main_context_unref(context_);
-
-  DCHECK(!error_) << "Missing a call to CheckError() to clear |error_|";
+  // Close the connection.
+  system_bus_->ShutdownAndBlock();
 }
 
 bool NetworkManagerWlanApi::Init() {
-  // Chrome DLL init code handles initializing the thread system, so rather than
-  // get caught up with that nonsense here, lets just assert our requirement.
-  CHECK(g_thread_supported());
+  dbus::Bus::Options options;
+  options.bus_type = dbus::Bus::SYSTEM;
+  options.connection_type = dbus::Bus::PRIVATE;
+  return InitWithBus(new dbus::Bus(options));
+}
 
-  // We require a private bus to ensure that we don't interfere with the
-  // default loop on the main thread.  Unforunately this functionality is only
-  // available in dbus-glib-0.84 and later. We do a dynamic symbol lookup
-  // to determine if dbus_g_bus_get_private is available. See bug
-  // http://code.google.com/p/chromium/issues/detail?id=59913 for more
-  // information.
-  ScopedDLHandle handle(dlopen(NULL, RTLD_LAZY));
-  if (!handle.get())
-    return false;
-
-  DBusGBusGetPrivateFunc *my_dbus_g_bus_get_private =
-      (DBusGBusGetPrivateFunc *) dlsym(handle.get(), "dbus_g_bus_get_private");
-
-  if (!my_dbus_g_bus_get_private) {
-    LOG(ERROR) << "We need dbus-glib >= 0.84 for wifi geolocation.";
-    return false;
-  }
-  // Get a private connection to the session bus.
-  context_ = g_main_context_new();
-  DCHECK(context_);
-  connection_ = my_dbus_g_bus_get_private(DBUS_BUS_SYSTEM, context_, &error_);
-
-  if (CheckError())
-    return false;
-  DCHECK(connection_);
-
-  // Disable timers on the connection since we don't need them and
-  // we're not going to run them anyway as the connection is associated
-  // with a private context. See bug http://crbug.com/40803
-  dbus_bool_t ok = dbus_connection_set_timeout_functions(
-      dbus_g_connection_get_connection(connection_),
-      NULL, NULL, NULL, NULL, NULL);
-  DCHECK(ok);
-
-  proxy_.reset(dbus_g_proxy_new_for_name(connection_,
-                                         kNetworkManagerServiceName,
-                                         kNetworkManagerPath,
-                                         kNetworkManagerInterface));
-  DCHECK(proxy_.get());
-
+bool NetworkManagerWlanApi::InitWithBus(dbus::Bus* bus) {
+  system_bus_ = bus;
+  // system_bus_ will own all object proxies created from the bus.
+  network_manager_proxy_ =
+      system_bus_->GetObjectProxy(kNetworkManagerServiceName,
+                                  kNetworkManagerPath);
   // Validate the proxy object by checking we can enumerate devices.
-  ScopedGPtrArrayPtr device_list(GetAdapterDeviceList());
-  return !!device_list.get();
+  std::vector<std::string> adapter_paths;
+  const bool success = GetAdapterDeviceList(&adapter_paths);
+  VLOG(1) << "Init() result:  " << success;
+  return success;
 }
 
 bool NetworkManagerWlanApi::GetAccessPointData(
     WifiData::AccessPointDataSet* data) {
-  ScopedGPtrArrayPtr device_list(GetAdapterDeviceList());
-  if (device_list == NULL) {
-    DLOG(WARNING) << "Could not enumerate access points";
+  std::vector<std::string> device_paths;
+  if (!GetAdapterDeviceList(&device_paths)) {
+    LOG(WARNING) << "Could not enumerate access points";
     return false;
   }
   int success_count = 0;
   int fail_count = 0;
 
   // Iterate the devices, getting APs for each wireless adapter found
-  for (guint i = 0; i < device_list->len; i++) {
-    const gchar* device_path =
-        reinterpret_cast<const gchar*>(g_ptr_array_index(device_list, i));
+  for (size_t i = 0; i < device_paths.size(); ++i) {
+    const std::string& device_path = device_paths[i];
+    VLOG(1) << "Checking device: " << device_path;
 
-    ScopedDBusGProxyPtr device_properties_proxy(dbus_g_proxy_new_from_proxy(
-        proxy_.get(), DBUS_INTERFACE_PROPERTIES, device_path));
-    ScopedGValue device_type_g_value;
-    dbus_g_proxy_call(device_properties_proxy.get(), "Get",  &error_,
-                      G_TYPE_STRING, "org.freedesktop.NetworkManager.Device",
-                      G_TYPE_STRING, "DeviceType",
-                      G_TYPE_INVALID,
-                      G_TYPE_VALUE,   &device_type_g_value.v,
-                      G_TYPE_INVALID);
-    if (CheckError())
-      continue;
+    dbus::ObjectProxy* device_proxy =
+        system_bus_->GetObjectProxy(kNetworkManagerServiceName,
+                                    device_path);
 
-    const guint device_type = g_value_get_uint(&device_type_g_value.v);
+    dbus::MethodCall method_call(DBUS_INTERFACE_PROPERTIES, "Get");
+    dbus::MessageWriter builder(&method_call);
+    builder.AppendString("org.freedesktop.NetworkManager.Device");
+    builder.AppendString("DeviceType");
+    scoped_ptr<dbus::Response> response(
+        device_proxy->CallMethodAndBlock(
+            &method_call,
+            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+    if (!response.get()) {
+      LOG(WARNING) << "Failed to get the device type for " << device_path;
+      continue;  // Check the next device.
+    }
+    dbus::MessageReader reader(response.get());
+    uint32 device_type = 0;
+    if (!reader.PopVariantOfUint32(&device_type)) {
+      LOG(WARNING) << "Unexpected response for " << device_type << ": "
+                   << response->ToString();
+      continue;  // Check the next device.
+    }
+    VLOG(1) << "Device type: " << device_type;
 
     if (device_type == NM_DEVICE_TYPE_WIFI) {  // Found a wlan adapter
       if (GetAccessPointsForAdapter(device_path, data))
@@ -269,84 +169,107 @@ bool NetworkManagerWlanApi::GetAccessPointData(
   return success_count || fail_count == 0;
 }
 
-bool NetworkManagerWlanApi::CheckError() {
-  if (error_) {
-    LOG(ERROR) << "Failed to complete NetworkManager call: " << error_->message;
-    g_error_free(error_);
-    error_ = NULL;
-    return true;
+bool NetworkManagerWlanApi::GetAdapterDeviceList(
+    std::vector<std::string>* device_paths) {
+  dbus::MethodCall method_call(kNetworkManagerInterface, "GetDevices");
+  scoped_ptr<dbus::Response> response(
+      network_manager_proxy_->CallMethodAndBlock(
+          &method_call,
+          dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  if (!response.get()) {
+    LOG(WARNING) << "Failed to get the device list";
+    return false;
   }
-  return false;
+
+  dbus::MessageReader reader(response.get());
+  if (!reader.PopArrayOfObjectPaths(device_paths)) {
+    LOG(WARNING) << "Unexpected response: " << response->ToString();
+    return false;
+  }
+  return true;
 }
 
-GPtrArray* NetworkManagerWlanApi::GetAdapterDeviceList() {
-  GPtrArray* device_list = NULL;
-  dbus_g_proxy_call(proxy_.get(), "GetDevices", &error_,
-                    G_TYPE_INVALID,
-                    dbus_g_type_get_collection("GPtrArray",
-                                               DBUS_TYPE_G_OBJECT_PATH),
-                    &device_list,
-                    G_TYPE_INVALID);
-  if (CheckError())
-    return NULL;
-  return device_list;
-}
 
 bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
-    const gchar* adapter_path, WifiData::AccessPointDataSet* data) {
-  DCHECK(proxy_.get());
-
+    const std::string& adapter_path, WifiData::AccessPointDataSet* data) {
   // Create a proxy object for this wifi adapter, and ask it to do a scan
   // (or at least, dump its scan results).
-  ScopedDBusGProxyPtr wifi_adapter_proxy(dbus_g_proxy_new_from_proxy(
-      proxy_.get(), "org.freedesktop.NetworkManager.Device.Wireless",
-      adapter_path));
-
-  GPtrArray* ap_list_raw = NULL;
-  // Enumerate the access points for this adapter.
-  dbus_g_proxy_call(wifi_adapter_proxy.get(), "GetAccessPoints",  &error_,
-                    G_TYPE_INVALID,
-                    dbus_g_type_get_collection("GPtrArray",
-                                               DBUS_TYPE_G_OBJECT_PATH),
-                    &ap_list_raw,
-                    G_TYPE_INVALID);
-  ScopedGPtrArrayPtr ap_list(ap_list_raw);  // Takes ownership.
-  ap_list_raw = NULL;
-
-  if (CheckError())
+  dbus::ObjectProxy* device_proxy =
+      system_bus_->GetObjectProxy(kNetworkManagerServiceName,
+                                  adapter_path);
+  dbus::MethodCall method_call(
+      "org.freedesktop.NetworkManager.Device.Wireless",
+      "GetAccessPoints");
+  scoped_ptr<dbus::Response> response(
+      device_proxy->CallMethodAndBlock(
+          &method_call,
+          dbus::ObjectProxy::TIMEOUT_USE_DEFAULT));
+  if (!response.get()) {
+    LOG(WARNING) << "Failed to get access points data for " << adapter_path;
     return false;
+  }
+  dbus::MessageReader reader(response.get());
+  std::vector<std::string> access_point_paths;
+  if (!reader.PopArrayOfObjectPaths(&access_point_paths)) {
+    LOG(WARNING) << "Unexpected response for " << adapter_path << ": "
+                 << response->ToString();
+    return false;
+  }
 
-  DVLOG(1) << "Wireless adapter " << adapter_path << " found " << ap_list->len
-           << " access points.";
+  VLOG(1) << "Wireless adapter " << adapter_path << " found "
+          << access_point_paths.size() << " access points.";
 
-  for (guint i = 0; i < ap_list->len; i++) {
-    const gchar* ap_path =
-        reinterpret_cast<const gchar*>(g_ptr_array_index(ap_list, i));
-    ScopedDBusGProxyPtr access_point_proxy(dbus_g_proxy_new_from_proxy(
-        proxy_.get(), DBUS_INTERFACE_PROPERTIES, ap_path));
+  for (size_t i = 0; i < access_point_paths.size(); ++i) {
+    const std::string& access_point_path = access_point_paths[i];
+    VLOG(1) << "Checking access point: " << access_point_path;
+
+    dbus::ObjectProxy* access_point_proxy =
+        system_bus_->GetObjectProxy(kNetworkManagerServiceName,
+                                    access_point_path);
 
     AccessPointData access_point_data;
-    {  // Read SSID.
-      ScopedGValue ssid_g_value;
-      if (!GetAccessPointProperty(access_point_proxy.get(), "Ssid",
-                                  G_TYPE_BOXED, &ssid_g_value.v))
+    {
+      scoped_ptr<dbus::Response> response(
+          GetAccessPointProperty(access_point_proxy, "Ssid"));
+      if (!response.get())
         continue;
-      const GArray* ssid =
-          reinterpret_cast<const GArray*>(g_value_get_boxed(&ssid_g_value.v));
-      UTF8ToUTF16(ssid->data, ssid->len, &access_point_data.ssid);
+      // The response should contain a variant that contains an array of bytes.
+      dbus::MessageReader reader(response.get());
+      dbus::MessageReader variant_reader(response.get());
+      if (!reader.PopVariant(&variant_reader)) {
+        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
+                     << response->ToString();
+        continue;
+      }
+      uint8* ssid_bytes = NULL;
+      size_t ssid_length = 0;
+      if (!variant_reader.PopArrayOfBytes(&ssid_bytes, &ssid_length)) {
+        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
+                     << response->ToString();
+        continue;
+      }
+      std::string ssid(ssid_bytes, ssid_bytes + ssid_length);
+      access_point_data.ssid = UTF8ToUTF16(ssid);
     }
 
     { // Read the mac address
-      ScopedGValue mac_g_value;
-      if (!GetAccessPointProperty(access_point_proxy.get(), "HwAddress",
-                                  G_TYPE_STRING, &mac_g_value.v))
+      scoped_ptr<dbus::Response> response(
+          GetAccessPointProperty(access_point_proxy, "HwAddress"));
+      if (!response.get())
         continue;
-      std::string mac = g_value_get_string(&mac_g_value.v);
+      dbus::MessageReader reader(response.get());
+      std::string mac;
+      if (!reader.PopVariantOfString(&mac)) {
+        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
+                     << response->ToString();
+        continue;
+      }
+
       ReplaceSubstringsAfterOffset(&mac, 0U, ":", "");
       std::vector<uint8> mac_bytes;
       if (!base::HexStringToBytes(mac, &mac_bytes) || mac_bytes.size() != 6) {
-        DLOG(WARNING) << "Can't parse mac address (found " << mac_bytes.size()
-                      << " bytes) so using raw string: " << mac;
+        LOG(WARNING) << "Can't parse mac address (found " << mac_bytes.size()
+                     << " bytes) so using raw string: " << mac;
         access_point_data.mac_address = UTF8ToUTF16(mac);
       } else {
         access_point_data.mac_address = MacAddressAsString16(&mac_bytes[0]);
@@ -354,47 +277,63 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
     }
 
     {  // Read signal strength.
-      ScopedGValue signal_g_value;
-      if (!GetAccessPointProperty(access_point_proxy.get(), "Strength",
-                                  G_TYPE_UCHAR, &signal_g_value.v))
+      scoped_ptr<dbus::Response> response(
+          GetAccessPointProperty(access_point_proxy, "Strength"));
+      if (!response.get())
         continue;
+      dbus::MessageReader reader(response.get());
+      uint8 strength = 0;
+      if (!reader.PopVariantOfByte(&strength)) {
+        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
+                     << response->ToString();
+        continue;
+      }
       // Convert strength as a percentage into dBs.
-      access_point_data.radio_signal_strength =
-          -100 + g_value_get_uchar(&signal_g_value.v) / 2;
+      access_point_data.radio_signal_strength = -100 + strength / 2;
     }
 
     { // Read the channel
-      ScopedGValue freq_g_value;
-      if (!GetAccessPointProperty(access_point_proxy.get(), "Frequency",
-                                  G_TYPE_UINT, &freq_g_value.v))
+      scoped_ptr<dbus::Response> response(
+          GetAccessPointProperty(access_point_proxy, "Frequency"));
+      if (!response.get())
         continue;
+      dbus::MessageReader reader(response.get());
+      uint32 frequency = 0;
+      if (!reader.PopVariantOfUint32(&frequency)) {
+        LOG(WARNING) << "Unexpected response for " << access_point_path << ": "
+                     << response->ToString();
+        continue;
+      }
+
       // NetworkManager returns frequency in MHz.
       access_point_data.channel =
-          frquency_in_khz_to_channel(g_value_get_uint(&freq_g_value.v) * 1000);
+          frquency_in_khz_to_channel(frequency * 1000);
     }
+    VLOG(1) << "Access point data of " << access_point_path << ": "
+            << "SSID: " << access_point_data.ssid << ", "
+            << "MAC: " << access_point_data.mac_address << ", "
+            << "Strength: " << access_point_data.radio_signal_strength << ", "
+            << "Channel: " << access_point_data.channel;
+
     data->insert(access_point_data);
   }
   return true;
 }
 
-bool NetworkManagerWlanApi::GetAccessPointProperty(DBusGProxy* proxy,
-                                                   const char* property_name,
-                                                   int expected_gvalue_type,
-                                                   GValue* value_out) {
-  dbus_g_proxy_call(proxy, "Get", &error_,
-                    G_TYPE_STRING, "org.freedesktop.NetworkManager.AccessPoint",
-                    G_TYPE_STRING, property_name,
-                    G_TYPE_INVALID,
-                    G_TYPE_VALUE, value_out,
-                    G_TYPE_INVALID);
-  if (CheckError())
-    return false;
-  if (!G_VALUE_HOLDS(value_out, expected_gvalue_type)) {
-    DLOG(WARNING) << "Property " << property_name << " unexptected type "
-                  << G_VALUE_TYPE(value_out);
-    return false;
+dbus::Response* NetworkManagerWlanApi::GetAccessPointProperty(
+    dbus::ObjectProxy* access_point_proxy,
+    const std::string& property_name) {
+  dbus::MethodCall method_call(DBUS_INTERFACE_PROPERTIES, "Get");
+  dbus::MessageWriter builder(&method_call);
+  builder.AppendString("org.freedesktop.NetworkManager.AccessPoint");
+  builder.AppendString(property_name);
+  dbus::Response* response = access_point_proxy->CallMethodAndBlock(
+      &method_call,
+      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT);
+  if (!response) {
+    LOG(WARNING) << "Failed to get property for " << property_name;
   }
-  return true;
+  return response;
 }
 
 }  // namespace
@@ -424,4 +363,12 @@ PollingPolicyInterface* WifiDataProviderLinux::NewPollingPolicy() {
                                   kNoChangePollingIntervalMilliseconds,
                                   kTwoNoChangePollingIntervalMilliseconds,
                                   kNoWifiPollingIntervalMilliseconds>;
+}
+
+WifiDataProviderCommon::WlanApiInterface*
+WifiDataProviderLinux::NewWlanApiForTesting(dbus::Bus* bus) {
+  scoped_ptr<NetworkManagerWlanApi> wlan_api(new NetworkManagerWlanApi);
+  if (wlan_api->InitWithBus(bus))
+    return wlan_api.release();
+  return NULL;
 }

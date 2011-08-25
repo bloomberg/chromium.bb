@@ -560,12 +560,13 @@
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
-            '../build/linux/system.gyp:dbus-glib',
+            '../build/linux/system.gyp:dbus',
             # For FcLangSetAdd call in render_sandbox_host_linux.cc
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
             # For XShm* in backing_store_x.cc
             '../build/linux/system.gyp:x11',
+            '../dbus/dbus.gyp:dbus',
           ],
         }],
         ['OS=="linux" and chromeos==1', {

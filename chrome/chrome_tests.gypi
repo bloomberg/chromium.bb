@@ -2009,6 +2009,7 @@
         '../content/browser/geolocation/location_arbitrator_unittest.cc',
         '../content/browser/geolocation/network_location_provider_unittest.cc',
         '../content/browser/geolocation/wifi_data_provider_common_unittest.cc',
+        '../content/browser/geolocation/wifi_data_provider_linux_unittest.cc',
         '../content/browser/geolocation/wifi_data_provider_unittest_win.cc',
         '../content/browser/geolocation/win7_location_api_unittest_win.cc',
         '../content/browser/geolocation/win7_location_provider_unittest_win.cc',
@@ -2086,6 +2087,7 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
+            ['exclude', '^../content/browser/geolocation/wifi_data_provider_linux_unittest.cc'],
             # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
             # print preview is enabled on CrOS.
             ['exclude', '^browser/ui/webui/print_preview_ui_unittest.cc'],
@@ -2136,8 +2138,10 @@
             }],
           ],
           'dependencies': [
+            '../build/linux/system.gyp:dbus',
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:ssl',
+            '../dbus/dbus.gyp:dbus_test_support',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources!': [

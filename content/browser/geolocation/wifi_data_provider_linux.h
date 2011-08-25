@@ -8,16 +8,25 @@
 
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
+namespace dbus {
+class Bus;
+};
+
 class WifiDataProviderLinux : public WifiDataProviderCommon {
  public:
   WifiDataProviderLinux();
 
  private:
+  friend class GeolocationWifiDataProviderLinuxTest;
+
   virtual ~WifiDataProviderLinux();
 
   // WifiDataProviderCommon
   virtual WlanApiInterface* NewWlanApi();
   virtual PollingPolicyInterface* NewPollingPolicy();
+
+  // For testing.
+  WlanApiInterface* NewWlanApiForTesting(dbus::Bus* bus);
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderLinux);
 };
