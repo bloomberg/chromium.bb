@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/geolocation/access_token_store.h"
-
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
@@ -45,7 +44,7 @@ void StartTestStepFromClientThread(
     AccessTokenStore::LoadAccessTokensCallbackType* callback) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId));
   if (*store == NULL)
-    (*store) = NewChromePrefsAccessTokenStore();
+    (*store) = new ChromeAccessTokenStore();
   (*store)->LoadAccessTokens(consumer, callback);
 }
 
@@ -57,7 +56,7 @@ struct TokenLoadClientForTest {
 
 void RunCancelTestInClientTread() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId));
-  scoped_refptr<AccessTokenStore> store(NewChromePrefsAccessTokenStore());
+  scoped_refptr<AccessTokenStore> store(new ChromeAccessTokenStore());
   CancelableRequestConsumer consumer;
   TokenLoadClientForTest load_client;
 
@@ -117,8 +116,7 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
   }
 
   if (token_to_set_) {
-    scoped_refptr<AccessTokenStore> store(
-        NewChromePrefsAccessTokenStore());
+    scoped_refptr<AccessTokenStore> store(new ChromeAccessTokenStore());
     store->SaveAccessToken(ref_url_, *token_to_set_);
   }
   BrowserThread::PostTask(

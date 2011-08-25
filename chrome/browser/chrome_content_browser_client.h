@@ -100,6 +100,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual DevToolsManager* GetDevToolsManager() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual speech_input::SpeechInputManager* GetSpeechInputManager() OVERRIDE;
+  virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
   virtual WebPreferences GetWebkitPrefs(
       content::BrowserContext* browser_context,

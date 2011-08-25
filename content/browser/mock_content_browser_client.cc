@@ -211,6 +211,10 @@ speech_input::SpeechInputManager*
   return NULL;
 }
 
+AccessTokenStore* MockContentBrowserClient::CreateAccessTokenStore() {
+  return NULL;
+}
+
 bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }

@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_message_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -669,6 +670,10 @@ net::NetLog* ChromeContentBrowserClient::GetNetLog() {
 speech_input::SpeechInputManager*
     ChromeContentBrowserClient::GetSpeechInputManager() {
   return speech_input::ChromeSpeechInputManager::GetInstance();
+}
+
+AccessTokenStore* ChromeContentBrowserClient::CreateAccessTokenStore() {
+  return new ChromeAccessTokenStore();
 }
 
 bool ChromeContentBrowserClient::IsFastShutdownPossible() {

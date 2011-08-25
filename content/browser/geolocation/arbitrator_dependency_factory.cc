@@ -29,7 +29,7 @@ DefaultGeolocationArbitratorDependencyFactory::GetTimeFunction() {
 
 AccessTokenStore*
 DefaultGeolocationArbitratorDependencyFactory::NewAccessTokenStore() {
-  return NewChromePrefsAccessTokenStore();
+  return content::GetContentClient()->browser()->CreateAccessTokenStore();
 }
 
 LocationProviderBase*

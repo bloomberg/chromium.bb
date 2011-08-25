@@ -4,11 +4,11 @@
 
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 
-#include "content/browser/geolocation/access_token_store.h"
+#include "chrome/browser/geolocation/chrome_access_token_store.h"
 
 namespace geolocation {
 void RegisterPrefs(PrefService* prefs) {
   // Fan out to all geolocation sub-components that use prefs.
-  AccessTokenStore::RegisterPrefs(prefs);
+  ChromeAccessTokenStore::RegisterPrefs(prefs);
 }
 }  // namespace geolocation

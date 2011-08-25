@@ -13,6 +13,7 @@
 #include "content/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
+class AccessTokenStore;
 class BrowserRenderProcessHost;
 class BrowserURLHandler;
 class CommandLine;
@@ -248,6 +249,9 @@ class ContentBrowserClient {
   virtual DevToolsManager* GetDevToolsManager() = 0;
   virtual net::NetLog* GetNetLog() = 0;
   virtual speech_input::SpeechInputManager* GetSpeechInputManager() = 0;
+
+  // Creates a new AccessTokenStore for gelocation.
+  virtual AccessTokenStore* CreateAccessTokenStore() = 0;
 
   // Returns true if fast shutdown is possible.
   virtual bool IsFastShutdownPossible() = 0;

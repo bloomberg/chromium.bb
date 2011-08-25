@@ -23,13 +23,11 @@
 #include "googleurl/src/gurl.h"
 
 class GURL;
-class PrefService;
 
 // Provides storage for the access token used in the network request.
 class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore>,
                          public CancelableRequestProvider {
  public:
-  static void RegisterPrefs(PrefService* prefs);
 
   // Map of server URLs to associated access token.
   typedef std::map<GURL, string16> AccessTokenSet;
@@ -54,8 +52,5 @@ class AccessTokenStore : public base::RefCountedThreadSafe<AccessTokenStore>,
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessTokenStore);
 };
-
-// Creates a new access token store backed by the global chome prefs.
-AccessTokenStore* NewChromePrefsAccessTokenStore();
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_ACCESS_TOKEN_STORE_H_

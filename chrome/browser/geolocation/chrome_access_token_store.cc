@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/geolocation/access_token_store.h"
+#include "chrome/browser/geolocation/chrome_access_token_store.h"
 
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
@@ -14,28 +14,14 @@
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
-namespace {
-class ChromePrefsAccessTokenStore : public AccessTokenStore {
- public:
-  ChromePrefsAccessTokenStore();
-
- private:
-  void LoadDictionaryStoreInUIThread(
-      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request);
-
-  // AccessTokenStore
-  virtual void DoLoadAccessTokens(
-      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request);
-  virtual void SaveAccessToken(
-      const GURL& server_url, const string16& access_token);
-
-  DISALLOW_COPY_AND_ASSIGN(ChromePrefsAccessTokenStore);
-};
-
-ChromePrefsAccessTokenStore::ChromePrefsAccessTokenStore() {
+void ChromeAccessTokenStore::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
 }
 
-void ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread(
+ChromeAccessTokenStore::ChromeAccessTokenStore() {
+}
+
+void ChromeAccessTokenStore::LoadDictionaryStoreInUIThread(
       scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (request->canceled())
@@ -59,10 +45,10 @@ void ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread(
   request->ForwardResultAsync(MakeTuple(access_token_set));
 }
 
-void ChromePrefsAccessTokenStore::DoLoadAccessTokens(
+void ChromeAccessTokenStore::DoLoadAccessTokens(
     scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
-      this, &ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread,
+      this, &ChromeAccessTokenStore::LoadDictionaryStoreInUIThread,
       request));
 }
 
@@ -75,36 +61,8 @@ void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
       server_url.spec(), Value::CreateStringValue(token));
 }
 
-void ChromePrefsAccessTokenStore::SaveAccessToken(
+void ChromeAccessTokenStore::SaveAccessToken(
       const GURL& server_url, const string16& access_token) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableFunction(
       &SetAccessTokenOnUIThread, server_url, access_token));
-}
-}  // namespace
-
-AccessTokenStore::AccessTokenStore() {
-}
-
-AccessTokenStore::~AccessTokenStore() {
-}
-
-void AccessTokenStore::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
-}
-
-AccessTokenStore::Handle AccessTokenStore::LoadAccessTokens(
-    CancelableRequestConsumerBase* consumer,
-    LoadAccessTokensCallbackType* callback) {
-  scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request(
-      new CancelableRequest<LoadAccessTokensCallbackType>(callback));
-  AddRequest(request, consumer);
-  DCHECK(request->handle());
-
-  DoLoadAccessTokens(request);
-  return request->handle();
-}
-
-// Creates a new access token store backed by the global chome prefs.
-AccessTokenStore* NewChromePrefsAccessTokenStore() {
-  return new ChromePrefsAccessTokenStore;
 }

@@ -161,6 +161,7 @@
         'browser/find_pasteboard.mm',
         'browser/font_list_async.cc',
         'browser/font_list_async.h',
+        'browser/geolocation/access_token_store.cc',
         'browser/geolocation/access_token_store.h',
         'browser/geolocation/arbitrator_dependency_factory.cc',
         'browser/geolocation/arbitrator_dependency_factory.h',
