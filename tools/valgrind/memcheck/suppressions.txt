@@ -5352,6 +5352,12 @@
    fun:ChromeMain
    fun:main
 }
+{
+   bug_94195
+   Memcheck:Leak
+   ...
+   fun:_ZN12GpuBlacklist16LoadGpuBlacklistERKSsNS_8OsFilterE
+}
 
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
