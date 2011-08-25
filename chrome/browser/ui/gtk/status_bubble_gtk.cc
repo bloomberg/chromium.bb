@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/text/text_elider.h"
 
 namespace {
@@ -260,7 +259,7 @@ void StatusBubbleGtk::InitWidgets() {
   container_.Own(gtk_event_box_new());
   gtk_widget_set_no_show_all(container_.get(), TRUE);
   gtk_util::ActAsRoundedWindow(
-      container_.get(), ui::kGdkWhite, kCornerSize,
+      container_.get(), gtk_util::kGdkWhite, kCornerSize,
       gtk_util::ROUNDED_TOP_RIGHT,
       gtk_util::BORDER_TOP | gtk_util::BORDER_RIGHT);
   gtk_widget_set_name(container_.get(), "status-bubble");

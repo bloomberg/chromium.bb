@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "testing/platform_test.h"
 
 namespace {

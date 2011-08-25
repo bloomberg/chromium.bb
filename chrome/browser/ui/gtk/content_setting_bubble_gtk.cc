@@ -22,7 +22,6 @@
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/gtk_util.h"
@@ -89,7 +88,7 @@ void ContentSettingBubbleGtk::Observe(int type,
 void ContentSettingBubbleGtk::BuildBubble() {
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(profile_);
 
-  GtkWidget* bubble_content = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  GtkWidget* bubble_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);
 
   const ContentSettingBubbleModel::BubbleContent& content =
@@ -103,7 +102,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
 
   const std::set<std::string>& plugins = content.resource_identifiers;
   if (!plugins.empty()) {
-    GtkWidget* list_content = gtk_vbox_new(FALSE, ui::kControlSpacing);
+    GtkWidget* list_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
@@ -121,7 +120,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
                          FALSE, FALSE, 0);
     }
     gtk_box_pack_start(GTK_BOX(bubble_content), list_content, FALSE, FALSE,
-                       ui::kControlSpacing);
+                       gtk_util::kControlSpacing);
   }
 
   if (content_setting_bubble_model_->content_type() ==
@@ -147,8 +146,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
         g_signal_connect(event_box, "button_press_event",
                          G_CALLBACK(OnPopupIconButtonPressThunk), this);
         gtk_table_attach(GTK_TABLE(table), event_box, 0, 1, row, row + 1,
-                         GTK_FILL, GTK_FILL, ui::kControlSpacing / 2,
-                         ui::kControlSpacing / 2);
+                         GTK_FILL, GTK_FILL, gtk_util::kControlSpacing / 2,
+                         gtk_util::kControlSpacing / 2);
       }
 
       GtkWidget* button = gtk_chrome_link_button_new(
@@ -157,8 +156,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
       g_signal_connect(button, "clicked", G_CALLBACK(OnPopupLinkClickedThunk),
                        this);
       gtk_table_attach(GTK_TABLE(table), button, 1, 2, row, row + 1,
-                       GTK_FILL, GTK_FILL, ui::kControlSpacing / 2,
-                       ui::kControlSpacing / 2);
+                       GTK_FILL, GTK_FILL, gtk_util::kControlSpacing / 2,
+                       gtk_util::kControlSpacing / 2);
     }
 
     gtk_box_pack_start(GTK_BOX(bubble_content), table, FALSE, FALSE, 0);
@@ -194,7 +193,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
        content.domain_lists.begin();
        i != content.domain_lists.end(); ++i) {
     // Put each list into its own vbox to allow spacing between lists.
-    GtkWidget* list_content = gtk_vbox_new(FALSE, ui::kControlSpacing);
+    GtkWidget* list_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
     GtkWidget* label = gtk_label_new(BuildElidedText(i->title).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
@@ -208,7 +207,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
                          FALSE, FALSE, 0);
     }
     gtk_box_pack_start(GTK_BOX(bubble_content), list_content, FALSE, FALSE,
-                       ui::kControlSpacing);
+                       gtk_util::kControlSpacing);
   }
 
   if (!content.custom_link.empty()) {

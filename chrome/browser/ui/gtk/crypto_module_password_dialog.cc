@@ -15,7 +15,6 @@
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -168,7 +167,7 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
   gtk_entry_set_activates_default(GTK_ENTRY(password_entry_), TRUE);
   gtk_entry_set_visibility(GTK_ENTRY(password_entry_), FALSE);
 
-  GtkWidget* password_box = gtk_hbox_new(FALSE, ui::kLabelSpacing);
+  GtkWidget* password_box = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_box_pack_start(GTK_BOX(password_box),
                      gtk_label_new(l10n_util::GetStringUTF8(
                          IDS_CRYPTO_MODULE_AUTH_DIALOG_PASSWORD_FIELD).c_str()),

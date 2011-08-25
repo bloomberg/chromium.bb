@@ -25,7 +25,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/gtk_util.h"
@@ -345,7 +344,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   //
   // * The url and corresponding label are not shown if creating a new folder.
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
-  gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, 12);
 

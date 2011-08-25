@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace browser {
@@ -38,7 +38,7 @@ InstantConfirmDialogGtk::InstantConfirmDialogGtk(
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
   GtkBox* vbox = GTK_BOX(GTK_DIALOG(dialog_)->vbox);
-  gtk_box_set_spacing(vbox, ui::kControlSpacing);
+  gtk_box_set_spacing(vbox, gtk_util::kControlSpacing);
 
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_INSTANT_OPT_IN_MESSAGE).c_str());

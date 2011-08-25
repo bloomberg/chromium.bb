@@ -27,6 +27,14 @@ class GURL;
 class Profile;
 struct RendererPreferences;  // from common/renderer_preferences.h
 
+const int kSkiaToGDKMultiplier = 257;
+
+// Define a macro for creating GdkColors from RGB values.  This is a macro to
+// allow static construction of literals, etc.  Use this like:
+//   GdkColor white = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+#define GDK_COLOR_RGB(r, g, b) {0, r * kSkiaToGDKMultiplier, \
+        g * kSkiaToGDKMultiplier, b * kSkiaToGDKMultiplier}
+
 namespace event_utils {
 
 // Translates event flags into what kind of disposition they represent.
@@ -37,6 +45,32 @@ WindowOpenDisposition DispositionFromEventFlags(guint state);
 }  // namespace event_utils
 
 namespace gtk_util {
+
+extern const GdkColor kGdkWhite;
+extern const GdkColor kGdkGray;
+extern const GdkColor kGdkBlack;
+extern const GdkColor kGdkGreen;
+
+// Constants relating to the layout of dialog windows:
+// (See http://library.gnome.org/devel/hig-book/stable/design-window.html.en)
+
+// Spacing between controls of the same group.
+const int kControlSpacing = 6;
+
+// Horizontal spacing between a label and its control.
+const int kLabelSpacing = 12;
+
+// Indent of the controls within each group.
+const int kGroupIndent = 12;
+
+// Space around the outside of a dialog's contents.
+const int kContentAreaBorder = 12;
+
+// Spacing between groups of controls.
+const int kContentAreaSpacing = 18;
+
+// Horizontal Spacing between controls in a form.
+const int kFormControlSpacing = 10;
 
 // Create a table of labeled controls, using proper spacing and alignment.
 // Arguments should be pairs of const char*, GtkWidget*, concluding with a

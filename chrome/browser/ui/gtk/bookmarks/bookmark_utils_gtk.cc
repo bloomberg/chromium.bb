@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -281,8 +280,8 @@ void SetButtonTextColors(GtkWidget* label, GtkThemeService* provider) {
 
     // Because the prelight state is a white image that doesn't change by the
     // theme, force the text color to black when it would be used.
-    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &ui::kGdkBlack);
-    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, &ui::kGdkBlack);
+    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &gtk_util::kGdkBlack);
+    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, &gtk_util::kGdkBlack);
   }
 }
 

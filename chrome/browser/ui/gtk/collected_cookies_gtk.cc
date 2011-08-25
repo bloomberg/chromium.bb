@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_source.h"
 #include "grit/generated_resources.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -92,8 +91,8 @@ CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
 }
 
 void CollectedCookiesGtk::Init() {
-  dialog_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
-  gtk_box_set_spacing(GTK_BOX(dialog_), ui::kContentAreaSpacing);
+  dialog_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(dialog_), gtk_util::kContentAreaSpacing);
 
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_DIALOG_TITLE).c_str());
@@ -150,7 +149,7 @@ void CollectedCookiesGtk::Init() {
   // Close button.
   GtkWidget* button_box = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
-  gtk_box_set_spacing(GTK_BOX(button_box), ui::kControlSpacing);
+  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
   gtk_box_pack_end(GTK_BOX(dialog_), button_box, FALSE, TRUE, 0);
   close_button_ = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
   gtk_button_set_label(GTK_BUTTON(close_button_),
@@ -167,14 +166,14 @@ void CollectedCookiesGtk::Init() {
 }
 
 GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
-  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL).
           c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), label, FALSE, FALSE,
-                     ui::kControlSpacing);
+                     gtk_util::kControlSpacing);
 
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
@@ -222,9 +221,9 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
 
   GtkWidget* button_box = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_START);
-  gtk_box_set_spacing(GTK_BOX(button_box), ui::kControlSpacing);
+  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), button_box, FALSE, FALSE,
-                     ui::kControlSpacing);
+                     gtk_util::kControlSpacing);
   block_allowed_cookie_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_BLOCK_BUTTON).c_str());
   g_signal_connect(block_allowed_cookie_button_, "clicked",
@@ -235,7 +234,7 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
   // horizontal axis.
   GtkWidget* box = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), cookie_list_vbox, TRUE, TRUE,
-                     ui::kControlSpacing);
+                     gtk_util::kControlSpacing);
   return box;
 }
 
@@ -245,7 +244,7 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
   HostContentSettingsMap* host_content_settings_map =
       wrapper->profile()->GetHostContentSettingsMap();
 
-  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(
@@ -256,7 +255,7 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), label, TRUE, TRUE,
-                     ui::kControlSpacing);
+                     gtk_util::kControlSpacing);
 
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
@@ -302,9 +301,9 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
 
   GtkWidget* button_box = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_START);
-  gtk_box_set_spacing(GTK_BOX(button_box), ui::kControlSpacing);
+  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(cookie_list_vbox), button_box, FALSE, FALSE,
-                     ui::kControlSpacing);
+                     gtk_util::kControlSpacing);
   allow_blocked_cookie_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_ALLOW_BUTTON).c_str());
   g_signal_connect(allow_blocked_cookie_button_, "clicked",
@@ -322,7 +321,7 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
   // horizontal axis.
   GtkWidget* box = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box), cookie_list_vbox, TRUE, TRUE,
-                     ui::kControlSpacing);
+                     gtk_util::kControlSpacing);
   return box;
 }
 

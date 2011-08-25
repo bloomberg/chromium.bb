@@ -8,12 +8,12 @@
 
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -42,7 +42,7 @@ GtkWidget* MakeWhiteMarkupLabel(const char* format, const std::string& str) {
   gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
 
   // Set text to white.
-  GdkColor white = ui::kGdkWhite;
+  GdkColor white = gtk_util::kGdkWhite;
   gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &white);
 
   return label;
@@ -113,7 +113,7 @@ SadTabGtk::SadTabGtk(TabContents* tab_contents, Kind kind)
     GtkWidget* link = gtk_chrome_link_button_new(
         l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
     gtk_chrome_link_button_set_normal_color(GTK_CHROME_LINK_BUTTON(link),
-                                            &ui::kGdkWhite);
+                                            &gtk_util::kGdkWhite);
     g_signal_connect(link, "clicked", G_CALLBACK(OnLinkButtonClickThunk), this);
     GtkWidget* link_alignment = gtk_alignment_new(0.5, 0.5, 0.0, 0.0);
     gtk_container_add(GTK_CONTAINER(link_alignment), link);

@@ -18,7 +18,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "media/audio/audio_manager.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,7 +32,7 @@ const int kIconHorizontalPadding = 10;
 const int kButtonBarHorizontalSpacing = 10;
 
 // Use black for text labels since the bubble has white background.
-const GdkColor kLabelTextColor = ui::kGdkBlack;
+const GdkColor kLabelTextColor = gtk_util::kGdkBlack;
 
 // Implementation of SpeechInputBubble for GTK. This shows a speech input bubble
 // on screen.

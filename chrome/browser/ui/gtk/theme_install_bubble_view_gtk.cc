@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // Roundedness of bubble.
@@ -98,7 +97,7 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
   gtk_label_set_markup(GTK_LABEL(label), markup);
   g_free(markup);
 
-  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &ui::kGdkWhite);
+  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkWhite);
   gtk_container_add(GTK_CONTAINER(widget_), label);
 
   // We need to show the label so we'll know the widget's actual size when we
@@ -123,7 +122,7 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
                      G_CALLBACK(OnExposeThunk), this);
     gtk_widget_realize(widget_);
   } else {
-    gtk_widget_modify_bg(widget_, GTK_STATE_NORMAL, &ui::kGdkBlack);
+    gtk_widget_modify_bg(widget_, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
     GdkColor color;
     gtk_util::ActAsRoundedWindow(widget_, color, kBubbleCornerRadius,
                                  gtk_util::ROUNDED_ALL, gtk_util::BORDER_NONE);

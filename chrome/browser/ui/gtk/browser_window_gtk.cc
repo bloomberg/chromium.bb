@@ -91,7 +91,6 @@
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "ui/base/gtk/gtk_floating_container.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
@@ -1753,7 +1752,7 @@ void BrowserWindowGtk::InitWidgets() {
   // Set a white background so during startup the user sees white in the
   // content area before we get a TabContents in place.
   gtk_widget_modify_bg(render_area_event_box_, GTK_STATE_NORMAL,
-                       &ui::kGdkWhite);
+                       &gtk_util::kGdkWhite);
   gtk_container_add(GTK_CONTAINER(render_area_event_box_),
                     render_area_floating_container_);
   gtk_widget_show(render_area_event_box_);

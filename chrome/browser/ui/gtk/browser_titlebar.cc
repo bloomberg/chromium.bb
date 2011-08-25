@@ -46,7 +46,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
@@ -759,10 +758,10 @@ void BrowserTitlebar::UpdateTextColor() {
           ThemeService::COLOR_FRAME_INACTIVE);
     }
     GdkColor text_color = PickLuminosityContrastingColor(
-        &frame_color, &ui::kGdkWhite, &ui::kGdkBlack);
+        &frame_color, &gtk_util::kGdkWhite, &gtk_util::kGdkBlack);
     gtk_util::SetLabelColor(app_mode_title_, &text_color);
   } else {
-    gtk_util::SetLabelColor(app_mode_title_, &ui::kGdkWhite);
+    gtk_util::SetLabelColor(app_mode_title_, &gtk_util::kGdkWhite);
   }
 }
 

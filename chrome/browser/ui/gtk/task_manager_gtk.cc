@@ -29,7 +29,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -499,7 +498,7 @@ void TaskManagerGtk::Init() {
   ConnectAccelerators();
 
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      ui::kContentAreaSpacing);
+                      gtk_util::kContentAreaSpacing);
 
   destroy_handler_id_ = g_signal_connect(dialog_, "destroy",
                                          G_CALLBACK(OnDestroyThunk), this);
