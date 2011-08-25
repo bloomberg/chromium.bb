@@ -15,19 +15,39 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "content/common/page_transition_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 
 namespace safe_browsing {
+namespace features {
+const char kUrlHistoryVisitCount[] = "UrlHistoryVisitCount";
+const char kUrlHistoryTypedCount[] = "UrlHistoryTypedCount";
+const char kUrlHistoryLinkCount[] = "UrlHistoryLinkCount";
+const char kUrlHistoryVisitCountMoreThan24hAgo[] =
+    "UrlHistoryVisitCountMoreThan24hAgo";
+const char kHttpHostVisitCount[] = "HttpHostVisitCount";
+const char kHttpsHostVisitCount[] = "HttpsHostVisitCount";
+const char kFirstHttpHostVisitMoreThan24hAgo[] =
+    "FirstHttpHostVisitMoreThan24hAgo";
+const char kFirstHttpsHostVisitMoreThan24hAgo[] =
+    "FirstHttpsHostVisitMoreThan24hAgo";
 
-const int BrowserFeatureExtractor::kSuffixPrefixHashLength = 5;
+const char kHostPrefix[] = "Host";
+const char kRedirectPrefix[] = "Redirect";
+const char kReferrer[] = "Referrer";
+const char kHasSSLReferrer[] = "HasSSLReferrer";
+const char kPageTransitionType[] = "PageTransitionType";
+const char kIsFirstNavigation[] = "IsFirstNavigation";
+const char kBadIpFetch[] = "BadIpFetch=";
+const char kSafeBrowsingMaliciousUrl[] = "SafeBrowsingMaliciousUrl=";
+const char kSafeBrowsingOriginalUrl[] = "SafeBrowsingOriginalUrl=";
+const char kSafeBrowsingIsSubresource[] = "SafeBrowsingIsSubresource";
+const char kSafeBrowsingThreatType[] = "SafeBrowsingThreatType";
+}  // namespace features
 
 BrowseInfo::BrowseInfo() {}
 
@@ -191,7 +211,6 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   }
 
   ExtractBrowseInfoFeatures(*info, request);
-  ComputeURLHash(request);
   pending_extractions_.insert(std::make_pair(request, callback));
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -442,20 +461,6 @@ bool BrowserFeatureExtractor::GetHistoryService(HistoryService** history) {
   }
   VLOG(2) << "Unable to query history.  No history service available.";
   return false;
-}
-
-void BrowserFeatureExtractor::ComputeURLHash(
-    ClientPhishingRequest* request) {
-  // Put the url into SafeBrowsing host suffix / path prefix format, with
-  // query parameters stripped.
-  std::string host, path, query;
-  safe_browsing_util::CanonicalizeUrl(GURL(request->url()),
-                                      &host, &path, &query);
-  DCHECK(!host.empty()) << request->url();
-  DCHECK(!path.empty()) << request->url();
-  request->set_suffix_prefix_hash(
-      crypto::SHA256HashString(host + path).substr(
-          0, kSuffixPrefixHashLength));
 }
 
 };  // namespace safe_browsing

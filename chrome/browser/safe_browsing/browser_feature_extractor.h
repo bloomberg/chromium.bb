@@ -13,7 +13,6 @@
 
 #include <map>
 #include <set>
-#include <string>
 #include <utility>
 
 #include "base/basictypes.h"
@@ -45,6 +44,65 @@ struct BrowseInfo {
   ~BrowseInfo();
 };
 
+namespace features {
+
+// TODO(noelutz): move renderer/safe_browsing/features.h to common.
+////////////////////////////////////////////////////
+// History features.
+////////////////////////////////////////////////////
+
+// Number of visits to that URL stored in the browser history.
+// Should always be an integer larger than 1 because by the time
+// we lookup the history the current URL should already be stored there.
+extern const char kUrlHistoryVisitCount[];
+
+// Number of times the URL was typed in the Omnibox.
+extern const char kUrlHistoryTypedCount[];
+
+// Number of times the URL was reached by clicking a link.
+extern const char kUrlHistoryLinkCount[];
+
+// Number of times URL was visited more than 24h ago.
+extern const char kUrlHistoryVisitCountMoreThan24hAgo[];
+
+// Number of user-visible visits to all URLs on the same host/port as
+// the URL for HTTP and HTTPs.
+extern const char kHttpHostVisitCount[];
+extern const char kHttpsHostVisitCount[];
+
+// Boolean feature which is true if the host was visited for the first
+// time more than 24h ago (only considers user-visible visits like above).
+extern const char kFirstHttpHostVisitMoreThan24hAgo[];
+extern const char kFirstHttpsHostVisitMoreThan24hAgo[];
+
+////////////////////////////////////////////////////
+// Browse features.
+////////////////////////////////////////////////////
+// Note that these features may have the following prefixes appended to them
+// that tell for which page type the feature pertains.
+extern const char kHostPrefix[];
+extern const char kRedirectPrefix[];
+
+// Referrer
+extern const char kReferrer[];
+// True if the referrer was stripped because it is an SSL referrer.
+extern const char kHasSSLReferrer[];
+// Stores the page transition.  See: PageTransition.  We strip the qualifier.
+extern const char kPageTransitionType[];
+// True if this navigation is the first for this tab.
+extern const char kIsFirstNavigation[];
+
+// Resource was fetched from a known bad IP address.
+extern const char kBadIpFetch[];
+
+// SafeBrowsing related featues.  Fields from the UnsafeResource if there is
+// any.
+extern const char kSafeBrowsingMaliciousUrl[];
+extern const char kSafeBrowsingOriginalUrl[];
+extern const char kSafeBrowsingIsSubresource[];
+extern const char kSafeBrowsingThreatType[];
+}  // namespace features
+
 // All methods of this class must be called on the UI thread (including
 // the constructor).
 class BrowserFeatureExtractor {
@@ -73,10 +131,6 @@ class BrowserFeatureExtractor {
   virtual void ExtractFeatures(const BrowseInfo* info,
                                ClientPhishingRequest* request,
                                DoneCallback* callback);
-
-  // The size of hash prefix to use for
-  // ClientPhishingRequest.suffix_prefix_hash.  Public for testing.
-  static const int kSuffixPrefixHashLength;
 
  private:
   friend class DeleteTask<BrowserFeatureExtractor>;
@@ -138,10 +192,6 @@ class BrowserFeatureExtractor {
   // Helper function which gets the history server if possible.  If the pointer
   // is set it will return true and false otherwise.
   bool GetHistoryService(HistoryService** history);
-
-  // Computes the SHA-256 hash prefix for the URL and adds it to the
-  // ClientPhishingRequest.
-  void ComputeURLHash(ClientPhishingRequest* request);
 
   TabContents* tab_;
   ClientSideDetectionService* service_;
