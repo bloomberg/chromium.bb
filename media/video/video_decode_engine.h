@@ -55,7 +55,7 @@ class VideoDecodeEngine {
     //
     // |buffer| can be NULL in which case this method call is purely for
     // requesting new video samples. If |buffer| is non-NULL, the buffer is
-    // returned to the owner at the sample time as a request for video sample
+    // returned to the owner at the same time as a request for video sample
     // is made.
     virtual void ProduceVideoSample(scoped_refptr<Buffer> buffer) = 0;
 
@@ -97,8 +97,8 @@ class VideoDecodeEngine {
   // could be itself. ) then call EventHandler::OnFlushDone().
   virtual void Flush() = 0;
 
-  // This method is used as a signal for the decode engine to prefoll and
-  // issue read requests after Flush() us made.
+  // This method is used as a signal for the decode engine to preroll and
+  // issue read requests after Flush() is made.
   virtual void Seek() = 0;
 
   // Provide a video sample to be used by the video decode engine.

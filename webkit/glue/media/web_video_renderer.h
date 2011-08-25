@@ -36,17 +36,7 @@ class WebVideoRenderer : public media::VideoRendererBase {
   // |dest_rect|.
   //
   // Method called on the render thread.
-  virtual void Paint(SkCanvas* canvas,
-                     const gfx::Rect& dest_rect) = 0;
-
-  // Clients of this class (painter/compositor) should use GetCurrentFrame()
-  // obtain ownership of VideoFrame, it should always relinquish the ownership
-  // by use PutCurrentFrame(). Current frame is not guaranteed to be non-NULL.
-  // It expects clients to use color-fill the background if current frame
-  // is NULL. This could happen when before pipeline is pre-rolled or during
-  // pause/flush/seek.
-  virtual void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out) {}
-  virtual void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame) {}
+  virtual void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebVideoRenderer);

@@ -28,10 +28,6 @@ class VideoRendererImpl : public WebVideoRenderer {
   virtual void SetWebMediaPlayerProxy(WebMediaPlayerProxy* proxy) OVERRIDE;
   virtual void SetRect(const gfx::Rect& rect) OVERRIDE;
   virtual void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) OVERRIDE;
-  virtual void GetCurrentFrame(
-      scoped_refptr<media::VideoFrame>* frame_out) OVERRIDE;
-  virtual void PutCurrentFrame(
-      scoped_refptr<media::VideoFrame> frame) OVERRIDE;
 
  protected:
   // VideoRendererBase implementation.

@@ -60,8 +60,7 @@ void VideoRendererImpl::SetWebMediaPlayerProxy(WebMediaPlayerProxy* proxy) {
 void VideoRendererImpl::SetRect(const gfx::Rect& rect) {}
 
 // This method is always called on the renderer's thread.
-void VideoRendererImpl::Paint(SkCanvas* canvas,
-                              const gfx::Rect& dest_rect) {
+void VideoRendererImpl::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
   scoped_refptr<media::VideoFrame> video_frame;
   GetCurrentFrame(&video_frame);
   if (!video_frame) {
@@ -89,16 +88,6 @@ void VideoRendererImpl::Paint(SkCanvas* canvas,
   }
 
   PutCurrentFrame(video_frame);
-}
-
-void VideoRendererImpl::GetCurrentFrame(
-    scoped_refptr<media::VideoFrame>* frame_out) {
-  VideoRendererBase::GetCurrentFrame(frame_out);
-}
-
-void VideoRendererImpl::PutCurrentFrame(
-    scoped_refptr<media::VideoFrame> frame) {
-  VideoRendererBase::PutCurrentFrame(frame);
 }
 
 // CanFastPaint is a helper method to determine the conditions for fast
