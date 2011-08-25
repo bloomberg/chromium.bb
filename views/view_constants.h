@@ -12,11 +12,11 @@ namespace views {
 
 // Size (width or height) within which the user can hold the mouse and the
 // view should scroll.
-extern const int kAutoscrollSize;
+VIEWS_EXPORT extern const int kAutoscrollSize;
 
 // Time in milliseconds to autoscroll by a row. This is used during drag and
 // drop.
-extern const int kAutoscrollRowTimerMS;
+VIEWS_EXPORT extern const int kAutoscrollRowTimerMS;
 
 // Used to determine whether a drop is on an item or before/after it. If a drop
 // occurs kDropBetweenPixels from the top/bottom it is considered before/after
