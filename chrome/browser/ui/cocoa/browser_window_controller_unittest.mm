@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -654,6 +655,13 @@ class BrowserWindowFullScreenControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
+
+    // This test case crashes when run on Lion. Fail early.
+    if (base::mac::IsOSLionOrLater()) {
+      controller_ = nil;  // Need to make sure this isn't uninitialized memory.
+      FAIL() << "This test crashes on Lion; http://crbug.com/93925";
+    }
+
     Browser* browser = browser_helper_.browser();
     controller_ =
         [[BrowserWindowControllerFakeFullscreen alloc] initWithBrowser:browser
@@ -682,7 +690,7 @@ static bool IsFrontWindow(NSWindow *window) {
          [[frontmostWindow parentWindow] isEqual:window];
 }
 
-TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
+TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreenNotLion) {
   EXPECT_FALSE([controller_ isFullscreen]);
   [controller_ setFullscreen:YES];
   EXPECT_TRUE([controller_ isFullscreen]);
@@ -694,7 +702,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
 // problem (such as a modal dialog up).  This tests is a very useful canary, so
 // please do not mark it as flaky without first verifying that there are no bot
 // problems.
-TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
+TEST_F(BrowserWindowFullScreenControllerTest, TestActivateNotLion) {
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
