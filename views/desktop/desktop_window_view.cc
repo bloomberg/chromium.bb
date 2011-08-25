@@ -15,7 +15,9 @@
 #include "views/widget/widget.h"
 #include "views/window/native_frame_view.h"
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+#include "views/widget/native_widget_aura.h"
+#elif defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
@@ -137,7 +139,9 @@ void DesktopWindowView::CreateDesktopWindow(DesktopType type) {
   // In this environment, CreateChromeWindow will default to creating a views-
   // window, so we need to construct a NativeWidgetWin by hand.
   // TODO(beng): Replace this with NativeWindow::CreateNativeRootWindow().
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  params.native_widget = new views::NativeWidgetAura(window);
+#elif defined(OS_WIN)
   params.native_widget = new views::NativeWidgetWin(window);
 #elif defined(TOOLKIT_USES_GTK)
   params.native_widget = new views::NativeWidgetGtk(window);

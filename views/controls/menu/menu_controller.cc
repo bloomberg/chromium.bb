@@ -1748,7 +1748,7 @@ bool MenuController::SelectByChar(char16 character) {
   return false;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 void MenuController::RepostEvent(SubmenuView* source,
                                  const MouseEvent& event) {
   if (!state_.item) {

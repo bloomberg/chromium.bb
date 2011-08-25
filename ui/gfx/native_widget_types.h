@@ -36,6 +36,9 @@
 // 'views' and with our Chrome UI code where the elements are also called
 // 'views'.
 
+#if defined(USE_AURA)
+#include "aura/window.h"
+#endif
 #if defined(OS_WIN)
 #include <windows.h>  // NOLINT
 typedef struct HFONT__* HFONT;
@@ -80,10 +83,25 @@ class SkBitmap;
 
 namespace gfx {
 
-#if defined(OS_WIN)
-typedef HFONT NativeFont;
+#if defined(USE_AURA)
+typedef aura::Window* NativeView;
+typedef aura::Window* NativeWindow;
+#elif defined(OS_WIN)
 typedef HWND NativeView;
 typedef HWND NativeWindow;
+#elif defined(OS_MACOSX)
+typedef NSView* NativeView;
+typedef NSWindow* NativeWindow;
+#elif defined(USE_WAYLAND)
+typedef ui::WaylandWindow* NativeView;
+typedef ui::WaylandWindow* NativeWindow;
+#elif defined(USE_X11)
+typedef GtkWidget* NativeView;
+typedef GtkWindow* NativeWindow;
+#endif
+
+#if defined(OS_WIN)
+typedef HFONT NativeFont;
 typedef HWND NativeEditView;
 typedef HDC NativeDrawingContext;
 typedef HCURSOR NativeCursor;
@@ -92,8 +110,6 @@ typedef HRGN NativeRegion;
 typedef IAccessible* NativeViewAccessible;
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
-typedef NSView* NativeView;
-typedef NSWindow* NativeWindow;
 typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
 typedef void* NativeCursor;
@@ -101,8 +117,6 @@ typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(USE_WAYLAND)
 typedef PangoFontDescription* NativeFont;
-typedef ui::WaylandWindow* NativeView;
-typedef ui::WaylandWindow* NativeWindow;
 typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef void* NativeCursor;
@@ -113,8 +127,6 @@ typedef GdkRegion* NativeRegion;
 typedef void* NativeViewAccessible;
 #elif defined(USE_X11)
 typedef PangoFontDescription* NativeFont;
-typedef GtkWidget* NativeView;
-typedef GtkWindow* NativeWindow;
 typedef GtkWidget* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
 typedef GdkCursor* NativeCursor;
@@ -139,7 +151,7 @@ typedef NativeImageType* NativeImage;
 // See comment at the top of the file for usage.
 typedef intptr_t NativeViewId;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 // Convert a NativeViewId to a NativeView.
 //
 // On Windows, we pass an HWND into the renderer. As stated above, the renderer
@@ -148,10 +160,10 @@ static inline NativeView NativeViewFromId(NativeViewId id) {
   return reinterpret_cast<NativeView>(id);
 }
 #define NativeViewFromIdInBrowser(x) NativeViewFromId(x)
-#elif defined(OS_POSIX)
-// On Mac and Linux, a NativeView is a pointer to an object, and is useless
-// outside the process in which it was created. NativeViewFromId should only be
-// used inside the appropriate platform ifdef outside of the browser.
+#elif defined(OS_POSIX) || defined(USE_AURA)
+// On Mac, Linux and USE_AURA, a NativeView is a pointer to an object, and is
+// useless outside the process in which it was created. NativeViewFromId should
+// only be used inside the appropriate platform ifdef outside of the browser.
 // (NativeViewFromIdInBrowser can be used everywhere in the browser.) If your
 // cross-platform design involves a call to NativeViewFromId from outside the
 // browser it will never work on Mac or Linux and is fundamentally broken.

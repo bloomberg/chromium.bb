@@ -20,7 +20,7 @@
 #include "views/window/hit_test.h"
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"
 #endif
 
@@ -567,7 +567,7 @@ void CustomFrameView::LayoutClientView() {
 void CustomFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     title_font_ = new gfx::Font(NativeWidgetWin::GetWindowTitleFont());
 #elif defined(OS_LINUX)
     // TODO(ben): need to resolve what font this is.

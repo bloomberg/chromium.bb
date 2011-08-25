@@ -6,7 +6,7 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"
 #endif
 
@@ -32,7 +32,7 @@ bool DefaultThemeProvider::GetDisplayProperty(int id, int* result) const {
 }
 
 bool DefaultThemeProvider::ShouldUseNativeFrame() const {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   return NativeWidgetWin::IsAeroGlassEnabled();
 #else
   return false;

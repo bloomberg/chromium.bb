@@ -20,6 +20,11 @@
           ['exclude', '_(touch)\\.cc$'],
         ],
       }],
+      ['use_aura==1', {
+        'sources/': [ ['exclude', '_win\\.(h|cc)$'],
+                      ['exclude', '_gtk\\.(h|cc)$'],
+                      ['exclude', '_x\\.(h|cc)$'] ],
+      }],      
     ],
   },
   'targets': [
@@ -230,6 +235,7 @@
         'drag_utils_win.cc',
         'events/event.cc',
         'events/event.h',
+        'events/event_aura.cc',
         'events/event_gtk.cc',
         'events/event_win.cc',
         'events/event_utils_win.cc',
@@ -342,6 +348,8 @@
         'widget/monitor_win.cc',
         'widget/monitor_win.h',
         'widget/native_widget.h',
+        'widget/native_widget_aura.cc',
+        'widget/native_widget_aura.h',
         'widget/native_widget_delegate.h',
         'widget/native_widget_private.h',
         'widget/native_widget_gtk.cc',
@@ -378,6 +386,17 @@
         '<(DEPTH)/third_party/wtl/include',
       ],
       'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            '../aura/aura.gyp:aura',
+          ],
+          'sources!': [
+            'controls/native_control.cc',
+            'widget/aero_tooltip_manager.cc',
+            'widget/child_window_message_processor.cc',
+            'widget/child_window_message_processor.h',
+          ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',

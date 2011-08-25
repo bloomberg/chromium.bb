@@ -12,7 +12,9 @@
 #include "views/test/views_test_base.h"
 #include "views/views_delegate.h"
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+#include "views/widget/native_widget_aura.h"
+#elif defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
@@ -103,7 +105,9 @@ class WidgetTest : public ViewsTestBase {
 
 NativeWidget* CreatePlatformNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  return new NativeWidgetAura(delegate);
+#elif defined(OS_WIN)
   return new NativeWidgetWin(delegate);
 #elif defined(TOOLKIT_USES_GTK)
   return new NativeWidgetGtkCapture(delegate);
@@ -336,7 +340,9 @@ struct OwnershipTestState {
 // A platform NativeWidget subclass that updates a bag of state when it is
 // destroyed.
 class OwnershipTestNativeWidget :
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+    public NativeWidgetAura,
+#elif defined(OS_WIN)
     public NativeWidgetWin {
 #elif defined(TOOLKIT_USES_GTK)
     public NativeWidgetGtk {
@@ -344,7 +350,9 @@ class OwnershipTestNativeWidget :
 public:
   OwnershipTestNativeWidget(internal::NativeWidgetDelegate* delegate,
                             OwnershipTestState* state)
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+    : NativeWidgetAura(delegate),
+#elif defined(OS_WIN)
     : NativeWidgetWin(delegate),
 #elif defined(TOOLKIT_USES_GTK)
     : NativeWidgetGtk(delegate),
