@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/resource_util.h"
+#include "base/win/resource_util.h"
 #include "grit/gfx_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/brush.h"
@@ -112,8 +112,8 @@ SkBitmap LoadBitmapFromResources(int resource_id) {
   HINSTANCE resource_instance = GetModuleHandle(NULL);
   void* data_ptr;
   size_t data_size;
-  if (base::GetDataResourceFromModule(resource_instance, resource_id, &data_ptr,
-                                      &data_size)) {
+  if (base::win::GetDataResourceFromModule(resource_instance, resource_id,
+                                           &data_ptr, &data_size)) {
     scoped_refptr<RefCountedMemory> memory(new RefCountedStaticMemory(
         reinterpret_cast<const unsigned char*>(data_ptr), data_size));
     if (!memory)

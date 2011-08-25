@@ -15,11 +15,11 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/resource_util.h"
 #include "base/stack_container.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/resource_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_chromium_resources.h"
@@ -131,8 +131,8 @@ FilePath GetResourcesFilePath() {
 static base::StringPiece GetRawDataResource(HMODULE module, int resource_id) {
   void* data_ptr;
   size_t data_size;
-  return base::GetDataResourceFromModule(module, resource_id, &data_ptr,
-                                         &data_size)
+  return base::win::GetDataResourceFromModule(module, resource_id, &data_ptr,
+                                              &data_size)
       ? base::StringPiece(static_cast<char*>(data_ptr), data_size)
       : base::StringPiece();
 }
@@ -169,8 +169,8 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   DWORD num_fonts = 1;
   void* font_ptr;
   size_t font_size;
-  if (base::GetDataResourceFromModule(::GetModuleHandle(NULL), IDR_AHEM_FONT,
-                                      &font_ptr, &font_size)) {
+  if (base::win::GetDataResourceFromModule(::GetModuleHandle(NULL),
+      IDR_AHEM_FONT, &font_ptr, &font_size)) {
     HANDLE rc = AddFontMemResourceEx(font_ptr, font_size, 0, &num_fonts);
     DCHECK(rc != 0);
   }

@@ -9,9 +9,9 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/resource_util.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"
+#include "base/win/resource_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/gfx/font.h"
@@ -61,8 +61,8 @@ RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
     DataHandle module, int resource_id) {
   void* data_ptr;
   size_t data_size;
-  if (base::GetDataResourceFromModule(module, resource_id, &data_ptr,
-                                      &data_size)) {
+  if (base::win::GetDataResourceFromModule(module, resource_id, &data_ptr,
+                                           &data_size)) {
     return new RefCountedStaticMemory(
         reinterpret_cast<const unsigned char*>(data_ptr), data_size);
   } else {
@@ -83,10 +83,10 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
   void* data_ptr;
   size_t data_size;
   base::StringPiece data;
-  if (base::GetDataResourceFromModule(resources_data_,
-                                      resource_id,
-                                      &data_ptr,
-                                      &data_size)) {
+  if (base::win::GetDataResourceFromModule(resources_data_,
+                                           resource_id,
+                                           &data_ptr,
+                                           &data_size)) {
     return base::StringPiece(static_cast<const char*>(data_ptr), data_size);
   } else if (locale_resources_data_.get() &&
              locale_resources_data_->GetStringPiece(resource_id, &data)) {

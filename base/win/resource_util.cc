@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/resource_util.h"
+#include "base/win/resource_util.h"
 
 namespace base {
+namespace win {
 bool GetDataResourceFromModule(HMODULE module, int resource_id,
                                void** data, size_t* length) {
   if (!module)
@@ -34,4 +35,5 @@ bool GetDataResourceFromModule(HMODULE module, int resource_id,
   *length = static_cast<size_t>(data_size);
   return true;
 }
-}  // namespace
+}  // namespace win
+}  // namespace base

@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/event_recorder.h"
-#include "base/resource_util.h"
 #include "base/win/win_util.h"
 #include "ui/gfx/native_theme_win.h"
 #include "webkit/tools/test_shell/foreground_helper.h"

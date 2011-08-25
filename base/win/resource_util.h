@@ -5,8 +5,8 @@
 // This file contains utility functions for accessing resources in external
 // files (DLLs) or embedded in the executable itself.
 
-#ifndef BASE_RESOURCE_UTIL_H__
-#define BASE_RESOURCE_UTIL_H__
+#ifndef BASE_WIN_RESOURCE_UTIL_H__
+#define BASE_WIN_RESOURCE_UTIL_H__
 #pragma once
 
 #include <windows.h>
@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 
 namespace base {
+namespace win {
 
 // Function for getting a data resource (BINDATA) from a dll.  Some
 // resources are optional, especially in unit tests, so this returns false
@@ -22,6 +23,7 @@ namespace base {
 bool BASE_EXPORT GetDataResourceFromModule(HMODULE module, int resource_id,
                                            void** data, size_t* length);
 
+}  // namespace win
 }  // namespace base
 
-#endif  // BASE_RESOURCE_UTIL_H__
+#endif  // BASE_WIN_RESOURCE_UTIL_H__

@@ -9,9 +9,9 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/resource_util.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
+#include "base/win/resource_util.h"
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 
@@ -29,8 +29,8 @@ FilePath GetResourceFilePath(const char* ascii_name) {
 base::StringPiece GetRawDataResource(HMODULE module, int resource_id) {
   void* data_ptr;
   size_t data_size;
-  return base::GetDataResourceFromModule(module, resource_id, &data_ptr,
-                                         &data_size)
+  return base::win::GetDataResourceFromModule(module, resource_id, &data_ptr,
+                                              &data_size)
       ? base::StringPiece(static_cast<char*>(data_ptr), data_size)
       : base::StringPiece();
 }
