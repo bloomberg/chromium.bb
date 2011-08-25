@@ -26,7 +26,7 @@
 
 set -eu
 
-otool="${DEVELOPER_BIN_DIR}/otool"
+otool="${DEVELOPER_BIN_DIR:-/usr/bin}/otool"
 executable="${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}"
 
 if "${otool}" -arch i386 -o "${executable}" | grep -q '^Contents.*section$'; \
