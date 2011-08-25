@@ -130,7 +130,7 @@ void AfterInitialize(bool unit_test_mode) {
     }
     if (ATSFontActivateFromFileReference(&resource_ref, kATSFontContextLocal,
         kATSFontFormatUnspecified, 0, kATSOptionFlagsDefault, 0) != noErr) {
-      DLOG(FATAL) << "Fail to activate font: %s" << resource_path;
+      DLOG(FATAL) << "Fail to activate font: " << resource_path;
     }
   }
 
