@@ -399,16 +399,9 @@ class LKGMManagerTest(mox.MoxTestBase):
     fake_result.output = fake_git_log
 
     self.mox.StubOutWithMock(cros_lib.ManifestHandler, 'ParseManifest')
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.mox.StubOutWithMock(self.manager, '_PrintLink')
 
     cros_lib.ManifestHandler.ParseManifest(
         self.tmpmandir + '/LKGM/lkgm.xml').AndReturn(fake_project_handler)
-    cros_lib.RunCommand(['git', 'log', '%s..HEAD' % fake_revision],
-                        print_cmd=False, redirect_stdout=True,
-                        cwd=self.tmpdir + '/fake/path').AndReturn(fake_result)
-    self.manager._PrintLink(
-        'fake:1234', 'http://gerrit.chromium.org/gerrit/1234')
     self.mox.ReplayAll()
     self.manager.GenerateBlameListSinceLKGM()
     self.mox.VerifyAll()
