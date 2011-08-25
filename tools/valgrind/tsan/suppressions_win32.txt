@@ -71,3 +71,38 @@
   fun:MessageLoop::PostDelayedTask
   fun:net::internal::ClientSocketPoolBaseHelper::Group::StartBackupSocketTimer
 }
+{
+  bug_93932a
+  ThreadSanitizer:Race
+  fun:avcodec_default_release_buffer 
+  fun:ff_mpeg4video_split
+}
+{
+  bug_93932b
+  ThreadSanitizer:Race
+  ...
+  fun:ff_mpeg4video_split
+  fun:avcodec_close
+  fun:media::FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine
+}
+{
+  bug_93932c
+  ThreadSanitizer:Race
+  ...
+  fun:ff_thread_decode_frame
+  fun:avcodec_decode_video2
+  fun:media::FFmpegVideoDecodeEngine::DecodeFrame
+}
+{
+  bug_93932d
+  ThreadSanitizer:Race
+  fun:memcpy
+  fun:media::CopyPlane
+}
+{
+  bug_93932e
+  ThreadSanitizer:Race
+  ...
+  fun:ff_thread_finish_setup
+  fun:ptw32_threadStart@4
+}
