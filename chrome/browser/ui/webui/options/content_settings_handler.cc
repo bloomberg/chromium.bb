@@ -61,7 +61,11 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
   {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
   {CONTENT_SETTINGS_TYPE_INTENTS, "intents"},
+  {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
 };
+COMPILE_ASSERT(arraysize(kContentSettingsTypeGroupNames) ==
+                   CONTENT_SETTINGS_NUM_TYPES,
+               MISSING_CONTENT_SETTINGS_TYPE);
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
   for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
