@@ -15,8 +15,9 @@
 namespace skia {
 
 //static
-SkDevice* VectorPlatformDeviceEmf::CreateDevice(
-    int width, int height, bool is_opaque, HANDLE shared_section) {
+PlatformDevice* VectorPlatformDeviceEmf::CreateDevice(int width, int height,
+                                                      bool is_opaque,
+                                                      HANDLE shared_section) {
   if (!is_opaque) {
     // TODO(maruel):  http://crbug.com/18382 When restoring a semi-transparent
     // layer, i.e. merging it, we need to rasterize it because GDI doesn't
@@ -39,7 +40,7 @@ SkDevice* VectorPlatformDeviceEmf::CreateDevice(
   // SkScalarRound(value) as SkScalarRound(value * 10). Safari is already
   // doing the same for text rendering.
   SkASSERT(shared_section);
-  SkDevice* device = VectorPlatformDeviceEmf::create(
+  PlatformDevice* device = VectorPlatformDeviceEmf::create(
       reinterpret_cast<HDC>(shared_section), width, height);
   return device;
 }
@@ -58,7 +59,9 @@ static void FillBitmapInfoHeader(int width, int height, BITMAPINFOHEADER* hdr) {
   hdr->biClrImportant = 0;
 }
 
-SkDevice* VectorPlatformDeviceEmf::create(HDC dc, int width, int height) {
+VectorPlatformDeviceEmf* VectorPlatformDeviceEmf::create(HDC dc,
+                                                         int width,
+                                                         int height) {
   InitializeDC(dc);
 
   // Link the SkBitmap to the current selected bitmap in the device context.
@@ -93,13 +96,12 @@ SkDevice* VectorPlatformDeviceEmf::create(HDC dc, int width, int height) {
 }
 
 VectorPlatformDeviceEmf::VectorPlatformDeviceEmf(HDC dc, const SkBitmap& bitmap)
-    : SkDevice(bitmap),
+    : PlatformDevice(bitmap),
       hdc_(dc),
       previous_brush_(NULL),
       previous_pen_(NULL),
       alpha_blend_used_(false) {
   transform_.reset();
-  SetPlatformDevice(this, this);
 }
 
 VectorPlatformDeviceEmf::~VectorPlatformDeviceEmf() {
@@ -863,3 +865,4 @@ void VectorPlatformDeviceEmf::InternalDrawBitmap(const SkBitmap& bitmap,
 }
 
 }  // namespace skia
+

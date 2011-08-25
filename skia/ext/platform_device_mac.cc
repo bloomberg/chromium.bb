@@ -22,6 +22,15 @@ CGContextRef GetBitmapContext(SkDevice* device) {
   return NULL;
 }
 
+PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
+    : SkDevice(bitmap) {
+  SetPlatformDevice(this, this);
+}
+
+bool PlatformDevice::IsNativeFontRenderingAllowed() {
+    return true;
+}
+
 CGContextRef PlatformDevice::BeginPlatformPaint() {
   return GetBitmapContext();
 }
@@ -153,3 +162,4 @@ void PlatformDevice::LoadClippingRegionToCGContext(
 }
 
 }  // namespace skia
+

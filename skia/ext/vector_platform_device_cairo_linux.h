@@ -19,13 +19,12 @@ namespace skia {
 // cooresponding Cairo APIs and outputs to a Cairo surface. Please NOTE that
 // since it is completely vectorial, the bitmap content in it is thus
 // meaningless.
-class SK_API VectorPlatformDeviceCairo : public PlatformDevice,
-    public SkDevice {
+class SK_API VectorPlatformDeviceCairo : public PlatformDevice {
  public:
   virtual ~VectorPlatformDeviceCairo();
 
-  static SkDevice* CreateDevice(cairo_t* context, int width, int height,
-                                bool isOpaque);
+  static PlatformDevice* CreateDevice(cairo_t* context, int width, int height,
+                                      bool isOpaque);
 
   // Clean up cached fonts. It is an error to call this while some
   // VectorPlatformDeviceCairo callee is still using fonts created for it by
@@ -68,19 +67,17 @@ class SK_API VectorPlatformDeviceCairo : public PlatformDevice,
                           const SkPaint&) OVERRIDE;
 
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&) OVERRIDE;
+                             const SkClipStack&);
 
   // Overridden from PlatformDevice
-  virtual PlatformSurface BeginPlatformPaint() OVERRIDE;
-  virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                   const PlatformRect* src_rect) OVERRIDE;
+  virtual PlatformSurface BeginPlatformPaint();
 
  protected:
   VectorPlatformDeviceCairo(PlatformSurface context, const SkBitmap& bitmap);
 
   virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
                                              int height, bool isOpaque,
-                                             Usage usage) OVERRIDE;
+                                             Usage usage);
 
  private:
   // Apply paint's color in the context.

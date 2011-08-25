@@ -69,8 +69,9 @@ bool IsContextValid(cairo_t* context) {
 namespace skia {
 
 // static
-SkDevice* VectorPlatformDeviceCairo::CreateDevice(cairo_t* context, int width,
-                                                  int height, bool isOpaque) {
+PlatformDevice* VectorPlatformDeviceCairo::CreateDevice(cairo_t* context,
+                                                        int width, int height,
+                                                        bool isOpaque) {
   // TODO(myhuang): Here we might also have similar issues as those on Windows
   // (vector_canvas_win.cc, http://crbug.com/18382 & http://crbug.com/18383).
   // Please note that is_opaque is true when we use this class for printing.
@@ -91,11 +92,9 @@ SkDevice* VectorPlatformDeviceCairo::CreateDevice(cairo_t* context, int width,
 
 VectorPlatformDeviceCairo::VectorPlatformDeviceCairo(PlatformSurface context,
                                                      const SkBitmap& bitmap)
-    : SkDevice(bitmap),
+    : PlatformDevice(bitmap),
       context_(context) {
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
-
-  SetPlatformDevice(this, this);
 
   // Increase the reference count to keep the context alive.
   cairo_reference(context_);
@@ -108,14 +107,9 @@ VectorPlatformDeviceCairo::~VectorPlatformDeviceCairo() {
   cairo_destroy(context_);
 }
 
-PlatformSurface VectorPlatformDeviceCairo::BeginPlatformPaint() {
+PlatformDevice::PlatformSurface
+VectorPlatformDeviceCairo::BeginPlatformPaint() {
   return context_;
-}
-
-void VectorPlatformDeviceCairo::DrawToNativeContext(
-    PlatformSurface surface, int x, int y, const PlatformRect* src_rect) {
-  // Should never be called on Linux.
-  SkASSERT(false);
 }
 
 SkDevice* VectorPlatformDeviceCairo::onCreateCompatibleDevice(

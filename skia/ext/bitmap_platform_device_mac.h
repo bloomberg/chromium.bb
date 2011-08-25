@@ -7,8 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "skia/ext/platform_device.h"
+#include "skia/ext/platform_device_mac.h"
 
 namespace skia {
 
@@ -26,7 +25,7 @@ namespace skia {
 // For us, that other bitmap will become invalid as soon as the device becomes
 // invalid, which may lead to subtle bugs. Therefore, DO NOT ASSIGN THE
 // DEVICE'S PIXEL DATA TO ANOTHER BITMAP, make sure you copy instead.
-class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
+class BitmapPlatformDevice : public PlatformDevice {
  public:
   // |context| may be NULL.
   static BitmapPlatformDevice* Create(CGContextRef context,
@@ -43,12 +42,12 @@ class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
   // PlatformDevice overrides
   virtual CGContextRef GetBitmapContext();
   virtual void DrawToNativeContext(CGContextRef context, int x, int y,
-                                   const CGRect* src_rect) OVERRIDE;
-  virtual void MakeOpaque(int x, int y, int width, int height) OVERRIDE;
+                                   const CGRect* src_rect);
+  virtual void MakeOpaque(int x, int y, int width, int height);
 
   // SkDevice overrides
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&) OVERRIDE;
+                             const SkClipStack&);
 
  protected:
   // Reference counted data that can be shared between multiple devices. This
@@ -62,11 +61,11 @@ class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
   // Flushes the CoreGraphics context so that the pixel data can be accessed
   // directly by Skia. Overridden from SkDevice, this is called when Skia
   // starts accessing pixel data.
-  virtual void onAccessBitmap(SkBitmap*) OVERRIDE;
+  virtual void onAccessBitmap(SkBitmap*);
 
   virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
                                              int height, bool isOpaque,
-                                             Usage usage) OVERRIDE;
+                                             Usage usage);
 
   // Data associated with this device, guaranteed non-null. We hold a reference
   // to this object.

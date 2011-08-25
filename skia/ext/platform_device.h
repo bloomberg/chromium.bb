@@ -6,28 +6,24 @@
 #define SKIA_EXT_PLATFORM_DEVICE_H_
 #pragma once
 
-#include "build/build_config.h"
+// This file provides an easy way to include the appropriate PlatformDevice
+// header file for your platform.
 
-#if defined(OS_WIN)
+#if defined(WIN32)
 #include <windows.h>
-#include <vector>
 #endif
 
 #include "third_party/skia/include/core/SkPreConfig.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-class SkMatrix;
-class SkPath;
-class SkRegion;
 
+class SkDevice;
 struct SkIRect;
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_FREEBSD) \
-    || defined(OS_SUN)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
 typedef struct _cairo cairo_t;
 typedef struct _cairo_rectangle cairo_rectangle_t;
-#elif defined(OS_MACOSX)
+#elif defined(__APPLE__)
 typedef struct CGContext* CGContextRef;
 typedef struct CGRect CGRect;
 #endif
@@ -36,14 +32,13 @@ namespace skia {
 
 class PlatformDevice;
 
-#if defined(OS_WIN)
+#if defined(WIN32)
 typedef HDC PlatformSurface;
 typedef RECT PlatformRect;
-#elif defined(OS_LINUX) || defined(OS_OPENBSD) || defined(OS_FREEBSD) \
-    || defined(OS_SUN)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun)
 typedef cairo_t* PlatformSurface;
 typedef cairo_rectangle_t PlatformRect;
-#elif defined(OS_MACOSX)
+#elif defined(__APPLE__)
 typedef CGContextRef PlatformSurface;
 typedef CGRect PlatformRect;
 #endif
@@ -64,106 +59,15 @@ SK_API void SetPlatformDevice(SkDevice* device,
                               PlatformDevice* platform_device);
 SK_API PlatformDevice* GetPlatformDevice(SkDevice* device);
 
-
-#if defined(OS_WIN)
-// Initializes the default settings and colors in a device context.
-SK_API void InitializeDC(HDC context);
-#elif defined (OS_MACOSX)
-// Returns the CGContext that backing the SkDevice.  Forwards to the bound
-// PlatformDevice.  Returns NULL if no PlatformDevice is bound.
-SK_API CGContextRef GetBitmapContext(SkDevice* device);
-#endif
-
-// A SkDevice is basically a wrapper around SkBitmap that provides a surface for
-// SkCanvas to draw into. PlatformDevice provides a surface Windows can also
-// write to. It also provides functionality to play well with GDI drawing
-// functions. This class is abstract and must be subclassed. It provides the
-// basic interface to implement it either with or without a bitmap backend.
-//
-// PlatformDevice provides an interface which sub-classes of SkDevice can also
-// provide to allow for drawing by the native platform into the device.
-class SK_API PlatformDevice {
- public:
-  virtual ~PlatformDevice() {}
-
-#if defined(OS_MACOSX)
-  // The CGContext that corresponds to the bitmap, used for CoreGraphics
-  // operations drawing into the bitmap. This is possibly heavyweight, so it
-  // should exist only during one pass of rendering.
-  virtual CGContextRef GetBitmapContext() = 0;
-#endif
-
-  // The DC that corresponds to the bitmap, used for GDI operations drawing
-  // into the bitmap. This is possibly heavyweight, so it should be existant
-  // only during one pass of rendering.
-  virtual PlatformSurface BeginPlatformPaint();
-
-  // Finish a previous call to beginPlatformPaint.
-  virtual void EndPlatformPaint();
-
-  // Draws to the given screen DC, if the bitmap DC doesn't exist, this will
-  // temporarily create it. However, if you have created the bitmap DC, it will
-  // be more efficient if you don't free it until after this call so it doesn't
-  // have to be created twice.  If src_rect is null, then the entirety of the
-  // source device will be copied.
-  virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                   const PlatformRect* src_rect) = 0;
-
-  // Sets the opacity of each pixel in the specified region to be opaque.
-  virtual void MakeOpaque(int x, int y, int width, int height) { }
-
-  // Returns if GDI is allowed to render text to this device.
-  virtual bool IsNativeFontRenderingAllowed();
-
-  // True if AlphaBlend() was called during a
-  // BeginPlatformPaint()/EndPlatformPaint() pair.
-  // Used by the printing subclasses.  See |VectorPlatformDeviceEmf|.
-  virtual bool AlphaBlendUsed() const;
-
-#if defined(OS_WIN)
-  // Loads a SkPath into the GDI context. The path can there after be used for
-  // clipping or as a stroke. Returns false if the path failed to be loaded.
-  static bool LoadPathToDC(HDC context, const SkPath& path);
-
-  // Loads a SkRegion into the GDI context.
-  static void LoadClippingRegionToDC(HDC context, const SkRegion& region,
-                                     const SkMatrix& transformation);
-#elif defined(OS_MACOSX)
-  // Loads a SkPath into the CG context. The path can there after be used for
-  // clipping or as a stroke.
-  static void LoadPathToCGContext(CGContextRef context, const SkPath& path);
-
-  // Initializes the default settings and colors in a device context.
-  static void InitializeCGContext(CGContextRef context);
-
-  // Loads a SkRegion into the CG context.
-  static void LoadClippingRegionToCGContext(CGContextRef context,
-                                            const SkRegion& region,
-                                            const SkMatrix& transformation);
-#endif
-
- protected:
-#if defined(OS_WIN)
-  // Arrays must be inside structures.
-  struct CubicPoints {
-    SkPoint p[4];
-  };
-  typedef std::vector<CubicPoints> CubicPath;
-  typedef std::vector<CubicPath> CubicPaths;
-
-  // Loads the specified Skia transform into the device context, excluding
-  // perspective (which GDI doesn't support).
-  static void LoadTransformToDC(HDC dc, const SkMatrix& matrix);
-
-  // Transforms SkPath's paths into a series of cubic path.
-  static bool SkPathToCubicPaths(CubicPaths* paths, const SkPath& skpath);
-#elif defined(OS_MACOSX)
-  // Loads the specified Skia transform into the device context
-  static void LoadTransformToCGContext(CGContextRef context,
-                                       const SkMatrix& matrix);
-#endif
-};
-
 }  // namespace skia
+
+#if defined(WIN32)
+#include "skia/ext/platform_device_win.h"
+#elif defined(__APPLE__)
+#include "skia/ext/platform_device_mac.h"
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
+      defined(__sun)
+#include "skia/ext/platform_device_linux.h"
+#endif
 
 #endif

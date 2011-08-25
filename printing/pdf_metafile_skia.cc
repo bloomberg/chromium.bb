@@ -61,14 +61,17 @@ SkDevice* PdfMetafileSkia::StartPageForVectorCanvas(
   transform.preScale(SkFloatToScalar(scale_factor),
                      SkFloatToScalar(scale_factor));
 
+  // TODO(ctguil): Refactor: don't create the PDF device explicitly here.
   SkISize pdf_page_size = SkISize::Make(page_size.width(), page_size.height());
   SkISize pdf_content_size =
       SkISize::Make(content_area.width(), content_area.height());
   SkRefPtr<SkPDFDevice> pdf_device =
-      new skia::VectorPlatformDeviceSkia(pdf_page_size, pdf_content_size,
-                                         transform);
-  data_->current_page_ = pdf_device;
-  return pdf_device.get();
+      new SkPDFDevice(pdf_page_size, pdf_content_size, transform);
+  pdf_device->unref();  // SkRefPtr and new both took a reference.
+  skia::VectorPlatformDeviceSkia* device =
+      new skia::VectorPlatformDeviceSkia(pdf_device.get());
+  data_->current_page_ = device->PdfDevice();
+  return device;
 }
 
 bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
