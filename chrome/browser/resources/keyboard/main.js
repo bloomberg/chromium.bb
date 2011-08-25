@@ -165,14 +165,26 @@ window.onload = function() {
 
   window.onhashchange();
 
-  // Restore the keyboard to the default state when it is hidden.
-  // Ref: dvcs.w3.org/hg/webperf/raw-file/tip/specs/PageVisibility/Overview.html
-  document.addEventListener("webkitvisibilitychange", function() {
-    if (document.webkitHidden) {
-      currentMode = SHIFT_MODE;
-      setMode(currentMode);
+  chrome.experimental.input.onTextInputTypeChanged.addListener(function(type) {
+    switch(type) {
+      case "text":
+        currentMode = SHIFT_MODE;
+        break;
+      case "password":
+      case "search":
+      case "url":
+        currentMode = KEY_MODE;
+        break;
+      case "number":
+      case "tel":
+        currentMode = NUMBER_MODE;
+        break;
+      default:
+        currentMode = KEY_MODE;
+        break;
     }
-  }, false);
+    setMode(currentMode);
+  });
 }
 // TODO(bryeung): would be nice to leave less gutter (without causing
 // rendering issues with floated divs wrapping at some sizes).
