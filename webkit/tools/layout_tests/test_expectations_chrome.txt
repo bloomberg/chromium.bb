@@ -389,6 +389,7 @@ BUG_OFF MAC : fast/filesystem/op-get-entry.html = TIMEOUT
 BUG_OFF MAC : fast/filesystem/op-move.html = TIMEOUT
 BUG_OFF MAC : fast/filesystem/op-remove.html = TIMEOUT
 BUG_OFF MAC : fast/images/pdf-as-background.html = TIMEOUT
+BUG_OFF MAC : fast/repaint/japanese-rl-selection-repaint-in-regions.html = TEXT
 BUG_OFF MAC : fast/writing-mode/japanese-rl-text-with-broken-font.html = TIMEOUT
 BUG_OFF MAC : html5lib/runner.html = TIMEOUT
 BUG_OFF MAC : http/tests/appcache/remove-cache.html = TIMEOUT
