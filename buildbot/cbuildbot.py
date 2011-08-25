@@ -250,7 +250,7 @@ def RunBuildStages(bot_id, options, build_config):
       stages.BuildBoardStage(bot_id, options, build_config).Run()
 
     if build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
-      stagelist = [stages.TestSDKStage(bot_id, options, build_config),
+      stagelist = [stages.SDKTestStage(bot_id, options, build_config),
                    stages.UploadPrebuiltsStage(bot_id, options, build_config)]
       return _RunStages(stagelist, version)
 
@@ -296,7 +296,7 @@ def RunBuildStages(bot_id, options, build_config):
         archive_stage.TestStageExited()
 
     if options.hw_tests:
-      stages.TestHWStage(bot_id, options, build_config).Run()
+      stages.HWTestStage(bot_id, options, build_config).Run()
 
     if options.remote_test_status:
       stages.RemoteTestStatusStage(bot_id, options, build_config).Run()

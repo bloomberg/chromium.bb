@@ -551,14 +551,14 @@ class UnitTestStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class TestHWStageTest(AbstractStageTest):
+class HWTestStageTest(AbstractStageTest):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     AbstractStageTest.setUp(self)
 
   def ConstructStage(self):
-    return stages.TestHWStage(self.bot_id, self.options, self.build_config)
+    return stages.HWTestStage(self.bot_id, self.options, self.build_config)
 
   def testHWTestOneTest(self):
     """HW test with 1 test, with reimaging and remote IP set in options."""

@@ -764,7 +764,7 @@ class VMTestStage(BuilderStage):
         self._archive_stage.TestResultsReady(test_tarball)
 
 
-class TestHWStage(NonHaltingBuilderStage):
+class HWTestStage(NonHaltingBuilderStage):
   """Stage that performs testing on actual HW."""
   def _PerformStage(self):
     if not self._build_config['hw_tests']:
@@ -794,7 +794,7 @@ class TestHWStage(NonHaltingBuilderStage):
                              test_args)
 
 
-class TestSDKStage(BuilderStage):
+class SDKTestStage(BuilderStage):
   """Stage that performs testing an SDK created in a previous stage"""
   def _PerformStage(self):
     tarball_location = os.path.join(self._build_root, 'built-sdk.tbz2')
