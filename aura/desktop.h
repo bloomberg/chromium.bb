@@ -21,18 +21,14 @@ class Compositor;
 
 namespace aura {
 
-class DesktopHost;
 class MouseEvent;
 class Window;
 
 // Desktop is responsible for hosting a set of windows.
 class Desktop {
  public:
-  Desktop();
+  Desktop(gfx::AcceleratedWidget widget, const gfx::Size& size);
   ~Desktop();
-
-  // Shows the desktop host and runs an event loop for it.
-  void Run();
 
   // Draws the necessary set of windows.
   void Draw();
@@ -45,16 +41,10 @@ class Desktop {
 
   Window* window() { return window_.get(); }
 
-  static Desktop* GetInstance();
-
  private:
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<Window> window_;
-
-  DesktopHost* host_;
-
-  static Desktop* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(Desktop);
 };

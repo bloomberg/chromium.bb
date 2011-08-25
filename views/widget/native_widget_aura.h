@@ -6,13 +6,11 @@
 #define VIEWS_WIDGET_NATIVE_WIDGET_AURA_H_
 #pragma once
 
-#include "aura/window_delegate.h"
 #include "views/widget/native_widget_private.h"
 
 namespace views {
 
-class NativeWidgetAura : public internal::NativeWidgetPrivate,
-                         public aura::WindowDelegate {
+class NativeWidgetAura : public internal::NativeWidgetPrivate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetAura();
@@ -99,14 +97,7 @@ class NativeWidgetAura : public internal::NativeWidgetPrivate,
       const Widget* ancestor, gfx::Point* point) const OVERRIDE;
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
-  // Overridden from aura::WindowDelegate:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
  private:
-  internal::NativeWidgetDelegate* delegate_;
-
-  aura::Window* window_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };
 

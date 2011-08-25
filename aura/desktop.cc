@@ -4,33 +4,19 @@
 
 #include "aura/desktop.h"
 
-#include "aura/desktop_host.h"
 #include "aura/window.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "ui/gfx/compositor/compositor.h"
 
 namespace aura {
 
-// static
-Desktop* Desktop::instance_ = NULL;
-
-Desktop::Desktop()
-    : host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1024, 768))) {
-  compositor_ = ui::Compositor::Create(host_->GetAcceleratedWidget(),
-                                       host_->GetSize());
-  host_->SetDesktop(this);
+Desktop::Desktop(gfx::AcceleratedWidget widget, const gfx::Size& size)
+    : compositor_(ui::Compositor::Create(widget, size)) {
   DCHECK(compositor_.get());
-  window_.reset(new Window(NULL));
+  window_.reset(new Window(this));
 }
 
 Desktop::~Desktop() {
-}
-
-void Desktop::Run() {
-  host_->Show();
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-  MessageLoopForUI::current()->Run(host_);
 }
 
 void Desktop::Draw() {
@@ -42,15 +28,6 @@ void Desktop::Draw() {
 
 bool Desktop::OnMouseEvent(const MouseEvent& event) {
   return window_->OnMouseEvent(event);
-}
-
-// static
-Desktop* Desktop::GetInstance() {
-  if (!instance_) {
-    instance_ = new Desktop;
-    instance_->window_->Init();
-  }
-  return instance_;
 }
 
 }  // namespace aura

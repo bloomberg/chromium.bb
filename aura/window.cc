@@ -9,25 +9,23 @@
 #include "aura/desktop.h"
 #include "aura/window_delegate.h"
 #include "base/logging.h"
-#include "ui/gfx/canvas_skia.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
 
 namespace aura {
 
-Window::Window(WindowDelegate* delegate)
-    : delegate_(delegate),
+// TODO: do we need to support child windows?
+Window::Window(Desktop* desktop)
+    : delegate_(NULL),
       visibility_(VISIBILITY_HIDDEN),
+      layer_(new ui::Layer(desktop->compositor())),
       needs_paint_all_(true),
       parent_(NULL),
       id_(-1) {
 }
 
 Window::~Window() {
-}
-
-void Window::Init() {
-  layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor()));
 }
 
 void Window::SetVisibility(Visibility visibility) {
@@ -53,17 +51,10 @@ void Window::SchedulePaint(const gfx::Rect& bounds) {
 
 void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
   // TODO: figure out how this is going to work when animating the layer. In
-  // particular if we're animating the size then the underlying Texture is going
+  // particular if we're animating the size then the underyling Texture is going
   // to be unhappy if we try to set a texture on a size bigger than the size of
   // the texture.
   layer_->SetCanvas(canvas, origin);
-}
-
-void Window::SetParent(Window* parent) {
-  if (parent)
-    parent->AddChild(this);
-  else
-    Desktop::GetInstance()->window()->AddChild(this);
 }
 
 void Window::DrawTree() {
@@ -105,13 +96,8 @@ void Window::UpdateLayerCanvas() {
   dirty_rect_.SetRect(0, 0, 0, 0);
   if (dirty_rect.IsEmpty())
     return;
-  if (delegate_) {
-    scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(
-        dirty_rect.width(), dirty_rect.height(), false));
-    canvas->TranslateInt(dirty_rect.x(), dirty_rect.y());
-    delegate_->OnPaint(canvas.get());
-    SetCanvas(*canvas->AsCanvasSkia(), bounds().origin());
-  }
+  if (delegate_)
+    delegate_->OnPaint(dirty_rect);
 }
 
 void Window::Draw() {

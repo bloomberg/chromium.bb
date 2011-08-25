@@ -1748,12 +1748,7 @@ bool MenuController::SelectByChar(char16 character) {
   return false;
 }
 
-#if defined(OS_WIN)
-#if defined(USE_AURA)
-void MenuController::RepostEvent(SubmenuView* source,
-                                 const MouseEvent& event) {
-}
-#else
+#if defined(OS_WIN) && !defined(USE_AURA)
 void MenuController::RepostEvent(SubmenuView* source,
                                  const MouseEvent& event) {
   if (!state_.item) {
@@ -1820,8 +1815,7 @@ void MenuController::RepostEvent(SubmenuView* source,
     }
   }
 }
-#endif  // !defined(USE_AURA)
-#endif  // defined(OS_WIN)
+#endif
 
 void MenuController::SetDropMenuItem(
     MenuItemView* new_target,

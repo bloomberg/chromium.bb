@@ -366,7 +366,7 @@ Canvas* Canvas::CreateCanvas(int width, int height, bool is_opaque) {
   return new CanvasSkia(width, height, is_opaque);
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 // TODO(beng): move to canvas_win.cc, etc.
 class CanvasPaintWin : public CanvasSkiaPaint, public CanvasPaint {
  public:
@@ -388,7 +388,7 @@ class CanvasPaintWin : public CanvasSkiaPaint, public CanvasPaint {
 #endif
 
 CanvasPaint* CanvasPaint::CreateCanvasPaint(gfx::NativeView view) {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   return new CanvasPaintWin(view);
 #else
   return NULL;

@@ -1,5 +1,4 @@
 include_rules = [
-  "+aura",
   "+grit/ui_resources.h",
   "+grit/ui_resources_standard.h",
   "+grit/ui_resources_large.h",
