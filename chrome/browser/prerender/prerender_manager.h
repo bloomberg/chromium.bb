@@ -204,6 +204,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Adds a condition. This is owned by the PrerenderManager.
   void AddCondition(const PrerenderCondition* condition);
 
+  bool IsTopSite(const GURL& url) const;
+
  protected:
   // Test that needs needs access to internal functions.
   FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExpireTest);
@@ -226,6 +228,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   struct NavigationRecord;
 
   class OnCloseTabContentsDeleter;
+
+  class MostVisitedSites;
 
   // Adds a prerender for |url| from referrer |referrer| initiated from the
   // RenderViewHost specified by |child_route_id_pair|. The |origin| specifies
@@ -389,6 +393,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   std::list<const PrerenderCondition*> prerender_conditions_;
 
   scoped_ptr<PrerenderHistograms> histograms_;
+
+  scoped_ptr<MostVisitedSites> most_visited_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

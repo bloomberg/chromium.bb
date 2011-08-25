@@ -46,7 +46,7 @@ class PrerenderObserver : public TabContentsObserver {
   void OnMsgUpdateTargetURL(int32 page_id, const GURL& url);
 
   // Retrieves the PrerenderManager, or NULL, if none was found.
-  PrerenderManager* MaybeGetPrerenderManager();
+  PrerenderManager* MaybeGetPrerenderManager() const;
 
   // Checks with the PrerenderManager if the specified URL has been preloaded,
   // and if so, swap the RenderViewHost with the preload into this TabContents
@@ -60,6 +60,8 @@ class PrerenderObserver : public TabContentsObserver {
   // it was used or not.  Will not do anything if there is no current hover.
   // Also resets the hover to no hover.
   void MaybeLogCurrentHover(bool was_used);
+
+  bool IsTopSite(const GURL& url) const;
 
   // TabContentsWrapper we're created for.
   TabContentsWrapper* tab_;
