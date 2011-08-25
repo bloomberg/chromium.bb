@@ -5,11 +5,18 @@
 #include "content/renderer/media/audio_input_device.h"
 
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread.h"
 #include "media/audio/audio_util.h"
+
+// Max waiting time for Stop() to complete. If this time limit is passed,
+// we will stop waiting and return false. It ensures that Stop() can't block
+// the calling thread forever.
+static const base::TimeDelta kMaxTimeOut =
+    base::TimeDelta::FromMilliseconds(1000);
 
 AudioInputDevice::AudioInputDevice(size_t buffer_size,
                                    int channels,
@@ -32,19 +39,15 @@ AudioInputDevice::AudioInputDevice(size_t buffer_size,
 }
 
 AudioInputDevice::~AudioInputDevice() {
-  // Make sure we have been shut down.
-  DCHECK_EQ(0, stream_id_);
-  Stop();
+  // TODO(henrika): The current design requires that the user calls
+  // Stop before deleting this class.
+  CHECK_EQ(0, stream_id_);
   for (int i = 0; i < channels_; ++i)
     delete [] audio_data_[i];
 }
 
-bool AudioInputDevice::Start() {
-  // Make sure we don't call Start() more than once.
-  DCHECK_EQ(0, stream_id_);
-  if (stream_id_)
-    return false;
-
+void AudioInputDevice::Start() {
+  VLOG(1) << "Start()";
   AudioParameters params;
   // TODO(henrika): add support for low-latency mode?
   params.format = AudioParameters::AUDIO_PCM_LINEAR;
@@ -56,21 +59,32 @@ bool AudioInputDevice::Start() {
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &AudioInputDevice::InitializeOnIOThread, params));
-
-  return true;
 }
 
 bool AudioInputDevice::Stop() {
-  if (!stream_id_)
-    return false;
+  VLOG(1) << "Stop()";
+  base::WaitableEvent completion(false, false);
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &AudioInputDevice::ShutDownOnIOThread));
+      NewRunnableMethod(this, &AudioInputDevice::ShutDownOnIOThread,
+                        &completion));
 
-  if (audio_thread_.get()) {
-    socket_->Close();
-    audio_thread_->Join();
+  // We wait here for the IO task to be completed to remove race conflicts
+  // with OnLowLatencyCreated() and to ensure that Stop() acts as a synchronous
+  // function call.
+  if (completion.TimedWait(kMaxTimeOut)) {
+    if (audio_thread_.get()) {
+      // Terminate the main thread function in the audio thread.
+      socket_->Close();
+      // Wait for the audio thread to exit.
+      audio_thread_->Join();
+      // Ensures that we can call Stop() multiple times.
+      audio_thread_.reset(NULL);
+    }
+  } else {
+    LOG(ERROR) << "Failed to shut down audio input on IO thread";
+    return false;
   }
 
   return true;
@@ -87,26 +101,39 @@ bool AudioInputDevice::GetVolume(double* volume) {
 }
 
 void AudioInputDevice::InitializeOnIOThread(const AudioParameters& params) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
+  // Make sure we don't call Start() more than once.
+  DCHECK_EQ(0, stream_id_);
+  if (stream_id_)
+    return;
+
   stream_id_ = filter_->AddDelegate(this);
   Send(new AudioInputHostMsg_CreateStream(stream_id_, params, true));
 }
 
 void AudioInputDevice::StartOnIOThread() {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   if (stream_id_)
     Send(new AudioInputHostMsg_RecordStream(stream_id_));
 }
 
-void AudioInputDevice::ShutDownOnIOThread() {
+void AudioInputDevice::ShutDownOnIOThread(base::WaitableEvent* completion) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   // Make sure we don't call shutdown more than once.
-  if (!stream_id_)
+  if (!stream_id_) {
+    completion->Signal();
     return;
+  }
 
   filter_->RemoveDelegate(stream_id_);
   Send(new AudioInputHostMsg_CloseStream(stream_id_));
   stream_id_ = 0;
+
+  completion->Signal();
 }
 
 void AudioInputDevice::SetVolumeOnIOThread(double volume) {
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   if (stream_id_)
     Send(new AudioInputHostMsg_SetVolume(stream_id_, volume));
 }
@@ -125,13 +152,21 @@ void AudioInputDevice::OnLowLatencyCreated(
 #endif
   DCHECK(length);
 
+  VLOG(1) << "OnLowLatencyCreated (stream_id=" << stream_id_ << ")";
+  // Takes care of the case when Stop() is called before OnLowLatencyCreated().
+  if (!stream_id_) {
+    base::SharedMemory::CloseHandle(handle);
+    base::SyncSocket socket(socket_handle);
+    return;
+  }
+
   shared_memory_.reset(new base::SharedMemory(handle, false));
   shared_memory_->Map(length);
 
   socket_.reset(new base::SyncSocket(socket_handle));
 
   audio_thread_.reset(
-      new base::DelegateSimpleThread(this, "renderer_audio_input_thread"));
+      new base::DelegateSimpleThread(this, "RendererAudioInputThread"));
   audio_thread_->Start();
 
   MessageLoop::current()->PostTask(
@@ -158,7 +193,7 @@ void AudioInputDevice::Run() {
 
   while (sizeof(pending_data) == socket_->Receive(&pending_data,
                                                   sizeof(pending_data)) &&
-         pending_data >= 0) {
+                                                  pending_data >= 0) {
     // TODO(henrika): investigate the provided |pending_data| value
     // and ensure that it is actually an accurate delay estimation.
 

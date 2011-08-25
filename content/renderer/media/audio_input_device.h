@@ -5,7 +5,7 @@
 // Low-latency audio capturing unit utilizing audio input stream provided
 // by browser process through IPC.
 //
-// Relationship of classes.
+// Relationship of classes:
 //
 //  AudioInputController                 AudioInputDevice
 //           ^                                  ^
@@ -19,7 +19,7 @@
 // an AudioInputDevice::CaptureCallback at construction and will be called
 // by the AudioInputDevice with recorded audio from the underlying audio layers.
 //
-// State sequences.
+// State sequences:
 //
 //            Task [IO thread]                  IPC [IO thread]
 //
@@ -32,6 +32,7 @@
 // Stop --> ShutDownOnIOThread ------>  AudioInputHostMsg_CloseStream -> Close
 //
 // This class utilizes three threads during its lifetime, namely:
+//
 // 1. Creating thread.
 //    Must be the main render thread. Start and Stop should be called on
 //    this thread.
@@ -42,6 +43,12 @@
 //    Responsible for calling the CaptrureCallback and feed audio samples from
 //    the audio layer in the browser process using sync sockets and shared
 //    memory.
+//
+// Implementation notes:
+//
+// - Start() is asynchronous/non-blocking.
+// - Stop() is synchronous/blocking.
+// - The user must call Stop() before deleting the class instance.
 
 #ifndef CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
 #define CONTENT_RENDERER_MEDIA_AUDIO_INPUT_DEVICE_H_
@@ -59,6 +66,9 @@ struct AudioParameters;
 
 // TODO(henrika): This class is based on the AudioDevice class and it has
 // many components in common. Investigate potential for re-factoring.
+// TODO(henrika): Add support for event handling (e.g. OnStateChanged,
+// OnCaptureStopped etc.) and ensure that we can deliver these notifications
+// to any clients using this class.
 class AudioInputDevice
     : public AudioInputMessageFilter::Delegate,
       public base::DelegateSimpleThread::Delegate,
@@ -80,10 +90,13 @@ class AudioInputDevice
                    CaptureCallback* callback);
   virtual ~AudioInputDevice();
 
-  // Starts audio capturing. Returns |true| on success.
-  bool Start();
+  // Starts audio capturing. This method is asynchronous/non-blocking.
+  // TODO(henrika): add support for notification when recording has started.
+  void Start();
 
-  // Stops audio capturing. Returns |true| on success.
+  // Stops audio capturing. This method is synchronous/blocking.
+  // Returns |true| on success.
+  // TODO(henrika): add support for notification when recording has stopped.
   bool Stop();
 
   // Sets the capture volume scaling, with range [0.0, 1.0] inclusive.
@@ -111,7 +124,7 @@ class AudioInputDevice
   // sends IPC messages on that thread.
   void InitializeOnIOThread(const AudioParameters& params);
   void StartOnIOThread();
-  void ShutDownOnIOThread();
+  void ShutDownOnIOThread(base::WaitableEvent* completion);
   void SetVolumeOnIOThread(double volume);
 
   void Send(IPC::Message* message);

@@ -389,8 +389,9 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
     LOG(WARNING) << "Recording is already active";
     return 0;
   }
-  recording_ = audio_input_device_->Start();
-  return (recording_ ? 0 : -1);
+  audio_input_device_->Start();
+  recording_ = true;
+  return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::StopRecording() {

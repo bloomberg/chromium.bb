@@ -71,15 +71,17 @@ void AudioInputMessageFilter::OnLowLatencyStreamCreated(
     base::FileDescriptor socket_descriptor,
 #endif
     uint32 length) {
-  Delegate* delegate = delegates_.Lookup(stream_id);
-  if (!delegate) {
-    DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
-        " audio capturer.";
-    return;
-  }
 #if !defined(OS_WIN)
   base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
 #endif
+  Delegate* delegate = delegates_.Lookup(stream_id);
+  if (!delegate) {
+    DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
+        " audio capturer (stream_id=" << stream_id << ").";
+    base::SharedMemory::CloseHandle(handle);
+    base::SyncSocket socket(socket_handle);
+    return;
+  }
   // Forward message to the stream delegate.
   delegate->OnLowLatencyCreated(handle, socket_handle, length);
 }
@@ -99,5 +101,6 @@ int32 AudioInputMessageFilter::AddDelegate(Delegate* delegate) {
 }
 
 void AudioInputMessageFilter::RemoveDelegate(int32 id) {
+  VLOG(1) << "AudioInputMessageFilter::RemoveDelegate(id=" << id << ")";
   delegates_.Remove(id);
 }
