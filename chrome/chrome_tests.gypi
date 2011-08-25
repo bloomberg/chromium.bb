@@ -2617,6 +2617,7 @@
         'test/base/out_of_proc_test_runner.cc',
         'test/data/webui/assertions-inl.h',
         'test/data/webui/assertions.js',
+        'test/data/webui/ntp4.js',
         'test/data/webui/print_preview.js',
         'test/data/webui/options.js',
         # TODO(craig): Rename this and run from base_unittests when the test
