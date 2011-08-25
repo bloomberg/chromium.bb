@@ -2021,7 +2021,6 @@
         '../content/browser/plugin_service_unittest.cc',
         '../content/browser/renderer_host/render_view_host_unittest.cc',
         '../content/browser/renderer_host/render_widget_host_unittest.cc',
-        '../content/browser/renderer_host/resource_dispatcher_host_unittest.cc',
         '../content/browser/site_instance_unittest.cc',
         '../content/browser/tab_contents/navigation_controller_unittest.cc',
         '../content/browser/tab_contents/navigation_entry_unittest.cc',

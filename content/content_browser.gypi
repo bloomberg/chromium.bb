@@ -544,6 +544,14 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
+          'direct_dependent_settings': {
+            'link_settings': {
+              'libraries': [
+                '-llocationapi.lib',
+                '-lsensorsapi.lib',
+              ],
+            }
+          },
           'sources!': [
             'browser/power_save_blocker_stub.cc',
           ],

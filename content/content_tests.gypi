@@ -90,6 +90,7 @@
         'browser/renderer_host/media/media_stream_dispatcher_host_unittest.cc',
         'browser/renderer_host/media/video_capture_host_unittest.cc',
         'browser/renderer_host/media/video_capture_manager_unittest.cc',
+        'browser/renderer_host/resource_dispatcher_host_unittest.cc',
         'browser/renderer_host/resource_queue_unittest.cc',
         'browser/resolve_proxy_msg_helper_unittest.cc',
         'browser/speech/endpointer/endpointer_unittest.cc',
