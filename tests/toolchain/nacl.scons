@@ -21,7 +21,7 @@ if not wa_env.Bit('bitcode'):
                  + map(lambda name: '-l' + name, DEP_LIBS)
                  + ['-Wl,-no-whole-archive'])
 
-nexe = wa_env.ComponentProgram('dummy', 'dummy.c', EXTRA_LIBS=DEP_LIBS)
+nexe = wa_env.ComponentProgram('dummy', 'dummy.c', LIBS=[])
 node = wa_env.CommandValidatorTestNacl('whole_archive_test.out',
                                        image=[nexe])
 wa_env.AddNodeToTestSuite(node,
