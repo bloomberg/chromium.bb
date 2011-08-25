@@ -7,12 +7,11 @@ vars = {
   "webkit_revision": "93705",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "6499",
+  "nacl_revision": "6539",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
   # revisions here, but it makes checkdeps confused. We should fix checkdeps.
-  "nacl_chrome_ppapi_revision": "97134", # native_client/DEPS: chrome_ppapi_rev 
   "nacl_tools_revision": "5360",  # native_client/DEPS: tools_rev
 
   # These hashes need to be updated when nacl_toolchain_revision is changed.
@@ -101,11 +100,6 @@ deps = {
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
-
-  "src/native_client/src/third_party/ppapi":
-    # TODO(brettw) enable the From() line instead when checkdeps is fixed.
-    #From("src/native_client", "native_client/src/third_party/ppapi"),
-    "/trunk/src/ppapi@" + Var("nacl_chrome_ppapi_revision"),
 
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +

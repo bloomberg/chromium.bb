@@ -21,6 +21,9 @@ NACL_CMD_BUFFER_DIR = os.path.join('src', 'shared',
                                    'ppapi_proxy', 'command_buffer')
 GPU_CMD_BUFFER_DIR = os.path.join('..', 'gpu', 'command_buffer')
 
+# Pathing to mirror of nacl tree in ppapi.
+PPAPI_NACL_DIR = os.path.join(SRC_DIR, 'ppapi', 'native_client')
+
 
 def RelativePath(path, base):
   """Find the relative path.
@@ -94,6 +97,10 @@ def PrintInputs(platforms):
       # Apply the underlay of gpu/command_buffer (to match scons).
       if filename.startswith(NACL_CMD_BUFFER_DIR + os.sep):
         filename = GPU_CMD_BUFFER_DIR + filename[len(NACL_CMD_BUFFER_DIR):]
+      # Apply the underlay of ppapi (to match scons).
+      if (not os.path.exists(os.path.join(NACL_DIR, filename)) and
+          os.path.exists(os.path.join(PPAPI_NACL_DIR, filename))):
+        filename = '../ppapi/native_client/' + filename
       inputs.add(filename)
   # Check that everything exists and make it script relative.
   # Exclude things above SRC_DIR.
