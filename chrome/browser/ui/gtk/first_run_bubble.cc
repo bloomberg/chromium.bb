@@ -17,6 +17,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -101,7 +102,7 @@ FirstRunBubble::~FirstRunBubble() {
 
 void FirstRunBubble::InitializeContentForLarge(
     std::vector<GtkWidget*>* labels) {
-  GtkWidget* label1 = theme_service_->BuildLabel("", gtk_util::kGdkBlack);
+  GtkWidget* label1 = theme_service_->BuildLabel("", ui::kGdkBlack);
   labels->push_back(label1);
   char* markup = g_markup_printf_escaped(kSearchLabelMarkup,
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_TITLE).c_str());
@@ -109,13 +110,13 @@ void FirstRunBubble::InitializeContentForLarge(
   g_free(markup);
 
   GtkWidget* label2 = theme_service_->BuildLabel(
-      l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT), gtk_util::kGdkBlack);
+      l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT), ui::kGdkBlack);
   labels->push_back(label2);
 
   string16 search_engine = GetDefaultSearchEngineName(profile_);
   GtkWidget* label3 = theme_service_->BuildLabel(
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_QUESTION, search_engine),
-      gtk_util::kGdkBlack);
+      ui::kGdkBlack);
   labels->push_back(label3);
 
   GtkWidget* keep_button = gtk_button_new_with_label(
@@ -154,7 +155,7 @@ void FirstRunBubble::InitializeContentForOEM(std::vector<GtkWidget*>* labels) {
 
 void FirstRunBubble::InitializeContentForMinimal(
     std::vector<GtkWidget*>* labels) {
-  GtkWidget* label1 = theme_service_->BuildLabel("", gtk_util::kGdkBlack);
+  GtkWidget* label1 = theme_service_->BuildLabel("", ui::kGdkBlack);
   labels->push_back(label1);
   char* markup = g_markup_printf_escaped(kSearchLabelMarkup,
       l10n_util::GetStringFUTF8(
@@ -164,7 +165,7 @@ void FirstRunBubble::InitializeContentForMinimal(
   g_free(markup);
 
   GtkWidget* label2 = theme_service_->BuildLabel(
-      l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT), gtk_util::kGdkBlack);
+      l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT), ui::kGdkBlack);
   labels->push_back(label2);
 
   gtk_box_pack_start(GTK_BOX(content_), label1, FALSE, FALSE, 0);

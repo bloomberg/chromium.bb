@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
     TabContentsWrapper* owner,
@@ -20,7 +21,7 @@ TranslateMessageInfoBar::~TranslateMessageInfoBar() {
 void TranslateMessageInfoBar::Init() {
   TranslateInfoBarBase::Init();
 
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox_, hbox, false, 0);
 
   std::string text = UTF16ToUTF8(GetDelegate()->GetMessageInfoBarText());

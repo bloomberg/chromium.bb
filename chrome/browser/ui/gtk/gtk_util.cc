@@ -35,6 +35,7 @@
 #include "grit/theme_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
@@ -208,18 +209,13 @@ WindowOpenDisposition DispositionFromEventFlags(guint event_flags) {
 
 namespace gtk_util {
 
-const GdkColor kGdkWhite = GDK_COLOR_RGB(0xff, 0xff, 0xff);
-const GdkColor kGdkGray  = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
-const GdkColor kGdkBlack = GDK_COLOR_RGB(0x00, 0x00, 0x00);
-const GdkColor kGdkGreen = GDK_COLOR_RGB(0x00, 0xff, 0x00);
-
 GtkWidget* CreateLabeledControlsGroup(std::vector<GtkWidget*>* labels,
                                       const char* text, ...) {
   va_list ap;
   va_start(ap, text);
   GtkWidget* table = gtk_table_new(0, 2, FALSE);
-  gtk_table_set_col_spacing(GTK_TABLE(table), 0, kLabelSpacing);
-  gtk_table_set_row_spacings(GTK_TABLE(table), kControlSpacing);
+  gtk_table_set_col_spacing(GTK_TABLE(table), 0, ui::kLabelSpacing);
+  gtk_table_set_row_spacings(GTK_TABLE(table), ui::kControlSpacing);
 
   for (guint row = 0; text; ++row) {
     gtk_table_resize(GTK_TABLE(table), row + 1, 2);
@@ -666,7 +662,7 @@ GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
 }
 
 GtkWidget* CreateEntryImageHBox(GtkWidget* entry, GtkWidget* image) {
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
   return hbox;
@@ -682,7 +678,7 @@ void SetLabelColor(GtkWidget* label, const GdkColor* color) {
 GtkWidget* IndentWidget(GtkWidget* content) {
   GtkWidget* content_alignment = gtk_alignment_new(0.0, 0.5, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(content_alignment), 0, 0,
-                            gtk_util::kGroupIndent, 0);
+                            ui::kGroupIndent, 0);
   gtk_container_add(GTK_CONTAINER(content_alignment), content);
   return content_alignment;
 }

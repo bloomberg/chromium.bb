@@ -13,6 +13,7 @@
 #include "content/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace importer {
@@ -48,7 +49,7 @@ ImportLockDialogGtk::ImportLockDialogGtk(GtkWindow* parent,
       GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
 
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
-  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_IMPORTER_LOCK_TEXT).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 
 #if defined(TOUCH_UI)
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_touch.h"
@@ -50,8 +51,8 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   if (delegate->ShouldHaveBorderPadding()) {
     gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-        gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder,
-        gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder);
+        ui::kContentAreaBorder, ui::kContentAreaBorder,
+        ui::kContentAreaBorder, ui::kContentAreaBorder);
   }
 
   GdkColor background;

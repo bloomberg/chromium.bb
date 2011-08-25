@@ -20,6 +20,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -100,7 +101,7 @@ void HungRendererDialogGtk::Init() {
   // |         kill button    wait button|
   // ·-----------------------------------·
   GtkWidget* content_area = gtk_dialog_get_content_area(dialog_);
-  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, 12);
   gtk_box_pack_start(GTK_BOX(content_area), hbox, TRUE, TRUE, 0);
@@ -113,7 +114,7 @@ void HungRendererDialogGtk::Init() {
   GtkWidget* icon = gtk_image_new_from_pixbuf(icon_pixbuf);
   gtk_box_pack_start(GTK_BOX(icon_vbox), icon, FALSE, FALSE, 0);
 
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 0);
 
   GtkWidget* text = gtk_label_new(

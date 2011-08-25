@@ -22,6 +22,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -104,9 +105,9 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
       delegate_(delegate),
       parent_(parent),
       window_(NULL) {
-  root_widget_.Own(gtk_vbox_new(FALSE, gtk_util::kControlSpacing));
+  root_widget_.Own(gtk_vbox_new(FALSE, ui::kControlSpacing));
 
-  GtkWidget* site_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* site_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(root_widget_.get()), site_vbox,
                      FALSE, FALSE, 0);
 
@@ -120,7 +121,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
   gtk_util::LeftAlignMisc(site_label);
   gtk_box_pack_start(GTK_BOX(site_vbox), site_label, FALSE, FALSE, 0);
 
-  GtkWidget* selector_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* selector_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(root_widget_.get()), selector_vbox,
                      TRUE, TRUE, 0);
 
@@ -159,7 +160,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
   // And then create a set of buttons like a GtkDialog would.
   GtkWidget* button_box = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
-  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
+  gtk_box_set_spacing(GTK_BOX(button_box), ui::kControlSpacing);
   gtk_box_pack_end(GTK_BOX(root_widget_.get()), button_box, FALSE, FALSE, 0);
 
   GtkWidget* view_button = gtk_button_new_with_mnemonic(

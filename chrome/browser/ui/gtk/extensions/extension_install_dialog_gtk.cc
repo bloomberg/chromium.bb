@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 
@@ -75,9 +76,9 @@ void ShowInstallDialog(GtkWindow* parent,
 
   // Create a two column layout.
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
 
-  GtkWidget* icon_hbox = gtk_hbox_new(FALSE, gtk_util::kContentAreaSpacing);
+  GtkWidget* icon_hbox = gtk_hbox_new(FALSE, ui::kContentAreaSpacing);
   gtk_box_pack_start(GTK_BOX(content_area), icon_hbox, TRUE, TRUE, 0);
 
   // Resize the icon if necessary.
@@ -97,7 +98,7 @@ void ShowInstallDialog(GtkWindow* parent,
   gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.0);
 
   // Create a new vbox for the right column.
-  GtkWidget* right_column_area = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* right_column_area = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(icon_hbox), right_column_area, TRUE, TRUE, 0);
 
   std::string heading_text = l10n_util::GetStringFUTF8(

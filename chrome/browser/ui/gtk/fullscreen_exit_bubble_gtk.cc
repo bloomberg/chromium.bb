@@ -10,6 +10,7 @@
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/gtk/gtk_floating_container.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 FullscreenExitBubbleGtk::FullscreenExitBubbleGtk(
@@ -43,9 +44,9 @@ void FullscreenExitBubbleGtk::InitWidgets() {
   signals_.Connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
 
   link_container_.Own(gtk_util::CreateGtkBorderBin(
-      link, &gtk_util::kGdkBlack,
+      link, &ui::kGdkBlack,
       kPaddingPx, kPaddingPx, kPaddingPx, kPaddingPx));
-  gtk_util::ActAsRoundedWindow(link_container_.get(), gtk_util::kGdkGreen,
+  gtk_util::ActAsRoundedWindow(link_container_.get(), ui::kGdkGreen,
       kPaddingPx,
       gtk_util::ROUNDED_BOTTOM_LEFT | gtk_util::ROUNDED_BOTTOM_RIGHT,
       gtk_util::BORDER_NONE);

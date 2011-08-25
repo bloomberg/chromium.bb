@@ -38,6 +38,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -317,7 +318,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                               Source<ThemeService>(theme_service_));
 
   // We don't do InitThemesFor() because it just forces a redraw.
-  gtk_util::ActAsRoundedWindow(frame_container_, gtk_util::kGdkBlack, 3,
+  gtk_util::ActAsRoundedWindow(frame_container_, ui::kGdkBlack, 3,
                                gtk_util::ROUNDED_ALL,
                                gtk_util::BORDER_ALL);
 
