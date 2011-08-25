@@ -97,48 +97,6 @@ def SetupContextVars(context):
   context['off_trunk'] = context['branch'] not in ['native_client', '']
 
 
-def UploadIrtBinary(status, context):
-  if context.Linux():
-    with Step('archive irt.nexe', status):
-      # Upload the integrated runtime (IRT) library so that it can be pulled
-      # into the Chromium build, so that a NaCl toolchain will not be needed
-      # to build a NaCl-enabled Chromium.  We strip the IRT to save space
-      # and download time.
-      # TODO(mseaborn): It might be better to do the stripping in Scons.
-      irt_path = 'scons-out/nacl_irt-x86-%s/staging/irt.nexe' % context['bits']
-      stripped_irt_path = irt_path + '.stripped'
-
-      if os.environ.get('ARCHIVE_IRT') == '1':
-        Command(
-          context,
-          cmd=['toolchain/linux_x86_newlib/bin/x86_64-nacl-strip',
-               '--strip-debug',
-               irt_path,
-               '-o', stripped_irt_path])
-
-        irt_dir = 'nativeclient-archive2/irt'
-        if context['off_trunk']:
-          irt_dir = '%s/branches/%s' % (irt_dir, context['branch'])
-        gsdview = 'http://gsdview.appspot.com'
-        rev = os.environ['BUILDBOT_GOT_REVISION']
-        gs_path = '%s/r%s/irt_x86_%s.nexe' % (irt_dir, rev, context['bits'])
-
-        def GSCPCommand(context, cmd):
-          gs_util = '/b/build/scripts/slave/gsutil'
-          Command(context, cmd=[gs_util, '-h', 'Cache-Control:no-cache', 'cp',
-                                '-a', 'public-read'] + cmd)
-
-        # Upload the stripped IRT
-        GSCPCommand(context, cmd=[stripped_irt_path, 'gs://' + gs_path])
-        StepLink('stripped', '/'.join([gsdview, gs_path]))
-
-        # Upload the unstripped IRT, in case it's needed for debugging.
-        GSCPCommand(context, cmd=[irt_path, 'gs://' + gs_path + '.unstripped'])
-        StepLink('unstripped', '/'.join([gsdview, gs_path]) + '.unstripped')
-      else:
-        StepText('not uploading on this bot')
-
-
 def BuildScript(status, context):
   inside_toolchain = context['inside_toolchain']
   # When off the trunk, we don't have anywhere to get Chrome binaries
@@ -241,8 +199,6 @@ def BuildScript(status, context):
   # The main compile step.
   with Step('scons_compile', status):
     SCons(context, parallel=True, args=[])
-
-  UploadIrtBinary(status, context)
 
   if need_plugin_32:
     with Step('plugin_compile_32', status):
