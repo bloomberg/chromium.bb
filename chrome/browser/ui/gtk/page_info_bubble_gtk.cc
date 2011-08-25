@@ -81,6 +81,8 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
 
   BubbleGtk* bubble_;
 
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleGtk);
 };
 
@@ -95,7 +97,8 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
       cert_id_(ssl.cert_id()),
       parent_(parent),
       contents_(NULL),
-      theme_service_(GtkThemeService::GetFrom(profile)) {
+      theme_service_(GtkThemeService::GetFrom(profile)),
+      profile_(profile) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
 
@@ -224,7 +227,7 @@ void PageInfoBubbleGtk::OnViewCertLinkClicked(GtkWidget* widget) {
 void PageInfoBubbleGtk::OnHelpLinkClicked(GtkWidget* widget) {
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   bubble_->Close();
 }
