@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+                       DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   content::GetContentClient()->browser()->ClearInspectorSettings(
@@ -395,22 +395,23 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 }
 
 // Tests network timing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkTiming) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestNetworkTiming) {
   RunTest("testNetworkTiming", kSlowTestPage);
 }
 
 // Tests network size.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkSize) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestNetworkSize) {
   RunTest("testNetworkSize", kChunkedTestPage);
 }
 
 // Tests raw headers text.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkSyncSize) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestNetworkSyncSize) {
   RunTest("testNetworkSyncSize", kChunkedTestPage);
 }
 
 // Tests raw headers text.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkRawHeadersText) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       DISABLED_TestNetworkRawHeadersText) {
   RunTest("testNetworkRawHeadersText", kChunkedTestPage);
 }
 
