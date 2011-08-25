@@ -96,6 +96,9 @@ class PrintPreviewUI : public ChromeWebUI {
   // Notifies the Web UI renderer that file selection has been cancelled.
   void OnFileSelectionCancelled();
 
+  // Notifies the Web UI to cancel the pending preview request.
+  void OnCancelPendingPreviewRequest();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerUnitTest,
                            TitleAfterReload);

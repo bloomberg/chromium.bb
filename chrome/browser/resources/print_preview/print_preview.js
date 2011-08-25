@@ -140,6 +140,8 @@ function disableInputElementsInSidebar() {
  * backend to open the native print dialog.
  */
 function onSystemDialogLinkClicked() {
+  if (showingSystemDialog)
+    return;
   showingSystemDialog = true;
   disableInputElementsInSidebar();
   $('system-dialog-throbber').classList.remove('hidden');
@@ -151,6 +153,8 @@ function onSystemDialogLinkClicked() {
  * 'Launch native print dialog' UI.
  */
 function launchNativePrintDialog() {
+  if (showingSystemDialog)
+    return;
   showingSystemDialog = true;
   $('error-button').disabled = true;
   $('native-print-dialog-throbber').classList.remove('hidden');

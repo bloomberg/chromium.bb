@@ -677,6 +677,10 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue*) {
   printing::PrintViewManager* manager = wrapper->print_view_manager();
   manager->set_observer(this);
   manager->PrintForSystemDialogNow();
+
+  // Cancel the pending preview request if exists.
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  print_preview_ui->OnCancelPendingPreviewRequest();
 }
 
 void PrintPreviewHandler::HandleManagePrinters(const ListValue*) {
