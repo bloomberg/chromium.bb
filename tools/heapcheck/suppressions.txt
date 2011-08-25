@@ -1786,3 +1786,9 @@
    fun:net::URLRequestTestJob::ProcessOnePendingMessage
    fun:ResourceDispatcherHostTest_*
 }
+{
+   bug_94195
+   Heapcheck:Leak
+   ...
+   fun:GpuBlacklist::LoadGpuBlacklist
+}
