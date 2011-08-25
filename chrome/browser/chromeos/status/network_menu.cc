@@ -1039,6 +1039,7 @@ NetworkMenu::NetworkMenu(Delegate* delegate, bool is_browser_mode)
   menu_item_view_->set_has_icons(true);
   menu_item_view_->set_menu_position(
       views::MenuItemView::POSITION_BELOW_BOUNDS);
+  menu_runner_.reset(new views::MenuRunner(menu_item_view_));
 }
 
 NetworkMenu::~NetworkMenu() {
