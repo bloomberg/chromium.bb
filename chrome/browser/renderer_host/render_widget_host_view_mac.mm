@@ -1165,12 +1165,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
-// static
-void RenderWidgetHostView::GetDefaultScreenInfo(
-    WebKit::WebScreenInfo* results) {
-  *results = WebKit::WebScreenInfoFactory::screenInfo(NULL);
-}
-
 // RenderWidgetHostViewCocoa ---------------------------------------------------
 
 @implementation RenderWidgetHostViewCocoa
