@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio.idl modified Wed Aug 17 11:16:34 2011. */
+/* From ppb_audio.idl modified Wed Aug 24 20:46:25 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
@@ -14,7 +14,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_AUDIO_INTERFACE_0_6 "PPB_Audio;0.6"
 #define PPB_AUDIO_INTERFACE_1_0 "PPB_Audio;1.0"
 #define PPB_AUDIO_INTERFACE PPB_AUDIO_INTERFACE_1_0
 

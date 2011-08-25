@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_loader.idl modified Thu Aug 18 19:44:49 2011. */
+/* From ppb_url_loader.idl modified Wed Aug 24 20:48:35 2011. */
 
 #ifndef PPAPI_C_PPB_URL_LOADER_H_
 #define PPAPI_C_PPB_URL_LOADER_H_
@@ -15,7 +15,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_URLLOADER_INTERFACE_0_2 "PPB_URLLoader;0.2"
 #define PPB_URLLOADER_INTERFACE_1_0 "PPB_URLLoader;1.0"
 #define PPB_URLLOADER_INTERFACE PPB_URLLOADER_INTERFACE_1_0
 

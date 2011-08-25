@@ -9,7 +9,6 @@
  */
 
 label Chrome {
-  M13 = 0.9,
   M14 = 1.0
 };
 
@@ -18,7 +17,6 @@ label Chrome {
  * a file system.  This struct contains a <code>PP_FileSystemType</code>
  * identifier and a file path string.
  */
-[version=0.9]
 interface PPB_FileRef {
   /**
    * Create() creates a weak pointer to a file in the given file system. File

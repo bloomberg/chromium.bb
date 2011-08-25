@@ -9,7 +9,6 @@
  */
 
 label Chrome {
-  M13 = 0.5,
   M14 = 1.0
 };
 
@@ -54,7 +53,6 @@ label Chrome {
  * The <code>PPB_FileIO</code> struct is used to operate on a regular file
  * (PP_FileType_Regular).
  */
-[version=0.5]
 interface PPB_FileIO {
   /**
    * Create() creates a new FileIO object.

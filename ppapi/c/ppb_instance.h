@@ -78,6 +78,13 @@ struct PPB_Instance {
    */
   PP_Bool (*IsFullFrame)(PP_Instance instance);
 };
+
+struct PPB_Instance_0_5 {
+  struct PP_Var (*GetWindowObject)(PP_Instance instance);
+  struct PP_Var (*GetOwnerElementObject)(PP_Instance instance);
+  PP_Bool (*BindGraphics)(PP_Instance instance, PP_Resource device);
+  PP_Bool (*IsFullFrame)(PP_Instance instance);
+};
 /**
  * @}
  */

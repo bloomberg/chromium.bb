@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_image_data.idl modified Mon Aug 15 11:01:06 2011. */
+/* From ppb_image_data.idl modified Wed Aug 24 20:50:01 2011. */
 
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
@@ -15,7 +15,6 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_IMAGEDATA_INTERFACE_0_3 "PPB_ImageData;0.3"
 #define PPB_IMAGEDATA_INTERFACE_1_0 "PPB_ImageData;1.0"
 #define PPB_IMAGEDATA_INTERFACE PPB_IMAGEDATA_INTERFACE_1_0
 

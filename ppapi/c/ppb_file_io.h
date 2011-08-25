@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Wed Jul 13 16:41:25 2011. */
+/* From ppb_file_io.idl modified Wed Aug 24 20:51:24 2011. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
@@ -17,7 +17,6 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 
-#define PPB_FILEIO_INTERFACE_0_5 "PPB_FileIO;0.5"
 #define PPB_FILEIO_INTERFACE_1_0 "PPB_FileIO;1.0"
 #define PPB_FILEIO_INTERFACE PPB_FILEIO_INTERFACE_1_0
 

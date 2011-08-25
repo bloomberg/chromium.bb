@@ -8,7 +8,6 @@
  */
 
 label Chrome {
-  M13 = 0.7,
   M14 = 1.0
 };
 
@@ -16,7 +15,6 @@ label Chrome {
  * The <code>PPB_FileSystem</code> struct identifies the file system type
  * associated with a file.
  */
-[version=0.7]
 interface PPB_FileSystem {
   /** Create() creates a file system object of the given type.
    *

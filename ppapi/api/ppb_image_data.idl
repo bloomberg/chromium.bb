@@ -9,7 +9,6 @@
  */
 
  label Chrome {
-   M13 = 0.3,
    M14 = 1.0
  };
 
@@ -77,7 +76,6 @@ struct PP_ImageDataDesc {
  * The <code>PPB_ImageData</code> interface contains pointers to several
  * functions for determining the browser's treatment of image data.
  */
-[version=0.3]
 interface PPB_ImageData {
   /**
    * GetNativeImageDataFormat() returns the browser's preferred format for

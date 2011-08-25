@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_request_info.idl modified Mon Aug 15 11:01:06 2011. */
+/* From ppb_url_request_info.idl modified Wed Aug 24 20:53:00 2011. */
 
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_URLREQUESTINFO_INTERFACE_0_2 "PPB_URLRequestInfo;0.2"
 #define PPB_URLREQUESTINFO_INTERFACE_1_0 "PPB_URLRequestInfo;1.0"
 #define PPB_URLREQUESTINFO_INTERFACE PPB_URLREQUESTINFO_INTERFACE_1_0
 

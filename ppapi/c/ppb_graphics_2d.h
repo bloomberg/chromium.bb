@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_graphics_2d.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppb_graphics_2d.idl modified Wed Aug 24 20:51:38 2011. */
 
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
@@ -18,7 +18,6 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_GRAPHICS_2D_INTERFACE_0_4 "PPB_Graphics2D;0.4"
 #define PPB_GRAPHICS_2D_INTERFACE_1_0 "PPB_Graphics2D;1.0"
 #define PPB_GRAPHICS_2D_INTERFACE PPB_GRAPHICS_2D_INTERFACE_1_0
 

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Wed Aug 17 11:16:34 2011. */
+/* From ppb_audio_config.idl modified Wed Aug 24 20:49:30 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -14,7 +14,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_AUDIO_CONFIG_INTERFACE_0_5 "PPB_AudioConfig;0.5"
 #define PPB_AUDIO_CONFIG_INTERFACE_1_0 "PPB_AudioConfig;1.0"
 #define PPB_AUDIO_CONFIG_INTERFACE PPB_AUDIO_CONFIG_INTERFACE_1_0
 
@@ -159,9 +158,8 @@ struct PPB_AudioConfig {
    * @param[in] config A <code>PP_Resource</code> containing the audio config
    * resource.
    * @return A <code>uint32_t</code> containing sample frame count or
-   * 0 if the resource is invalid. Refer to
-   * <code>RecommendSampleFrameCount</code> for more information on sample
-   * frame counts.
+   * 0 if the resource is invalid. See <code>RecommendSampleFrameCount</code>
+   * for more on sample frame counts.
    */
   uint32_t (*GetSampleFrameCount)(PP_Resource config);
 };

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_system.idl modified Sat Jul 16 16:50:26 2011. */
+/* From ppb_file_system.idl modified Wed Aug 24 20:52:19 2011. */
 
 #ifndef PPAPI_C_PPB_FILE_SYSTEM_H_
 #define PPAPI_C_PPB_FILE_SYSTEM_H_
@@ -16,7 +16,6 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_FILESYSTEM_INTERFACE_0_7 "PPB_FileSystem;0.7"
 #define PPB_FILESYSTEM_INTERFACE_1_0 "PPB_FileSystem;1.0"
 #define PPB_FILESYSTEM_INTERFACE PPB_FILESYSTEM_INTERFACE_1_0
 

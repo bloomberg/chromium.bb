@@ -10,7 +10,6 @@
  */
 
 label Chrome {
-  M13 = 0.1,
   M14 = 1.0
 };
 
@@ -19,7 +18,6 @@ label Chrome {
  * and is related to sending messages to JavaScript message event listeners on
  * the DOM element associated with specific module instance.
  */
-[version=0.1]
 interface PPB_Messaging {
   /**
    * PostMessage() asynchronously invokes any listeners for message events on

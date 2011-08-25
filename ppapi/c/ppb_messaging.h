@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_messaging.idl modified Wed Jul 13 16:51:56 2011. */
+/* From ppb_messaging.idl modified Wed Aug 24 20:48:00 2011. */
 
 #ifndef PPAPI_C_PPB_MESSAGING_H_
 #define PPAPI_C_PPB_MESSAGING_H_
@@ -14,7 +14,6 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_MESSAGING_INTERFACE_0_1 "PPB_Messaging;0.1"
 #define PPB_MESSAGING_INTERFACE_1_0 "PPB_Messaging;1.0"
 #define PPB_MESSAGING_INTERFACE PPB_MESSAGING_INTERFACE_1_0
 
