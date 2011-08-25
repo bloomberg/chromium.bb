@@ -20,6 +20,7 @@
         'installer_util',
         'platform_locale_settings',
         'profile_import',
+        'safe_browsing_proto',
         'safe_browsing_report_proto',
         # TODO(sync): Make browser not depend on syncapi_core directly.
         'syncapi_core',

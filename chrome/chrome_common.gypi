@@ -101,7 +101,6 @@
         'common_constants',
         'common_net',
         'default_plugin/default_plugin.gyp:default_plugin',
-        'safe_browsing_proto',
         'theme_resources',
         'theme_resources_standard',
         '../base/base.gyp:base',
