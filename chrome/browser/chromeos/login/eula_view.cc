@@ -382,15 +382,15 @@ void EulaView::UpdateLocalizedStrings() {
   }
 
   // Load other labels from resources.
-  usage_statistics_checkbox_->SetLabel(
+  usage_statistics_checkbox_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_CHECKBOX_ENABLE_LOGGING)));
   learn_more_link_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
   system_security_settings_link_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING)));
-  continue_button_->SetLabel(UTF16ToWide(
+  continue_button_->SetText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON)));
-  back_button_->SetLabel(
+  back_button_->SetText(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_BACK_BUTTON)));
 }
 

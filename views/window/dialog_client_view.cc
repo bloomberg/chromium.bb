@@ -47,7 +47,7 @@ void UpdateButtonHelper(NativeTextButton* button_view,
                         MessageBoxFlags::DialogButton button) {
   std::wstring label = delegate->GetDialogButtonLabel(button);
   if (!label.empty())
-    button_view->SetLabel(label);
+    button_view->SetText(label);
   button_view->SetEnabled(delegate->IsDialogButtonEnabled(button));
   button_view->SetVisible(delegate->IsDialogButtonVisible(button));
 }

@@ -407,13 +407,6 @@ class VIEWS_EXPORT NativeTextButton : public TextButton {
   NativeTextButton(ButtonListener* listener);
   NativeTextButton(ButtonListener* listener, const std::wstring& text);
 
-  // Sets/Gets the text to be used as the button's label.
-  // TODO: Remove this function and replace all call sites with SetText().
-  void SetLabel(const std::wstring& label) {
-    SetText(label);
-  }
-  std::wstring label() const { return text(); }
-
   // Overridden from TextButton:
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 

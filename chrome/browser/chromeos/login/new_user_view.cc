@@ -300,7 +300,7 @@ void NewUserView::UpdateLocalizedStringsAndFonts() {
   SetAndCorrectTextfieldFont(password_field_, base_font);
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
-  sign_in_button_->SetLabel(UTF16ToWide(
+  sign_in_button_->SetText(UTF16ToWide(
       l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON)));
   if (need_guest_link_) {
     guest_link_->SetFont(base_font);

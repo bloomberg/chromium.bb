@@ -286,7 +286,7 @@ void FirstRunSearchEngineView::OnTemplateURLServiceChanged() {
     for (it = search_engine_choices_.begin();
          it != search_engine_choices_.end();
          it++) {
-      (*it)->SetLabel((*it)->GetSearchEngine()->short_name());
+      (*it)->SetText((*it)->GetSearchEngine()->short_name());
     }
   }
 

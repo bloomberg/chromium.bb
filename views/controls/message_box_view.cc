@@ -77,7 +77,7 @@ void MessageBoxView::SetCheckBoxLabel(const std::wstring& label) {
   if (!checkbox_)
     checkbox_ = new Checkbox(label);
   else
-    checkbox_->SetLabel(label);
+    checkbox_->SetText(label);
   ResetLayoutManager();
 }
 
