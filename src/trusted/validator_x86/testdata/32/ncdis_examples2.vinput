@@ -52,17 +52,17 @@
 
 # Check direct moves on 32-bit constant addresses.
 -i=a044332211                                               # 0:	a0 44 33 22 11      	mov %al, [0x11223344]
-# Note: The following entry should use %ax instead of %eax
+# Note: The following will use %ax instead of %eax when using validator decoder
 -i=66a144332211                                             # 0:	66 a1 44 33 22 11   	mov %eax, [0x11223344]
 -i=a144332211                                               # 0:	a1 44 33 22 11      	mov %eax, [0x11223344]
 -i=a244332211                                               # 0:	a2 44 33 22 11      	mov [0x11223344], %al
-# Note: The following entry should use %ax instead of %eax
+# Note: The following entry will use %ax instead of %eax when using validator decoder
 -i=66a344332211                                             # 0:	66 a3 44 33 22 11   	mov [0x11223344], %eax
 -i=a344332211                                               # 0:	a3 44 33 22 11      	mov [0x11223344], %eax
 
 # The following don't print out the right syntax for matched instructions,
-# and is intended to show the difference between the -use_iter=true and
-# -use_iter=false cases.
+# and is intended to show the difference between the --full_decoder and --validator_decoder
+# cases.
 -i=0000                                                     # 0:	00 00               	add [%eax], %eax
 -i=00c0                                                     # 0:	00 c0               	add %eax, %eax
 -i=01c0                                                     # 0:	01 c0               	add %eax, %eax
@@ -78,6 +78,7 @@
 -i=666666662e0f1f840000000000                               # 0:	66 66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
 -i=66666666662e0f1f840000000000                             # 0:	66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
 -i=6666666666662e0f1f840000000000                           # 0:	66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
+
 -i=0fae10                                                   # 0:	0f ae 10            	ldmxcsr [%eax]
 -i=0fae18                                                   # 0:	0f ae 18            	stmxcsr [%eax]
 -i=90                                                       # 0:	90                  	nop

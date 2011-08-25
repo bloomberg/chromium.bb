@@ -107,8 +107,13 @@ static void SegmentFatal(const char *fmt, ...) {
 static void NaClMaybeDecodeDataSegment(
     uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize size) {
   if (NACL_FLAGS_stubout_memory) {
-    /* Disassemble data segment to see how halts were inserted. */
-    NaClDisassembleSegment(mbase, vbase, size);
+    /* Disassemble data segment to see how halts were inserted.
+     * Note: We use the full decoder (rather than the validator decoder)
+     * because the validator decoders are partial decodings, and can be
+     * confusing to the reader.
+     */
+    NaClDisassembleSegment(mbase, vbase, size,
+                           NACL_DISASSEMBLE_FLAG(NaClDisassembleFull));
   }
 }
 
@@ -547,7 +552,6 @@ static Bool GrokABoolFlag(const char *arg) {
     { "--stubout", &NACL_FLAGS_stubout_memory },
     { "--trace_insts", &NACL_FLAGS_validator_trace_instructions },
     { "-t", &NACL_FLAGS_print_timing },
-    { "--use_iter", &NACL_FLAGS_use_iter },
     { "--stats", &NACL_FLAGS_stats_print },
     { "--annotate", &NACL_FLAGS_ncval_annotate },
     { "--x87"    , &ncval_cpu_features.f_x87 },
@@ -650,7 +654,7 @@ int main(int argc, const char *argv[]) {
 
   NaClLogDisableTimestamp();
 
-  if (NACL_FLAGS_use_iter) {
+  if (64 == NACL_TARGET_SUBARCH) {
     Bool success = FALSE;
     NaClValidateSetCPUFeatures(&ncval_cpu_features);
     argc = NaClRunValidatorGrokFlags(argc, argv);
@@ -679,9 +683,6 @@ int main(int argc, const char *argv[]) {
       /* always succeed, so that the testing framework works. */
       result = 0;
     }
-  } else if (64 == NACL_TARGET_SUBARCH) {
-    SegmentFatal("Can only run %s using -use_iter=false flag on 64 bit code\n",
-                 argv[0]);
   } else if (0 == strcmp(NACL_FLAGS_hex_text, "")) {
       int i;
     for (i=1; i< argc; i++) {

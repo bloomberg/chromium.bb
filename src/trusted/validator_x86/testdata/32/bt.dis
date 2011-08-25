@@ -1,0 +1,10 @@
+00000000: 66 0f ba 24 24 01                            bt %ds:[%esp+%esp*1], 0x1
+00000006: 90                                           nop
+00000007: 90                                           nop
+00000008: 90                                           nop
+00000009: 90                                           nop
+0000000a: 90                                           nop
+0000000b: 0f ba 24 24 01                               bt %ds:[%esp+%esp*1], 0x1
+00000010: 0f ba 34 24 01                               btr %ds:[%esp+%esp*1], 0x1
+00000015: 0f ba 2c 24 01                               bts %ds:[%esp+%esp*1], 0x1
+0000001a: 0f ba 3c 24 01                               btc %ds:[%esp+%esp*1], 0x1

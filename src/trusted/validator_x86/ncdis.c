@@ -33,6 +33,30 @@
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 
+/* True if we should use the full decoder when decoding. */
+/* TODO(karl): When the full_decoder is working for both the x86-32 and
+ * x86-64 platforms, change to use full decoder for both as default.
+ */
+static Bool NACL_FLAGS_full_decoder =
+#if NACL_TARGET_SUBARCH == 64
+    TRUE
+#else
+    FALSE
+#endif
+    ;
+
+/* True if we should use the validator decoder when decoding. */
+static Bool NACL_FLAGS_validator_decoder =
+#if NACL_TARGET_SUBARCH == 64
+    FALSE
+#else
+    TRUE
+#endif
+    ;
+
+/* True if we should print internal representations while decoding. */
+static Bool NACL_FLAGS_internal = FALSE;
+
 /* The name of the executable that is being run. */
 static const char* exec_name = "???";
 
@@ -64,6 +88,9 @@ static void usage() {
           "\tAdditional command line arguments are specified in the given\n"
           "\tfile ('#' acts as a comment character). Use '-' as its value to\n"
           "\tredirect command line arguments from standard input.\n"
+          "--full_decoder\n"
+          "\tDisassemble the elf executable using native client's\n"
+          "\tfull decoder.\n"
           "--help\n"
           "\tPrint out this usage message\n"
           "--hex_text=<file>\n"
@@ -93,15 +120,26 @@ static void usage() {
           "\tfollowed by the corresponding disassembled text. On such\n"
           "\tlines, the input is copied up to (and including) the '#'.,\n"
           "\tand then the disassembled instruction is printed.\n"
-          "--use_iter\n"
-          "\tThis executable defines two different implementations of the\n"
-          "\tinstruction disasssembler. The iterator model\n"
-          "\tdisassembles code for the x86-64 validator, while the\n"
-          "\tnon-interator model disassembles code the the\n"
-          "\tx86-32 validator. Future releases will hopefully remove\n"
-          "\tthe need for this flag\n"
+          "--validator_decoder\n"
+          "\tDisassemble the file using the partial instruction decoder used\n"
+          "\tby the validator.\n"
           );
   exit(1);
+}
+
+/* Converts command line flags to corresponding disassemble flags. */
+static NaClDisassembleFlags NaClGetDisassembleFlags() {
+  NaClDisassembleFlags flags = 0;
+  if (NACL_FLAGS_validator_decoder) {
+    NaClAddBits(flags, NACL_DISASSEMBLE_FLAG(NaClDisassembleValidatorDecoder));
+  }
+  if (NACL_FLAGS_full_decoder) {
+    NaClAddBits(flags, NACL_DISASSEMBLE_FLAG(NaClDisassembleFull));
+  }
+  if (NACL_FLAGS_internal) {
+    NaClAddBits(flags, NACL_DISASSEMBLE_FLAG(NaClDisassembleAddInternals));
+  }
+  return flags;
 }
 
 static int AnalyzeSections(ncfile *ncf) {
@@ -117,7 +155,8 @@ static int AnalyzeSections(ncfile *ncf) {
       continue;
     Info("parsing section %d\n", ii);
     NaClDisassembleSegment(ncf->data + (shdr[ii].sh_addr - ncf->vbase),
-                           shdr[ii].sh_addr, shdr[ii].sh_size);
+                           shdr[ii].sh_addr, shdr[ii].sh_size,
+                           NaClGetDisassembleFlags());
   }
   return -badsections;
 }
@@ -236,15 +275,16 @@ int GrokFlags(int argc, const char *argv[]) {
         GrokCstringFlag("--commands", arg, &FLAGS_commands) ||
         GrokCstringFlag("--hex_text", arg, &FLAGS_hex_text) ||
         GrokBoolFlag("--self_document", arg, &FLAGS_self_document) ||
-        GrokBoolFlag("--use_iter", arg, &NACL_FLAGS_use_iter) ||
         GrokBoolFlag("--internal", arg, &NACL_FLAGS_internal) ||
-        GrokBoolFlag("--validator_decoder", arg,
-                     &NACL_FLAGS_validator_decoder) ||
         GrokBoolFlag("--help", arg, &help)) {
       if (help) usage();
-      continue;
-    }
-    if (GrokCstringFlag("-i", arg, &hex_instruction)) {
+    } else if (GrokBoolFlag("--validator_decoder", arg,
+                            &NACL_FLAGS_validator_decoder)) {
+      NACL_FLAGS_full_decoder = !NACL_FLAGS_validator_decoder;
+    } else if (GrokBoolFlag("--full_decoder", arg,
+                            &NACL_FLAGS_full_decoder)) {
+      NACL_FLAGS_validator_decoder = !NACL_FLAGS_full_decoder;
+    } else if (GrokCstringFlag("-i", arg, &hex_instruction)) {
       int i = 0;
       char buffer[3];
       char* buf = &(hex_instruction[0]);
@@ -273,9 +313,6 @@ int GrokFlags(int argc, const char *argv[]) {
 
 /* Process the command line arguments. */
 static const char* GrokArgv(int argc, const char* argv[]) {
-  if (NACL_FLAGS_internal && ! NACL_FLAGS_use_iter) {
-    Fatal("Can't specify -internal without -use_iter");
-  }
   if (argc != 2) {
     Fatal("no filename specified\n");
   }
@@ -435,18 +472,18 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
      */
     if (new_argc > 1) {
       Fatal("unrecognized option '%s'\n", argv[1]);
-    } else if (0 != strcmp(FLAGS_commands, "")) {
-      Fatal("can't specify -commands and -b options simultaneously\n");
     }
     NaClDisassembleSegment(FLAGS_decode_instruction, FLAGS_decode_pc,
-                           FLAGS_decode_instruction_size);
+                           FLAGS_decode_instruction_size,
+                           NaClGetDisassembleFlags());
   } else if (0 != strcmp(FLAGS_hex_text, "")) {
     uint8_t bytes[MAX_INPUT_LINE];
     size_t num_bytes;
     NaClPcAddress pc;
     if (0 == strcmp(FLAGS_hex_text, "-")) {
       num_bytes = NaClReadHexTextWithPc(stdin, &pc, bytes, MAX_INPUT_LINE);
-      NaClDisassembleSegment(bytes, pc, (NaClMemorySize) num_bytes);
+      NaClDisassembleSegment(bytes, pc, (NaClMemorySize) num_bytes,
+                             NaClGetDisassembleFlags());
     } else {
       FILE* input = fopen(FLAGS_hex_text, "r");
       if (NULL == input) {
@@ -454,7 +491,8 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
       }
       num_bytes = NaClReadHexTextWithPc(input, &pc, bytes, MAX_INPUT_LINE);
       fclose(input);
-      NaClDisassembleSegment(bytes, pc, (NaClMemorySize) num_bytes);
+      NaClDisassembleSegment(bytes, pc, (NaClMemorySize) num_bytes,
+                             NaClGetDisassembleFlags());
     }
   } else if (0 != strcmp(FLAGS_commands, "")) {
     /* Use the given input file to find command line arguments,

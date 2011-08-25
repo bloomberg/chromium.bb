@@ -21,14 +21,11 @@
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 
-/* True if the full decoder (iterator model) should be used. */
-Bool NACL_FLAGS_use_iter = (64 == NACL_TARGET_SUBARCH);
-
-/* True if internal details should be printed as part of the disassembly. */
-Bool NACL_FLAGS_internal = FALSE;
-
-/* True if validator decoder tables should be used. */
-Bool NACL_FLAGS_validator_decoder = FALSE;
+/* Returns true if the disassemble flag is in the given flag set. */
+Bool NaClContainsDisasembleFlag(NaClDisassembleFlags flags,
+                                NaClDisassembleFlag flag) {
+  return NaClHasBit(flags, NACL_DISASSEMBLE_FLAG(flag)) ? TRUE : FALSE;
+}
 
 static const char* kHardCodedMessage = "[hard coded]";
 
@@ -88,35 +85,65 @@ static void NaClInstPrintOpcodeSeq(struct Gio* gout,
   }
 }
 
-static const struct NaClDecodeTables* NaClGetDecoderTables() {
-  return NACL_FLAGS_validator_decoder
-      ? kNaClValDecoderTables
-      : kNaClDecoderTables;
+/* Disassemble the code segment, using the given decoder tables.
+ * Note: The decoder tables specified in the flags argument will
+ * be ignored.
+ *
+ * Parameters:
+ *    mbase - Memory region containing code segment.
+ *    vbase - PC address associated with first byte of memory region.
+ *    size - Number of bytes in memory region.
+ *    flags - Flags to use when decoding.
+ */
+static void NaClDisassembleSegmentUsingTables(
+    uint8_t* mbase, NaClPcAddress vbase,
+    NaClMemorySize size, NaClDisassembleFlags flags,
+    const struct NaClDecodeTables* decoder_tables)  {
+  NaClSegment segment;
+  NaClInstIter* iter;
+  struct Gio* gout = NaClLogGetGio();
+  Bool print_internals =
+      NaClHasBit(flags, NACL_DISASSEMBLE_FLAG(NaClDisassembleAddInternals));
+  NaClSegmentInitialize(mbase, vbase, size, &segment);
+  iter = NaClInstIterCreate(decoder_tables, &segment);
+  if (NULL == iter) {
+    gprintf(gout, "Error: not enough memory\n");
+  } else {
+    for (; NaClInstIterHasNext(iter); NaClInstIterAdvance(iter)) {
+      NaClInstState* state = NaClInstIterGetState(iter);
+      NaClInstStateInstPrint(gout, state);
+      if (print_internals) {
+        NaClInstPrintOpcodeSeq(gout, state);
+        NaClInstPrint(gout, state->decoder_tables, NaClInstStateInst(state));
+        NaClExpVectorPrint(gout, NaClInstStateExpVector(state));
+      }
+    }
+    NaClInstIterDestroy(iter);
+  }
 }
 
 void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
-                            NaClMemorySize size) {
-  if (NACL_FLAGS_use_iter) {
-    NaClSegment segment;
-    NaClInstIter* iter;
-    struct Gio* gout = NaClLogGetGio();
-    NaClSegmentInitialize(mbase, vbase, size, &segment);
-    iter = NaClInstIterCreate(NaClGetDecoderTables(), &segment);
-    if (NULL == iter) {
-      gprintf(NaClLogGetGio(), "Error: not enough memory\n");
+                            NaClMemorySize size, NaClDisassembleFlags flags) {
+  if (NaClHasBit(flags, NACL_DISASSEMBLE_FLAG(NaClDisassembleFull))) {
+    if (NaClHasBit(flags,
+                   NACL_DISASSEMBLE_FLAG(NaClDisassembleValidatorDecoder))) {
+      gprintf(NaClLogGetGio(),
+              "Error: can't specify both full and validator disassembly,\n"
+              "       assuming full disassembly.\n");
+    }
+    NaClDisassembleSegmentUsingTables(mbase, vbase, size, flags,
+                                      kNaClDecoderTables);
+  } else if (NaClHasBit
+             (flags,
+              NACL_DISASSEMBLE_FLAG(NaClDisassembleValidatorDecoder))) {
+    if (64 == NACL_TARGET_SUBARCH) {
+      NaClDisassembleSegmentUsingTables(mbase, vbase, size, flags,
+                                        kNaClValDecoderTables);
     } else {
-      for (; NaClInstIterHasNext(iter); NaClInstIterAdvance(iter)) {
-        NaClInstState* state = NaClInstIterGetState(iter);
-        NaClInstStateInstPrint(gout, state);
-        if (NACL_FLAGS_internal) {
-          NaClInstPrintOpcodeSeq(gout, state);
-          NaClInstPrint(gout, state->decoder_tables, NaClInstStateInst(state));
-          NaClExpVectorPrint(gout, NaClInstStateExpVector(state));
-        }
-      }
-      NaClInstIterDestroy(iter);
+      NCDecodeSegment(mbase, vbase, size);
     }
   } else {
-    NCDecodeSegment(mbase, vbase, size);
+    gprintf(NaClLogGetGio(),
+            "Error: No decoder tables specified, can't disassemble\n");
   }
 }

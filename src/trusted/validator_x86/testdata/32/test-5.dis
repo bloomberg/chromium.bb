@@ -1,0 +1,91 @@
+08054600: 8d 4c 24 04                                  lea %ecx, %ds:[%esp+%esp*1+0x4]
+08054604: 83 e4 f0                                     and %esp, 0xf0
+08054607: ff 71 fc                                     push %ds:[%ecx-0x4]
+0805460a: 55                                           push %ebp
+0805460b: 89 e5                                        mov %ebp, %esp
+0805460d: 51                                           push %ecx
+0805460e: 66 90                                        nop
+08054610: 83 ec 24                                     sub %esp, 0x24
+08054613: 89 4d e8                                     mov %ss:[%ebp-0x18], %ecx
+08054616: c7 45 f4 0a 00 00 00                         mov %ss:[%ebp-0xc], 0xa
+0805461d: 8b 45 e8                                     mov %eax, %ss:[%ebp-0x18]
+08054620: 83 38 01                                     cmp %ds:[%eax], 0x1
+08054623: 7f 2b                                        jnle 0x8054650
+08054625: 8b 55 e8                                     mov %edx, %ss:[%ebp-0x18]
+08054628: 8b 42 04                                     mov %eax, %ds:[%edx+0x4]
+0805462b: 8b 00                                        mov %eax, %ds:[%eax]
+0805462d: 8d 76 00                                     lea %esi, %ds:[%esi]
+08054630: 89 44 24 04                                  mov %ds:[%esp+%esp*1+0x4], %eax
+08054634: c7 04 24 54 14 00 08                         mov %ds:[%esp+%esp*1], 0x8001454
+0805463b: e8 c0 02 00 00                               call 0x8054900
+08054640: c7 04 24 01 00 00 00                         mov %ds:[%esp+%esp*1], 0x1
+08054647: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
+0805464b: e8 c0 01 00 00                               call 0x8054810
+08054650: 8b 55 e8                                     mov %edx, %ss:[%ebp-0x18]
+08054653: 8b 42 04                                     mov %eax, %ds:[%edx+0x4]
+08054656: 83 c0 04                                     add %eax, 0x4
+08054659: 8b 00                                        mov %eax, %ds:[%eax]
+0805465b: 89 04 24                                     mov %ds:[%esp+%esp*1], %eax
+0805465e: 66 90                                        nop
+08054660: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
+08054664: 8d bc 27 00 00 00 00                         lea %edi, %ds:[%edi+%esp*1]
+0805466b: e8 90 09 00 00                               call 0x8055000
+08054670: 89 45 f8                                     mov %ss:[%ebp-0x8], %eax
+08054673: 8b 45 e8                                     mov %eax, %ss:[%ebp-0x18]
+08054676: 83 38 02                                     cmp %ds:[%eax], 0x2
+08054679: 7e 25                                        jle 0x80546a0
+0805467b: 8b 55 e8                                     mov %edx, %ss:[%ebp-0x18]
+0805467e: 66 90                                        nop
+08054680: 8b 42 04                                     mov %eax, %ds:[%edx+0x4]
+08054683: 83 c0 08                                     add %eax, 0x8
+08054686: 8b 00                                        mov %eax, %ds:[%eax]
+08054688: 89 04 24                                     mov %ds:[%esp+%esp*1], %eax
+0805468b: e8 70 09 00 00                               call 0x8055000
+08054690: 89 45 f4                                     mov %ss:[%ebp-0xc], %eax
+08054693: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+08054699: 8d bc 27 00 00 00 00                         lea %edi, %ds:[%edi+%esp*1]
+080546a0: 8b 45 f4                                     mov %eax, %ss:[%ebp-0xc]
+080546a3: a3 28 2f 00 08                               mov [0x8002f28], %eax
+080546a8: eb 26                                        jmp 0x80546d0
+080546aa: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+080546b0: c7 44 24 08 03 00 00 00                      mov %ds:[%esp+%esp*1+0x8], 0x3
+080546b8: c7 44 24 04 01 00 00 00                      mov %ds:[%esp+%esp*1+0x4], 0x1
+080546c0: 8b 45 f4                                     mov %eax, %ss:[%ebp-0xc]
+080546c3: 89 04 24                                     mov %ds:[%esp+%esp*1], %eax
+080546c6: 90                                           nop
+080546c7: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
+080546cb: e8 20 00 00 00                               call 0x80546f0
+080546d0: 83 7d f8 00                                  cmp %ss:[%ebp-0x8], 0x0
+080546d4: 0f 9f c0                                     setnle %al
+080546d7: 83 6d f8 01                                  sub %ss:[%ebp-0x8], 0x1
+080546db: 84 c0                                        test %al, %al
+080546dd: 8d 76 00                                     lea %esi, %ds:[%esi]
+080546e0: 75 ce                                        jnz 0x80546b0
+080546e2: c7 04 24 00 00 00 00                         mov %ds:[%esp+%esp*1], 0x0
+080546e9: 66 90                                        nop
+080546eb: e8 20 01 00 00                               call 0x8054810
+080546f0: 55                                           push %ebp
+080546f1: 89 e5                                        mov %ebp, %esp
+080546f3: 83 ec 1c                                     sub %esp, 0x1c
+080546f6: 83 7d 08 01                                  cmp %ss:[%ebp+0x8], 0x1
+080546fa: 75 44                                        jnz 0x8054740
+080546fc: 8b 55 0c                                     mov %edx, %ss:[%ebp+0xc]
+080546ff: 90                                           nop
+08054700: 8b 04 95 24 2f 00 08                         mov %eax, %ds:[%edx*4+0x8002f24]
+08054707: 83 e8 01                                     sub %eax, 0x1
+0805470a: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+08054710: 89 04 95 24 2f 00 08                         mov %ds:[%edx*4+0x8002f24], %eax
+08054717: 8b 55 10                                     mov %edx, %ss:[%ebp+0x10]
+0805471a: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+08054720: 8b 04 95 24 2f 00 08                         mov %eax, %ds:[%edx*4+0x8002f24]
+08054727: 83 c0 01                                     add %eax, 0x1
+0805472a: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
+08054730: 89 04 95 24 2f 00 08                         mov %ds:[%edx*4+0x8002f24], %eax
+08054737: 00 00                                        add %ds:[%eax], %al
+08054739: 8d b4 26 00 00 00 00                         lea %esi, %ds:[%esi+%esp*1]
+08054740: 8b 45 10                                     mov %eax, %ss:[%ebp+0x10]
+08054743: 8b 55 0c                                     mov %edx, %ss:[%ebp+0xc]
+08054746: 01 c2                                        add %edx, %eax
+08054748: b8 06 00 00 00                               mov %eax, 0x6
+0805474d: 29 d0                                        sub %eax, %edx
+0805474f: f4                                           hlt

@@ -1,0 +1,34 @@
+ 0:	00 00               	add [%eax], %eax
+ 0:	00 c0               	add %eax, %eax
+ 0:	01 c0               	add %eax, %eax
+ 0:	03 18               	add %ebx, [%eax]
+ 0:	03 1d 20 00 00 00   	add %ebx, [0x20]
+ 0:	02 04 00            	add %eax, [%eax + %eax]
+ 0:	d5 0a               	aad
+ 0:	90                  	nop
+ 0:	66 90               	nop
+ 0:	8d 76 00            	lea %esi, 0x0[%esi]
+ 0:	8d 74 26 00         	lea %esi, 0x0[%esi]
+ 0:	8d b6 00 00 00 00   	lea %esi, 0x0[%esi]
+ 0:	8d b4 26 00 00 00 00	lea %esi, 0x0[%esi]
+ 0:	89 f6               	mov %esi, %esi
+ 0:	8d bc 27 00 00 00 00	lea %edi, 0x0[%edi]
+ 0:	0f 1f 00            	nop
+ 0:	0f 1f 40 00         	nop
+ 0:	0f 1f 44 00 00      	nop
+ 0:	66 0f 1f 44 00 00   	nop
+ 0:	0f 1f 80 00 00 00 00	nop
+ 0:	0f 1f 84 00 00 00 00 00	nop
+ 0:	66 0f 1f 84 00 00 00 00 00	nop
+ 0:	66 2e 0f 1f 84 00 00 00 00 00	nop
+ 0:	66 66 2e 0f 1f 84 00 00 00 00 00	nop
+ 0:	66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
+ 0:	66 66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
+ 0:	66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
+ 0:	66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00	nop
+ 0:	e3 00               	jcxz 0x2
+ 0:	67 e3 00            	jcxz 0x3
+ 0:	0f 16 d1            	movhps %xmm2, %edx
+ 0:	0f 16 a5 00 00 00 00	movhps %xmm4, 0x0[%ebp]
+ 0:	0f ac c1 10         	shrd %eax, %eax, 0x10
+ 0:	0f ad 45 bc         	shrd 0xffffffbc[%ebp], %eax, %cl

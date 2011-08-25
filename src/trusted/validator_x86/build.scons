@@ -15,6 +15,9 @@ Import('env')
 #
 if not env.Bit('target_x86'): Return()
 
+# ------------------------------------------------------
+# General adjustments to the environment for builds.
+
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
 # NOTE: debug builds on windows break without this
@@ -24,6 +27,12 @@ if env.AllBits('windows', 'debug'):
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
                          'x86/Microsoft.VC80.DebugCRT')
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+# Defines which test sets tests should be added to.
+STANDARD_TESTS = ['small_tests', 'validator_tests']
+
+# Define which test sets modeling test should be added to
+MODELING_TESTS = STANDARD_TESTS + ['validator_modeling']
 
 # TODO(bradchen): eliminate need for the following line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
@@ -35,10 +44,53 @@ env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 # This object file is used to mark a library/executable as containing C++.
 force_cpp_o = env.ComponentObject('force_cpp.cc')
 
+# Defines the source directory where validator generated files should be added.
+val_src_dir = '$MAIN_DIR/src/trusted/validator_x86'
+
+# Create environment for command-line tools and testing, rather than
+# part of the TCB. Then define compile-time flag that communicates
+# that we are compiling in the test environment (rather than for the TCB).
+test_env = env.Clone();
+test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+
+# ------------------------------------------------------
+# Source generation:
+#
+# Source generation is done in three steps. The first generates
+# enumerated types. The second generates decoder tables needed by
+# the decoders. In between these two steps we generate the executables
+# that build the decoder tables.
+#
+# Source generation is controlled by to command line directives, and can be
+# built in either the x86-32 or the x86-64 platform. The two directives are:
+#
+#   valclean : Delete the existing versions of the generated files.
+#       This step should be done whenever ANY change may effect
+#       the generated sources.
+#
+#   valgen : Regenerate any deleted source files. Note: some generated
+#       source files do understand dependencies and do not need to be
+#       deleted before calling valgen. However, do not count on this,
+#       as some dependencies are not caught. To be safe, if you have
+#       modified a file that effects source generation, run "valclean"
+#       followed by a "valgen" to guarantee that generated sources are
+#       up to date.
+
+gen_env = env.Clone();
+gen_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+
 generate = False
 if 'valgen' in COMMAND_LINE_TARGETS: generate = True
 if 'valclean' in COMMAND_LINE_TARGETS: generate = True
 
+# Set of generated (source) decoder tables.
+tables = []
+
+# Set of generated (source) enumeration files.
+enum_headers = []
+
+# ------------------------------------------------------
+#  Source generation step 1: Generate enumerated types.
 #
 # Only generate/clean these files if the alias is specified on the
 # command line.  We conditionally add these pieces to scons to prevent
@@ -56,19 +108,17 @@ if generate:
   #
 
   # Get the directory in which we will generate checking in files.
-  header_prefix = env.subst('${MAIN_DIR}')
+  header_prefix = gen_env.subst('${MAIN_DIR}')
   if header_prefix.endswith('/native_client'):
     header_prefix = header_prefix[0:header_prefix.rfind('native_client')]
   elif header_prefix.endswith('/native_client/'):
     header_prefix = header_prefix[0:header_prefix.rfind('native_client/')]
-  val_src_dir = '$MAIN_DIR/src/trusted/validator_x86'
 
   #------------------------------------------------------
   # Generate the needed header files for enumerated types.
   # Note that we use the same directory for all platforms.
 
   # Define enumerate type files, and the options to process.
-  enum_headers = []
   ncv_enum_pairs = {
       'nacl_disallows': '--name=NaClDisallowsFlag --add_size=1',
   }
@@ -76,51 +126,47 @@ if generate:
   # Now code generate the enumerated types.
   for ncv_enum in ncv_enum_pairs:
     ncv_options = ncv_enum_pairs[ncv_enum]
-    ncv_enum_file = env.File(ncv_enum + '.enum')
-    ncv_header_1 = env.File('%s/gen/%s.h' % (val_src_dir, ncv_enum))
-    ncv_header_2 = env.File('%s/gen/%s_impl.h' % (val_src_dir, ncv_enum))
+    ncv_enum_file = gen_env.File(ncv_enum + '.enum')
+    ncv_header_1 = gen_env.File('%s/gen/%s.h' % (val_src_dir, ncv_enum))
+    ncv_header_2 = gen_env.File('%s/gen/%s_impl.h' % (val_src_dir, ncv_enum))
 
     cmd_line = (
         '${PYTHON} %s --header="%s" --source="%s" --path_prefix="%s" %s %s' %
-        (env.File('enum_gen.py'), ncv_header_1, ncv_header_2, header_prefix,
+        (gen_env.File('enum_gen.py'), ncv_header_1, ncv_header_2, header_prefix,
          ncv_options, ncv_enum_file))
 
-    env.Command([ncv_header_1, ncv_header_2], ncv_enum_file, cmd_line)
+    gen_env.Command([ncv_header_1, ncv_header_2], ncv_enum_file, cmd_line)
     enum_headers.append(ncv_header_1)
     enum_headers.append(ncv_header_2)
 
-  #
-  # Switch to generator environment to turn on macro:
-  #   NACL_TRUSTED_BUT_NOT_TCB
-  #
-
-  tables = []
-  for bits in ['32', '64']:
-    ncv_decodetab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdecodetab', bits)
-    ncv_disasmtab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdisasmtab', bits)
-    ncv_badprefixmask_h= '%s/gen/%s_%s.h' % (val_src_dir, 'ncbadprefixmask', bits)
-    exe_path = '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'
-    env.Command(
-        [ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h],
-        exe_path,
-        ['%s -m%s %s %s %s' % (exe_path, bits, ncv_decodetab_h,
-                               ncv_disasmtab_h, ncv_badprefixmask_h )]
-    )
-    tables.append(ncv_decodetab_h)
-    tables.append(ncv_disasmtab_h)
-    tables.append(ncv_badprefixmask_h)
-
+# ------------------------------------------------------
+# Table generators:
 #
-# In the middle of generating, we unconditionally add ncdecode_tablegen
-# so that the tests which depend on it, can run correctly.  This step
-# sits in the middle because of dependency order, where the next
+# In the middle of generating, we unconditionally add ncdecode_table and
+# ncdecode_tablegen so that the tests which depend on it, can run correctly.
+# This step sits in the middle because of dependency order, where the next
 # generation step requires this executable.
+
+# Add old x86 table generator.
 #
+#
+# Isolate the environment for ncdecode_table to prevent a cycle.
+env_decode_table = test_env.Clone()
+# TODO: This should be handled more cleanly, by just building
+#   Testing type programs for coverage. But for the moment, we need sel_ldr
+#   and others to have coverage, so it's easier to gate it off here.
+env_decode_table['COVERAGE_LINKCOM_EXTRAS'] = None
+
+ncdecode_table = env_decode_table.ComponentProgram(
+    'ncdecode_table',
+    ['ncdecode_table.c'],
+    EXTRA_LIBS=[env_decode_table.NaClTargetArchSuffix('ncval_base_verbose')])
+
+env.Requires(ncdecode_table, crt)
+
 # Add new x86 table generator.
 #
 #
-gen_env = env.Clone();
-gen_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 ncdecode_tablegen = gen_env.ComponentProgram(
     'ncdecode_tablegen',
     ['ncdecode_tablegen.c',
@@ -148,11 +194,31 @@ ncdecode_tablegen = gen_env.ComponentProgram(
 
 gen_env.Requires(ncdecode_tablegen, crt)
 
+# ------------------------------------------------------
+#  Source generation step 2: Generate decoder tables.
 #
 # Now we are back to conditionally defining the large tables generated
 # by ncdecode_tablegen.
 #
 if generate:
+  #
+  # Generate 32 and 64 bit versions of ncdecodetab and ncdisasmtab.
+  #
+  for bits in ['32', '64']:
+    ncv_decodetab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdecodetab', bits)
+    ncv_disasmtab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdisasmtab', bits)
+    ncv_badprefixmask_h= '%s/gen/%s_%s.h' % (val_src_dir, 'ncbadprefixmask', bits)
+    exe_path = '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'
+    gen_env.Command(
+        [ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h],
+        exe_path,
+        ['%s -m%s %s %s %s' % (exe_path, bits, ncv_decodetab_h,
+                               ncv_disasmtab_h, ncv_badprefixmask_h )]
+    )
+    tables.append(ncv_decodetab_h)
+    tables.append(ncv_disasmtab_h)
+    tables.append(ncv_badprefixmask_h)
+
   #
   # Generate 32 and 64 bit versions of nc_opcode_table and nc_subregs
   #
@@ -177,15 +243,6 @@ if generate:
   gen_env.AlwaysBuild(
       gen_env.Alias('valclean', action=[Delete(x) for x in gen_list]))
 
-# Create environment for command-line tools and testing, rather than
-# part of the TCB. Then define compile-time flag that communicates
-# that we are compiling in the test environment (rather than for the TCB).
-test_env = env.Clone();
-test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
-
-# Define where generated code should be put.
-ncv_gen_basedir = '${TARGET_ROOT}'
-ncv_gen_dir = ncv_gen_basedir +'/gen/native_client/src/trusted/validator_x86'
 # ======================================================================
 # Helper functions for getting automated tests from the corresponding
 # test directory.
@@ -223,20 +280,6 @@ def __AddTest(test, test_env, base, ext, command, groups):
   test_env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
 
 
-# Isolate the environment for ncdecode_table to prevent a cycle.
-env_decode_table = test_env.Clone()
-# TODO: This should be handled more cleanly, by just building
-#   Testing type programs for coverage. But for the moment, we need sel_ldr
-#   and others to have coverage, so it's easier to gate it off here.
-env_decode_table['COVERAGE_LINKCOM_EXTRAS'] = None
-
-ncdecode_table = env_decode_table.ComponentProgram(
-    'ncdecode_table',
-    ['ncdecode_table.c'],
-    EXTRA_LIBS=[env_decode_table.NaClTargetArchSuffix('ncval_base_verbose')])
-
-env.Requires(ncdecode_table, crt)
-
 # The following are common library components that use elements
 # of both x86-32 and x86-64 validators.
 test_env.ComponentLibrary(test_env.NaClTargetArchSuffix('ncdis_util'),
@@ -256,7 +299,6 @@ env.ComponentLibrary(env.NaClTargetArchSuffix('nccopy'), [
 
 #------------------------------------------------------------------
 # Generate the header files containing the modeled x86 instructions.
-
 
 def TestGeneratedInstructionTables(target_subarch, golden_filename, groups):
   test_name = 'ncdecode_tablegen_inst_tables_' + target_subarch + '.out'
@@ -286,9 +328,9 @@ def TestGeneratedSubregisterTables(target_subarch, golden_filename, groups):
 # same source files.
 for test_subarch in ['32', '64']:
   TestGeneratedInstructionTables(test_subarch, 'nc_opcode_table',
-                                 ['small_tests', 'validator_tests'])
+                                 STANDARD_TESTS)
   TestGeneratedSubregisterTables(test_subarch, 'nc_subregs',
-                                 ['small_tests', 'validator_tests'])
+                                 STANDARD_TESTS)
 
 # ======================================================================
 # Decoder unittests
@@ -306,9 +348,11 @@ if test_env.Bit('target_x86_32'):
         [ncdecode_tests],
         )
 
-    test_env.AddNodeToTestSuite(node, ['small_tests'])
+    test_env.AddNodeToTestSuite(node, STANDARD_TESTS)
 
 # ======================================================================
+# Build command line decoder.
+#
 ncdis = test_env.ComponentProgram(
   'ncdis', [
     'ncdis.c',
@@ -338,7 +382,17 @@ if test_env.Bit('target_x86_32'):
       [ncval_tests],
       )
 
-  test_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'])
+  test_env.AddNodeToTestSuite(node, STANDARD_TESTS)
+
+# ======================================================================
+# Define what decoder was historically being used for tests. This allows
+# existing tests to continue to follow that historical assumption.
+
+if test_env.Bit('target_x86_32'):
+  _ncdis_historical_decoder = '--validator_decoder'
+else:
+  _ncdis_historical_decoder = '--full_decoder'
+
 
 # ======================================================================
 # Decoder vs objdump tests
@@ -355,69 +409,39 @@ if test_env.Bit('linux') and test_env.Bit('target_x86_32'):
     __AddTest(test, test_env, base, ext, node, ['large_tests'])
 
 # ======================================================================
-# Decoder on sample instruction sequences.
-TARGET_ARCH_NAME =  env['TARGET_ARCHITECTURE'] + '_' + env['TARGET_SUBARCH']
+# Run tests on ncdis, where the input is self documenting (i.e. the input
+# file matches the generated resulit.
+def __AddNcdisSelfDocTests(validator_decoder, internals_also):
+  test = 'ncdis_test'
+  options = ['--commands=-']
+  input_ext = 'input'
+  if internals_also:
+    output_ext = 'internal'
+    options.append('--internal')
+  else:
+    output_ext = input_ext
+    options.append('--self_document')
+  if validator_decoder:
+    output_ext = 'v' + output_ext
+    options.append('--validator_decoder')
+  else:
+    options.append('--full_decoder')
+  for base in __GoldenBases(output_ext):
+    command = [ncdis] + options
+    ncdis_test = test_env.CommandTest(
+        __OutTestFile(test, base, output_ext),
+        command,
+        stdin = __BaseTestFile(base, input_ext),
+        stdout_golden = __BaseTestFile(base, output_ext))
+    __AddTest(test, test_env, base, output_ext, ncdis_test,
+              STANDARD_TESTS)
 
-NCDIS_TEST_NAME = 'ncdis_' + TARGET_ARCH_NAME + '_test'
-
-ncdis_input_golden = test_env.File(TESTDATA_SUBARCH_DIR + 'ncdis_test.input')
-
-ncdis_test = test_env.CommandTest(
-    NCDIS_TEST_NAME + '.out',
-    [ncdis , '--use_iter=false', '--self_document', '--commands=-'],
-    stdin=ncdis_input_golden,
-    stdout_golden=ncdis_input_golden)
-
-test_env.AddNodeToTestSuite(ncdis_test, ['small_tests'], NCDIS_TEST_NAME)
-
-# ======================================================================
-# Decoder on sample instruction sequences using new iterator model.
-
-NCDIS_ITER_TEST_NAME = 'ncdis_iter_' + TARGET_ARCH_NAME + '_test'
-
-ncdis_iter_input_golden = test_env.File(TESTDATA_SUBARCH_DIR + 'ncdis_iter_test.input')
-
-ncdis_iter_test = test_env.CommandTest(
-    NCDIS_ITER_TEST_NAME + '.out',
-    [ncdis , '--use_iter', '--self_document', '--commands=-'],
-    stdin=ncdis_iter_input_golden,
-    stdout_golden=ncdis_iter_input_golden)
-
-test_env.AddNodeToTestSuite(ncdis_iter_test,
-                            ['small_tests'],
-                            NCDIS_ITER_TEST_NAME)
-
-# Same as above, but comparing internal representation against golde files.
-
-ncdis_iter_internal_golden = test_env.File(TESTDATA_SUBARCH_DIR +
-                                           'ncdis_iter_test.internal')
-
-ncdis_internal_test = test_env.CommandTest(
-    NCDIS_ITER_TEST_NAME + '_int.out',
-    [ncdis, '--use_iter', '--internal', '--commands=-'],
-    stdin=ncdis_iter_input_golden,
-    stdout_golden=ncdis_iter_internal_golden)
-
-test_env.AddNodeToTestSuite(ncdis_internal_test,
-                            ['small_tests'],
-                            NCDIS_ITER_TEST_NAME)
-
-# Same as above, but using validator decoder as well.
-ncdis_iter_internal_vd_golden = test_env.File(TESTDATA_SUBARCH_DIR +
-                                              'ncdis_iter_test.internal_vd')
-
-ncdis_internal_vd_test = test_env.CommandTest(
-    NCDIS_ITER_TEST_NAME + '_int_vd.out',
-    [ncdis, '--use_iter', '--internal', '--validator_decoder', '--commands=-'],
-    stdin=ncdis_iter_input_golden,
-    stdout_golden=ncdis_iter_internal_vd_golden)
-
-test_env.AddNodeToTestSuite(ncdis_internal_vd_test,
-                            ['small_tests'],
-                            NCDIS_ITER_TEST_NAME)
+for validator_decoder in [False, True]:
+  for internals_also in [False, True]:
+    __AddNcdisSelfDocTests(validator_decoder, internals_also)
 
 # ======================================================================
-# Segment register validator.
+# Build command line validator.
 ncval = test_env.ComponentProgram(
   'ncval', [
     'ncval.c',
@@ -449,41 +473,35 @@ if env.Bit('target_x86_32'):
         )
     __AddTest(test, test_env, base, ext, node, ['large_tests'])
 
-# Run tests using ncdis on test files. Assumes that extension
-# dis implies to use the iterator model, while ndis does not.
-def __AddNcDisTests(use_iter, validator_decoder):
+# Run tests using ncdis on test files.
+def __AddNcDisTests(validator_decoder):
   test = 'ncdis_hex'
   options = ['--hex_text=-']
-  if use_iter:
-    ext = 'dis'
-    options.append('--use_iter');
-  else:
-    ext = 'ndis'
-    options.append('--use_iter=false');
   if validator_decoder:
-    ext = 'v' + ext
+    ext = 'vdis'
     options.append('--validator_decoder')
+  else:
+    ext = 'dis'
+    options.append('--full_decoder')
   for base in __GoldenBases(ext):
     node_dis = test_env.CommandTest(
         __OutTestFile(test, base, ext),
         [ncdis] + options,
         stdin = __BaseTestFile(base, 'hex'),
         stdout_golden = __BaseTestFile(base, ext))
-    __AddTest(test, test_env, base, ext, node_dis,
-              ['small_tests', 'validator_tests'])
+    __AddTest(test, test_env, base, ext, node_dis, STANDARD_TESTS)
 
-for use_iter in [False, True]:
-  for validator_decoder in [False, True]:
-    __AddNcDisTests(use_iter, validator_decoder)
+for validator_decoder in [False, True]:
+  __AddNcDisTests(validator_decoder)
 
-# Run tests using ncval --use_iter, on test files. Assume that write sandbox
+# Run tests using ncval on test files. Assume that write sandbox
 # tests use extension 'val' while read/write sandbox tests use extension
 # 'rval'. Assumes that a suffix of 0 on the extension implies no CPUID flags
 # set. Otherwise, assume that test is run with all CPUID flags set.
 def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate):
   if env.Bit('target_x86_64'):
     test = 'ncval64_hex'
-    options = ['--use_iter', '--hex_text=-', '--max_errors=-1']
+    options = ['--hex_text=-', '--max_errors=-1']
     if test_readwrite:
       ext = 'rval'
       options.append('--readwrite_sfi')
@@ -508,18 +526,17 @@ def __AddNcvalSfiTests(test_readwrite, test_cpuid_all, test_annotate):
           stdin = __BaseTestFile(base, 'hex'),
           stdout_golden = __BaseTestFile(base, ext))
       __AddTest(test, test_env, base, ext, node_val,
-                ['small_tests', 'validator_tests'])
+                STANDARD_TESTS)
 
 for read_write in [False, True]:
   for cpu_features_all in [False, True]:
     for annotate in [False, True]:
       __AddNcvalSfiTests(read_write, cpu_features_all, annotate)
 
-# Run tests using ncval --use_iter=false on test files.
+# Run segment sandboxing tests using ncval on test files.
 def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):
   if env.Bit('target_x86_32'):
-    options = ['--use_iter=false',
-               '--hex_text=-',
+    options = ['--hex_text=-',
                '--max_errors=-1']
     ext = 'nval'
     if (detailed):
@@ -549,7 +566,7 @@ def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):
           stdin = __BaseTestFile(base, 'hex'),
           stdout_golden = __BaseTestFile(base, ext))
       __AddTest(test, test_env, base, ext, node_val,
-                ['small_tests', 'validator_tests'])
+                STANDARD_TESTS)
 
 for cpu_features_all in [False, True]:
   for test_stats in [False, True]:
@@ -558,35 +575,29 @@ for cpu_features_all in [False, True]:
         __AddNcvalSegmentTests(cpu_features_all, test_stats,
                                detailed, align_16)
 
-# Run tests for stubout on test files. Assumes that the extension
-# sval implies to use the SFI model, while snval implies use of the
-# (32 bit) segment model. The input file uses extension hex.
-def __AddNcValStuboutTests(use_sfi):
-  if env.Bit('target_x86_32') or use_sfi:
-    test = 'ncval_stubout'
-    options = ['--hex_text=-', '--stubout']
-    if use_sfi:
-      ext = 'sval'
-      options.append('--use_iter')
-    else:
-      ext = 'snval'
-      options.append('--use_iter=false')
-    for base in __GoldenBases(ext):
-      command = [ncval] + options
-      node_stubout = test_env.CommandTest(
-          __OutTestFile(test, base, ext),
-          command,
-          stdin = __BaseTestFile(base, 'hex'),
-          stdout_golden = __BaseTestFile(base, ext))
-      __AddTest(test, test_env, base, ext, node_stubout,
-                ['small_tests', 'validator_tests'])
+# Run tests for stubout on test files. The input file uses extension hex.
+def __AddNcValStuboutTests():
+  test = 'ncval_stubout'
+  options = ['--hex_text=-', '--stubout']
+  ext = 'sval'
+  for base in __GoldenBases(ext):
+    command = [ncval] + options
+    node_stubout = test_env.CommandTest(
+        __OutTestFile(test, base, ext),
+        command,
+        stdin = __BaseTestFile(base, 'hex'),
+        stdout_golden = __BaseTestFile(base, ext))
+    __AddTest(test, test_env, base, ext, node_stubout,
+              STANDARD_TESTS)
 
-__AddNcValStuboutTests(True)
-__AddNcValStuboutTests(False)
+__AddNcValStuboutTests()
 
 # Run test to see if we have changed the set of modeled instructions.
 def __AddModeledInstsTest():
-  for prefix in ['' , 'ncval_reg_sfi_']:
+  prefixes = ['']
+  if test_env.Bit('build_x86_64'):
+    prefixes.append('ncval_reg_sfi_')
+  for prefix in prefixes:
     test = 'test'
     base = prefix + 'modeled_insts'
     ext = 'txt'
@@ -600,9 +611,7 @@ def __AddModeledInstsTest():
         command,
         stdout_golden = __BaseTestFile(base, ext))
     __AddTest(test, test_env, base, ext, model,
-              ['small_tests',
-               'validator_tests',
-               'validator_modeling'])
+              MODELING_TESTS)
 
 __AddModeledInstsTest()
 
@@ -615,7 +624,7 @@ def __AddNegMaxErrors():
     ext = 'nval'
     node_val = test_env.CommandTest(
         __OutTestFile(test, base, ext),
-        [ncval, '--use_iter=false', '--max_errors=-1', '--hex_text=-'],
+        [ncval, '--max_errors=-1', '--hex_text=-'],
         stdin = __BaseTestFile(base, 'hex'),
         stdout_golden = __BaseTestFile(base, ext))
     __AddTest(test, test_env, base, ext, node_val,

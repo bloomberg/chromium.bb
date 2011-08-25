@@ -18,21 +18,42 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/types_memory_model.h"
 
-/* When true, use an instruction iterator instead of NCDecodeSegment.
- */
-extern Bool NACL_FLAGS_use_iter;
+/* Flags that can be passed to the disassembler */
+typedef enum NaClDisassembleFlag {
+  /* Use the full decoder to disassemble the instruction. */
+  NaClDisassembleFull,
+  /* Use the dissassembler associated with the corresponding decoder. */
+  NaClDisassembleValidatorDecoder,
+  /* If additional internal information is available about the disassembled
+   * instruction, print it also.
+   */
+  NaClDisassembleAddInternals,
+} NaClDisassembleFlag;
 
-/* When true (and NACL_FLAGS_use_iter is true), prints out the internal
- * representation of the disassembled instruction.
- */
-extern Bool NACL_FLAGS_internal;
+/* Defines an integer to represent sets of possible disassembler flags. */
+typedef uint8_t NaClDisassembleFlags;
 
-/* When true, use the validator decoder tables instead of the regular
- * decoder tables.
+/* Converts a NaClDisssembleFlag to the corresponding bit in
+ * NaClDisassembleFlags.
  */
-extern Bool NACL_FLAGS_validator_decoder;
+#define NACL_DISASSEMBLE_FLAG(x) (((NaClDisassembleFlags) 1) << (x))
 
+/* Returns Bool flag defining if given flag is in the set of
+ * disassemble flags.
+ */
+Bool NaClContainsDisassembleFlag(NaClDisassembleFlags flags,
+                                 NaClDisassembleFlag flag);
+
+/* Disassemble the code segment, following the rules specified by
+ * the given set of flags.
+ *
+ * Parameters:
+ *    mbase - Memory region containing code segment.
+ *    vbase - PC address associated with first byte of memory region.
+ *    size - Number of bytes in memory region.
+ *    flags - Flags to use when decoding.
+ */
 void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
-                            NaClMemorySize size);
+                            NaClMemorySize size, NaClDisassembleFlags flags);
 
 #endif   /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDIS_SEGMENTS_H_ */
