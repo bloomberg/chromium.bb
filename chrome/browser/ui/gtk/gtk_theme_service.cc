@@ -1080,9 +1080,8 @@ SkBitmap* GtkThemeService::GenerateTintedIcon(
     int base_id,
     const color_utils::HSL& tint) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(base_id)));
   return new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(
-      *button, tint));
+      *rb.GetBitmapNamed(base_id), tint));
 }
 
 void GtkThemeService::GetNormalButtonTintHSL(
