@@ -388,7 +388,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 
   render_thread_->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced
-  // when we receive ViewMsg_Close.
+  // when we receive ViewMsg_ClosePage.
   AddRef();
 
   // If this is a popup, we must wait for the CreatingNew_ACK message before
@@ -631,6 +631,7 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExitFullscreen, OnExitFullscreen)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
@@ -1737,6 +1738,14 @@ void RenderView::enterFullscreenForNode(const WebKit::WebNode& node) {
 
 void RenderView::exitFullscreenForNode(const WebKit::WebNode& node) {
   NOTIMPLEMENTED();
+}
+
+void RenderView::enterFullscreen() {
+  Send(new ViewHostMsg_ToggleFullscreen(routing_id_, true));
+}
+
+void RenderView::exitFullscreen() {
+  Send(new ViewHostMsg_ToggleFullscreen(routing_id_, false));
 }
 
 void RenderView::setStatusText(const WebString& text) {
@@ -3423,6 +3432,10 @@ void RenderView::OnSetZoomLevel(double zoom_level) {
 void RenderView::OnSetZoomLevelForLoadingURL(const GURL& url,
                                              double zoom_level) {
   host_zoom_levels_[url] = zoom_level;
+}
+
+void RenderView::OnExitFullscreen() {
+  webview()->exitFullscreen();
 }
 
 void RenderView::OnSetPageEncoding(const std::string& encoding_name) {

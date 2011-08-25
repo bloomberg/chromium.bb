@@ -240,6 +240,9 @@ class TabContentsWrapper : public TabContentsObserver,
   InfoBarDelegate* GetInfoBarDelegateAt(size_t index);
   void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
 
+  // Stop this tab rendering in fullscreen mode.
+  void ExitFullscreenMode();
+
  private:
   // Internal helpers ----------------------------------------------------------
 

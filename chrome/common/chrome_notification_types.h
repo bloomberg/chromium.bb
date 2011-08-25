@@ -871,6 +871,9 @@ enum {
   // Sent when the cached profile info has changed.
   NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
 
+  // Sent when the browser enters or exits fullscreen mode.
+  NOTIFICATION_FULLSCREEN_CHANGED,
+
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

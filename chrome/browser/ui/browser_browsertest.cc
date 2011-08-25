@@ -635,6 +635,36 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
   EXPECT_EQ("fr", helper->language_state().original_language());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserTest, TestNewTabExitsFullscreen) {
+  ASSERT_TRUE(test_server()->Start());
+
+  AddTabAtIndex(0, GURL("about:blank"), PageTransition::TYPED);
+
+  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+
+  browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+  AddTabAtIndex(1, GURL("about:blank"), PageTransition::TYPED);
+  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, TestTabExitsItselfFromFullscreen) {
+  ASSERT_TRUE(test_server()->Start());
+
+  AddTabAtIndex(0, GURL("about:blank"), PageTransition::TYPED);
+
+  TabContents* fullscreen_tab = browser()->GetSelectedTabContents();
+
+  browser()->ToggleFullscreenModeForTab(fullscreen_tab, true);
+  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+  browser()->ToggleFullscreenModeForTab(fullscreen_tab, false);
+  ui_test_utils::WaitForNotification(chrome::NOTIFICATION_FULLSCREEN_CHANGED);
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+}
+
 // Chromeos defaults to restoring the last session, so this test isn't
 // applicable.
 #if !defined(OS_CHROMEOS)

@@ -310,6 +310,10 @@ class TabContentsDelegate {
   virtual void EnumerateDirectory(TabContents* tab, int request_id,
                                   const FilePath& path);
 
+  // Called when the renderer puts a tab into or out of fullscreen mode.
+  virtual void ToggleFullscreenModeForTab(TabContents* tab,
+                                          bool enter_fullscreen);
+
  protected:
   virtual ~TabContentsDelegate();
 

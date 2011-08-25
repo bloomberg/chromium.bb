@@ -498,6 +498,11 @@ void TabContents::HandleMouseActivate() {
     delegate_->HandleMouseActivate();
 }
 
+void TabContents::ToggleFullscreenMode(bool enter_fullscreen) {
+  if (delegate_)
+    delegate_->ToggleFullscreenModeForTab(this, enter_fullscreen);
+}
+
 void TabContents::ShowContents() {
   RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
   if (rwhv)

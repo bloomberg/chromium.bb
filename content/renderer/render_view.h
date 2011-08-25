@@ -406,6 +406,8 @@ class RenderView : public RenderWidget,
   virtual bool supportsFullscreen();
   virtual void enterFullscreenForNode(const WebKit::WebNode&);
   virtual void exitFullscreenForNode(const WebKit::WebNode&);
+  virtual void enterFullscreen() OVERRIDE;
+  virtual void exitFullscreen() OVERRIDE;
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url);
   virtual void setKeyboardFocusURL(const WebKit::WebURL& url);
@@ -849,6 +851,7 @@ class RenderView : public RenderWidget,
 #endif
   void OnSetZoomLevel(double zoom_level);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
+  void OnExitFullscreen();
   void OnShouldClose();
   void OnStop();
   void OnStopFinding(const ViewMsg_StopFinding_Params& params);

@@ -372,6 +372,9 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
       RenderViewHost* render_view_host,
       const ViewHostMsg_RunFileChooser_Params& params) {}
 
+  // Notification that the page wants to go into or out of fullscreen mode.
+  virtual void ToggleFullscreenMode(bool enter_fullscreen) {}
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

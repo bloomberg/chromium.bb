@@ -1244,6 +1244,9 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
                     int /* job_id */,
                     IPC::PlatformFileForTransit /* file handle */)
 
+// Exit fullscreen.
+IPC_MESSAGE_ROUTED0(ViewMsg_ExitFullscreen)
+
 // Messages sent from the renderer to the browser.
 
 // Sent by the renderer when it is creating a new window.  The browser creates
@@ -2052,6 +2055,11 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_WebIntentDispatch,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
                     std::string,  /* key */
                     std::string /* value */)
+
+// Puts the browser into "tab fullscreen" mode for the sending renderer.
+// See the comment in chrome/browser/ui/browser.h for more details.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ToggleFullscreen,
+                    bool /* enter_fullscreen */)
 
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,

@@ -288,6 +288,10 @@ void TabContentsDelegate::EnumerateDirectory(TabContents* tab, int request_id,
                                              const FilePath& path) {
 }
 
+void TabContentsDelegate::ToggleFullscreenModeForTab(TabContents* tab,
+                                                     bool enter_fullscreen) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
   while (!attached_contents_.empty()) {
     TabContents* tab_contents = *attached_contents_.begin();

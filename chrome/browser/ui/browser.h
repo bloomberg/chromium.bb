@@ -466,6 +466,9 @@ class Browser : public TabHandlerDelegate,
   // fullscreen.
   void WindowFullscreenStateChanged();
 
+  // Sends a notification that the fullscreen state has changed.
+  void NotifyFullscreenChange();
+
   // Assorted browser commands ////////////////////////////////////////////////
 
   // NOTE: Within each of the following sections, the IDs are ordered roughly by
@@ -792,6 +795,8 @@ class Browser : public TabHandlerDelegate,
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, ConvertTabToAppShortcut);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, OpenAppWindowLikeNtp);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestNewTabExitsFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TestTabExitsItselfFromFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutNoPref);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutWindowPref);
   FRIEND_TEST_ALL_PREFIXES(BrowserInitTest, OpenAppShortcutTabPref);
@@ -902,7 +907,8 @@ class Browser : public TabHandlerDelegate,
       const ViewHostMsg_RunFileChooser_Params& params) OVERRIDE;
   virtual void EnumerateDirectory(TabContents* tab, int request_id,
                                 const FilePath& path) OVERRIDE;
-
+  virtual void ToggleFullscreenModeForTab(TabContents* tab,
+      bool enter_fullscreen) OVERRIDE;
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
@@ -1032,6 +1038,25 @@ class Browser : public TabHandlerDelegate,
   // >= index.
   void SyncHistoryWithTabs(int index);
 
+  // Tab fullscreen functions /////////////////////////////////////////////////
+
+  // There are two different kinds of fullscreen mode - "tab fullscreen" and
+  // "browser fullscreen". "Tab fullscreen" refers to when a tab enters
+  // fullscreen mode via the JS fullscreen API, and "browser fullscreen"
+  // refers to the user putting the browser itself into fullscreen mode from
+  // the UI. The difference is that tab fullscreen has implications for how
+  // the contents of the tab render (eg: a video element may grow to consume
+  // the whole tab), whereas browser fullscreen mode doesn't. Therefore if a
+  // user forces an exit from fullscreen, we need to notify the tab so it can
+  // stop rendering in its fullscreen mode.
+
+  // Make the current tab exit fullscreen mode if it is in it.
+  void ExitTabbedFullscreenModeIfNecessary();
+
+  // Notifies the tab that it has been forced out of fullscreen mode if
+  // necessary.
+  void NotifyTabOfFullscreenExitIfNecessary();
+
   // OnBeforeUnload handling //////////////////////////////////////////////////
 
   typedef std::set<TabContents*> UnloadListenerSet;
@@ -1154,6 +1179,14 @@ class Browser : public TabHandlerDelegate,
 
   // Open the bookmark manager with a defined hash action.
   void OpenBookmarkManagerWithHash(const std::string& action, int64 node_id);
+
+  // Make the current tab exit fullscreen mode. If the browser was fullscreen
+  // because of that (as opposed to the user clicking the fullscreen button)
+  // then take the browser out of fullscreen mode as well.
+  void ExitTabbedFullscreenMode();
+
+  // Notifies the tab that it has been forced out of fullscreen mode.
+  void NotifyTabOfFullscreenExit();
 
   // Data members /////////////////////////////////////////////////////////////
 
@@ -1297,6 +1330,12 @@ class Browser : public TabHandlerDelegate,
   scoped_ptr<InstantUnloadHandler> instant_unload_handler_;
 
   BookmarkBar::State bookmark_bar_state_;
+
+  // Tab to notify when the browser exits fullscreen mode.
+  TabContentsWrapper* fullscreened_tab_;
+
+  // True if the current tab is in fullscreen mode.
+  bool tab_caused_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

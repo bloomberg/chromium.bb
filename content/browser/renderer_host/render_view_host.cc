@@ -684,6 +684,8 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
                         OnMsgDocumentOnLoadCompletedInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleFullscreen,
+                        OnMsgToggleFullscreen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenURL, OnMsgOpenURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnMsgDidContentsPreferredSizeChange)
@@ -981,6 +983,11 @@ void RenderViewHost::OnMsgContextMenu(const ContextMenuParams& params) {
   FilterURL(policy, renderer_id, &validated_params.frame_url);
 
   view->ShowContextMenu(validated_params);
+}
+
+void RenderViewHost::OnMsgToggleFullscreen(bool enter_fullscreen) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  delegate_->ToggleFullscreenMode(enter_fullscreen);
 }
 
 void RenderViewHost::OnMsgOpenURL(const GURL& url,

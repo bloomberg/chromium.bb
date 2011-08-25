@@ -707,6 +707,7 @@ class TabContents : public PageNavigator,
   virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void RunFileChooser(RenderViewHost* render_view_host,
                               const ViewHostMsg_RunFileChooser_Params& params);
+  virtual void ToggleFullscreenMode(bool enter_fullscreen) OVERRIDE;
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

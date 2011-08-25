@@ -841,3 +841,7 @@ void TabContentsWrapper::RemoveAllInfoBars(bool animate) {
   while (!infobars_.empty())
     RemoveInfoBarInternal(GetInfoBarDelegateAt(infobar_count() - 1), animate);
 }
+
+void TabContentsWrapper::ExitFullscreenMode() {
+  Send(new ViewMsg_ExitFullscreen(routing_id()));
+}

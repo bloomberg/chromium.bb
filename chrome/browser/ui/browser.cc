@@ -262,7 +262,9 @@ Browser::Browser(Type type, Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           synced_window_delegate_(
               new BrowserSyncedWindowDelegate(this))),
-      bookmark_bar_state_(BookmarkBar::HIDDEN) {
+      bookmark_bar_state_(BookmarkBar::HIDDEN),
+      fullscreened_tab_(NULL),
+      tab_caused_fullscreen_(false) {
   registrar_.Add(this, content::NOTIFICATION_SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
@@ -1282,6 +1284,16 @@ void Browser::ShowSingletonTabOverwritingNTP(
 void Browser::WindowFullscreenStateChanged() {
   UpdateCommandsForFullscreenMode(window_->IsFullscreen());
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
+  MessageLoop::current()->PostTask(
+      FROM_HERE, method_factory_.NewRunnableMethod(
+      &Browser::NotifyFullscreenChange));
+}
+
+void Browser::NotifyFullscreenChange() {
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+      Source<Browser>(this),
+      NotificationService::NoDetails());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1630,6 +1642,8 @@ void Browser::ConvertPopupToTabbedBrowser() {
 }
 
 void Browser::ToggleFullscreenMode() {
+  bool entering_fullscreen = !window_->IsFullscreen();
+
 #if !defined(OS_MACOSX)
   // In kiosk mode, we always want to be fullscreen. When the browser first
   // starts we're not yet fullscreen, so let the initial toggle go through.
@@ -1639,7 +1653,7 @@ void Browser::ToggleFullscreenMode() {
 #endif
 
   UserMetrics::RecordAction(UserMetricsAction("ToggleFullscreen"));
-  window_->SetFullscreen(!window_->IsFullscreen());
+  window_->SetFullscreen(entering_fullscreen);
 
   // Once the window has become fullscreen it'll call back to
   // WindowFullscreenStateChanged(). We don't do this immediately as
@@ -1651,6 +1665,16 @@ void Browser::ToggleFullscreenMode() {
 #if defined(OS_MACOSX)
   WindowFullscreenStateChanged();
 #endif
+
+  if (!entering_fullscreen)
+    NotifyTabOfFullscreenExitIfNecessary();
+}
+
+void Browser::NotifyTabOfFullscreenExitIfNecessary() {
+  if (fullscreened_tab_)
+    fullscreened_tab_->ExitFullscreenMode();
+  fullscreened_tab_ = NULL;
+  tab_caused_fullscreen_ = false;
 }
 
 #if defined(OS_MACOSX)
@@ -2996,6 +3020,8 @@ void Browser::TabDetachedAt(TabContentsWrapper* contents, int index) {
 }
 
 void Browser::TabDeactivated(TabContentsWrapper* contents) {
+  if (contents == fullscreened_tab_)
+    ExitTabbedFullscreenModeIfNecessary();
   if (instant())
     instant()->DestroyPreviewContents();
 
@@ -3597,6 +3623,25 @@ void Browser::RunFileChooser(TabContents* tab,
 void Browser::EnumerateDirectory(TabContents* tab, int request_id,
                                  const FilePath& path) {
   Browser::EnumerateDirectoryHelper(tab, request_id, path);
+}
+
+void Browser::ToggleFullscreenModeForTab(TabContents* tab,
+    bool enter_fullscreen) {
+  if (tab != GetSelectedTabContents())
+    return;
+  fullscreened_tab_ = enter_fullscreen ?
+      TabContentsWrapper::GetCurrentWrapperForContents(tab) : NULL;
+  if (enter_fullscreen && !window_->IsFullscreen())
+    tab_caused_fullscreen_ = true;
+  if (tab_caused_fullscreen_)
+    ToggleFullscreenMode();
+}
+
+void Browser::ExitTabbedFullscreenModeIfNecessary() {
+  if (tab_caused_fullscreen_)
+    ToggleFullscreenMode();
+  else
+    NotifyTabOfFullscreenExitIfNecessary();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

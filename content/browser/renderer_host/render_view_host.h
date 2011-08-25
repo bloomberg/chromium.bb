@@ -428,6 +428,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnMsgContextMenu(const ContextMenuParams& params);
+  void OnMsgToggleFullscreen(bool enter_fullscreen);
   void OnMsgOpenURL(const GURL& url, const GURL& referrer,
                     WindowOpenDisposition disposition);
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
