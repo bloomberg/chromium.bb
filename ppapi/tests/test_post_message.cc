@@ -165,7 +165,7 @@ std::string TestPostMessage::TestMessageEvent() {
   bool success = AddEchoingListener("((message_event.origin == '')"
                                    " && (message_event.lastEventId == '')"
                                    " && (message_event.source == null)"
-                                   " && (message_event.ports == null)"
+                                   " && (message_event.ports.length == 0)"
                                    " && (message_event.bubbles == false)"
                                    " && (message_event.cancelable == false)"
                                    ")");
