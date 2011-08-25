@@ -919,8 +919,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     elif self._gsutil_archive:
       upload_location = self._GetGSUploadLocation()
       url_prefix = 'https://sandbox.google.com/storage/'
-      url = '%s/_index.html' % upload_location
-      return url.replace('gs://', url_prefix)
+      return upload_location.replace('gs://', url_prefix)
     else:
       # 'http://botname/archive/bot_id/version'
       return 'http://%s/archive/%s/%s' % (socket.getfqdn(), self._bot_id,
@@ -1080,16 +1079,10 @@ class ArchiveStage(NonHaltingBuilderStage):
       background.RunParallelSteps([BuildAndArchiveFactoryImages,
                                    ArchiveRegularImages])
 
-    try:
-      background.RunParallelSteps([
-        UploadTestResults,
-        ArchiveDebugSymbols,
-        BuildAndArchiveAllImages])
-    finally:
-      # Update the _index.html file with the test artifacts and build artifacts
-      # uploaded above.
-      if upload_url and not debug:
-        commands.UpdateIndex(upload_url)
+    background.RunParallelSteps([
+      UploadTestResults,
+      ArchiveDebugSymbols,
+      BuildAndArchiveAllImages])
 
     # Update and upload LATEST file.
     commands.UpdateLatestFile(self._bot_archive_root, self._gsutil_archive)

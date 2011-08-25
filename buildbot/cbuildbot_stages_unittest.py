@@ -959,9 +959,6 @@ class ArchiveStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(background, 'RunParallelSteps')
     background.RunParallelSteps(mox.IgnoreArg())
 
-    self.mox.StubOutWithMock(commands, 'UpdateIndex')
-    commands.UpdateIndex(mox.IgnoreArg())
-
     self.mox.StubOutWithMock(commands, 'UpdateLatestFile')
     self.mox.StubOutWithMock(commands, 'UploadArchivedFile')
     commands.UpdateLatestFile(mox.IgnoreArg(), mox.IgnoreArg())

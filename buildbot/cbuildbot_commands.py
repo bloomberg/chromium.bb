@@ -26,7 +26,6 @@ _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-overlay/'
                              'chromeos/binhost')
 _GSUTIL_PATH = '/b/scripts/slave/gsutil'
-_GS_GEN_INDEX = '/b/scripts/gsd_generate_index/gsd_generate_index.py'
 _GS_ACL = '/home/chrome-bot/slave_archive_acl'
 _BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
 
@@ -645,17 +644,6 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
     cmd.extend(['--git-sync'])
   cmd.extend(extra_args)
   cros_lib.OldRunCommand(cmd, cwd=cwd)
-
-
-def UpdateIndex(upload_url):
-  """Update _index.html page in Google Storage.
-
-  upload_url: Google Storage location where we want an updated index.
-  """
-  cros_lib.RunCommand([_GS_GEN_INDEX,
-                       '--gsutil', _GSUTIL_PATH,
-                       '-a', _GS_ACL,
-                       upload_url])
 
 
 def GenerateBreakpadSymbols(buildroot, board):
