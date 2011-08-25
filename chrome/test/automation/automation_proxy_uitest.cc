@@ -1080,8 +1080,8 @@ TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
   loop.RunFor(TestTimeouts::action_max_timeout_ms());
 }
 
-// Flaky, http://crbug.com/42545.
-TEST_F(ExternalTabUITest, FLAKY_HostNetworkStack) {
+// Disabled, http://crbug.com/42545.
+TEST_F(ExternalTabUITest, DISABLED_HostNetworkStack) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
@@ -1151,8 +1151,8 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStack) {
   loop.RunFor(TestTimeouts::action_max_timeout_ms());
 }
 
-// Flaky, http://crbug.com/61023.
-TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackAbortRequest) {
+// Disabled, http://crbug.com/61023.
+TEST_F(ExternalTabUITest, DISABLED_HostNetworkStackAbortRequest) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
@@ -1193,8 +1193,8 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackAbortRequest) {
   loop.RunFor(TestTimeouts::action_max_timeout_ms());
 }
 
-// Flaky, http://crbug.com/61023.
-TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackUnresponsiveRenderer) {
+// Disabled, http://crbug.com/61023.
+TEST_F(ExternalTabUITest, DISABLED_HostNetworkStackUnresponsiveRenderer) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
@@ -1272,8 +1272,8 @@ class ExternalTabUITestPopupEnabled : public ExternalTabUITest {
 
 #if defined(OS_WIN)
 // http://crbug.com/61023 - Fails on one popular operating system.
-#define MAYBE_WindowDotOpen FLAKY_WindowDotOpen
-#define MAYBE_UserGestureTargetBlank FLAKY_UserGestureTargetBlank
+#define MAYBE_WindowDotOpen DISABLED_WindowDotOpen
+#define MAYBE_UserGestureTargetBlank DISABLED_UserGestureTargetBlank
 #else
 #define MAYBE_WindowDotOpen WindowDotOpen
 #define MAYBE_UserGestureTargetBlank UserGestureTargetBlank
