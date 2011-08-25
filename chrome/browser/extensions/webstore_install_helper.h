@@ -57,7 +57,7 @@ class WebstoreInstallHelper : public UtilityProcessHost::Client,
   void Start();
 
  private:
-  ~WebstoreInstallHelper();
+  virtual ~WebstoreInstallHelper();
 
   void StartWorkOnIOThread();
   void StartFetchedImageDecode();
