@@ -42,7 +42,7 @@ def InARepoRepository(directory):
 
 
 def CloneGitRepo(working_dir, repo_url):
-  """"Clone given git repo
+  """Clone given git repo
   Args:
     repo_url: git repo to clone
     repo_dir: location where it should be cloned to
