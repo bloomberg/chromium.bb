@@ -291,7 +291,7 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
     for (size_t i = 0; i < body_.size(); ++i) {
       if (body_[i].file_ref) {
         FilePath platform_path;
-        switch (body_[i].file_ref->file_system()->type()) {
+        switch (body_[i].file_ref->GetFileSystemType()) {
           case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
           case PP_FILESYSTEMTYPE_LOCALPERSISTENT: {
             // TODO(kinuko): remove this sync IPC when we add more generic
