@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
+#include "base/synchronization/lock.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
@@ -43,9 +44,18 @@ base::NativeLibrary LoadLibrary(const char* filename) {
   return LoadLibrary(FilePath(filename));
 }
 
+// TODO(backer): Find a more principled (less heavy handed) way to prevent a
+// race in the bindings initialization.
+#if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
+base::Lock g_lock;
+#endif
+
 }  // namespace anonymous
 
 bool InitializeGLBindings(GLImplementation implementation) {
+#if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
+  base::AutoLock locked(g_lock);
+#endif
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
