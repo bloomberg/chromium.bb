@@ -281,6 +281,26 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   ASSERT_FALSE(channel.HasAcceptedConnection());
 }
 
+TEST_F(IPCChannelPosixTest, BadChannelName) {
+  // Test empty name
+  IPC::ChannelHandle handle("");
+  IPC::Channel channel(handle, IPC::Channel::MODE_NAMED_SERVER, NULL);
+  ASSERT_FALSE(channel.Connect());
+
+  // Test name that is too long.
+  const char *kTooLongName = "This_is_a_very_long_name_to_proactively_implement"
+                             "client-centered_synergy_through_top-line"
+                             "platforms_Phosfluorescently_disintermediate_"
+                             "clicks-and-mortar_best_practices_without_"
+                             "future-proof_growth_strategies_Continually"
+                             "pontificate_proactive_potentialities_before"
+                             "leading-edge_processes";
+  EXPECT_GE(strlen(kTooLongName), IPC::kMaxPipeNameLength);
+  IPC::ChannelHandle handle2(kTooLongName);
+  IPC::Channel channel2(handle2, IPC::Channel::MODE_NAMED_SERVER, NULL);
+  EXPECT_FALSE(channel2.Connect());
+}
+
 TEST_F(IPCChannelPosixTest, MultiConnection) {
   // Test setting up a connection to an external process, and then have
   // another external process attempt to connect to us.

@@ -144,10 +144,9 @@ COMPILE_ASSERT(sizeof(((sockaddr_un*)0)->sun_path) >= kMaxPipeNameLength,
 bool CreateServerUnixDomainSocket(const std::string& pipe_name,
                                   int* server_listen_fd) {
   DCHECK(server_listen_fd);
-  DCHECK_GT(pipe_name.length(), 0u);
-  DCHECK_LT(pipe_name.length(), kMaxPipeNameLength);
 
   if (pipe_name.length() == 0 || pipe_name.length() >= kMaxPipeNameLength) {
+    DLOG(ERROR) << "pipe_name.length() == " << pipe_name.length();
     return false;
   }
 
@@ -315,7 +314,6 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
     const char *modestr = (mode_ & MODE_SERVER_FLAG) ? "server" : "client";
-    // The pipe may have been closed already.
     LOG(WARNING) << "Unable to create pipe named \"" << channel_handle.name
                  << "\" in " << modestr << " mode";
   }
