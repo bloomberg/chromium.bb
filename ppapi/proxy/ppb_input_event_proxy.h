@@ -26,9 +26,6 @@ class PPB_InputEvent_Proxy : public InterfaceProxy {
   static const Info* GetMouseInputEventInfo();
   static const Info* GetWheelInputEventInfo();
 
-  static PP_Resource CreateProxyResource(PP_Instance instance,
-                                         const ppapi::InputEventData& data);
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 

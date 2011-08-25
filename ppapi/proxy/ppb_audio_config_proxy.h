@@ -23,10 +23,6 @@ class PPB_AudioConfig_Proxy : public InterfaceProxy {
 
   static const Info* GetInfo();
 
-  static PP_Resource CreateProxyResource(PP_Instance instance,
-                                         PP_AudioSampleRate sample_rate,
-                                         uint32_t sample_frame_count);
-
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 

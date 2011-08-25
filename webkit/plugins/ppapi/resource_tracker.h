@@ -56,6 +56,7 @@ class ResourceTracker : public ::ppapi::TrackerBase,
       ::ppapi::proxy::InterfaceID id) OVERRIDE;
   virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
+  virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
 
   // ppapi::ResourceTracker overrides.
   virtual void LastPluginRefWasDeleted(::ppapi::Resource* object) OVERRIDE;

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_id.h"
 
@@ -44,6 +45,10 @@ class TrackerBase {
 
   virtual VarTracker* GetVarTracker() = 0;
   virtual ResourceTracker* GetResourceTracker() = 0;
+
+  // Returns the PP_Module associated with the given PP_Instance, or 0 on
+  // failure.
+  virtual PP_Module GetModuleForInstance(PP_Instance instance) = 0;
 };
 
 }  // namespace ppapi

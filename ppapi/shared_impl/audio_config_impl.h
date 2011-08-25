@@ -12,21 +12,34 @@
 
 namespace ppapi {
 
-class AudioConfigImpl : public thunk::PPB_AudioConfig_API {
+class AudioConfigImpl : public Resource,
+                        public thunk::PPB_AudioConfig_API {
  public:
-  // You must call Init before using this object.
-  AudioConfigImpl();
   virtual ~AudioConfigImpl();
 
-  // Returns false if the arguments are invalid, the object should not be
-  // used in this case.
-  bool Init(PP_AudioSampleRate sample_rate, uint32_t sample_frame_count);
+  static PP_Resource CreateAsImpl(PP_Instance instance,
+                                  PP_AudioSampleRate sample_rate,
+                                  uint32_t sample_frame_count);
+  static PP_Resource CreateAsProxy(PP_Instance instance,
+                                   PP_AudioSampleRate sample_rate,
+                                   uint32_t sample_frame_count);
+
+  // Resource overrides.
+  virtual thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
 
   // PPB_AudioConfig_API implementation.
   virtual PP_AudioSampleRate GetSampleRate() OVERRIDE;
   virtual uint32_t GetSampleFrameCount() OVERRIDE;
 
  private:
+  // You must call Init before using this object.
+  explicit AudioConfigImpl(PP_Instance instance);               // Impl c'tor.
+  explicit AudioConfigImpl(const HostResource& host_resource);  // Proxy c'tor.
+
+  // Returns false if the arguments are invalid, the object should not be
+  // used in this case.
+  bool Init(PP_AudioSampleRate sample_rate, uint32_t sample_frame_count);
+
   PP_AudioSampleRate sample_rate_;
   uint32_t sample_frame_count_;
 

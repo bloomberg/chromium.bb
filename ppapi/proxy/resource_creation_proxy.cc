@@ -11,7 +11,6 @@
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_audio_config_proxy.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
@@ -26,12 +25,12 @@
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
-#include "ppapi/proxy/ppb_input_event_proxy.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
 #include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
+#include "ppapi/shared_impl/audio_config_impl.h"
 #include "ppapi/shared_impl/font_impl.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
@@ -69,7 +68,7 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
     PP_Instance instance,
     PP_AudioSampleRate sample_rate,
     uint32_t sample_frame_count) {
-  return PPB_AudioConfig_Proxy::CreateProxyResource(
+  return AudioConfigImpl::CreateAsProxy(
       instance, sample_rate, sample_frame_count);
 }
 
@@ -217,7 +216,8 @@ PP_Resource ResourceCreationProxy::CreateKeyboardInputEvent(
     data.character_text = text_str->value();
   }
 
-  return PPB_InputEvent_Proxy::CreateProxyResource(instance, data);
+  return (new InputEventImpl(InputEventImpl::InitAsProxy(),
+                             instance, data))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
@@ -243,7 +243,8 @@ PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
   data.mouse_position = *mouse_position;
   data.mouse_click_count = click_count;
 
-  return PPB_InputEvent_Proxy::CreateProxyResource(instance, data);
+  return (new InputEventImpl(InputEventImpl::InitAsProxy(),
+                             instance, data))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateGraphics3D(
@@ -326,7 +327,8 @@ PP_Resource ResourceCreationProxy::CreateWheelInputEvent(
   data.wheel_ticks = *wheel_ticks;
   data.wheel_scroll_by_page = PP_ToBool(scroll_by_page);
 
-  return PPB_InputEvent_Proxy::CreateProxyResource(instance, data);
+  return (new InputEventImpl(InputEventImpl::InitAsProxy(),
+                             instance, data))->GetReference();
 }
 
 bool ResourceCreationProxy::Send(IPC::Message* msg) {

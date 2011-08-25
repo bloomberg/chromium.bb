@@ -166,6 +166,13 @@ void ResourceTracker::CleanupInstanceData(PP_Instance instance,
   return this;
 }
 
+PP_Module ResourceTracker::GetModuleForInstance(PP_Instance instance) {
+  PluginInstance* inst = GetInstance(instance);
+  if (!inst)
+    return 0;
+  return inst->module()->pp_module();
+}
+
 void ResourceTracker::LastPluginRefWasDeleted(::ppapi::Resource* object) {
   ::ppapi::ResourceTracker::LastPluginRefWasDeleted(object);
 

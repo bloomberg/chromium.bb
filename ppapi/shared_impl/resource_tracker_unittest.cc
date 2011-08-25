@@ -74,6 +74,9 @@ class ResourceTrackerTest : public testing::Test, public TrackerBase {
   virtual ResourceTracker* GetResourceTracker() OVERRIDE {
     return &resource_tracker_;
   }
+  virtual PP_Module GetModuleForInstance(PP_Instance /* instance */) OVERRIDE {
+    return 0;
+  }
 
   ResourceTracker& resource_tracker() { return resource_tracker_; }
 

@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
 
 namespace ppapi {
@@ -42,9 +44,22 @@ struct InputEventData {
 
 // This simple class implements the PPB_InputEvent_API in terms of the
 // shared InputEventData structure
-class InputEventImpl : public thunk::PPB_InputEvent_API {
+class InputEventImpl : public Resource, public thunk::PPB_InputEvent_API {
  public:
-  explicit InputEventImpl(const InputEventData& data);
+  struct InitAsImpl {};
+  struct InitAsProxy {};
+
+  // The dummy arguments control which version of Resource's constructor is
+  // called for this base class.
+  InputEventImpl(const InitAsImpl&,
+                 PP_Instance instance,
+                 const InputEventData& data);
+  InputEventImpl(const InitAsProxy&,
+                 PP_Instance instance,
+                 const InputEventData& data);
+
+  // Resource overrides.
+  virtual PPB_InputEvent_API* AsPPB_InputEvent_API() OVERRIDE;
 
   // PPB_InputEvent_API implementation.
   virtual const InputEventData& GetInputEventData() const OVERRIDE;
@@ -60,13 +75,10 @@ class InputEventImpl : public thunk::PPB_InputEvent_API {
   virtual uint32_t GetKeyCode() OVERRIDE;
   virtual PP_Var GetCharacterText() OVERRIDE;
 
- protected:
-  // Derived classes override this to convert a string to a PP_Var in either
-  // the proxy or the impl.
-  virtual PP_Var StringToPPVar(const std::string& str) = 0;
-
  private:
   InputEventData data_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(InputEventImpl);
 };
 
 }  // namespace ppapi

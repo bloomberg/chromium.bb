@@ -75,6 +75,11 @@ ResourceTracker* PluginResourceTracker::GetResourceTracker() {
   return this;
 }
 
+PP_Module PluginResourceTracker::GetModuleForInstance(PP_Instance instance) {
+  // Currently proxied plugins don't use the PP_Module for anything useful.
+  return 0;
+}
+
 PP_Resource PluginResourceTracker::AddResource(Resource* object) {
   PP_Resource ret = ResourceTracker::AddResource(object);
 

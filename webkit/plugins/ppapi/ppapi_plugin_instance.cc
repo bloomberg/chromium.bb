@@ -29,6 +29,7 @@
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
+#include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
@@ -61,7 +62,6 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/ppb_input_event_impl.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
@@ -91,6 +91,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
+using ppapi::InputEventImpl;
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
@@ -460,8 +461,9 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
           events[i].is_filtered = true;
         else
           rv = true;  // Unfiltered events are assumed to be handled.
-        scoped_refptr<PPB_InputEvent_Impl> event_resource(
-            new PPB_InputEvent_Impl(pp_instance(), events[i]));
+        scoped_refptr<InputEventImpl> event_resource(
+            new InputEventImpl(InputEventImpl::InitAsImpl(),
+                               pp_instance(), events[i]));
 
         rv |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
             pp_instance(), event_resource->pp_resource()));

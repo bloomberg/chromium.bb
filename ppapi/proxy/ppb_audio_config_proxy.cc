@@ -13,30 +13,6 @@
 namespace ppapi {
 namespace proxy {
 
-// The implementation is actually in AudioConfigImpl.
-class AudioConfig : public Resource, public AudioConfigImpl {
- public:
-  // Note that you must call Init (on AudioConfigImpl) before using this class.
-  AudioConfig(const HostResource& resource);
-  virtual ~AudioConfig();
-
-  // Resource overrides.
-  virtual thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AudioConfig);
-};
-
-AudioConfig::AudioConfig(const HostResource& resource) : Resource(resource) {
-}
-
-AudioConfig::~AudioConfig() {
-}
-
-thunk::PPB_AudioConfig_API* AudioConfig::AsPPB_AudioConfig_API() {
-  return this;
-}
-
 namespace {
 
 InterfaceProxy* CreateAudioConfigProxy(Dispatcher* dispatcher,
@@ -64,18 +40,6 @@ const InterfaceProxy::Info* PPB_AudioConfig_Proxy::GetInfo() {
     &CreateAudioConfigProxy,
   };
   return &info;
-}
-
-// static
-PP_Resource PPB_AudioConfig_Proxy::CreateProxyResource(
-    PP_Instance instance,
-    PP_AudioSampleRate sample_rate,
-    uint32_t sample_frame_count) {
-  scoped_refptr<AudioConfig> object(new AudioConfig(
-      HostResource::MakeInstanceOnly(instance)));
-  if (!object->Init(sample_rate, sample_frame_count))
-    return 0;
-  return object->GetReference();
 }
 
 bool PPB_AudioConfig_Proxy::OnMessageReceived(const IPC::Message& msg) {

@@ -260,8 +260,6 @@
         '../plugins/ppapi/ppb_graphics_3d_impl.h',
         '../plugins/ppapi/ppb_image_data_impl.cc',
         '../plugins/ppapi/ppb_image_data_impl.h',
-        '../plugins/ppapi/ppb_input_event_impl.cc',
-        '../plugins/ppapi/ppb_input_event_impl.h',
         '../plugins/ppapi/ppb_layer_compositor_impl.cc',
         '../plugins/ppapi/ppb_layer_compositor_impl.h',
         '../plugins/ppapi/ppb_memory_impl.cc',

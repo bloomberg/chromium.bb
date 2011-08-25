@@ -59,6 +59,7 @@ class PluginResourceTracker : public TrackerBase, public ResourceTracker {
                                             InterfaceID id) OVERRIDE;
   virtual VarTracker* GetVarTracker() OVERRIDE;
   virtual ResourceTracker* GetResourceTracker() OVERRIDE;
+  virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
 
  protected:
   // ResourceTracker overrides.

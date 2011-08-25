@@ -18,38 +18,6 @@ using ppapi::thunk::PPB_InputEvent_API;
 namespace ppapi {
 namespace proxy {
 
-// The implementation is actually in InputEventImpl.
-class InputEvent : public Resource, public InputEventImpl {
- public:
-  InputEvent(const HostResource& resource, const InputEventData& data);
-  virtual ~InputEvent();
-
-  // Resource overrides.
-  virtual PPB_InputEvent_API* AsPPB_InputEvent_API() OVERRIDE;
-
-  // InputEventImpl overrides.
-  virtual PP_Var StringToPPVar(const std::string& str) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputEvent);
-};
-
-InputEvent::InputEvent(const HostResource& resource, const InputEventData& data)
-    : Resource(resource),
-      InputEventImpl(data) {
-}
-
-InputEvent::~InputEvent() {
-}
-
-PPB_InputEvent_API* InputEvent::AsPPB_InputEvent_API() {
-  return this;
-}
-
-PP_Var InputEvent::StringToPPVar(const std::string& str) {
-  return StringVar::StringToPPVar(0, str);
-}
-
 namespace {
 
 InterfaceProxy* CreateInputEventProxy(Dispatcher* dispatcher,
@@ -113,14 +81,6 @@ const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetWheelInputEventInfo() {
     &CreateInputEventProxy,
   };
   return &info;
-}
-
-// static
-PP_Resource PPB_InputEvent_Proxy::CreateProxyResource(
-    PP_Instance instance,
-    const InputEventData& data) {
-  return (new InputEvent(HostResource::MakeInstanceOnly(instance), data))->
-      GetReference();
 }
 
 bool PPB_InputEvent_Proxy::OnMessageReceived(const IPC::Message& msg) {

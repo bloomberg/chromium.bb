@@ -24,30 +24,6 @@ using ppapi::thunk::PPB_AudioConfig_API;
 namespace webkit {
 namespace ppapi {
 
-// PPB_AudioConfig -------------------------------------------------------------
-
-PPB_AudioConfig_Impl::PPB_AudioConfig_Impl(PP_Instance instance)
-    : Resource(instance) {
-}
-
-PPB_AudioConfig_Impl::~PPB_AudioConfig_Impl() {
-}
-
-// static
-PP_Resource PPB_AudioConfig_Impl::Create(PP_Instance instance,
-                                         PP_AudioSampleRate sample_rate,
-                                         uint32_t sample_frame_count) {
-  scoped_refptr<PPB_AudioConfig_Impl> config(
-      new PPB_AudioConfig_Impl(instance));
-  if (!config->Init(sample_rate, sample_frame_count))
-    return 0;
-  return config->GetReference();
-}
-
-PPB_AudioConfig_API* PPB_AudioConfig_Impl::AsPPB_AudioConfig_API() {
-  return this;
-}
-
 // PPB_Audio_Impl --------------------------------------------------------------
 
 PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)

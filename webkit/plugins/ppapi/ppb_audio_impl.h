@@ -23,26 +23,6 @@
 namespace webkit {
 namespace ppapi {
 
-// The implementation is actually in AudioConfigImpl.
-class PPB_AudioConfig_Impl : public ::ppapi::Resource,
-                             public ::ppapi::AudioConfigImpl {
- public:
-  virtual ~PPB_AudioConfig_Impl();
-
-  // Non-trusted creation.
-  static PP_Resource Create(PP_Instance instance,
-                            PP_AudioSampleRate sample_rate,
-                            uint32_t sample_frame_count);
-
-  // Resource overrides.
-  virtual ::ppapi::thunk::PPB_AudioConfig_API* AsPPB_AudioConfig_API() OVERRIDE;
-
- private:
-  explicit PPB_AudioConfig_Impl(PP_Instance instance);
-
-  DISALLOW_COPY_AND_ASSIGN(PPB_AudioConfig_Impl);
-};
-
 // Some of the backend functionality of this class is implemented by the
 // AudioImpl so it can be shared with the proxy.
 class PPB_Audio_Impl : public ::ppapi::Resource,

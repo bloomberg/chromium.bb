@@ -12,6 +12,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_input_event_proxy.h"
+#include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_input_event_api.h"
 
@@ -93,21 +94,19 @@ bool PPP_InputEvent_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPP_InputEvent_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
                                                  const InputEventData& data) {
-  PP_Resource event_resource = PPB_InputEvent_Proxy::CreateProxyResource(
-      instance, data);
-  ppp_input_event_target()->HandleInputEvent(instance, event_resource);
-  PluginResourceTracker::GetInstance()->ReleaseResource(event_resource);
+  scoped_refptr<InputEventImpl> resource(new InputEventImpl(
+      InputEventImpl::InitAsProxy(), instance, data));
+  ppp_input_event_target()->HandleInputEvent(instance, resource->pp_resource());
 }
 
 void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
     PP_Instance instance,
     const InputEventData& data,
     PP_Bool* result) {
-  PP_Resource event_resource = PPB_InputEvent_Proxy::CreateProxyResource(
-      instance, data);
+  scoped_refptr<InputEventImpl> resource(new InputEventImpl(
+      InputEventImpl::InitAsProxy(), instance, data));
   *result = ppp_input_event_target()->HandleInputEvent(instance,
-                                                       event_resource);
-  PluginResourceTracker::GetInstance()->ReleaseResource(event_resource);
+                                                       resource->pp_resource());
 }
 
 }  // namespace proxy

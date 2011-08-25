@@ -6,12 +6,52 @@
 
 namespace ppapi {
 
-AudioConfigImpl::AudioConfigImpl()
-    : sample_rate_(PP_AUDIOSAMPLERATE_NONE),
+AudioConfigImpl::AudioConfigImpl(PP_Instance instance)
+    : Resource(instance),
+      sample_rate_(PP_AUDIOSAMPLERATE_NONE),
+      sample_frame_count_(0) {
+}
+
+AudioConfigImpl::AudioConfigImpl(const HostResource& host_resource)
+    : Resource(host_resource),
+      sample_rate_(PP_AUDIOSAMPLERATE_NONE),
       sample_frame_count_(0) {
 }
 
 AudioConfigImpl::~AudioConfigImpl() {
+}
+
+// static
+PP_Resource AudioConfigImpl::CreateAsImpl(PP_Instance instance,
+                                          PP_AudioSampleRate sample_rate,
+                                          uint32_t sample_frame_count) {
+  scoped_refptr<AudioConfigImpl> object(new AudioConfigImpl(instance));
+  if (!object->Init(sample_rate, sample_frame_count))
+    return 0;
+  return object->GetReference();
+}
+
+// static
+PP_Resource AudioConfigImpl::CreateAsProxy(PP_Instance instance,
+                                           PP_AudioSampleRate sample_rate,
+                                           uint32_t sample_frame_count) {
+  scoped_refptr<AudioConfigImpl> object(new AudioConfigImpl(
+      HostResource::MakeInstanceOnly(instance)));
+  if (!object->Init(sample_rate, sample_frame_count))
+    return 0;
+  return object->GetReference();
+}
+
+thunk::PPB_AudioConfig_API* AudioConfigImpl::AsPPB_AudioConfig_API() {
+  return this;
+}
+
+PP_AudioSampleRate AudioConfigImpl::GetSampleRate() {
+  return sample_rate_;
+}
+
+uint32_t AudioConfigImpl::GetSampleFrameCount() {
+  return sample_frame_count_;
 }
 
 bool AudioConfigImpl::Init(PP_AudioSampleRate sample_rate,
@@ -31,14 +71,6 @@ bool AudioConfigImpl::Init(PP_AudioSampleRate sample_rate,
   sample_rate_ = sample_rate;
   sample_frame_count_ = sample_frame_count;
   return true;
-}
-
-PP_AudioSampleRate AudioConfigImpl::GetSampleRate() {
-  return sample_rate_;
-}
-
-uint32_t AudioConfigImpl::GetSampleFrameCount() {
-  return sample_frame_count_;
 }
 
 }  // namespace ppapi
