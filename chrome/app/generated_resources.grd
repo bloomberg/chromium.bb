@@ -5497,6 +5497,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
         Block third-party cookies from being set
       </message>
+      <message name="IDS_INTENTS_TAB_LABEL" desc="Label for Web Intents tab on Content Settings page">
+        Web Intents
+      </message>
 
       <!-- Mac users do not close their browser; they quit it. -->
       <if expr="not is_macosx">
@@ -5649,9 +5652,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
         Ask me when a site wants to show desktop notifications (recommended)
       </message>
-      <message name="IDS_INTENTS_TAB_LABEL" desc="Label for Intents Windows tab on Content Settings dialog">
-        Web Intents
-      </message>
       <message name="IDS_INTENTS_HEADER" desc="Header for intent exception management page on Content Settings dialog">
         Web Intents Exceptions
       </message>
@@ -5736,6 +5736,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
           Manage handlers...
+        </message>
+      </if>
+
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_INTENTS_MANAGE_BUTTON" desc="">
+          Manage Intents...
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_INTENTS_MANAGE_BUTTON" desc="">
+          Manage intents...
         </message>
       </if>
 
@@ -8177,6 +8188,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_COOKIES_COOKIE_EXPIRES_LABEL" desc="The Cookie Expires label">
         Expires:
+      </message>
+
+      <!-- Intents Window -->
+      <message name="IDS_INTENTS_MANAGER_WINDOW_TITLE" desc="The title of the Intents page that lets you manage intent services for websites">
+        Intents
+      </message>
+      <message name="IDS_INTENTS_DOMAIN_COLUMN_HEADER" desc="Label for the Site column in the intents manager page.">
+        Site
+      </message>
+      <message name="IDS_INTENTS_SERVICE_DATA_COLUMN_HEADER" desc="Label for the Service Data column in the intents manager page.">
+        Service Data
+      </message>
+      <message name="IDS_INTENTS_REMOVE_INTENT_BUTTON" desc="Text on the button to remove an intent.">
+        Remove Intent
       </message>
 
       <!-- Mac users do not close their browser; they quit it. -->

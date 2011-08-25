@@ -18,7 +18,7 @@ class WebIntentsRegistry;
 class WebIntentsRegistryFactory : public ProfileKeyedServiceFactory {
  public:
   // Returns the WebIntentsRegistry that provides intent registration for
-  // |profile|.
+  // |profile|. Ownership stays with this factory object.
   static WebIntentsRegistry* GetForProfile(Profile* profile);
 
   // Returns the singleton instance of the WebIntentsRegistryFactory.

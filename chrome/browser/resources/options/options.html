@@ -29,6 +29,9 @@
   <link rel="stylesheet" href="handler_options.css">
 </if>
 <link rel="stylesheet" href="import_data_overlay.css">
+<if expr="pp_ifdef('enable_web_intents')">
+  <link rel="stylesheet" href="intents_view.css">
+</if>
 <link rel="stylesheet" href="language_options.css">
 <link rel="stylesheet" href="manage_profile_overlay.css">
 <link rel="stylesheet" href="password_manager.css">
@@ -163,6 +166,9 @@
              <include src="cookies_view.html">
              <if expr="pp_ifdef('enable_register_protocol_handler')">
                <include src="handler_options.html">
+             </if>
+             <if expr="pp_ifdef('enable_web_intents')">
+               <include src="intents_view.html">
              </if>
              <include src="content_settings_exceptions_area.html">
            </div>

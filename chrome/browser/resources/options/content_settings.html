@@ -212,30 +212,34 @@
       </div>
     </section>
     <!-- Intent registration filter tab contents -->
-    <section id="intent-filter">
+    <if expr="pp_ifdef('enable_web_intents')">
+      <section id="intents-section">
       <h3 i18n-content="intentsTabLabel" class="content-settings-header"></h3>
-      <div>
-        <div class="radio">
-          <label>
-            <input type="radio" name="intents" value="allow">
-            <span i18n-content="intentsAllow"></span>
-          </label>
+        <div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="intents" value="allow">
+              <span i18n-content="intentsAllow"></span>
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="intents" value="ask">
+              <span i18n-content="intentsAsk"></span>
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="intents" value="block">
+              <span i18n-content="intentsBlock"></span>
+            </label>
+          </div>
+          <button class="exceptions-list-button" contentType="intents"
+              i18n-content="manage_exceptions"></button>
+          <button id="manage-intents-button" contentType="intents"
+              i18n-content="manageIntents"></button>
         </div>
-        <div class="radio">
-          <label>
-            <input type="radio" name="intents" value="ask">
-            <span i18n-content="intentsAsk"></span>
-          </label>
-        </div>
-        <div class="radio">
-          <label>
-            <input type="radio" name="intents" value="block">
-            <span i18n-content="intentsBlock"></span>
-          </label>
-        </div>
-        <button class="exceptions-list-button" contentType="intents"
-            i18n-content="manage_exceptions"></button>
-      </div>
-    </section>
+      </section>
+    </if>
   </div>
 </div>
