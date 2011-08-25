@@ -15,8 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
-#include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/download/download_request_limiter_observer.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
@@ -25,7 +23,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_tab_helper.h"
-#include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intent_data.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -58,7 +55,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/child_process_security_policy.h"
@@ -497,13 +493,6 @@ void TabContentsWrapper::DidBecomeSelected() {
 bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabContentsWrapper, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
-                        OnRegisterProtocolHandler)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterIntentHandler,
-                        OnRegisterIntentHandler)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_WebIntentDispatch,
-                        OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
@@ -645,79 +634,6 @@ InfoBarDelegate* TabContentsWrapper::GetInfoBarDelegateAt(size_t index) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Internal helpers
-
-void TabContentsWrapper::OnJSOutOfMemory() {
-  AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),
-      NULL, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true));
-}
-
-void TabContentsWrapper::OnRegisterProtocolHandler(const std::string& protocol,
-                                                   const GURL& url,
-                                                   const string16& title) {
-  if (profile()->IsOffTheRecord())
-    return;
-
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
-  if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
-    return;
-
-  ProtocolHandler handler =
-      ProtocolHandler::CreateProtocolHandler(protocol, url, title);
-
-  ProtocolHandlerRegistry* registry = profile()->GetProtocolHandlerRegistry();
-  if (!registry->enabled() || registry->IsRegistered(handler) ||
-      registry->IsIgnored(handler))
-    return;
-
-  if (!handler.IsEmpty() &&
-      registry->CanSchemeBeOverridden(handler.protocol())) {
-    UserMetrics::RecordAction(
-        UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
-    AddInfoBar(new RegisterProtocolHandlerInfoBarDelegate(tab_contents(),
-                                                          registry,
-                                                          handler));
-  }
-}
-
-void TabContentsWrapper::OnRegisterIntentHandler(const string16& action,
-                                                 const string16& type,
-                                                 const string16& href,
-                                                 const string16& title) {
-  if (profile()->IsOffTheRecord())
-    return;
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
-    return;
-
-  GURL service_url(href);
-  if (!service_url.is_valid()) {
-    const GURL& url = tab_contents()->GetURL();
-    service_url = url.Resolve(href);
-  }
-
-  WebIntentData intent;
-  intent.service_url = service_url;
-  intent.action = action;
-  intent.type = type;
-  intent.title = title;
-  AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(tab_contents(), intent));
-}
-
-void TabContentsWrapper::OnWebIntentDispatch(const IPC::Message& message,
-                                             const string16& action,
-                                             const string16& type,
-                                             const string16& data,
-                                             int intent_id) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
-    return;
-
-  DLOG(INFO) << "Browser tab contents received intent:"
-             << "\naction=" << UTF16ToASCII(action)
-             << "\ntype=" << UTF16ToASCII(type)
-             << "\nrenderer_id=" << message.routing_id()
-             << "\nid=" << intent_id;
-}
 
 void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
   NotificationService::current()->Notify(

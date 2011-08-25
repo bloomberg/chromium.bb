@@ -31,6 +31,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -51,6 +53,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
+#include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -104,6 +107,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -2412,6 +2416,96 @@ void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
                                          path);
 }
 
+// static
+void Browser::JSOutOfMemoryHelper(TabContents* tab) {
+  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab);
+  if (tcw) {
+    tcw->AddInfoBar(new SimpleAlertInfoBarDelegate(
+        tab, NULL, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
+        true));
+  }
+}
+
+// static
+void Browser::RegisterProtocolHandlerHelper(TabContents* tab,
+                                            const std::string& protocol,
+                                            const GURL& url,
+                                            const string16& title) {
+  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab);
+  if (!tcw || tcw->profile()->IsOffTheRecord())
+    return;
+
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  if (policy->IsPseudoScheme(protocol) || policy->IsDisabledScheme(protocol))
+    return;
+
+  ProtocolHandler handler =
+      ProtocolHandler::CreateProtocolHandler(protocol, url, title);
+
+  ProtocolHandlerRegistry* registry =
+      tcw->profile()->GetProtocolHandlerRegistry();
+  if (!registry->enabled() || registry->IsRegistered(handler) ||
+      registry->IsIgnored(handler))
+    return;
+
+  if (!handler.IsEmpty() &&
+      registry->CanSchemeBeOverridden(handler.protocol())) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
+    tcw->AddInfoBar(new RegisterProtocolHandlerInfoBarDelegate(tab,
+                                                               registry,
+                                                               handler));
+  }
+}
+
+// static
+void Browser::RegisterIntentHandlerHelper(TabContents* tab,
+                                          const string16& action,
+                                          const string16& type,
+                                          const string16& href,
+                                          const string16& title) {
+  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab);
+  if (!tcw || tcw->profile()->IsOffTheRecord())
+    return;
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+    return;
+
+  GURL service_url(href);
+  if (!service_url.is_valid()) {
+    const GURL& url = tab->GetURL();
+    service_url = url.Resolve(href);
+  }
+
+  WebIntentData intent;
+  intent.service_url = service_url;
+  intent.action = action;
+  intent.type = type;
+  intent.title = title;
+  tcw->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(tab, intent));
+}
+
+// static
+void Browser::WebIntentDispatchHelper(TabContents* tab,
+                                      int routing_id,
+                                      const string16& action,
+                                      const string16& type,
+                                      const string16& data,
+                                      int intent_id) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+    return;
+
+  DLOG(INFO) << "Browser tab contents received intent:"
+             << "\naction=" << UTF16ToASCII(action)
+             << "\ntype=" << UTF16ToASCII(type)
+             << "\nrenderer_id=" << routing_id
+             << "\nid=" << intent_id;
+}
+
 void Browser::ExecuteCommandWithDisposition(
   int id, WindowOpenDisposition disposition) {
   // No commands are enabled if there is not yet any selected tab.
@@ -3635,6 +3729,35 @@ void Browser::ToggleFullscreenModeForTab(TabContents* tab,
     tab_caused_fullscreen_ = true;
   if (tab_caused_fullscreen_)
     ToggleFullscreenMode();
+}
+
+void Browser::JSOutOfMemory(TabContents* tab) {
+  Browser::JSOutOfMemoryHelper(tab);
+}
+
+void Browser::RegisterProtocolHandler(TabContents* tab,
+                                      const std::string& protocol,
+                                      const GURL& url,
+                                      const string16& title) {
+  Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title);
+}
+
+void Browser::RegisterIntentHandler(TabContents* tab,
+                                    const string16& action,
+                                    const string16& type,
+                                    const string16& href,
+                                    const string16& title) {
+  Browser::RegisterIntentHandlerHelper(tab, action, type, href, title);
+}
+
+void Browser::WebIntentDispatch(TabContents* tab,
+                                int routing_id,
+                                const string16& action,
+                                const string16& type,
+                                const string16& data,
+                                int intent_id) {
+  Browser::WebIntentDispatchHelper(tab, routing_id, action, type, data,
+                                   intent_id);
 }
 
 void Browser::ExitTabbedFullscreenModeIfNecessary() {

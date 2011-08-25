@@ -292,6 +292,30 @@ void TabContentsDelegate::ToggleFullscreenModeForTab(TabContents* tab,
                                                      bool enter_fullscreen) {
 }
 
+void TabContentsDelegate::JSOutOfMemory(TabContents* tab) {
+}
+
+void TabContentsDelegate::RegisterProtocolHandler(TabContents* tab,
+                                                  const std::string& protocol,
+                                                  const GURL& url,
+                                                  const string16& title) {
+}
+
+void TabContentsDelegate::RegisterIntentHandler(TabContents* tab,
+                                                const string16& action,
+                                                const string16& type,
+                                                const string16& href,
+                                                const string16& title) {
+}
+
+void TabContentsDelegate::WebIntentDispatch(TabContents* tab,
+                                            int routing_id,
+                                            const string16& action,
+                                            const string16& type,
+                                            const string16& data,
+                                            int intent_id) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
   while (!attached_contents_.empty()) {
     TabContents* tab_contents = *attached_contents_.begin();

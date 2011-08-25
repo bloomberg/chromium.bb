@@ -160,6 +160,22 @@ class ExternalTabContainer : public TabContentsDelegate,
                               const ViewHostMsg_RunFileChooser_Params& params);
   virtual void EnumerateDirectory(TabContents* tab, int request_id,
                                 const FilePath& path);
+  virtual void JSOutOfMemory(TabContents* tab);
+  virtual void RegisterProtocolHandler(TabContents* tab,
+                                       const std::string& protocol,
+                                       const GURL& url,
+                                       const string16& title);
+  virtual void RegisterIntentHandler(TabContents* tab,
+                                     const string16& action,
+                                     const string16& type,
+                                     const string16& href,
+                                     const string16& title);
+  virtual void WebIntentDispatch(TabContents* tab,
+                                 int routing_id,
+                                 const string16& action,
+                                 const string16& type,
+                                 const string16& data,
+                                 int intent_id);
 
   void RegisterRenderViewHost(RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(RenderViewHost* render_view_host);

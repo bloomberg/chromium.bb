@@ -314,6 +314,30 @@ class TabContentsDelegate {
   virtual void ToggleFullscreenModeForTab(TabContents* tab,
                                           bool enter_fullscreen);
 
+  // Called when a Javascript out of memory notification is received.
+  virtual void JSOutOfMemory(TabContents* tab);
+
+  // Register a new handler for URL requests with the given scheme.
+  virtual void RegisterProtocolHandler(TabContents* tab,
+                                       const std::string& protocol,
+                                       const GURL& url,
+                                       const string16& title);
+
+  // Register a new handler for Intents with the given action and type filter.
+  virtual void RegisterIntentHandler(TabContents* tab,
+                                     const string16& action,
+                                     const string16& type,
+                                     const string16& href,
+                                     const string16& title);
+
+  // WebIntent notification handler.
+  virtual void WebIntentDispatch(TabContents* tab,
+                                 int routing_id,
+                                 const string16& action,
+                                 const string16& type,
+                                 const string16& data,
+                                 int intent_id);
+
  protected:
   virtual ~TabContentsDelegate();
 

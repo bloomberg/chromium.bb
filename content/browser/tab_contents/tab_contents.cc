@@ -295,6 +295,13 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SaveURLAs, OnSaveURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
+                        OnRegisterProtocolHandler)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterIntentHandler,
+                        OnRegisterIntentHandler)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebIntentDispatch,
+                        OnWebIntentDispatch)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1100,6 +1107,32 @@ void TabContents::OnFocusedNodeChanged(bool is_editable_node) {
 void TabContents::OnEnumerateDirectory(int request_id,
                                        const FilePath& path) {
   delegate()->EnumerateDirectory(this, request_id, path);
+}
+
+void TabContents::OnJSOutOfMemory() {
+  delegate()->JSOutOfMemory(this);
+}
+
+void TabContents::OnRegisterProtocolHandler(const std::string& protocol,
+                                            const GURL& url,
+                                            const string16& title) {
+  delegate()->RegisterProtocolHandler(this, protocol, url, title);
+}
+
+void TabContents::OnRegisterIntentHandler(const string16& action,
+                                          const string16& type,
+                                          const string16& href,
+                                          const string16& title) {
+  delegate()->RegisterIntentHandler(this, action, type, href, title);
+}
+
+void TabContents::OnWebIntentDispatch(const IPC::Message& message,
+                                      const string16& action,
+                                      const string16& type,
+                                      const string16& data,
+                                      int intent_id) {
+  delegate()->WebIntentDispatch(this, message.routing_id(), action, type,
+                                data, intent_id);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

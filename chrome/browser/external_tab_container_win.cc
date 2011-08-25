@@ -745,6 +745,35 @@ void ExternalTabContainer::EnumerateDirectory(TabContents* tab, int request_id,
   Browser::EnumerateDirectoryHelper(tab, request_id, path);
 }
 
+void ExternalTabContainer::JSOutOfMemory(TabContents* tab) {
+  Browser::JSOutOfMemoryHelper(tab);
+}
+
+void ExternalTabContainer::RegisterProtocolHandler(TabContents* tab,
+                                                   const std::string& protocol,
+                                                   const GURL& url,
+                                                   const string16& title) {
+  Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title);
+}
+
+void ExternalTabContainer::RegisterIntentHandler(TabContents* tab,
+                                                 const string16& action,
+                                                 const string16& type,
+                                                 const string16& href,
+                                                 const string16& title) {
+  Browser::RegisterIntentHandlerHelper(tab, action, type, href, title);
+}
+
+void ExternalTabContainer::WebIntentDispatch(TabContents* tab,
+                                             int routing_id,
+                                             const string16& action,
+                                             const string16& type,
+                                             const string16& data,
+                                             int intent_id) {
+  Browser::WebIntentDispatchHelper(tab, routing_id, action, type, data,
+                                   intent_id);
+}
+
 bool ExternalTabContainer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExternalTabContainer, message)

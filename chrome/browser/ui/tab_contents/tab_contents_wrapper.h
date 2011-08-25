@@ -247,19 +247,6 @@ class TabContentsWrapper : public TabContentsObserver,
   // Internal helpers ----------------------------------------------------------
 
   // Message handlers.
-  void OnJSOutOfMemory();
-  void OnRegisterProtocolHandler(const std::string& protocol,
-                                 const GURL& url,
-                                 const string16& title);
-  void OnRegisterIntentHandler(const string16& action,
-                               const string16& type,
-                               const string16& href,
-                               const string16& title);
-  void OnWebIntentDispatch(const IPC::Message& message,
-                           const string16& action,
-                           const string16& type,
-                           const string16& data,
-                           int intent_id);
   void OnSnapshot(const SkBitmap& bitmap);
   void OnPDFHasUnsupportedFeature();
   void OnDidBlockDisplayingInsecureContent();
