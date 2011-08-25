@@ -27,5 +27,12 @@ PlatformDevice* GetPlatformDevice(SkDevice* device) {
   return NULL;
 }
 
-}  // namespace skia
+bool PlatformDevice::IsNativeFontRenderingAllowed() {
+  return true;
+}
 
+bool PlatformDevice::AlphaBlendUsed() const {
+  return false;
+}
+
+}  // namespace skia

@@ -165,10 +165,11 @@ BitmapPlatformDevice* BitmapPlatformDevice::create(int width,
 BitmapPlatformDevice::BitmapPlatformDevice(
     BitmapPlatformDeviceData* data,
     const SkBitmap& bitmap)
-    : PlatformDevice(bitmap),
+    : SkDevice(bitmap),
       data_(data) {
   // The data object is already ref'ed for us by create().
   SkDEBUGCODE(begin_paint_count_ = 0);
+  SetPlatformDevice(this, this);
 }
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {
@@ -262,4 +263,3 @@ SkDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
 }
 
 }  // namespace skia
-
