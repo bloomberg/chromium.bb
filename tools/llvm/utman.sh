@@ -248,7 +248,7 @@ else
 fi
 # hg-update-non-llvm uses these
 readonly NEWLIB_REV=57d709868c78
-readonly BINUTILS_REV=d0816797d2fd
+readonly BINUTILS_REV=2f1d9c8ef12d
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 
