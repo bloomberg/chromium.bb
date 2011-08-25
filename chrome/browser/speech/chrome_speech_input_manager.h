@@ -15,6 +15,8 @@
 
 namespace speech_input {
 
+// This is Chrome's implementation of the SpeechInputManager interface. This
+// class is a singleton and accessed via the Get method.
 class ChromeSpeechInputManager : public SpeechInputManager,
                                  public SpeechInputBubbleControllerDelegate,
                                  public SpeechRecognizerDelegate {

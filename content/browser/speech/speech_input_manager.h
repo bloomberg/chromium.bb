@@ -15,7 +15,6 @@ namespace speech_input {
 // handles requests received from various render views and makes sure only one
 // of them can use speech recognition at a time. It also sends recognition
 // results and status events to the render views when required.
-// This class is a singleton and accessed via the Get method.
 class SpeechInputManager {
  public:
   // Implemented by the dispatcher host to relay events to the render views.
