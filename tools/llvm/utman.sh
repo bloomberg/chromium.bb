@@ -241,7 +241,7 @@ fi
 # Current milestones in each repo
 # hg-update-pnacl-sfi uses these
 if ${UTMAN_UPSTREAM}; then
-  readonly UPSTREAM_REV=478a8c1c5549
+  readonly UPSTREAM_REV=12c5551e8e38
 else
   readonly LLVM_REV=9ca0d1b53734
   readonly LLVM_GCC_REV=e093fe8c5603

@@ -46,7 +46,7 @@ EXTRA_ENV = {
     # some vfp instructions which only have a 9bit offset
     ('-arm-reserve-r9 -sfi-disable-cp -arm_static_tls ' +
      '-sfi-store -sfi-stack -sfi-branch -sfi-data ' +
-     '-no-inline-jumptables ${PIC ? -arm-elf-force-pic}'),
+     '-no-inline-jumptables'),
 
   'LLC_FLAGS_X8632' : '',
   'LLC_FLAGS_X8664' : '',
