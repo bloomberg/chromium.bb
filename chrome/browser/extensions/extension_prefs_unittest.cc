@@ -578,7 +578,7 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(
-        extension_.get(), Extension::DISABLED, false, 0);
+        extension_.get(), Extension::DISABLED, false, -1);
   }
 
   virtual void Verify() {
@@ -597,10 +597,10 @@ class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
     // No extensions yet.
     EXPECT_EQ(0, prefs()->GetNextAppLaunchIndex(0));
 
-    extension_ = prefs_.AddExtension("on_extension_installed");
+    extension_ = prefs_.AddApp("on_extension_installed");
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, 0);
+                                  false, -1);
   }
 
   virtual void Verify() {
@@ -630,11 +630,17 @@ TEST_F(ExtensionPrefsAppLaunchIndex, ExtensionPrefsAppLaunchIndex) {}
 class ExtensionPrefsPageIndex : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension_ = prefs_.AddExtension("page_index");
+    extension_ = prefs_.AddApp("page_index");
     // Install to page 3 (index 2).
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
                                   false, 2);
     EXPECT_EQ(2, prefs()->GetPageIndex(extension_->id()));
+
+    scoped_refptr<Extension> extension2 = prefs_.AddApp("page_index_2");
+    // Install without any page preference.
+    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
+                                  false, -1);
+    EXPECT_EQ(0, prefs()->GetPageIndex(extension_->id()));
   }
 
   virtual void Verify() {
@@ -652,13 +658,32 @@ class ExtensionPrefsPageIndex : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsPageIndex, ExtensionPrefsPageIndex) {}
 
+class ExtensionPrefsAppLocation : public ExtensionPrefsTest {
+ public:
+  virtual void Initialize() {
+    extension_ = prefs_.AddExtension("not_an_app");
+    // Non-apps should not have any app launch index or page index.
+    prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
+                                  false, 0);
+  }
+
+  virtual void Verify() {
+    EXPECT_EQ(-1, prefs()->GetAppLaunchIndex(extension_->id()));
+    EXPECT_EQ(-1, prefs()->GetPageIndex(extension_->id()));
+  }
+
+ private:
+  scoped_refptr<Extension> extension_;
+};
+TEST_F(ExtensionPrefsAppLocation, ExtensionPrefsAppLocation) {}
+
 class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, 0);
+                                  false, -1);
   }
 
   virtual void Verify() {
@@ -808,7 +833,7 @@ class ExtensionPrefsPreferencesBase : public ExtensionPrefsTest {
     Extension* extensions[] = {ext1_, ext2_, ext3_};
     for (int i = 0; i < 3; ++i) {
       if (ext == extensions[i] && !installed[i]) {
-        prefs()->OnExtensionInstalled(ext, Extension::ENABLED, false, 0);
+        prefs()->OnExtensionInstalled(ext, Extension::ENABLED, false, -1);
         installed[i] = true;
         break;
       }

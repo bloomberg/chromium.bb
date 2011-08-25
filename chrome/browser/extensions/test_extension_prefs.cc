@@ -101,6 +101,17 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {
   return AddExtensionWithManifest(dictionary, Extension::INTERNAL);
 }
 
+scoped_refptr<Extension> TestExtensionPrefs::AddApp(std::string name) {
+  DictionaryValue dictionary;
+  dictionary.SetString(extension_manifest_keys::kName, name);
+  dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
+  dictionary.SetString(extension_manifest_keys::kApp, "true");
+  dictionary.SetString(extension_manifest_keys::kLaunchWebURL,
+                       "http://example.com");
+  return AddExtensionWithManifest(dictionary, Extension::INTERNAL);
+
+}
+
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
     const DictionaryValue& manifest, Extension::Location location) {
   return AddExtensionWithManifestAndFlags(manifest, location,
@@ -117,7 +128,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
   std::string errors;
   scoped_refptr<Extension> extension = Extension::Create(
       path, location, manifest, extra_flags, &errors);
-  EXPECT_TRUE(extension);
+  EXPECT_TRUE(extension) << errors;
   if (!extension)
     return NULL;
 

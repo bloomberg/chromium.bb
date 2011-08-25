@@ -167,10 +167,14 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetInteger("app_launch_index", app_launch_index);
 
   int page_index = prefs->GetPageIndex(extension->id());
-  if (page_index >= 0) {
-    // Only provide a value if one is stored
-    value->SetInteger("page_index", page_index);
+  if (page_index < 0) {
+    // Make sure every app has a page index (some predate the page index).
+    // The webstore app should be on the first page.
+    page_index = extension->id() == extension_misc::kWebStoreAppId ?
+        0 : prefs->GetNaturalAppPageIndex();
+    prefs->SetPageIndex(extension->id(), page_index);
   }
+  value->SetInteger("page_index", page_index);
 }
 
 // TODO(estade): remove this. We record app launches via js calls rather than

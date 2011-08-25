@@ -101,6 +101,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   void SetToolbarOrder(const std::vector<std::string>& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
+  // If |page_index| is -1, and the then a page will be found for the App.
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
                             bool from_webstore,
@@ -276,6 +277,10 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   // Gets the next available application launch index. This is 1 higher than the
   // highest current application launch index found for the page |on_page|.
   int GetNextAppLaunchIndex(int on_page);
+
+  // Gets the page a new app should install to. Starts on page 0, and if there
+  // are N or more apps on it, tries to install on the next page.
+  int GetNaturalAppPageIndex();
 
   // Sets the order the apps should be displayed in the app launcher.
   void SetAppLauncherOrder(const std::vector<std::string>& extension_ids);

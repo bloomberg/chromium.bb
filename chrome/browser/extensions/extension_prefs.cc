@@ -21,6 +21,10 @@ using base::Time;
 
 namespace {
 
+// The number of apps per page. This isn't a hard limit, but new apps installed
+// from the webstore will overflow onto a new page if this limit is reached.
+const int kNaturalAppPageSize = 18;
+
 // Additional preferences keys
 
 // Where an extension was installed from. (see Extension::Location)
@@ -980,10 +984,15 @@ void ExtensionPrefs::OnExtensionInstalled(
     extension_dict->Set(kPrefManifest,
                         extension->manifest_value()->DeepCopy());
   }
-  extension_dict->Set(kPrefPageIndex,
-                      Value::CreateIntegerValue(page_index));
-  extension_dict->Set(kPrefAppLaunchIndex,
-      Value::CreateIntegerValue(GetNextAppLaunchIndex(page_index)));
+
+  if (extension->is_app()) {
+    if (page_index == -1)
+      page_index = GetNaturalAppPageIndex();
+    extension_dict->Set(kPrefPageIndex,
+                        Value::CreateIntegerValue(page_index));
+    extension_dict->Set(kPrefAppLaunchIndex,
+        Value::CreateIntegerValue(GetNextAppLaunchIndex(page_index)));
+  }
   extension_pref_value_map_->RegisterExtension(
       id, install_time, initial_state == Extension::ENABLED);
   content_settings_store_->RegisterExtension(
@@ -1340,6 +1349,25 @@ int ExtensionPrefs::GetNextAppLaunchIndex(int on_page) {
       max_value = value;
   }
   return max_value + 1;
+}
+
+int ExtensionPrefs::GetNaturalAppPageIndex() {
+  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  if (!extensions)
+    return 0;
+
+  std::map<int, int> page_counts;
+  for (DictionaryValue::key_iterator extension_id = extensions->begin_keys();
+       extension_id != extensions->end_keys(); ++extension_id) {
+    int page_index = GetPageIndex(*extension_id);
+    if (page_index >= 0)
+      page_counts[page_index] = page_counts[page_index] + 1;
+  }
+  for (int i = 0; ; i++) {
+    std::map<int, int>::const_iterator it = page_counts.find(i);
+    if (it == page_counts.end() || it->second < kNaturalAppPageSize)
+      return i;
+  }
 }
 
 void ExtensionPrefs::SetAppLauncherOrder(

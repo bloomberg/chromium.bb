@@ -199,7 +199,7 @@ void SimpleExtensionLoadPrompt::ShowPrompt() {
 void SimpleExtensionLoadPrompt::InstallUIProceed() {
   if (extension_service_.get())
     extension_service_->OnExtensionInstalled(
-        extension_, false, 0);  // Not from web store.
+        extension_, false, -1);  // Not from web store.
   delete this;
 }
 
@@ -2249,6 +2249,15 @@ void ExtensionService::AddExtension(const Extension* extension) {
     return;
   }
 
+  // Unfortunately, we used to set app launcher indices for non-apps. If this
+  // extension has an index (page or in-page), set it to -1.
+  if (!extension->is_app()) {
+    if (extension_prefs_->GetAppLaunchIndex(extension->id()) != -1)
+      extension_prefs_->SetAppLaunchIndex(extension->id(), -1);
+    if (extension_prefs_->GetPageIndex(extension->id()) != -1)
+      extension_prefs_->SetPageIndex(extension->id(), -1);
+  }
+
   extensions_.push_back(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
@@ -2382,7 +2391,7 @@ void ExtensionService::OnLoadSingleExtension(const Extension* extension,
     prompt->ShowPrompt();
     return;  // continues in SimpleExtensionLoadPrompt::InstallUI*
   }
-  OnExtensionInstalled(extension, false, 0);  // Not from web store.
+  OnExtensionInstalled(extension, false, -1);  // Not from web store.
 }
 
 void ExtensionService::OnExtensionInstalled(
