@@ -156,7 +156,11 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   int app_launch_index = prefs->GetAppLaunchIndex(extension->id());
   if (app_launch_index == -1) {
     // Make sure every app has a launch index (some predate the launch index).
-    app_launch_index = prefs->GetNextAppLaunchIndex(0);
+    // The webstore's app launch index is set to -2 to make sure it's first.
+    // The next time the user drags (any) app this will be set to something
+    // sane (i.e. >= 0).
+    app_launch_index = extension->id() == extension_misc::kWebStoreAppId ?
+        -2 : prefs->GetNextAppLaunchIndex(0);
     prefs->SetAppLaunchIndex(extension->id(), app_launch_index);
   }
   value->SetInteger("app_launch_index", app_launch_index);
@@ -322,6 +326,9 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
     }
   }
 
+  // CreateAppInfo can change the extension prefs.
+  AutoReset<bool> auto_reset(&ignore_changes_, true);
+
   extensions = extension_service_->disabled_extensions();
   for (it = extensions->begin(); it != extensions->end(); ++it) {
     if (!IsAppExcludedFromList(*it)) {
@@ -381,6 +388,8 @@ DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
   AppNotificationManager* notification_manager =
       extension_service_->app_notification_manager();
   DictionaryValue* app_info = new DictionaryValue();
+  // CreateAppInfo can change the extension prefs.
+  AutoReset<bool> auto_reset(&ignore_changes_, true);
   CreateAppInfo(extension,
                 notification_manager->GetLast(extension->id()),
                 extension_service_,
