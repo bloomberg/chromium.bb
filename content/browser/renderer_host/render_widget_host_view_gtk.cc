@@ -726,10 +726,13 @@ bool RenderWidgetHostViewGtk::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewGtk::GetViewBounds() const {
-  GtkAllocation* alloc = &view_.get()->allocation;
-  return gfx::Rect(alloc->x, alloc->y,
-                   requested_size_.width(),
-                   requested_size_.height());
+  GdkWindow* gdk_window = view_.get()->window;
+  if (!gdk_window)
+    return gfx::Rect(requested_size_);
+  GdkRectangle window_rect;
+  gdk_window_get_origin(gdk_window, &window_rect.x, &window_rect.y);
+  return gfx::Rect(window_rect.x, window_rect.y,
+                   requested_size_.width(), requested_size_.height());
 }
 
 void RenderWidgetHostViewGtk::UpdateCursor(const WebCursor& cursor) {
