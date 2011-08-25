@@ -14,6 +14,16 @@ cr.define('ntp4', function() {
   var tileId = 0;
 
   /**
+   * The maximum number of tiles that we will display on this page.  If there
+   * are not enough spaces to show all bookmarks, we'll include a link to the
+   * Bookmarks manager.
+   * TODO(csilv): Eliminate the need for this restraint.
+   * @type {number}
+   * @const
+   */
+  var MAX_BOOKMARK_TILES = 18;
+
+  /**
    * Creates a new bookmark object.
    * @param {Object} data The url and title.
    * @constructor
@@ -174,7 +184,19 @@ cr.define('ntp4', function() {
 
     initialize: function() {
       this.classList.add('bookmarks-page');
+
+      // insert the bookmark titles header which is unique to bookmark pages.
       this.insertBefore($('bookmarks-title-wrapper'), this.firstChild);
+
+      // insert a container for a link to a Bookmarks Manager page.
+      var link = document.createElement('a');
+      link.className = 'bookmarks-manager-link';
+      link.textContent = localStrings.getString('bookmarksManagerLinkTitle');
+      var container = document.createElement('div');
+      container.className = 'bookmarks-manager-link-container';
+      container.hidden = true;
+      container.appendChild(link);
+      this.querySelector('.tile-page-content').appendChild(container);
     },
 
     /**
@@ -207,8 +229,18 @@ cr.define('ntp4', function() {
      */
     updateBookmarkTiles_: function(items) {
       this.removeAllTiles();
-      for (var i = 0; i < items.length; i++)
+      var tile_count = Math.min(items.length, MAX_BOOKMARK_TILES);
+      for (var i = 0; i < tile_count; i++)
         this.appendTile(new Bookmark(items[i]), false);
+
+      var container = this.querySelector('.bookmarks-manager-link-container');
+      if (items.length > MAX_BOOKMARK_TILES) {
+        var link = container.querySelector('.bookmarks-manager-link');
+        link.href = 'chrome://bookmarks/#' + this.id;
+        container.hidden = false;
+      } else {
+        container.hidden = true;
+      }
     },
 
     /** @inheritDoc */
@@ -221,6 +253,7 @@ cr.define('ntp4', function() {
      * data.
      */
     set data(data) {
+      this.id = data.navigationItems[0].id;
       this.updateBookmarkTiles_(data.items);
       this.updateBookmarkTitles_(data.navigationItems);
     },

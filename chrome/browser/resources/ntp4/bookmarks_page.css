@@ -153,3 +153,7 @@ html[dir=rtl] .bookmark .close-button {
   margin: 2px 0;
   width: 10px;
 }
+
+.bookmarks-manager-link-container {
+  height: 40px;
+}

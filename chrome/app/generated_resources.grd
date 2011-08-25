@@ -8309,6 +8309,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NEW_TAB_BOOKMARKS_PAGE_TITLE" desc="The 'Bookmarks' title on the new tab page">
         Bookmarks
       </message>
+      <message name="IDS_NEW_TAB_BOOKMARKS_MANAGER_LINK_TITLE" desc="The title of the link to invoke the bookmarks manager from the New Tab Page.">
+        More...
+      </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK"
          desc="The link that restores previously removed thumbnails">
         Restore all removed thumbnails
