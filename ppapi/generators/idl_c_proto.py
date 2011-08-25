@@ -398,26 +398,42 @@ class CGen(object):
     self.LogExit('Exit DefineMember')
     return out
 
-  # Define a Struct.
-  def DefineStruct(self, node, releases, prefix='', comment=False):
+  def DefineStructInternals(self, node, release, suffix='', comment=True):
     out = ''
-
-    self.LogEnter('DefineStruct %s' % node)
     if node.GetProperty('union'):
-      out += 'union %s%s {\n' % (prefix, node.GetName())
+      out += 'union %s%s {\n' % (node.GetName(), suffix)
     else:
-      out += 'struct %s%s {\n' % (prefix, node.GetName())
+      out += 'struct %s%s {\n' % (node.GetName(), suffix)
 
     # Generate Member Functions
     members = []
     for child in node.GetListOf('Member'):
-      member = self.Define(child, releases, tabs=1, comment=comment)
+      member = self.Define(child, [release], tabs=1, comment=comment)
       if not member:
         continue
       members.append(member)
     out += '%s\n};\n' % '\n'.join(members)
+    return out
+
+
+  def DefineStruct(self, node, releases, prefix='', comment=False):
+    self.LogEnter('DefineStruct %s' % node)
+    out = ''
+    build_list = node.GetUniqueReleases(releases)
+
+    # Build the most recent one with comments
+    out = self.DefineStructInternals(node, build_list[-1], comment=True)
+
+    # Build the rest without comments and with the version number appended
+    for rel in build_list[0:-1]:
+      ver_num = node.GetVersion(rel)
+      ver = ("_%s" % ver_num).replace('.', '_')
+      out += '\n' + self.DefineStructInternals(node, rel, suffix=ver,
+                                               comment=False)
+
     self.LogExit('Exit DefineStruct')
     return out
+
 
   #
   # Copyright and Comment

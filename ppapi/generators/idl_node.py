@@ -273,6 +273,17 @@ class IDLNode(IDLVersion):
     if not label: return None
     return label.GetVersion(release)
 
+  def GetUniqueReleases(self, releases):
+    # Given a list of release, return a subset of releases that change.
+    last_hash = None
+    build_list = []
+    for rel in releases:
+      cur_hash = self.GetHash(rel)
+      if last_hash != cur_hash:
+        build_list.append(rel)
+      last_hash = cur_hash
+    return build_list
+
   def SetProperty(self, name, val):
     self.property_node.SetProperty(name, val)
 

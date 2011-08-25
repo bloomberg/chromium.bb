@@ -119,6 +119,10 @@ class IDLVersionMap(object):
       return self.version_to_release[version]
 
   def GetVersion(self, release):
+    if release > self.releases[-1]:
+      release = self.releases[-1]
+    elif release < self.releases[0]:
+      release = self.releases[0]
     return self.release_to_version[release]
 
 

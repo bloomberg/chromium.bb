@@ -167,15 +167,14 @@ class HGen(GeneratorByFile):
       macro = node.GetProperty('macro')
       if not macro:
         macro = self.GetMacro(node)
-      label = node.GetLabel()
-      if label:
-        for vers in label.versions:
-          strver = str(vers).replace('.', '_')
-          idefs += self.GetDefine('%s_%s' % (macro, strver),
-                                  '"%s;%s"' % (name, vers))
-          if label.GetRelease(vers) == releases[-1]:
-            idefs += self.GetDefine(macro, '%s_%s' % (macro, strver))
-        idefs += '\n'
+
+      unique = node.GetUniqueReleases(releases)
+      for rel in unique:
+        version = node.GetVersion(rel)
+        strver = str(version).replace('.', '_')
+        idefs += self.GetDefine('%s_%s' % (macro, strver),
+                                '"%s;%s"' % (name, version))
+      idefs += self.GetDefine(macro, '%s_%s' % (macro, strver)) + '\n'
       out.Write(idefs)
 
     # Generate the @file comment
