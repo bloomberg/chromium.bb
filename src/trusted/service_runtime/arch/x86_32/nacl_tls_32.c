@@ -28,28 +28,14 @@ void NaClTlsFini() {
   NaClLdtFini();
 }
 
-/*
- * The TLS segment goes from the given base up to the top of the untrusted
- * address space.
- */
-static uint32_t NaClTlsLdtSize(struct NaClAppThread *natp,
-                               void                 *base_addr) {
-  size_t size = ((size_t) 1U << natp->nap->addr_bits) - (uintptr_t) base_addr;
-  /*
-   * The hardware constrains a byte-granularity segment to a 2MB limit.
-   */
-  if (size > (1U << 20))
-    size = (1U << 20);
-  return size;
-}
 
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
                          void                 *base_addr) {
-  size_t size = NaClTlsLdtSize(natp, base_addr);
+  UNREFERENCED_PARAMETER(natp);
   return (uint32_t) NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
                                                 0,
                                                 base_addr,
-                                                size);
+                                                4);
 }
 
 
@@ -60,12 +46,11 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 
 uint32_t NaClTlsChange(struct NaClAppThread *natp,
                        void                 *base_addr) {
-  size_t size = NaClTlsLdtSize(natp, base_addr);
   return (uint32_t)NaClLdtChangeByteSelector(natp->user.gs >> 3,
                                              NACL_LDT_DESCRIPTOR_DATA,
                                              0,
                                              base_addr,
-                                             size);
+                                             4);
 }
 
 
