@@ -3,18 +3,21 @@
 // found in the LICENSE file.
 
 #include "aura/desktop.h"
+#include "aura/desktop_host.h"
 #include "aura/window.h"
 #include "aura/window_delegate.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
+#include "views/widget/widget.h"
 
 namespace {
 
@@ -33,6 +36,19 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(DemoWindowDelegate);
 };
 
+class TestView : public views::View {
+ public:
+  TestView() {}
+  virtual ~TestView() {}
+
+ private:
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) {
+    canvas->FillRectInt(SK_ColorYELLOW, 0, 0, width(), height());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestView);
+};
 
 }  // namespace
 
@@ -76,6 +92,13 @@ int main(int argc, char** argv) {
   window3.SetBounds(gfx::Rect(10, 10, 50, 50), 0);
   window3.SetVisibility(aura::Window::VISIBILITY_SHOWN);
   window3.SetParent(&window2);
+
+  views::Widget widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+  params.bounds = gfx::Rect(75, 75, 80, 80);
+  params.parent = &window2;
+  widget.Init(params);
+  widget.SetContentsView(new TestView);
 
   aura::Desktop::GetInstance()->Run();
   return 0;

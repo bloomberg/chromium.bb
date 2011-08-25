@@ -242,6 +242,7 @@
         'events/event_utils_win.h',
         'events/event_x.cc',
         'focus/accelerator_handler.h',
+        'focus/accelerator_handler_aura.cc',
         'focus/accelerator_handler_gtk.cc',
         'focus/accelerator_handler_touch.cc',
         'focus/accelerator_handler_win.cc',
@@ -310,6 +311,7 @@
         'touchui/touch_selection_controller_impl.h',
         'view.cc',
         'view.h',
+        'view_aura.cc',
         'view_constants.cc',
         'view_constants.h',
         'view_gtk.cc',
@@ -395,6 +397,16 @@
             'widget/aero_tooltip_manager.cc',
             'widget/child_window_message_processor.cc',
             'widget/child_window_message_processor.h',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'sources/': [
+                ['include', 'controls/menu/menu_config_win.cc'],
+                ['include', 'controls/menu/menu_item_view_win.cc'],
+                ['include', 'controls/menu/menu_separator_win.cc'],
+                ['include', 'drag_utils_win.cc'],
+              ],
+            }],
           ],
         }],
         ['toolkit_uses_gtk == 1', {
@@ -753,6 +765,45 @@
           ],
         },
         ],
+        ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-limm32.lib',
+              '-loleacc.lib',
+            ]
+          },
+          'include_dirs': [
+            '<(DEPTH)/third_party/wtl/include',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'views_aura_desktop',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../skia/skia.gyp:skia',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        '../ui/ui.gyp:gfx_resources',
+        '../ui/ui.gyp:ui',
+        '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
+        'views',
+        'views_desktop_lib',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'aura_desktop/aura_desktop_main.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
+      ],
+      'conditions': [
         ['OS=="win"', {
           'link_settings': {
             'libraries': [
