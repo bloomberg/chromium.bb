@@ -389,7 +389,6 @@ class NetworkDevice {
   const std::string& firmware_revision() const { return firmware_revision_; }
   const std::string& hardware_revision() const { return hardware_revision_; }
   const unsigned int prl_version() const { return prl_version_; }
-  const std::string& home_provider() const { return home_provider_; }
   const std::string& home_provider_code() const { return home_provider_code_; }
   const std::string& home_provider_country() const {
     return home_provider_country_;
@@ -452,9 +451,6 @@ class NetworkDevice {
     technology_family_ = technology_family;
   }
   void set_carrier(const std::string& carrier) { carrier_ = carrier; }
-  void set_home_provider(const std::string& home_provider) {
-    home_provider_ = home_provider;
-  }
   void set_home_provider_code(const std::string& home_provider_code) {
     home_provider_code_ = home_provider_code;
   }
@@ -518,7 +514,6 @@ class NetworkDevice {
   // Cellular specific device info.
   TechnologyFamily technology_family_;
   std::string carrier_;
-  std::string home_provider_;
   std::string home_provider_code_;
   std::string home_provider_country_;
   std::string home_provider_id_;
@@ -1508,6 +1503,9 @@ class NetworkLibrary {
 
   // Change data roaming restriction for current cellular device.
   virtual void SetCellularDataRoamingAllowed(bool new_value) = 0;
+
+  // Return true if GSM SIM card can work only with enabled roaming.
+  virtual bool IsCellularAlwaysInRoaming() = 0;
 
   // Request a scan for new wifi networks.
   virtual void RequestNetworkScan() = 0;

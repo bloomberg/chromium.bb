@@ -291,6 +291,8 @@ class NetworkIcon {
   // bottom_right: disconnected / secure / technology / warning
   void SetBadges(const Network* network) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    chromeos::NetworkLibrary* cros =
+        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
 
     switch (network->type()) {
       case TYPE_ETHERNET: {
@@ -310,8 +312,11 @@ class NetworkIcon {
       case TYPE_CELLULAR: {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(network);
-        if (cellular->roaming_state() == ROAMING_STATE_ROAMING)
+        if (cellular->roaming_state() == ROAMING_STATE_ROAMING &&
+            !cros->IsCellularAlwaysInRoaming()) {
+          // For cellular that always in roaming don't show roaming badge.
           top_left_badge_ = rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_ROAMING);
+        }
         if (!cellular->connecting())
           bottom_right_badge_ = BadgeForNetworkTechnology(cellular);
         break;

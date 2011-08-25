@@ -308,6 +308,11 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         return;
 
       NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+      if (cros->IsCellularAlwaysInRoaming()) {
+        // If operator requires roaming always enabled, ignore supplied value
+        // and set data roaming allowed in true always.
+        new_value = true;
+      }
       cros->SetCellularDataRoamingAllowed(new_value);
     } else if (path == kStatsReportingPref) {
       // TODO(pastarmovj): Remove this once we don't need to regenerate the
@@ -328,9 +333,15 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
       const NetworkDevice* cellular = cros->FindCellularDevice();
       if (cellular) {
         bool device_value = cellular->data_roaming_allowed();
-        bool new_value = (use_value == USE_VALUE_SUPPLIED) ? value : false;
-        if (device_value != new_value)
-          cros->SetCellularDataRoamingAllowed(new_value);
+        if (!device_value && cros->IsCellularAlwaysInRoaming()) {
+          // If operator requires roaming always enabled, ignore supplied value
+          // and set data roaming allowed in true always.
+          cros->SetCellularDataRoamingAllowed(true);
+        } else {
+          bool new_value = (use_value == USE_VALUE_SUPPLIED) ? value : false;
+          if (device_value != new_value)
+            cros->SetCellularDataRoamingAllowed(new_value);
+        }
       }
     } else if (path == kStatsReportingPref) {
       bool stats_consent = (use_value == USE_VALUE_SUPPLIED) ? value : false;

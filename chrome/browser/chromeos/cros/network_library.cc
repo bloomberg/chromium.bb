@@ -103,6 +103,12 @@ const int kRecentPlanPaymentHours = 6;
 // If cellular device doesn't have SIM card, then retries are never used.
 const int kDefaultSimUnlockRetriesCount = 999;
 
+// List of cellular operators names that should have data roaming always enabled
+// to be able to connect to any network.
+const char* kAlwaysInRoamingOperators[] = {
+  "CUBIC"
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Misc.
 
@@ -1374,6 +1380,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // virtual RequestCellularScan implemented in derived classes.
   // virtual RequestCellularRegister implemented in derived classes.
   // virtual SetCellularDataRoamingAllowed implemented in derived classes.
+  // virtual IsCellularAlwaysInRoaming implemented in derived classes.
   // virtual RequestNetworkScan implemented in derived classes.
   // virtual GetWifiAccessPoints implemented in derived classes.
 
@@ -2955,6 +2962,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   virtual void RequestCellularScan() OVERRIDE;
   virtual void RequestCellularRegister(const std::string& network_id) OVERRIDE;
   virtual void SetCellularDataRoamingAllowed(bool new_value) OVERRIDE;
+  virtual bool IsCellularAlwaysInRoaming() OVERRIDE;
   virtual void RequestNetworkScan() OVERRIDE;
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) OVERRIDE;
 
@@ -3216,12 +3224,16 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(const std::string& path,
     PropertyIndex index = PROPERTY_INDEX_UNKNOWN;
     if (device->UpdateStatus(key, value, &index)) {
       if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
-        bool settings_value =
-            UserCrosSettingsProvider::cached_data_roaming_enabled();
-        if (device->data_roaming_allowed() != settings_value) {
-          // Switch back to signed settings value.
-          SetCellularDataRoamingAllowed(settings_value);
-          return;
+        if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
+          SetCellularDataRoamingAllowed(true);
+        } else {
+          bool settings_value =
+              UserCrosSettingsProvider::cached_data_roaming_enabled();
+          if (device->data_roaming_allowed() != settings_value) {
+            // Switch back to signed settings value.
+            SetCellularDataRoamingAllowed(settings_value);
+            return;
+          }
         }
       }
     } else {
@@ -3479,6 +3491,21 @@ void NetworkLibraryImplCros::SetCellularDataRoamingAllowed(bool new_value) {
   chromeos::SetNetworkDeviceProperty(cellular->device_path().c_str(),
                                      kCellularAllowRoamingProperty,
                                      value.get());
+}
+
+bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
+  const NetworkDevice* cellular = FindCellularDevice();
+  if (!cellular) {
+    NOTREACHED() << "Calling IsCellularAlwaysInRoaming method "
+        "w/o cellular device.";
+    return false;
+  }
+  const std::string& home_provider_name = cellular->home_provider_name();
+  for (size_t i = 0; i < arraysize(kAlwaysInRoamingOperators); i++) {
+    if (home_provider_name == kAlwaysInRoamingOperators[i])
+      return true;
+  }
+  return false;
 }
 
 void NetworkLibraryImplCros::RequestNetworkScan() {
@@ -4256,6 +4283,18 @@ void NetworkLibraryImplCros::ParseNetworkDevice(const std::string& device_path,
     CHECK(device) << "Attempted to add NULL device for path: " << device_path;
   }
   VLOG(1) << "ParseNetworkDevice:" << device->name();
+  if (device && device->type() == TYPE_CELLULAR) {
+    if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
+      SetCellularDataRoamingAllowed(true);
+    } else {
+      bool settings_value =
+          UserCrosSettingsProvider::cached_data_roaming_enabled();
+      if (device->data_roaming_allowed() != settings_value) {
+        // Switch back to signed settings value.
+        SetCellularDataRoamingAllowed(settings_value);
+      }
+    }
+  }
   NotifyNetworkManagerChanged(false);  // Not forced.
   AddNetworkDeviceObserver(device_path, network_device_observer_.get());
 }
@@ -4305,6 +4344,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   virtual void RequestCellularRegister(
       const std::string& network_id) OVERRIDE {}
   virtual void SetCellularDataRoamingAllowed(bool new_value) OVERRIDE {}
+  virtual bool IsCellularAlwaysInRoaming() OVERRIDE { return false; }
   virtual void RequestNetworkScan() OVERRIDE {}
 
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) OVERRIDE;
