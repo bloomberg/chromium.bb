@@ -710,6 +710,14 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
   if (!to_migrate.empty())
     host_->frontend_->OnMigrationNeededForTypes(to_migrate);
 
+  // Process any changes to the datatypes we're syncing.
+  // TODO(sync): add support for removing types.
+  syncable::ModelTypeSet to_add;
+  if (host_->initialized() &&
+      sync_manager()->ReceivedExperimentalTypes(&to_add)) {
+    host_->frontend_->OnDataTypesChanged(to_add);
+  }
+
   // If we are waiting for a configuration change, check here to see
   // if this sync cycle has initialized all of the types we've been
   // waiting for.

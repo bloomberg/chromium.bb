@@ -874,10 +874,19 @@ bool ProfileSyncServiceHarness::WaitForTypeEncryption(
 bool ProfileSyncServiceHarness::IsTypeEncrypted(syncable::ModelType type) {
   syncable::ModelTypeSet encrypted_types;
   service_->GetEncryptedDataTypes(&encrypted_types);
-  if (encrypted_types.count(type) == 0) {
-    return false;
-  }
-  return true;
+  return (encrypted_types.count(type) != 0);
+}
+
+bool ProfileSyncServiceHarness::IsTypeRegistered(syncable::ModelType type) {
+  syncable::ModelTypeSet registered_types;
+  service_->GetRegisteredDataTypes(&registered_types);
+  return (registered_types.count(type) != 0);
+}
+
+bool ProfileSyncServiceHarness::IsTypePreferred(syncable::ModelType type) {
+  syncable::ModelTypeSet synced_types;
+  service_->GetPreferredDataTypes(&synced_types);
+  return (synced_types.count(type) != 0);
 }
 
 std::string ProfileSyncServiceHarness::GetServiceStatus() {

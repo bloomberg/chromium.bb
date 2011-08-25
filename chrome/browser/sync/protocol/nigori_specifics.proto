@@ -60,6 +60,8 @@ message NigoriSpecifics {
   optional bool encrypt_sessions = 20;
   optional bool encrypt_apps = 21;
   optional bool encrypt_search_engines = 22;
+  
+  optional bool sync_tabs = 23;
 }
 
 extend EntitySpecifics {

@@ -863,6 +863,23 @@ class SyncDataModel(object):
             entry.parent_id_string)
       self._entries[entry.id_string] = entry
 
+  def TriggerSyncTabs(self):
+    """Set the 'sync_tabs' field to this account's nigori node.
+
+    If the field is not currently set, will write a new nigori node entry
+    with the field set. Else does nothing.
+    """
+
+    nigori_tag = "google_chrome_nigori"
+    nigori_original = self._entries.get(self._ServerTagToId(nigori_tag))
+    if (nigori_original.specifics.Extensions[nigori_specifics_pb2.nigori].
+        sync_tabs):
+      return
+    nigori_new = copy.deepcopy(nigori_original)
+    nigori_new.specifics.Extensions[nigori_specifics_pb2.nigori].sync_tabs = (
+        True)
+    self._SaveEntry(nigori_new)
+
 
 class TestServer(object):
   """An object to handle requests for one (and only one) Chrome Sync account.
@@ -938,6 +955,13 @@ class TestServer(object):
     return (
         200,
         '<html><title>Transient error</title><H1>Transient error</H1></html>')
+
+  def HandleSetSyncTabs(self):
+    """Set the 'sync_tab' field of the nigori node for this account."""
+    self.account.TriggerSyncTabs()
+    return (
+        200,
+        '<html><title>Sync Tabs</title><H1>Sync Tabs</H1></html>')
 
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.

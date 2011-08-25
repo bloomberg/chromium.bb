@@ -158,7 +158,7 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
 
 DataTypeManager* ProfileSyncFactoryImpl::CreateDataTypeManager(
     SyncBackendHost* backend,
-    const DataTypeController::TypeMap& controllers) {
+    const DataTypeController::TypeMap* controllers) {
   return new DataTypeManagerImpl(backend, controllers);
 }
 

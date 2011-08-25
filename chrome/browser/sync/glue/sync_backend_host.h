@@ -94,6 +94,9 @@ class SyncFrontend {
   virtual void OnMigrationNeededForTypes(
       const syncable::ModelTypeSet& types) = 0;
 
+  // Inform the Frontend that new datatypes are available for registration.
+  virtual void OnDataTypesChanged(const syncable::ModelTypeSet& to_add) = 0;
+
  protected:
   // Don't delete through SyncFrontend interface.
   virtual ~SyncFrontend() {

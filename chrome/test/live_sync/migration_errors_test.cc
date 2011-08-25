@@ -279,3 +279,91 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithNigori) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 }
+
+class MigrationReconfigureTest : public LiveSyncTest {
+ public:
+  MigrationReconfigureTest() : LiveSyncTest(TWO_CLIENT) {}
+
+  virtual void SetUpCommandLine(CommandLine* cl) OVERRIDE {
+    AddTestSwitches(cl);
+    // Do not add optional datatypes.
+  }
+
+  virtual ~MigrationReconfigureTest() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MigrationReconfigureTest);
+};
+
+IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
+  if (!ServerSupportsErrorTriggering()) {
+    LOG(WARNING) << "Test skipped in this server environment.";
+    return;
+  }
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_FALSE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
+  ASSERT_FALSE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
+
+  // Phase 1: Before migrating anything, create & sync a preference.
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+
+  // Phase 2: Trigger setting the sync_tabs field.
+  TriggerSetSyncTabs();
+
+  // Phase 3: Modify a bookmark and wait for it to sync.
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Phase 4: Verify that preferences can still be synchronized.
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+
+  // Phase 5: Verify that sessions are registered and enabled.
+  ASSERT_TRUE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
+  ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabsAndMigrate) {
+  if (!ServerSupportsErrorTriggering()) {
+    LOG(WARNING) << "Test skipped in this server environment.";
+    return;
+  }
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_FALSE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
+  ASSERT_FALSE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
+
+  // Phase 1: Before migrating anything, create & sync a preference.
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+
+  // Phase 2: Trigger setting the sync_tabs field.
+  TriggerSetSyncTabs();
+
+  // Phase 3: Trigger a preference migration on the server.
+  syncable::ModelTypeSet migrate_types;
+  migrate_types.insert(syncable::PREFERENCES);
+  TriggerMigrationDoneError(migrate_types);
+
+  // Phase 4: Modify a bookmark and wait for it to sync.
+  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Phase 5: Verify that preferences can still be synchronized.
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  ChangeBooleanPref(0, prefs::kShowHomeButton);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+
+  // Phase 6: Verify that sessions are registered and enabled.
+  ASSERT_TRUE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
+  ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
+}

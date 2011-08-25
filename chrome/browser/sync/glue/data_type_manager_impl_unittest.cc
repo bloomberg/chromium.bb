@@ -167,7 +167,7 @@ class DataTypeManagerImplTest : public TestingBrowserProcessTest {
 };
 
 TEST_F(DataTypeManagerImplTest, NoControllers) {
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
   dtm.Configure(types_, sync_api::CONFIGURE_REASON_RECONFIGURATION);
@@ -181,7 +181,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOne) {
   SetStartStopExpectations(bookmark_dtc);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(1);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.insert(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
@@ -197,7 +197,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneStopWhileStarting) {
                                DataTypeController::MODEL_STARTING);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(1);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.insert(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
@@ -212,7 +212,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
   SetBusyStartStopExpectations(bookmark_dtc, DataTypeController::ASSOCIATING);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(1);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.insert(syncable::BOOKMARKS);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
@@ -232,7 +232,7 @@ TEST_F(DataTypeManagerImplTest, OneWaitingForCrypto) {
   controllers_[syncable::PASSWORDS] = password_dtc;
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(1);
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.insert(syncable::PASSWORDS);
   SetConfigureStartExpectation();
 
@@ -268,7 +268,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneThenAnother) {
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(2);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.insert(syncable::BOOKMARKS);
 
   SetConfigureStartExpectation();
@@ -295,7 +295,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureOneThenSwitch) {
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(2);
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   types_.insert(syncable::BOOKMARKS);
 
   SetConfigureStartExpectation();
@@ -349,7 +349,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _))
     .WillOnce(Invoke(DoConfigureDataTypes))
     .WillOnce(DoAll(Invoke(DoConfigureDataTypes),
@@ -385,7 +385,7 @@ TEST_F(DataTypeManagerImplTest, OneFailingController) {
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ASSOCIATION_FAILED);
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(1);
@@ -409,7 +409,7 @@ TEST_F(DataTypeManagerImplTest, StopWhileInFlight) {
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED);
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(1);
@@ -441,7 +441,7 @@ TEST_F(DataTypeManagerImplTest, SecondControllerFails) {
       WillRepeatedly(Return(DataTypeController::NOT_RUNNING));
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ASSOCIATION_FAILED);
   EXPECT_CALL(backend_, ConfigureDataTypes(_, _, _, _, _)).Times(1);
@@ -461,7 +461,7 @@ TEST_F(DataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   SetStartStopExpectations(preference_dtc);
   controllers_[syncable::PREFERENCES] = preference_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
   base::Callback<void(bool)> task;
@@ -495,7 +495,7 @@ TEST_F(DataTypeManagerImplTest, StopWhileDownloadPending) {
   SetNotUsedExpectations(bookmark_dtc);
   controllers_[syncable::BOOKMARKS] = bookmark_dtc;
 
-  DataTypeManagerImpl dtm(&backend_, controllers_);
+  DataTypeManagerImpl dtm(&backend_, &controllers_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED);
   base::Callback<void(bool)> task;

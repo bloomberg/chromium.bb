@@ -8,6 +8,9 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,9 +19,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
-
-#include <string>
-#include <vector>
 
 class CommandLine;
 class Profile;
@@ -77,13 +77,13 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // Validates command line parameters and creates a local python test server if
   // specified.
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
   // Brings down local python test server if one was created.
-  virtual void TearDown();
+  virtual void TearDown() OVERRIDE;
 
   // Sets up command line flags required for sync tests.
-  virtual void SetUpCommandLine(CommandLine* cl);
+  virtual void SetUpCommandLine(CommandLine* cl) OVERRIDE;
 
   // Used to get the number of sync clients used by a test.
   int num_clients() WARN_UNUSED_RESULT { return num_clients_; }
@@ -161,18 +161,28 @@ class LiveSyncTest : public InProcessBrowserTest {
   // this state until shut down.
   void TriggerTransientError();
 
+  // Triggers setting the sync_tabs field of the nigori node.
+  void TriggerSetSyncTabs();
+
  protected:
+  // Add custom switches needed for running the test.
+  virtual void AddTestSwitches(CommandLine* cl);
+
+  // Append the command line switches to enable experimental types that aren't
+  // on by default yet.
+  virtual void AddOptionalTypesToCommandLine(CommandLine* cl);
+
   // InProcessBrowserTest override. Destroys all the sync clients and sync
   // profiles created by a test.
-  virtual void CleanUpOnMainThread();
+  virtual void CleanUpOnMainThread() OVERRIDE;
 
   // InProcessBrowserTest override. Changes behavior of the default host
   // resolver to avoid DNS lookup errors.
-  virtual void SetUpInProcessBrowserTestFixture();
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
 
   // InProcessBrowserTest override. Resets the host resolver its default
   // behavior.
-  virtual void TearDownInProcessBrowserTestFixture();
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
   // GAIA account used by the test case.
   std::string username_;

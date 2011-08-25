@@ -151,14 +151,14 @@ void LiveSyncTest::SetUp() {
     SetupMockGaiaResponses();
   }
 
-   if (!cl->HasSwitch(switches::kSyncServiceURL) &&
-       !cl->HasSwitch(switches::kSyncServerCommandLine)) {
-    // If neither a sync server URL nor a sync server command line is
-    // provided, start up a local python sync test server and point Chrome
-    // to its URL.  This is the most common configuration, and the only
-    // one that makes sense for most developers.
-    server_type_ = LOCAL_PYTHON_SERVER;
-   } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
+  if (!cl->HasSwitch(switches::kSyncServiceURL) &&
+      !cl->HasSwitch(switches::kSyncServerCommandLine)) {
+   // If neither a sync server URL nor a sync server command line is
+   // provided, start up a local python sync test server and point Chrome
+   // to its URL.  This is the most common configuration, and the only
+   // one that makes sense for most developers.
+   server_type_ = LOCAL_PYTHON_SERVER;
+  } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
               cl->HasSwitch(switches::kSyncServerCommandLine)) {
     // If a sync server URL and a sync server command line are provided,
     // start up a local sync server by running the command line. Chrome
@@ -201,18 +201,25 @@ void LiveSyncTest::TearDown() {
 }
 
 void LiveSyncTest::SetUpCommandLine(CommandLine* cl) {
+  AddTestSwitches(cl);
+  AddOptionalTypesToCommandLine(cl);
+}
+
+void LiveSyncTest::AddTestSwitches(CommandLine* cl) {
   // TODO(rsimha): Until we implement a fake Tango server against which tests
   // can run, we need to set the --sync-notification-method to "p2p".
   if (!cl->HasSwitch(switches::kSyncNotificationMethod))
     cl->AppendSwitchASCII(switches::kSyncNotificationMethod, "p2p");
 
-  // TODO(sync): Remove this once sessions sync is enabled by default.
-  if (!cl->HasSwitch(switches::kEnableSyncSessions))
-    cl->AppendSwitch(switches::kEnableSyncSessions);
-
   // Disable non-essential access of external network resources.
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);
+}
+
+void LiveSyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {
+  // TODO(sync): Remove this once sessions sync is enabled by default.
+  if (!cl->HasSwitch(switches::kEnableSyncSessions))
+    cl->AppendSwitch(switches::kEnableSyncSessions);
 }
 
 // static
@@ -357,7 +364,7 @@ void LiveSyncTest::ReadPasswordFile() {
   std::vector<std::string> tokens;
   std::string delimiters = "\r\n";
   Tokenize(file_contents, delimiters, &tokens);
-  ASSERT_TRUE(tokens.size() == 2) << "Password file \""
+  ASSERT_EQ(2U, tokens.size()) << "Password file \""
       << password_file_.value()
       << "\" must contain exactly two lines of text.";
   username_ = tokens[0];
@@ -568,6 +575,14 @@ void LiveSyncTest::TriggerTransientError() {
   std::string path = "chromiumsync/transienterror";
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
   ASSERT_EQ("Transient error",
+            UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
+}
+
+void LiveSyncTest::TriggerSetSyncTabs() {
+  ASSERT_TRUE(ServerSupportsErrorTriggering());
+  std::string path = "chromiumsync/synctabs";
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+  ASSERT_EQ("Sync Tabs",
             UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
 }
 

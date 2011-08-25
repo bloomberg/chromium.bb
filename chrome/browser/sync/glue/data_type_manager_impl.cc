@@ -64,7 +64,7 @@ class SortComparator : public std::binary_function<DataTypeController*,
 }  // namespace
 
 DataTypeManagerImpl::DataTypeManagerImpl(SyncBackendHost* backend,
-    const DataTypeController::TypeMap& controllers)
+    const DataTypeController::TypeMap* controllers)
     : backend_(backend),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
@@ -73,8 +73,8 @@ DataTypeManagerImpl::DataTypeManagerImpl(SyncBackendHost* backend,
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(backend_);
   // Ensure all data type controllers are stopped.
-  for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
-       it != controllers_.end(); ++it) {
+  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
+       it != controllers_->end(); ++it) {
     DCHECK_EQ(DataTypeController::NOT_RUNNING, (*it).second->state());
   }
 
@@ -92,8 +92,8 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
   bool found_any = false;
   for (TypeSet::const_iterator it = last_requested_types_.begin();
        it != last_requested_types_.end(); ++it) {
-    DataTypeController::TypeMap::const_iterator dtc = controllers_.find(*it);
-    if (dtc != controllers_.end() &&
+    DataTypeController::TypeMap::const_iterator dtc = controllers_->find(*it);
+    if (dtc != controllers_->end() &&
         (dtc->second->state() == DataTypeController::NOT_RUNNING ||
          dtc->second->state() == DataTypeController::STOPPING)) {
       found_any = true;
@@ -163,8 +163,8 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
   // Add any data type controllers into that needs_stop_ list that are
   // currently MODEL_STARTING, ASSOCIATING, or RUNNING.
   needs_stop_.clear();
-  for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
-       it != controllers_.end(); ++it) {
+  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
+       it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second;
     if (desired_types.count(dtc->type()) == 0 && (
             dtc->state() == DataTypeController::MODEL_STARTING ||
@@ -214,7 +214,7 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
   const syncable::ModelTypeSet& types_to_add = last_requested_types_;
   syncable::ModelTypeSet types_to_remove;
   for (DataTypeController::TypeMap::const_iterator it =
-           controllers_.begin(); it != controllers_.end(); ++it) {
+           controllers_->begin(); it != controllers_->end(); ++it) {
     all_types.insert(it->first);
   }
   // Check that types_to_add \subseteq all_types.
@@ -406,8 +406,8 @@ void DataTypeManagerImpl::FinishStop() {
   DCHECK(state_== CONFIGURING || state_ == STOPPING || state_ == BLOCKED ||
          state_ == DOWNLOAD_PENDING);
   // Simply call the Stop() method on all running data types.
-  for (DataTypeController::TypeMap::const_iterator it = controllers_.begin();
-       it != controllers_.end(); ++it) {
+  for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
+       it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second;
     if (dtc->state() != DataTypeController::NOT_RUNNING &&
         dtc->state() != DataTypeController::STOPPING) {
@@ -475,10 +475,6 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
       chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
       Source<DataTypeManager>(this),
       Details<const ConfigureResult>(&result));
-}
-
-const DataTypeController::TypeMap& DataTypeManagerImpl::controllers() {
-  return controllers_;
 }
 
 DataTypeManager::State DataTypeManagerImpl::state() {

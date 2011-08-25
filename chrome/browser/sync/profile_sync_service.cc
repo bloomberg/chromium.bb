@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <map>
-#include <ostream>
 #include <set>
 #include <utility>
 
@@ -21,6 +20,8 @@
 #include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/about_flags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -29,6 +30,8 @@
 #include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/session_data_type_controller.h"
+#include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
@@ -316,7 +319,6 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken,
                                    "",
                                    PrefService::UNSYNCABLE_PREF);
-
   pref_service->RegisterBooleanPref(prefs::kSyncAutofillProfile,
                                     enable_by_default,
                                     PrefService::UNSYNCABLE_PREF);
@@ -550,6 +552,41 @@ const char* ProfileSyncService::GetPrefNameForDataType(
   return NULL;
 }
 
+// static
+std::string ProfileSyncService::GetExperimentNameForDataType(
+    syncable::ModelType data_type) {
+  switch (data_type) {
+    case syncable::SESSIONS:
+      return "sync-sessions";
+    case syncable::TYPED_URLS:
+      return "sync-typed-urls";
+    default:
+      break;
+  }
+  NOTREACHED();
+  return "";
+}
+
+void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
+  if (data_type_controllers_.count(data_type) > 0)
+    return;
+  switch (data_type) {
+    case syncable::SESSIONS:
+      RegisterDataTypeController(
+          new browser_sync::SessionDataTypeController(factory_,
+                                                      profile_,
+                                                      this));
+      return;
+    case syncable::TYPED_URLS:
+      RegisterDataTypeController(
+          new browser_sync::TypedUrlDataTypeController(factory_, profile_));
+      return;
+    default:
+      break;
+  }
+  NOTREACHED();
+}
+
 // An invariant has been violated.  Transition to an error state where we try
 // to do as little work as possible, to avoid further corruption or crashes.
 void ProfileSyncService::OnUnrecoverableError(
@@ -625,6 +662,60 @@ void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
   VLOG(2) << "Notifying observers sync cycle completed";
   NotifyObservers();
+}
+
+// TODO(sync): eventually support removing datatypes too.
+void ProfileSyncService::OnDataTypesChanged(
+    const syncable::ModelTypeSet& to_add) {
+  // We don't bother doing anything if the migrator is busy.
+  if (migrator_->state() != browser_sync::BackendMigrator::IDLE) {
+    VLOG(1) << "Dropping OnDataTypesChanged due to migrator busy.";
+    return;
+  }
+
+  syncable::ModelTypeSet new_types;
+  syncable::ModelTypeSet preferred_types;
+  GetPreferredDataTypes(&preferred_types);
+  syncable::ModelTypeSet registered_types;
+  GetRegisteredDataTypes(&registered_types);
+
+  for (syncable::ModelTypeSet::const_iterator iter = to_add.begin();
+       iter != to_add.end();
+       ++iter) {
+    // Received notice to enable session sync. Check if sessions are
+    // registered, and if not register a new datatype controller.
+    if (registered_types.count(*iter) == 0) {
+      RegisterNewDataType(*iter);
+      // Enable the about:flags switch for sessions so we don't have to always
+      // perform this reconfiguration. Once we set this, sessions will remain
+      // registered, so we will no longer go down this code path.
+      std::string experiment_name = GetExperimentNameForDataType(*iter);
+      if (experiment_name.empty())
+        continue;
+      about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+                                        experiment_name,
+                                        true);
+
+      // Check if the user has "Keep Everything Synced" enabled. If so, we want
+      // to turn on sessions if it's not already on. Otherwise we leave it off.
+      // Note: if sessions are already registered, we don't turn it on. This
+      // covers the case where we're already in the process of reconfiguring
+      // to turn sessions on.
+      if (profile_->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced) &&
+          preferred_types.count(*iter) == 0){
+        std::string pref_name = GetPrefNameForDataType(*iter);
+        if (pref_name.empty())
+          continue;
+        profile_->GetPrefs()->SetBoolean(pref_name.c_str(), true);
+      }
+    }
+  }
+
+  if (!new_types.empty()) {
+    VLOG(1) << "Dynamically enabling new datatypes: "
+            << syncable::ModelTypeSetToString(new_types);
+    OnMigrationNeededForTypes(new_types);
+  }
 }
 
 void ProfileSyncService::UpdateAuthErrorState(
@@ -1126,7 +1217,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     restart = true;
     data_type_manager_.reset(
         factory_->CreateDataTypeManager(backend_.get(),
-                                        data_type_controllers_));
+                                        &data_type_controllers_));
     registrar_.Add(this,
                    chrome::NOTIFICATION_SYNC_CONFIGURE_START,
                    Source<DataTypeManager>(data_type_manager_.get()));

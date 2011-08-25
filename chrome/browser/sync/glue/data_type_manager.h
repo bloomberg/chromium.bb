@@ -93,9 +93,6 @@ class DataTypeManager {
   // stopped.
   virtual void Stop() = 0;
 
-  // Reference to map of data type controllers.
-  virtual const DataTypeController::TypeMap& controllers() = 0;
-
   // The current state of the data type manager.
   virtual State state() = 0;
 };

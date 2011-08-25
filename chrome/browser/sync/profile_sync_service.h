@@ -207,6 +207,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const syncable::ModelTypeSet& encrypted_types) OVERRIDE;
   virtual void OnMigrationNeededForTypes(
       const syncable::ModelTypeSet& types) OVERRIDE;
+  virtual void OnDataTypesChanged(
+      const syncable::ModelTypeSet& to_add) OVERRIDE;
 
   void OnClearServerDataTimeout();
 
@@ -550,6 +552,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void NotifyObservers();
 
   static const char* GetPrefNameForDataType(syncable::ModelType data_type);
+
+  // About-flags experiment names for datatypes that aren't enabled by default
+  // yet.
+  static std::string GetExperimentNameForDataType(
+      syncable::ModelType data_type);
+
+  // Create and register a new datatype controller.
+  void RegisterNewDataType(syncable::ModelType data_type);
 
   // Time at which we begin an attempt a GAIA authorization.
   base::TimeTicks auth_start_time_;

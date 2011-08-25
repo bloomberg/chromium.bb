@@ -24,7 +24,7 @@ class SyncBackendHost;
 class DataTypeManagerImpl : public DataTypeManager {
  public:
   DataTypeManagerImpl(SyncBackendHost* backend,
-                       const DataTypeController::TypeMap& controllers);
+                      const DataTypeController::TypeMap* controllers);
   virtual ~DataTypeManagerImpl();
 
   // DataTypeManager interface.
@@ -36,7 +36,6 @@ class DataTypeManagerImpl : public DataTypeManager {
                                       sync_api::ConfigureReason reason);
 
   virtual void Stop();
-  virtual const DataTypeController::TypeMap& controllers();
   virtual State state();
 
  private:
@@ -77,7 +76,7 @@ class DataTypeManagerImpl : public DataTypeManager {
   SyncBackendHost* backend_;
   // Map of all data type controllers that are available for sync.
   // This list is determined at startup by various command line flags.
-  const DataTypeController::TypeMap controllers_;
+  const DataTypeController::TypeMap* controllers_;
   State state_;
   std::map<syncable::ModelType, int> start_order_;
   TypeSet last_requested_types_;

@@ -512,7 +512,14 @@ class SyncManager {
   // only be called after syncapi has been initialized.
   void RefreshEncryption();
 
+  // Gets the set of encrypted types from the cryptographer
+  // Note: opens a transaction.
   syncable::ModelTypeSet GetEncryptedDataTypes() const;
+
+  // Reads the nigori node to determine if any experimental types should be
+  // enabled.
+  // Note: opens a transaction.
+  bool ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add) const;
 
   // Uses a read-only transaction to determine if the directory being synced has
   // any remaining unsynced items.
