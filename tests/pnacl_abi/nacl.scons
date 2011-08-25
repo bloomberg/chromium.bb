@@ -13,9 +13,16 @@ if not env.Bit('bitcode'):
 if env.Bit('target_arm'):
   Return()
 
+# Comparisons with golden bitcode files are bound to fail with optimizations.
+# This hack makes sure they're always compiled at "default" level.
+optflags = ['-O0','-O1','-O2','-O3']
+env.FilterOut(CCFLAGS=optflags,
+              LINKFLAGS=optflags,
+              CXXFLAGS=optflags)
+
 TESTS = ['small_structs_by_value.c',
          'data_type.c',
-         ## 'vaarg.c',## todo(jasonwkim) comment out - upstream changes break this test
+         'vaarg.c',
          ]
 
 for src in TESTS:

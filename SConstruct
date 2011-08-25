@@ -2527,14 +2527,7 @@ def FixWindowsAssembler(env):
 
 FixWindowsAssembler(nacl_env)
 
-# TODO(mcgrathr,pdox): llc troubles at final link time if the libraries are
-# built with optimization, remove this hack when the compiler is fixed.
-# http://code.google.com/p/nativeclient/issues/detail?id=1225
 if nacl_env.Bit('bitcode'):
-  optflags = ['-O0','-O1','-O2','-O3']
-  nacl_env.FilterOut(CCFLAGS=optflags,
-                     LINKFLAGS=optflags,
-                     CXXFLAGS=optflags)
   # TODO(pdox): Remove this as soon as build_config.h can be
   #             changed to accept __pnacl__.
   # pending http://codereview.chromium.org/6667035/
