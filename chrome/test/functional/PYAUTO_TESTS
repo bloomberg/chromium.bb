@@ -189,6 +189,9 @@
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
+      # Causes browser crash.  crbug.com/93548
+      '-notifications.NotificationsTest.testIncognitoNotification',
+      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/70437
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/91617
