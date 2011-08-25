@@ -293,7 +293,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
   if (args.Length() && args[0]->IsArray()) {
     // For backwards compatibility, also accept an array of strings.
     // TODO(tonyg): Remove this when it is confirmed to be unused.
-    v8::Array* suggestions_array = static_cast<v8::Array*>(*args[0]);
+    v8::Array* suggestions_array = v8::Array::Cast(*args[0]);
     uint32_t length = suggestions_array->Length();
     for (uint32_t i = 0; i < length; i++) {
       std::string suggestion = *v8::String::Utf8Value(
