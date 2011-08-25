@@ -1781,8 +1781,9 @@ def AliasSrpc(env, alias, is_client, build_dir, srpc_files,
   # Add the srpc_files
   for name in srpc_files:
     # TODO(bradnelson): make this more correct.
-    gen_args.append(File(name).srcnode().abspath.replace(
-        '/native_client/src/', '/ppapi/native_client/src/'))
+    old = os.sep.join(['', 'native_client', 'src', ''])
+    new = os.sep.join(['', 'ppapi', 'native_client', 'src', ''])
+    gen_args.append(File(name).srcnode().abspath.replace(old, new))
 
   # Build the command line string
   action = ' '.join(gen_args)
