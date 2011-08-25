@@ -7,12 +7,16 @@
 #pragma once
 
 #include <map>
+#include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread.h"
+#include "googleurl/src/gurl.h"
 
 class GURL;
 class FilePath;
@@ -48,9 +52,6 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   // The indexed db file extension.
   static const FilePath::CharType kIndexedDBExtension[];
 
-  // Get the file name of the indexed db file for the given origin.
-  FilePath GetIndexedDBFilePath(const string16& origin_id) const;
-
   void set_clear_local_state_on_exit(bool clear_local_state) {
     clear_local_state_on_exit_ = clear_local_state;
   }
@@ -59,11 +60,12 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   void DeleteIndexedDBForOrigin(const GURL& origin_url);
 
   // Does a particular origin get unlimited storage?
-  bool IsUnlimitedStorageGranted(const GURL& origin) const;
+  bool IsUnlimitedStorageGranted(const GURL& origin_url) const;
 
   // Methods used in response to QuotaManager requests.
-  void GetAllOriginIdentifiers(std::vector<string16>* origin_ids);
+  void GetAllOrigins(std::vector<GURL>* origins);
   int64 GetOriginDiskUsage(const GURL& origin_url);
+  base::Time GetOriginLastModified(const GURL& origin_url);
 
   // Methods called by IndexedDBDispatcherHost for quota support.
   void ConnectionOpened(const GURL& origin_url);
@@ -80,28 +82,41 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
 #endif
 
  private:
+  FRIEND_TEST(ExtensionServiceTest, ClearExtensionData);
+  FRIEND_TEST(IndexedDBBrowserTest, ClearLocalState);
+  friend class IndexedDBQuotaClientTest;
+
   typedef std::map<GURL, int64> OriginToSizeMap;
   class IndexedDBGetUsageAndQuotaCallback;
 
+  FilePath GetIndexedDBFilePath(const string16& origin_id) const;
   int64 ReadUsageFromDisk(const GURL& origin_url) const;
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
   void GotUpdatedQuota(const GURL& origin_url, int64 usage, int64 quota);
   void QueryAvailableQuota(const GURL& origin_url);
-  int64 ResetDiskUsageCache(const GURL& origin_url);
+
+  std::set<GURL>* GetOriginSet();
+  bool AddToOriginSet(const GURL& origin_url) {
+    return GetOriginSet()->insert(origin_url).second;
+  }
+  void RemoveFromOriginSet(const GURL& origin_url) {
+    GetOriginSet()->erase(origin_url);
+  }
+  bool IsInOriginSet(const GURL& origin_url) {
+    std::set<GURL>* set = GetOriginSet();
+    return set->find(origin_url) != set->end();
+  }
+
+  // Only for testing.
+  void ResetCaches();
 
   scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
-
-  // Path where the indexed db data is stored
   FilePath data_path_;
-
-  // True if the destructor should delete its files.
   bool clear_local_state_on_exit_;
-
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
-
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
-
+  scoped_ptr<std::set<GURL> > origin_set_;
   OriginToSizeMap origin_size_map_;
   OriginToSizeMap space_available_map_;
   std::map<GURL, unsigned int> connection_count_;

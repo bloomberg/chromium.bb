@@ -481,7 +481,7 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
       cookies_(new CannedBrowsingDataCookieHelper(profile)),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
       file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
-      indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(profile)),
+      indexed_dbs_(new CannedBrowsingDataIndexedDBHelper()),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
 }

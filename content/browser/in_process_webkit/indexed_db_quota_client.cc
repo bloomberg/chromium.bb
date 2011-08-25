@@ -88,14 +88,12 @@ class IndexedDBQuotaClient::GetOriginsTaskBase : public HelperTask {
   virtual bool ShouldAddOrigin(const GURL& origin) = 0;
 
   virtual void RunOnTargetThread() OVERRIDE {
-    std::vector<string16> origin_identifiers;
-    indexed_db_context_->GetAllOriginIdentifiers(&origin_identifiers);
-    for (std::vector<string16>::const_iterator iter =
-             origin_identifiers.begin();
-         iter != origin_identifiers.end(); ++iter) {
-      GURL origin = DatabaseUtil::GetOriginFromIdentifier(*iter);
-      if (ShouldAddOrigin(origin))
-        origins_.insert(origin);
+    std::vector<GURL> origins;
+    indexed_db_context_->GetAllOrigins(&origins);
+    for (std::vector<GURL>::const_iterator iter = origins.begin();
+         iter != origins.end(); ++iter) {
+      if (ShouldAddOrigin(*iter))
+        origins_.insert(*iter);
     }
   }
 

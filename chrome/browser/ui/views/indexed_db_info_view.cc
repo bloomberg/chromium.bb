@@ -34,7 +34,7 @@ IndexedDBInfoView::~IndexedDBInfoView() {
 
 void IndexedDBInfoView::SetIndexedDBInfo(
     const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info) {
-  origin_value_field_->SetText(UTF8ToWide(indexed_db_info.origin));
+  origin_value_field_->SetText(UTF8ToWide(indexed_db_info.origin.spec()));
   size_value_field_->SetText(ui::FormatBytes(indexed_db_info.size));
   last_modified_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified));

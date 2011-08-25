@@ -2757,14 +2757,13 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
   EXPECT_TRUE(file_util::PathExists(lso_path));
 
-  // Create indexed db. Again, it is enough to only simulate this by creating
-  // the file on the disk.
+  // Create indexed db. Similarly, it is enough to only simulate this by
+  // creating the directory on the disk.
   IndexedDBContext* idb_context =
       profile_->GetWebKitContext()->indexed_db_context();
   FilePath idb_path = idb_context->GetIndexedDBFilePath(origin_id);
-  EXPECT_TRUE(file_util::CreateDirectory(idb_path.DirName()));
-  EXPECT_EQ(0, file_util::WriteFile(idb_path, NULL, 0));
-  EXPECT_TRUE(file_util::PathExists(idb_path));
+  EXPECT_TRUE(file_util::CreateDirectory(idb_path));
+  EXPECT_TRUE(file_util::DirectoryExists(idb_path));
 
   // Uninstall the extension.
   service_->UninstallExtension(good_crx, false, NULL);
@@ -2787,7 +2786,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_FALSE(file_util::PathExists(lso_path));
 
   // Check if the indexed db has disappeared too.
-  EXPECT_FALSE(file_util::PathExists(idb_path));
+  EXPECT_FALSE(file_util::DirectoryExists(idb_path));
 }
 
 // Tests loading single extensions (like --load-extension)

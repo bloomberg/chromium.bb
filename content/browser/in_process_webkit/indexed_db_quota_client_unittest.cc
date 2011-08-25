@@ -122,6 +122,7 @@ class IndexedDBQuotaClientTest : public TestingBrowserProcessTest {
     }
     file_path_origin = file_path_origin.Append(FILE_PATH_LITERAL("fake_file"));
     SetFileSizeTo(file_path_origin, size);
+    idb_context()->ResetCaches();
   }
 
  private:

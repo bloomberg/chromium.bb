@@ -32,26 +32,16 @@ class BrowsingDataIndexedDBHelper
   // Contains detailed information about an indexed database.
   struct IndexedDBInfo {
     IndexedDBInfo(
-        const std::string& protocol,
-        const std::string& host,
-        unsigned short port,
-        const std::string& database_identifier,
-        const std::string& origin,
-        const FilePath& file_path,
+        const GURL& origin,
         int64 size,
         base::Time last_modified);
     ~IndexedDBInfo();
 
     bool IsFileSchemeData() {
-      return protocol == chrome::kFileScheme;
+      return origin.SchemeIsFile();
     }
 
-    std::string protocol;
-    std::string host;
-    unsigned short port;
-    std::string database_identifier;
-    std::string origin;
-    FilePath file_path;
+    GURL origin;
     int64 size;
     base::Time last_modified;
   };
@@ -69,8 +59,8 @@ class BrowsingDataIndexedDBHelper
   // longer exists).
   // This must be called only in the UI thread.
   virtual void CancelNotification() = 0;
-  // Requests a single indexed database file to be deleted in the WEBKIT thread.
-  virtual void DeleteIndexedDBFile(const FilePath& file_path) = 0;
+  // Requests a single indexed database to be deleted in the WEBKIT thread.
+  virtual void DeleteIndexedDB(const GURL& origin) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper>;
@@ -83,7 +73,7 @@ class BrowsingDataIndexedDBHelper
 class CannedBrowsingDataIndexedDBHelper
     : public BrowsingDataIndexedDBHelper {
  public:
-  explicit CannedBrowsingDataIndexedDBHelper(Profile* profile);
+  CannedBrowsingDataIndexedDBHelper();
 
   // Return a copy of the IndexedDB helper. Only one consumer can use the
   // StartFetching method at a time, so we need to create a copy of the helper
@@ -105,7 +95,7 @@ class CannedBrowsingDataIndexedDBHelper
   virtual void StartFetching(
       Callback1<const std::list<IndexedDBInfo>& >::Type* callback);
   virtual void CancelNotification();
-  virtual void DeleteIndexedDBFile(const FilePath& file_path) {}
+  virtual void DeleteIndexedDB(const GURL& origin) {}
 
  private:
   struct PendingIndexedDBInfo {
@@ -123,8 +113,6 @@ class CannedBrowsingDataIndexedDBHelper
   void ConvertPendingInfoInWebKitThread();
 
   void NotifyInUIThread();
-
-  Profile* profile_;
 
   // Lock to protect access to pending_indexed_db_info_;
   mutable base::Lock lock_;

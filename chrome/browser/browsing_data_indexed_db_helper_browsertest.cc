@@ -28,13 +28,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   const GURL origin1("http://host1:1/");
   const GURL origin2("http://host2:1/");
   const string16 description(ASCIIToUTF16("description"));
-  const FilePath::CharType file1[] =
-      FILE_PATH_LITERAL("http_host1_1.indexeddb.leveldb");
-  const FilePath::CharType file2[] =
-      FILE_PATH_LITERAL("http_host2_1.indexeddb.leveldb");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(browser()->profile()));
+      new CannedBrowsingDataIndexedDBHelper());
   helper->AddIndexedDB(origin1, description);
   helper->AddIndexedDB(origin2, description);
 
@@ -48,19 +44,17 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   ASSERT_EQ(2U, result.size());
   std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo>::iterator info =
       result.begin();
-  EXPECT_EQ(FilePath(file1).value(), info->file_path.BaseName().value());
+  EXPECT_EQ(origin1, info->origin);
   info++;
-  EXPECT_EQ(FilePath(file2).value(), info->file_path.BaseName().value());
+  EXPECT_EQ(origin2, info->origin);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
   const GURL origin("http://host1:1/");
   const string16 description(ASCIIToUTF16("description"));
-  const FilePath::CharType file[] =
-      FILE_PATH_LITERAL("http_host1_1.indexeddb.leveldb");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(browser()->profile()));
+      new CannedBrowsingDataIndexedDBHelper());
   helper->AddIndexedDB(origin, description);
   helper->AddIndexedDB(origin, description);
 
@@ -72,7 +66,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
       callback.result();
 
   ASSERT_EQ(1U, result.size());
-  EXPECT_EQ(FilePath(file).value(),
-            result.begin()->file_path.BaseName().value());
+  EXPECT_EQ(origin, result.begin()->origin);
 }
 }  // namespace

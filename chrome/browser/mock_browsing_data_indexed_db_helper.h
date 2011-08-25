@@ -19,7 +19,7 @@
 class MockBrowsingDataIndexedDBHelper
     : public BrowsingDataIndexedDBHelper {
  public:
-  explicit MockBrowsingDataIndexedDBHelper(Profile* profile);
+  MockBrowsingDataIndexedDBHelper();
 
   // Adds some IndexedDBInfo samples.
   void AddIndexedDBSamples();
@@ -38,20 +38,13 @@ class MockBrowsingDataIndexedDBHelper
   virtual void StartFetching(
       Callback1<const std::list<IndexedDBInfo>& >::Type* callback);
   virtual void CancelNotification();
-  virtual void DeleteIndexedDBFile(const FilePath& file_path);
-
-  FilePath last_deleted_file_;
+  virtual void DeleteIndexedDB(const GURL& origin);
 
  private:
   virtual ~MockBrowsingDataIndexedDBHelper();
 
-  Profile* profile_;
-
-  scoped_ptr<Callback1<const std::list<IndexedDBInfo>& >::Type >
-      callback_;
-
-  std::map<const FilePath::StringType, bool> files_;
-
+  scoped_ptr<Callback1<const std::list<IndexedDBInfo>& >::Type > callback_;
+  std::map<GURL, bool> origins_;
   std::list<IndexedDBInfo> response_;
 };
 

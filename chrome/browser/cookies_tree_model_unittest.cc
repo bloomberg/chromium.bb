@@ -52,7 +52,7 @@ class CookiesTreeModelTest : public TestingBrowserProcessTest {
     mock_browsing_data_appcache_helper_ =
       new MockBrowsingDataAppCacheHelper(profile_.get());
     mock_browsing_data_indexed_db_helper_ =
-      new MockBrowsingDataIndexedDBHelper(profile_.get());
+      new MockBrowsingDataIndexedDBHelper();
     mock_browsing_data_file_system_helper_ =
       new MockBrowsingDataFileSystemHelper(profile_.get());
     mock_browsing_data_quota_helper_ =
@@ -159,7 +159,8 @@ class CookiesTreeModelTest : public TestingBrowserProcessTest {
             return node->GetDetailedInfo().appcache_info->manifest_url.spec() +
                    ",";
           case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
-            return node->GetDetailedInfo().indexed_db_info->origin + ",";
+            return node->GetDetailedInfo().indexed_db_info->origin.spec() +
+                   ",";
           case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
             return node->GetDetailedInfo().file_system_info->origin.spec() +
                    ",";

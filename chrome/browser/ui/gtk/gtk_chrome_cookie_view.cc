@@ -592,7 +592,7 @@ void gtk_chrome_cookie_view_display_indexed_db(
   UpdateVisibleDetailedInfo(self, self->indexed_db_details_table_);
 
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_origin_entry_),
-                     indexed_db_info.origin.c_str());
+                     indexed_db_info.origin.spec().c_str());
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_size_entry_),
                      UTF16ToUTF8(ui::FormatBytes(
                          indexed_db_info.size)).c_str());

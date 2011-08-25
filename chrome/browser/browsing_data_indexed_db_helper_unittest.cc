@@ -7,20 +7,17 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/test/base/testing_browser_process_test.h"
-#include "chrome/test/base/testing_profile.h"
 
 namespace {
 
 typedef TestingBrowserProcessTest CannedBrowsingDataIndexedDBHelperTest;
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
-  TestingProfile profile;
-
   const GURL origin("http://host1:1/");
   const string16 description(ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(&profile));
+      new CannedBrowsingDataIndexedDBHelper());
 
   ASSERT_TRUE(helper->empty());
   helper->AddIndexedDB(origin, description);

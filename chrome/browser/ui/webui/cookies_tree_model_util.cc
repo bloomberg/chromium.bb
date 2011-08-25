@@ -168,7 +168,7 @@ bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info =
           *node.GetDetailedInfo().indexed_db_info;
 
-      dict->SetString(kKeyOrigin, indexed_db_info.origin);
+      dict->SetString(kKeyOrigin, indexed_db_info.origin.spec());
       dict->SetString(kKeySize, ui::FormatBytes(indexed_db_info.size));
       dict->SetString(kKeyModified, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified)));

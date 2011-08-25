@@ -244,17 +244,15 @@ CookieTreeIndexedDBNode::CookieTreeIndexedDBNode(
     std::list<BrowsingDataIndexedDBHelper::IndexedDBInfo>::iterator
         indexed_db_info)
     : CookieTreeNode(UTF8ToUTF16(
-          indexed_db_info->origin.empty() ?
-              indexed_db_info->database_identifier :
-              indexed_db_info->origin)),
+          indexed_db_info->origin.spec())),
       indexed_db_info_(indexed_db_info) {
 }
 
 CookieTreeIndexedDBNode::~CookieTreeIndexedDBNode() {}
 
 void CookieTreeIndexedDBNode::DeleteStoredObjects() {
-  GetModel()->indexed_db_helper_->DeleteIndexedDBFile(
-      indexed_db_info_->file_path);
+  GetModel()->indexed_db_helper_->DeleteIndexedDB(
+      indexed_db_info_->origin);
   GetModel()->indexed_db_info_list_.erase(indexed_db_info_);
 }
 
@@ -981,7 +979,7 @@ void CookiesTreeModel::PopulateIndexedDBInfoWithFilter(
        indexed_db_info_list_.begin();
        indexed_db_info != indexed_db_info_list_.end();
        ++indexed_db_info) {
-    GURL origin(indexed_db_info->origin);
+    const GURL& origin = indexed_db_info->origin;
 
     if (!filter.size() ||
         (CookieTreeOriginNode::TitleForUrl(origin).find(filter) !=

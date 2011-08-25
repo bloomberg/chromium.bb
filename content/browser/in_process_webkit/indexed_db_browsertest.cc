@@ -17,9 +17,12 @@
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_switches.h"
+#include "webkit/database/database_util.h"
 #include "webkit/quota/quota_manager.h"
+#include "webkit/quota/special_storage_policy.h"
 
 using quota::QuotaManager;
+using webkit_database::DatabaseUtil;
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
 // the actual implementation that lives in the browser side (in_process_webkit).
@@ -124,41 +127,48 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, Bug84933Test) {
 // In proc browser test is needed here because ClearLocalState indirectly calls
 // WebKit's isMainThread through WebSecurityOrigin->SecurityOrigin.
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ClearLocalState) {
-  // Create test files.
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  FilePath indexeddb_dir = temp_dir.path().Append(
-      IndexedDBContext::kIndexedDBDirectory);
-  ASSERT_TRUE(file_util::CreateDirectory(indexeddb_dir));
 
-  FilePath::StringType file_name_1(FILE_PATH_LITERAL("http_foo_0"));
-  file_name_1.append(IndexedDBContext::kIndexedDBExtension);
-  FilePath::StringType file_name_2(FILE_PATH_LITERAL("chrome-extension_foo_0"));
-  file_name_2.append(IndexedDBContext::kIndexedDBExtension);
-  FilePath temp_file_path_1 = indexeddb_dir.Append(file_name_1);
-  FilePath temp_file_path_2 = indexeddb_dir.Append(file_name_2);
-
-  ASSERT_EQ(1, file_util::WriteFile(temp_file_path_1, ".", 1));
-  ASSERT_EQ(1, file_util::WriteFile(temp_file_path_2, "o", 1));
+  FilePath protected_path;
+  FilePath unprotected_path;
 
   // Create the scope which will ensure we run the destructor of the webkit
   // context which should trigger the clean up.
   {
     TestingProfile profile;
+
+    // Test our assumptions about what is protected and what is not.
+    const GURL kProtectedOrigin("chrome-extension://foo/");
+    const GURL kUnprotectedOrigin("http://foo/");
+    quota::SpecialStoragePolicy* policy = profile.GetSpecialStoragePolicy();
+    ASSERT_TRUE(policy->IsStorageProtected(kProtectedOrigin));
+    ASSERT_FALSE(policy->IsStorageProtected(kUnprotectedOrigin));
+
+    // Create some indexedDB paths.
+    // With the levelDB backend, these are directories.
     WebKitContext *webkit_context = profile.GetWebKitContext();
-    webkit_context->indexed_db_context()->set_data_path(indexeddb_dir);
+    IndexedDBContext* idb_context = webkit_context->indexed_db_context();
+    idb_context->set_data_path(temp_dir.path());
+    protected_path = idb_context->GetIndexedDBFilePath(
+        DatabaseUtil::GetOriginIdentifier(kProtectedOrigin));
+    unprotected_path = idb_context->GetIndexedDBFilePath(
+        DatabaseUtil::GetOriginIdentifier(kUnprotectedOrigin));
+    ASSERT_TRUE(file_util::CreateDirectory(protected_path));
+    ASSERT_TRUE(file_util::CreateDirectory(unprotected_path));
+
+    // Setup to clear all unprotected origins on exit.
     webkit_context->set_clear_local_state_on_exit(true);
   }
+
   // Make sure we wait until the destructor has run.
   scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT)));
   ASSERT_TRUE(helper->Run());
 
-  // Because we specified https for scheme to be skipped the second file
-  // should survive and the first go into vanity.
-  ASSERT_FALSE(file_util::PathExists(temp_file_path_1));
-  ASSERT_TRUE(file_util::PathExists(temp_file_path_2));
+  ASSERT_TRUE(file_util::DirectoryExists(protected_path));
+  ASSERT_FALSE(file_util::DirectoryExists(unprotected_path));
 }
 
 class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {

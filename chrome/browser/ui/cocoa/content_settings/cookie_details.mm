@@ -243,7 +243,8 @@
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypeTreeIndexedDB;
     canEditExpiration_ = NO;
-    domain_.reset([base::SysUTF8ToNSString(indexedDBInfo->origin) retain]);
+    domain_.reset([base::SysUTF8ToNSString(
+        indexedDBInfo->origin.spec()) retain]);
     fileSize_.reset([base::SysUTF16ToNSString(
         ui::FormatBytes(indexedDBInfo->size)) retain]);
     lastModified_.reset([base::SysUTF16ToNSString(

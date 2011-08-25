@@ -7,9 +7,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 
-MockBrowsingDataIndexedDBHelper::MockBrowsingDataIndexedDBHelper(
-    Profile* profile)
-    : profile_(profile) {
+MockBrowsingDataIndexedDBHelper::MockBrowsingDataIndexedDBHelper() {
 }
 
 MockBrowsingDataIndexedDBHelper::~MockBrowsingDataIndexedDBHelper() {
@@ -24,24 +22,23 @@ void MockBrowsingDataIndexedDBHelper::CancelNotification() {
   callback_.reset(NULL);
 }
 
-void MockBrowsingDataIndexedDBHelper::DeleteIndexedDBFile(
-    const FilePath& file_path) {
-  CHECK(files_.find(file_path.value()) != files_.end());
-  last_deleted_file_ = file_path;
-  files_[file_path.value()] = false;
+void MockBrowsingDataIndexedDBHelper::DeleteIndexedDB(
+    const GURL& origin) {
+  CHECK(origins_.find(origin) != origins_.end());
+  origins_[origin] = false;
 }
 
 void MockBrowsingDataIndexedDBHelper::AddIndexedDBSamples() {
+  const GURL kOrigin1("http://idbhost1:1/");
+  const GURL kOrigin2("http://idbhost2:2/");
   response_.push_back(
       BrowsingDataIndexedDBHelper::IndexedDBInfo(
-          "http", "idbhost1", 1, "idb1", "http://idbhost1:1/",
-          FilePath(FILE_PATH_LITERAL("file1")), 1, base::Time()));
-  files_[FILE_PATH_LITERAL("file1")] = true;
+          kOrigin1, 1, base::Time()));
+  origins_[kOrigin1] = true;
   response_.push_back(
       BrowsingDataIndexedDBHelper::IndexedDBInfo(
-          "http", "idbhost2", 2, "idb2", "http://idbhost2:2/",
-          FilePath(FILE_PATH_LITERAL("file2")), 2, base::Time()));
-  files_[FILE_PATH_LITERAL("file2")] = true;
+          kOrigin2, 2, base::Time()));
+  origins_[kOrigin2] = true;
 }
 
 void MockBrowsingDataIndexedDBHelper::Notify() {
@@ -50,14 +47,14 @@ void MockBrowsingDataIndexedDBHelper::Notify() {
 }
 
 void MockBrowsingDataIndexedDBHelper::Reset() {
-  for (std::map<const FilePath::StringType, bool>::iterator i = files_.begin();
-       i != files_.end(); ++i)
+  for (std::map<GURL, bool>::iterator i = origins_.begin();
+       i != origins_.end(); ++i)
     i->second = true;
 }
 
 bool MockBrowsingDataIndexedDBHelper::AllDeleted() {
-  for (std::map<const FilePath::StringType, bool>::const_iterator i =
-       files_.begin(); i != files_.end(); ++i)
+  for (std::map<GURL, bool>::const_iterator i = origins_.begin();
+       i != origins_.end(); ++i)
     if (i->second)
       return false;
   return true;
