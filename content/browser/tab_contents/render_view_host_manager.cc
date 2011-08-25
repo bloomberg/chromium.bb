@@ -635,8 +635,19 @@ void RenderViewHostManager::CommitPending() {
   // in case we navigate back to it.
   if (old_render_view_host->IsRenderViewLive()) {
     DCHECK(old_render_view_host->is_swapped_out());
-    swapped_out_hosts_[old_render_view_host->site_instance()->id()] =
-        old_render_view_host;
+    // Temp fix for http://crbug.com/90867 until we do a better cleanup to make
+    // sure we don't get different rvh instances for the same site instance
+    // in the same rvhmgr.
+    // TODO(creis): Clean this up, and duplication in SwapInRenderViewHost.
+    int32 old_site_instance_id = old_render_view_host->site_instance()->id();
+    RenderViewHostMap::iterator iter =
+        swapped_out_hosts_.find(old_site_instance_id);
+    if (iter != swapped_out_hosts_.end() &&
+        iter->second != old_render_view_host) {
+      // Shutdown the RVH that will be replaced in the map to avoid a leak.
+      iter->second->Shutdown();
+    }
+    swapped_out_hosts_[old_site_instance_id] = old_render_view_host;
   } else {
     old_render_view_host->Shutdown();
   }
@@ -855,8 +866,19 @@ void RenderViewHostManager::SwapInRenderViewHost(RenderViewHost* rvh) {
   // in case we navigate back to it.
   if (old_render_view_host->IsRenderViewLive()) {
     DCHECK(old_render_view_host->is_swapped_out());
-    swapped_out_hosts_[old_render_view_host->site_instance()->id()] =
-        old_render_view_host;
+    // Temp fix for http://crbug.com/90867 until we do a better cleanup to make
+    // sure we don't get different rvh instances for the same site instance
+    // in the same rvhmgr.
+    // TODO(creis): Clean this up as well as duplication with CommitPending.
+    int32 old_site_instance_id = old_render_view_host->site_instance()->id();
+    RenderViewHostMap::iterator iter =
+        swapped_out_hosts_.find(old_site_instance_id);
+    if (iter != swapped_out_hosts_.end() &&
+        iter->second != old_render_view_host) {
+      // Shutdown the RVH that will be replaced in the map to avoid a leak.
+      iter->second->Shutdown();
+    }
+    swapped_out_hosts_[old_site_instance_id] = old_render_view_host;
   } else {
     old_render_view_host->Shutdown();
   }

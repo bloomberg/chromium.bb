@@ -8,12 +8,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
+#include "content/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -245,4 +248,90 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
   scoped_refptr<SiteInstance> noref_site_instance(
       browser()->GetSelectedTabContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, noref_site_instance);
+}
+
+// This class holds onto RenderViewHostObservers for as long as their observed
+// RenderViewHosts are alive. This allows us to confirm that all hosts have
+// properly been shutdown.
+class RenderViewHostObserverArray {
+ public:
+  ~RenderViewHostObserverArray() {
+    // In case some would be left in there with a dead pointer to us.
+    for (std::list<RVHObserver*>::iterator iter = observers_.begin();
+         iter != observers_.end(); ++iter) {
+      (*iter)->ClearParent();
+    }
+  }
+  void AddObserverToRVH(RenderViewHost* rvh) {
+    observers_.push_back(new RVHObserver(this, rvh));
+  }
+  size_t GetNumObservers() const {
+    return observers_.size();
+  }
+ private:
+  friend class RVHObserver;
+  class RVHObserver : public RenderViewHostObserver {
+   public:
+    RVHObserver(RenderViewHostObserverArray* parent, RenderViewHost* rvh)
+        : RenderViewHostObserver(rvh),
+          parent_(parent) {
+    }
+    virtual void RenderViewHostDestroyed() OVERRIDE {
+      if (parent_)
+        parent_->RemoveObserver(this);
+      RenderViewHostObserver::RenderViewHostDestroyed();
+    };
+    void ClearParent() {
+      parent_ = NULL;
+    }
+   private:
+    RenderViewHostObserverArray* parent_;
+  };
+
+  void RemoveObserver(RVHObserver* observer) {
+    observers_.remove(observer);
+  }
+
+  std::list<RVHObserver*> observers_;
+};
+
+// Test for crbug.com/90867. Make sure we don't leak render view hosts since
+// they may cause crashes or memory corruptions when trying to call dead
+// delegate_.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Create a new tab so that we can close the one we navigate and still have
+  // a running browser.
+  AddBlankTabAndShow(browser());
+
+  // Load a random page and then navigate to view-source: of it.
+  // This is one way to cause two rvh instances for the same instance id.
+  GURL navigated_url(test_server()->GetURL("files/title2.html"));
+  ui_test_utils::NavigateToURL(browser(), navigated_url);
+
+  // Observe the newly created render_view_host to make sure it will not leak.
+  RenderViewHostObserverArray rvh_observers;
+  rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
+      render_view_host());
+
+  GURL view_source_url(chrome::kViewSourceScheme + std::string(":") +
+      navigated_url.spec());
+  ui_test_utils::NavigateToURL(browser(), view_source_url);
+  rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
+      render_view_host());
+
+  // Now navigate to a different instance so that we swap out again.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("files/title2.html"));
+  rvh_observers.AddObserverToRVH(browser()->GetSelectedTabContents()->
+      render_view_host());
+
+  // This used to leak a render view host.
+  browser()->CloseTabContents(browser()->GetSelectedTabContents());
+  EXPECT_EQ(0U, rvh_observers.GetNumObservers());
 }
