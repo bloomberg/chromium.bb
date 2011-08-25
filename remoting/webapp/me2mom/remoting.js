@@ -358,6 +358,8 @@ remoting.cancelShare = function() {
 }
 
 function updateStatistics() {
+  if (!remoting.session)
+    return;
   if (remoting.session.state != remoting.ClientSession.State.CONNECTED)
     return;
   var stats = remoting.session.stats();
