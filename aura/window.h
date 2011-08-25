@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
 class SkCanvas;
@@ -42,13 +41,16 @@ class Window {
     VISIBILITY_SHOWN_NO_INPUT = 3,
   };
 
-  explicit Window(Desktop* desktop);
+  explicit Window(WindowDelegate* delegate);
   ~Window();
 
-  void set_delegate(WindowDelegate* d) { delegate_ = d; }
+  void Init();
 
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
+
+  ui::Layer* layer() { return layer_.get(); }
+  const ui::Layer* layer() const { return layer_.get(); }
 
   // Changes the visibility of the window.
   void SetVisibility(Visibility visibility);
@@ -64,6 +66,11 @@ class Window {
   // Sets the contents of the window.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
 
+  // Sets the parent window of the window. If NULL, the window is parented to
+  // the desktop's window.
+  void SetParent(Window* parent);
+  Window* parent() { return parent_; }
+
   // Draw the window and its children.
   void DrawTree();
 
@@ -72,7 +79,6 @@ class Window {
   //             should change this.
   void AddChild(Window* child);
   void RemoveChild(Window* child);
-  Window* parent() { return parent_; }
 
   // Handles a mouse event. Returns true if handled.
   bool OnMouseEvent(const MouseEvent& event);

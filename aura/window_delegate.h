@@ -6,14 +6,17 @@
 #define AURA_WINDOW_DELEGATE_H_
 #pragma once
 
+namespace gfx {
+class Canvas;
+}
+
 namespace aura {
 
 // Delegate interface for aura::Window.
 class WindowDelegate {
  public:
-  // Asks the delegate to paint to the window. The delegate should call back
-  // to the window with SetCanvas.
-  virtual void OnPaint(const gfx::Rect& bounds) = 0;
+  // Asks the delegate to paint window contents into the supplied canvas.
+   virtual void OnPaint(gfx::Canvas* canvas) = 0;
 
  protected:
   virtual ~WindowDelegate() {}
