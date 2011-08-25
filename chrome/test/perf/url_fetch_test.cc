@@ -54,13 +54,13 @@ class UrlFetchTest : public UIPerfTest {
       if (wait_cookie_value) {
         bool completed = WaitUntilCookieValue(
             tab.get(), url, wait_cookie_name,
-            TestTimeouts::huge_test_timeout_ms(),
+            TestTimeouts::large_test_timeout_ms(),
             wait_cookie_value);
         ASSERT_TRUE(completed);
       } else {
         result->cookie_value = WaitUntilCookieNonEmpty(
             tab.get(), url, wait_cookie_name,
-            TestTimeouts::huge_test_timeout_ms());
+            TestTimeouts::large_test_timeout_ms());
         ASSERT_TRUE(result->cookie_value.length());
       }
     } else if (!wait_js_expr.empty()) {

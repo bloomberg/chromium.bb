@@ -54,7 +54,7 @@ class FrameRateTest : public UIPerfTest {
     // Block until the tests completes.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
         tab, L"", L"window.domAutomationController.send(!__running_all);",
-        TestTimeouts::huge_test_timeout_ms()));
+        TestTimeouts::large_test_timeout_ms()));
 
     // Read out the results.
     std::wstring json;

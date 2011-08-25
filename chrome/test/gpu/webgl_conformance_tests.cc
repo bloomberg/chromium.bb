@@ -67,7 +67,7 @@ class WebGLConformanceTests : public UITest {
     // Block until the test completes.
     ASSERT_TRUE(WaitUntilJavaScriptCondition(
         tab, L"", L"window.domAutomationController.send(!running);",
-        TestTimeouts::huge_test_timeout_ms()));
+        TestTimeouts::large_test_timeout_ms()));
 
     // Read out the test result.
     std::wstring result, message;

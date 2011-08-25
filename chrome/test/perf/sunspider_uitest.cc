@@ -62,7 +62,7 @@ class SunSpiderTest : public UIPerfTest {
 
   bool WaitUntilTestCompletes(TabProxy* tab, const GURL& test_url) {
     return WaitUntilCookieValue(tab, test_url, "__done",
-                                TestTimeouts::huge_test_timeout_ms(), "1");
+                                TestTimeouts::large_test_timeout_ms(), "1");
   }
 
   bool GetTotal(TabProxy* tab, std::string* total) {

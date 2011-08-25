@@ -23,7 +23,7 @@ class BookmarksUITest : public UITest {
         L"domAutomationController.send("
         L"    location.protocol == 'chrome-extension:' && "
         L"    document.readyState == 'complete')",
-        TestTimeouts::huge_test_timeout_ms());
+        TestTimeouts::large_test_timeout_ms());
   }
 
   scoped_refptr<TabProxy> GetBookmarksUITab() {

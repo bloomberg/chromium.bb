@@ -441,7 +441,7 @@ bool LiveSyncTest::SetUpLocalTestServer() {
   if (!base::LaunchProcess(server_cmdline, options, &test_server_handle_))
     LOG(ERROR) << "Could not launch local test server.";
 
-  const int kMaxWaitTime = TestTimeouts::live_operation_timeout_ms();
+  const int kMaxWaitTime = TestTimeouts::action_max_timeout_ms();
   const int kNumIntervals = 15;
   if (WaitForTestServerToStart(kMaxWaitTime, kNumIntervals)) {
     VLOG(1) << "Started local test server at "

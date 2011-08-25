@@ -60,7 +60,7 @@ class DromaeoTest : public UIPerfTest {
 
   bool WaitUntilTestCompletes(TabProxy* tab, const GURL& test_url) {
     return WaitUntilCookieValue(tab, test_url, "__done",
-                                TestTimeouts::huge_test_timeout_ms(), "1");
+                                TestTimeouts::large_test_timeout_ms(), "1");
   }
 
   bool GetScore(TabProxy* tab, std::string* score) {
