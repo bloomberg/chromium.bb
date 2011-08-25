@@ -316,25 +316,19 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
                                          uint32 serial_number,
                                          std::string* private_key,
                                          std::string* cert) {
+  std::string subject = "CN=OBC";
   scoped_ptr<crypto::RSAPrivateKey> key(
       crypto::RSAPrivateKey::Create(kKeySizeInBits));
   if (!key.get()) {
     LOG(WARNING) << "Unable to create key pair for client";
     return ERR_KEY_GENERATION_FAILED;
   }
-#if defined(USE_NSS)
-  scoped_refptr<X509Certificate> x509_cert = X509Certificate::CreateOriginBound(
-      key.get(),
-      origin,
-      serial_number,
-      base::TimeDelta::FromDays(kValidityPeriodInDays));
-#else
+
   scoped_refptr<X509Certificate> x509_cert = X509Certificate::CreateSelfSigned(
       key.get(),
-      "CN=anonymous.invalid",
+      subject,
       serial_number,
       base::TimeDelta::FromDays(kValidityPeriodInDays));
-#endif
   if (!x509_cert) {
     LOG(WARNING) << "Unable to create x509 cert for client";
     return ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED;
