@@ -207,7 +207,7 @@ GpuBlacklist::StringInfo::Op GpuBlacklist::StringInfo::StringToOp(
 }
 
 // static
-GpuBlacklist::GpuBlacklistEntry*
+GpuBlacklist::ScopedGpuBlacklistEntry
 GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     DictionaryValue* value, bool top_level) {
   DCHECK(value);
@@ -420,7 +420,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     LOG(WARNING) << "Entry with unknown fields " << entry->id();
     entry->contains_unknown_fields_ = true;
   }
-  return entry.release();
+  return entry;
 }
 
 GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
@@ -527,7 +527,7 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
 }
 
 void GpuBlacklist::GpuBlacklistEntry::AddException(
-    GpuBlacklistEntry* exception) {
+    ScopedGpuBlacklistEntry exception) {
   exceptions_.push_back(exception);
 }
 

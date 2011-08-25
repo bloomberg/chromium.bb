@@ -208,7 +208,7 @@ class GpuBlacklist {
    public:
     // Constructs GpuBlacklistEntry from DictionaryValue loaded from json.
     // Top-level entry must have an id number.  Others are exceptions.
-    static GpuBlacklistEntry* GetGpuBlacklistEntryFromValue(
+    static ScopedGpuBlacklistEntry GetGpuBlacklistEntryFromValue(
         base::DictionaryValue* value, bool top_level);
 
     // Determines if a given os/gc/driver is included in the Entry set.
@@ -275,7 +275,7 @@ class GpuBlacklist {
     bool SetBlacklistedFeatures(
         const std::vector<std::string>& blacklisted_features);
 
-    void AddException(GpuBlacklistEntry* exception);
+    void AddException(ScopedGpuBlacklistEntry exception);
 
     uint32 id_;
     std::string description_;
