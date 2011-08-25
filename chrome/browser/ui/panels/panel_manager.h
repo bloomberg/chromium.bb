@@ -55,6 +55,11 @@ class PanelManager {
 
   PanelManager();
 
+#if UNIT_TEST
+  const Panels& panels() const { return panels_; }
+  static int horizontal_spacing() { return kPanelsHorizontalSpacing; }
+#endif
+
   // Applies the new work area. This is called by OnDisplayChanged and the test
   // code.
   void SetWorkArea(const gfx::Rect& work_area);
@@ -84,6 +89,8 @@ class PanelManager {
   void DragLeft();
   void DragRight();
 
+  // Horizontal spacing between panels.  Used for unit testing.
+
   Panels panels_;
 
   // Stores the panels that are pending to remove. We want to delay the removal
@@ -111,6 +118,8 @@ class PanelManager {
   // the dragging happens. Then it is updated to the position that will be set
   // to when the dragging ends.
   gfx::Rect dragging_panel_bounds_;
+
+  static const int kPanelsHorizontalSpacing = 4;
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };

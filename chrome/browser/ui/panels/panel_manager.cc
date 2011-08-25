@@ -28,9 +28,6 @@ const int kPanelDefaultHeightPixels = 290;
 const double kPanelMaxWidthFactor = 1.0;
 const double kPanelMaxHeightFactor = 0.5;
 
-// Horizontal spacing between two panels.
-const int kPanelsHorizontalSpacing = 4;
-
 // Single instance of PanelManager.
 scoped_ptr<PanelManager> panel_instance;
 }  // namespace
@@ -351,9 +348,12 @@ void PanelManager::RemoveAll() {
   // This should not be called when we're in the process of dragging.
   DCHECK(dragging_panel_index_ == kInvalidPanelIndex);
 
+  // Make a copy of the iterator as closing panels can modify the vector.
+  Panels panels_copy = panels_;
+
   // Start from the bottom to avoid reshuffling.
-  for (Panels::reverse_iterator iter = panels_.rbegin();
-       iter != panels_.rend(); ++iter)
+  for (Panels::reverse_iterator iter = panels_copy.rbegin();
+       iter != panels_copy.rend(); ++iter)
     (*iter)->Close();
 }
 

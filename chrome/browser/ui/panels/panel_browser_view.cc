@@ -332,9 +332,9 @@ bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
   if (!mouse_pressed_)
     return false;
 
-  // We do not allow dragging vertically.
   int delta_x = location.x() - mouse_pressed_point_.x();
-  if (!mouse_dragging_ && ExceededDragThreshold(delta_x, 0)) {
+  int delta_y = location.y() - mouse_pressed_point_.y();
+  if (!mouse_dragging_ && ExceededDragThreshold(delta_x, delta_y)) {
     panel_->manager()->StartDragging(panel_.get());
     mouse_dragging_ = true;
   }
@@ -419,9 +419,12 @@ void NativePanelTestingWin::ReleaseMouseButtonTitlebar() {
 }
 
 void NativePanelTestingWin::DragTitlebar(int delta_x, int delta_y) {
-  gfx::Rect current_bounds = panel_browser_view_->panel()->GetRestoredBounds();
+  // TODO(jianli): Need a comment here that explains why we use
+  // mouse_pressed_point_ and not current bounds as obtained by
+  // GetRestoredBounds().
   panel_browser_view_->OnTitlebarMouseDragged(gfx::Point(
-      current_bounds.x() + delta_x, current_bounds.y() + delta_y));
+      panel_browser_view_->mouse_pressed_point_.x() + delta_x,
+      panel_browser_view_->mouse_pressed_point_.y() + delta_y));
 }
 
 void NativePanelTestingWin::CancelDragTitlebar() {
