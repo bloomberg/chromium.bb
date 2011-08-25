@@ -42,7 +42,7 @@ function setupTests(tester, plugin) {
     plugin.addEventListener('message', function(message_event) {
       this.removeEventListener('message', arguments.callee, false);
       status.assertEqual(message_event.data,
-                         'nbytes = 47\nKernelService\nManifestNameService\nSecureRandom\n');
+                         'EnumerateNames: in_out_nbytes 4\nEnumerateNames: in_out_nbytes 8\nEnumerateNames: in_out_nbytes 16\nEnumerateNames: in_out_nbytes 32\nEnumerateNames: in_out_nbytes 47\nnbytes = 47\nKernelService\nManifestNameService\nSecureRandom\n');
       status.pass();
     }, false);
     plugin.postMessage('name_dump');

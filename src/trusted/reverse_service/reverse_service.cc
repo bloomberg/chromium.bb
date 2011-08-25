@@ -143,18 +143,26 @@ void ManifestListRpc(NaClSrpcRpc* rpc,
   size_t sofar = 0;
   size_t space = out_args[0]->u.count;
   char* dest = out_args[0]->arrays.carr;
+  size_t to_write;
 
   for (std::set<nacl::string>::iterator it = manifest_keys.begin();
        it != manifest_keys.end();
        ++it) {
     NaClLog(3, "ManifestList RPC: appending %s\n", it->c_str());
 
-    if (sofar + it->size() + 1 > space) {
+    if (sofar >= space) {
+      NaClLog(3, "ManifestList RPC: buffer too small, breaking\n");
       break;
     }
-    strncpy(dest + sofar, it->c_str(), it->size() + 1);
-    NaClLog(3, "ManifestList RPC: %s\n", dest + sofar);
-    sofar += it->size() + 1;
+    to_write = space - sofar;
+    if (it->size() + 1 < to_write) {
+      to_write = it->size() + 1;
+    } else {
+      NaClLog(3, "ManifestList RPC: truncating entry %s\n", it->c_str());
+    }
+    strncpy(dest + sofar, it->c_str(), to_write);
+    NaClLog(3, "ManifestList RPC: %.*s\n", (int) to_write, dest + sofar);
+    sofar += to_write;
   }
 
   NaClLog(3, "ManifestList RPC: total size %"NACL_PRIdS"\n", sofar);

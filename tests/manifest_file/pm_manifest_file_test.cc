@@ -175,15 +175,41 @@ class MyInstance : public nacl_ppapi::NaClPpapiPluginInstance {
 
 // success/fail
 bool EnumerateNames(NaClSrpcChannel *nschan, nacl::StringBuffer *sb) {
-  char      buffer[1024];
-  uint32_t  nbytes = sizeof buffer;
+  char      *buffer;
+  uint32_t  nbytes = 4;
+  uint32_t  in_out_nbytes;
+  char      *new_buffer;
 
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(nschan,
-                                                       NACL_NAME_SERVICE_LIST,
-                                                       &nbytes, buffer)) {
-    sb->Printf("NaClSrpcInvokeBySignature failed\n");
+  buffer = reinterpret_cast<char *>(malloc(nbytes));
+  if (NULL == buffer) {
+    sb->Printf("EnumerateNames: initial malloc failed\n");
     return false;
   }
+
+  for (;;) {
+    in_out_nbytes = nbytes;
+    if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeBySignature(nschan,
+                                                         NACL_NAME_SERVICE_LIST,
+                                                         &in_out_nbytes,
+                                                         buffer)) {
+      sb->Printf("NaClSrpcInvokeBySignature failed\n");
+      return false;
+    }
+    sb->Printf("EnumerateNames: in_out_nbytes %d\n", in_out_nbytes);
+    if (in_out_nbytes < nbytes) {
+      break;
+    }
+    nbytes *= 2;
+    new_buffer = reinterpret_cast<char *>(realloc(buffer, nbytes));
+    if (NULL == new_buffer) {
+      sb->Printf("EnumerateNames: out of memory during realloc\n");
+      free(buffer);
+      return false;
+    }
+    buffer = new_buffer;
+    new_buffer = NULL;
+  }
+  nbytes = in_out_nbytes;
   sb->Printf("nbytes = %u\n", (size_t) nbytes);
   if (nbytes == sizeof buffer) {
     sb->Printf("Insufficent space for namespace enumeration\n");
@@ -196,6 +222,7 @@ bool EnumerateNames(NaClSrpcChannel *nschan, nacl::StringBuffer *sb) {
     name_len = strlen(p) + 1;
     sb->Printf("%s\n", p);
   }
+  free(buffer);
   return true;
 }
 
