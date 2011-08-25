@@ -69,11 +69,13 @@ void NativeWidgetViews::OnActivate(bool active) {
   if (widget->is_top_level()) {
     InputMethod* input_method = widget->GetInputMethodDirect();
     if (active) {
-      input_method->OnFocus();
+      if (input_method)
+        input_method->OnFocus();
       // See description of got_initial_focus_in_ for details on this.
       widget->GetFocusManager()->RestoreFocusedView();
     } else {
-      input_method->OnBlur();
+      if (input_method)
+        input_method->OnBlur();
       widget->GetFocusManager()->StoreFocusedView();
     }
   }
@@ -81,7 +83,7 @@ void NativeWidgetViews::OnActivate(bool active) {
 }
 
 bool NativeWidgetViews::OnKeyEvent(const KeyEvent& key_event) {
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  InputMethod* input_method = GetWidget()->GetInputMethod();
   DCHECK(input_method);
   input_method->DispatchKeyEvent(key_event);
   return true;
