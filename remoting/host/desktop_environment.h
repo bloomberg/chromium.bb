@@ -58,6 +58,12 @@ class DesktopEnvironment {
   void OnPause(bool pause);
 
  private:
+  enum ContinueTimerState {
+    INACTIVE,      // The timer is not running or has been cancelled.
+    SHOW_DIALOG,   // Show the continue dialog when the timer expires.
+    SHUTDOWN_HOST  // Shutdown the Chromoting host when the timer expires.
+  };
+
   void ProcessOnConnect(const std::string& username);
   void ProcessOnLastDisconnect();
   void ProcessOnPause(bool pause);
@@ -105,7 +111,7 @@ class DesktopEnvironment {
   bool is_monitoring_local_inputs_;
 
   // Timer controlling the "continue session" dialog.
-  bool continue_timer_started_;
+  ContinueTimerState continue_timer_state_;
   base::Time continue_timer_target_time_;
 
   scoped_refptr<UIThreadProxy> proxy_;

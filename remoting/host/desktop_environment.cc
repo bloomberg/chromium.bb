@@ -15,7 +15,12 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/local_input_monitor.h"
 
-static const int kContinueWindowTimeoutMs = 10 * 60 * 1000;
+// Milliseconds before the continue window is shown.
+static const int kContinueWindowShowTimeoutMs = 10 * 60 * 1000;
+
+// Milliseconds before the continue window is automatically dismissed and
+// the connection is closed.
+static const int kContinueWindowHideTimeoutMs = 60 * 1000;
 
 namespace remoting {
 
@@ -32,7 +37,7 @@ namespace remoting {
 // MessageLoopProxy.
 class UIThreadProxy : public base::RefCountedThreadSafe<UIThreadProxy> {
  public:
-  UIThreadProxy(base::MessageLoopProxy* message_loop)
+  explicit UIThreadProxy(base::MessageLoopProxy* message_loop)
       : message_loop_(message_loop) {
   }
 
@@ -119,7 +124,7 @@ DesktopEnvironment::DesktopEnvironment(ChromotingHostContext* context,
       continue_window_(continue_window),
       local_input_monitor_(local_input_monitor),
       is_monitoring_local_inputs_(false),
-      continue_timer_started_(false),
+      continue_timer_state_(INACTIVE),
       proxy_(new UIThreadProxy(context->ui_message_loop())) {
 }
 
@@ -170,7 +175,10 @@ void DesktopEnvironment::ProcessOnLastDisconnect() {
 }
 
 void DesktopEnvironment::ProcessOnPause(bool pause) {
-  StartContinueWindowTimer(!pause);
+  if (!pause) {
+    continue_timer_state_ = INACTIVE;
+    StartContinueWindowTimer(true);
+  }
 }
 
 void DesktopEnvironment::MonitorLocalInputs(bool enable) {
@@ -210,16 +218,18 @@ void DesktopEnvironment::ShowContinueWindow(bool show) {
 void DesktopEnvironment::StartContinueWindowTimer(bool start) {
   DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
 
-  if (start && !continue_timer_started_) {
+  if (start && continue_timer_state_ == INACTIVE) {
     continue_timer_target_time_ = base::Time::Now() +
-        base::TimeDelta::FromMilliseconds(kContinueWindowTimeoutMs);
+        base::TimeDelta::FromMilliseconds(kContinueWindowShowTimeoutMs);
     proxy_->CallOnUIThreadDelayed(
         FROM_HERE, base::Bind(&DesktopEnvironment::ContinueWindowTimerFunc,
                               base::Unretained(this)),
-        kContinueWindowTimeoutMs);
+        kContinueWindowShowTimeoutMs);
+    continue_timer_state_ = SHOW_DIALOG;
+  } else if (!start) {
+    continue_timer_state_ = INACTIVE;
   }
 
-  continue_timer_started_ = start;
 }
 
 void DesktopEnvironment::ContinueWindowTimerFunc() {
@@ -230,9 +240,27 @@ void DesktopEnvironment::ContinueWindowTimerFunc() {
   if (continue_timer_target_time_ > base::Time::Now())
     return;
 
-  continue_timer_started_ = false;
-  host_->PauseSession(true);
-  ShowContinueWindow(true);
+  switch (continue_timer_state_) {
+    case INACTIVE:
+      // This function will still be called, even if the timeout was cancelled.
+      return;
+    case SHOW_DIALOG:
+      host_->PauseSession(true);
+      ShowContinueWindow(true);
+      continue_timer_target_time_ = base::Time::Now() +
+          base::TimeDelta::FromMilliseconds(kContinueWindowHideTimeoutMs);
+      proxy_->CallOnUIThreadDelayed(
+          FROM_HERE, base::Bind(&DesktopEnvironment::ContinueWindowTimerFunc,
+                                base::Unretained(this)),
+          kContinueWindowHideTimeoutMs);
+      continue_timer_state_ = SHUTDOWN_HOST;
+      break;
+    case SHUTDOWN_HOST:
+      continue_timer_state_ = INACTIVE;
+      ShowContinueWindow(false);
+      host_->Shutdown(NULL);
+      break;
+  }
 }
 
 

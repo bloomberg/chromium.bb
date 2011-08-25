@@ -634,3 +634,6 @@ remoting.promptClose = function() {
 }
 
 }());
+
+// Shortcut to save typing now that this is the only way to show the debug log.
+var tdl = remoting.toggleDebugLog;

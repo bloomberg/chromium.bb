@@ -358,7 +358,7 @@ void ChromotingHost::PauseSession(bool pause) {
   for (client = clients_.begin(); client != clients_.end(); ++client) {
     client->get()->set_awaiting_continue_approval(pause);
   }
-  desktop_environment_->OnPause(!pause);
+  desktop_environment_->OnPause(pause);
 }
 
 void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {

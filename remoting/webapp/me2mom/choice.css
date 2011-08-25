@@ -140,6 +140,10 @@ label {
   margin-bottom: 10px;
 }
 
+.hide-scrollbars {
+  overflow-y: hidden;
+}
+
 .top-primary {
   font-size: 14px;
   position: absolute;
