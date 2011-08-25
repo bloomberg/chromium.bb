@@ -1870,8 +1870,6 @@
         'browser/renderer_host/render_widget_host_view_views_gtk.cc',
         'browser/renderer_host/render_widget_host_view_views_touch.cc',
         'browser/renderer_host/render_widget_host_view_views_win.cc',
-        'browser/renderer_host/render_widget_host_view_win.cc',
-        'browser/renderer_host/render_widget_host_view_win.h',
         'browser/renderer_host/safe_browsing_resource_handler.cc',
         'browser/renderer_host/safe_browsing_resource_handler.h',
         'browser/renderer_host/text_input_client_mac.h',

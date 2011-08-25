@@ -10,7 +10,7 @@
 #define _WIN32_WINNT _WIN32_WINNT_WIN7
 #include <windows.h>
 
-#include "chrome/browser/renderer_host/render_widget_host_view_win.h"
+#include "content/browser/renderer_host/render_widget_host_view_win.h"
 
 #include <algorithm>
 
@@ -42,9 +42,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"

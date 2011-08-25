@@ -11,7 +11,7 @@
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/renderer_host/render_widget_host_view_win.h"
+#include "content/browser/renderer_host/render_widget_host_view_win.h"
 #elif defined(TOUCH_UI)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #elif defined(TOOLKIT_USES_GTK)

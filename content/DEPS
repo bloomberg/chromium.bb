@@ -46,6 +46,8 @@ include_rules = [
   # given its id is left to the embedder.
   "-ui/base/l10n",
   "-ui/base/resource",
+  # This file isn't related to grd, so it's fine.
+  "+ui/base/l10n/l10n_util_win.h",
 
   "+views",
   "+webkit",

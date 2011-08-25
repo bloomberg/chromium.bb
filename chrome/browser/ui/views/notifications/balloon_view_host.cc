@@ -8,7 +8,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #if defined(OS_WIN)
-#include "chrome/browser/renderer_host/render_widget_host_view_win.h"
+#include "content/browser/renderer_host/render_widget_host_view_win.h"
 #endif
 #if defined(TOOLKIT_USES_GTK)
 #if defined(TOUCH_UI)
