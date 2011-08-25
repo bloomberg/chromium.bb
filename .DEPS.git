@@ -11,7 +11,7 @@ vars = {
 
 deps = {
     'src/breakpad/src':
-        Var('git_url') + '/external/google-breakpad/src.git@e3192937351161f6898dba41bcfc8939ad2a6f1f',
+        Var('git_url') + '/external/google-breakpad/src.git@8c6aed089174a0221b8e705949a19fe882e6a6c3',
     'src/build/util/support':
         Var('git_url') + '/chromium/support.git@9306628dc48b26b6264fc32a09bd5f926fec7218',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
@@ -33,7 +33,7 @@ deps = {
     'src/third_party/WebKit':
         Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/angle':
-        Var('git_url') + '/external/angleproject.git@1584eebfcb4410e1dbed867c38837448861638a3',
+        Var('git_url') + '/external/angleproject.git@32a3154df3b75a8fb724e7f8c15249abfd1d6777',
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/files/src/google':
