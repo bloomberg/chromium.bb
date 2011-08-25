@@ -74,7 +74,8 @@ extension_misc::AppLaunchBucket ParseLaunchSource(
 AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extension_service_(extension_service),
       promo_active_(false),
-      ignore_changes_(false) {
+      ignore_changes_(false),
+      attempted_bookmark_app_install_(false) {
 }
 
 AppLauncherHandler::~AppLauncherHandler() {}
@@ -264,27 +265,42 @@ void AppLauncherHandler::Observe(int type,
       web_ui_->CallJavascriptFunction("appNotificationChanged", args);
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const Extension* extension =
-          type == chrome::NOTIFICATION_EXTENSION_LOADED ?
-              Details<const Extension>(details).ptr() :
-              Details<UnloadedExtensionInfo>(details)->extension;
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const Extension* extension = Details<const Extension>(details).ptr();
       if (!extension->is_app())
-        break;
+        return;
 
-      if (NewTabUI::NTP4Enabled()) {
-        scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
-        if (app_info.get()) {
-          std::string function =
-              type == chrome::NOTIFICATION_EXTENSION_LOADED ?
-                  "ntp4.appAdded" : "ntp4.appRemoved";
-          web_ui_->CallJavascriptFunction(function, *app_info);
-        }
-      } else if (web_ui_->tab_contents()) {
+      if (!NewTabUI::NTP4Enabled()) {
         HandleGetApps(NULL);
+        break;
       }
 
+      scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
+      if (app_info.get()) {
+        ExtensionPrefs* prefs = extension_service_->extension_prefs();
+        scoped_ptr<base::FundamentalValue> highlight(Value::CreateBooleanValue(
+              prefs->IsFromBookmark(extension->id()) &&
+              attempted_bookmark_app_install_));
+        attempted_bookmark_app_install_ = false;
+        web_ui_->CallJavascriptFunction("ntp4.appAdded", *app_info, *highlight);
+      }
+
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      const Extension* extension =
+          Details<UnloadedExtensionInfo>(details)->extension;
+      if (!extension->is_app())
+        return;
+
+      if (!NewTabUI::NTP4Enabled()) {
+        HandleGetApps(NULL);
+        break;
+      }
+
+      scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
+      if (app_info.get())
+        web_ui_->CallJavascriptFunction("ntp4.appRemoved", *app_info);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED:
@@ -308,6 +324,10 @@ void AppLauncherHandler::Observe(int type,
         FillAppDictionary(&dictionary);
         web_ui_->CallJavascriptFunction("appsPrefChangeCallback", dictionary);
       }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
+      attempted_bookmark_app_install_ = false;
       break;
     }
     default:
@@ -454,6 +474,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
         NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
+        NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
         NotificationService::AllSources());
   }
   if (pref_change_registrar_.IsEmpty()) {
@@ -766,6 +788,7 @@ void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
       extension_service_->MakeCrxInstaller(NULL));
   installer->set_page_index(install_info->page_index);
   installer->InstallWebApp(*web_app);
+  attempted_bookmark_app_install_ = true;
 }
 
 // static

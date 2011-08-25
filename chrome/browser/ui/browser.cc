@@ -1117,8 +1117,9 @@ int Browser::GetIndexForInsertionDuringRestore(int relative_index) {
       TabStripModel::INSERT_AFTER) ? tab_count() : relative_index;
 }
 
-TabContentsWrapper* Browser::AddSelectedTabWithURL(const GURL& url,
-                                            PageTransition::Type transition) {
+TabContentsWrapper* Browser::AddSelectedTabWithURL(
+    const GURL& url,
+    PageTransition::Type transition) {
   browser::NavigateParams params(this, url, transition);
   params.disposition = NEW_FOREGROUND_TAB;
   browser::Navigate(&params);

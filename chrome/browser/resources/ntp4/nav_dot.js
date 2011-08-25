@@ -72,6 +72,14 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Gets the associated TilePage.
+     * @return {TilePage}
+     */
+    get page() {
+      return this.page_;
+    },
+
+    /**
      * Removes the dot from the page after transitioning to 0 width.
      */
     animateRemove: function() {
@@ -184,10 +192,8 @@ cr.define('ntp4', function() {
 
       if (!this.dragWrapper_.isCurrentDragTarget)
         e.dataTransfer.dropEffect = 'none';
-      else if (ntp4.getCurrentlyDraggingTile())
-        e.dataTransfer.dropEffect = 'move';
       else
-        e.dataTransfer.dropEffect = 'copy';
+        this.page_.setDropEffect(e.dataTransfer);
     },
 
     /**

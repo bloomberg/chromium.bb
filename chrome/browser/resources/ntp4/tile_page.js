@@ -161,7 +161,7 @@ cr.define('ntp4', function() {
       if (this.landedOnTrash) {
         this.dragClone.classList.add('deleting');
       } else if (this.tilePage) {
-        if (this.tilePage.selected) {
+        if (this.tilePage.selected && e.dataTransfer.dropEffect != 'copy') {
           // The tile's contents may have moved following the respositioning;
           // adjust for that.
           var contentDiffX = this.dragClone.firstChild.offsetLeft -
@@ -903,11 +903,7 @@ cr.define('ntp4', function() {
     doDragOver: function(e) {
       e.preventDefault();
 
-      if (currentlyDraggingTile)
-        e.dataTransfer.dropEffect = 'move';
-      else
-        e.dataTransfer.dropEffect = 'copy';
-
+      this.setDropEffect(e.dataTransfer);
       var newDragIndex = this.getWouldBeIndexForPoint_(e.pageX, e.pageY);
       if (newDragIndex < 0 || newDragIndex >= this.tileElements_.length)
         newDragIndex = this.dragItemIndex_;
@@ -1029,6 +1025,15 @@ cr.define('ntp4', function() {
      * @param {Node} draggedTile The tile that was dropped.
      */
     tileMoved: function(draggedTile) {
+    },
+
+    /**
+     * Sets the drop effect on |dataTransfer| to the desired value (e.g.
+     * 'copy').
+     * @param {Object} dataTransfer The drag event dataTransfer object.
+     */
+    setDropEffect: function(dataTransfer) {
+      assert(false);
     },
   };
 

@@ -190,6 +190,10 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // refreshing. This is useful when making many batch updates to avoid flicker.
   bool ignore_changes_;
 
+  // When true, we have attempted to install a bookmark app, and are still
+  // waiting to hear about success or failure from the extensions system.
+  bool attempted_bookmark_app_install_;
+
   // Hold state for favicon requests.
   CancelableRequestConsumerTSimple<AppInstallInfo*> favicon_consumer_;
 

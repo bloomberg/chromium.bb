@@ -420,7 +420,7 @@ cr.define('ntp4', function() {
       var tile = ntp4.getCurrentlyDraggingTile();
       if (!tile.querySelector('.app')) {
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
+        this.setDropEffect(e.dataTransfer);
       } else {
         TilePage.prototype.doDragOver.call(this, e);
       }
@@ -516,6 +516,15 @@ cr.define('ntp4', function() {
       }
 
       chrome.send('reorderApps', [draggedTile.firstChild.appId, appIds]);
+    },
+
+    /** @inheritDoc */
+    setDropEffect: function(dataTransfer) {
+      var tile = ntp4.getCurrentlyDraggingTile();
+      if (tile && tile.querySelector('.app'))
+        dataTransfer.dropEffect = 'move';
+      else
+        dataTransfer.dropEffect = 'copy';
     },
   };
 

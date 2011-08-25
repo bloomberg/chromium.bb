@@ -56,12 +56,6 @@ cr.define('ntp4', function() {
   var dotList;
 
   /**
-   * A list of all 'dots' elements.
-   * @type {!NodeList|undefined}
-   */
-  var dots;
-
-  /**
    * The left and right paging buttons.
    * @type {!Element|undefined}
    */
@@ -145,13 +139,7 @@ cr.define('ntp4', function() {
 
     // When a new app has been installed, we will be opened with a hash value
     // that corresponds to the new app ID.
-    var hash = location.hash;
-    if (hash && hash.indexOf('#app-id=') == 0) {
-      highlightAppId = hash.split('=')[1];
-      // Clear the hash so if the user bookmarks this page, they'll just get
-      // chrome://newtab/.
-      window.history.replaceState({}, '', '/');
-    }
+    highlightAppId = getAndClearAppIDHash();
 
     // Request data on the apps so we can fill them in.
     // Note that this is kicked off asynchronously.  'getAppsCallback' will be
@@ -163,7 +151,6 @@ cr.define('ntp4', function() {
       e.preventDefault();
     }, true);
 
-    dots = dotList.getElementsByClassName('dot');
     tilePages = pageList.getElementsByClassName('tile-page');
     appsPages = pageList.getElementsByClassName('apps-page');
 
@@ -247,6 +234,23 @@ cr.define('ntp4', function() {
   }
 
   /**
+   * Gets the app ID stored in the hash of the URL, and resets the hash to
+   * empty. If there is not an app-id in the hash, does nothing.
+   * @return {String} The value of the app-id query string parameter.
+   */
+  function getAndClearAppIDHash() {
+    var hash = location.hash;
+    if (hash.indexOf('#app-id=') == 0) {
+      var appID = hash.split('=')[1];
+      // Clear the hash so if the user bookmarks this page, they'll just get
+      // chrome://newtab/.
+      window.history.replaceState({}, '', '/');
+      return appID;
+    }
+    return '';
+  }
+
+  /**
    * Callback invoked by chrome with the apps available.
    *
    * Note that calls to this function can occur at any time, not just in
@@ -324,14 +328,14 @@ cr.define('ntp4', function() {
 
     ntp4.AppsPage.setPromo(data.showPromo ? data : null);
 
-    // Tell the slider about the pages
+    // Tell the slider about the pages.
     updateSliderCards();
 
     if (highlightApp)
-      appAdded(highlightApp);
+      appAdded(highlightApp, true);
 
-    // Mark the current page
-    dots[cardSlider.currentCard].classList.add('selected');
+    // Mark the current page.
+    cardSlider.currentCardValue.navigationDot.classList.add('selected');
     logEvent('apps.layout: ' + (Date.now() - startTime));
 
     document.documentElement.classList.remove('starting-up');
@@ -342,10 +346,25 @@ cr.define('ntp4', function() {
    * @param {Object} app A data structure full of relevant information for the
    *     app.
    */
-  function appAdded(app) {
+  function appAdded(app, opt_highlight) {
+    // If the page is already open when a new app is installed, the hash will
+    // be set once again.
+    var appID = getAndClearAppIDHash();
+    if (appID == app.id)
+      opt_highlight = true;
+
     var pageIndex = app.page_index || 0;
+
+    if (pageIndex >= appsPages.length) {
+      while (pageIndex >= appsPages.length) {
+        appendAppsPage(new ntp4.AppsPage(), '');
+      }
+      updateSliderCards();
+    }
+
     var page = appsPages[pageIndex];
-    cardSlider.selectCardByValue(page);
+    if (opt_highlight)
+      cardSlider.selectCardByValue(page);
     page.appendApp(app, true);
   }
 
@@ -408,12 +427,14 @@ cr.define('ntp4', function() {
       pageArray[i] = tilePages[i];
     cardSlider.setCards(pageArray, pageNo);
 
-    if (shownPage == templateData['most_visited_page_id'])
+    if (shownPage == templateData['most_visited_page_id']) {
       cardSlider.selectCardByValue(mostVisitedPage);
-    else if (shownPage == templateData['apps_page_id'])
-      cardSlider.selectCardByValue(appsPages[shownPageIndex]);
-    else if (shownPage == templateData['bookmarks_page_id'])
+    } else if (shownPage == templateData['apps_page_id']) {
+      cardSlider.selectCardByValue(
+          appsPages[Math.min(shownPageIndex, appsPages.length - 1)]);
+    } else if (shownPage == templateData['bookmarks_page_id']) {
       cardSlider.selectCardByValue(bookmarksPage);
+    }
   }
 
   /**
@@ -496,7 +517,7 @@ cr.define('ntp4', function() {
   function leaveRearrangeMode(e) {
     var tempPage = document.querySelector('.tile-page.temporary');
     var dot = tempPage.navigationDot;
-    if (!tempPage.tileCount) {
+    if (!tempPage.tileCount && tempPage != cardSlider.currentCardValue) {
       dot.animateRemove();
       tempPage.parentNode.removeChild(tempPage);
       updateSliderCards();
@@ -642,8 +663,7 @@ cr.define('ntp4', function() {
     var curDot = dotList.getElementsByClassName('selected')[0];
     if (curDot)
       curDot.classList.remove('selected');
-    var newPageIndex = e.cardSlider.currentCard;
-    dots[newPageIndex].classList.add('selected');
+    page.navigationDot.classList.add('selected');
     updatePageSwitchers();
   }
 
