@@ -1793,6 +1793,11 @@ def AliasSrpc(env, alias, is_client, build_dir, srpc_files,
   return node
 
 
+def _StripPrefix(path, prefix):
+  """Assume path starts with prefix, and return path with that prefix."""
+  return path[len(prefix):]
+
+
 def TrustedSrpc(env, is_client, srpc_files, name, h_file, cc_file, guard):
   # Add these SRPC files to the 'srpcgen' alias for a manual build step.
   h_file = 'trusted/srpcgen/' + h_file
@@ -1805,10 +1810,18 @@ def TrustedSrpc(env, is_client, srpc_files, name, h_file, cc_file, guard):
   # up to date, so we generate a second copy of the files to the output
   # directory which we will use to diff against the above copy which is
   # checked in and only generated mnaully by calling the 'srgcgen' target.
-  env.AliasSrpc(alias='srpcdif', is_client=is_client,
-                build_dir='${TARGET_ROOT}/srpcgen/${SOURCE.srcdir}',
-                srpc_files=srpc_files, name=name, h_file=h_file,
-                cc_file=cc_file, guard=guard)
+  # Using scons' inline string evaluation magic to call _StripPrefix to
+  # convert paths in the ppapi/ dir (which end up being absolute) into
+  # paths relative to native_client/ to keep our pathing consistent.
+  env['_StripPrefix'] = _StripPrefix
+  env['SRPCGEN_BASE'] = env.subst('${SOURCE_ROOT}/ppapi/native_client/')
+  env.AliasSrpc(
+      alias='srpcdif', is_client=is_client,
+      build_dir=(
+         '${TARGET_ROOT}/srpcgen/'
+         '${_StripPrefix(SOURCE.srcdir.path,SRPCGEN_BASE)}'),
+      srpc_files=srpc_files, name=name, h_file=h_file,
+      cc_file=cc_file, guard=guard)
   env.AlwaysBuild(env.Alias('srpcdif'))
 
 
