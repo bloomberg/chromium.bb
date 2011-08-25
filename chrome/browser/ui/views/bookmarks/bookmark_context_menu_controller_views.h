@@ -66,8 +66,9 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
   bool IsItemChecked(int id) const;
   bool IsCommandEnabled(int id) const;
 
-  // Accessors:
   Profile* profile() const { return profile_; }
+
+  void set_navigator(PageNavigator* navigator) { navigator_ = navigator; }
   PageNavigator* navigator() const { return navigator_; }
 
  private:

@@ -71,6 +71,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // Returns the context menu, or NULL if the context menu isn't showing.
   views::MenuItemView* context_menu() const;
 
+  // Sets the page navigator.
+  void SetPageNavigator(PageNavigator* navigator);
+
   void set_observer(Observer* observer) { observer_ = observer; }
 
   // MenuDelegate methods.

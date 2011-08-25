@@ -30,11 +30,12 @@
 using views::MenuItemView;
 
 BookmarkMenuController::BookmarkMenuController(Profile* profile,
-                                               PageNavigator* navigator,
+                                               PageNavigator* page_navigator,
                                                views::Widget* parent,
                                                const BookmarkNode* node,
                                                int start_child_index)
-    : menu_delegate_(new BookmarkMenuDelegate(profile, navigator, parent, 1)),
+    : menu_delegate_(
+        new BookmarkMenuDelegate(profile, page_navigator, parent, 1)),
       node_(node),
       observer_(NULL),
       for_drop_(false),
@@ -76,6 +77,10 @@ MenuItemView* BookmarkMenuController::menu() const {
 
 MenuItemView* BookmarkMenuController::context_menu() const {
   return menu_delegate_->context_menu();
+}
+
+void BookmarkMenuController::SetPageNavigator(PageNavigator* navigator) {
+  menu_delegate_->SetPageNavigator(navigator);
 }
 
 std::wstring BookmarkMenuController::GetTooltipText(int id,

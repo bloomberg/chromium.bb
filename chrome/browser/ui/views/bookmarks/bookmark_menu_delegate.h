@@ -58,6 +58,9 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
             int start_child_index,
             ShowOptions show_options);
 
+  // Sets the PageNavigator.
+  void SetPageNavigator(PageNavigator* navigator);
+
   // Returns the id given to the next menu.
   int next_menu_id() const { return next_menu_id_; }
 

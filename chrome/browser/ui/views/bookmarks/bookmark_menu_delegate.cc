@@ -81,6 +81,12 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
   }
 }
 
+void BookmarkMenuDelegate::SetPageNavigator(PageNavigator* navigator) {
+  page_navigator_ = navigator;
+  if (context_menu_.get())
+    context_menu_->SetPageNavigator(navigator);
+}
+
 void BookmarkMenuDelegate::SetActiveMenu(const BookmarkNode* node,
                                          int start_index) {
   DCHECK(!parent_menu_item_);

@@ -49,6 +49,9 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
     observer_ = observer;
   }
 
+  // Sets the PageNavigator.
+  void SetPageNavigator(PageNavigator* navigator);
+
   // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int command_id);
   virtual bool IsItemChecked(int command_id) const;
