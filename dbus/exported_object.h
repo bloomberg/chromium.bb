@@ -86,9 +86,12 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
   // BLOCKING CALL.
   virtual void Unregister();
 
+ protected:
+  // This is protected, so we can define sub classes.
+  virtual ~ExportedObject();
+
  private:
   friend class base::RefCountedThreadSafe<ExportedObject>;
-  virtual ~ExportedObject();
 
   // Helper function for ExportMethod().
   void ExportMethodInternal(const std::string& interface_name,

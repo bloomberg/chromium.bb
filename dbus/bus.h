@@ -368,9 +368,12 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // AssertOnOriginThread().
   virtual void AssertOnDBusThread();
 
+ protected:
+  // This is protected, so we can define sub classes.
+  virtual ~Bus();
+
  private:
   friend class base::RefCountedThreadSafe<Bus>;
-  virtual ~Bus();
 
   // Helper function used for Shutdown().
   void ShutdownInternal(OnShutdownCallback callback);

@@ -6,6 +6,7 @@
 #define DBUS_OBJECT_PROXY_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 #include <dbus/dbus.h>
@@ -104,9 +105,12 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   // BLOCKING CALL.
   virtual void Detach();
 
+ protected:
+  // This is protected, so we can define sub classes.
+  virtual ~ObjectProxy();
+
  private:
   friend class base::RefCountedThreadSafe<ObjectProxy>;
-  virtual ~ObjectProxy();
 
   // Struct of data we'll be passing from StartAsyncMethodCall() to
   // OnPendingCallIsCompleteThunk().
