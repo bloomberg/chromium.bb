@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
-#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
@@ -157,29 +156,13 @@ bool PanelBrowserWindowCocoa::IsDrawingAttention() const {
 
 bool PanelBrowserWindowCocoa::PreHandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
-    return false;
-
-  int id = [BrowserWindowUtils getCommandId:event];
-  if (id == -1)
-    return false;
-
-  if (browser()->IsReservedCommandOrKey(id, event)) {
-      return [BrowserWindowUtils handleKeyboardEvent:event.os_event
-                                 inWindow:GetNativePanelHandle()];
-  }
-
-  DCHECK(is_keyboard_shortcut);
-  *is_keyboard_shortcut = true;
+  NOTIMPLEMENTED();
   return false;
 }
 
 void PanelBrowserWindowCocoa::HandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if ([BrowserWindowUtils shouldHandleKeyboardEvent:event]) {
-    [BrowserWindowUtils handleKeyboardEvent:event.os_event
-                                   inWindow:GetNativePanelHandle()];
-  }
+  NOTIMPLEMENTED();
 }
 
 Browser* PanelBrowserWindowCocoa::GetPanelBrowser() const {

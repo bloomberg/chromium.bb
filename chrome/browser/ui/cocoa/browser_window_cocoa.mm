@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
@@ -449,27 +449,130 @@ void BrowserWindowCocoa::ShowAppMenu() {
 
 bool BrowserWindowCocoa::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
+  if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char)
     return false;
 
-  int id = [BrowserWindowUtils getCommandId:event];
+  DCHECK(event.os_event != NULL);
+  int id = GetCommandId(event);
   if (id == -1)
     return false;
 
-  if (browser_->IsReservedCommandOrKey(id, event)) {
-      return [BrowserWindowUtils handleKeyboardEvent:event.os_event
-                                            inWindow:window()];
-  }
+  if (browser_->IsReservedCommandOrKey(id, event))
+    return HandleKeyboardEventInternal(event.os_event);
 
-  DCHECK(is_keyboard_shortcut);
+  DCHECK(is_keyboard_shortcut != NULL);
   *is_keyboard_shortcut = true;
+
   return false;
 }
 
 void BrowserWindowCocoa::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if ([BrowserWindowUtils shouldHandleKeyboardEvent:event])
-    [BrowserWindowUtils handleKeyboardEvent:event.os_event inWindow:window()];
+  if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char)
+    return;
+
+  DCHECK(event.os_event != NULL);
+  HandleKeyboardEventInternal(event.os_event);
+}
+
+@interface MenuWalker : NSObject
++ (NSMenuItem*)itemForKeyEquivalent:(NSEvent*)key
+                               menu:(NSMenu*)menu;
+@end
+
+@implementation MenuWalker
++ (NSMenuItem*)itemForKeyEquivalent:(NSEvent*)key
+                               menu:(NSMenu*)menu {
+  NSMenuItem* result = nil;
+
+  for (NSMenuItem *item in [menu itemArray]) {
+    NSMenu* submenu = [item submenu];
+    if (submenu) {
+      if (submenu != [NSApp servicesMenu])
+        result = [self itemForKeyEquivalent:key
+                                       menu:submenu];
+    } else if ([item cr_firesForKeyEventIfEnabled:key]) {
+      result = item;
+    }
+
+    if (result)
+      break;
+  }
+
+  return result;
+}
+@end
+
+int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
+  if ([event.os_event type] != NSKeyDown)
+    return -1;
+
+  // Look in menu.
+  NSMenuItem* item = [MenuWalker itemForKeyEquivalent:event.os_event
+                                                 menu:[NSApp mainMenu]];
+
+  if (item && [item action] == @selector(commandDispatch:) && [item tag] > 0)
+    return [item tag];
+
+  // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
+  // that do not correspond to IDC_ constants need no special treatment however,
+  // as they can't be blacklisted in |Browser::IsReservedCommandOrKey()| anyhow.
+  if (item && [item action] == @selector(performClose:))
+    return IDC_CLOSE_WINDOW;
+
+  // "Exit" doesn't use the |commandDispatch:| mechanism either.
+  if (item && [item action] == @selector(terminate:))
+    return IDC_EXIT;
+
+  // Look in secondary keyboard shortcuts.
+  NSUInteger modifiers = [event.os_event modifierFlags];
+  const bool cmdKey = (modifiers & NSCommandKeyMask) != 0;
+  const bool shiftKey = (modifiers & NSShiftKeyMask) != 0;
+  const bool cntrlKey = (modifiers & NSControlKeyMask) != 0;
+  const bool optKey = (modifiers & NSAlternateKeyMask) != 0;
+  const int keyCode = [event.os_event keyCode];
+  const unichar keyChar = KeyCharacterForEvent(event.os_event);
+
+  int cmdNum = CommandForWindowKeyboardShortcut(
+      cmdKey, shiftKey, cntrlKey, optKey, keyCode, keyChar);
+  if (cmdNum != -1)
+    return cmdNum;
+
+  cmdNum = CommandForBrowserKeyboardShortcut(
+      cmdKey, shiftKey, cntrlKey, optKey, keyCode, keyChar);
+  if (cmdNum != -1)
+    return cmdNum;
+
+  return -1;
+}
+
+bool BrowserWindowCocoa::HandleKeyboardEventInternal(NSEvent* event) {
+  ChromeEventProcessingWindow* event_window =
+      static_cast<ChromeEventProcessingWindow*>(window());
+  DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
+
+  // Do not fire shortcuts on key up.
+  if ([event type] == NSKeyDown) {
+    // Send the event to the menu before sending it to the browser/window
+    // shortcut handling, so that if a user configures cmd-left to mean
+    // "previous tab", it takes precedence over the built-in "history back"
+    // binding. Other than that, the |-redispatchKeyEvent:| call would take care
+    // of invoking the original menu item shortcut as well.
+
+    if ([[NSApp mainMenu] performKeyEquivalent:event])
+      return true;
+
+    if ([event_window handleExtraBrowserKeyboardShortcut:event])
+      return true;
+
+    if ([event_window handleExtraWindowKeyboardShortcut:event])
+      return true;
+
+    if ([event_window handleDelayedWindowKeyboardShortcut:event])
+      return true;
+  }
+
+  return [event_window redispatchKeyEvent:event];
 }
 
 void BrowserWindowCocoa::ShowCreateWebAppShortcutsDialog(

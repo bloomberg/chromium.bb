@@ -132,6 +132,8 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void DestroyBrowser();
 
  private:
+  int GetCommandId(const NativeWebKeyboardEvent& event);
+  bool HandleKeyboardEventInternal(NSEvent* event);
   NSWindow* window() const;  // Accessor for the (current) |NSWindow|.
   void UpdateSidebarForContents(TabContents* tab_contents);
 
