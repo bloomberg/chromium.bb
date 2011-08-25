@@ -11,6 +11,9 @@
     'variables': {
       'target_base': 'none',
     },
+    'include_dirs': [
+      '<(DEPTH)/ppapi',
+    ],
     'target_conditions': [
       ['target_base=="ppNaClPlugin"', {
         'sources': [
@@ -61,7 +64,7 @@
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
             '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_cpp_nacl',
-            '<(DEPTH)/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
+            '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
             '<(DEPTH)/native_client/src/third_party_mod/jsoncpp/jsoncpp.gyp:jsoncpp',
@@ -94,7 +97,7 @@
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:imc',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
             '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_cpp_nacl',
-            '<(DEPTH)/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
+            '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
             '<(DEPTH)/native_client/src/third_party_mod/jsoncpp/jsoncpp.gyp:jsoncpp',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',

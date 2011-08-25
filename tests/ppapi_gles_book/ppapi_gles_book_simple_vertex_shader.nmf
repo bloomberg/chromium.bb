@@ -1,7 +1,0 @@
-{
-  "program": {
-    "x86-32": {"url": "ppapi_gles_book_simple_vertex_shader_x86-32.nexe"},
-    "x86-64": {"url": "ppapi_gles_book_simple_vertex_shader_x86-64.nexe"},
-    "arm": {"url": "ppapi_gles_book_simple_vertex_shader_arm.nexe"}
-  }
-}

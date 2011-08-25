@@ -29,6 +29,9 @@ import command_tester
 Dir('src/third_party_mod/gtest').addRepository(
     Dir('#/../testing/gtest'))
 
+# Underlay things migrating to ppapi repo.
+Dir('..').addRepository(Dir('#/../ppapi'))
+
 # ----------------------------------------------------------
 # REPORT
 # ----------------------------------------------------------
@@ -1777,7 +1780,9 @@ def AliasSrpc(env, alias, is_client, build_dir, srpc_files,
 
   # Add the srpc_files
   for name in srpc_files:
-    gen_args.append(File(name).srcnode().abspath)
+    # TODO(bradnelson): make this more correct.
+    gen_args.append(File(name).srcnode().abspath.replace(
+        '/native_client/src/', '/ppapi/native_client/src/'))
 
   # Build the command line string
   action = ' '.join(gen_args)

@@ -13,7 +13,9 @@
         '../src/shared/imc/imc.gyp:*',
         '../src/shared/platform/platform.gyp:*',
         '../src/shared/ppapi/ppapi.gyp:*',
-        '../src/shared/ppapi_proxy/ppapi_proxy.gyp:*',
+        # TODO(bradnelson):
+        #     We may eventually be able to drop this from nacl's build entirely.
+        '../../ppapi/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
         '../src/third_party_mod/jsoncpp/jsoncpp.gyp:*',
