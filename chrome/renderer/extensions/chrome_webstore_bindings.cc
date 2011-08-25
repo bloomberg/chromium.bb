@@ -111,7 +111,7 @@ class ChromeWebstoreExtensionWrapper : public v8::Extension {
     }
 
     GURL webstore_base_url =
-        GURL(extension_misc::GetWebstoreItemDetailURLPrefix());
+        GURL(extension_urls::GetWebstoreItemDetailURLPrefix());
     WebNodeList children = head.childNodes();
     for (unsigned i = 0; i < children.length(); ++i) {
       WebNode child = children.item(i);
@@ -150,7 +150,7 @@ class ChromeWebstoreExtensionWrapper : public v8::Extension {
       }
 
       std::string reconstructed_webstore_item_url_string =
-          extension_misc::GetWebstoreItemDetailURLPrefix() +
+          extension_urls::GetWebstoreItemDetailURLPrefix() +
               candidate_webstore_item_id;
       if (reconstructed_webstore_item_url_string != webstore_url_string) {
         *error = kInvalidWebstoreItemUrlError;

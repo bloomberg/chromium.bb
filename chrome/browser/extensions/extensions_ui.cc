@@ -138,14 +138,14 @@ ChromeWebUIDataSource* CreateExtensionsUIHTMLSource() {
       l10n_util::GetStringFUTF16(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
           ASCIIToUTF16("<a href='") +
               ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-                  GURL(extension_misc::GetWebstoreLaunchURL())).spec()) +
+                  GURL(extension_urls::GetWebstoreLaunchURL())).spec()) +
               ASCIIToUTF16("'>"),
           ASCIIToUTF16("</a>")));
 
   source->AddString("getMoreExtensions",
       ASCIIToUTF16("<a href='") +
       ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-          GURL(extension_misc::GetWebstoreLaunchURL())).spec()) +
+          GURL(extension_urls::GetWebstoreLaunchURL())).spec()) +
       ASCIIToUTF16("'>") +
       l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS) +
       ASCIIToUTF16("</a>"));

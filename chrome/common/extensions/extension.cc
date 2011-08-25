@@ -253,22 +253,6 @@ scoped_refptr<Extension> Extension::CreateWithId(const FilePath& path,
   return extension;
 }
 
-namespace {
-const char* kGalleryUpdateHttpUrl =
-    "http://clients2.google.com/service/update2/crx";
-const char* kGalleryUpdateHttpsUrl =
-    "https://clients2.google.com/service/update2/crx";
-}  // namespace
-
-// static
-GURL Extension::GalleryUpdateUrl(bool secure) {
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL))
-    return GURL(cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL));
-  else
-    return GURL(secure ? kGalleryUpdateHttpsUrl : kGalleryUpdateHttpUrl);
-}
-
 // static
 Extension::Location Extension::GetHigherPriorityLocation(
     Extension::Location loc1, Extension::Location loc2) {
@@ -2344,7 +2328,7 @@ GURL Extension::GetHomepageURL() const {
   if (!UpdatesFromGallery())
     return GURL();
 
-  GURL url(extension_misc::GetWebstoreItemDetailURLPrefix() + id());
+  GURL url(extension_urls::GetWebstoreItemDetailURLPrefix() + id());
   return url;
 }
 
@@ -2715,7 +2699,7 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
   // like extensions removing the "report abuse" link).
   // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
   // against the store app extent?
-  GURL store_url(extension_misc::GetWebstoreLaunchURL());
+  GURL store_url(extension_urls::GetWebstoreLaunchURL());
   if ((page_url.host() == store_url.host()) &&
       !CanExecuteScriptEverywhere() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2797,8 +2781,8 @@ bool Extension::CanCaptureVisiblePage(const GURL& page_url,
 }
 
 bool Extension::UpdatesFromGallery() const {
-  return update_url() == GalleryUpdateUrl(false) ||
-         update_url() == GalleryUpdateUrl(true);
+  return update_url() == extension_urls::GetWebstoreUpdateUrl(false) ||
+         update_url() == extension_urls::GetWebstoreUpdateUrl(true);
 }
 
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
@@ -2833,8 +2817,8 @@ Extension::SyncType Extension::GetSyncType() const {
   // TODO(akalin): Relax this restriction once we've put in UI to
   // approve synced extensions.
   if (!update_url().is_empty() &&
-      (update_url() != GalleryUpdateUrl(false)) &&
-      (update_url() != GalleryUpdateUrl(true))) {
+      (update_url() != extension_urls::GetWebstoreUpdateUrl(false)) &&
+      (update_url() != extension_urls::GetWebstoreUpdateUrl(true))) {
     return SYNC_TYPE_NONE;
   }
 
@@ -2852,8 +2836,8 @@ Extension::SyncType Extension::GetSyncType() const {
 
     case Extension::TYPE_USER_SCRIPT:
       // We only want to sync user scripts with gallery update URLs.
-      if (update_url() == GalleryUpdateUrl(true) ||
-          update_url() == GalleryUpdateUrl(false))
+      if (update_url() == extension_urls::GetWebstoreUpdateUrl(true) ||
+          update_url() == extension_urls::GetWebstoreUpdateUrl(false))
         return SYNC_TYPE_EXTENSION;
       else
         return SYNC_TYPE_NONE;

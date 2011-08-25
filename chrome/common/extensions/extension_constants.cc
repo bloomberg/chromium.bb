@@ -4,9 +4,12 @@
 
 #include "chrome/common/extensions/extension_constants.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/escape.h"
 
 namespace extension_manifest_keys {
 
@@ -408,6 +411,48 @@ const char* kIllegalPlugins =
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {
+std::string GetWebstoreLaunchURL() {
+  std::string gallery_prefix = kGalleryBrowsePrefix;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsGalleryURL))
+    gallery_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kAppsGalleryURL);
+  if (EndsWith(gallery_prefix, "/", true))
+    gallery_prefix = gallery_prefix.substr(0, gallery_prefix.length() - 1);
+  return gallery_prefix;
+}
+
+std::string GetWebstoreItemDetailURLPrefix() {
+  return GetWebstoreLaunchURL() + "/detail/";
+}
+
+const char* kGalleryUpdateHttpUrl =
+    "http://clients2.google.com/service/update2/crx";
+const char* kGalleryUpdateHttpsUrl =
+    "https://clients2.google.com/service/update2/crx";
+
+GURL GetWebstoreUpdateUrl(bool secure) {
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL))
+    return GURL(cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL));
+  else
+    return GURL(secure ? kGalleryUpdateHttpsUrl : kGalleryUpdateHttpUrl);
+}
+
+GURL GetWebstoreInstallUrl(const std::string& extension_id,
+                           const std::string& locale) {
+  std::vector<std::string> params;
+  params.push_back("id=" + extension_id);
+  params.push_back("lang=" + locale);
+  params.push_back("uc");
+  std::string url_string = extension_urls::GetWebstoreUpdateUrl(true).spec();
+
+  GURL url(url_string + "?response=redirect&x=" +
+      EscapeQueryParamValue(JoinString(params, '&'), true));
+  DCHECK(url.is_valid());
+
+  return url;
+}
+
 const char* kGalleryBrowsePrefix = "https://chrome.google.com/webstore";
 const char* kMiniGalleryBrowsePrefix = "https://tools.google.com/chrome/";
 const char* kMiniGalleryDownloadPrefix = "https://dl-ssl.google.com/chrome/";
@@ -435,19 +480,5 @@ const char* kAccessExtensionPath =
     "/usr/share/chromeos-assets/accessibility/extensions";
 const char* kChromeVoxDirectoryName = "access_chromevox";
 #endif
-
-std::string GetWebstoreLaunchURL() {
-  std::string gallery_prefix = extension_urls::kGalleryBrowsePrefix;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsGalleryURL))
-    gallery_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kAppsGalleryURL);
-  if (EndsWith(gallery_prefix, "/", true))
-    gallery_prefix = gallery_prefix.substr(0, gallery_prefix.length() - 1);
-  return gallery_prefix;
-}
-
-std::string GetWebstoreItemDetailURLPrefix() {
-  return GetWebstoreLaunchURL() + "/detail/";
-}
 
 }

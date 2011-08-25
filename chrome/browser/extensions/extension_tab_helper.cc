@@ -157,7 +157,7 @@ void ExtensionTabHelper::OnInlineWebstoreInstall(
   // For now there is no inline installation UI, we just open the item's Web
   // Store page in a new tab.
   GURL webstore_item_url =
-      GURL(extension_misc::GetWebstoreItemDetailURLPrefix() + webstore_item_id);
+      GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + webstore_item_id);
   GetBrowser()->OpenURL(OpenURLParams(
       webstore_item_url,
       GetBrowser()->GetSelectedTabContents()->GetURL(),

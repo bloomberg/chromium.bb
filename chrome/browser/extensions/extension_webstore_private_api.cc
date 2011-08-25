@@ -32,7 +32,6 @@
 #include "content/common/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -515,15 +514,8 @@ bool CompleteInstallFunction::RunImpl() {
     return false;
   }
 
-  std::vector<std::string> params;
-  params.push_back("id=" + id);
-  params.push_back("lang=" + g_browser_process->GetApplicationLocale());
-  params.push_back("uc");
-  std::string url_string = Extension::GalleryUpdateUrl(true).spec();
-
-  GURL url(url_string + "?response=redirect&x=" +
-      EscapeQueryParamValue(JoinString(params, '&'), true));
-  DCHECK(url.is_valid());
+  GURL install_url(extension_urls::GetWebstoreInstallUrl(
+      id, g_browser_process->GetApplicationLocale()));
 
   // The download url for the given |id| is now contained in |url|. We
   // navigate the current (calling) tab to this url which will result in a
@@ -532,7 +524,7 @@ bool CompleteInstallFunction::RunImpl() {
   // normal permissions install dialog.
   NavigationController& controller =
       dispatcher()->delegate()->GetAssociatedTabContents()->controller();
-  controller.LoadURL(url, source_url(), PageTransition::LINK);
+  controller.LoadURL(install_url, source_url(), PageTransition::LINK);
 
   return true;
 }

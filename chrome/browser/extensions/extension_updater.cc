@@ -381,7 +381,7 @@ void ManifestFetchesBuilder::AddExtensionData(
     // Fill in default update URL.
     //
     // TODO(akalin): Figure out if we should use the HTTPS version.
-    update_url = Extension::GalleryUpdateUrl(false);
+    update_url = extension_urls::GetWebstoreUpdateUrl(false);
   } else {
     url_stats_.other_url_count++;
   }
@@ -1038,7 +1038,7 @@ void ExtensionUpdater::CheckNow() {
     // url here to avoid DNS hijacking of the blacklist, which is not validated
     // by a public key signature like .crx files are.
     ManifestFetchData* blacklist_fetch =
-        new ManifestFetchData(Extension::GalleryUpdateUrl(true));
+        new ManifestFetchData(extension_urls::GetWebstoreUpdateUrl(true));
     std::string version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
     ManifestFetchData::PingData ping_data;
     ping_data.rollcall_days =

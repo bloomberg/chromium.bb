@@ -208,9 +208,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       const std::string& explicit_id,
       std::string* error);
 
-  // Return the update url used by gallery/webstore extensions.
-  static GURL GalleryUpdateUrl(bool secure);
-
   // Given two install sources, return the one which should take priority
   // over the other. If an extension is installed from two sources A and B,
   // its install source should be set to GetHigherPriorityLocation(A, B).

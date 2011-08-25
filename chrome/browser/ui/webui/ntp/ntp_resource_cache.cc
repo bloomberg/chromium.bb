@@ -352,7 +352,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("web_store_title",
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
   localized_strings.SetString("web_store_url",
-      GetUrlWithLang(GURL(extension_misc::GetWebstoreLaunchURL())));
+      GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
   localized_strings.SetString("syncpromotext",
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
   localized_strings.SetString("syncLinkText",

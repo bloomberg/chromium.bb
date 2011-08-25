@@ -1061,9 +1061,9 @@ TEST_F(ExtensionUpdaterTest, TestUpdateUrlData) {
   ExtensionUpdaterTest::TestUpdateUrlDataSimple();
   ExtensionUpdaterTest::TestUpdateUrlDataCompound();
   ExtensionUpdaterTest::TestUpdateUrlDataFromGallery(
-      Extension::GalleryUpdateUrl(false).spec());
+      extension_urls::GetWebstoreUpdateUrl(false).spec());
   ExtensionUpdaterTest::TestUpdateUrlDataFromGallery(
-      Extension::GalleryUpdateUrl(true).spec());
+      extension_urls::GetWebstoreUpdateUrl(true).spec());
 }
 
 TEST_F(ExtensionUpdaterTest, TestDetermineUpdates) {
