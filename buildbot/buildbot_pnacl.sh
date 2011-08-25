@@ -222,8 +222,7 @@ mode-trybot-x8664() {
   # no adhoc tests for x86-64
 }
 
-# TODO(robetrm): this trybot config takes way too long, it should
-#                be replaced by per arch trybots above
+# TODO(bradnelson): remove after sharding is complete
 mode-trybot() {
   FAIL_FAST=0
   clobber

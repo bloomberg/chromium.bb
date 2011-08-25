@@ -74,17 +74,17 @@ BOT_ASSIGNMENT = {
 
     # PNaCl.
     'lucid_64-newlib-arm_qemu-pnacl-dbg':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-dbg',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-dbg',
     'lucid_64-newlib-arm_qemu-pnacl-opt':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-opt',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-opt',
     'jaunty_32-newlib-arm_hw-pnacl-dbg':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-dbg',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-dbg',
     'jaunty_32-newlib-arm_hw-pnacl-opt':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-opt',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-opt',
     'lucid_64-newlib-x86_32-pnacl':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8632',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x8632',
     'lucid_64-newlib-x86_64-pnacl':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-x8664',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-x8664',
     # PNaCl Spec
     'lucid_64-newlib-arm_qemu-pnacl-spec':
         'bash buildbot/buildbot_spec2k.sh pnacl-arm',
@@ -153,15 +153,28 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_valgrind.sh glibc',
     # Pnacl scons trybots
     'nacl-arm_opt':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-try',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
     'nacl-arm_hw_opt':
-        'bash buildbot/buildbot_pnacl1.sh mode-buildbot-arm-hw-try',
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
+    # TODO(bradnelson): Eliminate this non-sharded trybot
     'nacl-lucid64-pnacl1':
-        'bash buildbot/buildbot_pnacl1.sh mode-trybot',
+        'bash buildbot/buildbot_pnacl.sh mode-trybot',
+    'nacl-lucid_64-pnacl-newlib-arm_qemu-pnacl':
+        'bash buildbot/buildbot_pnacl.sh mode-trybot-arm',
+    'nacl-lucid_64-pnacl-newlib-x86_32-pnacl':
+        'bash buildbot/buildbot_pnacl.sh mode-trybot-x8632',
+    'nacl-lucid_64-pnacl-newlib-x86_64-pnacl':
+        'bash buildbot/buildbot_pnacl.sh mode-trybot-x8664',
     # Pnacl spec2k trybots
+    # TODO(bradnelson): Eliminate this non-sharded trybot
     'nacl-lucid64-pnacl2':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot',
-
+    'nacl-lucid_64-pnacl-newlib-arm_qemu-pnacl-spec':
+        'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm',
+    'nacl-lucid_64-pnacl-newlib-x86_32-pnacl-spec':
+        'bash buildbot/buildbot_spec2k.sh pnacl-trybot-x8632',
+    'nacl-lucid_64-pnacl-newlib-x86_64-pnacl-spec':
+        'bash buildbot/buildbot_spec2k.sh pnacl-trybot-x8664',
     # Toolchain glibc.
     'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
