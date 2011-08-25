@@ -255,37 +255,45 @@ size_t MinidumpGenerator::CalculateStackSize(mach_vm_address_t start_addr) {
   kern_return_t result =
     mach_vm_region_recurse(crashing_task_, &stack_region_base,
                            &stack_region_size, &nesting_level,
-                           region_info,
-                           &info_count);
+                           region_info, &info_count);
 
-  if (start_addr < stack_region_base) {
-    // probably stack corruption, since mach_vm_region had to go
+  if (result != KERN_SUCCESS || start_addr < stack_region_base) {
+    // Failure or stack corruption, since mach_vm_region had to go
     // higher in the process address space to find a valid region.
     return 0;
   }
 
-  if (((cpu_type_ & CPU_ARCH_ABI64) &&
-       (stack_region_base + stack_region_size) == TOP_OF_THREAD0_STACK_64BIT) ||
-      (!(cpu_type_ & CPU_ARCH_ABI64) &&
-       (stack_region_base + stack_region_size) == TOP_OF_THREAD0_STACK_32BIT)) {
-    // The stack for thread 0 needs to extend all the way to
-    // 0xc0000000 on 32 bit and 00007fff5fc00000 on 64bit.  HOWEVER,
-    // for many processes, the stack is first created in one page
-    // below this, and is then later extended to a much larger size by
-    // creating a new VM region immediately below the initial page.
+  unsigned int tag = submap_info.user_tag;
 
-    // You can see this for yourself by running vmmap on a "hello,
-    // world" program
+  // If the user tag is VM_MEMORY_STACK, look for more readable regions with
+  // the same tag placed immediately above the computed stack region. Under
+  // some circumstances, the stack for thread 0 winds up broken up into
+  // multiple distinct abutting regions. This can happen for several reasons,
+  // including user code that calls setrlimit(RLIMIT_STACK, ...) or changes
+  // the access on stack pages by calling mprotect.
+  if (tag == VM_MEMORY_STACK) {
+    while (true) {
+      mach_vm_address_t next_region_base = stack_region_base +
+                                           stack_region_size;
+      mach_vm_address_t proposed_next_region_base = next_region_base;
+      mach_vm_size_t next_region_size;
+      nesting_level = 0;
+      mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
+      result = mach_vm_region_recurse(crashing_task_, &next_region_base,
+                                      &next_region_size, &nesting_level,
+                                      region_info, &info_count);
+      if (result != KERN_SUCCESS ||
+          next_region_base != proposed_next_region_base ||
+          submap_info.user_tag != tag ||
+          submap_info.protection & VM_PROT_READ == 0) {
+        break;
+      }
 
-    // Because of the above, we'll add 4k to include the original
-    // stack frame page.
-    // This method of finding the stack region needs to be done in
-    // a better way; the breakpad issue 247 is tracking this.
-    stack_region_size += 0x1000;
+      stack_region_size += next_region_size;
+    }
   }
 
-  return result == KERN_SUCCESS ?
-    stack_region_base + stack_region_size - start_addr : 0;
+  return stack_region_base + stack_region_size - start_addr;
 }
 
 bool MinidumpGenerator::WriteStackFromStartAddress(

@@ -51,9 +51,6 @@ namespace google_breakpad {
 
 using std::string;
 
-const u_int64_t TOP_OF_THREAD0_STACK_64BIT = 0x00007fff5fbff000LL;
-const u_int32_t TOP_OF_THREAD0_STACK_32BIT = 0xbffff000;
-
 // Use the REGISTER_FROM_THREADSTATE to access a register name from the
 // breakpad_thread_state_t structure.
 #if __DARWIN_UNIX03 || TARGET_CPU_X86_64 || TARGET_CPU_PPC64
