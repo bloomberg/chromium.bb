@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_signin.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -40,8 +41,10 @@ class BeginInstallFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstall");
 };
 
-class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
-                                         public ExtensionInstallUI::Delegate {
+class BeginInstallWithManifestFunction
+    : public AsyncExtensionFunction,
+      public ExtensionInstallUI::Delegate,
+      public WebstoreInstallHelper::Delegate {
  public:
   BeginInstallWithManifestFunction();
 
@@ -85,14 +88,13 @@ class BeginInstallWithManifestFunction : public AsyncExtensionFunction,
   // as if the dialog choice was to proceed or abort.
   static void SetAutoConfirmForTests(bool should_proceed);
 
-  // Called when we've successfully parsed the manifest and decoded the icon in
-  // the utility process. Ownership of parsed_manifest is transferred.
-  void OnParseSuccess(const SkBitmap& icon,
-                      base::DictionaryValue* parsed_manifest);
-
-  // Called to indicate a parse failure. The |result_code| parameter should
-  // indicate whether the problem was with the manifest or icon.
-  void OnParseFailure(ResultCode result_code, const std::string& error_message);
+  // Implementing WebstoreInstallHelper::Delegate interface.
+  virtual void OnWebstoreParseSuccess(
+      const SkBitmap& icon,
+      base::DictionaryValue* parsed_manifest) OVERRIDE;
+  virtual void OnWebstoreParseFailure(
+      InstallHelperResultCode result_code,
+      const std::string& error_message) OVERRIDE;
 
   // Implementing ExtensionInstallUI::Delegate interface.
   virtual void InstallUIProceed() OVERRIDE;

@@ -1152,6 +1152,8 @@
         'browser/extensions/user_script_listener.h',
         'browser/extensions/user_script_master.cc',
         'browser/extensions/user_script_master.h',
+        'browser/extensions/webstore_install_helper.cc',
+        'browser/extensions/webstore_install_helper.h',
         'browser/external_protocol/external_protocol_handler.cc',
         'browser/external_protocol/external_protocol_handler.h',
         'browser/external_protocol/external_protocol_observer.cc',

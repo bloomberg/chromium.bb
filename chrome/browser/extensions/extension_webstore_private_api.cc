@@ -5,9 +5,7 @@
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 
 #include <string>
-#include <vector>
 
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -22,7 +20,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -30,10 +27,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
-#include "content/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -49,7 +44,6 @@ const char kTokenKey[] = "token";
 
 const char kCannotSpecifyIconDataAndUrlError[] =
     "You cannot specify both icon data and an icon url";
-const char kImageDecodeError[] = "Image decode failed";
 const char kInvalidIconUrlError[] = "Invalid icon url";
 const char kInvalidIdError[] = "Invalid id";
 const char kInvalidManifestError[] = "Invalid manifest";
@@ -157,214 +151,6 @@ bool BeginInstallFunction::RunImpl() {
   return true;
 }
 
-// This is a class to help BeginInstallWithManifestFunction manage sending
-// work to the utility process for parsing manifests and fetching/decoding
-// icon data.
-class SafeBeginInstallHelper : public UtilityProcessHost::Client,
-                               public URLFetcher::Delegate {
- public:
-  // Only one of icon_data or icon_url should be non-empty. If icon_url is
-  // non-empty, context_getter should be filled in, but otherwise NULL.
-  SafeBeginInstallHelper(BeginInstallWithManifestFunction* client,
-                         const std::string& manifest,
-                         const std::string& icon_data,
-                         const GURL& icon_url,
-                         net::URLRequestContextGetter* context_getter)
-      : client_(client),
-        manifest_(manifest),
-        icon_base64_data_(icon_data),
-        icon_url_(icon_url),
-        context_getter_(context_getter),
-        utility_host_(NULL),
-        icon_decode_complete_(false),
-        manifest_parse_complete_(false),
-        parse_error_(BeginInstallWithManifestFunction::UNKNOWN_ERROR) {}
-
-  void Start() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    CHECK(icon_base64_data_.empty() || icon_url_.is_empty());
-
-    if (icon_base64_data_.empty() && icon_url_.is_empty())
-      icon_decode_complete_ = true;
-
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &SafeBeginInstallHelper::StartWorkOnIOThread));
-
-    if (!icon_url_.is_empty()) {
-      CHECK(context_getter_);
-      url_fetcher_.reset(new URLFetcher(icon_url_, URLFetcher::GET, this));
-      url_fetcher_->set_request_context(context_getter_);
-
-      url_fetcher_->Start();
-      // We'll get called back in OnURLFetchComplete.
-    }
-  }
-
-  void StartWorkOnIOThread() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    utility_host_ = new UtilityProcessHost(this, BrowserThread::IO);
-    utility_host_->StartBatchMode();
-
-    if (!icon_base64_data_.empty())
-      utility_host_->Send(
-          new ChromeUtilityMsg_DecodeImageBase64(icon_base64_data_));
-
-    utility_host_->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
-  }
-
-  // Implementing the URLFetcher::Delegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    CHECK(source == url_fetcher_.get());
-    if (source->status().status() != net::URLRequestStatus::SUCCESS ||
-        source->response_code() != 200) {
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          NewRunnableMethod(this,
-                            &SafeBeginInstallHelper::OnDecodeImageFailed));
-    } else {
-      std::string response_data;
-      source->GetResponseAsString(&response_data);
-      fetched_icon_data_.insert(fetched_icon_data_.begin(),
-                                response_data.begin(),
-                                response_data.end());
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          NewRunnableMethod(this,
-                            &SafeBeginInstallHelper::StartFetchedImageDecode));
-    }
-    url_fetcher_.reset();
-  }
-
-  void StartFetchedImageDecode() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    CHECK(utility_host_);
-    utility_host_->Send(new ChromeUtilityMsg_DecodeImage(fetched_icon_data_));
-  }
-
-  // Implementing pieces of the UtilityProcessHost::Client interface.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(SafeBeginInstallHelper, message)
-      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Succeeded,
-                          OnDecodeImageSucceeded)
-      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DecodeImage_Failed,
-                          OnDecodeImageFailed)
-      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Succeeded,
-                          OnJSONParseSucceeded)
-      IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseJSON_Failed,
-                          OnJSONParseFailed)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnDecodeImageSucceeded(const SkBitmap& decoded_image) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    icon_ = decoded_image;
-    icon_decode_complete_ = true;
-    ReportResultsIfComplete();
-  }
-
-  void OnDecodeImageFailed() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    icon_decode_complete_ = true;
-    error_ = std::string(kImageDecodeError);
-    parse_error_ = BeginInstallWithManifestFunction::ICON_ERROR;
-    ReportResultsIfComplete();
-  }
-
-  void OnJSONParseSucceeded(const ListValue& wrapper) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    manifest_parse_complete_ = true;
-    Value* value = NULL;
-    CHECK(wrapper.Get(0, &value));
-    if (value->IsType(Value::TYPE_DICTIONARY)) {
-      parsed_manifest_.reset(
-          static_cast<DictionaryValue*>(value)->DeepCopy());
-    } else {
-      parse_error_ = BeginInstallWithManifestFunction::MANIFEST_ERROR;
-    }
-    ReportResultsIfComplete();
-  }
-
-  virtual void OnJSONParseFailed(const std::string& error_message) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    manifest_parse_complete_ = true;
-    error_ = error_message;
-    parse_error_ = BeginInstallWithManifestFunction::MANIFEST_ERROR;
-    ReportResultsIfComplete();
-  }
-
-  void ReportResultsIfComplete() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-    if (!icon_decode_complete_ || !manifest_parse_complete_)
-      return;
-
-    // The utility_host_ will take care of deleting itself after this call.
-    utility_host_->EndBatchMode();
-    utility_host_ = NULL;
-
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        NewRunnableMethod(this,
-                          &SafeBeginInstallHelper::ReportResultFromUIThread));
-  }
-
-  void ReportResultFromUIThread() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (error_.empty() && parsed_manifest_.get())
-      client_->OnParseSuccess(icon_, parsed_manifest_.release());
-    else
-      client_->OnParseFailure(parse_error_, error_);
-  }
-
- private:
-  ~SafeBeginInstallHelper() {}
-
-  // The client who we'll report results back to.
-  BeginInstallWithManifestFunction* client_;
-
-  // The manifest to parse.
-  std::string manifest_;
-
-  // Only one of these should be non-empty. If |icon_base64_data_| is non-emtpy,
-  // it's a base64-encoded string that needs to be parsed into an SkBitmap. If
-  // |icon_url_| is non-empty, it needs to be fetched and decoded into an
-  // SkBitmap.
-  std::string icon_base64_data_;
-  GURL icon_url_;
-  std::vector<unsigned char> fetched_icon_data_;
-
-  // For fetching the icon, if needed.
-  scoped_ptr<URLFetcher> url_fetcher_;
-  net::URLRequestContextGetter* context_getter_; // Only usable on UI thread.
-
-  UtilityProcessHost* utility_host_;
-
-  // Flags for whether we're done doing icon decoding and manifest parsing.
-  bool icon_decode_complete_;
-  bool manifest_parse_complete_;
-
-  // The results of succesful decoding/parsing.
-  SkBitmap icon_;
-  scoped_ptr<DictionaryValue> parsed_manifest_;
-
-  // A details string for keeping track of any errors.
-  std::string error_;
-
-  // A code to distinguish between an error with the icon, and an error with the
-  // manifest.
-  BeginInstallWithManifestFunction::ResultCode parse_error_;
-};
-
 BeginInstallWithManifestFunction::BeginInstallWithManifestFunction()
   : use_app_installed_bubble_(false) {}
 
@@ -428,16 +214,18 @@ bool BeginInstallWithManifestFunction::RunImpl() {
   if (!icon_url.is_empty())
     context_getter = profile()->GetRequestContext();
 
-  scoped_refptr<SafeBeginInstallHelper> helper = new SafeBeginInstallHelper(
+  scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
       this, manifest_, icon_data_, icon_url, context_getter);
 
-  // The helper will call us back via OnParseSuccess or OnParseFailure.
+  // The helper will call us back via OnWebstoreParseSuccess or
+  // OnWebstoreParseFailure.
   helper->Start();
 
-  // Matched with a Release in OnParseSuccess/OnParseFailure.
+  // Matched with a Release in OnWebstoreParseSuccess/OnWebstoreParseFailure.
   AddRef();
 
-  // The response is sent asynchronously in OnParseSuccess/OnParseFailure.
+  // The response is sent asynchronously in OnWebstoreParseSuccess/
+  // OnWebstoreParseFailure.
   return true;
 }
 
@@ -487,7 +275,7 @@ void BeginInstallWithManifestFunction::SetAutoConfirmForTests(
   auto_confirm_for_tests = should_proceed ? PROCEED : ABORT;
 }
 
-void BeginInstallWithManifestFunction::OnParseSuccess(
+void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     const SkBitmap& icon, DictionaryValue* parsed_manifest) {
   CHECK(parsed_manifest);
   icon_ = icon;
@@ -513,7 +301,8 @@ void BeginInstallWithManifestFunction::OnParseSuccess(
       id_,
       &init_errors);
   if (!dummy_extension_.get()) {
-    OnParseFailure(MANIFEST_ERROR, std::string(kInvalidManifestError));
+    OnWebstoreParseFailure(WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
+                           kInvalidManifestError);
     return;
   }
 
@@ -540,9 +329,23 @@ void BeginInstallWithManifestFunction::OnParseSuccess(
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 
-void BeginInstallWithManifestFunction::OnParseFailure(
-    ResultCode result_code, const std::string& error_message) {
-  SetResult(result_code);
+void BeginInstallWithManifestFunction::OnWebstoreParseFailure(
+    WebstoreInstallHelper::Delegate::InstallHelperResultCode result_code,
+    const std::string& error_message) {
+  // Map from WebstoreInstallHelper's result codes to ours.
+  switch (result_code) {
+    case WebstoreInstallHelper::Delegate::UNKNOWN_ERROR:
+      SetResult(UNKNOWN_ERROR);
+      break;
+    case WebstoreInstallHelper::Delegate::ICON_ERROR:
+      SetResult(ICON_ERROR);
+      break;
+    case WebstoreInstallHelper::Delegate::MANIFEST_ERROR:
+      SetResult(MANIFEST_ERROR);
+      break;
+    default:
+      CHECK(false);
+  }
   error_ = error_message;
   SendResponse(false);
 
@@ -570,7 +373,7 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
 }
 
 void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
-  error_ = std::string(kUserCancelledError);
+  error_ = kUserCancelledError;
   SetResult(USER_CANCELLED);
   SendResponse(false);
 
