@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 
-#include "chrome/browser/ui/gtk/gtk_expanded_container.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/gtk/gtk_expanded_container.h"
 
 namespace {
 

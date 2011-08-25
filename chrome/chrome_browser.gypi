@@ -2835,8 +2835,6 @@
         'browser/ui/gtk/gtk_custom_menu.h',
         'browser/ui/gtk/gtk_custom_menu_item.cc',
         'browser/ui/gtk/gtk_custom_menu_item.h',
-        'browser/ui/gtk/gtk_expanded_container.cc',
-        'browser/ui/gtk/gtk_expanded_container.h',
         'browser/ui/gtk/gtk_theme_service.cc',
         'browser/ui/gtk/gtk_theme_service.h',
         'browser/ui/gtk/gtk_tree.cc',

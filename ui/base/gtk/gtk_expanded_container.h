@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_GTK_EXPANDED_CONTAINER_H_
-#define CHROME_BROWSER_UI_GTK_GTK_EXPANDED_CONTAINER_H_
+#ifndef UI_BASE_GTK_GTK_EXPANDED_CONTAINER_H_
+#define UI_BASE_GTK_GTK_EXPANDED_CONTAINER_H_
 #pragma once
 
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+
+#include "ui/base/ui_export.h"
 
 // A specialized container derived from GtkFixed, which expands the size of its
 // children to fill the container, in one or both directions. The usage of this
@@ -56,16 +58,18 @@ struct _GtkExpandedContainerClass {
   GtkFixedClass parent_class;
 };
 
-GType gtk_expanded_container_get_type() G_GNUC_CONST;
-GtkWidget* gtk_expanded_container_new();
-void gtk_expanded_container_put(GtkExpandedContainer* container,
-                                GtkWidget* widget, gint x, gint y);
-void gtk_expanded_container_move(GtkExpandedContainer* container,
-                                 GtkWidget* widget, gint x, gint y);
-void gtk_expanded_container_set_has_window(GtkExpandedContainer* container,
-                                           gboolean has_window);
-gboolean gtk_expanded_container_get_has_window(GtkExpandedContainer* container);
+UI_EXPORT GType gtk_expanded_container_get_type() G_GNUC_CONST;
+UI_EXPORT GtkWidget* gtk_expanded_container_new();
+UI_EXPORT void gtk_expanded_container_put(GtkExpandedContainer* container,
+                                          GtkWidget* widget, gint x, gint y);
+UI_EXPORT void gtk_expanded_container_move(GtkExpandedContainer* container,
+                                           GtkWidget* widget, gint x, gint y);
+UI_EXPORT void gtk_expanded_container_set_has_window(
+    GtkExpandedContainer* container,
+    gboolean has_window);
+UI_EXPORT gboolean gtk_expanded_container_get_has_window(
+    GtkExpandedContainer* container);
 
 G_END_DECLS
 
-#endif  // CHROME_BROWSER_UI_GTK_GTK_EXPANDED_CONTAINER_H_
+#endif  // UI_BASE_GTK_GTK_EXPANDED_CONTAINER_H_

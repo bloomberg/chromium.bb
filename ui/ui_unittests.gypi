@@ -23,6 +23,7 @@
         'base/animation/multi_animation_unittest.cc',
         'base/animation/slide_animation_unittest.cc',
         'base/clipboard/clipboard_unittest.cc',
+        'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
@@ -123,6 +124,11 @@
                'dependencies': [
                  '../base/allocator/allocator.gyp:allocator',
                ],
+            }],
+            ['toolkit_views==1', {
+              'sources!': [
+                'browser/ui/gtk/gtk_expanded_container_unittest.cc',
+              ],
             }],
           ],
         }],
