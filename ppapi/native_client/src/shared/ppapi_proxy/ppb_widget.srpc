@@ -1,0 +1,46 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# RPC methods used to implement PPB_Widget calls from the plugin.
+# See ppapi/c/dev/ppb_widget_dev.h for interface details.
+{
+ 'name': 'PpbWidgetRpc',
+ 'rpcs': [
+          {'name': 'PPB_Widget_IsWidget',
+           'inputs': [['resource', 'PP_Resource'],
+                     ],
+           'outputs': [['is_widget', 'int32_t'],     # PP_Bool
+                      ]
+          },
+          {'name': 'PPB_Widget_Paint',
+           'inputs': [['widget', 'PP_Resource'],
+                      ['rect', 'char[]'],            # PP_Rect
+                      ['image', 'PP_Resource'],
+                     ],
+           'outputs': [['success', 'int32_t'],       # PP_Bool
+                      ]
+          },
+          {'name': 'PPB_Widget_HandleEvent',
+           'inputs': [['widget', 'PP_Resource'],
+                      ['event', 'PP_Resource'],           # PP_InputEvent
+                     ],
+           'outputs': [['handled', 'int32_t'],       # PP_Bool
+                      ]
+          },
+          {'name': 'PPB_Widget_GetLocation',
+           'inputs': [['widget', 'PP_Resource'],
+                     ],
+           'outputs': [['location', 'char[]'],       # PP_Rect
+                       ['visible', 'int32_t'],       # PP_Bool
+                      ]
+          },
+          {'name': 'PPB_Widget_SetLocation',
+           'inputs': [['widget', 'PP_Resource'],
+                      ['location', 'char[]'],        # PP_Rect
+                     ],
+           'outputs': [
+                      ]
+          },
+         ]
+}

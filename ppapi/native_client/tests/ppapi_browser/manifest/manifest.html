@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<!-- Copyright (c) 2011 The Native Client Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<head>
+  <title>PPAPI Runtime Feature Test</title>
+  <meta HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+  <meta HTTP-EQUIV="Expires" CONTENT="-1" />
+  <script type="text/javascript" src="nacltest.js"></script>
+  <script type="text/javascript" src="ppapi_progress_events.js"></script>
+</head>
+
+<body id="body">
+<script type="text/javascript">
+//<![CDATA[
+var tester = new Tester($('body'));
+testProgressEventStateMachine(
+    tester,
+    'topdir_static',
+    2,  // progressMinCount
+    0,  // errorCount
+    0,  // abortCount
+    1,  // loadCount
+    undefined  // lastError
+);
+testProgressEventStateMachine(
+    tester,
+    'subdir_static',
+    2,  // progressMinCount
+    0,  // errorCount
+    0,  // abortCount
+    1,  // loadCount
+    undefined  // lastError
+);
+function runTests() {
+  tester.waitFor($('topdir_static'), $('subdir_static'));
+  tester.run();
+}
+// Set all the listeners on the body.
+setListeners($('body'));
+//]]>
+</script>
+
+<!--
+// manifest_top refers to nexes in a subdirectory below the manifest.
+-->
+<embed id="topdir_static"
+       class="naclModule"
+       width=0 height=0
+       src="manifest_top.nmf"
+       type="application/x-nacl" />
+
+<!--
+// manifest_subdir refers to resources in the same directory as the manifest.
+-->
+<embed id="subdir_static"
+       class="naclModule"
+       width=0 height=0
+       src="subdir/manifest_subdir.nmf"
+       type="application/x-nacl" />
+
+<script type="text/javascript">
+//<![CDATA[
+runTests();
+//]]>
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# This test uses ppapi_test_lib.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe = 'ppapi_ppb_image_data_${TARGET_FULLARCH}'
+env.Alias('ppapi_ppb_image_data${PROGSUFFIX}',
+          ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
+
+env.ComponentProgram(
+    nexe,
+    ['ppapi_ppb_image_data.cc'],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                 'ppapi_test_lib',
+                 'platform',  # for CHECK
+                 'pthread',
+                 'gio',
+                 ])
+
+env.Publish(nexe, 'run',
+            [ 'ppapi_ppb_image_data.html',
+              'ppapi_ppb_image_data.nmf',
+              env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                  'browserdata/nacltest.js') ])
+
+node = env.PPAPIBrowserTester('ppapi_ppb_image_data_browser_test.out',
+                              url='ppapi_ppb_image_data.html',
+                              files=env.ExtractPublishedFiles(nexe))
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_ppb_image_data_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

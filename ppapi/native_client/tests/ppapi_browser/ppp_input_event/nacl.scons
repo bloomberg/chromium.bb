@@ -1,0 +1,38 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# This test uses ppapi_test_lib.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe = 'ppapi_ppp_input_event_%s' % env.get('TARGET_FULLARCH')
+env.Alias('ppapi_ppp_input_event${PROGSUFFIX}',
+          ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
+
+ppapi_ppp_input_event_nexe = env.ComponentProgram(
+    nexe,
+    ['ppapi_ppp_input_event.cc'],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                'ppapi_test_lib',
+                'platform',  # for CHECK
+                'pthread',
+                'gio',
+                ])
+
+env.Publish(nexe, 'run',
+            ['ppapi_ppp_input_event.html',
+             'ppapi_ppp_input_event.nmf',
+             'ppapi_ppp_input_event.js'])
+
+node = env.PPAPIBrowserTester('ppapi_ppp_input_event_browser_test.out',
+                              url='ppapi_ppp_input_event.html',
+                              files=env.ExtractPublishedFiles(nexe))
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_ppp_input_event_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

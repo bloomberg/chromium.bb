@@ -1,0 +1,168 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+import os
+
+Import('env')
+
+# To get generated include files.
+env.Append(CPPPATH=
+          ['${SOURCE_ROOT}/native_client/src/shared/ppapi_proxy/trusted'])
+
+if env.Bit('linux'):
+    env.Append(
+        CCFLAGS=['-fPIC', '-Wno-long-long',],
+        # Catch unresolved symbols in libraries.
+        LINKFLAGS=['-Wl,-z,defs'],
+        )
+
+if env.Bit('mac'):
+    env.Append(
+        CCFLAGS=['-Wno-long-long'],
+        CPPDEFINES = [ ['TARGET_API_MAC_CARBON', '1'], 'USE_SYSTEM_CONSOLE', ],
+        FRAMEWORKS = ['Carbon'],
+    )
+
+if env.Bit('windows'):
+    env.Append(
+        CPPDEFINES = ['WIN32', '_WINDOWS'],
+    )
+
+
+# The PPAPI RPCs are specified abstractly via .srpc files.
+# Once a .srpc file is added to the TrustedSrpc rules below, the low-level
+# server/client proxies and stubs can be generated automatically using
+#   scons --mode=opt-linux/mac/win srpcgen
+#   scons --mode=dbg-linux/mac/win sprcgen
+# The .cc files are written to ./ and .h files - to ./trusted/srpcgen/.
+# The generated files must be committed when changes are made to .srpc files.
+
+env.TrustedSrpc(is_client=True,
+                srpc_files=['completion_callback.srpc',
+                            'ppp.srpc',
+                            'ppp_audio.srpc',
+                            'ppp_find.srpc',
+                            'ppp_input_event.srpc',
+                            'ppp_instance.srpc',
+                            'ppp_messaging.srpc',
+                            'ppp_printing.srpc',
+                            'ppp_scrollbar.srpc',
+                            'ppp_selection.srpc',
+                            'ppp_widget.srpc',
+                            'ppp_zoom.srpc',
+                           ],
+                name='PppRpcs',
+                h_file='ppp_rpc.h',
+                cc_file='ppp_rpc_client.cc',
+                guard='GEN_PPAPI_PROXY_PPP_RPC_H_')
+
+env.TrustedSrpc(is_client=False,
+                srpc_files=['nacl_file.srpc',
+                            'ppb.srpc',
+                            'ppb_audio.srpc',
+                            'ppb_audio_config.srpc',
+                            'ppb_core.srpc',
+                            'ppb_cursor_control.srpc',
+                            'ppb_file_io.srpc',
+                            'ppb_file_ref.srpc',
+                            'ppb_file_system.srpc',
+                            'ppb_find.srpc',
+                            'ppb_font.srpc',
+                            'ppb_graphics_2d.srpc',
+                            'ppb_graphics_3d.srpc',
+                            'ppb_image_data.srpc',
+                            'ppb_input_event.srpc',
+                            'ppb_instance.srpc',
+                            'ppb_messaging.srpc',
+                            'ppb_pdf.srpc',
+                            'ppb_scrollbar.srpc',
+                            'ppb_testing.srpc',
+                            'ppb_url_loader.srpc',
+                            'ppb_url_request_info.srpc',
+                            'ppb_url_response_info.srpc',
+                            'ppb_widget.srpc',
+                            'ppb_zoom.srpc',
+                           ],
+                name='PpbRpcs',
+                h_file='ppb_rpc.h',
+                cc_file='ppb_rpc_server.cc',
+                guard='GEN_PPAPI_PROXY_PPB_RPC_H_')
+
+env.TrustedSrpc(is_client=False,
+                srpc_files=['upcall.srpc'],
+                name='PpbUpcalls',
+                h_file='upcall.h',
+                cc_file='upcall_server.cc',
+                guard='GEN_PPAPI_PROXY_UPCALL_H_')
+
+
+common_obj = env.DualObject(['utility.cc'])
+
+env.DualLibrary('ppapi_browser',
+                ['browser_callback.cc',
+                 'browser_globals.cc',
+                 'browser_nacl_file_rpc_server.cc',
+                 'browser_ppb_audio_rpc_server.cc',
+                 'browser_ppb_audio_config_rpc_server.cc',
+                 'browser_ppb_core_rpc_server.cc',
+                 'browser_ppb_cursor_control_rpc_server.cc',
+                 'browser_ppb_file_io_rpc_server.cc',
+                 'browser_ppb_file_ref_rpc_server.cc',
+                 'browser_ppb_file_system_rpc_server.cc',
+                 'browser_ppb_find_rpc_server.cc',
+                 'browser_ppb_font_rpc_server.cc',
+                 'browser_ppb_graphics_2d_rpc_server.cc',
+                 'browser_ppb_graphics_3d_rpc_server.cc',
+                 'browser_ppb_image_data_rpc_server.cc',
+                 'browser_ppb_input_event_rpc_server.cc',
+                 'browser_ppb_instance_rpc_server.cc',
+                 'browser_ppb_messaging_rpc_server.cc',
+                 'browser_ppb_pdf_rpc_server.cc',
+                 'browser_ppb_rpc_server.cc',
+                 'browser_ppb_scrollbar_rpc_server.cc',
+                 'browser_ppb_testing_rpc_server.cc',
+                 'browser_ppb_url_loader_rpc_server.cc',
+                 'browser_ppb_url_request_info_rpc_server.cc',
+                 'browser_ppb_url_response_info_rpc_server.cc',
+                 'browser_ppb_widget_rpc_server.cc',
+                 'browser_ppb_zoom_rpc_server.cc',
+                 'browser_ppp_find.cc',
+                 'browser_ppp_input_event.cc',
+                 'browser_ppp_instance.cc',
+                 'browser_ppp_messaging.cc',
+                 'browser_ppp_printing.cc',
+                 'browser_ppp_scrollbar.cc',
+                 'browser_ppp_selection.cc',
+                 'browser_ppp_widget.cc',
+                 'browser_ppp_zoom.cc',
+                 'browser_ppp.cc',
+                 'browser_upcall.cc',
+                 'input_event_data.cc',
+                 'object_serialize.cc',
+                 # Autogenerated files
+                 'ppb_rpc_server.cc',
+                 'ppp_rpc_client.cc',
+                 'upcall_server.cc',
+                 common_obj,])
+
+# Do a recursive diff of all files found in the first source directory against
+# all the checked in versions of the files
+node = env.CommandTest(
+  'srpc_diff.out',
+  command=['${PYTHON}', '${SOURCE_ROOT}/native_client/tools/diff.py', '-arv',
+           '${TARGET_ROOT}/srpcgen/src',
+           '${SOURCE_ROOT}/native_client/src'])
+
+# Add a dependency on the 'srpcdif' alias for the previous command
+env.Depends(node, Alias('srpcdif'))
+
+# Create an alias for the command and add it to the standard small test.
+# This test verifies that the checked in SRPC generated files are
+# actually up to date.  We ignore ARM which generates false negatives.
+# This is okay, since all try/builds should reproduce the same result
+# this is a check on what is in source control, and generated files are
+# platform independent.
+if not env.Bit('target_arm'):
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpcgen_test')

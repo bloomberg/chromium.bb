@@ -1,0 +1,72 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# RPC methods used to implement PPB_Scrollbar calls from the plugin.
+# See ppapi/c/dev/ppb_scrollbar_dev.h for interface details.
+{
+ 'name': 'PpbScrollbarRpc',
+ 'rpcs': [
+          {'name': 'PPB_Scrollbar_Create',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['vertical', 'int32_t'],      # PP_Bool
+                     ],
+           'outputs': [['scrollbar', 'PP_Resource'],
+                      ]
+          },
+          {'name': 'PPB_Scrollbar_IsScrollbar',
+           'inputs': [['resource', 'PP_Resource'],
+                     ],
+           'outputs': [['is_scrollbar', 'int32_t'],  # PP_Bool
+                      ]
+          },
+          {'name': 'PPB_Scrollbar_IsOverlay',
+           'inputs': [['resource', 'PP_Resource'],
+                     ],
+           'outputs': [['is_overlay', 'int32_t'],  # PP_Bool
+                      ]
+          },
+          {'name': 'PPB_Scrollbar_GetThickness',
+           'inputs': [['resource', 'PP_Resource'],
+                     ],
+           'outputs': [['thickness', 'int32_t'],
+                      ]
+          },
+          {'name': 'PPB_Scrollbar_GetValue',
+           'inputs': [['scrollbar', 'PP_Resource'],
+                     ],
+           'outputs': [['value', 'int32_t'],         # uint32_t
+                      ]
+          },
+          {'name': 'PPB_Scrollbar_SetValue',
+           'inputs': [['scrollbar', 'PP_Resource'],
+                      ['value', 'int32_t'],          # uint32_t
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_Scrollbar_SetDocumentSize',
+           'inputs': [['scrollbar', 'PP_Resource'],
+                      ['size', 'int32_t'],           # uint32_t
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_Scrollbar_SetTickMarks',
+           'inputs': [['scrollbar', 'PP_Resource'],
+                      ['tick_marks', 'char[]'],      # PP_Rect
+                      ['count', 'int32_t'],          # uint32_t
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPB_Scrollbar_ScrollBy',
+           'inputs': [['scrollbar', 'PP_Resource'],
+                      ['unit', 'int32_t'],           # PP_ScrollBy_Dev
+                      ['multiplier', 'int32_t'],
+                     ],
+           'outputs': [
+                      ]
+          },
+         ]
+}

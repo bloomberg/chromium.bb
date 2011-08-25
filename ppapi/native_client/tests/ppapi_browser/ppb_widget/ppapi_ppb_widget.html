@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright (c) 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="text/javascript" src="ppapi_ppb_widget.js"></script>
+    <title>PPAPI PPB_Widget_Dev Test</title>
+  </head>
+  <body>
+    <h1>PPAPI PPB_Widget_Dev Test</h1>
+
+    <embed type="application/x-nacl" id="test_nexe"
+           name="nacl_module"
+           src="ppapi_ppb_widget.nmf"
+           width="0" height="0" />
+
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      setupTests(tester, $('test_nexe'));
+      tester.waitFor($('test_nexe'));
+      tester.run();
+      //]]>
+    </script>
+  </body>
+</html>

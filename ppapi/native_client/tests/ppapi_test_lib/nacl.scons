@@ -1,0 +1,27 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# Test library for testing PPAPI C layer for PPB_ and PPP_ interfaces.
+#
+# TODO(polina): also factor in the C++ layer?
+# TODO(polina): add trusted build.scons.
+#
+# module_instance.cc - implements PPP and PPP_Instance interfaces.
+# get_browser_interface.cc - implements interface lookup helpers.
+# internal_utils.cc - implements internal helper functions and globals.
+# test_interface.cc - implements the test interface.
+#
+# See ppapi_test_example for sample usage.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+env.ComponentLibrary('ppapi_test_lib',
+                     ['get_browser_interface.cc',
+                      'internal_utils.cc',
+                      'testable_callback.cc',
+                      'module_instance.cc',
+                      'test_interface.cc']);

@@ -1,0 +1,71 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+
+######################################################################
+# REPLAY TESTS
+######################################################################
+TESTS = [('audio', ('audio',)),
+         ('graphics2d',('graphics2d',)),
+         ('event', ('event',)),
+         ('file', ('file1', 'file2')),
+         ]
+
+for test_exe, test_inputs in TESTS:
+  nexe = env.ComponentProgram('ppapi_simple_' + test_exe,
+                              [test_exe + '.cc'],
+                              EXTRA_LIBS=['${PPAPI_LIBS}',
+                                          'ppapi_cpp',
+                                          'platform',
+                                          'gio',
+                                          'pthread',
+                                          'm',
+                                          ])
+
+  for test in test_inputs:
+    node = env.SelUniversalTest(
+        'ppapi_simple_' + test + '.out',
+        nexe,
+        sel_universal_flags=[
+            '--silence_nexe',
+            '--command_file',
+            env.File('sel_universal_ppapi_replay_prolog.stdin'),
+            '--command_file',
+            env.File(test +'.stdin'),
+            ],
+        uses_ppapi=True,
+        stdout_golden=env.File(test + '.stdout'),
+        )
+
+    env.AddNodeToTestSuite(node,
+                           ['small_tests', 'sel_ldr_tests'],
+                           'run_ppapi_simple_' + test  + '_test')
+
+######################################################################
+# EMULATOR TESTS
+######################################################################
+node = env.SelUniversalTest(
+    'ppapi_emu_file.out',
+    env.File('ppapi_simple_file${PROGSUFFIX}'),
+    sel_universal_flags=[
+        '--silence_nexe',
+        '--command_file',
+        env.File('ppapi_emu_file.stdin'),
+        '--url_alias',
+        'test.txt',    # c.f. ppapi_emu_file.stdin
+        env.File('test.txt'),
+        ],
+    uses_ppapi=True,
+    stdout_golden=env.File('ppapi_emu_file.stdout'),
+    )
+
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_ppapi_emu_file_test')

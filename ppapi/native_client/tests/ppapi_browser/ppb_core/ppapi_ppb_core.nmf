@@ -1,0 +1,7 @@
+{
+  "program": {
+    "x86-32": {"url": "ppapi_ppb_core_x86-32.nexe"},
+    "x86-64": {"url": "ppapi_ppb_core_x86-64.nexe"},
+    "arm": {"url": "ppapi_ppb_core_arm.nexe"}
+  }
+}

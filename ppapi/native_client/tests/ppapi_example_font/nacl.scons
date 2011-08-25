@@ -1,0 +1,36 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a Pepper font example from ppapi/examples/font.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+# Adjust compiler flags to the more forgiving standards used in
+# ppapi/examples/*.
+env.FilterOut(CCFLAGS=['-Werror', '-pedantic'])
+env.Append(CCFLAGS=['-Wformat=0'])
+
+nexe_name = 'ppapi_example_font_${TARGET_FULLARCH}'
+obj = env.ComponentObject(
+    'simple_font',
+    '$SOURCE_ROOT/ppapi/examples/font/simple_font.cc'
+    )
+nexe = env.ComponentProgram(nexe_name, [obj],
+                            EXTRA_LIBS=['${PPAPI_LIBS}', 'ppapi_cpp'])
+
+# Note that the html is required to run this program.
+env.Publish(nexe_name, 'run',
+            ['ppapi_example_font.html', 'ppapi_example_font.nmf'])
+
+test = env.PPAPIBrowserTester('ppapi_example_font_test.out',
+                              url='ppapi_example_font.html',
+                              files=env.ExtractPublishedFiles(nexe_name))
+
+env.AddNodeToTestSuite(test,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_example_font_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

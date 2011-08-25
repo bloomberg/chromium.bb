@@ -1,0 +1,7 @@
+{
+  "program": {
+    "x86-32": {"url": "ppapi_example_2d_x86-32.nexe"},
+    "x86-64": {"url": "ppapi_example_2d_x86-64.nexe"},
+    "arm": {"url": "ppapi_example_2d_arm.nexe"}
+  }
+}

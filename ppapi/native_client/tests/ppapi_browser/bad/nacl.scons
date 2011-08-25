@@ -1,0 +1,98 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# Tests fatal errors that occur during loading.
+# (See ppapi_browser/crash for fatal errors that occur after loading).
+# TODO(polina): rename the directory and browser test to bad_load
+#
+# Manual testing with localhost:5103/scons-out/.../staging/ppapi_bad.html:
+#   scons --mode=nacl ppapi_bad
+# Automatic testing:
+#   scons run_ppapi_bad_browser_test
+#
+
+Import('env')
+
+# TODO(robertm): those should not be necessary once we go -std=c99
+env.FilterOut(CFLAGS=['-pedantic'])
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+ppapi_bad_files = [
+  'ppapi_bad.html',
+  'ppapi_bad.js',
+  'ppapi_bad_crossorigin.nmf',
+  'ppapi_bad_doesnotexist.nmf',
+  'ppapi_bad_doesnotexist_nexe_only.nmf',
+  'ppapi_bad_magic.nmf',
+  'ppapi_bad_manifest_uses_nexes.nmf',
+  'ppapi_bad_manifest_bad_files.nmf',
+  env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
+  ]
+ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)
+
+
+# Compile all nexes embedded into the above html
+for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
+              'no_ppp_instance', 'get_ppp_instance_crash',
+              'get_ppp_messaging_crash', 'get_ppp_printing_crash',
+              'ppp_instance_didcreate', 'ppp_instance_didcreate_crash',
+              'event_replay_crash'
+              ]:
+  bad_nmf = 'ppapi_bad_%s.nmf' % kind
+  bad_nexe = ('ppapi_bad_%s_%s' % (kind, env.get('TARGET_FULLARCH')))
+  env.ComponentProgram(bad_nexe,
+                       ['ppapi_bad_%s.cc' % kind],
+                       EXTRA_LIBS=['${PPAPI_LIBS}',
+                                   'platform',
+                                   'pthread',
+                                   'gio'])
+
+  env.Publish(bad_nexe, 'run', [bad_nmf])
+  ppapi_bad_files.extend(env.ExtractPublishedFiles(bad_nexe))
+  env.Depends(ppapi_bad, env.Alias(bad_nexe))
+
+# "scons --mode=nacl ppapi_bad" will publish the html and all of its
+# dependencies to scons-out.
+env.Alias('ppapi_bad', ppapi_bad)
+
+node = env.PPAPIBrowserTester(
+    'ppapi_bad_browser_test.out',
+    url='ppapi_bad.html',
+    files=[env.File(f) for f in ppapi_bad_files],
+    args=['--allow_404'])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_bad_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
+
+
+# Bad nexe tests that won't work in PNaCl (native)
+# For example, partly_invalid.nexe has inline assembly in its source files.
+
+ppapi_bad_native_files = [
+  env.File('ppapi_bad_native.html'),
+  env.File('partly_invalid.nmf'),
+  env.File('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
+           'ppapi_progress_events.js'),
+  env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
+  ]
+replicated_files = env.Replicate('${STAGING_DIR}', ppapi_bad_native_files)
+env.Alias('all_programs', replicated_files)
+
+partly_invalid = env.File('${STAGING_DIR}/partly_invalid${PROGSUFFIX}')
+ppapi_bad_native_files.append(partly_invalid)
+
+node = env.PPAPIBrowserTester(
+    'ppapi_bad_native_test.out',
+    url='ppapi_bad_native.html',
+    files=ppapi_bad_native_files,
+    )
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_bad_native_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                 env.Bit('bitcode'))

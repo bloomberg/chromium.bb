@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright (c) 2011 Google Inc.  All rights reserved. -->
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <title>Nexe Crash Test</title>
+  </head>
+  <body>
+    <h1>Nexe Crash Test</h1>
+
+    <embed type="application/x-nacl" id="crash_via_check_failure"
+           name="nacl_module"
+           src="ppapi_crash_via_check_failure.nmf"
+           width="0" height="0" />
+    <embed type="application/x-nacl" id="crash_via_exit_call"
+           name="nacl_module"
+           src="ppapi_crash_via_exit_call.nmf"
+           width="0" height="0" />
+    <embed type="application/x-nacl" id="crash_in_callback"
+           name="nacl_module"
+           src="ppapi_crash_in_callback.nmf"
+           width="0" height="0" />
+
+    <script type="text/javascript">
+      //<![CDATA[
+      var tester = new Tester();
+      function AddTest(plugin, testName, expectedHandler, unexpectedHandler) {
+        tester.addAsyncTest(testName, function(test) {
+          plugin.addEventListener(
+            expectedHandler,
+            test.wrap(function(e) { test.pass(); }),
+            false);
+          plugin.addEventListener(
+            unexpectedHandler,
+            test.wrap(function(e) { test.fail(); }),
+            false);
+          plugin.postMessage(testName);
+        });
+        tester.waitFor(plugin);
+      }
+
+      AddTest($('crash_via_check_failure'),
+              'CrashViaCheckFailure', 'crash', 'error');
+      AddTest($('crash_via_exit_call'),
+              'CrashViaExitCall', 'crash', 'error');
+      AddTest($('crash_in_callback'), 'CrashInCallback', 'crash', 'error');
+
+      tester.run();
+      //]]>
+    </script>
+  </body>
+</html>

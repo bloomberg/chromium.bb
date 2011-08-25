@@ -1,0 +1,39 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# This test uses ppapi_test_lib.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe = 'ppapi_ppb_url_request_info_%s' % env.get('TARGET_FULLARCH')
+env.Alias('ppapi_ppb_url_request_info${PROGSUFFIX}',
+          [ '$STAGING_DIR/%s${PROGSUFFIX}' % nexe ])
+
+ppapi_ppb_url_request_info_nexe = env.ComponentProgram(
+    nexe,
+    [ 'ppapi_ppb_url_request_info.cc' ],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                 'ppapi_test_lib',
+                 'platform',  # for CHECK
+                 'pthread',
+                 'gio',
+                 ])
+
+env.Publish(nexe, 'run',
+            ['ppapi_ppb_url_request_info.html',
+             'ppapi_ppb_url_request_info.nmf',
+             'ppapi_ppb_url_request_info.js'])
+
+node = env.PPAPIBrowserTester('ppapi_ppb_url_request_info_browser_test.out',
+                              url='ppapi_ppb_url_request_info.html',
+                              files=env.ExtractPublishedFiles(nexe),
+                              browser_flags=['--enable-pepper-testing'])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_ppb_url_request_info_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

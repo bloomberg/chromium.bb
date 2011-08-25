@@ -1,0 +1,177 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# Underlay $SOURCE_ROOT/gpu in this directory.
+Dir('.').addRepository(Dir('#/../gpu'))
+
+# To enable getting the generated include files and sources and also common and
+# client GPU command buffer sources.
+env.Append(CPPPATH=
+          ['${SOURCE_ROOT}/native_client/src/shared/ppapi_proxy/untrusted',
+           '$SOURCE_ROOT/gpu'])
+
+env.Append(CPPDEFINES=['XP_UNIX'])
+env.FilterOut(CCFLAGS=['-Wswitch-enum'])
+env.Append(CCFLAGS=['-Wno-long-long'])
+
+# The PPAPI RPCs are specified abstractly via .srpc files.
+# Once a .srpc file is added to the UntrustedSrpc rules below, the low-level
+# server/client proxies and stubs can be generated automatically using
+#   scons srpcgen
+# The .cc files are written to ./ and .h files - to ./untrusted/srpcgen/.
+# The generated files must be committed when changes are made to .srpc files.
+
+env.UntrustedSrpc(is_client=False,
+                  srpc_files=['completion_callback.srpc',
+                              'ppp.srpc',
+                              'ppp_audio.srpc',
+                              'ppp_find.srpc',
+                              'ppp_input_event.srpc',
+                              'ppp_instance.srpc',
+                              'ppp_messaging.srpc',
+                              'ppp_printing.srpc',
+                              'ppp_scrollbar.srpc',
+                              'ppp_selection.srpc',
+                              'ppp_widget.srpc',
+                              'ppp_zoom.srpc',
+                             ],
+                  name='PppRpcs',
+                  h_file='ppp_rpc.h',
+                  cc_file='ppp_rpc_server.cc',
+                  guard='GEN_PPAPI_PROXY_PPP_RPC_H_')
+
+env.UntrustedSrpc(is_client=True,
+                  srpc_files=['nacl_file.srpc',
+                              'ppb.srpc',
+                              'ppb_audio.srpc',
+                              'ppb_audio_config.srpc',
+                              'ppb_core.srpc',
+                              'ppb_cursor_control.srpc',
+                              'ppb_file_io.srpc',
+                              'ppb_file_ref.srpc',
+                              'ppb_file_system.srpc',
+                              'ppb_find.srpc',
+                              'ppb_font.srpc',
+                              'ppb_graphics_2d.srpc',
+                              'ppb_graphics_3d.srpc',
+                              'ppb_image_data.srpc',
+                              'ppb_input_event.srpc',
+                              'ppb_instance.srpc',
+                              'ppb_messaging.srpc',
+                              'ppb_pdf.srpc',
+                              'ppb_scrollbar.srpc',
+                              'ppb_testing.srpc',
+                              'ppb_url_loader.srpc',
+                              'ppb_url_request_info.srpc',
+                              'ppb_url_response_info.srpc',
+                              'ppb_widget.srpc',
+                              'ppb_zoom.srpc',
+                             ],
+                  name='PpbRpcs',
+                  h_file='ppb_rpc.h',
+                  cc_file='ppb_rpc_client.cc',
+                  guard='GEN_PPAPI_PROXY_PPB_RPC_H_',
+                  thread_check=True)
+
+env.UntrustedSrpc(is_client=True,
+                  srpc_files=['upcall.srpc'],
+                  name='PpbUpcalls',
+                  h_file='upcall.h',
+                  cc_file='upcall_client.cc',
+                  guard='GEN_PPAPI_PROXY_UPCALL_H_')
+
+command_buffer_common_srcs = [
+    'command_buffer/common/cmd_buffer_common.cc',
+    'command_buffer/common/gles2_cmd_format.cc',
+    'command_buffer/common/gles2_cmd_utils.cc',
+    ]
+
+command_buffer_client_srcs = [
+    'command_buffer/client/cmd_buffer_helper.cc',
+    'command_buffer/client/fenced_allocator.cc',
+    'command_buffer/client/gles2_c_lib.cc',
+    'command_buffer/client/gles2_cmd_helper.cc',
+    'command_buffer/client/gles2_implementation.cc',
+    'command_buffer/client/program_info_manager.cc',
+    'command_buffer/client/gles2_lib.cc',
+    'command_buffer/client/mapped_memory.cc',
+    'command_buffer/client/ring_buffer.cc',
+    'command_buffer/common/id_allocator.cc',
+    ]
+
+command_buffer_srcs = command_buffer_common_srcs + command_buffer_client_srcs;
+
+libppruntime = env.NaClSdkLibrary(
+    'libppruntime',
+    ['command_buffer_nacl.cc',
+    'input_event_data.cc',
+    'object_serialize.cc',
+    'plugin_callback.cc',
+    'plugin_globals.cc',
+    'plugin_instance_data.cc',
+    'plugin_main.cc',
+    'plugin_nacl_file.cc',
+    'plugin_opengles.cc',
+    'plugin_ppb.cc',
+    'plugin_ppb_audio.cc',
+    'plugin_ppb_audio_config.cc',
+    'plugin_ppb_buffer.cc',
+    'plugin_ppb_core.cc',
+    'plugin_ppb_cursor_control.cc',
+    'plugin_ppb_file_io.cc',
+    'plugin_ppb_file_system.cc',
+    'plugin_ppb_file_ref.cc',
+    'plugin_ppb_find.cc',
+    'plugin_ppb_font.cc',
+    'plugin_ppb_graphics_2d.cc',
+    'plugin_ppb_graphics_3d.cc',
+    'plugin_ppb_image_data.cc',
+    'plugin_ppb_input_event.cc',
+    'plugin_ppb_instance.cc',
+    'plugin_ppb_memory.cc',
+    'plugin_ppb_messaging.cc',
+    'plugin_ppb_pdf.cc',
+    'plugin_ppb_scrollbar.cc',
+    'plugin_ppb_testing.cc',
+    'plugin_ppb_url_loader.cc',
+    'plugin_ppb_url_request_info.cc',
+    'plugin_ppb_url_response_info.cc',
+    'plugin_ppb_var.cc',
+    'plugin_ppb_widget.cc',
+    'plugin_ppb_zoom.cc',
+    'plugin_ppp_find_rpc_server.cc',
+    'plugin_ppp_input_event_rpc_server.cc',
+    'plugin_ppp_instance_rpc_server.cc',
+    'plugin_ppp_messaging_rpc_server.cc',
+    'plugin_ppp_printing_rpc_server.cc',
+    'plugin_ppp_scrollbar_rpc_server.cc',
+    'plugin_ppp_selection_rpc_server.cc',
+    'plugin_ppp_widget_rpc_server.cc',
+    'plugin_ppp_zoom_rpc_server.cc',
+    'plugin_ppp_rpc_server.cc',
+    'plugin_resource.cc',
+    'plugin_resource_tracker.cc',
+    'plugin_threading.cc',
+    'plugin_upcall.cc',
+    'proxy_var.cc',
+    'proxy_var_cache.cc',
+    'utility.cc',
+    # Autogenerated files
+    'ppp_rpc_server.cc',
+    'ppb_rpc_client.cc',
+    'upcall_client.cc'] + command_buffer_srcs,
+    LIBS=['pthread',
+         'srpc',
+         'gio',
+         'platform',
+        ])
+
+header_install = env.AddHeaderToSdk(['ppruntime.h'])
+env.AddLibraryToSdk(libppruntime)
+
+# Clients that overload main() will use ppruntime.h.
+env.Requires(libppruntime, header_install)

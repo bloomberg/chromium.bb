@@ -1,0 +1,523 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0056BE226A3DC2421DD758C0 /* browser_globals.cc in Sources */ = {isa = PBXBuildFile; fileRef = 02742F4BBB94996183E4C3D3 /* browser_globals.cc */; };
+		04B554878D15773880F6291C /* browser_ppb_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = D12A17DF0A5384DC75ADC56B /* browser_ppb_rpc_server.cc */; };
+		0F006ABC91B01E8239274DFD /* object_serialize.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8EFE3143E0DA442CE75D84A3 /* object_serialize.cc */; };
+		0FA149477FF1CE25E5F986B5 /* browser_upcall.cc in Sources */ = {isa = PBXBuildFile; fileRef = 878CAC37F4CA83E3C47278EB /* browser_upcall.cc */; };
+		16B902D1E9452025F7527023 /* browser_ppb_audio_config_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = C946F5E02F3E10866CF25F7F /* browser_ppb_audio_config_rpc_server.cc */; };
+		17CFF8B49CFAA750C9DC9181 /* input_event_data.cc in Sources */ = {isa = PBXBuildFile; fileRef = 054155718BC55687504C8CDC /* input_event_data.cc */; };
+		18D43A614E8087126DAAFFA8 /* browser_ppb_audio_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 6FF26AEF2569DA12A03AC03D /* browser_ppb_audio_rpc_server.cc */; };
+		198164F53118271B0788C4BF /* browser_ppp_find.cc in Sources */ = {isa = PBXBuildFile; fileRef = 1727BB4719B3012C5DF29029 /* browser_ppp_find.cc */; };
+		1AE450EFA6EAE077B9ED579C /* browser_ppb_find_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 1058473A03FCDFB8675B7AFB /* browser_ppb_find_rpc_server.cc */; };
+		210225D7688E2407B574730B /* browser_ppp_printing.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4CA83840A75E9FFCF6F6864F /* browser_ppp_printing.cc */; };
+		25DA53BED12CAB000634978E /* browser_ppb_instance_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 9745490AE0DE94B3914B9385 /* browser_ppb_instance_rpc_server.cc */; };
+		388EDA19E15B41372C3D8176 /* browser_ppp_instance.cc in Sources */ = {isa = PBXBuildFile; fileRef = 954A1C78906094EF0A43D4A0 /* browser_ppp_instance.cc */; };
+		482615F1C617C24D4CE4C5F5 /* upcall_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = E586202B94DA1B17633C3CAA /* upcall_server.cc */; };
+		514C6878CDBE24736A070BFA /* browser_ppb_graphics_2d_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = AA821BADD7D8B9F6DB4B772C /* browser_ppb_graphics_2d_rpc_server.cc */; };
+		62C3C674AC1530A8D71F82B3 /* browser_ppp_zoom.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8E1151E1D1A47B47833B6FF5 /* browser_ppp_zoom.cc */; };
+		62F8E66E4E46E00634279259 /* browser_ppb_font_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = B382D02275604E8ACEC0CE5F /* browser_ppb_font_rpc_server.cc */; };
+		68D578F2B28585560CDA4877 /* browser_ppb_url_loader_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBFC933E4DCEC24DC1FFF025 /* browser_ppb_url_loader_rpc_server.cc */; };
+		6D5BA3D1383500996621E3BF /* browser_ppb_core_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = D164077C57B92C8AA9F5B126 /* browser_ppb_core_rpc_server.cc */; };
+		76D1F014B6BF136CAB666C3F /* browser_ppb_pdf_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0E9DB20F8E8175502632F60A /* browser_ppb_pdf_rpc_server.cc */; };
+		77B890199B53B99713AE4931 /* browser_ppb_input_event_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = B7C4ED506C190812D53A0882 /* browser_ppb_input_event_rpc_server.cc */; };
+		80CA814A1E0AC66807B1A1BE /* utility.cc in Sources */ = {isa = PBXBuildFile; fileRef = C765DAFF872F6AF74A788554 /* utility.cc */; };
+		817606546901E110B1AD45FF /* browser_ppb_cursor_control_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2740BB87A16F3D5D0AB87891 /* browser_ppb_cursor_control_rpc_server.cc */; };
+		8CFC3ED4D0913952E393BF96 /* browser_ppb_scrollbar_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = CC879F739018986B7F0D5A84 /* browser_ppb_scrollbar_rpc_server.cc */; };
+		8E77BDA60E975A500E0FE873 /* browser_ppb_file_ref_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 5B3B734FB2CAAD4CD4604B66 /* browser_ppb_file_ref_rpc_server.cc */; };
+		8EEF79DCD255BF0478823EA3 /* browser_ppb_messaging_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 1B094ED7DE3846B3C7FBFA46 /* browser_ppb_messaging_rpc_server.cc */; };
+		93C2C9A415E4808134746653 /* browser_ppb_graphics_3d_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 229CEBE09E36595867F6C6D4 /* browser_ppb_graphics_3d_rpc_server.cc */; };
+		96E05B4813179265FF36260F /* browser_ppb_widget_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2F9946EAE55747A2779815B9 /* browser_ppb_widget_rpc_server.cc */; };
+		98243B1ABFB0837FB214DF58 /* browser_ppb_image_data_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 21C25E77101490EA03171D46 /* browser_ppb_image_data_rpc_server.cc */; };
+		9ABE6B51298951501BCBF57E /* browser_ppb_file_io_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 0D0E706FE8FE6E6D28709818 /* browser_ppb_file_io_rpc_server.cc */; };
+		A1DABC5CAF545F071EF42390 /* browser_ppp_input_event.cc in Sources */ = {isa = PBXBuildFile; fileRef = 24A88ADA6B81D5D82CA2CD3B /* browser_ppp_input_event.cc */; };
+		AC58AD94387F9BC97D786245 /* browser_ppb_file_system_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7C6D3EA246A126E0FB26E541 /* browser_ppb_file_system_rpc_server.cc */; };
+		B19FC986B11ACE4FFD5C2C26 /* browser_ppb_testing_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 7BDE5205434B17F6ECB41E35 /* browser_ppb_testing_rpc_server.cc */; };
+		B2ADFE08F2B14B20C35C33AC /* browser_ppb_url_response_info_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = A1A9D876AA2E4C724351CB0F /* browser_ppb_url_response_info_rpc_server.cc */; };
+		B612AA5179171C8A8E3ADF78 /* browser_ppb_zoom_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 52263F453E31E10EE4A303D6 /* browser_ppb_zoom_rpc_server.cc */; };
+		C3EBE571277BBFF1B29D2CA5 /* browser_ppp_selection.cc in Sources */ = {isa = PBXBuildFile; fileRef = 90CEFE0757206DF129C1880E /* browser_ppp_selection.cc */; };
+		C405878586E526140E44EDE2 /* ppp_rpc_client.cc in Sources */ = {isa = PBXBuildFile; fileRef = EFEBF2376AF4233BB4E4429D /* ppp_rpc_client.cc */; };
+		D3CDE20C6A2F59FAABFD3C03 /* browser_callback.cc in Sources */ = {isa = PBXBuildFile; fileRef = 3E518D95B759DD2DA497A1A2 /* browser_callback.cc */; };
+		D5DF308F80DFBAF19652AE13 /* browser_nacl_file_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4D746F15F607698A8F2CA960 /* browser_nacl_file_rpc_server.cc */; };
+		DDDA2B0007A6F4934FBAEF7F /* browser_ppp.cc in Sources */ = {isa = PBXBuildFile; fileRef = A4836DC1DA9CA3E8112170CA /* browser_ppp.cc */; };
+		E20A40CAFAC6FCAF2283ABB3 /* browser_ppp_messaging.cc in Sources */ = {isa = PBXBuildFile; fileRef = 67B1D495E761A4AFBDD13917 /* browser_ppp_messaging.cc */; };
+		E94346D4495815A586DF3AC2 /* ppb_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = 74702F43338CA7F50AD05C95 /* ppb_rpc_server.cc */; };
+		F581F4A962D02B904F4C6313 /* browser_ppp_scrollbar.cc in Sources */ = {isa = PBXBuildFile; fileRef = 49CFB0F1AABC17C51ECE9E4B /* browser_ppp_scrollbar.cc */; };
+		F9268C44838705B9DA7F88CD /* browser_ppp_widget.cc in Sources */ = {isa = PBXBuildFile; fileRef = 45B4C6883EA1AA84EACCEE2B /* browser_ppp_widget.cc */; };
+		FCF78CC768AAFCB60A9CC4F4 /* browser_ppb_url_request_info_rpc_server.cc in Sources */ = {isa = PBXBuildFile; fileRef = C827451C76BC2FA486D1DC50 /* browser_ppb_url_request_info_rpc_server.cc */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		113EB4B93FBF1C097A8FB54A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 18B5649399A9BCEF14992B2D /* ppapi.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 37976CB5EC445D9088DC63A9;
+			remoteInfo = ppapi_c_nacl;
+		};
+		61D9EC26A55712F45FBA0F76 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 18B5649399A9BCEF14992B2D /* ppapi.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E8A6179E550C8FBBA6FE4E48;
+			remoteInfo = ppapi_cpp_nacl;
+		};
+		70B1A9CE3721CBA18B40F5A1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 18B5649399A9BCEF14992B2D /* ppapi.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0C68FB996E598DF8FB52A61D;
+			remoteInfo = ppapi_cpp_objects_nacl;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		02742F4BBB94996183E4C3D3 /* browser_globals.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_globals.cc; sourceTree = "<group>"; };
+		054155718BC55687504C8CDC /* input_event_data.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = input_event_data.cc; sourceTree = "<group>"; };
+		0D0E706FE8FE6E6D28709818 /* browser_ppb_file_io_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_file_io_rpc_server.cc; sourceTree = "<group>"; };
+		0E9DB20F8E8175502632F60A /* browser_ppb_pdf_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_pdf_rpc_server.cc; sourceTree = "<group>"; };
+		1058473A03FCDFB8675B7AFB /* browser_ppb_find_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_find_rpc_server.cc; sourceTree = "<group>"; };
+		1727BB4719B3012C5DF29029 /* browser_ppp_find.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_find.cc; sourceTree = "<group>"; };
+		18B5649399A9BCEF14992B2D /* ppapi.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ppapi.xcodeproj; path = ../../../../../native_client/src/shared/ppapi/ppapi.xcodeproj; sourceTree = SOURCE_ROOT; };
+		1B094ED7DE3846B3C7FBFA46 /* browser_ppb_messaging_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_messaging_rpc_server.cc; sourceTree = "<group>"; };
+		21C25E77101490EA03171D46 /* browser_ppb_image_data_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_image_data_rpc_server.cc; sourceTree = "<group>"; };
+		229CEBE09E36595867F6C6D4 /* browser_ppb_graphics_3d_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_graphics_3d_rpc_server.cc; sourceTree = "<group>"; };
+		23C102470A58F76D87DC893C /* common.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = common.gypi; path = ../../../../../native_client/build/common.gypi; sourceTree = "<group>"; };
+		24A88ADA6B81D5D82CA2CD3B /* browser_ppp_input_event.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_input_event.cc; sourceTree = "<group>"; };
+		2740BB87A16F3D5D0AB87891 /* browser_ppb_cursor_control_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_cursor_control_rpc_server.cc; sourceTree = "<group>"; };
+		2F9946EAE55747A2779815B9 /* browser_ppb_widget_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_widget_rpc_server.cc; sourceTree = "<group>"; };
+		3E518D95B759DD2DA497A1A2 /* browser_callback.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_callback.cc; sourceTree = "<group>"; };
+		45B4C6883EA1AA84EACCEE2B /* browser_ppp_widget.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_widget.cc; sourceTree = "<group>"; };
+		49CFB0F1AABC17C51ECE9E4B /* browser_ppp_scrollbar.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_scrollbar.cc; sourceTree = "<group>"; };
+		4CA83840A75E9FFCF6F6864F /* browser_ppp_printing.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_printing.cc; sourceTree = "<group>"; };
+		4D746F15F607698A8F2CA960 /* browser_nacl_file_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_nacl_file_rpc_server.cc; sourceTree = "<group>"; };
+		52263F453E31E10EE4A303D6 /* browser_ppb_zoom_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_zoom_rpc_server.cc; sourceTree = "<group>"; };
+		53B263AD715FBC8DE74A65E4 /* ppapi_proxy.gyp */ = {isa = PBXFileReference; lastKnownFileType = text; path = ppapi_proxy.gyp; sourceTree = "<group>"; };
+		5B3B734FB2CAAD4CD4604B66 /* browser_ppb_file_ref_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_file_ref_rpc_server.cc; sourceTree = "<group>"; };
+		67B1D495E761A4AFBDD13917 /* browser_ppp_messaging.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_messaging.cc; sourceTree = "<group>"; };
+		6FF26AEF2569DA12A03AC03D /* browser_ppb_audio_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_audio_rpc_server.cc; sourceTree = "<group>"; };
+		74702F43338CA7F50AD05C95 /* ppb_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ppb_rpc_server.cc; sourceTree = "<group>"; };
+		7BDE5205434B17F6ECB41E35 /* browser_ppb_testing_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_testing_rpc_server.cc; sourceTree = "<group>"; };
+		7C6D3EA246A126E0FB26E541 /* browser_ppb_file_system_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_file_system_rpc_server.cc; sourceTree = "<group>"; };
+		8346DD1517DC2BED1C8129D4 /* libnacl_ppapi_browser.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnacl_ppapi_browser.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		878CAC37F4CA83E3C47278EB /* browser_upcall.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_upcall.cc; sourceTree = "<group>"; };
+		8E1151E1D1A47B47833B6FF5 /* browser_ppp_zoom.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_zoom.cc; sourceTree = "<group>"; };
+		8EFE3143E0DA442CE75D84A3 /* object_serialize.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = object_serialize.cc; sourceTree = "<group>"; };
+		90CEFE0757206DF129C1880E /* browser_ppp_selection.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_selection.cc; sourceTree = "<group>"; };
+		954A1C78906094EF0A43D4A0 /* browser_ppp_instance.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp_instance.cc; sourceTree = "<group>"; };
+		9745490AE0DE94B3914B9385 /* browser_ppb_instance_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_instance_rpc_server.cc; sourceTree = "<group>"; };
+		A1A9D876AA2E4C724351CB0F /* browser_ppb_url_response_info_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_url_response_info_rpc_server.cc; sourceTree = "<group>"; };
+		A4836DC1DA9CA3E8112170CA /* browser_ppp.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppp.cc; sourceTree = "<group>"; };
+		AA821BADD7D8B9F6DB4B772C /* browser_ppb_graphics_2d_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_graphics_2d_rpc_server.cc; sourceTree = "<group>"; };
+		B382D02275604E8ACEC0CE5F /* browser_ppb_font_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_font_rpc_server.cc; sourceTree = "<group>"; };
+		B7C4ED506C190812D53A0882 /* browser_ppb_input_event_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_input_event_rpc_server.cc; sourceTree = "<group>"; };
+		C3477435D8F87A349542A73F /* external_code.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = external_code.gypi; path = ../../../../../native_client/build/external_code.gypi; sourceTree = "<group>"; };
+		C765DAFF872F6AF74A788554 /* utility.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = utility.cc; sourceTree = "<group>"; };
+		C827451C76BC2FA486D1DC50 /* browser_ppb_url_request_info_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_url_request_info_rpc_server.cc; sourceTree = "<group>"; };
+		C946F5E02F3E10866CF25F7F /* browser_ppb_audio_config_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_audio_config_rpc_server.cc; sourceTree = "<group>"; };
+		CC879F739018986B7F0D5A84 /* browser_ppb_scrollbar_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_scrollbar_rpc_server.cc; sourceTree = "<group>"; };
+		D12A17DF0A5384DC75ADC56B /* browser_ppb_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_rpc_server.cc; sourceTree = "<group>"; };
+		D164077C57B92C8AA9F5B126 /* browser_ppb_core_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_core_rpc_server.cc; sourceTree = "<group>"; };
+		E586202B94DA1B17633C3CAA /* upcall_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = upcall_server.cc; sourceTree = "<group>"; };
+		EBFC933E4DCEC24DC1FFF025 /* browser_ppb_url_loader_rpc_server.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_ppb_url_loader_rpc_server.cc; sourceTree = "<group>"; };
+		EFEBF2376AF4233BB4E4429D /* ppp_rpc_client.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ppp_rpc_client.cc; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C234E96F6068687070C859F0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0159C1A8B53C236453216FC1 /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				23C102470A58F76D87DC893C /* common.gypi */,
+				C3477435D8F87A349542A73F /* external_code.gypi */,
+				53B263AD715FBC8DE74A65E4 /* ppapi_proxy.gyp */,
+			);
+			name = Build;
+			sourceTree = "<group>";
+		};
+		6D41FC14F36382B2787AA5D1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8346DD1517DC2BED1C8129D4 /* libnacl_ppapi_browser.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		844C08F5BC79B244E3156932 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				18B5649399A9BCEF14992B2D /* ppapi.xcodeproj */,
+			);
+			name = Projects;
+			sourceTree = "<group>";
+		};
+		97BFF17E51B8AA74051B12AE = {
+			isa = PBXGroup;
+			children = (
+				BD8446F5E8D2D54DC0B68AD6 /* Source */,
+				844C08F5BC79B244E3156932 /* Projects */,
+				6D41FC14F36382B2787AA5D1 /* Products */,
+				0159C1A8B53C236453216FC1 /* Build */,
+			);
+			sourceTree = "<group>";
+		};
+		BD8446F5E8D2D54DC0B68AD6 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				3E518D95B759DD2DA497A1A2 /* browser_callback.cc */,
+				02742F4BBB94996183E4C3D3 /* browser_globals.cc */,
+				4D746F15F607698A8F2CA960 /* browser_nacl_file_rpc_server.cc */,
+				C946F5E02F3E10866CF25F7F /* browser_ppb_audio_config_rpc_server.cc */,
+				6FF26AEF2569DA12A03AC03D /* browser_ppb_audio_rpc_server.cc */,
+				D164077C57B92C8AA9F5B126 /* browser_ppb_core_rpc_server.cc */,
+				2740BB87A16F3D5D0AB87891 /* browser_ppb_cursor_control_rpc_server.cc */,
+				0D0E706FE8FE6E6D28709818 /* browser_ppb_file_io_rpc_server.cc */,
+				5B3B734FB2CAAD4CD4604B66 /* browser_ppb_file_ref_rpc_server.cc */,
+				7C6D3EA246A126E0FB26E541 /* browser_ppb_file_system_rpc_server.cc */,
+				1058473A03FCDFB8675B7AFB /* browser_ppb_find_rpc_server.cc */,
+				B382D02275604E8ACEC0CE5F /* browser_ppb_font_rpc_server.cc */,
+				AA821BADD7D8B9F6DB4B772C /* browser_ppb_graphics_2d_rpc_server.cc */,
+				229CEBE09E36595867F6C6D4 /* browser_ppb_graphics_3d_rpc_server.cc */,
+				21C25E77101490EA03171D46 /* browser_ppb_image_data_rpc_server.cc */,
+				B7C4ED506C190812D53A0882 /* browser_ppb_input_event_rpc_server.cc */,
+				9745490AE0DE94B3914B9385 /* browser_ppb_instance_rpc_server.cc */,
+				1B094ED7DE3846B3C7FBFA46 /* browser_ppb_messaging_rpc_server.cc */,
+				0E9DB20F8E8175502632F60A /* browser_ppb_pdf_rpc_server.cc */,
+				D12A17DF0A5384DC75ADC56B /* browser_ppb_rpc_server.cc */,
+				CC879F739018986B7F0D5A84 /* browser_ppb_scrollbar_rpc_server.cc */,
+				7BDE5205434B17F6ECB41E35 /* browser_ppb_testing_rpc_server.cc */,
+				EBFC933E4DCEC24DC1FFF025 /* browser_ppb_url_loader_rpc_server.cc */,
+				C827451C76BC2FA486D1DC50 /* browser_ppb_url_request_info_rpc_server.cc */,
+				A1A9D876AA2E4C724351CB0F /* browser_ppb_url_response_info_rpc_server.cc */,
+				2F9946EAE55747A2779815B9 /* browser_ppb_widget_rpc_server.cc */,
+				52263F453E31E10EE4A303D6 /* browser_ppb_zoom_rpc_server.cc */,
+				A4836DC1DA9CA3E8112170CA /* browser_ppp.cc */,
+				1727BB4719B3012C5DF29029 /* browser_ppp_find.cc */,
+				24A88ADA6B81D5D82CA2CD3B /* browser_ppp_input_event.cc */,
+				954A1C78906094EF0A43D4A0 /* browser_ppp_instance.cc */,
+				67B1D495E761A4AFBDD13917 /* browser_ppp_messaging.cc */,
+				4CA83840A75E9FFCF6F6864F /* browser_ppp_printing.cc */,
+				49CFB0F1AABC17C51ECE9E4B /* browser_ppp_scrollbar.cc */,
+				90CEFE0757206DF129C1880E /* browser_ppp_selection.cc */,
+				45B4C6883EA1AA84EACCEE2B /* browser_ppp_widget.cc */,
+				8E1151E1D1A47B47833B6FF5 /* browser_ppp_zoom.cc */,
+				878CAC37F4CA83E3C47278EB /* browser_upcall.cc */,
+				054155718BC55687504C8CDC /* input_event_data.cc */,
+				8EFE3143E0DA442CE75D84A3 /* object_serialize.cc */,
+				74702F43338CA7F50AD05C95 /* ppb_rpc_server.cc */,
+				EFEBF2376AF4233BB4E4429D /* ppp_rpc_client.cc */,
+				E586202B94DA1B17633C3CAA /* upcall_server.cc */,
+				C765DAFF872F6AF74A788554 /* utility.cc */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		D7C37A4B20C9D9A40CD5472D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CED0CFA55B4E95CCB1EC5851 /* libppapi_cpp_objects_nacl.a */,
+				6C4098E0DCD20F9E9083599B /* libppapi_cpp_nacl.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A69A7B7DC20908928BE34654 /* nacl_ppapi_browser */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C25021B8DA4E5D0272B81FE5 /* Build configuration list for PBXNativeTarget "nacl_ppapi_browser" */;
+			buildPhases = (
+				25F90DD75A7622D708C8209F /* Sources */,
+				C234E96F6068687070C859F0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E34675CE92FF60175845EF23 /* PBXTargetDependency */,
+			);
+			name = nacl_ppapi_browser;
+			productName = nacl_ppapi_browser;
+			productReference = 8346DD1517DC2BED1C8129D4 /* libnacl_ppapi_browser.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3297DFFD49F6ABFA7F55EF65 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+			};
+			buildConfigurationList = AD809D91CAF48A08D0115A64 /* Build configuration list for PBXProject "ppapi_proxy" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 97BFF17E51B8AA74051B12AE;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = D7C37A4B20C9D9A40CD5472D /* Products */;
+					ProjectRef = 18B5649399A9BCEF14992B2D /* ppapi.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				A69A7B7DC20908928BE34654 /* nacl_ppapi_browser */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		6C4098E0DCD20F9E9083599B /* libppapi_cpp_nacl.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libppapi_cpp_nacl.a;
+			remoteRef = 61D9EC26A55712F45FBA0F76 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		CED0CFA55B4E95CCB1EC5851 /* libppapi_cpp_objects_nacl.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libppapi_cpp_objects_nacl.a;
+			remoteRef = 70B1A9CE3721CBA18B40F5A1 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXSourcesBuildPhase section */
+		25F90DD75A7622D708C8209F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3CDE20C6A2F59FAABFD3C03 /* browser_callback.cc in Sources */,
+				0056BE226A3DC2421DD758C0 /* browser_globals.cc in Sources */,
+				D5DF308F80DFBAF19652AE13 /* browser_nacl_file_rpc_server.cc in Sources */,
+				18D43A614E8087126DAAFFA8 /* browser_ppb_audio_rpc_server.cc in Sources */,
+				16B902D1E9452025F7527023 /* browser_ppb_audio_config_rpc_server.cc in Sources */,
+				6D5BA3D1383500996621E3BF /* browser_ppb_core_rpc_server.cc in Sources */,
+				817606546901E110B1AD45FF /* browser_ppb_cursor_control_rpc_server.cc in Sources */,
+				9ABE6B51298951501BCBF57E /* browser_ppb_file_io_rpc_server.cc in Sources */,
+				8E77BDA60E975A500E0FE873 /* browser_ppb_file_ref_rpc_server.cc in Sources */,
+				AC58AD94387F9BC97D786245 /* browser_ppb_file_system_rpc_server.cc in Sources */,
+				1AE450EFA6EAE077B9ED579C /* browser_ppb_find_rpc_server.cc in Sources */,
+				62F8E66E4E46E00634279259 /* browser_ppb_font_rpc_server.cc in Sources */,
+				514C6878CDBE24736A070BFA /* browser_ppb_graphics_2d_rpc_server.cc in Sources */,
+				93C2C9A415E4808134746653 /* browser_ppb_graphics_3d_rpc_server.cc in Sources */,
+				98243B1ABFB0837FB214DF58 /* browser_ppb_image_data_rpc_server.cc in Sources */,
+				77B890199B53B99713AE4931 /* browser_ppb_input_event_rpc_server.cc in Sources */,
+				25DA53BED12CAB000634978E /* browser_ppb_instance_rpc_server.cc in Sources */,
+				8EEF79DCD255BF0478823EA3 /* browser_ppb_messaging_rpc_server.cc in Sources */,
+				76D1F014B6BF136CAB666C3F /* browser_ppb_pdf_rpc_server.cc in Sources */,
+				04B554878D15773880F6291C /* browser_ppb_rpc_server.cc in Sources */,
+				8CFC3ED4D0913952E393BF96 /* browser_ppb_scrollbar_rpc_server.cc in Sources */,
+				B19FC986B11ACE4FFD5C2C26 /* browser_ppb_testing_rpc_server.cc in Sources */,
+				68D578F2B28585560CDA4877 /* browser_ppb_url_loader_rpc_server.cc in Sources */,
+				FCF78CC768AAFCB60A9CC4F4 /* browser_ppb_url_request_info_rpc_server.cc in Sources */,
+				B2ADFE08F2B14B20C35C33AC /* browser_ppb_url_response_info_rpc_server.cc in Sources */,
+				96E05B4813179265FF36260F /* browser_ppb_widget_rpc_server.cc in Sources */,
+				B612AA5179171C8A8E3ADF78 /* browser_ppb_zoom_rpc_server.cc in Sources */,
+				198164F53118271B0788C4BF /* browser_ppp_find.cc in Sources */,
+				A1DABC5CAF545F071EF42390 /* browser_ppp_input_event.cc in Sources */,
+				388EDA19E15B41372C3D8176 /* browser_ppp_instance.cc in Sources */,
+				E20A40CAFAC6FCAF2283ABB3 /* browser_ppp_messaging.cc in Sources */,
+				210225D7688E2407B574730B /* browser_ppp_printing.cc in Sources */,
+				F581F4A962D02B904F4C6313 /* browser_ppp_scrollbar.cc in Sources */,
+				C3EBE571277BBFF1B29D2CA5 /* browser_ppp_selection.cc in Sources */,
+				F9268C44838705B9DA7F88CD /* browser_ppp_widget.cc in Sources */,
+				62C3C674AC1530A8D71F82B3 /* browser_ppp_zoom.cc in Sources */,
+				DDDA2B0007A6F4934FBAEF7F /* browser_ppp.cc in Sources */,
+				0FA149477FF1CE25E5F986B5 /* browser_upcall.cc in Sources */,
+				17CFF8B49CFAA750C9DC9181 /* input_event_data.cc in Sources */,
+				0F006ABC91B01E8239274DFD /* object_serialize.cc in Sources */,
+				80CA814A1E0AC66807B1A1BE /* utility.cc in Sources */,
+				C405878586E526140E44EDE2 /* ppp_rpc_client.cc in Sources */,
+				E94346D4495815A586DF3AC2 /* ppb_rpc_server.cc in Sources */,
+				482615F1C617C24D4CE4C5F5 /* upcall_server.cc in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E34675CE92FF60175845EF23 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ppapi_c_nacl;
+			targetProxy = 113EB4B93FBF1C097A8FB54A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		08D2E2BCB87B795040D352DF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEAD_CODE_STRIPPING = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_CW_ASM_SYNTAX = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"NACL_BLOCK_SHIFT=5\"",
+					"\"NACL_BLOCK_SIZE=32\"",
+					"\"NACL_LINUX=0\"",
+					"\"NACL_OSX=1\"",
+					"\"NACL_WINDOWS=0\"",
+					"\"__STDC_FORMAT_MACROS\"",
+					"\"NACL_STANDALONE=1\"",
+					"\"NACL_TARGET_SUBARCH=32\"",
+					"\"NACL_TARGET_ARCH=x86\"",
+					"\"NACL_BUILD_SUBARCH=32\"",
+					"\"NACL_BUILD_ARCH=x86\"",
+					"\"NDEBUG\"",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../../../../native_client/src/third_party,
+					../../../../..,
+					../../../../../ppapi/native_client/src/shared/ppapi_proxy/trusted,
+					../../../../../ppapi,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				PREBINDING = NO;
+				PRODUCT_NAME = nacl_ppapi_browser;
+				SDKROOT = macosx10.5;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wendif-labels",
+					"-Wno-long-long",
+					"-pedantic",
+					"-Wextra",
+					"-Wno-long-long",
+					"-Wswitch-enum",
+					"-Wsign-compare",
+				);
+			};
+			name = Release;
+		};
+		321B2CF9D87D4161EE304D50 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_CW_ASM_SYNTAX = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"NACL_BLOCK_SHIFT=5\"",
+					"\"NACL_BLOCK_SIZE=32\"",
+					"\"NACL_LINUX=0\"",
+					"\"NACL_OSX=1\"",
+					"\"NACL_WINDOWS=0\"",
+					"\"__STDC_FORMAT_MACROS\"",
+					"\"NACL_STANDALONE=1\"",
+					"\"NACL_TARGET_SUBARCH=32\"",
+					"\"NACL_TARGET_ARCH=x86\"",
+					"\"NACL_BUILD_SUBARCH=32\"",
+					"\"NACL_BUILD_ARCH=x86\"",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../../../../native_client/src/third_party,
+					../../../../..,
+					../../../../../ppapi/native_client/src/shared/ppapi_proxy/trusted,
+					../../../../../ppapi,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				PREBINDING = NO;
+				PRODUCT_NAME = nacl_ppapi_browser;
+				SDKROOT = macosx10.5;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wendif-labels",
+					"-Wno-long-long",
+					"-pedantic",
+					"-Wextra",
+					"-Wno-long-long",
+					"-Wswitch-enum",
+					"-Wsign-compare",
+				);
+			};
+			name = Debug;
+		};
+		67A97A08FD7FDEB3C11B6FA9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+				SYMROOT = ../../../../../xcodebuild;
+			};
+			name = Debug;
+		};
+		69794B36E89AEABCE8BAF3BD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+				SYMROOT = ../../../../../xcodebuild;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AD809D91CAF48A08D0115A64 /* Build configuration list for PBXProject "ppapi_proxy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				67A97A08FD7FDEB3C11B6FA9 /* Debug */,
+				69794B36E89AEABCE8BAF3BD /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+		C25021B8DA4E5D0272B81FE5 /* Build configuration list for PBXNativeTarget "nacl_ppapi_browser" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				321B2CF9D87D4161EE304D50 /* Debug */,
+				08D2E2BCB87B795040D352DF /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3297DFFD49F6ABFA7F55EF65 /* Project object */;
+}

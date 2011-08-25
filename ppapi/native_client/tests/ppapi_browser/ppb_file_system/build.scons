@@ -1,0 +1,26 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# A way to build the nexe as a trusted plugin to validate directly
+# against Chrome on Linux using
+# --register-pepper-plugins="/path/to/libppapi_ppb_file_system.so;application/x-nacl"
+# http://localhost:5103/scons-out/nacl-x86-../staging/ppapi_ppb_file_system.html
+
+Import('env')
+
+if env.Bit('linux'):
+  env['COMPONENT_STATIC'] = False  # Build a .so, not a .a
+  env.Append(CFLAGS=['-std=c99'])
+
+  sources = ['ppapi_ppb_file_system.cc']
+
+  libs = ['imc',
+          'gio',
+          'pthread' ]
+
+  ppapi_geturl = env.ComponentLibrary('ppapi_ppb_file_system',
+                                      sources,
+                                      EXTRA_LIBS=libs,
+                                      no_import_lib=True)

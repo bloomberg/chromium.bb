@@ -1,0 +1,104 @@
+# First register a bunch of dummy replays with zero count
+# so that those signatures will get registered during "install_upcalls"
+# Note: because of the zero count we do not have to get the parameters right
+#
+# Enumerating all known methods ahead of time helps in many ways:
+# * we can delay registering non zero count replays till later which help
+#   readability
+# * we get an error if for some reason the nexe calls one of these functions.
+#   Sadly, the nexe usually fails silently when a method is missing from a
+#   service
+#
+# This must be updated by hand when signatures change.
+
+echo
+echo "*** REPLAY PROLOG"
+
+replay 0 HasProperty:CCC:iC *
+replay 0 HasMethod:CCC:iC *
+replay 0 GetProperty:CCC:CC *
+replay 0 GetAllPropertyNames:CC:iCC *
+replay 0 SetProperty:CCCC:C *
+replay 0 RemoveProperty:CCC:C *
+replay 0 Call:CCiCC:CC *
+replay 0 Construct:CiCC:CC *
+replay 0 Deallocate:C: *
+replay 0 PPB_GetInterface:s:i *
+
+replay 0 PPB_Audio_Create:ii:i *
+replay 0 PPB_Audio_IsAudio:i:i *
+replay 0 PPB_Audio_GetCurrentConfig:i:i *
+replay 0 PPB_Audio_StopPlayback:i:i *
+replay 0 PPB_Audio_StartPlayback:i:i *
+
+replay 0 PPB_AudioConfig_CreateStereo16Bit:iii:i *
+replay 0 PPB_AudioConfig_IsAudioConfig:i:i *
+replay 0 PPB_AudioConfig_RecommendSampleFrameCount:ii:i *
+replay 0 PPB_AudioConfig_GetSampleRate:i:i *
+replay 0 PPB_AudioConfig_GetSampleFrameCount:i:i *
+
+replay 0 PPB_Core_AddRefResource:i: *
+replay 0 PPB_Core_ReleaseResource:i: *
+replay 0 PPB_Core_GetTime::d *
+replay 0 PPB_Core_CallOnMainThread:iii: *
+
+replay 0 ReleaseResourceMultipleTimes:ii: *
+
+replay 0 PPB_FileIO_Create:i:i *
+replay 0 PPB_FileIO_IsFileIO:i:i *
+replay 0 PPB_FileIO_Open:iiii:i *
+replay 0 PPB_FileIO_Read:ilii:Ci *
+
+replay 0 PPB_Graphics2D_Create:iCi:i *
+replay 0 PPB_Graphics2D_IsGraphics2D:i:i *
+replay 0 PPB_Graphics2D_Describe:i:Cii *
+replay 0 PPB_Graphics2D_PaintImageData:iiCC: *
+replay 0 PPB_Graphics2D_Scroll:iCC: *
+replay 0 PPB_Graphics2D_ReplaceContents:ii: *
+replay 0 PPB_Graphics2D_Flush:ii:i *
+
+replay 0 PPB_ImageData_GetNativeImageDataFormat::i *
+replay 0 PPB_ImageData_IsImageDataFormatSupported:i:i *
+replay 0 PPB_ImageData_Create:iiCi:i *
+replay 0 PPB_ImageData_IsImageData:i:i *
+replay 0 PPB_ImageData_Describe:i:Chii *
+
+replay 0 PPB_Instance_BindGraphics:ii:i *
+replay 0 PPB_Instance_IsFullFrame:i:i *
+
+replay 0 PPB_URLRequestInfo_Create:i:i *
+replay 0 PPB_URLRequestInfo_IsURLRequestInfo:i:i *
+replay 0 PPB_URLRequestInfo_IsURLResponseInfo:i:i *
+replay 0 PPB_URLRequestInfo_SetProperty:iiC:i *
+replay 0 PPB_URLRequestInfo_AppendDataToBody:iC:i *
+replay 0 PPB_URLRequestInfo_AppendFileToBody:illld:i *
+
+replay 0 PPB_URLLoader_Open:iii:i *
+replay 0 PPB_URLLoader_Create:i:i *
+replay 0 PPB_URLLoader_FollowRedirect:ii:i *
+replay 0 PPB_URLLoader_GetUploadProgress:i:lli *
+replay 0 PPB_URLLoader_GetDownloadProgress:i:lli *
+replay 0 PPB_URLLoader_ReadResponseBody:iii:Ci *
+replay 0 PPB_URLLoader_GetResponseInfo:i:i *
+replay 0 PPB_URLLoader_Close:i: *
+replay 0 PPB_URLLoader_IsURLLoader:i:i *
+
+replay 0 PPB_URLResponseInfo_IsURLResponseInfo:i:i *
+replay 0 PPB_URLResponseInfo_GetProperty:ii:C *
+replay 0 PPB_URLResponseInfo_GetBodyAsFileRef:i:l *
+
+replay 0 PPB_Messaging_PostMessage:iC: *
+
+# Register  signatures found in all previous replay commands for export
+# via install_upcalls
+echo
+echo "*** REGISTER REPLAY METHODS"
+replay_activate
+
+# Create a upcall service on the channel between nexe and sel_univeral.
+# The service string is save into the variable "service_string".
+echo
+echo "*** CREATE UPCALL SERVICE"
+install_upcalls service_string pepper_desc
+# the variable service string is very long and might change so we suppress it
+nondeterministic s("${service_string}") @LENGTHY_SERVICE_STRING

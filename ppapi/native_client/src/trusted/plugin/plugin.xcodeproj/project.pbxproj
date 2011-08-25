@@ -1,0 +1,1390 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0512B675305D3AFD29700B0A /* libnonnacl_srpc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0C6572D3103B89B48D63313 /* libnonnacl_srpc.a */; };
+		0DB9A2BCA231BDFE130F6B8D /* string_encoding.cc in Sources */ = {isa = PBXBuildFile; fileRef = F6CEFA6C5EF47C924C602649 /* string_encoding.cc */; };
+		1FE2ACF356B68E5995EC8757 /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BA633570BC84E88A5485D7F7 /* libssl.dylib */; };
+		23254754DEFBBDEA139453B4 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6840E9858FC08BB95EE1F006 /* Carbon.framework */; };
+		2F4A1B21FBEC65F36E0CB2E7 /* manifest.cc in Sources */ = {isa = PBXBuildFile; fileRef = D33D7B4AB1DE8A51FD613307 /* manifest.cc */; };
+		35E0F7AF811CD3E0FFD3E727 /* libppapi_cpp_nacl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B1B1193623AF3C786449A3 /* libppapi_cpp_nacl.a */; };
+		40FD08307E5A8D1798048FEF /* libreverse_service.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B5543B004A4EF5E566475138 /* libreverse_service.a */; };
+		49F0DB4042A7635BED7A3875 /* pnacl_srpc_lib.cc in Sources */ = {isa = PBXBuildFile; fileRef = C39DC96319E734E57E62E3EB /* pnacl_srpc_lib.cc */; };
+		4A53FCC57ED22D39B86D6E00 /* scriptable_handle.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2FA4ECBA9BFD0DFFF24F01EF /* scriptable_handle.cc */; };
+		4FD2B9E03C6000C497DA4238 /* libnacl_ppapi_browser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC6D23D35097F45E8EDB69E5 /* libnacl_ppapi_browser.a */; };
+		503165674E302823FC6DBE86 /* libthread_interface.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D120F91621BE6927B701B8F6 /* libthread_interface.a */; };
+		50C6C683F64E64D75FDB6A63 /* libjsoncpp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CB4A8509FD7B34E5A1AFF6F /* libjsoncpp.a */; };
+		51ED36800220F9928F8BA8D5 /* method_map.cc in Sources */ = {isa = PBXBuildFile; fileRef = 054122D1AE4E27A7A2B6204B /* method_map.cc */; };
+		5446AC3AFDBDEA2E886FCE38 /* desc_based_handle.cc in Sources */ = {isa = PBXBuildFile; fileRef = F4AD44658ADACBA1AE1C58EB /* desc_based_handle.cc */; };
+		593D357067E80D83F90273A2 /* libsel_ldr_launcher.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A17B539C4A2EA1E34EC86B94 /* libsel_ldr_launcher.a */; };
+		5DDFB212A1B5455284BDB727 /* nacl_subprocess.cc in Sources */ = {isa = PBXBuildFile; fileRef = 788F1CBB5056854EA4EC803C /* nacl_subprocess.cc */; };
+		5FC315C4AE4DFD18B5044507 /* libplatform_qual_lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 658DF7406F8E2CC4C6B06B12 /* libplatform_qual_lib.a */; };
+		638089A95B62BBE161E29F64 /* libstdc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 531F0D52DAD06B2FDD47E3F0 /* libstdc++.dylib */; };
+		684E8B606C84A886C39B1125 /* array_ppapi.cc in Sources */ = {isa = PBXBuildFile; fileRef = 3872A50EC56C22316756B973 /* array_ppapi.cc */; };
+		690F26D86A72212115885EED /* libnacl_error_code.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 013A09905C1616D976A757AF /* libnacl_error_code.a */; };
+		6B243D4AC85849148127E03A /* libplatform.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 42EE60AD403DC154C5EC61F9 /* libplatform.a */; };
+		6FFE26B7A4CBA83AD0BCFFF5 /* pnacl_coordinator.cc in Sources */ = {isa = PBXBuildFile; fileRef = E69FE285F97604FAE11454B0 /* pnacl_coordinator.cc */; };
+		7368FE8E6FDF9259C0BDD971 /* libimc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 706C0CEBAC386E6BE3A98295 /* libimc.a */; };
+		8CF13462509CA483E993B92F /* libsimple_service.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E91B2901EE15F2F2C7088CB6 /* libsimple_service.a */; };
+		9086771531DDBA7130CC11B3 /* var_utils.cc in Sources */ = {isa = PBXBuildFile; fileRef = F650DB81C3CF7F34006A6BAD /* var_utils.cc */; };
+		A16831219B59A32A9C226811 /* libnacl_base.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E96903D51E8DF59322758354 /* libnacl_base.a */; };
+		A4601E7CD4A6ECCFCF91EBF0 /* plugin.cc in Sources */ = {isa = PBXBuildFile; fileRef = CB2A206CD2DBA04E311BD1EA /* plugin.cc */; };
+		B98B14C8345AEEBA3A45CB4F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F03AF2EE1E72EC3074410446 /* Foundation.framework */; };
+		BFF3632C5EB24BE9670698FE /* srpc_client.cc in Sources */ = {isa = PBXBuildFile; fileRef = F76F549DCFA409BEE55D4C95 /* srpc_client.cc */; };
+		C2A77F9E13B2E1F54C90C15A /* libncval_base_x86_32.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B2F0AAB26024B850346F6F0 /* libncval_base_x86_32.a */; };
+		C5D0D2048A09F2A59F4967C1 /* file_downloader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 97EF6F302F3F341C605971D9 /* file_downloader.cc */; };
+		C8023FD31DB9E1381D60A7EA /* browser_interface.cc in Sources */ = {isa = PBXBuildFile; fileRef = B4E363756B53E65AF47216E7 /* browser_interface.cc */; };
+		D2D8713C4B46AB26971755AF /* utility.cc in Sources */ = {isa = PBXBuildFile; fileRef = E522B9A05A2A96FD713AA661 /* utility.cc */; };
+		D6CC88F85B9322FE6E873D1F /* libppapi_cpp_objects_nacl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3ED014D1F4DDE993C5EF4E58 /* libppapi_cpp_objects_nacl.a */; };
+		D976F0D7A3918E41AB897F8B /* libenv_cleanser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A509464B57A0C2C731F1BC4 /* libenv_cleanser.a */; };
+		DB78D658ACC668638C40C7AC /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DEC45DDEC989898EC114A76 /* libcrypto.dylib */; };
+		DBA0A1398CD359E6D36DB6C1 /* libnrd_xfer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1359B99AD1A47C20C520CEDA /* libnrd_xfer.a */; };
+		E2D418C48F4925B014FD747F /* service_runtime.cc in Sources */ = {isa = PBXBuildFile; fileRef = A59CD9429D7A6DE16DFBCA32 /* service_runtime.cc */; };
+		E3C1D974FB3C832CF13B71D1 /* libweak_ref.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 794ED711B227F03DB8BBFDA0 /* libweak_ref.a */; };
+		E7912F04B6C454659C8E8B31 /* libgio_wrapped_desc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C94B65AAEE4ECF2881F037E1 /* libgio_wrapped_desc.a */; };
+		E8F2F256824FFE15665322CB /* libnonnacl_util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 571DAC5F0C0909F5CEB41616 /* libnonnacl_util.a */; };
+		E9D03D9B1CD556AA475B44FC /* libgio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 14E7A920987E4F1FE95D48D5 /* libgio.a */; };
+		EB6BB43CDA6E40BFD2D22D13 /* nexe_arch.cc in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4986240DE27123CBDB6D8 /* nexe_arch.cc */; };
+		F712E4A778E070E02B0ECFCD /* module_ppapi.cc in Sources */ = {isa = PBXBuildFile; fileRef = B98DE0E3CA252C2A8E702D94 /* module_ppapi.cc */; };
+		FFD5355ED935CD0CE1DB0DC9 /* sandbox_isa.cc in Sources */ = {isa = PBXBuildFile; fileRef = D72CEA0CD3FDE59EC74A6F8B /* sandbox_isa.cc */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0003B8B7276FC14F0DC477DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2FB7677253523A0A25A08B0 /* platform.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6EDCA4CFF96EFF980259120B;
+			remoteInfo = platform;
+		};
+		0114BE6B01C2BFCBFFA9C7E6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E971B7E46E4DE6ADACA430E9 /* imc.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 052E2DCE6A6495174A6AF823;
+			remoteInfo = imc;
+		};
+		04F0C841FE19664D21A4D0A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2FB7677253523A0A25A08B0 /* platform.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = C90E55DA097368C583BD245B;
+			remoteInfo = platform_tests;
+		};
+		0758F97530AEDE3CE67BB0A6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 71263C5E4C0ABD0899F08256 /* ppapi.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = E2F2A0E55B110BD510823436;
+			remoteInfo = ppapi_cpp_nacl;
+		};
+		089719F9643AC0FF948932C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA93ECA3102254944047B24E /* reverse_service.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9B769190C4EB567BFBE3F874;
+			remoteInfo = reverse_service;
+		};
+		0AEC5EFF2D70143384D1636B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = C6F9CB4007FC3B928D32A804;
+			remoteInfo = env_cleanser;
+		};
+		1132810898F6AB98B15ADA8F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D4112F1C9780E6BEC6865D9D /* desc.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 91187F631935BEBB3350F24D;
+			remoteInfo = nrd_xfer;
+		};
+		1C1D6C98B18B424CF1378433 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F1A22203D8ED7C2018551F88 /* srpc.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 156230E7D439BA561B258646;
+			remoteInfo = nonnacl_srpc;
+		};
+		25D3D123657B8F815F6EDCB2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 71263C5E4C0ABD0899F08256 /* ppapi.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0C68FB996E598DF8FB52A61D;
+			remoteInfo = ppapi_cpp_objects_nacl;
+		};
+		314B24CECA017C050099B1B5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3F189536128C41D1B6CE47F7;
+			remoteInfo = nacl_error_code;
+		};
+		3162E403391EA6C55C8F9E2F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CE1473CD1C8A3550D5651652 /* threading.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A148E304BDE0ACD656CE468;
+			remoteInfo = thread_interface;
+		};
+		3238117537ECAAEEF7DFF138 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3D1E23996847B82084F8515 /* gio_wrapped_desc.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 6C3D1EC496E178FA7F77A82A;
+			remoteInfo = gio_wrapped_desc;
+		};
+		419F90ED0E5E7810F9716BDE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A6EAB45210C88C01E62FDDF /* nonnacl_util.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7F32C9B4D905A7091981B01D;
+			remoteInfo = sel_ldr_launcher;
+		};
+		42CC12B00D9312D6274C076C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E971B7E46E4DE6ADACA430E9 /* imc.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = CE0D104B94500F372D28F8A0;
+			remoteInfo = imc;
+		};
+		4867A7A2EA584A3D2CEBDBF5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B2FB7677253523A0A25A08B0 /* platform.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 7EBB58F2B4C1E773852C6944;
+			remoteInfo = platform;
+		};
+		4A939CB2AC4C203830F317A1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0ADFEDFCBD2C14AE1E83C43 /* gio.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 1C2FFAB41620A7921D178BF8;
+			remoteInfo = gio;
+		};
+		4B74B54A09CAED68F32D53F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 237CD794767B28B3473FB65C /* nacl_base.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2C292E0C6B382CCCCACC5A49;
+			remoteInfo = nacl_base;
+		};
+		57EAAAA3D2C25E8B173C5BBA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D2380F7A757C5E3E8D4B99 /* weak_ref.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = E6F4821F5A736A9B7103604A;
+			remoteInfo = weak_ref;
+		};
+		58F04AB25BE810B74E971FF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E3691F8BAE590283A630FA37 /* simple_service.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 68AFC284A0AC617185152B0F;
+			remoteInfo = simple_service;
+		};
+		62725EBBCE5EE777BAEAE894 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0FBFBF2DCCEDCC331F2877A2 /* validate_x86.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6D768F682E2B602DC92E7821;
+			remoteInfo = ncval_base_verbose_x86_32;
+		};
+		63A285CE316A9D4BCC1738BC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 71263C5E4C0ABD0899F08256 /* ppapi.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E8A6179E550C8FBBA6FE4E48;
+			remoteInfo = ppapi_cpp_nacl;
+		};
+		66147BBC43F54931DB75356D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D4112F1C9780E6BEC6865D9D /* desc.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = DFF44C414C34422983F7CBD8;
+			remoteInfo = nrd_xfer;
+		};
+		6652B52D613CB70281D019B4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75D2380F7A757C5E3E8D4B99 /* weak_ref.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8EDF18EE675DD282A1BC6968;
+			remoteInfo = weak_ref;
+		};
+		6F53DA97D18BB12A13D88646 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A6EAB45210C88C01E62FDDF /* nonnacl_util.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 034F7BF8B97E70DFE656DB0A;
+			remoteInfo = nonnacl_util;
+		};
+		730EC8CEAFE82A9644E1834E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0ADFEDFCBD2C14AE1E83C43 /* gio.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 00060C671039317748C5EBEB;
+			remoteInfo = gio;
+		};
+		8125F53552AC6BAA042754A0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 237CD794767B28B3473FB65C /* nacl_base.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 12B50AA4E728E7C47CF24683;
+			remoteInfo = nacl_base;
+		};
+		8254E37C37900676817DF9CE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8AF7939C3267891763B02F69;
+			remoteInfo = env_cleanser;
+		};
+		8C7E05F51C34F5F463277CAB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E3691F8BAE590283A630FA37 /* simple_service.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0EF0AC33A3851614B81964D5;
+			remoteInfo = simple_service;
+		};
+		8EDCFFBB3BF791E2B675F8F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AE544ECA45F1A5014DACE107 /* platform_qualify.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 6D8B830DD6C4A436403F8EA5;
+			remoteInfo = platform_qual_lib;
+		};
+		916A6F17D2A13C2ED4B2A21A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8F4EE08CED8464B651711EAB /* ppapi_proxy.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = A69A7B7DC20908928BE34654;
+			remoteInfo = nacl_ppapi_browser;
+		};
+		96E959948F294CC1864028C3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A6EAB45210C88C01E62FDDF /* nonnacl_util.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D15D02E0D100CCC652A8DD92;
+			remoteInfo = sel_ldr_launcher;
+		};
+		983A03E485D1C4A89CE090B4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0FBFBF2DCCEDCC331F2877A2 /* validate_x86.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F16F7002D3CD31B0B71D6CB9;
+			remoteInfo = ncval_base_x86_32;
+		};
+		9CC5DA808C751EBA1C8143B3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E806BEDA5E62B16521327F9F /* jsoncpp.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = A5BFECDBEB4797D8B5F73D4B;
+			remoteInfo = jsoncpp;
+		};
+		9F3BB1F9C97CD27201E909E1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8F4EE08CED8464B651711EAB /* ppapi_proxy.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8346DD1517DC2BED1C8129D4;
+			remoteInfo = nacl_ppapi_browser;
+		};
+		A199E645CD2A3BE4709F9A23 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A6EAB45210C88C01E62FDDF /* nonnacl_util.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 9CC0194EB44B35E80F06C062;
+			remoteInfo = nonnacl_util;
+		};
+		A574CADB32986B354614D7B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA93ECA3102254944047B24E /* reverse_service.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 112978558DA53FE84321A3FC;
+			remoteInfo = reverse_service;
+		};
+		B68583BCB94CBB489A1426AD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E806BEDA5E62B16521327F9F /* jsoncpp.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4800408075CA8E86E9CDB180;
+			remoteInfo = jsoncpp;
+		};
+		C9BCE56D5A51DC439B457B39 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A27137A2D7A0AE496EF576E3;
+			remoteInfo = nacl_error_code;
+		};
+		CA8D5469D031247677077766 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CE1473CD1C8A3550D5651652 /* threading.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 52573AAB45B43549B82F623B;
+			remoteInfo = thread_interface;
+		};
+		CB2994AD5EAFAED788327646 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0FBFBF2DCCEDCC331F2877A2 /* validate_x86.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8EACDEF34EABF2BAC5F9688F;
+			remoteInfo = ncval_base_x86_32;
+		};
+		CF908E2F4A70D4D9487AF27E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 71263C5E4C0ABD0899F08256 /* ppapi.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 0D055E483800A7A2D370FE96;
+			remoteInfo = ppapi_cpp_objects_nacl;
+		};
+		D50B799992542568C332CA0A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7005276B56BA271E1BC46F42;
+			remoteInfo = sel;
+		};
+		D5BB90F42A361F02BA2C52C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A610A6A16A498AB4FE70F080;
+			remoteInfo = sel_ldr;
+		};
+		D95F9F60774B2A054A3E97A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1DE0B82B2F96C86E55863C01;
+			remoteInfo = nacl_xdr;
+		};
+		DD4C0983CC83FA9D9C057750 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F3D1E23996847B82084F8515 /* gio_wrapped_desc.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2342F285F9684439F77D7C05;
+			remoteInfo = gio_wrapped_desc;
+		};
+		DF719A069E0ABC9276F9EEAF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8026BC40E941F4AF6FEA321A;
+			remoteInfo = container;
+		};
+		E3AFD96A10B83D4ABAE4ABD4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F1A22203D8ED7C2018551F88 /* srpc.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 1CF883829F3246950ED408F4;
+			remoteInfo = nonnacl_srpc;
+		};
+		E8295B85A41710C432250776 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E971B7E46E4DE6ADACA430E9 /* imc.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8BFDD35612BDC164F2AC533B;
+			remoteInfo = sigpipe_test;
+		};
+		F2BFC9E78E3A275281FAEB7D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AE544ECA45F1A5014DACE107 /* platform_qualify.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2DBE41AA94FC9751D7CE6F75;
+			remoteInfo = platform_qual_lib;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0305144425480087921B6154 /* external_code.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = external_code.gypi; path = ../../../build/external_code.gypi; sourceTree = "<group>"; };
+		054122D1AE4E27A7A2B6204B /* method_map.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = method_map.cc; sourceTree = "<group>"; };
+		05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = service_runtime.xcodeproj; path = ../service_runtime/service_runtime.xcodeproj; sourceTree = SOURCE_ROOT; };
+		0A6EAB45210C88C01E62FDDF /* nonnacl_util.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = nonnacl_util.xcodeproj; path = ../nonnacl_util/nonnacl_util.xcodeproj; sourceTree = SOURCE_ROOT; };
+		0FBFBF2DCCEDCC331F2877A2 /* validate_x86.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = validate_x86.xcodeproj; path = ../validator/x86/validate_x86.xcodeproj; sourceTree = SOURCE_ROOT; };
+		237CD794767B28B3473FB65C /* nacl_base.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = nacl_base.xcodeproj; path = ../nacl_base/nacl_base.xcodeproj; sourceTree = SOURCE_ROOT; };
+		2FA4ECBA9BFD0DFFF24F01EF /* scriptable_handle.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = scriptable_handle.cc; sourceTree = "<group>"; };
+		3872A50EC56C22316756B973 /* array_ppapi.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = array_ppapi.cc; sourceTree = "<group>"; };
+		531F0D52DAD06B2FDD47E3F0 /* libstdc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.dylib"; path = "usr/lib/libstdc++.dylib"; sourceTree = SDKROOT; };
+		5556F891DFC4BEB5F873DF4D /* common.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = common.gypi; path = ../../../build/common.gypi; sourceTree = "<group>"; };
+		59CF0E40FFA63F3D6B56C5DC /* plugin.gyp */ = {isa = PBXFileReference; lastKnownFileType = text; path = plugin.gyp; sourceTree = "<group>"; };
+		5CD4986240DE27123CBDB6D8 /* nexe_arch.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nexe_arch.cc; sourceTree = "<group>"; };
+		664706E5C1B8DC1ED366607A /* libppGoogleNaClPlugin.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libppGoogleNaClPlugin.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		6840E9858FC08BB95EE1F006 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		71263C5E4C0ABD0899F08256 /* ppapi.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ppapi.xcodeproj; path = ../../shared/ppapi/ppapi.xcodeproj; sourceTree = SOURCE_ROOT; };
+		75D2380F7A757C5E3E8D4B99 /* weak_ref.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = weak_ref.xcodeproj; path = ../weak_ref/weak_ref.xcodeproj; sourceTree = SOURCE_ROOT; };
+		788F1CBB5056854EA4EC803C /* nacl_subprocess.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nacl_subprocess.cc; sourceTree = "<group>"; };
+		8DEC45DDEC989898EC114A76 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
+		8F4EE08CED8464B651711EAB /* ppapi_proxy.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ppapi_proxy.xcodeproj; path = ../../../../ppapi/native_client/src/shared/ppapi_proxy/ppapi_proxy.xcodeproj; sourceTree = SOURCE_ROOT; };
+		97EF6F302F3F341C605971D9 /* file_downloader.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = file_downloader.cc; sourceTree = "<group>"; };
+		A0ADFEDFCBD2C14AE1E83C43 /* gio.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = gio.xcodeproj; path = ../../shared/gio/gio.xcodeproj; sourceTree = SOURCE_ROOT; };
+		A59CD9429D7A6DE16DFBCA32 /* service_runtime.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = service_runtime.cc; sourceTree = "<group>"; };
+		AE544ECA45F1A5014DACE107 /* platform_qualify.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = platform_qualify.xcodeproj; path = ../platform_qualify/platform_qualify.xcodeproj; sourceTree = SOURCE_ROOT; };
+		B2FB7677253523A0A25A08B0 /* platform.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = platform.xcodeproj; path = ../../shared/platform/platform.xcodeproj; sourceTree = SOURCE_ROOT; };
+		B4E363756B53E65AF47216E7 /* browser_interface.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = browser_interface.cc; sourceTree = "<group>"; };
+		B98DE0E3CA252C2A8E702D94 /* module_ppapi.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = module_ppapi.cc; sourceTree = "<group>"; };
+		BA633570BC84E88A5485D7F7 /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = usr/lib/libssl.dylib; sourceTree = SDKROOT; };
+		BA93ECA3102254944047B24E /* reverse_service.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = reverse_service.xcodeproj; path = ../reverse_service/reverse_service.xcodeproj; sourceTree = SOURCE_ROOT; };
+		C39DC96319E734E57E62E3EB /* pnacl_srpc_lib.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pnacl_srpc_lib.cc; sourceTree = "<group>"; };
+		CB2A206CD2DBA04E311BD1EA /* plugin.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = plugin.cc; sourceTree = "<group>"; };
+		CE1473CD1C8A3550D5651652 /* threading.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = threading.xcodeproj; path = ../threading/threading.xcodeproj; sourceTree = SOURCE_ROOT; };
+		D33D7B4AB1DE8A51FD613307 /* manifest.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = manifest.cc; sourceTree = "<group>"; };
+		D4112F1C9780E6BEC6865D9D /* desc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = desc.xcodeproj; path = ../desc/desc.xcodeproj; sourceTree = SOURCE_ROOT; };
+		D72CEA0CD3FDE59EC74A6F8B /* sandbox_isa.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sandbox_isa.cc; sourceTree = "<group>"; };
+		E3691F8BAE590283A630FA37 /* simple_service.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = simple_service.xcodeproj; path = ../simple_service/simple_service.xcodeproj; sourceTree = SOURCE_ROOT; };
+		E522B9A05A2A96FD713AA661 /* utility.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = utility.cc; sourceTree = "<group>"; };
+		E69FE285F97604FAE11454B0 /* pnacl_coordinator.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pnacl_coordinator.cc; sourceTree = "<group>"; };
+		E806BEDA5E62B16521327F9F /* jsoncpp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = jsoncpp.xcodeproj; path = ../../third_party_mod/jsoncpp/jsoncpp.xcodeproj; sourceTree = SOURCE_ROOT; };
+		E971B7E46E4DE6ADACA430E9 /* imc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = imc.xcodeproj; path = ../../shared/imc/imc.xcodeproj; sourceTree = SOURCE_ROOT; };
+		EE9D2B679C77B23EFC7E9AAB /* plugin.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; path = plugin.gypi; sourceTree = "<group>"; };
+		F03AF2EE1E72EC3074410446 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		F1A22203D8ED7C2018551F88 /* srpc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = srpc.xcodeproj; path = ../../shared/srpc/srpc.xcodeproj; sourceTree = SOURCE_ROOT; };
+		F3D1E23996847B82084F8515 /* gio_wrapped_desc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = gio_wrapped_desc.xcodeproj; path = ../gio/gio_wrapped_desc.xcodeproj; sourceTree = SOURCE_ROOT; };
+		F4AD44658ADACBA1AE1C58EB /* desc_based_handle.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = desc_based_handle.cc; sourceTree = "<group>"; };
+		F650DB81C3CF7F34006A6BAD /* var_utils.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = var_utils.cc; sourceTree = "<group>"; };
+		F6CEFA6C5EF47C924C602649 /* string_encoding.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = string_encoding.cc; sourceTree = "<group>"; };
+		F76F549DCFA409BEE55D4C95 /* srpc_client.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = srpc_client.cc; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EBD10901A168BF9C87632072 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9D03D9B1CD556AA475B44FC /* libgio.a in Frameworks */,
+				7368FE8E6FDF9259C0BDD971 /* libimc.a in Frameworks */,
+				6B243D4AC85849148127E03A /* libplatform.a in Frameworks */,
+				35E0F7AF811CD3E0FFD3E727 /* libppapi_cpp_nacl.a in Frameworks */,
+				4FD2B9E03C6000C497DA4238 /* libnacl_ppapi_browser.a in Frameworks */,
+				0512B675305D3AFD29700B0A /* libnonnacl_srpc.a in Frameworks */,
+				50C6C683F64E64D75FDB6A63 /* libjsoncpp.a in Frameworks */,
+				DBA0A1398CD359E6D36DB6C1 /* libnrd_xfer.a in Frameworks */,
+				E8F2F256824FFE15665322CB /* libnonnacl_util.a in Frameworks */,
+				5FC315C4AE4DFD18B5044507 /* libplatform_qual_lib.a in Frameworks */,
+				E7912F04B6C454659C8E8B31 /* libgio_wrapped_desc.a in Frameworks */,
+				8CF13462509CA483E993B92F /* libsimple_service.a in Frameworks */,
+				40FD08307E5A8D1798048FEF /* libreverse_service.a in Frameworks */,
+				E3C1D974FB3C832CF13B71D1 /* libweak_ref.a in Frameworks */,
+				D6CC88F85B9322FE6E873D1F /* libppapi_cpp_objects_nacl.a in Frameworks */,
+				A16831219B59A32A9C226811 /* libnacl_base.a in Frameworks */,
+				593D357067E80D83F90273A2 /* libsel_ldr_launcher.a in Frameworks */,
+				D976F0D7A3918E41AB897F8B /* libenv_cleanser.a in Frameworks */,
+				690F26D86A72212115885EED /* libnacl_error_code.a in Frameworks */,
+				C2A77F9E13B2E1F54C90C15A /* libncval_base_x86_32.a in Frameworks */,
+				503165674E302823FC6DBE86 /* libthread_interface.a in Frameworks */,
+				23254754DEFBBDEA139453B4 /* Carbon.framework in Frameworks */,
+				DB78D658ACC668638C40C7AC /* libcrypto.dylib in Frameworks */,
+				1FE2ACF356B68E5995EC8757 /* libssl.dylib in Frameworks */,
+				638089A95B62BBE161E29F64 /* libstdc++.dylib in Frameworks */,
+				B98B14C8345AEEBA3A45CB4F /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		15A8E33ABC57C888DDD4277A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E96903D51E8DF59322758354 /* libnacl_base.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1927C2A75944AEC85B22F012 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				706C0CEBAC386E6BE3A98295 /* libimc.a */,
+				5C4041FA06F9D6756796313F /* sigpipe_test */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		26CC7167447280390E8A3EF3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				664706E5C1B8DC1ED366607A /* libppGoogleNaClPlugin.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2B64C4DDB8592234918691DF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E91B2901EE15F2F2C7088CB6 /* libsimple_service.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		30CBEF79B9B2257909C1D16B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C0C6572D3103B89B48D63313 /* libnonnacl_srpc.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		30F3D41C862094914C3539EA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5CB4A8509FD7B34E5A1AFF6F /* libjsoncpp.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		30FA3664B5061BEA4E3846FB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC6D23D35097F45E8EDB69E5 /* libnacl_ppapi_browser.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		45FC264A621FB4D5D8434C30 /* arch_x86 */ = {
+			isa = PBXGroup;
+			children = (
+				D72CEA0CD3FDE59EC74A6F8B /* sandbox_isa.cc */,
+			);
+			path = arch_x86;
+			sourceTree = "<group>";
+		};
+		57B0612AD487EDC43569812F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				14E7A920987E4F1FE95D48D5 /* libgio.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		64D348CF77C5F10CD34F3519 /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				5556F891DFC4BEB5F873DF4D /* common.gypi */,
+				0305144425480087921B6154 /* external_code.gypi */,
+				59CF0E40FFA63F3D6B56C5DC /* plugin.gyp */,
+				EE9D2B679C77B23EFC7E9AAB /* plugin.gypi */,
+			);
+			name = Build;
+			sourceTree = "<group>";
+		};
+		6A18885A01F8BD5D745F2ED3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C94B65AAEE4ECF2881F037E1 /* libgio_wrapped_desc.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7290F1BD04FF55BAE7141EBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B5543B004A4EF5E566475138 /* libreverse_service.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		75858ACFFD509AFB313E8543 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				89A2C5EF51849A55FE917FAB /* libsel.a */,
+				BCCAC1A96D8E0588BC6B4BBB /* libcontainer.a */,
+				ABA8815426C50752ABC1DBED /* libnacl_xdr.a */,
+				013A09905C1616D976A757AF /* libnacl_error_code.a */,
+				4A509464B57A0C2C731F1BC4 /* libenv_cleanser.a */,
+				61FC5CC82A8604D4E4886FCA /* sel_ldr */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7FF733352998067F8D52D82B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				794ED711B227F03DB8BBFDA0 /* libweak_ref.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		84CE719694CC990CB84C50ED /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				6840E9858FC08BB95EE1F006 /* Carbon.framework */,
+				F03AF2EE1E72EC3074410446 /* Foundation.framework */,
+				8DEC45DDEC989898EC114A76 /* libcrypto.dylib */,
+				BA633570BC84E88A5485D7F7 /* libssl.dylib */,
+				531F0D52DAD06B2FDD47E3F0 /* libstdc++.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		89C6C604CF17E42F330E86A5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				42EE60AD403DC154C5EC61F9 /* libplatform.a */,
+				15ADAFADB6DF7D5B2C2F6A80 /* platform_tests */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9DC1B5402058106C439B81C6 = {
+			isa = PBXGroup;
+			children = (
+				E806FA5102ABEE32BF5612CB /* Source */,
+				BF36DAB8486E3EF002C36DA9 /* Projects */,
+				84CE719694CC990CB84C50ED /* Frameworks */,
+				26CC7167447280390E8A3EF3 /* Products */,
+				64D348CF77C5F10CD34F3519 /* Build */,
+			);
+			sourceTree = "<group>";
+		};
+		BD810EB0A148CA7826A2E76F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D120F91621BE6927B701B8F6 /* libthread_interface.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BF36DAB8486E3EF002C36DA9 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				D4112F1C9780E6BEC6865D9D /* desc.xcodeproj */,
+				A0ADFEDFCBD2C14AE1E83C43 /* gio.xcodeproj */,
+				F3D1E23996847B82084F8515 /* gio_wrapped_desc.xcodeproj */,
+				E971B7E46E4DE6ADACA430E9 /* imc.xcodeproj */,
+				E806BEDA5E62B16521327F9F /* jsoncpp.xcodeproj */,
+				237CD794767B28B3473FB65C /* nacl_base.xcodeproj */,
+				0A6EAB45210C88C01E62FDDF /* nonnacl_util.xcodeproj */,
+				B2FB7677253523A0A25A08B0 /* platform.xcodeproj */,
+				AE544ECA45F1A5014DACE107 /* platform_qualify.xcodeproj */,
+				71263C5E4C0ABD0899F08256 /* ppapi.xcodeproj */,
+				8F4EE08CED8464B651711EAB /* ppapi_proxy.xcodeproj */,
+				BA93ECA3102254944047B24E /* reverse_service.xcodeproj */,
+				05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */,
+				E3691F8BAE590283A630FA37 /* simple_service.xcodeproj */,
+				F1A22203D8ED7C2018551F88 /* srpc.xcodeproj */,
+				CE1473CD1C8A3550D5651652 /* threading.xcodeproj */,
+				0FBFBF2DCCEDCC331F2877A2 /* validate_x86.xcodeproj */,
+				75D2380F7A757C5E3E8D4B99 /* weak_ref.xcodeproj */,
+			);
+			name = Projects;
+			sourceTree = "<group>";
+		};
+		C32925566E196C99C0EA974B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1359B99AD1A47C20C520CEDA /* libnrd_xfer.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C763A0DFB97513D1541CD060 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A17B539C4A2EA1E34EC86B94 /* libsel_ldr_launcher.a */,
+				571DAC5F0C0909F5CEB41616 /* libnonnacl_util.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CC091081913EAE1EEE5FBB17 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3ED014D1F4DDE993C5EF4E58 /* libppapi_cpp_objects_nacl.a */,
+				D8B1B1193623AF3C786449A3 /* libppapi_cpp_nacl.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D3C77E09710980B1D09F0914 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				658DF7406F8E2CC4C6B06B12 /* libplatform_qual_lib.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E806FA5102ABEE32BF5612CB /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				45FC264A621FB4D5D8434C30 /* arch_x86 */,
+				3872A50EC56C22316756B973 /* array_ppapi.cc */,
+				B4E363756B53E65AF47216E7 /* browser_interface.cc */,
+				F4AD44658ADACBA1AE1C58EB /* desc_based_handle.cc */,
+				97EF6F302F3F341C605971D9 /* file_downloader.cc */,
+				D33D7B4AB1DE8A51FD613307 /* manifest.cc */,
+				054122D1AE4E27A7A2B6204B /* method_map.cc */,
+				B98DE0E3CA252C2A8E702D94 /* module_ppapi.cc */,
+				788F1CBB5056854EA4EC803C /* nacl_subprocess.cc */,
+				5CD4986240DE27123CBDB6D8 /* nexe_arch.cc */,
+				CB2A206CD2DBA04E311BD1EA /* plugin.cc */,
+				E69FE285F97604FAE11454B0 /* pnacl_coordinator.cc */,
+				C39DC96319E734E57E62E3EB /* pnacl_srpc_lib.cc */,
+				2FA4ECBA9BFD0DFFF24F01EF /* scriptable_handle.cc */,
+				A59CD9429D7A6DE16DFBCA32 /* service_runtime.cc */,
+				F76F549DCFA409BEE55D4C95 /* srpc_client.cc */,
+				F6CEFA6C5EF47C924C602649 /* string_encoding.cc */,
+				E522B9A05A2A96FD713AA661 /* utility.cc */,
+				F650DB81C3CF7F34006A6BAD /* var_utils.cc */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		F401C863270455EF01D267D7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8B2F0AAB26024B850346F6F0 /* libncval_base_x86_32.a */,
+				B06B28E92774648E62A7A6AE /* libncval_base_verbose_x86_32.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7FE9E83C876167A9F63F7F77 /* ppGoogleNaClPlugin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8FBD68EA480C8DB4E7449C10 /* Build configuration list for PBXNativeTarget "ppGoogleNaClPlugin" */;
+			buildPhases = (
+				B723BD2A25DF34CC35827295 /* Sources */,
+				EBD10901A168BF9C87632072 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3675EF172F844DAFBFF0E2E2 /* PBXTargetDependency */,
+				2C4B6AB54DCD38395A63D803 /* PBXTargetDependency */,
+				AD275474C45A66D5EC683D3F /* PBXTargetDependency */,
+				A1D3403AA9994F940C3E099D /* PBXTargetDependency */,
+				994BC8BB87FBE94789E23A19 /* PBXTargetDependency */,
+				9EE35712DD628F51DBF93B55 /* PBXTargetDependency */,
+				0005E3D8CB9C2AE1CADEB22A /* PBXTargetDependency */,
+				5B1485C5A32E287D1BF39EB2 /* PBXTargetDependency */,
+				FDC6C4CBE7A04145B9622D91 /* PBXTargetDependency */,
+				7EFB31E6092DEC5CFA255855 /* PBXTargetDependency */,
+				585A0DA820803E5184141F8B /* PBXTargetDependency */,
+				3F98BC1B25AD8A573807D2AF /* PBXTargetDependency */,
+				A14332ED112A67B8972E2D4F /* PBXTargetDependency */,
+				75E414F600163EBE9E2CBE02 /* PBXTargetDependency */,
+				BBAD497F2A54F9A7B52EDE7E /* PBXTargetDependency */,
+				28A4CB124CA2B051657AEF2E /* PBXTargetDependency */,
+				A5DA07C8D2E83C4050B36C4E /* PBXTargetDependency */,
+				7CB32C0F5C85F1DB70579D63 /* PBXTargetDependency */,
+				DC9B623BA9FB0CF747632F55 /* PBXTargetDependency */,
+				407313FDBF41F51C9868F0BE /* PBXTargetDependency */,
+				C61FC17A1D5066D2EC8BFAD7 /* PBXTargetDependency */,
+			);
+			name = ppGoogleNaClPlugin;
+			productName = ppGoogleNaClPlugin;
+			productReference = 664706E5C1B8DC1ED366607A /* libppGoogleNaClPlugin.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E9BF4284A4D7602AA0864CA3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+			};
+			buildConfigurationList = 0F67E6C4E63CA9C6E86EF43C /* Build configuration list for PBXProject "plugin" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 9DC1B5402058106C439B81C6;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = C32925566E196C99C0EA974B /* Products */;
+					ProjectRef = D4112F1C9780E6BEC6865D9D /* desc.xcodeproj */;
+				},
+				{
+					ProductGroup = 57B0612AD487EDC43569812F /* Products */;
+					ProjectRef = A0ADFEDFCBD2C14AE1E83C43 /* gio.xcodeproj */;
+				},
+				{
+					ProductGroup = 6A18885A01F8BD5D745F2ED3 /* Products */;
+					ProjectRef = F3D1E23996847B82084F8515 /* gio_wrapped_desc.xcodeproj */;
+				},
+				{
+					ProductGroup = 1927C2A75944AEC85B22F012 /* Products */;
+					ProjectRef = E971B7E46E4DE6ADACA430E9 /* imc.xcodeproj */;
+				},
+				{
+					ProductGroup = 30F3D41C862094914C3539EA /* Products */;
+					ProjectRef = E806BEDA5E62B16521327F9F /* jsoncpp.xcodeproj */;
+				},
+				{
+					ProductGroup = 15A8E33ABC57C888DDD4277A /* Products */;
+					ProjectRef = 237CD794767B28B3473FB65C /* nacl_base.xcodeproj */;
+				},
+				{
+					ProductGroup = C763A0DFB97513D1541CD060 /* Products */;
+					ProjectRef = 0A6EAB45210C88C01E62FDDF /* nonnacl_util.xcodeproj */;
+				},
+				{
+					ProductGroup = 89C6C604CF17E42F330E86A5 /* Products */;
+					ProjectRef = B2FB7677253523A0A25A08B0 /* platform.xcodeproj */;
+				},
+				{
+					ProductGroup = D3C77E09710980B1D09F0914 /* Products */;
+					ProjectRef = AE544ECA45F1A5014DACE107 /* platform_qualify.xcodeproj */;
+				},
+				{
+					ProductGroup = CC091081913EAE1EEE5FBB17 /* Products */;
+					ProjectRef = 71263C5E4C0ABD0899F08256 /* ppapi.xcodeproj */;
+				},
+				{
+					ProductGroup = 30FA3664B5061BEA4E3846FB /* Products */;
+					ProjectRef = 8F4EE08CED8464B651711EAB /* ppapi_proxy.xcodeproj */;
+				},
+				{
+					ProductGroup = 7290F1BD04FF55BAE7141EBB /* Products */;
+					ProjectRef = BA93ECA3102254944047B24E /* reverse_service.xcodeproj */;
+				},
+				{
+					ProductGroup = 75858ACFFD509AFB313E8543 /* Products */;
+					ProjectRef = 05D8A5556D0DDA00FDDA9514 /* service_runtime.xcodeproj */;
+				},
+				{
+					ProductGroup = 2B64C4DDB8592234918691DF /* Products */;
+					ProjectRef = E3691F8BAE590283A630FA37 /* simple_service.xcodeproj */;
+				},
+				{
+					ProductGroup = 30CBEF79B9B2257909C1D16B /* Products */;
+					ProjectRef = F1A22203D8ED7C2018551F88 /* srpc.xcodeproj */;
+				},
+				{
+					ProductGroup = BD810EB0A148CA7826A2E76F /* Products */;
+					ProjectRef = CE1473CD1C8A3550D5651652 /* threading.xcodeproj */;
+				},
+				{
+					ProductGroup = F401C863270455EF01D267D7 /* Products */;
+					ProjectRef = 0FBFBF2DCCEDCC331F2877A2 /* validate_x86.xcodeproj */;
+				},
+				{
+					ProductGroup = 7FF733352998067F8D52D82B /* Products */;
+					ProjectRef = 75D2380F7A757C5E3E8D4B99 /* weak_ref.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				7FE9E83C876167A9F63F7F77 /* ppGoogleNaClPlugin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		013A09905C1616D976A757AF /* libnacl_error_code.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnacl_error_code.a;
+			remoteRef = C9BCE56D5A51DC439B457B39 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1359B99AD1A47C20C520CEDA /* libnrd_xfer.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnrd_xfer.a;
+			remoteRef = 1132810898F6AB98B15ADA8F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		14E7A920987E4F1FE95D48D5 /* libgio.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libgio.a;
+			remoteRef = 730EC8CEAFE82A9644E1834E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		15ADAFADB6DF7D5B2C2F6A80 /* platform_tests */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = platform_tests;
+			remoteRef = 04F0C841FE19664D21A4D0A9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3ED014D1F4DDE993C5EF4E58 /* libppapi_cpp_objects_nacl.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libppapi_cpp_objects_nacl.a;
+			remoteRef = 25D3D123657B8F815F6EDCB2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		42EE60AD403DC154C5EC61F9 /* libplatform.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libplatform.a;
+			remoteRef = 0003B8B7276FC14F0DC477DA /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4A509464B57A0C2C731F1BC4 /* libenv_cleanser.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libenv_cleanser.a;
+			remoteRef = 8254E37C37900676817DF9CE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		571DAC5F0C0909F5CEB41616 /* libnonnacl_util.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnonnacl_util.a;
+			remoteRef = 6F53DA97D18BB12A13D88646 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		5C4041FA06F9D6756796313F /* sigpipe_test */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = sigpipe_test;
+			remoteRef = E8295B85A41710C432250776 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		5CB4A8509FD7B34E5A1AFF6F /* libjsoncpp.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libjsoncpp.a;
+			remoteRef = B68583BCB94CBB489A1426AD /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		61FC5CC82A8604D4E4886FCA /* sel_ldr */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = sel_ldr;
+			remoteRef = D5BB90F42A361F02BA2C52C9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		658DF7406F8E2CC4C6B06B12 /* libplatform_qual_lib.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libplatform_qual_lib.a;
+			remoteRef = F2BFC9E78E3A275281FAEB7D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		706C0CEBAC386E6BE3A98295 /* libimc.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libimc.a;
+			remoteRef = 42CC12B00D9312D6274C076C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		794ED711B227F03DB8BBFDA0 /* libweak_ref.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libweak_ref.a;
+			remoteRef = 6652B52D613CB70281D019B4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		89A2C5EF51849A55FE917FAB /* libsel.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libsel.a;
+			remoteRef = D50B799992542568C332CA0A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8B2F0AAB26024B850346F6F0 /* libncval_base_x86_32.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libncval_base_x86_32.a;
+			remoteRef = 983A03E485D1C4A89CE090B4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A17B539C4A2EA1E34EC86B94 /* libsel_ldr_launcher.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libsel_ldr_launcher.a;
+			remoteRef = 419F90ED0E5E7810F9716BDE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		ABA8815426C50752ABC1DBED /* libnacl_xdr.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnacl_xdr.a;
+			remoteRef = D95F9F60774B2A054A3E97A3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B06B28E92774648E62A7A6AE /* libncval_base_verbose_x86_32.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libncval_base_verbose_x86_32.a;
+			remoteRef = 62725EBBCE5EE777BAEAE894 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B5543B004A4EF5E566475138 /* libreverse_service.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libreverse_service.a;
+			remoteRef = 089719F9643AC0FF948932C9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BCCAC1A96D8E0588BC6B4BBB /* libcontainer.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcontainer.a;
+			remoteRef = DF719A069E0ABC9276F9EEAF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C0C6572D3103B89B48D63313 /* libnonnacl_srpc.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnonnacl_srpc.a;
+			remoteRef = 1C1D6C98B18B424CF1378433 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C94B65AAEE4ECF2881F037E1 /* libgio_wrapped_desc.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libgio_wrapped_desc.a;
+			remoteRef = DD4C0983CC83FA9D9C057750 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D120F91621BE6927B701B8F6 /* libthread_interface.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libthread_interface.a;
+			remoteRef = CA8D5469D031247677077766 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D8B1B1193623AF3C786449A3 /* libppapi_cpp_nacl.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libppapi_cpp_nacl.a;
+			remoteRef = 63A285CE316A9D4BCC1738BC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		DC6D23D35097F45E8EDB69E5 /* libnacl_ppapi_browser.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnacl_ppapi_browser.a;
+			remoteRef = 9F3BB1F9C97CD27201E909E1 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E91B2901EE15F2F2C7088CB6 /* libsimple_service.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libsimple_service.a;
+			remoteRef = 8C7E05F51C34F5F463277CAB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E96903D51E8DF59322758354 /* libnacl_base.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnacl_base.a;
+			remoteRef = 4B74B54A09CAED68F32D53F8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B723BD2A25DF34CC35827295 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				684E8B606C84A886C39B1125 /* array_ppapi.cc in Sources */,
+				C8023FD31DB9E1381D60A7EA /* browser_interface.cc in Sources */,
+				5446AC3AFDBDEA2E886FCE38 /* desc_based_handle.cc in Sources */,
+				C5D0D2048A09F2A59F4967C1 /* file_downloader.cc in Sources */,
+				2F4A1B21FBEC65F36E0CB2E7 /* manifest.cc in Sources */,
+				51ED36800220F9928F8BA8D5 /* method_map.cc in Sources */,
+				F712E4A778E070E02B0ECFCD /* module_ppapi.cc in Sources */,
+				5DDFB212A1B5455284BDB727 /* nacl_subprocess.cc in Sources */,
+				EB6BB43CDA6E40BFD2D22D13 /* nexe_arch.cc in Sources */,
+				A4601E7CD4A6ECCFCF91EBF0 /* plugin.cc in Sources */,
+				6FFE26B7A4CBA83AD0BCFFF5 /* pnacl_coordinator.cc in Sources */,
+				49F0DB4042A7635BED7A3875 /* pnacl_srpc_lib.cc in Sources */,
+				4A53FCC57ED22D39B86D6E00 /* scriptable_handle.cc in Sources */,
+				E2D418C48F4925B014FD747F /* service_runtime.cc in Sources */,
+				BFF3632C5EB24BE9670698FE /* srpc_client.cc in Sources */,
+				0DB9A2BCA231BDFE130F6B8D /* string_encoding.cc in Sources */,
+				D2D8713C4B46AB26971755AF /* utility.cc in Sources */,
+				9086771531DDBA7130CC11B3 /* var_utils.cc in Sources */,
+				FFD5355ED935CD0CE1DB0DC9 /* sandbox_isa.cc in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0005E3D8CB9C2AE1CADEB22A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = jsoncpp;
+			targetProxy = 9CC5DA808C751EBA1C8143B3 /* PBXContainerItemProxy */;
+		};
+		28A4CB124CA2B051657AEF2E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = nacl_base;
+			targetProxy = 8125F53552AC6BAA042754A0 /* PBXContainerItemProxy */;
+		};
+		2C4B6AB54DCD38395A63D803 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = imc;
+			targetProxy = 0114BE6B01C2BFCBFFA9C7E6 /* PBXContainerItemProxy */;
+		};
+		3675EF172F844DAFBFF0E2E2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = gio;
+			targetProxy = 4A939CB2AC4C203830F317A1 /* PBXContainerItemProxy */;
+		};
+		3F98BC1B25AD8A573807D2AF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = simple_service;
+			targetProxy = 58F04AB25BE810B74E971FF2 /* PBXContainerItemProxy */;
+		};
+		407313FDBF41F51C9868F0BE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ncval_base_x86_32;
+			targetProxy = CB2994AD5EAFAED788327646 /* PBXContainerItemProxy */;
+		};
+		585A0DA820803E5184141F8B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = gio_wrapped_desc;
+			targetProxy = 3238117537ECAAEEF7DFF138 /* PBXContainerItemProxy */;
+		};
+		5B1485C5A32E287D1BF39EB2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = nrd_xfer;
+			targetProxy = 66147BBC43F54931DB75356D /* PBXContainerItemProxy */;
+		};
+		75E414F600163EBE9E2CBE02 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = weak_ref;
+			targetProxy = 57EAAAA3D2C25E8B173C5BBA /* PBXContainerItemProxy */;
+		};
+		7CB32C0F5C85F1DB70579D63 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = env_cleanser;
+			targetProxy = 0AEC5EFF2D70143384D1636B /* PBXContainerItemProxy */;
+		};
+		7EFB31E6092DEC5CFA255855 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = platform_qual_lib;
+			targetProxy = 8EDCFFBB3BF791E2B675F8F8 /* PBXContainerItemProxy */;
+		};
+		994BC8BB87FBE94789E23A19 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = nacl_ppapi_browser;
+			targetProxy = 916A6F17D2A13C2ED4B2A21A /* PBXContainerItemProxy */;
+		};
+		9EE35712DD628F51DBF93B55 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = nonnacl_srpc;
+			targetProxy = E3AFD96A10B83D4ABAE4ABD4 /* PBXContainerItemProxy */;
+		};
+		A14332ED112A67B8972E2D4F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = reverse_service;
+			targetProxy = A574CADB32986B354614D7B0 /* PBXContainerItemProxy */;
+		};
+		A1D3403AA9994F940C3E099D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ppapi_cpp_nacl;
+			targetProxy = 0758F97530AEDE3CE67BB0A6 /* PBXContainerItemProxy */;
+		};
+		A5DA07C8D2E83C4050B36C4E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = sel_ldr_launcher;
+			targetProxy = 96E959948F294CC1864028C3 /* PBXContainerItemProxy */;
+		};
+		AD275474C45A66D5EC683D3F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = platform;
+			targetProxy = 4867A7A2EA584A3D2CEBDBF5 /* PBXContainerItemProxy */;
+		};
+		BBAD497F2A54F9A7B52EDE7E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ppapi_cpp_objects_nacl;
+			targetProxy = CF908E2F4A70D4D9487AF27E /* PBXContainerItemProxy */;
+		};
+		C61FC17A1D5066D2EC8BFAD7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = thread_interface;
+			targetProxy = 3162E403391EA6C55C8F9E2F /* PBXContainerItemProxy */;
+		};
+		DC9B623BA9FB0CF747632F55 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = nacl_error_code;
+			targetProxy = 314B24CECA017C050099B1B5 /* PBXContainerItemProxy */;
+		};
+		FDC6C4CBE7A04145B9622D91 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = nonnacl_util;
+			targetProxy = A199E645CD2A3BE4709F9A23 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		3D648ABA4E86EDA82E90BEA6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEAD_CODE_STRIPPING = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_CW_ASM_SYNTAX = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"NACL_BLOCK_SHIFT=5\"",
+					"\"NACL_BLOCK_SIZE=32\"",
+					"\"NACL_LINUX=0\"",
+					"\"NACL_OSX=1\"",
+					"\"NACL_WINDOWS=0\"",
+					"\"__STDC_FORMAT_MACROS\"",
+					"\"XP_MACOSX\"",
+					"\"XP_UNIX\"",
+					"\"TARGET_API_MAC_CARBON=1\"",
+					"\"NO_X11\"",
+					"\"USE_SYSTEM_CONSOLE\"",
+					"\"NACL_STANDALONE=1\"",
+					"\"NACL_TARGET_SUBARCH=32\"",
+					"\"NACL_TARGET_ARCH=x86\"",
+					"\"NACL_BUILD_SUBARCH=32\"",
+					"\"NACL_BUILD_ARCH=x86\"",
+					"\"NDEBUG\"",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../../../ppapi,
+					../../../src/third_party,
+					../../../..,
+				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/System/Library/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				OTHER_LDFLAGS = "-Wl,-search_paths_first";
+				PREBINDING = NO;
+				PRODUCT_NAME = ppGoogleNaClPlugin;
+				SDKROOT = macosx10.5;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wendif-labels",
+					"-Wno-long-long",
+					"-Wextra",
+					"-Wno-long-long",
+					"-Wswitch-enum",
+					"-Wsign-compare",
+					"-Wno-deprecated",
+					"-Wno-deprecated-declarations",
+				);
+				WARNING_CFLAGS_excluded = "-pedantic";
+			};
+			name = Release;
+		};
+		51903D509402D5D2E50F74A2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+				SYMROOT = ../../../../xcodebuild;
+			};
+			name = Release;
+		};
+		B7D9EBCE9C63773A13B039E9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_CW_ASM_SYNTAX = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"NACL_BLOCK_SHIFT=5\"",
+					"\"NACL_BLOCK_SIZE=32\"",
+					"\"NACL_LINUX=0\"",
+					"\"NACL_OSX=1\"",
+					"\"NACL_WINDOWS=0\"",
+					"\"__STDC_FORMAT_MACROS\"",
+					"\"XP_MACOSX\"",
+					"\"XP_UNIX\"",
+					"\"TARGET_API_MAC_CARBON=1\"",
+					"\"NO_X11\"",
+					"\"USE_SYSTEM_CONSOLE\"",
+					"\"NACL_STANDALONE=1\"",
+					"\"NACL_TARGET_SUBARCH=32\"",
+					"\"NACL_TARGET_ARCH=x86\"",
+					"\"NACL_BUILD_SUBARCH=32\"",
+					"\"NACL_BUILD_ARCH=x86\"",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../../../ppapi,
+					../../../src/third_party,
+					../../../..,
+				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/System/Library/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				OTHER_LDFLAGS = "-Wl,-search_paths_first";
+				PREBINDING = NO;
+				PRODUCT_NAME = ppGoogleNaClPlugin;
+				SDKROOT = macosx10.5;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wall",
+					"-Wendif-labels",
+					"-Wno-long-long",
+					"-Wextra",
+					"-Wno-long-long",
+					"-Wswitch-enum",
+					"-Wsign-compare",
+					"-Wno-deprecated",
+					"-Wno-deprecated-declarations",
+				);
+				WARNING_CFLAGS_excluded = "-pedantic";
+			};
+			name = Debug;
+		};
+		FDABDCC07C369BACD2986D07 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+				SYMROOT = ../../../../xcodebuild;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0F67E6C4E63CA9C6E86EF43C /* Build configuration list for PBXProject "plugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FDABDCC07C369BACD2986D07 /* Debug */,
+				51903D509402D5D2E50F74A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+		8FBD68EA480C8DB4E7449C10 /* Build configuration list for PBXNativeTarget "ppGoogleNaClPlugin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B7D9EBCE9C63773A13B039E9 /* Debug */,
+				3D648ABA4E86EDA82E90BEA6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E9BF4284A4D7602AA0864CA3 /* Project object */;
+}

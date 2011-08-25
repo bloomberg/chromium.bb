@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!--
+  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+  <head>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="text/javascript" src="nacltest.js"> </script>
+    <script type="text/javascript" src="ppapi_bad.js"> </script>
+    <title> PPAPI bad manifest/nexe URLs </title>
+    <style type="text/css">
+    .naclModule { background-color: gray; margin: 2px 2px; }
+    </style>
+  </head>
+<body id="body">
+<script type="text/javascript">
+//<![CDATA[
+
+function declareTests(tester) {
+  // 'bad_magic' loads a manifest, then loads a nexe that tests as invalid.
+  badLoadTest(
+      tester,
+      'bad_magic',
+      'ppapi_bad_magic.nmf',
+      'NaCl module load failed: Too many program header entries in ELF file');
+
+  // 'cross_origin' loads a manifest, then tries to load a cross-origin nexe.
+  badLoadTest(
+      tester,
+      'cross_origin',
+      'ppapi_bad_crossorigin.nmf',
+      'NaCl module load failed: could not load nexe url.');
+
+  // 'cross_manifest' tries to load a cross-origin manifest.
+  badLoadTest(
+      tester,
+      'cross_manifest',
+      'http://www.google.com/crossorigin.manifest',
+      'NaCl module load failed: could not load manifest url.');
+
+  // 'nonexistent_nexe' loads a manifest, then tries to load a nonexistent nexe,
+  // given both a nexe and a portable program to choose from.
+  badLoadTest(
+      tester,
+      'nonexistent_nexe',
+      'ppapi_bad_doesnotexist.nmf',
+      'NaCl module load failed: could not load nexe url.');
+
+  // 'nonexistent_nexe_only' loads a manifest, then tries to load a nonexistent
+  // nexe, given only a nexe to choose from.
+  badLoadTest(
+      tester,
+      'nonexistent_nexe_only',
+      'ppapi_bad_doesnotexist_nexe_only.nmf',
+      'NaCl module load failed: could not load nexe url.');
+
+  // 'nonexistent_manifest' tries to load a nonexistent manifest.
+  badLoadTest(
+      tester,
+      'nonexistent_manifest',
+      'doesnotexist.manifest',
+      'NaCl module load failed: could not load manifest url.');
+
+  // 'bad_manifest' loads an invalid manifest.
+  badLoadTest(
+      tester,
+      'bad_manifest',
+      'ppapi_bad.html',
+      'NaCl module load failed: manifest JSON parsing failed: * Line 1, Column 1\n  Syntax error: value, object or array expected.\n');
+
+  // 'bad_manifest_uses_nexes' loads a manifest with an obsolete 'nexes' section.
+  badLoadTest(
+      tester,
+      'bad_manifest_uses_nexes',
+      'ppapi_bad_manifest_uses_nexes.nmf',
+      'NaCl module load failed: manifest: missing \'program\' section.');
+
+  // 'bad_manifest_bad_files' loads a manifest with a bad 'files' section.
+  badLoadTest(
+      tester,
+      'bad_manifest_bad_files',
+      'ppapi_bad_manifest_bad_files.nmf',
+      'NaCl module load failed: manifest: file \'file.txt\' no version given for current arch and no portable version found.');
+
+  //////////////////////////////////////
+  // Initialization errors begin here //
+  //////////////////////////////////////
+
+  // 'bad_ppp_initialize' loads a manifest, then loads a nexe that fails to
+  // initialize PPAPI module
+  badLoadTest(
+      tester,
+      'bad_ppp_initialize',
+      'ppapi_bad_ppp_initialize.nmf',
+      'NaCl module load failed: could not initialize module.');
+
+  // 'bad_ppp_initialize_crash' loads a manifest, then loads a nexe that crashes
+  // before initializing PPAPI module
+  badLoadTest(
+      tester,
+      'bad_ppp_initialize_crash',
+      'ppapi_bad_ppp_initialize_crash.nmf',
+      'NaCl module load failed: could not initialize module.');
+
+  // 'bad_no_ppp_instance' loads a manifest, then loads a nexe that fails to
+  // get the required PPP_Instance interface
+  badLoadTest(
+      tester,
+      'bad_no_ppp_instance',
+      'ppapi_bad_no_ppp_instance.nmf',
+      'NaCl module load failed: could not initialize module.');
+
+  // 'bad_get_ppp_instance_crash' loads a manifest, then loads a nexe that
+  // crashes when getting the required PPP_Instance interface
+  badLoadTest(
+      tester,
+      'bad_get_ppp_instance_crash',
+      'ppapi_bad_get_ppp_instance_crash.nmf',
+      'NaCl module load failed: could not initialize module.');
+
+  // 'bad_get_ppp_messaging_crash' loads a manifest, then loads a nexe that
+  // crashes when getting the optional PPP_Messaging interface, which is done
+  // on init.
+  badLoadTest(
+      tester,
+      'bad_get_ppp_messaging_crash',
+      'ppapi_bad_get_ppp_messaging_crash.nmf',
+      'NaCl module load failed: could not initialize module.');
+
+  // 'bad_get_ppp_printing_crash' loads a manifest, then loads a nexe that
+  // crashes when getting the optional PPP_Printing interface, which is done
+  // right after creation, but before loadEnd is dispatched.
+  badLoadTest(
+      tester,
+      'bad_get_ppp_printing_crash',
+      'ppapi_bad_get_ppp_printing_crash.nmf',
+      'NaCl module load failed: instance crashed after creation.');
+
+  // 'bad_ppp_instance_didcreate' loads a manifest, then loads a nexe that fails
+  // to create the instance
+  badLoadTest(
+      tester,
+      'bad_ppp_instance_didcreate',
+      'ppapi_bad_ppp_instance_didcreate.nmf',
+      'NaCl module load failed: could not create instance.');
+
+  // 'bad_ppp_instance_didcreate_crash' loads a manifest, then loads a nexe that
+  // crashes before creating the instance.
+  badLoadTest(
+      tester,
+      'bad_ppp_instance_didcreate_crash',
+      'ppapi_bad_ppp_instance_didcreate_crash.nmf',
+      'NaCl module load failed: could not create instance.');
+
+  // 'bad_event_replay_crash' loads a manifest, then loads a nexe and replays
+  // the events that occured during loading causing the nexe to crash before
+  // proxy start-up was completed.
+  badLoadTest(
+      tester,
+      'bad_event_replay_crash',
+      'ppapi_bad_event_replay_crash.nmf',
+      'NaCl module load failed: instance crashed after creation.');
+}
+
+
+// The driver invoked when the body has finished loading.
+function runTests() {
+  var tester = new Tester($('body'));
+  tester.loadErrorsAreOK();
+  declareTests(tester);
+  tester.run();
+}
+//]]>
+</script>
+
+<!-- The tests will create and remove embeds from this div. -->
+<div id="embeds"></div>
+
+<!-- These two embeds are not automatically tested - visual inspection only. -->
+
+<embed id="cross_manifest_pdf"
+  width=100 height=20
+  src="http://www.google.com/crossorigin.manifest"
+  style="background-color:gray"
+  type="application/pdf" />
+
+<!-- This load would have succeeded if the NEXE was from a chrome-extension
+     URL and NaCl had been registered as handling the PDF MIME type using
+     the nacl_modules attribute in a Chrome extension manifest. -->
+
+<embed id="cross_origin_pdf"
+  width=100 height=20
+  src="ppapi_bad_crossorigin.nmf"
+  style="background-color:gray"
+  type="application/pdf" />
+
+<script type="text/javascript">
+//<![CDATA[
+runTests();
+//]]>
+</script>
+</body>
+</html>

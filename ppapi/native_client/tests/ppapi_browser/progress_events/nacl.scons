@@ -1,0 +1,41 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# TODO(robertm): those should not be necessary once we go -std=c99
+env.FilterOut(CFLAGS=['-pedantic'])
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+progress_events_sources = env.ComponentObject('ppapi_progress_events.cc'),
+
+progress_events_target = ('ppapi_progress_events_%s' %
+                          env.get('TARGET_FULLARCH'))
+env.ComponentProgram(progress_events_target,
+                     [progress_events_sources],
+                     EXTRA_LIBS=['${PPAPI_LIBS}',
+                                 'ppapi_test_lib',
+                                 'pthread',
+                                 'platform',
+                                 'gio'])
+
+# Needed by other tests using progress events.
+env.Publish(progress_events_target, 'run', [
+    'ppapi_progress_events.html',
+    'ppapi_progress_events.nmf',
+    ('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
+     'ppapi_progress_events.js'),
+    '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
+])
+
+node = env.PPAPIBrowserTester(
+    'ppapi_progress_events_browser_test.out',
+    url='ppapi_progress_events.html',
+    files=env.ExtractPublishedFiles(progress_events_target))
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_progress_events_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

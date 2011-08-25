@@ -1,0 +1,101 @@
+<!--
+  Copyright 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <title>PPAPI OpenGL ES Book Examples</title>
+  </head>
+
+  <body>
+    <h1>PPAPI OpenGL ES Book Examples</h1>
+    <table style="border-spacing: 20pt;" summary="List of GLES book tests">
+    <tr style="vertical-align: top;">
+    <td>
+    <h2>Examples available and expected output</h2>
+    <p><a href="?manifest=ppapi_gles_book_hello_triangle.nmf">
+      hello_triangle</a>
+      Red triangle</p>
+    <p><a href="?manifest=ppapi_gles_book_mip_map_2d.nmf">mip_map_2d</a>
+      Two red/blue chess board-patterned planes</p>
+    <p><a href="?manifest=ppapi_gles_book_simple_texture_2d.nmf">
+      simple_texture_2d</a>
+      2x2 matrix with red, green, blue, and yellow squares</p>
+    <p><a href="?manifest=ppapi_gles_book_simple_texture_cubemap.nmf">
+      simple_texture_cubemap</a>
+      Ball with blue, red, yellow, and green patches; purple in the
+      center.</p>
+    <p><a href="?manifest=ppapi_gles_book_simple_vertex_shader.nmf">
+      simple_vertex_shader</a>
+      Rotating red square</p>
+    <p><a href="?manifest=ppapi_gles_book_stencil_test.nmf">stencil_test</a>
+      EXPECTED OUTPUT UNKNOWN</p>
+    <p><a href="?manifest=ppapi_gles_book_texture_wrap.nmf">texture_wrap</a>
+      Three blue/red patterns</p>
+    <h2>Troubleshooting</h2>
+    <p>Make sure you start Chrome with
+      <tt>--enable-accelerated-plugins</tt>.</p>
+    <p>Check the JavaScript console.</p>
+    </td>
+    <td>
+    <div id="attach" style="background-image:
+      url(http://www.google.com/intl/en_ALL/images/logo.gif);
+      background-repeat:repeat"></div>
+    </td>
+    </tr>
+    </table>
+
+  <script type="text/javascript">
+    //<![CDATA[
+function ExtractSearchParameter(name) {
+  var nameIndex = location.search.indexOf(name + '=');
+  if (nameIndex != -1) {
+    var value = location.search.substring(nameIndex + name.length + 1);
+    var endIndex = value.indexOf('&');
+    if (endIndex != -1)
+      value = value.substring(0, endIndex);
+    return value;
+  }
+  return '';
+}
+
+function setupTests(tester, plugin) {
+  // This template is built for tests where we only need to (or can)
+  // verify that the nexe loaded successfully. We do this by inserting
+  // following dummy test.
+  // This only tests that loading and any start-up testing (typically
+  // within DidChangeView) returned success; there is no
+  // automated way of checking that it did as intended beyond that.
+  tester.addAsyncTest('DummyTestToEnsureLoadingComplete_' + manifest,
+                      function(status) { status.pass(); });
+}
+
+var manifest = ExtractSearchParameter('manifest');
+if (!manifest) manifest = 'ppapi_gles_book_hello_triangle.nmf';
+document.title = 'Test ' + manifest;
+
+var node = document.createElement('div');
+node.innerHTML = '<embed id="naclModule" ' +
+                 'name="naclModule" ' +
+                 'width=400 height=400 ' +
+                 'src="' + manifest + '" ' +
+                 'basic_tests="1" ' +
+                 'stress_tests="0" ' +
+                'type="application/x-nacl" ' +
+                 ' />';
+document.getElementById('attach').appendChild(node);
+
+var tester = new Tester();
+setupTests(tester, $('naclModule'));
+tester.waitFor($('naclModule'));
+tester.run();
+    //]]>
+  </script>
+ </body>
+</html>

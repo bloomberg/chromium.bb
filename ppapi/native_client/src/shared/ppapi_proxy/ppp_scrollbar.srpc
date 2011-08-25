@@ -1,0 +1,27 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# RPC methods used to implement PPP_Scrollbar calls to the plugin.
+# See ppapi/c/dev/ppp_scrollbar_dev.h for interface details.
+{
+ 'name': 'PppScrollbarRpc',
+ 'rpcs': [
+          {'name': 'PPP_Scrollbar_ValueChanged',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['scrollbar', 'PP_Resource'],
+                      ['value', 'int32_t'],              # uint32_t
+                     ],
+           'outputs': [
+                      ]
+          },
+          {'name': 'PPP_Scrollbar_OverlayChanged',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['scrollbar', 'PP_Resource'],
+                      ['overlay', 'int32_t'],              # PP_Bool
+                     ],
+           'outputs': [
+                      ]
+          },
+         ]
+}

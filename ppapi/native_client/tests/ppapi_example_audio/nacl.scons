@@ -1,0 +1,40 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a pepper audio example from examples/audio.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+nexe_name = 'ppapi_example_audio_%s' % env.get('TARGET_FULLARCH')
+nexe = env.ComponentProgram(nexe_name,
+                            [ 'audio.cc' ],
+                            EXTRA_LIBS=['${PPAPI_LIBS}',
+                                        'ppapi_cpp',
+                                        'platform',
+                                        'gio',
+                                        'pthread',
+                                        'm'])
+
+# Note that the html is required to run this program.
+env.Publish(nexe_name, 'run',
+            ['ppapi_example_audio.html' , 'ppapi_example_audio.nmf'])
+
+test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
+                              url='ppapi_example_audio.html#mute',
+                              files=[nexe,
+                                     env.File('ppapi_example_audio.nmf'),
+                                     env.File('ppapi_example_audio.html')])
+
+# Though this tests passes locally, it does not pass on the Windows
+# and Linux buildbots, which do not have audio devices.  Although
+# StartPlayback() and StopPlayback() succeed, the audio callback is
+# not called.  However, this does work on the Mac buildbots.
+is_broken = env.PPAPIBrowserTesterIsBroken() or not env.Bit('host_mac')
+env.AddNodeToTestSuite(test,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_example_audio_test',
+                       is_broken=is_broken)

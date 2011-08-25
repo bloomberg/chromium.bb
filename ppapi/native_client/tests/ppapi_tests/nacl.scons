@@ -1,0 +1,105 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+import os
+
+ppapi_tests_target = 'ppapi_tests_${TARGET_FULLARCH}'
+
+ppapi_tests_sources = [
+    # Common test files
+    'test_case.cc',
+    'test_utils.cc',
+    'testing_instance.cc',
+
+    # Compile-time tests
+    'test_c_includes.c',
+    'test_cpp_includes.cc',
+    'test_struct_sizes.c',
+
+    # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
+    # Add/uncomment PPAPI interfaces below when they get proxied.
+    # Not yet proxied.
+    #'test_broker.cc',
+    # Not yet proxied.
+    #'test_buffer.cc',
+    # Not yet proxied.
+    #'test_char_set.cc',
+    'test_cursor_control.cc',
+    # Fails in DeleteDirectoryRecursively.
+    # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2107
+    #'test_directory_reader.cc',
+    'test_file_io.cc',
+    'test_file_ref.cc',
+    'test_file_system.cc',
+    'test_memory.cc',
+    'test_graphics_2d.cc',
+    'test_image_data.cc',
+    'test_paint_aggregator.cc',
+    # test_post_message.cc relies on synchronous scripting, which is not
+    # available for untrusted tests.
+    # Does not compile under nacl (uses private interface ExecuteScript).
+    #'test_post_message.cc',
+    'test_scrollbar.cc',
+    # Not yet proxied.
+    #'test_transport.cc',
+    # Not yet proxied.
+    #'test_uma.cc',
+    # Activating the URL loader test requires a test httpd that
+    # understands HTTP POST, which our current httpd.py doesn't.
+    # It also requires deactivating the tests that use FileIOTrusted
+    # when running in NaCl.
+    #'test_url_loader.cc',
+    # Does not compile under nacl (uses VarPrivate).
+    #'test_url_util.cc',
+    # Not yet proxied.
+    #'test_video_decoder.cc',
+    'test_var.cc',
+
+    # Deprecated test cases.
+    #'test_instance_deprecated.cc',
+    # Var_deprecated fails in TestPassReference, and we probably won't
+    # fix it.
+    #'test_var_deprecated.cc'
+    ]
+
+# Pepper code has small issues like extra commas at the end of enums.
+env.FilterOut(CFLAGS=['-pedantic'])
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+# This abstracts away that we are including sources from another
+# directory. It is also necessary to work around a scons bug that
+# causes object files to end up in the wrong directory.
+def MakeComponentObject(src):
+  return env.ComponentObject(
+      os.path.splitext(src)[0],
+      os.path.join('$SOURCE_ROOT/ppapi/tests', src))
+
+ppapi_tests_objs = [MakeComponentObject(src) for src in ppapi_tests_sources]
+
+ppapi_tests_nexe = env.ComponentProgram(ppapi_tests_target,
+                                        ppapi_tests_objs,
+                                        EXTRA_LIBS=['${PPAPI_LIBS}',
+                                                    'ppapi_cpp'
+                                                    ])
+
+# Note that the html is required to run this program.
+# To run, load page with mode=nacl search string:
+# http://localhost:5103/scons-out/nacl-x86-32/staging/test_case.html?mode=nacl
+# http://localhost:5103/scons-out/nacl-x86-64/staging/test_case.html?mode=nacl
+
+# NOTE: This test is also run as part of the pyauto suite.
+#       See pyauto_nacl/nacl.scons.
+
+env.Publish(ppapi_tests_target, 'run',
+            ['$SOURCE_ROOT/ppapi/tests/test_url_loader_data/*'],
+            subdir='test_url_loader_data')
+
+env.Publish(ppapi_tests_target, 'run',
+            [ppapi_tests_nexe,
+             '$SOURCE_ROOT/ppapi/tests/test_case.html',
+             'test_case.nmf',
+             '$SOURCE_ROOT/ppapi/tests/test_image_data',
+             '$SOURCE_ROOT/ppapi/tests/test_page.css'])

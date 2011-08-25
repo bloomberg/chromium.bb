@@ -1,0 +1,19 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# RPC methods used to implement PPP_Widget calls to the plugin.
+# See ppapi/c/dev/ppp_widget_dev.h for interface details.
+{
+ 'name': 'PppWidgetRpc',
+ 'rpcs': [
+          {'name': 'PPP_Widget_Invalidate',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['widget', 'PP_Resource'],
+                      ['dirty_rect', 'char[]'],          # PP_Rect
+                     ],
+           'outputs': [
+                      ]
+          },
+         ]
+}

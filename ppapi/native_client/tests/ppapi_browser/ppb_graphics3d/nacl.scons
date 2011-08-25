@@ -1,0 +1,46 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# This test uses ppapi_test_lib.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+env.Append(CPPPATH=['$SOURCE_ROOT/ppapi/lib/gl/include'])
+
+nexe = 'ppapi_ppb_graphics3d_${TARGET_FULLARCH}'
+env.Alias('ppapi_ppb_graphics3d${PROGSUFFIX}',
+          ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
+
+ppapi_ppb_graphics3d_nexe = env.ComponentProgram(
+    nexe,
+    [ 'ppapi_ppb_graphics3d.cc' ],
+    EXTRA_LIBS=['${PPAPI_LIBS}',
+                 'ppapi_gles2',
+                 'ppapi_test_lib',
+                 'platform',  # for CHECK
+                 'pthread',
+                 'gio',
+                 ])
+
+dest_copy = env.Publish(nexe, 'run',
+                        [ 'ppapi_ppb_graphics3d.html',
+                          'ppapi_ppb_graphics3d.nmf',
+                          env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
+                                   'browserdata/nacltest.js') ])
+
+node = env.PPAPIBrowserTester('ppapi_ppb_graphics3d_browser_test.out',
+                              url='ppapi_ppb_graphics3d.html',
+                              files=[ ppapi_ppb_graphics3d_nexe,
+                                      env.File('ppapi_ppb_graphics3d.nmf'),
+                                      env.File('ppapi_ppb_graphics3d.html')],
+                              browser_flags=['--enable-accelerated-plugins'])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_ppapi_ppb_graphics3d_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                 env.PPAPIGraphics3DIsBroken())

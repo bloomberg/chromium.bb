@@ -1,0 +1,116 @@
+# NOTE: to be used with a prolog from
+#       tests/ppapi_proxy/sel_universal_ppapi_replay_prolog.stdin
+
+# define a bunch of variables for readability
+set_variable MODULE i(4444)
+set_variable INSTANCE i(5555)
+# to be safe we allocate a shmem region of 64k
+set_variable SHM_SIZE 65536
+set_variable NUM_FRAMES 4096
+# size of the audio buffer = NUM_FRAMES * 2 (channels) * 2 (16bit audio)
+set_variable BUF_SIZE 16384
+#  SHM_UNUSED = SHM_SIZE - BUF_SIZE
+set_variable SHM_UNUSED 49152
+
+# arbitrary numbers we picked as handles
+set_variable HANDLE_CFG i(30)
+set_variable HANDLE_AUDIO i(34)
+
+echo
+echo "*** INIT MODULE"
+# PPB_xxx replays below will be triggered as a reaction to PPP_InitializeModule
+replay 1 PPB_GetInterface:s:i  s("PPB_Core;1.0") * i(1)
+# The results contain a process id which is non-determinisitic.
+# We must hide the results to support golden file diffing.
+rpc PPP_InitializeModule hide-results i(0) ${MODULE} h(pepper_desc) s("${service_string}") * i(0) i(0)
+
+echo
+echo "*** INIT INSTANCE"
+set_variable TAGS C(10,frequency\000)
+set_variable VALUES C(4,800\000)
+# The PPB_xxx replays below will be triggered as a reaction to
+# PPP_Instance_DidCreate in roughly the order shown
+replay 1 PPB_GetInterface:s:i s("PPB_AudioConfig;1.0") * i(1)
+replay 1 PPB_AudioConfig_RecommendSampleFrameCount:ii:i i(44100) i(${NUM_FRAMES}) * i(${NUM_FRAMES})
+replay 1 PPB_AudioConfig_CreateStereo16Bit:iii:i ${INSTANCE} i(44100) i(${NUM_FRAMES}) * ${HANDLE_CFG}
+# TODO(robertm): explain why these are called three times
+replay 3 PPB_Core_AddRefResource:i: ${HANDLE_CFG} *
+replay 3 PPB_Core_ReleaseResource:i: ${HANDLE_CFG} *
+replay 1 PPB_GetInterface:s:i s("PPB_Audio;1.0") * i(1)
+replay 1 PPB_Audio_Create:ii:i ${INSTANCE} ${HANDLE_CFG} * ${HANDLE_AUDIO}
+replay 1 PPB_AudioConfig_IsAudioConfig:i:i ${HANDLE_CFG} * i(1)
+replay 1 PPB_Audio_IsAudio:i:i ${HANDLE_AUDIO} * i(1)
+replay 1 PPB_AudioConfig_IsAudioConfig:i:i ${HANDLE_AUDIO} * i(0)
+replay 1 PPB_Audio_IsAudio:i:i ${HANDLE_CFG} * i(0)
+replay 1 PPB_Audio_GetCurrentConfig:i:i ${HANDLE_AUDIO} * ${HANDLE_CFG}
+replay 1 PPB_Audio_GetCurrentConfig:i:i ${HANDLE_CFG} * i(0)
+replay 1 PPB_AudioConfig_GetSampleRate:i:i  ${HANDLE_CFG} * i(44100)
+replay 1 PPB_AudioConfig_GetSampleFrameCount:i:i  ${HANDLE_CFG} * i(${NUM_FRAMES})
+replay 1 PPB_Audio_StartPlayback:i:i ${HANDLE_AUDIO} * i(1)
+replay 1 PPB_Core_CallOnMainThread:iii: i(10000) i(1) i(0) *
+rpc PPP_Instance_DidCreate ${INSTANCE} i(1) ${TAGS} ${VALUES} * i(0)
+
+echo
+echo "*** TRIGGER REPAINT"
+rpc PPP_Instance_DidChangeView ${INSTANCE} I(4,8,79,400,400) I(4,0,0,400,400) *
+
+echo
+echo "*** SETTING UP AUDIO SHARED MEMORY"
+shmem audio_handle audio_address ${SHM_SIZE}
+memset ${audio_address} 0  ${SHM_SIZE} 0
+checksum ${audio_address} 0 ${SHM_SIZE}
+
+echo
+echo "*** SETTING UP AUDIO SYNC SOCKET"
+sync_socket_create sync_in sync_out
+
+echo
+echo "*** AUDIO STREAM"
+# inform the nexe about the shmem region and the sync_socket
+rpc PPP_Audio_StreamCreated ${HANDLE_AUDIO} h(audio_handle) i(${BUF_SIZE}) h(sync_out) *
+
+echo
+echo "*** AUDIO STREAM SYNC"
+# By writing a byte into the sync sock we wake up the other side, the actual
+# value does not matter as long as it is not -1.
+# once the other side has woken up it is supposed to write into the buffer
+# associated with audio_handle as quickly as possible.
+# We wait 1sec to give it time to do that.
+# Note: the shmem area is actually bigger than the buffer.
+# We compute a checksum over the part that is used and that isn't.
+# The latter checksum should not change and be zero.
+sync_socket_write sync_in 0
+sleep 1
+checksum ${audio_address} 0 ${BUF_SIZE}
+checksum ${audio_address} ${BUF_SIZE} ${SHM_UNUSED}
+
+echo
+echo "*** AUDIO STREAM SYNC"
+sync_socket_write sync_in 1
+sleep 1
+checksum ${audio_address} 0 ${BUF_SIZE}
+checksum ${audio_address} ${BUF_SIZE} ${SHM_UNUSED}
+
+echo
+echo "*** AUDIO STREAM SYNC"
+sync_socket_write sync_in 2
+sleep 1
+checksum ${audio_address} 0 ${BUF_SIZE}
+checksum ${audio_address} ${BUF_SIZE} ${SHM_UNUSED}
+
+echo
+echo "*** AUDIO STREAM SYNC"
+
+sync_socket_write sync_in 3
+sleep 1
+checksum ${audio_address} 0 ${BUF_SIZE}
+checksum ${audio_address} ${BUF_SIZE} ${SHM_UNUSED}
+
+echo
+echo "*** TERMINATE AUDIO STREAM"
+sync_socket_write sync_in -1
+checksum ${audio_address} 0 ${BUF_SIZE}
+checksum ${audio_address} ${BUF_SIZE} 49152
+
+sleep 1
+rpc PPP_ShutdownModule *

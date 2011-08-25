@@ -1,0 +1,32 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+Import('env')
+
+stress_files = [
+    env.File('stress_many_nexes.html'),
+    env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js'),
+    ]
+replicated_files = env.Replicate('${STAGING_DIR}', stress_files)
+env.Alias('all_programs', replicated_files)
+
+core = env.File('${STAGING_DIR}/ppapi_ppb_core_${TARGET_FULLARCH}${PROGSUFFIX}')
+nmf = env.File('${STAGING_DIR}/ppapi_ppb_core.nmf')
+stress_files.extend([core, nmf])
+
+node = env.PPAPIBrowserTester(
+    'stress_many_nexes_test.out',
+    url='stress_many_nexes.html',
+    test_args=(('count', 100), ('parallel', 0)),
+    timeout=200,
+    files=stress_files)
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_stress_many_nexes_test',
+                       # Don't run this test automatically. It can cause random
+                       # processes to die on a machine, etc.
+                       is_broken=True)

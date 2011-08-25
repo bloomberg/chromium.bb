@@ -1,0 +1,60 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# A way to build the nexe as a trusted plugin to validate directly
+# against Chrome on Linux and OS X using
+# --register-pepper-plugins="/path/to/libppapi_messaging.so;application/x-nacl"
+# http://localhost:5103/scons-out/nacl-x86-../staging/ppapi_messaging.html
+# Note that a trusted plugin is not built on Windows.
+
+Import('env')
+
+plugin_env = env.Clone()
+
+sources = ['ppapi_messaging.c']
+
+libs = ['imc',
+        'gio',
+        'pthread',
+        'platform'
+       ]
+
+trusted_plugin = None
+if plugin_env.Bit('linux'):  # linux, arm
+  trusted_plugin = plugin_env.DualLibrary('ppapi_messaging',
+                                               sources)
+elif plugin_env.Bit('mac'):  # os x
+  plugin_env.Append(
+      FRAMEWORKS = ['Cocoa'],
+      LINKFLAGS = ['-bundle', '-framework', 'Foundation']
+      )
+  plugin_env['tools'] = 'target_platform_mac'
+  REZ = '/Developer/Tools/Rez'
+  plugin_env.Command(target='ppapi_messaging.rsrc',
+                     source='ppapi_messaging.r',
+                     action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
+  ppapi_messaging = plugin_env.ComponentProgram('ppapi_messaging',
+                                                sources,
+                                                EXTRA_LIBS=libs,
+                                                no_import_lib=True)
+  bundle_name = '${STAGING_DIR}/ppapi_messaging.bundle'
+  plugin_env.Alias('ppapi_messaging.bundle', [bundle_name])
+  plugin_env.Bundle(bundle_name,
+                    BUNDLE_EXE=ppapi_messaging,
+                    BUNDLE_PKGINFO_FILENAME=0,
+                    BUNDLE_RESOURCES='ppapi_messaging.rsrc',
+                    BUNDLE_INFO_PLIST='Info.plist')
+  trusted_plugin = bundle_name
+
+if not trusted_plugin == None:
+  # Note that the html is required to run this program.
+  nacltest_js = '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js'
+  dest_copy = plugin_env.Replicate('$STAGING_DIR',
+                                   ['ppapi_messaging.html',
+                                    'ppapi_messaging.nmf',
+                                    env.File(nacltest_js)]
+                                  )
+  plugin_env.Depends(trusted_plugin, dest_copy)
+

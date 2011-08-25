@@ -1,0 +1,131 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods used to implement the Pepper 3D drawing
+# API.
+# TODO(neb): Figure what the threading model really is. Keep the following
+# comment here until then, although it may be wrong:
+# All of the following RPC methods are invoked on the NPAPI thread from
+# untrusted code.  This means, due to the Pepper threading model, that they
+# may only be invoked by code that is called from the JavaScript foreground
+# thread in the renderer.
+{
+ 'name': 'PpbGraphics3DRpc',
+ 'rpcs': [
+          # For PPB_Graphics3D.Create(...)
+          {'name': 'PPB_Graphics3D_Create',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['share_context', 'PP_Resource'],
+                      ['attrib_list', 'int32_t[]']
+                     ],
+           'outputs': [['resource_id', 'PP_Resource']
+                      ],
+          },
+          # For PPB_Graphics3D.GetAttribs(...)
+          {'name': 'PPB_Graphics3D_GetAttribs',
+           'inputs': [['context', 'PP_Resource'],
+                      ['input_attrib_list', 'int32_t[]']
+                     ],
+           'outputs': [['output_attrib_list', 'int32_t[]'],
+                       ['pp_error', 'int32_t']
+                      ],
+           },
+           # For PPB_Graphics3D.SetAttribs(...)
+           {'name': 'PPB_Graphics3D_SetAttribs',
+            'inputs': [['context', 'PP_Resource'],
+                       ['attrib_list', 'int32_t[]']
+                      ],
+            'outputs': [['pp_error', 'int32_t']
+                       ],
+           },
+           # For PPB_Graphics3D.ResizeBuffers(...)
+           {'name': 'PPB_Graphics3D_ResizeBuffers',
+            'inputs': [['context', 'PP_Resource'],
+                       ['width', 'int32_t'],
+                       ['height', 'int32_t']
+                      ],
+            'outputs': [['pp_error', 'int32_t']
+                       ],
+          },
+          # For PPB_Graphics3D.SwapBuffers(...)
+          {'name': 'PPB_Graphics3D_SwapBuffers',
+           'inputs': [['context', 'PP_Resource'],
+                      ['callback_id', 'int32_t']
+                     ],
+           'outputs': [['pp_error', 'int32_t']
+                      ],
+          },
+          # End of PPB_Graphics3D.
+
+          # Start of PPB_Graphics3DTrusted.
+          # Create a Graphics3D context.
+          {'name': 'PPB_Graphics3DTrusted_CreateRaw',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['share_context', 'PP_Resource'],
+                      ['attrib_list', 'int32_t[]']
+                     ],
+           'outputs': [['resource_id', 'PP_Resource']]
+          },
+          # Initialize the command buffer.
+          {'name': 'PPB_Graphics3DTrusted_InitCommandBuffer',
+           'inputs': [['resource_id', 'PP_Resource'],
+                      ['size', 'int32_t']
+                      ],
+           'outputs': [['success', 'int32_t']]  # PP_Bool
+          },
+          # Get the ring buffer.
+          {'name': 'PPB_Graphics3DTrusted_GetRingBuffer',
+           'inputs': [['resource_id', 'PP_Resource']],
+           'outputs': [['shm_desc', 'handle'],
+                       ['shm_size', 'int32_t']
+                      ]
+          },
+          # Get command buffer state.
+          {'name': 'PPB_Graphics3DTrusted_GetState',
+           'inputs': [['resource_id', 'PP_Resource']],
+           'outputs': [['state', 'char[]'],          # PP_Graphics3DTrustedState
+                      ]
+          },
+          # Flush async.
+          {'name': 'PPB_Graphics3DTrusted_Flush',
+           'inputs': [['resource_id', 'PP_Resource'],
+                      ['put_offset', 'int32_t']
+                      ],
+           'outputs': []
+          },
+          # Flush sync.
+          {'name': 'PPB_Graphics3DTrusted_FlushSync',
+           'inputs': [['resource_id', 'PP_Resource'],
+                      ['put_offset', 'int32_t']
+                      ],
+           'outputs': [['state', 'char[]'],          # PP_Graphics3DTrustedState
+                      ]
+          },
+          # Create a shared memory transfer buffer.
+          {'name': 'PPB_Graphics3DTrusted_CreateTransferBuffer',
+           'inputs': [['resource_id', 'PP_Resource'],
+                      ['size', 'int32_t'],
+                      ['request_id', 'int32_t']
+                     ],
+           'outputs': [['id', 'int32_t']]
+          },
+          # Destroy a shared memory transfer buffer.
+          {'name': 'PPB_Graphics3DTrusted_DestroyTransferBuffer',
+           'inputs': [['resource_id', 'PP_Resource'],
+                      ['id', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+          # Get a shared memory transfer buffer.
+          {'name': 'PPB_Graphics3DTrusted_GetTransferBuffer',
+           'inputs': [['resource_id', 'PP_Resource'],
+                      ['id', 'int32_t'],
+                     ],
+           'outputs': [['shm_desc', 'handle'],
+                       ['shm_size', 'int32_t']
+                      ]
+          },
+          # End of PPB_Graphics3DTrusted 
+        ]
+}

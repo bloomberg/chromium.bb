@@ -1,0 +1,63 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# TODO(robertm): those should not be necessary once we go -std=c99
+env.FilterOut(CFLAGS=['-pedantic'])
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+manifest_good_sources = env.ComponentObject('manifest_good.cc'),
+
+manifest_good_target = ('manifest_good_%s' %
+                        env.get('TARGET_FULLARCH'))
+env.ComponentProgram(manifest_good_target,
+                     [manifest_good_sources],
+                     EXTRA_LIBS=['${PPAPI_LIBS}',
+                                 'ppapi_test_lib',
+                                 'pthread',
+                                 'platform',
+                                 'gio'])
+
+manifest_bad_sources = env.ComponentObject('manifest_bad.cc'),
+
+manifest_bad_target = ('manifest_bad_%s' %
+                       env.get('TARGET_FULLARCH'))
+env.ComponentProgram(manifest_bad_target,
+                     [manifest_bad_sources],
+                     EXTRA_LIBS=['${PPAPI_LIBS}',
+                                 'ppapi_test_lib',
+                                 'pthread',
+                                 'platform',
+                                 'gio'])
+
+env.Publish(manifest_good_target, 'run', [
+    'manifest.html',
+    manifest_bad_target,
+    'manifest_top.nmf',
+    'manifest_subdir.nmf',
+    ('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
+     'ppapi_progress_events.js'),
+    '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
+])
+
+node = env.PPAPIBrowserTester(
+    'manifest_browser_test.out',
+    url='manifest.html',
+    files=env.ExtractPublishedFiles(manifest_good_target),
+    map_files=[
+        ('subdir/manifest_subdir.nmf',
+        env.File('${STAGING_DIR}/manifest_subdir.nmf')),
+        # the 'good' nexe in the root directory will fail.
+        (manifest_good_target + env['PROGSUFFIX'],
+        env.File('${STAGING_DIR}/%s${PROGSUFFIX}' % manifest_bad_target)),
+        # the 'good' nexe in the subdirectory will succeed.
+        ('subdir/' + manifest_good_target + env['PROGSUFFIX'],
+        env.File('${STAGING_DIR}/%s${PROGSUFFIX}' % manifest_good_target))])
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_manifest_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
