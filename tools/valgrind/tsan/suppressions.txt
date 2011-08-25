@@ -618,55 +618,6 @@
    fun:VisitedLinkMaster::CreateURLTable
 }
 {
-   bug_93777_a
-   ThreadSanitizer:Race
-   fun:WebCore::Document::detach
-   fun:WebCore::Frame::setView
-   fun:WebKit::WebFrameImpl::createFrameView
-   fun:WebKit::FrameLoaderClientImpl::makeDocumentView
-   fun:WebKit::FrameLoaderClientImpl::transitionToCommittedForNewPage
-   fun:WebCore::FrameLoader::transitionToCommitted
-   fun:WebCore::FrameLoader::commitProvisionalLoad
-   fun:WebCore::DocumentLoader::commitIfReady
-   fun:WebCore::DocumentLoader::finishedLoading
-   fun:WebCore::FrameLoader::finishedLoading
-   fun:WebCore::MainResourceLoader::didFinishLoading
-   fun:WebCore::MainResourceLoader::continueAfterContentPolicy
-   fun:WebCore::MainResourceLoader::continueAfterContentPolicy
-   fun:WebCore::MainResourceLoader::callContinueAfterContentPolicy
-   fun:WebCore::PolicyCallback::call
-   fun:WebCore::PolicyChecker::continueAfterContentPolicy
-   fun:WebKit::FrameLoaderClientImpl::dispatchDecidePolicyForResponse
-   fun:WebCore::PolicyChecker::checkContentPolicy
-   fun:WebCore::MainResourceLoader::didReceiveResponse
-   fun:WebCore::MainResourceLoader::handleEmptyLoad
-   fun:WebCore::MainResourceLoader::loadNow
-   fun:WebCore::MainResourceLoader::load
-   fun:WebCore::DocumentLoader::startLoadingMainResource
-   fun:WebCore::FrameLoader::continueLoadAfterWillSubmitForm
-   fun:WebCore::FrameLoader::continueLoadAfterNavigationPolicy
-   fun:WebCore::FrameLoader::callContinueLoadAfterNavigationPolicy
-   fun:WebCore::PolicyCallback::call
-   fun:WebCore::PolicyChecker::continueAfterNavigationPolicy
-   fun:WebKit::FrameLoaderClientImpl::dispatchDecidePolicyForNavigationAction
-   fun:WebCore::PolicyChecker::checkNavigationPolicy
-}
-{
-   bug_93777_b
-   ThreadSanitizer:Race
-   fun:WebCore::Document::page
-   fun:WebCore::InspectorInstrumentation::instrumentingAgentsForContext
-   fun:WebCore::InspectorInstrumentation::workerContextTerminated
-   fun:WebKit::WebWorkerClientImpl::workerContextDestroyed
-   fun:WebCore::WorkerContext::~WorkerContext
-   fun:WebCore::DedicatedWorkerContext::~DedicatedWorkerContext
-   fun:WTF::RefCounted::deref
-   fun:WTF::RefPtr::operator=
-   fun:WebCore::WorkerThread::workerThread
-   fun:WebCore::WorkerThread::workerThreadStart
-   fun:WTF::threadEntryPoint
-}
-{
    bug_93932_a
    ThreadSanitizer:Race
    ...
