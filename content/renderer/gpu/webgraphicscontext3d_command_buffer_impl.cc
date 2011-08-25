@@ -235,6 +235,12 @@ void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
     renderview->OnViewContextSwapBuffersPosted();
 #endif
   context_->SwapBuffers();
+#if defined(OS_MACOSX)
+  // It appears that making the compositor's on-screen context current on
+  // other platforms implies this flush. TODO(kbr): this means that the
+  // TOUCH build and, in the future, other platforms might need this.
+  gl_->Flush();
+#endif
 }
 
 void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
