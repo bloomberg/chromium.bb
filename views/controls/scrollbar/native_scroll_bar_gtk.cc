@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,9 @@
 
 #include "ui/base/keycodes/keyboard_codes_posix.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
+#include "views/controls/scrollbar/native_scroll_bar_views.h"
 #include "views/controls/scrollbar/scroll_bar.h"
+#include "views/widget/widget.h"
 
 namespace views {
 
@@ -199,6 +201,8 @@ void NativeScrollBarGtk::MoveToBottom() {
 // static
 NativeScrollBarWrapper* NativeScrollBarWrapper::CreateWrapper(
     NativeScrollBar* scroll_bar) {
+  if (Widget::IsPureViews())
+    return new NativeScrollBarViews(scroll_bar);
   return new NativeScrollBarGtk(scroll_bar);
 }
 
