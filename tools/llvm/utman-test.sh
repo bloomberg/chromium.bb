@@ -34,7 +34,7 @@ SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
 # For different levels of make parallelism change this in your env
 readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 
-readonly OTHER_TEST_SCRIPT="${NACL_ROOT}/buildbot/buildbot_pnacl1.sh"
+readonly OTHER_TEST_SCRIPT="${NACL_ROOT}/buildbot/buildbot_pnacl.sh"
 
 ######################################################################
 ######################################################################
