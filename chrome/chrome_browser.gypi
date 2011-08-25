@@ -4182,6 +4182,14 @@
             '../views/views.gyp:views',
             '../views/views.gyp:views_desktop_lib',
           ],
+          'direct_dependent_settings': {
+            'link_settings': {
+              'libraries': [
+                '-llocationapi.lib',
+                '-lsensorsapi.lib',
+              ],
+            }
+          },
           'sources': [
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
