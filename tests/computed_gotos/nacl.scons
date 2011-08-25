@@ -11,9 +11,4 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 prog = env.ComponentProgram('computed_goto', 'computed_goto.c',
                             EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl('computed_goto_test.out', prog)
-# TODO(mseaborn): Enable this for PNaCl when PNaCl is fixed to
-# generate correct code for this program.
-# See http://code.google.com/p/nativeclient/issues/detail?id=1423
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_computed_goto_test',
-                       #is_broken=env.Bit('bitcode'))
-                       is_broken=False)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_computed_goto_test')
