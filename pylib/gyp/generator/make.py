@@ -43,7 +43,6 @@ generator_default_variables = {
   'INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/geni',
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
-  'LIB_DIR': '$(obj).$(TOOLSET)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
   'RULE_INPUT_PATH': '$(abspath $<)',
   'RULE_INPUT_EXT': '$(suffix $<)',
@@ -76,6 +75,8 @@ def CalculateVariables(default_variables, params):
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.dylib')
     default_variables.setdefault('SHARED_LIB_DIR',
                                  generator_default_variables['PRODUCT_DIR'])
+    default_variables.setdefault('LIB_DIR',
+                                 generator_default_variables['PRODUCT_DIR'])
 
     # Copy additional generator configuration data from Xcode, which is shared
     # by the Mac Make generator.
@@ -95,6 +96,7 @@ def CalculateVariables(default_variables, params):
     default_variables.setdefault('OS', 'linux')
     default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
     default_variables.setdefault('SHARED_LIB_DIR','$(builddir)/lib.$(TOOLSET)')
+    default_variables.setdefault('LIB_DIR', '$(obj).$(TOOLSET)')
 
 
 def CalculateGeneratorInputInfo(params):
@@ -904,9 +906,7 @@ class XcodeSettings(object):
     # TODO: Do not hardcode arch. Supporting fat binaries will be annoying.
     ldflags.append('-arch i386')
 
-    # Xcode adds the product directory by default. It writes static libraries
-    # into the product directory. So add both.
-    ldflags.append('-L' + generator_default_variables['LIB_DIR'])
+    # Xcode adds the product directory by default.
     ldflags.append('-L' + generator_default_variables['PRODUCT_DIR'])
 
     install_name = self.GetPerTargetSetting('LD_DYLIB_INSTALL_NAME')
@@ -1717,6 +1717,11 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     return target_prefix + target + target_ext
 
 
+  def _InstallImmediately(self):
+    return self.toolset == 'target' and self.flavor == 'mac' and self.type in (
+          'static_library', 'executable', 'shared_library', 'loadable_module')
+
+
   def ComputeOutput(self, spec):
     """Return the 'output' (full output path) of a gyp spec.
 
@@ -1729,7 +1734,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       return ''  # Doesn't have any output.
 
     path = os.path.join('$(obj).' + self.toolset, self.path)
-    if self.type == 'executable':
+    if self.type == 'executable' or self._InstallImmediately():
       path = '$(builddir)'
     path = spec.get('product_dir', path)
     return os.path.join(path, self.ComputeOutputBasename(spec))
@@ -1879,6 +1884,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     if postbuilds:
       assert not self.is_mac_bundle, ('Postbuilds for bundles should be done '
           'on the bundle, not the binary (target \'%s\')' % self.target)
+      assert 'product_dir' not in spec, ('Postbuilds do not work with '
+          'custom product_dir')
       self.WriteXcodeEnv(self.output_binary, spec)  # For postbuilds
       postbuilds = [EscapeShellArgument(p) for p in postbuilds]
       self.WriteLn('%s: builddir := $(abs_builddir)' % self.output_binary)
@@ -1940,8 +1947,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         file_desc = 'executable'
       install_path = self._InstallableTargetInstallPath()
       installable_deps = [self.output]
-      if self.is_mac_bundle:
-        # Bundles are created in their install_path location immediately.
+      if self.flavor == 'mac' and not 'product_dir' in spec:
+        # On mac, products are created in install_path immediately.
         assert install_path == self.output, '%s != %s' % (
             install_path, self.output)
 
@@ -2151,26 +2158,17 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     for a full list."""
     if self.flavor != 'mac': return {}
 
+    built_products_dir = generator_default_variables['PRODUCT_DIR']
     def StripProductDir(s):
-      product_dir = generator_default_variables['PRODUCT_DIR']
-      assert s.startswith(product_dir), s
-      return s[len(product_dir) + 1:]
+      assert s.startswith(built_products_dir), s
+      return s[len(built_products_dir) + 1:]
 
     product_name = spec.get('product_name', self.output)
 
-    # Some postbuilds try to read a build output file at
-    # ""${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}". Static libraries end up
-    # "$(obj).target", so
-    #   BUILT_PRODUCTS_DIR is $(builddir)
-    #   FULL_PRODUCT_NAME is $(out).target/path/to/lib.a
-    # Since $(obj) contains out/Debug already, the postbuild
-    # would get out/Debug/out/Debug/obj.target/path/to/lib.a. To prevent this,
-    # remove the "out/Debug" prefix from $(obj).
-    if product_name.startswith('$(obj)'):
-      product_name = (
-          '$(subst $(builddir)/,,$(obj))' + product_name[len('$(obj)'):])
+    if self._InstallImmediately():
+      if product_name.startswith(built_products_dir):
+        product_name = StripProductDir(product_name)
 
-    built_products_dir = generator_default_variables['PRODUCT_DIR']
     srcroot = self.path
     if target_relative_path:
       built_products_dir = os.path.relpath(built_products_dir, srcroot)
@@ -2190,7 +2188,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     }
     if self.type in ('executable', 'shared_library'):
       env['EXECUTABLE_NAME'] = os.path.basename(self.output_binary)
-    if self.type in ('executable', 'shared_library', 'loadable_module'):
+    if self.type in (
+        'executable', 'static_library', 'shared_library', 'loadable_module'):
       env['EXECUTABLE_PATH'] = self.xcode_settings.GetExecutablePath()
     if self.is_mac_bundle:
       env['CONTENTS_FOLDER_PATH'] = \

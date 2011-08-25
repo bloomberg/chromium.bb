@@ -397,7 +397,7 @@ class TestGypMake(TestGypBase):
       result.append(chdir)
     configuration = self.configuration_dirname()
     result.extend(['out', configuration])
-    if type == self.STATIC_LIB:
+    if type == self.STATIC_LIB and sys.platform != 'darwin':
       result.append('obj.target')
     elif type == self.SHARED_LIB and sys.platform != 'darwin':
       result.append('lib.target')
