@@ -36,6 +36,11 @@
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
+  // The impl spins an event loop to distinguish clicks from drags,
+  // which could result in our destruction.  Wire ourselves down for
+  // the duration.
+  scoped_nsobject<DraggableButton> keepAlive([self retain]);
+
   if ([draggableButtonImpl_ mouseDownImpl:theEvent] ==
           kDraggableButtonMixinCallSuper) {
     [super mouseDown:theEvent];
