@@ -431,7 +431,9 @@ function onClientStateChange_(oldState) {
     showConnectError_(remoting.ClientError.OTHER_ERROR);
   } else {
     remoting.debug.log('Unexpected client plugin state: ' + state);
-    showConnectError_(remoting.ClientError.OTHER_ERROR);
+    // This should only happen if the web-app and client plugin get out of
+    // sync, and even then the version check should allow compatibility.
+    showConnectError_(remoting.ClientError.MISSING_PLUGIN);
   }
 }
 

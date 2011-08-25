@@ -18,7 +18,7 @@
     "description": "Label for general-purpose Cancel buttons."
   },
   "CLOSE_PROMPT": {
-    "message": "Navigating away from this page will end your Chromoting session.",
+    "message": "Leaving this page will end your Chromoting session.",
     "description": "Message shown when the Chromoting client tab is closed while a connection is active."
   },
   "CONNECT_BUTTON": {
@@ -34,16 +34,16 @@
     "description": "Message displayed when the session has lasted longer than five minutes, explaining that the host computer is being shared and asking whether or not the user wants to continue sharing it."
   },
   "DESCRIPTION_AUTHORIZE": {
-    "message": "In order to use Chromoting you must first grant extended access permissions to your computer. Click Continue to authorize. You only have to do this once.",
+    "message": "In order to use Chromoting you must first grant extended access permissions to your computer. Click Continue to view the required permissions. You only have to do this once.",
     "description": "Text shown when the app first starts, or if the access token is invalidated, explaining the need to authorize the Chromoting app before use."
   },
   "DESCRIPTION_CONNECT": {
-    "message": "Have the user whose computer you wish to access click ‘Share this computer’ and then have them read their access code to you.",
-    "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started."
+    "message": "Ask the user whose computer you wish to access to click ‘Share This Computer’ and then provide you with the access code.",
+    "description": "Description for the client app. This is shown to the client user above the access code entry box before the connection is started. Note that the 'Share This Computer' quote should be copied verbatim from the corresponding translation."
   },
   "DESCRIPTION_SHARE": {
-    "message": "With Chromoting you can easily and securely let another Chrome user see and control your computer.",
-    "description": "Description for the host app. This is shown to the host above the 'Share' button user before the client connects."
+    "message": "With Chromoting you can easily and securely let another Chromium user see and control your computer.",
+    "description": "Description for the host app. This is shown to the host above the 'Share This Computer' button user before the client connects."
   },
   "DISCONNECT_BUTTON": {
     "message": "Disconnect",
@@ -62,27 +62,27 @@
     "description": "Label for the disconnect button including the Windows keyboard shortcut."
   },
   "ERROR_GENERIC": {
-    "message": "An error occurred.",
+    "message": "An unknown error occurred. Please sign out of Chromoting and try again.",
     "description": "Generic error message, displayed if something went wrong, but we aren't able to determine what, or the cause is too technical to be of use to a typical user."
   },
   "ERROR_INVALID_ACCESS_CODE": {
-    "message": "Invalid access code.",
+    "message": "The access code is invalid. Please try again.",
     "description": "Error displayed if an invalid access code is entered."
   },
   "ERROR_MISSING_PLUGIN": {
-    "message": "The viewer plugin is missing or out-of-date. Please upgrade to a more recent version of Chrome.",
-    "description": "Error displayed if the client plugin fails to load. The most common reason for this is that the web-app is being used in a version of Chrome that doesn't support it."
+    "message": "Plugin missing or out-of-date. Please make sure you're running the latest version of Chromium and try again.",
+    "description": "Error displayed if the client plugin fails to load. The most common reason for this is that the web-app is being used in a version of Chromium that doesn't support it."
   },
   "ERROR_NO_RESPONSE": {
-    "message": "Failed to get response from server.",
+    "message": "Failed to get a response from the server.",
     "description": "Error displayed by the client if the server does not respond to a network request."
   },
   "ERROR_AUTHENTICATION_FAILED": {
-    "message": "Authentication failed. Try logging out and re-authorizing.",
+    "message": "Authentication failed. Please sign out of Chromoting and try again.",
     "description": "Error displayed if authentication fails. This can be caused by stale credentials, in which logging out of the web-app and retrying can fix the problem."
   },
   "ERROR_UNABLE_TO_GET_TOKEN": {
-    "message": "Unable to get access token.",
+    "message": "There was a problem accessing the server. Please try again.",
     "description": "Error message displayed if an access token could not be generated."
   },
   "FOOTER_CLIENT": {
@@ -100,7 +100,7 @@
     }
   },
   "FOOTER_CHROME_OS": {
-    "message": "Currently Hosting is not supported on Chromebooks. Hosting is supported on Windows, Mac OS X and Linux.",
+    "message": "Sharing is not currently supported on Chromebooks.",
     "description": "Footer text displayed on ChromeOS in lieu of the mode switch hyperlink."
   },
   "FOOTER_HOST": {
@@ -126,7 +126,7 @@
     "description": "Help link, displayed in the top-left (assuming ltr layout) corner of the main screen. Clicking this takes the user to our FAQ."
   },
   "INSTRUCTIONS_SHARE_ABOVE": {
-    "message": "To begin sharing your desktop, read out the access code below to the person who will be assisting you.",
+    "message": "To begin sharing your desktop, provide the access code below to the person who will be assisting you.",
     "description": "Instructions shown above the access code when it is ready to be conveyed to the client."
   },
   "INSTRUCTIONS_SHARE_BELOW": {
@@ -137,9 +137,9 @@
     "message": "Connected:",
     "description": "String displayed in front of the host when a connection is active informing the client user who they are connected to."
   },
-  "LOGOUT_BUTTON": {
-    "message": "Logout",
-    "description": "Logout button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."
+  "SIGN_OUT_BUTTON": {
+    "message": "Sign out",
+    "description": "Sign out button, visible if the user has authenticated. Clicking this clears authentication credentials and returns the web-app to the initial 'unauthenticated' state."
   },
   "MESSAGE_GENERATING": {
     "message": "Generating access code…",
@@ -176,16 +176,26 @@
     "description": "Label for general-purpose OK buttons."
   },
   "PRODUCT_DESCRIPTION": {
-    "message": "Remote support in Chrome.",
-    "description": "Web-app description. Displayed in Chrome's extensions page."
+    "message": "Remote support in Chromium.",
+    "description": "Web-app description. Displayed in Chromium's extensions page."
   },
   "PRODUCT_NAME": {
     "message": "Chromoting",
-    "description": "The product name. Displayed in various Chrome page, including the New Tab page, and displayed prominently on the app's main page."
+    "description": "The product name. Displayed in various Chromium pages, including the New Tab page, and displayed prominently on the app's main page."
   },
   "PRODUCT_NAME_AND_VERSION": {
     "message": "Chromoting v1.0",
-    "description": "The product name and version number. Displayed in Chrome's extensions page."
+    "description": "The product name and version number. Displayed in Chromium's extensions page."
+  },
+  "REQUEST_FIREWALL_PERMISSION": {
+    "message": "$exe$ requires permission to accept incoming connections for Chromoting to function.",
+    "description": "Message displayed to the used if Chromoting detects that a firewall exception is required. The message will be presented in a dialog with two buttons: OK and Cancel.",
+    "placeholders": {
+      "exe": {
+        "content": "$1",
+        "example": "Chromium.exe"
+      }
+    }
   },
   "SCALE_BUTTON": {
     "message": "Fit Screen",
