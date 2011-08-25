@@ -386,24 +386,11 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
     }
   }
 
-  void TestTouchHelper(const FilePath& path, bool new_file) {
-    base::Time last_access_time = base::Time::Now();  // Ignored, so not tested.
+  void TestTouchHelper(const FilePath& path, bool is_file) {
+    base::Time last_access_time = base::Time::Now();
     base::Time last_modified_time = base::Time::Now();
-    scoped_ptr<FileSystemOperationContext> context;
 
-    if (new_file) {
-      // Verify that file creation requires sufficient quota for the path.
-      context.reset(NewContext(NULL));
-      context->set_allowed_bytes_growth(
-          ObfuscatedFileSystemFileUtil::ComputeFilePathCost(path) - 1);
-      EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-                ofsfu()->Touch(
-                    context.get(), path, last_access_time, last_modified_time));
-    }
-
-    context.reset(NewContext(NULL));
-    context->set_allowed_bytes_growth(
-        ObfuscatedFileSystemFileUtil::ComputeFilePathCost(path));
+    scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               ofsfu()->Touch(
                   context.get(), path, last_access_time, last_modified_time));
@@ -419,6 +406,7 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
 
     context.reset(NewContext(NULL));
     last_modified_time += base::TimeDelta::FromHours(1);
+    last_access_time += base::TimeDelta::FromHours(14);
     EXPECT_EQ(base::PLATFORM_FILE_OK,
               ofsfu()->Touch(
                   context.get(), path, last_access_time, last_modified_time));
@@ -426,6 +414,8 @@ class ObfuscatedFileSystemFileUtilTest : public testing::Test {
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofsfu()->GetFileInfo(
         context.get(), path, &file_info, &local_path));
     EXPECT_EQ(file_info.last_modified.ToTimeT(), last_modified_time.ToTimeT());
+    if (is_file)  // Directories in OFSFU don't support atime.
+      EXPECT_EQ(file_info.last_accessed.ToTimeT(), last_access_time.ToTimeT());
   }
 
   void TestCopyInForeignFileHelper(bool overwrite) {
@@ -844,45 +834,51 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestReadDirectoryOnFile) {
 }
 
 TEST_F(ObfuscatedFileSystemFileUtilTest, TestTouch) {
-  FilePath path = UTF8ToFilePath("fake/file");
-  base::Time last_access_time = base::Time::Now();  // Ignored, so not tested.
-  base::Time last_modified_time = base::Time::Now();
+  FilePath path = UTF8ToFilePath("file");
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
+
+  base::Time last_access_time = base::Time::Now();
+  base::Time last_modified_time = base::Time::Now();
+
+  // It's not there yet.
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
             ofsfu()->Touch(
                 context.get(), path, last_access_time, last_modified_time));
 
-  // Touch will create a file if it's not there but its parent is.
-  bool new_file = true;
-  path = UTF8ToFilePath("file name");
-  TestTouchHelper(path, new_file);
-
-  bool exclusive = true;
-  bool recursive = true;
-  path = UTF8ToFilePath("directory/to/use");
+  // OK, now create it.
   context.reset(NewContext(NULL));
-  EXPECT_EQ(base::PLATFORM_FILE_OK, ofsfu()->CreateDirectory(
-      context.get(), path, exclusive, recursive));
-  new_file = false;
-  TestTouchHelper(path, new_file);
+  bool created = false;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->EnsureFileExists(context.get(), path, &created));
+  ASSERT_TRUE(created);
+  TestTouchHelper(path, true);
+
+  // Now test a directory:
+  context.reset(NewContext(NULL));
+  bool exclusive = true;
+  bool recursive = false;
+  path = UTF8ToFilePath("dir");
+  ASSERT_EQ(base::PLATFORM_FILE_OK, ofsfu()->CreateDirectory(context.get(),
+      path, exclusive, recursive));
+  TestTouchHelper(path, false);
 }
 
 TEST_F(ObfuscatedFileSystemFileUtilTest, TestPathQuotas) {
   FilePath path = UTF8ToFilePath("fake/file");
-  base::Time last_access_time = base::Time::Now();
-  base::Time last_modified_time = base::Time::Now();
   scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
-  // Touch will create a file if it's not there but its parent is.
   path = UTF8ToFilePath("file name");
   context->set_allowed_bytes_growth(5);
+  bool created = false;
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            ofsfu()->Touch(
-                context.get(), path, last_access_time, last_modified_time));
+            ofsfu()->EnsureFileExists(
+                context.get(), path, &created));
+  EXPECT_FALSE(created);
   context->set_allowed_bytes_growth(1024);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofsfu()->Touch(
-                context.get(), path, last_access_time, last_modified_time));
+            ofsfu()->EnsureFileExists(
+                context.get(), path, &created));
+  EXPECT_TRUE(created);
   int64 path_cost = ObfuscatedFileSystemFileUtil::ComputeFilePathCost(path);
   EXPECT_EQ(1024 - path_cost, context->allowed_bytes_growth());
 

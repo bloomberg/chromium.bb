@@ -956,4 +956,35 @@ TEST_F(FileSystemOperationTest, TestTruncateFailureByQuota) {
   EXPECT_EQ(10, info.size);
 }
 
+TEST_F(FileSystemOperationTest, TestTouchFile) {
+  FilePath file_path(CreateVirtualTemporaryFileInDir(FilePath()));
+  FilePath platform_path = PlatformPath(file_path);
+
+  base::PlatformFileInfo info;
+
+  EXPECT_TRUE(file_util::GetFileInfo(platform_path, &info));
+  EXPECT_FALSE(info.is_directory);
+  EXPECT_EQ(0, info.size);
+  const base::Time last_modified = info.last_modified;
+  const base::Time last_accessed = info.last_accessed;
+
+  const base::Time new_modified_time = base::Time::UnixEpoch();
+  const base::Time new_accessed_time = new_modified_time +
+    base::TimeDelta::FromHours(77);;
+  ASSERT_NE(last_modified, new_modified_time);
+  ASSERT_NE(last_accessed, new_accessed_time);
+
+  operation()->TouchFile(URLForPath(file_path), new_accessed_time,
+      new_modified_time);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+
+  EXPECT_TRUE(file_util::GetFileInfo(platform_path, &info));
+  // We compare as time_t here to lower our resolution, to avoid false
+  // negatives caused by conversion to the local filesystem's native
+  // representation and back.
+  EXPECT_EQ(new_modified_time.ToTimeT(), info.last_modified.ToTimeT());
+  EXPECT_EQ(new_accessed_time.ToTimeT(), info.last_accessed.ToTimeT());
+}
+
 }  // namespace fileapi

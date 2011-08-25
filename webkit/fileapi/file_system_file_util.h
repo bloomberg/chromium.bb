@@ -188,6 +188,7 @@ class FileSystemFileUtil {
       const FilePath& file_path);
 
   // Touches a file. The callback can be NULL.
+  // If the file doesn't exist, this fails with PLATFORM_FILE_ERROR_NOT_FOUND.
   virtual PlatformFileError Touch(
       FileSystemOperationContext* context,
       const FilePath& file_path,

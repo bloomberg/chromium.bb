@@ -541,46 +541,28 @@ PlatformFileError ObfuscatedFileSystemFileUtil::Touch(
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
   FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      context->src_origin_url(), context->src_type(), true);
+      context->src_origin_url(), context->src_type(), false);
   if (!db)
-    return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   FileId file_id;
-  if (db->GetFileWithPath(virtual_path, &file_id)) {
-    FileInfo file_info;
-    if (!db->GetFileInfo(file_id, &file_info)) {
-      NOTREACHED();
-      return base::PLATFORM_FILE_ERROR_FAILED;
-    }
-    if (file_info.is_directory()) {
-      file_info.modification_time = last_modified_time;
-      if (!db->UpdateFileInfo(file_id, file_info))
-        return base::PLATFORM_FILE_ERROR_FAILED;
-      return base::PLATFORM_FILE_OK;
-    }
-    FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
-      context->src_type(), file_info.data_path);
-    return underlying_file_util_->Touch(
-        context, data_path, last_access_time, last_modified_time);
-  }
-  FileId parent_id;
-  if (!db->GetFileWithPath(virtual_path.DirName(), &parent_id))
+  if (!db->GetFileWithPath(virtual_path, &file_id))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   FileInfo file_info;
-  InitFileInfo(&file_info, parent_id, virtual_path.BaseName().value());
-  // In the event of a sporadic underlying failure, we might create a new file,
-  // but fail to update its mtime + atime.
-  if (!AllocateQuotaForPath(context, 1, file_info.name.size()))
-    return base::PLATFORM_FILE_ERROR_NO_SPACE;
-  PlatformFileError error = CreateFile(context, context->src_origin_url(),
-      context->src_type(), FilePath(), &file_info, 0, NULL);
-  if (base::PLATFORM_FILE_OK != error)
-    return error;
-
+  if (!db->GetFileInfo(file_id, &file_info)) {
+    NOTREACHED();
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  if (file_info.is_directory()) {
+    file_info.modification_time = last_modified_time;
+    if (!db->UpdateFileInfo(file_id, file_info))
+      return base::PLATFORM_FILE_ERROR_FAILED;
+    return base::PLATFORM_FILE_OK;
+  }
   FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), file_info.data_path);
-  return underlying_file_util_->Touch(context, data_path,
-    last_access_time, last_modified_time);
+  return underlying_file_util_->Touch(
+      context, data_path, last_access_time, last_modified_time);
 }
 
 PlatformFileError ObfuscatedFileSystemFileUtil::Truncate(
