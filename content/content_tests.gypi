@@ -132,6 +132,8 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
+            # TODO(jam): remove this
+            ['exclude', '^browser/renderer_host/resource_dispatcher_host_unittest.cc'],
           ],
         }],
       ],
