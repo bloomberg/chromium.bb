@@ -17,7 +17,23 @@ const int kDefaultPollingIntervalMilliseconds = 10 * 1000;  // 10s
 const int kNoChangePollingIntervalMilliseconds = 2 * 60 * 1000;  // 2 mins
 const int kTwoNoChangePollingIntervalMilliseconds = 10 * 60 * 1000;  // 10 mins
 const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
+
+WifiDataProviderImplBase* ChromeOSFactoryFunction() {
+  return new WifiDataProviderChromeOs();
 }
+
+// This global class forces code that links in this file to use that as a data
+// provider instead of the default Linux provider.
+class RegisterChromeOSWifiDataProvider {
+ public:
+  RegisterChromeOSWifiDataProvider() {
+    WifiDataProvider::SetFactory(ChromeOSFactoryFunction);
+  }
+};
+
+RegisterChromeOSWifiDataProvider g_force_chrome_os_provider;
+
+}  // namespace
 
 namespace chromeos {
 namespace {
@@ -68,13 +84,7 @@ bool NetworkLibraryWlanApi::GetAccessPointData(
 }  // namespace
 }  // namespace chromeos
 
-template<>
-WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
-  return new WifiDataProviderChromeOs();
-}
-
-WifiDataProviderChromeOs::WifiDataProviderChromeOs() :
-    started_(false) {
+WifiDataProviderChromeOs::WifiDataProviderChromeOs() : started_(false) {
 }
 
 WifiDataProviderChromeOs::~WifiDataProviderChromeOs() {
@@ -160,8 +170,7 @@ void WifiDataProviderChromeOs::DoWifiScanTaskOnUIThread() {
   if (!wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
     client_loop()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &WifiDataProviderChromeOs::DidWifiScanTaskNoResults));
-  }
-  else {
+  } else {
     client_loop()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &WifiDataProviderChromeOs::DidWifiScanTask,
         new_data));

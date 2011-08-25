@@ -569,12 +569,6 @@
             '../dbus/dbus.gyp:dbus',
           ],
         }],
-        ['OS=="linux" and chromeos==1', {
-          'sources/': [
-            ['exclude', '^browser/geolocation/wifi_data_provider_linux.cc'],
-            ['exclude', '^browser/geolocation/wifi_data_provider_linux.h'],
-          ]
-        }],
         ['OS=="linux" and toolkit_views==1',{
           'dependencies': [
             '../views/views.gyp:views',
