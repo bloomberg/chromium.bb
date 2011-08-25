@@ -601,7 +601,7 @@ FocusManager* Widget::GetFocusManager() {
 InputMethod* Widget::GetInputMethod() {
   if (is_top_level()) {
     if (!input_method_.get())
-      ReplaceInputMethod(native_widget_->CreateInputMethod());
+      input_method_.reset(native_widget_->CreateInputMethod());
     return input_method_.get();
   } else {
     Widget* toplevel = GetTopLevelWidget();

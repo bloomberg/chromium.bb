@@ -622,7 +622,12 @@ bool NativeWidgetWin::HasMouseCapture() const {
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-  return views::Widget::IsPureViews() ? new InputMethodWin(this) : NULL;
+  if (views::Widget::IsPureViews()) {
+    InputMethod* input_method = new InputMethodWin(this);
+    input_method->Init(GetWidget());
+    return input_method;
+  }
+  return NULL;
 }
 
 void NativeWidgetWin::CenterWindow(const gfx::Size& size) {

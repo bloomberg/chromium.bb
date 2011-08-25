@@ -236,10 +236,12 @@ bool NativeWidgetViews::HasMouseCapture() const {
 
 InputMethod* NativeWidgetViews::CreateInputMethod() {
 #if defined(HAVE_IBUS)
-  return new InputMethodIBus(this);
+  InputMethod* input_method = new InputMethodIBus(this);
 #else
-  return new MockInputMethod(this);
+  InputMethod* input_method = new MockInputMethod(this);
 #endif
+  input_method->Init(GetWidget());
+  return input_method;
 }
 
 void NativeWidgetViews::CenterWindow(const gfx::Size& size) {
