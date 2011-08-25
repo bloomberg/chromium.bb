@@ -51,7 +51,7 @@ int NaClQualifyReadTp(void) {
          * while we call __aeabi_read_tp.  If it uses the stack, we'll crash.
          */
         "mov r1, sp\n"
-        "mov sp, #0\n"
+        "mov sp, %0\n"
         /*
          * Fetch the $tp value.
          * The ABI says this may not clobber any registers but r0.
@@ -61,7 +61,7 @@ int NaClQualifyReadTp(void) {
          * Now restore the real stack pointer.
          */
         "mov sp, r1\n"
-        : : : "r0", "r1");
+        : : "r"(0) : "r0", "r1");
     success = 1;
   } else {
     success = 0;
