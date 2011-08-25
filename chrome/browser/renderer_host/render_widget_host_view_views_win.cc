@@ -5,6 +5,16 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 
 #include "base/logging.h"
+#include "chrome/browser/renderer_host/render_widget_host_view_win.h"
+#include "views/widget/widget.h"
+
+// static
+RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  if (views::Widget::IsPureViews())
+    return new RenderWidgetHostViewViews(widget);
+  return new RenderWidgetHostViewWin(widget);
+}
 
 void RenderWidgetHostViewViews::UpdateCursor(const WebCursor& cursor) {
 }

@@ -258,6 +258,12 @@ int MockContentBrowserClient::GetCrashSignalFD(
 }
 #endif
 
+#if defined(OS_WIN)
+const wchar_t* MockContentBrowserClient::GetResourceDllName() {
+  return NULL;
+}
+#endif
+
 #if defined(USE_NSS)
 crypto::CryptoModuleBlockingPasswordDelegate*
     MockContentBrowserClient::GetCryptoPasswordDelegate(const GURL& url) {

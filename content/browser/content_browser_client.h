@@ -292,6 +292,11 @@ class ContentBrowserClient {
   virtual int GetCrashSignalFD(const std::string& process_type) = 0;
 #endif
 
+#if defined(OS_WIN)
+  // Returns the name of the dll that contains cursors and other resources.
+  virtual const wchar_t* GetResourceDllName() = 0;
+#endif
+
 #if defined(USE_NSS)
   // Return a delegate to authenticate and unlock |module|.
   // This is called on a worker thread.

@@ -120,6 +120,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;
 #endif
+#if defined(OS_WIN)
+  virtual const wchar_t* GetResourceDllName() OVERRIDE;
+#endif
 #if defined(USE_NSS)
   virtual
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(

@@ -22,25 +22,21 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/wrapped_window_proc.h"
-#include "chrome/browser/browser_trial.h"
-#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_win.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/common/content_switches.h"
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/notification_service.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
-#include "grit/webkit_resources.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -227,16 +223,6 @@ typedef BOOL (WINAPI *ChangeWindowMessageFilterExFunction)(
 ChangeWindowMessageFilterExFunction g_ChangeWindowMessageFilterEx;
 
 }  // namespace
-
-// RenderWidgetHostView --------------------------------------------------------
-
-// static
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  if (views::Widget::IsPureViews())
-    return new RenderWidgetHostViewViews(widget);
-  return new RenderWidgetHostViewWin(widget);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, public:
@@ -599,8 +585,8 @@ void RenderWidgetHostViewWin::UpdateCursor(const WebCursor& cursor) {
 void RenderWidgetHostViewWin::UpdateCursorIfOverSelf() {
   static HCURSOR kCursorArrow = LoadCursor(NULL, IDC_ARROW);
   static HCURSOR kCursorAppStarting = LoadCursor(NULL, IDC_APPSTARTING);
-  static HINSTANCE module_handle =
-      GetModuleHandle(chrome::kBrowserResourcesDll);
+  static HINSTANCE module_handle = GetModuleHandle(
+      content::GetContentClient()->browser()->GetResourceDllName());
 
   // If the mouse is over our HWND, then update the cursor state immediately.
   CPoint pt;

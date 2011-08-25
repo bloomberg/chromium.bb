@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_factory.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/logging_chrome.h"
@@ -768,6 +769,12 @@ int ChromeContentBrowserClient::GetCrashSignalFD(
   return -1;
 }
 #endif  // defined(OS_LINUX)
+
+#if defined(OS_WIN)
+const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {
+  return chrome::kBrowserResourcesDll;
+}
+#endif
 
 #if defined(USE_NSS)
 crypto::CryptoModuleBlockingPasswordDelegate*

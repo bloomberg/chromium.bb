@@ -124,6 +124,10 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual int GetCrashSignalFD(const std::string& process_type) OVERRIDE;
 #endif
 
+#if defined(OS_WIN)
+  virtual const wchar_t* GetResourceDllName() OVERRIDE;
+#endif
+
 #if defined(USE_NSS)
   virtual
       crypto::CryptoModuleBlockingPasswordDelegate* GetCryptoPasswordDelegate(
