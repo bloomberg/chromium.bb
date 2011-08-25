@@ -286,6 +286,7 @@ def _SetEnvForPnacl(env, root):
               AR=pnacl_ar,
               RANLIB=pnacl_ranlib,
               DISASS=pnacl_disass,
+              OBJDUMP=pnacl_disass,
               STRIP=pnacl_strip,
               # Strip doesn't seem to be a first-class citizen in SCons country,
               # so we have to add these *COM, *COMSTR manually.

@@ -99,17 +99,29 @@ irt_library = LinkIrt('irt', irt_browser, ['ppruntime',
 #env.AddHeaderToSdk(['irt.h'])
 #env.AddHeaderToSdk(['irt_ppapi.h'])
 
-if env.Bit('build_x86_32') and not env.Bit('bitcode'):
-  # Make sure that the linked IRT nexe never uses TLS via %gs access.
-  # All IRT code must avoid direct use of the TLS ABI register, which
-  # is reserved for user TLS.  Instead, ensure all TLS accesses use a
-  # call to __nacl_read_tp, which the IRT code overrides to segregate
-  # IRT-private TLS from user TLS.
+# Make sure that the linked IRT nexe never uses TLS via the TLS ABI
+# register (e.g., %gs on x86-32).  All IRT code must avoid direct use
+# of the TLS ABI register, which is reserved for user TLS.  Instead,
+# ensure all TLS accesses use a call to __nacl_read_tp (or __aeabi_read_tp
+# for ARM), which the IRT code overrides to segregate IRT-private TLS
+# from user TLS.
+if ((env.Bit('build_arm') or env.Bit('build_x86_32'))
+    # Do not try to run OBJDUMP if 'built_elsewhere', since that *might*
+    # mean that a toolchain is not even present. E.g., the arm buildbots
+    # do not have the pnacl toolchain, since that is built for x86 hosts.
+    and not env.Bit('built_elsewhere')):
   node = env.CommandTest('irt_tls_test.out',
                          ['${PYTHON}', env.File('check_tls.py'),
-                          '${OBJDUMP}', irt_library])
+                          '${TARGET_FULLARCH}', '${OBJDUMP}', irt_library],
+                         # don't run ${PYTHON} under the emulator.
+                         direct_emulation=False,
+                         # Holy cow it takes over 30 seconds to disassemble
+                         # the ARM irt.nexe. Set test size to 'large'.
+                         size='large')
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_tls_test')
   node = env.CommandTest('irt_core_tls_test.out',
                          ['${PYTHON}', env.File('check_tls.py'),
-                          '${OBJDUMP}', irt_core_library])
+                          '${TARGET_FULLARCH}', '${OBJDUMP}', irt_core_library],
+                         # don't run ${PYTHON} under the emulator.
+                         direct_emulation=False)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_core_tls_test')
