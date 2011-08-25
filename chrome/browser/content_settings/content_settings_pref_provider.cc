@@ -563,18 +563,20 @@ void PrefProvider::Observe(
     if (updating_preferences_)
       return;
 
-    AutoReset<bool> auto_reset(&updating_preferences_, true);
-    std::string* name = Details<std::string>(details).ptr();
-    if (*name == prefs::kContentSettingsPatternPairs) {
-      SyncObsoletePatternPref();
-      SyncObsoleteGeolocationPref();
-    } else if (*name == prefs::kContentSettingsPatterns) {
-      MigrateObsoleteContentSettingsPatternPref();
-    } else if (*name == prefs::kGeolocationContentSettings) {
-      MigrateObsoleteGeolocationPref();
-    } else {
-      NOTREACHED() << "Unexpected preference observed";
-      return;
+    if (!is_incognito_) {
+      AutoReset<bool> auto_reset(&updating_preferences_, true);
+      std::string* name = Details<std::string>(details).ptr();
+      if (*name == prefs::kContentSettingsPatternPairs) {
+        SyncObsoletePatternPref();
+        SyncObsoleteGeolocationPref();
+      } else if (*name == prefs::kContentSettingsPatterns) {
+        MigrateObsoleteContentSettingsPatternPref();
+      } else if (*name == prefs::kGeolocationContentSettings) {
+        MigrateObsoleteGeolocationPref();
+      } else {
+        NOTREACHED() << "Unexpected preference observed";
+        return;
+      }
     }
     ReadContentSettingsFromPref(true);
 
