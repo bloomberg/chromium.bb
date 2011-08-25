@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/BidiCheckerWebUITest.h"
+#include "chrome/browser/ui/webui/bidi_checker_web_ui_test.h"
 
 #include "base/base_paths.h"
 #include "base/path_service.h"
