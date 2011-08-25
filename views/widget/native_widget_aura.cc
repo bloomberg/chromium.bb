@@ -7,7 +7,14 @@
 #include "aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/font.h"
 #include "views/widget/native_widget_delegate.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_gdi_object.h"
+#include "base/win/win_util.h"
+#include "ui/base/l10n/l10n_util_win.h"
+#endif
 
 namespace views {
 
@@ -21,6 +28,19 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
 }
 
 NativeWidgetAura::~NativeWidgetAura() {
+}
+
+// static
+gfx::Font NativeWidgetAura::GetWindowTitleFont() {
+#if defined(OS_WIN)
+  NONCLIENTMETRICS ncm;
+  base::win::GetNonClientMetrics(&ncm);
+  l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
+  base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
+  return gfx::Font(caption_font);
+#else
+  return gfx::Font();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

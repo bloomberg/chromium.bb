@@ -18,6 +18,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
 #include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace {
 
@@ -48,6 +49,28 @@ class TestView : public views::View {
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestView);
+};
+
+class TestWindowContents : public views::WidgetDelegateView {
+ public:
+  TestWindowContents() {}
+  virtual ~TestWindowContents() {}
+
+ private:
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    canvas->FillRectInt(SK_ColorGRAY, 0, 0, width(), height());
+  }
+
+  // Overridden from views::WidgetDelegateView:
+  virtual std::wstring GetWindowTitle() const OVERRIDE {
+    return L"Test Window!";
+  }
+  virtual View* GetContentsView() OVERRIDE {
+    return this;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestWindowContents);
 };
 
 }  // namespace
@@ -99,6 +122,11 @@ int main(int argc, char** argv) {
   params.parent = &window2;
   widget.Init(params);
   widget.SetContentsView(new TestView);
+
+  TestWindowContents* contents = new TestWindowContents;
+  views::Widget* views_window = views::Widget::CreateWindowWithParentAndBounds(
+      contents, &window2, gfx::Rect(120, 150, 200, 200));
+  views_window->Show();
 
   aura::Desktop::GetInstance()->Run();
   return 0;

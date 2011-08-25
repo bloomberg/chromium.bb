@@ -9,6 +9,10 @@
 #include "aura/window_delegate.h"
 #include "views/widget/native_widget_private.h"
 
+namespace gfx {
+class Font;
+}
+
 namespace views {
 
 class NativeWidgetAura : public internal::NativeWidgetPrivate,
@@ -16,6 +20,10 @@ class NativeWidgetAura : public internal::NativeWidgetPrivate,
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetAura();
+
+  // TODO(beng): Find a better place for this, and the similar method on
+  //             NativeWidgetWin.
+  static gfx::Font GetWindowTitleFont();
 
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;

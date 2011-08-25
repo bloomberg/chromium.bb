@@ -796,7 +796,6 @@
             '../ui/ui.gyp:ui_resources',
             '../ui/ui.gyp:ui_resources_standard',
             'views',
-            'views_desktop_lib',
           ],
           'include_dirs': [
             '..',

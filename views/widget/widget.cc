@@ -194,7 +194,7 @@ Widget* Widget::CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
   Widget* widget = new Widget;
   Widget::InitParams params;
   params.delegate = delegate;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(USE_AURA)
   params.parent = parent;
 #endif
   params.bounds = bounds;
