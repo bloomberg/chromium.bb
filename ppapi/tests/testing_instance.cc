@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <sstream>
 #include <vector>
 
 #include "ppapi/cpp/module.h"
@@ -13,6 +14,10 @@
 #include "ppapi/tests/test_case.h"
 
 TestCaseFactory* TestCaseFactory::head_ = NULL;
+
+// Cookie value we use to signal "we're still working." See the comment above
+// the class declaration for how this works.
+static const char kProgressSignal[] = "...";
 
 // Returns a new heap-allocated test case for the given test, or NULL on
 // failure.
@@ -23,6 +28,7 @@ TestingInstance::TestingInstance(PP_Instance instance)
     : pp::InstancePrivate(instance),
 #endif
       current_case_(NULL),
+      progress_cookie_number_(0),
       executed_tests_(false),
       nacl_mode_(false) {
   callback_factory_.Initialize(this);
@@ -87,6 +93,9 @@ void TestingInstance::DidChangeView(const pp::Rect& position,
 
 void TestingInstance::LogTest(const std::string& test_name,
                               const std::string& error_message) {
+  // Tell the browser we're still working.
+  ReportProgress(kProgressSignal);
+
   std::string html;
   html.append("<div class=\"test_line\"><span class=\"test_name\">");
   html.append(test_name);
@@ -113,7 +122,7 @@ void TestingInstance::AppendError(const std::string& message) {
 }
 
 void TestingInstance::ExecuteTests(int32_t unused) {
-  SetCookie("STARTUP_COOKIE", "STARTED");
+  ReportProgress(kProgressSignal);
 
   // Clear the console.
   PostMessage(pp::Var("TESTING_MESSAGE:ClearConsole"));
@@ -134,7 +143,7 @@ void TestingInstance::ExecuteTests(int32_t unused) {
   }
 
   // Declare we're done by setting a cookie to either "PASS" or the errors.
-  SetCookie("COMPLETION_COOKIE", errors_.empty() ? "PASS" : errors_);
+  ReportProgress(errors_.empty() ? "PASS" : errors_);
   PostMessage(pp::Var("TESTING_MESSAGE:DidExecuteTests"));
 }
 
@@ -187,6 +196,14 @@ void TestingInstance::LogHTML(const std::string& html) {
   std::string message("TESTING_MESSAGE:LogHTML:");
   message.append(html);
   PostMessage(pp::Var(message));
+}
+
+void TestingInstance::ReportProgress(const std::string& progress_value) {
+  // Use streams since nacl doesn't compile base yet (for StringPrintf).
+  std::ostringstream cookie_name;
+  cookie_name << "PPAPI_PROGRESS_" << progress_cookie_number_;
+  SetCookie(cookie_name.str(), progress_value);
+  progress_cookie_number_++;
 }
 
 void TestingInstance::SetCookie(const std::string& name,

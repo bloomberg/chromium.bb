@@ -90,26 +90,33 @@ class PPAPITest : public UITest {
     ASSERT_TRUE(tab.get());
     ASSERT_TRUE(tab->NavigateToURL(test_url));
 
-    // First wait for the "starting" signal. This cookie is set at the start
-    // of every test. Waiting for this separately allows us to avoid a single
-    // long timeout. Instead, we can have two timeouts which allow startup +
-    // test execution time to take a while on a loaded computer, while also
-    // making sure we're making forward progress.
-    std::string startup_cookie =
-        WaitUntilCookieNonEmpty(tab.get(), test_url,
-            "STARTUP_COOKIE", TestTimeouts::action_max_timeout_ms());
+    // See comment above TestingInstance in ppapi/test/testing_instance.h.
+    // Basically it sets a series of numbered cookies. The value of "..." means
+    // it's still working and we should continue to wait, any other value
+    // indicates completion (in this case it will start with "PASS" or "FAIL").
+    // This keeps us from timing out on cookie waits for long tests.
+    int progress_number = 0;
+    std::string progress;
+    while (true) {
+      std::string cookie_name = StringPrintf("PPAPI_PROGRESS_%d",
+                                             progress_number);
+      progress = WaitUntilCookieNonEmpty(tab.get(), test_url,
+            cookie_name.c_str(), TestTimeouts::large_test_timeout_ms());
+      if (progress != "...")
+        break;
+      progress_number++;
+    }
 
-    // If this fails, the plugin couldn't be loaded in the given amount of
-    // time. This may mean the plugin was not found or possibly the system
-    // can't load it due to missing symbols, etc.
-    ASSERT_STREQ("STARTED", startup_cookie.c_str())
-        << "Plugin couldn't be loaded. Make sure the PPAPI test plugin is "
-        << "built, in the right place, and doesn't have any missing symbols.";
+    if (progress_number == 0) {
+      // Failing the first time probably means the plugin wasn't loaded.
+      ASSERT_FALSE(progress.empty())
+          << "Plugin couldn't be loaded. Make sure the PPAPI test plugin is "
+          << "built, in the right place, and doesn't have any missing symbols.";
+    } else {
+      ASSERT_FALSE(progress.empty()) << "Test timed out.";
+    }
 
-    std::string escaped_value =
-        WaitUntilCookieNonEmpty(tab.get(), test_url,
-            "COMPLETION_COOKIE", TestTimeouts::large_test_timeout_ms());
-    EXPECT_STREQ("PASS", escaped_value.c_str());
+    EXPECT_STREQ("PASS", progress.c_str());
   }
 };
 
