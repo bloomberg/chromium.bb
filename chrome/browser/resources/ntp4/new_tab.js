@@ -619,19 +619,24 @@ cr.define('ntp4', function() {
    */
   function cardChangedHandler(e) {
     var page = e.cardSlider.currentCardValue;
-    if (page.classList.contains('apps-page')) {
-      shownPage = templateData['apps_page_id'];
-      shownPageIndex = getAppsPageIndex(page);
-    } else if (page.classList.contains('most-visited-page')) {
-      shownPage = templateData['most_visited_page_id'];
-      shownPageIndex = 0;
-    } else if (page.classList.contains('bookmarks-page')) {
-      shownPage = templateData['bookmarks_page_id'];
-      shownPageIndex = 0;
-    } else {
-      console.error('unknown page selected');
+
+    // Don't change shownPage until startup is done (and page changes actually
+    // reflect user actions).
+    if (!document.documentElement.classList.contains('starting-up')) {
+      if (page.classList.contains('apps-page')) {
+        shownPage = templateData['apps_page_id'];
+        shownPageIndex = getAppsPageIndex(page);
+      } else if (page.classList.contains('most-visited-page')) {
+        shownPage = templateData['most_visited_page_id'];
+        shownPageIndex = 0;
+      } else if (page.classList.contains('bookmarks-page')) {
+        shownPage = templateData['bookmarks_page_id'];
+        shownPageIndex = 0;
+      } else {
+        console.error('unknown page selected');
+      }
+      chrome.send('pageSelected', [shownPage, shownPageIndex]);
     }
-    chrome.send('pageSelected', [shownPage, shownPageIndex]);
 
     // Update the active dot
     var curDot = dotList.getElementsByClassName('selected')[0];
