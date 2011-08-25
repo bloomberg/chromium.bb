@@ -974,8 +974,6 @@ InputMethod* NativeWidgetGtk::CreateInputMethod() {
     InputMethod* input_method = new InputMethodGtk(this);
 #endif
     input_method->Init(GetWidget());
-    if (has_focus_)
-      input_method->OnFocus();
     return input_method;
   }
   // GTK's textfield handles IME.
@@ -1643,7 +1641,7 @@ gboolean NativeWidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
     return false;
 
   // Only top-level Widget should have an InputMethod instance.
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  InputMethod* input_method = GetWidget()->GetInputMethod();
   if (input_method)
     input_method->OnFocus();
 
@@ -1667,7 +1665,7 @@ gboolean NativeWidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
     return false;
 
   // Only top-level Widget should have an InputMethod instance.
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  InputMethod* input_method = GetWidget()->GetInputMethod();
   if (input_method)
     input_method->OnBlur();
   return false;
@@ -1675,7 +1673,7 @@ gboolean NativeWidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
 
 gboolean NativeWidgetGtk::OnEventKey(GtkWidget* widget, GdkEventKey* event) {
   KeyEvent key(reinterpret_cast<NativeEvent>(event));
-  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  InputMethod* input_method = GetWidget()->GetInputMethod();
   if (input_method)
     input_method->DispatchKeyEvent(key);
   else

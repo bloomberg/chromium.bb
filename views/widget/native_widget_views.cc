@@ -67,15 +67,13 @@ void NativeWidgetViews::OnActivate(bool active) {
   // This will be fixed when we have WM API.
   Widget* widget = GetWidget();
   if (widget->is_top_level()) {
-    InputMethod* input_method = widget->GetInputMethodDirect();
+    InputMethod* input_method = widget->GetInputMethod();
     if (active) {
-      if (input_method)
-        input_method->OnFocus();
+      input_method->OnFocus();
       // See description of got_initial_focus_in_ for details on this.
       widget->GetFocusManager()->RestoreFocusedView();
     } else {
-      if (input_method)
-        input_method->OnBlur();
+      input_method->OnBlur();
       widget->GetFocusManager()->StoreFocusedView();
     }
   }
