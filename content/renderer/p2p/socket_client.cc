@@ -8,6 +8,8 @@
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 
+namespace content {
+
 P2PSocketClient::P2PSocketClient(P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher),
       ipc_message_loop_(dispatcher->message_loop()),
@@ -153,3 +155,5 @@ void P2PSocketClient::Detach() {
   dispatcher_ = NULL;
   OnError();
 }
+
+}  // namespace content

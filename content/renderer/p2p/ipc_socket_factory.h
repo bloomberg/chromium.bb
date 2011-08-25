@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "third_party/libjingle/source/talk/base/packetsocketfactory.h"
 
+namespace content {
+
 class P2PSocketDispatcher;
 
 // IpcPacketSocketFactory implements talk_base::PacketSocketFactory
@@ -41,5 +43,7 @@ class IpcPacketSocketFactory : public talk_base::PacketSocketFactory {
 
   DISALLOW_COPY_AND_ASSIGN(IpcPacketSocketFactory);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_P2P_IPC_SOCKET_FACTORY_H_

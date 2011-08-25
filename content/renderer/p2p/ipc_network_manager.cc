@@ -7,6 +7,8 @@
 #include "net/base/net_util.h"
 #include "net/base/sys_byteorder.h"
 
+namespace content {
+
 IpcNetworkManager::IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher)
     : socket_dispatcher_(socket_dispatcher),
       started_(false),
@@ -60,3 +62,5 @@ void IpcNetworkManager::OnNetworkListChanged(
 void IpcNetworkManager::SendNetworksChangedSignal() {
   SignalNetworksChanged();
 }
+
+}  // namespace content

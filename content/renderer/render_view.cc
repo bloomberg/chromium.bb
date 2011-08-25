@@ -416,7 +416,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
     WebAccessibilityCache::enableAccessibility();
 
 #if defined(ENABLE_P2P_APIS)
-  p2p_socket_dispatcher_ = new P2PSocketDispatcher(this);
+  p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
 #endif
 
   new MHTMLGenerator(this);
@@ -4589,4 +4589,3 @@ void RenderView::OnEnableViewSourceMode() {
     return;
   main_frame->enableViewSourceMode(true);
 }
-

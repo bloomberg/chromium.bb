@@ -80,6 +80,8 @@ class FakeServerSocket : public net::ServerSocket {
 
 }  // namespace
 
+namespace content {
+
 class P2PSocketHostTcpServerTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
@@ -159,3 +161,5 @@ TEST_F(P2PSocketHostTcpServerTest, Accept2) {
   EXPECT_EQ(incoming2, GetSocketFormTcpSocketHost(
       reinterpret_cast<P2PSocketHostTcp*>(new_host2.get())));
 }
+
+}  // namespace content

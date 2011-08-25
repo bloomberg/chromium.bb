@@ -22,6 +22,8 @@ class GrowableIOBuffer;
 class StreamSocket;
 }  // namespace net
 
+namespace content {
+
 class P2PSocketHostTcp : public P2PSocketHost {
  public:
   P2PSocketHostTcp(IPC::Message::Sender* message_sender,
@@ -70,5 +72,7 @@ class P2PSocketHostTcp : public P2PSocketHost {
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcp);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_H_

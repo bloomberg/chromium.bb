@@ -38,6 +38,8 @@ namespace net {
 class IPEndPoint;
 }  // namespace net
 
+namespace content {
+
 class P2PHostAddressRequest;
 class P2PSocketClient;
 
@@ -112,5 +114,7 @@ class P2PSocketDispatcher : public RenderViewObserver {
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_

@@ -16,6 +16,8 @@ const int kReadBufferSize = 65536;
 
 }  // namespace
 
+namespace content {
+
 P2PSocketHostUdp::P2PSocketHostUdp(IPC::Message::Sender* message_sender,
                                    int routing_id, int id)
     : P2PSocketHost(message_sender, routing_id, id),
@@ -169,3 +171,5 @@ P2PSocketHost* P2PSocketHostUdp::AcceptIncomingTcpConnection(
   OnError();
   return NULL;
 }
+
+}  // namespace content

@@ -12,6 +12,8 @@
 #include "jingle/glue/utils.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
+namespace content {
+
 namespace {
 
 // IpcPacketSocket implements talk_base::AsyncPacketSocket interface
@@ -362,3 +364,5 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
     return NULL;
   return socket.release();
 }
+
+}  // namespace content

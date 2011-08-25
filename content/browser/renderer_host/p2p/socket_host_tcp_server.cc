@@ -17,6 +17,8 @@ namespace {
 const int kListenBacklog = 5;
 }  // namespace
 
+namespace content {
+
 P2PSocketHostTcpServer::P2PSocketHostTcpServer(
     IPC::Message::Sender* message_sender,
     int routing_id, int id)
@@ -135,3 +137,5 @@ P2PSocketHost* P2PSocketHostTcpServer::AcceptIncomingTcpConnection(
 
   return result.release();
 }
+
+}  // namespace content

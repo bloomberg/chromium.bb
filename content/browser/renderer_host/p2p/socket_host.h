@@ -10,6 +10,8 @@
 #include "ipc/ipc_message.h"
 #include "net/base/ip_endpoint.h"
 
+namespace content {
+
 // Base class for P2P sockets.
 class P2PSocketHost {
  public:
@@ -71,5 +73,7 @@ class P2PSocketHost {
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_H_

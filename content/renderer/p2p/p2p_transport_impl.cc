@@ -15,6 +15,8 @@
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 
+namespace content {
+
 P2PTransportImpl::P2PTransportImpl(
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory)
@@ -137,3 +139,5 @@ void P2PTransportImpl::OnTcpConnected(int result) {
   state_ = static_cast<State>(STATE_READABLE | STATE_WRITABLE);
   event_handler_->OnStateChange(state_);
 }
+
+}  // namespace content

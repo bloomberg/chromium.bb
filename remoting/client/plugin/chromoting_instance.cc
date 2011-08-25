@@ -173,11 +173,11 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   webkit::ppapi::PluginInstance* plugin_instance =
       webkit::ppapi::ResourceTracker::Get()->GetInstance(pp_instance());
 
-  P2PSocketDispatcher* socket_dispatcher =
+  content::P2PSocketDispatcher* socket_dispatcher =
       plugin_instance->delegate()->GetP2PSocketDispatcher();
 
-  IpcNetworkManager* network_manager = NULL;
-  IpcPacketSocketFactory* socket_factory = NULL;
+  content::IpcNetworkManager* network_manager = NULL;
+  content::IpcPacketSocketFactory* socket_factory = NULL;
   HostResolverFactory* host_resolver_factory = NULL;
   PortAllocatorSessionFactory* session_factory =
       CreatePepperPortAllocatorSessionFactory(
@@ -187,8 +187,8 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // disabled), then JingleSessionManager will try to use physical sockets.
   if (socket_dispatcher) {
     VLOG(1) << "Creating IpcNetworkManager and IpcPacketSocketFactory.";
-    network_manager = new IpcNetworkManager(socket_dispatcher);
-    socket_factory = new IpcPacketSocketFactory(socket_dispatcher);
+    network_manager = new content::IpcNetworkManager(socket_dispatcher);
+    socket_factory = new content::IpcPacketSocketFactory(socket_dispatcher);
     host_resolver_factory = new IpcHostResolverFactory(socket_dispatcher);
   }
 

@@ -13,10 +13,9 @@
 #include "net/base/network_change_notifier.h"
 
 namespace content {
-class ResourceContext;
-}  // namespace content
 
 class P2PSocketHost;
+class ResourceContext;
 
 class P2PSocketDispatcherHost
     : public BrowserMessageFilter,
@@ -84,5 +83,7 @@ class P2PSocketDispatcherHost
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcherHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_DISPATCHER_HOST_H_

@@ -16,6 +16,8 @@
 #include "net/base/single_request_host_resolver.h"
 #include "net/base/sys_addrinfo.h"
 
+namespace content {
+
 class P2PSocketDispatcherHost::DnsRequest {
  public:
   typedef base::Callback<void(const net::IPAddressNumber&)> DoneCallback;
@@ -281,3 +283,5 @@ void P2PSocketDispatcherHost::OnDestroySocket(const IPC::Message& msg,
     LOG(ERROR) << "Received P2PHostMsg_DestroySocket for invalid socket_id.";
   }
 }
+
+}  // namespace content

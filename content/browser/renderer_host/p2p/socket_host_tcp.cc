@@ -12,11 +12,11 @@
 #include "net/socket/tcp_client_socket.h"
 
 namespace {
-
 const int kReadBufferSize = 4096;
 const int kPacketHeaderSize = sizeof(uint16);
-
 }  // namespace
+
+namespace content {
 
 P2PSocketHostTcp::P2PSocketHostTcp(IPC::Message::Sender* message_sender,
                                    int routing_id, int id)
@@ -271,3 +271,5 @@ P2PSocketHost* P2PSocketHostTcp::AcceptIncomingTcpConnection(
   OnError();
   return NULL;
 }
+
+} // namespace content

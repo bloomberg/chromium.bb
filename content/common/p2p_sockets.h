@@ -8,11 +8,15 @@
 #ifndef CONTENT_COMMON_P2P_SOCKETS_H_
 #define CONTENT_COMMON_P2P_SOCKETS_H_
 
+namespace content {
+
 // Type of P2P Socket.
 enum P2PSocketType {
   P2P_SOCKET_UDP,
   P2P_SOCKET_TCP_SERVER,
   P2P_SOCKET_TCP_CLIENT,
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_P2P_SOCKETS_H_

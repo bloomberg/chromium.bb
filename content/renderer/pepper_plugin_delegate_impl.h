@@ -295,7 +295,7 @@ class PepperPluginDelegateImpl
   virtual void DidStopLoading() OVERRIDE;
   virtual void SetContentRestriction(int restrictions) OVERRIDE;
   virtual void SaveURLAs(const GURL& url) OVERRIDE;
-  virtual P2PSocketDispatcher* GetP2PSocketDispatcher() OVERRIDE;
+  virtual content::P2PSocketDispatcher* GetP2PSocketDispatcher() OVERRIDE;
   virtual webkit_glue::P2PTransport* CreateP2PTransport() OVERRIDE;
   virtual double GetLocalTimeZoneOffset(base::Time t) OVERRIDE;
   virtual std::string GetFlashCommandLineArgs() OVERRIDE;

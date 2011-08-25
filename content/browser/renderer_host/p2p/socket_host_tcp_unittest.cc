@@ -17,6 +17,8 @@ using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Return;
 
+namespace content {
+
 class P2PSocketHostTcpTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
@@ -165,3 +167,5 @@ TEST_F(P2PSocketHostTcpTest, SendAfterStunRequest) {
 
   EXPECT_EQ(expected_data, sent_data_);
 }
+
+}  // namespace content

@@ -8,7 +8,9 @@
 #include "base/compiler_specific.h"
 #include "remoting/jingle_glue/host_resolver.h"
 
+namespace content {
 class P2PSocketDispatcher;
+}  // namespace content
 
 namespace remoting {
 
@@ -19,13 +21,13 @@ namespace remoting {
 // HostResolver interface is moved to libjingle.
 class IpcHostResolverFactory : public HostResolverFactory {
  public:
-  IpcHostResolverFactory(P2PSocketDispatcher* socket_dispatcher);
+  IpcHostResolverFactory(content::P2PSocketDispatcher* socket_dispatcher);
   virtual ~IpcHostResolverFactory();
 
   virtual HostResolver* CreateHostResolver() OVERRIDE;
 
  private:
-  P2PSocketDispatcher* socket_dispatcher_;
+  content::P2PSocketDispatcher* socket_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcHostResolverFactory);
 };

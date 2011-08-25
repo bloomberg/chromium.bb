@@ -14,6 +14,8 @@ const int kStunHeaderSize = 20;
 const uint32 kStunMagicCookie = 0x2112A442;
 }  // namespace
 
+namespace content {
+
 P2PSocketHost::P2PSocketHost(IPC::Message::Sender* message_sender,
                              int routing_id, int id)
     : message_sender_(message_sender),
@@ -89,3 +91,5 @@ P2PSocketHost* P2PSocketHost::Create(
   NOTREACHED();
   return NULL;
 }
+
+}  // namespace content

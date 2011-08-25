@@ -113,6 +113,8 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
 
 }  // namespace
 
+namespace content {
+
 class P2PSocketHostUdpTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
@@ -236,3 +238,5 @@ TEST_F(P2PSocketHostUdpTest, SendAfterStunResponseDifferentHost) {
       .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
   socket_host_->Send(dest2_, packet);
 }
+
+}  // namespace content

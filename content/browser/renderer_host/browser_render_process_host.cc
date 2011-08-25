@@ -409,7 +409,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
               widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
 
 #if defined(ENABLE_P2P_APIS)
-  channel_->AddFilter(new P2PSocketDispatcherHost(
+  channel_->AddFilter(new content::P2PSocketDispatcherHost(
       &browser_context()->GetResourceContext()));
 #endif
 

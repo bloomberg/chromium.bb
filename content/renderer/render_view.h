@@ -63,7 +63,6 @@ class LoadProgressTracker;
 class MediaStreamImpl;
 class NavigationState;
 class NotificationProvider;
-class P2PSocketDispatcher;
 class PepperDeviceTest;
 class PrintWebViewHelper;
 class RenderViewObserver;
@@ -83,16 +82,20 @@ struct WebDropData;
 
 namespace base {
 class WaitableEvent;
-}
+}  // namespace base
+
+namespace content {
+class P2PSocketDispatcher;
+}  // namespace content
 
 namespace chrome {
 class ChromeContentRendererClient;
-}
+}  // namespace chrome
 
 namespace gfx {
 class Point;
 class Rect;
-}
+}  // namespace gfx
 
 namespace webkit {
 
@@ -237,7 +240,7 @@ class RenderView : public RenderWidget,
   const WebKit::WebNode& context_menu_node() { return context_menu_node_; }
 
   // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
-  P2PSocketDispatcher* p2p_socket_dispatcher() {
+  content::P2PSocketDispatcher* p2p_socket_dispatcher() {
     return p2p_socket_dispatcher_;
   }
 
@@ -1170,7 +1173,7 @@ class RenderView : public RenderWidget,
   bool accessibility_ack_pending_;
 
   // Dispatches all P2P socket used by the renderer.
-  P2PSocketDispatcher* p2p_socket_dispatcher_;
+  content::P2PSocketDispatcher* p2p_socket_dispatcher_;
 
   DevToolsAgent* devtools_agent_;
 

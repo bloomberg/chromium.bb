@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/p2p/p2p_transport_impl.h"
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
-#include "content/renderer/p2p/p2p_transport_impl.h"
 #include "jingle/glue/fake_network_manager.h"
 #include "jingle/glue/fake_socket_factory.h"
 #include "jingle/glue/thread_wrapper.h"
@@ -323,6 +324,8 @@ class TcpChannelTester : public base::RefCountedThreadSafe<TcpChannelTester> {
 
 }  // namespace
 
+namespace content {
+
 class MockP2PEventHandler : public P2PTransport::EventHandler {
  public:
   MOCK_METHOD1(OnCandidateReady, void(const std::string& address));
@@ -483,3 +486,5 @@ TEST_F(P2PTransportImplTest, SendDataTcp) {
   message_loop_.Run();
   channel_tester->CheckResults();
 }
+
+}  // namespace content

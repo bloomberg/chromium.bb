@@ -9,6 +9,8 @@
 #include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/socket_client.h"
 
+namespace content {
+
 P2PSocketDispatcher::P2PSocketDispatcher(RenderView* render_view)
     : RenderViewObserver(render_view),
       message_loop_(base::MessageLoopProxy::current()),
@@ -142,3 +144,5 @@ P2PSocketClient* P2PSocketDispatcher::GetClient(int socket_id) {
 
   return client;
 }
+
+}  // namespace content

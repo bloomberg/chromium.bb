@@ -13,8 +13,6 @@
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "webkit/glue/p2p_transport.h"
 
-class P2PSocketDispatcher;
-
 namespace cricket {
 class Candidate;
 class PortAllocator;
@@ -32,6 +30,10 @@ namespace talk_base {
 class NetworkManager;
 class PacketSocketFactory;
 }  // namespace talk_base
+
+namespace content {
+
+class P2PSocketDispatcher;
 
 class P2PTransportImpl : public webkit_glue::P2PTransport,
                          public sigslot::has_slots<> {
@@ -85,5 +87,7 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
 
   DISALLOW_COPY_AND_ASSIGN(P2PTransportImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_P2P_P2P_TRANSPORT_IMPL_H_

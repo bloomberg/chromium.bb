@@ -15,6 +15,8 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
+namespace content {
+
 class P2PSocketDispatcher;
 
 class P2PHostAddressRequest :
@@ -64,5 +66,7 @@ class P2PHostAddressRequest :
 
   DISALLOW_COPY_AND_ASSIGN(P2PHostAddressRequest);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_P2P_HOST_ADDRESS_REQUEST_H_

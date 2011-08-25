@@ -9,6 +9,8 @@
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 
+namespace content {
+
 P2PHostAddressRequest::P2PHostAddressRequest(P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher),
       ipc_message_loop_(dispatcher->message_loop()),
@@ -76,3 +78,5 @@ void P2PHostAddressRequest::DeliverResponse(
     state_ = STATE_FINISHED;
   }
 }
+
+}  // namespace content

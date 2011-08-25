@@ -17,6 +17,8 @@
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_server_socket.h"
 
+namespace content {
+
 class P2PSocketHostUdp : public P2PSocketHost {
  public:
   P2PSocketHostUdp(IPC::Message::Sender* message_sender,
@@ -58,5 +60,7 @@ class P2PSocketHostUdp : public P2PSocketHost {
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostUdp);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_UDP_H_

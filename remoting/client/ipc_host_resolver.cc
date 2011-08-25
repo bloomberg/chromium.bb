@@ -14,7 +14,7 @@ namespace remoting {
 
 class IpcHostResolver : public HostResolver {
  public:
-  IpcHostResolver(P2PSocketDispatcher* socket_dispatcher)
+  IpcHostResolver(content::P2PSocketDispatcher* socket_dispatcher)
       : socket_dispatcher_(socket_dispatcher) {
   }
 
@@ -26,7 +26,7 @@ class IpcHostResolver : public HostResolver {
   virtual void Resolve(const talk_base::SocketAddress& address) OVERRIDE {
     if (address.IsUnresolved()) {
       port_ = address.port();
-      request_ = new P2PHostAddressRequest(socket_dispatcher_);
+      request_ = new content::P2PHostAddressRequest(socket_dispatcher_);
       request_->Request(address.hostname(), base::Bind(
           &IpcHostResolver::OnDone, base::Unretained(this)));
     } else {
@@ -49,13 +49,13 @@ class IpcHostResolver : public HostResolver {
     SignalDone(this, socket_address);
   }
 
-  P2PSocketDispatcher* socket_dispatcher_;
-  scoped_refptr<P2PHostAddressRequest> request_;
+  content::P2PSocketDispatcher* socket_dispatcher_;
+  scoped_refptr<content::P2PHostAddressRequest> request_;
   uint16 port_;
 };
 
 IpcHostResolverFactory::IpcHostResolverFactory(
-    P2PSocketDispatcher* socket_dispatcher)
+    content::P2PSocketDispatcher* socket_dispatcher)
     : socket_dispatcher_(socket_dispatcher) {
 }
 

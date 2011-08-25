@@ -259,7 +259,7 @@ void MockPluginDelegate::SetContentRestriction(int restrictions) {
 void MockPluginDelegate::SaveURLAs(const GURL& url) {
 }
 
-P2PSocketDispatcher* MockPluginDelegate::GetP2PSocketDispatcher() {
+content::P2PSocketDispatcher* MockPluginDelegate::GetP2PSocketDispatcher() {
   return NULL;
 }
 

@@ -19,6 +19,8 @@ namespace net {
 class StreamSocket;
 }  // namespace net
 
+namespace content {
+
 class P2PSocketHostTcpServer : public P2PSocketHost {
  public:
   P2PSocketHostTcpServer(IPC::Message::Sender* message_sender,
@@ -56,5 +58,7 @@ class P2PSocketHostTcpServer : public P2PSocketHost {
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcpServer);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TCP_SERVER_H_

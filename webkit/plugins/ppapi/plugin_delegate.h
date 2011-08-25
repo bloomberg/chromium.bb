@@ -29,12 +29,15 @@
 
 class AudioMessageFilter;
 class GURL;
-class P2PSocketDispatcher;
 class SkBitmap;
 
 namespace base {
 class MessageLoopProxy;
 class Time;
+}
+
+namespace content {
+class P2PSocketDispatcher;
 }
 
 namespace fileapi {
@@ -426,7 +429,7 @@ class PluginDelegate {
   //
   // TODO(sergeyu): Stop using GetP2PSocketDispatcher() in remoting
   // client and remove it from here.
-  virtual P2PSocketDispatcher* GetP2PSocketDispatcher() = 0;
+  virtual content::P2PSocketDispatcher* GetP2PSocketDispatcher() = 0;
 
   // Creates P2PTransport object.
   virtual webkit_glue::P2PTransport* CreateP2PTransport() = 0;

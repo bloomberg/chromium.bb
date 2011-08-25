@@ -15,6 +15,8 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
+namespace content {
+
 class P2PSocketDispatcher;
 
 // P2P socket that rountes all calls over IPC.
@@ -106,5 +108,7 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketClient);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_

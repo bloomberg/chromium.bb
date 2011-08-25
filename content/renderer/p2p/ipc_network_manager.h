@@ -13,6 +13,8 @@
 #include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/base/network.h"
 
+namespace content {
+
 // IpcNetworkManager is a NetworkManager for libjingle that gets a
 // list of network interfaces from the browser.
 class IpcNetworkManager : public talk_base::NetworkManagerBase,
@@ -39,5 +41,7 @@ class IpcNetworkManager : public talk_base::NetworkManagerBase,
 
   ScopedRunnableMethodFactory<IpcNetworkManager> task_factory_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_P2P_IPC_NETWORK_MANAGER_H_

@@ -12,7 +12,7 @@
 
 #define IPC_MESSAGE_START P2PMsgStart
 
-IPC_ENUM_TRAITS(P2PSocketType)
+IPC_ENUM_TRAITS(content::P2PSocketType)
 
 IPC_STRUCT_TRAITS_BEGIN(net::NetworkInterface)
   IPC_STRUCT_TRAITS_MEMBER(name)
@@ -56,7 +56,7 @@ IPC_MESSAGE_ROUTED2(P2PHostMsg_GetHostAddress,
                     int32 /* request_id */)
 
 IPC_MESSAGE_ROUTED4(P2PHostMsg_CreateSocket,
-                    P2PSocketType /* type */,
+                    content::P2PSocketType /* type */,
                     int /* socket_id */,
                     net::IPEndPoint /* local_address */,
                     net::IPEndPoint /* remote_address */)
