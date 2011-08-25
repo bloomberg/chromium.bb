@@ -290,8 +290,7 @@ class ChromeTests:
   def TestInteractiveUI(self):
     return self.SimpleTest("chrome", "interactive_ui_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=(self.UI_TEST_ARGS +
-                                     ["--test-terminate-timeout=300000"]))
+                           cmd_args=self.UI_TEST_ARGS)
 
   def TestReliability(self):
     script_dir = path_utils.ScriptDir()
@@ -304,12 +303,12 @@ class ChromeTests:
   def TestSafeBrowsing(self):
     return self.SimpleTest("chrome", "safe_browsing_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=(["--test-terminate-timeout=900000"]))
+                           cmd_args=(["--ui-test-action-max-timeout=900000"]))
 
   def TestSyncIntegration(self):
     return self.SimpleTest("chrome", "sync_integration_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=(["--test-terminate-timeout=900000"]))
+                           cmd_args=(["--ui-test-action-max-timeout=900000"]))
 
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",
