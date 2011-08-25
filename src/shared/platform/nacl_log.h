@@ -42,14 +42,17 @@
  * NACL_LOG_MODULE_NAME was not defined) by running the program with
  * the NACLVERBOSITY environment variable, viz:
  *
- *   NACLVERBOSITY=3,elf_util=4,my_module=5
+ *   NACLVERBOSITY=3:elf_util=4:my_module=5
  *
  * would set the default verbosity level to be 3, the verbosity level
  * for the elf_util module to be 4, and the verbosity level for the
  * my_module module to be 5.
  *
  * NB: because of craziness in the test infrastructure, we accept
- * either ',' or ':' as separators.
+ * either ',' or ':' as separators.  (Setting osenv in the SCons
+ * python code with NACLVERBOSITY=3,elf_util=4 would set two
+ * environment variables "NACLVERBOSITY" and "elf_util", despite the
+ * fact that osenv is a list of name=value strings.)
  *
  * In this case, when the desired verbosity level for my_module is 5,
  * all logging output at detail level 5 and below would be printed to
@@ -81,6 +84,8 @@
 
 #ifdef __native_client__
 # define ATTRIBUTE_FORMAT_PRINTF(m, n) __attribute__((format(printf, m, n)))
+# define NACL_PLATFORM_HAS_TLS  1
+# define NACL_PLATFORM_HAS_TSD  1
 
 /* TODO(sehr): move these defs to a common header */
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -98,6 +103,33 @@
 
 #else
 # include "native_client/src/include/portability.h"
+# if NACL_WINDOWS
+#  if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+#   if NACL_BUILD_SUBARCH == 32
+/*
+ * lie about availability of TLS, since TLS usage in dso is verboten
+ * in chrome
+ */
+#    define NACL_PLATFORM_HAS_TLS 0
+#    define NACL_PLATFORM_HAS_TSD 0
+#   elif NACL_BUILD_SUBARCH == 64
+#    define NACL_PLATFORM_HAS_TLS 1
+#    define NACL_PLATFORM_HAS_TSD 0
+#   else
+#    error "windows is running on x86-128?"
+#   endif
+#  else
+#   error "windows is running on non-x86?"
+#  endif
+# elif NACL_LINUX
+#  define NACL_PLATFORM_HAS_TLS 1
+#  define NACL_PLATFORM_HAS_TSD 1
+# elif NACL_OSX
+#  define NACL_PLATFORM_HAS_TLS 0
+#  define NACL_PLATFORM_HAS_TSD 1
+# else
+#  error "what platform are we on?"
+# endif
 #endif
 
 struct Gio;
@@ -241,26 +273,27 @@ void NaClLog2(char const *module_name,
               ...) ATTRIBUTE_FORMAT_PRINTF(3, 4);
 
 /*
- * "Internal" functions.  NaClLogLockAndSetModule and
- * NaClLogDoLogAndUnlock should only be used by the syntactic macro
- * below.
+ * "Internal" functions.  NaClLogSetModule and
+ * NaClLogDoLogAndUnsetModule should only be used by the syntactic
+ * macro below.
  *
- * NaClLogLockAndSetModule always return 0.  This means in the macro,
- * its continuation is the else clause.  NaClLogDoLogAndUnlock is a
+ * NaClLogSetModule always return 0.  This means in the macro, its
+ * continuation is the else clause.  NaClLogDoLogAndUnsetModule is a
  * "naked" identifier in the macro definition, and so will take on the
- * argument list from NaClLog.
+ * argument list from the apparent argument list of NaClLog.
  */
-int NaClLogLockAndSetModule(char const *module_name);
-void NaClLogDoLogAndUnlock(int        detail_level,
-                           char const *fmt,
-                           ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+int NaClLogSetModule(char const *module_name);
+void NaClLogDoLogAndUnsetModule(int        detail_level,
+                                char const *fmt,
+                                ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 #ifdef NACL_LOG_MODULE_NAME
-# define NaClLog                                     \
-  if (NaClLogLockAndSetModule(NACL_LOG_MODULE_NAME)) \
-    ;                                                \
-  else                                               \
-    NaClLogDoLogAndUnlock
+# define NaClLog                              \
+  if (NaClLogSetModule(NACL_LOG_MODULE_NAME)) \
+    ;                                         \
+  else                                        \
+    NaClLogDoLogAndUnsetModule
+
 /*
  * User code has lines of the form
  *
@@ -271,10 +304,10 @@ void NaClLogDoLogAndUnlock(int        detail_level,
  * just invoke the NaClLog function.  When NACL_LOG_MODULE_NAME *is*
  * defined, however, it expands to:
  *
- * if (NaClLogLockAndSetModule(NACL_LOG_MODULE_NAME))
+ * if (NaClLogSetModule(NACL_LOG_MODULE_NAME))
  *   ;
  * else
- *   NaClLogDoLogAndUnlock(detail_level, format_string, ...);
+ *   NaClLogDoLogAndUnsetModule(detail_level, format_string, ...);
  *
  * Note that this is a syntactic macro, so that if the original code had
  *
@@ -284,8 +317,13 @@ void NaClLogDoLogAndUnlock(int        detail_level,
  *   else
  *     printf("!bar\n");
  *
- * the macro expansion for NaClLog would cause the "else" clauses to
- * mis-bind.
+ * the macro expansion for NaClLog would not cause the "else" clauses
+ * to mis-bind.
+ *
+ * Also note that the compiler may generate a warning/suggestion to
+ * use braces.  This doesn't occur in the NaCl code base (esp w/
+ * -Werror), but may have an impact on untrusted code that use this
+ * module.
  */
 #endif
 

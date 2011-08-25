@@ -3093,6 +3093,7 @@ linux_coverage_env = linux_debug_env.Clone(
 
 if linux_coverage_env.Bit('target_x86_64'):
   linux_coverage_env.Append(CCFLAGS=['-fPIC'])
+  linux_coverage_env.FilterOut(CCFLAGS=['-fPIE'])
 
 linux_coverage_env['OPTIONAL_COVERAGE_LIBS'] = '$COVERAGE_LIBS'
 AddDualLibrary(linux_coverage_env)

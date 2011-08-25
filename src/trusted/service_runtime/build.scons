@@ -714,7 +714,8 @@ if env.Bit('target_x86'):
       filter_regex = '"' + RE_HELLO + '|' + RE_IDENT + '"',
       filter_group_only = 'true',
       )
-  env.AddNodeToTestSuite(node, ['medium_tests'])
+  env.AddNodeToTestSuite(node, ['medium_tests'],
+                         'run_service_runtime_hello_world_test')
 
   assert len(INTEGRATION_TESTS_X86) == len(INTEGRATION_TESTS_X86_STDIN_OUT)
   map(AddIntegrationTest,
