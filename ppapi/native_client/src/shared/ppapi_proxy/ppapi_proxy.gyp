@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    '../../../build/common.gypi',
+    '../../../../../native_client/build/common.gypi',
   ],
   'targets': [
     {
@@ -58,7 +58,8 @@
         'upcall_server.cc',
       ],
       'include_dirs': [
-        '<(DEPTH)/native_client/src/shared/ppapi_proxy/trusted',
+        '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/trusted',
+        '<(DEPTH)/ppapi',
       ],
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_c_nacl',
