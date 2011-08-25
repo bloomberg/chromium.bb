@@ -9,13 +9,15 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skia_util.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
 
 namespace views {
 
 NativeMenuX::NativeMenuX(Menu2* menu)
     : model_(menu->model()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(root_(new MenuItemView(this))) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(root_(new MenuItemView(this))),
+      menu_runner_(new MenuRunner(root_)) {
 }
 
 NativeMenuX::~NativeMenuX() {
@@ -23,10 +25,13 @@ NativeMenuX::~NativeMenuX() {
 
 // MenuWrapper implementation:
 void NativeMenuX::RunMenuAt(const gfx::Point& point, int alignment) {
+  // TODO: this should really return the value from MenuRunner.
   UpdateStates();
-  root_->RunMenuAt(NULL, NULL, gfx::Rect(point, gfx::Size()),
-      alignment == Menu2::ALIGN_TOPLEFT ? MenuItemView::TOPLEFT :
-      MenuItemView::TOPRIGHT, true);
+  if (menu_runner_->RunMenuAt(NULL, NULL, gfx::Rect(point, gfx::Size()),
+          alignment == Menu2::ALIGN_TOPLEFT ? MenuItemView::TOPLEFT :
+          MenuItemView::TOPRIGHT, MenuRunner::HAS_MNEMONICS) ==
+      MenuRunner::MENU_DELETED)
+    return;
 }
 
 void NativeMenuX::CancelMenu() {
@@ -34,10 +39,9 @@ void NativeMenuX::CancelMenu() {
 }
 
 void NativeMenuX::Rebuild() {
-  if (SubmenuView* submenu = root_->GetSubmenu()) {
+  if (SubmenuView* submenu = root_->GetSubmenu())
     submenu->RemoveAllChildViews(true);
-  }
-  AddMenuItemsFromModel(root_.get(), model_);
+  AddMenuItemsFromModel(root_, model_);
 }
 
 void NativeMenuX::UpdateStates() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,8 @@ class MenuModel;
 }
 
 namespace views {
+
+class MenuRunner;
 
 // A non-GTK implementation of MenuWrapper, used currently for touchui.
 class NativeMenuX : public MenuWrapper,
@@ -46,7 +48,8 @@ class NativeMenuX : public MenuWrapper,
 
   // The attached model and delegate. Does not assume ownership.
   ui::MenuModel* model_;
-  scoped_ptr<MenuItemView> root_;
+  MenuItemView* root_;
+  scoped_ptr<MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuX);
 };
