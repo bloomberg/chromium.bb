@@ -137,10 +137,11 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
                 NULL);
     DCHECK(printer_handle);
     if (printer_handle) {
-      DWORD devmode_size = DocumentProperties(
+      LONG devmode_size = DocumentProperties(
           NULL, printer_handle, const_cast<LPTSTR>(printer_name_wide.c_str()),
           NULL, NULL, 0);
-      DCHECK_NE(0U, devmode_size);
+      if (devmode_size <= 0)
+        return false;
       scoped_ptr<BYTE> devmode_out_buffer(new BYTE[devmode_size]);
       DEVMODE* devmode_out =
           reinterpret_cast<DEVMODE*>(devmode_out_buffer.get());
