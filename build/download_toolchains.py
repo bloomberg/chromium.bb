@@ -75,7 +75,7 @@ def SyncFlavor(flavor, url, dst, hash):
   download_utils.WriteSourceStamp(dst, url)
 
 
-def Main():
+def Main(args):
   parent_dir = os.path.dirname(os.path.dirname(__file__))
   parser = optparse.OptionParser()
   parser.add_option(
@@ -105,7 +105,7 @@ def Main():
       action='store_true', default=False,
       help='download only the non-pnacl newlib toolchain')
 
-  options, args = parser.parse_args()
+  options, args = parser.parse_args(args)
   if args:
     parser.error('ERROR: invalid argument')
 
@@ -160,4 +160,4 @@ def Main():
 
 
 if __name__ == '__main__':
-  Main()
+  Main(sys.argv[1:])
