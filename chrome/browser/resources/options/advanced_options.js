@@ -98,14 +98,6 @@ var OptionsPage = options.OptionsPage;
         chrome.send('checkRevocationCheckboxAction',
             [String($('sslCheckRevocation').checked)]);
       };
-      $('sslUseSSL3').onclick = function(event) {
-        chrome.send('useSSL3CheckboxAction',
-            [String($('sslUseSSL3').checked)]);
-      };
-      $('sslUseTLS1').onclick = function(event) {
-        chrome.send('useTLS1CheckboxAction',
-            [String($('sslUseTLS1').checked)]);
-      };
 
       if ($('backgroundModeCheckbox')) {
         $('backgroundModeCheckbox').onclick = function(event) {
@@ -224,18 +216,6 @@ var OptionsPage = options.OptionsPage;
       checked, disabled) {
     $('sslCheckRevocation').checked = checked;
     $('sslCheckRevocation').disabled = disabled;
-  };
-
-  // Set the checked state for the sslUseSSL3 checkbox.
-  AdvancedOptions.SetUseSSL3CheckboxState = function(checked, disabled) {
-    $('sslUseSSL3').checked = checked;
-    $('sslUseSSL3').disabled = disabled;
-  };
-
-  // Set the checked state for the sslUseTLS1 checkbox.
-  AdvancedOptions.SetUseTLS1CheckboxState = function(checked, disabled) {
-    $('sslUseTLS1').checked = checked;
-    $('sslUseTLS1').disabled = disabled;
   };
 
   // Set the checked state for the backgroundModeCheckbox element.

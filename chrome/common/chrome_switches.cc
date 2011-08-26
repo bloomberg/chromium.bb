@@ -300,6 +300,9 @@ const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 // Disable False Start in SSL and TLS connections.
 const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
 
+// Disable SSL v3 (usually for testing purposes).
+const char kDisableSSL3[]                   = "disable-ssl3";
+
 // Disable syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -338,6 +341,9 @@ const char kDisableSyncTypedUrls[]           = "disable-sync-typed-urls";
 // need a switch to disable the watcher.
 const char kDisableTabCloseableStateWatcher[] =
     "disable-tab-closeable-state-watcher";
+
+// Disable TLS v1.0 (usually for testing purposes).
+const char kDisableTLS1[]                   = "disable-tls1";
 
 // Allow disabling of translate from the command line to assist with
 // automated browser testing (e.g. Selenium/WebDriver).  Normal

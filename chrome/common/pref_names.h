@@ -310,8 +310,6 @@ extern const char kPasswordsUseLocalProfileId[];
 
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
-extern const char kSSL3Enabled[];
-extern const char kTLS1Enabled[];
 extern const char kCipherSuiteBlacklist[];
 
 extern const char kMetricsClientID[];

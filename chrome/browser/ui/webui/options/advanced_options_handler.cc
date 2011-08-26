@@ -99,10 +99,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SSL_GROUP_DESCRIPTION },
     { "sslCheckRevocation",
       IDS_OPTIONS_SSL_CHECKREVOCATION },
-    { "sslUseSSL3",
-      IDS_OPTIONS_SSL_USESSL3 },
-    { "sslUseTLS1",
-      IDS_OPTIONS_SSL_USETLS1 },
     { "networkPredictionEnabledDescription",
       IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION },
     { "privacyContentSettingsButton",
@@ -241,10 +237,6 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
 
   rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
                              g_browser_process->local_state(), this);
-  ssl3_enabled_.Init(prefs::kSSL3Enabled, g_browser_process->local_state(),
-                     this);
-  tls1_enabled_.Init(prefs::kTLS1Enabled, g_browser_process->local_state(),
-                     this);
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   background_mode_enabled_.Init(prefs::kBackgroundModeEnabled,
@@ -309,12 +301,6 @@ void AdvancedOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleCheckRevocationCheckbox));
-  web_ui_->RegisterMessageCallback("useSSL3CheckboxAction",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleUseSSL3Checkbox));
-  web_ui_->RegisterMessageCallback("useTLS1CheckboxAction",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleUseTLS1Checkbox));
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback("backgroundModeAction",
       NewCallback(this,
@@ -426,26 +412,6 @@ void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
           UserMetricsAction("Options_CheckCertRevocation_Enable") :
           UserMetricsAction("Options_CheckCertRevocation_Disable"));
   rev_checking_enabled_.SetValue(enabled);
-}
-
-void AdvancedOptionsHandler::HandleUseSSL3Checkbox(const ListValue* args) {
-  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
-  UserMetrics::RecordAction(
-      enabled ?
-          UserMetricsAction("Options_SSL3_Enable") :
-          UserMetricsAction("Options_SSL3_Disable"));
-  ssl3_enabled_.SetValue(enabled);
-}
-
-void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
-  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
-  bool enabled = checked_str == "true";
-  UserMetrics::RecordAction(
-      enabled ?
-          UserMetricsAction("Options_TLS1_Enable") :
-          UserMetricsAction("Options_TLS1_Disable"));
-  tls1_enabled_.SetValue(enabled);
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
@@ -653,17 +619,5 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
     web_ui_->CallJavascriptFunction(
         "options.AdvancedOptions.SetCheckRevocationCheckboxState", checked,
         disabled);
-  }
-  {
-    base::FundamentalValue checked(ssl3_enabled_.GetValue());
-    base::FundamentalValue disabled(ssl3_enabled_.IsManaged());
-    web_ui_->CallJavascriptFunction(
-        "options.AdvancedOptions.SetUseSSL3CheckboxState", checked, disabled);
-  }
-  {
-    base::FundamentalValue checked(tls1_enabled_.GetValue());
-    base::FundamentalValue disabled(tls1_enabled_.IsManaged());
-    web_ui_->CallJavascriptFunction(
-        "options.AdvancedOptions.SetUseTLS1CheckboxState", checked, disabled);
   }
 }

@@ -8,10 +8,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
@@ -134,8 +136,6 @@ class SSLConfigServiceManagerPref
 
   // The prefs (should only be accessed from UI thread)
   BooleanPrefMember rev_checking_enabled_;
-  BooleanPrefMember ssl3_enabled_;
-  BooleanPrefMember tls1_enabled_;
 
   // The cached list of disabled SSL cipher suites.
   std::vector<uint16> disabled_cipher_suites_;
@@ -152,8 +152,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
 
   rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
                              local_state, this);
-  ssl3_enabled_.Init(prefs::kSSL3Enabled, local_state, this);
-  tls1_enabled_.Init(prefs::kTLS1Enabled, local_state, this);
   pref_change_registrar_.Init(local_state);
   pref_change_registrar_.Add(prefs::kCipherSuiteBlacklist, this);
 
@@ -168,10 +166,6 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefService* prefs) {
   net::SSLConfig default_config;
   prefs->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
                              default_config.rev_checking_enabled);
-  prefs->RegisterBooleanPref(prefs::kSSL3Enabled,
-                             default_config.ssl3_enabled);
-  prefs->RegisterBooleanPref(prefs::kTLS1Enabled,
-                             default_config.tls1_enabled);
   prefs->RegisterListPref(prefs::kCipherSuiteBlacklist);
 }
 
@@ -208,8 +202,12 @@ void SSLConfigServiceManagerPref::Observe(int type,
 void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
     net::SSLConfig* config) {
   config->rev_checking_enabled = rev_checking_enabled_.GetValue();
-  config->ssl3_enabled = ssl3_enabled_.GetValue();
-  config->tls1_enabled = tls1_enabled_.GetValue();
+
+  config->ssl3_enabled =
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSSL3);
+  config->tls1_enabled =
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableTLS1);
+
   config->disabled_cipher_suites = disabled_cipher_suites_;
   SSLConfigServicePref::SetSSLConfigFlags(config);
 }

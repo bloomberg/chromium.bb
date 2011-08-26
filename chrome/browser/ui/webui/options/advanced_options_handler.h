@@ -159,8 +159,6 @@ class AdvancedOptionsHandler
 
   // SSLConfigService prefs.
   BooleanPrefMember rev_checking_enabled_;
-  BooleanPrefMember ssl3_enabled_;
-  BooleanPrefMember tls1_enabled_;
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
   BooleanPrefMember background_mode_enabled_;
