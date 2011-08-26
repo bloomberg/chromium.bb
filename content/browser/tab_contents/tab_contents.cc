@@ -1799,6 +1799,10 @@ WebPreferences TabContents::GetWebkitPrefs() {
       web_prefs.accelerated_compositing_enabled = false;
 #endif
 
+#if defined(TOUCH_UI)
+  web_prefs.force_compositing_mode = true;
+#endif
+
   return web_prefs;
 }
 
