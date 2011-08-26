@@ -561,6 +561,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGPUClientLogging,
     switches::kEnableLogging,
     switches::kEnableMediaStream,
+    switches::kEnableFullScreen,
     switches::kEnablePepperTesting,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.

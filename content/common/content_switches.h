@@ -61,6 +61,7 @@ extern const char kEnableAcceleratedPlugins[];
 extern const char kEnableAccessibility[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableDeviceMotion[];
+extern const char kEnableFullScreen[];
 extern const char kEnableGPUPlugin[];
 extern const char kEnableLogging[];
 extern const char kEnableMediaStream[];

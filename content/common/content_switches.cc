@@ -165,6 +165,9 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
+// Enable the JavaScript Full Screen API.
+const char kEnableFullScreen[]              = "enable-fullscreen";
+
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
 
