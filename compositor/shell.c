@@ -29,7 +29,6 @@
 #include "compositor.h"
 
 struct wl_shell {
-	struct wl_object object;
 	struct wlsc_shell shell;
 };
 
@@ -76,22 +75,17 @@ static const struct wl_grab_interface move_grab_interface = {
 	move_grab_end
 };
 
-static void
-shell_move(struct wl_client *client, struct wl_resource *resource,
-	   struct wl_surface *surface,
-	   struct wl_input_device *device, uint32_t time)
+static int
+wlsc_surface_move(struct wlsc_surface *es,
+		  struct wlsc_input_device *wd, uint32_t time)
 {
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_move_grab *move;
 
 	/* FIXME: Reject if fullscreen */
 
 	move = malloc(sizeof *move);
-	if (!move) {
-		wl_client_post_no_memory(client);
-		return;
-	}
+	if (!move)
+		return -1;
 
 	move->grab.interface = &move_grab_interface;
 	move->dx = es->x - wd->input_device.grab_x;
@@ -99,11 +93,26 @@ shell_move(struct wl_client *client, struct wl_resource *resource,
 	move->surface = es;
 
 	if (wl_input_device_update_grab(&wd->input_device,
-					&move->grab, surface, time) < 0)
-		return;
+					&move->grab, &es->surface, time) < 0)
+		return 0;
 
 	wlsc_input_device_set_pointer_image(wd, WLSC_POINTER_DRAGGING);
-	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
+	wl_input_device_set_pointer_focus(&wd->input_device,
+					  NULL, time, 0, 0, 0, 0);
+
+	return 0;
+}
+
+static void
+shell_move(struct wl_client *client, struct wl_resource *resource,
+	   struct wl_resource *surface_resource,
+	   struct wl_resource *input_resource, uint32_t time)
+{
+	struct wlsc_input_device *wd = input_resource->data;
+	struct wlsc_surface *es = surface_resource->data;
+
+	if (wlsc_surface_move(es, wd, time) < 0)
+		wl_client_post_no_memory(client);
 }
 
 struct wlsc_resize_grab {
@@ -111,8 +120,7 @@ struct wlsc_resize_grab {
 	uint32_t edges;
 	int32_t dx, dy, width, height;
 	struct wlsc_surface *surface;
-	struct wl_shell *shell;
-	struct wl_resource resource;
+	struct wl_resource *resource;
 };
 
 static void
@@ -140,7 +148,7 @@ resize_grab_motion(struct wl_grab *grab,
 		height = resize->height;
 	}
 
-	wl_resource_post_event(&resize->resource,
+	wl_resource_post_event(resize->resource,
 			       WL_SHELL_CONFIGURE, time, resize->edges,
 			       surface, width, height);
 }
@@ -171,24 +179,20 @@ static const struct wl_grab_interface resize_grab_interface = {
 	resize_grab_end
 };
 
-static void
-shell_resize(struct wl_client *client, struct wl_resource *resource,
-	     struct wl_surface *surface,
-	     struct wl_input_device *device, uint32_t time, uint32_t edges)
+static int
+wlsc_surface_resize(struct wlsc_surface *es,
+		    struct wlsc_input_device *wd,
+		    uint32_t time, uint32_t edges,
+		    struct wl_resource *resource)
 {
-	struct wl_shell *shell = resource->data;
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
 	struct wlsc_resize_grab *resize;
 	enum wlsc_pointer_type pointer = WLSC_POINTER_LEFT_PTR;
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
 	/* FIXME: Reject if fullscreen */
 
 	resize = malloc(sizeof *resize);
-	if (!resize) {
-		wl_client_post_no_memory(client);
-		return;
-	}
+	if (!resize)
+		return -1;
 
 	resize->grab.interface = &resize_grab_interface;
 	resize->edges = edges;
@@ -197,14 +201,11 @@ shell_resize(struct wl_client *client, struct wl_resource *resource,
 	resize->width = es->width;
 	resize->height = es->height;
 	resize->surface = es;
-	resize->shell = shell;
-
-	resize->resource.object = resource->object;
-	resize->resource.client = client;
+	resize->resource = resource;
 
 	if (edges == 0 || edges > 15 ||
 	    (edges & 3) == 3 || (edges & 12) == 12)
-		return;
+		return 0;
 
 	switch (edges) {
 	case WL_SHELL_RESIZE_TOP:
@@ -234,20 +235,37 @@ shell_resize(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	if (wl_input_device_update_grab(&wd->input_device,
-					&resize->grab, surface, time) < 0)
-		return;
+					&resize->grab, &es->surface, time) < 0)
+		return 0;
 
 	wlsc_input_device_set_pointer_image(wd, pointer);
-	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
+	wl_input_device_set_pointer_focus(&wd->input_device,
+					  NULL, time, 0, 0, 0, 0);
+
+	return 0;
+}
+
+static void
+shell_resize(struct wl_client *client, struct wl_resource *resource,
+	     struct wl_resource *surface_resource,
+	     struct wl_resource *input_resource, uint32_t time, uint32_t edges)
+{
+	struct wlsc_input_device *wd = input_resource->data;
+	struct wlsc_surface *es = surface_resource->data;
+
+	/* FIXME: Reject if fullscreen */
+
+	if (wlsc_surface_resize(es, wd, time, edges, resource) < 0)
+		wl_client_post_no_memory(client);
 }
 
 static void
 shell_set_toplevel(struct wl_client *client,
 		   struct wl_resource *resource,
-		   struct wl_surface *surface)
+		   struct wl_resource *surface_resource)
 
 {
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_surface *es = surface_resource->data;
 	struct wlsc_compositor *ec = es->compositor;
 
 	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
@@ -269,12 +287,12 @@ shell_set_toplevel(struct wl_client *client,
 static void
 shell_set_transient(struct wl_client *client,
 		    struct wl_resource *resource,
-		    struct wl_surface *surface,
-		    struct wl_surface *parent,
+		    struct wl_resource *surface_resource,
+		    struct wl_resource *parent_resource,
 		    int x, int y, uint32_t flags)
 {
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_surface *pes = (struct wlsc_surface *) parent;
+	struct wlsc_surface *es = surface_resource->data;
+	struct wlsc_surface *pes = parent_resource->data;
 
 	/* assign to parents output  */
 	es->output = pes->output;
@@ -289,10 +307,10 @@ shell_set_transient(struct wl_client *client,
 static void
 shell_set_fullscreen(struct wl_client *client,
 		     struct wl_resource *resource,
-		     struct wl_surface *surface)
+		     struct wl_resource *surface_resource)
 
 {
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_surface *es = surface_resource->data;
 	struct wlsc_output *output;
 
 	/* FIXME: Fullscreen on first output */
@@ -345,8 +363,6 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 	if (surface &&
 	    (!drag->drag_focus ||
 	     drag->drag_focus->resource.client != surface->resource.client)) {
-		wl_client_post_global(surface->resource.client,
-				      &drag->drag_offer.resource.object);
 		
 		drag->drag_offer.resource.client = surface->resource.client;
 		end = drag->types.data + drag->types.size;
@@ -490,10 +506,12 @@ static const struct wl_grab_interface drag_grab_interface = {
 static void
 drag_activate(struct wl_client *client,
 	      struct wl_resource *resource,
-	      struct wl_surface *surface,
-	      struct wl_input_device *device, uint32_t time)
+	      struct wl_resource *surface_resource,
+	      struct wl_resource *device_resource, uint32_t time)
 {
 	struct wl_drag *drag = resource->data;
+	struct wl_surface *surface = surface_resource->data;
+	struct wl_input_device *device = device_resource->data;
 	struct wl_display *display = wl_client_get_display (client);
 	struct wlsc_surface *target;
 	int32_t sx, sy;
@@ -510,8 +528,7 @@ drag_activate(struct wl_client *client,
 	drag->drag_offer.resource.object.implementation =
 		(void (**)(void)) &drag_offer_interface;
 
-	wl_display_add_global(display,
-			      &drag->drag_offer.resource.object, NULL);
+	wl_display_add_global(display, &wl_drag_offer_interface, drag, NULL);
 
 	target = pick_surface(device, &sx, &sy);
 	wl_input_device_set_pointer_focus(device, NULL, time, 0, 0, 0, 0);
@@ -585,8 +602,6 @@ wlsc_selection_set_focus(struct wlsc_shell *shell,
 				     NULL);
 
 	if (surface) {
-		wl_client_post_global(surface->resource.client,
-				      &selection->selection_offer.resource.object);
 
 		selection->selection_offer.resource.client = surface->resource.client;
 		end = selection->types.data + selection->types.size;
@@ -646,15 +661,15 @@ selection_offer(struct wl_client *client,
 static void
 selection_activate(struct wl_client *client,
 		   struct wl_resource *resource,
-		   struct wl_input_device *device, uint32_t time)
+		   struct wl_resource *input_resource, uint32_t time)
 {
 	struct wl_selection *selection = resource->data;
-	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_input_device *wd = input_resource->data;
 	struct wl_display *display = wl_client_get_display (client);
 	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) device->compositor;
+		(struct wlsc_compositor *) wd->input_device.compositor;
 
-	selection->input_device = device;
+	selection->input_device = &wd->input_device;
 
 	selection->selection_offer.resource.object.interface =
 		&wl_selection_offer_interface;
@@ -662,8 +677,7 @@ selection_activate(struct wl_client *client,
 		(void (**)(void)) &selection_offer_interface;
 
 	wl_display_add_global(display,
-			      &selection->selection_offer.resource.object,
-			      NULL);
+			      &wl_selection_offer_interface, selection, NULL);
 
 	if (wd->selection) {
 		wl_resource_post_event(&wd->selection->resource,
@@ -671,8 +685,8 @@ selection_activate(struct wl_client *client,
 	}
 	wd->selection = selection;
 
-	wlsc_selection_set_focus(compositor->shell,
-				 selection, device->keyboard_focus, time);
+	wlsc_selection_set_focus(compositor->shell, selection,
+				 wd->input_device.keyboard_focus, time);
 }
 
 static void
@@ -763,7 +777,7 @@ move_binding(struct wl_input_device *device, uint32_t time,
 	if (surface == NULL)
 		return;
 
-	shell_move(NULL, NULL, &surface->surface, device, time);
+	wlsc_surface_move(surface, (struct wlsc_input_device *) device, time);
 }
 
 static void
@@ -772,6 +786,7 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 {
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
+	struct wl_resource *resource;
 	uint32_t edges = 0;
 	int32_t x, y;
 
@@ -795,7 +810,12 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	else
 		edges |= WL_SHELL_RESIZE_BOTTOM;
 
-	shell_resize(NULL, NULL, &surface->surface, device, time, edges);
+	resource = /* Find shell resource for surface client */ 0;
+
+	/* ... or use wl_shell_surface */
+
+	wlsc_surface_resize(surface, (struct wlsc_input_device *) device,
+			    time, edges, resource);
 }
 
 static void
@@ -810,6 +830,15 @@ attach(struct wlsc_shell *shell, struct wlsc_surface *es)
 		es->x = (es->fullscreen_output->current->width - es->width) / 2;
 		es->y = (es->fullscreen_output->current->height - es->height) / 2;
 	}
+}
+
+static void
+bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
+{
+	struct wl_shell *shell = data;
+
+	wl_client_add_object(client, &wl_shell_interface,
+			     &shell_interface, id, shell);
 }
 
 int
@@ -828,9 +857,8 @@ shell_init(struct wlsc_compositor *ec)
 	shell->shell.attach = attach;
 	shell->shell.set_selection_focus = wlsc_selection_set_focus;
 
-	shell->object.interface = &wl_shell_interface;
-	shell->object.implementation = (void (**)(void)) &shell_interface;
-	if (wl_display_add_global(ec->wl_display, &shell->object, NULL))
+	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
+				  shell, bind_shell) == NULL)
 		return -1;
 
 	wlsc_compositor_add_binding(ec, 0, BTN_LEFT, MODIFIER_SUPER,

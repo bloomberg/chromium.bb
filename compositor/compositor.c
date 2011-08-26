@@ -1013,10 +1013,11 @@ wlsc_surface_assign_output(struct wlsc_surface *es)
 
 static void
 surface_attach(struct wl_client *client,
-	       struct wl_resource *resource, struct wl_buffer *buffer,
-	       int32_t x, int32_t y)
+	       struct wl_resource *resource,
+	       struct wl_resource *buffer_resource, int32_t x, int32_t y)
 {
 	struct wlsc_surface *es = resource->data;
+	struct wl_buffer *buffer = buffer_resource->data;
 
 	buffer->busy_count++;
 	wlsc_buffer_post_release(es->buffer);
@@ -1601,9 +1602,10 @@ static void
 input_device_attach(struct wl_client *client,
 		    struct wl_resource *resource,
 		    uint32_t time,
-		    struct wl_buffer *buffer, int32_t x, int32_t y)
+		    struct wl_resource *buffer_resource, int32_t x, int32_t y)
 {
 	struct wlsc_input_device *device = resource->data;
+	struct wl_buffer *buffer = buffer_resource->data;
 
 	if (time < device->input_device.pointer_focus_time)
 		return;
@@ -1625,18 +1627,22 @@ const static struct wl_input_device_interface input_device_interface = {
 	input_device_attach,
 };
 
+static void
+bind_input_device(struct wl_client *client,
+		  void *data, uint32_t version, uint32_t id)
+{
+	wl_client_add_object(client, &wl_display_interface,
+			     &input_device_interface, id, data);
+}
+
 WL_EXPORT void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec)
 {
 	wl_input_device_init(&device->input_device, &ec->compositor);
 
-	device->input_device.resource.object.interface = &wl_input_device_interface;
-	device->input_device.resource.object.implementation =
-		(void (**)(void)) &input_device_interface;
-	device->input_device.resource.data = device;
-	wl_display_add_global(ec->wl_display,
-			      &device->input_device.resource.object, NULL);
+	wl_display_add_global(ec->wl_display, &wl_input_device_interface,
+			      device, bind_input_device);
 
 	device->sprite = wlsc_surface_create(ec,
 					     device->input_device.x,
@@ -1655,11 +1661,10 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 }
 
 static void
-wlsc_output_post_geometry(struct wl_client *client, struct wl_object *global,
-			  uint32_t version, uint32_t id)
+bind_output(struct wl_client *client,
+	    void *data, uint32_t version, uint32_t id)
 {
-	struct wlsc_output *output =
-		container_of(global, struct wlsc_output, resource.object);
+	struct wlsc_output *output = data;
 	struct wlsc_mode *mode;
 
 	output->resource.client = client;
@@ -1860,8 +1865,8 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	wl_list_init(&output->frame_callback_list);
 
 	output->resource.object.interface = &wl_output_interface;
-	wl_display_add_global(c->wl_display, &output->resource.object,
-			      wlsc_output_post_geometry);
+	wl_display_add_global(c->wl_display,
+			      &wl_output_interface, output, bind_output);
 }
 
 static void
