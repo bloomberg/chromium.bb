@@ -452,9 +452,9 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
                                          bool is_keyword,
                                          const string16& input_text,
                                          SuggestResults* suggest_results) {
-  ListValue* root_list = root_val->AsList();
-  if (!root_list)
+  if (!root_val->IsType(Value::TYPE_LIST))
     return false;
+  ListValue* root_list = static_cast<ListValue*>(root_val);
 
   Value* query_val;
   string16 query_str;
@@ -462,15 +462,16 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
   if ((root_list->GetSize() < 2) || !root_list->Get(0, &query_val) ||
       !query_val->GetAsString(&query_str) ||
       (query_str != input_text) ||
-      !root_list->Get(1, &result_val) || !result_val->AsList())
+      !root_list->Get(1, &result_val) || !result_val->IsType(Value::TYPE_LIST))
     return false;
 
   ListValue* description_list = NULL;
   if (root_list->GetSize() > 2) {
     // 3rd element: Description list.
     Value* description_val;
-    if (root_list->Get(2, &description_val))
-      description_list = description_val->AsList();
+    if (root_list->Get(2, &description_val) &&
+        description_val->IsType(Value::TYPE_LIST))
+      description_list = static_cast<ListValue*>(description_val);
   }
 
   // We don't care about the query URL list (the fourth element in the

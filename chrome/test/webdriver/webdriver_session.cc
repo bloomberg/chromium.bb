@@ -1240,9 +1240,9 @@ Error* Session::ExecuteFindElementScriptAndParse(
     virtual ~FindElementsParser() { }
 
     virtual bool Parse(base::Value* value) const OVERRIDE {
-      ListValue* list = value->AsList();
-      if (!list)
+      if (!value->IsType(Value::TYPE_LIST))
         return false;
+      ListValue* list = static_cast<ListValue*>(value);
       for (size_t i = 0; i < list->GetSize(); ++i) {
         ElementId element;
         Value* element_value = NULL;

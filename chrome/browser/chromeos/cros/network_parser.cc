@@ -70,7 +70,7 @@ bool NetworkDeviceParser::UpdateDeviceFromInfo(const DictionaryValue& info,
     bool result = info.GetWithoutPathExpansion(key, &value);
     DCHECK(result);
     if (result)
-      UpdateStatus(key, value, device, NULL);
+      UpdateStatus(key, *value, device, NULL);
   }
   if (VLOG_IS_ON(2)) {
     std::string json;
@@ -82,7 +82,7 @@ bool NetworkDeviceParser::UpdateDeviceFromInfo(const DictionaryValue& info,
 }
 
 bool NetworkDeviceParser::UpdateStatus(const std::string& key,
-                                       Value* value,
+                                       const Value& value,
                                        NetworkDevice* device,
                                        PropertyIndex* index) {
   PropertyIndex found_index = mapper().Get(key);
@@ -94,7 +94,7 @@ bool NetworkDeviceParser::UpdateStatus(const std::string& key,
   }
   if (VLOG_IS_ON(2)) {
     std::string value_json;
-    base::JSONWriter::Write(value, true, &value_json);
+    base::JSONWriter::Write(&value, true, &value_json);
     VLOG(2) << "Updated value on device: "
             << device->device_path() << "[" << key << "] = " << value_json;
   }
@@ -134,7 +134,7 @@ bool NetworkParser::UpdateNetworkFromInfo(const DictionaryValue& info,
     bool res = info.GetWithoutPathExpansion(key, &value);
     DCHECK(res);
     if (res)
-      network->UpdateStatus(key, value, NULL);
+      network->UpdateStatus(key, *value, NULL);
   }
   if (network->unique_id().empty())
     network->CalculateUniqueId();
@@ -145,7 +145,7 @@ bool NetworkParser::UpdateNetworkFromInfo(const DictionaryValue& info,
 }
 
 bool NetworkParser::UpdateStatus(const std::string& key,
-                                 Value* value,
+                                 const Value& value,
                                  Network* network,
                                  PropertyIndex* index) {
   PropertyIndex found_index = mapper().Get(key);
@@ -159,7 +159,7 @@ bool NetworkParser::UpdateStatus(const std::string& key,
   }
   if (VLOG_IS_ON(2)) {
     std::string value_json;
-    base::JSONWriter::Write(value, true, &value_json);
+    base::JSONWriter::Write(&value, true, &value_json);
     VLOG(2) << "Updated value on network: "
             << network->unique_id() << "[" << key << "] = " << value_json;
   }
@@ -167,12 +167,12 @@ bool NetworkParser::UpdateStatus(const std::string& key,
 }
 
 bool NetworkParser::ParseValue(PropertyIndex index,
-                               Value* value,
+                               const Value& value,
                                Network* network) {
   switch (index) {
     case PROPERTY_INDEX_TYPE: {
       std::string type_string;
-      if (value->GetAsString(&type_string)) {
+      if (value.GetAsString(&type_string)) {
         ConnectionType type = ParseType(type_string);
         LOG_IF(ERROR, type != network->type())
             << "Network with mismatched type: " << network->service_path()
@@ -183,14 +183,14 @@ bool NetworkParser::ParseValue(PropertyIndex index,
     }
     case PROPERTY_INDEX_DEVICE: {
       std::string device_path;
-      if (!value->GetAsString(&device_path))
+      if (!value.GetAsString(&device_path))
         break;
       network->set_device_path(device_path);
       return true;
     }
     case PROPERTY_INDEX_NAME: {
       std::string name;
-      if (value->GetAsString(&name)) {
+      if (value.GetAsString(&name)) {
         network->SetName(name);
         return true;
       }
@@ -198,7 +198,7 @@ bool NetworkParser::ParseValue(PropertyIndex index,
     }
     case PROPERTY_INDEX_GUID: {
       std::string unique_id;
-      if (!value->GetAsString(&unique_id))
+      if (!value.GetAsString(&unique_id))
         break;
       network->set_unique_id(unique_id);
       return true;
@@ -206,14 +206,14 @@ bool NetworkParser::ParseValue(PropertyIndex index,
     case PROPERTY_INDEX_PROFILE: {
       // Note: currently this is only provided for non remembered networks.
       std::string profile_path;
-      if (!value->GetAsString(&profile_path))
+      if (!value.GetAsString(&profile_path))
         break;
       network->set_profile_path(profile_path);
       return true;
     }
     case PROPERTY_INDEX_STATE: {
       std::string state_string;
-      if (value->GetAsString(&state_string)) {
+      if (value.GetAsString(&state_string)) {
         network->SetState(ParseState(state_string));
         return true;
       }
@@ -221,7 +221,7 @@ bool NetworkParser::ParseValue(PropertyIndex index,
     }
     case PROPERTY_INDEX_MODE: {
       std::string mode_string;
-      if (value->GetAsString(&mode_string)) {
+      if (value.GetAsString(&mode_string)) {
         network->mode_ = ParseMode(mode_string);
         return true;
       }
@@ -229,7 +229,7 @@ bool NetworkParser::ParseValue(PropertyIndex index,
     }
     case PROPERTY_INDEX_ERROR: {
       std::string error_string;
-      if (value->GetAsString(&error_string)) {
+      if (value.GetAsString(&error_string)) {
         network->error_ = ParseError(error_string);
         return true;
       }
@@ -237,28 +237,28 @@ bool NetworkParser::ParseValue(PropertyIndex index,
     }
     case PROPERTY_INDEX_CONNECTABLE: {
       bool connectable;
-      if (!value->GetAsBoolean(&connectable))
+      if (!value.GetAsBoolean(&connectable))
         break;
       network->set_connectable(connectable);
       return true;
     }
     case PROPERTY_INDEX_IS_ACTIVE: {
       bool is_active;
-      if (!value->GetAsBoolean(&is_active))
+      if (!value.GetAsBoolean(&is_active))
         break;
       network->set_is_active(is_active);
       return true;
     }
     case PROPERTY_INDEX_AUTO_CONNECT: {
       bool auto_connect;
-      if (!value->GetAsBoolean(&auto_connect))
+      if (!value.GetAsBoolean(&auto_connect))
         break;
       network->set_auto_connect(auto_connect);
       return true;
     }
     case PROPERTY_INDEX_SAVE_CREDENTIALS: {
       bool save_credentials;
-      if (!value->GetAsBoolean(&save_credentials))
+      if (!value.GetAsBoolean(&save_credentials))
         break;
       network->set_save_credentials(save_credentials);
       return true;

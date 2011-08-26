@@ -206,10 +206,10 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
   json.append("]");
 
   scoped_ptr<Value> root_val(base::JSONReader::Read(json, true));
-  ListValue* list = root_val->AsList();
-  if (!list)
+  if (!root_val->IsType(Value::TYPE_LIST))
     return false;
 
+  ListValue* list = static_cast<ListValue*>(root_val.get());
   Value* result_val;
   if (!list || !list->GetSize() ||
       !list->Remove(0, &result_val))  // Remove gives us ownership of the value.
@@ -925,9 +925,9 @@ class SnapshotTaker {
     // Parse the JSON.
     std::vector<int> dimensions;
     scoped_ptr<Value> value(base::JSONReader::Read(json, true));
-    ListValue* list = value->AsList();
-    if (!list)
+    if (!value->IsType(Value::TYPE_LIST))
       return false;
+    ListValue* list = static_cast<ListValue*>(value.get());
     int width, height;
     if (!list->GetInteger(0, &width) || !list->GetInteger(1, &height))
       return false;

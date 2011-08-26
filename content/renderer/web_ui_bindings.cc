@@ -77,7 +77,7 @@ void WebUIBindings::send(const CppArgumentList& args, CppVariant* result) {
       return;
 
     content.reset(CreateValueFromCppVariant(args[1]));
-    CHECK(content->AsList());
+    CHECK(content->IsType(Value::TYPE_LIST));
   } else {
     content.reset(new ListValue());
   }

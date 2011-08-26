@@ -28,7 +28,7 @@ class Response {
   void SetStatus(ErrorCode status);
 
   // Ownership of the returned pointer is kept by this object.
-  Value* GetValue() const;
+  const Value* GetValue() const;
 
   // Sets the |value| of this response, assuming ownership of the object in the
   // process.

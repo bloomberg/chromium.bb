@@ -187,11 +187,11 @@ bool SendExecuteJavascriptJSONRequest(
 
   JSONStringValueSerializer deserializer(json);
   Value* value = deserializer.Deserialize(NULL, NULL);
-  if (!value || !value->AsList()) {
+  if (!value || !value->IsType(Value::TYPE_LIST)) {
     LOG(ERROR) << "Unable to deserialize returned JSON";
     return false;
   }
-  scoped_ptr<ListValue> list(value->AsList());
+  scoped_ptr<ListValue> list(static_cast<ListValue*>(value));
   return list->Remove(0, result);
 }
 
@@ -297,9 +297,9 @@ bool SendGetCookiesJSONRequest(
   if (!reply_dict.Remove("cookies", &cookies_unscoped_value))
     return false;
   scoped_ptr<Value> cookies_value(cookies_unscoped_value);
-  if (!cookies_value->AsList())
+  if (!cookies_value->IsType(Value::TYPE_LIST))
     return false;
-  *cookies = cookies_value->AsList();
+  *cookies = static_cast<ListValue*>(cookies_value.release());
   return true;
 }
 

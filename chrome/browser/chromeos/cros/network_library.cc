@@ -183,7 +183,7 @@ void NetworkDevice::ParseInfo(const DictionaryValue& info) {
 }
 
 bool NetworkDevice::UpdateStatus(const std::string& key,
-                                 Value* value,
+                                 const Value& value,
                                  PropertyIndex* index) {
   if (device_parser_.get())
     return device_parser_->UpdateStatus(key, value, this, index);
@@ -430,7 +430,7 @@ void Network::InitIPAddress() {
 }
 
 bool Network::UpdateStatus(const std::string& key,
-                           Value* value,
+                           const Value& value,
                            PropertyIndex* index) {
   if (network_parser_.get())
     return network_parser_->UpdateStatus(key, value, this, index);
@@ -2981,14 +2981,13 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   // Calbacks.
   static void NetworkStatusChangedHandler(
       void* object, const char* path, const char* key, const Value* value);
-  void UpdateNetworkStatus(const std::string& path,
-                           const std::string& key,
-                           Value* value);
+  void UpdateNetworkStatus(
+      const std::string& path, const std::string& key, const Value& value);
 
   static void NetworkDevicePropertyChangedHandler(
       void* object, const char* path, const char* key, const Value* value);
   void UpdateNetworkDeviceStatus(
-      const std::string& path, const std::string& key, Value* value);
+      const std::string& path, const std::string& key, const Value& value);
 
   static void PinOperationCallback(void* object,
                                    const char* path,
@@ -3175,14 +3174,11 @@ void NetworkLibraryImplCros::NetworkStatusChangedHandler(
   DCHECK(networklib);
   if (key == NULL || value == NULL || path == NULL || object == NULL)
     return;
-  networklib->UpdateNetworkStatus(std::string(path),
-                                  std::string(key),
-                                  const_cast<Value*>(value));
+  networklib->UpdateNetworkStatus(std::string(path), std::string(key), *value);
 }
 
-void NetworkLibraryImplCros::UpdateNetworkStatus(const std::string& path,
-                                                 const std::string& key,
-                                                 Value* value) {
+void NetworkLibraryImplCros::UpdateNetworkStatus(
+    const std::string& path, const std::string& key, const Value& value) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Network* network = FindNetworkByPath(path);
   if (network) {
@@ -3211,12 +3207,11 @@ void NetworkLibraryImplCros::NetworkDevicePropertyChangedHandler(
     return;
   networklib->UpdateNetworkDeviceStatus(std::string(path),
                                         std::string(key),
-                                        const_cast<Value*>(value));
+                                        *value);
 }
 
-void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(const std::string& path,
-                                                       const std::string& key,
-                                                       Value* value) {
+void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
+    const std::string& path, const std::string& key, const Value& value) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   NetworkDevice* device = FindNetworkDeviceByPath(path);
   if (device) {

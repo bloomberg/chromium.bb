@@ -413,7 +413,7 @@ class NetworkDevice {
   // PropertyIndex that was updated in |index|.  |index| may be NULL
   // if not needed.
   bool UpdateStatus(const std::string& key,
-                    Value* value,
+                    const Value& value,
                     PropertyIndex *index);
 
   NativeNetworkDeviceParser* device_parser() { return device_parser_.get(); }
@@ -635,7 +635,7 @@ class Network {
   }
 
   virtual bool UpdateStatus(const std::string& key,
-                            Value* value,
+                            const Value& value,
                             PropertyIndex* index);
 
  protected:

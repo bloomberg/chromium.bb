@@ -195,9 +195,8 @@ namespace {
 
 void ValidateJsonList(const std::string& json) {
   scoped_ptr<Value> root(base::JSONReader::Read(json, false));
-  ASSERT_TRUE(root.get());
-  ListValue* list = root->AsList();
-  ASSERT_TRUE(list);
+  ASSERT_TRUE(root.get() && root->IsType(Value::TYPE_LIST));
+  ListValue* list = static_cast<ListValue*>(root.get());
   ASSERT_EQ(1U, list->GetSize());
   Value* elt = NULL;
   ASSERT_TRUE(list->Get(0, &elt));
@@ -220,9 +219,8 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
 
   // It's ok to have a comment in a string.
   root.reset(base::JSONReader::Read("[\"// ok\\n /* foo */ \"]", false));
-  ASSERT_TRUE(root.get());
-  ListValue* list = root->AsList();
-  ASSERT_TRUE(list);
+  ASSERT_TRUE(root.get() && root->IsType(Value::TYPE_LIST));
+  ListValue* list = static_cast<ListValue*>(root.get());
   ASSERT_EQ(1U, list->GetSize());
   Value* elt = NULL;
   ASSERT_TRUE(list->Get(0, &elt));

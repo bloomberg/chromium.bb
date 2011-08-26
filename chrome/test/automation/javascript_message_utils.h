@@ -51,11 +51,11 @@ struct ValueConversionTraits<std::vector<T> > {
     }
     return value;
   }
-  static bool SetFromValue(Value* value, std::vector<T>* t) {
-    ListValue* list_value = value->AsList();
-    if (!list_value)
+  static bool SetFromValue(const Value* value, std::vector<T>* t) {
+    if (!value->IsType(Value::TYPE_LIST))
       return false;
 
+    const ListValue* list_value = static_cast<const ListValue*>(value);
     ListValue::const_iterator iter;
     for (iter = list_value->begin(); iter != list_value->end(); ++iter) {
       if (!ValueConversionTraits<T>::CanConvert(*iter))

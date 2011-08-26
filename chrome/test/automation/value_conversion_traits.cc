@@ -71,15 +71,14 @@ Value* ValueConversionTraits<ListValue*>::CreateValueFrom(const ListValue* t) {
 
 bool ValueConversionTraits<ListValue*>::SetFromValue(const Value* value,
                                                      ListValue** t) {
-  ListValue* list = const_cast<Value*>(value)->AsList();
-  if (!list)
+  if (!value->IsType(Value::TYPE_LIST))
     return false;
-  *t = list->DeepCopy();
+  *t = static_cast<const ListValue*>(value)->DeepCopy();
   return true;
 }
 
 bool ValueConversionTraits<ListValue*>::CanConvert(const Value* value) {
-  return const_cast<Value*>(value)->AsList();
+  return value->IsType(Value::TYPE_LIST);
 }
 
 Value* ValueConversionTraits<DictionaryValue*>::CreateValueFrom(

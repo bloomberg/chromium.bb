@@ -285,7 +285,8 @@ bool GetBookmarksFunction::RunImpl() {
   scoped_ptr<ListValue> json(new ListValue());
   Value* arg0;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &arg0));
-  if (const ListValue* ids = arg0->AsList()) {
+  if (arg0->IsType(Value::TYPE_LIST)) {
+    const ListValue* ids = static_cast<const ListValue*>(arg0);
     size_t count = ids->GetSize();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {

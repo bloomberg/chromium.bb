@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_NATIVE_NETWORK_PARSER_H_
 #pragma once
 
-#include "base/compiler_specific.h"  // for OVERRIDE
 #include "chrome/browser/chromeos/cros/network_parser.h"
+#include "base/compiler_specific.h"  // for OVERRIDE
 
 namespace chromeos {
 
@@ -18,11 +18,9 @@ class NativeNetworkDeviceParser : public NetworkDeviceParser {
  public:
   NativeNetworkDeviceParser();
   virtual ~NativeNetworkDeviceParser();
-
   virtual bool ParseValue(PropertyIndex index,
-                          Value* value,
+                          const Value& value,
                           NetworkDevice* device) OVERRIDE;
-
  protected:
   virtual ConnectionType ParseType(const std::string& type) OVERRIDE;
 
@@ -48,13 +46,11 @@ class NativeNetworkParser : public NetworkParser {
  public:
   NativeNetworkParser();
   virtual ~NativeNetworkParser();
-
   static const EnumMapper<PropertyIndex>* property_mapper();
   static const ConnectionType ParseConnectionType(const std::string& type);
-
  protected:
   virtual bool ParseValue(PropertyIndex index,
-                          Value* value,
+                          const Value& value,
                           Network* network) OVERRIDE;
   virtual ConnectionType ParseType(const std::string& type) OVERRIDE;
   virtual ConnectionType ParseTypeFromDictionary(
@@ -62,7 +58,6 @@ class NativeNetworkParser : public NetworkParser {
   virtual ConnectionMode ParseMode(const std::string& mode) OVERRIDE;
   virtual ConnectionState ParseState(const std::string& state) OVERRIDE;
   virtual ConnectionError ParseError(const std::string& error) OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeNetworkParser);
 };
@@ -72,7 +67,6 @@ class NativeEthernetNetworkParser : public NativeNetworkParser {
  public:
   NativeEthernetNetworkParser();
   virtual ~NativeEthernetNetworkParser();
-
  private:
   // NOTE: Uses base class ParseValue, etc.
 
@@ -85,9 +79,8 @@ class NativeWirelessNetworkParser : public NativeNetworkParser {
   NativeWirelessNetworkParser();
   virtual ~NativeWirelessNetworkParser();
   virtual bool ParseValue(PropertyIndex index,
-                          Value* value,
+                          const Value& value,
                           Network* network) OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWirelessNetworkParser);
 };
@@ -97,14 +90,12 @@ class NativeWifiNetworkParser : public NativeWirelessNetworkParser {
   NativeWifiNetworkParser();
   virtual ~NativeWifiNetworkParser();
   virtual bool ParseValue(PropertyIndex index,
-                          Value* value,
+                          const Value& value,
                           Network* network) OVERRIDE;
-
  protected:
   ConnectionSecurity ParseSecurity(const std::string& security);
   EAPMethod ParseEAPMethod(const std::string& method);
   EAPPhase2Auth ParseEAPPhase2Auth(const std::string& auth);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWifiNetworkParser);
 };
@@ -114,14 +105,14 @@ class NativeCellularNetworkParser : public NativeWirelessNetworkParser {
   NativeCellularNetworkParser();
   virtual ~NativeCellularNetworkParser();
   virtual bool ParseValue(PropertyIndex index,
-                          Value* value,
+                          const Value& value,
                           Network* network) OVERRIDE;
-
  protected:
   ActivationState ParseActivationState(const std::string& state);
-  NetworkTechnology ParseNetworkTechnology(const std::string& technology);
-  NetworkRoamingState ParseRoamingState(const std::string& roaming_state);
-
+  NetworkTechnology ParseNetworkTechnology(
+      const std::string& technology);
+  NetworkRoamingState ParseRoamingState(
+      const std::string& roaming_state);
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeCellularNetworkParser);
 };
@@ -131,20 +122,19 @@ class NativeVirtualNetworkParser : public NativeNetworkParser {
   NativeVirtualNetworkParser();
   virtual ~NativeVirtualNetworkParser();
   virtual bool ParseValue(PropertyIndex index,
-                          Value* value,
+                          const Value& value,
                           Network* network) OVERRIDE;
   virtual bool UpdateNetworkFromInfo(const DictionaryValue& info,
                                      Network* network) OVERRIDE;
-
  protected:
   bool ParseProviderValue(PropertyIndex index,
-                          const Value& value,
-                          VirtualNetwork* network);
+                                  const Value& value,
+                                  VirtualNetwork* network);
   ProviderType ParseProviderType(const std::string& type);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeVirtualNetworkParser);
 };
+
 
 }  // namespace chromeos
 
