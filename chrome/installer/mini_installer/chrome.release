@@ -40,6 +40,7 @@ nacl_irt_x86_64.nexe: %(VersionDir)s\
 icudt.dll: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 locales\*.pak: %(VersionDir)s\Locales
+locales\*.dll: %(VersionDir)s\Locales
 servers\*.dll: %(VersionDir)s\
 servers\*.exe: %(VersionDir)s\
 chrome_frame_helper.exe: %(VersionDir)s\

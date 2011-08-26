@@ -2,3 +2,4 @@ servers\npchrome_frame.dll
 servers\chrome_launcher.exe
 chrome_frame_helper.exe
 chrome_frame_helper.dll
+locales\*.dll
