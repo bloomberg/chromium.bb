@@ -98,6 +98,10 @@ class BrowsingDataRemover : public NotificationObserver,
   static bool is_removing() { return removing_; }
 
  private:
+  // The clear API needs to be able to toggle removing_ in order to test that
+  // only one BrowsingDataRemover instance can be called at a time.
+  FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest, ClearOneAtATime);
+
   enum CacheState {
     STATE_NONE,
     STATE_CREATE_MAIN,
@@ -174,6 +178,10 @@ class BrowsingDataRemover : public NotificationObserver,
            !waiting_for_clear_networking_history_ &&
            !waiting_for_clear_lso_data_;
   }
+
+  // Setter for removing_; DCHECKs that we can only start removing if we're not
+  // already removing, and vice-versa.
+  static void set_removing(bool removing);
 
   NotificationRegistrar registrar_;
 

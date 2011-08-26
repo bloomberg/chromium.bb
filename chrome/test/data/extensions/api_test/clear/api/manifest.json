@@ -1,0 +1,10 @@
+{
+  "name": "chrome.clear API Test",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.experimental.clear API",
+  "background_page": "background.html",
+  "permissions": [
+    "experimental",
+    "clear"
+  ]
+}

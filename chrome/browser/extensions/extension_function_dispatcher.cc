@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
+#include "chrome/browser/extensions/extension_clear_api.h"
 #include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
 #include "chrome/browser/extensions/extension_content_settings_api.h"
 #include "chrome/browser/extensions/extension_context_menu_api.h"
@@ -167,6 +168,15 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<BrowserActionSetBadgeTextFunction>();
   RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
   RegisterFunction<BrowserActionSetPopupFunction>();
+
+  // Browsing Data.
+  RegisterFunction<ClearBrowsingDataFunction>();
+  RegisterFunction<ClearCacheFunction>();
+  RegisterFunction<ClearCookiesFunction>();
+  RegisterFunction<ClearDownloadsFunction>();
+  RegisterFunction<ClearFormDataFunction>();
+  RegisterFunction<ClearHistoryFunction>();
+  RegisterFunction<ClearPasswordsFunction>();
 
   // Bookmarks.
   RegisterFunction<GetBookmarksFunction>();

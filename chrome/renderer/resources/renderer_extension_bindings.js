@@ -304,6 +304,7 @@ var chrome = chrome || {};
       "experimental.accessibility",
       "experimental.app",
       "experimental.bookmarkManager",
+      "experimental.clear",
       "experimental.contentSettings",
       "experimental.debugger",
       "experimental.downloads",

@@ -102,9 +102,14 @@ BrowsingDataRemover::~BrowsingDataRemover() {
   DCHECK(all_done());
 }
 
+// Static.
+void BrowsingDataRemover::set_removing(bool removing) {
+  DCHECK(removing_ != removing);
+  removing_ = removing;
+}
+
 void BrowsingDataRemover::Remove(int remove_mask) {
-  DCHECK(!removing_);
-  removing_ = true;
+  set_removing(true);
 
   if (remove_mask & REMOVE_HISTORY) {
     HistoryService* history_service =
@@ -347,7 +352,7 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
   if (g_browser_process->net_log())
     g_browser_process->net_log()->ClearAllPassivelyCapturedEvents();
 
-  removing_ = false;
+  set_removing(false);
   FOR_EACH_OBSERVER(Observer, observer_list_, OnBrowsingDataRemoverDone());
 
   // History requests aren't happy if you delete yourself from the callback.
