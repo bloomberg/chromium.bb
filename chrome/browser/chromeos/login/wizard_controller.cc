@@ -238,12 +238,14 @@ chromeos::EnterpriseEnrollmentScreen*
 }
 
 void WizardController::ShowNetworkScreen() {
+  VLOG(1) << "Showing network screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetNetworkScreen());
   host_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
 }
 
 void WizardController::ShowLoginScreen() {
+  VLOG(1) << "Showing login screen.";
   SetStatusAreaVisible(true);
   host_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
   host_->StartSignInScreen();

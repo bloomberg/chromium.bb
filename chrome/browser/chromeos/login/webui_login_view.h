@@ -135,6 +135,9 @@ class WebUILoginView : public views::View,
   // Whether the host window is frozen.
   bool host_window_frozen_;
 
+  // Caches StatusArea visibility setting before it has been initialized.
+  bool status_area_visibility_on_init_;
+
   DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };
 

@@ -46,7 +46,8 @@ WebUILoginView::WebUILoginView()
       profile_(NULL),
       webui_login_(NULL),
       status_window_(NULL),
-      host_window_frozen_(false) {
+      host_window_frozen_(false),
+      status_area_visibility_on_init_(true) {
 #if defined(TOUCH_UI)
   // Make sure the singleton KeyboardManager object is created.
   KeyboardManager::GetInstance();
@@ -137,6 +138,8 @@ void WebUILoginView::SetStatusAreaEnabled(bool enable) {
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
   if (status_area_)
     status_area_->SetVisible(visible);
+  else
+    status_area_visibility_on_init_ = visible;
 }
 
 // WebUILoginView protected: ---------------------------------------------------
@@ -221,6 +224,7 @@ void WebUILoginView::InitStatusArea() {
   DCHECK(status_window_ == NULL);
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
+  status_area_->SetVisible(status_area_visibility_on_init_);
 
   views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
   gfx::Size size = status_area_->GetPreferredSize();
