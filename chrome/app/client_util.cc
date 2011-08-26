@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/rand_util.h"  // For PreRead experiment.
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -23,6 +24,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/google_chrome_sxs_distribution.h"  // PreRead.
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/util_constants.h"
@@ -83,10 +85,90 @@ bool EnvQueryStr(const wchar_t* key_name, std::wstring* value) {
   return true;
 }
 
+#if defined(OS_WIN)
+// These constants are used by the PreRead experiment.
+const wchar_t kPreReadRegistryValue[] = L"PreReadExperimentGroup";
+const int kPreReadExpiryYear = 2012;
+const int kPreReadExpiryMonth = 1;
+const int kPreReadExpiryDay = 1;
+
+bool PreReadShouldRun() {
+  base::Time::Exploded exploded = { 0 };
+  exploded.year = kPreReadExpiryYear;
+  exploded.month = kPreReadExpiryMonth;
+  exploded.day_of_month = kPreReadExpiryDay;
+
+  base::Time expiration_time = base::Time::FromLocalExploded(exploded);
+
+  // Get the build time. This code is copied from
+  // base::FieldTrial::GetBuildTime. We can't use MetricsLogBase::GetBuildTime
+  // because that's in seconds since Unix epoch, which base::Time can't use.
+  base::Time build_time;
+  const char* kDateTime = __DATE__ " " __TIME__;
+  bool result = base::Time::FromString(kDateTime, &build_time);
+  DCHECK(result);
+
+  // If the experiment is expired, don't run it.
+  if (build_time > expiration_time)
+    return false;
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // The experiment should only run on canary and dev.
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring channel;
+  if (!dist->GetChromeChannel(&channel))
+    return false;
+  return channel == GoogleChromeSxSDistribution::ChannelName() ||
+      channel == L"dev";
+#else
+  // If we're running Chromium, we have no concept of channel so we
+  // run the experiment.
+  return true;
+#endif
+}
+
+// Checks to see if the experiment is running. If so, either tosses a coin
+// and persists it, or gets the already persistent coin-toss value. Returns
+// the coin-toss via |pre_read|. Returns true if the experiment is running and
+// pre_read has been written, false otherwise. |pre_read| is only written to
+// when this function returns true. |key| must be open with read-write access,
+// and be valid.
+bool GetPreReadExperimentGroup(base::win::RegKey* key,
+                               DWORD* pre_read) {
+  DCHECK(key != NULL);
+  DCHECK(pre_read != NULL);
+
+  if (!PreReadShouldRun()) {
+    // The experiment is no longer running. Remove the registry key
+    // storing the coin toss.
+    key->DeleteValue(kPreReadRegistryValue);
+    return false;
+  }
+
+  // Coin already tossed?
+  DWORD coin_toss = 0;
+  if (key->ReadValueDW(kPreReadRegistryValue, &coin_toss) == ERROR_SUCCESS) {
+    *pre_read = coin_toss;
+    return true;
+  }
+
+  // Coin not tossed? Toss it, and save the value to the registry.
+  coin_toss = base::RandInt(0, 1);
+  DCHECK(coin_toss == 0 || coin_toss == 1);
+  if (key->WriteValue(kPreReadRegistryValue, coin_toss) == ERROR_SUCCESS) {
+    *pre_read = coin_toss;
+    return true;
+  }
+
+  return false;
+}
+#endif  // if defined(OS_WIN)
+
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
 // value not being null to determine if this path contains a valid dll.
-HMODULE LoadChromeWithDirectory(std::wstring* dir) {
+HMODULE LoadChromeWithDirectory(const std::wstring& reg_key,  // For PreRead.
+                                std::wstring* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
 #ifdef _WIN64
@@ -138,6 +220,32 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
       key.Close();
     }
 
+    // The PreRead experiment is unable to use the standard FieldTrial
+    // mechanism as pre-reading happens in chrome.exe prior to loading
+    // chrome.dll. As such, we use a custom approach. If the experiment is
+    // running (not expired, and we're running a version of chrome from an
+    // appropriate channel) then we look to the registry for the experiment
+    // group. If it is not found, we toss a coin and persist the result in the
+    // registry. The coin-toss value is communicated to chrome.dll via an
+    // environment variable, which indicates to chrome.dll that the experiment
+    // is running, causing it to report sub-histogram results. If the experiment
+    // is expired or not running, the registry key is removed.
+
+    base::win::RegKey exp_key(
+        HKEY_CURRENT_USER, reg_key.c_str(),
+        KEY_CREATE_SUB_KEY | KEY_QUERY_VALUE | KEY_SET_VALUE);
+
+    if (exp_key.Valid()) {
+      // If the experiment is running, indicate it to chrome.dll via an
+      // environment variable.
+      if (GetPreReadExperimentGroup(&exp_key, &pre_read)) {
+        scoped_ptr<base::Environment> env(base::Environment::Create());
+        env->SetVar(chrome::kPreReadEnvironmentVariable,
+                    pre_read ? "1" : "0");
+      }
+      exp_key.Close();
+    }
+
     if (pre_read) {
       TRACE_EVENT_BEGIN_ETW("PreReadImage", 0, "");
       file_util::PreReadImage(dir->c_str(), pre_read_size, pre_read_step_size);
@@ -161,7 +269,7 @@ void ClearDidRun(const std::wstring& dll_path) {
   GoogleUpdateSettings::UpdateDidRunState(false, system_level);
 }
 
-}
+}  // namespace
 //=============================================================================
 
 MainDllLoader::MainDllLoader() : dll_(NULL) {
@@ -183,7 +291,7 @@ MainDllLoader::~MainDllLoader() {
 HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
   std::wstring dir(GetExecutablePath());
   *out_file = dir;
-  HMODULE dll = LoadChromeWithDirectory(out_file);
+  HMODULE dll = LoadChromeWithDirectory(GetRegistryPath(), out_file);
   if (dll)
     return dll;
 
@@ -222,7 +330,7 @@ HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
     *out_file = dir;
     *out_version = version_string;
     out_file->append(*out_version).append(L"\\");
-    dll = LoadChromeWithDirectory(out_file);
+    dll = LoadChromeWithDirectory(GetRegistryPath(), out_file);
     if (!dll) {
       LOG(ERROR) << "Failed to load Chrome DLL from " << out_file;
     }

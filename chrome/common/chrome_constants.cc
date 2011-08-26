@@ -188,6 +188,11 @@ extern const int kLowestRendererOomScore = 300;
 extern const int kHighestRendererOomScore = 1000;
 #endif
 
+#if defined(OS_WIN)
+// This is used by the PreRead experiment.
+const char kPreReadEnvironmentVariable[] = "CHROME_PRE_READ_EXPERIMENT";
+#endif
+
 }  // namespace chrome
 
 #undef FPL
