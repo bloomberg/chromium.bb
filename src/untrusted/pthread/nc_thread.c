@@ -136,7 +136,6 @@ void nc_thread_starter(nc_thread_function func,
   __newlib_thread_init();
   retval = tdb->start_func(tdb->state);
   /* if the function returns, terminate the thread */
-  tdb->exiting_without_returning = 0;
   pthread_exit(retval);
   /* NOTREACHED */
   /* TODO(gregoryd) - add assert */
@@ -284,11 +283,6 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
 
   tdb->start_func = NULL;
   tdb->state = NULL;
-  /*
-   * A call to pthread_exit without returning from the thread function
-   * should be recognized
-   */
-  tdb->exiting_without_returning = 1;
 
   /* Imitate PTHREAD_COND_INITIALIZER - we cannot use it directly here,
    * since this is not variable initialization.
@@ -525,8 +519,7 @@ void pthread_exit (void* retval) {
   int                       joinable = tdb->joinable;
 
   /* call the destruction functions for TSD */
-  if (tdb->exiting_without_returning)
-    __nc_tsd_exit();
+  __nc_tsd_exit();
 
   __newlib_thread_exit();
 

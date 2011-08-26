@@ -55,7 +55,6 @@ typedef struct {
   nc_thread_memory_block_t *tls_node;
   nc_thread_function  start_func;
   void* state;
-  int exiting_without_returning;
   struct nc_basic_thread_data *basic_data;
 } nc_thread_descriptor_t;
 

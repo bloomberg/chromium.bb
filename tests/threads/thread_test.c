@@ -476,15 +476,6 @@ pthread_key_t tsd_key;
 void* TsdThread(void *state) {
   CHECK_OK(pthread_setspecific(tsd_key, state));
 
-#ifndef __GLIBC__
-  /* This works around a bug in nacl-newlib's libpthread.  The TSD
-     destructor only gets run by explicit pthread_exit() calls, and
-     not by returning from the thread function.
-     See http://code.google.com/p/nativeclient/issues/detail?id=1085
-     TODO(mseaborn): This would be easy to fix. */
-  pthread_exit(NULL);
-#endif
-
   return 0;
 }
 
