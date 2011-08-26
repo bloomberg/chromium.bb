@@ -31,6 +31,9 @@ const char* GetPageTransitionQualifierString(
 const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source);
 
+const char* GetDeviceTypeString(
+    sync_pb::SessionHeader::DeviceType device_type);
+
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_

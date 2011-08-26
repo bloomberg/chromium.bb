@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -20,12 +20,20 @@ message SessionSpecifics {
   // Unique id for the client.
   optional string session_tag = 1;
   optional SessionHeader header = 2;
-  optional SessionTab tab = 3;  
+  optional SessionTab tab = 3;
 }
 // Properties of session sync objects.
 message SessionHeader {
   // Each session is composed of windows.
   repeated SessionWindow window = 2;
+  // A non-unique but human-readable name to describe this client.
+  optional string client_name = 3;
+  // The type of device.
+  enum DeviceType {
+    TYPE_PC = 1;
+    TYPE_CROS = 2;
+  }
+  optional DeviceType device_type = 4;
 }
 message SessionWindow {
   // Unique (to the owner) id for this window.
