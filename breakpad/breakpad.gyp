@@ -182,6 +182,9 @@
             'crash_inspector',
             'crash_report_sender',
           ],
+          'defines': [
+            'USE_PROTECTED_ALLOCATIONS=1',
+          ],
           'sources': [
             'src/client/mac/crash_generation/crash_generation_client.cc',
             'src/client/mac/crash_generation/crash_generation_client.h',
