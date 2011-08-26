@@ -146,7 +146,6 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
       } else {
         std::vector<WebScriptSource> sources;
         sources.push_back(source);
-        UserScriptSlave::InsertInitExtensionCode(&sources, params.extension_id);
         frame->executeScriptInIsolatedWorld(
             extension_dispatcher_->user_script_slave()->
                 GetIsolatedWorldIdForExtension(extension, frame),

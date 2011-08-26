@@ -89,7 +89,7 @@ function testPath(path, expectError) {
           return false;
         }
         var str = err.toString();
-        if (str.search("is not supported in content scripts") != -1) {
+        if (str.search("can only be used in extension processes.") != -1) {
           console.log(" ok (correct error thrown): " + path);
           return true;
         } else {
@@ -159,4 +159,3 @@ function doTest(privilegedPaths, unprivilegedPaths) {
     reportFailure();
   }
 }
-

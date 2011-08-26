@@ -175,11 +175,6 @@ class ExtensionImpl : public ExtensionBase {
     } else if (name->Equals(v8::String::New("SetIconCommon"))) {
       return v8::FunctionTemplate::New(SetIconCommon,
                                        v8::External::New(this));
-    } else if (name->Equals(v8::String::New("IsExtensionProcess"))) {
-      return v8::FunctionTemplate::New(IsExtensionProcess,
-                                       v8::External::New(this));
-    } else if (name->Equals(v8::String::New("IsIncognitoProcess"))) {
-      return v8::FunctionTemplate::New(IsIncognitoProcess);
     } else if (name->Equals(v8::String::New("GetUniqueSubEventName"))) {
       return v8::FunctionTemplate::New(GetUniqueSubEventName);
     } else if (name->Equals(v8::String::New("GetLocalFileSystem"))) {
@@ -549,17 +544,6 @@ class ExtensionImpl : public ExtensionBase {
     if (!renderview)
       return v8::Undefined();
     return v8::Integer::New(renderview->routing_id());
-  }
-
-  static v8::Handle<v8::Value> IsExtensionProcess(const v8::Arguments& args) {
-    ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
-    return v8::Boolean::New(
-        v8_extension->extension_dispatcher_->is_extension_process());
-  }
-
-  static v8::Handle<v8::Value> IsIncognitoProcess(const v8::Arguments& args) {
-    return v8::Boolean::New(
-        ChromeRenderProcessObserver::is_incognito_process());
   }
 };
 

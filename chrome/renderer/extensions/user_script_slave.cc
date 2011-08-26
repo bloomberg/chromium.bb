@@ -44,11 +44,6 @@ using WebKit::WebView;
 static const char kUserScriptHead[] = "(function (unsafeWindow) {\n";
 static const char kUserScriptTail[] = "\n})(window);";
 
-// Sets up the chrome.extension module. This may be run multiple times per
-// context, but the init method deletes itself after the first time.
-static const char kInitExtension[] =
-  "if (chrome.initExtension) chrome.initExtension('%s', true, %s);";
-
 int UserScriptSlave::GetIsolatedWorldIdForExtension(
     const Extension* extension, WebFrame* frame) {
   static int g_next_isolated_world_id = 1;
@@ -234,17 +229,6 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   return true;
 }
 
-// static
-void UserScriptSlave::InsertInitExtensionCode(
-    std::vector<WebScriptSource>* sources, const std::string& extension_id) {
-  DCHECK(sources);
-  bool incognito = ChromeRenderProcessObserver::is_incognito_process();
-  sources->insert(sources->begin(), WebScriptSource(WebString::fromUTF8(
-      base::StringPrintf(kInitExtension,
-                         extension_id.c_str(),
-                         incognito ? "true" : "false"))));
-}
-
 void UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
   // Normally we would use frame->document().url() to determine the document's
@@ -297,6 +281,8 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
         // We add this dumb function wrapper for standalone user script to
         // emulate what Greasemonkey does.
+        // TODO(aa): I think that maybe "is_standalone" scripts don't exist
+        // anymore. Investigate.
         if (script->is_standalone() || script->emulate_greasemonkey()) {
           content.insert(0, kUserScriptHead);
           content += kUserScriptTail;
@@ -318,10 +304,9 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
       // Setup chrome.self to contain an Extension object with the correct
       // ID.
-      if (!script->extension_id().empty()) {
-        InsertInitExtensionCode(&sources, script->extension_id());
+      // TODO(aa): Can extension_id() ever be empty anymore?
+      if (!script->extension_id().empty())
         isolated_world_id = GetIsolatedWorldIdForExtension(extension, frame);
-      }
 
       PerfTimer exec_timer;
       frame->executeScriptInIsolatedWorld(

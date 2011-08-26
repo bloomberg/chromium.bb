@@ -1,6 +1,14 @@
 <script>
 // Simple success test: we want content-script APIs to be available (like
 // sendRequest), but other APIs to be undefined.
-var success = (chrome.tabs == undefined);
+var success = false;
+
+try {
+  var foo = chrome.tabs;
+} catch (e) {
+  success = e.message.indexOf(
+      " can only be used in extension processes.") > -1;
+}
+
 chrome.extension.sendRequest({success: success});
 </script>

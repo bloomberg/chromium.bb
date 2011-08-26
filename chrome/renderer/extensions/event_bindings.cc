@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
@@ -332,13 +333,13 @@ void EventBindings::HandleContextCreated(
   contexts.push_back(linked_ptr<ContextInfo>(
       new ContextInfo(persistent_context, extension_id, frame)));
 
-  // Content scripts get initialized in user_script_slave.cc.
-  if (!content_script) {
-    v8::HandleScope handle_scope;
-    v8::Handle<v8::Value> argv[1];
-    argv[0] = v8::String::New(extension_id.c_str());
-    CallFunctionInContext(context, "dispatchOnLoad", arraysize(argv), argv);
-  }
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::Value> argv[3];
+  argv[0] = v8::String::New(extension_id.c_str());
+  argv[1] = v8::Boolean::New(extension_dispatcher->is_extension_process());
+  argv[2] = v8::Boolean::New(
+      ChromeRenderProcessObserver::is_incognito_process());
+  CallFunctionInContext(context, "dispatchOnLoad", arraysize(argv), argv);
 }
 
 // static

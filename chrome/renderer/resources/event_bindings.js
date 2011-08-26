@@ -232,8 +232,10 @@ var chrome = chrome || {};
   chromeHidden.onLoad = new chrome.Event();
   chromeHidden.onUnload = new chrome.Event();
 
-  chromeHidden.dispatchOnLoad = function(extensionId) {
-    chromeHidden.onLoad.dispatch(extensionId);
+  chromeHidden.dispatchOnLoad = function(extensionId, isExtensionProcess,
+                                         isIncognitoContext) {
+    chromeHidden.onLoad.dispatch(extensionId, isExtensionProcess,
+                                 isIncognitoContext);
   };
 
   chromeHidden.dispatchOnUnload = function() {

@@ -57,8 +57,6 @@ class UserScriptSlave {
 
   void RemoveIsolatedWorld(const std::string& extension_id);
 
-  static void InsertInitExtensionCode(std::vector<WebScriptSource>* sources,
-                                      const std::string& extension_id);
  private:
   static void InitializeIsolatedWorld(int isolated_world_id,
                                       const Extension* extension);

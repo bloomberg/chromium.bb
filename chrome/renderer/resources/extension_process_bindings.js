@@ -18,27 +18,12 @@ var chrome = chrome || {};
   native function OpenChannelToTab();
   native function GetRenderViewId();
   native function SetIconCommon();
-  native function IsExtensionProcess();
-  native function IsIncognitoProcess();
   native function GetUniqueSubEventName(eventName);
   native function GetLocalFileSystem(name, path);
   native function DecodeJPEG(jpeg_image);
   native function Print();
 
   var chromeHidden = GetChromeHidden();
-
-  // These bindings are for the extension process only. Since a chrome-extension
-  // URL can be loaded in an iframe of a regular renderer, we check here to
-  // ensure we don't expose the APIs in that case.
-  if (!IsExtensionProcess()) {
-    chromeHidden.onLoad.addListener(function (extensionId) {
-      if (!extensionId) {
-        return;
-      }
-      chrome.initExtension(extensionId, false);
-    });
-    return;
-  }
 
   if (!chrome)
     chrome = {};
@@ -590,11 +575,10 @@ var chrome = chrome || {};
     return "unknown";
   }
 
-  chromeHidden.onLoad.addListener(function (extensionId) {
-    if (!extensionId) {
+  chromeHidden.onLoad.addListener(function(extensionId, isExtensionProcess,
+                                           isIncognitoProcess) {
+    if (!isExtensionProcess)
       return;
-    }
-    chrome.initExtension(extensionId, false, IsIncognitoProcess());
 
     // Setup the ChromeSetting class so we can use it to construct
     // ChromeSetting objects from the API definition.

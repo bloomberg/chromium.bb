@@ -173,9 +173,8 @@ var chrome = chrome || {};
 
   // This function is called on context initialization for both content scripts
   // and extension contexts.
-  chrome.initExtension = function(extensionId, warnOnPrivilegedApiAccess,
-                                  inIncognitoContext) {
-    delete chrome.initExtension;
+  chromeHidden.onLoad.addListener(function(extensionId, isExtensionProcess,
+                                           inIncognitoContext) {
     chromeHidden.extensionId = extensionId;
 
     chrome.extension = chrome.extension || {};
@@ -259,12 +258,11 @@ var chrome = chrome || {};
       return GetL10nMessage(message_name, placeholders, extensionId);
     };
 
-    if (warnOnPrivilegedApiAccess) {
+    if (!isExtensionProcess)
       setupApiStubs();
-    }
-  };
+  });
 
-  var notSupportedSuffix = " is not supported in content scripts. " +
+  var notSupportedSuffix = " can only be used in extension processes. " +
       "See the content scripts documentation for more details.";
 
   // Setup to throw an error message when trying to access |name| on the chrome
