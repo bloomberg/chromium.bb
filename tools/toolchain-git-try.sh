@@ -29,6 +29,10 @@ for repo in $repos; do
   revname="NACL_$(echo "$repo" | tr '[:lower:]-' '[:upper:]_')_COMMIT"
   patch="toolchain-try.${repo}.patch"
   (cd "SRC/$repo"; git diff "${!revname}..HEAD") > $patch
+  if [ $? -ne 0  ]; then
+    echo >&2 "$0: error: update SRC/$repo first"
+    exit 2
+  fi
   if [ -s "$patch" ]; then
     git add "$patch"
     tryname="${tryname}-${repo}-$(git rev-list -n1 --abbrev-commit HEAD)"
@@ -36,6 +40,11 @@ for repo in $repos; do
     rm -f "$patch"
   fi
 done
+
+if ! git rev-parse origin/master >/dev/null; then
+  echo >&2 "$0: error: no origin/master branch"
+  exit 3
+fi
 
 (set -x
  git checkout -b "$tryname" origin/master
