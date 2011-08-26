@@ -96,8 +96,12 @@ void RecordBrowserStartupTime() {
   ::GetProcessTimes(::GetCurrentProcess(), &creation_time, &ignore, &ignore,
       &ignore);
 
-  RecordPreReadExperimentTime("Startup.BrowserMessageLoopStartTime",
-      base::Time::Now() - base::Time::FromFileTime(creation_time));
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Startup.BrowserMessageLoopStartTime",
+      base::Time::Now() - base::Time::FromFileTime(creation_time),
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromHours(1),
+      100);
 }
 
 int AskForUninstallConfirmation() {

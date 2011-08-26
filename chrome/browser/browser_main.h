@@ -213,9 +213,4 @@ void ShowMissingLocaleMessageBox();
 // the UMA histogram |metric_name|.
 void RecordBrowserStartupTime();
 
-// Records a time value to an UMA histogram in the context of the
-// PreReadExperiment field-trial. This also reports to the appropriate
-// sub-histogram (_PreRead(Enabled|Disabled)).
-void RecordPreReadExperimentTime(const char* name, base::TimeDelta time);
-
 #endif  // CHROME_BROWSER_BROWSER_MAIN_H_

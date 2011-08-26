@@ -116,11 +116,6 @@ extern const int kLowestRendererOomScore;
 extern const int kHighestRendererOomScore;
 #endif
 
-#if defined(OS_WIN)
-// This is used by the PreRead experiment.
-extern const char kPreReadEnvironmentVariable[];
-#endif
-
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_
