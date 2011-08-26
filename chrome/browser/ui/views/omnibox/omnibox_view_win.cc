@@ -48,12 +48,12 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "views/controls/textfield/native_textfield_win.h"
 #include "views/drag_utils.h"
 #include "views/events/event_utils_win.h"
-#include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"
 
 #pragma comment(lib, "oleacc.lib")  // Needed for accessibility support.
@@ -1813,8 +1813,8 @@ void OmniboxViewWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 
 BOOL OmniboxViewWin::OnMouseWheel(UINT flags, short delta, CPoint point) {
   // Forward the mouse-wheel message to the window under the mouse.
-  if (!views::RerouteMouseWheel(m_hWnd, MAKEWPARAM(flags, delta),
-                                MAKELPARAM(point.x, point.y)))
+  if (!ui::RerouteMouseWheel(m_hWnd, MAKEWPARAM(flags, delta),
+                             MAKELPARAM(point.x, point.y)))
     SetMsgHandled(false);
   return 0;
 }

@@ -21,6 +21,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -32,7 +33,6 @@
 #include "views/controls/native_control_win.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/accelerator_handler.h"
-#include "views/focus/focus_util_win.h"
 #include "views/focus/view_storage.h"
 #include "views/ime/input_method_win.h"
 #include "views/views_delegate.h"
@@ -1199,7 +1199,7 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   if (!IsAccessibleWidget())
     NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kCustomObjectID, CHILDID_SELF);
 
-  props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
+  props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(hwnd()));
 
   drop_target_ = new DropTargetWin(
       static_cast<internal::RootView*>(GetWidget()->GetRootView()));
@@ -1542,7 +1542,7 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
     active_mouse_tracking_flags_ = 0;
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
     // Reroute the mouse wheel to the window under the pointer if applicable.
-    return (views::RerouteMouseWheel(hwnd(), w_param, l_param) ||
+    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
             delegate_->OnMouseEvent(MouseWheelEvent(msg))) ? 0 : 1;
   }
 

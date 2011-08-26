@@ -47,13 +47,13 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "views/focus/focus_manager.h"
-#include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
@@ -807,7 +807,7 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   OnInputLangChange(0, 0);
   // Marks that window as supporting mouse-wheel messages rerouting so it is
   // scrolled when under the mouse pointer even if inactive.
-  props_.push_back(views::SetWindowSupportsRerouteMouseWheel(m_hWnd));
+  props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
   props_.push_back(new ViewProp(m_hWnd, kRenderWidgetHostViewKey,
                                 static_cast<RenderWidgetHostView*>(this)));
 
@@ -1401,7 +1401,7 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
   // Forward the mouse-wheel message to the window under the mouse if it belongs
   // to us.
   if (message == WM_MOUSEWHEEL &&
-      views::RerouteMouseWheel(m_hWnd, wparam, lparam)) {
+      ui::RerouteMouseWheel(m_hWnd, wparam, lparam)) {
     handled = TRUE;
     return 0;
   }

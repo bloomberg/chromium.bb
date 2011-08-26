@@ -260,8 +260,6 @@
         'focus/focus_manager_factory.h',
         'focus/focus_search.cc',
         'focus/focus_search.h',
-        'focus/focus_util_win.cc',
-        'focus/focus_util_win.h',
         'focus/view_storage.cc',
         'focus/view_storage.h',
         'ime/character_composer.cc',

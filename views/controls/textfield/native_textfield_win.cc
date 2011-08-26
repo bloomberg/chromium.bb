@@ -21,6 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/range/range.h"
+#include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/native_theme_win.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
@@ -30,7 +31,6 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/focus/focus_manager.h"
-#include "views/focus/focus_util_win.h"
 #include "views/metrics.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
@@ -749,7 +749,7 @@ LRESULT NativeTextfieldWin::OnMouseWheel(UINT message,
                                          LPARAM l_param) {
   // Reroute the mouse-wheel to the window under the mouse pointer if
   // applicable.
-  if (views::RerouteMouseWheel(m_hWnd, w_param, l_param))
+  if (ui::RerouteMouseWheel(m_hWnd, w_param, l_param))
     return 0;
   return DefWindowProc(message, w_param, l_param);
 }

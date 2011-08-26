@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/focus/focus_util_win.h"
+#include "ui/base/win/mouse_wheel_util.h"
 
 #include <windowsx.h>
 
@@ -10,9 +10,7 @@
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 
-using ui::ViewProp;
-
-namespace views {
+namespace ui {
 
 // Property used to indicate the HWND supports having mouse wheel messages
 // rerouted to it.
@@ -34,7 +32,7 @@ static bool WindowSupportsRerouteMouseWheel(HWND window) {
 }
 
 static bool IsCompatibleWithMouseWheelRedirection(HWND window) {
-  std::wstring class_name = ui::GetClassName(window);
+  std::wstring class_name = GetClassName(window);
   // Mousewheel redirection to comboboxes is a surprising and
   // undesireable user behavior.
   return !(class_name == L"ComboBox" ||
@@ -42,7 +40,7 @@ static bool IsCompatibleWithMouseWheelRedirection(HWND window) {
 }
 
 static bool CanRedirectMouseWheelFrom(HWND window) {
-  std::wstring class_name = ui::GetClassName(window);
+  std::wstring class_name = GetClassName(window);
 
   // Older Thinkpad mouse wheel drivers create a window under mouse wheel
   // pointer. Detect if we are dealing with this window. In this case we
@@ -118,4 +116,4 @@ bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param) {
   return false;
 }
 
-}  // namespace views
+}  // namespace ui
