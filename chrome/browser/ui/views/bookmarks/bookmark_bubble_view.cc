@@ -187,18 +187,19 @@ void BookmarkBubbleView::Init() {
   }
 
   remove_link_ = new views::Link(UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK)));
+      IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK)));
   remove_link_->set_listener(this);
 
   edit_button_ = new views::NativeTextButton(
-      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_OPTIONS)));
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS)));
 
   close_button_ = new views::NativeTextButton(
       this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
   close_button_->SetIsDefault(true);
 
   views::Label* combobox_label = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_FOLDER_TEXT)));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_FOLDER_TEXT)));
 
   parent_combobox_ = new views::Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
@@ -208,8 +209,8 @@ void BookmarkBubbleView::Init() {
 
   views::Label* title_label = new views::Label(
       UTF16ToWide(l10n_util::GetStringUTF16(
-          newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
-                              IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK)));
+          newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
+                              IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK)));
   title_label->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   title_label->SetColor(kTitleColor);
@@ -253,7 +254,7 @@ void BookmarkBubbleView::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, 2);
   layout->AddView(new views::Label(UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_TITLE_TEXT))));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_TITLE_TEXT))));
   title_tf_ = new views::Textfield();
   title_tf_->SetText(GetTitle());
   layout->AddView(title_tf_);
@@ -340,7 +341,7 @@ bool BookmarkBubbleView::FadeInOnShow() {
 
 std::wstring BookmarkBubbleView::accessible_name() {
   return UTF16ToWide(
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_ADD_BOOKMARK));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_ADD_BOOKMARK));
 }
 
 void BookmarkBubbleView::Close() {

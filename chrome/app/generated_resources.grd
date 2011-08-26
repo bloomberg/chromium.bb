@@ -6212,85 +6212,85 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
   <!-- bookmark editor messages-->
-      <message name="IDS_BOOMARK_EDITOR_NAME_LABEL" desc="Label shown before the title/name of the URL.">
+      <message name="IDS_BOOKMARK_EDITOR_NAME_LABEL" desc="Label shown before the title/name of the URL.">
         Name:
       </message>
-      <message name="IDS_BOOMARK_EDITOR_URL_LABEL" desc="Label shown before the URL.">
+      <message name="IDS_BOOKMARK_EDITOR_URL_LABEL" desc="Label shown before the URL.">
         URL:
       </message>
-      <message name="IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON" desc="Text on the new folder button.">
+      <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON" desc="Text on the new folder button.">
         New folder
       </message>
-      <message name="IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM" desc="Text on the new folder context menu item.">
+      <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM" desc="Text on the new folder context menu item.">
         &amp;New folder
       </message>
-      <message name="IDS_BOOMARK_EDITOR_TITLE" desc="Title of the window the bookmark editor is in.">
+      <message name="IDS_BOOKMARK_EDITOR_TITLE" desc="Title of the window the bookmark editor is in.">
         Edit Bookmark
       </message>
-      <message name="IDS_BOOMARK_EDITOR_CONFIRM_DELETE" desc="The message shown in the dialog asking the user to confirm deleting a folder.">
+      <message name="IDS_BOOKMARK_EDITOR_CONFIRM_DELETE" desc="The message shown in the dialog asking the user to confirm deleting a folder.">
         This folder contains <ph name="COUNT">$1<ex>5</ex></ph> bookmarks. Are you sure you want to delete it?
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
           Bookmarks bar
         </message>
-        <message name="IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME" desc="Name shown in the tree for the synced bookmarks folder">
+        <message name="IDS_BOOKMARK_BAR_SYNCED_FOLDER_NAME" desc="Name shown in the tree for the synced bookmarks folder">
           Synced bookmarks
         </message>
-        <message name="IDS_BOOMARK_BAR_OTHER_FOLDER_NAME" desc="Name shown in the tree for the other bookmarks folder">
+        <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="Name shown in the tree for the other bookmarks folder">
           Other bookmarks
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the bookmarks bar folder">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the bookmarks bar folder">
           Bookmarks Bar
         </message>
-        <message name="IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the synced bookmarks folder">
+        <message name="IDS_BOOKMARK_BAR_SYNCED_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the synced bookmarks folder">
           Synced Bookmarks
         </message>
-        <message name="IDS_BOOMARK_BAR_OTHER_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the other bookmarks folder">
+        <message name="IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the other bookmarks folder">
           Other Bookmarks
         </message>
       </if>
-      <message name="IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME" desc="Name for newly created groups">
+      <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME" desc="Name for newly created groups">
         New folder
       </message>
-      <message name="IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE" desc="Window title of editor for bookmark folders">
+      <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE" desc="Window title of editor for bookmark folders">
         Edit folder name
       </message>
-      <message name="IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="Window title of editor for new bookmark folders">
+      <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="Window title of editor for new bookmark folders">
         New folder
       </message>
 
       <!-- bookmark info bubble messages -->
-      <message name="IDS_BOOMARK_BUBBLE_ADD_BOOKMARK" desc="Accessible title of the bubble before bookmarking something">
+      <message name="IDS_BOOKMARK_BUBBLE_ADD_BOOKMARK" desc="Accessible title of the bubble before bookmarking something">
         Add Bookmark
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED" desc="Title of the bubble after bookmarking something">
+      <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED" desc="Title of the bubble after bookmarking something">
         Bookmark Added!
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark">
+      <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark">
         Bookmark
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_OPTIONS" desc="Title of the link the user can click to edit details of the bookmark">
+      <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the link the user can click to edit details of the bookmark">
         Edit...
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK" desc="Link for removing the bookmark">
+      <message name="IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK" desc="Link for removing the bookmark">
         Remove
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked">
+      <message name="IDS_BOOKMARK_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked">
         Name:
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
+      <message name="IDS_BOOKMARK_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
         Folder:
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
+        <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
           Choose another folder...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="In Title Case: Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
+        <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="In Title Case: Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
           Choose Another Folder...
         </message>
       </if>
@@ -6320,32 +6320,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- bookmark bar messages -->
-      <message name="IDS_BOOMARK_BAR_OTHER_BOOKMARKED" desc="Title of button showing other bookmarks">
+      <message name="IDS_BOOKMARK_BAR_OTHER_BOOKMARKED" desc="Title of button showing other bookmarks">
         Other bookmarks
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB" desc="Menu description for loading bookmark in a new tab">
+        <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB" desc="Menu description for loading bookmark in a new tab">
           &amp;Open in new tab
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW" desc="Menu description for loading bookmark in a new window">
+        <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW" desc="Menu description for loading bookmark in a new window">
           Open in &amp;new window
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="Menu description for opening bookmark in incognito window">
+        <message name="IDS_BOOKMARK_BAR_OPEN_INCOGNITO" desc="Menu description for opening bookmark in incognito window">
           Open in &amp;incognito window
         </message>
-        <message name="IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK" desc="Menu title for adding a new bookmark entry">
+        <message name="IDS_BOOKMARK_BAR_ADD_NEW_BOOKMARK" desc="Menu title for adding a new bookmark entry">
           Add pa&amp;ge...
         </message>
-        <message name="IDS_BOOMARK_BAR_NEW_FOLDER" desc="Menu title for adding a new folder">
+        <message name="IDS_BOOKMARK_BAR_NEW_FOLDER" desc="Menu title for adding a new folder">
           Add &amp;folder...
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_ALL" desc="Menu title for opening all urls in a bookmark folder">
+        <message name="IDS_BOOKMARK_BAR_OPEN_ALL" desc="Menu title for opening all urls in a bookmark folder">
           &amp;Open all bookmarks
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="Menu title for opening all urls in a bookmark folder in a new window">
+        <message name="IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="Menu title for opening all urls in a bookmark folder in a new window">
           Open all bookmarks in &amp;new window
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO" desc="Menu description for opening all urls in a bookmark folder in an incognito window">
+        <message name="IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO" desc="Menu description for opening all urls in a bookmark folder in an incognito window">
           Open all bookmarks in &amp;incognito window
         </message>
         <message name="IDS_BOOKMARK_BAR_REMOVE" desc="Menu title for removing/unstarring a bookmark">
@@ -6353,35 +6353,35 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB" desc="In Title Case: Menu description for loading bookmark in a new tab">
+        <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB" desc="In Title Case: Menu description for loading bookmark in a new tab">
           &amp;Open in New Tab
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW" desc="In Title Case: Menu description for loading bookmark in a new window">
+        <message name="IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW" desc="In Title Case: Menu description for loading bookmark in a new window">
           Open in &amp;New Window
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="In Title Case: Menu description for opening bookmark in incognito window">
+        <message name="IDS_BOOKMARK_BAR_OPEN_INCOGNITO" desc="In Title Case: Menu description for opening bookmark in incognito window">
           Open in &amp;Incognito Window
         </message>
-        <message name="IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK" desc="In Title Case: Menu title for adding a new bookmark entry">
+        <message name="IDS_BOOKMARK_BAR_ADD_NEW_BOOKMARK" desc="In Title Case: Menu title for adding a new bookmark entry">
           Add Pa&amp;ge...
         </message>
-        <message name="IDS_BOOMARK_BAR_NEW_FOLDER" desc="In Title Case: Menu title for adding a new folder">
+        <message name="IDS_BOOKMARK_BAR_NEW_FOLDER" desc="In Title Case: Menu title for adding a new folder">
           Add &amp;Folder...
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_ALL" desc="In Title Case: Menu title for opening all urls in a bookmark folder">
+        <message name="IDS_BOOKMARK_BAR_OPEN_ALL" desc="In Title Case: Menu title for opening all urls in a bookmark folder">
           &amp;Open All Bookmarks
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="In Title Case: Menu title for opening all urls in a bookmark folder in a new window">
+        <message name="IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="In Title Case: Menu title for opening all urls in a bookmark folder in a new window">
           Open All Bookmarks in &amp;New Window
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO" desc="In Title Case: Menu description for opening all urls in a bookmark folder in an incognito window">
+        <message name="IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO" desc="In Title Case: Menu description for opening all urls in a bookmark folder in an incognito window">
           Open All Bookmarks in &amp;Incognito Window
         </message>
         <message name="IDS_BOOKMARK_BAR_REMOVE" desc="In Title Case: Menu title for removing/unstarring a bookmark">
           &amp;Delete
         </message>
       </if>
-      <message name="IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
+      <message name="IDS_BOOKMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
         Name:
       </message>
       <if expr="not pp_ifdef('use_titlecase')">

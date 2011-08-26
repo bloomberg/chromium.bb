@@ -97,7 +97,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
     // and fill it in.
     if (!model->other_node()->empty()) {
       NSString* other_items_title =
-          l10n_util::GetNSString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME);
+          l10n_util::GetNSString(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME);
       [bookmark_menu addItem:[NSMenuItem separatorItem]];
       AddNodeAsSubmenu(bookmark_menu,
                        model->other_node(),
@@ -259,13 +259,13 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
     [menu addItem:[NSMenuItem separatorItem]];
     bool enabled = child_count != 0;
     AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL,
-                  IDS_BOOMARK_BAR_OPEN_ALL,
+                  IDS_BOOKMARK_BAR_OPEN_ALL,
                   node, menu, enabled);
     AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                  IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                  IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
                   node, menu, enabled);
     AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                  IDS_BOOMARK_BAR_OPEN_INCOGNITO,
+                  IDS_BOOKMARK_BAR_OPEN_INCOGNITO,
                   node, menu, enabled);
   }
 }

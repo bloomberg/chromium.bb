@@ -722,13 +722,13 @@ BookmarkNode* BookmarkModel::CreatePermanentNode(BookmarkNode::Type type) {
   BookmarkNode* node = new BookmarkNode(generate_next_node_id(), GURL());
   node->set_type(type);
   if (type == BookmarkNode::BOOKMARK_BAR) {
-    node->set_title(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
+    node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
   } else if (type == BookmarkNode::OTHER_NODE) {
     node->set_title(
-        l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
   } else {
     node->set_title(
-        l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME));
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_SYNCED_FOLDER_NAME));
   }
   return node;
 }

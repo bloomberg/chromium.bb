@@ -150,7 +150,7 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
   EXPECT_EQ(2, folder_b_3_->child_count());
   [controller_ selectTestNodeInBrowser:folder_b_3_];
   NSString* expectedName =
-      l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
+      l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME);
   [controller_ setDisplayName:expectedName];
   [controller_ newFolder:nil];
   NSArray* selectionPaths = [controller_ tableSelectionPaths];

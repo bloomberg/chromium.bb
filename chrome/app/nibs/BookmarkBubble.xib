@@ -72,7 +72,7 @@
 									<object class="NSTextFieldCell" key="NSCell" id="368795405">
 										<int key="NSCellFlags">68288064</int>
 										<int key="NSCellFlags2">272630784</int>
-										<string key="NSContents">^IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK</string>
+										<string key="NSContents">^IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK</string>
 										<object class="NSFont" key="NSSupport">
 											<string key="NSName">LucidaGrande</string>
 											<double key="NSSize">13</double>
@@ -137,7 +137,7 @@
 											<object class="NSButtonCell" key="NSCell" id="562929863">
 												<int key="NSCellFlags">67239424</int>
 												<int key="NSCellFlags2">134348800</int>
-												<string key="NSContents">^IDS_BOOMARK_BUBBLE_OPTIONS</string>
+												<string key="NSContents">^IDS_BOOKMARK_BUBBLE_OPTIONS</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="430629007"/>
 												<int key="NSButtonFlags">-2038284033</int>
@@ -167,7 +167,7 @@
 											<object class="NSButtonCell" key="NSCell" id="1066753170">
 												<int key="NSCellFlags">-2080244224</int>
 												<int key="NSCellFlags2">134348800</int>
-												<string key="NSContents">^IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK</string>
+												<string key="NSContents">^IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="177936093"/>
 												<int key="NSButtonFlags">-2038021889</int>
@@ -202,7 +202,7 @@
 											<object class="NSTextFieldCell" key="NSCell" id="628112279">
 												<int key="NSCellFlags">68288064</int>
 												<int key="NSCellFlags2">272761856</int>
-												<string key="NSContents">^IDS_BOOMARK_BUBBLE_TITLE_TEXT</string>
+												<string key="NSContents">^IDS_BOOKMARK_BUBBLE_TITLE_TEXT</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="303910295"/>
 												<reference key="NSBackgroundColor" ref="152587692"/>
@@ -218,7 +218,7 @@
 											<object class="NSTextFieldCell" key="NSCell" id="295393049">
 												<int key="NSCellFlags">68288064</int>
 												<int key="NSCellFlags2">272761856</int>
-												<string key="NSContents">^IDS_BOOMARK_BUBBLE_FOLDER_TEXT</string>
+												<string key="NSContents">^IDS_BOOKMARK_BUBBLE_FOLDER_TEXT</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="228609717"/>
 												<reference key="NSBackgroundColor" ref="152587692"/>

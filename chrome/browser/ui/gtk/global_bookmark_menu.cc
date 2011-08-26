@@ -112,7 +112,7 @@ void GlobalBookmarkMenu::RebuildMenu() {
     AddBookmarkMenuItem(bookmark_menu_.get(), gtk_separator_menu_item_new());
 
     GtkWidget* menu_item = gtk_image_menu_item_new_with_label(
-        l10n_util::GetStringUTF8(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME).c_str());
+        l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME).c_str());
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
     gtk_image_menu_item_set_image(
         GTK_IMAGE_MENU_ITEM(menu_item),

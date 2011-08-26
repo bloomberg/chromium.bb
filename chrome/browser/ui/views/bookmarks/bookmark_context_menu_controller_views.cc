@@ -15,9 +15,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/browser/user_metrics.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/page_navigator.h"
+#include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "views/widget/widget.h"
 
@@ -48,18 +48,18 @@ BookmarkContextMenuControllerViews::~BookmarkContextMenuControllerViews() {
 void BookmarkContextMenuControllerViews::BuildMenu() {
   if (selection_.size() == 1 && selection_[0]->is_url()) {
     delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL,
-                                   IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB);
+                                   IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB);
     delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                                   IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW);
+                                   IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW);
     delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                                   IDS_BOOMARK_BAR_OPEN_INCOGNITO);
+                                   IDS_BOOKMARK_BAR_OPEN_INCOGNITO);
   } else {
     delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL,
-                                   IDS_BOOMARK_BAR_OPEN_ALL);
+                                   IDS_BOOKMARK_BAR_OPEN_ALL);
     delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                                   IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
+                                   IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW);
     delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                                   IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO);
+                                   IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO);
   }
 
   delegate_->AddSeparator();
@@ -82,9 +82,9 @@ void BookmarkContextMenuControllerViews::BuildMenu() {
 
   delegate_->AddSeparator();
   delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK,
-                                 IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK);
+                                 IDS_BOOKMARK_BAR_ADD_NEW_BOOKMARK);
   delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_NEW_FOLDER,
-                                 IDS_BOOMARK_BAR_NEW_FOLDER);
+                                 IDS_BOOKMARK_BAR_NEW_FOLDER);
 
   delegate_->AddSeparator();
   delegate_->AddItemWithStringId(IDC_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);

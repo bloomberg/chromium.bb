@@ -99,7 +99,7 @@ void SafariImporter::StartImport(const importer::SourceProfile& source_profile,
 
 void SafariImporter::ImportBookmarks() {
   string16 toolbar_name =
-      bridge_->GetLocalizedString(IDS_BOOMARK_BAR_FOLDER_NAME);
+      bridge_->GetLocalizedString(IDS_BOOKMARK_BAR_FOLDER_NAME);
   std::vector<ProfileWriter::BookmarkEntry> bookmarks;
   ParseBookmarks(toolbar_name, &bookmarks);
 

@@ -4,12 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 
-#include "ui/base/l10n/l10n_util.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 @implementation BookmarkNameFolderController
@@ -36,7 +36,7 @@
       initialName_.reset([base::SysUTF16ToNSString(node_->GetTitle()) retain]);
     } else {
       NSString* newString =
-        l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
+        l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME);
       initialName_.reset([newString retain]);
     }
   }

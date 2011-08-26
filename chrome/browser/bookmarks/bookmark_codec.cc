@@ -189,11 +189,11 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   bb_node->set_type(BookmarkNode::BOOKMARK_BAR);
   other_folder_node->set_type(BookmarkNode::OTHER_NODE);
   synced_folder_node->set_type(BookmarkNode::SYNCED);
-  bb_node->set_title(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
+  bb_node->set_title(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
   other_folder_node->set_title(
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
   synced_folder_node->set_title(
-        l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_SYNCED_FOLDER_NAME));
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_SYNCED_FOLDER_NAME));
 
   return true;
 }

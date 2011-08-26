@@ -308,7 +308,7 @@ class Writer : public Task {
       if (folder_type == BookmarkNode::BOOKMARK_BAR) {
         if (!Write(kBookmarkBar))
           return false;
-        title = l10n_util::GetStringUTF8(IDS_BOOMARK_BAR_FOLDER_NAME);
+        title = l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_FOLDER_NAME);
       } else if (!Write(kFolderAttributeEnd)) {
         return false;
       }

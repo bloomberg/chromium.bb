@@ -60,7 +60,8 @@ int RecentlyUsedFoldersComboModel::GetItemCount() {
 
 string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) {
   if (index == static_cast<int>(nodes_.size()))
-    return l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
+    return
+       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
   return nodes_[index]->GetTitle();
 }
 

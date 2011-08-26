@@ -543,7 +543,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   if (parentInfo) {
     NSIndexPath* selection = [self selectedIndexPath];
     NSString* newFolderName =
-        l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
+        l10n_util::GetNSStringWithFixup(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME);
     BookmarkFolderInfo* folderInfo =
         [BookmarkFolderInfo bookmarkFolderInfoWithFolderName:newFolderName];
     [self willChangeValueForKey:@"folderTreeArray"];

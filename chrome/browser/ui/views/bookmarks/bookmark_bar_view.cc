@@ -1199,7 +1199,7 @@ int BookmarkBarView::GetFirstHiddenNodeIndex() {
 MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   MenuButton* button = new BookmarkFolderButton(
       this,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED)),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED)),
       this,
       false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
@@ -1207,7 +1207,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   button->set_context_menu_controller(this);
   button->set_tag(kOtherFolderButtonTag);
   button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED));
   return button;
 }
 

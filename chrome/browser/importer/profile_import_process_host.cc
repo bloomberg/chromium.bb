@@ -54,8 +54,8 @@ bool ProfileImportProcessHost::StartProfileImportProcess(
       base::IntToString(IDS_IMPORT_FROM_SAFARI),
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
   localized_strings.SetString(
-      base::IntToString(IDS_BOOMARK_BAR_FOLDER_NAME),
-      l10n_util::GetStringUTF8(IDS_BOOMARK_BAR_FOLDER_NAME));
+      base::IntToString(IDS_BOOKMARK_BAR_FOLDER_NAME),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_FOLDER_NAME));
 
   Send(new ProfileImportProcessMsg_StartImport(source_profile, items,
                                                localized_strings));

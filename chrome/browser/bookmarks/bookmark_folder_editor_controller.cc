@@ -42,12 +42,12 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
   model_->AddObserver(this);
 
   string16 title = is_new_ ?
-      l10n_util::GetStringUTF16(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW) :
-      l10n_util::GetStringUTF16(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE);
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW) :
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE);
   string16 label =
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL);
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_EDIT_FOLDER_LABEL);
   string16 contents = is_new_ ?
-      l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME) :
       node_->GetTitle();
 
   dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);

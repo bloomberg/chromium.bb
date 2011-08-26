@@ -153,7 +153,7 @@
 									<object class="NSTextFieldCell" key="NSCell" id="383706794">
 										<int key="NSCellFlags">68288064</int>
 										<int key="NSCellFlags2">272630784</int>
-										<string key="NSContents">^IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL</string>
+										<string key="NSContents">^IDS_BOOKMARK_BAR_EDIT_FOLDER_LABEL</string>
 										<reference key="NSSupport" ref="11363697"/>
 										<reference key="NSControlView" ref="1000877900"/>
 										<object class="NSColor" key="NSBackgroundColor">

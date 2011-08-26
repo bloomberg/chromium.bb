@@ -95,13 +95,13 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
       apply_edits_(true),
       remove_bookmark_(false) {
   GtkWidget* label = gtk_label_new(l10n_util::GetStringUTF8(
-      newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
-                          IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK).c_str());
+      newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
+                          IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK).c_str());
   labels_.push_back(label);
   remove_button_ = theme_service_->BuildChromeLinkButton(
-      l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK));
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
   GtkWidget* edit_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_OPTIONS).c_str());
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_BUBBLE_OPTIONS).c_str());
   GtkWidget* close_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_DONE).c_str());
 
@@ -130,9 +130,9 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
   // with the entry and folder combo lining up.
   GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
       &labels_,
-      l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_TITLE_TEXT).c_str(),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_BUBBLE_TITLE_TEXT).c_str(),
       name_entry_,
-      l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_FOLDER_TEXT).c_str(),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_BUBBLE_FOLDER_TEXT).c_str(),
       folder_combo_,
       NULL);
 

@@ -316,21 +316,21 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
   localized_strings->SetString("should_open_all",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL));
   localized_strings->SetString("open_incognito",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OPEN_INCOGNITO));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OPEN_INCOGNITO));
   localized_strings->SetString("open_in_new_tab",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB));
   localized_strings->SetString("open_in_new_window",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW));
   localized_strings->SetString("add_new_bookmark",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_ADD_NEW_BOOKMARK));
   localized_strings->SetString("new_folder",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_NEW_FOLDER));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_NEW_FOLDER));
   localized_strings->SetString("open_all",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OPEN_ALL));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OPEN_ALL));
   localized_strings->SetString("open_all_new_window",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW));
   localized_strings->SetString("open_all_incognito",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO));
   localized_strings->SetString("remove",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_REMOVE));
   localized_strings->SetString("copy",
@@ -342,7 +342,7 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
   localized_strings->SetString("delete",
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_DELETE));
   localized_strings->SetString("new_folder_name",
-      l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME));
   localized_strings->SetString("name_input_placeholder",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_NAME_INPUT_PLACE_HOLDER));
   localized_strings->SetString("url_input_placeholder",

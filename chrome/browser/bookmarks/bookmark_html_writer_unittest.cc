@@ -245,7 +245,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   ASSERT_EQ(8U, parsed_bookmarks.size());
   // Windows and ChromeOS builds use Sentence case.
   string16 bookmark_folder_name =
-      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME);
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME);
   AssertBookmarkEntryEquals(parsed_bookmarks[0], true, url1, url1_title, t1,
                             bookmark_folder_name, f1_title, string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[1], true, url2, url2_title, t2,

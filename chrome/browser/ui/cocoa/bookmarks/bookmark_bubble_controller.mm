@@ -197,11 +197,11 @@ void BookmarkBubbleNotificationBridge::Observe(
   origin.x -= bubbleArrowtip.x;
   [window setFrameOrigin:origin];
   [parentWindow_ addChildWindow:window ordered:NSWindowAbove];
-  // Default is IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK; "Bookmark".
+  // Default is IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK; "Bookmark".
   // If adding for the 1st time the string becomes "Bookmark Added!"
   if (!alreadyBookmarked_) {
     NSString* title =
-        l10n_util::GetNSString(IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED);
+        l10n_util::GetNSString(IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED);
     [bigTitle_ setStringValue:title];
   }
 
@@ -370,7 +370,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 
 + (NSString*)chooseAnotherFolderString {
   return l10n_util::GetNSStringWithFixup(
-      IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
+      IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
 }
 
 // For the given folder node, walk the tree and add folder names to

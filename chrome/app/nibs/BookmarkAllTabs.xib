@@ -121,7 +121,7 @@
 									<object class="NSTextFieldCell" key="NSCell" id="52444064">
 										<int key="NSCellFlags">68288064</int>
 										<int key="NSCellFlags2">272630784</int>
-										<string key="NSContents">^IDS_BOOMARK_EDITOR_NAME_LABEL</string>
+										<string key="NSContents">^IDS_BOOKMARK_EDITOR_NAME_LABEL</string>
 										<reference key="NSSupport" ref="899171858"/>
 										<reference key="NSControlView" ref="1036501322"/>
 										<object class="NSColor" key="NSBackgroundColor" id="460527477">
@@ -163,7 +163,7 @@
 									<object class="NSButtonCell" key="NSCell" id="732374144">
 										<int key="NSCellFlags">67239424</int>
 										<int key="NSCellFlags2">134217728</int>
-										<string key="NSContents">^IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON</string>
+										<string key="NSContents">^IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON</string>
 										<reference key="NSSupport" ref="899171858"/>
 										<reference key="NSControlView" ref="631907363"/>
 										<int key="NSButtonFlags">-2038284033</int>

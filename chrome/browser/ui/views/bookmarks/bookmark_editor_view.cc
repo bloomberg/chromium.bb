@@ -106,7 +106,7 @@ bool BookmarkEditorView::CanResize() const {
 }
 
 std::wstring BookmarkEditorView::GetWindowTitle() const {
-  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_TITLE));
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_TITLE));
 }
 
 bool BookmarkEditorView::Accept() {
@@ -209,7 +209,7 @@ bool BookmarkEditorView::IsCommandIdEnabled(int command_id) const {
     case IDS_EDIT:
     case IDS_DELETE:
       return !running_menu_for_root_;
-    case IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM:
+    case IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM:
       return true;
     default:
       NOTREACHED();
@@ -243,7 +243,7 @@ void BookmarkEditorView::ExecuteCommand(int command_id) {
     }
     tree_model_->Remove(node->parent(), node);
   } else {
-    DCHECK(command_id == IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
+    DCHECK(command_id == IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
     NewFolder();
   }
 }
@@ -279,8 +279,8 @@ void BookmarkEditorView::ShowContextMenuForView(View* source,
     context_menu_contents_->AddItemWithStringId(IDS_EDIT, IDS_EDIT);
     context_menu_contents_->AddItemWithStringId(IDS_DELETE, IDS_DELETE);
     context_menu_contents_->AddItemWithStringId(
-        IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM,
-        IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
+        IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM,
+        IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
     context_menu_.reset(new views::Menu2(context_menu_contents_.get()));
   }
   context_menu_->RunContextMenuAt(p);
@@ -300,7 +300,7 @@ void BookmarkEditorView::Init() {
     url = details_.existing_node->url();
   } else if (details_.type == EditDetails::NEW_FOLDER) {
     title = UTF16ToWide(
-        l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME));
   } else if (details_.type == EditDetails::NEW_URL) {
     string16 title16;
     bookmark_utils::GetURLAndTitleToBookmarkFromCurrentTab(profile_,
@@ -311,7 +311,7 @@ void BookmarkEditorView::Init() {
   title_tf_.SetController(this);
 
   title_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NAME_LABEL)));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NAME_LABEL)));
   title_tf_.SetAccessibleName(WideToUTF16Hack(title_label_->GetText()));
 
   if (show_tree_) {
@@ -320,7 +320,7 @@ void BookmarkEditorView::Init() {
     new_folder_button_.reset(new views::NativeTextButton(
         this,
         UTF16ToWide(l10n_util::GetStringUTF16(
-            IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON))));
+            IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON))));
     new_folder_button_->set_parent_owned(false);
     tree_view_->set_context_menu_controller(this);
 
@@ -366,7 +366,7 @@ void BookmarkEditorView::Init() {
 
   if (details_.type != EditDetails::NEW_FOLDER) {
     url_label_ = new views::Label(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_URL_LABEL)));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL)));
 
     std::string languages =
         profile_ ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
@@ -496,7 +496,7 @@ void BookmarkEditorView::NewFolder() {
 BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewFolder(
     EditorNode* parent) {
   EditorNode* new_node = new EditorNode(
-      l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME), 0);
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME), 0);
   // |new_node| is now owned by |parent|.
   tree_model_->Add(parent, new_node, parent->child_count());
   return new_node;

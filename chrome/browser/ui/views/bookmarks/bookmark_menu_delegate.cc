@@ -399,7 +399,7 @@ void BookmarkMenuDelegate::BuildOtherFolderMenu(
       GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
   MenuItemView* submenu = menu->AppendSubMenuWithIcon(
       id, UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED)),
+          l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_BOOKMARKED)),
       *folder_icon);
   BuildMenu(other_folder, 0, submenu, next_menu_id);
   menu_id_to_node_map_[id] = other_folder;
