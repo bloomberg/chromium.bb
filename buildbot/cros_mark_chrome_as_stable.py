@@ -48,14 +48,14 @@ _CHROME_REVISION_URL = ('http://build.chromium.org/f/chromium/perf/dashboard/'
 
 _CHROME_SVN_TAG = 'CROS_SVN_COMMIT'
 
-def _GetSvnUrl():
+def _GetSvnUrl(base_url):
   """Returns the path to the svn url for the given chrome branch."""
-  return os.path.join(BASE_CHROME_SVN_URL, 'trunk')
+  return os.path.join(base_url, 'trunk')
 
 
-def  _GetTipOfTrunkSvnRevision():
+def  _GetTipOfTrunkSvnRevision(base_url):
   """Returns the current svn revision for the chrome tree."""
-  svn_url = _GetSvnUrl()
+  svn_url = _GetSvnUrl(base_url)
   svn_info = RunCommand(['svn', 'info', svn_url], redirect_stdout=True)
 
   revision_re = re.compile('^Revision:\s+(\d+).*')
@@ -69,9 +69,9 @@ def  _GetTipOfTrunkSvnRevision():
   raise Exception('Could not find revision information from %s' % svn_url)
 
 
-def _GetTipOfTrunkVersion():
+def _GetTipOfTrunkVersion(base_url):
   """Returns the current Chrome version."""
-  svn_url = os.path.join(_GetSvnUrl(), 'src', 'chrome', 'VERSION')
+  svn_url = os.path.join(_GetSvnUrl(base_url), 'src', 'chrome', 'VERSION')
   chrome_version_info = RunCommand(
       ['svn', 'cat', svn_url],
       redirect_stdout=True,
@@ -84,7 +84,7 @@ def _GetTipOfTrunkVersion():
   return '.'.join(chrome_version_array)
 
 
-def _GetLatestRelease(branch=None):
+def _GetLatestRelease(base_url, branch=None):
   """Gets the latest release version from the buildspec_url for the branch.
 
   Args:
@@ -93,7 +93,7 @@ def _GetLatestRelease(branch=None):
   Returns:
     Latest version string.
   """
-  buildspec_url = os.path.join(BASE_CHROME_SVN_URL, 'releases')
+  buildspec_url = os.path.join(base_url, 'releases')
   svn_ls = RunCommand(['svn', 'ls', buildspec_url], redirect_stdout=True)
   sorted_ls = RunCommand(['sort', '--version-sort'], input=svn_ls,
                          redirect_stdout=True)
@@ -400,6 +400,7 @@ def main():
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
   parser.add_option('-b', '--board', default='x86-generic')
+  parser.add_option('-c', '--chrome_url', default=BASE_CHROME_SVN_URL)
   parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
                                                             'trunk', 'src'),
                     help='Path to the src directory')
@@ -423,16 +424,16 @@ def main():
   sticky_branch = sticky_version.rpartition('.')[0]
 
   if chrome_rev == constants.CHROME_REV_TOT:
-    version_to_uprev = _GetTipOfTrunkVersion()
-    commit_to_use = _GetTipOfTrunkSvnRevision()
+    version_to_uprev = _GetTipOfTrunkVersion(options.chrome_url)
+    commit_to_use = _GetTipOfTrunkSvnRevision(options.chrome_url)
   elif chrome_rev == constants.CHROME_REV_LATEST:
-    version_to_uprev = _GetLatestRelease()
+    version_to_uprev = _GetLatestRelease(options.chrome_url)
     # Don't rev on stable branch for latest_release.
     if re.match('%s\.\d+' % sticky_branch, version_to_uprev):
       Info('Latest release is sticky branch.  Nothing to do.')
       return
   else:
-    version_to_uprev = _GetLatestRelease(sticky_branch)
+    version_to_uprev = _GetLatestRelease(options.chrome_url, sticky_branch)
 
   stable_candidate = FindChromeUprevCandidate(stable_ebuilds, chrome_rev,
                                               sticky_branch)
