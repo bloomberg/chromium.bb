@@ -262,6 +262,7 @@
     # primary chrome on ChromeOS.
     'chromeos': [
       'chromeos_basic',
+      'chromeos_browser',
       'chromeos_firmware_version_checker',
       'chromeos_power',
       'chromeos_prefs',
