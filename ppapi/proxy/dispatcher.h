@@ -42,7 +42,7 @@ class VarSerializationRules;
 //    "Target"                          |    "Source"
 //    InterfaceProxy <---------------------- InterfaceProxy
 //                                      |
-class Dispatcher : public ProxyChannel {
+class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
  public:
   typedef const void* (*GetInterfaceFunc)(const char*);
   typedef int32_t (*InitModuleFunc)(PP_Module, GetInterfaceFunc);

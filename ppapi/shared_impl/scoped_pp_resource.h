@@ -6,13 +6,14 @@
 #define PPAPI_SHARED_IMPL_SCOPED_RESOURCE_H_
 
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
 class Resource;
 
 // This is a version of scoped_refptr but for PP_Resources.
-class ScopedPPResource {
+class PPAPI_SHARED_EXPORT ScopedPPResource {
  public:
   struct PassRef {};
 

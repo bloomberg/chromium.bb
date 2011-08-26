@@ -6,6 +6,7 @@
 #define PPAPI_THUNK_URL_REQUEST_INFO_API_H_
 
 #include "ppapi/c/ppb_url_request_info.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 
@@ -13,7 +14,7 @@ struct PPB_URLRequestInfo_Data;
 
 namespace thunk {
 
-class PPB_URLRequestInfo_API {
+class PPAPI_THUNK_EXPORT PPB_URLRequestInfo_API {
  public:
   virtual ~PPB_URLRequestInfo_API() {}
 

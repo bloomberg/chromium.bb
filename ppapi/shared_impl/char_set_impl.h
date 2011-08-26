@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 struct PPB_Memory_Dev;
 
@@ -14,7 +15,7 @@ namespace ppapi {
 
 // Contains the implementation of character set conversion that is shared
 // between the proxy and the renderer.
-class CharSetImpl {
+class PPAPI_SHARED_EXPORT CharSetImpl {
  public:
   static char* UTF16ToCharSet(const PPB_Memory_Dev* memory,
                               const uint16_t* utf16,

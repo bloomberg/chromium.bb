@@ -9,6 +9,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {

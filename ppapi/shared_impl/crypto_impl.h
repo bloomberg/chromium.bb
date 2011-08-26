@@ -7,10 +7,11 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
-class CryptoImpl {
+class PPAPI_SHARED_EXPORT CryptoImpl {
  public:
   static void GetRandomBytes(char* buffer, uint32_t num_bytes);
 };

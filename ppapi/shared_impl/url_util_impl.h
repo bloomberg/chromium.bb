@@ -12,6 +12,7 @@
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 class GURL;
 
@@ -19,7 +20,7 @@ namespace ppapi {
 
 // Contains the implementation of PPB_URLUtil that is shared between the proxy
 // and the renderer.
-class URLUtilImpl {
+class PPAPI_SHARED_EXPORT URLUtilImpl {
  public:
   // PPB_URLUtil shared functions.
   static PP_Var Canonicalize(PP_Module pp_module,

@@ -35,7 +35,7 @@ namespace proxy {
 class InterfaceProxy;
 class VarSerialization;
 
-class HostDispatcher : public Dispatcher {
+class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
  public:
   // Constructor for the renderer side.
   //

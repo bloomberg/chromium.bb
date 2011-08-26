@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace IPC {
 class Message;
@@ -61,7 +62,7 @@ class VarSerializationRules;
 //
 // The helper classes used for accessing the SerializedVar have more reasonable
 // behavior and will enforce that you don't do stupid things.
-class SerializedVar {
+class PPAPI_PROXY_EXPORT SerializedVar {
  public:
   SerializedVar();
   ~SerializedVar();
@@ -82,7 +83,7 @@ class SerializedVar {
   friend class SerializedVarTestConstructor;
   friend class SerializedVarVectorReceiveInput;
 
-  class Inner : public base::RefCounted<Inner> {
+  class PPAPI_PROXY_EXPORT Inner : public base::RefCounted<Inner> {
    public:
     Inner();
     Inner(VarSerializationRules* serialization_rules);
@@ -212,7 +213,8 @@ class SerializedVarSendInput : public SerializedVar {
 //     Send(new MyFunctionMsg(&result));
 //     return result.Return(dispatcher());
 //   }
-class ReceiveSerializedVarReturnValue : public SerializedVar {
+class PPAPI_PROXY_EXPORT ReceiveSerializedVarReturnValue
+    : public SerializedVar {
  public:
   // Note that we can't set the dispatcher in the constructor because the
   // data will be overridden when the return value is set. This constructor is
@@ -303,7 +305,7 @@ class ReceiveSerializedVarVectorOutParam {
 //   void OnMsgMyFunction(SerializedVarReceiveInput param) {
 //     MyFunction(param.Get());
 //   }
-class SerializedVarReceiveInput {
+class PPAPI_PROXY_EXPORT SerializedVarReceiveInput {
  public:
   // We rely on the implicit constructor here since the IPC layer will call
   // us with a SerializedVar. Pass this object by value, the copy constructor
@@ -359,7 +361,7 @@ class SerializedVarVectorReceiveInput {
 //   void OnMsgMyFunction(SerializedVarReturnValue result) {
 //     result.Return(dispatcher(), MyFunction());
 //   }
-class SerializedVarReturnValue {
+class PPAPI_PROXY_EXPORT SerializedVarReturnValue {
  public:
   // We rely on the implicit constructor here since the IPC layer will call
   // us with a SerializedVar*. Pass this object by value, the copy constructor
@@ -387,7 +389,7 @@ class SerializedVarReturnValue {
 //   void OnMsgMyFunction(SerializedVarOutParam out_param) {
 //     MyFunction(out_param.OutParam(dispatcher()));
 //   }
-class SerializedVarOutParam {
+class PPAPI_PROXY_EXPORT SerializedVarOutParam {
  public:
   // We rely on the implicit constructor here since the IPC layer will call
   // us with a SerializedVar*. Pass this object by value, the copy constructor
@@ -432,7 +434,7 @@ class SerializedVarVectorOutParam {
 // For tests that just want to construct a SerializedVar for giving it to one
 // of the other classes. This emulates a SerializedVar just received over the
 // wire from another process.
-class SerializedVarTestConstructor : public SerializedVar {
+class PPAPI_PROXY_EXPORT SerializedVarTestConstructor : public SerializedVar {
  public:
   // For POD-types and objects.
   explicit SerializedVarTestConstructor(const PP_Var& pod_var);
@@ -442,7 +444,7 @@ class SerializedVarTestConstructor : public SerializedVar {
 };
 
 // For tests that want to read what's in a SerializedVar.
-class SerializedVarTestReader : public SerializedVar {
+class PPAPI_PROXY_EXPORT SerializedVarTestReader : public SerializedVar {
  public:
   explicit SerializedVarTestReader(const SerializedVar& var);
 

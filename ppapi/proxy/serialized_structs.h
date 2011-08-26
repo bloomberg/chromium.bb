@@ -27,7 +27,7 @@ class Dispatcher;
 
 // PP_FontDescript_Dev has to be redefined with a SerializedVar in place of
 // the PP_Var used for the face name.
-struct SerializedFontDescription {
+struct PPAPI_PROXY_EXPORT SerializedFontDescription {
   SerializedFontDescription();
   ~SerializedFontDescription();
 

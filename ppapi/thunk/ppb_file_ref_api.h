@@ -6,6 +6,7 @@
 #define PPAPI_THUNK_PPB_FILE_REF_API_H_
 
 #include "ppapi/c/ppb_file_ref.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 
@@ -13,7 +14,7 @@ struct PPB_FileRef_CreateInfo;
 
 namespace thunk {
 
-class PPB_FileRef_API {
+class PPAPI_THUNK_EXPORT PPB_FileRef_API {
  public:
   virtual ~PPB_FileRef_API() {}
 

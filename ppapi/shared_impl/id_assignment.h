@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/basictypes.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
@@ -21,7 +22,7 @@ enum PPIdType {
   PP_ID_TYPE_COUNT
 };
 
-extern const unsigned int kPPIdTypeBits;
+PPAPI_SHARED_EXPORT extern const unsigned int kPPIdTypeBits;
 
 extern const int32 kMaxPPId;
 

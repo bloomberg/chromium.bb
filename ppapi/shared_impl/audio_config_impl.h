@@ -12,8 +12,9 @@
 
 namespace ppapi {
 
-class AudioConfigImpl : public Resource,
-                        public thunk::PPB_AudioConfig_API {
+class PPAPI_SHARED_EXPORT AudioConfigImpl
+    : public Resource,
+      public thunk::PPB_AudioConfig_API {
  public:
   virtual ~AudioConfigImpl();
 

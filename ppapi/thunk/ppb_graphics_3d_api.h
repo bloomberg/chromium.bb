@@ -7,11 +7,12 @@
 
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
 
-class PPB_Graphics3D_API {
+class PPAPI_THUNK_EXPORT PPB_Graphics3D_API {
  public:
   virtual ~PPB_Graphics3D_API() {}
 

@@ -10,6 +10,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -25,8 +26,9 @@ namespace proxy {
 
 class VarSerializationRules;
 
-class ProxyChannel : public IPC::Channel::Listener,
-                     public IPC::Message::Sender {
+class PPAPI_PROXY_EXPORT ProxyChannel
+    : public IPC::Channel::Listener,
+      public IPC::Message::Sender {
  public:
   typedef void (*ShutdownModuleFunc)();
 

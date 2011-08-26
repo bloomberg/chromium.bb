@@ -30,11 +30,15 @@
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/url_request_info_impl.h"
+
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT PPAPI_PROXY_EXPORT
 
 #define IPC_MESSAGE_START PpapiMsgStart
 

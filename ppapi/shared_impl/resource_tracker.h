@@ -12,12 +12,13 @@
 #include "base/memory/linked_ptr.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
 class Resource;
 
-class ResourceTracker {
+class PPAPI_SHARED_EXPORT ResourceTracker {
  public:
   ResourceTracker();
   virtual ~ResourceTracker();

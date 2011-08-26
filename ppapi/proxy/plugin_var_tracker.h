@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
 struct PPB_Var;
@@ -28,7 +29,7 @@ namespace proxy {
 class PluginDispatcher;
 
 // Tracks live strings and objects in the plugin process.
-class PluginVarTracker : public VarTracker {
+class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
  public:
   PluginVarTracker();
   ~PluginVarTracker();

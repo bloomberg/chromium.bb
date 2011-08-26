@@ -12,12 +12,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 struct PP_FontDescription_Dev;
 
 namespace ppapi {
 
-class FontImpl {
+class PPAPI_SHARED_EXPORT FontImpl {
  public:
   // Validates the parameters in thee description. Can be called on any thread.
   static bool IsPPFontDescriptionValid(const PP_FontDescription_Dev& desc);

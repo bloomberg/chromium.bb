@@ -59,7 +59,7 @@ FOR_ALL_PPAPI_RESOURCE_APIS(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 }  // namespace thunk
 
-class Resource : public base::RefCounted<Resource> {
+class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
  public:
   // For constructing non-proxied objects. This just takes the associated
   // instance, and generates a new resource ID. The host resource will be the

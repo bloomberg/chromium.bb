@@ -18,8 +18,8 @@ namespace thunk {
 class PPB_FileRef_API;
 }
 
-struct PPB_URLRequestInfo_Data {
-  struct BodyItem {
+struct PPAPI_SHARED_EXPORT PPB_URLRequestInfo_Data {
+  struct PPAPI_SHARED_EXPORT BodyItem {
     BodyItem();
     explicit BodyItem(const std::string& data);
     BodyItem(Resource* file_ref,
@@ -90,8 +90,9 @@ struct PPB_URLRequestInfo_Data {
   // ppapi_messages.h
 };
 
-class URLRequestInfoImpl : public ::ppapi::Resource,
-                           public ::ppapi::thunk::PPB_URLRequestInfo_API {
+class PPAPI_SHARED_EXPORT URLRequestInfoImpl
+    : public ::ppapi::Resource,
+      public ::ppapi::thunk::PPB_URLRequestInfo_API {
  public:
   // This constructor initializes the object as a proxy object with the given
   // host resource.

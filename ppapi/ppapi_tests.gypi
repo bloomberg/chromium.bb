@@ -174,7 +174,10 @@
       },
       'dependencies': [
         'ppapi_proxy',
+        'ppapi_shared',
         '../base/base.gyp:test_support_base',
+        '../gpu/gpu.gyp:gpu_ipc',
+        '../ipc/ipc.gyp:ipc',
         '../ipc/ipc.gyp:test_support_ipc',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

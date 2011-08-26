@@ -15,6 +15,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/tracker_base.h"
@@ -29,7 +30,8 @@ namespace proxy {
 
 class PluginDispatcher;
 
-class PluginResourceTracker : public TrackerBase, public ResourceTracker {
+class PPAPI_PROXY_EXPORT PluginResourceTracker : public TrackerBase,
+                                                 public ResourceTracker {
  public:
   // Called by tests that want to specify a specific ResourceTracker. This
   // allows them to use a unique one each time and avoids singletons sticking

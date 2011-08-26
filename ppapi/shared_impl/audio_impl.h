@@ -18,8 +18,9 @@ namespace ppapi {
 // Implements the logic to map shared memory and run the audio thread signaled
 // from the sync socket. Both the proxy and the renderer implementation use
 // this code.
-class AudioImpl : public thunk::PPB_Audio_API,
-                  public base::DelegateSimpleThread::Delegate {
+class PPAPI_SHARED_EXPORT AudioImpl
+    : public thunk::PPB_Audio_API,
+      public base::DelegateSimpleThread::Delegate {
  public:
   AudioImpl();
   virtual ~AudioImpl();

@@ -6,6 +6,7 @@
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {

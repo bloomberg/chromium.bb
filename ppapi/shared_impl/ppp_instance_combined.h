@@ -7,10 +7,11 @@
 
 #include "base/basictypes.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
-struct PPP_Instance_Combined : public PPP_Instance_1_0 {
+struct PPAPI_SHARED_EXPORT PPP_Instance_Combined : public PPP_Instance_1_0 {
  public:
   explicit PPP_Instance_Combined(const PPP_Instance_1_0& instance_if);
 

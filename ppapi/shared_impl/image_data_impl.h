@@ -7,6 +7,7 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/ppb_image_data.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
@@ -19,7 +20,7 @@ namespace ppapi {
 // probably best to have some kind of "configuration" message that the renderer
 // sends to the plugin process on startup that contains all of these kind of
 // settings.
-class ImageDataImpl {
+class PPAPI_SHARED_EXPORT ImageDataImpl {
  public:
   static PP_ImageDataFormat GetNativeImageDataFormat();
   static bool IsImageDataFormatSupported(PP_ImageDataFormat format);

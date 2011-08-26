@@ -30,7 +30,8 @@ namespace ppapi {
 
 // Implements the logic to set and run callbacks for various video decoder
 // events. Both the proxy and the renderer implementation share this code.
-class VideoDecoderImpl : public thunk::PPB_VideoDecoder_API {
+class PPAPI_SHARED_EXPORT VideoDecoderImpl
+    : NON_EXPORTED_BASE(public thunk::PPB_VideoDecoder_API) {
  public:
   VideoDecoderImpl();
   virtual ~VideoDecoderImpl();

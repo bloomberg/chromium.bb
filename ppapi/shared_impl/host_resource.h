@@ -7,6 +7,7 @@
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
@@ -17,7 +18,7 @@ namespace ppapi {
 // this tranformation.
 //
 // All HostResources respresent IDs valid in the host.
-class HostResource {
+class PPAPI_SHARED_EXPORT HostResource {
  public:
   HostResource() : instance_(0), host_resource_(0) {
   }

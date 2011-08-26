@@ -6,10 +6,11 @@
 #define PPAPI_SHARED_IMPL_INSTANCE_IMPL_H_
 
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
-class InstanceImpl {
+class PPAPI_SHARED_EXPORT InstanceImpl {
  public:
   virtual ~InstanceImpl();
 

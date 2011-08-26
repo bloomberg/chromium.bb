@@ -10,7 +10,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/ppapi_preferences.cc"
 
 namespace ppapi {
 namespace proxy {

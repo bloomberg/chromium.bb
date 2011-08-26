@@ -38,9 +38,9 @@ struct InstanceData {
   PP_Bool fullscreen;
 };
 
-class PluginDispatcher : public Dispatcher {
+class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
  public:
-  class PluginDelegate : public ProxyChannel::Delegate {
+  class PPAPI_PROXY_EXPORT PluginDelegate : public ProxyChannel::Delegate {
    public:
     // Returns the set used for globally uniquifying PP_Instances. This same
     // set must be returned for all channels.

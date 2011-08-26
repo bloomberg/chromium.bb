@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_id.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
@@ -26,7 +27,7 @@ class VarTracker;
 // does is forward to the process-type-specific tracker to get the information.
 // TODO(fischman/vrk): When brettw fixes the TODO above, fix the ugliness in
 // VideoDecoderImpl accordingly.
-class TrackerBase {
+class PPAPI_SHARED_EXPORT TrackerBase {
  public:
   // Must be called before any other function that uses the TrackerBase.
   // This sets the getter that returns the global implmenetation of

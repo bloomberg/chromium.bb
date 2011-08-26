@@ -7,11 +7,12 @@
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
 
-class PPB_Audio_API {
+class PPAPI_THUNK_EXPORT PPB_Audio_API {
  public:
   virtual ~PPB_Audio_API() {}
 

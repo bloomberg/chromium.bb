@@ -17,7 +17,7 @@ namespace ppapi {
 // IF YOU ADD STUFF TO THIS CLASS
 // ==============================
 // Be sure to add it to the STRUCT_TRAITS at the top of ppapi_messages.h
-struct InputEventData {
+struct PPAPI_SHARED_EXPORT InputEventData {
   InputEventData();
   ~InputEventData();
 
@@ -44,7 +44,9 @@ struct InputEventData {
 
 // This simple class implements the PPB_InputEvent_API in terms of the
 // shared InputEventData structure
-class InputEventImpl : public Resource, public thunk::PPB_InputEvent_API {
+class PPAPI_SHARED_EXPORT InputEventImpl
+    : public Resource,
+      public thunk::PPB_InputEvent_API {
  public:
   struct InitAsImpl {};
   struct InitAsProxy {};

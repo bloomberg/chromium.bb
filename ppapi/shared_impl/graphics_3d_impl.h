@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 #include "ppapi/thunk/ppb_graphics_3d_api.h"
 
 namespace gpu {
@@ -20,7 +21,7 @@ class GLES2Implementation;
 
 namespace ppapi {
 
-class Graphics3DImpl : public thunk::PPB_Graphics3D_API {
+class PPAPI_SHARED_EXPORT Graphics3DImpl : public thunk::PPB_Graphics3D_API {
  public:
   // PPB_Graphics3D_API implementation.
   virtual int32_t GetAttribs(int32_t* attrib_list) OVERRIDE;

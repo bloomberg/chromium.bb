@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
@@ -23,7 +24,7 @@ class StringVar;
 // Represents a non-POD var. This is derived from a resource even though it
 // isn't a resource from the plugin's perspective. This allows us to re-use
 // the refcounting and the association with the module from the resource code.
-class Var : public base::RefCounted<Var> {
+class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
  public:
   virtual ~Var();
 
@@ -88,7 +89,7 @@ class Var : public base::RefCounted<Var> {
 //   if (!string)
 //     return false;  // Not a string or an invalid var.
 //   DoSomethingWithTheString(string->value());
-class StringVar : public Var {
+class PPAPI_SHARED_EXPORT StringVar : public Var {
  public:
   StringVar(PP_Module module, const std::string& str);
   StringVar(PP_Module module, const char* str, uint32 len);

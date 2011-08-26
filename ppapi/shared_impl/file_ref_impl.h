@@ -29,7 +29,8 @@ struct PPB_FileRef_CreateInfo {
 // This class provides the shared implementation of a FileRef. The functions
 // that actually "do stuff" like Touch and MakeDirectory are implemented
 // differently for the proxied and non-proxied derived classes.
-class FileRefImpl : public Resource, public thunk::PPB_FileRef_API {
+class PPAPI_SHARED_EXPORT FileRefImpl : public Resource,
+                                        public thunk::PPB_FileRef_API {
  public:
   struct InitAsImpl {};
   struct InitAsProxy {};

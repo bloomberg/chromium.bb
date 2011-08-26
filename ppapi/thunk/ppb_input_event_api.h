@@ -6,6 +6,7 @@
 #define PPAPI_THUNK_PPB_INPUT_EVENT_API_H_
 
 #include "ppapi/c/ppb_input_event.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 
@@ -13,7 +14,7 @@ struct InputEventData;
 
 namespace thunk {
 
-class PPB_InputEvent_API {
+class PPAPI_THUNK_EXPORT PPB_InputEvent_API {
  public:
   virtual ~PPB_InputEvent_API() {}
 

@@ -6,10 +6,12 @@
   'targets': [
     {
       'target_name': 'ppapi_proxy',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
-        '../ipc/ipc.gyp:ipc',
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../gpu/gpu.gyp:gpu_ipc',
+        '../ipc/ipc.gyp:ipc',
         '../skia/skia.gyp:skia',
         '../ui/gfx/surface/surface.gyp:surface',
         'ppapi.gyp:ppapi_c',
@@ -158,14 +160,7 @@
         'proxy/var_serialization_rules.h',
       ],
       'defines': [
-      ],
-      'conditions': [
-        ['OS=="win"', {
-        }],
-        ['OS=="linux"', {
-        }],
-        ['OS=="mac"', {
-        }]
+        'PPAPI_PROXY_IMPLEMENTATION',
       ],
     },
   ],

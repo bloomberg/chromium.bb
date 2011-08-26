@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/file_ref_impl.h"
 
 struct PP_FileInfo;
@@ -56,7 +57,7 @@ struct ParamTraits<PP_FileInfo> {
 };
 
 template <>
-struct ParamTraits<PP_Flash_NetAddress> {
+struct PPAPI_PROXY_EXPORT ParamTraits<PP_Flash_NetAddress> {
   typedef PP_Flash_NetAddress param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);

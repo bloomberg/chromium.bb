@@ -6,12 +6,13 @@
 #define PPAPI_SHARED_IMPL_PPAPI_PREFERENCES_H_
 
 #include "base/string16.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 struct WebPreferences;
 
 namespace ppapi {
 
-struct Preferences {
+struct PPAPI_SHARED_EXPORT Preferences {
  public:
   Preferences();
   explicit Preferences(const WebPreferences& prefs);

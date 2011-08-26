@@ -9,6 +9,7 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 struct PP_FontDescription_Dev;
 struct PP_FontMetrics_Dev;
@@ -27,9 +28,9 @@ namespace ppapi {
 
 struct Preferences;
 
-class WebKitForwarding {
+class PPAPI_SHARED_EXPORT WebKitForwarding {
  public:
-  class Font {
+  class PPAPI_SHARED_EXPORT Font {
    public:
     // C++ version of PP_TextRun_Dev. Since the functions below will be called
     // on an alternate thread in the proxy, and since there are different
@@ -43,7 +44,7 @@ class WebKitForwarding {
 
     // DoDrawText takes too many arguments to be used with base::Bind, so we
     // use this struct to hold them.
-    struct DrawTextParams {
+    struct PPAPI_SHARED_EXPORT DrawTextParams {
       DrawTextParams(skia::PlatformCanvas* destination_arg,
                      const TextRun& text_arg,
                      const PP_Point* position_arg,

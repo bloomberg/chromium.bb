@@ -9,6 +9,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
@@ -26,7 +27,7 @@ class Var;
 // This class maintains the "track_with_no_reference_count" but doesn't do
 // anything with it other than call virtual functions. The interesting parts
 // are added by the PluginObjectVar derived from this class.
-class VarTracker {
+class PPAPI_SHARED_EXPORT VarTracker {
  public:
   VarTracker();
   virtual ~VarTracker();

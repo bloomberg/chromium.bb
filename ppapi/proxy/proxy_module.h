@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
@@ -16,7 +17,7 @@ namespace proxy {
 
 class PluginDispatcher;
 
-class ProxyModule {
+class PPAPI_PROXY_EXPORT ProxyModule {
  public:
   // The global singleton getter.
   static ProxyModule* GetInstance();

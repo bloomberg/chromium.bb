@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 
 struct PP_Flash_Menu;
 
@@ -20,7 +21,7 @@ class Message;
 namespace ppapi {
 namespace proxy {
 
-class SerializedFlashMenu {
+class PPAPI_PROXY_EXPORT SerializedFlashMenu {
  public:
   SerializedFlashMenu();
   ~SerializedFlashMenu();

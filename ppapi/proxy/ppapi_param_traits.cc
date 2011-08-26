@@ -9,7 +9,6 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
-#include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/proxy/serialized_flash_menu.h"

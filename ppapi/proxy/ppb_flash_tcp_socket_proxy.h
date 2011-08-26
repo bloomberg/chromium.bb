@@ -12,16 +12,17 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace ppapi {
 namespace proxy {
 
 // The maximum number of bytes that each PpapiHostMsg_PPBFlashTCPSocket_Read
 // message is allowed to request.
-extern const int32_t kFlashTCPSocketMaxReadSize;
+PPAPI_PROXY_EXPORT extern const int32_t kFlashTCPSocketMaxReadSize;
 // The maximum number of bytes that each PpapiHostMsg_PPBFlashTCPSocket_Write
 // message is allowed to carry.
-extern const int32_t kFlashTCPSocketMaxWriteSize;
+PPAPI_PROXY_EXPORT extern const int32_t kFlashTCPSocketMaxWriteSize;
 
 class PPB_Flash_TCPSocket_Proxy : public InterfaceProxy {
  public:
