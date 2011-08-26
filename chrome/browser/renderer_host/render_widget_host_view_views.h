@@ -267,6 +267,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   string16 tooltip_text_;
 
   scoped_ptr<views::TouchSelectionController> touch_selection_controller_;
+  gfx::Point selection_start_;
+  gfx::Point selection_end_;
 
 #if defined(TOUCH_UI)
   std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerTouch> >

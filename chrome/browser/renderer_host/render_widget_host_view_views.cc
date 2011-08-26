@@ -149,6 +149,11 @@ void RenderWidgetHostViewViews::DidBecomeSelected() {
   is_hidden_ = false;
   if (host_)
     host_->WasRestored();
+
+  if (touch_selection_controller_.get()) {
+    touch_selection_controller_->SelectionChanged(selection_start_,
+                                                  selection_end_);
+  }
 }
 
 void RenderWidgetHostViewViews::WasHidden() {
@@ -164,6 +169,9 @@ void RenderWidgetHostViewViews::WasHidden() {
   // reduce its resource utilization.
   if (host_)
     host_->WasHidden();
+
+  if (touch_selection_controller_.get())
+    touch_selection_controller_->ClientViewLostFocus();
 }
 
 void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
@@ -330,6 +338,8 @@ void RenderWidgetHostViewViews::SelectionChanged(const std::string& text,
                                                  const gfx::Point& end) {
   // TODO(anicolao): deal with the clipboard without GTK
   NOTIMPLEMENTED();
+  selection_start_ = start;
+  selection_end_ = end;
   if (touch_selection_controller_.get())
     touch_selection_controller_->SelectionChanged(start, end);
 }
