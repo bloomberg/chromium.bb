@@ -365,7 +365,7 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
  * @param {boolean} shouldScale If the plugin should scale itself.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.toggleScaleToFit = function(shouldScale) {
+remoting.ClientSession.prototype.setScaleToFit = function(shouldScale) {
   if (shouldScale) {
     if (this.plugin.desktopWidth == 0 ||
         this.plugin.desktopHeight == 0) {

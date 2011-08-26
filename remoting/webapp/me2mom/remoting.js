@@ -68,13 +68,16 @@ function hasClass(classes, cls) {
 }
 
 function addClass(element, cls) {
-  if (!hasClass(element.className, cls))
-    element.className = element.className + ' ' + cls;
+  if (!hasClass(element.className, cls)) {
+    var padded = element.className == '' ? '' : element.className + ' ';
+    element.className = padded + cls;
+  }
 }
 
 function removeClass(element, cls) {
   element.className =
-      element.className.replace(new RegExp('\\b' + cls + '\\b', 'g'), '');
+      element.className.replace(new RegExp('\\b' + cls + '\\b', 'g'), '')
+                       .replace('  ', ' ');
 }
 
 function retrieveEmail_(access_token) {
@@ -143,6 +146,8 @@ remoting.toggleDebugLog = function() {
 
 remoting.init = function() {
   l10n.localize();
+  var button = document.getElementById('toggle-scaling');
+  button.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_SCALING');
   // Create global objects.
   remoting.oauth2 = new remoting.OAuth2();
   remoting.debug =
@@ -597,11 +602,17 @@ function isHostModeSupported() {
 /**
  * Enable or disable scale-to-fit.
  *
+ * @param {boolean} scale True to enable scaling.
  * @return {void} Nothing.
  */
-remoting.toggleScaleToFit = function() {
+remoting.toggleScaleToFit = function(button) {
   remoting.scaleToFit = !remoting.scaleToFit;
-  remoting.session.toggleScaleToFit(remoting.scaleToFit);
+  if (remoting.scaleToFit) {
+    addClass(button, 'toggle-button-active');
+  } else {
+    removeClass(button, 'toggle-button-active');
+  }
+  remoting.session.setScaleToFit(remoting.scaleToFit);
 }
 
 /**

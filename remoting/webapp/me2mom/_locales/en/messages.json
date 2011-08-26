@@ -197,10 +197,6 @@
       }
     }
   },
-  "SCALE_BUTTON": {
-    "message": "Fit Screen",
-    "description": "Label for the scaling button. Clicking this toggles between scale-to-fit and 1:1 mode. This is displayed in a tool-bar with limited horizontal space; please try to keep the translation under 20 characters."
-  },
   "SHARE_BUTTON": {
     "message": "Share This Computer",
     "description": "Label for the share button on the host-side. Clicking this button generates an access code to be conveyed to the client."
@@ -208,6 +204,10 @@
   "STOP_SHARING_BUTTON": {
     "message": "Stop Sharing",
     "description": "Label for the 'stop sharing' button on the host-side. Clicking this button disconnects the client."
+  },
+  "TOOLTIP_SCALING": {
+    "message": "Scale to fit",
+    "description": "The tool-tip shown when the user hovers over the scale to fit button. Clicking this button toggles between scaling down the remote desktop to fit it inside the Chromium browser window and displaying it at 1:1 scale."
   },
   "VERIFYING_CODE": {
     "message": "Verifying access code…",

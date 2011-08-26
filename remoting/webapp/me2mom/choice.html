@@ -63,8 +63,10 @@ found in the LICENSE file.
         <button type="button" onclick="remoting.disconnect();"
                 i18n-content="DISCONNECT_BUTTON"></button>
         <span class="end-align">
-          <button type="button" onclick="remoting.toggleScaleToFit();"
-                  i18n-content="SCALE_BUTTON"></button>
+          <button id="toggle-scaling"
+                  onClick="remoting.toggleScaleToFit(this);">
+            <img src="scale-to-fit.png">
+          </button>
         </span>
       </div>
       <div class="toolbar-stub">

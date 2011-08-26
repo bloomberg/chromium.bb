@@ -40,7 +40,7 @@ button:hover {
   -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-button:active {
+button:active, .toggle-button-active, .toggle-button-active:hover {
   background: #ebebeb -webkit-linear-gradient(#f4f4f4, #efefef 40%, #dcdcdc);
   color: #333;
   -webkit-box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.2);
@@ -232,17 +232,9 @@ label {
   -webkit-user-select: none;
 }
 
-#session-status-msg {
-  /*
-    clear: both; forces the session-controls div to size appropriately for
-    session-buttons.
-  */
-  clear: both;
-  font-family: monospace;
-  font-size: small;
-  margin: 5px;
-}
-
-#server-response {
-  font-weight: bolder;
+#toggle-scaling {
+  margin: 1px 0 0 0;
+  padding: 1px;
+  min-width: 0;
+  line-height: 0;
 }

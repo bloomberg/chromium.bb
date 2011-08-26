@@ -80,6 +80,7 @@
       'webapp/me2mom/oauth2_callback.html',
       'webapp/me2mom/plugin_settings.js',
       'webapp/me2mom/remoting.js',
+      'webapp/me2mom/scale-to-fit.png',
       'webapp/me2mom/spinner.gif',
       'webapp/me2mom/toolbar.css',
       'webapp/me2mom/toolbar-stub.png',
