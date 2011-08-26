@@ -787,16 +787,15 @@ bool SyncManager::SyncInternal::Init(
 
   initialized_ = true;
 
+  // The following calls check that initialized_ is true.
+  BootstrapEncryption(restored_key_for_bootstrapping);
+
   // Notify that initialization is complete.
   ObserverList<SyncManager::Observer> temp_obs_list;
   CopyObservers(&temp_obs_list);
   FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
                     OnInitializationComplete(
                         WeakHandle<JsBackend>(weak_ptr_factory_.GetWeakPtr())));
-
-  // The following calls check that initialized_ is true.
-
-  BootstrapEncryption(restored_key_for_bootstrapping);
 
   sync_notifier_->AddObserver(this);
 
