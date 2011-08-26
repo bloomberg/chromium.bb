@@ -352,7 +352,7 @@ void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
     types->push_back(UTF8ToUTF16(kMimeTypeText));
   if (::IsClipboardFormatAvailable(htmlFormat->cfFormat))
     types->push_back(UTF8ToUTF16(kMimeTypeHTML));
-  if (::IsClipboardFormatAvailable(CF_BITMAP))
+  if (::IsClipboardFormatAvailable(CF_DIB))
     types->push_back(UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 }
@@ -442,6 +442,8 @@ SkBitmap Clipboard::ReadImage(Buffer buffer) const {
   // HBITMAP returned from ::GetClipboardData(CF_BITMAP) always reports a color
   // depth of 32bpp.
   BITMAPINFO* bitmap = static_cast<BITMAPINFO*>(::GetClipboardData(CF_DIB));
+  if (!bitmap)
+    return SkBitmap();
   int color_table_length = 0;
   switch (bitmap->bmiHeader.biBitCount) {
     case 1:
