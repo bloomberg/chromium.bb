@@ -653,7 +653,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 	closure->count = i;
 	ffi_prep_cif(&closure->cif, FFI_DEFAULT_ABI,
-		     closure->count, &ffi_type_uint32, closure->types);
+		     closure->count, &ffi_type_void, closure->types);
 
 	wl_connection_consume(connection, size);
 
