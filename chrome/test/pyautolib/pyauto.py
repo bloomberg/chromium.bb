@@ -1313,7 +1313,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {  # Prepare command for the json interface
       'command': 'GetBrowserInfo',
     }
-    return self._GetResultFromJSONRequest(cmd_dict)
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
 
   def GetNavigationInfo(self, tab_index=0, windex=0):
     """Get info about the navigation state of a given tab.

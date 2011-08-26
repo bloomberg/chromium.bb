@@ -2237,6 +2237,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::UpdateExtensionsNow;
   handler_map["CreateNewAutomationProvider"] =
       &TestingAutomationProvider::CreateNewAutomationProvider;
+  handler_map["GetBrowserInfo"] =
+      &TestingAutomationProvider::GetBrowserInfo;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -2306,9 +2308,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::EnablePlugin;
   browser_handler_map["GetPluginsInfo"] =
       &TestingAutomationProvider::GetPluginsInfo;
-
-  browser_handler_map["GetBrowserInfo"] =
-      &TestingAutomationProvider::GetBrowserInfo;
 
   browser_handler_map["GetNavigationInfo"] =
       &TestingAutomationProvider::GetNavigationInfo;
@@ -2679,7 +2678,6 @@ class GetChildProcessHostInfoTask : public Task {
 // Refer to GetBrowserInfo() in chrome/test/pyautolib/pyauto.py for
 // sample json output.
 void TestingAutomationProvider::GetBrowserInfo(
-    Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;  // needed for PathService
@@ -2727,7 +2725,7 @@ void TestingAutomationProvider::GetBrowserInfo(
        it != BrowserList::end();
        ++it, ++windex) {
     DictionaryValue* browser_item = new DictionaryValue;
-    browser = *it;
+    Browser* browser = *it;
     browser_item->SetInteger("index", windex);
     // Window properties
     gfx::Rect rect = browser->window()->GetRestoredBounds();

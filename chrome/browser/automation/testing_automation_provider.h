@@ -386,8 +386,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // Get info about the chromium/chrome in use.
   // This includes things like version, executable name, executable path.
   // Uses the JSON interface for input/output.
-  void GetBrowserInfo(Browser* browser,
-                      base::DictionaryValue* args,
+  void GetBrowserInfo(base::DictionaryValue* args,
                       IPC::Message* reply_message);
 
   // Get info about the state of navigation in a given tab.
