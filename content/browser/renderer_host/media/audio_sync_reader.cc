@@ -33,6 +33,10 @@ uint32 AudioSyncReader::Read(void* data, uint32 size) {
   // Get the data from the buffer.
   memcpy(data, shared_memory_->memory(), read_size);
 
+  // If amount read was less than requested, then zero out the remainder.
+  if (read_size < size)
+    memset(static_cast<char*>(data) + read_size, 0, size - read_size);
+
   // Zero out the entire buffer.
   memset(shared_memory_->memory(), 0, max_size);
 
