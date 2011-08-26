@@ -27,6 +27,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/backing_store_x.h"
 #include "content/browser/renderer_host/gtk_im_context_wrapper.h"
+#include "content/browser/renderer_host/gtk_window_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -92,23 +93,6 @@ GdkCursor* GetMozSpinningCursor() {
     g_object_unref(mask);
   }
   return moz_spinning_cursor;
-}
-
-void GetScreenInfoFromNativeWindow(
-    GdkWindow* gdk_window, WebKit::WebScreenInfo* results) {
-  GdkScreen* screen = gdk_drawable_get_screen(gdk_window);
-  *results = WebKit::WebScreenInfoFactory::screenInfo(
-      gdk_x11_drawable_get_xdisplay(gdk_window),
-      gdk_x11_screen_get_screen_number(screen));
-
-  // TODO(tony): We should move this code into WebScreenInfoFactory.
-  gint monitor_number = gdk_screen_get_monitor_at_window(screen, gdk_window);
-  GdkRectangle monitor_rect;
-  gdk_screen_get_monitor_geometry(screen, monitor_number, &monitor_rect);
-  results->rect = WebKit::WebRect(monitor_rect.x, monitor_rect.y,
-                                  monitor_rect.width, monitor_rect.height);
-  // TODO(tony): Should we query _NET_WORKAREA to get the workarea?
-  results->availableRect = results->rect;
 }
 
 }  // namespace
@@ -1174,7 +1158,7 @@ void RenderWidgetHostViewGtk::GetScreenInfo(WebKit::WebScreenInfo* results) {
   }
   if (!gdk_window)
     return;
-  GetScreenInfoFromNativeWindow(gdk_window, results);
+  content::GetScreenInfoFromNativeWindow(gdk_window, results);
 }
 
 gfx::Rect RenderWidgetHostViewGtk::GetRootWindowBounds() {
@@ -1257,5 +1241,5 @@ void RenderWidgetHostView::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
   GdkWindow* gdk_window =
       gdk_display_get_default_group(gdk_display_get_default());
-  GetScreenInfoFromNativeWindow(gdk_window, results);
+  content::GetScreenInfoFromNativeWindow(gdk_window, results);
 }

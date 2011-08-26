@@ -333,6 +333,8 @@
         'browser/renderer_host/gtk_im_context_wrapper.h',
         'browser/renderer_host/gtk_key_bindings_handler.cc',
         'browser/renderer_host/gtk_key_bindings_handler.h',
+        'browser/renderer_host/gtk_window_utils.cc',
+        'browser/renderer_host/gtk_window_utils.h',
         'browser/renderer_host/media/audio_common.cc',
         'browser/renderer_host/media/audio_common.h',
         'browser/renderer_host/media/audio_input_device_manager.cc',
