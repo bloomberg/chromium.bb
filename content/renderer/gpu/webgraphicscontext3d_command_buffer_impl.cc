@@ -21,7 +21,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/synchronization/lock.h"
 #include "content/common/content_switches.h"
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/render_thread.h"
@@ -33,8 +32,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
-static base::LazyInstance<base::Lock>
-    g_all_contexts_lock(base::LINKER_INITIALIZED);
 static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
     g_all_contexts(base::LINKER_INITIALIZED);
 
@@ -57,10 +54,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
 
 WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
-  {
-    base::AutoLock lock(g_all_contexts_lock.Get());
-    g_all_contexts.Pointer()->erase(this);
-  }
+  g_all_contexts.Pointer()->erase(this);
   delete context_;
 }
 
@@ -76,59 +70,25 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
     bool render_directly_to_web_view) {
-  DCHECK(!context_);
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
   webkit_glue::BindSkiaToCommandBufferGL();
   RenderThread* render_thread = RenderThread::current();
   if (!render_thread)
     return false;
-  host_ = render_thread->EstablishGpuChannelSync(
+  GpuChannelHost* host = render_thread->EstablishGpuChannelSync(
     content::
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
-  if (!host_)
+  if (!host)
     return false;
-  DCHECK(host_->state() == GpuChannelHost::kConnected);
-
-  const GPUInfo& gpu_info = host_->gpu_info();
-  UMA_HISTOGRAM_ENUMERATION(
-      "GPU.WebGraphicsContext3D_Init_CanLoseContext",
-      attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context,
-      4);
-  if (attributes.canRecoverFromContextLoss == false) {
-    if (gpu_info.can_lose_context)
-      return false;
-  }
-
-  if (web_view && web_view->mainFrame())
-    active_url_ = GURL(web_view->mainFrame()->document().url());
-
-  attributes_ = attributes;
-  render_directly_to_web_view_ = render_directly_to_web_view;
-  if (render_directly_to_web_view_) {
-    RenderView* renderview = RenderView::FromWebView(web_view);
-    if (!renderview)
-      return false;
-    render_view_routing_id_ = renderview->routing_id(),
-#ifndef WTF_USE_THREADED_COMPOSITING
-    web_view_ = web_view;
-#endif
-  }
-  return true;
-}
-
-bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
-  if (context_) {
-    return true;
-  }
-  TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::MaybeInitializeGL");
+  DCHECK(host->state() == GpuChannelHost::kConnected);
 
   // Convert WebGL context creation attributes into RendererGLContext / EGL size
   // requests.
-  const int alpha_size = attributes_.alpha ? 8 : 0;
-  const int depth_size = attributes_.depth ? 24 : 0;
-  const int stencil_size = attributes_.stencil ? 8 : 0;
-  const int samples = attributes_.antialias ? 4 : 0;
-  const int sample_buffers = attributes_.antialias ? 1 : 0;
+  const int alpha_size = attributes.alpha ? 8 : 0;
+  const int depth_size = attributes.depth ? 24 : 0;
+  const int stencil_size = attributes.stencil ? 8 : 0;
+  const int samples = attributes.antialias ? 4 : 0;
+  const int sample_buffers = attributes.antialias ? 1 : 0;
   const int32 attribs[] = {
     RendererGLContext::ALPHA_SIZE, alpha_size,
     RendererGLContext::DEPTH_SIZE, depth_size,
@@ -138,47 +98,66 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     RendererGLContext::NONE,
   };
 
+  const char* preferred_extensions = attributes.noExtensions ?
+      kWebGLPreferredGLExtensions : "*";
+
+  const GPUInfo& gpu_info = host->gpu_info();
+  UMA_HISTOGRAM_ENUMERATION(
+      "GPU.WebGraphicsContext3D_Init_CanLoseContext",
+      attributes.canRecoverFromContextLoss * 2 + gpu_info.can_lose_context,
+      4);
+  if (attributes.canRecoverFromContextLoss == false) {
+    if (gpu_info.can_lose_context)
+      return false;
+  }
+
+  GURL active_url;
+  if (web_view && web_view->mainFrame())
+    active_url = GURL(web_view->mainFrame()->document().url());
+
   // HACK: Assume this is a WebGL context by looking for the noExtensions
   // attribute. WebGL contexts must not go in the share group because they
   // rely on destruction of the context to clean up owned resources. Putting
   // them in a share group would prevent this from happening.
-  {
-      // Need to hold this lock until after RendererGLContext::Create, to ensure
-      // the context we picked for our share group isn't deleted (there's also
-      // a lock in the destructor).
-      base::AutoLock lock(g_all_contexts_lock.Get());
-      RendererGLContext* share_group = NULL;
-      if (!attributes_.noExtensions) {
-        share_group = g_all_contexts.Pointer()->empty() ?
-            NULL : (*g_all_contexts.Pointer()->begin())->context_;
-      }
+  RendererGLContext* share_group = NULL;
+  if (!attributes.noExtensions) {
+    share_group = g_all_contexts.Pointer()->empty() ?
+        NULL : (*g_all_contexts.Pointer()->begin())->context_;
+  }
 
-      const char* preferred_extensions = attributes_.noExtensions ?
-          kWebGLPreferredGLExtensions : "*";
-
-      if (render_directly_to_web_view_) {
-        context_ = RendererGLContext::CreateViewContext(
-            host_,
-            render_view_routing_id_,
-            !attributes_.noExtensions,
-            share_group,
-            preferred_extensions,
-            attribs,
-            active_url_);
-        if (context_) {
-          context_->SetSwapBuffersCallback(NewCallback(this,
+  render_directly_to_web_view_ = render_directly_to_web_view;
+  if (render_directly_to_web_view) {
+#ifndef WTF_USE_THREADED_COMPOSITING
+    RenderView* renderview = RenderView::FromWebView(web_view);
+    if (!renderview)
+      return false;
+    web_view_ = web_view;
+#endif
+    context_ = RendererGLContext::CreateViewContext(
+        host,
+        renderview->routing_id(),
+        !attributes.noExtensions,
+        share_group,
+        preferred_extensions,
+        attribs,
+        active_url);
+    if (context_) {
+      context_->SetSwapBuffersCallback(
+          NewCallback(this,
               &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete));
-        }
-      } else {
-        context_ = RendererGLContext::CreateOffscreenContext(
-            host_,
-            gfx::Size(1, 1),
-            !attributes_.noExtensions,
-            share_group,
-            preferred_extensions,
-            attribs,
-            active_url_);
-      }
+    }
+  } else {
+    context_ = RendererGLContext::CreateOffscreenContext(
+        host,
+        gfx::Size(1, 1),
+        !attributes.noExtensions,
+        share_group,
+        preferred_extensions,
+        attribs,
+        active_url);
+#ifndef WTF_USE_THREADED_COMPOSITING
+    web_view_ = NULL;
+#endif
   }
   if (!context_)
     return false;
@@ -196,6 +175,7 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
 
   // Set attributes_ from created offscreen context.
   {
+    attributes_ = attributes;
     GLint alpha_bits = 0;
     getIntegerv(GL_ALPHA_BITS, &alpha_bits);
     attributes_.alpha = alpha_bits > 0;
@@ -210,17 +190,13 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     attributes_.antialias = samples > 0;
   }
 
-  if (!attributes_.noExtensions) {
-    base::AutoLock lock(g_all_contexts_lock.Get());
+  if (!attributes.noExtensions)
     g_all_contexts.Pointer()->insert(this);
-  }
 
   return true;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
-  if (!MaybeInitializeGL())
-    return false;
   return RendererGLContext::MakeCurrent(context_);
 }
 
@@ -245,6 +221,7 @@ bool WebGraphicsContext3DCommandBufferImpl::setParentContext(
 }
 
 WebGLId WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
+  DCHECK(context_);
   return context_->GetParentTextureId();
 }
 
