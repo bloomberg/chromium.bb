@@ -51,7 +51,7 @@ def generate_nmf(env, target, source):
   lines = source_file.readlines()
   source_file.close()
   for line in lines:
-    if line.strip() == '// libs':
+    if line.strip() == '@libs':
       for k,v in env['manifest_mapping']:
         file_name = env.subst(k)
         target_file.write('"' + file_name + '" : { "portable" : { "url": "' +

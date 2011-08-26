@@ -5,7 +5,10 @@
     "arm":    {"url": "lib/runnable-ld.so"}
   },
   "files": {
-// libs
+  // NOTE: The following "@libs" line will be replaced by the nacl.scons
+  // build script with full set of libraries upon which this example
+  // depends.
+@libs
     "main.nexe" : {
       "x86-32" : {"url" : "ppapi_test_example_x86-32.nexe"},
       "x86-64" : {"url" : "ppapi_test_example_x86-64.nexe"},
