@@ -1504,7 +1504,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
-    form_structure->set_possible_types(i, possible_field_types[i]);
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
 
   FieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
@@ -1564,7 +1564,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   form_structure.reset(new FormStructure(form));
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
-    form_structure->set_possible_types(i, possible_field_types[i]);
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
 
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
@@ -1604,7 +1604,7 @@ TEST(FormStructureTest, EncodeUploadRequest) {
   form_structure.reset(new FormStructure(form));
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
-    form_structure->set_possible_types(i, possible_field_types[i]);
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
   EXPECT_FALSE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                    &encoded_xml));
 }
@@ -1635,7 +1635,7 @@ TEST(FormStructureTest, CheckDataPresence) {
   FieldTypeSet unknown_type;
   unknown_type.insert(UNKNOWN_TYPE);
   for (size_t i = 0; i < form_structure.field_count(); ++i)
-    form_structure.set_possible_types(i, unknown_type);
+    form_structure.field(i)->set_possible_types(unknown_type);
 
   // No available types.
   // datapresent should be "" == trimmmed(0x0000000000000000) ==
@@ -1919,7 +1919,7 @@ TEST(FormStructureTest, CheckMultipleTypes) {
   form_structure.reset(new FormStructure(form));
 
   for (size_t i = 0; i < form_structure->field_count(); ++i)
-    form_structure->set_possible_types(i, possible_field_types[i]);
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
   std::string encoded_xml;
 
   // Now we matched both fields singularly.
@@ -1937,7 +1937,7 @@ TEST(FormStructureTest, CheckMultipleTypes) {
             encoded_xml);
   // Match third field as both first and last.
   possible_field_types[2].insert(NAME_FIRST);
-  form_structure->set_possible_types(2, possible_field_types[2]);
+  form_structure->field(2)->set_possible_types(possible_field_types[2]);
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
   EXPECT_EQ("<\?xml version=\"1.0\" encoding=\"UTF-8\"\?>"
@@ -1952,8 +1952,7 @@ TEST(FormStructureTest, CheckMultipleTypes) {
             "</autofillupload>",
             encoded_xml);
   possible_field_types[3].insert(ADDRESS_HOME_LINE2);
-  form_structure->set_possible_types(
-      form_structure->field_count() - 1,
+  form_structure->field(form_structure->field_count() - 1)->set_possible_types(
       possible_field_types[form_structure->field_count() - 1]);
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));
@@ -1972,8 +1971,7 @@ TEST(FormStructureTest, CheckMultipleTypes) {
   possible_field_types[3].clear();
   possible_field_types[3].insert(ADDRESS_HOME_LINE1);
   possible_field_types[3].insert(COMPANY_NAME);
-  form_structure->set_possible_types(
-      form_structure->field_count() - 1,
+  form_structure->field(form_structure->field_count() - 1)->set_possible_types(
       possible_field_types[form_structure->field_count() - 1]);
   EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, false,
                                                   &encoded_xml));

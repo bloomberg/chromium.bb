@@ -115,6 +115,8 @@ class AutofillManager : public TabContentsObserver,
  private:
   void OnFormSubmitted(const webkit_glue::FormData& form);
   void OnFormsSeen(const std::vector<webkit_glue::FormData>& forms);
+  void OnTextFieldDidChange(const webkit_glue::FormData& form,
+                            const webkit_glue::FormField& field);
   void OnQueryFormFieldAutofill(int query_id,
                                 const webkit_glue::FormData& form,
                                 const webkit_glue::FormField& field);
@@ -123,8 +125,9 @@ class AutofillManager : public TabContentsObserver,
                               const webkit_glue::FormField& field,
                               int unique_id);
   void OnShowAutofillDialog();
+  void OnDidPreviewAutofillFormData();
   void OnDidFillAutofillFormData();
-  void OnDidShowAutofillSuggestions();
+  void OnDidShowAutofillSuggestions(bool is_new_popup);
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.
@@ -217,12 +220,19 @@ class AutofillManager : public TabContentsObserver,
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;
-
   // Have we logged whether Autofill is enabled for this page load?
   bool has_logged_autofill_enabled_;
-
   // Have we logged an address suggestions count metric for this page?
   bool has_logged_address_suggestions_count_;
+  // Have we shown Autofill suggestions at least once?
+  bool did_show_suggestions_;
+  // Has the user manually edited at least one form field among the autofillable
+  // ones?
+  bool user_did_type_;
+  // Has the user autofilled a form on this page?
+  bool user_did_autofill_;
+  // Has the user edited a field that was previously autofilled?
+  bool user_did_edit_autofilled_field_;
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
@@ -264,6 +274,9 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsForFailure);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, QualityMetricsWithExperimentId);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, SaneMetricsWithCacheMismatch);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
+                           UserHappinessFormLoadAndSubmission);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, UserHappinessFormInteraction);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };

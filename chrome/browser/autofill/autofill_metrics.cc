@@ -288,6 +288,13 @@ void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) const {
                             NUM_SERVER_QUERY_METRICS);
 }
 
+void AutofillMetrics::LogUserHappinessMetric(UserHappinessMetric metric) const {
+  DCHECK(metric < NUM_USER_HAPPINESS_METRICS);
+
+  UMA_HISTOGRAM_ENUMERATION("Autofill.UserHappiness", metric,
+                            NUM_USER_HAPPINESS_METRICS);
+}
+
 void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) const {
   UMA_HISTOGRAM_BOOLEAN("Autofill.IsEnabled.Startup", enabled);
 }

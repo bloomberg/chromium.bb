@@ -46,6 +46,7 @@ class MockAutofillMetrics : public AutofillMetrics {
   MOCK_CONST_METHOD2(LogQualityMetric, void(QualityMetric metric,
                                             const std::string& experiment_id));
   MOCK_CONST_METHOD1(LogServerQueryMetric, void(ServerQueryMetric metric));
+  MOCK_CONST_METHOD1(LogUserHappinessMetric, void(UserHappinessMetric metric));
   MOCK_CONST_METHOD1(LogIsAutofillEnabledAtPageLoad, void(bool enabled));
   MOCK_CONST_METHOD1(LogIsAutofillEnabledAtStartup, void(bool enabled));
   MOCK_CONST_METHOD1(LogStoredProfileCount, void(size_t num_profiles));
@@ -389,6 +390,9 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               LogQualityMetric(AutofillMetrics::FIELD_AUTOFILLED,
                                std::string()));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogUserHappinessMetric(
+                  AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME));
 
   // Simulate form submission.
   EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));
@@ -1025,4 +1029,241 @@ TEST_F(AutofillMetricsTest, ServerQueryExperimentIdForQuery) {
   FormStructure::ParseQueryResponse(
       "<autofillqueryresponse experimentid=\"ar1\"></autofillqueryresponse>",
       std::vector<FormStructure*>(), metric_logger);
+}
+
+// Verify that we correctly log user happiness metrics dealing with form loading
+// and form submission.
+TEST_F(AutofillMetricsTest, UserHappinessFormLoadAndSubmission) {
+  // Start with a form with insufficiently many fields.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  FormField field;
+  autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Expect no notifications when the form is first seen.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED)).Times(0);
+    autofill_manager_->OnFormsSeen(forms);
+  }
+
+
+  // Expect no notifications when the form is submitted.
+  {
+    EXPECT_CALL(
+        *autofill_manager_->metric_logger(),
+        LogUserHappinessMetric(
+            AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_ALL)).Times(0);
+    EXPECT_CALL(
+        *autofill_manager_->metric_logger(),
+        LogUserHappinessMetric(
+            AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME)).Times(0);
+    EXPECT_CALL(
+        *autofill_manager_->metric_logger(),
+        LogUserHappinessMetric(
+            AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE)).Times(0);
+    EXPECT_CALL(
+        *autofill_manager_->metric_logger(),
+        LogUserHappinessMetric(
+            AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM)).Times(0);
+    autofill_manager_->OnFormSubmitted(form);
+  }
+
+  // Add more fields to the form.
+  autofill_test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField("Unknown", "unknown", "", "text", &field);
+  form.fields.push_back(field);
+  forms.front() = form;
+
+  // Expect a notification when the form is first seen.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED));
+    autofill_manager_->OnFormsSeen(forms);
+  }
+
+  // Expect a notification when the form is submitted.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM));
+    autofill_manager_->OnFormSubmitted(form);
+  }
+
+  // Fill in two of the fields.
+  form.fields[0].value = ASCIIToUTF16("Elvis Aaron Presley");
+  form.fields[1].value = ASCIIToUTF16("theking@gmail.com");
+  forms.front() = form;
+
+  // Expect a notification when the form is submitted.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM));
+    autofill_manager_->OnFormSubmitted(form);
+  }
+
+  // Fill in the third field.
+  form.fields[2].value = ASCIIToUTF16("12345678901");
+  forms.front() = form;
+
+  // Expect notifications when the form is submitted.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE));
+    autofill_manager_->OnFormSubmitted(form);
+  }
+
+
+  // Mark one of the fields as autofilled.
+  form.fields[1].is_autofilled = true;
+  forms.front() = form;
+
+  // Expect notifications when the form is submitted.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME));
+    autofill_manager_->OnFormSubmitted(form);
+  }
+
+  // Mark all of the fillable fields as autofilled.
+  form.fields[0].is_autofilled = true;
+  form.fields[2].is_autofilled = true;
+  forms.front() = form;
+
+  // Expect notifications when the form is submitted.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_ALL));
+    autofill_manager_->OnFormSubmitted(form);
+  }
+
+  // Clear out the third field's value.
+  form.fields[2].value = string16();
+  forms.front() = form;
+
+  // Expect notifications when the form is submitted.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM));
+    autofill_manager_->OnFormSubmitted(form);
+  }
+}
+
+// Verify that we correctly log user happiness metrics dealing with form
+// interaction.
+TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
+  // Load a fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.method = ASCIIToUTF16("POST");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  FormField field;
+  autofill_test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+  autofill_test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Expect a notification when the form is first seen.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED));
+    autofill_manager_->OnFormsSeen(forms);
+  }
+
+  // Simulate typing.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(AutofillMetrics::USER_DID_TYPE));
+    autofill_manager_->OnTextFieldDidChange(form, form.fields.front());
+  }
+
+  // Simulate suggestions shown twice for a single edit (i.e. multiple
+  // keystrokes in a single field).
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUGGESTIONS_SHOWN)).Times(1);
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUGGESTIONS_SHOWN_ONCE)).Times(1);
+    autofill_manager_->OnDidShowAutofillSuggestions(true);
+    autofill_manager_->OnDidShowAutofillSuggestions(false);
+  }
+
+  // Simulate suggestions shown for a different field.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN));
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::SUGGESTIONS_SHOWN_ONCE)).Times(0);
+    autofill_manager_->OnDidShowAutofillSuggestions(true);
+  }
+
+  // Simulate invoking autofill.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL));
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::USER_DID_AUTOFILL_ONCE));
+    autofill_manager_->OnDidFillAutofillFormData();
+  }
+
+  // Simulate editing an autofilled field.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD));
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE));
+    AutofillManager::GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+    AutofillManager::GUIDPair empty(std::string(), 0);
+    autofill_manager_->OnFillAutofillFormData(
+        0, form, form.fields.front(),
+        autofill_manager_->PackGUIDs(empty, guid));
+    autofill_manager_->OnTextFieldDidChange(form, form.fields.front());
+    // Simulate a second keystroke; make sure we don't log the metric twice.
+    autofill_manager_->OnTextFieldDidChange(form, form.fields.front());
+  }
+
+  // Simulate invoking autofill again.
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL));
+  EXPECT_CALL(*autofill_manager_->metric_logger(),
+              LogUserHappinessMetric(
+                  AutofillMetrics::USER_DID_AUTOFILL_ONCE)).Times(0);
+  autofill_manager_->OnDidFillAutofillFormData();
+
+  // Simulate editing another autofilled field.
+  {
+    EXPECT_CALL(*autofill_manager_->metric_logger(),
+                LogUserHappinessMetric(
+                    AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD));
+    autofill_manager_->OnTextFieldDidChange(form, form.fields[1]);
+  }
 }

@@ -179,6 +179,7 @@ void AutofillAgent::removeAutocompleteSuggestion(const WebString& name,
 
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
   password_autofill_manager_->TextFieldDidEndEditing(element);
+  has_shown_autofill_popup_for_current_edit_ = false;
 }
 
 void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
@@ -197,6 +198,11 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
     return;
 
   ShowSuggestions(element, false, true, false);
+
+  webkit_glue::FormData form;
+  webkit_glue::FormField field;
+  if (FindFormAndFieldForNode(element, &form, &field))
+    Send(new AutofillHostMsg_TextFieldDidChange(routing_id(), form, field));
 }
 
 void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
@@ -230,6 +236,7 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
   std::vector<int> ids(unique_ids);
   int separator_index = -1;
 
+  DCHECK_GT(ids.size(), 0U);
   if (!autofill_query_element_.isNull() &&
       !autofill_query_element_.autoComplete()) {
     // If autofill is disabled and we had suggestions, show a warning instead.
@@ -290,7 +297,10 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
         autofill_query_element_, v, l, i, ids, separator_index);
   }
 
-  Send(new AutofillHostMsg_DidShowAutofillSuggestions(routing_id()));
+  Send(new AutofillHostMsg_DidShowAutofillSuggestions(
+      routing_id(),
+      has_autofill_item && !has_shown_autofill_popup_for_current_edit_));
+  has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
 }
 
 void AutofillAgent::OnFormDataFilled(int query_id,
@@ -301,15 +311,16 @@ void AutofillAgent::OnFormDataFilled(int query_id,
   switch (autofill_action_) {
     case AUTOFILL_FILL:
       form_manager_.FillForm(form, autofill_query_element_);
+      Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id()));
       break;
     case AUTOFILL_PREVIEW:
       form_manager_.PreviewForm(form, autofill_query_element_);
+      Send(new AutofillHostMsg_DidPreviewAutofillFormData(routing_id()));
       break;
     default:
       NOTREACHED();
   }
   autofill_action_ = AUTOFILL_NONE;
-  Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id()));
 }
 
 void AutofillAgent::OnFieldTypePredictionsAvailable(

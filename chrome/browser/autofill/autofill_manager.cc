@@ -227,7 +227,11 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
       disable_download_manager_requests_(false),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
-      has_logged_address_suggestions_count_(false) {
+      has_logged_address_suggestions_count_(false),
+      did_show_suggestions_(false),
+      user_did_type_(false),
+      user_did_autofill_(false),
+      user_did_edit_autofilled_field_(false) {
   DCHECK(tab_contents);
 
   // |personal_data_| is NULL when using TestTabContents.
@@ -278,12 +282,16 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutofillManager, message)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_FormsSeen, OnFormsSeen)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_FormSubmitted, OnFormSubmitted)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_TextFieldDidChange,
+                        OnTextFieldDidChange)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_QueryFormFieldAutofill,
                         OnQueryFormFieldAutofill)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowAutofillDialog,
                         OnShowAutofillDialog)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_FillAutofillFormData,
                         OnFillAutofillFormData)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_DidPreviewAutofillFormData,
+                        OnDidPreviewAutofillFormData)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_DidFillAutofillFormData,
                         OnDidFillAutofillFormData)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_DidShowAutofillSuggestions,
@@ -350,6 +358,31 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms) {
     return;
 
   ParseForms(forms);
+}
+
+void AutofillManager::OnTextFieldDidChange(const FormData& form,
+                                           const FormField& field) {
+  FormStructure* form_structure = NULL;
+  AutofillField* autofill_field = NULL;
+  if (!FindCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return;
+
+  if (!user_did_type_) {
+    user_did_type_ = true;
+    metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_TYPE);
+  }
+
+  if (autofill_field->is_autofilled) {
+    autofill_field->is_autofilled = false;
+    metric_logger_->LogUserHappinessMetric(
+        AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD);
+
+    if (!user_did_edit_autofilled_field_) {
+      user_did_edit_autofilled_field_ = true;
+      metric_logger_->LogUserHappinessMetric(
+          AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE);
+    }
+  }
 }
 
 void AutofillManager::OnQueryFormFieldAutofill(
@@ -508,6 +541,10 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
                     AutofillType(field_type).group());
           FillCreditCardFormField(*credit_card, field_type, &(*iter));
         }
+
+        // Mark the cached field as autofilled, so that we can detect when a
+        // user edits an autofilled field (for metrics).
+        autofill_field->is_autofilled = true;
         break;
       }
     }
@@ -559,6 +596,10 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
         DCHECK_EQ(AutofillType::CREDIT_CARD, field_group_type);
         FillCreditCardFormField(*credit_card, field_type, &result.fields[j]);
       }
+
+      // Mark the cached field as autofilled, so that we can detect when a user
+      // edits an autofilled field (for metrics).
+      form_structure->field(k)->is_autofilled = true;
     }
 
     // We found a matching field in the |form_structure|, so on the next
@@ -583,18 +624,43 @@ void AutofillManager::OnShowAutofillDialog() {
     browser->ShowOptionsTab(chrome::kAutofillSubPage);
 }
 
-void AutofillManager::OnDidFillAutofillFormData() {
+void AutofillManager::OnDidPreviewAutofillFormData() {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
 }
 
-void AutofillManager::OnDidShowAutofillSuggestions() {
+
+void AutofillManager::OnDidFillAutofillFormData() {
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
+      Source<RenderViewHost>(tab_contents()->render_view_host()),
+      NotificationService::NoDetails());
+
+  metric_logger_->LogUserHappinessMetric(AutofillMetrics::USER_DID_AUTOFILL);
+  if (!user_did_autofill_) {
+    user_did_autofill_ = true;
+    metric_logger_->LogUserHappinessMetric(
+        AutofillMetrics::USER_DID_AUTOFILL_ONCE);
+  }
+}
+
+void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_SHOW_SUGGESTIONS,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
       NotificationService::NoDetails());
+
+  if (is_new_popup) {
+    metric_logger_->LogUserHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
+
+    if (!did_show_suggestions_) {
+      did_show_suggestions_ = true;
+      metric_logger_->LogUserHappinessMetric(
+          AutofillMetrics::SUGGESTIONS_SHOWN_ONCE);
+    }
+  }
 }
 
 void AutofillManager::OnLoadedServerPredictions(
@@ -646,7 +712,7 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
   // For each field in the |submitted_form|, extract the value.  Then for each
   // profile or credit card, identify any stored types that match the value.
   for (size_t i = 0; i < submitted_form->field_count(); i++) {
-    const AutofillField* field = submitted_form->field(i);
+    AutofillField* field = submitted_form->field(i);
     string16 value = CollapseWhitespace(field->value, false);
     FieldTypeSet matching_types;
     for (std::vector<FormGroup*>::const_iterator it = stored_data.begin();
@@ -657,7 +723,7 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
     if (matching_types.empty())
       matching_types.insert(UNKNOWN_TYPE);
 
-    submitted_form->set_possible_types(i, matching_types);
+    field->set_possible_types(matching_types);
   }
 }
 
@@ -704,6 +770,10 @@ void AutofillManager::Reset() {
   form_structures_.reset();
   has_logged_autofill_enabled_ = false;
   has_logged_address_suggestions_count_ = false;
+  did_show_suggestions_ = false;
+  user_did_type_ = false;
+  user_did_autofill_ = false;
+  user_did_edit_autofilled_field_ = false;
 }
 
 AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
@@ -715,7 +785,11 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
       disable_download_manager_requests_(true),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
-      has_logged_address_suggestions_count_(false) {
+      has_logged_address_suggestions_count_(false),
+      did_show_suggestions_(false),
+      user_did_type_(false),
+      user_did_autofill_(false),
+      user_did_edit_autofilled_field_(false)  {
   DCHECK(tab_contents);
 }
 
@@ -1012,6 +1086,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
        iter != non_queryable_forms.end(); ++iter) {
     form_structures_.push_back(*iter);
   }
+
+  if (!form_structures_.empty())
+    metric_logger_->LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
 
   CheckForPopularForms(form_structures_.get(), tab_contents_wrapper_,
                        tab_contents());

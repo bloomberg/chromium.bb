@@ -109,10 +109,8 @@ class FormStructure {
   // set for each field.
   void LogQualityMetrics(const AutofillMetrics& metric_logger) const;
 
-  // Sets the possible types for the field at |index|.
-  void set_possible_types(size_t index, const FieldTypeSet& types);
-
   const AutofillField* field(size_t index) const;
+  AutofillField* field(size_t index);
   size_t field_count() const;
 
   // Returns the number of fields that are able to be autofilled.

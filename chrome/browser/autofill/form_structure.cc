@@ -650,6 +650,9 @@ void FormStructure::LogQualityMetrics(
   std::string experiment_id = server_experiment_id();
   metric_logger.LogServerExperimentIdForUpload(experiment_id);
 
+  size_t num_detected_field_types = 0;
+  bool did_autofill_all_possible_fields = true;
+  bool did_autofill_some_possible_fields = false;
   for (size_t i = 0; i < field_count(); ++i) {
     const AutofillField* field = this->field(i);
     metric_logger.LogQualityMetric(AutofillMetrics::FIELD_SUBMITTED,
@@ -661,6 +664,12 @@ void FormStructure::LogQualityMetrics(
     DCHECK(!field_types.empty());
     if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE))
       continue;
+
+    ++num_detected_field_types;
+    if (field->is_autofilled)
+      did_autofill_some_possible_fields = true;
+    else
+      did_autofill_all_possible_fields = false;
 
     // Collapse field types that Chrome treats as identical, e.g. home and
     // billing address fields.
@@ -765,16 +774,20 @@ void FormStructure::LogQualityMetrics(
       }
     }
   }
-}
 
-void FormStructure::set_possible_types(size_t index,
-                                       const FieldTypeSet& types) {
-  if (index >= fields_.size()) {
-    NOTREACHED();
-    return;
+  if (num_detected_field_types < kRequiredFillableFields) {
+    metric_logger.LogUserHappinessMetric(
+        AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM);
+  } else if (did_autofill_all_possible_fields) {
+    metric_logger.LogUserHappinessMetric(
+        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_ALL);
+  } else if (did_autofill_some_possible_fields) {
+    metric_logger.LogUserHappinessMetric(
+        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME);
+  } else {
+    metric_logger.LogUserHappinessMetric(
+        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE);
   }
-
-  fields_[index]->set_possible_types(types);
 }
 
 const AutofillField* FormStructure::field(size_t index) const {
@@ -784,6 +797,11 @@ const AutofillField* FormStructure::field(size_t index) const {
   }
 
   return fields_[index];
+}
+
+AutofillField* FormStructure::field(size_t index) {
+  return const_cast<AutofillField*>(
+      static_cast<const FormStructure*>(this)->field(index));
 }
 
 size_t FormStructure::field_count() const {

@@ -163,6 +163,10 @@ class AutofillAgent : public RenderViewObserver,
   // The menu index of the "Autofill options..." menu item.
   int suggestions_options_index_;
 
+  // Have we already shown Autofill suggestions for the field the user is
+  // currently editing?  Used to keep track of state for metrics logging.
+  bool has_shown_autofill_popup_for_current_edit_;
+
   ScopedRunnableMethodFactory<AutofillAgent> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
