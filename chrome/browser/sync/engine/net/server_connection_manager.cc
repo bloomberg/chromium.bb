@@ -132,16 +132,11 @@ ScopedServerStatusWatcher::ScopedServerStatusWatcher(
     ServerConnectionManager* conn_mgr, HttpResponse* response)
     : conn_mgr_(conn_mgr),
       response_(response),
-      reset_count_(conn_mgr->reset_count_),
       server_reachable_(conn_mgr->server_reachable_) {
   response->server_status = conn_mgr->server_status_;
 }
 
 ScopedServerStatusWatcher::~ScopedServerStatusWatcher() {
-  // Don't update the status of the connection if it has been reset.
-  // TODO(timsteele): Do we need this? Is this used by multiple threads?
-  if (reset_count_ != conn_mgr_->reset_count_)
-    return;
   if (conn_mgr_->server_status_ != response_->server_status) {
     conn_mgr_->server_status_ = response_->server_status;
     conn_mgr_->NotifyStatusChanged();
@@ -164,23 +159,23 @@ ServerConnectionManager::ServerConnectionManager(
       proto_sync_path_(kSyncServerSyncPath),
       get_time_path_(kSyncServerGetTimePath),
       error_count_(0),
-      listeners_(new ObserverListThreadSafe<ServerConnectionEventListener>()),
       server_status_(HttpResponse::NONE),
-      server_reachable_(false),
-      reset_count_(0),
-      terminate_all_io_(false) {
+      server_reachable_(false) {
 }
 
 ServerConnectionManager::~ServerConnectionManager() {
 }
 
 void ServerConnectionManager::NotifyStatusChanged() {
-  listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
-      ServerConnectionEvent(server_status_, server_reachable_));
+  DCHECK(CalledOnValidThread());
+  FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
+     OnServerConnectionEvent(
+         ServerConnectionEvent(server_status_, server_reachable_)));
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(
     const PostBufferParams* params, ScopedServerStatusWatcher* watcher) {
+  DCHECK(CalledOnValidThread());
   string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
   return PostBufferToPath(params, path, auth_token(), watcher);
@@ -189,6 +184,7 @@ bool ServerConnectionManager::PostBufferWithCachedAuth(
 bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,
     const string& path, const string& auth_token,
     ScopedServerStatusWatcher* watcher) {
+  DCHECK(CalledOnValidThread());
   DCHECK(watcher != NULL);
 
   if (auth_token.empty()) {
@@ -219,6 +215,7 @@ bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,
 }
 
 bool ServerConnectionManager::CheckTime(int32* out_time) {
+  DCHECK(CalledOnValidThread());
   // Verify that the server really is reachable by checking the time. We need
   // to do this because of wifi interstitials that intercept messages from the
   // client and return HTTP OK instead of a redirect.
@@ -226,11 +223,7 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
   ScopedServerStatusWatcher watcher(this, &response);
   string post_body = "command=get_time";
 
-  // We only retry the CheckTime call if we were reset during the CheckTime
-  // attempt. We only try 3 times in case we're in a reset loop elsewhere.
-  base::subtle::AtomicWord start_reset_count = reset_count_ - 1;
-  for (int i = 0 ; i < 3 && start_reset_count != reset_count_ ; i++) {
-    start_reset_count = reset_count_;
+  for (int i = 0 ; i < 3;  i++) {
     scoped_ptr<Post> post(MakePost());
 
     // Note that the server's get_time path doesn't require authentication.
@@ -264,15 +257,18 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
 }
 
 bool ServerConnectionManager::IsServerReachable() {
+  DCHECK(CalledOnValidThread());
   int32 time;
   return CheckTime(&time);
 }
 
 bool ServerConnectionManager::IsUserAuthenticated() {
+  DCHECK(CalledOnValidThread());
   return IsGoodReplyFromServer(server_status_);
 }
 
 bool ServerConnectionManager::CheckServerReachable() {
+  DCHECK(CalledOnValidThread());
   const bool server_is_reachable = IsServerReachable();
   if (server_reachable_ != server_is_reachable) {
     server_reachable_ = server_is_reachable;
@@ -281,59 +277,38 @@ bool ServerConnectionManager::CheckServerReachable() {
   return server_is_reachable;
 }
 
-void ServerConnectionManager::kill() {
-  {
-    base::AutoLock lock(terminate_all_io_mutex_);
-    terminate_all_io_ = true;
-  }
-}
-
-void ServerConnectionManager::ResetConnection() {
-  base::subtle::NoBarrier_AtomicIncrement(&reset_count_, 1);
-}
-
 bool ServerConnectionManager::IncrementErrorCount() {
-  error_count_mutex_.Acquire();
+  DCHECK(CalledOnValidThread());
   error_count_++;
 
   if (error_count_ > kMaxConnectionErrorsBeforeReset) {
     error_count_ = 0;
 
-    // Be careful with this mutex because calling out to other methods can
-    // result in being called back. Unlock it here to prevent any potential
-    // double-acquisitions.
-    error_count_mutex_.Release();
-
     if (!IsServerReachable()) {
       LOG(WARNING) << "Too many connection failures, server is not reachable. "
                    << "Resetting connections.";
-      ResetConnection();
     } else {
       LOG(WARNING) << "Multiple connection failures while server is reachable.";
     }
     return false;
   }
 
-  error_count_mutex_.Release();
   return true;
 }
 
 void ServerConnectionManager::SetServerParameters(const string& server_url,
                                                   int port,
                                                   bool use_ssl) {
-  {
-    base::AutoLock lock(server_parameters_mutex_);
-    sync_server_ = server_url;
-    sync_server_port_ = port;
-    use_ssl_ = use_ssl;
-  }
+  DCHECK(CalledOnValidThread());
+  sync_server_ = server_url;
+  sync_server_port_ = port;
+  use_ssl_ = use_ssl;
 }
 
 // Returns the current server parameters in server_url and port.
 void ServerConnectionManager::GetServerParameters(string* server_url,
                                                   int* port,
                                                   bool* use_ssl) const {
-  base::AutoLock lock(server_parameters_mutex_);
   if (server_url != NULL)
     *server_url = sync_server_;
   if (port != NULL)
@@ -359,12 +334,14 @@ std::string ServerConnectionManager::GetServerHost() const {
 
 void ServerConnectionManager::AddListener(
     ServerConnectionEventListener* listener) {
-  listeners_->AddObserver(listener);
+  DCHECK(CalledOnValidThread());
+  listeners_.AddObserver(listener);
 }
 
 void ServerConnectionManager::RemoveListener(
     ServerConnectionEventListener* listener) {
-  listeners_->RemoveObserver(listener);
+  DCHECK(CalledOnValidThread());
+  listeners_.RemoveObserver(listener);
 }
 
 ServerConnectionManager::Post* ServerConnectionManager::MakePost() {

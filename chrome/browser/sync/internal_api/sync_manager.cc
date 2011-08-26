@@ -1280,6 +1280,7 @@ void SyncManager::SyncInternal::OnIPAddressChanged() {
 }
 
 void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(akalin): CheckServerReachable() can block, which may cause
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
@@ -1287,6 +1288,7 @@ void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
 
 void SyncManager::SyncInternal::OnServerConnectionEvent(
     const ServerConnectionEvent& event) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   allstatus_.HandleServerConnectionEvent(event);
   if (event.connection_code ==
       browser_sync::HttpResponse::SERVER_CONNECTION_OK) {

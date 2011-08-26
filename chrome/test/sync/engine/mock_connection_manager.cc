@@ -609,14 +609,16 @@ void MockConnectionManager::SetServerReachable() {
   server_status_ = HttpResponse::SERVER_CONNECTION_OK;
   server_reachable_ = true;
 
-  listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
-      ServerConnectionEvent(server_status_, server_reachable_));
+  FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
+     OnServerConnectionEvent(
+         ServerConnectionEvent(server_status_, server_reachable_)));
 }
 
 void MockConnectionManager::SetServerNotReachable() {
   server_status_ = HttpResponse::CONNECTION_UNAVAILABLE;
   server_reachable_ = false;
 
-  listeners_->Notify(&ServerConnectionEventListener::OnServerConnectionEvent,
-      ServerConnectionEvent(server_status_, server_reachable_));
+  FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
+     OnServerConnectionEvent(
+         ServerConnectionEvent(server_status_, server_reachable_)));
 }

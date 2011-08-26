@@ -10,8 +10,9 @@
 #include <string>
 
 #include "base/atomicops.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
 #include "base/string_util.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/common/net/http_return.h"
@@ -124,16 +125,14 @@ class ServerConnectionManager;
 // A helper class that automatically notifies when the status changes.
 // TODO(tim): This class shouldn't be exposed outside of the implementation,
 // bug 35060.
-class ScopedServerStatusWatcher {
+class ScopedServerStatusWatcher : public base::NonThreadSafe {
  public:
   ScopedServerStatusWatcher(ServerConnectionManager* conn_mgr,
                             HttpResponse* response);
-  ~ScopedServerStatusWatcher();
+  virtual ~ScopedServerStatusWatcher();
  private:
   ServerConnectionManager* const conn_mgr_;
   HttpResponse* const response_;
-  // TODO(tim): Should this be Barrier:AtomicIncrement?
-  base::subtle::AtomicWord reset_count_;
   bool server_reachable_;
   DISALLOW_COPY_AND_ASSIGN(ScopedServerStatusWatcher);
 };
@@ -141,9 +140,7 @@ class ScopedServerStatusWatcher {
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
 //
-//  *** This class is thread safe. In fact, you should consider creating only
-//  one instance for every server that you need to talk to.
-class ServerConnectionManager {
+class ServerConnectionManager : public base::NonThreadSafe {
  public:
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response
@@ -186,7 +183,6 @@ class ServerConnectionManager {
     void GetServerParams(std::string* server,
                          int* server_port,
                          bool* use_ssl) const {
-      base::AutoLock lock(scm_->server_parameters_mutex_);
       server->assign(scm_->sync_server_);
       *server_port = scm_->sync_server_port_;
       *use_ssl = scm_->use_ssl_;
@@ -229,15 +225,13 @@ class ServerConnectionManager {
   // Updates status and broadcasts events on change.
   bool CheckServerReachable();
 
-  // Signal the shutdown event to notify listeners.
-  virtual void kill();
-
   void AddListener(ServerConnectionEventListener* listener);
   void RemoveListener(ServerConnectionEventListener* listener);
 
   inline std::string user_agent() const { return user_agent_; }
 
   inline HttpResponse::ServerConnectionCode server_status() const {
+    DCHECK(CalledOnValidThread());
     return server_status_;
   }
 
@@ -248,8 +242,7 @@ class ServerConnectionManager {
   // This changes the server info used by the connection manager. This allows
   // a single client instance to talk to different backing servers. This is
   // typically called during / after authentication so that the server url
-  // can be a function of the user's login id. A side effect of this call is
-  // that ResetConnection is called.
+  // can be a function of the user's login id.
   void SetServerParameters(const std::string& server_url,
                            int port,
                            bool use_ssl);
@@ -261,24 +254,19 @@ class ServerConnectionManager {
 
   std::string GetServerHost() const;
 
-  bool terminate_all_io() const {
-    base::AutoLock lock(terminate_all_io_mutex_);
-    return terminate_all_io_;
-  }
-
   // Factory method to create a Post object we can use for communication with
   // the server.
   virtual Post* MakePost();
 
   void set_client_id(const std::string& client_id) {
+    DCHECK(CalledOnValidThread());
     DCHECK(client_id_.empty());
     client_id_.assign(client_id);
   }
 
   // Returns true if the auth token is succesfully set and false otherwise.
   bool set_auth_token(const std::string& auth_token) {
-    // TODO(chron): Consider adding a message loop check here.
-    base::AutoLock lock(auth_token_mutex_);
+    DCHECK(CalledOnValidThread());
     if (previously_invalidated_token != auth_token) {
       auth_token_.assign(auth_token);
       previously_invalidated_token = std::string();
@@ -288,8 +276,8 @@ class ServerConnectionManager {
   }
 
   void InvalidateAndClearAuthToken() {
+    DCHECK(CalledOnValidThread());
     // Copy over the token to previous invalid token.
-    base::AutoLock lock(auth_token_mutex_);
     if (!auth_token_.empty()) {
       previously_invalidated_token.assign(auth_token_);
       auth_token_ = std::string();
@@ -297,18 +285,16 @@ class ServerConnectionManager {
   }
 
   const std::string auth_token() const {
-    base::AutoLock lock(auth_token_mutex_);
+    DCHECK(CalledOnValidThread());
     return auth_token_;
   }
 
  protected:
   inline std::string proto_sync_path() const {
-    base::AutoLock lock(path_mutex_);
     return proto_sync_path_;
   }
 
   std::string get_time_path() const {
-    base::AutoLock lock(path_mutex_);
     return get_time_path_;
   }
 
@@ -323,9 +309,6 @@ class ServerConnectionManager {
                                 const std::string& path,
                                 const std::string& auth_token,
                                 ScopedServerStatusWatcher* watcher);
-
-  // Protects access to sync_server_, sync_server_port_ and use_ssl_:
-  mutable base::Lock server_parameters_mutex_;
 
   // The sync_server_ is the server that requests will be made to.
   std::string sync_server_;
@@ -343,40 +326,28 @@ class ServerConnectionManager {
   bool use_ssl_;
 
   // The paths we post to.
-  mutable base::Lock path_mutex_;
   std::string proto_sync_path_;
   std::string get_time_path_;
 
-  mutable base::Lock auth_token_mutex_;
   // The auth token to use in authenticated requests. Set by the AuthWatcher.
   std::string auth_token_;
 
   // The previous auth token that is invalid now.
   std::string previously_invalidated_token;
 
-  base::Lock error_count_mutex_;  // Protects error_count_
   int error_count_;  // Tracks the number of connection errors.
 
-  scoped_refptr<ObserverListThreadSafe<ServerConnectionEventListener> >
-     listeners_;
+  ObserverList<ServerConnectionEventListener> listeners_;
 
-  // Volatile so various threads can call server_status() without
-  // synchronization.
-  volatile HttpResponse::ServerConnectionCode server_status_;
+  HttpResponse::ServerConnectionCode server_status_;
   bool server_reachable_;
-
-  // A counter that is incremented everytime ResetAuthStatus() is called.
-  volatile base::subtle::AtomicWord reset_count_;
 
  private:
   friend class Post;
   friend class ScopedServerStatusWatcher;
 
   void NotifyStatusChanged();
-  void ResetConnection();
 
-  mutable base::Lock terminate_all_io_mutex_;
-  bool terminate_all_io_;  // When set to true, terminate all connections asap.
   DISALLOW_COPY_AND_ASSIGN(ServerConnectionManager);
 };
 
