@@ -285,7 +285,7 @@ size_t MinidumpGenerator::CalculateStackSize(mach_vm_address_t start_addr) {
       if (result != KERN_SUCCESS ||
           next_region_base != proposed_next_region_base ||
           submap_info.user_tag != tag ||
-          submap_info.protection & VM_PROT_READ == 0) {
+          (submap_info.protection & VM_PROT_READ) == 0) {
         break;
       }
 
