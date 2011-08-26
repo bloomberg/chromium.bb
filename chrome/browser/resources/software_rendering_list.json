@@ -47,7 +47,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "1.16",
+  "version": "1.17",
   "entries": [
     {
       "id": 1,
@@ -346,6 +346,16 @@
       },
       "blacklist": [
         "all"
+      ]
+    },
+    {
+      "id": 24,
+      "description": "Accelerated 2d canvas is unstable in Linux at the moment.",
+      "os": {
+        "type": "linux"
+      },
+      "blacklist": [
+        "accelerated_2d_canvas"
       ]
     }
   ]
