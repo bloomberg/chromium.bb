@@ -132,6 +132,7 @@ cr.define('oobe', function() {
         if (prevIndex > 0)
           UserImageScreen.selectUserImage(prevIndex - 1);
       }
+      e.stopPropagation();
     });
   };
 
