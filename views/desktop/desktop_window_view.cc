@@ -19,6 +19,8 @@
 #include "views/widget/native_widget_aura.h"
 #elif defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
+#elif defined(USE_WAYLAND)
+#include "views/widget/native_widget_wayland.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
 #endif
@@ -143,6 +145,8 @@ void DesktopWindowView::CreateDesktopWindow(DesktopType type) {
   params.native_widget = new views::NativeWidgetAura(window);
 #elif defined(OS_WIN)
   params.native_widget = new views::NativeWidgetWin(window);
+#elif defined(USE_WAYLAND)
+  params.native_widget = new views::NativeWidgetWayland(window);
 #elif defined(TOOLKIT_USES_GTK)
   params.native_widget = new views::NativeWidgetGtk(window);
   params.maximize = true;

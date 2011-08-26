@@ -17,6 +17,12 @@
 #include <ole2.h>
 #endif
 
+#if defined(USE_WAYLAND)
+#include "ui/gfx/gl/gl_surface_egl.h"
+#include "ui/wayland/wayland_display.h"
+#include "ui/wayland/wayland_message_pump.h"
+#endif
+
 int main(int argc, char** argv) {
 #if defined(OS_WIN)
   OleInitialize(NULL);
@@ -24,7 +30,9 @@ int main(int argc, char** argv) {
   // Initializes gtk stuff.
   g_thread_init(NULL);
   g_type_init();
+#if !defined(USE_WAYLAND)
   gtk_init(&argc, &argv);
+#endif
 #endif
 
   CommandLine::Init(argc, argv);
@@ -39,6 +47,16 @@ int main(int argc, char** argv) {
 
   ResourceBundle::InitSharedInstance("en-US");
 
+#if defined(USE_WAYLAND)
+  // Wayland uses EGL for drawing, so we need to initialize this as early as
+  // possible.
+  if (!gfx::GLSurface::InitializeOneOff()) {
+    LOG(ERROR) << "Failed to initialize GLSurface";
+    return -1;
+  }
+  ui::WaylandMessagePump wayland_message_pump(
+      ui::WaylandDisplay::GetDisplay(gfx::GLSurfaceEGL::GetNativeDisplay()));
+#endif
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
 
   views::desktop::DesktopViewsDelegate views_delegate;

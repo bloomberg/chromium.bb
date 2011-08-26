@@ -219,6 +219,9 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // Dispatcher method. This returns true if the menu was canceled, or
   // if the message is such that the menu should be closed.
   virtual bool Dispatch(const MSG& msg);
+#elif defined(USE_WAYLAND)
+  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
+      ui::WaylandEvent* event);
 #elif defined(TOUCH_UI)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xevent);
 #else

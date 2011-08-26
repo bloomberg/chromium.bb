@@ -21,6 +21,10 @@
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 
+#if defined(USE_WAYLAND)
+#include "ui/wayland/events/wayland_event.h"
+#endif
+
 namespace {
 SkColor kTooltipBackground = 0xFF7F7F00;
 int kTooltipTimeoutMs = 500;
@@ -100,6 +104,21 @@ void TooltipManagerViews::HideKeyboardTooltip() {
   NOTREACHED();
 }
 
+#if defined(USE_WAYLAND)
+base::MessagePumpObserver::EventStatus TooltipManagerViews::WillProcessEvent(
+      ui::WaylandEvent* event) {
+  if (event->type == ui::WAYLAND_MOTION) {
+    if (tooltip_timer_.IsRunning())
+      tooltip_timer_.Reset();
+    curr_mouse_pos_.SetPoint(event->motion.x, event->motion.y);
+
+    // If tooltip is visible, we may want to hide it. If it is not, we are ok.
+    if (tooltip_widget_->IsVisible())
+      UpdateIfRequired(curr_mouse_pos_.x(), curr_mouse_pos_.y(), false);
+  }
+  return base::MessagePumpObserver::EVENT_CONTINUE;
+}
+#else
 base::MessagePumpObserver::EventStatus TooltipManagerViews::WillProcessXEvent(
     XEvent* xevent) {
   XGenericEventCookie* cookie = &xevent->xcookie;
@@ -115,6 +134,7 @@ base::MessagePumpObserver::EventStatus TooltipManagerViews::WillProcessXEvent(
   }
   return base::MessagePumpObserver::EVENT_CONTINUE;
 }
+#endif
 
 void TooltipManagerViews::TooltipTimerFired() {
   if (tooltip_widget_->IsVisible()) {

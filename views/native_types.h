@@ -14,6 +14,11 @@ typedef union _GdkEvent GdkEvent;
 #if defined(USE_X11)
 typedef union _XEvent XEvent;
 #endif
+#if defined(USE_WAYLAND)
+namespace ui {
+union WaylandEvent;
+}
+#endif
 
 #if defined(USE_AURA)
 namespace aura {
@@ -40,7 +45,13 @@ typedef aura::Event* NativeEvent;
 #elif defined(OS_WIN)
 typedef MSG NativeEvent;
 #elif defined(OS_LINUX)
+
+#if defined(USE_WAYLAND)
+typedef ui::WaylandEvent* NativeEvent;
+#else
 typedef GdkEvent* NativeEvent;
+#endif
+
 #endif
 
 #if defined(USE_X11)

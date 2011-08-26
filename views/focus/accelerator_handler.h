@@ -20,7 +20,7 @@
 
 namespace views {
 
-#if defined(TOUCH_UI)
+#if defined(TOUCH_UI) && !defined(USE_WAYLAND)
 // Dispatch an XEvent to the RootView. Return true if the event was dispatched
 // and handled, false otherwise.
 bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
@@ -40,6 +40,9 @@ class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
   // focus manager
 #if defined(OS_WIN)
   virtual bool Dispatch(const MSG& msg);
+#elif defined(USE_WAYLAND)
+  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
+      ui::WaylandEvent* ev);
 #elif defined(TOUCH_UI)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xev);
 #else

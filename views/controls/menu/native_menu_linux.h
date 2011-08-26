@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_MENU_NATIVE_MENU_X_H_
-#define VIEWS_CONTROLS_MENU_NATIVE_MENU_X_H_
+#ifndef VIEWS_CONTROLS_MENU_NATIVE_MENU_LINUX_H_
+#define VIEWS_CONTROLS_MENU_NATIVE_MENU_LINUX_H_
 #pragma once
 
 #include "views/controls/menu/menu_delegate.h"
@@ -19,11 +19,11 @@ namespace views {
 class MenuRunner;
 
 // A non-GTK implementation of MenuWrapper, used currently for touchui.
-class NativeMenuX : public MenuWrapper,
-                    public MenuDelegate {
+class NativeMenuLinux : public MenuWrapper,
+                        public MenuDelegate {
  public:
-  explicit NativeMenuX(Menu2* menu);
-  virtual ~NativeMenuX();
+  explicit NativeMenuLinux(Menu2* menu);
+  virtual ~NativeMenuLinux();
 
   // Overridden from MenuWrapper:
   virtual void RunMenuAt(const gfx::Point& point, int alignment);
@@ -51,9 +51,9 @@ class NativeMenuX : public MenuWrapper,
   MenuItemView* root_;
   scoped_ptr<MenuRunner> menu_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeMenuX);
+  DISALLOW_COPY_AND_ASSIGN(NativeMenuLinux);
 };
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_MENU_NATIVE_MENU_X_H_
+#endif  // VIEWS_CONTROLS_MENU_NATIVE_MENU_LINUX_H_

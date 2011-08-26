@@ -12,7 +12,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_config.h"
-#include "views/controls/menu/menu_image_util_gtk.h"
+#include "views/controls/menu/menu_image_util_linux.h"
 #include "views/controls/menu/submenu_view.h"
 
 namespace views {

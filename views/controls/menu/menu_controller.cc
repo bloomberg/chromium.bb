@@ -869,6 +869,13 @@ bool MenuController::Dispatch(const MSG& msg) {
   DispatchMessage(&msg);
   return exit_type_ == EXIT_NONE;
 }
+#elif defined(USE_WAYLAND)
+base::MessagePumpDispatcher::DispatchStatus
+    MenuController::Dispatch(ui::WaylandEvent* ev) {
+  return exit_type_ != EXIT_NONE ?
+      base::MessagePumpDispatcher::EVENT_QUIT :
+      base::MessagePumpDispatcher::EVENT_PROCESSED;
+}
 #elif defined(TOUCH_UI)
 base::MessagePumpDispatcher::DispatchStatus
     MenuController::Dispatch(XEvent* xev) {

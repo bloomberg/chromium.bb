@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,11 @@
 #include <windows.h>
 #elif defined(OS_MACOSX)
 #include <CoreGraphics/CGGeometry.h>
-#elif defined(OS_POSIX)
+#elif defined(USE_X11)
 #include <gdk/gdk.h>
+#endif
+#if defined(USE_WAYLAND)
+#include <cairo.h>
 #endif
 
 #include <ostream>
@@ -77,7 +80,7 @@ Rect& Rect::operator=(const CGRect& r) {
   set_height(r.size.height);
   return *this;
 }
-#elif defined(OS_POSIX)
+#elif defined(USE_X11)
 Rect::Rect(const GdkRectangle& r)
     : origin_(r.x, r.y) {
   set_width(r.width);
@@ -91,6 +94,21 @@ Rect& Rect::operator=(const GdkRectangle& r) {
   return *this;
 }
 #endif
+#if defined(USE_WAYLAND)
+Rect::Rect(const cairo_rectangle_int_t& r)
+    : origin_(r.x, r.y) {
+  set_width(r.width);
+  set_height(r.height);
+}
+
+Rect& Rect::operator=(const cairo_rectangle_int_t& r) {
+  origin_.SetPoint(r.x, r.y);
+  set_width(r.width);
+  set_height(r.height);
+  return *this;
+}
+#endif
+
 
 void Rect::SetRect(int x, int y, int width, int height) {
   origin_.SetPoint(x, y);
@@ -141,9 +159,15 @@ RECT Rect::ToRECT() const {
 CGRect Rect::ToCGRect() const {
   return CGRectMake(x(), y(), width(), height());
 }
-#elif defined(OS_POSIX)
+#elif defined(USE_X11)
 GdkRectangle Rect::ToGdkRectangle() const {
   GdkRectangle r = {x(), y(), width(), height()};
+  return r;
+}
+#endif
+#if defined(USE_WAYLAND)
+cairo_rectangle_int_t Rect::ToCairoRectangle() const {
+  cairo_rectangle_int_t r = {x(), y(), width(), height()};
   return r;
 }
 #endif

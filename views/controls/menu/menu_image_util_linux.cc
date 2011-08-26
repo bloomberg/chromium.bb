@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/menu/menu_image_util_gtk.h"
+#include "views/controls/menu/menu_image_util_linux.h"
 
 #include "base/i18n/rtl.h"
 #include "grit/ui_resources.h"

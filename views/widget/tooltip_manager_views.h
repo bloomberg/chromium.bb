@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "base/message_pump_x.h"
 #include "base/timer.h"
 #include "views/controls/label.h"
 #include "views/widget/native_widget.h"
@@ -17,6 +16,9 @@
 
 typedef union _GdkEvent GdkEvent;
 typedef union _XEvent XEvent;
+namespace ui {
+union WaylandEvent;
+}
 
 namespace views {
 
@@ -39,9 +41,14 @@ class TooltipManagerViews : public TooltipManager,
   virtual void ShowKeyboardTooltip(View* view) OVERRIDE;
   virtual void HideKeyboardTooltip() OVERRIDE;
 
+#if defined(USE_WAYLAND)
+  virtual base::MessagePumpObserver::EventStatus WillProcessEvent(
+      ui::WaylandEvent* event) OVERRIDE;
+#else
   // MessageLoopForUI::Observer
   virtual base::MessagePumpObserver::EventStatus WillProcessXEvent(
       XEvent* xevent) OVERRIDE;
+#endif
 
  private:
   void TooltipTimerFired();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/menu/native_menu_x.h"
+#include "views/controls/menu/native_menu_linux.h"
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -14,17 +14,17 @@
 
 namespace views {
 
-NativeMenuX::NativeMenuX(Menu2* menu)
+NativeMenuLinux::NativeMenuLinux(Menu2* menu)
     : model_(menu->model()),
       ALLOW_THIS_IN_INITIALIZER_LIST(root_(new MenuItemView(this))),
       menu_runner_(new MenuRunner(root_)) {
 }
 
-NativeMenuX::~NativeMenuX() {
+NativeMenuLinux::~NativeMenuLinux() {
 }
 
 // MenuWrapper implementation:
-void NativeMenuX::RunMenuAt(const gfx::Point& point, int alignment) {
+void NativeMenuLinux::RunMenuAt(const gfx::Point& point, int alignment) {
   // TODO: this should really return the value from MenuRunner.
   UpdateStates();
   if (menu_runner_->RunMenuAt(NULL, NULL, gfx::Rect(point, gfx::Size()),
@@ -34,46 +34,46 @@ void NativeMenuX::RunMenuAt(const gfx::Point& point, int alignment) {
     return;
 }
 
-void NativeMenuX::CancelMenu() {
+void NativeMenuLinux::CancelMenu() {
   NOTIMPLEMENTED();
 }
 
-void NativeMenuX::Rebuild() {
+void NativeMenuLinux::Rebuild() {
   if (SubmenuView* submenu = root_->GetSubmenu())
     submenu->RemoveAllChildViews(true);
   AddMenuItemsFromModel(root_, model_);
 }
 
-void NativeMenuX::UpdateStates() {
+void NativeMenuLinux::UpdateStates() {
   SubmenuView* submenu = root_->CreateSubmenu();
   UpdateMenuFromModel(submenu, model_);
 }
 
-gfx::NativeMenu NativeMenuX::GetNativeMenu() const {
+gfx::NativeMenu NativeMenuLinux::GetNativeMenu() const {
   NOTIMPLEMENTED();
   return NULL;
 }
 
-MenuWrapper::MenuAction NativeMenuX::GetMenuAction() const {
+MenuWrapper::MenuAction NativeMenuLinux::GetMenuAction() const {
   NOTIMPLEMENTED();
   return MENU_ACTION_NONE;
 }
 
-void NativeMenuX::AddMenuListener(MenuListener* listener) {
+void NativeMenuLinux::AddMenuListener(MenuListener* listener) {
   NOTIMPLEMENTED();
 }
 
-void NativeMenuX::RemoveMenuListener(MenuListener* listener) {
+void NativeMenuLinux::RemoveMenuListener(MenuListener* listener) {
   NOTIMPLEMENTED();
 }
 
-void NativeMenuX::SetMinimumWidth(int width) {
+void NativeMenuLinux::SetMinimumWidth(int width) {
   NOTIMPLEMENTED();
 }
 
 // MenuDelegate implementation
 
-bool NativeMenuX::IsItemChecked(int cmd) const {
+bool NativeMenuLinux::IsItemChecked(int cmd) const {
   int index;
   ui::MenuModel* model = model_;
   if (!ui::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
@@ -81,7 +81,7 @@ bool NativeMenuX::IsItemChecked(int cmd) const {
   return model->IsItemCheckedAt(index);
 }
 
-bool NativeMenuX::IsCommandEnabled(int cmd) const {
+bool NativeMenuLinux::IsCommandEnabled(int cmd) const {
   int index;
   ui::MenuModel* model = model_;
   if (!ui::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
@@ -89,7 +89,7 @@ bool NativeMenuX::IsCommandEnabled(int cmd) const {
   return model->IsEnabledAt(index);
 }
 
-void NativeMenuX::ExecuteCommand(int cmd) {
+void NativeMenuLinux::ExecuteCommand(int cmd) {
   int index;
   ui::MenuModel* model = model_;
   if (!ui::MenuModel::GetModelAndIndexForCommandId(cmd, &model, &index))
@@ -97,7 +97,7 @@ void NativeMenuX::ExecuteCommand(int cmd) {
   model->ActivatedAt(index);
 }
 
-bool NativeMenuX::GetAccelerator(int id, views::Accelerator* accelerator) {
+bool NativeMenuLinux::GetAccelerator(int id, views::Accelerator* accelerator) {
   int index;
   ui::MenuModel* model = model_;
   if (!ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index))
@@ -113,8 +113,8 @@ bool NativeMenuX::GetAccelerator(int id, views::Accelerator* accelerator) {
 }
 
 // private
-void NativeMenuX::AddMenuItemsFromModel(MenuItemView* parent,
-                                        ui::MenuModel* model) {
+void NativeMenuLinux::AddMenuItemsFromModel(MenuItemView* parent,
+                                            ui::MenuModel* model) {
   for (int i = 0; i < model->GetItemCount(); ++i) {
     int index = i + model->GetFirstItemIndex(NULL);
     MenuItemView* child = parent->AppendMenuItemFromModel(model, index,
@@ -126,8 +126,8 @@ void NativeMenuX::AddMenuItemsFromModel(MenuItemView* parent,
   }
 }
 
-void NativeMenuX::UpdateMenuFromModel(SubmenuView* menu,
-                                      ui::MenuModel* model) {
+void NativeMenuLinux::UpdateMenuFromModel(SubmenuView* menu,
+                                          ui::MenuModel* model) {
   for (int i = 0, sep = 0; i < model->GetItemCount(); ++i) {
     int index = i + model->GetFirstItemIndex(NULL);
     if (model->GetTypeAt(index) == ui::MenuModel::TYPE_SEPARATOR) {
@@ -162,7 +162,7 @@ void NativeMenuX::UpdateMenuFromModel(SubmenuView* menu,
 
 // static
 MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
-  return new NativeMenuX(menu);
+  return new NativeMenuLinux(menu);
 }
 
 }  // namespace views
