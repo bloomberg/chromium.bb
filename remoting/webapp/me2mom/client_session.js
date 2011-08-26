@@ -395,16 +395,9 @@ remoting.ClientSession.prototype.toggleScaleToFit = function(shouldScale) {
     this.plugin.width = this.plugin.desktopWidth;
     this.plugin.height = this.plugin.desktopHeight;
   }
-  remoting.debug.log('window size is now: ' +
-                     window.innerWidth + ' x ' + window.innerHeight + '.');
   remoting.debug.log('plugin size is now: ' +
                      this.plugin.width + ' x ' + this.plugin.height + '.');
   this.plugin.setScaleToFit(shouldScale);
-  if (shouldScale) {
-    addClass(document.all[0], 'hide-scrollbars');
-  } else {
-    removeClass(document.all[0], 'hide-scrollbars');
-  }
   remoting.debug.log('scale to fit is now: ' + shouldScale);
 };
 

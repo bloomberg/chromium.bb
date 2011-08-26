@@ -228,6 +228,7 @@ label {
 
 #session-mode {
   width: 100%;
+  margin: 0;
   -webkit-user-select: none;
 }
 
