@@ -31,8 +31,6 @@
   },
   'target_defaults': {
     'dependencies': [
-      # locales need to be built for the chrome frame binaries to be loadable.
-      'locales/locales.gyp:*',
       '../chrome/chrome.gyp:chrome_resources',
       '../chrome/chrome.gyp:chrome_strings',
       '../chrome/chrome.gyp:packed_resources',
@@ -85,6 +83,7 @@
         'chrome_frame_ie',
         'chrome_frame_strings',
         'chrome_tab_idl',
+        'locales/locales.gyp:*',
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
@@ -205,6 +204,7 @@
         'chrome_frame_strings',
         'chrome_frame_utils',
         'chrome_tab_idl',
+        'locales/locales.gyp:*',
         'npchrome_frame',
       ],
       'sources': [
@@ -311,6 +311,7 @@
         'chrome_frame_strings',
         'chrome_frame_utils',
         'chrome_tab_idl',
+        'locales/locales.gyp:*',
         'npchrome_frame',
       ],
       'sources': [
@@ -464,6 +465,7 @@
         'chrome_frame_ie',
         'chrome_frame_strings',
         'chrome_tab_idl',
+        'locales/locales.gyp:*',
       ],
       'sources': [
         'test/reliability/run_all_unittests.cc',
@@ -532,6 +534,7 @@
         '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
         'chrome_frame_ie',
         'chrome_frame_strings',
+        'locales/locales.gyp:*',
         'npchrome_frame',
       ],
       'sources': [
@@ -600,6 +603,13 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        {
+          'action_name': 'chrome_frame_dialogs',
+          'variables': {
+            'grit_grd_file': 'resources/chrome_frame_dialogs.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
@@ -631,6 +641,7 @@
         'chrome_frame_strings',
         'chrome_frame_utils',
         'chrome_tab_idl',
+        'locales/locales.gyp:*',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
         '../chrome/chrome.gyp:common',
@@ -829,9 +840,10 @@
         'chrome_frame_utils',
         'chrome_tab_idl',
         'chrome_frame_launcher.gyp:chrome_launcher',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
         'chrome_frame_launcher.gyp:chrome_frame_helper',
         'chrome_frame_launcher.gyp:chrome_frame_helper_dll',
+        'locales/locales.gyp:*',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/chrome.gyp:chrome',
         '../chrome/chrome.gyp:chrome_dll',
         '../chrome/chrome.gyp:chrome_version_resources',

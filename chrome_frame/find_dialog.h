@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "resource.h"
-#include "grit/generated_resources.h"
+#include "grit/chrome_frame_dialogs.h"
 
 class ChromeFrameAutomationClient;
 

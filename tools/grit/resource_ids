@@ -97,8 +97,14 @@
   # strings.
   "chrome/app/generated_resources.grd": {
     "structures": [10500],
-    "includes": [10750],
     "messages": [11000],
+  },
+  # The chrome frame dialogs are also in generated_resources.grd so they
+  # get included by the translation console.  We make sure that the ids
+  # for structures here are the same as for generated_resources.grd.
+  "chrome_frame/resources/chrome_frame_dialogs.grd": {
+    "structures": [10500],
+    "includes": [10750],
   },
   "webkit/glue/inspector_strings.grd": {
     "messages": [16000],

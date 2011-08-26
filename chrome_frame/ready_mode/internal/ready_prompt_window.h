@@ -17,7 +17,7 @@
 #include "base/win/scoped_comptr.h"
 #include "chrome_frame/infobars/infobar_content.h"
 #include "chrome_frame/resource.h"
-#include "grit/generated_resources.h"
+#include "grit/chrome_frame_dialogs.h"
 
 class ReadyModeState;
 class UrlLauncher;

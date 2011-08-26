@@ -13,6 +13,7 @@
 #include "chrome_frame/ready_mode/internal/ready_mode_state.h"
 #include "chrome_frame/ready_mode/internal/url_launcher.h"
 #include "chrome_frame/simple_resource_loader.h"
+#include "grit/chrome_frame_dialogs.h"
 #include "grit/chromium_strings.h"
 
 // atlctrlx.h requires 'min' and 'max' macros, the definition of which conflicts
