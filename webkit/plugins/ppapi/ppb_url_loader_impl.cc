@@ -115,7 +115,14 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
   WebFrame* frame = GetFrameForResource(this);
   if (!frame)
     return PP_ERROR_FAILED;
-  WebURLRequest web_request(request->ToWebURLRequest(frame));
+  WebURLRequest web_request;
+  if (!request->ToWebURLRequest(frame, &web_request))
+    return PP_ERROR_FAILED;
+
+  // Save a copy of the request info so the plugin can continue to use and
+  // change it while we're doing the request without affecting us. We must do
+  // this after ToWebURLRequest since that fills out the file refs.
+  request_data_ = request->GetData();
 
   WebURLLoaderOptions options;
   if (has_universal_access_) {
@@ -123,11 +130,11 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
     options.crossOriginRequestPolicy =
         WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
     options.allowCredentials = true;
-  } else if (request->allow_cross_origin_requests()) {
+  } else if (request_data_.allow_cross_origin_requests) {
     // Otherwise, allow cross-origin requests with access control.
     options.crossOriginRequestPolicy =
         WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-    options.allowCredentials = request->allow_credentials();
+    options.allowCredentials = request_data_.allow_credentials;
   }
 
   is_asynchronous_load_suspended_ = false;
@@ -136,8 +143,6 @@ int32_t PPB_URLLoader_Impl::Open(PP_Resource request_id,
     return PP_ERROR_FAILED;
 
   loader_->loadAsynchronously(web_request, this);
-
-  request_info_ = scoped_refptr<PPB_URLRequestInfo_Impl>(request);
 
   // Notify completion when we receive a redirect or response headers.
   RegisterCallback(callback);
@@ -260,7 +265,7 @@ void PPB_URLLoader_Impl::willSendRequest(
     WebURLLoader* loader,
     WebURLRequest& new_request,
     const WebURLResponse& redirect_response) {
-  if (!request_info_->follow_redirects()) {
+  if (!request_data_.follow_redirects) {
     SaveResponse(redirect_response);
     loader_->setDefersLoading(true);
     RunCallback(PP_OK);
@@ -310,14 +315,12 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
   // To avoid letting the network stack download an entire stream all at once,
   // defer loading when we have enough buffer.
   // Check the buffer size after potentially moving some to the user buffer.
-  DCHECK(!request_info_ ||
-         (request_info_->prefetch_buffer_lower_threshold() <
-          request_info_->prefetch_buffer_upper_threshold()));
+  DCHECK(request_data_.prefetch_buffer_lower_threshold <
+         request_data_.prefetch_buffer_upper_threshold);
   if (!is_streaming_to_file_ &&
       !is_asynchronous_load_suspended_ &&
-      request_info_ &&
       (buffer_.size() >= static_cast<size_t>(
-          request_info_->prefetch_buffer_upper_threshold()))) {
+          request_data_.prefetch_buffer_upper_threshold))) {
     DVLOG(1) << "Suspending async load - buffer size: " << buffer_.size();
     loader->setDefersLoading(true);
     is_asynchronous_load_suspended_ = true;
@@ -402,10 +405,10 @@ size_t PPB_URLLoader_Impl::FillUserBuffer() {
   buffer_.erase(buffer_.begin(), buffer_.begin() + bytes_to_copy);
 
   // If the buffer is getting too empty, resume asynchronous loading.
-  DCHECK(!is_asynchronous_load_suspended_ || request_info_);
+  DCHECK(!is_asynchronous_load_suspended_);
   if (is_asynchronous_load_suspended_ &&
       buffer_.size() <= static_cast<size_t>(
-          request_info_->prefetch_buffer_lower_threshold())) {
+          request_data_.prefetch_buffer_lower_threshold)) {
     DVLOG(1) << "Resuming async load - buffer size: " << buffer_.size();
     loader_->setDefersLoading(false);
     is_asynchronous_load_suspended_ = false;
@@ -442,11 +445,11 @@ void PPB_URLLoader_Impl::UpdateStatus() {
 }
 
 bool PPB_URLLoader_Impl::RecordDownloadProgress() const {
-  return request_info_ && request_info_->record_download_progress();
+  return request_data_.record_download_progress;
 }
 
 bool PPB_URLLoader_Impl::RecordUploadProgress() const {
-  return request_info_ && request_info_->record_upload_progress();
+  return request_data_.record_upload_progress;
 }
 
 }  // namespace ppapi

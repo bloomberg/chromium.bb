@@ -15,9 +15,11 @@
 struct PPB_URLResponseInfo;
 
 namespace ppapi {
+
+struct PPB_FileRef_CreateInfo;
+
 namespace proxy {
 
-struct PPBFileRef_CreateInfo;
 class SerializedVarReturnValue;
 
 class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
@@ -45,7 +47,7 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
                         int32_t property,
                         SerializedVarReturnValue result);
   void OnMsgGetBodyAsFileRef(const ppapi::HostResource& response,
-                             PPBFileRef_CreateInfo* result);
+                             PPB_FileRef_CreateInfo* result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLResponseInfo_Proxy);
 };

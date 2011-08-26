@@ -8,6 +8,9 @@
 #include "ppapi/c/ppb_file_ref.h"
 
 namespace ppapi {
+
+struct PPB_FileRef_CreateInfo;
+
 namespace thunk {
 
 class PPB_FileRef_API {
@@ -26,6 +29,10 @@ class PPB_FileRef_API {
   virtual int32_t Delete(PP_CompletionCallback callback) = 0;
   virtual int32_t Rename(PP_Resource new_file_ref,
                          PP_CompletionCallback callback) = 0;
+
+  // Intermal function for use in proxying. Returns the internal CreateInfo
+  // (the contained resource does not carry a ref on behalf of the caller).
+  virtual const PPB_FileRef_CreateInfo& GetCreateInfo() const = 0;
 };
 
 }  // namespace thunk

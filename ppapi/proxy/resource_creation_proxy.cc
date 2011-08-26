@@ -27,7 +27,6 @@
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
-#include "ppapi/proxy/ppb_url_request_info_proxy.h"
 #include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/shared_impl/audio_config_impl.h"
@@ -35,6 +34,7 @@
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/input_event_impl.h"
+#include "ppapi/shared_impl/url_request_info_impl.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
@@ -289,8 +289,11 @@ PP_Resource ResourceCreationProxy::CreateURLLoader(PP_Instance instance) {
   return PPB_URLLoader_Proxy::CreateProxyResource(instance);
 }
 
-PP_Resource ResourceCreationProxy::CreateURLRequestInfo(PP_Instance instance) {
-  return PPB_URLRequestInfo_Proxy::CreateProxyResource(instance);
+PP_Resource ResourceCreationProxy::CreateURLRequestInfo(
+    PP_Instance instance,
+    const PPB_URLRequestInfo_Data& data) {
+  return (new URLRequestInfoImpl(
+      HostResource::MakeInstanceOnly(instance), data))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {

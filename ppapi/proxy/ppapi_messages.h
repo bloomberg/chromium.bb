@@ -34,6 +34,7 @@
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "ppapi/shared_impl/url_request_info_impl.h"
 
 #define IPC_MESSAGE_START PpapiMsgStart
 
@@ -106,6 +107,35 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::InputEventData)
   IPC_STRUCT_TRAITS_MEMBER(wheel_scroll_by_page)
   IPC_STRUCT_TRAITS_MEMBER(key_code)
   IPC_STRUCT_TRAITS_MEMBER(character_text)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PPB_URLRequestInfo_Data)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(method)
+  IPC_STRUCT_TRAITS_MEMBER(headers)
+  IPC_STRUCT_TRAITS_MEMBER(stream_to_file)
+  IPC_STRUCT_TRAITS_MEMBER(follow_redirects)
+  IPC_STRUCT_TRAITS_MEMBER(record_download_progress)
+  IPC_STRUCT_TRAITS_MEMBER(record_upload_progress)
+  IPC_STRUCT_TRAITS_MEMBER(has_custom_referrer_url)
+  IPC_STRUCT_TRAITS_MEMBER(custom_referrer_url)
+  IPC_STRUCT_TRAITS_MEMBER(allow_cross_origin_requests)
+  IPC_STRUCT_TRAITS_MEMBER(allow_credentials)
+  IPC_STRUCT_TRAITS_MEMBER(has_custom_content_transfer_encoding)
+  IPC_STRUCT_TRAITS_MEMBER(custom_content_transfer_encoding)
+  IPC_STRUCT_TRAITS_MEMBER(prefetch_buffer_upper_threshold)
+  IPC_STRUCT_TRAITS_MEMBER(prefetch_buffer_lower_threshold)
+  IPC_STRUCT_TRAITS_MEMBER(body)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PPB_URLRequestInfo_Data::BodyItem)
+  IPC_STRUCT_TRAITS_MEMBER(is_file)
+  IPC_STRUCT_TRAITS_MEMBER(data)
+  // Note: we don't serialize file_ref.
+  IPC_STRUCT_TRAITS_MEMBER(file_ref_host_resource)
+  IPC_STRUCT_TRAITS_MEMBER(start_offset)
+  IPC_STRUCT_TRAITS_MEMBER(number_of_bytes)
+  IPC_STRUCT_TRAITS_MEMBER(expected_last_modified_time)
 IPC_STRUCT_TRAITS_END()
 
 // These are from the browser to the plugin.
@@ -189,7 +219,7 @@ IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPBFileChooser_ChooseComplete,
     ppapi::HostResource /* chooser */,
     int32_t /* result_code (will be != PP_OK on failure */,
-    std::vector<ppapi::proxy::PPBFileRef_CreateInfo> /* chosen_files */)
+    std::vector<ppapi::PPB_FileRef_CreateInfo> /* chosen_files */)
 
 // PPB_FileSystem.
 IPC_MESSAGE_ROUTED2(
@@ -531,10 +561,10 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFileChooser_Show,
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileRef_Create,
                            ppapi::HostResource /* file_system */,
                            std::string /* path */,
-                           ppapi::proxy::PPBFileRef_CreateInfo /* result */)
+                           ppapi::PPB_FileRef_CreateInfo /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetParent,
                            ppapi::HostResource /* file_ref */,
-                           ppapi::proxy::PPBFileRef_CreateInfo /* result */)
+                           ppapi::PPB_FileRef_CreateInfo /* result */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_MakeDirectory,
                     ppapi::HostResource /* file_ref */,
                     PP_Bool /* make_ancestors */,
@@ -575,8 +605,9 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
                            PP_Instance /* instance */,
                            std::string /* url */,
                            ppapi::proxy::SerializedVar /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_Navigate,
-                           ppapi::HostResource /* request_info */,
+IPC_SYNC_MESSAGE_ROUTED4_1(PpapiHostMsg_PPBFlash_Navigate,
+                           PP_Instance /* instance */,
+                           ppapi::PPB_URLRequestInfo_Data /* request_data */,
                            std::string /* target */,
                            bool /* from_user_action */,
                            int32_t /* result */)
@@ -840,7 +871,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLLoader_Create,
                            ppapi::HostResource /* result */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBURLLoader_Open,
                     ppapi::HostResource /* loader */,
-                    ppapi::HostResource /*request_info */,
+                    ppapi::PPB_URLRequestInfo_Data /* request_data */,
                     uint32_t /* serialized_callback */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLLoader_FollowRedirect,
                     ppapi::HostResource /* loader */,
@@ -860,24 +891,6 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_Close,
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBURLLoader_GrantUniversalAccess,
                     ppapi::HostResource /* loader */)
 
-// PPB_URLRequestInfo.
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLRequestInfo_Create,
-                           PP_Instance /* instance */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBURLRequestInfo_SetProperty,
-                    ppapi::HostResource /* request */,
-                    int32_t /* property */,
-                    ppapi::proxy::SerializedVar /* value */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBURLRequestInfo_AppendDataToBody,
-                    ppapi::HostResource /* request */,
-                    std::string /* data */)
-IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBURLRequestInfo_AppendFileToBody,
-                    ppapi::HostResource /* request */,
-                    ppapi::HostResource /* file_ref */,
-                    int64_t /* start_offset */,
-                    int64_t /* number_of_bytes */,
-                    double /* expected_last_modified_time */)
-
 // PPB_URLResponseInfo.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
                            ppapi::HostResource /* response */,
@@ -885,7 +898,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
                            ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
                            ppapi::HostResource /* response */,
-                           ppapi::proxy::PPBFileRef_CreateInfo /* result */)
+                           ppapi::PPB_FileRef_CreateInfo /* result */)
 
 // PPB_URLUtil.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBURLUtil_ResolveRelativeToDocument,

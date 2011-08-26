@@ -1000,7 +1000,10 @@ int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
   WebFrame* frame = document.frame();
   if (!frame)
     return PP_ERROR_FAILED;
-  WebURLRequest web_request(request->ToWebURLRequest(frame));
+
+  WebURLRequest web_request;
+  if (!request->ToWebURLRequest(frame, &web_request))
+    return PP_ERROR_FAILED;
   web_request.setFirstPartyForCookies(document.firstPartyForCookies());
   web_request.setHasUserGesture(from_user_action);
 

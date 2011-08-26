@@ -110,7 +110,7 @@ void PPB_FileChooser_Impl::StoreChosenFiles(
 #endif
 
     chosen_files_.push_back(make_scoped_refptr(
-        new PPB_FileRef_Impl(pp_instance(), file_path)));
+        PPB_FileRef_Impl::CreateExternal(pp_instance(), file_path)));
   }
 
   RunCallback((chosen_files_.size() > 0) ? PP_OK : PP_ERROR_USERCANCEL);

@@ -97,10 +97,9 @@ class EnterResource {
  public:
   EnterResource(PP_Resource resource, bool report_error)
       : object_(NULL) {
-    Resource* base =
-        TrackerBase::Get()->GetResourceTracker()->GetResource(resource);
-    if (base)
-      object_ = base->GetAs<ResourceT>();
+    resource_ = TrackerBase::Get()->GetResourceTracker()->GetResource(resource);
+    if (resource_)
+      object_ = resource_->GetAs<ResourceT>();
     // TODO(brettw) check error and if report_error is set, do something.
   }
   ~EnterResource() {}
@@ -109,8 +108,10 @@ class EnterResource {
   bool failed() const { return !object_; }
 
   ResourceT* object() { return object_; }
+  Resource* resource() { return resource_; }
 
  private:
+  Resource* resource_;
   ResourceT* object_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterResource);

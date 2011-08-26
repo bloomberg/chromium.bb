@@ -39,7 +39,7 @@ class FileChooser : public Resource,
   // Handles the choose complete notification from the host.
   void ChooseComplete(
     int32_t result_code,
-    const std::vector<PPBFileRef_CreateInfo>& chosen_files);
+    const std::vector<PPB_FileRef_CreateInfo>& chosen_files);
 
  private:
   PP_CompletionCallback current_show_callback_;
@@ -106,7 +106,7 @@ PP_Resource FileChooser::GetNextChosenFile() {
 
 void FileChooser::ChooseComplete(
     int32_t result_code,
-    const std::vector<PPBFileRef_CreateInfo>& chosen_files) {
+    const std::vector<PPB_FileRef_CreateInfo>& chosen_files) {
   // Convert each of the passed in file infos to resources. These will be owned
   // by the FileChooser object until they're passed to the plugin.
   DCHECK(file_queue_.empty());
@@ -245,7 +245,7 @@ void PPB_FileChooser_Proxy::OnMsgShow(const HostResource& chooser) {
 void PPB_FileChooser_Proxy::OnMsgChooseComplete(
     const HostResource& chooser,
     int32_t result_code,
-    const std::vector<PPBFileRef_CreateInfo>& chosen_files) {
+    const std::vector<PPB_FileRef_CreateInfo>& chosen_files) {
   EnterPluginFromHostResource<PPB_FileChooser_API> enter(chooser);
   if (enter.succeeded()) {
     static_cast<FileChooser*>(enter.object())->ChooseComplete(
@@ -255,7 +255,7 @@ void PPB_FileChooser_Proxy::OnMsgChooseComplete(
 
 void PPB_FileChooser_Proxy::OnShowCallback(int32_t result,
                                            const HostResource& chooser) {
-  std::vector<PPBFileRef_CreateInfo> files;
+  std::vector<PPB_FileRef_CreateInfo> files;
   if (result == PP_OK) {
     // Jump through some hoops to get the FileRef proxy. Since we know we're
     // in the host at this point, we can ask the host dispatcher for it.
@@ -268,7 +268,7 @@ void PPB_FileChooser_Proxy::OnShowCallback(int32_t result,
     while (PP_Resource cur_file_resource =
                ppb_file_chooser_target()->GetNextChosenFile(
                    chooser.host_resource())) {
-      PPBFileRef_CreateInfo cur_create_info;
+      PPB_FileRef_CreateInfo cur_create_info;
       file_ref_proxy->SerializeFileRef(cur_file_resource, &cur_create_info);
       files.push_back(cur_create_info);
     }

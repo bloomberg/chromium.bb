@@ -97,6 +97,11 @@ void Var::AssignVarID(int32 id) {
 
 // StringVar -------------------------------------------------------------------
 
+StringVar::StringVar(PP_Module module, const std::string& str)
+    : Var(module),
+      value_(str) {
+}
+
 StringVar::StringVar(PP_Module module, const char* str, uint32 len)
     : Var(module),
       value_(str, len) {

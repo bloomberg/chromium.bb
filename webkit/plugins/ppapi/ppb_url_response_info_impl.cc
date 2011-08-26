@@ -74,8 +74,8 @@ bool PPB_URLResponseInfo_Impl::Initialize(const WebURLResponse& response) {
 
   WebString file_path = response.downloadFilePath();
   if (!file_path.isEmpty()) {
-    body_ = new PPB_FileRef_Impl(pp_instance(),
-                                 webkit_glue::WebStringToFilePath(file_path));
+    body_ = PPB_FileRef_Impl::CreateExternal(
+        pp_instance(), webkit_glue::WebStringToFilePath(file_path));
   }
   return true;
 }
@@ -114,7 +114,6 @@ PP_Var PPB_URLResponseInfo_Impl::GetProperty(PP_URLResponseProperty property) {
 PP_Resource PPB_URLResponseInfo_Impl::GetBodyAsFileRef() {
   if (!body_.get())
     return 0;
-  body_->AddRef();  // AddRef for the caller.
   return body_->GetReference();
 }
 

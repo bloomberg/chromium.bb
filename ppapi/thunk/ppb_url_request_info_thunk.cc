@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ppapi/shared_impl/url_request_info_impl.h"
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_url_request_info_api.h"
@@ -16,7 +17,8 @@ PP_Resource Create(PP_Instance instance) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateURLRequestInfo(instance);
+  return enter.functions()->CreateURLRequestInfo(
+      instance, PPB_URLRequestInfo_Data());
 }
 
 PP_Bool IsURLRequestInfo(PP_Resource resource) {

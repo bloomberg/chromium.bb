@@ -20,6 +20,9 @@ struct PPB_URLLoader;
 struct PPB_URLLoaderTrusted;
 
 namespace ppapi {
+
+struct PPB_URLRequestInfo_Data;
+
 namespace proxy {
 
 struct PPBURLLoader_UpdateProgress_Params;
@@ -62,7 +65,7 @@ class PPB_URLLoader_Proxy : public InterfaceProxy {
   void OnMsgCreate(PP_Instance instance,
                    ppapi::HostResource* result);
   void OnMsgOpen(const ppapi::HostResource& loader,
-                 const ppapi::HostResource& request_info,
+                 const PPB_URLRequestInfo_Data& data,
                  uint32_t serialized_callback);
   void OnMsgFollowRedirect(const ppapi::HostResource& loader,
                            uint32_t serialized_callback);

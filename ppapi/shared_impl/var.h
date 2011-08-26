@@ -90,6 +90,7 @@ class Var : public base::RefCounted<Var> {
 //   DoSomethingWithTheString(string->value());
 class StringVar : public Var {
  public:
+  StringVar(PP_Module module, const std::string& str);
   StringVar(PP_Module module, const char* str, uint32 len);
   virtual ~StringVar();
 

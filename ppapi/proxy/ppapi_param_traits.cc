@@ -248,33 +248,31 @@ void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Log(
     std::string* l) {
 }
 
-// PPBFileRef_CreateInfo -------------------------------------------------------
+// PPB_FileRef_CreateInfo ------------------------------------------------------
 
 // static
-void ParamTraits<ppapi::proxy::PPBFileRef_CreateInfo>::Write(
-    Message* m,
-    const param_type& p) {
+void ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Write(Message* m,
+                                                       const param_type& p) {
   ParamTraits<ppapi::HostResource>::Write(m, p.resource);
   ParamTraits<int>::Write(m, p.file_system_type);
-  ParamTraits<ppapi::proxy::SerializedVar>::Write(m, p.path);
-  ParamTraits<ppapi::proxy::SerializedVar>::Write(m, p.name);
+  ParamTraits<std::string>::Write(m, p.path);
+  ParamTraits<std::string>::Write(m, p.name);
 }
 
 // static
-bool ParamTraits<ppapi::proxy::PPBFileRef_CreateInfo>::Read(const Message* m,
-                                                            void** iter,
-                                                            param_type* r) {
+bool ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Read(const Message* m,
+                                                      void** iter,
+                                                      param_type* r) {
   return
       ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
       ParamTraits<int>::Read(m, iter, &r->file_system_type) &&
-      ParamTraits<ppapi::proxy::SerializedVar>::Read(m, iter, &r->path) &&
-      ParamTraits<ppapi::proxy::SerializedVar>::Read(m, iter, &r->name);
+      ParamTraits<std::string>::Read(m, iter, &r->path) &&
+      ParamTraits<std::string>::Read(m, iter, &r->name);
 }
 
 // static
-void ParamTraits<ppapi::proxy::PPBFileRef_CreateInfo>::Log(
-    const param_type& p,
-    std::string* l) {
+void ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Log(const param_type& p,
+                                                     std::string* l) {
 }
 
 // PPBURLLoader_UpdateProgress_Params ------------------------------------------
@@ -440,16 +438,16 @@ void ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Log(
     std::string* l) {
 }
 
-// std::vector<PPBFileRef_CreateInfo> ------------------------------------------
+// std::vector<PPB_FileRef_CreateInfo> -----------------------------------------
 
-void ParamTraits< std::vector<ppapi::proxy::PPBFileRef_CreateInfo> >::Write(
+void ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Write(
     Message* m,
     const param_type& p) {
   WriteVectorWithoutCopy(m, p);
 }
 
 // static
-bool ParamTraits< std::vector<ppapi::proxy::PPBFileRef_CreateInfo> >::Read(
+bool ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Read(
     const Message* m,
     void** iter,
     param_type* r) {
@@ -457,7 +455,7 @@ bool ParamTraits< std::vector<ppapi::proxy::PPBFileRef_CreateInfo> >::Read(
 }
 
 // static
-void ParamTraits< std::vector<ppapi::proxy::PPBFileRef_CreateInfo> >::Log(
+void ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Log(
     const param_type& p,
     std::string* l) {
 }

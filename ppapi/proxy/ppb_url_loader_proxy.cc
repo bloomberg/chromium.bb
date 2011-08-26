@@ -22,6 +22,7 @@
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -180,16 +181,14 @@ PPB_URLLoader_API* URLLoader::AsPPB_URLLoader_API() {
 
 int32_t URLLoader::Open(PP_Resource request_id,
                         PP_CompletionCallback callback) {
-  Resource* request_object =
-      PluginResourceTracker::GetInstance()->GetResource(request_id);
-  if (!request_object)
-    return PP_ERROR_BADARGUMENT;
+  EnterResourceNoLock<thunk::PPB_URLRequestInfo_API> enter(request_id, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
 
   // TODO(brettw) http://crbug.com/86279: SendCallback doesn't ensure that
   // the proper callback semantics happen if the object is deleted.
   GetDispatcher()->Send(new PpapiHostMsg_PPBURLLoader_Open(
-      INTERFACE_ID_PPB_URL_LOADER, host_resource(),
-      request_object->host_resource(),
+      INTERFACE_ID_PPB_URL_LOADER, host_resource(), enter.object()->GetData(),
       GetDispatcher()->callback_tracker().SendCallback(callback)));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -453,13 +452,23 @@ void PPB_URLLoader_Proxy::OnMsgCreate(PP_Instance instance,
 }
 
 void PPB_URLLoader_Proxy::OnMsgOpen(const HostResource& loader,
-                                    const HostResource& request_info,
+                                    const PPB_URLRequestInfo_Data& data,
                                     uint32_t serialized_callback) {
+  // Have to be careful to always issue the callback, so don't return early.
   EnterHostFromHostResource<PPB_URLLoader_API> enter(loader);
+  EnterFunctionNoLock<ResourceCreationAPI> enter_creation(
+      loader.instance(), true);
+
   PP_CompletionCallback callback = ReceiveCallback(serialized_callback);
+
   int32_t result = PP_ERROR_BADRESOURCE;
-  if (enter.succeeded())
-    result = enter.object()->Open(request_info.host_resource(), callback);
+  if (enter.succeeded() && enter_creation.succeeded()) {
+    ScopedPPResource request_resource(
+        ScopedPPResource::PassRef(),
+        enter_creation.functions()->CreateURLRequestInfo(loader.instance(),
+                                                         data));
+    result = enter.object()->Open(request_resource, callback);
+  }
   if (result != PP_OK_COMPLETIONPENDING)
     PP_RunCompletionCallback(&callback, result);
   // TODO(brettw) bug 73236 register for the status callbacks.

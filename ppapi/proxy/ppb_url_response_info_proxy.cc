@@ -71,7 +71,7 @@ PP_Resource URLResponseInfo::GetBodyAsFileRef() {
   // file ref when the request is streaming to a file and it's in the state
   // where the file is ready. This will prevent us from having to do this sync
   // IPC here.
-  PPBFileRef_CreateInfo create_info;
+  PPB_FileRef_CreateInfo create_info;
   PluginDispatcher::GetForResource(this)->Send(
       new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
           INTERFACE_ID_PPB_URL_RESPONSE_INFO, host_resource(), &create_info));
@@ -135,7 +135,7 @@ void PPB_URLResponseInfo_Proxy::OnMsgGetProperty(
 
 void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
     const HostResource& response,
-    PPBFileRef_CreateInfo* result) {
+    PPB_FileRef_CreateInfo* result) {
   EnterHostFromHostResource<PPB_URLResponseInfo_API> enter(response);
   PP_Resource file_ref = 0;
   if (enter.succeeded())

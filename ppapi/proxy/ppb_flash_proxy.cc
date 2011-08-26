@@ -19,6 +19,10 @@
 #include "ppapi/proxy/proxy_module.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/scoped_pp_resource.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_url_request_info_api.h"
+#include "ppapi/thunk/resource_creation_api.h"
 
 namespace ppapi {
 namespace proxy {
@@ -95,20 +99,19 @@ PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
 int32_t Navigate(PP_Resource request_id,
                  const char* target,
                  bool from_user_action) {
-  Resource* request_object =
-      PluginResourceTracker::GetInstance()->GetResource(request_id);
-  if (!request_object)
+  thunk::EnterResource<thunk::PPB_URLRequestInfo_API> enter(request_id, true);
+  if (enter.failed())
     return PP_ERROR_BADRESOURCE;
+  PP_Instance instance = enter.resource()->pp_instance();
 
-  PluginDispatcher* dispatcher =
-      PluginDispatcher::GetForInstance(request_object->pp_instance());
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return PP_ERROR_FAILED;
 
   int32_t result = PP_ERROR_FAILED;
   dispatcher->Send(new PpapiHostMsg_PPBFlash_Navigate(
       INTERFACE_ID_PPB_FLASH,
-      request_object->host_resource(), target, from_user_action,
+      instance, enter.object()->GetData(), target, from_user_action,
       &result));
   return result;
 }
@@ -256,18 +259,40 @@ void PPB_Flash_Proxy::OnMsgGetProxyForURL(PP_Instance instance,
       instance, url.c_str()));
 }
 
-void PPB_Flash_Proxy::OnMsgNavigate(const HostResource& request_info,
+void PPB_Flash_Proxy::OnMsgNavigate(PP_Instance instance,
+                                    const PPB_URLRequestInfo_Data& data,
                                     const std::string& target,
                                     bool from_user_action,
                                     int32_t* result) {
   DCHECK(!dispatcher()->IsPlugin());
+
+  // Validate the PP_Instance since we'll be constructing resources on its
+  // behalf.
+  HostDispatcher* host_dispatcher = static_cast<HostDispatcher*>(dispatcher());
+  if (HostDispatcher::GetForInstance(instance) != host_dispatcher) {
+    NOTREACHED();
+    *result = PP_ERROR_BADARGUMENT;
+    return;
+  }
+
   // We need to allow re-entrancy here, because this may call into Javascript
   // (e.g. with a "javascript:" URL), or do things like navigate away from the
   // page, either one of which will need to re-enter into the plugin.
   // It is safe, because it is essentially equivalent to NPN_GetURL, where Flash
   // would expect re-entrancy. When running in-process, it does re-enter here.
-  static_cast<HostDispatcher*>(dispatcher())->set_allow_plugin_reentrancy();
-  *result = ppb_flash_target()->Navigate(request_info.host_resource(),
+  host_dispatcher->set_allow_plugin_reentrancy();
+
+  // Make a temporary request resource.
+  thunk::EnterFunctionNoLock<thunk::ResourceCreationAPI> enter(instance, true);
+  if (enter.failed()) {
+    *result = PP_ERROR_FAILED;
+    return;
+  }
+  ScopedPPResource request_resource(
+      ScopedPPResource::PassRef(),
+      enter.functions()->CreateURLRequestInfo(instance, data));
+
+  *result = ppb_flash_target()->Navigate(request_resource,
                                          target.c_str(),
                                          from_user_action);
 }

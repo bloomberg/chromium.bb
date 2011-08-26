@@ -109,7 +109,9 @@ class ResourceCreationProxy : public FunctionGroupBase,
                                       const char* name,
                                       const char* proto) OVERRIDE;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateURLRequestInfo(
+      PP_Instance instance,
+      const PPB_URLRequestInfo_Data& data) OVERRIDE;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoDecoder(
       PP_Instance instance,

@@ -20,10 +20,10 @@ struct PPB_FileChooser_Dev;
 namespace ppapi {
 
 class HostResource;
+struct PPB_FileRef_CreateInfo;
 
 namespace proxy {
 
-struct PPBFileRef_CreateInfo;
 class SerializedVarReceiveInput;
 
 class PPB_FileChooser_Proxy : public InterfaceProxy {
@@ -58,7 +58,7 @@ class PPB_FileChooser_Proxy : public InterfaceProxy {
   void OnMsgChooseComplete(
       const ppapi::HostResource& chooser,
       int32_t result_code,
-      const std::vector<PPBFileRef_CreateInfo>& chosen_files);
+      const std::vector<PPB_FileRef_CreateInfo>& chosen_files);
 
   // Called when the show is complete in the host. This will notify the plugin
   // via IPC and OnMsgChooseComplete will be called there.

@@ -70,17 +70,6 @@ struct SerializedDirEntry {
   bool is_dir;
 };
 
-// FileRefs are created in a number of places and they include a number of
-// return values. This struct encapsulates everything in one place.
-struct PPBFileRef_CreateInfo {
-  PPBFileRef_CreateInfo();  // Initializes to 0.
-
-  ppapi::HostResource resource;
-  int file_system_type;  // One of PP_FileSystemType values.
-  SerializedVar path;
-  SerializedVar name;
-};
-
 struct PPBFlash_DrawGlyphs_Params {
   PPBFlash_DrawGlyphs_Params();
   ~PPBFlash_DrawGlyphs_Params();

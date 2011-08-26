@@ -17,6 +17,10 @@ ScopedPPResource::ScopedPPResource(PP_Resource resource) : id_(resource) {
   CallAddRef();
 }
 
+ScopedPPResource::ScopedPPResource(const PassRef&, PP_Resource resource)
+    : id_(resource) {
+}
+
 ScopedPPResource::ScopedPPResource(Resource* resource)
     : id_(resource ? resource->GetReference() : 0) {
   // GetReference AddRef's for us.

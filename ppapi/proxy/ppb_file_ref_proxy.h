@@ -18,10 +18,9 @@ struct PPB_FileRef_Dev;
 namespace ppapi {
 
 class HostResource;
+struct PPB_FileRef_CreateInfo;
 
 namespace proxy {
-
-struct PPBFileRef_CreateInfo;
 
 class PPB_FileRef_Proxy : public InterfaceProxy {
  public:
@@ -46,7 +45,7 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
   // Various PPAPI functions return file refs from various interfaces, so this
   // function is public so anybody can send a file ref.
   void SerializeFileRef(PP_Resource file_ref,
-                        PPBFileRef_CreateInfo* result);
+                        PPB_FileRef_CreateInfo* result);
 
   // Creates a plugin resource from the given CreateInfo sent from the host.
   // The value will be the result of calling SerializeFileRef on the host.
@@ -56,15 +55,15 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
   // Various PPAPI functions return file refs from various interfaces, so this
   // function is public so anybody can receive a file ref.
   static PP_Resource DeserializeFileRef(
-      const PPBFileRef_CreateInfo& serialized);
+      const PPB_FileRef_CreateInfo& serialized);
 
  private:
   // Message handlers.
   void OnMsgCreate(const ppapi::HostResource& file_system,
                    const std::string& path,
-                   PPBFileRef_CreateInfo* result);
+                   PPB_FileRef_CreateInfo* result);
   void OnMsgGetParent(const ppapi::HostResource& host_resource,
-                      PPBFileRef_CreateInfo* result);
+                      PPB_FileRef_CreateInfo* result);
   void OnMsgMakeDirectory(const ppapi::HostResource& host_resource,
                           PP_Bool make_ancestors,
                           uint32_t serialized_callback);

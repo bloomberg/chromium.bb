@@ -35,6 +35,9 @@ def Main(args):
     # See http://code.google.com/p/nativeclient/issues/detail?id=2124
     # TODO(mseaborn): Reenable when this issue is resolved.
     tests_to_disable.append('run_ppapi_ppb_var_browser_test')
+    # Te behavior of the URLRequest changed slightly and this test needs to be
+    # updated. http://code.google.com/p/chromium/issues/detail?id=94352
+    tests_to_disable.append('run_ppapi_ppb_url_request_info_browser_test')
 
   if sys.platform == 'darwin':
     # The following test is failing on Mac OS X 10.5.  This may be

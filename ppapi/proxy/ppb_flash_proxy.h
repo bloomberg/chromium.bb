@@ -19,6 +19,9 @@ struct PP_FileInfo;
 struct PPB_Flash;
 
 namespace ppapi {
+
+struct PPB_URLRequestInfo_Data;
+
 namespace proxy {
 
 struct PPBFlash_DrawGlyphs_Params;
@@ -47,7 +50,8 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   void OnMsgGetProxyForURL(PP_Instance instance,
                            const std::string& url,
                            SerializedVarReturnValue result);
-  void OnMsgNavigate(const HostResource& request_info,
+  void OnMsgNavigate(PP_Instance instance,
+                     const PPB_URLRequestInfo_Data& data,
                      const std::string& target,
                      bool from_user_action,
                      int32_t* result);

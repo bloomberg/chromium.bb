@@ -46,7 +46,7 @@ class TestURLLoader : public TestCase {
   std::string TestEmptyDataPOST();
   std::string TestBinaryDataPOST();
   std::string TestCustomRequestHeader();
-  std::string TestIgnoresBogusContentLength();
+  std::string TestFailsBogusContentLength();
   std::string TestStreamToFile();
   std::string TestSameOriginRestriction();
   std::string TestJavascriptURLRestriction();

@@ -14,10 +14,15 @@ class Resource;
 // This is a version of scoped_refptr but for PP_Resources.
 class ScopedPPResource {
  public:
+  struct PassRef {};
+
   ScopedPPResource();
 
   // Takes one reference to the given resource.
   explicit ScopedPPResource(PP_Resource resource);
+
+  // Assumes responsibility for one ref that the resource already has.
+  explicit ScopedPPResource(const PassRef&, PP_Resource resource);
 
   // Helper to get the PP_Resource out of the given object and take a reference
   // to it.

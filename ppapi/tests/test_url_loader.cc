@@ -79,7 +79,7 @@ void TestURLLoader::RunTest() {
   RUN_TEST_FORCEASYNC_AND_NOT(EmptyDataPOST);
   RUN_TEST_FORCEASYNC_AND_NOT(BinaryDataPOST);
   RUN_TEST_FORCEASYNC_AND_NOT(CustomRequestHeader);
-  RUN_TEST_FORCEASYNC_AND_NOT(IgnoresBogusContentLength);
+  RUN_TEST_FORCEASYNC_AND_NOT(FailsBogusContentLength);
   RUN_TEST_FORCEASYNC_AND_NOT(SameOriginRestriction);
   RUN_TEST_FORCEASYNC_AND_NOT(JavascriptURLRestriction);
   RUN_TEST_FORCEASYNC_AND_NOT(CrossOriginRequest);
@@ -310,14 +310,25 @@ std::string TestURLLoader::TestCustomRequestHeader() {
   return LoadAndCompareBody(request, "1");
 }
 
-std::string TestURLLoader::TestIgnoresBogusContentLength() {
+std::string TestURLLoader::TestFailsBogusContentLength() {
   pp::URLRequestInfo request(instance_);
   request.SetURL("/echo");
   request.SetMethod("POST");
   request.SetHeaders("Content-Length: 400");
   std::string postdata("postdata");
   request.AppendDataToBody(postdata.data(), postdata.length());
-  return LoadAndCompareBody(request, postdata);
+
+  TestCompletionCallback callback(instance_->pp_instance(), force_async_);
+  pp::URLLoader loader(*instance_);
+  int32_t rv = loader.Open(request, callback);
+  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+    return ReportError("URLLoader::Open force_async", rv);
+  if (rv == PP_OK_COMPLETIONPENDING)
+    rv = callback.WaitForResult();
+
+  // The bad header should have made the request fail.
+  ASSERT_TRUE(rv == PP_ERROR_FAILED);
+  PASS();
 }
 
 std::string TestURLLoader::TestStreamToFile() {

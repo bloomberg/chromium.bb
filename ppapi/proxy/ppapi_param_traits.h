@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/shared_impl/file_ref_impl.h"
 
 struct PP_FileInfo;
 struct PP_ObjectProperty;
@@ -22,10 +23,10 @@ struct PP_Flash_NetAddress;
 namespace ppapi {
 
 class HostResource;
+//struct PPB_FileRef_CreateInfo;
 
 namespace proxy {
 
-struct PPBFileRef_CreateInfo;
 struct PPBFlash_DrawGlyphs_Params;
 struct PPBURLLoader_UpdateProgress_Params;
 struct SerializedDirEntry;
@@ -79,8 +80,8 @@ struct ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params> {
 };
 
 template<>
-struct ParamTraits<ppapi::proxy::PPBFileRef_CreateInfo> {
-  typedef ppapi::proxy::PPBFileRef_CreateInfo param_type;
+struct ParamTraits<ppapi::PPB_FileRef_CreateInfo> {
+  typedef ppapi::PPB_FileRef_CreateInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -135,8 +136,8 @@ struct ParamTraits< std::vector<ppapi::proxy::SerializedVar> > {
 };
 
 template<>
-struct ParamTraits< std::vector<ppapi::proxy::PPBFileRef_CreateInfo> > {
-  typedef std::vector<ppapi::proxy::PPBFileRef_CreateInfo> param_type;
+struct ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> > {
+  typedef std::vector<ppapi::PPB_FileRef_CreateInfo> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

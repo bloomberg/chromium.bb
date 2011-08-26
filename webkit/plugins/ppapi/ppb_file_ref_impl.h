@@ -10,39 +10,30 @@
 #include "base/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/ppb_file_ref.h"
-#include "ppapi/shared_impl/resource.h"
-#include "ppapi/thunk/ppb_file_ref_api.h"
+#include "ppapi/shared_impl/file_ref_impl.h"
 
 namespace webkit {
 namespace ppapi {
 
 class PPB_FileSystem_Impl;
-class PluginDelegate;
-class PluginModule;
 
-class PPB_FileRef_Impl : public ::ppapi::Resource,
-                         public ::ppapi::thunk::PPB_FileRef_API {
+class PPB_FileRef_Impl : public ::ppapi::FileRefImpl {
  public:
-  PPB_FileRef_Impl();
-  PPB_FileRef_Impl(PP_Instance instance,
-                   scoped_refptr<PPB_FileSystem_Impl> file_system,
-                   const std::string& validated_path);
-  PPB_FileRef_Impl(PP_Instance instance,
+  PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,
+                   PPB_FileSystem_Impl* file_system);
+  PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,
                    const FilePath& external_file_path);
   virtual ~PPB_FileRef_Impl();
 
-  static PP_Resource Create(PP_Resource file_system, const char* path);
+  // The returned object will have a refcount of 0 (just like "new").
+  static PPB_FileRef_Impl* CreateInternal(PP_Resource pp_file_system,
+                                          const std::string& path);
 
-  // Resource overrides.
-  virtual PPB_FileRef_Impl* AsPPB_FileRef_Impl();
+  // The returned object will have a refcount of 0 (just like "new").
+  static PPB_FileRef_Impl* CreateExternal(PP_Instance instance,
+                                          const FilePath& external_file_path);
 
-  // Resource overrides.
-  virtual ::ppapi::thunk::PPB_FileRef_API* AsPPB_FileRef_API() OVERRIDE;
-
-  // PPB_FileRef_API implementation.
-  virtual PP_FileSystemType GetFileSystemType() const OVERRIDE;
-  virtual PP_Var GetName() const OVERRIDE;
-  virtual PP_Var GetPath() const OVERRIDE;
+  // PPB_FileRef_API implementation (not provided by FileRefImpl).
   virtual PP_Resource GetParent() OVERRIDE;
   virtual int32_t MakeDirectory(PP_Bool make_ancestors,
                                 PP_CompletionCallback callback) OVERRIDE;
@@ -55,10 +46,8 @@ class PPB_FileRef_Impl : public ::ppapi::Resource,
 
   PPB_FileSystem_Impl* file_system() const { return file_system_.get(); }
 
-  // Returns the virtual path (i.e., the path that the pepper plugin sees)
-  const std::string& virtual_path() const { return virtual_path_; }
-
-  // Returns the system path corresponding to this file.
+  // Returns the system path corresponding to this file. Valid only for
+  // external filesystems.
   FilePath GetSystemPath() const;
 
   // Returns the FileSystem API URL corresponding to this file.
@@ -70,9 +59,11 @@ class PPB_FileRef_Impl : public ::ppapi::Resource,
   // access check for these functions.
   bool IsValidNonExternalFileSystem() const;
 
+  // Null for external filesystems.
   scoped_refptr<PPB_FileSystem_Impl> file_system_;
-  std::string virtual_path_;  // UTF-8 encoded
-  FilePath system_path_;
+
+  // Used only for external filesystems.
+  FilePath external_file_system_path_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileRef_Impl);
 };

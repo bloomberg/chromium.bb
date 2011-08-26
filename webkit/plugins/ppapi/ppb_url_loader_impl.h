@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/url_request_info_impl.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/plugins/ppapi/callbacks.h"
@@ -121,8 +122,13 @@ class PPB_URLLoader_Impl : public ::ppapi::Resource,
   // If true, then the plugin instance is a full-frame plugin and we're just
   // wrapping the main document's loader (i.e. loader_ is null).
   bool main_document_loader_;
+
+  // Keep a copy of the request data. We specifically do this instead of
+  // keeping a reference to the request resource, because the plugin might
+  // change the request info resource out from under us.
+  ::ppapi::PPB_URLRequestInfo_Data request_data_;
+
   scoped_ptr<WebKit::WebURLLoader> loader_;
-  scoped_refptr<PPB_URLRequestInfo_Impl> request_info_;
   scoped_refptr<PPB_URLResponseInfo_Impl> response_info_;
   scoped_refptr<TrackedCompletionCallback> pending_callback_;
   std::deque<char> buffer_;

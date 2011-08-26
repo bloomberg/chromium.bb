@@ -104,7 +104,8 @@ void PPB_DirectoryReader_Impl::AddNewEntries(
     const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
   DCHECK(!entries.empty() || !has_more);
   has_more_ = has_more;
-  std::string dir_path = directory_ref_->virtual_path();
+
+  std::string dir_path = directory_ref_->GetCreateInfo().path;
   if (dir_path[dir_path.size() - 1] != '/')
     dir_path += '/';
   FilePath::StringType dir_file_path = UTF8StringToFilePathString(dir_path);
@@ -127,9 +128,12 @@ bool PPB_DirectoryReader_Impl::FillUpEntry() {
     entries_.pop();
     if (entry_->file_ref)
       ResourceTracker::Get()->ReleaseResource(entry_->file_ref);
-    PPB_FileRef_Impl* file_ref =
-        new PPB_FileRef_Impl(pp_instance(), directory_ref_->file_system(),
-                             FilePathStringToUTF8String(dir_entry.name));
+
+    PPB_FileRef_Impl* file_ref = PPB_FileRef_Impl::CreateInternal(
+        directory_ref_->file_system()->pp_resource(),
+        FilePathStringToUTF8String(dir_entry.name));
+    if (!file_ref)
+      return false;
     entry_->file_ref = file_ref->GetReference();
     entry_->file_type =
         (dir_entry.is_directory ? PP_FILETYPE_DIRECTORY : PP_FILETYPE_REGULAR);

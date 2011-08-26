@@ -21,6 +21,8 @@
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
+using ppapi::HostResource;
+using ppapi::PPB_FileRef_CreateInfo;
 using ppapi::PPTimeToTime;
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;
@@ -51,35 +53,51 @@ void TrimTrailingSlash(std::string* path) {
     path->erase(path->size() - 1, 1);
 }
 
+std::string GetNameForExternalFilePath(const FilePath& in_path) {
+  const FilePath::StringType& path = in_path.value();
+  size_t pos = path.rfind(FilePath::kSeparators[0]);
+  CHECK(pos != FilePath::StringType::npos);
+#if defined(OS_WIN)
+  return WideToUTF8(path.substr(pos + 1));
+#elif defined(OS_POSIX)
+  return path.substr(pos + 1);
+#else
+#error "Unsupported platform."
+#endif
+}
+
+std::string GetNameForVirtualFilePath(const std::string& path) {
+  if (path.size() == 1 && path[0] == '/')
+    return path;
+
+  // There should always be a leading slash at least!
+  size_t pos = path.rfind('/');
+  CHECK(pos != std::string::npos);
+  return path.substr(pos + 1);
+}
+
 }  // namespace
 
-PPB_FileRef_Impl::PPB_FileRef_Impl()
-    : Resource(0),
-      file_system_() {
-}
-
-PPB_FileRef_Impl::PPB_FileRef_Impl(
-    PP_Instance instance,
-    scoped_refptr<PPB_FileSystem_Impl> file_system,
-    const std::string& validated_path)
-    : Resource(instance),
+PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
+                                   PPB_FileSystem_Impl* file_system)
+    : FileRefImpl(FileRefImpl::InitAsImpl(), info),
       file_system_(file_system),
-      virtual_path_(validated_path) {
+      external_file_system_path_() {
 }
 
-PPB_FileRef_Impl::PPB_FileRef_Impl(PP_Instance instance,
+PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
                                    const FilePath& external_file_path)
-    : Resource(instance),
-      file_system_(NULL),
-      system_path_(external_file_path) {
+    : FileRefImpl(FileRefImpl::InitAsImpl(), info),
+      file_system_(),
+      external_file_system_path_(external_file_path) {
 }
 
 PPB_FileRef_Impl::~PPB_FileRef_Impl() {
 }
 
 // static
-PP_Resource PPB_FileRef_Impl::Create(PP_Resource pp_file_system,
-                                     const char* path) {
+PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Resource pp_file_system,
+                                                   const std::string& path) {
   EnterResourceNoLock<PPB_FileSystem_API> enter(pp_file_system, true);
   if (enter.failed())
     return 0;
@@ -93,83 +111,52 @@ PP_Resource PPB_FileRef_Impl::Create(PP_Resource pp_file_system,
       file_system->type() != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
     return 0;
 
-  std::string validated_path(path);
-  if (!IsValidLocalPath(validated_path))
+  PPB_FileRef_CreateInfo info;
+  info.resource = HostResource::MakeInstanceOnly(file_system->pp_instance());
+  info.file_system_type = file_system->type();
+
+  // Validate the path.
+  info.path = path;
+  if (!IsValidLocalPath(info.path))
     return 0;
-  TrimTrailingSlash(&validated_path);
+  TrimTrailingSlash(&info.path);
 
-  return (new PPB_FileRef_Impl(file_system->pp_instance(),
-                               file_system, validated_path))->GetReference();
+  info.name = GetNameForVirtualFilePath(info.path);
+
+  return new PPB_FileRef_Impl(info, file_system);
 }
 
-PPB_FileRef_API* PPB_FileRef_Impl::AsPPB_FileRef_API() {
-  return this;
-}
+// static
+PPB_FileRef_Impl* PPB_FileRef_Impl::CreateExternal(
+    PP_Instance instance,
+    const FilePath& external_file_path) {
+  PPB_FileRef_CreateInfo info;
+  info.resource = HostResource::MakeInstanceOnly(instance);
+  info.file_system_type = PP_FILESYSTEMTYPE_EXTERNAL;
+  info.name = GetNameForExternalFilePath(external_file_path);
 
-PPB_FileRef_Impl* PPB_FileRef_Impl::AsPPB_FileRef_Impl() {
-  return this;
-}
-
-PP_FileSystemType PPB_FileRef_Impl::GetFileSystemType() const {
-  // When the file ref exists but there's no explicit filesystem object
-  // associated with it, that means it's an "external" filesystem.
-  if (!file_system_)
-    return PP_FILESYSTEMTYPE_EXTERNAL;
-  return file_system_->type();
-}
-
-PP_Var PPB_FileRef_Impl::GetName() const {
-  std::string result;
-  if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL) {
-    FilePath::StringType path = system_path_.value();
-    size_t pos = path.rfind(FilePath::kSeparators[0]);
-    DCHECK(pos != FilePath::StringType::npos);
-#if defined(OS_WIN)
-    result = WideToUTF8(path.substr(pos + 1));
-#elif defined(OS_POSIX)
-    result = path.substr(pos + 1);
-#else
-#error "Unsupported platform."
-#endif
-  } else if (virtual_path_.size() == 1 && virtual_path_[0] == '/') {
-    result = virtual_path_;
-  } else {
-    // There should always be a leading slash at least!
-    size_t pos = virtual_path_.rfind('/');
-    DCHECK(pos != std::string::npos);
-    result = virtual_path_.substr(pos + 1);
-  }
-
-  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
-  if (!plugin_module)
-    return PP_MakeUndefined();
-  return StringVar::StringToPPVar(plugin_module->pp_module(), result);
-}
-
-PP_Var PPB_FileRef_Impl::GetPath() const {
-  if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
-    return PP_MakeUndefined();
-  PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
-  if (!plugin_module)
-    return PP_MakeUndefined();
-  return StringVar::StringToPPVar(plugin_module->pp_module(), virtual_path_);
+  return new PPB_FileRef_Impl(info, external_file_path);
 }
 
 PP_Resource PPB_FileRef_Impl::GetParent() {
   if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
     return 0;
 
+  const std::string& virtual_path = GetCreateInfo().path;
+
   // There should always be a leading slash at least!
-  size_t pos = virtual_path_.rfind('/');
-  DCHECK(pos != std::string::npos);
+  size_t pos = virtual_path.rfind('/');
+  CHECK(pos != std::string::npos);
 
   // If the path is "/foo", then we want to include the slash.
   if (pos == 0)
     pos++;
-  std::string parent_path = virtual_path_.substr(0, pos);
+  std::string parent_path = virtual_path.substr(0, pos);
 
   scoped_refptr<PPB_FileRef_Impl> parent_ref(
-      new PPB_FileRef_Impl(pp_instance(), file_system_, parent_path));
+      CreateInternal(file_system_->pp_resource(), parent_path));
+  if (!parent_ref.get())
+    return 0;
   return parent_ref->GetReference();
 }
 
@@ -251,7 +238,7 @@ FilePath PPB_FileRef_Impl::GetSystemPath() const {
     NOTREACHED();
     return FilePath();
   }
-  return system_path_;
+  return external_file_system_path_;
 }
 
 GURL PPB_FileRef_Impl::GetFileSystemURL() const {
@@ -260,14 +247,16 @@ GURL PPB_FileRef_Impl::GetFileSystemURL() const {
     NOTREACHED();
     return GURL();
   }
-  if (!virtual_path_.size())
-    return file_system_->root_url();
+
+  const std::string& virtual_path = GetCreateInfo().path;
+  CHECK(!virtual_path.empty());  // Should always be at least "/".
+
   // Since |virtual_path_| starts with a '/', it looks like an absolute path.
   // We need to trim off the '/' before calling Resolve, as FileSystem URLs
   // start with a storage type identifier that looks like a path segment.
   // TODO(ericu): Switch this to use Resolve after fixing GURL to understand
   // FileSystem URLs.
-  return GURL(file_system_->root_url().spec() + virtual_path_.substr(1));
+  return GURL(file_system_->root_url().spec() + virtual_path.substr(1));
 }
 
 bool PPB_FileRef_Impl::IsValidNonExternalFileSystem() const {

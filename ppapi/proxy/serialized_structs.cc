@@ -63,10 +63,6 @@ void SerializedFontDescription::SetToPPFontDescription(
   desc->word_spacing = word_spacing;
 }
 
-PPBFileRef_CreateInfo::PPBFileRef_CreateInfo()
-    : file_system_type(PP_FILESYSTEMTYPE_EXTERNAL) {
-}
-
 PPBFlash_DrawGlyphs_Params::PPBFlash_DrawGlyphs_Params()
     : instance(0),
       font_desc(),

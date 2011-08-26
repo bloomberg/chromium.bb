@@ -24,6 +24,9 @@ struct PP_VideoCaptureDeviceInfo_Dev;
 struct PP_Size;
 
 namespace ppapi {
+
+struct PPB_URLRequestInfo_Data;
+
 namespace thunk {
 
 // A functional API for creating resource types. Separating out the creation
@@ -108,7 +111,9 @@ class ResourceCreationAPI {
                                       const char* name,
                                       const char* proto) = 0;
   virtual PP_Resource CreateURLLoader(PP_Instance instance) = 0;
-  virtual PP_Resource CreateURLRequestInfo(PP_Instance instance) = 0;
+  virtual PP_Resource CreateURLRequestInfo(
+      PP_Instance instance,
+      const PPB_URLRequestInfo_Data& data) = 0;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoDecoder(
       PP_Instance instance,

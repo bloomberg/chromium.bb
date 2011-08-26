@@ -118,7 +118,8 @@ PP_Resource ResourceCreationImpl::CreateFileIO(PP_Instance instance) {
 
 PP_Resource ResourceCreationImpl::CreateFileRef(PP_Resource file_system,
                                                 const char* path) {
-  return PPB_FileRef_Impl::Create(file_system, path);
+  PPB_FileRef_Impl* res = PPB_FileRef_Impl::CreateInternal(file_system, path);
+  return res ? res->GetReference() : 0;
 }
 
 PP_Resource ResourceCreationImpl::CreateFileSystem(
@@ -256,8 +257,10 @@ PP_Resource ResourceCreationImpl::CreateURLLoader(PP_Instance instance) {
   return (new PPB_URLLoader_Impl(instance, false))->GetReference();
 }
 
-PP_Resource ResourceCreationImpl::CreateURLRequestInfo(PP_Instance instance) {
-  return (new PPB_URLRequestInfo_Impl(instance))->GetReference();
+PP_Resource ResourceCreationImpl::CreateURLRequestInfo(
+    PP_Instance instance,
+    const ::ppapi::PPB_URLRequestInfo_Data& data) {
+  return (new PPB_URLRequestInfo_Impl(instance, data))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {
