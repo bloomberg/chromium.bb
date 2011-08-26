@@ -745,6 +745,12 @@ ChromeContentBrowserClient::GetDefaultRequestContextDeprecatedCrBug64339() {
   return Profile::Deprecated::GetDefaultRequestContext();
 }
 
+net::URLRequestContextGetter*
+ChromeContentBrowserClient::GetSystemRequestContext() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return g_browser_process->system_request_context();
+}
+
 #if defined(OS_LINUX)
 int ChromeContentBrowserClient::GetCrashSignalFD(
     const std::string& process_type) {

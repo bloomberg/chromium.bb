@@ -287,6 +287,10 @@ class ContentBrowserClient {
   virtual net::URLRequestContextGetter*
       GetDefaultRequestContextDeprecatedCrBug64339() = 0;
 
+  // Returns the system request context, a context tied to no browser context.
+  // This is called on the UI thread.
+  virtual net::URLRequestContextGetter* GetSystemRequestContext() = 0;
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
   virtual int GetCrashSignalFD(const std::string& process_type) = 0;

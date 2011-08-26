@@ -115,6 +115,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
   virtual net::URLRequestContextGetter*
       GetDefaultRequestContextDeprecatedCrBug64339() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetSystemRequestContext() OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1.
