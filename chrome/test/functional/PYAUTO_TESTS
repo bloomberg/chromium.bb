@@ -393,10 +393,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # Temporarily disabling autofill tests until the following change
-      # cycles through to an official Chrome build:
-      # http://src.chromium.org/viewvc/chrome?view=rev&revision=98060
-      '-autofill',
       # Disable pyauto+webdriver tests on 'Google Chrome' bots until next
       # build is generated. 8/15/2011. Remove tomorrow.
       '-pyauto_webdriver',
