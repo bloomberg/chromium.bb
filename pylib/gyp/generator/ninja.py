@@ -300,15 +300,26 @@ class NinjaWriter:
 
     return outputs
 
+  def GenerateDescription(self, verb, message, fallback):
+    """Generate and return a description of a build step.
+
+    |verb| is the short summary, e.g. ACTION or RULE.
+    |message| is a hand-written description, or None if not available.
+    |fallback| is the gyp-level name of the step, usable as a fallback.
+    """
+    if message:
+      return '%s %s' % (verb, self.ExpandSpecial(message))
+    else:
+      return '%s %s: %s' % (verb, self.name, fallback)
+
   def WriteActions(self, actions, extra_sources, prebuild):
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
       name = action['action_name']
-      if 'message' in action:
-        description = 'ACTION ' + self.ExpandSpecial(action['message'])
-      else:
-        description = 'ACTION %s: %s' % (self.name, action['action_name'])
+      description = self.GenerateDescription('ACTION',
+                                             action.get('message', None),
+                                             name)
       rule_name = self.WriteNewNinjaRule(name, action['action'], description)
 
       inputs = [self.GypPathToNinja(i) for i in action['inputs']]
@@ -331,10 +342,9 @@ class NinjaWriter:
       # First write out a rule for the rule action.
       name = rule['rule_name']
       args = rule['action']
-      if 'message' in rule:
-        description = 'RULE ' + self.ExpandSpecial(rule['message'])
-      else:
-        description = 'RULE %s: %s $source' % (self.name, name)
+      description = self.GenerateDescription('RULE',
+                                             rule.get('message', None),
+                                             '%s $source' % name)
       rule_name = self.WriteNewNinjaRule(name, args, description)
 
       # TODO: if the command references the outputs directly, we should
