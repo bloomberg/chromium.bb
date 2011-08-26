@@ -413,6 +413,8 @@
       'gpu',
       # crbug.com/92446
       '-gpu.GpuTest.testGpuWithVideo',
+      # Preloaded extensions affect process count: crbug.com/94350
+      '-process_count',
     ],
 
     'mac': [
