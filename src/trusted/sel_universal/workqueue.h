@@ -7,9 +7,9 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SEL_LDR_UNIVERSAL_WORKQUEUE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SEL_LDR_UNIVERSAL_WORKQUEUE_H_
 
-#include <assert.h>
 #include <queue>
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_semaphore.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
@@ -22,13 +22,11 @@ class ScopedMutexLock {
  public:
   explicit ScopedMutexLock(NaClMutex* m)
     : mutex_(m) {
-    // work around compiler warning, cast to void does not work!
-    // More instances of this hack below
-    if (NaClMutexLock(mutex_)) {}
+    NaClXMutexLock(mutex_);
   }
 
   ~ScopedMutexLock() {
-    if (NaClMutexUnlock(mutex_)) {}
+    NaClXMutexUnlock(mutex_);
   }
 
  private:
@@ -41,12 +39,12 @@ class ScopedMutexLock {
 class Job {
  public:
   Job() {
-    if (NaClMutexCtor(&mutex_)) {}
-    if (NaClCondVarCtor(&condvar_)) {}
+    NaClXMutexCtor(&mutex_);
+    NaClXCondVarCtor(&condvar_);
     // we grab the lock here so that we have it when Wait is called
     // subsequently - otherwise NaClCondVarSignal might happen
     // before NaClCondVarWait which is an error
-    if (NaClMutexLock(&mutex_)) {}
+    NaClXMutexLock(&mutex_);
   }
 
   virtual ~Job() {}
@@ -54,12 +52,12 @@ class Job {
   void Run() {
     Action();
     ScopedMutexLock lock(&mutex_);
-    if (NaClCondVarSignal(&condvar_)) { /* work around compiler warning */}
+    NaClXCondVarSignal(&condvar_);
   }
 
   void Wait() {
     // NOTE: the mutex has been locked in the constructor
-    if (NaClCondVarWait(&condvar_, &mutex_)) {}
+    NaClXCondVarWait(&condvar_, &mutex_);
   }
 
   virtual void Action() = 0;
@@ -75,7 +73,7 @@ class Job {
 class ThreadedWorkQueue {
  public:
   ThreadedWorkQueue() {
-    if (NaClMutexCtor(&mutex_)) {}
+    NaClXMutexCtor(&mutex_);
     NaClSemCtor(&sem_, 0);
   }
 
@@ -99,10 +97,10 @@ class ThreadedWorkQueue {
   }
 
   void StartInAnotherThread() {
-    NaClThreadCreateJoinable(&thread_,
-                             ThreadedWorkQueue::Run,
-                             this,
-                             128 << 10);
+    CHECK(NaClThreadCreateJoinable(&thread_,
+                                   ThreadedWorkQueue::Run,
+                                   this,
+                                   128 << 10));
   }
 
   void JobPut(Job* job) {
@@ -117,7 +115,7 @@ class ThreadedWorkQueue {
   Job* JobGet() {
     NaClSemWait(&sem_);
     ScopedMutexLock lock(&mutex_);
-    assert(queue_.size() > 0);
+    CHECK(queue_.size() > 0);
     Job* job = queue_.front();
     queue_.pop();
     return job;
