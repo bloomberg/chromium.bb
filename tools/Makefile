@@ -787,6 +787,7 @@ endif
 # On platforms where glibc build is slow or unavailable you can specify
 # glibc_download.sh (or any other program) to download glibc
 INST_GLIBC_PROGRAM?=none
+GLIBC_VER=2.9
 .PHONY: build-with-glibc
 build-with-glibc:
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
@@ -803,6 +804,31 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(SDKROOT)"
+	for dir in lib32 lib64 ; do ( \
+	  cd $(DESTDIR)$(PREFIX)/$(CROSSARCH)/$$dir ; \
+	  for lib in BrokenLocale anl c cidn crypt dl m nsl \
+	    nss_{compat,dns,files,hesiod,nis,nisplus} pthread \
+	    resolv rt util ; do \
+	    for fulllib in lib$$lib.so.* ; do \
+	      mv lib$$lib-$(GLIBC_VER).so "$$fulllib" ; \
+	      ln -sfn "$$fulllib" lib$$lib-$(GLIBC_VER).so ; \
+	    done ; \
+	  done ; \
+	  for fulllib in ld-linux.so.* ld-linux-x86-64.so.* ; do \
+	    if [[ "$$fulllib" != *\** ]] ; then \
+	      mv ld-$(GLIBC_VER).so "$$fulllib" ; \
+	      ln -sfn "$$fulllib" ld-$(GLIBC_VER).so ; \
+	    fi ; \
+	  done ; \
+	  for fulllib in libthread_db.so.* ; do \
+	    mv libthread_db-1.0.so "$$fulllib" ; \
+	    ln -sfn "$$fulllib" libthread_db-1.0.so ; \
+	  done ; \
+	  for fulllib in libstdc++.so.6.* ; do \
+	    mv "$$fulllib" libstdc++.so.6 ; \
+	    ln -sfn libstdc++.so.6 "$$fulllib" ; \
+	  done ; \
+	) ; done
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,$(CROSSARCH)/lib{,32}/*.la}
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{lib/{*/*/*/*{,/*}.la,*.so*},lib{32,64}}
 
