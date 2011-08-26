@@ -76,6 +76,7 @@ enum UserActionBuckets {
   PREVIEW_FAILED,
   PREVIEW_STARTED,
   INITIATOR_TAB_CRASHED,
+  INITIATOR_TAB_CLOSED,
   USERACTION_BUCKET_BOUNDARY
 };
 
@@ -495,11 +496,8 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
 
   TabContents* initiator_tab = GetInitiatorTab();
   if (!initiator_tab) {
-    if (!reported_failed_preview_) {
-      ReportUserActionHistogram(PREVIEW_FAILED);
-      reported_failed_preview_ = true;
-    }
-    print_preview_ui->OnPrintPreviewFailed();
+    ReportUserActionHistogram(INITIATOR_TAB_CLOSED);
+    print_preview_ui->OnInitiatorTabClosed();
     return;
   }
 
@@ -888,6 +886,13 @@ void PrintPreviewHandler::OnTabDestroyed() {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
   wrapper->print_view_manager()->set_observer(NULL);
+}
+
+void PrintPreviewHandler::OnPrintPreviewFailed() {
+  if (reported_failed_preview_)
+    return;
+  reported_failed_preview_ = true;
+  ReportUserActionHistogram(PREVIEW_FAILED);
 }
 
 void PrintPreviewHandler::FileSelected(const FilePath& path,

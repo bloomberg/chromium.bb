@@ -808,7 +808,9 @@ function displayErrorMessageWithButton(
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
-  displayErrorMessage(localStrings.getString('previewFailed'));
+  displayErrorMessageWithButton(localStrings.getString('previewFailed'),
+                                localStrings.getString('launchNativeDialog'),
+                                launchNativePrintDialog);
 }
 
 /**

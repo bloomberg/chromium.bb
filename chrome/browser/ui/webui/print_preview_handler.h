@@ -55,6 +55,9 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // observer.
   void OnTabDestroyed();
 
+  // Called when print preview failed.
+  void OnPrintPreviewFailed();
+
  private:
   friend class PrintSystemTaskProxy;
 

@@ -566,8 +566,8 @@ be available for now. -->
       <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">
         Chromium does not include the PDF viewer which is required for Print Preview to function.
       </message>
-      <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing.">
-        Launch native print dialog
+      <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing or when print preview fails.">
+        Print using system dialog…
       </message>
 
       <if expr="is_macosx">

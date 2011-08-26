@@ -541,8 +541,8 @@ Chrome supports. -->
       <message name="IDS_PRINT_PREVIEW_NO_PLUGIN" desc="Message to display when the PDF viewer is missing.">
         Google Chrome cannot show the print preview when the built-in PDF viewer is disabled. In order to see the preview, please visit <ph name="BEGIN_LINK">&lt;a target="_blank" rel="noreferrer" href="$1"&gt;</ph>$1<ph name="END_LINK">&lt;/a&gt;</ph>, enable the "Chrome PDF Viewer", and try again.
       </message>
-      <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing.">
-        Launch native print dialog
+      <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing or when print preview fails.">
+        Print using system dialog…
       </message>
 
       <if expr="is_macosx">

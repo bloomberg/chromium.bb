@@ -224,6 +224,7 @@ void PrintPreviewUI::OnCancelPendingPreviewRequest() {
 }
 
 void PrintPreviewUI::OnPrintPreviewFailed() {
+  handler_->OnPrintPreviewFailed();
   CallJavascriptFunction("printPreviewFailed");
 }
 
