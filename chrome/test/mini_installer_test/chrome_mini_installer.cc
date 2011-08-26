@@ -593,7 +593,7 @@ HKEY ChromeMiniInstaller::GetRootRegistryKey() {
 void ChromeMiniInstaller::LaunchInstaller(const std::wstring& path,
                                           const wchar_t* process_name) {
   ASSERT_TRUE(file_util::PathExists(FilePath(path)));
-  std::wstring launch_args(L" --verbose-logging");
+  std::wstring launch_args;
   if (is_chrome_frame_) {
     launch_args.append(L" --do-not-create-shortcuts");
     launch_args.append(L" --do-not-launch-chrome");

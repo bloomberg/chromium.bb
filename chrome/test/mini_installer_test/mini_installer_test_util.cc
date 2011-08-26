@@ -79,13 +79,12 @@ bool MiniInstallerTestUtil::GetCommandForTagging(
     return false;
   }
 
-  VLOG(1) << "Tagging command: " << standalone_installer_path.value().c_str();
   *return_command = base::StringPrintf(L"%ls %ls %ls %ls",
       mini_installer_constants::kChromeApplyTagExe,
       standalone_installer_path.value().c_str(),
       tagged_installer_path.c_str(),
       mini_installer_constants::kChromeApplyTagParameters);
-  VLOG(1) << "Command to run Apply tag: " << return_command;
+  VLOG(1) << "Command to run Apply tag: " << *return_command;
   return true;
 }
 
@@ -93,7 +92,6 @@ std::wstring MiniInstallerTestUtil::GetFilePath(const wchar_t* exe_name) {
   FilePath installer_path;
   PathService::Get(base::DIR_EXE, &installer_path);
   installer_path = installer_path.Append(exe_name);
-  VLOG(1) << "Chrome exe path: " << installer_path.value().c_str();
   return installer_path.value();
 }
 
@@ -259,7 +257,7 @@ bool MiniInstallerTestUtil::GetStandaloneVersion(
   if (build.empty())
     return false;
   *version = build;
-  VLOG(1) << "Standalone installer version: " << version;
+  VLOG(1) << "Standalone installer version: " << *version;
   return true;
 }
 
