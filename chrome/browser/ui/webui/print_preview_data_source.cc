@@ -23,6 +23,19 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace{
+
+#if defined(OS_MACOSX)
+// U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8
+const char kAdvancedPrintShortcut[] = "\x28\xE2\x8C\x98\xE2\x87\xA7\x50\x29";
+#elif defined(OS_WIN)
+const char kAdvancedPrintShortcut[] = "(Ctrl+Shift+P)";
+#else
+const char kAdvancedPrintShortcut[] = "(Shift+Ctrl+P)";
+#endif
+
+};  // namespace
+
 PrintPreviewDataSource::PrintPreviewDataSource()
     : ChromeWebUIDataSource(chrome::kChromeUIPrintHost) {
 
@@ -77,8 +90,11 @@ PrintPreviewDataSource::PrintPreviewDataSource()
                      IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR);
   AddLocalizedString("printPreviewPageLabelPlural",
                      IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
-  AddLocalizedString("systemDialogOption",
-                     IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION);
+  const string16 shortcut_text(UTF8ToUTF16(kAdvancedPrintShortcut));
+  AddString("systemDialogOption", l10n_util::GetStringFUTF16(
+      IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION,
+      shortcut_text));
+
   AddLocalizedString("pageRangeInstruction",
                      IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION);
   AddLocalizedString("copiesInstruction", IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);

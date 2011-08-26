@@ -58,6 +58,9 @@ class PrintPreviewUI : public ChromeWebUI {
   // Notifies the Web UI of a print preview request with |request_id|.
   void OnPrintPreviewRequest(int request_id);
 
+  // Notifies the Web UI to show the system dialog.
+  void OnShowSystemDialog();
+
   // Notifies the Web UI about the page count of the request preview.
   void OnDidGetPreviewPageCount(
       const PrintHostMsg_DidGetPreviewPageCount_Params& params);

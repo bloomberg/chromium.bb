@@ -33,6 +33,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // pick those up in the WM_APPCOMMAND message.
 IDR_MAINFRAME ACCELERATORS
 BEGIN
+    "P",            IDC_ADVANCED_PRINT,         VIRTKEY, CONTROL, SHIFT
     VK_LEFT,        IDC_BACK,                   VIRTKEY, ALT
     VK_BACK,        IDC_BACK,                   VIRTKEY
     "D",            IDC_BOOKMARK_PAGE,          VIRTKEY, CONTROL

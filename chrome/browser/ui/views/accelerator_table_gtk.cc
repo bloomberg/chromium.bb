@@ -95,6 +95,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_N,              false, true,  false, IDC_NEW_WINDOW },
   { ui::VKEY_O,              false, true,  false, IDC_OPEN_FILE },
   { ui::VKEY_P,              false, true,  false, IDC_PRINT},
+  { ui::VKEY_P,              true,  true,  false, IDC_ADVANCED_PRINT},
   { ui::VKEY_R,              false, true,  false, IDC_RELOAD },
   { ui::VKEY_R,              true,  true,  false, IDC_RELOAD_IGNORING_CACHE },
 #if !defined(OS_CHROMEOS)

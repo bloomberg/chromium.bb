@@ -88,6 +88,26 @@ bool PrintViewManager::PrintForSystemDialogNow() {
   return PrintNowInternal(new PrintMsg_PrintForSystemDialog(routing_id()));
 }
 
+bool PrintViewManager::AdvancedPrintNow() {
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
+  if (!tab_controller)
+    return false;
+  TabContents* print_preview_tab =
+      tab_controller->GetPrintPreviewForTab(tab_contents());
+  if (print_preview_tab) {
+    // Preview tab exist for current tab or current tab is preview tab.
+    if (!print_preview_tab->web_ui())
+      return false;
+    PrintPreviewUI* print_preview_ui =
+        static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+    print_preview_ui->OnShowSystemDialog();
+    return true;
+  } else {
+    return PrintNow();
+  }
+}
+
 bool PrintViewManager::PrintPreviewNow() {
   return PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id()));
 }

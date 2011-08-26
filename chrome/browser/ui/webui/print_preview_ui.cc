@@ -146,6 +146,10 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   g_print_preview_request_id_map.Get().Set(preview_ui_addr_str_, request_id);
 }
 
+void PrintPreviewUI::OnShowSystemDialog() {
+  CallJavascriptFunction("onSystemDialogLinkClicked");
+}
+
 void PrintPreviewUI::OnDidGetPreviewPageCount(
     const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
   DCHECK_GT(params.page_count, 0);

@@ -895,6 +895,10 @@ void PrintPreviewHandler::OnPrintPreviewFailed() {
   ReportUserActionHistogram(PREVIEW_FAILED);
 }
 
+void PrintPreviewHandler::ShowSystemDialog() {
+  HandleShowSystemDialog(NULL);
+}
+
 void PrintPreviewHandler::FileSelected(const FilePath& path,
                                        int index, void* params) {
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);

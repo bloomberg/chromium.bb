@@ -58,6 +58,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Called when print preview failed.
   void OnPrintPreviewFailed();
 
+  // Called when the user press ctrl+shift+p to display the native system
+  // dialog.
+  void ShowSystemDialog();
+
  private:
   friend class PrintSystemTaskProxy;
 

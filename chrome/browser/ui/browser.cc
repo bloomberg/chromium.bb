@@ -61,6 +61,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -1794,6 +1795,10 @@ void Browser::Print() {
     GetSelectedTabContentsWrapper()->print_view_manager()->PrintNow();
 }
 
+void Browser::AdvancedPrint() {
+  GetSelectedTabContentsWrapper()->print_view_manager()->AdvancedPrintNow();
+}
+
 void Browser::ToggleEncodingAutoDetect() {
   UserMetrics::RecordAction(UserMetricsAction("AutoDetectChange"));
   encoding_auto_detect_.SetValue(!encoding_auto_detect_.GetValue());
@@ -2588,6 +2593,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_VIEW_SOURCE:           ViewSelectedSource();             break;
     case IDC_EMAIL_PAGE_LOCATION:   EmailPageLocation();              break;
     case IDC_PRINT:                 Print();                          break;
+    case IDC_ADVANCED_PRINT:        AdvancedPrint();                  break;
     case IDC_ENCODING_AUTO_DETECT:  ToggleEncodingAutoDetect();       break;
     case IDC_ENCODING_UTF8:
     case IDC_ENCODING_UTF16LE:
@@ -4377,13 +4383,20 @@ void Browser::UpdateCommandsForContentRestrictionState() {
 
 void Browser::UpdatePrintingState(int content_restrictions) {
   bool enabled = true;
+  bool selected_tab_is_preview_tab = false;
   if (content_restrictions & CONTENT_RESTRICTION_PRINT) {
     enabled = false;
+    selected_tab_is_preview_tab =
+        printing::PrintPreviewTabController::IsPrintPreviewTab(
+            GetSelectedTabContents());
   } else if (g_browser_process->local_state()) {
     enabled = g_browser_process->local_state()->
         GetBoolean(prefs::kPrintingEnabled);
   }
   command_updater_.UpdateCommandEnabled(IDC_PRINT, enabled);
+  command_updater_.UpdateCommandEnabled(IDC_ADVANCED_PRINT,
+                                        selected_tab_is_preview_tab ? true :
+                                                                      enabled);
 }
 
 void Browser::UpdateReloadStopState(bool is_loading, bool force) {

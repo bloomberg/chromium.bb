@@ -531,6 +531,7 @@ class Browser : public TabHandlerDelegate,
   // TODO(port): port these, and re-merge the two function declaration lists.
   // Page-related commands.
   void Print();
+  void AdvancedPrint();
   void EmailPageLocation();
   void ToggleEncodingAutoDetect();
   void OverrideEncoding(int encoding_id);
