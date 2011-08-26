@@ -18,8 +18,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/i18n.h"
 #include "base/win/windows_version.h"
-
 #include "chrome_frame/policy_settings.h"
+#include "ui/base/resource/data_pack.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -83,7 +84,8 @@ bool PushBackWithFallbackIfAbsent(
 }  // namespace
 
 SimpleResourceLoader::SimpleResourceLoader()
-    : locale_dll_handle_(NULL) {
+    : data_pack_(NULL),
+      locale_dll_handle_(NULL) {
   // Find and load the resource DLL.
   std::vector<std::wstring> language_tags;
 
@@ -100,19 +102,16 @@ SimpleResourceLoader::SimpleResourceLoader()
   language_tags.push_back(L"en-US");
 
   FilePath locales_path;
-  FilePath locale_dll_path;
 
   DetermineLocalesDirectory(&locales_path);
-  if (LoadLocaleDll(language_tags, locales_path, &locale_dll_handle_,
-                    &locale_dll_path)) {
-    language_ = locale_dll_path.BaseName().RemoveExtension().value();
-  } else {
+  if (!LoadLocalePack(language_tags, locales_path, &locale_dll_handle_,
+                      &data_pack_, &language_)) {
     NOTREACHED() << "Failed loading any resource dll (even \"en-US\").";
   }
 }
 
 SimpleResourceLoader::~SimpleResourceLoader() {
-  locale_dll_handle_ = NULL;
+  delete data_pack_;
 }
 
 // static
@@ -132,7 +131,6 @@ void SimpleResourceLoader::GetPreferredLanguages(
       PushBackIfAbsent(*scan, language_tags);
     }
   }
-
   // Use the base i18n routines (i.e., ICU) as a last, best hope for something
   // meaningful for the user.
   PushBackWithFallbackIfAbsent(ASCIIToWide(base::i18n::GetConfiguredLocale()),
@@ -172,20 +170,24 @@ bool SimpleResourceLoader::IsValidLanguageTag(
 }
 
 // static
-bool SimpleResourceLoader::LoadLocaleDll(
+bool SimpleResourceLoader::LoadLocalePack(
     const std::vector<std::wstring>& language_tags,
     const FilePath& locales_path,
     HMODULE* dll_handle,
-    FilePath* file_path) {
-  DCHECK(file_path);
+    ui::DataPack** data_pack,
+    std::wstring* language) {
+  DCHECK(language);
 
   // The dll should only have resources, not executable code.
   const DWORD load_flags =
       (base::win::GetVersion() >= base::win::VERSION_VISTA ?
           LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE | LOAD_LIBRARY_AS_IMAGE_RESOURCE :
           DONT_RESOLVE_DLL_REFERENCES);
+
   const std::wstring dll_suffix(L".dll");
-  bool found_dll = false;
+  const std::wstring pack_suffix(L".pak");
+
+  bool found_pack = false;
 
   for (std::vector<std::wstring>::const_iterator scan = language_tags.begin(),
          end = language_tags.end();
@@ -196,46 +198,54 @@ bool SimpleResourceLoader::LoadLocaleDll(
                       " \"" << *scan << "\"";
       continue;
     }
-    FilePath look_path = locales_path.Append(*scan + dll_suffix);
-    HMODULE locale_dll_handle = LoadLibraryEx(look_path.value().c_str(), NULL,
-                                              load_flags);
-    if (NULL != locale_dll_handle) {
-      *dll_handle = locale_dll_handle;
-      *file_path = look_path;
-      found_dll = true;
-      break;
+
+    // Attempt to load both the resource pack and the dll. We return success
+    // only we load both.
+    FilePath resource_pack_path = locales_path.Append(*scan + pack_suffix);
+    FilePath dll_path = locales_path.Append(*scan + dll_suffix);
+
+    if (file_util::PathExists(resource_pack_path) &&
+        file_util::PathExists(dll_path)) {
+      *data_pack = ui::ResourceBundle::LoadResourcesDataPak(resource_pack_path);
+      if (!*data_pack) {
+        continue;
+      }
+      HMODULE locale_dll_handle = LoadLibraryEx(dll_path.value().c_str(), NULL,
+                                                load_flags);
+      if (locale_dll_handle) {
+        *dll_handle = locale_dll_handle;
+        *language = dll_path.BaseName().RemoveExtension().value();
+        found_pack = true;
+        break;
+      } else {
+        *data_pack = NULL;
+      }
     }
-    DPCHECK(ERROR_FILE_NOT_FOUND == GetLastError())
-        << "Unable to load generated resources from " << look_path.value();
   }
-
-  DCHECK(found_dll || file_util::DirectoryExists(locales_path))
+  DCHECK(found_pack || file_util::DirectoryExists(locales_path))
       << "Could not locate locales DLL directory.";
-
-  return found_dll;
+  return found_pack;
 }
 
 std::wstring SimpleResourceLoader::GetLocalizedResource(int message_id) {
-  if (!locale_dll_handle_) {
+  if (!data_pack_) {
     DLOG(ERROR) << "locale resources are not loaded";
     return std::wstring();
   }
 
   DCHECK(IS_INTRESOURCE(message_id));
 
-  const ATLSTRINGRESOURCEIMAGE* image = AtlGetStringResourceImage(
-      locale_dll_handle_, message_id);
-  if (!image) {
-    // Fall back on the current module (shouldn't be any strings here except
-    // in unittests).
-    image = AtlGetStringResourceImage(_AtlBaseModule.GetModuleInstance(),
-                                      message_id);
-    if (!image) {
-      NOTREACHED() << "unable to find resource: " << message_id;
-      return std::wstring();
-    }
+  base::StringPiece data;
+  if (!data_pack_->GetStringPiece(message_id, &data)) {
+    DLOG(ERROR) << "Unable to find string for resource id:" << message_id;
+    return std::wstring();
   }
-  return std::wstring(image->achString, image->nLength);
+
+  // Data pack encodes strings as UTF16.
+  DCHECK_EQ(data.length() % 2, 0U);
+  string16 msg(reinterpret_cast<const char16*>(data.data()),
+               data.length() / 2);
+  return msg;
 }
 
 // static

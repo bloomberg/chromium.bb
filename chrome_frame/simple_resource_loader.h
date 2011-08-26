@@ -18,6 +18,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 
+namespace ui {
+class DataPack;
+}  // namespace ui
+
 class SimpleResourceLoader {
  public:
 
@@ -48,15 +52,18 @@ class SimpleResourceLoader {
   SimpleResourceLoader();
   ~SimpleResourceLoader();
 
-  // Finds the most-preferred resource DLL for the laguages in |language_tags|
+  // Finds the most-preferred resource dll and language pack for the laguages
+  // in |language_tags|
   // in |locales_path|.
   //
   // Returns true on success with a handle to the DLL that was loaded in
-  // |dll_handle| and its path in |file_path|.
-  static bool LoadLocaleDll(const std::vector<std::wstring>& language_tags,
-                            const FilePath& locales_path,
-                            HMODULE* dll_handle,
-                            FilePath* file_path);
+  // |dll_handle|, the data pack in |data_pack| and the locale language in
+  // the |language| parameter.
+  static bool LoadLocalePack(const std::vector<std::wstring>& language_tags,
+                             const FilePath& locales_path,
+                             HMODULE* dll_handle,
+                             ui::DataPack** data_pack,
+                             std::wstring* language);
 
   // Returns the string resource identified by message_id from the currently
   // loaded locale dll.
@@ -67,6 +74,8 @@ class SimpleResourceLoader {
   FRIEND_TEST_ALL_PREFIXES(SimpleResourceLoaderTest, LoadLocaleDll);
 
   std::wstring language_;
+  ui::DataPack* data_pack_;
+
   HINSTANCE locale_dll_handle_;
 };
 
