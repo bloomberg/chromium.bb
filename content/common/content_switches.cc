@@ -39,9 +39,6 @@ const char kDisableAcceleratedCompositing[] = "disable-accelerated-compositing";
 // Disables the hardware acceleration of 3D CSS and animation.
 const char kDisableAcceleratedLayers[]      = "disable-accelerated-layers";
 
-// Disables the hardware acceleration of plugins.
-const char kDisableAcceleratedPlugins[]     = "disable-accelerated-plugins";
-
 // Disables GPU accelerated video display.
 const char kDisableAcceleratedVideo[]       = "disable-accelerated-video";
 
@@ -155,6 +152,9 @@ const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 // SKIA_GPU flag, which can be enabled by setting use_skia_gpu variable to 1
 // in build/features_override.gypi.
 const char kEnableAcceleratedDrawing[]      = "enable-accelerated-drawing";
+
+// Enables the hardware acceleration of plugins.
+const char kEnableAcceleratedPlugins[]      = "enable-accelerated-plugins";
 
 // Enables WebKit accessibility within the renderer process.
 const char kEnableAccessibility[]           = "enable-accessibility";
