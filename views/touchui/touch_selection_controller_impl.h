@@ -9,12 +9,14 @@
 #include "ui/gfx/point.h"
 #include "views/touchui/touch_selection_controller.h"
 #include "views/view.h"
+#include "views/views_export.h"
 
 namespace views {
 
 // Touch specific implementation of TouchSelectionController. Responsible for
 // displaying selection handles and menu elements relevant in a touch interface.
-class TouchSelectionControllerImpl : public TouchSelectionController {
+class VIEWS_EXPORT TouchSelectionControllerImpl
+    : public TouchSelectionController {
  public:
   // Use TextSelectionController::create().
   explicit TouchSelectionControllerImpl(TouchSelectionClientView* client_view);
