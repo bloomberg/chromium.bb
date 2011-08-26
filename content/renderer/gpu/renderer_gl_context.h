@@ -201,6 +201,10 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   gpu::gles2::GLES2Implementation* gles2_implementation_;
   Error last_error_;
   int frame_number_;
+#ifndef NDEBUG
+  // Used to assert that this object is used on a single thread.
+  MessageLoop* message_loop_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RendererGLContext);
 };
