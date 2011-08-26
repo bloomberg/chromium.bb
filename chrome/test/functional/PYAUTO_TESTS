@@ -169,12 +169,12 @@
       # Crashes browser. crbug.com/89000
       '-prefs.PrefsTest.testGeolocationPref',
       # crbug.com/93822
-      '-process_count.ProcessCountTest.testprocessCountAppendSingleTab',
-      '-process_count.ProcessCountTest.testprocessCountCombination',
-      '-process_count.ProcessCountTest.testprocessCountExtensionProcess',
-      '-process_count.ProcessCountTest.testprocessCountFlashProcess',
-      '-process_count.ProcessCountTest.testprocessCountFreshProfile',
-      '-process_count.ProcessCountTest.testprocessCountNewWindow',
+      '-process_count.ProcessCountTest.testProcessCountAppendSingleTab',
+      '-process_count.ProcessCountTest.testProcessCountCombination',
+      '-process_count.ProcessCountTest.testProcessCountExtensionProcess',
+      '-process_count.ProcessCountTest.testProcessCountFlashProcess',
+      '-process_count.ProcessCountTest.testProcessCountFreshProfile',
+      '-process_count.ProcessCountTest.testProcessCountNewWindow',
     ],
 
     'mac': [
