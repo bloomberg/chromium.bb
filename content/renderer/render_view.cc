@@ -2092,8 +2092,6 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
   }
 
-  GURL old_url(frame->document().url());
-
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a WebUI page, etc). We only care about
   // top-level navigations within the current tab (as opposed to, for example,
@@ -2138,6 +2136,11 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
+
+  // Use the frame's original request's URL rather than the document's URL for
+  // this check.  For a popup, the document's URL may become the opener window's
+  // URL if the opener has called document.write.  See http://crbug.com/93517.
+  GURL old_url(frame->dataSource()->request().url());
 
   // Detect when a page is "forking" a new tab that can be safely rendered in
   // its own process.  This is done by sites like Gmail that try to open links

@@ -339,6 +339,165 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   alert->native_dialog()->AcceptAppModalDialog();
 }
 
+// Test that scripts can fork a new renderer process for a cross-site popup,
+// based on http://www.google.com/chrome/intl/en/webmasters-faq.html#newtab.
+// The script must open a new tab, set its window.opener to null, and navigate
+// it to a cross-site URL.  It should also work for meta-refreshes.
+// See http://crbug.com/93517.
+IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+
+  // Create http and https servers for a cross-site transition.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_test_server(net::TestServer::TYPE_HTTPS,
+                                    FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL http_url(test_server()->GetURL("files/title1.html"));
+  GURL https_url(https_test_server.GetURL(""));
+
+  // Start with an http URL.
+  ui_test_utils::NavigateToURL(browser(), http_url);
+  TabContents* oldtab = browser()->GetSelectedTabContents();
+  RenderProcessHost* process = oldtab->render_view_host()->process();
+
+  // Now open a tab to a blank page, set its opener to null, and redirect it
+  // cross-site.
+  std::string redirect_popup = "w=window.open();";
+  redirect_popup += "w.opener=null;";
+  redirect_popup += "w.document.location=\"";
+  redirect_popup += https_url.spec();
+  redirect_popup += "\";";
+
+  ui_test_utils::WindowedNotificationObserver popup_observer(
+        content::NOTIFICATION_TAB_ADDED,
+        NotificationService::AllSources());
+  ui_test_utils::WindowedNotificationObserver nav_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        NotificationService::AllSources());
+  oldtab->render_view_host()->
+      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(redirect_popup));
+
+  // Wait for popup window to appear and finish navigating.
+  popup_observer.Wait();
+  ASSERT_EQ(2, browser()->tab_count());
+  TabContents* newtab = browser()->GetSelectedTabContents();
+  EXPECT_TRUE(newtab);
+  EXPECT_NE(oldtab, newtab);
+  nav_observer.Wait();
+  ASSERT_TRUE(newtab->controller().GetLastCommittedEntry());
+  EXPECT_EQ(https_url.spec(),
+            newtab->controller().GetLastCommittedEntry()->url().spec());
+
+  // Popup window should not be in the opener's process.
+  RenderProcessHost* popup_process = newtab->render_view_host()->process();
+  EXPECT_NE(process, popup_process);
+
+  // Now open a tab to a blank page, set its opener to null, and use a
+  // meta-refresh to navigate it instead.
+  std::string refresh_popup = "w=window.open();";
+  refresh_popup += "w.opener=null;";
+  refresh_popup += "w.document.write(";
+  refresh_popup += "'<META HTTP-EQUIV=\"refresh\" content=\"0; url=";
+  refresh_popup += https_url.spec();
+  refresh_popup += "\">');w.document.close();";
+
+  ui_test_utils::WindowedNotificationObserver popup_observer2(
+        content::NOTIFICATION_TAB_ADDED,
+        NotificationService::AllSources());
+  ui_test_utils::WindowedNotificationObserver nav_observer2(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        NotificationService::AllSources());
+  oldtab->render_view_host()->
+      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(refresh_popup));
+
+  // Wait for popup window to appear and finish navigating.
+  popup_observer2.Wait();
+  ASSERT_EQ(3, browser()->tab_count());
+  TabContents* newtab2 = browser()->GetSelectedTabContents();
+  EXPECT_TRUE(newtab2);
+  EXPECT_NE(oldtab, newtab2);
+  nav_observer2.Wait();
+  ASSERT_TRUE(newtab2->controller().GetLastCommittedEntry());
+  EXPECT_EQ(https_url.spec(),
+            newtab2->controller().GetLastCommittedEntry()->url().spec());
+
+  // This popup window should also not be in the opener's process.
+  RenderProcessHost* popup_process2 = newtab2->render_view_host()->process();
+  EXPECT_NE(process, popup_process2);
+}
+
+// Tests that other popup navigations that do not follow the steps at
+// http://www.google.com/chrome/intl/en/webmasters-faq.html#newtab will not
+// fork a new renderer process.
+IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+
+  // Create http and https servers for a cross-site transition.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_test_server(net::TestServer::TYPE_HTTPS,
+                                    FilePath(kDocRoot));
+  ASSERT_TRUE(https_test_server.Start());
+  GURL http_url(test_server()->GetURL("files/title1.html"));
+  GURL https_url(https_test_server.GetURL(""));
+
+  // Start with an http URL.
+  ui_test_utils::NavigateToURL(browser(), http_url);
+  TabContents* oldtab = browser()->GetSelectedTabContents();
+  RenderProcessHost* process = oldtab->render_view_host()->process();
+
+  // Now open a tab to a blank page, set its opener to null, and redirect it
+  // cross-site.
+  std::string dont_fork_popup = "w=window.open();";
+  dont_fork_popup += "w.document.location=\"";
+  dont_fork_popup += https_url.spec();
+  dont_fork_popup += "\";";
+
+  ui_test_utils::WindowedNotificationObserver popup_observer(
+        content::NOTIFICATION_TAB_ADDED,
+        NotificationService::AllSources());
+  ui_test_utils::WindowedNotificationObserver nav_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        NotificationService::AllSources());
+  oldtab->render_view_host()->
+      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(dont_fork_popup));
+
+  // Wait for popup window to appear and finish navigating.
+  popup_observer.Wait();
+  ASSERT_EQ(2, browser()->tab_count());
+  TabContents* newtab = browser()->GetSelectedTabContents();
+  EXPECT_TRUE(newtab);
+  EXPECT_NE(oldtab, newtab);
+  nav_observer.Wait();
+  ASSERT_TRUE(newtab->controller().GetLastCommittedEntry());
+  EXPECT_EQ(https_url.spec(),
+            newtab->controller().GetLastCommittedEntry()->url().spec());
+
+  // Popup window should still be in the opener's process.
+  RenderProcessHost* popup_process = newtab->render_view_host()->process();
+  EXPECT_EQ(process, popup_process);
+
+  // Same thing if the current tab tries to navigate itself.
+  std::string navigate_str = "document.location=\"";
+  navigate_str += https_url.spec();
+  navigate_str += "\";";
+
+  ui_test_utils::WindowedNotificationObserver nav_observer2(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        NotificationService::AllSources());
+  oldtab->render_view_host()->
+      ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(navigate_str));
+  nav_observer2.Wait();
+  ASSERT_TRUE(oldtab->controller().GetLastCommittedEntry());
+  EXPECT_EQ(https_url.spec(),
+            oldtab->controller().GetLastCommittedEntry()->url().spec());
+
+  // Original window should still be in the original process.
+  RenderProcessHost* new_process = newtab->render_view_host()->process();
+  EXPECT_EQ(process, new_process);
+}
+
 // Test that get_process_idle_time() returns reasonable values when compared
 // with time deltas measured locally.
 IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
