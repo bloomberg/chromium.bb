@@ -1051,9 +1051,7 @@ TEST_F(FullTabSeleniumTest, Core) {
 // This should bring up a confirmation dialog which we hit yes on. This should
 // reissue the top level post request in response to which the html content
 // containing the meta tag is sent again.
-// This test has been disabled due to bug
-// http://code.google.com/p/chromium/issues/detail?id=94362
-TEST_F(FullTabDownloadTest, DISABLED_TopLevelPostReissueFromChromeFramePage) {
+TEST_F(FullTabDownloadTest, TopLevelPostReissueFromChromeFramePage) {
   chrome_frame_test::MockWindowObserver post_reissue_watcher;
   post_reissue_watcher.WatchWindow("Confirm Form Resubmission", "");
 
