@@ -4,10 +4,12 @@
 
 import os
 import pwd
+import re
 import shutil
 import subprocess
 
 from autotest_lib.client.bin import utils
+from autotest_lib.client.common_lib import error
 from autotest_lib.client.cros import constants, chrome_test, cros_ui, login
 
 
@@ -16,6 +18,9 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
 
     Performs all setup and fires off the CHROMEOS_PERF PyAuto suite.
     """
+    _PERF_MARKER_PRE = '_PERF_PRE_'
+    _PERF_MARKER_POST = '_PERF_POST_'
+
     version = 1
 
     def initialize(self):
@@ -74,4 +79,19 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
         functional_cmd = cros_ui.xcommand_as(
             '%s/chrome_test/test_src/chrome/test/functional/'
             'pyauto_functional.py --suite=CHROMEOS_PERF -v' % deps_dir)
-        utils.system(functional_cmd)
+        proc = subprocess.Popen(
+            functional_cmd, shell=True, stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+        output = proc.communicate()[0]
+        if proc.returncode != 0:
+          raise error.TestFail(
+              'Unexpected return code from pyauto_functional.py when running '
+              'with the CHROMEOS_PERF suite: %d' % proc.returncode)
+        re_compiled = re.compile('%s(.+)%s' % (self._PERF_MARKER_PRE,
+                                               self._PERF_MARKER_POST))
+        perf_lines = [line for line in output.split('\n')
+                      if re_compiled.match(line)]
+        if perf_lines:
+          perf_dict = dict([eval(re_compiled.match(line).group(1))
+                            for line in perf_lines])
+          self.write_perf_keyval(perf_dict)
