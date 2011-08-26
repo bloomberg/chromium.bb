@@ -374,7 +374,7 @@ void ChromotingInstance::SetScaleToFit(bool scale_to_fit) {
 void ChromotingInstance::RegisterLogMessageHandler() {
   base::AutoLock lock(g_logging_lock);
 
-  LOG(INFO) << "Registering global log handler";
+  VLOG(1) << "Registering global log handler";
 
   // Record previous handler so we can call it in a chain.
   g_logging_old_handler = logging::GetLogMessageHandler();
@@ -406,7 +406,7 @@ void ChromotingInstance::UnregisterLoggingInstance() {
   g_has_logging_instance = false;
   g_logging_instance = NULL;
 
-  LOG(INFO) << "Unregistering global log handler";
+  VLOG(1) << "Unregistering global log handler";
 }
 
 // static

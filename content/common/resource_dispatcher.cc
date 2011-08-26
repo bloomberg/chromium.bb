@@ -305,9 +305,7 @@ ResourceDispatcher::PendingRequestInfo*
 ResourceDispatcher::GetPendingRequestInfo(int request_id) {
   PendingRequestList::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
-    // This might happen for kill()ed requests on the webkit end, so perhaps it
-    // shouldn't be a warning...
-    DLOG(WARNING) << "Received message for a nonexistent or finished request";
+    // This might happen for kill()ed requests on the webkit end.
     return NULL;
   }
   return &(it->second);
