@@ -374,6 +374,11 @@ LEAK
 ...
 WINMM.dll!wave*GetNumDevs
 
+# http://code.google.com/p/drmemory/issues/detail?id=466
+LEAK
+ntdll.dll!RtlRunOnceBeginInitialize
+ntdll.dll!RtlInitializeCriticalSectionAndSpinCount
+
 # http://code.google.com/p/drmemory/issues/detail?id=471
 UNINITIALIZED READ
 *!media::AudioRendererAlgorithmOLA::Crossfade<unsigned char>
@@ -479,6 +484,18 @@ LEAK
 USER32.dll!CreateWindowExW
 *!views::TooltipManagerWin::Init
 *!views::TooltipManagerWin::TooltipManagerWin
+
+# http://code.google.com/p/drmemory/issues/detail?id=567
+UNINITIALIZED READ
+dbghelp.dll!*
+...
+dbghelp.dll!StackWalk64
+
+LEAK
+*!*
+dbghelp.dll!*
+...
+dbghelp.dll!StackWalk64
 
 ############################
 # TODO(timurrrr): investigate these
