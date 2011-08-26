@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_WIDGET_TOOLTIP_WINDOW_GTK_H_
-#define VIEWS_WIDGET_TOOLTIP_WINDOW_GTK_H_
+#ifndef UI_BASE_GTK_TOOLTIP_WINDOW_GTK_H_
+#define UI_BASE_GTK_TOOLTIP_WINDOW_GTK_H_
 #pragma once
 
 #include <string>
@@ -11,19 +11,19 @@
 #include "base/basictypes.h"
 #include "ui/base/gtk/gtk_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "views/views_export.h"
+#include "ui/base/ui_export.h"
 
 typedef struct _GdkEventExpose GdkEventExpose;
 typedef struct _GtkLabel GtkLabel;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkStyle GtkStyle;
 
-namespace views {
+namespace ui {
 
 // TooltipWindowGtk provides a customized tooltip window and gives us a
 // chance to apply RGBA colormap on it. This enables the GTK theme engine to
 // draw tooltip with nice shadow and rounded corner on ChromeOS.
-class VIEWS_EXPORT TooltipWindowGtk {
+class UI_EXPORT TooltipWindowGtk {
  public:
   explicit TooltipWindowGtk(GtkWidget* widget);
   virtual ~TooltipWindowGtk();
@@ -53,6 +53,6 @@ class VIEWS_EXPORT TooltipWindowGtk {
   DISALLOW_COPY_AND_ASSIGN(TooltipWindowGtk);
 };
 
-} // namespace views
+} // namespace ui
 
-#endif  // VIEWS_WIDGET_TOOLTIP_WINDOW_GTK_H_
+#endif  // UI_BASE_GTK_TOOLTIP_WINDOW_GTK_H_

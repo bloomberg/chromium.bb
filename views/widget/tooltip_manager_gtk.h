@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 
 #include <gtk/gtk.h>
 
+#include "ui/base/gtk/tooltip_window_gtk.h"
 #include "views/widget/tooltip_manager.h"
-#include "views/widget/tooltip_window_gtk.h"
 
 namespace views {
 
@@ -43,7 +43,7 @@ class TooltipManagerGtk : public TooltipManager {
   View* keyboard_view_;
 
   // Customized tooltip window.
-  TooltipWindowGtk tooltip_window_;
+  ui::TooltipWindowGtk tooltip_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipManagerGtk);
 };

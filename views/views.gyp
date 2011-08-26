@@ -355,8 +355,6 @@
         'widget/tooltip_manager_win.h',
         'widget/tooltip_manager.cc',
         'widget/tooltip_manager.h',
-        'widget/tooltip_window_gtk.cc',
-        'widget/tooltip_window_gtk.h',
         'widget/monitor_win.cc',
         'widget/monitor_win.h',
         'widget/native_widget.h',

@@ -45,7 +45,7 @@
 #include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_CHROMEOS)
-#include "views/widget/tooltip_window_gtk.h"
+#include "ui/base/gtk/tooltip_window_gtk.h"
 #else
 #include "content/browser/renderer_host/gtk_key_bindings_handler.h"
 #endif  // defined(OS_CHROMEOS)
@@ -901,7 +901,7 @@ void RenderWidgetHostViewGtk::DoSharedInit() {
   im_context_.reset(new GtkIMContextWrapper(this));
   plugin_container_manager_.set_host_widget(view_.get());
 #if defined(OS_CHROMEOS)
-  tooltip_window_.reset(new views::TooltipWindowGtk(view_.get()));
+  tooltip_window_.reset(new ui::TooltipWindowGtk(view_.get()));
 #else
   key_bindings_handler_.reset(new GtkKeyBindingsHandler(view_.get()));
 #endif

@@ -28,7 +28,7 @@ class GtkIMContextWrapper;
 struct NativeWebKeyboardEvent;
 
 #if defined(OS_CHROMEOS)
-namespace views {
+namespace ui {
 class TooltipWindowGtk;
 }
 #else
@@ -269,7 +269,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
 
 #if defined(OS_CHROMEOS)
   // Custimized tooltip window.
-  scoped_ptr<views::TooltipWindowGtk> tooltip_window_;
+  scoped_ptr<ui::TooltipWindowGtk> tooltip_window_;
 #endif  // defined(OS_CHROMEOS)
 };
 

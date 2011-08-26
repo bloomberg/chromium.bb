@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/widget/tooltip_window_gtk.h"
+#include "ui/base/gtk/tooltip_window_gtk.h"
 
 #include <gtk/gtk.h>
 
 #include "base/utf_string_conversions.h"
 
-namespace views {
+namespace ui {
 
 TooltipWindowGtk::TooltipWindowGtk(GtkWidget* widget)
     : host_(widget),
@@ -92,4 +92,4 @@ void TooltipWindowGtk::OnStyleSet(GtkWidget* widget,
   gtk_widget_queue_draw(widget);
 }
 
-}  // namespace views
+}  // namespace ui
