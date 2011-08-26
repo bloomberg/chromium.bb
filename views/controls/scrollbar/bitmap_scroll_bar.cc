@@ -19,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/menu/menu.h"
+#include "views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "views/controls/scroll_view.h"
 #include "views/widget/widget.h"
 
@@ -44,7 +45,7 @@ static const int kScrollThumbDragOutSnap = 100;
 ///////////////////////////////////////////////////////////////////////////////
 class AutorepeatButton : public ImageButton {
  public:
-  AutorepeatButton(ButtonListener* listener)
+  explicit AutorepeatButton(ButtonListener* listener)
       : ImageButton(listener),
         ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
             NewCallback<AutorepeatButton>(this,
@@ -97,58 +98,13 @@ class AutorepeatButton : public ImageButton {
 //  drag to scroll the associated contents view within the viewport.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class BitmapScrollBarThumb : public View {
+class BitmapScrollBarThumb : public BaseScrollBarThumb {
  public:
   explicit BitmapScrollBarThumb(BitmapScrollBar* scroll_bar)
-      : scroll_bar_(scroll_bar),
-        drag_start_position_(-1),
-        mouse_offset_(-1),
-        state_(CustomButton::BS_NORMAL) {
+      : BaseScrollBarThumb(scroll_bar),
+        scroll_bar_(scroll_bar) {
   }
   virtual ~BitmapScrollBarThumb() { }
-
-  // Sets the size (width or height) of the thumb to the specified value.
-  void SetSize(int size) {
-    // Make sure the thumb is never sized smaller than its minimum possible
-    // display size.
-    gfx::Size prefsize = GetPreferredSize();
-    size = std::max(size, scroll_bar_->IsHorizontal() ? prefsize.width() :
-                                                        prefsize.height());
-    gfx::Rect thumb_bounds = bounds();
-    if (scroll_bar_->IsHorizontal()) {
-      thumb_bounds.set_width(size);
-    } else {
-      thumb_bounds.set_height(size);
-    }
-    SetBoundsRect(thumb_bounds);
-  }
-
-  // Retrieves the size (width or height) of the thumb.
-  int GetSize() const {
-    if (scroll_bar_->IsHorizontal())
-      return width();
-    return height();
-  }
-
-  // Sets the position of the thumb on the x or y axis.
-  void SetPosition(int position) {
-    gfx::Rect thumb_bounds = bounds();
-    gfx::Rect track_bounds = scroll_bar_->GetTrackBounds();
-    if (scroll_bar_->IsHorizontal()) {
-      thumb_bounds.set_x(track_bounds.x() + position);
-    } else {
-      thumb_bounds.set_y(track_bounds.y() + position);
-    }
-    SetBoundsRect(thumb_bounds);
-  }
-
-  // Gets the position of the thumb on the x or y axis.
-  int GetPosition() const {
-    gfx::Rect track_bounds = scroll_bar_->GetTrackBounds();
-    if (scroll_bar_->IsHorizontal())
-      return x() - track_bounds.x();
-    return y() - track_bounds.y();
-  }
 
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
@@ -160,7 +116,7 @@ class BitmapScrollBarThumb : public View {
 
  protected:
   // View overrides:
-  virtual void Paint(gfx::Canvas* canvas) OVERRIDE {
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawBitmapInt(*start_cap_bitmap(), 0, 0);
     int top_cap_height = start_cap_bitmap()->height();
     int bottom_cap_height = end_cap_bitmap()->height();
@@ -176,71 +132,21 @@ class BitmapScrollBarThumb : public View {
     canvas->DrawBitmapInt(*grippy_bitmap(), grippy_x, grippy_y);
   }
 
-  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE {
-    SetState(CustomButton::BS_HOT);
-  }
-
-  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE {
-    SetState(CustomButton::BS_NORMAL);
-  }
-
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE {
-    mouse_offset_ = scroll_bar_->IsHorizontal() ? event.x() : event.y();
-    drag_start_position_ = GetPosition();
-    SetState(CustomButton::BS_PUSHED);
-    return true;
-  }
-
-  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE {
-    // If the user moves the mouse more than |kScrollThumbDragOutSnap| outside
-    // the bounds of the thumb, the scrollbar will snap the scroll back to the
-    // point it was at before the drag began.
-    if (scroll_bar_->IsHorizontal()) {
-      if ((event.y() < y() - kScrollThumbDragOutSnap) ||
-          (event.y() > (y() + height() + kScrollThumbDragOutSnap))) {
-        scroll_bar_->ScrollToThumbPosition(drag_start_position_, false);
-        return true;
-      }
-    } else {
-      if ((event.x() < x() - kScrollThumbDragOutSnap) ||
-          (event.x() > (x() + width() + kScrollThumbDragOutSnap))) {
-        scroll_bar_->ScrollToThumbPosition(drag_start_position_, false);
-        return true;
-      }
-    }
-    if (scroll_bar_->IsHorizontal()) {
-      int thumb_x = event.x() - mouse_offset_;
-      scroll_bar_->ScrollToThumbPosition(x() + thumb_x, false);
-    } else {
-      int thumb_y = event.y() - mouse_offset_;
-      scroll_bar_->ScrollToThumbPosition(y() + thumb_y, false);
-    }
-    return true;
-  }
-
-  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE {
-    OnMouseCaptureLost();
-  }
-
-  virtual void OnMouseCaptureLost() OVERRIDE {
-    SetState(CustomButton::BS_HOT);
-  }
-
  private:
   // Returns the bitmap rendered at the start of the thumb.
   SkBitmap* start_cap_bitmap() const {
-    return scroll_bar_->images_[BitmapScrollBar::THUMB_START_CAP][state_];
+    return scroll_bar_->images_[BitmapScrollBar::THUMB_START_CAP][GetState()];
   }
 
   // Returns the bitmap rendered at the end of the thumb.
   SkBitmap* end_cap_bitmap() const {
-    return scroll_bar_->images_[BitmapScrollBar::THUMB_END_CAP][state_];
+    return scroll_bar_->images_[BitmapScrollBar::THUMB_END_CAP][GetState()];
   }
 
   // Returns the bitmap that is tiled in the background of the thumb between
   // the start and the end caps.
   SkBitmap* background_bitmap() const {
-    return scroll_bar_->images_[BitmapScrollBar::THUMB_MIDDLE][state_];
+    return scroll_bar_->images_[BitmapScrollBar::THUMB_MIDDLE][GetState()];
   }
 
   // Returns the bitmap that is rendered in the middle of the thumb
@@ -250,23 +156,8 @@ class BitmapScrollBarThumb : public View {
         [CustomButton::BS_NORMAL];
   }
 
-  // Update our state and schedule a repaint when the mouse moves over us.
-  void SetState(CustomButton::ButtonState state) {
-    state_ = state;
-    SchedulePaint();
-  }
-
   // The BitmapScrollBar that owns us.
   BitmapScrollBar* scroll_bar_;
-
-  int drag_start_position_;
-
-  // The position of the mouse on the scroll axis relative to the top of this
-  // View when the drag started.
-  int mouse_offset_;
-
-  // The current state of the thumb button.
-  CustomButton::ButtonState state_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapScrollBarThumb);
 };
@@ -277,19 +168,10 @@ class BitmapScrollBarThumb : public View {
 // BitmapScrollBar, public:
 
 BitmapScrollBar::BitmapScrollBar(bool horizontal, bool show_scroll_buttons)
-    : contents_size_(0),
-      contents_scroll_offset_(0),
+    : BaseScrollBar(horizontal, new BitmapScrollBarThumb(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(prev_button_(new AutorepeatButton(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(next_button_(new AutorepeatButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(thumb_(new BitmapScrollBarThumb(this))),
-      thumb_track_state_(CustomButton::BS_NORMAL),
-      last_scroll_amount_(SCROLL_NONE),
-      ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
-          NewCallback<BitmapScrollBar>(this,
-                                       &BitmapScrollBar::TrackClicked))),
-      context_menu_mouse_position_(0),
-      show_scroll_buttons_(show_scroll_buttons),
-      ScrollBar(horizontal) {
+      show_scroll_buttons_(show_scroll_buttons) {
   if (!show_scroll_buttons_) {
     prev_button_->SetVisible(false);
     next_button_->SetVisible(false);
@@ -297,29 +179,10 @@ BitmapScrollBar::BitmapScrollBar(bool horizontal, bool show_scroll_buttons)
 
   AddChildView(prev_button_);
   AddChildView(next_button_);
-  AddChildView(thumb_);
 
   set_context_menu_controller(this);
   prev_button_->set_context_menu_controller(this);
   next_button_->set_context_menu_controller(this);
-  thumb_->set_context_menu_controller(this);
-}
-
-gfx::Rect BitmapScrollBar::GetTrackBounds() const {
-  gfx::Size prefsize = prev_button_->GetPreferredSize();
-  if (IsHorizontal()) {
-    if (!show_scroll_buttons_)
-      prefsize.set_width(0);
-    int new_width =
-        std::max(0, width() - (prefsize.width() * 2));
-    gfx::Rect track_bounds(prefsize.width(), 0, new_width, prefsize.height());
-    return track_bounds;
-  }
-  if (!show_scroll_buttons_)
-    prefsize.set_height(0);
-  gfx::Rect track_bounds(0, prefsize.height(), prefsize.width(),
-                         std::max(0, height() - (prefsize.height() * 2)));
-  return track_bounds;
 }
 
 void BitmapScrollBar::SetImage(ScrollBarPart part,
@@ -344,58 +207,26 @@ void BitmapScrollBar::SetImage(ScrollBarPart part,
   }
 }
 
-void BitmapScrollBar::ScrollByAmount(ScrollAmount amount) {
-  ScrollBarController* controller = GetController();
-  int offset = contents_scroll_offset_;
-  switch (amount) {
-    case SCROLL_START:
-      offset = GetMinPosition();
-      break;
-    case SCROLL_END:
-      offset = GetMaxPosition();
-      break;
-    case SCROLL_PREV_LINE:
-      offset -= controller->GetScrollIncrement(this, false, false);
-      offset = std::max(GetMinPosition(), offset);
-      break;
-    case SCROLL_NEXT_LINE:
-      offset += controller->GetScrollIncrement(this, false, true);
-      offset = std::min(GetMaxPosition(), offset);
-      break;
-    case SCROLL_PREV_PAGE:
-      offset -= controller->GetScrollIncrement(this, true, false);
-      offset = std::max(GetMinPosition(), offset);
-      break;
-    case SCROLL_NEXT_PAGE:
-      offset += controller->GetScrollIncrement(this, true, true);
-      offset = std::min(GetMaxPosition(), offset);
-      break;
-  }
-  contents_scroll_offset_ = offset;
-  ScrollContentsToOffset();
+int BitmapScrollBar::GetLayoutSize() const {
+  gfx::Size prefsize = prev_button_->GetPreferredSize();
+  return IsHorizontal() ? prefsize.height() : prefsize.width();
 }
 
-void BitmapScrollBar::ScrollToThumbPosition(int thumb_position,
-                                            bool scroll_to_middle) {
-  contents_scroll_offset_ =
-      CalculateContentsOffset(thumb_position, scroll_to_middle);
-  if (contents_scroll_offset_ < GetMinPosition()) {
-    contents_scroll_offset_ = GetMinPosition();
-  } else if (contents_scroll_offset_ > GetMaxPosition()) {
-    contents_scroll_offset_ = GetMaxPosition();
+gfx::Rect BitmapScrollBar::GetTrackBounds() const {
+  gfx::Size prefsize = prev_button_->GetPreferredSize();
+  if (IsHorizontal()) {
+    if (!show_scroll_buttons_)
+      prefsize.set_width(0);
+    int new_width =
+        std::max(0, width() - (prefsize.width() * 2));
+    gfx::Rect track_bounds(prefsize.width(), 0, new_width, prefsize.height());
+    return track_bounds;
   }
-  ScrollContentsToOffset();
-  SchedulePaint();
-}
-
-void BitmapScrollBar::ScrollByContentsOffset(int contents_offset) {
-  contents_scroll_offset_ -= contents_offset;
-  if (contents_scroll_offset_ < GetMinPosition()) {
-    contents_scroll_offset_ = GetMinPosition();
-  } else if (contents_scroll_offset_ > GetMaxPosition()) {
-    contents_scroll_offset_ = GetMaxPosition();
-  }
-  ScrollContentsToOffset();
+  if (!show_scroll_buttons_)
+    prefsize.set_height(0);
+  gfx::Rect track_bounds(0, prefsize.height(), prefsize.width(),
+                         std::max(0, height() - (prefsize.height() * 2)));
+  return track_bounds;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -426,19 +257,20 @@ void BitmapScrollBar::Layout() {
     next_button_->SetBounds(0, 0, 0, 0);
   }
 
+  BaseScrollBarThumb* thumb = GetThumb();
   // Size and place the thumb
-  gfx::Size thumb_prefsize = thumb_->GetPreferredSize();
+  gfx::Size thumb_prefsize = thumb->GetPreferredSize();
   gfx::Rect track_bounds = GetTrackBounds();
 
   // Preserve the height/width of the thumb (depending on orientation) as set
   // by the last call to |Update|, but coerce the width/height to be the
   // appropriate value for the bitmaps provided.
   if (IsHorizontal()) {
-    thumb_->SetBounds(thumb_->x(), thumb_->y(), thumb_->width(),
+    thumb->SetBounds(thumb->x(), thumb->y(), thumb->width(),
                       thumb_prefsize.height());
   } else {
-    thumb_->SetBounds(thumb_->x(), thumb_->y(), thumb_prefsize.width(),
-                      thumb_->height());
+    thumb->SetBounds(thumb->x(), thumb->y(), thumb_prefsize.width(),
+                     thumb->height());
   }
 
   // Hide the thumb if the track isn't tall enough to display even a tiny
@@ -446,196 +278,21 @@ void BitmapScrollBar::Layout() {
   // in this scenario.
   if ((IsHorizontal() && (track_bounds.width() < thumb_prefsize.width()) ||
       (!IsHorizontal() && (track_bounds.height() < thumb_prefsize.height())))) {
-    thumb_->SetVisible(false);
-  } else if (!thumb_->IsVisible()) {
-    thumb_->SetVisible(true);
+    thumb->SetVisible(false);
+  } else if (!thumb->IsVisible()) {
+    thumb->SetVisible(true);
   }
-}
-
-bool BitmapScrollBar::OnMousePressed(const MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton()) {
-    SetThumbTrackState(CustomButton::BS_PUSHED);
-    gfx::Rect thumb_bounds = thumb_->bounds();
-    if (IsHorizontal()) {
-      if (event.x() < thumb_bounds.x()) {
-        last_scroll_amount_ = SCROLL_PREV_PAGE;
-      } else if (event.x() > thumb_bounds.right()) {
-        last_scroll_amount_ = SCROLL_NEXT_PAGE;
-      }
-    } else {
-      if (event.y() < thumb_bounds.y()) {
-        last_scroll_amount_ = SCROLL_PREV_PAGE;
-      } else if (event.y() > thumb_bounds.bottom()) {
-        last_scroll_amount_ = SCROLL_NEXT_PAGE;
-      }
-    }
-    TrackClicked();
-    repeater_.Start();
-  }
-  return true;
-}
-
-void BitmapScrollBar::OnMouseReleased(const MouseEvent& event) {
-  OnMouseCaptureLost();
-}
-
-void BitmapScrollBar::OnMouseCaptureLost() {
-  SetThumbTrackState(CustomButton::BS_NORMAL);
-  repeater_.Stop();
-}
-
-bool BitmapScrollBar::OnKeyPressed(const KeyEvent& event) {
-  ScrollAmount amount = SCROLL_NONE;
-  switch (event.key_code()) {
-    case ui::VKEY_UP:
-      if (!IsHorizontal())
-        amount = SCROLL_PREV_LINE;
-      break;
-    case ui::VKEY_DOWN:
-      if (!IsHorizontal())
-        amount = SCROLL_NEXT_LINE;
-      break;
-    case ui::VKEY_LEFT:
-      if (IsHorizontal())
-        amount = SCROLL_PREV_LINE;
-      break;
-    case ui::VKEY_RIGHT:
-      if (IsHorizontal())
-        amount = SCROLL_NEXT_LINE;
-      break;
-    case ui::VKEY_PRIOR:
-      amount = SCROLL_PREV_PAGE;
-      break;
-    case ui::VKEY_NEXT:
-      amount = SCROLL_NEXT_PAGE;
-      break;
-    case ui::VKEY_HOME:
-      amount = SCROLL_START;
-      break;
-    case ui::VKEY_END:
-      amount = SCROLL_END;
-      break;
-  }
-  if (amount != SCROLL_NONE) {
-    ScrollByAmount(amount);
-    return true;
-  }
-  return false;
-}
-
-bool BitmapScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
-  ScrollByContentsOffset(event.offset());
-  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BitmapScrollBar, ContextMenuController implementation:
+// BitmapScrollBar, View implementation:
 
-enum ScrollBarContextMenuCommands {
-  ScrollBarContextMenuCommand_ScrollHere = 1,
-  ScrollBarContextMenuCommand_ScrollStart,
-  ScrollBarContextMenuCommand_ScrollEnd,
-  ScrollBarContextMenuCommand_ScrollPageUp,
-  ScrollBarContextMenuCommand_ScrollPageDown,
-  ScrollBarContextMenuCommand_ScrollPrev,
-  ScrollBarContextMenuCommand_ScrollNext
-};
-
-void BitmapScrollBar::ShowContextMenuForView(View* source,
-                                             const gfx::Point& p,
-                                             bool is_mouse_gesture) {
-  Widget* widget = GetWidget();
-  gfx::Rect widget_bounds = widget->GetWindowScreenBounds();
-  gfx::Point temp_pt(p.x() - widget_bounds.x(), p.y() - widget_bounds.y());
-  View::ConvertPointFromWidget(this, &temp_pt);
-  context_menu_mouse_position_ = IsHorizontal() ? temp_pt.x() : temp_pt.y();
-
-  scoped_ptr<Menu> menu(
-      Menu::Create(this, Menu::TOPLEFT, GetWidget()->GetNativeView()));
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollHere);
-  menu->AppendSeparator();
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollStart);
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollEnd);
-  menu->AppendSeparator();
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPageUp);
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPageDown);
-  menu->AppendSeparator();
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPrev);
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollNext);
-  menu->RunMenuAt(p.x(), p.y());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// BitmapScrollBar, Menu::Delegate implementation:
-
-std::wstring BitmapScrollBar::GetLabel(int id) const {
-  int ids_value = 0;
-  switch (id) {
-    case ScrollBarContextMenuCommand_ScrollHere:
-      ids_value = IDS_APP_SCROLLBAR_CXMENU_SCROLLHERE;
-      break;
-    case ScrollBarContextMenuCommand_ScrollStart:
-      ids_value = IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLLEFTEDGE
-                                 : IDS_APP_SCROLLBAR_CXMENU_SCROLLHOME;
-      break;
-    case ScrollBarContextMenuCommand_ScrollEnd:
-      ids_value = IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLRIGHTEDGE
-                                 : IDS_APP_SCROLLBAR_CXMENU_SCROLLEND;
-      break;
-    case ScrollBarContextMenuCommand_ScrollPageUp:
-      ids_value = IDS_APP_SCROLLBAR_CXMENU_SCROLLPAGEUP;
-      break;
-    case ScrollBarContextMenuCommand_ScrollPageDown:
-      ids_value = IDS_APP_SCROLLBAR_CXMENU_SCROLLPAGEDOWN;
-      break;
-    case ScrollBarContextMenuCommand_ScrollPrev:
-      ids_value = IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLLEFT
-                                 : IDS_APP_SCROLLBAR_CXMENU_SCROLLUP;
-      break;
-    case ScrollBarContextMenuCommand_ScrollNext:
-      ids_value = IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLRIGHT
-                                 : IDS_APP_SCROLLBAR_CXMENU_SCROLLDOWN;
-      break;
-    default:
-      NOTREACHED() << "Invalid BitmapScrollBar Context Menu command!";
-  }
-
-  return ids_value ? UTF16ToWide(l10n_util::GetStringUTF16(ids_value)) : L"";
-}
-
-bool BitmapScrollBar::IsCommandEnabled(int id) const {
-  switch (id) {
-    case ScrollBarContextMenuCommand_ScrollPageUp:
-    case ScrollBarContextMenuCommand_ScrollPageDown:
-      return !IsHorizontal();
-  }
-  return true;
-}
-
-void BitmapScrollBar::ExecuteCommand(int id) {
-  switch (id) {
-    case ScrollBarContextMenuCommand_ScrollHere:
-      ScrollToThumbPosition(context_menu_mouse_position_, true);
-      break;
-    case ScrollBarContextMenuCommand_ScrollStart:
-      ScrollByAmount(SCROLL_START);
-      break;
-    case ScrollBarContextMenuCommand_ScrollEnd:
-      ScrollByAmount(SCROLL_END);
-      break;
-    case ScrollBarContextMenuCommand_ScrollPageUp:
-      ScrollByAmount(SCROLL_PREV_PAGE);
-      break;
-    case ScrollBarContextMenuCommand_ScrollPageDown:
-      ScrollByAmount(SCROLL_NEXT_PAGE);
-      break;
-    case ScrollBarContextMenuCommand_ScrollPrev:
-      ScrollByAmount(SCROLL_PREV_LINE);
-      break;
-    case ScrollBarContextMenuCommand_ScrollNext:
-      ScrollByAmount(SCROLL_NEXT_LINE);
-      break;
-  }
+void BitmapScrollBar::OnPaint(gfx::Canvas* canvas) {
+  // Paint the track.
+  gfx::Rect track_bounds = GetTrackBounds();
+  canvas->TileImageInt(*images_[THUMB_TRACK][GetThumbTrackState()],
+                       track_bounds.x(), track_bounds.y(),
+                       track_bounds.width(), track_bounds.height());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -647,89 +304,6 @@ void BitmapScrollBar::ButtonPressed(Button* sender, const views::Event& event) {
   } else if (sender == next_button_) {
     ScrollByAmount(SCROLL_NEXT_LINE);
   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// BitmapScrollBar, ScrollBar implementation:
-
-void BitmapScrollBar::Update(int viewport_size, int content_size,
-                             int contents_scroll_offset) {
-  ScrollBar::Update(viewport_size, content_size, contents_scroll_offset);
-
-  // Make sure contents_size is always > 0 to avoid divide by zero errors in
-  // calculations throughout this code.
-  contents_size_ = std::max(1, content_size);
-
-  if (content_size < 0)
-    content_size = 0;
-  if (contents_scroll_offset < 0)
-    contents_scroll_offset = 0;
-  if (contents_scroll_offset > content_size)
-    contents_scroll_offset = content_size;
-
-  // Thumb Height and Thumb Pos.
-  // The height of the thumb is the ratio of the Viewport height to the
-  // content size multiplied by the height of the thumb track.
-  double ratio = static_cast<double>(viewport_size) / contents_size_;
-  int thumb_size = static_cast<int>(ratio * GetTrackSize());
-  thumb_->SetSize(thumb_size);
-
-  int thumb_position = CalculateThumbPosition(contents_scroll_offset);
-  thumb_->SetPosition(thumb_position);
-}
-
-int BitmapScrollBar::GetLayoutSize() const {
-  gfx::Size prefsize = prev_button_->GetPreferredSize();
-  return IsHorizontal() ? prefsize.height() : prefsize.width();
-}
-
-int BitmapScrollBar::GetPosition() const {
-  return thumb_->GetPosition();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// BitmapScrollBar, View implementation:
-
-void BitmapScrollBar::OnPaint(gfx::Canvas* canvas) {
-  // Paint the track.
-  gfx::Rect track_bounds = GetTrackBounds();
-  canvas->TileImageInt(*images_[THUMB_TRACK][thumb_track_state_],
-                       track_bounds.x(), track_bounds.y(),
-                       track_bounds.width(), track_bounds.height());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// BitmapScrollBar, private:
-
-void BitmapScrollBar::TrackClicked() {
-  if (last_scroll_amount_ != SCROLL_NONE)
-    ScrollByAmount(last_scroll_amount_);
-}
-
-void BitmapScrollBar::ScrollContentsToOffset() {
-  GetController()->ScrollToPosition(this, contents_scroll_offset_);
-  thumb_->SetPosition(CalculateThumbPosition(contents_scroll_offset_));
-}
-
-int BitmapScrollBar::GetTrackSize() const {
-  gfx::Rect track_bounds = GetTrackBounds();
-  return IsHorizontal() ? track_bounds.width() : track_bounds.height();
-}
-
-int BitmapScrollBar::CalculateThumbPosition(int contents_scroll_offset) const {
-  return (contents_scroll_offset * GetTrackSize()) / contents_size_;
-}
-
-int BitmapScrollBar::CalculateContentsOffset(int thumb_position,
-                                             bool scroll_to_middle) const {
-  if (scroll_to_middle)
-    thumb_position = thumb_position - (thumb_->GetSize() / 2);
-  return (thumb_position * contents_size_) / GetTrackSize();
-}
-
-void BitmapScrollBar::SetThumbTrackState(CustomButton::ButtonState state) {
-  thumb_track_state_ = state;
-  SchedulePaint();
 }
 
 }  // namespace views
