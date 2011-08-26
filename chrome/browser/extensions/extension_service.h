@@ -243,6 +243,9 @@ class ExtensionService
   // Initialize and start all installed extensions.
   void Init();
 
+  // Initialize the event routers after import has finished.
+  void InitEventRoutersAfterImport();
+
   // Start up the extension event routers.
   void InitEventRouters();
 

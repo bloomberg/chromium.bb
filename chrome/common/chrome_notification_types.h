@@ -835,6 +835,9 @@ enum {
   // |webkit_glue::PasswordForm|s that were affected.
   NOTIFICATION_LOGINS_CHANGED,
 
+  // Sent when an import process has ended.
+  NOTIFICATION_IMPORT_FINISHED,
+
   // Sent when the applications in the NTP app launcher have been reordered.
   NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
 

@@ -103,7 +103,8 @@ Profile* ProfileManager::GetLastUsedProfile() {
   return profile_manager->GetLastUsedProfile(user_data_dir);
 }
 
-ProfileManager::ProfileManager() : logged_in_(false) {
+ProfileManager::ProfileManager() : logged_in_(false),
+                                   will_import_(false) {
   BrowserList::AddObserver(this);
 #if defined(OS_CHROMEOS)
   registrar_.Add(
@@ -338,6 +339,19 @@ void ProfileManager::Observe(
     logged_in_ = true;
   }
 #endif
+}
+
+void ProfileManager::SetWillImport() {
+  will_import_ = true;
+}
+
+void ProfileManager::OnImportFinished(Profile* profile) {
+  will_import_ = false;
+  DCHECK(profile);
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_IMPORT_FINISHED,
+      Source<Profile>(profile),
+      NotificationService::NoDetails());
 }
 
 void ProfileManager::OnBrowserAdded(const Browser* browser) {}

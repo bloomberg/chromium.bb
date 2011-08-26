@@ -689,6 +689,11 @@ ExtensionService::~ExtensionService() {
   }
 }
 
+void ExtensionService::InitEventRoutersAfterImport() {
+  registrar_.Add(this, chrome::NOTIFICATION_IMPORT_FINISHED,
+                 Source<Profile>(profile_));
+}
+
 void ExtensionService::InitEventRouters() {
   if (event_routers_initialized_)
     return;
@@ -2716,6 +2721,12 @@ void ExtensionService::Observe(int type,
       } else {
         NOTREACHED() << "Unexpected preference name.";
       }
+      break;
+    }
+    case chrome::NOTIFICATION_IMPORT_FINISHED: {
+      registrar_.Remove(this, chrome::NOTIFICATION_IMPORT_FINISHED,
+                        Source<Profile>(profile_));
+      InitEventRouters();
       break;
     }
 

@@ -126,6 +126,13 @@ class ProfileManager : public base::NonThreadSafe,
   virtual void OnBrowserRemoved(const Browser* browser);
   virtual void OnBrowserSetLastActive(const Browser* browser);
 
+  // Indicate that an import process will run for the next created Profile.
+  void SetWillImport();
+  bool will_import() { return will_import_; }
+
+  // Indicate that the import process for |profile| has completed.
+  void OnImportFinished(Profile* profile);
+
   // ------------------ static utility functions -------------------
 
   // Returns the path to the default profile directory, based on the given
@@ -224,6 +231,9 @@ class ProfileManager : public base::NonThreadSafe,
   // in the --login-profile command line argument should be used as the
   // default.
   bool logged_in_;
+
+  // True if an import process will be run.
+  bool will_import_;
 
   // Maps profile path to ProfileInfo (if profile has been created). Use
   // RegisterProfile() to add into this map.
