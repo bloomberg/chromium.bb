@@ -52,7 +52,8 @@ DownloadManager::DownloadManager(DownloadManagerDelegate* delegate,
       browser_context_(NULL),
       file_manager_(NULL),
       status_updater_(status_updater->AsWeakPtr()),
-      delegate_(delegate) {
+      delegate_(delegate),
+      largest_db_handle_in_history_(DownloadItem::kUninitializedHandle) {
   if (status_updater_)
     status_updater_->AddDelegate(this);
 }
@@ -288,6 +289,8 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info) {
                                             browser_context_->IsOffTheRecord());
   int32 download_id = info->download_id;
   DCHECK(!ContainsKey(in_progress_, download_id));
+
+  // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.
   CHECK(!ContainsKey(active_downloads_, download_id));
   downloads_.insert(download);
   active_downloads_[download_id] = download;
@@ -506,38 +509,36 @@ void DownloadManager::OnDownloadRenamedToFinalName(int download_id,
   delegate_->UpdatePathForItemInPersistentStore(item, full_path);
 }
 
-void DownloadManager::DownloadCancelled(int32 download_id) {
+void DownloadManager::CancelDownload(int32 download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DownloadMap::iterator it = in_progress_.find(download_id);
-  if (it == in_progress_.end())
+  DownloadItem* download = GetDownloadItem(download_id);
+  if (!download)
     return;
-  DownloadItem* download = it->second;
 
-  VLOG(20) << __FUNCTION__ << "()" << " download_id = " << download_id
+  download->Cancel(true);
+}
+
+void DownloadManager::DownloadCancelledInternal(DownloadItem* download) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  int download_id = download->id();
+
+  VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
   // Clean up will happen when the history system create callback runs if we
   // don't have a valid db_handle yet.
   if (download->db_handle() != DownloadItem::kUninitializedHandle) {
-    in_progress_.erase(it);
+    in_progress_.erase(download_id);
     active_downloads_.erase(download_id);
     UpdateDownloadProgress();  // Reflect removal from in_progress_.
     delegate_->UpdateItemInPersistentStore(download);
+
+    // This function is called from the DownloadItem, so DI state
+    // should already have been updated.
     AssertQueueStateConsistent(download);
   }
 
-  DownloadCancelledInternal(download_id, download->request_handle());
-}
-
-void DownloadManager::DownloadCancelledInternal(
-    int download_id, const DownloadRequestHandle& request_handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  request_handle.CancelRequest();
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          file_manager_, &DownloadFileManager::CancelDownload, download_id));
+  download->OffThreadCancel(file_manager_);
 }
 
 void DownloadManager::OnDownloadError(int32 download_id,
@@ -762,7 +763,7 @@ void DownloadManager::FileSelectionCanceled(void* params) {
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
-  DownloadCancelledInternal(download_id, download->request_handle());
+  download->OffThreadCancel(file_manager_);
 }
 
 // Operations posted to us from the history service ----------------------------
@@ -771,13 +772,21 @@ void DownloadManager::FileSelectionCanceled(void* params) {
 // 'DownloadPersistentStoreInfo's in sorted order (by ascending start_time).
 void DownloadManager::OnPersistentStoreQueryComplete(
     std::vector<DownloadPersistentStoreInfo>* entries) {
+  // TODO(rdsmith): Remove this and related logic when
+  // http://crbug.com/84508 is fixed.
+  largest_db_handle_in_history_ = 0;
+
   for (size_t i = 0; i < entries->size(); ++i) {
     DownloadItem* download = new DownloadItem(this, entries->at(i));
+    // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.
     CHECK(!ContainsKey(history_downloads_, download->db_handle()));
     downloads_.insert(download);
     history_downloads_[download->db_handle()] = download;
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
              << " download = " << download->DebugString(true);
+
+    if (download->db_handle() > largest_db_handle_in_history_)
+      largest_db_handle_in_history_ = download->db_handle();
   }
   NotifyModelChanged();
   CheckForHistoryFilesRemoval();
@@ -794,6 +803,8 @@ void DownloadManager::AddDownloadItemToHistory(DownloadItem* download,
   DCHECK(download->db_handle() == DownloadItem::kUninitializedHandle);
   download->set_db_handle(db_handle);
 
+  // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/84508
+  // is fixed.
   CHECK(!ContainsKey(history_downloads_, download->db_handle()));
   history_downloads_[download->db_handle()] = download;
 
@@ -830,6 +841,11 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
            << " download_id = " << download_id
            << " download = " << download->DebugString(true);
 
+  // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.
+  CHECK(!ContainsKey(history_downloads_, download->db_handle()));
+  int64 largest_handle = largest_db_handle_in_history_;
+  base::debug::Alias(&largest_handle);
+
   AddDownloadItemToHistory(download, db_handle);
 
   // If the download is still in progress, try to complete it.
@@ -842,6 +858,8 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
   if (download->IsInProgress()) {
     MaybeCompleteDownload(download);
   } else {
+    // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/84508
+    // is fixed.
     CHECK(download->IsCancelled())
         << " download = " << download->DebugString(true);
     in_progress_.erase(download_id);
@@ -978,6 +996,11 @@ void DownloadManager::OnSavePageItemAddedToPersistentStore(int32 download_id,
     NOTREACHED();
     return;
   }
+
+  // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.
+  CHECK(!ContainsKey(history_downloads_, download->db_handle()));
+  int64 largest_handle = largest_db_handle_in_history_;
+  base::debug::Alias(&largest_handle);
 
   AddDownloadItemToHistory(download, db_handle);
 

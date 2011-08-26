@@ -367,7 +367,7 @@ void DownloadItem::Cancel(bool update_history) {
   TransitionTo(CANCELLED);
   StopProgressTimer();
   if (update_history)
-    download_manager_->DownloadCancelled(download_id_);
+    download_manager_->DownloadCancelledInternal(this);
 }
 
 void DownloadItem::MarkAsComplete() {
@@ -701,6 +701,16 @@ FilePath DownloadItem::GetFileNameToReportUser() const {
 FilePath DownloadItem::GetUserVerifiedFilePath() const {
   return (safety_state_ == DownloadItem::SAFE) ?
       GetTargetFilePath() : full_path_;
+}
+
+void DownloadItem::OffThreadCancel(DownloadFileManager* file_manager) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  request_handle_.CancelRequest();
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          file_manager, &DownloadFileManager::CancelDownload, download_id_));
 }
 
 void DownloadItem::Init(bool active) {

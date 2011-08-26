@@ -583,7 +583,7 @@ class DownloadTest : public InProcessBrowserTest {
     return new DownloadsObserver(
         download_manager, num_downloads,
         DownloadItem::COMPLETE,  // Really done
-        false,                   // Bail on select file
+        true,                    // Bail on select file
         ON_DANGEROUS_DOWNLOAD_FAIL);
   }
 

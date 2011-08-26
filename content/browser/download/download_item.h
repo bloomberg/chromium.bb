@@ -170,7 +170,7 @@ class DownloadItem {
   // to display progress when the DownloadItem should be considered complete.
   void MarkAsComplete();
 
-  // Called by the delegate after it delayed completing the download in 
+  // Called by the delegate after it delayed completing the download in
   // DownloadManagerDelegate::ShouldCompleteDownload.
   void CompleteDelayedDownload();
 
@@ -321,6 +321,14 @@ class DownloadItem {
   bool NeedsRename() const {
     return state_info_.target_name != full_path_.BaseName();
   }
+
+  // Cancels the off-thread aspects of the download.
+  // TODO(rdsmith): This should be private and only called from
+  // DownloadItem::Cancel/Interrupt; it isn't now because we can't
+  // call those functions from
+  // DownloadManager::FileSelectionCancelled() without doing some
+  // rewrites of the DownloadManager queues.
+  void OffThreadCancel(DownloadFileManager* file_manager);
 
   std::string DebugString(bool verbose) const;
 

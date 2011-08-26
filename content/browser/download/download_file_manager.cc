@@ -364,7 +364,7 @@ void DownloadFileManager::CancelDownloadOnRename(int id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(download_manager,
-                        &DownloadManager::DownloadCancelled, id));
+                        &DownloadManager::CancelDownload, id));
 }
 
 void DownloadFileManager::EraseDownload(int id) {
