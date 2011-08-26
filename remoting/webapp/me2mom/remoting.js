@@ -196,6 +196,11 @@ remoting.setMode = function(mode) {
   }
   remoting.debug.log('App mode: ' + mode);
   remoting.currentMode = mode;
+  if (mode == remoting.AppMode.IN_SESSION) {
+    document.removeEventListener('keydown', remoting.checkHotkeys, false);
+  } else {
+    document.addEventListener('keydown', remoting.checkHotkeys, false);
+  }
 }
 
 /**
@@ -648,7 +653,10 @@ remoting.promptClose = function() {
   }
 }
 
-}());
+remoting.checkHotkeys = function(event) {
+  if (String.fromCharCode(event.which) == 'D') {
+    remoting.toggleDebugLog();
+  }
+}
 
-// Shortcut to save typing now that this is the only way to show the debug log.
-var tdl = remoting.toggleDebugLog;
+}());
