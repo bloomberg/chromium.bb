@@ -92,6 +92,7 @@ void Layer::Draw() {
   // Only blend for transparent child layers.
   // The root layer will clobber the cleared bg.
   texture_draw_params.blend = parent_ != NULL && !fills_bounds_opaquely_;
+  texture_draw_params.compositor_size = compositor_->size();
 
 #if defined(OS_WIN)
   texture_->Draw(texture_draw_params);

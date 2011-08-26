@@ -13,8 +13,8 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/gl/gl_surface_glx.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace {
@@ -22,8 +22,7 @@ namespace {
 class AcceleratedSurfaceContainerTouchEGL
     : public AcceleratedSurfaceContainerTouch {
  public:
-  AcceleratedSurfaceContainerTouchEGL(ui::CompositorGL* compositor,
-                                      const gfx::Size& size,
+  AcceleratedSurfaceContainerTouchEGL(const gfx::Size& size,
                                       uint64 surface_handle);
   // TextureGL implementation
   virtual void Draw(const ui::TextureDrawParams& params,
@@ -33,14 +32,14 @@ class AcceleratedSurfaceContainerTouchEGL
   ~AcceleratedSurfaceContainerTouchEGL();
 
   void* image_;
+
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouchEGL);
 };
 
 class AcceleratedSurfaceContainerTouchGLX
     : public AcceleratedSurfaceContainerTouch {
  public:
-  AcceleratedSurfaceContainerTouchGLX(ui::CompositorGL* compositor,
-                                      const gfx::Size& size,
+  AcceleratedSurfaceContainerTouchGLX(const gfx::Size& size,
                                       uint64 surface_handle);
   // TextureGL implementation
   virtual void Draw(const ui::TextureDrawParams& params,
@@ -51,6 +50,7 @@ class AcceleratedSurfaceContainerTouchGLX
 
   XID pixmap_;
   XID glx_pixmap_;
+
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerTouchGLX);
 };
 
@@ -62,12 +62,13 @@ class ScopedPtrXFree {
 };
 
 AcceleratedSurfaceContainerTouchEGL::AcceleratedSurfaceContainerTouchEGL(
-    ui::CompositorGL* compositor,
     const gfx::Size& size,
     uint64 surface_handle)
-    : AcceleratedSurfaceContainerTouch(compositor, size),
+    : AcceleratedSurfaceContainerTouch(size),
       image_(NULL) {
-  compositor_->MakeCurrent();
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+  instance->MakeSharedContextCurrent();
 
   image_ = eglCreateImageKHR(
       gfx::GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
@@ -84,6 +85,10 @@ AcceleratedSurfaceContainerTouchEGL::AcceleratedSurfaceContainerTouchEGL(
 }
 
 AcceleratedSurfaceContainerTouchEGL::~AcceleratedSurfaceContainerTouchEGL() {
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+  instance->MakeSharedContextCurrent();
+
   eglDestroyImageKHR(gfx::GLSurfaceEGL::GetHardwareDisplay(), image_);
   glFlush();
 }
@@ -91,7 +96,8 @@ AcceleratedSurfaceContainerTouchEGL::~AcceleratedSurfaceContainerTouchEGL() {
 void AcceleratedSurfaceContainerTouchEGL::Draw(
     const ui::TextureDrawParams& params,
     const gfx::Rect& clip_bounds_in_texture) {
-  DCHECK(compositor_->program_no_swizzle());
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
 
   ui::TextureDrawParams modified_params = params;
 
@@ -103,18 +109,21 @@ void AcceleratedSurfaceContainerTouchEGL::Draw(
 
   modified_params.transform = flipped;
 
-  DrawInternal(*compositor_->program_no_swizzle(),
+  DrawInternal(*instance->program_no_swizzle(),
                modified_params,
                clip_bounds_in_texture);
 }
 
 AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
-    ui::CompositorGL* compositor,
     const gfx::Size& size,
     uint64 surface_handle)
-    : AcceleratedSurfaceContainerTouch(compositor, size),
+    : AcceleratedSurfaceContainerTouch(size),
       pixmap_(0),
       glx_pixmap_(0) {
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+  instance->MakeSharedContextCurrent();
+
   // Create pixmap from window.
   Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
   int event_base, error_base;
@@ -186,7 +195,6 @@ AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
       dpy, fbconfigs.get()[config], pixmap_, pixmapAttribs);
 
   // Create texture.
-  compositor_->MakeCurrent();
   glGenTextures(1, &texture_id_);
   glBindTexture(GL_TEXTURE_2D, texture_id_);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -196,6 +204,10 @@ AcceleratedSurfaceContainerTouchGLX::AcceleratedSurfaceContainerTouchGLX(
 }
 
 AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+  instance->MakeSharedContextCurrent();
+
   Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
   if (glx_pixmap_)
     glXDestroyGLXPixmap(dpy, glx_pixmap_);
@@ -206,12 +218,14 @@ AcceleratedSurfaceContainerTouchGLX::~AcceleratedSurfaceContainerTouchGLX() {
 void AcceleratedSurfaceContainerTouchGLX::Draw(
     const ui::TextureDrawParams& params,
     const gfx::Rect& clip_bounds_in_texture) {
-  DCHECK(compositor_->program_no_swizzle());
+  ui::SharedResources* instance = ui::SharedResources::GetInstance();
+  DCHECK(instance);
+
   Display* dpy = gfx::GLSurfaceGLX::GetDisplay();
 
   glBindTexture(GL_TEXTURE_2D, texture_id_);
   glXBindTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT, NULL);
-  DrawInternal(*compositor_->program_no_swizzle(),
+  DrawInternal(*instance->program_no_swizzle(),
                params,
                clip_bounds_in_texture);
   glXReleaseTexImageEXT(dpy, glx_pixmap_, GLX_FRONT_LEFT_EXT);
@@ -220,25 +234,20 @@ void AcceleratedSurfaceContainerTouchGLX::Draw(
 }  // namespace
 
 AcceleratedSurfaceContainerTouch::AcceleratedSurfaceContainerTouch(
-    ui::CompositorGL* compositor,
-    const gfx::Size& size) :
-        TextureGL(compositor, size) {
+    const gfx::Size& size) : TextureGL(size) {
 }
 
 // static
 AcceleratedSurfaceContainerTouch*
 AcceleratedSurfaceContainerTouch::CreateAcceleratedSurfaceContainer(
-    ui::CompositorGL* compositor,
     const gfx::Size& size,
     uint64 surface_handle) {
   switch (gfx::GetGLImplementation()) {
     case gfx::kGLImplementationDesktopGL:
-      return new AcceleratedSurfaceContainerTouchGLX(compositor,
-                                                     size,
+      return new AcceleratedSurfaceContainerTouchGLX(size,
                                                      surface_handle);
     case gfx::kGLImplementationEGLGLES2:
-      return new AcceleratedSurfaceContainerTouchEGL(compositor,
-                                                     size,
+      return new AcceleratedSurfaceContainerTouchEGL(size,
                                                      surface_handle);
     default:
       NOTREACHED();

@@ -84,35 +84,6 @@ class TextureProgramSwizzleGL : public ui::TextureProgramGL {
   DISALLOW_COPY_AND_ASSIGN(TextureProgramSwizzleGL);
 };
 
-// We share between compositor contexts so that we don't have to compile
-// shaders if they have already been compiled in another context.
-class SharedResources {
- public:
-  static SharedResources* GetInstance();
-
-  // Creates a context with shaders active.
-  scoped_refptr<gfx::GLContext> CreateContext(gfx::GLSurface* surface);
-  void ContextDestroyed();
-
-  ui::TextureProgramGL* program_no_swizzle() {
-    return program_no_swizzle_.get();
-  }
-
-  ui::TextureProgramGL* program_swizzle() { return program_swizzle_.get(); }
-
- private:
-  friend struct DefaultSingletonTraits<SharedResources>;
-
-  SharedResources();
-  virtual ~SharedResources();
-
-  scoped_refptr<gfx::GLShareGroup> share_group_;
-  scoped_ptr<ui::TextureProgramGL> program_swizzle_;
-  scoped_ptr<ui::TextureProgramGL> program_no_swizzle_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedResources);
-};
-
 GLuint CompileShader(GLenum type, const GLchar* source) {
   GLuint shader = glCreateShader(type);
   if (!shader)
@@ -175,61 +146,6 @@ bool TextureProgramSwizzleGL::Initialize() {
   return InitializeCommon();
 }
 
-SharedResources::SharedResources() {
-}
-
-SharedResources::~SharedResources() {
-}
-
-// static
-SharedResources* SharedResources::GetInstance() {
-  return Singleton<SharedResources>::get();
-}
-
-scoped_refptr<gfx::GLContext> SharedResources::CreateContext(
-    gfx::GLSurface* surface) {
-  if (share_group_.get()) {
-    return gfx::GLContext::CreateGLContext(share_group_.get(), surface);
-  } else {
-    scoped_refptr<gfx::GLContext> context(
-        gfx::GLContext::CreateGLContext(NULL, surface));
-    context->MakeCurrent(surface);
-
-    if (!program_no_swizzle_.get()) {
-      scoped_ptr<ui::TextureProgramGL> temp_program(
-          new TextureProgramNoSwizzleGL());
-      if (!temp_program->Initialize()) {
-        LOG(ERROR) << "Unable to initialize shaders (context = "
-                   << static_cast<void*>(context.get()) << ")";
-        return NULL;
-      }
-      program_no_swizzle_.swap(temp_program);
-    }
-
-    if (!program_swizzle_.get()) {
-      scoped_ptr<ui::TextureProgramGL> temp_program(
-          new TextureProgramSwizzleGL());
-      if (!temp_program->Initialize()) {
-        LOG(ERROR) << "Unable to initialize shaders (context = "
-                   << static_cast<void*>(context.get()) << ")";
-        return NULL;
-      }
-      program_swizzle_.swap(temp_program);
-    }
-
-    share_group_ = context->share_group();
-    return context;
-  }
-}
-
-void SharedResources::ContextDestroyed() {
-  if (share_group_.get() && share_group_->GetHandle() == NULL) {
-    share_group_ = NULL;
-    program_no_swizzle_.reset();
-    program_swizzle_.reset();
-  }
-}
-
 }  // namespace
 
 namespace ui {
@@ -275,20 +191,117 @@ bool TextureProgramGL::InitializeCommon() {
   return true;
 }
 
-TextureGL::TextureGL(CompositorGL* compositor) : texture_id_(0),
-                                                 compositor_(compositor) {
+SharedResources::SharedResources() : initialized_(false) {
 }
 
-TextureGL::TextureGL(CompositorGL* compositor,
-                     const gfx::Size& size)
-    : texture_id_(0),
-      size_(size),
-      compositor_(compositor) {
+
+SharedResources::~SharedResources() {
+}
+
+// static
+SharedResources* SharedResources::GetInstance() {
+  // We use LeakySingletonTraits so that we don't race with
+  // the tear down of the gl_bindings.
+  SharedResources* instance = Singleton<SharedResources,
+      LeakySingletonTraits<SharedResources> >::get();
+  if (instance->Initialize()) {
+    return instance;
+  } else {
+    instance->Destroy();
+    return NULL;
+  }
+}
+
+bool SharedResources::Initialize() {
+  if (initialized_)
+    return true;
+
+  {
+    // The following line of code exists soley to disable IO restrictions
+    // on this thread long enough to perform the GL bindings.
+    // TODO(wjmaclean) Remove this when GL initialisation cleaned up.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    if (!gfx::GLSurface::InitializeOneOff() ||
+        gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
+      LOG(ERROR) << "Could not load the GL bindings";
+      return false;
+    }
+  }
+
+  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1));
+  if (!surface_.get()) {
+    LOG(ERROR) << "Unable to create offscreen GL surface.";
+    return false;
+  }
+
+  context_ = gfx::GLContext::CreateGLContext(NULL, surface_.get());
+  if (!context_.get()) {
+    LOG(ERROR) << "Unable to create GL context.";
+    return false;
+  }
+
+  program_no_swizzle_.reset();
+  program_swizzle_.reset();
+
+  context_->MakeCurrent(surface_.get());
+
+  scoped_ptr<ui::TextureProgramGL> temp_program_no_swizzle(
+      new TextureProgramNoSwizzleGL());
+  if (!temp_program_no_swizzle->Initialize()) {
+    LOG(ERROR) << "Unable to initialize shader.";
+    return false;
+  }
+
+  scoped_ptr<ui::TextureProgramGL> temp_program_swizzle(
+      new TextureProgramSwizzleGL());
+  if (!temp_program_swizzle->Initialize()) {
+    LOG(ERROR) << "Unable to initialize shader.";
+    return false;
+  }
+
+  program_no_swizzle_.swap(temp_program_no_swizzle);
+  program_swizzle_.swap(temp_program_swizzle);
+
+  initialized_ = true;
+  return true;
+}
+
+void SharedResources::Destroy() {
+  program_swizzle_.reset();
+  program_no_swizzle_.reset();
+
+  context_ = NULL;
+  surface_ = NULL;
+
+  initialized_ = false;
+}
+
+bool SharedResources::MakeSharedContextCurrent() {
+  if (!initialized_)
+    return false;
+  else
+    return context_->MakeCurrent(surface_.get());
+}
+
+scoped_refptr<gfx::GLContext> SharedResources::CreateContext(
+    gfx::GLSurface* surface) {
+  if (initialized_)
+    return gfx::GLContext::CreateGLContext(context_->share_group(), surface);
+  else
+    return NULL;
+}
+
+TextureGL::TextureGL() : texture_id_(0) {
+}
+
+TextureGL::TextureGL(const gfx::Size& size) : texture_id_(0), size_(size) {
 }
 
 TextureGL::~TextureGL() {
   if (texture_id_) {
-    compositor_->MakeCurrent();
+    SharedResources* instance = SharedResources::GetInstance();
+    DCHECK(instance);
+    instance->MakeSharedContextCurrent();
     glDeleteTextures(1, &texture_id_);
   }
 }
@@ -333,21 +346,27 @@ void TextureGL::SetCanvas(const SkCanvas& canvas,
 }
 
 void TextureGL::Draw(const ui::TextureDrawParams& params) {
-  DCHECK(compositor_->program_swizzle());
   Draw(params, gfx::Rect(0, 0, size_.width(), size_.height()));
 }
 
 void TextureGL::Draw(const ui::TextureDrawParams& params,
                      const gfx::Rect& clip_bounds_in_texture) {
-  DCHECK(compositor_->program_swizzle());
-  DrawInternal(*compositor_->program_swizzle(), params, clip_bounds_in_texture);
+  SharedResources* instance = SharedResources::GetInstance();
+  DCHECK(instance);
+  DrawInternal(*instance->program_swizzle(),
+               params,
+               clip_bounds_in_texture);
 }
+
 void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
                              const ui::TextureDrawParams& params,
                              const gfx::Rect& clip_bounds_in_texture) {
-   // clip clip_bounds_in_layer to size of texture
-   gfx::Rect clip_bounds = clip_bounds_in_texture.Intersect(
-       gfx::Rect(gfx::Point(0, 0), size_));
+  // Clip clip_bounds_in_texture to size of texture.
+  gfx::Rect clip_bounds = clip_bounds_in_texture.Intersect(
+      gfx::Rect(gfx::Point(0, 0), size_));
+
+  // Verify that compositor_size has been set.
+  DCHECK(params.compositor_size != gfx::Size(0,0));
 
   if (params.blend)
     glEnable(GL_BLEND);
@@ -360,8 +379,6 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
   glUniform1i(program.u_tex_loc(), 0);
   glBindTexture(GL_TEXTURE_2D, texture_id_);
 
-  gfx::Size window_size = compositor_->GetSize();
-
   ui::Transform t;
   t.ConcatTranslate(1, 1);
   t.ConcatScale(size_.width()/2.0f, size_.height()/2.0f);
@@ -370,15 +387,16 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
 
   t.ConcatTransform(params.transform);  // Add view transform.
 
-  t.ConcatTranslate(0, -window_size.height());
+  t.ConcatTranslate(0, -params.compositor_size.height());
   t.ConcatScale(1, -1);
-  t.ConcatTranslate(-window_size.width() / 2.0f, -window_size.height() / 2.0f);
-  t.ConcatScale(2.0f / window_size.width(), 2.0f / window_size.height());
+  t.ConcatTranslate(-params.compositor_size.width() / 2.0f,
+                    -params.compositor_size.height() / 2.0f);
+  t.ConcatScale(2.0f / params.compositor_size.width(),
+                2.0f / params.compositor_size.height());
 
   GLfloat m[16];
   t.matrix().asColMajorf(m);
 
-  // TODO(pkotwicz) window_size != size_, fix this
   SkRect texture_rect = SkRect::MakeXYWH(
       clip_bounds.x(),
       clip_bounds.y(),
@@ -429,7 +447,7 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
 
 CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
                            const gfx::Size& size)
-    : size_(size),
+    : Compositor(size),
       started_(false) {
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, widget);
   gl_context_ = SharedResources::GetInstance()->
@@ -441,34 +459,24 @@ CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
 
 CompositorGL::~CompositorGL() {
   gl_context_ = NULL;
-  SharedResources::GetInstance()->ContextDestroyed();
 }
 
 void CompositorGL::MakeCurrent() {
   gl_context_->MakeCurrent(gl_surface_.get());
 }
 
-gfx::Size CompositorGL::GetSize() {
-  return size_;
-}
-
-TextureProgramGL* CompositorGL::program_no_swizzle() {
-  return SharedResources::GetInstance()->program_no_swizzle();
-}
-
-TextureProgramGL* CompositorGL::program_swizzle() {
-  return SharedResources::GetInstance()->program_swizzle();
+void CompositorGL::OnWidgetSizeChanged() {
 }
 
 Texture* CompositorGL::CreateTexture() {
-  Texture* texture = new TextureGL(this);
+  Texture* texture = new TextureGL();
   return texture;
 }
 
 void CompositorGL::NotifyStart() {
   started_ = true;
   gl_context_->MakeCurrent(gl_surface_.get());
-  glViewport(0, 0, size_.width(), size_.height());
+  glViewport(0, 0, size().width(), size().height());
   glColorMask(true, true, true, true);
 
 #if defined(DEBUG)
@@ -494,21 +502,13 @@ void CompositorGL::SchedulePaint() {
   NOTIMPLEMENTED();
 }
 
-void CompositorGL::OnWidgetSizeChanged(const gfx::Size& size) {
-  size_ = size;
-}
-
 // static
 Compositor* Compositor::Create(gfx::AcceleratedWidget widget,
                                const gfx::Size& size) {
-  // The following line of code exists soley to disable IO restrictions
-  // on this thread long enough to perform the GL bindings.
-  // TODO(wjmaclean) Remove this when GL initialisation cleaned up.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  if (gfx::GLSurface::InitializeOneOff() &&
-      gfx::GetGLImplementation() != gfx::kGLImplementationNone)
+  if (SharedResources::GetInstance() == NULL)
+    return NULL;
+  else
     return new CompositorGL(widget, size);
-  return NULL;
 }
 
 }  // namespace ui

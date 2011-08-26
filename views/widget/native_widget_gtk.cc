@@ -1350,7 +1350,7 @@ void NativeWidgetGtk::OnSizeAllocate(GtkWidget* widget,
     return;
   size_ = new_size;
   if (compositor_.get())
-    compositor_->OnWidgetSizeChanged(size_);
+    compositor_->WidgetSizeChanged(size_);
   delegate_->OnNativeWidgetSizeChanged(size_);
 
   if (GetWidget()->non_client_view()) {

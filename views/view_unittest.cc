@@ -2358,7 +2358,9 @@ class TestCompositor : public ui::Compositor {
   virtual void NotifyEnd() OVERRIDE {}
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE {}
   virtual void SchedulePaint() OVERRIDE {}
-  virtual void OnWidgetSizeChanged(const gfx::Size& size) OVERRIDE {}
+
+ protected:
+  virtual void OnWidgetSizeChanged() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCompositor);

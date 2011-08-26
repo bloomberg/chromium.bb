@@ -2304,7 +2304,7 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
   gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
               std::max(0, static_cast<int>(r.bottom - r.top)));
   if (compositor_.get())
-    compositor_->OnWidgetSizeChanged(s);
+    compositor_->WidgetSizeChanged(s);
   delegate_->OnNativeWidgetSizeChanged(s);
   if (use_layered_buffer_) {
     layered_window_contents_.reset(
