@@ -189,21 +189,15 @@ class ExtensionImpl : public ExtensionBase {
 
 // Returns true if the extension running in the given |context| has sufficient
 // permissions to access the data.
-static bool HasSufficientPermissions(ContextInfo* context,
+static bool HasSufficientPermissions(RenderView* render_view,
                                      const GURL& event_url) {
-  v8::Context::Scope context_scope(context->context);
-
   // During unit tests, we might be invoked without a v8 context. In these
   // cases, we only allow empty event_urls and short-circuit before retrieving
   // the render view from the current context.
   if (!event_url.is_valid())
     return true;
 
-  RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
-  if (!renderview)
-    return false;
-
-  WebDocument document = renderview->webview()->mainFrame()->document();
+  WebDocument document = render_view->webview()->mainFrame()->document();
   return GURL(document.url()).SchemeIs(chrome::kExtensionScheme) &&
        document.securityOrigin().canRequest(event_url);
 }
@@ -364,7 +358,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
   // itself might not be registered, but can still be a parent frame.
   for (ContextList::iterator it = GetContexts().begin();
        it != GetContexts().end(); ) {
-    if ((*it)->frame == frame) {
+    if ((*it)->unsafe_frame == frame) {
       UnregisterContext(it, false);
       // UnregisterContext will remove |it| from the list, but may also
       // modify the rest of the list as a result of calling into javascript.
@@ -391,20 +385,25 @@ void EventBindings::CallFunction(const std::string& extension_id,
   V8ValueConverter converter;
   for (ContextList::iterator it = contexts.begin();
        it != contexts.end(); ++it) {
-    if (render_view) {
-      RenderView* context_render_view =
-          RenderView::FromWebView((*it)->frame->view());
-      if (render_view != context_render_view)
-        continue;
-    }
+    if ((*it)->context.IsEmpty())
+      continue;
 
     if (!extension_id.empty() && extension_id != (*it)->extension_id)
       continue;
 
-    if ((*it)->context.IsEmpty())
+    WebFrame* context_frame = WebFrame::frameForContext((*it)->context);
+    if (!context_frame || !context_frame->view())
       continue;
 
-    if (!HasSufficientPermissions(it->get(), event_url))
+    RenderView* context_render_view =
+        RenderView::FromWebView(context_frame->view());
+    if (!context_render_view)
+      continue;
+
+    if (render_view && render_view != context_render_view)
+      continue;
+
+    if (!HasSufficientPermissions(context_render_view, event_url))
       continue;
 
     v8::Local<v8::Context> context(*((*it)->context));

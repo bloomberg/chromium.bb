@@ -91,10 +91,10 @@ struct ContextInfo {
   // The extension ID this context is associated with.
   std::string extension_id;
 
-  // The frame the context is associated with. We can't always get this from
-  // WebFrame::frameForContext() (in particular as the the frame is navigating
-  // or being destroyed).
-  WebKit::WebFrame* frame;
+  // The frame the context is associated with. ContextInfo can outlive its
+  // frame, so this should not be dereferenced. It is stored only for use for
+  // comparison.
+  void* unsafe_frame;
 
   // A count of the number of events that are listening in this context. When
   // this is zero, |context| will be a weak handle.

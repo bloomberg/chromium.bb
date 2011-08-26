@@ -133,7 +133,7 @@ ContextInfo::ContextInfo(v8::Persistent<v8::Context> context,
                          WebFrame* frame)
     : context(context),
       extension_id(extension_id),
-      frame(frame),
+      unsafe_frame(frame),
       num_connected_events(0) {
 }
 
