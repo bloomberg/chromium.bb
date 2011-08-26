@@ -373,13 +373,13 @@ void RenderWidgetHostViewViews::SelectRect(const gfx::Point& start,
 }
 
 bool RenderWidgetHostViewViews::IsCommandIdChecked(int command_id) const {
-  // TODO(varunjain): implement this and other menu delegate methods.
   NOTREACHED();
   return true;
 }
 
 bool RenderWidgetHostViewViews::IsCommandIdEnabled(int command_id) const {
-  NOTREACHED();
+  // TODO(varunjain): implement this.
+  NOTIMPLEMENTED();
   return true;
 }
 
@@ -391,7 +391,8 @@ bool RenderWidgetHostViewViews::GetAcceleratorForCommandId(
 }
 
 void RenderWidgetHostViewViews::ExecuteCommand(int command_id) {
-  NOTREACHED();
+  // TODO(varunjain): implement this.
+  NOTIMPLEMENTED();
 }
 
 std::string RenderWidgetHostViewViews::GetClassName() const {
