@@ -265,8 +265,14 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
   // this is the only thread that writes to the database.  We also don't have
   // to worry about the sync model getting out of sync, because changes are
   // propagated to the ChangeProcessor on this thread.
-  return WriteToHistoryBackend(&titles, &new_urls, &updated_urls,
-                               &new_visits, NULL);
+  if (!WriteToHistoryBackend(&titles, &new_urls, &updated_urls,
+                             &new_visits, NULL)) {
+    error->Reset(FROM_HERE,
+                 "Failed to write to history backend",
+                 model_type());
+    return false;
+  }
+  return true;
 }
 
 bool TypedUrlModelAssociator::DeleteAllNodes(

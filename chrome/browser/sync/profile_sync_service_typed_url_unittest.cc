@@ -682,3 +682,30 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(0U, new_sync_entries.size());
 }
+
+TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
+  history::VisitVector native_visits;
+  history::VisitVector sync_visits;
+  history::URLRow native_entry(MakeTypedUrlEntry("http://native.com", "entry",
+                                                 2, 15, false, &native_visits));
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://sync.com", "entry",
+                                               3, 16, false, &sync_visits));
+
+  std::vector<history::URLRow> native_entries;
+  native_entries.push_back(native_entry);
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
+  EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
+      WillRepeatedly(DoAll(SetArgumentPointee<1>(native_visits), Return(true)));
+  EXPECT_CALL((*history_backend_.get()),
+      AddVisits(_, _, history::SOURCE_SYNCED)).WillRepeatedly(Return(false));
+
+  std::vector<history::URLRow> sync_entries;
+  sync_entries.push_back(sync_entry);
+  AddTypedUrlEntriesTask task(this, sync_entries);
+
+  EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
+      WillRepeatedly(Return(false));
+  StartSyncService(&task);
+  ASSERT_TRUE(service_->unrecoverable_error_detected());
+}
