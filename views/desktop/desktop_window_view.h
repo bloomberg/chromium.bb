@@ -6,16 +6,15 @@
 #define VIEWS_DESKTOP_DESKTOP_WINDOW_H_
 
 #include "views/view.h"
-#include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 
 namespace views {
 class NativeWidgetViews;
+class Widget;
 
 namespace desktop {
 
-class DesktopWindowView : public WidgetDelegateView,
-                          public Widget::Observer {
+class DesktopWindowView : public WidgetDelegateView {
  public:
   // The look and feel will be slightly different for different kinds of
   // desktop.
@@ -31,12 +30,6 @@ class DesktopWindowView : public WidgetDelegateView,
   virtual ~DesktopWindowView();
 
   static void CreateDesktopWindow(DesktopType type);
-
-  // Changes activation to the specified Widget. The currently active Widget
-  // is de-activated.
-  void ActivateWidget(Widget* widget);
-
-  NativeWidgetViews* active_native_widget() { return active_native_widget_; }
 
   void CreateTestWindow(const std::wstring& title,
                         SkColor color,
@@ -64,12 +57,6 @@ class DesktopWindowView : public WidgetDelegateView,
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 
-  // Overridden from Widget::Observer.
-  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
-  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
-  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
-
-  NativeWidgetViews* active_native_widget_;
   DesktopType type_;
   Widget* widget_;
 

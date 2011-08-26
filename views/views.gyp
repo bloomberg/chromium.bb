@@ -718,8 +718,6 @@
         'desktop/desktop_background.h',
         'desktop/desktop_window_manager.cc',
         'desktop/desktop_window_manager.h',
-        'desktop/desktop_window_root_view.cc',
-        'desktop/desktop_window_root_view.h',
         'desktop/desktop_window_view.cc',
         'desktop/desktop_window_view.h',
       ],

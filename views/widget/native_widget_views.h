@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "ui/gfx/transform.h"
 #include "views/widget/native_widget_private.h"
+#include "views/widget/widget.h"
 
 namespace views {
 namespace desktop {
@@ -43,7 +44,7 @@ class VIEWS_EXPORT NativeWidgetViews : public internal::NativeWidgetPrivate {
     delete_native_view_ = delete_native_view;
   }
 
-  internal::NativeWidgetDelegate* delegate() { return delegate_; }
+  internal::NativeWidgetDelegate* delegate() const { return delegate_; }
 
  protected:
   friend class NativeWidgetView;

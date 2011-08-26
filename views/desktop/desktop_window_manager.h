@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
+#include "views/widget/widget.h"
 #include "views/widget/window_manager.h"
 
 namespace gfx {
@@ -14,7 +15,6 @@ class Point;
 }
 
 namespace views {
-class Widget;
 
 namespace desktop {
 class WindowController;
@@ -22,8 +22,9 @@ class WindowController;
 // A tentative window manager for views destktop until we have *right*
 // implementation based on aura/layer API. This is minimum
 // implmenetation and complicated actio like moving transformed window
-// doesn't work.  TODO(oshima): move active widget to WindowManager.
-class DesktopWindowManager : public views::WindowManager {
+// doesn't work.
+class DesktopWindowManager : public views::WindowManager,
+                             public Widget::Observer {
  public:
   DesktopWindowManager(Widget* desktop);
   virtual ~DesktopWindowManager();
@@ -37,16 +38,28 @@ class DesktopWindowManager : public views::WindowManager {
   virtual bool SetMouseCapture(views::Widget* widget) OVERRIDE;
   virtual bool ReleaseMouseCapture(views::Widget* widget) OVERRIDE;
   virtual bool HasMouseCapture(const views::Widget* widget) const OVERRIDE;
+  virtual bool HandleKeyEvent(views::Widget* widget,
+                              const views::KeyEvent& event) OVERRIDE;
   virtual bool HandleMouseEvent(views::Widget* widget,
                                 const views::MouseEvent& event) OVERRIDE;
 
+  virtual void Register(Widget* widget) OVERRIDE;
+
  private:
+  // Overridden from Widget::Observer.
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
+  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
+
   void SetMouseCapture();
   void ReleaseMouseCapture();
   bool HasMouseCapture() const;
 
+  void Activate(Widget* widget);
+
   views::Widget* desktop_;
   views::Widget* mouse_capture_;
+  views::Widget* active_widget_;
   scoped_ptr<WindowController> window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowManager);

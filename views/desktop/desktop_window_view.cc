@@ -7,7 +7,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/transform.h"
 #include "views/desktop/desktop_background.h"
-#include "views/desktop/desktop_window_root_view.h"
 #include "views/desktop/desktop_window_manager.h"
 #include "views/layer_property_setter.h"
 #include "views/widget/native_widget_view.h"
@@ -39,23 +38,11 @@ class DesktopWindow : public Widget {
 
  private:
   // Overridden from Widget:
-  virtual internal::RootView* CreateRootView() OVERRIDE {
-    return new DesktopWindowRootView(desktop_window_view_, this);
-  }
-
   virtual bool OnKeyEvent(const KeyEvent& event) OVERRIDE {
-    NativeWidgetViews* native_widget =
-        desktop_window_view_->active_native_widget();
-    return native_widget ? native_widget->OnKeyEvent(event) : false;
+    return WindowManager::Get()->HandleKeyEvent(this, event);
   }
 
   virtual bool OnMouseEvent(const MouseEvent& event) {
-    if (event.type() == ui::ET_MOUSEWHEEL) {
-      NativeWidgetViews* native_widget =
-          desktop_window_view_->active_native_widget();
-      if (native_widget)
-        return native_widget->delegate()->OnMouseEvent(event);
-    }
     return WindowManager::Get()->HandleMouseEvent(this, event) ||
         Widget::OnMouseEvent(event);
   }
@@ -111,8 +98,7 @@ class TestWindowContentView : public WidgetDelegateView {
 DesktopWindowView* DesktopWindowView::desktop_window_view = NULL;
 
 DesktopWindowView::DesktopWindowView(DesktopType type)
-    : active_native_widget_(NULL),
-      type_(type) {
+    : type_(type) {
   switch (type_) {
     case DESKTOP_DEFAULT:
     case DESKTOP_NETBOOK:
@@ -156,18 +142,6 @@ void DesktopWindowView::CreateDesktopWindow(DesktopType type) {
   window->Show();
 }
 
-void DesktopWindowView::ActivateWidget(Widget* widget) {
-  if (widget && widget->IsActive())
-    return;
-
-  if (widget) {
-    if (!widget->HasObserver(this))
-      widget->AddObserver(this);
-    widget->Activate();
-  }
-}
-
-
 void DesktopWindowView::CreateTestWindow(const std::wstring& title,
                                          SkColor color,
                                          gfx::Rect initial_bounds,
@@ -196,15 +170,11 @@ void DesktopWindowView::Layout() {
 
 void DesktopWindowView::ViewHierarchyChanged(
     bool is_add, View* parent, View* child) {
-  if (!is_add &&
-      active_native_widget_ &&
-      active_native_widget_->GetView() == child) {
-    active_native_widget_ = NULL;
-  } else if (is_add &&
-      child->GetClassName() == internal::NativeWidgetView::kViewClassName) {
-    internal::NativeWidgetView* native_widget_view =
-        static_cast<internal::NativeWidgetView*>(child);
-    native_widget_view->GetAssociatedWidget()->AddObserver(this);
+  if (child->GetClassName() == internal::NativeWidgetView::kViewClassName) {
+    Widget* widget =
+        static_cast<internal::NativeWidgetView*>(child)->GetAssociatedWidget();
+    if (is_add)
+      WindowManager::Get()->Register(widget);
   }
 }
 
@@ -261,28 +231,6 @@ NonClientFrameView* DesktopWindowView::CreateNonClientFrameView() {
       return new NativeFrameView(widget_);
   }
   return NULL;
-}
-
-void DesktopWindowView::OnWidgetClosing(Widget* widget) {
-  if (active_native_widget_ && static_cast<internal::NativeWidgetPrivate*>
-      (active_native_widget_)->GetWidget() == widget)
-    active_native_widget_ = NULL;
-}
-
-void DesktopWindowView::OnWidgetVisibilityChanged(Widget* widget,
-                                                  bool visible) {
-}
-
-void DesktopWindowView::OnWidgetActivationChanged(Widget* widget,
-                                                  bool active) {
-  if (active) {
-    if (active_native_widget_)
-      active_native_widget_->GetWidget()->Deactivate();
-    active_native_widget_ =
-        static_cast<NativeWidgetViews*>(widget->native_widget());
-  } else if (widget == active_native_widget_->GetWidget()) {
-    active_native_widget_ = NULL;
-  }
 }
 
 }  // namespace desktop

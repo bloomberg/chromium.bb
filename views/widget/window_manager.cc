@@ -48,6 +48,11 @@ class NullWindowManager : public views::WindowManager {
     return mouse_capture_ == widget;
   }
 
+  virtual bool HandleKeyEvent(views::Widget* widget,
+                              const views::KeyEvent& event) OVERRIDE {
+    return false;
+  }
+
   virtual bool HandleMouseEvent(views::Widget* widget,
                                 const views::MouseEvent& event) OVERRIDE {
     if (mouse_capture_) {
@@ -58,6 +63,8 @@ class NullWindowManager : public views::WindowManager {
     }
     return false;
   }
+
+  void Register(views::Widget* widget) OVERRIDE {}
 
  private:
   views::Widget* mouse_capture_;

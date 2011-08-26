@@ -66,7 +66,10 @@ class ScopedEvent {
 // WidgetDelegate is supplied.
 class DefaultWidgetDelegate : public WidgetDelegate {
  public:
-  explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {}
+  DefaultWidgetDelegate(Widget* widget, const Widget::InitParams& params)
+      : widget_(widget),
+        can_activate_(params.type != Widget::InitParams::TYPE_POPUP) {
+  }
   virtual ~DefaultWidgetDelegate() {}
 
   // Overridden from WidgetDelegate:
@@ -80,8 +83,13 @@ class DefaultWidgetDelegate : public WidgetDelegate {
     return widget_;
   }
 
+  virtual bool CanActivate() const {
+    return can_activate_;
+  }
+
  private:
   Widget* widget_;
+  bool can_activate_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultWidgetDelegate);
 };
@@ -282,8 +290,8 @@ void Widget::Init(const InitParams& params) {
       (!params.child &&
        params.type != InitParams::TYPE_CONTROL &&
        params.type != InitParams::TYPE_TOOLTIP);
-  widget_delegate_ =
-      params.delegate ? params.delegate : new DefaultWidgetDelegate(this);
+  widget_delegate_ = params.delegate ?
+      params.delegate : new DefaultWidgetDelegate(this, params);
   ownership_ = params.ownership;
   native_widget_ = params.native_widget ?
       params.native_widget->AsNativeWidgetPrivate() :
