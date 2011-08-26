@@ -1224,7 +1224,8 @@ class EmergeQueue(object):
     # Schedule more jobs.
     while self._ready and len(self._jobs) < needed_jobs:
       score, pkg = heapq.heappop(self._ready)
-      self._Schedule(pkg)
+      if pkg not in self._failed:
+        self._Schedule(pkg)
 
   def _Print(self, line):
     """Print a single line."""
@@ -1374,11 +1375,12 @@ class EmergeQueue(object):
 
       seconds = time.time() - job.start_timestamp
       details = "%s (in %dm%.1fs)" % (target, seconds / 60, seconds % 60)
+      previously_failed = target in self._failed
 
       # Complain if necessary.
       if job.retcode != 0:
         # Handle job failure.
-        if target in self._failed:
+        if previously_failed:
           # If this job has failed previously, give up.
           self._Print("Failed %s. Your build has failed." % details)
         else:
@@ -1387,15 +1389,21 @@ class EmergeQueue(object):
           self._failed.add(target)
           self._Print("Failed %s, retrying later." % details)
       else:
-        if target in self._failed and self._retry_queue:
+        if previously_failed:
+          # Remove target from list of failed packages.
+          self._failed.remove(target)
+
+        self._Print("Completed %s" % details)
+
+        # Mark as completed and unblock waiting ebuilds.
+        self._Finish(target)
+
+        if previously_failed and self._retry_queue:
           # If we have successfully retried a failed package, and there
           # are more failed packages, try the next one. We will only have
           # one retrying package actively running at a time.
           self._Retry()
 
-        self._Print("Completed %s" % details)
-        # Mark as completed and unblock waiting ebuilds.
-        self._Finish(target)
 
       # Schedule pending jobs and print an update.
       self._ScheduleLoop()
