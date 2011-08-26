@@ -1229,6 +1229,54 @@ def GenUsage(parser, command):
   parser.epilog = getattr(obj, 'epilog', None)
 
 
+def Parser():
+  """Returns the default parser."""
+  parser = optparse.OptionParser(version='%prog ' + __version__)
+  parser.add_option('-j', '--jobs', default=1, type='int',
+                    help='Specify how many SCM commands can run in parallel; '
+                          'default=%default')
+  parser.add_option('-v', '--verbose', action='count', default=0,
+                    help='Produces additional output for diagnostics. Can be '
+                          'used up to three times for more logging info.')
+  parser.add_option('--gclientfile', dest='config_filename',
+                    default=os.environ.get('GCLIENT_FILE', '.gclient'),
+                    help='Specify an alternate %default file')
+  # Integrate standard options processing.
+  old_parser = parser.parse_args
+  def Parse(args):
+    (options, args) = old_parser(args)
+    level = None
+    if options.verbose == 2:
+      level = logging.INFO
+    elif options.verbose > 2:
+      level = logging.DEBUG
+    logging.basicConfig(level=level,
+        format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
+    options.entries_filename = options.config_filename + '_entries'
+    if options.jobs < 1:
+      parser.error('--jobs must be 1 or higher')
+
+    # These hacks need to die.
+    if not hasattr(options, 'revisions'):
+      # GClient.RunOnDeps expects it even if not applicable.
+      options.revisions = []
+    if not hasattr(options, 'head'):
+      options.head = None
+    if not hasattr(options, 'nohooks'):
+      options.nohooks = True
+    if not hasattr(options, 'deps_os'):
+      options.deps_os = None
+    if not hasattr(options, 'manually_grab_svn_rev'):
+      options.manually_grab_svn_rev = None
+    if not hasattr(options, 'force'):
+      options.force = None
+    return (options, args)
+  parser.parse_args = Parse
+  # We don't want wordwrapping in epilog (usually examples)
+  parser.format_epilog = lambda _: parser.epilog or ''
+  return parser
+
+
 def Main(argv):
   """Doesn't parse the arguments here, just find the right subcommand to
   execute."""
@@ -1247,49 +1295,7 @@ def Main(argv):
     CMDhelp.usage = ('\n\nCommands are:\n' + '\n'.join([
         '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
         for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
-    parser = optparse.OptionParser(version='%prog ' + __version__)
-    parser.add_option('-j', '--jobs', default=1, type='int',
-                      help='Specify how many SCM commands can run in parallel; '
-                           'default=%default')
-    parser.add_option('-v', '--verbose', action='count', default=0,
-                      help='Produces additional output for diagnostics. Can be '
-                           'used up to three times for more logging info.')
-    parser.add_option('--gclientfile', dest='config_filename',
-                      default=os.environ.get('GCLIENT_FILE', '.gclient'),
-                      help='Specify an alternate %default file')
-    # Integrate standard options processing.
-    old_parser = parser.parse_args
-    def Parse(args):
-      (options, args) = old_parser(args)
-      level = None
-      if options.verbose == 2:
-        level = logging.INFO
-      elif options.verbose > 2:
-        level = logging.DEBUG
-      logging.basicConfig(level=level,
-          format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
-      options.entries_filename = options.config_filename + '_entries'
-      if options.jobs < 1:
-        parser.error('--jobs must be 1 or higher')
-
-      # These hacks need to die.
-      if not hasattr(options, 'revisions'):
-        # GClient.RunOnDeps expects it even if not applicable.
-        options.revisions = []
-      if not hasattr(options, 'head'):
-        options.head = None
-      if not hasattr(options, 'nohooks'):
-        options.nohooks = True
-      if not hasattr(options, 'deps_os'):
-        options.deps_os = None
-      if not hasattr(options, 'manually_grab_svn_rev'):
-        options.manually_grab_svn_rev = None
-      if not hasattr(options, 'force'):
-        options.force = None
-      return (options, args)
-    parser.parse_args = Parse
-    # We don't want wordwrapping in epilog (usually examples)
-    parser.format_epilog = lambda _: parser.epilog or ''
+    parser = Parser()
     if argv:
       command = Command(argv[0])
       if command:
