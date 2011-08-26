@@ -19,6 +19,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/win_util.h"
 #include "ui/base/win/window_impl.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout/layout_manager.h"
@@ -51,14 +52,6 @@ VIEWS_EXPORT void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
                                             gfx::Rect* child_rect,
                                             int padding);
 }  // namespace internal
-
-// A Windows message reflected from other windows. This message is sent
-// with the following arguments:
-// hWnd - Target window
-// uMsg - kReflectedMessage
-// wParam - Should be 0
-// lParam - Pointer to MSG struct containing the original message.
-const int kReflectedMessage = WM_APP + 3;
 
 // These two messages aren't defined in winuser.h, but they are sent to windows
 // with captions. They appear to paint the window caption and frame.
@@ -296,7 +289,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
 
     // Reflected message handler
-    MESSAGE_HANDLER_EX(kReflectedMessage, OnReflectedMessage)
+    MESSAGE_HANDLER_EX(base::win::kReflectedMessage, OnReflectedMessage)
 
     // CustomFrameWindow hacks
     MESSAGE_HANDLER_EX(WM_NCUAHDRAWCAPTION, OnNCUAHDrawCaption)

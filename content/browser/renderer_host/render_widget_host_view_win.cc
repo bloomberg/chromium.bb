@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/win_util.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
@@ -51,11 +52,9 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-#include "views/accessibility/native_view_accessibility_win.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_util_win.h"
-// Included for views::kReflectedMessage - TODO(beng): move this to win_util.h!
-#include "views/widget/native_widget_win.h"
+#include "views/widget/widget.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
@@ -1432,7 +1431,7 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
     new_message.lParam = lparam;
 
     handled_by_TabContents =
-        !!::SendMessage(GetParent(), views::kReflectedMessage, 0,
+        !!::SendMessage(GetParent(), base::win::kReflectedMessage, 0,
                         reinterpret_cast<LPARAM>(&new_message));
   }
 
