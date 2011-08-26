@@ -20,15 +20,13 @@ namespace remoting {
 
 class XmppIqRequest : public IqRequest, public buzz::XmppIqHandler {
  public:
-  typedef Callback1<const buzz::XmlElement*>::Type ReplyCallback;
-
   XmppIqRequest(MessageLoop* message_loop, buzz::XmppClient* xmpp_client);
   virtual ~XmppIqRequest();
 
   // IqRequest interface.
   virtual void SendIq(const std::string& type, const std::string& addressee,
                       buzz::XmlElement* iq_body) OVERRIDE;
-  virtual void set_callback(ReplyCallback* callback) OVERRIDE;
+  virtual void set_callback(const ReplyCallback& callback) OVERRIDE;
 
   // buzz::XmppIqHandler interface.
   virtual void IqResponse(buzz::XmppIqCookie cookie,
@@ -44,7 +42,7 @@ class XmppIqRequest : public IqRequest, public buzz::XmppIqHandler {
   MessageLoop* message_loop_;
   buzz::XmppClient* xmpp_client_;
   buzz::XmppIqCookie cookie_;
-  scoped_ptr<ReplyCallback> callback_;
+  ReplyCallback callback_;
 };
 
 }  // namespace remoting

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 
 namespace buzz {
@@ -23,20 +23,18 @@ namespace remoting {
 // callback with the response.
 class IqRequest {
  public:
-  typedef Callback1<const buzz::XmlElement*>::Type ReplyCallback;
+  typedef base::Callback<void(const buzz::XmlElement*)> ReplyCallback;
 
   IqRequest() {}
   virtual ~IqRequest() {}
 
   // Sends stanza of type |type| to |addressee|. |iq_body| contains body of
-  // the stanza. Ownership of |iq_body| is transfered to IqRequest. Must
-  // be called on the jingle thread.
+  // the stanza. Takes pwnership of |iq_body|.
   virtual void SendIq(const std::string& type, const std::string& addressee,
                       buzz::XmlElement* iq_body) = 0;
 
-  // Sets callback that is called when reply stanza is received. Callback
-  // is called on the jingle thread.
-  virtual void set_callback(ReplyCallback* callback) = 0;
+  // Sets callback that is called when reply stanza is received.
+  virtual void set_callback(const ReplyCallback& callback) = 0;
 
  protected:
   static buzz::XmlElement* MakeIqStanza(const std::string& type,

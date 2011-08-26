@@ -54,15 +54,15 @@ class JavascriptIqRequest : public IqRequest {
                       JavascriptIqRegistry* registry);
   virtual ~JavascriptIqRequest();
 
-  //  IqRequest interface.
+  // IqRequest interface.
   virtual void SendIq(const std::string& type, const std::string& addressee,
                       buzz::XmlElement* iq_body) OVERRIDE;
-  virtual void set_callback(ReplyCallback* callback) OVERRIDE;
+  virtual void set_callback(const ReplyCallback& callback) OVERRIDE;
 
  private:
   friend class JavascriptIqRegistry;
 
-  scoped_ptr<ReplyCallback> callback_;
+  ReplyCallback callback_;
   SignalStrategy* signal_strategy_;
   JavascriptIqRegistry* registry_;
 

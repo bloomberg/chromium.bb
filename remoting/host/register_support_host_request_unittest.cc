@@ -129,7 +129,7 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   support_id_lifetime->AddText(kSupportIdLifetime);
   result->AddElement(support_id_lifetime);
 
-  iq_request->callback()->Run(response.get());
+  iq_request->callback().Run(response.get());
   message_loop_.RunAllPending();
 }
 

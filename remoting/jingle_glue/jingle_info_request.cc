@@ -4,6 +4,7 @@
 
 #include "remoting/jingle_glue/jingle_info_request.h"
 
+#include "base/bind.h"
 #include "base/task.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
@@ -22,7 +23,8 @@ JingleInfoRequest::JingleInfoRequest(IqRequest* request,
                                      HostResolverFactory* host_resolver_factory)
     : host_resolver_factory_(host_resolver_factory),
       request_(request) {
-  request_->set_callback(NewCallback(this, &JingleInfoRequest::OnResponse));
+  request_->set_callback(base::Bind(&JingleInfoRequest::OnResponse,
+                                    base::Unretained(this)));
 }
 
 JingleInfoRequest::~JingleInfoRequest() {

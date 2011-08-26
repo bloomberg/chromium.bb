@@ -41,8 +41,8 @@ void XmppIqRequest::SendIq(const std::string& type,
   xmpp_client_->engine()->SendIq(stanza.get(), this, &cookie_);
 }
 
-void XmppIqRequest::set_callback(ReplyCallback* callback) {
-  callback_.reset(callback);
+void XmppIqRequest::set_callback(const ReplyCallback& callback) {
+  callback_ = callback;
 }
 
 void XmppIqRequest::Unregister() {
@@ -57,8 +57,9 @@ void XmppIqRequest::Unregister() {
 
 void XmppIqRequest::IqResponse(buzz::XmppIqCookie cookie,
                                const buzz::XmlElement* stanza) {
-  if (callback_.get() != NULL) {
-    callback_->Run(stanza);
+  if (callback_.is_null()) {
+    callback_.Run(stanza);
+    callback_.Reset();
   }
 }
 

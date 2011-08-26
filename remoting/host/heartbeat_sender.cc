@@ -4,6 +4,7 @@
 
 #include "remoting/host/heartbeat_sender.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
@@ -72,7 +73,8 @@ void HeartbeatSender::OnSignallingConnected(SignalStrategy* signal_strategy,
 
   full_jid_ = full_jid;
   request_.reset(signal_strategy->CreateIqRequest());
-  request_->set_callback(NewCallback(this, &HeartbeatSender::ProcessResponse));
+  request_->set_callback(base::Bind(&HeartbeatSender::ProcessResponse,
+                                    base::Unretained(this)));
 
   DoSendStanza();
   timer_.Start(base::TimeDelta::FromMilliseconds(interval_ms_), this,
