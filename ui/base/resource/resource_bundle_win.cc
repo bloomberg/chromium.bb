@@ -7,13 +7,17 @@
 #include <atlbase.h>
 
 #include "base/debug/stack_trace.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_piece.h"
+#include "base/synchronization/lock.h"
 #include "base/win/resource_util.h"
 #include "base/win/windows_version.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/gfx/font.h"
 
 namespace ui {
@@ -51,9 +55,48 @@ void ResourceBundle::LoadCommonResources() {
   }
 }
 
+std::string ResourceBundle::LoadLocaleResources(
+    const std::string& pref_locale) {
+  DCHECK(NULL == locale_resources_data_) << "locale dll already loaded";
+  const std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+  const FilePath& locale_path = GetLocaleFilePath(app_locale);
+  if (locale_path.value().empty()) {
+    // It's possible that there are no locale dlls found, in which case we just
+    // return.
+    NOTREACHED();
+    return std::string();
+  }
+
+  // The dll should only have resources, not executable code.
+  locale_resources_data_ = LoadLibraryEx(locale_path.value().c_str(), NULL,
+                                         GetDataDllLoadFlags());
+  DCHECK(locale_resources_data_ != NULL) <<
+      "unable to load generated resources";
+  return app_locale;
+}
+
 void ResourceBundle::LoadTestResources(const FilePath& path) {
   // On Windows, the test resources are normally compiled into the binary
   // itself.
+}
+
+void ResourceBundle::UnloadLocaleResources() {
+  if (locale_resources_data_) {
+    BOOL rv = FreeLibrary(locale_resources_data_);
+    DCHECK(rv);
+    locale_resources_data_ = NULL;
+  }
+}
+
+// static
+FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
+  FilePath locale_path;
+  PathService::Get(ui::DIR_LOCALES, &locale_path);
+
+  if (app_locale.empty())
+    return FilePath();
+
+  return locale_path.AppendASCII(app_locale + ".dll");
 }
 
 // static
@@ -82,26 +125,20 @@ HICON ResourceBundle::LoadThemeIcon(int icon_id) {
 base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
   void* data_ptr;
   size_t data_size;
-  base::StringPiece data;
   if (base::win::GetDataResourceFromModule(resources_data_,
                                            resource_id,
                                            &data_ptr,
                                            &data_size)) {
     return base::StringPiece(static_cast<const char*>(data_ptr), data_size);
-  } else if (locale_resources_data_.get() &&
-             locale_resources_data_->GetStringPiece(resource_id, &data)) {
-    return data;
+  } else if (locale_resources_data_ &&
+             base::GetDataResourceFromModule(locale_resources_data_,
+                                             resource_id,
+                                             &data_ptr,
+                                             &data_size)) {
+    return base::StringPiece(static_cast<const char*>(data_ptr), data_size);
   }
 
-  // TODO(tony): Remove this ATL code once we remove the strings in
-  // chrome.dll.
-  const ATLSTRINGRESOURCEIMAGE* image = AtlGetStringResourceImage(
-    resources_data_, resource_id);
-  if (image) {
-    return base::StringPiece(reinterpret_cast<const char*>(image->achString),
-                             image->nLength * 2);
-  }
-
+  base::StringPiece data;
   for (size_t i = 0; i < data_packs_.size(); ++i) {
     if (data_packs_[i]->GetStringPiece(resource_id, &data))
       return data;
@@ -113,6 +150,36 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
 // Loads and returns a cursor from the current module.
 HCURSOR ResourceBundle::LoadCursor(int cursor_id) {
   return ::LoadCursor(resources_data_, MAKEINTRESOURCE(cursor_id));
+}
+
+string16 ResourceBundle::GetLocalizedString(int message_id) {
+  // If for some reason we were unable to load a resource dll, return an empty
+  // string (better than crashing).
+  if (!locale_resources_data_) {
+    base::debug::StackTrace().PrintBacktrace();  // See http://crbug.com/21925.
+    LOG(WARNING) << "locale resources are not loaded";
+    return string16();
+  }
+
+  DCHECK(IS_INTRESOURCE(message_id));
+
+  // Get a reference directly to the string resource.
+  HINSTANCE hinstance = locale_resources_data_;
+  const ATLSTRINGRESOURCEIMAGE* image = AtlGetStringResourceImage(hinstance,
+                                                                  message_id);
+  if (!image) {
+    // Fall back on the current module (shouldn't be any strings here except
+    // in unittests).
+    image = AtlGetStringResourceImage(resources_data_, message_id);
+    if (!image) {
+      // See http://crbug.com/21925.
+      base::debug::StackTrace().PrintBacktrace();
+      NOTREACHED() << "unable to find resource: " << message_id;
+      return string16();
+    }
+  }
+  // Copy into a string16 and return.
+  return string16(image->achString, image->nLength);
 }
 
 // Windows only uses SkBitmap for gfx::Image, so this is the same as

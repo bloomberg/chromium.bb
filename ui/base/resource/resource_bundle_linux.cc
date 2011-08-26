@@ -71,6 +71,20 @@ FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
   return FilePath();
 }
 
+// static
+FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
+  FilePath locale_file_path;
+  PathService::Get(ui::DIR_LOCALES, &locale_file_path);
+  if (locale_file_path.empty())
+    return locale_file_path;
+  if (app_locale.empty())
+    return FilePath();
+  locale_file_path = locale_file_path.AppendASCII(app_locale + ".pak");
+  if (!file_util::PathExists(locale_file_path))
+    return FilePath();
+  return locale_file_path;
+}
+
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
   return *GetPixbufImpl(resource_id, false);
 }

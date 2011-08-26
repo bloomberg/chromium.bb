@@ -90,7 +90,7 @@ void SetDefaultLocaleForTest(const std::string& tag, base::Environment* env) {
 TEST_F(L10nUtilTest, GetAppLocale) {
   scoped_ptr<base::Environment> env;
   // Use a temporary locale dir so we don't have to actually build the locale
-  // pak files for this test.
+  // dlls for this test.
   FilePath orig_locale_dir;
   PathService::Get(ui::DIR_LOCALES, &orig_locale_dir);
   FilePath new_locale_dir;
@@ -115,9 +115,14 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     "ca@valencia",
   };
 
+#if defined(OS_WIN)
+  static const char kLocaleFileExtension[] = ".dll";
+#elif defined(OS_POSIX)
+  static const char kLocaleFileExtension[] = ".pak";
+#endif
   for (size_t i = 0; i < arraysize(filenames); ++i) {
     FilePath filename = new_locale_dir.AppendASCII(
-        filenames[i] + ".pak");
+        filenames[i] + kLocaleFileExtension);
     file_util::WriteFile(filename, "", 0);
   }
 
