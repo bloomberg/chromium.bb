@@ -3,35 +3,22 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_fullscreen_dev.idl modified Fri Aug 26 10:51:16 2011. */
-
-#ifndef PPAPI_C_DEV_PPB_FULLSCREEN_DEV_H_
-#define PPAPI_C_DEV_PPB_FULLSCREEN_DEV_H_
-
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_size.h"
-#include "ppapi/c/pp_stdint.h"
-
-#define PPB_FULLSCREEN_DEV_INTERFACE_0_4 "PPB_Fullscreen(Dev);0.4"
-#define PPB_FULLSCREEN_DEV_INTERFACE PPB_FULLSCREEN_DEV_INTERFACE_0_4
 
 /**
- * @file
  * This file defines the <code>PPB_Fullscreen</code> interface.
  */
 
+label Chrome {
+  M14 = 0.4
+};
 
-/**
- * @addtogroup Interfaces
- * @{
- */
-struct PPB_Fullscreen_Dev {
+interface PPB_Fullscreen_Dev {
   /**
    * Checks whether the plugin instance is currently in fullscreen mode.
    */
-  PP_Bool (*IsFullscreen)(PP_Instance instance);
+  PP_Bool IsFullscreen(
+      [in] PP_Instance instance);
+
   /**
    * Switches the plugin instance to/from fullscreen mode. Returns PP_TRUE on
    * success, PP_FALSE on failure.
@@ -46,16 +33,16 @@ struct PPB_Fullscreen_Dev {
    * resources need to be re-created. This is a current limitation that will be
    * lifted in a later revision.
    */
-  PP_Bool (*SetFullscreen)(PP_Instance instance, PP_Bool fullscreen);
+  PP_Bool SetFullscreen(
+      [in] PP_Instance instance,
+      [in] PP_Bool fullscreen);
+
   /**
    * Gets the size of the screen. When going fullscreen, the instance will be
    * resized to that size.
    */
-  PP_Bool (*GetScreenSize)(PP_Instance instance, struct PP_Size* size);
+  PP_Bool GetScreenSize(
+      [in] PP_Instance instance,
+      [out] PP_Size size);
 };
-/**
- * @}
- */
-
-#endif  /* PPAPI_C_DEV_PPB_FULLSCREEN_DEV_H_ */
 
