@@ -1602,6 +1602,21 @@
         'variables': {
           'repack_path': '../tools/data_pack/repack.py',
         },
+        'dependencies': [
+          # MSVS needs the dependencies explictly named, Make is able to
+          # derive the dependencies from the output files.
+          'chrome_resources',
+          'chrome_strings',
+          'default_plugin/default_plugin.gyp:default_plugin_resources',
+          'platform_locale_settings',
+          'theme_resources',
+          '<(DEPTH)/net/net.gyp:net_resources',
+          '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
+          '<(DEPTH)/ui/ui.gyp:gfx_resources',
+          '<(DEPTH)/ui/ui.gyp:ui_resources',
+          '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
+          '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+        ],
         'actions': [
           # TODO(mark): These actions are duplicated for the Mac in the
           # chrome_dll target.  Can they be unified?

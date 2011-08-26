@@ -83,6 +83,10 @@ class UI_EXPORT ResourceBundle {
   // Initialize the ResourceBundle using given data pack path for testing.
   static void InitSharedInstanceForTest(const FilePath& path);
 
+  // Load a .pak file.  Returns NULL if we fail to load |path|.  The caller
+  // is responsible for deleting up this pointer.
+  static DataPack* LoadResourcesDataPak(const FilePath& path);
+
   // Changes the locale for an already-initialized ResourceBundle.  Future
   // calls to get strings will return the strings for this new locale.  This
   // has no effect on existing or future image resources.  This has no effect
@@ -271,7 +275,9 @@ class UI_EXPORT ResourceBundle {
   // Handles for data sources.
   DataHandle resources_data_;
   DataHandle large_icon_resources_data_;
-  DataHandle locale_resources_data_;
+#if !defined(NACL_WIN64)
+  scoped_ptr<DataPack> locale_resources_data_;
+#endif
 
   // References to extra data packs loaded via AddDataPackToSharedInstance.
   std::vector<LoadedDataPack*> data_packs_;

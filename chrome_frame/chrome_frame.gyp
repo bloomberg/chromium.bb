@@ -32,9 +32,9 @@
   'target_defaults': {
     'dependencies': [
       # locales need to be built for the chrome frame binaries to be loadable.
-      '../chrome/app/locales/locales.gyp:*',
       '../chrome/chrome.gyp:chrome_resources',
       '../chrome/chrome.gyp:chrome_strings',
+      '../chrome/chrome.gyp:packed_resources',
       '../chrome/chrome.gyp:theme_resources',
       '../skia/skia.gyp:skia',
     ],

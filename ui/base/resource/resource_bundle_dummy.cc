@@ -45,8 +45,7 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 
 ResourceBundle::ResourceBundle()
     : lock_(new base::Lock),
-      resources_data_(NULL),
-      locale_resources_data_(NULL) {
+      resources_data_(NULL) {
 }
 
 ResourceBundle::~ResourceBundle() {
