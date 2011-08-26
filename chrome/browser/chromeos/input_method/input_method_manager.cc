@@ -75,6 +75,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 #if !defined(TOUCH_UI)
         candidate_window_controller_(NULL),
 #endif
+        shutting_down_(false),
         ibus_daemon_process_handle_(base::kNullProcessHandle) {
     // Observe APP_TERMINATING to stop input method daemon gracefully.
     // We should not use APP_EXITING here since logout might be canceled by
@@ -832,6 +833,11 @@ class InputMethodManagerImpl : public InputMethodManager,
       return false;
     }
 
+    if (shutting_down_) {
+      NOTREACHED() << "Trying to launch input method while shutting down";
+      return false;
+    }
+
 #if !defined(TOUCH_UI)
     if (!candidate_window_controller_.get()) {
       candidate_window_controller_.reset(
@@ -904,6 +910,7 @@ class InputMethodManagerImpl : public InputMethodManager,
                const NotificationDetails& details) {
     // Stop the input method daemon on browser shutdown.
     if (type == content::NOTIFICATION_APP_TERMINATING) {
+      shutting_down_ = true;
       notification_registrar_.RemoveAll();
       StopInputMethodDaemon();
 #if !defined(TOUCH_UI)
@@ -965,6 +972,9 @@ class InputMethodManagerImpl : public InputMethodManager,
   scoped_ptr<input_method::CandidateWindowController>
       candidate_window_controller_;
 #endif
+
+  // True if we've received the APP_TERMINATING notification.
+  bool shutting_down_;
 
   // The process handle of the IBus daemon. kNullProcessHandle if it's not
   // running.
