@@ -167,9 +167,9 @@ void MediaPlayer::SetPlaybackError(GURL const& url) {
 void MediaPlayer::Observe(int type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSING);
+  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
   registrar_.Remove(this,
-                    chrome::NOTIFICATION_BROWSER_CLOSING,
+                    chrome::NOTIFICATION_BROWSER_CLOSED,
                     source);
   if (Source<Browser>(source).ptr() == mediaplayer_browser_) {
     mediaplayer_browser_ = NULL;
@@ -205,7 +205,7 @@ void MediaPlayer::PopupPlaylist(Browser* creator) {
                                             gfx::Rect(),
                                             profile);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_CLOSING,
+                 chrome::NOTIFICATION_BROWSER_CLOSED,
                  Source<Browser>(playlist_browser_));
   playlist_browser_->AddSelectedTabWithURL(GetMediaplayerPlaylistUrl(),
                                            PageTransition::LINK);
@@ -230,7 +230,7 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
                                                gfx::Rect(),
                                                profile);
   registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_CLOSING,
+                 chrome::NOTIFICATION_BROWSER_CLOSED,
                  Source<Browser>(mediaplayer_browser_));
 
 #if defined(OS_CHROMEOS)
