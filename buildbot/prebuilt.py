@@ -140,7 +140,7 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
       'url.ssh://gerrit.chromium.org:29418.pushinsteadof',
       'http://git.chromium.org']
   cros_build_lib.RunCommand(git_ssh_config_cmd, cwd=cwd)
-  cros_build_lib.RunCommand(['git', 'remote', 'update'], cwd=cwd)
+  _RetryRun(['git', 'remote', 'update'], cwd=cwd)
   cros_build_lib.RunCommand(['repo', 'start', prebuilt_branch, '.'], cwd=cwd)
 
   # We want to push our changes to this file to tip of tree, so we should
