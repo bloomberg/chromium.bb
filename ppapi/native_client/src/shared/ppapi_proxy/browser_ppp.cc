@@ -125,16 +125,18 @@ void BrowserPpp::ShutdownModule() {
     CHECK(!is_nexe_alive_);
     return;  // The proxy has already been shut down.
   }
-  NaClSrpcError srpc_result =
-    PppRpcClient::PPP_ShutdownModule(main_channel_);
-  DebugPrintf("PPP_ShutdownModule: %s\n", NaClSrpcErrorString(srpc_result));
+  if (is_nexe_alive_) {
+    NaClSrpcError srpc_result =
+      PppRpcClient::PPP_ShutdownModule(main_channel_);
+    DebugPrintf("PPP_ShutdownModule: %s\n", NaClSrpcErrorString(srpc_result));
+  }
   NaClThreadJoin(&upcall_thread_);
   UnsetBrowserPppForInstance(plugin_->pp_instance());
   UnsetModuleIdForSrpcChannel(main_channel_);
   UnsetInstanceIdForSrpcChannel(main_channel_);
   main_channel_ = NULL;
   is_nexe_alive_ = false;
-  DebugPrintf("PPP_Shutdown: done\n");
+  DebugPrintf("PPP_Shutdown: main_channel=NULL\n");
 }
 
 const void* BrowserPpp::GetPluginInterface(const char* interface_name) {

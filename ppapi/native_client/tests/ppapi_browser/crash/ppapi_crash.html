@@ -23,21 +23,37 @@
            name="nacl_module"
            src="ppapi_crash_in_callback.nmf"
            width="0" height="0" />
+    <embed type="application/x-nacl" id="crash_ppapi_off_main_thread"
+           name="nacl_module"
+           src="ppapi_crash_ppapi_off_main_thread.nmf"
+           width="0" height="0" />
+    <embed type="application/x-nacl" id="crash_off_main_thread"
+           name="nacl_module"
+           src="ppapi_crash_off_main_thread.nmf"
+           width="0" height="0" />
 
     <script type="text/javascript">
       //<![CDATA[
       var tester = new Tester();
-      function AddTest(plugin, testName, expectedHandler, unexpectedHandler) {
+      function AddTest(plugin, testName, expectedEvent, unexpectedEvent,
+                       pingToDetectCrash) {
         tester.addAsyncTest(testName, function(test) {
-          plugin.addEventListener(
-            expectedHandler,
-            test.wrap(function(e) { test.pass(); }),
-            false);
-          plugin.addEventListener(
-            unexpectedHandler,
-            test.wrap(function(e) { test.fail(); }),
-            false);
+          test.expectEvent(plugin, expectedEvent,
+                           function(e) { test.pass(); });
+          test.expectEvent(plugin, unexpectedEvent,
+                           function(e) { test.fail(); });
           plugin.postMessage(testName);
+          // In case the nexe does not crash right away, we will ping it
+          // until we detect that it's death. DidChangeView and other events
+          // can do this too, but are less reliable.
+          if (pingToDetectCrash) {
+            function PingBack(message) {
+              test.log(message.data);
+              plugin.postMessage('Ping');
+            }
+            plugin.addEventListener('message', PingBack, false);
+            plugin.postMessage("Ping");
+          }
         });
         tester.waitFor(plugin);
       }
@@ -46,7 +62,12 @@
               'CrashViaCheckFailure', 'crash', 'error');
       AddTest($('crash_via_exit_call'),
               'CrashViaExitCall', 'crash', 'error');
-      AddTest($('crash_in_callback'), 'CrashInCallback', 'crash', 'error');
+      AddTest($('crash_in_callback'),
+              'CrashInCallback', 'crash', 'error');
+      AddTest($('crash_ppapi_off_main_thread'),
+              'CrashPPAPIOffMainThread', 'crash', 'error');
+      AddTest($('crash_off_main_thread'),
+              'CrashOffMainThread', 'crash', 'error', true);
 
       tester.run();
       //]]>

@@ -75,6 +75,8 @@ class BrowserPpp {
   int plugin_pid() const { return plugin_pid_; }
   plugin::Plugin* plugin() { return plugin_; }
 
+  void ReportDeadNexe() { is_nexe_alive_ = false; }
+
  private:
   // The "main" SRPC channel used to communicate with the plugin.
   // NULL if proxy has been shut down.

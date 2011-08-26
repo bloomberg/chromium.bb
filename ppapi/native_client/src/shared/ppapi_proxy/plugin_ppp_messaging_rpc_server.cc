@@ -26,6 +26,6 @@ void PppMessagingRpcServer::PPP_Messaging_HandleMessage(
   if (!DeserializeTo(rpc->channel, message_bytes, message_size, 1, &message))
     return;
   PPPMessagingInterface()->HandleMessage(instance, message);
-  DebugPrintf("PPP_Instance::HandleMessage\n");
+  DebugPrintf("PPP_Messaging::HandleMessage\n");
   rpc->result = NACL_SRPC_RESULT_OK;
 }

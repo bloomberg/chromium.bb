@@ -472,7 +472,7 @@ void Plugin::LoadMethods() {
 }
 
 bool Plugin::HasMethod(uintptr_t method_id, CallType call_type) {
-  PLUGIN_PRINTF(("Plugin::HasMethod (method_id=%x) = ",
+  PLUGIN_PRINTF(("Plugin::HasMethod (method_id=%x)\n",
                  static_cast<int>(method_id)));
   if (GetMethodInfo(method_id, call_type)) {
     PLUGIN_PRINTF(("true\n"));
@@ -1305,6 +1305,8 @@ bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
 
 void Plugin::ReportDeadNexe() {
   PLUGIN_PRINTF(("Plugin::ReportDeadNexe\n"));
+  if (ppapi_proxy_ != NULL)
+    ppapi_proxy_->ReportDeadNexe();
 
   if (nacl_ready_state() == DONE) {  // After loadEnd.
     int64_t crash_time = NaClGetTimeOfDayMicroseconds();
@@ -1321,7 +1323,9 @@ void Plugin::ReportDeadNexe() {
     CHECK(ppapi_proxy_ != NULL && !ppapi_proxy_->is_valid());
     ShutdownProxy();
   }
-  // else LoadNaClModule and NexeFileDidOpen will provide error handling.
+  // else ReportLoadError() and ReportAbortError() will be used by loading code
+  // to provide error handling and proxy shutdown.
+  //
   // NOTE: not all crashes during load will make it here.
   // Those in BrowserPpp::InitializeModule and creation of PPP interfaces
   // will just get reported back as PP_ERROR_FAILED.
@@ -1333,10 +1337,11 @@ void Plugin::ShutdownProxy() {
   // We do not call remote PPP_Instance::DidDestroy because the untrusted
   // side can no longer take full advantage of mostly asynchronous Pepper
   // per-Instance interfaces at this point.
-  if (BrowserPpp::is_valid(ppapi_proxy_))
+  if (ppapi_proxy_ != NULL) {
     ppapi_proxy_->ShutdownModule();
-  delete ppapi_proxy_;
-  ppapi_proxy_ = NULL;
+    delete ppapi_proxy_;
+    ppapi_proxy_ = NULL;
+  }
 }
 
 void Plugin::NaClManifestBufferReady(int32_t pp_error) {

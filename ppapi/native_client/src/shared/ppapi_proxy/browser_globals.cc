@@ -171,8 +171,7 @@ void CleanUpAfterDeadNexe(PP_Instance instance) {
   BrowserPpp* proxy = LookupBrowserPppForInstance(instance);
   if (proxy == NULL)
     return;
-  proxy->ShutdownModule();
-  proxy->plugin()->ReportDeadNexe();  // Deletes the proxy.
+  proxy->plugin()->ReportDeadNexe();  // Shuts down and deletes the proxy.
 }
 
 void SetPPBGetInterface(PPB_GetInterface get_interface_function,
