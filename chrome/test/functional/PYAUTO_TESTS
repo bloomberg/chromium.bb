@@ -168,6 +168,13 @@
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       # Crashes browser. crbug.com/89000
       '-prefs.PrefsTest.testGeolocationPref',
+      # crbug.com/93822
+      '-process_count.ProcessCountTest.testprocessCountAppendSingleTab',
+      '-process_count.ProcessCountTest.testprocessCountCombination',
+      '-process_count.ProcessCountTest.testprocessCountExtensionProcess',
+      '-process_count.ProcessCountTest.testprocessCountFlashProcess',
+      '-process_count.ProcessCountTest.testprocessCountFreshProfile',
+      '-process_count.ProcessCountTest.testprocessCountNewWindow',
     ],
 
     'mac': [

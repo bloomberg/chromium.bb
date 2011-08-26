@@ -20,16 +20,16 @@ class SpecialTabsTest(pyauto.PyUITest):
   }
 
   special_url_redirects = {
-    'about:': 'chrome://version',
-    'about:about': 'chrome://about',
-    'about:appcache-internals': 'chrome://appcache-internals',
-    'about:credits': 'chrome://credits',
-    'about:dns': 'chrome://dns',
-    'about:histograms': 'chrome://histograms',
-    'about:plugins': 'chrome://plugins',
-    'about:sync': 'chrome://sync-internals',
-    'about:sync-internals': 'chrome://sync-internals',
-    'about:version': 'chrome://version',
+   'about:': 'chrome://version',
+   'about:about': 'chrome://about',
+   'about:appcache-internals': 'chrome://appcache-internals',
+   'about:credits': 'chrome://credits',
+   'about:dns': 'chrome://dns',
+   'about:histograms': 'chrome://histograms',
+   'about:plugins': 'chrome://plugins',
+   'about:sync': 'chrome://sync-internals',
+   'about:sync-internals': 'chrome://sync-internals',
+   'about:version': 'chrome://version',
   }
 
   special_url_tabs = {
@@ -182,7 +182,7 @@ class SpecialTabsTest(pyauto.PyUITest):
   broken_google_win_special_url_tabs = {}
 
   google_mac_special_url_tabs = {}
-  broken_gogle_mac_special_url_tabs = {}
+  broken_google_mac_special_url_tabs = {}
 
   google_linux_special_url_tabs = {}
   broken_google_linux_special_url_tabs = {}
