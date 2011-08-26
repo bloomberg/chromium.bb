@@ -1682,9 +1682,19 @@ FileManager.prototype = {
   FileManager.prototype.maybeRenderUnmountTask_ = function(selection) {
     for (var index = 0; index < selection.urls.length; ++index) {
       // Each url should be a mount point.
-      var path = selection.urls[index];
-      if (!this.mountPoints_.hasOwnProperty(path) ||
-          this.mountPoints_[path].type != 'file')
+      var path = selection.entries[index].fullPath;
+      var found = false;
+      for (var i = 0; i < this.mountPoints_.length; i++) {
+        var mountPath = this.mountPoints_[i].mountPath;
+        if (mountPath[0] != '/') {
+          mountPath = '/' + mountPath;
+        }
+        if (mountPath == path && this.mountPoints_[i].mountType == 'file') {
+          found = true;
+          break;
+        }
+      }
+      if (!found)
         return;
     }
     this.renderTaskButton_({
