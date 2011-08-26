@@ -1,6 +1,6 @@
 <script>
 // Content settings API test
-// Run with browser_tests --gtest_filter=ExtensionApiTest.ContentSettingsOnChange
+// Run with browser_tests --gtest_filter=ExtensionApiTest.PreferenceOnChange
 
 // Listen until |event| has fired with all of the values in |expected|.
 function listenUntil(event, expected) {
@@ -17,12 +17,12 @@ function listenUntil(event, expected) {
   });
 }
 
-var cs = chrome.experimental.contentSettings;
+var pw = chrome.experimental.privacy.websites;
 chrome.test.runTests([
   function changeDefault() {
     // Changing the regular settings when no incognito-specific settings are
     // defined should fire two events.
-    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+    listenUntil(pw.thirdPartyCookiesAllowed.onChange, [{
       'value': false,
       'levelOfControl': 'controlled_by_this_extension'
     },
@@ -31,55 +31,55 @@ chrome.test.runTests([
       'incognitoSpecific': false,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.global.thirdPartyCookiesAllowed.set({
+    pw.thirdPartyCookiesAllowed.set({
       'value':false
     }, chrome.test.callbackPass());
   },
   function changeIncognitoOnly() {
-    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+    listenUntil(pw.thirdPartyCookiesAllowed.onChange, [{
       'value': true,
       'incognitoSpecific': true,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.global.thirdPartyCookiesAllowed.set({
+    pw.thirdPartyCookiesAllowed.set({
       'value': true,
       'scope': 'incognito_persistent'
     }, chrome.test.callbackPass());
   },
   function changeDefaultOnly() {
-    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+    listenUntil(pw.thirdPartyCookiesAllowed.onChange, [{
       'value': true,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.global.thirdPartyCookiesAllowed.set({
+    pw.thirdPartyCookiesAllowed.set({
       'value': true
     }, chrome.test.callbackPass());
   },
   function changeIncognitoOnlyBack() {
     // Change the incognito setting back to false so that we get an event when
     // clearing the value.
-    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+    listenUntil(pw.thirdPartyCookiesAllowed.onChange, [{
       'value': false,
       'incognitoSpecific': true,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.global.thirdPartyCookiesAllowed.set({
+    pw.thirdPartyCookiesAllowed.set({
       'value': false,
       'scope': 'incognito_persistent'
     }, chrome.test.callbackPass());
   },
   function clearIncognito() {
-    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+    listenUntil(pw.thirdPartyCookiesAllowed.onChange, [{
       'value': true,
       'incognitoSpecific': false,
       'levelOfControl': 'controlled_by_this_extension'
     }]);
-    cs.global.thirdPartyCookiesAllowed.clear({
+    pw.thirdPartyCookiesAllowed.clear({
       'scope': 'incognito_persistent'
     }, chrome.test.callbackPass());
   },
   function clearDefault() {
-    listenUntil(cs.global.thirdPartyCookiesAllowed.onChange, [{
+    listenUntil(pw.thirdPartyCookiesAllowed.onChange, [{
       'value': true,
       'levelOfControl': 'controllable_by_this_extension'
     },
@@ -88,7 +88,7 @@ chrome.test.runTests([
       'incognitoSpecific': false,
       'levelOfControl': 'controllable_by_this_extension'
     }]);
-    cs.global.thirdPartyCookiesAllowed.clear({}, chrome.test.callbackPass());
+    pw.thirdPartyCookiesAllowed.clear({}, chrome.test.callbackPass());
   }
 ]);
 

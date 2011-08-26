@@ -94,15 +94,16 @@ class ExtensionAPIPermission {
     // Real permissions.
     kBackground,
     kBookmark,
+    kChromeAuthPrivate,
+    kChromePrivate,
+    kChromeosInfoPrivate,
     kClipboardRead,
     kClipboardWrite,
     kContentSettings,
     kContextMenus,
     kCookie,
-    kChromeAuthPrivate,
-    kChromePrivate,
-    kChromeosInfoPrivate,
     kDebugger,
+    kDevtools,
     kExperimental,
     kFileBrowserHandler,
     kFileBrowserPrivate,
@@ -113,6 +114,8 @@ class ExtensionAPIPermission {
     kManagement,
     kMediaPlayerPrivate,
     kNotification,
+    kPermissions,
+    kPlugin,
     kProxy,
     kTab,
     kTts,
@@ -120,9 +123,6 @@ class ExtensionAPIPermission {
     kUnlimitedStorage,
     kWebSocketProxyPrivate,
     kWebstorePrivate,
-    kDevtools,
-    kPlugin,
-    kPermissions,
     kEnumBoundary
   };
 

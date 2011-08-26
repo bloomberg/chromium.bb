@@ -1,0 +1,7 @@
+{
+  "name" : "Preferences API Test Extension (clear)",
+  "version" : "0.1",
+  "description" : "Preferences API Test Extension (clear)",
+  "permissions": [ "experimental", "privacy" ],
+  "background_page": "test.html"
+}

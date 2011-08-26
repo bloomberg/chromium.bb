@@ -90,7 +90,7 @@ void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
   }
 }
 
-} // namespace
+}  // namespace
 
 //
 // PermissionMessage
@@ -100,7 +100,7 @@ void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
 ExtensionPermissionMessage ExtensionPermissionMessage::CreateFromHostList(
     const std::set<std::string>& hosts) {
   std::vector<std::string> host_list(hosts.begin(), hosts.end());
-  CHECK(host_list.size() > 0);
+  CHECK_GT(host_list.size(), 0UL);
   ID message_id;
   string16 message;
 

@@ -7711,27 +7711,6 @@
       }
     ],
     "properties": {
-      "global": {
-        "type": "object",
-        "value": {},
-        "properties": {
-          "thirdPartyCookiesAllowed": {
-            "$ref": "ChromeSetting",
-            "value": ["thirdPartyCookiesAllowed", {"type": "boolean"}],
-            "description": "Whether third party cookies should be allowed. The value of this preference is of type boolean, and the default value is true."
-          },
-          "referrersEnabled": {
-            "$ref": "ChromeSetting",
-            "value": ["referrersEnabled", {"type":"boolean"}],
-            "description": "Whether referrers should be enabled. The value of this preference is of type boolean, and the default value is true."
-          },
-          "hyperlinkAuditingEnabled": {
-            "$ref": "ChromeSetting",
-            "value": ["hyperlinkAuditingEnabled", {"type":"boolean"}],
-            "description": "Whether to enable hyperlink auditing (\"&lt;a ping&gt;\"). The value of this preference is of type boolean, and the default value is true."
-          }
-        }
-      },
       "cookies": {
         "$ref": "ContentSetting",
         "description": "Whether to allow cookies and other local data to be set by websites. One of<br><var>allow</var>: Accept cookies,<br><var>block</var>: Block cookies,<br><var>session_only</var>: Accept cookies only for the current session. Default is <var>allow</var>.<br>The primary URL is the URL representing the cookie origin. The secondary URL is the URL of the top-level frame.",
@@ -7779,6 +7758,87 @@
           "notifications",
           {"type":"string", "enum": ["allow", "block", "ask"]}
         ]
+      }
+    }
+  },
+  {
+    "namespace": "experimental.privacy",
+    "properties": {
+      "network": {
+        "type": "object",
+        "value": {},
+        "description": "Settings that influence Chrome's handling of network connections in general.",
+        "properties": {
+          "networkPredictionEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["networkPredictionEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome attempts to speed up your web browsing experience by pre-resolving DNS entries, prerendering sites (<code>&lt;link rel='prefetch' ...&gt;</code>), and preemptively opening TCP and SSL connections to servers.  This preference's value is a boolean, defaulting to <code>true</code>."
+          }
+        }
+      },
+      "services": {
+        "type": "object",
+        "value": {},
+        "description": "Settings that enable or disable features that require third-party network services provided by Google and your default search provider.",
+        "properties": {
+          "alternateErrorPagesEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["alternateErrorPagesEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome uses a web service to help resolve navigation errors. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "autofillEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["autofillEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome offers to automatically fill in forms. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "instantEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["instantEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome automatically performs and displays search requests for text you type into the Omnibox as you type it. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "metricsReportingEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["metricsReportingEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome automatically sends usage statistics and crash reports to Google. This preference's value is a boolean, defaulting to <code>false</code>."
+          },
+          "safeBrowsingEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["safeBrowsingEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome does its best to protect you from phishing and malware. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "searchSuggestEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["searchSuggestEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome sends the text you type into the Omnibox to your default search engine, which provides predictions of websites and searches that are likely completions of what you've typed so far. This preference's value is a boolean, defaulting to <code>true</code>."
+          },
+          "translationServiceEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["translationServiceEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome offers to translate pages that aren't in a language you read. This preference's value is a boolean, defaulting to <code>true</code>."
+          }
+        }
+      },
+      "websites": {
+        "type": "object",
+        "value": {},
+        "description": "Settings that determine what information Chrome sends when requesting websites.",
+        "properties": {
+          "thirdPartyCookiesAllowed": {
+            "$ref": "ChromeSetting",
+            "value": ["thirdPartyCookiesAllowed", {"type": "boolean"}],
+            "description": "If disabled, Chrome blocks third-party sites from setting cookies. The value of this preference is of type boolean, and the default value is <code>true</code>."
+          },
+          "hyperlinkAuditingEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["hyperlinkAuditingEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome sends auditing pings when requested by a website (<code>&lt;a ping&gt;</code>). The value of this preference is of type boolean, and the default value is <code>true</code>."
+          },
+          "referrersEnabled": {
+            "$ref": "ChromeSetting",
+            "value": ["referrersEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome sends <code>referer</code> headers with your requests. Yes, the name of this preference doesn't match the misspelled header. No, we're not going to change it. The value of this preference is of type boolean, and the default value is <code>true</code>."
+          }
+        }
       }
     }
   },

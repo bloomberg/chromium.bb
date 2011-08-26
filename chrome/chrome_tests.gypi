@@ -2496,6 +2496,7 @@
         'browser/extensions/extension_nacl_browsertest.cc',
         'browser/extensions/extension_omnibox_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
+        'browser/extensions/extension_preference_apitest.cc',
         'browser/extensions/extension_processes_apitest.cc',
         'browser/extensions/extension_proxy_apitest.cc',
         'browser/extensions/extension_resource_request_policy_apitest.cc',

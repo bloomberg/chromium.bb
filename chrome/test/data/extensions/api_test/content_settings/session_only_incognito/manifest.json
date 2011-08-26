@@ -1,7 +1,0 @@
-{
-  "name" : "Content Settings API Test Extension (Incognito)",
-  "version" : "0.1",
-  "description" : "Content Settings API Test Extension (Incognito)",
-  "permissions": [ "experimental", "contentSettings", "tabs" ],
-  "background_page": "test.html"
-}

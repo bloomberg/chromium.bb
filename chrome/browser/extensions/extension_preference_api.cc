@@ -45,22 +45,55 @@ const char kValue[] = "value";
 const char kOnPrefChangeFormat[] = "types.ChromeSetting.%s.onChange";
 
 PrefMappingEntry kPrefMapping[] = {
-  { "thirdPartyCookiesAllowed",
-    prefs::kBlockThirdPartyCookies,
-    ExtensionAPIPermission::kContentSettings
+  { "alternateErrorPagesEnabled",
+    prefs::kAlternateErrorPagesEnabled,
+    ExtensionAPIPermission::kExperimental
   },
-  { "referrersEnabled",
-    prefs::kEnableReferrers,
-    ExtensionAPIPermission::kContentSettings
+  { "autofillEnabled",
+    prefs::kAutofillEnabled,
+    ExtensionAPIPermission::kExperimental
   },
   { "hyperlinkAuditingEnabled",
     prefs::kEnableHyperlinkAuditing,
-    ExtensionAPIPermission::kContentSettings
+    ExtensionAPIPermission::kExperimental
+  },
+  { "instantEnabled",
+    prefs::kInstantEnabled,
+    ExtensionAPIPermission::kExperimental
+  },
+  // TODO(mkwst): come back to this once the UMA discussion has been resolved.
+  // { "metricsReportingEnabled",
+  //   prefs::kMetricsReportingEnabled,
+  //   ExtensionAPIPermission::kMetrics
+  // },
+  { "networkPredictionEnabled",
+    prefs::kNetworkPredictionEnabled,
+    ExtensionAPIPermission::kExperimental
   },
   { "proxy",
     prefs::kProxy,
     ExtensionAPIPermission::kProxy
   },
+  { "referrersEnabled",
+    prefs::kEnableReferrers,
+    ExtensionAPIPermission::kExperimental
+  },
+  { "searchSuggestEnabled",
+    prefs::kSearchSuggestEnabled,
+    ExtensionAPIPermission::kExperimental
+  },
+  { "safeBrowsingEnabled",
+    prefs::kSafeBrowsingEnabled,
+    ExtensionAPIPermission::kExperimental
+  },
+  { "thirdPartyCookiesAllowed",
+    prefs::kBlockThirdPartyCookies,
+    ExtensionAPIPermission::kExperimental
+  },
+  { "translationServiceEnabled",
+    prefs::kEnableTranslate,
+    ExtensionAPIPermission::kExperimental
+  }
 };
 
 class IdentityPrefTransformer : public PrefTransformerInterface {

@@ -25,43 +25,27 @@ var settings = {
 };
 
 Object.prototype.forEach = function(f) {
-  for (key in this) {
-    if (this.hasOwnProperty(key))
-      f(key, this[key]);
+  var k;
+  for (k in this) {
+    if (this.hasOwnProperty(k))
+      f(k, this[k]);
   }
-}
-
+};
 
 function expect(expected, message) {
   return chrome.test.callbackPass(function(value) {
     chrome.test.assertEq(expected, value, message);
   });
 }
+
+function expectFalse(message) {
+  return expect({
+    "value": false,
+    "levelOfControl": "controllable_by_this_extension"
+  }, message);
+}
+
 chrome.test.runTests([
-  function getThirdPartyCookiesAllowed() {
-    cs.global.thirdPartyCookiesAllowed.get(
-        {}, 
-        expect({ 'value': false,
-                 'levelOfControl': "controllable_by_this_extension" },
-               "third-party cookies should be blocked"));
-  },
-  function getReferrersEnabled() {
-    cs.global.referrersEnabled.get(
-        {},
-        expect({ 'value': false,
-                 'levelOfControl': "controllable_by_this_extension" },
-               "referrers should be disabled"));
-  },
-  function setThirdPartyCookiesAllowed() {
-    cs.global.thirdPartyCookiesAllowed.set(
-        {'value': true},
-        chrome.test.callbackPass());
-  },
-  function setReferrersEnabled() {
-    cs.global.referrersEnabled.set(
-        {'value': true},
-        chrome.test.callbackPass());
-  },
   function setDefaultContentSettings() {
     default_content_settings.forEach(function(type, setting) {
       cs[type].set({
@@ -91,7 +75,7 @@ chrome.test.runTests([
   },
   function invalidSettings() {
     cs.cookies.get({
-      'primaryUrl': 'moo',
+      'primaryUrl': 'moo'
     }, chrome.test.callbackFail("The URL \"moo\" is invalid."));
     cs.plugins.set({
       'primaryPattern': 'http://example.com/*',

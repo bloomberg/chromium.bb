@@ -316,6 +316,7 @@ var chrome = chrome || {};
       "experimental.settings",
       "experimental.popup",
       "experimental.processes",
+      "experimental.privacy",
       "experimental.rlz",
       "experimental.sidebar",
       "experimental.webNavigation",
