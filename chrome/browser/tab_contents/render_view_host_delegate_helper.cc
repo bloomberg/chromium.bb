@@ -447,7 +447,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.composite_to_texture_enabled =
         command_line.HasSwitch(switches::kEnableCompositeToTexture);
     web_prefs.accelerated_plugins_enabled =
-        command_line.HasSwitch(switches::kEnableAcceleratedPlugins);
+        !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
     web_prefs.accelerated_video_enabled =
         !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
     web_prefs.memory_info_enabled =
