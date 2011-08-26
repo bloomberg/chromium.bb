@@ -96,6 +96,14 @@ class LocalRietveld(object):
         '--port=%d' % self.port,
         '--datastore_path=' + os.path.join(self.rietveld, 'tmp.db'),
         '-c']
+
+    # CHEAP TRICK
+    # By default you only want to bind on loopback but I'm testing over a
+    # headless computer so it's useful to be able to access the test instance
+    # remotely.
+    if os.environ.get('GAE_LISTEN_ALL', '') == 'true':
+      cmd.extend(('-a', '0.0.0.0'))
+
     self.test_server = subprocess2.Popen(
         cmd, stdout=pipe, stderr=pipe, cwd=self.rietveld)
     # Loop until port 127.0.0.1:port opens or the process dies.
