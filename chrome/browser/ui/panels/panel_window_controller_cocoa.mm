@@ -170,6 +170,10 @@ const int kMinimumWindowSize = 1;
       [sender tag], disposition);
 }
 
+- (void)executeCommand:(int)command {
+  windowShim_->browser()->ExecuteCommandIfEnabled(command);
+}
+
 // Handler for the custom Close button.
 - (void)closePanel {
   windowShim_->panel()->Close();

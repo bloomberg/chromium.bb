@@ -13,12 +13,14 @@
 
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
+#import "chrome/browser/ui/cocoa/browser_command_executor.h"
 
 @class FindBarCocoaController;
 class PanelBrowserWindowCocoa;
 @class PanelTitlebarViewCocoa;
 
-@interface PanelWindowControllerCocoa : NSWindowController<NSWindowDelegate> {
+@interface PanelWindowControllerCocoa : NSWindowController<NSWindowDelegate,
+                                                       BrowserCommandExecutor> {
  @private
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
   scoped_ptr<PanelBrowserWindowCocoa> windowShim_;
@@ -51,6 +53,11 @@ class PanelBrowserWindowCocoa;
 
 // Accessor for titlebar view.
 - (PanelTitlebarViewCocoa*)titlebarView;
+
+// Executes the command in the context of the current browser.
+// |command| is an integer value containing one of the constants defined in the
+// "chrome/app/chrome_command_ids.h" file.
+- (void)executeCommand:(int)command;
 
 @end  // @interface PanelWindowController
 

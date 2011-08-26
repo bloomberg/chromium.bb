@@ -69,6 +69,7 @@ class PanelBrowserWindowCocoa : public NativePanel {
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewSizing);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewClose);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, MenuItems);
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, KeyEvent);
 
   bool isClosed();
 

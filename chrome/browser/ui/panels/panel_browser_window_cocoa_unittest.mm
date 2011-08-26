@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 
+#include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
 #include "base/command_line.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
+#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -306,5 +308,24 @@ TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
   EXPECT_FALSE([presentation_menu_item isEnabled]);
   EXPECT_FALSE([bookmarks_menu_item isEnabled]);
 
+  ClosePanelAndWait(panel->browser());
+}
+
+TEST_F(PanelBrowserWindowCocoaTest, KeyEvent) {
+  Panel* panel = CreateTestPanel("Test Panel");
+  NSEvent* event = [NSEvent keyEventWithType:NSKeyDown
+                                    location:NSZeroPoint
+                               modifierFlags:NSControlKeyMask
+                                   timestamp:0.0
+                                windowNumber:0
+                                     context:nil
+                                  characters:@""
+                 charactersIgnoringModifiers:@""
+                                   isARepeat:NO
+                                     keyCode:kVK_Tab];
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  [BrowserWindowUtils handleKeyboardEvent:event
+                      inWindow:[native_window->controller_ window]];
   ClosePanelAndWait(panel->browser());
 }
