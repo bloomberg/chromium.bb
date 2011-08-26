@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,7 +19,7 @@ if [ "$(uname | cut -b1-6)" == "CYGWIN" ] ; then
     depot_tools_error
   fi
   DEPOT_TOOLS=$(dirname "$GCLIENT_PATH")
-  PYTHON_PATH="$DEPOT_TOOLS/python"
+  PYTHON_PATH="$DEPOT_TOOLS/python.bat"
   if ! [ -f "$PYTHON_PATH" ] ; then
     depot_tools_error
   fi
