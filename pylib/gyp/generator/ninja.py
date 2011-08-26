@@ -26,12 +26,13 @@ generator_default_variables = {
 
   # Gyp expects the following variables to be expandable by the build
   # system to the appropriate locations.  Ninja prefers paths to be
-  # known at compile time.  To resolve this, the magic variable
-  # $!PRODUCT_DIR (which begins with a $ so gyp knows it's special,
-  # but is otherwise an invalid ninja/shell variable) is passed to gyp
-  # here but expanded before writing out into the target .ninja files;
-  # see ExpandProduct.
-  #
+  # known at compile time.  To resolve this, introduce special
+  # variables starting with $! (which begin with a $ so gyp knows it
+  # should be treated as a path, but is otherwise an invalid
+  # ninja/shell variable) that are passed to gyp here but expanded
+  # before writing out into the target .ninja files; see
+  # ExpandSpecial.
+
   # TODO: intermediate dir should *not* be shared between different targets.
   # Unfortunately, whatever we provide here gets written into many different
   # places within the gyp spec so it's difficult to make it target-specific.
@@ -127,25 +128,6 @@ def InvertRelativePath(path):
   return '/'.join(['..'] * depth)
 
 
-def ExpandProduct(path, product_dir=None):
-  """Expand $!PRODUCT_DIR in |path|.
-
-  If |product_dir| is None, assumes the cwd is already the product
-  dir.  Otherwise, |product_dir| is the relative path to the product
-  dir.
-  """
-
-  if '$!PRODUCT_DIR' not in path:
-    return path
-
-  if product_dir:
-    path = path.replace('$!PRODUCT_DIR', product_dir)
-  else:
-    path = path.replace('$!PRODUCT_DIR/', '')
-    path = path.replace('$!PRODUCT_DIR', '.')
-  return path
-
-
 # A small discourse on paths as used within the Ninja build:
 # All files we produce (both at gyp and at build time) appear in the
 # build directory (e.g. out/Debug).
@@ -188,12 +170,30 @@ class NinjaWriter:
     # Relative path from base dir to build dir.
     self.base_to_build = os.path.join(InvertRelativePath(base_dir), build_dir)
 
+  def ExpandSpecial(self, path, product_dir=None):
+    """Expand specials like $!PRODUCT_DIR in |path|.
+
+    If |product_dir| is None, assumes the cwd is already the product
+    dir.  Otherwise, |product_dir| is the relative path to the product
+    dir.
+    """
+
+    if '$!PRODUCT_DIR' not in path:
+      return path
+
+    if product_dir:
+      path = path.replace('$!PRODUCT_DIR', product_dir)
+    else:
+      path = path.replace('$!PRODUCT_DIR/', '')
+      path = path.replace('$!PRODUCT_DIR', '.')
+    return path
+
   def GypPathToNinja(self, path):
     """Translate a gyp path to a ninja path.
 
     See the above discourse on path conversions."""
     if path.startswith('$!'):
-      return ExpandProduct(path)
+      return self.ExpandSpecial(path)
     assert '$' not in path, path
     return os.path.normpath(os.path.join(self.build_to_base, path))
 
@@ -313,7 +313,7 @@ class NinjaWriter:
       # First write out a rule for the action.
       name = action['action_name']
       if 'message' in action:
-        description = 'ACTION ' + ExpandProduct(action['message'])
+        description = 'ACTION ' + self.ExpandSpecial(action['message'])
       else:
         description = 'ACTION %s: %s' % (self.name, action['action_name'])
       rule_name = self.WriteNewNinjaRule(name, action['action'], description)
@@ -339,7 +339,7 @@ class NinjaWriter:
       name = rule['rule_name']
       args = rule['action']
       if 'message' in rule:
-        description = 'RULE ' + ExpandProduct(rule['message'])
+        description = 'RULE ' + self.ExpandSpecial(rule['message'])
       else:
         description = 'RULE %s: %s $source' % (self.name, name)
       rule_name = self.WriteNewNinjaRule(name, args, description)
@@ -378,8 +378,8 @@ class NinjaWriter:
             # '$source' is a parameter to the rule action, which means
             # it shouldn't be converted to a Ninja path.  But we don't
             # want $!PRODUCT_DIR in there either.
-            extra_bindings.append(('source',
-                                   ExpandProduct(source, self.base_to_build)))
+            source_expanded = self.ExpandSpecial(source, self.base_to_build)
+            extra_bindings.append(('source', source_expanded))
           elif var == 'ext':
             extra_bindings.append(('ext', ext))
           elif var == 'name':
@@ -480,10 +480,10 @@ class NinjaWriter:
 
     if output_uses_linker:
       self.WriteVariableList('ldflags',
-                             gyp.common.uniquer(map(ExpandProduct,
+                             gyp.common.uniquer(map(self.ExpandSpecial,
                                                     config.get('ldflags', []))))
       self.WriteVariableList('libs',
-                             gyp.common.uniquer(map(ExpandProduct,
+                             gyp.common.uniquer(map(self.ExpandSpecial,
                                                     spec.get('libraries', []))))
 
     extra_bindings = []
@@ -552,7 +552,7 @@ class NinjaWriter:
 
     if 'product_dir' in spec:
       path = os.path.join(spec['product_dir'], filename)
-      return ExpandProduct(path)
+      return self.ExpandSpecial(path)
 
     # Executables and loadable modules go into the output root,
     # libraries go into shared library dir, and everything else
@@ -585,7 +585,7 @@ class NinjaWriter:
     # cd into the directory before running, and adjust paths in
     # the arguments to point to the proper locations.
     cd = 'cd %s; ' % self.build_to_base
-    args = [ExpandProduct(arg, self.base_to_build) for arg in args]
+    args = [self.ExpandSpecial(arg, self.base_to_build) for arg in args]
 
     command = cd + gyp.common.EncodePOSIXShellList(args)
     self.ninja.rule(rule_name, command, description)
