@@ -221,8 +221,11 @@ void Network::SetState(ConnectionState new_state) {
   ConnectionState old_state = state_;
   state_ = new_state;
   if (new_state == STATE_FAILURE) {
-    if (old_state != STATE_UNKNOWN) {
+    if (old_state != STATE_UNKNOWN &&
+        old_state != STATE_IDLE) {
       // New failure, the user needs to be notified.
+      // Transition STATE_IDLE -> STATE_FAILURE sometimes happens on resume
+      // but is not an actual failure as network device is not ready yet.
       notify_failure_ = true;
     }
   } else {
