@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_path_parser.h"
@@ -481,6 +482,11 @@ bool ConfigurationPolicyPrefKeeper::ApplyDownloadDirPolicy(
     DCHECK(result);
     FilePath::StringType expanded_value =
         policy::path_parser::ExpandPathVariables(string_value);
+    // Leaving the policy empty would revert to the default download location
+    // else we would point in an undefined location. We do this after the
+    // path expansion because it might lead to an empty string(e.g. for "\"\"").
+    if (expanded_value.empty())
+      expanded_value = download_util::GetDefaultDownloadDirectory().value();
     prefs_.SetValue(prefs::kDownloadDefaultDirectory,
                     Value::CreateStringValue(expanded_value));
     prefs_.SetValue(prefs::kPromptForDownload,
