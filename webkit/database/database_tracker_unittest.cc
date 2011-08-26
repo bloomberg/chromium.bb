@@ -607,6 +607,52 @@ class DatabaseTracker_TestHelper_Test {
     // The origin directory should be gone as well.
     EXPECT_FALSE(file_util::PathExists(origin1_db_dir));
   }
+
+  static void EmptyDatabaseNameIsValid() {
+    const GURL kOrigin(kOrigin1Url);
+    const string16 kOriginId = DatabaseUtil::GetOriginIdentifier(kOrigin);
+    const string16 kEmptyName;
+    const string16 kDescription(ASCIIToUTF16("description"));
+    const string16 kChangedDescription(ASCIIToUTF16("changed_description"));
+
+    // Initialize a tracker database, no need to put it on disk.
+    const bool kUseInMemoryTrackerDatabase = true;
+    ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    scoped_refptr<DatabaseTracker> tracker(
+        new DatabaseTracker(temp_dir.path(), kUseInMemoryTrackerDatabase,
+                            false, NULL, NULL, NULL));
+
+    // Starts off with no databases.
+    std::vector<OriginInfo> infos;
+    EXPECT_TRUE(tracker->GetAllOriginsInfo(&infos));
+    EXPECT_TRUE(infos.empty());
+
+    // Create a db with an empty name.
+    int64 database_size = -1;
+    tracker->DatabaseOpened(kOriginId, kEmptyName, kDescription, 0,
+                            &database_size);
+    EXPECT_EQ(0, database_size);
+    tracker->DatabaseModified(kOriginId, kEmptyName);
+    EXPECT_TRUE(tracker->GetAllOriginsInfo(&infos));
+    EXPECT_EQ(1u, infos.size());
+    EXPECT_EQ(kDescription, infos[0].GetDatabaseDescription(kEmptyName));
+    EXPECT_FALSE(tracker->GetFullDBFilePath(kOriginId, kEmptyName).empty());
+    tracker->DatabaseOpened(kOriginId, kEmptyName, kChangedDescription, 0,
+                            &database_size);
+    infos.clear();
+    EXPECT_TRUE(tracker->GetAllOriginsInfo(&infos));
+    EXPECT_EQ(1u, infos.size());
+    EXPECT_EQ(kChangedDescription, infos[0].GetDatabaseDescription(kEmptyName));
+    tracker->DatabaseClosed(kOriginId, kEmptyName);
+    tracker->DatabaseClosed(kOriginId, kEmptyName);
+
+    // Deleting it should return to the initial state.
+    EXPECT_EQ(net::OK, tracker->DeleteDatabase(kOriginId, kEmptyName, NULL));
+    infos.clear();
+    EXPECT_TRUE(tracker->GetAllOriginsInfo(&infos));
+    EXPECT_TRUE(infos.empty());
+  }
 };
 
 TEST(DatabaseTrackerTest, DeleteOpenDatabase) {
@@ -633,6 +679,10 @@ TEST(DatabaseTrackerTest, DatabaseTrackerQuotaIntegration) {
 TEST(DatabaseTrackerTest, DatabaseTrackerClearLocalStateOnExit) {
   // Only works for regular mode.
   DatabaseTracker_TestHelper_Test::DatabaseTrackerClearLocalStateOnExit();
+}
+
+TEST(DatabaseTrackerTest, EmptyDatabaseNameIsValid) {
+  DatabaseTracker_TestHelper_Test::EmptyDatabaseNameIsValid();
 }
 
 }  // namespace webkit_database

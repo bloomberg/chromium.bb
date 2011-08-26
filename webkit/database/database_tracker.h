@@ -221,14 +221,26 @@ class DatabaseTracker
                                      int64 estimated_size);
 
   void ClearAllCachedOriginInfo();
-  CachedOriginInfo* GetCachedOriginInfo(const string16& origin_identifier);
+  CachedOriginInfo* MaybeGetCachedOriginInfo(const string16& origin_identifier,
+                                             bool create_if_needed);
+  CachedOriginInfo* GetCachedOriginInfo(const string16& origin_identifier) {
+    return MaybeGetCachedOriginInfo(origin_identifier, true);
+  }
 
   int64 GetDBFileSize(const string16& origin_identifier,
                       const string16& database_name);
-  int64 SeedOpenDatabaseSize(const string16& origin_identifier,
-                             const string16& database_name);
+  int64 SeedOpenDatabaseInfo(const string16& origin_identifier,
+                             const string16& database_name,
+                             const string16& description);
+  int64 UpdateOpenDatabaseInfoAndNotify(const string16& origin_identifier,
+                                        const string16& database_name,
+                                        const string16* opt_description);
   int64 UpdateOpenDatabaseSizeAndNotify(const string16& origin_identifier,
-                                        const string16& database_name);
+                                        const string16& database_name) {
+    return UpdateOpenDatabaseInfoAndNotify(
+        origin_identifier, database_name, NULL);
+  }
+
 
   void ScheduleDatabaseForDeletion(const string16& origin_identifier,
                                    const string16& database_name);

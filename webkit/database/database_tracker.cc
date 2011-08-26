@@ -141,11 +141,14 @@ void DatabaseTracker::DatabaseOpened(const string16& origin_identifier,
   InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
                                 database_description, estimated_size);
   if (database_connections_.AddConnection(origin_identifier, database_name)) {
-    *database_size = SeedOpenDatabaseSize(origin_identifier, database_name);
+    *database_size = SeedOpenDatabaseInfo(origin_identifier,
+                                          database_name,
+                                          database_description);
     return;
   }
-  *database_size  = UpdateOpenDatabaseSizeAndNotify(origin_identifier,
-                                                    database_name);
+  *database_size  = UpdateOpenDatabaseInfoAndNotify(origin_identifier,
+                                                    database_name,
+                                                    &database_description);
 }
 
 void DatabaseTracker::DatabaseModified(const string16& origin_identifier,
@@ -278,7 +281,6 @@ FilePath DatabaseTracker::GetFullDBFilePath(
     const string16& origin_identifier,
     const string16& database_name) {
   DCHECK(!origin_identifier.empty());
-  DCHECK(!database_name.empty());
   if (!LazyInit())
     return FilePath();
 
@@ -531,13 +533,16 @@ void DatabaseTracker::ClearAllCachedOriginInfo() {
   origins_info_map_.clear();
 }
 
-DatabaseTracker::CachedOriginInfo* DatabaseTracker::GetCachedOriginInfo(
-    const string16& origin_identifier) {
+DatabaseTracker::CachedOriginInfo* DatabaseTracker::MaybeGetCachedOriginInfo(
+    const string16& origin_identifier, bool create_if_needed) {
   if (!LazyInit())
     return NULL;
 
   // Populate the cache with data for this origin if needed.
   if (origins_info_map_.find(origin_identifier) == origins_info_map_.end()) {
+    if (!create_if_needed)
+      return NULL;
+
     std::vector<DatabaseDetails> details;
     if (!databases_table_->GetAllDatabaseDetailsForOrigin(
             origin_identifier, &details)) {
@@ -573,25 +578,33 @@ int64 DatabaseTracker::GetDBFileSize(const string16& origin_identifier,
   return db_file_size;
 }
 
-int64 DatabaseTracker::SeedOpenDatabaseSize(
-    const string16& origin_id, const string16& name) {
+int64 DatabaseTracker::SeedOpenDatabaseInfo(
+    const string16& origin_id, const string16& name,
+    const string16& description) {
   DCHECK(database_connections_.IsDatabaseOpened(origin_id, name));
   int64 size = GetDBFileSize(origin_id, name);
   database_connections_.SetOpenDatabaseSize(origin_id, name,  size);
-  if (origins_info_map_.find(origin_id) != origins_info_map_.end())
-    origins_info_map_[origin_id].SetDatabaseSize(name, size);
+  CachedOriginInfo* info = MaybeGetCachedOriginInfo(origin_id, false);
+  if (info) {
+    info->SetDatabaseSize(name, size);
+    info->SetDatabaseDescription(name, description);
+  }
   return size;
 }
 
-int64 DatabaseTracker::UpdateOpenDatabaseSizeAndNotify(
-    const string16& origin_id, const string16& name) {
+int64 DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
+    const string16& origin_id, const string16& name,
+    const string16* opt_description) {
   DCHECK(database_connections_.IsDatabaseOpened(origin_id, name));
   int64 new_size = GetDBFileSize(origin_id, name);
   int64 old_size = database_connections_.GetOpenDatabaseSize(origin_id, name);
+  CachedOriginInfo* info = MaybeGetCachedOriginInfo(origin_id, false);
+  if (info && opt_description)
+    info->SetDatabaseDescription(name, *opt_description);
   if (old_size != new_size) {
     database_connections_.SetOpenDatabaseSize(origin_id, name, new_size);
-    if (origins_info_map_.find(origin_id) != origins_info_map_.end())
-      origins_info_map_[origin_id].SetDatabaseSize(name, new_size);
+    if (info)
+      info->SetDatabaseSize(name, new_size);
     if (quota_manager_proxy_)
       quota_manager_proxy_->NotifyStorageModified(
           quota::QuotaClient::kDatabase,
