@@ -114,6 +114,17 @@ class HGen(GeneratorByFile):
       out = '#define %s \\\n    %s' % (name, value)
     return '%s\n' % out
 
+  def GetVersionString(self, node):
+    # If an interface name is specified, use that
+    iname = node.GetProperty('iname')
+    if iname: return iname
+
+    # Otherwise, the interface name is the object's name
+    # With '_Dev' replaced by '(Dev)' if it's a Dev interface.
+    name = node.GetName()
+    if len(name) > 4 and name[-4:] == '_Dev':
+      name = '%s(Dev)' % name[:-4]
+    return name
 
   def GetOutFile(self, filenode, options):
     savename = GetOutFileName(filenode, GetOption('dstroot'))
@@ -163,7 +174,7 @@ class HGen(GeneratorByFile):
     out.Write('\n')
     for node in filenode.GetListOf('Interface'):
       idefs = ''
-      name = node.GetName()
+      name = self.GetVersionString(node)
       macro = node.GetProperty('macro')
       if not macro:
         macro = self.GetMacro(node)

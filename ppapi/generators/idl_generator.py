@@ -11,8 +11,8 @@ from idl_option import GetOption, Option, ParseOptions
 
 GeneratorList = []
 
-Option('release', 'Which release to generate.', default='M14')
-Option('range', 'Which release ranges in the form of MIN,MAX.', default='')
+Option('release', 'Which release to generate.', default='')
+Option('range', 'Which ranges in the form of MIN,MAX.', default='M13,M14')
 
 
 #
@@ -67,7 +67,7 @@ class Generator(object):
     releasestr = GetOption('release')
 
     # Check for a range option which over-rides a release option
-    if rangestr:
+    if not releasestr and rangestr:
       range_list = rangestr.split(',')
       if len(range_list) != 2:
         self.Error('Failed to generate for %s, incorrect range: "%s"' %
@@ -77,12 +77,17 @@ class Generator(object):
         vmax = range_list[1]
         vmin = ast.releases.index(vmin)
         vmax = ast.releases.index(vmax) + 1
-        ret = self.GenerateRange(ast, ast.releases[vmin:vmax], options)
+        range = ast.releases[vmin:vmax]
+        InfoOut.Log('Generate range %s of %s.' % (range, self.name))
+        ret = self.GenerateRange(ast, range, options)
         if ret < 0:
           self.Error('Failed to generate range %s : %s.' %(vmin, vmax))
+        else:
+          InfoOut.Log('%s wrote %d files.' % (self.name, ret))
     # Otherwise this should be a single release generation
     else:
       if releasestr:
+        InfoOut.Log('Generate release %s of %s.' % (releasestr, self.name))
         ret = self.GenerateRelease(ast, releasestr, options)
         if ret < 0:
           self.Error('Failed to generate release %s.' % releasestr)
