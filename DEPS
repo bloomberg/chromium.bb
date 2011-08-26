@@ -224,6 +224,7 @@ deps = {
   # WebDriver keeps client and test code separate, and merges when the
   # python egg is installed. We run tests directly from src, so import
   # the code into the structure expected by the tests.
+  # Make sure you update chrome/test/functional.DEPS/DEPS too.
   "src/third_party/webdriver/python/selenium":
     "http://selenium.googlecode.com/svn/trunk/py/selenium@13487",
   "src/third_party/webdriver/python/selenium/test":
