@@ -57,7 +57,7 @@ void XmppIqRequest::Unregister() {
 
 void XmppIqRequest::IqResponse(buzz::XmppIqCookie cookie,
                                const buzz::XmlElement* stanza) {
-  if (callback_.is_null()) {
+  if (!callback_.is_null()) {
     callback_.Run(stanza);
     callback_.Reset();
   }

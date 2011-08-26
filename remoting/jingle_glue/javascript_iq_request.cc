@@ -57,7 +57,7 @@ void JavascriptIqRegistry::OnIncomingStanza(const buzz::XmlElement* stanza) {
     // JavascriptIqRequest::SendIq(), but remove in
     // JavascriptIqRegistry::OnIq().  We should try to keep the
     // registration/deregistration in one spot.
-    if (it->second->callback_.is_null()) {
+    if (!it->second->callback_.is_null()) {
       it->second->callback_.Run(stanza);
       it->second->callback_.Reset();
     } else {
