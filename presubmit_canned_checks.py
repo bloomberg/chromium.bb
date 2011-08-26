@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -828,14 +828,17 @@ def _CheckConstNSObject(input_api, output_api, source_file_filter):
 
 def _CheckSingletonInHeaders(input_api, output_api, source_file_filter):
   """Checks to make sure no header files have |Singleton<|."""
-  pattern = input_api.re.compile(r'Singleton<')
+  pattern = input_api.re.compile(r'Singleton\s*<')
   files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
     if (f.LocalPath().endswith('.h') or f.LocalPath().endswith('.hxx') or
         f.LocalPath().endswith('.hpp') or f.LocalPath().endswith('.inl')):
       contents = input_api.ReadFile(f)
-      if pattern.search(contents):
-        files.append(f)
+      for line in contents.splitlines(False):
+        line = input_api.re.sub(r'//.*$', '', line)  # Strip C++ comment.
+        if pattern.search(line):
+          files.append(f)
+          break
 
   if files:
     return [ output_api.PresubmitError(
