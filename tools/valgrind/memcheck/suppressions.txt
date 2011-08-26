@@ -5359,6 +5359,16 @@
    fun:_ZN12GpuBlacklist16LoadGpuBlacklistERKSsNS_8OsFilterE
 }
 
+{
+   bug_94345
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK4base8internal18WeakReferenceOwner6GetRefEv
+   fun:_ZN4base15SupportsWeakPtrI16ObserverListBaseIN11MessageLoop12TaskObserverEEE9AsWeakPtrEv
+   fun:_ZN16ObserverListBaseIN11MessageLoop12TaskObserverEE8IteratorC1ERS2_
+   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
+}
+
 #-----------------------------------------------------------------------
 # These only occur on our Google workstations
 {
