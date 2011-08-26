@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_P2P_TRANSPORT_H_
 
 #include <string>
+#include <vector>
 
 namespace net {
 class Socket;
@@ -43,13 +44,31 @@ class P2PTransport {
     virtual void OnError(int error) = 0;
   };
 
+  struct Config {
+    Config();
+    ~Config();
+
+    // STUN server address and port, e.g. "stun.example.com:23542".
+    std::string stun_server;
+
+    // Relay server name, e.g. "relay.example.com".
+    std::string relay_server;
+
+    // Relay token to use for relay servers.
+    std::string relay_token;
+
+    // TCP window sizes. Default size is used when set to 0.
+    int tcp_receive_window;
+    int tcp_send_window;
+  };
+
   virtual ~P2PTransport() {}
 
   // Initialize transport using specified configuration. Returns true
   // if initialization succeeded.
   virtual bool Init(const std::string& name,
                     Protocol protocol,
-                    const std::string& config,
+                    const Config& config,
                     EventHandler* event_handler) = 0;
 
   // Add candidate received from the remote peer. Returns false if the

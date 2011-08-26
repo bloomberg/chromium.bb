@@ -34,6 +34,8 @@ class PPB_Transport_Impl : public ::ppapi::Resource,
 
   // PPB_Transport_API implementation.
   virtual PP_Bool IsWritable() OVERRIDE;
+  virtual int32_t SetProperty(PP_TransportProperty property,
+                              PP_Var value) OVERRIDE;
   virtual int32_t Connect(PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t GetNextAddress(PP_Var* address,
                                  PP_CompletionCallback callback) OVERRIDE;
@@ -59,6 +61,7 @@ class PPB_Transport_Impl : public ::ppapi::Resource,
 
   std::string name_;
   bool use_tcp_;
+  webkit_glue::P2PTransport::Config config_;
   bool started_;
   scoped_ptr<webkit_glue::P2PTransport> p2p_transport_;
   bool writable_;

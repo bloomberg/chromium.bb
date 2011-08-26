@@ -15,6 +15,7 @@ class PPB_Transport_API {
   virtual ~PPB_Transport_API() {}
 
   virtual PP_Bool IsWritable() = 0;
+  virtual int32_t SetProperty(PP_TransportProperty property, PP_Var value) = 0;
   virtual int32_t Connect(PP_CompletionCallback callback) = 0;
   virtual int32_t GetNextAddress(PP_Var* address,
                                  PP_CompletionCallback callback) = 0;

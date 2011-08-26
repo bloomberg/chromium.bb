@@ -36,6 +36,14 @@ PP_Bool IsWritable(PP_Resource transport) {
   return enter.object()->IsWritable();
 }
 
+int32_t SetProperty(PP_Resource transport, PP_TransportProperty property,
+                   PP_Var value) {
+  EnterTransport enter(transport, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  return enter.object()->SetProperty(property, value);
+}
+
 int32_t Connect(PP_Resource transport, PP_CompletionCallback callback) {
   EnterTransport enter(transport, true);
   if (enter.failed())
@@ -89,6 +97,7 @@ const PPB_Transport_Dev g_ppb_transport_thunk = {
   &Create,
   &IsTransport,
   &IsWritable,
+  &SetProperty,
   &Connect,
   &GetNextAddress,
   &ReceiveRemoteAddress,

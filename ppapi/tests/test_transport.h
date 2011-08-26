@@ -31,6 +31,7 @@ class TestTransport : public TestCase {
 
   std::string TestCreate();
   std::string TestConnect();
+  std::string TestSetProperty();
   std::string TestSendDataTcp();
   std::string TestSendDataUdp();
   std::string TestConnectAndCloseTcp();

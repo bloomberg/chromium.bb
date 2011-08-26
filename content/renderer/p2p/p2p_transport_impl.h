@@ -54,7 +54,7 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
   // webkit_glue::P2PTransport interface.
   virtual bool Init(const std::string& name,
                     Protocol protocol,
-                    const std::string& config,
+                    const Config& config,
                     EventHandler* event_handler) OVERRIDE;
   virtual bool AddRemoteCandidate(const std::string& address) OVERRIDE;
   virtual net::Socket* GetChannel() OVERRIDE;

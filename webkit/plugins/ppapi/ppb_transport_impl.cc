@@ -30,6 +30,9 @@ namespace {
 const char kUdpProtocolName[] = "udp";
 const char kTcpProtocolName[] = "tcp";
 
+const int kMinBufferSize = 1024;
+const int kMaxBufferSize = 1024 * 1024;
+
 int MapNetError(int result) {
   if (result > 0)
     return result;
@@ -101,6 +104,70 @@ PP_Bool PPB_Transport_Impl::IsWritable() {
   return PP_FromBool(writable_);
 }
 
+int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
+                                        PP_Var value) {
+  // SetProperty() may be called only before Connect().
+  if (started_)
+    return PP_ERROR_FAILED;
+
+  switch (property) {
+    case PP_TRANSPORTPROPERTY_STUN_SERVER: {
+      StringVar* value_str = StringVar::FromPPVar(value);
+      if (!value_str)
+        return PP_ERROR_BADARGUMENT;
+      config_.stun_server = value_str->value();
+      break;
+    }
+
+    case PP_TRANSPORTPROPERTY_RELAY_SERVER: {
+      StringVar* value_str = StringVar::FromPPVar(value);
+      if (!value_str)
+        return PP_ERROR_BADARGUMENT;
+      config_.relay_server = value_str->value();
+      break;
+    }
+
+    case PP_TRANSPORTPROPERTY_RELAY_TOKEN: {
+      StringVar* value_str = StringVar::FromPPVar(value);
+      if (!value_str)
+        return PP_ERROR_BADARGUMENT;
+      config_.relay_token = value_str->value();
+      break;
+    }
+
+    case PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW: {
+      if (!use_tcp_)
+        return PP_ERROR_BADARGUMENT;
+
+      int32_t int_value = value.value.as_int;
+      if (value.type != PP_VARTYPE_INT32 || int_value < kMinBufferSize ||
+          int_value > kMaxBufferSize) {
+        return PP_ERROR_BADARGUMENT;
+      }
+      config_.tcp_receive_window = int_value;
+      break;
+    }
+
+    case PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW: {
+      if (!use_tcp_)
+        return PP_ERROR_BADARGUMENT;
+
+      int32_t int_value = value.value.as_int;
+      if (value.type != PP_VARTYPE_INT32 || int_value < kMinBufferSize ||
+          int_value > kMaxBufferSize) {
+        return PP_ERROR_BADARGUMENT;
+      }
+      config_.tcp_send_window = int_value;
+      break;
+    }
+
+    default:
+      return PP_ERROR_BADARGUMENT;
+  }
+
+  return PP_OK;
+}
+
 int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
   if (!p2p_transport_.get())
     return PP_ERROR_FAILED;
@@ -112,7 +179,7 @@ int32_t PPB_Transport_Impl::Connect(PP_CompletionCallback callback) {
   P2PTransport::Protocol protocol = use_tcp_ ?
       P2PTransport::PROTOCOL_TCP : P2PTransport::PROTOCOL_UDP;
 
-  if (!p2p_transport_->Init(name_, protocol, "", this))
+  if (!p2p_transport_->Init(name_, protocol, config_, this))
     return PP_ERROR_FAILED;
 
   started_ = true;

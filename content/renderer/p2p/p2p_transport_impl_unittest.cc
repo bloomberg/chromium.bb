@@ -33,8 +33,6 @@ const char kTestAddress2[] = "192.168.15.33";
 const char kTransportName1[] = "tr1";
 const char kTransportName2[] = "tr2";
 
-const char kTestConfig[] = "";
-
 // Send 10 packets 10 bytes each. Packets are sent with 10ms delay
 // between packets (about 100 ms for 10 messages).
 const int kMessageSize = 10;
@@ -353,10 +351,11 @@ class P2PTransportImplTest : public testing::Test {
   }
 
   void Init(P2PTransport::Protocol protocol) {
+    P2PTransport::Config config;
     ASSERT_TRUE(transport1_->Init(
-        kTransportName1, protocol, kTestConfig, &event_handler1_));
+        kTransportName1, protocol, config, &event_handler1_));
     ASSERT_TRUE(transport2_->Init(
-        kTransportName2, protocol, kTestConfig, &event_handler2_));
+        kTransportName2, protocol, config, &event_handler2_));
   }
 
   MessageLoop message_loop_;

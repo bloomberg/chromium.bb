@@ -36,6 +36,14 @@ bool Transport_Dev::IsWritable() {
       get_interface<PPB_Transport_Dev>()->IsWritable(pp_resource()));
 }
 
+int32_t Transport_Dev::SetProperty(PP_TransportProperty property,
+                                   const Var& value) {
+  if (!has_interface<PPB_Transport_Dev>())
+    return PP_ERROR_NOINTERFACE;
+  return get_interface<PPB_Transport_Dev>()->SetProperty(
+      pp_resource(), property, value.pp_var());
+}
+
 int32_t Transport_Dev::Connect(const CompletionCallback& cc) {
   if (!has_interface<PPB_Transport_Dev>())
     return cc.MayForce(PP_ERROR_NOINTERFACE);

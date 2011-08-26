@@ -42,7 +42,7 @@ P2PTransportImpl::~P2PTransportImpl() {
 
 bool P2PTransportImpl::Init(const std::string& name,
                             Protocol protocol,
-                            const std::string& config,
+                            const Config& config,
                             EventHandler* event_handler) {
   DCHECK(event_handler);
 
@@ -53,8 +53,7 @@ bool P2PTransportImpl::Init(const std::string& name,
   name_ = name;
   event_handler_ = event_handler;
 
-  // TODO(sergeyu): Implement PortAllocator that can parse |config|
-  // and use it here instead of BasicPortAllocator.
+  // TODO(sergeyu): Use STUN/Relay settings from |config|.
   allocator_.reset(new cricket::BasicPortAllocator(
       network_manager_.get(), socket_factory_.get()));
 

@@ -361,6 +361,7 @@
         'multipart_response_delegate.h',
         'npruntime_util.cc',
         'npruntime_util.h',
+        'p2p_transport.cc',
         'p2p_transport.h',
         'password_form.cc',
         'password_form.h',

@@ -13,8 +13,28 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_TRANSPORT_DEV_INTERFACE_0_5 "PPB_Transport;0.5"
-#define PPB_TRANSPORT_DEV_INTERFACE PPB_TRANSPORT_DEV_INTERFACE_0_5
+#define PPB_TRANSPORT_DEV_INTERFACE_0_6 "PPB_Transport;0.6"
+#define PPB_TRANSPORT_DEV_INTERFACE PPB_TRANSPORT_DEV_INTERFACE_0_6
+
+typedef enum {
+  // STUN server address and port, e.g "stun.example.com:19302".
+  PP_TRANSPORTPROPERTY_STUN_SERVER = 0,
+
+  // Relay server name, e.g. "relay.example.com".
+  PP_TRANSPORTPROPERTY_RELAY_SERVER = 1,
+
+  // Single string that specifies token for use with relay server.
+  PP_TRANSPORTPROPERTY_RELAY_TOKEN = 2,
+
+  // TCP receive window in bytes. Takes effect only for PseudoTCP
+  // connections.
+  PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW = 3,
+
+  // TCP send window in bytes. Takes effect only for PseudoTCP
+  // connections.
+  PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW = 4
+} PP_TransportProperty;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TransportProperty, 4);
 
 struct PPB_Transport_Dev {
   // Creates a new transport object with the specified name using the
@@ -33,6 +53,11 @@ struct PPB_Transport_Dev {
   // connect state
   // connect type, protocol
   // RTT
+
+  // Sets various configuration properties of the transport.
+  int32_t (*SetProperty)(PP_Resource transport,
+                         PP_TransportProperty property,
+                         struct PP_Var value);
 
   // Establishes a connection to the remote peer.  Returns
   // PP_OK_COMPLETIONPENDING and notifies on |cb| when connectivity is

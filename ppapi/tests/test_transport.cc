@@ -13,9 +13,10 @@
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/transport_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/dev/transport_dev.h"
+#include "ppapi/cpp/var.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -103,11 +104,12 @@ bool TestTransport::Init() {
 
 void TestTransport::RunTest() {
   RUN_TEST(Create);
-  RUN_TEST(Connect);
-  RUN_TEST_FORCEASYNC(SendDataUdp);
-  RUN_TEST(SendDataTcp);
-  RUN_TEST(ConnectAndCloseUdp);
-  RUN_TEST(ConnectAndCloseTcp);
+  RUN_TEST_FORCEASYNC_AND_NOT(Connect);
+  RUN_TEST(SetProperty);
+  RUN_TEST_FORCEASYNC_AND_NOT(SendDataUdp);
+  RUN_TEST_FORCEASYNC_AND_NOT(SendDataTcp);
+  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAndCloseUdp);
+  RUN_TEST_FORCEASYNC_AND_NOT(ConnectAndCloseTcp);
 }
 
 std::string TestTransport::InitTargets(const char* proto) {
@@ -166,6 +168,47 @@ std::string TestTransport::TestCreate() {
   PASS();
 }
 
+std::string TestTransport::TestSetProperty() {
+  RUN_SUBTEST(InitTargets("tcp"));
+
+  // Try settings STUN and Relay properties.
+  ASSERT_EQ(transport1_->SetProperty(
+      PP_TRANSPORTPROPERTY_STUN_SERVER,
+      pp::Var("stun.example.com:19302")), PP_OK);
+
+  ASSERT_EQ(transport1_->SetProperty(
+      PP_TRANSPORTPROPERTY_RELAY_SERVER,
+      pp::Var("ralay.example.com:80")), PP_OK);
+
+  ASSERT_EQ(transport1_->SetProperty(
+      PP_TRANSPORTPROPERTY_RELAY_TOKEN,
+      pp::Var("INVALID_TOKEN")), PP_OK);
+
+  // Try changing TCP window size.
+  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW,
+                                     pp::Var(65536)), PP_OK);
+  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_RECEIVE_WINDOW,
+                                     pp::Var(10000000)), PP_ERROR_BADARGUMENT);
+
+  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW,
+                                     pp::Var(65536)), PP_OK);
+  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW,
+                                     pp::Var(10000000)), PP_ERROR_BADARGUMENT);
+
+  TestCompletionCallback connect_cb(instance_->pp_instance());
+  ASSERT_EQ(transport1_->Connect(connect_cb), PP_OK_COMPLETIONPENDING);
+
+  // SetProperty() should fail after we've connected.
+  ASSERT_EQ(transport1_->SetProperty(
+      PP_TRANSPORTPROPERTY_STUN_SERVER,
+      pp::Var("stun.example.com:31323")), PP_ERROR_FAILED);
+
+  Clean();
+  ASSERT_EQ(connect_cb.WaitForResult(), PP_ERROR_ABORTED);
+
+  PASS();
+}
+
 std::string TestTransport::TestConnect() {
   RUN_SUBTEST(InitTargets("udp"));
   RUN_SUBTEST(Connect());
@@ -211,8 +254,9 @@ std::string TestTransport::TestSendDataUdp() {
   }
 
   // Limit waiting time.
-  pp::Module::Get()->core()->CallOnMainThread(kUdpWaitTimeMs, done_cb);
-  ASSERT_EQ(done_cb.WaitForResult(), PP_OK);
+  TestCompletionCallback timeout_cb(instance_->pp_instance());
+  pp::Module::Get()->core()->CallOnMainThread(kUdpWaitTimeMs, timeout_cb);
+  ASSERT_EQ(timeout_cb.WaitForResult(), PP_OK);
 
   ASSERT_TRUE(reader.errors().size() == 0);
   ASSERT_TRUE(reader.received().size() > 0);
@@ -235,7 +279,6 @@ std::string TestTransport::TestSendDataTcp() {
   RUN_SUBTEST(Connect());
 
   const int kTcpSendSize = 100000;
-  const int kTimeoutMs = 20000;  // 20 seconds.
 
   TestCompletionCallback done_cb(instance_->pp_instance());
   StreamReader reader(transport1_.get(), kTcpSendSize,
@@ -259,8 +302,6 @@ std::string TestTransport::TestSendDataTcp() {
     pos += result;
   }
 
-  // Limit waiting time.
-  pp::Module::Get()->core()->CallOnMainThread(kTimeoutMs, done_cb);
   ASSERT_EQ(done_cb.WaitForResult(), PP_OK);
 
   ASSERT_TRUE(reader.errors().size() == 0);
