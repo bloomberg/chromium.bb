@@ -593,6 +593,14 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         self->WriteMinidumpWithException(receive.exception, receive.code[0],
                                          subcode, receive.thread.name, true);
 
+#if USE_PROTECTED_ALLOCATIONS
+        // This may have become protected again within
+        // WriteMinidumpWithException, but it needs to be unprotected for
+        // UninstallHandler.
+        if(gBreakpadAllocator)
+          gBreakpadAllocator->Unprotect();
+#endif
+
         self->UninstallHandler(true);
 
 #if USE_PROTECTED_ALLOCATIONS
