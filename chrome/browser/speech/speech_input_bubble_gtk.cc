@@ -107,6 +107,7 @@ void SpeechInputBubbleGtk::OnTryAgainClicked(GtkWidget* widget) {
 
 void SpeechInputBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
   AudioManager::GetAudioManager()->ShowAudioInputSettings();
+  Hide();
 }
 
 void SpeechInputBubbleGtk::Show() {
