@@ -104,7 +104,7 @@
             },
           ],
         }],
-        ['OS!="win" and target_arch=="ia32" and chromeos==0', {
+        ['OS!="win" and target_arch=="ia32"', {
           # Linux-x86-32 and OSX need only the x86-32 IRT.
           'actions': [
             {
@@ -120,7 +120,7 @@
             },
           ],
         }],
-        ['OS!="win" and target_arch=="x64" and chromeos==0', {
+        ['OS!="win" and target_arch=="x64"', {
           # Linux-x86-64 needs only the x86-64 IRT.
           'actions': [
             {
