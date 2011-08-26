@@ -9,7 +9,7 @@
  {u'unique_key':'path', u'name':u'Shockwave Flash', u'path':'/opt/google/chrome/plugins/libgcflashplayer.so', u'enabled':1, u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
  {u'name':'Remoting Viewer', u'enabled':1, u'version':u'', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
  {u'name':'Chrome PDF Viewer', u'enabled':1, u'version':u'', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
- {u'name':'Netflix', u'enabled':1, u'version':u'1.2.0', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
+ {u'name':'Netflix', u'enabled':1, u'version':u'1.2.1', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
  {u'name':'Google Talk Plugin', u'enabled':1, u'version':u'', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
  {u'name':'O3D Plugin', u'enabled':1, u'version':u'', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
  {u'name':'Default Plug-in', u'enabled':1, u'version':u'1', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
