@@ -4,11 +4,29 @@
 
 #include <string>
 
+#if defined(OS_CHROMEOS)
+#include "base/basictypes.h"
+#include "base/string_util.h"
+#endif
+
 namespace l10n_util {
 
 // Return true blindly for now.
 bool IsLocaleSupportedByOS(const std::string& locale) {
+#if !defined(OS_CHROMEOS)
   return true;
+#else
+  // We don't have translations yet for am, fa and sw.
+  // We don't have fonts for te and kn, yet.
+  // TODO(jungshik): Once the above issues are resolved, change this back
+  // to return true.
+  static const char* kUnsupportedLocales[] = {"am", "fa", "kn", "sw", "te"};
+  for (size_t i = 0; i < arraysize(kUnsupportedLocales); ++i) {
+    if (LowerCaseEqualsASCII(locale, kUnsupportedLocales[i]))
+      return false;
+  }
+  return true;
+#endif
 }
 
 }  // namespace l10n_util
