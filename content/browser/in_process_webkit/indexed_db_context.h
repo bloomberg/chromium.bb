@@ -59,9 +59,6 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   // Deletes all indexed db files for the given origin.
   void DeleteIndexedDBForOrigin(const GURL& origin_url);
 
-  // Does a particular origin get unlimited storage?
-  bool IsUnlimitedStorageGranted(const GURL& origin_url) const;
-
   // Methods used in response to QuotaManager requests.
   void GetAllOrigins(std::vector<GURL>* origins);
   int64 GetOriginDiskUsage(const GURL& origin_url);

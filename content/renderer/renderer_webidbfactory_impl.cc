@@ -28,14 +28,14 @@ void RendererWebIDBFactoryImpl::open(
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
     const WebString& data_dir,
-    unsigned long long maximum_size,
+    unsigned long long maximum_size_unused,
     WebKit::WebIDBFactory::BackingStoreType) {
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBFactoryOpen(
-      name, callbacks, origin.databaseIdentifier(), web_frame, maximum_size);
+      name, callbacks, origin.databaseIdentifier(), web_frame);
 }
 
 void RendererWebIDBFactoryImpl::deleteDatabase(

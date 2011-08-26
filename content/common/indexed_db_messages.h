@@ -30,8 +30,6 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   IPC_STRUCT_MEMBER(string16, origin)
   // The name of the database.
   IPC_STRUCT_MEMBER(string16, name)
-  // The maximum size of the database.
-  IPC_STRUCT_MEMBER(uint64, maximum_size)
 IPC_STRUCT_END()
 
 // Used to delete an indexed database.

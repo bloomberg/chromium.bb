@@ -135,7 +135,6 @@ extern const char kSingleProcess[];
 extern const char kSQLiteIndexedDatabase[];
 extern const char kTestSandbox[];
 extern const char kUnlimitedQuotaForFiles[];
-extern const char kUnlimitedQuotaForIndexedDB[];
 extern const char kUserAgent[];
 extern const char kUtilityCmdPrefix[];
 extern const char kUtilityProcess[];

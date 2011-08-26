@@ -37,8 +37,7 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
       const string16& name,
       WebKit::WebIDBCallbacks* callbacks,
       const string16& origin,
-      WebKit::WebFrame* web_frame,
-      uint64 maximum_size);
+      WebKit::WebFrame* web_frame);
 
   void RequestIDBFactoryDeleteDatabase(
       const string16& name,

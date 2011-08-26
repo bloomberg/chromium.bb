@@ -30,6 +30,7 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,
       const WebKit::WebString& data_dir,
+      // TODO(dgrogan): Remove maximum_size after it's out of the webkit api.
       unsigned long long maximum_size,
       WebKit::WebIDBFactory::BackingStoreType);
   // FIXME(jochen): remove after webkit roll.

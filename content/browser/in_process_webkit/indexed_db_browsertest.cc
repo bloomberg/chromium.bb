@@ -32,10 +32,6 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kUnlimitedQuotaForIndexedDB);
-  }
-
   GURL testUrl(const FilePath& file_path) {
     const FilePath kTestDir(FILE_PATH_LITERAL("indexeddb"));
     return ui_test_utils::GetTestUrl(kTestDir, file_path);

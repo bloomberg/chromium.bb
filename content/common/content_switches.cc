@@ -420,11 +420,6 @@ const char kTestSandbox[]                   = "test-sandbox";
 // TODO(dumi): remove the switch when we have a real quota implementation.
 const char kUnlimitedQuotaForFiles[]        = "unlimited-quota-for-files";
 
-// This is for testing IndexedDB and will give any website you visit unlimited
-// quota in IndexedDB. This should only be used for development and not general
-// browsing. It is ignored in single process mode.
-const char kUnlimitedQuotaForIndexedDB[]    = "unlimited-quota-for-indexeddb";
-
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 

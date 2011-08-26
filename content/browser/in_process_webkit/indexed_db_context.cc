@@ -176,11 +176,6 @@ void IndexedDBContext::DeleteIndexedDBForOrigin(const GURL& origin_url) {
   }
 }
 
-bool IndexedDBContext::IsUnlimitedStorageGranted(
-    const GURL& origin) const {
-  return special_storage_policy_->IsStorageUnlimited(origin);
-}
-
 void IndexedDBContext::GetAllOrigins(std::vector<GURL>* origins) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   std::set<GURL>* origins_set = GetOriginSet();

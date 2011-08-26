@@ -46,10 +46,6 @@ using WebKit::WebVector;
 
 namespace {
 
-// FIXME: Replace this magic constant once we have a more sophisticated quota
-// system.
-static const uint64 kDefaultQuota = 5 * 1024 * 1024;
-
 template <class T>
 void DeleteOnWebKitThread(T* obj) {
   if (!BrowserThread::DeleteSoon(BrowserThread::WEBKIT, FROM_HERE, obj))
@@ -203,23 +199,13 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
   // TODO(jorlow): This doesn't support file:/// urls properly. We probably need
   //               to add some toString method to WebSecurityOrigin that doesn't
-  //               return null for them.
+  //               return null for them.  Look at
+  //               DatabaseUtil::GetOriginFromIdentifier.
   WebSecurityOrigin origin(
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
   GURL origin_url(origin.toString());
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
-  DCHECK(kDefaultQuota == params.maximum_size);
-
-  uint64 quota = kDefaultQuota;
-  if (Context()->IsUnlimitedStorageGranted(origin_url) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUnlimitedQuotaForIndexedDB)) {
-      // TODO(jorlow): For the IsUnlimitedStorageGranted case, we need some
-      //       way to revoke it.
-      // TODO(jorlow): Use kint64max once we think we can scale over 1GB.
-      quota = 1024 * 1024 * 1024; // 1GB. More or less "unlimited".
-  }
 
   WebKit::WebIDBFactory::BackingStoreType backingStoreType =
       WebKit::WebIDBFactory::LevelDBBackingStore;
@@ -229,14 +215,17 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     backingStoreType = WebKit::WebIDBFactory::SQLiteBackingStore;
   }
 
+  // TODO(dgrogan): Delete this magic constant once we've removed sqlite.
+  static const uint64 kIncognitoSqliteBackendQuota = 50 * 1024 * 1024;
+
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   Context()->GetIDBFactory()->open(
       params.name,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id,
                                              origin_url),
-      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path), quota,
-      backingStoreType);
+      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path),
+      kIncognitoSqliteBackendQuota, backingStoreType);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
