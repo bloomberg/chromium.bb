@@ -1807,7 +1807,7 @@ FileManager.prototype = {
       if (event.status == 'success' ||
           event.status == 'error_unknown_filesystem' ||
           event.status == 'error_unsuported_filesystem')
-        self.rescanDirectory_();
+        self.rescanDirectory_(null, 300);
     });
   };
 
@@ -2535,12 +2535,63 @@ FileManager.prototype = {
   };
 
   /**
-   * Rescan the current directory, refreshing the list.
+   * Rescans the current directory, refreshing the list. It decreases the
+   * probability that two such calls are pending simultaneously.
+   *
+   * @param {function()} opt_callback Optional function to invoke when the
+   *     rescan is complete.
+   * @param {string} delayMS Delay during which next rescanDirectory calls
+   *     can happen.
+   */
+
+  FileManager.prototype.rescanDirectory_ = function(opt_callback, delayMS) {
+    var self = this;
+    function done(count) {
+      // Variable count is introduced because we only want to do callbacks, that
+      // were in the queue at the moment of rescanDirectoryNow invocation.
+      while (count--) {
+        var callback = self.rescanDirectory_.callbacks.shift();
+        callback();
+      }
+    }
+
+    // callbacks is a queue of callbacks that need to be called after rescaning
+    // directory is done. We push callback to the end and pop form the front.
+    // When we get to actually call rescanDirectoryNow_ we need to remember how
+    // many callbacks were in a queue at the time, not to call callbacks that
+    // arrived in the middle of execution (they may depend on rescaning being
+    // done after they called rescanDirectory_).
+    if (!this.rescanDirectory_.callbacks)
+      this.rescanDirectory_.callbacks = [];
+
+    if (opt_callback)
+      this.rescanDirectory_.callbacks.push(opt_callback);
+
+    delayMS = delayMS || 100;
+
+    // Assumes rescanDirectoryNow_ takes less than 100 ms. If not there is
+    // a possible overlap between two calls.
+    if (delayMS < 100)
+      delayMS = 100;
+
+    if (this.rescanDirectory_.handle)
+      clearTimeout(this.rescanDirectory_.handle);
+    var currentQueueLength = self.rescanDirectory_.callbacks.length;
+    this.rescanDirectory_.handle = setTimeout(function () {
+        self.rescanDirectoryNow_(function() {
+            done(currentQueueLength);
+          });
+      }, delayMS);
+  };
+
+  /**
+   * Rescans the current directory immediately, refreshing the list. Should NOT
+   * be used in most cases. Instead use rescanDirectory_.
    *
    * @param {function()} opt_callback Optional function to invoke when the
    *     rescan is complete.
    */
-  FileManager.prototype.rescanDirectory_ = function(opt_callback) {
+  FileManager.prototype.rescanDirectoryNow_ = function(opt_callback) {
     var self = this;
     var reader;
 
