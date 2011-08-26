@@ -12,6 +12,8 @@
 
 class Profile;
 
+extern const char kFileBrowserDomain[];
+
 // Helper class for wiring file browser component extension with the rest of UI.
 class FileManagerUtil {
  public:

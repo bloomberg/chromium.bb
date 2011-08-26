@@ -69,6 +69,10 @@
 #include "ui/gfx/favicon_size.h"
 #include "webkit/glue/webmenuitem.h"
 
+#ifdef FILE_MANAGER_EXTENSION
+#include "chrome/browser/extensions/file_manager_util.h"
+#endif
+
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebURL;
@@ -162,6 +166,19 @@ void AddCustomItemsToMenu(const std::vector<WebMenuItem>& items,
         break;
     }
   }
+}
+
+bool ShouldShowTranslateItem(const GURL& page_url) {
+  if (page_url.SchemeIs("chrome"))
+    return false;
+
+#ifdef FILE_MANAGER_EXTENSION
+  if (page_url.SchemeIs("chrome-extension") &&
+      page_url.DomainIs(kFileBrowserDomain))
+    return false;
+#endif
+
+  return true;
 }
 
 }  // namespace
@@ -681,12 +698,15 @@ void RenderViewContextMenu::AppendPageItems() {
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
 
-  std::string locale = g_browser_process->GetApplicationLocale();
-  locale = TranslateManager::GetLanguageCode(locale);
-  string16 language = l10n_util::GetDisplayNameForLocale(locale, locale, true);
-  menu_model_.AddItem(
-      IDC_CONTENT_CONTEXT_TRANSLATE,
-      l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
+  if (ShouldShowTranslateItem(params_.page_url)) {
+    std::string locale = g_browser_process->GetApplicationLocale();
+    locale = TranslateManager::GetLanguageCode(locale);
+    string16 language = l10n_util::GetDisplayNameForLocale(locale, locale,
+                                                           true);
+    menu_model_.AddItem(
+        IDC_CONTENT_CONTEXT_TRANSLATE,
+        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
+  }
 
   menu_model_.AddItemWithStringId(IDC_VIEW_SOURCE,
                                   IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);

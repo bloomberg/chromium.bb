@@ -24,8 +24,10 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_util.h"
 
+#define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
+const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
 #define FILEBROWSER_URL(PATH) \
-    ("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/" PATH)
+    ("chrome-extension://" FILEBROWSER_DOMAIN "/" PATH)
 // This is the "well known" url for the file manager extension from
 // browser/resources/file_manager.  In the future we may provide a way to swap
 // out this file manager for an aftermarket part, but not yet.
