@@ -505,6 +505,8 @@ class DepGraphGenerator(object):
     # Build our own tree from the emerge digraph.
     deps_tree = {}
     digraph = depgraph._dynamic_config.digraph
+    root = emerge.settings["ROOT"]
+    final_db = depgraph._dynamic_config.mydbapi[root]
     for node, node_deps in digraph.nodes.items():
       # Calculate dependency packages that need to be installed first. Each
       # child on the digraph is a dependency. The "operation" field specifies
@@ -524,13 +526,26 @@ class DepGraphGenerator(object):
       # We just refer to CPVs as packages here because it's easier.
       deps = {}
       for child, priorities in node_deps[0].items():
-        if isinstance(child, SetArg): continue
-        deps[str(child.cpv)] = dict(action=str(child.operation),
-                                    deptypes=[str(x) for x in priorities],
-                                    deps={})
+        if isinstance(child, Package) and child.root == root:
+          cpv = str(child.cpv)
+          action = str(child.operation)
+
+          # If we're uninstalling a package, check whether Portage is
+          # installing a replacement. If so, just depend on the installation
+          # of the new package, because the old package will automatically
+          # be uninstalled at that time.
+          if action == "uninstall":
+            for pkg in final_db.match_pkgs(child.slot_atom):
+              cpv = str(pkg.cpv)
+              action = "merge"
+              break
+
+          deps[cpv] = dict(action=action,
+                           deptypes=[str(x) for x in priorities],
+                           deps={})
 
       # We've built our list of deps, so we can add our package to the tree.
-      if isinstance(node, Package) and node.root == emerge.settings["ROOT"]:
+      if isinstance(node, Package) and node.root == root:
         deps_tree[str(node.cpv)] = dict(action=str(node.operation),
                                         deps=deps)
 
@@ -539,7 +554,7 @@ class DepGraphGenerator(object):
     deps_info = {}
     for pkg in depgraph.altlist():
       if isinstance(pkg, Package):
-        assert pkg.root == emerge.settings["ROOT"]
+        assert pkg.root == root
         self.package_db[pkg.cpv] = pkg
 
         # Save off info about the package
@@ -598,7 +613,7 @@ class DepGraphGenerator(object):
         Unsanitized digraph.
       """
       binpkg_phases = set(["setup", "preinst", "postinst"])
-      needed_dep_types = set(["buildtime", "runtime"])
+      needed_dep_types = set(["blocker", "buildtime", "runtime"])
       for pkg in packages:
 
         # Create an entry for the package
@@ -627,12 +642,21 @@ class DepGraphGenerator(object):
         # Add dependencies to this package.
         for dep, dep_item in packages[pkg]["deps"].iteritems():
           # We only need to enforce strict ordering of dependencies if the
-          # dependency is a buildtime or runtime dependency. (I.e., ignored,
-          # optional, and runtime_post dependencies don't depend on ordering.)
+          # dependency is a blocker, or is a buildtime or runtime dependency.
+          # (I.e., ignored, optional, and runtime_post dependencies don't
+          # depend on ordering.)
           dep_types = dep_item["deptypes"]
           if needed_dep_types.intersection(dep_types):
             deps_map[dep]["provides"].add(pkg)
             this_pkg["needs"][dep] = "/".join(dep_types)
+
+          # If there's a blocker, Portage may need to move files from one
+          # package to another, which requires editing the CONTENTS files of
+          # both packages. To avoid race conditions while editing this file,
+          # the two packages must not be installed in parallel, so we can't
+          # safely ignore dependencies. See http://crosbug.com/19328
+          if "blocker" in dep_types:
+            this_pkg["nodeps"] = False
 
     def FindCycles():
       """Find cycles in the dependency tree.
@@ -709,6 +733,13 @@ class DepGraphGenerator(object):
 
       needs = deps_map[dep]["needs"]
       depinfo = needs.get(basedep, "deleted")
+
+      # It's OK to swap install order for blockers, as long as the two
+      # packages aren't installed in parallel. If there is a cycle, then
+      # we know the packages depend on each other already, so we can drop the
+      # blocker safely without printing a warning.
+      if depinfo == "blocker":
+        return
 
       # Notify the user that we're breaking a cycle.
       print "Breaking %s -> %s (%s)" % (dep, basedep, depinfo)
