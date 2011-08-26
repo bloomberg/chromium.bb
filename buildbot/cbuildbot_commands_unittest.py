@@ -220,7 +220,7 @@ class CBuildBotTest(mox.MoxTestBase):
     cros_lib.RunCommand(arg_test,
                         cwd=mox.StrContains(buildroot),
                         enter_chroot=True,
-                        extra_env={'EXTRA_BOARD_FLAGS': '--rebuilt-binaries'})
+                        extra_env={})
     self.mox.ReplayAll()
     commands.Build(buildroot=buildroot,
                    board='x86-generic',

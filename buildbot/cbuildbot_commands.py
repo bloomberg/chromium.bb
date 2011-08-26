@@ -220,11 +220,7 @@ def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
 
   if skip_toolchain_update: cmd.append('--skip_toolchain_update')
 
-  if usepkg:
-    key = 'EXTRA_BOARD_FLAGS'
-    prev = env.get(key)
-    env[key] = (prev and prev + ' ' or '') + '--rebuilt-binaries'
-  else:
+  if not usepkg:
     cmd.append('--nousepkg')
 
   if nowithdebug:
