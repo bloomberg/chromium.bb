@@ -32,14 +32,7 @@ generator_default_variables = {
   # ninja/shell variable) that are passed to gyp here but expanded
   # before writing out into the target .ninja files; see
   # ExpandSpecial.
-
-  # TODO: intermediate dir should *not* be shared between different targets.
-  # Unfortunately, whatever we provide here gets written into many different
-  # places within the gyp spec so it's difficult to make it target-specific.
-  # Apparently we've made it this far with one global path for the make build
-  # so we're safe for now, but it's likely the newer $!PRODUCT_DIR hack will
-  # make it easier to make this totally correct.
-  'INTERMEDIATE_DIR': '$!PRODUCT_DIR/geni',
+  'INTERMEDIATE_DIR': '$!INTERMEDIATE_DIR',
   'SHARED_INTERMEDIATE_DIR': '$!PRODUCT_DIR/gen',
   'PRODUCT_DIR': '$!PRODUCT_DIR',
   'SHARED_LIB_DIR': '$!PRODUCT_DIR/lib',
@@ -178,14 +171,22 @@ class NinjaWriter:
     dir.
     """
 
-    if '$!PRODUCT_DIR' not in path:
-      return path
+    PRODUCT_DIR = '$!PRODUCT_DIR'
+    if PRODUCT_DIR in path:
+      if product_dir:
+        path = path.replace(PRODUCT_DIR, product_dir)
+      else:
+        path = path.replace(PRODUCT_DIR + '/', '')
+        path = path.replace(PRODUCT_DIR, '.')
 
-    if product_dir:
-      path = path.replace('$!PRODUCT_DIR', product_dir)
-    else:
-      path = path.replace('$!PRODUCT_DIR/', '')
-      path = path.replace('$!PRODUCT_DIR', '.')
+    INTERMEDIATE_DIR = '$!INTERMEDIATE_DIR'
+    if INTERMEDIATE_DIR in path:
+      int_dir = self.GypPathToUniqueOutput('gen')
+      # GypPathToUniqueOutput generates a path relative to the product dir,
+      # so insert product_dir in front if it is provided.
+      path = path.replace(INTERMEDIATE_DIR,
+                          os.path.join(product_dir or '', int_dir))
+
     return path
 
   def GypPathToNinja(self, path):
@@ -197,7 +198,7 @@ class NinjaWriter:
     assert '$' not in path, path
     return os.path.normpath(os.path.join(self.build_to_base, path))
 
-  def GypPathToUniqueOutput(self, path, qualified=False):
+  def GypPathToUniqueOutput(self, path, qualified=True):
     """Translate a gyp path to a ninja path for writing output.
 
     If qualified is True, qualify the resulting filename with the name
@@ -206,16 +207,8 @@ class NinjaWriter:
 
     See the above discourse on path conversions."""
 
-    # It may seem strange to discard components of the path, but we are just
-    # attempting to produce a known-unique output filename; we don't want to
-    # reuse any global directory.
-    genvars = generator_default_variables
-    assert not genvars['SHARED_INTERMEDIATE_DIR'].startswith(
-      genvars['INTERMEDIATE_DIR'])
-    path = StripPrefix(path, genvars['INTERMEDIATE_DIR'])
-    path = StripPrefix(path, genvars['SHARED_INTERMEDIATE_DIR'])
-    path = StripPrefix(path, '/')
-    assert not path.startswith('$')
+    path = self.ExpandSpecial(path)
+    assert not path.startswith('$'), path
 
     # Translate the path following this scheme:
     #   Input: foo/bar.gyp, target targ, references baz/out.o
@@ -237,7 +230,7 @@ class NinjaWriter:
 
     Stamp files are used to collapse a dependency on a bunch of files
     into a single file."""
-    return self.GypPathToUniqueOutput(name + '.stamp', qualified=True)
+    return self.GypPathToUniqueOutput(name + '.stamp')
 
   def WriteSpec(self, spec, config):
     """The main entry point for NinjaWriter: write the build rules for a spec.
@@ -436,7 +429,7 @@ class NinjaWriter:
         # TODO: should we assert here on unexpected extensions?
         continue
       input = self.GypPathToNinja(source)
-      output = self.GypPathToUniqueOutput(filename + '.o', qualified=True)
+      output = self.GypPathToUniqueOutput(filename + '.o')
       self.ninja.build(output, command, input,
                        order_only=predepends)
       outputs.append(output)
@@ -562,7 +555,7 @@ class NinjaWriter:
     elif spec['type'] == 'shared_library':
       return os.path.join('lib', filename)
     else:
-      return self.GypPathToUniqueOutput(filename)
+      return self.GypPathToUniqueOutput(filename, qualified=False)
 
   def WriteVariableList(self, var, values):
     if values is None:
