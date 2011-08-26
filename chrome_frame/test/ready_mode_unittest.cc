@@ -219,7 +219,9 @@ class ReadyPromptWindowButtonTest : public ReadyPromptWindowTest {
   chrome_frame_test::TimedMsgLoop message_loop_;
 };  // class ReadyPromptWindowButtonTest
 
-TEST_F(ReadyPromptTest, ReadyPromptContentTest) {
+// This test has been disabled due to bug
+// http://code.google.com/p/chromium/issues/detail?id=94362
+TEST_F(ReadyPromptTest, DISABLED_ReadyPromptContentTest) {
   // owned by ReadyPromptContent
   MockReadyModeState* state = new MockReadyModeState();
   MockUrlLauncher* url_launcher = new MockUrlLauncher();
