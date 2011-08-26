@@ -944,136 +944,13 @@ struct ParamTraits< Tuple5<A, B, C, D, E> > {
 
 // Used for asynchronous messages.
 template <class ParamType>
-class MessageWithTuple : public Message {
+class MessageSchema {
  public:
   typedef ParamType Param;
   typedef typename TupleTypes<ParamType>::ParamTuple RefParam;
 
-  // The constructor and the Read() method's templated implementations are in
-  // ipc_message_utils_impl.h. The subclass constructor and Log() methods call
-  // the templated versions of these and make sure there are instantiations in
-  // those translation units.
-  MessageWithTuple(int32 routing_id, uint32 type, const RefParam& p);
-
+  static void Write(Message* msg, const RefParam& p) IPC_MSG_NOINLINE;
   static bool Read(const Message* msg, Param* p) IPC_MSG_NOINLINE;
-
-  // Generic dispatcher.  Should cover most cases.
-  template<class T, class S, class Method>
-  static bool Dispatch(const Message* msg, T* obj, S* sender, Method func) {
-    Param p;
-    if (Read(msg, &p)) {
-      DispatchToMethod(obj, func, p);
-      return true;
-    }
-    return false;
-  }
-
-  // The following dispatchers exist for the case where the callback function
-  // needs the message as well.  They assume that "Param" is a type of Tuple
-  // (except the one arg case, as there is no Tuple1).
-  template<class T, class S, typename TA>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
-                       void (T::*func)(const Message&, TA)) {
-    Param p;
-    if (Read(msg, &p)) {
-      (obj->*func)(*msg, p.a);
-      return true;
-    }
-    return false;
-  }
-
-  template<class T, class S, typename TA, typename TB>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
-                       void (T::*func)(const Message&, TA, TB)) {
-    Param p;
-    if (Read(msg, &p)) {
-      (obj->*func)(*msg, p.a, p.b);
-      return true;
-    }
-    return false;
-  }
-
-  template<class T, class S, typename TA, typename TB, typename TC>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
-                       void (T::*func)(const Message&, TA, TB, TC)) {
-    Param p;
-    if (Read(msg, &p)) {
-      (obj->*func)(*msg, p.a, p.b, p.c);
-      return true;
-    }
-    return false;
-  }
-
-  template<class T, class S, typename TA, typename TB, typename TC, typename TD>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
-                       void (T::*func)(const Message&, TA, TB, TC, TD)) {
-    Param p;
-    if (Read(msg, &p)) {
-      (obj->*func)(*msg, p.a, p.b, p.c, p.d);
-      return true;
-    }
-    return false;
-  }
-
-  template<class T, class S, typename TA, typename TB, typename TC, typename TD,
-           typename TE>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
-                       void (T::*func)(const Message&, TA, TB, TC, TD, TE)) {
-    Param p;
-    if (Read(msg, &p)) {
-      (obj->*func)(*msg, p.a, p.b, p.c, p.d, p.e);
-      return true;
-    }
-    return false;
-  }
-
-  // Functions used to do manual unpacking.  Only used by the automation code,
-  // these should go away once that code uses SyncChannel.
-  template<typename TA, typename TB>
-  static bool Read(const IPC::Message* msg, TA* a, TB* b) {
-    ParamType params;
-    if (!Read(msg, &params))
-      return false;
-    *a = params.a;
-    *b = params.b;
-    return true;
-  }
-
-  template<typename TA, typename TB, typename TC>
-  static bool Read(const IPC::Message* msg, TA* a, TB* b, TC* c) {
-    ParamType params;
-    if (!Read(msg, &params))
-      return false;
-    *a = params.a;
-    *b = params.b;
-    *c = params.c;
-    return true;
-  }
-
-  template<typename TA, typename TB, typename TC, typename TD>
-  static bool Read(const IPC::Message* msg, TA* a, TB* b, TC* c, TD* d) {
-    ParamType params;
-    if (!Read(msg, &params))
-      return false;
-    *a = params.a;
-    *b = params.b;
-    *c = params.c;
-    *d = params.d;
-    return true;
-  }
-
-  template<typename TA, typename TB, typename TC, typename TD, typename TE>
-  static bool Read(const IPC::Message* msg, TA* a, TB* b, TC* c, TD* d, TE* e) {
-    ParamType params;
-    if (!Read(msg, &params))
-      return false;
-    *a = params.a;
-    *b = params.b;
-    *c = params.c;
-    *d = params.d;
-    *e = params.e;
-    return true;
-  }
 };
 
 // defined in ipc_logging.cc
@@ -1139,57 +1016,52 @@ class ParamDeserializer : public MessageReplyDeserializer {
 
 // Used for synchronous messages.
 template <class SendParamType, class ReplyParamType>
-class MessageWithReply : public SyncMessage {
+class SyncMessageSchema {
  public:
   typedef SendParamType SendParam;
   typedef typename TupleTypes<SendParam>::ParamTuple RefSendParam;
   typedef ReplyParamType ReplyParam;
 
-  MessageWithReply(int32 routing_id, uint32 type,
-                   const RefSendParam& send, const ReplyParam& reply);
+  static void Write(Message* msg, const RefSendParam& send) IPC_MSG_NOINLINE;
   static bool ReadSendParam(const Message* msg, SendParam* p) IPC_MSG_NOINLINE;
   static bool ReadReplyParam(
       const Message* msg,
       typename TupleTypes<ReplyParam>::ValueTuple* p) IPC_MSG_NOINLINE;
 
   template<class T, class S, class Method>
-  static bool Dispatch(const Message* msg, T* obj, S* sender, Method func) {
-    SendParam send_params;
-    Message* reply = GenerateReply(msg);
-    bool error;
-    if (ReadSendParam(msg, &send_params)) {
+  static bool DispatchWithSendParams(bool ok, const SendParam& send_params,
+                                     const Message* msg, T* obj, S* sender,
+                                     Method func) {
+    Message* reply = SyncMessage::GenerateReply(msg);
+    if (ok) {
       typename TupleTypes<ReplyParam>::ValueTuple reply_params;
       DispatchToMethod(obj, func, send_params, &reply_params);
       WriteParam(reply, reply_params);
-      error = false;
       LogReplyParamsToMessage(reply_params, msg);
     } else {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
-      error = true;
     }
-
     sender->Send(reply);
-    return !error;
+    return ok;
   }
 
   template<class T, class Method>
-  static bool DispatchDelayReply(const Message* msg, T* obj, Method func) {
-    SendParam send_params;
-    Message* reply = GenerateReply(msg);
-    bool error;
-    if (ReadSendParam(msg, &send_params)) {
+  static bool DispatchDelayReplyWithSendParams(bool ok,
+                                               const SendParam& send_params,
+                                               const Message* msg, T* obj,
+                                               Method func) {
+    Message* reply = SyncMessage::GenerateReply(msg);
+    if (ok) {
       Tuple1<Message&> t = MakeRefTuple(*reply);
       ConnectMessageAndReply(msg, reply);
       DispatchToMethod(obj, func, send_params, &t);
-      error = false;
     } else {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
       obj->Send(reply);
-      error = true;
     }
-    return !error;
+    return ok;
   }
 
   template<typename TA>

@@ -17,18 +17,20 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/render_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/glue/user_agent.h"
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_policy.h"
 #include "sandbox/src/sandbox.h"
 #endif
 
-#include "webkit/glue/user_agent.h"
+#if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
+#include "chrome/common/render_messages.h"
+#endif
 
 namespace {
 
@@ -288,6 +290,7 @@ void ChromeContentClient::AddPepperPlugins(
 }
 
 bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
+#if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
   // Any Chrome-specific messages that must be allowed to be sent from swapped
   // out renderers.
   switch (msg->type()) {
@@ -296,11 +299,13 @@ bool ChromeContentClient::CanSendWhileSwappedOut(const IPC::Message* msg) {
     default:
       break;
   }
+#endif
   return false;
 }
 
 bool ChromeContentClient::CanHandleWhileSwappedOut(
     const IPC::Message& msg) {
+#if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
   // Any Chrome-specific messages (apart from those listed in
   // CanSendWhileSwappedOut) that must be handled by the browser when sent from
   // swapped out renderers.
@@ -310,6 +315,7 @@ bool ChromeContentClient::CanHandleWhileSwappedOut(
     default:
       break;
   }
+#endif
   return false;
 }
 

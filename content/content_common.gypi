@@ -9,6 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../gpu/gpu.gyp:gpu_ipc',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
         '../net/net.gyp:net',

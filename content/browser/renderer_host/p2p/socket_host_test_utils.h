@@ -264,7 +264,7 @@ MATCHER_P(MatchPacketMessage, packet_content, "") {
   if (arg->type() != P2PMsg_OnDataReceived::ID)
     return false;
   P2PMsg_OnDataReceived::Param params;
-  IPC::MessageWithTuple<P2PMsg_OnDataReceived::Param>::Read(arg, &params);
+  P2PMsg_OnDataReceived::Read(arg, &params);
   return params.c == packet_content;
 }
 
@@ -272,7 +272,7 @@ MATCHER_P(MatchIncomingSocketMessage, address, "") {
   if (arg->type() != P2PMsg_OnIncomingTcpConnection::ID)
     return false;
   P2PMsg_OnIncomingTcpConnection::Param params;
-  IPC::MessageWithTuple<P2PMsg_OnIncomingTcpConnection::Param>::Read(
+  P2PMsg_OnIncomingTcpConnection::Read(
       arg, &params);
   return params.b == address;
 }

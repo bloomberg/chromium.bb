@@ -6,6 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/file_util_proxy.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/fileapi/file_system_types.h"

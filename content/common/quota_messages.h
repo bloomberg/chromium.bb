@@ -5,6 +5,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/basictypes.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "webkit/quota/quota_types.h"
 

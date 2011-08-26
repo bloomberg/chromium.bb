@@ -51,7 +51,7 @@ static const char* const kBlockedPluginDataURL = "chrome://blockedplugindata/";
 static const unsigned kMenuActionLoad = 1;
 static const unsigned kMenuActionRemove = 2;
 
-static const BlockedPlugin* gLastActiveMenu;
+static const BlockedPlugin* g_last_active_menu;
 
 BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              WebFrame* frame,
@@ -139,7 +139,7 @@ void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {
   menu_data.customItems.swap(custom_items);
   menu_data.mousePosition = WebPoint(event.windowX, event.windowY);
   render_view()->showContextMenu(NULL, menu_data);
-  gLastActiveMenu = this;
+  g_last_active_menu = this;
 }
 
 bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
@@ -147,17 +147,11 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
   // custom menu IDs, and not just our own. We don't swallow
   // ViewMsg_LoadBlockedPlugins because multiple blocked plugins have an
   // interest in it.
-  if (message.type() == ViewMsg_CustomContextMenuAction::ID &&
-      gLastActiveMenu == this) {
-    ViewMsg_CustomContextMenuAction::Dispatch(
-        &message, this, this, &BlockedPlugin::OnMenuItemSelected);
-  } else {
-    IPC_BEGIN_MESSAGE_MAP(BlockedPlugin, message)
-      IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins,
-                          OnLoadBlockedPlugins)
-      IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering)
-    IPC_END_MESSAGE_MAP()
-  }
+  IPC_BEGIN_MESSAGE_MAP(BlockedPlugin, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction, OnMenuItemSelected)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering)
+  IPC_END_MESSAGE_MAP()
 
   return false;
 }
@@ -165,6 +159,8 @@ bool BlockedPlugin::OnMessageReceived(const IPC::Message& message) {
 void BlockedPlugin::OnMenuItemSelected(
     const webkit_glue::CustomContextMenuContext& /* ignored */,
     unsigned id) {
+  if (g_last_active_menu != this)
+    return;
   if (id == kMenuActionLoad) {
     Send(new ViewHostMsg_UserMetricsRecordAction("Plugin_Load_Menu"));
     LoadPlugin();

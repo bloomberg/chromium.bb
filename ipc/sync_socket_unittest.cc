@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,7 @@
 
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "build/build_config.h"
-#include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_message_utils.h"
-#include "ipc/ipc_message_utils_impl.h"
 #include "ipc/ipc_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -24,74 +19,34 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-enum IPCMessageIds {
-  UNUSED_IPC_TYPE,
-  SERVER_FIRST_IPC_TYPE,    // SetHandle message sent to server.
-  SERVER_SECOND_IPC_TYPE,   // Shutdown message sent to server.
-  CLIENT_FIRST_IPC_TYPE     // Response message sent to client.
-};
+// IPC messages for testing ---------------------------------------------------
+
+#define IPC_MESSAGE_IMPL
+#include "ipc/ipc_message_macros.h"
+
+#define IPC_MESSAGE_START TestMsgStart
+
+// Message class to pass a base::SyncSocket::Handle to another process.  This
+// is not as easy as it sounds, because of the differences in transferring
+// Windows HANDLEs versus posix file descriptors.
+#if defined(OS_WIN)
+IPC_MESSAGE_CONTROL1(MsgClassSetHandle, base::SyncSocket::Handle)
+#elif defined(OS_POSIX)
+IPC_MESSAGE_CONTROL1(MsgClassSetHandle, base::FileDescriptor)
+#endif
+
+// Message class to pass a response to the server.
+IPC_MESSAGE_CONTROL1(MsgClassResponse, std::string)
+
+// Message class to tell the server to shut down.
+IPC_MESSAGE_CONTROL0(MsgClassShutdown)
+
+// ----------------------------------------------------------------------------
 
 namespace {
 const char kHelloString[] = "Hello, SyncSocket Client";
 const size_t kHelloStringLength = arraysize(kHelloString);
 }  // namespace
-
-// Message class to pass a base::SyncSocket::Handle to another process.
-// This is not as easy as it sounds, because of the differences in transferring
-// Windows HANDLEs versus posix file descriptors.
-#if defined(OS_WIN)
-class MsgClassSetHandle
-    : public IPC::MessageWithTuple< Tuple1<base::SyncSocket::Handle> > {
- public:
-  enum { ID = SERVER_FIRST_IPC_TYPE };
-  explicit MsgClassSetHandle(const base::SyncSocket::Handle arg1)
-      : IPC::MessageWithTuple< Tuple1<base::SyncSocket::Handle> >(
-            MSG_ROUTING_CONTROL, ID, MakeRefTuple(arg1)) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MsgClassSetHandle);
-};
-#elif defined(OS_POSIX)
-class MsgClassSetHandle
-    : public IPC::MessageWithTuple< Tuple1<base::FileDescriptor> > {
- public:
-  enum { ID = SERVER_FIRST_IPC_TYPE };
-  explicit MsgClassSetHandle(const base::FileDescriptor& arg1)
-      : IPC::MessageWithTuple< Tuple1<base::FileDescriptor> >(
-            MSG_ROUTING_CONTROL, ID, MakeRefTuple(arg1)) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MsgClassSetHandle);
-};
-#else
-# error "What platform?"
-#endif  // defined(OS_WIN)
-
-// Message class to pass a response to the server.
-class MsgClassResponse
-    : public IPC::MessageWithTuple< Tuple1<std::string> > {
- public:
-  enum { ID = CLIENT_FIRST_IPC_TYPE };
-  explicit MsgClassResponse(const std::string& arg1)
-      : IPC::MessageWithTuple< Tuple1<std::string> >(
-            MSG_ROUTING_CONTROL, ID, MakeRefTuple(arg1)) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MsgClassResponse);
-};
-
-// Message class to tell the server to shut down.
-class MsgClassShutdown
-    : public IPC::MessageWithTuple< Tuple0 > {
- public:
-  enum { ID = SERVER_SECOND_IPC_TYPE };
-  MsgClassShutdown()
-      : IPC::MessageWithTuple< Tuple0 >(
-            MSG_ROUTING_CONTROL, ID, MakeTuple()) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MsgClassShutdown);
-};
 
 // The SyncSocket server listener class processes two sorts of
 // messages from the client.
