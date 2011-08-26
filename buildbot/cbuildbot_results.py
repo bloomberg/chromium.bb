@@ -205,3 +205,4 @@ class Results:
       file.write('Build failed with:\n')
       file.write('\n')
       file.write(first_exception)
+      file.write('\n')

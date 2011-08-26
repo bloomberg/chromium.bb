@@ -1260,7 +1260,7 @@ class BuildStagesResultsTest(unittest.TestCase):
     results_lib.Results.Record('Pass', results_lib.Results.SKIPPED, time=1)
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS, time=2)
     results_lib.Results.Record('Fail', self.failException,
-                                       'failException Msg\nLine 2', time=3)
+                               'failException Msg\nLine 2', time=3)
     results_lib.Results.Record(
         'FailRunCommand',
         cros_lib.RunCommandError(
@@ -1296,7 +1296,7 @@ class BuildStagesResultsTest(unittest.TestCase):
         "Build failed with:\n"
         "\n"
         "failException Msg\n"
-        "Line 2")
+        "Line 2\n")
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')

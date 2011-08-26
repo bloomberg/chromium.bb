@@ -21,14 +21,24 @@ class PatchException(Exception):
   """Exception thrown by GetGerritPatchInfo."""
   pass
 
+
 class ApplyPatchException(Exception):
   """Exception thrown if we fail to apply a patch."""
-  pass
+
+  def __init__(self, patch):
+    super(ApplyPatchException, self).__init__()
+    self.patch = patch
+
+  def __str__(self):
+    return 'Failed to apply patch ' + str(self.patch)
 
 
 class Patch(object):
+  """Abstract class representing a Git Patch."""
+
   def __init__(self, project, tracking_branch):
     """Initialization of abstract Patch class.
+
     Args:
       project: The name of the project that the patch applies to.
       tracking_branch:  The remote branch of the project the patch applies to.
@@ -36,13 +46,17 @@ class Patch(object):
     self.project = project
     self.tracking_branch = tracking_branch
 
-  def Apply(self, buildroot):
+  def Apply(self, buildroot, trivial):
     """Applies the patch to specified buildroot. Implement in subclasses.
+
+    Args:
+      buildroot:  The buildroot.
+      trivial:  Only allow trivial merges when applying change.
 
     Raises:
       PatchException
     """
-    raise NotImplementedError, 'Applies the patch to specified buildroot.'
+    raise NotImplementedError('Applies the patch to specified buildroot.')
 
 
 class GerritPatch(Patch):
@@ -50,7 +64,7 @@ class GerritPatch(Patch):
   _PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
 
   def __init__(self, patch_dict, internal):
-    """Construct a GerritPatch object from Gerrit query results
+    """Construct a GerritPatch object from Gerrit query results.
 
     Args:
       patch_dict: A dictionary containing the parsed JSON gerrit query results.
@@ -70,17 +84,17 @@ class GerritPatch(Patch):
     self.gerrit_number = patch_dict['number']
     self.url = patch_dict['url']
 
-  def _RebasePatchOnto(self, rebase_onto, buildroot, project_dir):
-    """Rebase patch fetched from gerrit onto a revision.
+  def _RebasePatch(self, buildroot, project_dir, trivial):
+    """Rebase patch fetched from gerrit onto constants.PATCH_BRANCH.
 
     When the function completes, the constants.PATCH_BRANCH branch will be
     pointing to the rebased change.
 
     Arguments:
-    rebase_onto: The revision or branch name to base the contents of the patch
-                 on.
-    buildroot: The buildroot.
-    project_dir: Directory of the project that is being patched.
+      buildroot: The buildroot.
+      project_dir: Directory of the project that is being patched.
+      trivial: Use trivial logic that only allows trivial merges.  Note:
+        Requires Git >= 1.7.6 -- bug <.  Bots have 1.7.6 installed.
     """
     if self.internal:
       url_prefix = constants.GERRIT_INT_SSH_URL
@@ -88,40 +102,37 @@ class GerritPatch(Patch):
       url_prefix = self._PUBLIC_URL
 
     url = os.path.join(url_prefix, self.project)
-
+    upstream = _GetProjectManifestBranch(buildroot, self.project)
     cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
-    cros_lib.RunCommand(['git', 'checkout', '--no-track',
-                         '-b', constants.PATCH_BRANCH, 'FETCH_HEAD'],
-                         cwd=project_dir)
-    cros_lib.RunCommand(
-        ['git', 'rebase', '--onto', rebase_onto,
-         _GetProjectManifestBranch(buildroot, self.project),
-         constants.PATCH_BRANCH],
-        cwd=project_dir
-    )
-
-  def Apply(self, buildroot):
-    """Implementation of Patch.Apply()."""
-    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
-
     try:
-     if cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
-        revision = cros_lib.GetGitRepoRevision(project_dir,
-                                               constants.PATCH_BRANCH)
-        # Checkout to detached HEAD so we can delete the branch.
-        cros_lib.RunCommand(['git', 'checkout', revision], cwd=project_dir)
-        cros_lib.RunCommand(['git', 'branch', '-D', constants.PATCH_BRANCH],
-                            cwd=project_dir)
-        self._RebasePatchOnto(revision, buildroot, project_dir)
-     else:
-        manifest_default_branch = cros_lib.GetManifestDefaultBranch(buildroot)
-        self._RebasePatchOnto('m/' + manifest_default_branch, buildroot,
-                              project_dir)
+      git_rb = ['git', 'rebase']
+      if trivial: git_rb.extend(['--strategy', 'resolve', '-X', 'trivial'])
+      git_rb.extend(['--onto', constants.PATCH_BRANCH, upstream, 'FETCH_HEAD'])
 
-    except cros_lib.RunCommandError as e:
+      # Run the rebase command.
+      cros_lib.RunCommand(git_rb, cwd=project_dir)
+      cros_lib.RunCommand(['git', 'checkout', '-B', constants.PATCH_BRANCH],
+                          cwd=project_dir)
+    except cros_lib.RunCommandError:
       cros_lib.RunCommand(['git', 'rebase', '--abort'], cwd=project_dir,
                           error_ok=True)
-      raise ApplyPatchException(e)
+      cros_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
+                          cwd=project_dir)
+      raise
+
+  def Apply(self, buildroot, trivial=False):
+    """Implementation of Patch.Apply()."""
+    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
+    try:
+      if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
+        upstream = cros_lib.GetManifestDefaultBranch(buildroot)
+        cros_lib.RunCommand(['git', 'checkout', '-b', constants.PATCH_BRANCH,
+                             '-t', 'm/' + upstream],
+                            cwd=project_dir)
+
+      self._RebasePatch(buildroot, project_dir, trivial)
+    except cros_lib.RunCommandError:
+      raise ApplyPatchException(self)
 
   def Submit(self, helper, debug=False):
     """Submits patch using Gerrit Review."""
@@ -139,13 +150,14 @@ class GerritPatch(Patch):
 
 
 def RemovePatchRoot(patch_root):
-  """Removes the temporary directory storing patches"""
-  assert(os.path.basename(patch_root).startswith(_TRYBOT_TEMP_PREFIX))
+  """Removes the temporary directory storing patches."""
+  assert os.path.basename(patch_root).startswith(_TRYBOT_TEMP_PREFIX)
   shutil.rmtree(patch_root)
 
 
 class LocalPatch(Patch):
   """Object that represents a set of local commits that will be patched."""
+
   def __init__(self, project, tracking_branch, patch_dir, local_branch):
     """Construct a LocalPatch object.
 
@@ -165,12 +177,13 @@ class LocalPatch(Patch):
     file_list.sort()
     return file_list
 
-  def Apply(self, buildroot):
-    """Implementation of Patch.Apply().
+  def Apply(self, buildroot, trivial=False):
+    """Implementation of Patch.Apply().  Does not accept trivial option.
 
     Raises:
       PatchException if the patch is for the wrong tracking branch.
     """
+    assert not trivial, 'Local apply not compatible with trivial set'
     manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
     if self.tracking_branch != manifest_branch:
       raise PatchException('branch %s for project %s is not tracking %s'
@@ -183,8 +196,12 @@ class LocalPatch(Patch):
                           cwd=project_dir)
       cros_lib.RunCommand(['git', 'am', '--3way'] + self._GetFileList(),
                           cwd=project_dir)
-    except cros_lib.RunCommandError as e:
-      raise ApplyPatchException(e)
+    except cros_lib.RunCommandError:
+      raise ApplyPatchException(self)
+
+  def __str__(self):
+    """Returns custom string to identify this patch."""
+    return '%s:%s' % (self.project, self.local_branch)
 
 
 def GetGerritPatchInfo(patches):
@@ -256,15 +273,15 @@ def PrepareLocalPatches(patches, manifest_branch):
   patch_info = []
   patch_root = tempfile.mkdtemp(prefix=_TRYBOT_TEMP_PREFIX)
 
-  for id in range(0, len(patches)):
-    project, branch = patches[id].split(':')
+  for patch_id in range(0, len(patches)):
+    project, branch = patches[patch_id].split(':')
     project_dir = cros_lib.GetProjectDir('.', project)
 
-    patch_dir = os.path.join(patch_root, str(id))
+    patch_dir = os.path.join(patch_root, str(patch_id))
     cmd = ['git', 'format-patch', '%s..%s' % ('m/' + manifest_branch, branch),
            '-o', patch_dir]
     cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=project_dir)
-    if not len(os.listdir(patch_dir)):
+    if not os.listdir(patch_dir):
       raise PatchException('No changes found in %s:%s' % (project, branch))
 
     # Store remote tracking branch for verification during patch stage.

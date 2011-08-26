@@ -84,7 +84,7 @@ class ValidationPool(object):
     non_applied_changes = []
     for change in self.changes:
       try:
-        change.Apply(directory)
+        change.Apply(directory, trivial=True)
       except cros_patch.ApplyPatchException:
         non_applied_changes.append(change)
       else:
