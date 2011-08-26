@@ -14,6 +14,7 @@ class ChromeContentClient : public content::ContentClient {
  public:
   static const char* kPDFPluginName;
   static const char* kNaClPluginName;
+  static const char* kNaClOldPluginName;
 
   virtual void SetActiveURL(const GURL& url);
   virtual void SetGpuInfo(const GPUInfo& gpu_info);

@@ -44,6 +44,8 @@ const char* kNaClPluginMimeType = "application/x-nacl";
 const char* kNaClPluginExtension = "nexe";
 const char* kNaClPluginDescription = "Native Client Executable";
 
+const char* kNaClOldPluginName = "Chrome NaCl";
+
 #if defined(ENABLE_REMOTING)
 const char* kRemotingViewerPluginName = "Remoting Viewer";
 const FilePath::CharType kRemotingViewerPluginPath[] =
@@ -267,6 +269,7 @@ namespace chrome {
 
 const char* ChromeContentClient::kPDFPluginName = ::kPDFPluginName;
 const char* ChromeContentClient::kNaClPluginName = ::kNaClPluginName;
+const char* ChromeContentClient::kNaClOldPluginName = ::kNaClOldPluginName;
 
 void ChromeContentClient::SetActiveURL(const GURL& url) {
   child_process_logging::SetActiveURL(url);
