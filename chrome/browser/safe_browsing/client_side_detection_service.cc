@@ -10,13 +10,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/string_util.h"
 #include "base/stl_util.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/safe_browsing/browser_features.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
+#include "chrome/renderer/safe_browsing/features.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/notification_service.h"
@@ -64,8 +69,10 @@ ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
 ClientSideDetectionService::ClientSideDetectionService(
     net::URLRequestContextGetter* request_context_getter)
     : enabled_(false),
+      sb_service_(g_browser_process->safe_browsing_service()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       request_context_getter_(request_context_getter) {
+  InitializeAllowedFeatures();
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
 }
@@ -266,6 +273,40 @@ void ClientSideDetectionService::EndFetchModel(ClientModelStatus status) {
   ScheduleFetchModel(delay_ms);
 }
 
+void ClientSideDetectionService::SanitizeRequestForPingback(
+    const ClientPhishingRequest& full_request,
+    ClientPhishingRequest* sanitized_request) {
+  DCHECK(full_request.IsInitialized());
+  sanitized_request->Clear();
+  if (full_request.has_suffix_prefix_hash()) {
+    sanitized_request->set_suffix_prefix_hash(
+        full_request.suffix_prefix_hash());
+  }
+  sanitized_request->set_client_score(full_request.client_score());
+  if (full_request.has_is_phishing()) {
+    sanitized_request->set_is_phishing(full_request.is_phishing());
+  }
+
+  for (int i = 0; i < full_request.feature_map_size(); ++i) {
+    const ClientPhishingRequest_Feature& feature = full_request.feature_map(i);
+    if (allowed_features_.find(feature.name()) != allowed_features_.end()) {
+      sanitized_request->add_feature_map()->CopyFrom(feature);
+    }
+  }
+
+  if (full_request.has_model_version()) {
+    sanitized_request->set_model_version(full_request.model_version());
+  }
+
+  for (int i = 0; i < full_request.non_model_feature_map_size(); ++i) {
+    const ClientPhishingRequest_Feature& feature =
+        full_request.non_model_feature_map(i);
+    if (allowed_features_.find(feature.name()) != allowed_features_.end()) {
+      sanitized_request->add_non_model_feature_map()->CopyFrom(feature);
+    }
+  }
+}
+
 void ClientSideDetectionService::StartClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
     ClientReportPhishingRequestCallback* callback) {
@@ -279,8 +320,16 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
     return;
   }
 
+  // Create the version of the request proto that we'll send over the network.
+  ClientPhishingRequest request_to_send;
+  if (sb_service_ && sb_service_->CanReportStats()) {
+    request_to_send.CopyFrom(*request);
+  } else {
+    SanitizeRequestForPingback(*request, &request_to_send);
+  }
+
   std::string request_data;
-  if (!request->SerializeToString(&request_data)) {
+  if (!request_to_send.SerializeToString(&request_data)) {
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSerialized", 1);
     VLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
     if (cb.get()) {
@@ -468,6 +517,44 @@ bool ClientSideDetectionService::InitializePrivateNetworks() {
     }
   }
   return true;
+}
+
+void ClientSideDetectionService::InitializeAllowedFeatures() {
+  static const char* const kAllowedFeatures[] = {
+    // Renderer (model) features.
+    features::kUrlHostIsIpAddress,
+    features::kUrlNumOtherHostTokensGTOne,
+    features::kUrlNumOtherHostTokensGTThree,
+    features::kPageHasForms,
+    features::kPageActionOtherDomainFreq,
+    features::kPageHasTextInputs,
+    features::kPageHasPswdInputs,
+    features::kPageHasRadioInputs,
+    features::kPageHasCheckInputs,
+    features::kPageExternalLinksFreq,
+    features::kPageSecureLinksFreq,
+    features::kPageNumScriptTagsGTOne,
+    features::kPageNumScriptTagsGTSix,
+    features::kPageImgOtherDomainFreq,
+    // Browser (non-model) features.
+    features::kUrlHistoryVisitCount,
+    features::kUrlHistoryTypedCount,
+    features::kUrlHistoryLinkCount,
+    features::kUrlHistoryVisitCountMoreThan24hAgo,
+    features::kHttpHostVisitCount,
+    features::kHttpsHostVisitCount,
+    features::kFirstHttpHostVisitMoreThan24hAgo,
+    features::kFirstHttpsHostVisitMoreThan24hAgo,
+    features::kHasSSLReferrer,
+    features::kPageTransitionType,
+    features::kIsFirstNavigation,
+    features::kSafeBrowsingIsSubresource,
+    features::kSafeBrowsingThreatType,
+  };
+
+  for (size_t i = 0; i < arraysize(kAllowedFeatures); ++i) {
+    allowed_features_.insert(kAllowedFeatures[i]);
+  }
 }
 
 // static

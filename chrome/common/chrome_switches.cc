@@ -494,6 +494,12 @@ const char kEnablePanels[]                  = "enable-panels";
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
+// Enables the sanitized version of client-side phishing detection, for use by
+// non-UMA users.  Any features containing portions of the URL or page content
+// are not sent as part of the pingback in this mode.
+const char kEnableSanitizedClientSidePhishingDetection[] =
+    "enable-sanitized-client-side-phishing-detection";
+
 // Enable the IsSearchProviderInstalled and InstallSearchProvider with an extra
 // parameter to indicate if the provider should be the default.
 const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
