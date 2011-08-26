@@ -1527,6 +1527,8 @@ bool FileDialogStringsFunction::RunImpl() {
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_VIEW_CERT_BUTTON));
   dict->SetString("PLAY_MEDIA",
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAY));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableArchives))
+    dict->SetString("ENABLE_ARCHIVES", "true");
 
   return true;
 }

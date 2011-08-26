@@ -362,6 +362,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kWebUILogin)
   },
+  {
+    "enable-archives",
+    IDS_FILE_BROWSER_MOUNT_ARCHIVE,
+    IDS_FILE_MANAGER,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableArchives)
+  },
 #endif
   {
     "memory-widget",

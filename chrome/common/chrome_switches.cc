@@ -1113,6 +1113,9 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
+// Enables archive file (zip) handling in file manager.
+const char kEnableArchives[]                = "enable-archives";
+
 #ifndef NDEBUG
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
