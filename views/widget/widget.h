@@ -101,20 +101,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   typedef std::set<Widget*> Widgets;
 
-  enum DestroyState {
-    // The default, everything is good and alive.
-    DESTROY_STATE_NONE = 1,
-
-    // Set once OnNativeWidgetDestroying has been invoked.
-    DESTROY_STATE_IN_DESTROYING,
-
-    // Set once OnNativeWidgetDestroyed has been invoked.
-    DESTROY_STATE_DESTROYED,
-
-    // Set once the destructor is invoked.
-    DESTROY_STATE_DELETED,
-  };
-
   enum FrameType {
     FRAME_TYPE_DEFAULT,         // Use whatever the default would be.
     FRAME_TYPE_FORCE_CUSTOM,    // Force the custom frame.
@@ -578,8 +564,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // TYPE_CONTROL and TYPE_TOOLTIP is not considered top level.
   bool is_top_level() const { return is_top_level_; }
 
-  DestroyState destroy_state() const { return destroy_state_; }
-
   // Overridden from NativeWidgetDelegate:
   virtual bool IsModal() const OVERRIDE;
   virtual bool IsDialogBox() const OVERRIDE;
@@ -742,10 +726,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Factory used to create Compositors. Settable by tests.
   static ui::Compositor*(*compositor_factory_)();
-
-  // Tracks destroy state.
-  // TODO(sky): remove this, used in tracking 91396.
-  DestroyState destroy_state_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

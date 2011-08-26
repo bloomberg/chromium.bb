@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,16 +32,13 @@ namespace {
 // been initialized.
 // TODO(mirandac): This function will also separate windows by profile in a
 // multi-profile environment.
-PrefService* GetPrefsForWindow(const views::Widget* window,
-                               bool* using_local_state) {
+PrefService* GetPrefsForWindow(const views::Widget* window) {
   Profile* profile = reinterpret_cast<Profile*>(
       window->GetNativeWindowProperty(Profile::kProfileKey));
   if (!profile) {
     // Use local state for windows that have no explicit profile.
-    *using_local_state = true;
     return g_browser_process->local_state();
   }
-  *using_local_state = false;
   return profile->GetPrefs();
 }
 
@@ -66,14 +62,11 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
                                               const std::wstring& window_name,
                                               const gfx::Rect& bounds,
                                               bool maximized) {
-  bool using_local_state = false;
-  PrefService* prefs = GetPrefsForWindow(window, &using_local_state);
+  PrefService* prefs = GetPrefsForWindow(window);
   if (!prefs)
     return;
 
-  CHECK(prefs->FindPreference(WideToUTF8(window_name).c_str())) << " " <<
-      browser_shutdown::GetShutdownType() << " " << using_local_state << " " <<
-      window->destroy_state();
+  DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
   DictionaryPrefUpdate update(prefs, WideToUTF8(window_name).c_str());
   DictionaryValue* window_preferences = update.Get();
   window_preferences->SetInteger("left", bounds.x());
