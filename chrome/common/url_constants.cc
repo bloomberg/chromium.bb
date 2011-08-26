@@ -82,7 +82,7 @@ const char kChromeUIRegisterPageURL[] = "chrome://register/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
-const char kChromeUITermsOemURL[] = "chrome://terms/oem/";
+const char kChromeUITermsOemURL[] = "chrome://terms/oem";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
 #endif
 

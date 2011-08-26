@@ -290,14 +290,18 @@ button {
 .eula-frame {
   border: none;
   height: 200px;
-  margin-right: 10px;
   padding: 0 0 0 5px;
-  width: 310px;
+  width: 313px;
 }
 
 #cros-eula,
 #oem-eula {
   border: 1px solid #d9d9d9;
+  height: 200px
+}
+
+#oem-eula {
+  border-left: none;
 }
 
 #eulas.one-column #cros-eula {
