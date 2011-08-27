@@ -136,14 +136,22 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Checks if the datatype |type| is encrypted for profile |index|.
   bool IsEncrypted(int index, syncable::ModelType type);
 
-  // Disable notifications for the current test.  Must be called
-  // before the test server is started (i.e., before either of
-  // SetupSync() or SetupClients() is called).
-  void DisableNotifications();
-
   // Blocks until all sync clients have completed their mutual sync cycles.
   // Returns true if a quiescent state was successfully reached.
   bool AwaitQuiescence();
+
+  // Returns true if the server being used supports controlling
+  // notifications.
+  bool ServerSupportsNotificationControl();
+
+  // Disable notifications on the server.  This operation is available
+  // only if ServerSupportsNotificationControl() returned true.
+  void DisableNotifications();
+
+  // Trigger a notification to be sent to all clients.  This operation
+  // is available only if ServerSupportsNotificationControl() returned
+  // true.
+  void TriggerNotification(const syncable::ModelTypeSet& changed_types);
 
   // Returns true if the server being used supports injecting errors.
   bool ServerSupportsErrorTriggering();
@@ -295,9 +303,6 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // URLFetcher factory used to contact sync server.
   scoped_ptr<URLFetcherFactory> integration_factory_;
-
-  // Whether or not to use notifications for the current test.
-  bool enable_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };

@@ -32,8 +32,7 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
  public:
   ProfileSyncServiceHarness(Profile* profile,
                             const std::string& username,
-                            const std::string& password,
-                            bool expected_notifications_enabled);
+                            const std::string& password);
 
   virtual ~ProfileSyncServiceHarness();
 
@@ -73,6 +72,15 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Blocks the caller until this harness has completed a single sync cycle
   // since the previous one.  Returns true if a sync cycle has completed.
   bool AwaitSyncCycleCompletion(const std::string& reason);
+
+  // Blocks the caller until this harness has completed a single sync
+  // cycle, even if we're already synced.  Returns true if a sync
+  // cycle has completed.
+  //
+  // TODO(akalin): This is only used by some migration tests, pending
+  // the fix for http://crbug.com/92928.  Remove this once that is
+  // fixed.
+  bool AwaitNextSyncCycleCompletion(const std::string& reason);
 
   // Blocks the caller until the sync has been disabled for this client. Returns
   // true if sync is disabled.
@@ -238,6 +246,10 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
                                     const std::string& reason);
 
+  // Used by AwaitSyncCycleCompletion() and
+  // AwaitNextSyncCycleCompletion().
+  bool AwaitSyncCycleCompletionHelper(const std::string& reason);
+
   // Returns true if the sync client has no unsynced items.
   bool IsSynced();
 
@@ -277,9 +289,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Credentials used for GAIA authentication.
   std::string username_;
   std::string password_;
-
-  // The expected value of GetStatus().notifications_enabled.
-  bool expected_notifications_enabled_;
 
   // Used for logging.
   const std::string profile_debug_name_;

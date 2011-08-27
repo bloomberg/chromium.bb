@@ -4629,8 +4629,7 @@ void TestingAutomationProvider::SignInToSync(Browser* browser,
   }
   if (sync_waiter_.get() == NULL) {
     sync_waiter_.reset(new ProfileSyncServiceHarness(
-        browser->profile(), username, password,
-        true /* expected_notifications_enabled */));
+        browser->profile(), username, password));
   } else {
     sync_waiter_->SetCredentials(username, password);
   }

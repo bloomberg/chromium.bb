@@ -21,6 +21,7 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -113,8 +114,7 @@ LiveSyncTest::LiveSyncTest(TestType test_type)
       server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
       use_verifier_(true),
-      test_server_handle_(base::kNullProcessHandle),
-      enable_notifications_(true) {
+      test_server_handle_(base::kNullProcessHandle) {
   InProcessBrowserTest::set_show_window(true);
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
@@ -287,8 +287,7 @@ bool LiveSyncTest::SetupClients() {
     EXPECT_FALSE(GetBrowser(i) == NULL) << "GetBrowser(" << i << ") failed.";
 
     clients_.push_back(
-        new ProfileSyncServiceHarness(GetProfile(i), username_, password_,
-                                      enable_notifications_));
+        new ProfileSyncServiceHarness(GetProfile(i), username_, password_));
     EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
 
     ui_test_utils::WaitForBookmarkModelToLoad(
@@ -407,27 +406,25 @@ bool LiveSyncTest::SetUpLocalPythonTestServer() {
   cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
   VLOG(1) << "Started local python test server at " << sync_service_url;
 
-  if (enable_notifications_) {
-    int xmpp_port = 0;
-    if (!sync_server_.server_data().GetInteger("xmpp_port", &xmpp_port)) {
-      LOG(ERROR) << "Could not find valid xmpp_port value";
-      return false;
-    }
-    if ((xmpp_port <= 0) || (xmpp_port > kuint16max)) {
-      LOG(ERROR) << "Invalid xmpp port: " << xmpp_port;
-      return false;
-    }
+  int xmpp_port = 0;
+  if (!sync_server_.server_data().GetInteger("xmpp_port", &xmpp_port)) {
+    LOG(ERROR) << "Could not find valid xmpp_port value";
+    return false;
+  }
+  if ((xmpp_port <= 0) || (xmpp_port > kuint16max)) {
+    LOG(ERROR) << "Invalid xmpp port: " << xmpp_port;
+    return false;
+  }
 
-    net::HostPortPair xmpp_host_port_pair(sync_server_.host_port_pair());
-    xmpp_host_port_pair.set_port(xmpp_port);
-    xmpp_port_.reset(new net::ScopedPortException(xmpp_port));
+  net::HostPortPair xmpp_host_port_pair(sync_server_.host_port_pair());
+  xmpp_host_port_pair.set_port(xmpp_port);
+  xmpp_port_.reset(new net::ScopedPortException(xmpp_port));
 
-    if (!cl->HasSwitch(switches::kSyncNotificationHost)) {
-      cl->AppendSwitchASCII(switches::kSyncNotificationHost,
-                            xmpp_host_port_pair.ToString());
-      // The local XMPP server only supports insecure connections.
-      cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);
-    }
+  if (!cl->HasSwitch(switches::kSyncNotificationHost)) {
+    cl->AppendSwitchASCII(switches::kSyncNotificationHost,
+                          xmpp_host_port_pair.ToString());
+    // The local XMPP server only supports insecure connections.
+    cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);
   }
 
   return true;
@@ -526,21 +523,42 @@ bool LiveSyncTest::IsEncrypted(int index, syncable::ModelType type) {
   return GetClient(index)->IsTypeEncrypted(type);
 }
 
-void LiveSyncTest::DisableNotifications() {
-  // TODO(akalin): It would be better to assert that the test server
-  // hasn't been started yet.  That would require adding an
-  // IsStarted() method to TestServer.
-  ASSERT_TRUE(profiles_.empty());
-  ASSERT_TRUE(clients_.empty());
-  enable_notifications_ = false;
-}
-
 bool LiveSyncTest::AwaitQuiescence() {
   return ProfileSyncServiceHarness::AwaitQuiescence(clients());
 }
 
+bool LiveSyncTest::ServerSupportsNotificationControl() {
+  EXPECT_NE(SERVER_TYPE_UNDECIDED, server_type_);
+
+  // Supported only if we're using the python testserver.
+  return server_type_ == LOCAL_PYTHON_SERVER;
+}
+
+void LiveSyncTest::DisableNotifications() {
+  ASSERT_TRUE(ServerSupportsNotificationControl());
+  std::string path = "chromiumsync/disablenotifications";
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+  ASSERT_EQ("Notifications disabled",
+            UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
+}
+
+void LiveSyncTest::TriggerNotification(
+    const syncable::ModelTypeSet& changed_types) {
+  ASSERT_TRUE(ServerSupportsNotificationControl());
+  const std::string& data =
+      sync_notifier::P2PNotificationData("from_server",
+                                         sync_notifier::NOTIFY_ALL,
+                                         changed_types).ToString();
+  const std::string& path =
+      std::string("chromiumsync/sendnotification?channel=") +
+      sync_notifier::kSyncP2PNotificationChannel + "&data=" + data;
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+  ASSERT_EQ("Notification sent",
+            UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
+}
+
 bool LiveSyncTest::ServerSupportsErrorTriggering() {
-  EXPECT_TRUE(server_type_ != SERVER_TYPE_UNDECIDED);
+  EXPECT_NE(SERVER_TYPE_UNDECIDED, server_type_);
 
   // Supported only if we're using the python testserver.
   return server_type_ == LOCAL_PYTHON_SERVER;

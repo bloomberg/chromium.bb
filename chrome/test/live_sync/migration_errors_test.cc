@@ -8,8 +8,8 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/bookmarks_helper.h"
+#include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/preferences_helper.h"
 
 using bookmarks_helper::AddURL;
@@ -32,14 +32,15 @@ class MigrationCycleTest : public LiveSyncTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MigrationCycleTest, PrefsOnly) {
-  if (!ServerSupportsErrorTriggering()) {
+  if (!ServerSupportsNotificationControl() ||
+      !ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
   }
 
-  DisableNotifications();
-
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  DisableNotifications();
 
   // Phase 1: Trigger a preference migration on the server.
   syncable::ModelTypeSet migrate_types;
@@ -56,15 +57,40 @@ IN_PROC_BROWSER_TEST_F(MigrationCycleTest, PrefsOnly) {
 }
 
 // TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_PrefsNigori) {
-  if (!ServerSupportsErrorTriggering()) {
+IN_PROC_BROWSER_TEST_F(MigrationCycleTest,
+                       DISABLED_PrefsOnlyTriggerNotification) {
+  if (!ServerSupportsNotificationControl() ||
+      !ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
   }
 
-  DisableNotifications();
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Phase 1: Trigger a preference migration on the server.
+  syncable::ModelTypeSet migrate_types;
+  migrate_types.insert(syncable::PREFERENCES);
+  TriggerMigrationDoneError(migrate_types);
+
+  // Phase 2: Synthesize a notification (to trigger migration) and
+  // wait for a sync cycle.
+  // TODO(akalin): Shouldn't need to wait for full sync cycle; see
+  // 93167.
+  TriggerNotification(migrate_types);
+  ASSERT_TRUE(GetClient(0)->AwaitNextSyncCycleCompletion("Migration"));
+}
+
+// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_PrefsNigori) {
+  if (!ServerSupportsNotificationControl() ||
+      !ServerSupportsErrorTriggering()) {
+    LOG(WARNING) << "Test skipped in this server environment.";
+    return;
+  }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  DisableNotifications();
 
   // Phase 1: Trigger a preference and nigori migration on the server.
   {
@@ -89,14 +115,15 @@ IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_PrefsNigori) {
 
 // TODO(akalin): Fails (times out) due to http://crbug.com/92928.
 IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_BookmarksPrefs) {
-  if (!ServerSupportsErrorTriggering()) {
+  if (!ServerSupportsNotificationControl() ||
+      !ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
   }
 
-  DisableNotifications();
-
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  DisableNotifications();
 
   // Phase 1: Trigger a bookmark and preference migration on the
   // server.
@@ -119,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_BookmarksPrefs) {
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
 }
 
-// TODO(akalin): Add tests where the migration trigger is a poll or a
-// nudge from notifications.
+// TODO(akalin): Add tests where the migration trigger is a poll.
 
 class MigrationErrorsTest : public LiveSyncTest {
  public:

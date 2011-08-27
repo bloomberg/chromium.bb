@@ -95,8 +95,7 @@ bool StateChangeTimeoutEvent::Abort() {
 ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     Profile* profile,
     const std::string& username,
-    const std::string& password,
-    bool expected_notifications_enabled)
+    const std::string& password)
     : waiting_for_encryption_type_(syncable::UNSPECIFIED),
       wait_state_(INITIAL_WAIT_STATE),
       profile_(profile),
@@ -104,7 +103,6 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       timestamp_match_partner_(NULL),
       username_(username),
       password_(password),
-      expected_notifications_enabled_(expected_notifications_enabled),
       profile_debug_name_(profile->GetDebugName()) {
   if (IsSyncAlreadySetup()) {
     service_ = profile_->GetProfileSyncService();
@@ -122,9 +120,7 @@ ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(
     NOTREACHED() << "Profile has never signed into sync.";
     return NULL;
   }
-  return new ProfileSyncServiceHarness(
-      profile, "", "",
-      /* expected_notifications_enabled */ true);
+  return new ProfileSyncServiceHarness(profile, "", "");
 }
 
 void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
@@ -473,6 +469,17 @@ bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(
     return true;
   }
 
+  return AwaitSyncCycleCompletionHelper(reason);
+}
+
+bool ProfileSyncServiceHarness::AwaitNextSyncCycleCompletion(
+    const std::string& reason) {
+  VLOG(1) << GetClientInfoString("AwaitNextSyncCycleCompletion");
+  return AwaitSyncCycleCompletionHelper(reason);
+}
+
+bool ProfileSyncServiceHarness::AwaitSyncCycleCompletionHelper(
+    const std::string& reason) {
   if (wait_state_ == SERVER_UNREACHABLE) {
     // Client was offline; wait for it to go online, and then wait for sync.
     AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
@@ -620,8 +627,7 @@ bool ProfileSyncServiceHarness::IsSynced() {
   bool is_synced = snap &&
       snap->num_blocking_conflicting_updates == 0 &&
       ServiceIsPushingChanges() &&
-      (GetStatus().notifications_enabled ==
-       expected_notifications_enabled_) &&
+      GetStatus().notifications_enabled &&
       !service()->HasUnsyncedItems() &&
       !snap->has_more_to_sync &&
       snap->unsynced_count == 0 &&

@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -488,6 +488,14 @@ class XmppServer(asyncore.dispatcher):
     asyncore.loop(30.0, False, socket_map)
   """
 
+  # Used when sending a notification.
+  _NOTIFICATION_STANZA = ParseXml(
+    '<message>'
+    '  <push xmlns="google:push">'
+    '    <data/>'
+    '  </push>'
+    '</message>')
+
   def __init__(self, socket_map, addr):
     asyncore.dispatcher.__init__(self, None, socket_map)
     self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -497,11 +505,14 @@ class XmppServer(asyncore.dispatcher):
     self._socket_map = socket_map
     self._connections = set()
     self._handshake_done_connections = set()
+    self._notifications_enabled = True
 
   def handle_accept(self):
     (sock, addr) = self.accept()
     xmpp_connection = XmppConnection(sock, self._socket_map, self, addr)
     self._connections.add(xmpp_connection)
+    # Return the new XmppConnection for testing.
+    return xmpp_connection
 
   def close(self):
     # A copy is necessary since calling close on each connection
@@ -509,6 +520,39 @@ class XmppServer(asyncore.dispatcher):
     for connection in self._connections.copy():
       connection.close()
     asyncore.dispatcher.close(self)
+
+  def EnableNotifications(self):
+    self._notifications_enabled = True
+
+  def DisableNotifications(self):
+    self._notifications_enabled = False
+
+  def MakeNotification(self, channel, data):
+    """Makes a notification from the given channel and encoded data.
+
+    Args:
+      channel: The channel on which to send the notification.
+      data: The notification payload.
+    """
+    notification_stanza = CloneXml(self._NOTIFICATION_STANZA)
+    push_element = notification_stanza.getElementsByTagName('push')[0]
+    push_element.setAttribute('channel', channel)
+    data_element = push_element.getElementsByTagName('data')[0]
+    encoded_data = base64.b64encode(data)
+    data_text = notification_stanza.parentNode.createTextNode(encoded_data)
+    data_element.appendChild(data_text)
+    return notification_stanza
+
+  def SendNotification(self, channel, data):
+    """Sends a notification to all connections.
+
+    Args:
+      channel: The channel on which to send the notification.
+      data: The notification payload.
+    """
+    notification_stanza = self.MakeNotification(channel, data)
+    self.ForwardNotification(None, notification_stanza)
+    notification_stanza.unlink()
 
   # XmppConnection delegate methods.
   def OnXmppHandshakeDone(self, xmpp_connection):
@@ -519,6 +563,9 @@ class XmppServer(asyncore.dispatcher):
     self._handshake_done_connections.discard(xmpp_connection)
 
   def ForwardNotification(self, unused_xmpp_connection, notification_stanza):
-    for connection in self._handshake_done_connections:
-      print 'Sending notification to %s' % connection
-      connection.ForwardNotification(notification_stanza)
+    if self._notifications_enabled:
+      for connection in self._handshake_done_connections:
+        print 'Sending notification to %s' % connection
+        connection.ForwardNotification(notification_stanza)
+    else:
+      print 'Notifications disabled; dropping notification'

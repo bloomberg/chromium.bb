@@ -25,6 +25,9 @@ class MessageLoopProxy;
 
 namespace sync_notifier {
 
+// The channel to use for sync notifications.
+extern const char* kSyncP2PNotificationChannel;
+
 // The intended recipient(s) of a P2P notification.
 enum P2PNotificationTarget {
   NOTIFY_SELF,

@@ -17,9 +17,9 @@
 
 namespace sync_notifier {
 
-namespace {
+const char* kSyncP2PNotificationChannel = "http://www.google.com/chrome/sync";
 
-const char kSyncNotificationChannel[] = "http://www.google.com/chrome/sync";
+namespace {
 
 const char kNotifySelf[] = "notifySelf";
 const char kNotifyOthers[] = "notifyOthers";
@@ -196,7 +196,7 @@ void P2PNotifier::UpdateCredentials(
     }
 
     notifier::Subscription subscription;
-    subscription.channel = kSyncNotificationChannel;
+    subscription.channel = kSyncP2PNotificationChannel;
     // There may be some subtle issues around case sensitivity of the
     // from field, but it doesn't matter too much since this is only
     // used in p2p mode (which is only used in testing).
@@ -254,7 +254,7 @@ void P2PNotifier::OnIncomingNotification(
     VLOG(1) << "Notifications not enabled -- not emitting notification";
     return;
   }
-  if (notification.channel != kSyncNotificationChannel) {
+  if (notification.channel != kSyncP2PNotificationChannel) {
     LOG(WARNING) << "Notification from unexpected source "
                  << notification.channel;
   }
@@ -293,7 +293,7 @@ void P2PNotifier::SendNotificationData(
     const P2PNotificationData& notification_data) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   notifier::Notification notification;
-  notification.channel = kSyncNotificationChannel;
+  notification.channel = kSyncP2PNotificationChannel;
   notification.data = notification_data.ToString();
   VLOG(1) << "Sending XMPP notification: " << notification.ToString();
   talk_mediator_->SendNotification(notification);
