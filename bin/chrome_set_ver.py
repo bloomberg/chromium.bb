@@ -8,6 +8,7 @@
 import optparse
 import os
 import sys
+import urlparse
 
 # Want to use correct version of libraries even when executed through symlink.
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -17,6 +18,7 @@ import chromite.lib.cros_build_lib as cros_lib
 
 _CHROMIUM_ROOT = 'chromium'
 _CHROMIUM_SRC_ROOT = os.path.join(_CHROMIUM_ROOT, 'src')
+_CHROMIUM_SRC_INTERNAL = os.path.join(_CHROMIUM_ROOT, 'src-internal')
 _CHROMIUM_CROS_DEPS = os.path.join(_CHROMIUM_SRC_ROOT, 'tools/cros.DEPS/DEPS')
 
 
@@ -63,22 +65,41 @@ def _ResetProject(project_path, commit_hash):
                       cwd=project_path)
 
 
+def _ExtractProjectFromEntry(entry):
+  """From a deps entry extract the Gerrit project name.
+
+  Arguments:
+    entry: The deps entry in the format ${url_prefix}/${project_name}@${hash}
+  """
+  # We only support Gerrit urls, where the path is the project name.
+  repo_url = entry.partition('@')[0]
+  project = urlparse.urlparse(repo_url).path.lstrip('/')
+  project = os.path.splitext(project)[0]
+  return project
+
+
+def GetPathToProjectMappings(deps):
+  """Get dictionary relating path to Gerrit project names.
+
+  Arguments:
+   deps: a dictionary indexed by repo paths.  The same format as the 'deps'
+         entry in the '.DEPS.git' file.
+  """
+  mappings = {}
+  for rel_path, entry in deps.iteritems():
+    mappings[rel_path] = _ExtractProjectFromEntry(entry)
+
+  return mappings
+
+
 def _CreateCrosSymlink(repo_root):
   """Create symlinks to CrOS projects specified in the cros_DEPS/DEPS file."""
-  git_url = 'http://git.chromium.org'
   cros_deps_file = os.path.join(repo_root, _CHROMIUM_CROS_DEPS)
   deps, merged_deps = _GetParsedDeps(cros_deps_file)
   chromium_root = os.path.join(repo_root, _CHROMIUM_ROOT)
 
-  for rel_path, project_hash in merged_deps.iteritems():
-    repo_url, _, _ = project_hash.partition('@')
-    msg = ('Found unexpected url %s in %s.\n'
-           'Expected url to start with %s'
-           % (repo_url, cros_deps_file, git_url))
-    assert repo_url.startswith(git_url), msg
-    project = repo_url.replace(git_url, '').lstrip('/')
-    project, _ = os.path.splitext(project)
-
+  mappings = GetPathToProjectMappings(merged_deps)
+  for rel_path, project in mappings.iteritems():
     link_dir = os.path.join(chromium_root, rel_path)
     target_dir = os.path.join(repo_root,
                               cros_lib.GetProjectDir(repo_root, project))
@@ -97,8 +118,13 @@ def _ResetGitCheckout(chromium_root, deps):
   """
   for rel_path, project_hash in deps.iteritems():
     print 'resetting project %s' % rel_path
-    repo_url, commit_hash = project_hash.split('@')
-    _ResetProject(os.path.join(chromium_root, rel_path), commit_hash)
+    repo_url, _, commit_hash = project_hash.partition('@')
+    abs_path = os.path.join(chromium_root, rel_path)
+    if not os.path.isdir(abs_path):
+      cros_lib.Die('Cannot find project %s. Expecting project to be '
+                   'checked out to %s.\n' % (repo_url, abs_path))
+    if commit_hash:
+      _ResetProject(abs_path, commit_hash)
 
 
 def _RunHooks(chromium_root, hooks):
@@ -139,7 +165,7 @@ def _GetParsedDeps(deps_file):
     deps = _LoadDEPS(f.read())
 
   merged_deps = deps.get('deps', {})
-  unix_deps = deps['deps_os']['unix']
+  unix_deps = deps.get('deps_os', {}).get('unix', {})
   merged_deps = _MergeDeps(merged_deps, unix_deps)
   return deps, merged_deps
 
@@ -173,8 +199,13 @@ def main(argv=None):
   else:
     deps_files_to_parse.append(os.path.join(chromium_src_root, '.DEPS.git'))
 
+  internal_deps = os.path.join(repo_root, _CHROMIUM_SRC_INTERNAL, '.DEPS.git')
+  if os.path.exists(internal_deps):
+    deps_files_to_parse.append(internal_deps)
+
   deps_files_to_parse.append(os.path.join(repo_root, _CHROMIUM_CROS_DEPS))
 
+  # Prepare source tree for resetting
   chromium_root = os.path.join(repo_root, _CHROMIUM_ROOT)
   _CreateCrosSymlink(repo_root)
 

@@ -8,6 +8,7 @@
 
 import mox
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -86,6 +87,20 @@ class DEPSFileTest(mox.MoxTestBase):
     self.assertTrue(os.path.exists(hook1_output))
     self.assertTrue(os.path.exists(hook2_output))
 
+  def testParseInternalDEPSFile(self):
+    """Test that the internal DEPS file is found and parsed properly."""
+    shutil.copyfile(os.path.join(self.test_base, 'test_internal/DEPS.git'),
+                    os.path.join(self.repo_root,
+                                 'chromium/src-internal/.DEPS.git'))
+
+    chrome_set_ver.main(['-d',
+                         os.path.join(self.test_base, 'test_1/DEPS.git')])
+
+    repos = {'repo_internal': '8d35063e1836c79c9ef97bf81eb43f450dc111ac'}
+
+    for repo, revision in repos.iteritems():
+      repo_path = os.path.join(self.repo_root, 'chromium', 'src', repo)
+      self.assertTrue(cros_lib.GetGitRepoRevision(repo_path) == revision)
 
   def testErrorOnOverlap(self):
     """Test that an overlapping entry in unix deps causes error."""
