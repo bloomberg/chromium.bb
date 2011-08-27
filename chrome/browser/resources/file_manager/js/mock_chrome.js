@@ -281,6 +281,13 @@ chrome.fileBrowserPrivate = {
       CONFIRM_DELETE_ONE: 'Are you sure you want to delete "$1"?',
       CONFIRM_DELETE_SOME: 'Are you sure you want to delete $1 items?',
 
+      UNKNOWN_FILESYSTEM_WARNING:'This device cannot be opened because its' +
+          ' filesystem was not recognized.',
+      UNSUPPORTED_FILESYSTEM_WARNING: 'This device cannot be opened because' +
+          ' its filesystem is not supported.',
+      FORMATTING_WARNING: 'Formatting the removable media is going to erase' +
+          ' all data. Do you wish to continue?',
+
       ID3_ALBUM: 'Album',  // TALB
       ID3_BPM: 'BPM ',  // TBPM
       ID3_COMPOSER: 'Composer',  // TCOM

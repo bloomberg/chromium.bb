@@ -9216,6 +9216,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
        Are you sure you want to delete $1 items?
      </message>
 
+      <message name="IDS_FILE_BROWSER_UNKNOWN_FILESYSTEM_WARNING" desc="Displayed when device contents cannot be read because filesystem is unknown.">
+        This device cannot be opened because its filesystem was not recognized.
+      </message>
+      <message name="IDS_FILE_BROWSER_UNSUPPORTED_FILESYSTEM_WARNING" desc="Displayed when device contents cannot be read because filesystem is unsupported.">
+        This device cannot be opened because its filesystem is not supported.
+      </message>
       <message name="IDS_FILE_BROWSER_FORMATTING_WARNING" desc="Displayed when you attempt to format device.">
         Formatting the removable media is going to erase all data. Do you wish to continue?
       </message>

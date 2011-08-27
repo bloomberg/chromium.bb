@@ -344,16 +344,10 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
   FilePath relative_mount_path;
   bool relative_mount_path_set = false;
 
-  // If the device is corrupted but it's still possible to format it, it will
-  // be fake mounted.
-  // TODO(sidor): Write more general condition when it will possible.
-  bool mount_corrupted_device =
-      (error_code == chromeos::MOUNT_ERROR_UNKNOWN_FILESYSTEM ||
-       error_code == chromeos::MOUNT_ERROR_UNSUPORTED_FILESYSTEM) &&
-      mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE;
-
-  // If there were no error, add mountPath to the event.
-  if (error_code == chromeos::MOUNT_ERROR_NONE || mount_corrupted_device) {
+  // If there were no error or some special conditions occured, add mountPath
+  // to the event.
+  if (error_code == chromeos::MOUNT_ERROR_NONE ||
+      mount_info.mount_condition) {
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
     if (FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile_,
@@ -373,7 +367,7 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
 
   if (relative_mount_path_set &&
       mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
-      !mount_corrupted_device &&  // User should not be bothered by that.
+      !mount_info.mount_condition &&
       event == chromeos::MountLibrary::MOUNTING) {
     FileManagerUtil::ShowFullTabUrl(profile_, FilePath(mount_info.mount_path));
   }

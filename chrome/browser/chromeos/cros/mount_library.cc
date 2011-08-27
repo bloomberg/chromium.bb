@@ -34,6 +34,20 @@ std::string MountLibrary::MountTypeToString(MountType type) {
   return "";
 }
 
+std::string MountLibrary::MountConditionToString(MountCondition condition) {
+  switch (condition) {
+    case MOUNT_CONDITION_NONE:
+      return "";
+    case MOUNT_CONDITION_UNKNOWN_FILESYSTEM:
+      return "unknown_filesystem";
+    case MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM:
+      return "unsupported_filesystem";
+    default:
+      NOTREACHED();
+  }
+  return "";
+}
+
 // static
 MountType MountLibrary::MountTypeFromString(
     const std::string& type_str) {
@@ -173,7 +187,10 @@ class MountLibraryImpl : public MountLibrary {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!CrosLibrary::Get()->EnsureLoaded()) {
       OnMountCompleted(MOUNT_ERROR_LIBRARY_NOT_LOADED,
-                       MountPointInfo(source_path, NULL, type));
+                       MountPointInfo(source_path,
+                                      NULL,
+                                      type,
+                                      MOUNT_CONDITION_NONE));
       return;
     }
     libcros_proxy_->CallMountPath(source_path, type, options,
@@ -330,9 +347,20 @@ class MountLibraryImpl : public MountLibrary {
                                     MountType type,
                                     const char* mount_path) {
     DCHECK(object);
+    MountCondition mount_condition = MOUNT_CONDITION_NONE;
+    if (type == MOUNT_TYPE_DEVICE) {
+      if (error_code == MOUNT_ERROR_UNKNOWN_FILESYSTEM)
+          mount_condition = MOUNT_CONDITION_UNKNOWN_FILESYSTEM;
+      if (error_code == MOUNT_ERROR_UNSUPORTED_FILESYSTEM)
+          mount_condition = MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM;
+    }
+
     MountLibraryImpl* self = static_cast<MountLibraryImpl*>(object);
     self->OnMountCompleted(static_cast<MountError>(error_code),
-                           MountPointInfo(source_path, mount_path, type));
+                           MountPointInfo(source_path,
+                                          mount_path,
+                                          type,
+                                          mount_condition));
   }
 
   // Callback for UnmountRemovableDevice method.
@@ -437,20 +465,14 @@ class MountLibraryImpl : public MountLibrary {
 
     // If the device is corrupted but it's still possible to format it, it will
     // be fake mounted.
-    // TODO(sidor): Write more general condition when it will possible.
-    bool mount_corrupted_device =
-        (error_code == MOUNT_ERROR_UNKNOWN_FILESYSTEM ||
-         error_code == MOUNT_ERROR_UNSUPORTED_FILESYSTEM) &&
-        mount_info.mount_type == MOUNT_TYPE_DEVICE;
-
-    if ((error_code == MOUNT_ERROR_NONE || mount_corrupted_device) &&
+    if ((error_code == MOUNT_ERROR_NONE || mount_info.mount_condition) &&
         mount_points_.find(mount_info.mount_path) == mount_points_.end()) {
       mount_points_.insert(MountPointMap::value_type(
                                mount_info.mount_path.c_str(),
                                mount_info));
     }
 
-    if ((error_code == MOUNT_ERROR_NONE || mount_corrupted_device) &&
+    if ((error_code == MOUNT_ERROR_NONE || mount_info.mount_condition) &&
         mount_info.mount_type == MOUNT_TYPE_DEVICE &&
         !mount_info.source_path.empty() &&
         !mount_info.mount_path.empty()) {
@@ -480,7 +502,8 @@ class MountLibraryImpl : public MountLibrary {
           MOUNT_ERROR_NONE,
           MountPointInfo(mount_points_it->second.source_path.c_str(),
                          mount_points_it->second.mount_path.c_str(),
-                         mount_points_it->second.mount_type));
+                         mount_points_it->second.mount_type,
+                         mount_points_it->second.mount_condition));
       std::string path(mount_points_it->second.source_path);
       mount_points_.erase(mount_points_it);
       DiskMap::iterator iter = disks_.find(path);

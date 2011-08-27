@@ -6627,6 +6627,10 @@
             "type": "string",
             "enum": ["device", "file", "network"],
             "description": "Type of the mount."
+          },
+          "mountCondition": {
+            "type": "string",
+            "description": "Additional data about mount, for example, that the filesystem is not supported."
           }
         }
       },

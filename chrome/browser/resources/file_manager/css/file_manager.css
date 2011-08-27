@@ -325,6 +325,10 @@ li.thumbnail-item[selected] .file-checkbox {
   background-image: url(../images/filetype_audio.png);
 }
 
+.detail-icon[iconType="device"] {
+  background-image: url(../images/filetype_device.png);
+}
+
 .detail-icon[iconType="doc"] {
   background-image: url(../images/filetype_doc.png);
 }
@@ -355,6 +359,10 @@ li.thumbnail-item[selected] .file-checkbox {
 
 .detail-icon[iconType="text"] {
   background-image: url(../images/filetype_text.png);
+}
+
+.detail-icon[iconType="unreadable"] {
+  background-image: url(../images/filetype_unreadable_device.png);
 }
 
 .detail-icon[iconType="video"] {

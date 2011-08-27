@@ -29,6 +29,12 @@ typedef enum MountLibraryEventType {
   MOUNT_FORMATTING_FINISHED
 } MountLibraryEventType;
 
+typedef enum MountCondition {
+  MOUNT_CONDITION_NONE,
+  MOUNT_CONDITION_UNKNOWN_FILESYSTEM,
+  MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM
+} MountCondition;
+
 class MountLibcrosProxy {
  public:
   virtual ~MountLibcrosProxy() {}
@@ -135,11 +141,14 @@ class MountLibrary {
     std::string source_path;
     std::string mount_path;
     MountType mount_type;
+    MountCondition mount_condition;
 
-    MountPointInfo(const char* source, const char* mount, const MountType type)
+    MountPointInfo(const char* source, const char* mount, const MountType type,
+        MountCondition condition)
         : source_path(source ? source : ""),
           mount_path(mount ? mount : ""),
-          mount_type(type) {
+          mount_type(type),
+          mount_condition(condition) {
     }
   };
 
@@ -155,7 +164,7 @@ class MountLibrary {
     virtual void DiskChanged(MountLibraryEventType event,
                              const Disk* disk) = 0;
     virtual void DeviceChanged(MountLibraryEventType event,
-                               const std::string& device_path ) = 0;
+                               const std::string& device_path) = 0;
     virtual void MountCompleted(MountEvent event_type,
                                 MountError error_code,
                                 const MountPointInfo& mount_info) = 0;
@@ -189,6 +198,7 @@ class MountLibrary {
   // Helper functions for parameter conversions.
   static std::string MountTypeToString(MountType type);
   static MountType MountTypeFromString(const std::string& type_str);
+  static std::string MountConditionToString(MountCondition type);
 
   // Used in testing. Enables mocking libcros.
   virtual void SetLibcrosProxy(MountLibcrosProxy* proxy) {}

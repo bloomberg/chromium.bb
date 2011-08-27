@@ -208,10 +208,10 @@ FileManager.prototype = {
   var localStrings;
 
   /**
-   * Map of icon types to regular expressions.
+   * Map of icon types to regular expressions and functions
    *
-   * The first regexp to match the file name determines the icon type
-   * assigned to dom elements for a file.  Order of evaluation is not
+   * The first regexp/function to match the entry name determines the icon type
+   * assigned to dom elements for a file. Order of evaluation is not
    * defined, so don't depend on it.
    */
   const iconTypes = {
@@ -220,13 +220,33 @@ FileManager.prototype = {
     'image': /\.(bmp|gif|jpe?g|ico|png|webp)$/i,
     'pdf' : /\.(pdf)$/i,
     'text': /\.(pod|rst|txt|log)$/i,
-    'video': /\.(3gp|avi|mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
+    'video': /\.(3gp|avi|mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i,
+    'device': function(self, entry) {
+      var deviceNumber = self.getDeviceNumber(entry);
+      if (deviceNumber != undefined)
+        return (self.mountPoints_[deviceNumber].mountCondition == '');
+      return false;
+    },
+    'unreadable': function(self, entry) {
+      var deviceNumber = self.getDeviceNumber(entry);
+      if (deviceNumber != undefined) {
+        return self.mountPoints_[deviceNumber].mountCondition ==
+               'unknown_filesystem' ||
+               self.mountPoints_[deviceNumber].mountCondition ==
+               'unsupported_filesystem';
+      }
+      return false;
+    }
   };
 
   const previewArt = {
     'audio': 'images/filetype_large_audio.png',
+    // TODO(sidor): Find better icon here.
+    'device': 'images/filetype_large_folder.png',
     'folder': 'images/filetype_large_folder.png',
     'unknown': 'images/filetype_large_generic.png',
+    // TODO(sidor): Find better icon here.
+    'unreadable': 'images/filetype_large_folder.png',
     'video': 'images/filetype_large_video.png'
   };
 
@@ -294,49 +314,18 @@ FileManager.prototype = {
     return parent;
   }
 
-  /**
-   * Get the icon type for a given Entry.
-   *
-   * @param {Entry} entry An Entry subclass (FileEntry or DirectoryEntry).
-   * @return {string} One of the keys from FileManager.iconTypes, or
-   *     'unknown'.
-   */
-  function getIconType(entry) {
-    if (entry.cachedIconType_)
-      return entry.cachedIconType_;
-
-    var rv = 'unknown';
-
-    if (entry.isDirectory) {
-      rv = 'folder';
-    } else {
-      for (var name in iconTypes) {
-        var value = iconTypes[name];
-
-        if (value instanceof RegExp) {
-          if (value.test(entry.name))  {
-            rv = name;
-            break;
-          }
-        } else if (typeof value == 'function') {
-          try {
-            if (value(entry)) {
-              rv = name;
-              break;
-            }
-          } catch (ex) {
-            console.error('Caught exception while evaluating iconType: ' +
-                          name, ex);
-          }
-        } else {
-          console.log('Unexpected value in iconTypes[' + name + ']: ' + value);
-        }
-      }
-    }
-
-    entry.cachedIconType_ = rv;
-    return rv;
+ /**
+  * Normalizes path not to start with /
+  *
+  * @param {string} path The file path.
+  */
+  function normalizeAbsolutePath(x) {
+    if (x[0] == '/')
+      return x.slice(1);
+    else
+      return x;
   }
+
 
   /**
    * Call an asynchronous method on dirEntry, batching multiple callers.
@@ -477,27 +466,6 @@ FileManager.prototype = {
           successCallback(entry);
       }, opt_errorCallback);
     }
-  }
-
-  /**
-   * Get the icon type of a file, caching the result.
-   *
-   * When this method completes, the fileEntry object will get a
-   * 'cachedIconType_' property (if it doesn't already have one) containing the
-   * icon type of the file as a string.
-   *
-   * The successCallback is always invoked synchronously, since this does not
-   * actually require an async call.  You should not depend on this, as it may
-   * change if we were to start reading magic numbers (for example).
-   *
-   * @param {Entry} entry An HTML5 Entry object.
-   * @param {function(Entry)} successCallback The function to invoke once the
-   *     icon type is known.
-   */
-  function cacheEntryIconType(entry, successCallback) {
-    getIconType(entry);
-    if (successCallback)
-      setTimeout(function() { successCallback(entry) }, 0);
   }
 
   function isSystemDirEntry(dirEntry) {
@@ -657,6 +625,68 @@ FileManager.prototype = {
 
     this.textSearchState_ = {text: '', date: new Date()};
   };
+
+  /**
+   * Get the icon type for a given Entry.
+   *
+   * @param {Entry} entry An Entry subclass (FileEntry or DirectoryEntry).
+   * @return {string} One of the keys from FileManager.iconTypes, or
+   *     'unknown'.
+   */
+  FileManager.prototype.getIconType = function(entry) {
+    if (entry.cachedIconType_)
+      return entry.cachedIconType_;
+
+    var rv = 'unknown';
+   if (entry.isDirectory)
+      rv = 'folder';
+    for (var name in iconTypes) {
+      var value = iconTypes[name];
+
+      if (value instanceof RegExp) {
+        if (value.test(entry.name))  {
+          rv = name;
+          break;
+        }
+      } else if (typeof value == 'function') {
+        try {
+          if (value(this,entry)) {
+            rv = name;
+            break;
+          }
+        } catch (ex) {
+          console.error('Caught exception while evaluating iconType: ' +
+                        name, ex);
+        }
+      } else {
+        console.log('Unexpected value in iconTypes[' + name + ']: ' + value);
+      }
+    }
+    entry.cachedIconType_ = rv;
+    return rv;
+  };
+
+
+  /**
+   * Get the icon type of a file, caching the result.
+   *
+   * When this method completes, the fileEntry object will get a
+   * 'cachedIconType_' property (if it doesn't already have one) containing the
+   * icon type of the file as a string.
+   *
+   * The successCallback is always invoked synchronously, since this does not
+   * actually require an async call.  You should not depend on this, as it may
+   * change if we were to start reading magic numbers (for example).
+   *
+   * @param {Entry} entry An HTML5 Entry object.
+   * @param {function(Entry)} successCallback The function to invoke once the
+   *     icon type is known.
+   */
+  FileManager.prototype.cacheEntryIconType = function(entry, successCallback) {
+    this.getIconType(entry);
+    if (successCallback)
+      setTimeout(function() { successCallback(entry) }, 0);
+  }
 
   /**
    * Compare by mtime first, then by name.
@@ -1244,7 +1274,7 @@ FileManager.prototype = {
     } else if (field == 'cachedSize_') {
       cacheFunction = cacheEntrySize;
     } else if (field == 'cachedIconType_') {
-      cacheFunction = cacheEntryIconType;
+      cacheFunction = this.cacheEntryIconType.bind(this);
     } else {
       callback();
       return;
@@ -1351,7 +1381,7 @@ FileManager.prototype = {
 
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
-    entry.cachedIconType_ = getIconType(entry);
+    entry.cachedIconType_ = this.getIconType(entry);
     icon.setAttribute('iconType', entry.cachedIconType_);
     div.appendChild(icon);
 
@@ -1486,9 +1516,9 @@ FileManager.prototype = {
       selection.urls.push(entry.toURL());
 
       if (selection.iconType == null) {
-        selection.iconType = getIconType(entry);
+        selection.iconType = this.getIconType(entry);
       } else if (selection.iconType != 'unknown') {
-        var iconType = getIconType(entry);
+        var iconType = this.getIconType(entry);
         if (selection.iconType != iconType)
           selection.iconType = 'unknown';
       }
@@ -1719,19 +1749,11 @@ FileManager.prototype = {
     var self = this;
     function onMountPointsFound(mountPoints) {
       self.mountPoints_ = mountPoints;
-
-      function normalize(x) {
-        if (x[0] == '/')
-          return x.slice(1);
-        else
-          return x;
-      }
-
       function onVolumeMetadataFound(volumeMetadata) {
         if (volumeMetadata.deviceType == "flash") {
-          if (selection.entries.length != 1 ||
-              normalize(selection.entries[0].fullPath) !=
-              normalize(volumeMetadata.mountPath)) {
+          if (self.selection.entries.length != 1 ||
+              normalizeAbsolutePath(self.selection.entries[0].fullPath) !=
+              normalizeAbsolutePath(volumeMetadata.mountPath)) {
             return;
           }
           var task = {
@@ -1748,7 +1770,8 @@ FileManager.prototype = {
       var selectedPath = selection.entries[0].fullPath;
       for (var i = 0; i < mountPoints.length; i++) {
         if (mountPoints[i].mountType == "device" &&
-            normalize(mountPoints[i].mountPath) == normalize(selectedPath)) {
+            normalizeAbsolutePath(mountPoints[i].mountPath) ==
+            normalizeAbsolutePath(selectedPath)) {
           chrome.fileBrowserPrivate.getVolumeMetadata(mountPoints[i].sourceUrl,
               onVolumeMetadataFound);
           return;
@@ -1802,11 +1825,16 @@ FileManager.prototype = {
         return;
       }
 
+      var rescanDirectoryNeeded = (event.status == 'success');
+      for (var i = 0; i < mountPoints.length; i++) {
+        if (event.sourceUrl == mountPoints[i].sourceUrl &&
+            mountPoints[i].mountCondition != '') {
+          rescanDirectoryNeeded = true;
+        }
+      }
       // TODO(dgozman): rescan directory, only if it contains mounted points,
       // when mounts location will be decided.
-      if (event.status == 'success' ||
-          event.status == 'error_unknown_filesystem' ||
-          event.status == 'error_unsuported_filesystem')
+      if (rescanDirectoryNeeded)
         self.rescanDirectory_(null, 300);
     });
   };
@@ -1840,6 +1868,17 @@ FileManager.prototype = {
       });
     }
   };
+
+  FileManager.prototype.getDeviceNumber = function(entry) {
+    if (!entry.isDirectory) return false;
+    for (var i = 0; i < this.mountPoints_.length; i++) {
+      if (normalizeAbsolutePath(entry.fullPath) ==
+          normalizeAbsolutePath(this.mountPoints_[i].mountPath)) {
+        return i;
+      }
+    }
+    return undefined;
+  }
 
   FileManager.prototype.openImageEditor_ = function(entry) {
     var self = this;
@@ -1945,7 +1984,7 @@ FileManager.prototype = {
 
     this.previewFilename_.textContent = previewName;
 
-    var iconType = getIconType(this.selection.leadEntry);
+    var iconType = this.getIconType(this.selection.leadEntry);
     if (iconType == 'image') {
       if (fileManager.selection.totalCount > 1)
         this.previewImage_.classList.add('multiple-selected');
@@ -2102,7 +2141,7 @@ FileManager.prototype = {
     if (!entry)
       return;
 
-    var iconType = getIconType(entry);
+    var iconType = this.getIconType(entry);
 
     this.cacheMetadata_(entry, function (metadata) {
       var url = metadata.thumbnailURL;
@@ -2502,13 +2541,29 @@ FileManager.prototype = {
       return;
     }
 
-    if (entry.isDirectory)
-      return this.changeDirectory(entry.fullPath);
+    if (entry.isDirectory) {
+      return this.onDirectoryAction(entry);
+    }
 
     if (!this.okButton_.disabled)
       this.onOk_();
 
   };
+
+  FileManager.prototype.onDirectoryAction = function(entry) {
+    var deviceNumber = this.getDeviceNumber(entry);
+    if (deviceNumber != undefined &&
+        this.mountPoints_[deviceNumber].mountCondition ==
+        'unknown_filesystem') {
+      return this.showButter(str('UNKNOWN_FILESYSTEM_WARNING'));
+    } else if (deviceNumber != undefined &&
+               this.mountPoints_[deviceNumber].mountCondition ==
+               'unsupported_filesystem') {
+      return this.showButter(str('UNSUPPORTED_FILESYSTEM_WARNING'));
+    } else {
+      return this.changeDirectory(entry.fullPath);
+    }
+  }
 
   /**
    * Update the UI when the current directory changes.
@@ -2972,7 +3027,7 @@ FileManager.prototype = {
             this.selection.leadEntry.isDirectory &&
             this.dialogType_ != FileManager.SELECT_FOLDER) {
           event.preventDefault();
-          this.changeDirectory(this.selection.leadEntry.fullPath);
+          this.onDirectoryAction(this.selection.leadEntry);
         } else if (!this.okButton_.disabled) {
           event.preventDefault();
           this.onOk_();

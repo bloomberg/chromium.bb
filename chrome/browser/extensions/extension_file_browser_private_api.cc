@@ -268,6 +268,10 @@ base::DictionaryValue* MountPointToValue(Profile* profile,
       mount_info->SetString("mountPath", relative_mount_path.value());
     }
 
+    mount_info->SetString("mountCondition",
+        chromeos::MountLibrary::MountConditionToString(
+        mount_point_info.mount_condition));
+
     return mount_info;
 }
 #endif
@@ -1346,12 +1350,15 @@ bool GetVolumeMetadataFunction::RunImpl() {
     DictionaryValue* volume_info = new DictionaryValue();
     result_.reset(volume_info);
     // Localising mount path.
-    FilePath relative_mount_path;
-    FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile_,
-        FilePath(volume->mount_path()), &relative_mount_path);
-
+    std::string mount_path;
+    if (!volume->mount_path().empty()) {
+      FilePath relative_mount_path;
+      FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile_,
+          FilePath(volume->mount_path()), &relative_mount_path);
+      mount_path = relative_mount_path.value();
+    }
     volume_info->SetString("devicePath", volume->device_path());
-    volume_info->SetString("mountPath", relative_mount_path.value());
+    volume_info->SetString("mountPath", mount_path);
     volume_info->SetString("systemPath", volume->system_path());
     volume_info->SetString("filePath", volume->file_path());
     volume_info->SetString("deviceLabel", volume->device_label());
@@ -1477,6 +1484,8 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, CONFIRM_DELETE_ONE);
   SET_STRING(IDS_FILE_BROWSER, CONFIRM_DELETE_SOME);
 
+  SET_STRING(IDS_FILE_BROWSER, UNKNOWN_FILESYSTEM_WARNING);
+  SET_STRING(IDS_FILE_BROWSER, UNSUPPORTED_FILESYSTEM_WARNING);
   SET_STRING(IDS_FILE_BROWSER, FORMATTING_WARNING);
 
   SET_STRING(IDS_FILE_BROWSER, SELECT_FOLDER_TITLE);
