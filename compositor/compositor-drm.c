@@ -745,11 +745,11 @@ vt_func(struct wlsc_compositor *compositor, int event)
 	case TTY_LEAVE_VT:
 		compositor->focus = 0;
 		compositor->state = WLSC_COMPOSITOR_SLEEPING;
-		drmDropMaster(ec->drm.fd);
 
 		wl_list_for_each(output, &ec->base.output_list, link)
 			drm_output_set_cursor(output, NULL);
 
+		drmDropMaster(ec->drm.fd);
 		break;
 	};
 }
