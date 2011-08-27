@@ -3875,7 +3875,6 @@
    bug_76354
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3IPC16MessageWithReplyI6Tuple1I4GURLE6Tuple*
    ...
    fun:_ZN32ChildProcessHostMsg_ResolveProxyC1ERK4GURLPiPSs
    fun:_ZN25ResolveProxyMsgHelperTest13GenerateReplyEv
