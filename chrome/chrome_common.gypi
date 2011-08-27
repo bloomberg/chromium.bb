@@ -265,6 +265,12 @@
             ],
           },
         },],
+        ['toolkit_views==1', {
+          'sources': [
+            'common/native_web_keyboard_event_views.cc',
+            'common/native_web_keyboard_event_views.h',
+          ],
+        }],        
         ['os_posix == 1 and OS != "mac"', {
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)',

@@ -282,11 +282,6 @@
             'common/gpu/x_util.h',
           ],
         }],
-        ['toolkit_views==1', {
-          'sources': [
-            'common/native_web_keyboard_event_views.cc',
-          ],
-        }],
         ['touchui==1', {
           'sources': [
             'common/gpu/image_transport_surface_linux.h',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/native_web_keyboard_event.h"
+#include "chrome/common/native_web_keyboard_event_views.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
@@ -23,9 +23,9 @@ int ViewsFlagsToWebInputEventModifiers(int flags) {
 
 }  // namespace
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(
-    const views::KeyEvent& event)
-    : skip_in_browser(false) {
+NativeWebKeyboardEventViews::NativeWebKeyboardEventViews(
+    const views::KeyEvent& event) {
+  skip_in_browser = false;
   DCHECK(event.type() == ui::ET_KEY_PRESSED ||
          event.type() == ui::ET_KEY_RELEASED);
 
@@ -60,11 +60,13 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
 #endif
 }
 
-NativeWebKeyboardEvent::NativeWebKeyboardEvent(uint16 character,
-                                               int flags,
-                                               double time_stamp_seconds,
-                                               FromViewsEvent)
-    : skip_in_browser(true) {
+NativeWebKeyboardEventViews::NativeWebKeyboardEventViews(
+    uint16 character,
+    int flags,
+    double time_stamp_seconds,
+    FromViewsEvent) {
+  skip_in_browser = true;
+
   type = WebKit::WebInputEvent::Char;
   modifiers = ViewsFlagsToWebInputEventModifiers(flags);
   timeStampSeconds = time_stamp_seconds;
@@ -83,4 +85,7 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(uint16 character,
 #if defined(TOOLKIT_USES_GTK)
   match_edit_command = false;
 #endif
+}
+
+NativeWebKeyboardEventViews::~NativeWebKeyboardEventViews() {
 }

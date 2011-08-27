@@ -14,10 +14,10 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/native_web_keyboard_event_views.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/native_web_keyboard_event.h"
 #include "content/common/result_codes.h"
 #include "content/common/view_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -488,14 +488,14 @@ bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent& event) {
   // TODO(suzhe): Support editor key bindings.
   if (!host_)
     return false;
-  host_->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
+  host_->ForwardKeyboardEvent(NativeWebKeyboardEventViews(event));
   return true;
 }
 
 bool RenderWidgetHostViewViews::OnKeyReleased(const views::KeyEvent& event) {
   if (!host_)
     return false;
-  host_->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
+  host_->ForwardKeyboardEvent(NativeWebKeyboardEventViews(event));
   return true;
 }
 
@@ -578,9 +578,9 @@ void RenderWidgetHostViewViews::InsertText(const string16& text) {
 
 void RenderWidgetHostViewViews::InsertChar(char16 ch, int flags) {
   if (host_) {
-    NativeWebKeyboardEvent::FromViewsEvent from_views_event;
-    NativeWebKeyboardEvent wke(ch, flags, base::Time::Now().ToDoubleT(),
-                               from_views_event);
+    NativeWebKeyboardEventViews::FromViewsEvent from_views_event;
+    NativeWebKeyboardEventViews wke(ch, flags, base::Time::Now().ToDoubleT(),
+                                    from_views_event);
     host_->ForwardKeyboardEvent(wke);
   }
 }

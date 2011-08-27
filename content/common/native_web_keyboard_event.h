@@ -22,12 +22,6 @@ class NSEvent;
 typedef struct _GdkEventKey GdkEventKey;
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-namespace views {
-class KeyEvent;
-}
-#endif
-
 // Owns a platform specific event; used to pass own and pass event through
 // platform independent code.
 struct NativeWebKeyboardEvent : public WebKit::WebKeyboardEvent {
@@ -49,21 +43,6 @@ struct NativeWebKeyboardEvent : public WebKit::WebKeyboardEvent {
   NativeWebKeyboardEvent(wchar_t character,
                          int state,
                          double time_stamp_seconds);
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-  // TODO(suzhe): remove once we get rid of Gtk from Views.
-  struct FromViewsEvent {};
-  // These two constructors are shared between Windows and Linux Views ports.
-  explicit NativeWebKeyboardEvent(const views::KeyEvent& event);
-  // TODO(suzhe): Sadly, we need to add a meanless FromViewsEvent parameter to
-  // distinguish between this contructor and above Gtk one, because they use
-  // different modifier flags. We can remove this extra parameter as soon as we
-  // disable above Gtk constructor in Linux Views port.
-  NativeWebKeyboardEvent(uint16 character,
-                         int flags,
-                         double time_stamp_seconds,
-                         FromViewsEvent);
 #endif
 
   NativeWebKeyboardEvent(const NativeWebKeyboardEvent& event);
