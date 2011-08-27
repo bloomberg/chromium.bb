@@ -217,7 +217,6 @@ PluginInstance::PluginInstance(
       pp_instance_(0),
       container_(NULL),
       full_frame_(false),
-      sent_did_change_view_(false),
       has_webkit_focus_(false),
       has_content_area_focus_(false),
       find_identifier_(-1),
@@ -506,22 +505,18 @@ PP_Var PluginInstance::GetInstanceObject() {
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
                                  const gfx::Rect& clip) {
-  // WebKit can give weird (x,y) positions for empty clip rects (since the
-  // position technically doesn't matter). But we want to make these
-  // consistent since this is given to the plugin, so force everything to 0
-  // in the "everything is clipped" case.
-  gfx::Rect new_clip;
-  if (!clip.IsEmpty())
-    new_clip = clip;
-
-  // Don't notify the plugin if we've already sent these same params before.
-  if (sent_did_change_view_ && position == position_ && new_clip == clip_)
-    return;
-
-  sent_did_change_view_ = true;
-  position_ = position;
-  clip_ = new_clip;
   fullscreen_ = (fullscreen_container_ != NULL);
+  position_ = position;
+
+  if (clip.IsEmpty()) {
+    // WebKit can give weird (x,y) positions for empty clip rects (since the
+    // position technically doesn't matter). But we want to make these
+    // consistent since this is given to the plugin, so force everything to 0
+    // in the "everything is clipped" case.
+    clip_ = gfx::Rect();
+  } else {
+    clip_ = clip;
+  }
 
   PP_Rect pp_position, pp_clip;
   RectToPPRect(position_, &pp_position);
