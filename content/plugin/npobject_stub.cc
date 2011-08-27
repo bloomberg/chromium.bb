@@ -16,6 +16,26 @@
 
 using WebKit::WebBindings;
 
+// TODO(eroman): Remove this when done investigating 94179.
+//
+// The following disables optimizations for all the functions in this file.
+//
+// At a minimum we want to disable frame pointer optimization ("y"), so that
+// base::debug::StackTrace() works better. We also prevent inlining of these
+// functions so that StackTrace() is more complete. (The StackTrace() will
+// probably not be able to go deeper than these functions since the callers
+// will probably have FPO).
+//
+// Note that disabling optimizations causes warning 4748 which I have had to
+// disable throughout this file. That warning was:
+//
+//     /GS can not protect parameters and local variables from local buffer
+//     overrun because optimizations are disabled in function
+#if defined(COMPILER_MSVC)
+#pragma optimize("", off)
+MSVC_PUSH_DISABLE_WARNING(4748)
+#endif
+
 NPObjectStub::NPObjectStub(
     NPObject* npobject,
     PluginChannelBase* channel,
@@ -445,3 +465,9 @@ void NPObjectStub::OnEvaluate(const std::string& script,
   NPObjectMsg_Evaluate::WriteReplyParams(reply_msg, result_param, return_value);
   channel_->Send(reply_msg);
 }
+
+// Restore compiler optimizations and warnings.
+#if defined(COMPILER_MSVC)
+MSVC_POP_WARNING()
+#pragma optimize("", on)
+#endif
