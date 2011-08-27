@@ -35,6 +35,8 @@ vars = {
 
   # Note: On most bots, clang is not checked out via DEPS but by
   # tools/clang/scripts/update.sh. The script reads this line here.
+  # Do NOT CHANGE this if you don't know what you're doing -- see
+  # http://code.google.com/p/chromium/wiki/UpdatingClang
   "clang_revision": "138188",
 }
 
