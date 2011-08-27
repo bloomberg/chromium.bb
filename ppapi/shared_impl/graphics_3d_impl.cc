@@ -58,6 +58,23 @@ int32_t Graphics3DImpl::SwapBuffers(PP_CompletionCallback callback) {
   return DoSwapBuffers();
 }
 
+void* Graphics3DImpl::MapTexSubImage2DCHROMIUM(GLenum target,
+                                               GLint level,
+                                               GLint xoffset,
+                                               GLint yoffset,
+                                               GLsizei width,
+                                               GLsizei height,
+                                               GLenum format,
+                                               GLenum type,
+                                               GLenum access) {
+  return gles2_impl_->MapTexSubImage2DCHROMIUM(
+      target, level, xoffset, yoffset, width, height, format, type, access);
+}
+
+void Graphics3DImpl::UnmapTexSubImage2DCHROMIUM(const void* mem) {
+  gles2_impl_->UnmapTexSubImage2DCHROMIUM(mem);
+}
+
 void Graphics3DImpl::SwapBuffersACK(int32_t pp_error) {
   DCHECK(HasPendingSwap());
   PP_RunAndClearCompletionCallback(&swap_callback_, pp_error);

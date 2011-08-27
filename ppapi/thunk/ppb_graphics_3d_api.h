@@ -7,6 +7,7 @@
 
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
+#include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -37,8 +38,17 @@ class PPAPI_THUNK_EXPORT PPB_Graphics3D_API {
   virtual PP_Graphics3DTrustedState FlushSyncFast(int32_t put_offset,
                                                   int32_t last_known_get) = 0;
 
-  // TODO(alokp): Implement GLESChromiumTextureMapping here after
-  // deprecating Context3D.
+  // GLESChromiumTextureMapping.
+  virtual void* MapTexSubImage2DCHROMIUM(GLenum target,
+                                         GLint level,
+                                         GLint xoffset,
+                                         GLint yoffset,
+                                         GLsizei width,
+                                         GLsizei height,
+                                         GLenum format,
+                                         GLenum type,
+                                         GLenum access) = 0;
+  virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) = 0;
 };
 
 }  // namespace thunk
