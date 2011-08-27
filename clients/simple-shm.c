@@ -205,7 +205,7 @@ create_display(void)
 
 	wl_display_get_fd(display->display, event_mask_update, display);
 	
-	while (display->xrgb_visual)
+	while (!display->xrgb_visual)
 		wl_display_roundtrip(display->display);
 
 	return display;
