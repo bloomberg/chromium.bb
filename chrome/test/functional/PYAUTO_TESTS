@@ -312,6 +312,9 @@
       '-ntp.NTPTest.testLaunchAppFullScreen',
       # Content history broken in omnibox.  crosbug.com/14416
       '-omnibox.OmniboxTest.testContentHistory',
+      # crosbug.com/19760
+      '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
+      '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       # onunload popups get created in the same window on chromeos
       # crosbug.com/14924
       '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
