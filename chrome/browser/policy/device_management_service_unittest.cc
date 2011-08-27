@@ -74,8 +74,6 @@ class DeviceManagementServiceTestBase : public TESTBASE {
   scoped_ptr<DeviceManagementBackend> backend_;
 
  private:
-  ScopedTestingBrowserProcess browser_process_;
-
   MessageLoopForUI loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;

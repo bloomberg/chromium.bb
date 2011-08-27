@@ -22,7 +22,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,7 +94,7 @@ struct TestShortcutInfo {
     "Test - site", "0,0", 1, 4},
 };
 
-class ShortcutsProviderTest : public TestingBrowserProcessTest,
+class ShortcutsProviderTest : public testing::Test,
                               public ACProviderListener {
  public:
   ShortcutsProviderTest();

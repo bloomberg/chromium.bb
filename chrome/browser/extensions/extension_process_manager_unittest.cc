@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/site_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,7 +12,7 @@
 namespace {
 
 // make the test a PlatformTest to setup autorelease pools properly on mac
-class ExtensionProcessManagerTest : public TestingBrowserProcessTest {
+class ExtensionProcessManagerTest : public testing::Test {
  public:
   static void SetUpTestCase() {
     ExtensionErrorReporter::Init(false);  // no noisy errors

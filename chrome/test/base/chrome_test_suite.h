@@ -8,38 +8,14 @@
 
 #include <string>
 
-#include "build/build_config.h"
-
-#include "base/file_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/path_service.h"
+#include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
 #include "chrome/app/scoped_ole_initializer.h"
-#include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/common/chrome_content_client.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "net/base/mock_host_resolver.h"
-#include "net/base/net_util.h"
 
 namespace base {
 class StatsTable;
 }
-
-// In many cases it may be not obvious that a test makes a real DNS lookup.
-// We generally don't want to rely on external DNS servers for our tests,
-// so this host resolver procedure catches external queries and returns a failed
-// lookup result.
-class LocalHostResolverProc : public net::HostResolverProc {
- public:
-  LocalHostResolverProc();
-  virtual ~LocalHostResolverProc();
-
-  virtual int Resolve(const std::string& host,
-                      net::AddressFamily address_family,
-                      net::HostResolverFlags host_resolver_flags,
-                      net::AddressList* addrlist,
-                      int* os_error);
-};
 
 class ChromeTestSuite : public base::TestSuite {
  public:
@@ -54,22 +30,13 @@ class ChromeTestSuite : public base::TestSuite {
     browser_dir_ = browser_dir;
   }
 
-  // Client for embedding content in Chrome.
-  chrome::ChromeContentClient chrome_content_client_;
-  chrome::ChromeContentBrowserClient chrome_browser_content_client_;
-
-  base::StatsTable* stats_table_;
-
-  // The name used for the stats file so it can be cleaned up on posix during
-  // test shutdown.
-  std::string stats_filename_;
-
   // Alternative path to browser binaries.
   FilePath browser_dir_;
 
+  std::string stats_filename_;
+  scoped_ptr<base::StatsTable> stats_table_;
+
   ScopedOleInitializer ole_initializer_;
-  scoped_refptr<LocalHostResolverProc> host_resolver_proc_;
-  net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
 };
 
 #endif  // CHROME_TEST_BASE_CHROME_TEST_SUITE_H_

@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
@@ -47,7 +46,7 @@ class MockSyncFrontend : public SyncFrontend {
 
 }  // namespace
 
-class SyncBackendHostTest : public TestingBrowserProcessTest {
+class SyncBackendHostTest : public testing::Test {
  protected:
   SyncBackendHostTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),

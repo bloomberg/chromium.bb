@@ -16,7 +16,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -126,8 +125,6 @@ class AutocompleteProviderTest : public testing::Test,
   virtual void Observe(int type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-  ScopedTestingBrowserProcess browser_process_;
 
   MessageLoopForUI message_loop_;
   scoped_ptr<AutocompleteController> controller_;
@@ -273,7 +270,7 @@ TEST_F(AutocompleteProviderTest, AllowExactKeywordMatch) {
   RunExactKeymatchTest(false);
 }
 
-typedef TestingBrowserProcessTest AutocompleteTest;
+typedef testing::Test AutocompleteTest;
 
 TEST_F(AutocompleteTest, InputType) {
   struct test_data {
@@ -463,8 +460,6 @@ TEST(AutocompleteInput, ParseForEmphasizeComponent) {
     { ASCIIToUTF16("view-source:view-source:http://example.com/"),
         Component(12, 11), kInvalidComponent }
   };
-
-  ScopedTestingBrowserProcess browser_process;
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     Component scheme, host;

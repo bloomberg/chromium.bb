@@ -4,7 +4,6 @@
 
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +20,7 @@ class MockChromeFrameAutomationProvider
                void (const IPC::Message& message));  // NOLINT
 };
 
-typedef TestingBrowserProcessTest AutomationProviderTest;
+typedef testing::Test AutomationProviderTest;
 
 TEST_F(AutomationProviderTest, TestInvalidChromeFrameMessage) {
   MessageLoop message_loop;

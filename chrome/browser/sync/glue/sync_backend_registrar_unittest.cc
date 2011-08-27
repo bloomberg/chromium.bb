@@ -7,7 +7,6 @@
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/sync/engine/test_user_share.h"
 #include "content/browser/browser_thread.h"
@@ -33,7 +32,7 @@ using syncable::ModelType;
 using syncable::ModelTypeFromInt;
 using syncable::ModelTypeSet;
 
-class SyncBackendRegistrarTest : public TestingBrowserProcessTest {
+class SyncBackendRegistrarTest : public testing::Test {
  protected:
   SyncBackendRegistrarTest() : ui_thread_(BrowserThread::UI, &loop_) {}
 

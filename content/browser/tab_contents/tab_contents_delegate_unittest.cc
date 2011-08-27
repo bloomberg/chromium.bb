@@ -62,7 +62,6 @@ class MockTabContentsDelegate : public TabContentsDelegate {
 
 TEST(TabContentsDelegateTest, UnregisterInDestructor) {
   MessageLoop loop(MessageLoop::TYPE_UI);
-  ScopedTestingBrowserProcess browser_process;
   scoped_ptr<MockTabContentsDelegate> delegate(new MockTabContentsDelegate());
   scoped_ptr<Profile> profile(new TestingProfile());
   scoped_ptr<TabContents> contents_a(

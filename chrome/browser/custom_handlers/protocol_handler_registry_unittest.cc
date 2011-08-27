@@ -13,7 +13,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -187,7 +186,7 @@ class QueryProtocolHandlerOnChange : public NotificationObserver {
   NotificationRegistrar notification_registrar_;
 };
 
-class ProtocolHandlerRegistryTest : public TestingBrowserProcessTest {
+class ProtocolHandlerRegistryTest : public testing::Test {
  protected:
   ProtocolHandlerRegistryTest()
       : test_protocol_handler_(CreateProtocolHandler("test", "test")) {}

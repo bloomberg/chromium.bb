@@ -7,13 +7,12 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/common/about_handler.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef TestingBrowserProcessTest BrowserAboutHandlerTest;
+typedef testing::Test BrowserAboutHandlerTest;
 
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
   std::string chrome_prefix(chrome::kChromeUIScheme);

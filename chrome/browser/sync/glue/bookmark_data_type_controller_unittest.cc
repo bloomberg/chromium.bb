@@ -17,7 +17,6 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 #include "content/common/notification_source.h"
@@ -45,7 +44,7 @@ class BookmarkModelMock : public BookmarkModel {
   MOCK_CONST_METHOD0(IsLoaded, bool(void));
 };
 
-class BookmarkDataTypeControllerTest : public TestingBrowserProcessTest {
+class BookmarkDataTypeControllerTest : public testing::Test {
  public:
   BookmarkDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}

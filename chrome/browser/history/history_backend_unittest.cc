@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -69,7 +68,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendTestDelegate);
 };
 
-class HistoryBackendTest : public TestingBrowserProcessTest {
+class HistoryBackendTest : public testing::Test {
  public:
   HistoryBackendTest() : bookmark_model_(NULL), loaded_(false) {}
   virtual ~HistoryBackendTest() {

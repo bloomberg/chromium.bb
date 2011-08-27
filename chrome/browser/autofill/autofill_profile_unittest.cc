@@ -11,7 +11,6 @@
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/common/guid.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +24,7 @@ bool UpdateProfileLabel(AutofillProfile *profile) {
 
 }  // namespace
 
-typedef TestingBrowserProcessTest AutofillProfileTest;
+typedef testing::Test AutofillProfileTest;
 
 // Tests different possibilities for summary string generation.
 // Based on existence of first name, last name, and address line 1.

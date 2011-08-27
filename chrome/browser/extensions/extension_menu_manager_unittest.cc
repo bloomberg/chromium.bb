@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -31,7 +30,7 @@ using testing::Return;
 using testing::SaveArg;
 
 // Base class for tests.
-class ExtensionMenuManagerTest : public TestingBrowserProcessTest {
+class ExtensionMenuManagerTest : public testing::Test {
  public:
   ExtensionMenuManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

@@ -13,7 +13,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -24,7 +23,7 @@ using ::testing::_;
 
 namespace content_settings {
 
-class PolicyDefaultProviderTest : public TestingBrowserProcessTest {
+class PolicyDefaultProviderTest : public testing::Test {
  public:
   PolicyDefaultProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {
@@ -141,7 +140,7 @@ TEST_F(PolicyDefaultProviderTest, AutoSelectCertificate) {
   provider.ShutdownOnUIThread();
 }
 
-class PolicyProviderTest : public TestingBrowserProcessTest {
+class PolicyProviderTest : public testing::Test {
  public:
   PolicyProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {

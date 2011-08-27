@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/instant/promo_counter.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef TestingBrowserProcessTest PromoCounterTest;
+typedef testing::Test PromoCounterTest;
 
 // Makes sure ShouldShow returns false after the max number of days.
 TEST_F(PromoCounterTest, MaxTimeElapsed) {

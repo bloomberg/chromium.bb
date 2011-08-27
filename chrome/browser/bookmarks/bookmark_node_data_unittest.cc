@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -16,7 +15,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
-class BookmarkNodeDataTest : public TestingBrowserProcessTest {
+class BookmarkNodeDataTest : public testing::Test {
  public:
   BookmarkNodeDataTest()
       : ui_thread_(BrowserThread::UI, &loop_),

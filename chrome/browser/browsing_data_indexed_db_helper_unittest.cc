@@ -6,11 +6,11 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
-#include "chrome/test/base/testing_browser_process_test.h"
+#include "chrome/test/base/testing_profile.h"
 
 namespace {
 
-typedef TestingBrowserProcessTest CannedBrowsingDataIndexedDBHelperTest;
+typedef testing::Test CannedBrowsingDataIndexedDBHelperTest;
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
   const GURL origin("http://host1:1/");

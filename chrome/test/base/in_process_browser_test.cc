@@ -95,7 +95,11 @@ void InProcessBrowserTest::SetUp() {
   ASSERT_TRUE(CreateUserDataDirectory())
       << "Could not create user data directory.";
 
-  DCHECK(!g_browser_process);
+  // Undo TestingBrowserProcess creation in ChromeTestSuite.
+  // TODO(phajdan.jr): Extract a smaller test suite so we don't need this.
+  DCHECK(g_browser_process);
+  delete g_browser_process;
+  g_browser_process = NULL;
 
   // Allow subclasses the opportunity to make changes to the default user data
   // dir before running any tests.

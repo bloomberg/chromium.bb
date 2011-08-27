@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +43,7 @@ void ExpectAppsPromoHidden(PrefService* prefs) {
 
 } // namespace
 
-class ExtensionAppsPromo : public TestingBrowserProcessTest {
+class ExtensionAppsPromo : public testing::Test {
  public:
   TestingPrefService* prefs() { return &prefs_; }
   AppsPromo* apps_promo() { return &apps_promo_; }
@@ -60,7 +61,7 @@ class ExtensionAppsPromo : public TestingBrowserProcessTest {
 };
 
 ExtensionAppsPromo::ExtensionAppsPromo()
-    : local_state_(testing_browser_process_.get()),
+    : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
       apps_promo_(&prefs_) {
 }
 

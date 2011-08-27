@@ -112,7 +112,6 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
 
 // Test whether the function returns language name for non-ambiguous languages.
 TEST(InputMethodMenuTest, GetTextForMenuTest) {
-  ScopedTestingBrowserProcess browser_process;
   // For most languages input method or keyboard layout name is returned.
   // See below for exceptions.
   {

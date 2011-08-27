@@ -19,7 +19,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -58,7 +57,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
   std::set<Balloon*> balloons_;
 };
 
-class DesktopNotificationsTest : public TestingBrowserProcessTest {
+class DesktopNotificationsTest : public testing::Test {
  public:
   DesktopNotificationsTest();
   virtual ~DesktopNotificationsTest();

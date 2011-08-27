@@ -245,7 +245,7 @@ class MockPaintingObserver : public NotificationObserver {
 
 // RenderWidgetHostTest --------------------------------------------------------
 
-class RenderWidgetHostTest : public TestingBrowserProcessTest {
+class RenderWidgetHostTest : public testing::Test {
  public:
   RenderWidgetHostTest() : process_(NULL) {
   }

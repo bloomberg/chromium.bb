@@ -5,12 +5,12 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
-class DOMStorageTest : public TestingBrowserProcessTest {
+class DOMStorageTest : public testing::Test {
  public:
   DOMStorageTest()
       : message_loop_(MessageLoop::TYPE_IO),

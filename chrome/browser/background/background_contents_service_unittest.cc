@@ -16,13 +16,12 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-class BackgroundContentsServiceTest : public TestingBrowserProcessTest {
+class BackgroundContentsServiceTest : public testing::Test {
  public:
   BackgroundContentsServiceTest() {}
   ~BackgroundContentsServiceTest() {}

@@ -51,7 +51,7 @@ class PrerenderTrackerTest : public testing::Test {
   }
 
   PrerenderTracker* prerender_tracker() {
-    return browser_process_.get()->prerender_tracker();
+    return g_browser_process->prerender_tracker();
   }
 
   int GetCurrentStatus(int child_id, int route_id) {
@@ -69,7 +69,6 @@ class PrerenderTrackerTest : public testing::Test {
   }
 
  private:
-  ScopedTestingBrowserProcess browser_process_;
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;

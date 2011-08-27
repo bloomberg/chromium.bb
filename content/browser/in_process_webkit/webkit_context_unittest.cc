@@ -30,7 +30,6 @@ class MockDOMStorageContext : public DOMStorageContext {
 };
 
 TEST(WebKitContextTest, Basic) {
-  ScopedTestingBrowserProcess browser_process;
   TestingProfile profile;
   scoped_refptr<WebKitContext> context1(new WebKitContext(
           profile.IsOffTheRecord(), profile.GetPath(),
@@ -48,8 +47,6 @@ TEST(WebKitContextTest, Basic) {
 }
 
 TEST(WebKitContextTest, PurgeMemory) {
-  ScopedTestingBrowserProcess browser_process;
-
   // Start up a WebKit thread for the WebKitContext to call the
   // DOMStorageContext on.
   MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);

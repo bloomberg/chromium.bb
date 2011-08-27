@@ -9,8 +9,8 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sync/protocol/search_engine_specifics.pb.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 
@@ -79,7 +79,7 @@ class TestChangeProcessor : public SyncChangeProcessor {
   DISALLOW_COPY_AND_ASSIGN(TestChangeProcessor);
 };
 
-class TemplateURLServiceSyncTest : public TestingBrowserProcessTest {
+class TemplateURLServiceSyncTest : public testing::Test {
  public:
   typedef TemplateURLService::SyncDataMap SyncDataMap;
 

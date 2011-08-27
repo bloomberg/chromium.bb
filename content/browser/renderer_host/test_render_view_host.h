@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/common/page_transition_types.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gfx {
@@ -283,7 +282,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
 
 // RenderViewHostTestHarness ---------------------------------------------------
 
-class RenderViewHostTestHarness : public TestingBrowserProcessTest {
+class RenderViewHostTestHarness : public testing::Test {
  public:
   RenderViewHostTestHarness();
   virtual ~RenderViewHostTestHarness();

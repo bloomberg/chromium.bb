@@ -6,17 +6,20 @@
 
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/base/testing_browser_process_test.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
 
-class ProfileInfoCacheUnittests : public TestingBrowserProcessTest {
+class ProfileInfoCacheUnittests : public testing::Test {
  protected:
-  ProfileInfoCacheUnittests() : local_state_(testing_browser_process_.get()) {
+  ProfileInfoCacheUnittests()
+      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
     cache_.reset(new ProfileInfoCache(local_state_.Get(), GetUserDataDir()));
   }
 

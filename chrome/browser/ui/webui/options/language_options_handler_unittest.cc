@@ -8,7 +8,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -92,8 +91,6 @@ TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
 }
 
 TEST(LanguageOptionsHandlerTest, GetLanguageList) {
-  ScopedTestingBrowserProcess browser_process;
-
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       chromeos::CrosLanguageOptionsHandler::GetLanguageList(descriptors));

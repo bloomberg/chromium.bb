@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -46,7 +45,7 @@ typedef scoped_ptr<FileSystemInfoList> ScopedFileSystemInfoList;
 // called. For this to work, you'll need to ensure that each async call is
 // implemented as a class method that that calls Notify() at an appropriate
 // point.
-class BrowsingDataFileSystemHelperTest : public TestingBrowserProcessTest {
+class BrowsingDataFileSystemHelperTest : public testing::Test {
  public:
   BrowsingDataFileSystemHelperTest()
       : helper_(BrowsingDataFileSystemHelper::Create(&profile_)),

@@ -9,7 +9,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +16,7 @@
 
 // Our test class that takes care of managing the necessary threads for loading
 // extension icons, and waiting for those loads to happen.
-class ExtensionIconManagerTest : public TestingBrowserProcessTest {
+class ExtensionIconManagerTest : public testing::Test {
  public:
   ExtensionIconManagerTest() :
       unwaited_image_loads_(0),

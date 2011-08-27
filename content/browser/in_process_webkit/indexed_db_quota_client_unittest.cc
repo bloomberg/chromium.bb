@@ -9,7 +9,6 @@
 #include "base/memory/scoped_callback_factory.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/in_process_webkit/indexed_db_context.h"
 #include "content/browser/in_process_webkit/indexed_db_quota_client.h"
@@ -24,7 +23,7 @@ static const quota::StorageType kPerm = quota::kStorageTypePersistent;
 using namespace webkit_database;
 
 // Base class for our test fixtures.
-class IndexedDBQuotaClientTest : public TestingBrowserProcessTest {
+class IndexedDBQuotaClientTest : public testing::Test {
  public:
   const GURL kOriginA;
   const GURL kOriginB;

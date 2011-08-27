@@ -9,12 +9,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/browser/ui/intents/intents_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 
-class IntentsModelTest : public TestingBrowserProcessTest {
+class IntentsModelTest : public testing::Test {
  public:
   IntentsModelTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

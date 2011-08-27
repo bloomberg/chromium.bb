@@ -13,13 +13,12 @@
 #include "chrome/browser/extensions/external_policy_extension_loader.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ExternalPolicyExtensionProviderTest : public TestingBrowserProcessTest {
+class ExternalPolicyExtensionProviderTest : public testing::Test {
  public:
   ExternalPolicyExtensionProviderTest()
       : loop_(MessageLoop::TYPE_IO),

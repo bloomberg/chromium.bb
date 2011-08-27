@@ -9,10 +9,9 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TemplateURLParserTest : public TestingBrowserProcessTest {
+class TemplateURLParserTest : public testing::Test {
  public:
   TemplateURLParserTest() : parse_result_(true) {
   }

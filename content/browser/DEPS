@@ -6,5 +6,6 @@ include_rules = [
   # for more information.
 
   # ONLY USED BY TESTS
+	"+chrome/browser/browser_process.h",
   "+chrome/browser/ui/browser.h",
 ]

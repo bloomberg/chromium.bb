@@ -16,7 +16,6 @@
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/firefox2_importer.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -41,10 +40,10 @@ void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
 
 }  // namespace
 
-class BookmarkHTMLWriterTest : public TestingBrowserProcessTest {
+class BookmarkHTMLWriterTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    TestingBrowserProcessTest::SetUp();
+    testing::Test::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     path_ = temp_dir_.path().AppendASCII("bookmarks.html");
   }

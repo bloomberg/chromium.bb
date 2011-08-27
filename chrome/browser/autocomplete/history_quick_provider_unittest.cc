@@ -21,7 +21,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,7 +71,7 @@ struct TestURLInfo {
    "Dogs & Cats & Mice & Other Animals", 1, 1, 0},
 };
 
-class HistoryQuickProviderTest : public TestingBrowserProcessTest,
+class HistoryQuickProviderTest : public testing::Test,
                                  public ACProviderListener {
  public:
   HistoryQuickProviderTest()

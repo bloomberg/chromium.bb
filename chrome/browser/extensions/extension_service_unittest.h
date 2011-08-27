@@ -12,11 +12,10 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ExtensionServiceTestBase : public TestingBrowserProcessTest {
+class ExtensionServiceTestBase : public testing::Test {
  public:
   ExtensionServiceTestBase();
   virtual ~ExtensionServiceTestBase();

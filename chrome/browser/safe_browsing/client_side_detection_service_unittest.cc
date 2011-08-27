@@ -18,7 +18,6 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/url_fetcher.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -63,7 +62,7 @@ ACTION(QuitCurrentMessageLoop) {
 
 }  // namespace
 
-class ClientSideDetectionServiceTest : public TestingBrowserProcessTest {
+class ClientSideDetectionServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
     file_thread_.reset(new BrowserThread(BrowserThread::FILE, &msg_loop_));

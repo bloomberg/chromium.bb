@@ -13,7 +13,6 @@
 #include "chrome/browser/autofill/data_driven_test.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
@@ -113,7 +112,7 @@ const std::vector<AutofillProfile*>& PersonalDataManagerMock::web_profiles()
 // corresponding output file is a dump of the saved profiles that result from
 // importing the input profiles. The output file format is identical to the
 // input format.
-class AutofillMergeTest : public TestingBrowserProcessTest,
+class AutofillMergeTest : public testing::Test,
                           public DataDrivenTest {
  protected:
   AutofillMergeTest();

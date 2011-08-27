@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -53,7 +52,7 @@ class MockTableModelObserver : public ui::TableModelObserver {
 
 using ::testing::InSequence;
 
-class PluginExceptionsTableModelTest : public TestingBrowserProcessTest {
+class PluginExceptionsTableModelTest : public testing::Test {
  public:
   PluginExceptionsTableModelTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

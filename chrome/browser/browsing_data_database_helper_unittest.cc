@@ -5,13 +5,12 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 
 #include "base/file_util.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-typedef TestingBrowserProcessTest CannedBrowsingDataDatabaseTest;
+typedef testing::Test CannedBrowsingDataDatabaseTest;
 
 TEST_F(CannedBrowsingDataDatabaseTest, Empty) {
   TestingProfile profile;

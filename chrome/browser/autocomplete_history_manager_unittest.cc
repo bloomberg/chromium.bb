@@ -11,7 +11,6 @@
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"

@@ -5,21 +5,29 @@
 #include "chrome/test/base/chrome_test_suite.h"
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/stats_table.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/common/content_paths.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"
 #endif
@@ -33,7 +41,9 @@
 #include "base/shared_memory.h"
 #endif
 
-static void RemoveSharedMemoryFile(const std::string& filename) {
+namespace {
+
+void RemoveSharedMemoryFile(const std::string& filename) {
   // Stats uses SharedMemory under the hood. On posix, this results in a file
   // on disk.
 #if defined(OS_POSIX)
@@ -42,49 +52,108 @@ static void RemoveSharedMemoryFile(const std::string& filename) {
 #endif
 }
 
-LocalHostResolverProc::LocalHostResolverProc()
-    : HostResolverProc(NULL) {
-}
-
-LocalHostResolverProc::~LocalHostResolverProc() {
-}
-
-int LocalHostResolverProc::Resolve(const std::string& host,
-                                   net::AddressFamily address_family,
-                                   net::HostResolverFlags host_resolver_flags,
-                                   net::AddressList* addrlist,
-                                   int* os_error) {
-  const char* kLocalHostNames[] = {"localhost", "127.0.0.1", "::1"};
-  bool local = false;
-
-  if (host == net::GetHostName()) {
-    local = true;
-  } else {
-    for (size_t i = 0; i < arraysize(kLocalHostNames); i++)
-      if (host == kLocalHostNames[i]) {
-        local = true;
-        break;
-      }
+// In many cases it may be not obvious that a test makes a real DNS lookup.
+// We generally don't want to rely on external DNS servers for our tests,
+// so this host resolver procedure catches external queries and returns a failed
+// lookup result.
+class LocalHostResolverProc : public net::HostResolverProc {
+ public:
+  LocalHostResolverProc() : HostResolverProc(NULL) {
   }
 
-  // To avoid depending on external resources and to reduce (if not preclude)
-  // network interactions from tests, we simulate failure for non-local DNS
-  // queries, rather than perform them.
-  // If you really need to make an external DNS query, use
-  // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
-  if (!local) {
-    DVLOG(1) << "To avoid external dependencies, simulating failure for "
-                "external DNS lookup of " << host;
-    return net::ERR_NOT_IMPLEMENTED;
+  virtual int Resolve(const std::string& host,
+                      net::AddressFamily address_family,
+                      net::HostResolverFlags host_resolver_flags,
+                      net::AddressList* addrlist,
+                      int* os_error) {
+    const char* kLocalHostNames[] = {"localhost", "127.0.0.1", "::1"};
+    bool local = false;
+
+    if (host == net::GetHostName()) {
+      local = true;
+    } else {
+      for (size_t i = 0; i < arraysize(kLocalHostNames); i++)
+        if (host == kLocalHostNames[i]) {
+          local = true;
+          break;
+        }
+    }
+
+    // To avoid depending on external resources and to reduce (if not preclude)
+    // network interactions from tests, we simulate failure for non-local DNS
+    // queries, rather than perform them.
+    // If you really need to make an external DNS query, use
+    // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
+    if (!local) {
+      DVLOG(1) << "To avoid external dependencies, simulating failure for "
+          "external DNS lookup of " << host;
+      return net::ERR_NOT_IMPLEMENTED;
+    }
+
+    return ResolveUsingPrevious(host, address_family, host_resolver_flags,
+                                addrlist, os_error);
+  }
+};
+
+class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
+ public:
+  ChromeTestSuiteInitializer() {
   }
 
-  return ResolveUsingPrevious(host, address_family, host_resolver_flags,
-                              addrlist, os_error);
-}
+  virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
+    DCHECK(!g_browser_process);
+    g_browser_process = new TestingBrowserProcess;
+
+    DCHECK(!content::GetContentClient());
+    content_client_.reset(new chrome::ChromeContentClient);
+    browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
+    content_client_->set_browser(browser_content_client_.get());
+    content::SetContentClient(content_client_.get());
+
+    SetUpHostResolver();
+  }
+
+  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
+    if (g_browser_process) {
+      delete g_browser_process;
+      g_browser_process = NULL;
+    }
+
+    DCHECK_EQ(content_client_.get(), content::GetContentClient());
+    browser_content_client_.reset();
+    content_client_.reset();
+    content::SetContentClient(NULL);
+
+    TearDownHostResolver();
+  }
+
+ private:
+  void SetUpHostResolver() {
+    host_resolver_proc_ = new LocalHostResolverProc;
+    scoped_host_resolver_proc_.reset(
+        new net::ScopedDefaultHostResolverProc(host_resolver_proc_.get()));
+  }
+
+  void TearDownHostResolver() {
+    scoped_host_resolver_proc_.reset();
+    host_resolver_proc_ = NULL;
+  }
+
+  scoped_ptr<BrowserProcess> browser_process_;
+
+  scoped_ptr<chrome::ChromeContentClient> content_client_;
+  scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
+
+  scoped_refptr<LocalHostResolverProc> host_resolver_proc_;
+  scoped_ptr<net::ScopedDefaultHostResolverProc> scoped_host_resolver_proc_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeTestSuiteInitializer);
+};
+
+}  // namespace
 
 ChromeTestSuite::ChromeTestSuite(int argc, char** argv)
-    : base::TestSuite(argc, argv),
-      stats_table_(NULL) {
+    : base::TestSuite(argc, argv) {
 }
 
 ChromeTestSuite::~ChromeTestSuite() {
@@ -99,13 +168,7 @@ void ChromeTestSuite::Initialize() {
 
   base::TestSuite::Initialize();
 
-  // Initialize the content client which that code uses to talk to Chrome.
-  content::SetContentClient(&chrome_content_client_);
-  content::GetContentClient()->set_browser(&chrome_browser_content_client_);
-
   chrome::RegisterChromeSchemes();
-  host_resolver_proc_ = new LocalHostResolverProc();
-  scoped_host_resolver_proc_.Init(host_resolver_proc_.get());
 
   chrome::RegisterPathProvider();
   content::RegisterPathProvider();
@@ -133,19 +196,20 @@ void ChromeTestSuite::Initialize() {
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
   ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
 
-  // initialize the global StatsTable for unit_tests (make sure the file
-  // doesn't exist before opening it so the test gets a clean slate)
-  stats_filename_ = "unit_tests";
-  std::string pid_string = base::StringPrintf("-%d", base::GetCurrentProcId());
-  stats_filename_ += pid_string;
-  RemoveSharedMemoryFile(stats_filename_);
-  stats_table_ = new base::StatsTable(stats_filename_, 20, 200);
-  base::StatsTable::set_current(stats_table_);
-
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
   // Turn of GPU compositing in browser during unit tests.
   views::View::set_use_acceleration_when_possible(false);
 #endif
+
+  stats_filename_ = base::StringPrintf("unit_tests-%d",
+                                       base::GetCurrentProcId());
+  RemoveSharedMemoryFile(stats_filename_);
+  stats_table_.reset(new base::StatsTable(stats_filename_, 20, 200));
+  base::StatsTable::set_current(stats_table_.get());
+
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(new ChromeTestSuiteInitializer);
 }
 
 void ChromeTestSuite::Shutdown() {
@@ -155,9 +219,8 @@ void ChromeTestSuite::Shutdown() {
   base::mac::SetOverrideAppBundle(NULL);
 #endif
 
-  // Tear down shared StatsTable; prevents unit_tests from leaking it.
   base::StatsTable::set_current(NULL);
-  delete stats_table_;
+  stats_table_.reset();
   RemoveSharedMemoryFile(stats_filename_);
 
   base::TestSuite::Shutdown();

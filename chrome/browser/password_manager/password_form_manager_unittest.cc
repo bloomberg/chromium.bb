@@ -9,13 +9,12 @@
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "webkit/glue/password_form.h"
 
 using webkit_glue::PasswordForm;
 
-class PasswordFormManagerTest : public TestingBrowserProcessTest {
+class PasswordFormManagerTest : public testing::Test {
  public:
   PasswordFormManagerTest() {
   }

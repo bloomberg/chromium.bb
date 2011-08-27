@@ -42,8 +42,6 @@ class BrowserTestHelper {
   void CloseBrowserWindow();
 
  private:
-  ScopedTestingBrowserProcess browser_process_;
-
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   MessageLoopForUI message_loop_;

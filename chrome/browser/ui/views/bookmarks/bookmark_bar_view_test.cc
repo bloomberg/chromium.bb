@@ -288,7 +288,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   gfx::Size bb_view_pref_;
-  ScopedTestingBrowserProcess testing_browser_process_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   BrowserThread ui_thread_;

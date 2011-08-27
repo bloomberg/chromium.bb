@@ -32,7 +32,6 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +51,7 @@
 #define MAYBE(x) x
 #endif
 
-class ImporterTest : public TestingBrowserProcessTest {
+class ImporterTest : public testing::Test {
  public:
   ImporterTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

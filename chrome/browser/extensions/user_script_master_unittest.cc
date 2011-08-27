@@ -13,7 +13,6 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_registrar.h"
@@ -32,7 +31,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 // Test bringing up a master on a specific directory, putting a script
 // in there, etc.
 
-class UserScriptMasterTest : public TestingBrowserProcessTest,
+class UserScriptMasterTest : public testing::Test,
                              public NotificationObserver {
  public:
   UserScriptMasterTest()

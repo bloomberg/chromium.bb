@@ -18,7 +18,6 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/content_notification_types.h"
@@ -147,7 +146,7 @@ class MockCloudPrintDataSenderHelper : public CloudPrintDataSenderHelper {
                                             const Value& arg2));
 };
 
-class CloudPrintURLTest : public TestingBrowserProcessTest {
+class CloudPrintURLTest : public testing::Test {
  public:
   CloudPrintURLTest() {}
 

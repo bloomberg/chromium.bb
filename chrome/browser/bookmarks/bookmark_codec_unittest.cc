@@ -14,7 +14,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_test_utils.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +37,7 @@ BookmarkNode* AsMutable(const BookmarkNode* node) {
 
 }  // namespace
 
-class BookmarkCodecTest : public TestingBrowserProcessTest {
+class BookmarkCodecTest : public testing::Test {
  protected:
   // Helpers to create bookmark models with different data.
   BookmarkModel* CreateTestModel1() {

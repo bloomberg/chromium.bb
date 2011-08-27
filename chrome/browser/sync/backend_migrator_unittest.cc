@@ -8,7 +8,6 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +24,7 @@ using sessions::ErrorCounters;
 using sessions::SyncerStatus;
 using sessions::SyncSessionSnapshot;
 
-class BackendMigratorTest : public TestingBrowserProcessTest {
+class BackendMigratorTest : public testing::Test {
  public:
   BackendMigratorTest() { }
   virtual ~BackendMigratorTest() { }

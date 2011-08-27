@@ -148,20 +148,4 @@ class TestingBrowserProcess : public BrowserProcess {
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };
 
-// Scoper to put a TestingBrowserProcess in |g_browser_process|.
-class ScopedTestingBrowserProcess {
- public:
-  ScopedTestingBrowserProcess();
-  ~ScopedTestingBrowserProcess();
-
-  TestingBrowserProcess* get() {
-    return &browser_process_;
-  }
-
- private:
-  TestingBrowserProcess browser_process_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestingBrowserProcess);
-};
-
 #endif  // CHROME_TEST_BASE_TESTING_BROWSER_PROCESS_H_

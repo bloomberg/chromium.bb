@@ -228,8 +228,6 @@ class CloudPolicySubsystemTestBase : public TESTBASE {
         << "No enough requests were fired during the test run.";
   }
 
-  ScopedTestingBrowserProcess browser_process_;
-
   ScopedTempDir temp_user_data_dir_;
 
   MessageLoop loop_;

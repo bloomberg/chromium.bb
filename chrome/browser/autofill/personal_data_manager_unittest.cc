@@ -81,7 +81,6 @@ class PersonalDataManagerTest : public testing::Test {
     MessageLoop::current()->Run();
   }
 
-  ScopedTestingBrowserProcess browser_process_;
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread db_thread_;

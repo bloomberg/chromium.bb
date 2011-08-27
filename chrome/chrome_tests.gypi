@@ -180,7 +180,6 @@
         'test/base/test_url_request_context_getter.h',
         'test/base/testing_browser_process.cc',
         'test/base/testing_browser_process.h',
-        'test/base/testing_browser_process_test.h',
         'test/base/testing_pref_service.cc',
         'test/base/testing_pref_service.h',
         'test/base/testing_profile.cc',

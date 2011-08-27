@@ -29,7 +29,6 @@ TEST(UserControllerTest, GetNameTooltipExistingUser) {
   // We need to have NotificationService and g_browser_process initialized
   // before we create UserController for existing user.
   // Otherwise we crash with either SEGFAULT or DCHECK.
-  ScopedTestingBrowserProcess browser_process;
   UserManager::User existing_user;
   existing_user.set_email("someordinaryuser@domain.com");
   UserController existing_user_controller(NULL, existing_user);

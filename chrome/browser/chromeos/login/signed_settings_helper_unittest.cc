@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +46,7 @@ class MockSignedSettingsHelperCallback : public SignedSettingsHelper::Callback {
       const std::string& value));
 };
 
-class SignedSettingsHelperTest : public TestingBrowserProcessTest,
+class SignedSettingsHelperTest : public testing::Test,
                                  public SignedSettingsHelper::TestDelegate {
  public:
   SignedSettingsHelperTest()

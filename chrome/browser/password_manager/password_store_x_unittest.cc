@@ -320,8 +320,6 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
     }
   }
 
-  ScopedTestingBrowserProcess browser_process_;
-
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread db_thread_;  // PasswordStore, WDS schedule work on this thread.

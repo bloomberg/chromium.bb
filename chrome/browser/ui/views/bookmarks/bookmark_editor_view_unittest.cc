@@ -10,7 +10,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_editor_view.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +19,7 @@ using base::TimeDelta;
 
 // Base class for bookmark editor tests. Creates a BookmarkModel and populates
 // it with test data.
-class BookmarkEditorViewTest : public TestingBrowserProcessTest {
+class BookmarkEditorViewTest : public testing::Test {
  public:
   BookmarkEditorViewTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

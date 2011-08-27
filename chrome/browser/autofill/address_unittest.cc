@@ -8,10 +8,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address.h"
 #include "chrome/browser/autofill/autofill_type.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef TestingBrowserProcessTest AddressTest;
+typedef testing::Test AddressTest;
 
 // Test that the getters and setters for country code are working.
 TEST_F(AddressTest, CountryCode) {

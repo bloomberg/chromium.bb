@@ -6,7 +6,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "grit/theme_resources.h"
@@ -34,7 +33,7 @@ class MockThemeSource : public ThemeSource {
   ~MockThemeSource() {}
 };
 
-class WebUISourcesTest : public TestingBrowserProcessTest {
+class WebUISourcesTest : public testing::Test {
  public:
   WebUISourcesTest() : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
 

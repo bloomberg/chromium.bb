@@ -135,7 +135,6 @@ TEST(AutocompleteEditTest, AdjustTextForCopy) {
     // Tests that we don't get double http if the user manually inserts http.
     { "a.de/", 0, false, "http://a.de/", "http://a.de/", true, "http://a.de/" },
   };
-  ScopedTestingBrowserProcess browser_process;
   TestingOmniboxView view;
   TestingAutocompleteEditController controller;
   TestingProfile profile;

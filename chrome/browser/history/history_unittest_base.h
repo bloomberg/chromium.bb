@@ -6,13 +6,12 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_UNITTEST_BASE_H_
 
 #include "base/file_util.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace history {
 // A base class for a history unit test. It provides the common test methods.
 //
-class HistoryUnitTestBase : public TestingBrowserProcessTest {
+class HistoryUnitTestBase : public testing::Test {
  public:
   virtual ~HistoryUnitTestBase();
 

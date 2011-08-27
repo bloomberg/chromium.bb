@@ -14,7 +14,6 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/test/base/signaling_task.h"
 #include "chrome/test/base/test_notification_tracker.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -57,7 +56,7 @@ class TokenFailedTracker : public TestNotificationTracker {
   TokenService::TokenRequestFailedDetails details_;
 };
 
-class TokenServiceTestHarness : public TestingBrowserProcessTest {
+class TokenServiceTestHarness : public testing::Test {
  public:
   TokenServiceTestHarness();
   virtual ~TokenServiceTestHarness();

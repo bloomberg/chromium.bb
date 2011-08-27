@@ -7,10 +7,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class WebIntentsRegistryTest : public TestingBrowserProcessTest {
+class WebIntentsRegistryTest : public testing::Test {
  public:
    WebIntentsRegistryTest()
      : ui_thread_(BrowserThread::UI, &message_loop_),

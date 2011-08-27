@@ -8,11 +8,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class BackgroundModeManagerTest : public TestingBrowserProcessTest {
+class BackgroundModeManagerTest : public testing::Test {
  public:
   BackgroundModeManagerTest() {}
   ~BackgroundModeManagerTest() {}

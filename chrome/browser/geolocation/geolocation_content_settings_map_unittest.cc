@@ -10,7 +10,6 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_registrar.h"
@@ -60,7 +59,7 @@ void MockGeolocationSettingsObserver::Observe(
                          GURL("http://foo.random-hostname.com/"));
 }
 
-class GeolocationContentSettingsMapTests : public TestingBrowserProcessTest {
+class GeolocationContentSettingsMapTests : public testing::Test {
  public:
   GeolocationContentSettingsMapTests()
     : ui_thread_(BrowserThread::UI, &message_loop_) {

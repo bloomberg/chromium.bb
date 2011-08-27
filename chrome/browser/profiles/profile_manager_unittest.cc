@@ -10,6 +10,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -20,7 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
@@ -34,10 +35,10 @@ Profile* g_created_profile;
 
 }  // namespace
 
-class ProfileManagerTest : public TestingBrowserProcessTest {
+class ProfileManagerTest : public testing::Test {
  protected:
   ProfileManagerTest()
-      : local_state_(testing_browser_process_.get()),
+      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
         extension_event_router_forwarder_(new ExtensionEventRouterForwarder),
         ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB, &message_loop_),
@@ -48,7 +49,8 @@ class ProfileManagerTest : public TestingBrowserProcessTest {
     base::SystemMonitor::AllocateSystemIOPorts();
 #endif
     system_monitor_dummy_.reset(new base::SystemMonitor);
-    testing_browser_process_.get()->SetIOThread(&io_thread_);
+    static_cast<TestingBrowserProcess*>(g_browser_process)->SetIOThread(
+        &io_thread_);
   }
 
   virtual void SetUp() {

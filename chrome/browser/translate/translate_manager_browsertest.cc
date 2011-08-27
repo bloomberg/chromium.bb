@@ -869,9 +869,8 @@ TEST_F(TranslateManagerTest, ServerReportsUnsupportedLanguage) {
 // Tests that no translate infobar is shown when Chrome is in a language that
 // the translate server does not support.
 TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
-  TestingBrowserProcess* browser_process = testing_browser_process_.get();
-  std::string original_lang = browser_process->GetApplicationLocale();
-  browser_process->SetApplicationLocale("qbz");
+  std::string original_lang = g_browser_process->GetApplicationLocale();
+  g_browser_process->SetApplicationLocale("qbz");
 
   // Make sure that the accept language list only contains unsupported languages
   Profile* profile = Profile::FromBrowserContext(contents()->browser_context());
@@ -885,15 +884,14 @@ TEST_F(TranslateManagerTest, UnsupportedUILanguage) {
   // No info-bar should be shown.
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
-  browser_process->SetApplicationLocale(original_lang);
+  g_browser_process->SetApplicationLocale(original_lang);
 }
 
 // Tests that the first supported accept language is selected
 TEST_F(TranslateManagerTest, TranslateAcceptLanguage) {
   // Set locate to non-existant language
-  TestingBrowserProcess* browser_process = testing_browser_process_.get();
-  std::string original_lang = browser_process->GetApplicationLocale();
-  browser_process->SetApplicationLocale("qbz");
+  std::string original_lang = g_browser_process->GetApplicationLocale();
+  g_browser_process->SetApplicationLocale("qbz");
 
   // Set Qbz and French as the only accepted languages
   Profile* profile = Profile::FromBrowserContext(contents()->browser_context());

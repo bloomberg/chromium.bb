@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -16,7 +15,7 @@
 
 namespace {
 
-class BrowsingDataCookieHelperTest : public TestingBrowserProcessTest {
+class BrowsingDataCookieHelperTest : public testing::Test {
  public:
   void SetUpOnIOThread(base::WaitableEvent* io_setup_complete) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

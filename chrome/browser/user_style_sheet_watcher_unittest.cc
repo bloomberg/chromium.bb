@@ -16,8 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(UserStyleSheetWatcherTest, StyleLoad) {
-  ScopedTestingBrowserProcess browser_process;
-
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
 

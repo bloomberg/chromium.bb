@@ -6,11 +6,12 @@
 #include "base/file_util.h"
 #include "base/string16.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/shell_dialogs.h"
-#include "chrome/test/base/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +67,7 @@ class FileSelectionUser : public SelectFileDialog::Listener {
   bool file_selection_initialisation_in_progress;
 };
 
-typedef TestingBrowserProcessTest FileSelectionDialogTest;
+typedef testing::Test FileSelectionDialogTest;
 
 // Tests if SelectFileDialog::SelectFile returns asynchronously with
 // file-selection dialogs disabled by policy.
@@ -74,12 +75,13 @@ TEST_F(FileSelectionDialogTest, ExpectAsynchronousListenerCall) {
   MessageLoopForUI message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
-  ScopedTestingLocalState local_state_(testing_browser_process_.get());
+  ScopedTestingLocalState local_state(
+      static_cast<TestingBrowserProcess*>(g_browser_process));
 
   scoped_ptr<FileSelectionUser> file_selection_user(new FileSelectionUser());
 
   // Disallow file-selection dialogs.
-  local_state_.Get()->SetManagedPref(
+  local_state.Get()->SetManagedPref(
       prefs::kAllowFileSelectionDialogs,
       Value::CreateBooleanValue(false));
 

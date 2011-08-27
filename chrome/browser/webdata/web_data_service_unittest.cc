@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/thread_observer_helper.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_details.h"
@@ -68,7 +67,7 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
   }
 };
 
-class WebDataServiceTest : public TestingBrowserProcessTest {
+class WebDataServiceTest : public testing::Test {
  public:
   WebDataServiceTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

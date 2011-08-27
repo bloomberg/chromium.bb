@@ -25,7 +25,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -287,7 +286,7 @@ static void ExtractParameters(const std::string& params,
 
 // All of our tests that need to use private APIs of ExtensionUpdater live
 // inside this class (which is a friend to ExtensionUpdater).
-class ExtensionUpdaterTest : public TestingBrowserProcessTest {
+class ExtensionUpdaterTest : public testing::Test {
  public:
   static void SimulateTimerFired(ExtensionUpdater* updater) {
     EXPECT_TRUE(updater->timer_.IsRunning());

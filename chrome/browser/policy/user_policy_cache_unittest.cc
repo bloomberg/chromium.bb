@@ -16,7 +16,6 @@
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/proto/old_generic_format.pb.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,7 +44,7 @@ class MockCloudPolicyCacheBaseObserver
 };
 
 // Tests the device management policy cache.
-class UserPolicyCacheTest : public TestingBrowserProcessTest {
+class UserPolicyCacheTest : public testing::Test {
  protected:
   UserPolicyCacheTest()
       : loop_(MessageLoop::TYPE_UI),

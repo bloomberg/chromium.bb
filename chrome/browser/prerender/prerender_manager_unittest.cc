@@ -199,11 +199,10 @@ class PrerenderManagerTest : public testing::Test {
 
  private:
   PrerenderTracker* prerender_tracker() {
-    return browser_process_.get()->prerender_tracker();
+    return g_browser_process->prerender_tracker();
   }
 
   // Needed to pass PrerenderManager's DCHECKs.
-  ScopedTestingBrowserProcess browser_process_;
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   scoped_ptr<TestPrerenderManager> prerender_manager_;

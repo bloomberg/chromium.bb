@@ -21,7 +21,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/signaling_task.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,7 +51,7 @@ public:
 
 typedef std::vector<PasswordForm*> VectorOfForms;
 
-class PasswordStoreWinTest : public TestingBrowserProcessTest {
+class PasswordStoreWinTest : public testing::Test {
  protected:
   PasswordStoreWinTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

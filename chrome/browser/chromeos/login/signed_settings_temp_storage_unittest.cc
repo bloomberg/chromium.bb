@@ -14,12 +14,11 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
-class SignedSettingsTempStorageTest : public TestingBrowserProcessTest {
+class SignedSettingsTempStorageTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ref_map_["some_stuff"] = "a=35;code=64";

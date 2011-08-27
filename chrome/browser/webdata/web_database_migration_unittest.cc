@@ -20,7 +20,6 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/guid.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -128,7 +127,7 @@ void CreditCard32FromStatement(const sql::Statement& s,
 // Specifically, these tests are intended to exercise any schema changes in
 // the WebDatabase and data migrations that occur in
 // |WebDatabase::MigrateOldVersionsAsNeeded()|.
-class WebDatabaseMigrationTest : public TestingBrowserProcessTest {
+class WebDatabaseMigrationTest : public testing::Test {
  public:
   WebDatabaseMigrationTest() {}
   virtual ~WebDatabaseMigrationTest() {}

@@ -90,8 +90,6 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   void StartIOThread();
 
  private:
-  ScopedTestingBrowserProcess browser_process_;
-
   MessageLoopForUI message_loop_;
   // Needed to make the DeleteOnUIThread trait of WebDataService work
   // properly.

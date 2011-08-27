@@ -5,14 +5,14 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/test/base/testing_profile.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
-class ExtensionAppProviderTest : public TestingBrowserProcessTest {
+class ExtensionAppProviderTest : public testing::Test {
  protected:
   struct test_data {
     const string16 input;

@@ -29,7 +29,7 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
 }
 
 void BrowserWithTestWindowTest::SetUp() {
-  TestingBrowserProcessTest::SetUp();
+  testing::Test::SetUp();
 
   profile_.reset(CreateProfile());
   browser_.reset(new Browser(Browser::TYPE_TABBED, profile()));

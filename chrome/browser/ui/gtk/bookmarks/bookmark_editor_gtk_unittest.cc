@@ -11,7 +11,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_editor_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_tree_model.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +24,7 @@ using bookmark_utils::GetTitleFromTreeIter;
 // GTK-ifications of the corresponding views tests. Testing here is really
 // important because on Linux, we make round trip copies from chrome's
 // BookmarkModel class to GTK's native GtkTreeStore.
-class BookmarkEditorGtkTest : public TestingBrowserProcessTest {
+class BookmarkEditorGtkTest : public testing::Test {
  public:
   BookmarkEditorGtkTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -37,7 +36,7 @@ using testing::AtMost;
 using testing::Return;
 using testing::StrictMock;
 
-class ProfileSyncServiceTest : public TestingBrowserProcessTest {
+class ProfileSyncServiceTest : public testing::Test {
  protected:
   ProfileSyncServiceTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),

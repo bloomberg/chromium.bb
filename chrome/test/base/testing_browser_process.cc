@@ -271,13 +271,3 @@ void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
 void TestingBrowserProcess::SetDevToolsManager(DevToolsManager* manager) {
   devtools_manager_.reset(manager);
 }
-
-ScopedTestingBrowserProcess::ScopedTestingBrowserProcess() {
-  DCHECK(!g_browser_process);
-  g_browser_process = &browser_process_;
-}
-
-ScopedTestingBrowserProcess::~ScopedTestingBrowserProcess() {
-  DCHECK_EQ(&browser_process_, g_browser_process);
-  g_browser_process = NULL;
-}

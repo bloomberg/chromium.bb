@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -47,7 +46,7 @@ void ExpectObsoleteGeolocationSetting(
 
 namespace content_settings {
 
-class PrefDefaultProviderTest : public TestingBrowserProcessTest {
+class PrefDefaultProviderTest : public testing::Test {
  public:
   PrefDefaultProviderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -216,7 +215,7 @@ bool SettingsEqual(const ContentSettings& settings1,
   return true;
 }
 
-class PrefProviderTest : public TestingBrowserProcessTest {
+class PrefProviderTest : public testing::Test {
  public:
   PrefProviderTest() : ui_thread_(
       BrowserThread::UI, &message_loop_) {

@@ -43,7 +43,6 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_persistent_store_info.h"
@@ -101,7 +100,7 @@ class BackendDelegate : public HistoryBackend::Delegate {
 
 // This must be outside the anonymous namespace for the friend statement in
 // HistoryBackend to work.
-class HistoryTest : public TestingBrowserProcessTest {
+class HistoryTest : public testing::Test {
  public:
   HistoryTest()
       : history_service_(NULL),

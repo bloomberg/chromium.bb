@@ -4,6 +4,8 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -142,7 +144,8 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   TestTabContentsDelegate delegate;
   contents()->set_delegate(&delegate);
 
-  testing_browser_process_.get()->SetDevToolsManager(new DevToolsManager());
+  static_cast<TestingBrowserProcess*>(g_browser_process)->
+      SetDevToolsManager(new DevToolsManager());
   DevToolsManager* manager = DevToolsManager::GetInstance();
   ASSERT_TRUE(manager);
 

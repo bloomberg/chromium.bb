@@ -16,7 +16,6 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/common/notification_service.h"
 #include "content/common/url_fetcher.h"
@@ -148,7 +147,7 @@ TEST(GaiaOAuthFetcherTest, GetOAuthToken) {
 }
 #endif  // 0  // Suppressing for now
 
-typedef TestingBrowserProcessTest GaiaOAuthFetcherTest;
+typedef testing::Test GaiaOAuthFetcherTest;
 
 TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   const std::string oauth_token =

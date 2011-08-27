@@ -62,9 +62,6 @@ class MetricsServiceTest : public UITest {
     FilePath path = user_data_dir().Append(chrome::kLocalStateFilename);
     return PrefServiceMockBuilder().WithUserFilePrefs(path).Create();
   }
-
- private:
-  NotificationService notification_service_;
 };
 
 TEST_F(MetricsServiceTest, CloseRenderersNormally) {

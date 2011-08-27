@@ -9,7 +9,6 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/renderer_host/text_input_client_message_filter.h"
 #include "chrome/common/text_input_client_messages.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -25,7 +24,7 @@ const int64 kTaskDelayMs = 200;
 // This test does not test the WebKit side of the dictionary system (which
 // performs the actual data fetching), but rather this just tests that the
 // service's signaling system works.
-class TextInputClientMacTest : public TestingBrowserProcessTest {
+class TextInputClientMacTest : public testing::Test {
  public:
   TextInputClientMacTest()
       : message_loop_(MessageLoop::TYPE_UI),

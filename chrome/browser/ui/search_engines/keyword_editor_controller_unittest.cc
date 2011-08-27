@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/common/notification_details.h"
@@ -27,7 +26,7 @@ static const string16 kB1(ASCIIToUTF16("b1"));
 
 // Base class for keyword editor tests. Creates a profile containing an
 // empty TemplateURLService.
-class KeywordEditorControllerTest : public TestingBrowserProcessTest,
+class KeywordEditorControllerTest : public testing::Test,
                                     public ui::TableModelObserver {
  public:
   // Initializes all of the state.

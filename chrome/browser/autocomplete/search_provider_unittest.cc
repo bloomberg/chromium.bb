@@ -17,7 +17,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -33,7 +32,7 @@
 // . The URL created by using the search term keyword_term_ with keyword_t_url_
 //   is added to history.
 // . test_factory_ is set as the URLFetcher::Factory.
-class SearchProviderTest : public TestingBrowserProcessTest,
+class SearchProviderTest : public testing::Test,
                            public AutocompleteProvider::ACProviderListener {
  public:
   SearchProviderTest()

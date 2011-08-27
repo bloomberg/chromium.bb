@@ -22,7 +22,6 @@
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/user_policy_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/browser/browser_thread.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -114,7 +113,7 @@ class DeviceManagementBackendTestHelper {
 // in its own process to make sure the counters are not initialized before the
 // test runs, and that the StatisticsRecorder instance created for the test
 // doesn't interfere with counters in other tests.
-class EnterpriseMetricsTest : public TestingBrowserProcessTest {
+class EnterpriseMetricsTest : public testing::Test {
  public:
   EnterpriseMetricsTest()
       : ui_thread_(BrowserThread::UI, &loop_),

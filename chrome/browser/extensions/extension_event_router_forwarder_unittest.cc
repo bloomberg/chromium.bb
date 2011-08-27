@@ -8,7 +8,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/test/base/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -32,7 +32,7 @@ class MockExtensionEventRouterForwarder : public ExtensionEventRouterForwarder {
 
 }  // namespace
 
-class ExtensionEventRouterForwarderTest : public TestingBrowserProcessTest {
+class ExtensionEventRouterForwarderTest : public testing::Test {
  protected:
   ExtensionEventRouterForwarderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -50,7 +50,8 @@ class ExtensionEventRouterForwarderTest : public TestingBrowserProcessTest {
     // Inject a BrowserProcess with a ProfileManager.
     ASSERT_TRUE(io_thread_.Start());
 
-    TestingBrowserProcess* browser_process = testing_browser_process_.get();
+    TestingBrowserProcess* browser_process =
+        static_cast<TestingBrowserProcess*>(g_browser_process);
     browser_process->SetProfileManager(new ProfileManager);
 
     profile1_ = new TestingProfile();

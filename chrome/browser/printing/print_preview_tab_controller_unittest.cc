@@ -11,6 +11,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 #include "content/common/url_constants.h"
 
 typedef BrowserWithTestWindowTest PrintPreviewTabControllerUnitTest;

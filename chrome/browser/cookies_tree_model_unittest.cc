@@ -15,7 +15,6 @@
 #include "chrome/browser/mock_browsing_data_indexed_db_helper.h"
 #include "chrome/browser/mock_browsing_data_quota_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
@@ -29,7 +28,7 @@ using ::testing::_;
 
 namespace {
 
-class CookiesTreeModelTest : public TestingBrowserProcessTest {
+class CookiesTreeModelTest : public testing::Test {
  public:
   CookiesTreeModelTest() : ui_thread_(BrowserThread::UI, &message_loop_),
                            io_thread_(BrowserThread::IO, &message_loop_) {

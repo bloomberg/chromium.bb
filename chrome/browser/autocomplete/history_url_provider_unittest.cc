@@ -13,7 +13,6 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +97,7 @@ struct TestURLInfo {
   {"http://p/", "p", 0, 0},
 };
 
-class HistoryURLProviderTest : public TestingBrowserProcessTest,
+class HistoryURLProviderTest : public testing::Test,
                                public ACProviderListener {
  public:
   HistoryURLProviderTest()

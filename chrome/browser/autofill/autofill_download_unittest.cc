@@ -14,7 +14,6 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -115,7 +114,7 @@ class AutofillDownloadTestHelper : public AutofillDownloadManager::Observer {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
 };
 
-typedef TestingBrowserProcessTest AutofillDownloadTest;
+typedef testing::Test AutofillDownloadTest;
 
 TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   MessageLoopForUI message_loop;

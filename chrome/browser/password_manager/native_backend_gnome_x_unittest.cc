@@ -13,7 +13,6 @@
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -282,7 +281,7 @@ struct RunnableMethodTraits<NativeBackendGnome> {
   void ReleaseCallee(NativeBackendGnome*) {}
 };
 
-class NativeBackendGnomeTest : public TestingBrowserProcessTest {
+class NativeBackendGnomeTest : public testing::Test {
  protected:
   NativeBackendGnomeTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

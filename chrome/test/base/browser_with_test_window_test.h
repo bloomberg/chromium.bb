@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -39,7 +38,7 @@ class NavigationController;
 //
 // Subclasses must invoke BrowserWithTestWindowTest::SetUp as it is responsible
 // for creating the various objects of this class.
-class BrowserWithTestWindowTest : public TestingBrowserProcessTest {
+class BrowserWithTestWindowTest : public testing::Test {
  public:
   BrowserWithTestWindowTest();
   virtual ~BrowserWithTestWindowTest();

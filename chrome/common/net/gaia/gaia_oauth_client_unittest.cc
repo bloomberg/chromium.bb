@@ -11,7 +11,6 @@
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "chrome/common/net/http_return.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/common/url_fetcher.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -124,7 +123,7 @@ const std::string kDummyRefreshTokenResult =
 
 namespace gaia {
 
-class GaiaOAuthClientTest : public TestingBrowserProcessTest {
+class GaiaOAuthClientTest : public testing::Test {
  public:
   GaiaOAuthClientTest() {}
 

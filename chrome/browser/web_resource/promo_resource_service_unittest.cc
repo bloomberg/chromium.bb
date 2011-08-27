@@ -6,20 +6,21 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PromoResourceServiceTest : public TestingBrowserProcessTest {
+class PromoResourceServiceTest : public testing::Test {
  public:
   PromoResourceServiceTest()
-      : local_state_(testing_browser_process_.get()),
+      : local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
         web_resource_service_(new PromoResourceService(&profile_)) {
   }
 

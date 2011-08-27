@@ -5,7 +5,6 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/browsing_instance.h"
@@ -75,7 +74,7 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
   content::ContentBrowserClient* old_browser_client_;
 };
 
-class SiteInstanceTest : public TestingBrowserProcessTest {
+class SiteInstanceTest : public testing::Test {
  public:
   SiteInstanceTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),

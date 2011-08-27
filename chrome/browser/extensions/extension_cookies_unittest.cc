@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "googleurl/src/gurl.h"
 
@@ -62,7 +61,7 @@ class OtrTestingProfile : public TestingProfile {
 
 }  // namespace
 
-class ExtensionCookiesTest : public TestingBrowserProcessTest {
+class ExtensionCookiesTest : public testing::Test {
 };
 
 TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {

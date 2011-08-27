@@ -4,7 +4,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill_i18n::NormalizePhoneNumber;
@@ -14,7 +13,7 @@ using autofill_i18n::FormatPhone;
 using autofill_i18n::ComparePhones;
 using autofill_i18n::PhoneNumbersMatch;
 
-typedef TestingBrowserProcessTest PhoneNumberI18NTest;
+typedef testing::Test PhoneNumberI18NTest;
 
 TEST_F(PhoneNumberI18NTest, NormalizePhoneNumber) {
   // "Large" digits.

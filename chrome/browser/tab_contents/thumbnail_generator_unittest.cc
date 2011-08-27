@@ -7,7 +7,6 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
@@ -54,7 +53,7 @@ class TestRenderWidgetHostViewWithBackingStoreSkia
   DISALLOW_COPY_AND_ASSIGN(TestRenderWidgetHostViewWithBackingStoreSkia);
 };
 
-class ThumbnailGeneratorTest : public TestingBrowserProcessTest {
+class ThumbnailGeneratorTest : public testing::Test {
  public:
   ThumbnailGeneratorTest() {
     profile_.reset(new TestingProfile());
@@ -208,7 +207,7 @@ TEST_F(ThumbnailGeneratorTest, DiscardBackingStore) {
 
 #endif  // !defined(OS_MAC)
 
-typedef TestingBrowserProcessTest ThumbnailGeneratorSimpleTest;
+typedef testing::Test ThumbnailGeneratorSimpleTest;
 
 TEST_F(ThumbnailGeneratorSimpleTest, CalculateBoringScore_Empty) {
   SkBitmap bitmap;

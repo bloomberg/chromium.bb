@@ -20,7 +20,6 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_create_info.h"
@@ -37,7 +36,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
-class DownloadManagerTest : public TestingBrowserProcessTest {
+class DownloadManagerTest : public testing::Test {
  public:
   static const char* kTestData;
   static const size_t kTestDataLen;

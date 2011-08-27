@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/fake_profile_info_interface.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/base/testing_browser_process_test.h"
 #include "content/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +31,7 @@ class MockObserver : public AvatarMenuModelObserver {
   int count_;
 };
 
-class AvatarMenuModelTest : public TestingBrowserProcessTest {
+class AvatarMenuModelTest : public testing::Test {
  public:
   FakeProfileInfo* cache() {
     return &cache_;
