@@ -127,7 +127,7 @@
       # crbug.com/88210
       '-autofill.AutofillTest.testCharsStrippedForAggregatedPhoneNumbers',
       # crbug.com/81271
-      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',	
+      '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
       # Some download test fails on win official builder, only thru buildbot
       # when downloading the small zip file.
@@ -188,6 +188,8 @@
       '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
       # crbug.com/75724
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
+      # crbug.com/94468
+      '-downloads.DownloadsTest.testDownloadPercentage',
       # crbug.com/75724
       '-downloads.DownloadsTest.testSaveDangerousFile',
       '-instant.InstantTest.testInstantNavigation',  # crbug.com/69090
