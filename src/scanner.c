@@ -526,7 +526,11 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 		wl_list_for_each(a, &m->arg_list, link) {
 			printf(",\n%s", indent(n));
 
-			emit_type(a);
+			if (is_interface && a->type == OBJECT)
+				printf("struct wl_resource *");
+			else
+				emit_type(a);
+
 			printf("%s", a->name);
 		}
 
