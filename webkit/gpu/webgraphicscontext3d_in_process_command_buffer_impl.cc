@@ -198,8 +198,8 @@ const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
 
 static base::LazyInstance<
-    std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> > g_all_contexts(
-        base::LINKER_INITIALIZED);
+    std::set<WebGraphicsContext3DInProcessCommandBufferImpl*> >
+        g_all_shared_contexts(base::LINKER_INITIALIZED);
 
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
@@ -575,7 +575,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
-  g_all_contexts.Pointer()->erase(this);
+  g_all_shared_contexts.Pointer()->erase(this);
 }
 
 // This string should only be passed for WebGL contexts. Nothing ELSE!!!
@@ -627,14 +627,10 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     }
   }
 
-  // HACK: Assume this is a WebGL context by looking for the noExtensions
-  // attribute. WebGL contexts must not go in the share group because they
-  // rely on destruction of the context to clean up owned resources. Putting
-  // them in a share group would prevent this from happening.
   WebGraphicsContext3DInProcessCommandBufferImpl* context_group = NULL;
-  if (!attributes.noExtensions)
-    context_group = g_all_contexts.Pointer()->empty() ?
-        NULL : *g_all_contexts.Pointer()->begin();
+  if (attributes.shareResources)
+    context_group = g_all_shared_contexts.Pointer()->empty() ?
+        NULL : *g_all_shared_contexts.Pointer()->begin();
 
   context_ = GLInProcessContext::CreateOffscreenContext(
       parent_context,
@@ -672,8 +668,8 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
   }
   makeContextCurrent();
 
-  if (!attributes.noExtensions)
-    g_all_contexts.Pointer()->insert(this);
+  if (attributes.shareResources)
+    g_all_shared_contexts.Pointer()->insert(this);
 
   return true;
 }

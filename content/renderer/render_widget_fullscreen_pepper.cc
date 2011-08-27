@@ -344,12 +344,13 @@ void RenderWidgetFullscreenPepper::CreateContext() {
     RendererGLContext::STENCIL_SIZE, 0,
     RendererGLContext::SAMPLES, 0,
     RendererGLContext::SAMPLE_BUFFERS, 0,
+    RendererGLContext::SHARE_RESOURCES, 0,
+    RendererGLContext::BIND_GENERATES_RESOURCES, 1,
     RendererGLContext::NONE,
   };
   context_ = RendererGLContext::CreateViewContext(
       host,
       routing_id(),
-      false,
       NULL,
       "GL_OES_packed_depth_stencil GL_OES_depth24",
       attribs,

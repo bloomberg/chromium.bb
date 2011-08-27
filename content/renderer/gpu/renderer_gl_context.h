@@ -35,27 +35,30 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
  public:
   // These are the same error codes as used by EGL.
   enum Error {
-    SUCCESS             = 0x3000,
-    NOT_INITIALIZED     = 0x3001,
-    BAD_ATTRIBUTE       = 0x3004,
-    BAD_RendererGLContext         = 0x3006,
-    CONTEXT_LOST        = 0x300E
+    SUCCESS               = 0x3000,
+    NOT_INITIALIZED       = 0x3001,
+    BAD_ATTRIBUTE         = 0x3004,
+    BAD_RendererGLContext = 0x3006,
+    CONTEXT_LOST          = 0x300E
   };
 
-  // RendererGLContext configuration attributes. These are the same as used by
-  // EGL. Attributes are matched using a closest fit algorithm.
+  // RendererGLContext configuration attributes. Those in the 16-bit range are
+  // the same as used by EGL. Those outside the 16-bit range are unique to
+  // Chromium. Attributes are matched using a closest fit algorithm.
   enum Attribute {
-    ALPHA_SIZE     = 0x3021,
-    BLUE_SIZE      = 0x3022,
-    GREEN_SIZE     = 0x3023,
-    RED_SIZE       = 0x3024,
-    DEPTH_SIZE     = 0x3025,
-    STENCIL_SIZE   = 0x3026,
-    SAMPLES        = 0x3031,
-    SAMPLE_BUFFERS = 0x3032,
-    HEIGHT         = 0x3056,
-    WIDTH          = 0x3057,
-    NONE           = 0x3038  // Attrib list = terminator
+    ALPHA_SIZE                = 0x3021,
+    BLUE_SIZE                 = 0x3022,
+    GREEN_SIZE                = 0x3023,
+    RED_SIZE                  = 0x3024,
+    DEPTH_SIZE                = 0x3025,
+    STENCIL_SIZE              = 0x3026,
+    SAMPLES                   = 0x3031,
+    SAMPLE_BUFFERS            = 0x3032,
+    HEIGHT                    = 0x3056,
+    WIDTH                     = 0x3057,
+    NONE                      = 0x3038,  // Attrib list = terminator
+    SHARE_RESOURCES           = 0x10000,
+    BIND_GENERATES_RESOURCES  = 0x10001
   };
 
   // Reasons that a lost context might have been provoked.
@@ -100,7 +103,6 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   static RendererGLContext* CreateViewContext(
       GpuChannelHost* channel,
       int render_view_id,
-      bool share_resources,
       RendererGLContext* share_group,
       const char* allowed_extensions,
       const int32* attrib_list,
@@ -117,7 +119,6 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   static RendererGLContext* CreateOffscreenContext(
       GpuChannelHost* channel,
       const gfx::Size& size,
-      bool share_resources,
       RendererGLContext* share_group,
       const char* allowed_extensions,
       const int32* attrib_list,
@@ -179,8 +180,6 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   bool Initialize(bool onscreen,
                   int render_view_id,
                   const gfx::Size& size,
-                  bool share_resources,
-                  bool bind_generates_resource,
                   RendererGLContext* share_group,
                   const char* allowed_extensions,
                   const int32* attrib_list,

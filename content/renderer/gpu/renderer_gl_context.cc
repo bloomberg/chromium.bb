@@ -82,7 +82,6 @@ RendererGLContext::~RendererGLContext() {
 RendererGLContext* RendererGLContext::CreateViewContext(
     GpuChannelHost* channel,
     int render_view_id,
-    bool share_resources,
     RendererGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
@@ -93,8 +92,6 @@ RendererGLContext* RendererGLContext::CreateViewContext(
       true,
       render_view_id,
       gfx::Size(),
-      share_resources,
-      false,
       share_group,
       allowed_extensions,
       attrib_list,
@@ -110,7 +107,6 @@ RendererGLContext* RendererGLContext::CreateViewContext(
 RendererGLContext* RendererGLContext::CreateOffscreenContext(
     GpuChannelHost* channel,
     const gfx::Size& size,
-    bool share_resources,
     RendererGLContext* share_group,
     const char* allowed_extensions,
     const int32* attrib_list,
@@ -121,8 +117,6 @@ RendererGLContext* RendererGLContext::CreateOffscreenContext(
       false,
       0,
       size,
-      share_resources,
-      false,
       share_group,
       allowed_extensions,
       attrib_list,
@@ -291,8 +285,6 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel)
 bool RendererGLContext::Initialize(bool onscreen,
                                    int render_view_id,
                                    const gfx::Size& size,
-                                   bool share_resources,
-                                   bool bind_generates_resource,
                                    RendererGLContext* share_group,
                                    const char* allowed_extensions,
                                    const int32* attrib_list,
@@ -307,6 +299,8 @@ bool RendererGLContext::Initialize(bool onscreen,
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
 
+  bool share_resources = true;
+  bool bind_generates_resources = true;
   std::vector<int32> attribs;
   while (attrib_list) {
     int32 attrib = *attrib_list++;
@@ -322,6 +316,12 @@ bool RendererGLContext::Initialize(bool onscreen,
       case SAMPLE_BUFFERS:
         attribs.push_back(attrib);
         attribs.push_back(*attrib_list++);
+        break;
+      case SHARE_RESOURCES:
+        share_resources = !!(*attrib_list++);
+        break;
+      case BIND_GENERATES_RESOURCES:
+        bind_generates_resources = !!(*attrib_list++);
         break;
       case NONE:
         attribs.push_back(attrib);
@@ -408,7 +408,7 @@ bool RendererGLContext::Initialize(bool onscreen,
       transfer_buffer.ptr,
       transfer_buffer_id_,
       share_resources,
-      bind_generates_resource);
+      bind_generates_resources);
 
   return true;
 }
