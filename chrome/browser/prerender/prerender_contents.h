@@ -16,6 +16,7 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/notification_registrar.h"
+#include "ui/gfx/rect.h"
 
 class Profile;
 class RenderViewHost;
@@ -279,8 +280,11 @@ class PrerenderContents : public NotificationObserver,
   // Experiment during which this prerender is performed.
   uint8 experiment_id_;
 
-  // Offset by which to offset prerendered pages
+  // Offset by which to offset prerendered pages.
   static const int32 kPrerenderPageIdOffset = 10;
+
+  // Bounds to use for the prerendered TabContents.
+  gfx::Rect tab_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

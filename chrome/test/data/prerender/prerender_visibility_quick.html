@@ -1,0 +1,24 @@
+<html>
+<!-- 
+This test checks the visibility API when a prerendered page is displayed
+before the page has finished loading.
+
+TODO(mmenke):  Currently, we get get extra events when a page is shown on
+               Windows.  Make this check for extra events once that's fixed.
+-->
+<head>
+<title>Prerender Visibility Quick Switch</title>
+
+<script>
+// Checks that the the current state is visible.  Due to expected races between
+// loading the page and switching to the tab, it's possible for the page to
+// start out with visibility 'prerender', 'hidden', or 'visible'.
+function DidDisplayPass() {
+  return !document.webkitHidden &&
+         'visible' == document.webkitVisibilityState;
+}
+</script>
+
+</head>
+<body></body>
+</html>

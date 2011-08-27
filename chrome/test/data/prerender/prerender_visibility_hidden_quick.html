@@ -1,0 +1,41 @@
+<html>
+<!-- 
+This test checks the visibility API when a prerendered page is visited without
+being displayed, before the page has finished loading.
+-->
+<head>
+<title>Prerender Visibility Hidden Quick Switch</title>
+
+<script>
+// Checks visibility state while the page is still loading.
+var lastState = document.webkitVisibilityState;
+var loadingStatePassed = document.webkitHidden && lastState != 'visible';
+var unexpectedStateChange = false;
+
+function onVisibilityChange(event) {
+  if (lastState == 'hidden' ||
+      document.webkitVisibilityState != 'hidden') {
+    unexpectedStateChange = true;
+    return;
+  }
+  lastState = document.webkitVisibilityState;
+}
+
+document.addEventListener('webkitvisibilitychange',
+                          onVisibilityChange,
+                          false);
+
+// Checks that either the first visibility state was 'prerender' and there
+// was one and only one visibility change event to 'hidden', or visibility
+// was always 'hidden'.
+function DidDisplayPass() {
+  return loadingStatePassed &&
+         !unexpectedStateChange &&
+         'hidden' == document.webkitVisibilityState &&
+         document.webkitHidden;
+}
+</script>
+
+</head>
+<body></body>
+</html>

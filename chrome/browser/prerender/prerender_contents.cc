@@ -172,7 +172,6 @@ void PrerenderContents::StartPrerendering(
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
   TabContentsObserver::Observe(new_contents);
 
-  gfx::Rect tab_bounds;
   if (source_render_view_host) {
     DCHECK(source_render_view_host->view() != NULL);
     TabContents* source_tc =
@@ -183,7 +182,7 @@ void PrerenderContents::StartPrerendering(
       starting_page_id_ = source_tc->GetMaxPageID();
 
       // Set the size of the new TC to that of the old TC.
-      source_tc->view()->GetContainerBounds(&tab_bounds);
+      source_tc->view()->GetContainerBounds(&tab_bounds_);
     }
   } else {
     int max_page_id = -1;
@@ -209,7 +208,7 @@ void PrerenderContents::StartPrerendering(
     if (active_browser) {
       TabContents* active_tab_contents = active_browser->GetTabContentsAt(
           active_browser->active_index());
-      active_tab_contents->view()->GetContainerBounds(&tab_bounds);
+      active_tab_contents->view()->GetContainerBounds(&tab_bounds_);
     }
   }
 
@@ -222,9 +221,6 @@ void PrerenderContents::StartPrerendering(
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   new_contents->set_delegate(tab_contents_delegate_.get());
-
-  // Set the size of the prerender TabContents.
-  prerender_contents_->view()->SizeContents(tab_bounds.size());
 
   // Register as an observer of the RenderViewHost so we get messages.
   render_view_host_observer_.reset(
@@ -257,12 +253,6 @@ void PrerenderContents::StartPrerendering(
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<TabContents>(new_contents));
-
-  // Register to be told when the RenderView is ready, so we can hide it.
-  // It will automatically be set to visible when we resize it, otherwise.
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                              Source<TabContents>(new_contents));
 
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
@@ -381,20 +371,17 @@ void PrerenderContents::Observe(int type,
             new ChromeViewMsg_SetIsPrerendering(
                 new_render_view_host->routing_id(),
                 true));
-      }
-      break;
-    }
 
-    case content::NOTIFICATION_TAB_CONTENTS_CONNECTED: {
-      if (prerender_contents_.get()) {
-        DCHECK_EQ(Source<TabContents>(source).ptr(),
-                  prerender_contents_->tab_contents());
-        // Set the new TabContents and its RenderViewHost as hidden, to reduce
-        // resource usage.  This can only be done after the size has been sent
-        // to the RenderView, which is why it's done here.
+        // Set the size of the prerender TabContents.  This must be done after
+        // the RenderView has been created so that the RenderView will be
+        // informated promptly of the size change.
+        prerender_contents_->view()->SizeContents(tab_bounds_.size());
+
+        // Hide the tab contents.  Must be done after setting the size, as
+        // resizing currently forces the RenderView to set itself as visible.
         prerender_contents_->tab_contents()->HideContents();
       }
-      return;
+      break;
     }
 
     case content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED: {
