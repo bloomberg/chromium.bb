@@ -410,10 +410,7 @@ handle_event(struct wl_display *display,
 	const struct wl_message *message;
 
 	wl_connection_copy(display->connection, p, size);
-	if (id == 1)
-		proxy = &display->proxy;
-	else
-		proxy = wl_map_lookup(&display->objects, id);
+	proxy = wl_map_lookup(&display->objects, id);
 
 	if (proxy == NULL || proxy->object.implementation == NULL) {
 		wl_connection_consume(display->connection, size);
