@@ -579,13 +579,17 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
     SelectFile(default_filename);
   } else {
-    ClearInitiatorTabDetails();
     ReportPrintSettingsStats(*settings);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
     UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter",
                          GetPageCountFromSettingsDictionary(*settings));
 
+    // This tries to activate the initiator tab as well, so do not clear the
+    // association with the initiator tab yet.
     HidePreviewTab();
+
+    // Do this so the initiator tab can open a new print preview tab.
+    ClearInitiatorTabDetails();
 
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
