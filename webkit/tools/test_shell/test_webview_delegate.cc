@@ -53,6 +53,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "ui/gfx/native_widget_types.h"
@@ -127,6 +128,7 @@ using WebKit::WebWidget;
 using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
+using WebKit::WebVector;
 using WebKit::WebView;
 
 namespace {
@@ -600,6 +602,37 @@ WebPlugin* TestWebViewDelegate::createPlugin(WebFrame* frame,
       NULL, &plugins, &mime_types);
   if (plugins.empty())
     return NULL;
+
+#if defined(OS_MACOSX)
+  if (!shell_->layout_test_mode()) {
+    bool flash = LowerCaseEqualsASCII(params.mimeType.utf8(),
+                                      "application/x-shockwave-flash");
+    if (flash) {
+      // Mac does not support windowed plugins. Force Flash plugins to use
+      // windowless mode by setting the wmode="opaque" attribute.
+      DCHECK(params.attributeNames.size() == params.attributeValues.size());
+      size_t size = params.attributeNames.size();
+
+      WebVector<WebString> new_names(size+1),  new_values(size+1);
+
+      for (size_t i = 0; i < size; ++i) {
+        new_names[i] = params.attributeNames[i];
+        new_values[i] = params.attributeValues[i];
+      }
+
+      new_names[size] = "wmode";
+      new_values[size] = "opaque";
+
+      WebPluginParams new_params = params;
+      new_params.attributeNames.swap(new_names);
+      new_params.attributeValues.swap(new_values);
+
+      return new webkit::npapi::WebPluginImpl(
+          frame, new_params, plugins.front().path, mime_types.front(),
+          AsWeakPtr());
+    }
+  }
+#endif  // defined (OS_MACOSX)
 
   return new webkit::npapi::WebPluginImpl(
       frame, params, plugins.front().path, mime_types.front(), AsWeakPtr());

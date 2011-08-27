@@ -176,6 +176,10 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
 
+  // Indicates that the windowless plugins will draw directly to the window
+  // context instead of a buffer context.
+  void SetNoBufferContext();
+
 #ifndef NP_NO_CARBON
   // Indicates that it's time to send the plugin a null event.
   void FireIdleEvent();
@@ -428,6 +432,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   void UpdateIdleEventRate();
 #endif  // !NP_NO_CARBON
 
+  bool use_buffer_context_;
   CGContextRef buffer_context_;  // Weak ref.
 
 #ifndef NP_NO_CARBON

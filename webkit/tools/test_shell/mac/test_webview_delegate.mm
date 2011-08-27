@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
+using webkit::npapi::WebPluginDelegateImpl;
 using WebKit::WebCursorInfo;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenu;
@@ -176,8 +177,11 @@ webkit::npapi::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     return NULL;
 
   gfx::PluginWindowHandle containing_view = NULL;
-  return webkit::npapi::WebPluginDelegateImpl::Create(
-      path, mime_type, containing_view);
+  WebPluginDelegateImpl* delegate =
+      WebPluginDelegateImpl::Create(path, mime_type, containing_view);
+  if (delegate)
+    delegate->SetNoBufferContext();
+  return delegate;
 }
 
 void TestWebViewDelegate::CreatedPluginWindow(
