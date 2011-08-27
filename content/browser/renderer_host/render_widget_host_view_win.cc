@@ -53,8 +53,6 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-#include "views/focus/focus_manager.h"
-#include "views/widget/widget.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
@@ -87,8 +85,6 @@ const int kIdCustom = 1;
 // The delay before the compositor host window is destroyed. This gives the GPU
 // process a grace period to stop referencing it.
 const int kDestroyCompositorHostWindowDelay = 10000;
-
-const char* const kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 
 // A callback function for EnumThreadWindows to enumerate and dismiss
 // any owned popop windows
@@ -519,13 +515,7 @@ void RenderWidgetHostViewWin::Focus() {
 }
 
 void RenderWidgetHostViewWin::Blur() {
-  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(m_hWnd);
-  if (widget) {
-    views::FocusManager* focus_manager = widget->GetFocusManager();
-    // We don't have a FocusManager if we are hidden.
-    if (focus_manager)
-      focus_manager->ClearFocus();
-  }
+  NOTREACHED();
 }
 
 bool RenderWidgetHostViewWin::HasFocus() {
@@ -808,8 +798,6 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   // Marks that window as supporting mouse-wheel messages rerouting so it is
   // scrolled when under the mouse pointer even if inactive.
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
-  props_.push_back(new ViewProp(m_hWnd, kRenderWidgetHostViewKey,
-                                static_cast<RenderWidgetHostView*>(this)));
 
   return 0;
 }
@@ -1015,8 +1003,6 @@ LRESULT RenderWidgetHostViewWin::OnSetCursor(HWND window, UINT hittest_code,
 }
 
 void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
-  views::FocusManager::GetWidgetFocusManager()->OnWidgetFocusEvent(window,
-                                                                   m_hWnd);
   if (browser_accessibility_manager_.get())
     browser_accessibility_manager_->GotFocus();
   if (render_widget_host_)
@@ -1024,9 +1010,6 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
-  views::FocusManager::GetWidgetFocusManager()->OnWidgetFocusEvent(m_hWnd,
-                                                                   window);
-
   if (render_widget_host_)
     render_widget_host_->Blur();
 }

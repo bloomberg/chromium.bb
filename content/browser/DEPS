@@ -5,6 +5,11 @@ include_rules = [
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.
 
+  # Content shouldn't depend on views. This rule is now in content\browser,
+  # instead of content, because there's one file in content\common that depends
+  # on views. When it's moved back to chrome, move this rule up.
+  "-views",
+
   # ONLY USED BY TESTS
 	"+chrome/browser/browser_process.h",
   "+chrome/browser/ui/browser.h",

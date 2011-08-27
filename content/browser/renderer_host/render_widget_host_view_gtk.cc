@@ -54,7 +54,6 @@ namespace {
 
 const int kMaxWindowWidth = 4000;
 const int kMaxWindowHeight = 4000;
-const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 
 // The duration of the fade-out animation. See |overlay_animation_|.
 const int kFadeEffectDuration = 300;
@@ -156,9 +155,6 @@ class RenderWidgetHostViewGtkWidget {
     // TabContentsView which handles zoom events.
     g_signal_connect_after(widget, "scroll-event",
                            G_CALLBACK(OnMouseScrollEvent), host_view);
-
-    g_object_set_data(G_OBJECT(widget), kRenderWidgetHostViewKey,
-                      static_cast<RenderWidgetHostView*>(host_view));
 
     return widget;
   }

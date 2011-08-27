@@ -60,6 +60,7 @@
         'common/common_param_traits.h',
         'common/content_message_generator.cc',
         'common/content_message_generator.h',
+        'common/content_notification_types.h',
         'common/content_export.h',
         'common/content_client.cc',
         'common/content_client.h',

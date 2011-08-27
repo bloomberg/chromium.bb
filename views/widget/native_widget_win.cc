@@ -926,6 +926,8 @@ void NativeWidgetWin::Maximize() {
 
 void NativeWidgetWin::Minimize() {
   ExecuteSystemMenuCommand(SC_MINIMIZE);
+
+  delegate_->OnNativeBlur(NULL);
 }
 
 bool NativeWidgetWin::IsMaximized() const {
