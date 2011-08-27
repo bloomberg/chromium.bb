@@ -108,13 +108,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 
 // This tests the case when a service process is launched when the browser
 // starts but we try to launch it again while setting up Cloud Print.
-// Crashes on mac. http://crbug.com/75518
-#if defined(OS_MACOSX)
-#define MAYBE_LaunchTwice DISABLED_LaunchTwice
-#else
-#define MAYBE_LaunchTwice LaunchTwice
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
   // Launch the service process the first time.
   LaunchServiceProcessControl();
 
@@ -139,14 +133,8 @@ static void DecrementUntilZero(int* count) {
 
 // Invoke multiple Launch calls in succession and ensure that all the tasks
 // get invoked.
-// Crashes on mac. http://crbug.com/75518
-#if defined(OS_MACOSX)
-#define MAYBE_MultipleLaunchTasks DISABLED_MultipleLaunchTasks
-#else
-#define MAYBE_MultipleLaunchTasks MultipleLaunchTasks
-#endif
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
-                       MAYBE_MultipleLaunchTasks) {
+                       MultipleLaunchTasks) {
   ServiceProcessControl* process = ServiceProcessControl::GetInstance();
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
@@ -163,13 +151,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
 }
 
 // Make sure using the same task for success and failure tasks works.
-// Crashes on mac. http://crbug.com/75518
-#if defined(OS_MACOSX)
-#define MAYBE_SameLaunchTask DISABLED_SameLaunchTask
-#else
-#define MAYBE_SameLaunchTask SameLaunchTask
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
   ServiceProcessControl* process = ServiceProcessControl::GetInstance();
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
@@ -186,14 +168,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
 
 // Tests whether disconnecting from the service IPC causes the service process
 // to die.
-// Crashes on mac. http://crbug.com/75518
-#if defined(OS_MACOSX)
-#define MAYBE_DieOnDisconnect DISABLED_DieOnDisconnect
-#else
-#define MAYBE_DieOnDisconnect DieOnDisconnect
-#endif
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
-                       MAYBE_DieOnDisconnect) {
+                       DieOnDisconnect) {
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
@@ -202,9 +178,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   WaitForShutdown();
 }
 
-//http://code.google.com/p/chromium/issues/detail?id=70793
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
-                       DISABLED_ForceShutdown) {
+                       ForceShutdown) {
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
@@ -217,13 +192,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   WaitForShutdown();
 }
 
-// Crashes on mac. http://crbug.com/75518
-#if defined(OS_MACOSX)
-#define MAYBE_CheckPid DISABLED_CheckPid
-#else
-#define MAYBE_CheckPid CheckPid
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_CheckPid) {
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, CheckPid) {
   base::ProcessId service_pid;
   EXPECT_FALSE(GetServiceProcessData(NULL, &service_pid));
   // Launch the service process.

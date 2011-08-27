@@ -219,8 +219,6 @@
       '-plugins.PluginsTest.testBlockPluginException',
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
       '-plugins.PluginsTest.testKillAndReloadAllPlugins',
-      # Causes unexpected browser crash in Debug. crbug.com/75518
-      '-shortcuts.ShortcutsTest.testClearBrowsingDataShortcut',
     ],
 
     'linux': [  # linux != chromeos
