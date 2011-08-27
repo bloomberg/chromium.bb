@@ -25,7 +25,7 @@ class EndToEndAsyncTest : public testing::Test {
   EndToEndAsyncTest() {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     // Make the main thread not to allow IO.
     base::ThreadRestrictions::SetIOAllowed(false);
 
@@ -65,7 +65,7 @@ class EndToEndAsyncTest : public testing::Test {
     message_loop_.Run();
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     bus_->Shutdown(base::Bind(&EndToEndAsyncTest::OnShutdown,
                               base::Unretained(this)));
     // Wait until the bus is shutdown. OnShutdown() will be called in

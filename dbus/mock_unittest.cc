@@ -24,7 +24,7 @@ class MockTest : public testing::Test {
   MockTest() {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     // Create a mock bus.
     dbus::Bus::Options options;
     options.bus_type = dbus::Bus::SYSTEM;
@@ -52,6 +52,13 @@ class MockTest : public testing::Test {
     EXPECT_CALL(*mock_bus_, GetObjectProxy("org.chromium.TestService",
                                           "/org/chromium/TestObject"))
         .WillOnce(Return(mock_proxy_.get()));
+
+    // ShutdownAndBlock() will be called in TearDown().
+    EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+  }
+
+  virtual void TearDown() {
+    mock_bus_->ShutdownAndBlock();
   }
 
   // Called when the response is received.

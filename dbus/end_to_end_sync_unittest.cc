@@ -18,7 +18,7 @@ class EndToEndSyncTest : public testing::Test {
   EndToEndSyncTest() {
   }
 
-  void SetUp() {
+  virtual void SetUp() {
     // Start the test service;
     dbus::TestService::Options options;
     test_service_.reset(new dbus::TestService(options));
@@ -36,7 +36,7 @@ class EndToEndSyncTest : public testing::Test {
     ASSERT_FALSE(client_bus_->HasDBusThread());
   }
 
-  void TearDown() {
+  virtual void TearDown() {
     test_service_->Shutdown();
     ASSERT_TRUE(test_service_->WaitUntilServiceIsShutdown());
     test_service_->Stop();

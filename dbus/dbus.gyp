@@ -39,6 +39,8 @@
       'sources': [
         'mock_bus.cc',
         'mock_bus.h',
+        'mock_exported_object.cc',
+        'mock_exported_object.h',
         'mock_object_proxy.cc',
         'mock_object_proxy.h',
       ],

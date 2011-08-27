@@ -59,6 +59,12 @@ class ObjectProxy;
 // call). To err on the safe side, we consider all libdbus functions that
 // deal with the connection to dbus-damoen to be blocking.
 //
+// SHUTDOWN
+//
+// The Bus object must be shut down manually by Shutdown() or
+// ShutdownAndBlock(). We require the manual shutdown as we should not
+// issue blocking calls in the destructor.
+//
 // EXAMPLE USAGE:
 //
 // Synchronous method call:
@@ -448,7 +454,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
                    scoped_refptr<dbus::ExportedObject> > ExportedObjectTable;
   ExportedObjectTable exported_object_table_;
 
-  bool async_operations_are_set_up_;
+  bool async_operations_set_up_;
 
   // Counters to make sure that OnAddWatch()/OnRemoveWatch() and
   // OnAddTimeout()/OnRemoveTimeou() are balanced.

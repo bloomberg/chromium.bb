@@ -182,7 +182,7 @@ Bus::Bus(const Options& options)
       origin_loop_(MessageLoop::current()),
       origin_thread_id_(base::PlatformThread::CurrentId()),
       dbus_thread_id_(base::kInvalidThreadId),
-      async_operations_are_set_up_(false),
+      async_operations_set_up_(false),
       num_pending_watches_(0),
       num_pending_timeouts_(0) {
   if (dbus_thread_) {
@@ -370,7 +370,7 @@ bool Bus::SetUpAsyncOperations() {
   DCHECK(connection_);
   AssertOnDBusThread();
 
-  if (async_operations_are_set_up_)
+  if (async_operations_set_up_)
     return true;
 
   // Process all the incoming data if any, so that OnDispatchStatus() will
@@ -400,7 +400,7 @@ bool Bus::SetUpAsyncOperations() {
       this,
       NULL);
 
-  async_operations_are_set_up_ = true;
+  async_operations_set_up_ = true;
 
   return true;
 }
@@ -500,9 +500,11 @@ bool Bus::TryRegisterObjectPath(const std::string& object_path,
   DCHECK(connection_);
   AssertOnDBusThread();
 
-  DCHECK(registered_object_paths_.find(object_path) ==
-         registered_object_paths_.end())
-      << "Object path already registered: " << object_path;
+  if (registered_object_paths_.find(object_path) !=
+      registered_object_paths_.end()) {
+    LOG(ERROR) << "Object path already registered: " << object_path;
+    return false;
+  }
 
   const bool success = dbus_connection_try_register_object_path(
       connection_,
@@ -519,9 +521,12 @@ void Bus::UnregisterObjectPath(const std::string& object_path) {
   DCHECK(connection_);
   AssertOnDBusThread();
 
-  DCHECK(registered_object_paths_.find(object_path) !=
-         registered_object_paths_.end())
-      << "Requested to unregister an unknown object path: " << object_path;
+  if (registered_object_paths_.find(object_path) ==
+      registered_object_paths_.end()) {
+    LOG(ERROR) << "Requested to unregister an unknown object path: "
+               << object_path;
+    return;
+  }
 
   const bool success = dbus_connection_unregister_object_path(
       connection_,
