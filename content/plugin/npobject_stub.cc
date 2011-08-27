@@ -22,7 +22,9 @@ NPObjectStub::NPObjectStub(
     int route_id,
     gfx::NativeViewId containing_window,
     const GURL& page_url)
-    : npobject_(npobject),
+    : has_deletion_stack_trace_(false),
+      liveness_token_(kTokenAlive),
+      npobject_(npobject),
       channel_(channel),
       route_id_(route_id),
       containing_window_(containing_window),
@@ -35,21 +37,79 @@ NPObjectStub::NPObjectStub(
 }
 
 NPObjectStub::~NPObjectStub() {
+  // Crash if this is a double free!
+  CheckIsAlive();
+
   channel_->RemoveRoute(route_id_);
   CHECK(!npobject_);
+
+  // Mark the object as dead.
+  liveness_token_ = kTokenDead;
+
+  if (!has_deletion_stack_trace_) {
+    // We will probably have already set a more specific stack trace from
+    // DeleteSoonHelper. In case we got deleted from somewhere else, save the
+    // current thread's stack trace.
+    has_deletion_stack_trace_ = true;
+    deletion_stack_trace_ = base::debug::StackTrace();
+  }
+
+  // I doubt this is necessary to prevent optimization, but it can't hurt.
+  base::debug::Alias(&liveness_token_);
+  base::debug::Alias(&has_deletion_stack_trace_);
+  base::debug::Alias(&deletion_stack_trace_);
+}
+
+// static
+void NPObjectStub::DeleteSoonHelper(
+    const base::debug::StackTrace& task_origin_stack_trace,
+    NPObjectStub* stub) {
+  // Make sure the deletion stacktrace is going to be on the stack.
+  base::debug::StackTrace origin = task_origin_stack_trace;
+  base::debug::Alias(&origin);
+
+  stub->CheckIsAlive();
+
+  // Use the task origin's stacktrace as our deletion stacktrace
+  // (rather than the current thread's callstack).
+  stub->has_deletion_stack_trace_ = true;
+  stub->deletion_stack_trace_ = task_origin_stack_trace;
+
+  delete stub;
+}
+
+void NPObjectStub::CheckIsAlive() {
+  // Copy the deletion stacktrace onto stack in case we crash.
+  base::debug::StackTrace deletion_stack_trace = deletion_stack_trace_;
+  base::debug::Alias(&deletion_stack_trace);
+
+  // Copy the token onto stack in case it mismatches so we can explore its
+  // value.
+  int liveness_token = liveness_token_;
+  base::debug::Alias(&liveness_token);
+
+  CHECK_EQ(liveness_token, kTokenAlive);
 }
 
 void NPObjectStub::DeleteSoon(bool release_npobject) {
+  CheckIsAlive();
+
   if (npobject_) {
     channel_->RemoveMappingForNPObjectStub(route_id_, npobject_);
     if (release_npobject)
       WebBindings::releaseObject(npobject_);
     npobject_ = NULL;
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableFunction(
+          &NPObjectStub::DeleteSoonHelper,
+          base::debug::StackTrace(),
+          this));
   }
 }
 
 bool NPObjectStub::Send(IPC::Message* msg) {
+  CheckIsAlive();
   return channel_->Send(msg);
 }
 
