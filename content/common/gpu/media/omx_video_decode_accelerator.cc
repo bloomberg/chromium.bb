@@ -515,7 +515,8 @@ void OmxVideoDecodeAccelerator::OnReachedIdleInInitializing() {
   DCHECK_EQ(client_state_, OMX_StateLoaded);
   client_state_ = OMX_StateIdle;
   // Query the resources with the component.
-  if (component_name_is_nvidia_h264ext_) {
+  if (component_name_is_nvidia_h264ext_ &&
+      (profile_ != OMX_VIDEO_AVCProfileMax)) {
     OMX_INDEXTYPE  extension_index;
     OMX_ERRORTYPE result = OMX_GetExtensionIndex(
         component_handle_,
