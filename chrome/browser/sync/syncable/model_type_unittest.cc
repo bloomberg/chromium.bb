@@ -63,7 +63,6 @@ TEST_F(ModelTypeTest, ModelTypeBitSetFromValue) {
   model_types.set(syncable::APPS);
   value.reset(ModelTypeBitSetToValue(model_types));
   EXPECT_EQ(model_types, ModelTypeBitSetFromValue(*value));
-
 }
 
 TEST_F(ModelTypeTest, ModelTypeSetToValue) {
@@ -80,23 +79,17 @@ TEST_F(ModelTypeTest, ModelTypeSetToValue) {
   EXPECT_EQ("Apps", types[1]);
 }
 
-TEST_F(ModelTypeTest, ModelTypeBitSetFromString) {
-  ModelTypeBitSet input, output;
-  input.set(BOOKMARKS);
-  input.set(AUTOFILL);
-  input.set(APPS);
-  std::string input_string = "Bookmarks, Autofill, Apps";
-  EXPECT_TRUE(ModelTypeBitSetFromString(input_string, &output));
-  EXPECT_EQ(input, output);
+TEST_F(ModelTypeTest, ModelTypeSetFromValue) {
+  // Try empty set first.
+  ModelTypeSet model_types;
+  scoped_ptr<ListValue> value(ModelTypeSetToValue(model_types));
+  EXPECT_EQ(model_types, ModelTypeSetFromValue(*value));
 
-  // Check that ModelTypeBitSetFromString(ModelTypeBitSetToString(set)) == set.
-  std::string set_as_string = ModelTypeBitSetToString(input);
-  EXPECT_TRUE(ModelTypeBitSetFromString(set_as_string, &output));
-  EXPECT_EQ(input, output);
-
-  input_string.clear();
-  EXPECT_TRUE(ModelTypeBitSetFromString(input_string, &output));
-  EXPECT_EQ(ModelTypeBitSet(), output);
+  // Now try with a few random types.
+  model_types.insert(BOOKMARKS);
+  model_types.insert(APPS);
+  value.reset(ModelTypeSetToValue(model_types));
+  EXPECT_EQ(model_types, ModelTypeSetFromValue(*value));
 }
 
 TEST_F(ModelTypeTest, GetAllRealModelTypes) {

@@ -39,8 +39,9 @@ class NonBlockingInvalidationNotifier : public SyncNotifier {
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void UpdateEnabledTypes(
-      const syncable::ModelTypeSet& types) OVERRIDE;
-  virtual void SendNotification() OVERRIDE;
+      const syncable::ModelTypeSet& enabled_types) OVERRIDE;
+  virtual void SendNotification(
+      const syncable::ModelTypeSet& changed_types) OVERRIDE;
 
  private:
   // The real guts of NonBlockingInvalidationNotifier, which allows this class

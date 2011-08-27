@@ -26,6 +26,15 @@ ModelTypePayloadMap ModelTypePayloadMapFromBitSet(
   return types_with_payloads;
 }
 
+ModelTypeSet ModelTypePayloadMapToSet(const ModelTypePayloadMap& payload_map) {
+  ModelTypeSet types;
+  for (ModelTypePayloadMap::const_iterator it = payload_map.begin();
+       it != payload_map.end(); ++it) {
+    types.insert(it->first);
+  }
+  return types;
+}
+
 ModelTypePayloadMap ModelTypePayloadMapFromRoutingInfo(
     const browser_sync::ModelSafeRoutingInfo& routes,
     const std::string& payload) {

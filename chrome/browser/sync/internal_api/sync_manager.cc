@@ -38,6 +38,7 @@
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/weak_handle.h"
@@ -1599,7 +1600,9 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     if (is_notifiable_commit) {
       allstatus_.IncrementNotifiableCommits();
       if (sync_notifier_.get()) {
-        sync_notifier_->SendNotification();
+        const syncable::ModelTypeSet& changed_types =
+            syncable::ModelTypePayloadMapToSet(event.snapshot->source.types);
+        sync_notifier_->SendNotification(changed_types);
       } else {
         VLOG(1) << "Not sending notification: sync_notifier_ is NULL";
       }

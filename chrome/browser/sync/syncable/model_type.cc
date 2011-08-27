@@ -314,30 +314,6 @@ std::string ModelTypeBitSetToString(const ModelTypeBitSet& model_types) {
   return result;
 }
 
-bool ModelTypeBitSetFromString(
-    const std::string& model_type_bitset_string,
-    ModelTypeBitSet* model_types) {
-  DCHECK(model_types);
-  ModelTypeBitSet bitset;
-  if (!model_type_bitset_string.empty()) {
-    std::vector<std::string> types;
-    // Parse the comma-delimited list of types.
-    base::SplitString(model_type_bitset_string, ',', &types);
-
-    // Walk the list of types and set them in our ModelTypeBitSet.
-    for (std::vector<std::string>::const_iterator it = types.begin();
-         it != types.end();
-         ++it) {
-      ModelType type = ModelTypeFromString(*it);
-      if (type == UNSPECIFIED)
-        return false;
-      bitset.set(type);
-    }
-  }
-  *model_types = bitset;
-  return true;
-}
-
 ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set) {
   ModelTypeBitSet bitset;
   for (ModelTypeSet::const_iterator iter = set.begin(); iter != set.end();
@@ -373,6 +349,14 @@ ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types) {
     value->Append(Value::CreateStringValue(ModelTypeToString(*i)));
   }
   return value;
+}
+
+ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value) {
+  ModelTypeSet result;
+  for (ListValue::const_iterator i = value.begin(); i != value.end(); ++i) {
+    result.insert(ModelTypeFromValue(**i));
+  }
+  return result;
 }
 
 // TODO(zea): remove all hardcoded tags in model associators and have them use

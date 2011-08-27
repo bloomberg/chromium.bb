@@ -32,8 +32,7 @@ class NonBlockingInvalidationNotifier::Core
   void SetUniqueId(const std::string& unique_id);
   void SetState(const std::string& state);
   void UpdateCredentials(const std::string& email, const std::string& token);
-  void UpdateEnabledTypes(const syncable::ModelTypeSet& types);
-  void SendNotification();
+  void UpdateEnabledTypes(const syncable::ModelTypeSet& enabled_types);
 
   // SyncNotifierObserver implementation (all called on I/O thread).
   virtual void OnIncomingNotification(
@@ -111,9 +110,9 @@ void NonBlockingInvalidationNotifier::Core::UpdateCredentials(
 }
 
 void NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes(
-    const syncable::ModelTypeSet& types) {
+    const syncable::ModelTypeSet& enabled_types) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  invalidation_notifier_->UpdateEnabledTypes(types);
+  invalidation_notifier_->UpdateEnabledTypes(enabled_types);
 }
 
 void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
@@ -216,19 +215,20 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
 }
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
-    const syncable::ModelTypeSet& types) {
+    const syncable::ModelTypeSet& enabled_types) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   if (!io_message_loop_proxy_->PostTask(
           FROM_HERE,
           NewRunnableMethod(
               core_.get(),
               &NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
-              types))) {
+              enabled_types))) {
     NOTREACHED();
   }
 }
 
-void NonBlockingInvalidationNotifier::SendNotification() {
+void NonBlockingInvalidationNotifier::SendNotification(
+    const syncable::ModelTypeSet& changed_types) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   // InvalidationClient doesn't implement SendNotification(), so no
   // need to forward on the call.

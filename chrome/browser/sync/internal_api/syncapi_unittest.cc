@@ -720,7 +720,7 @@ class SyncNotifierMock : public sync_notifier::SyncNotifier {
                void(const std::string&, const std::string&));
   MOCK_METHOD1(UpdateEnabledTypes,
                void(const syncable::ModelTypeSet&));
-  MOCK_METHOD0(SendNotification, void());
+  MOCK_METHOD1(SendNotification, void(const syncable::ModelTypeSet&));
 };
 
 class SyncManagerTest : public testing::Test,

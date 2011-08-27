@@ -17,6 +17,8 @@
 #include "content/browser/browser_thread.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/notifier_options.h"
+#include "jingle/notifier/listener/mediator_thread_impl.h"
+#include "jingle/notifier/listener/talk_mediator_impl.h"
 #include "net/base/host_port_pair.h"
 
 namespace sync_notifier {
@@ -90,7 +92,12 @@ SyncNotifier* CreateDefaultSyncNotifier(
   }
 
   if (notifier_options.notification_method == notifier::NOTIFICATION_P2P) {
-    return new P2PNotifier(notifier_options);
+    notifier::TalkMediator* const talk_mediator =
+        new notifier::TalkMediatorImpl(
+            new notifier::MediatorThreadImpl(notifier_options),
+            notifier_options);
+    // Takes ownership of |talk_mediator|.
+    return new P2PNotifier(talk_mediator);
   }
 
   return new NonBlockingInvalidationNotifier(notifier_options, client_info);

@@ -55,8 +55,8 @@ IN_PROC_BROWSER_TEST_F(MigrationCycleTest, PrefsOnly) {
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
 }
 
-// TODO(akalin): Fails due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationCycleTest, FAILS_PrefsNigori) {
+// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_PrefsNigori) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
@@ -87,8 +87,8 @@ IN_PROC_BROWSER_TEST_F(MigrationCycleTest, FAILS_PrefsNigori) {
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
 }
 
-// TODO(akalin): Fails due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationCycleTest, FAILS_BookmarksPrefs) {
+// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_BookmarksPrefs) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
@@ -133,7 +133,9 @@ class MigrationErrorsTest : public LiveSyncTest {
 
 // Easiest possible test of migration errors: triggers a server migration on
 // one datatype, then modifies some other datatype.
-IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigratePrefsThenModifyBookmark) {
+// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
+                       DISABLED_MigratePrefsThenModifyBookmark) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
@@ -165,8 +167,9 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigratePrefsThenModifyBookmark) {
 
 // Triggers a server migration on two datatypes, then makes a local
 // modification to one of them.
+// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
 IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
-    MigratePrefsAndBookmarksThenModifyBookmark) {
+                       DISABLED_MigratePrefsAndBookmarksThenModifyBookmark) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
@@ -199,7 +202,9 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
 
 // Migrate every datatype in sequence; the catch being that the server
 // will only tell the client about the migrations one at a time.
-IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithoutNigori) {
+// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
+                       DISABLED_MigrationHellWithoutNigori) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
@@ -239,7 +244,9 @@ IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithoutNigori) {
   ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationErrorsTest, MigrationHellWithNigori) {
+// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
+                       DISABLED_MigrationHellWithNigori) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
@@ -329,7 +336,9 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
   ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabsAndMigrate) {
+// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
+IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest,
+                       DISABLED_SetSyncTabsAndMigrate) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;

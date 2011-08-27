@@ -18,10 +18,21 @@ using test::ExpectDictStringValue;
 
 class ModelTypePayloadMapTest : public testing::Test {};
 
+TEST_F(ModelTypePayloadMapTest, TypePayloadMapToSet) {
+  ModelTypePayloadMap payloads;
+  payloads[BOOKMARKS] = "bookmarkpayload";
+  payloads[APPS] = "";
+
+  ModelTypeSet types;
+  types.insert(BOOKMARKS);
+  types.insert(APPS);
+  EXPECT_EQ(types, ModelTypePayloadMapToSet(payloads));
+}
+
 TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {
   ModelTypePayloadMap payloads;
-  payloads[syncable::BOOKMARKS] = "bookmarkpayload";
-  payloads[syncable::APPS] = "";
+  payloads[BOOKMARKS] = "bookmarkpayload";
+  payloads[APPS] = "";
 
   scoped_ptr<DictionaryValue> value(ModelTypePayloadMapToValue(payloads));
   EXPECT_EQ(2u, value->size());

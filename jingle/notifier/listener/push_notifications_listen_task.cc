@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,16 +29,17 @@ PushNotificationsListenTask::~PushNotificationsListenTask() {
 }
 
 int PushNotificationsListenTask::ProcessStart() {
-  VLOG(1) << "Push notifications: Listener task started.";
   return STATE_RESPONSE;
 }
 
 int PushNotificationsListenTask::ProcessResponse() {
-  VLOG(1) << "Push notifications: Listener response received.";
   const buzz::XmlElement* stanza = NextStanza();
   if (stanza == NULL) {
     return STATE_BLOCKED;
   }
+
+  VLOG(1) << "Received stanza " << XmlElementToString(*stanza);
+
   // The push notifications service does not need us to acknowledge receipt of
   // the notification to the buzz server.
 
@@ -46,36 +47,41 @@ int PushNotificationsListenTask::ProcessResponse() {
   // Extract the service URL and service-specific data from the stanza.
   // Note that we treat the channel name as service URL.
   // The response stanza has the following format.
-  // <message from=’someservice.google.com’ to={full_jid}>
-  //  <push xmlns=’google:push’ channel={channel name}>
-  //    <recipient to={bare_jid}>{base-64 encoded data}</recipient>
-  //    <data>{base-64 data}</data>
+  // <message from="{url or bare jid}" to={full jid}>
+  //  <push xmlns="google:push" channel={channel name}>
+  //    <recipient to={bare jid}>{base-64 encoded data}</recipient>
+  //    <data>{base-64 encoded data}</data>
   //  </push>
   // </message>
 
-  const buzz::XmlElement* push_element =
-      stanza->FirstNamed(buzz::QName(kPushNotificationsNamespace, "push"));
+  const buzz::QName kQnPush(kPushNotificationsNamespace, "push");
+  const buzz::QName kQnChannel(buzz::STR_EMPTY, "channel");
+  const buzz::QName kQnData(kPushNotificationsNamespace, "data");
+
+  const buzz::XmlElement* push_element = stanza->FirstNamed(kQnPush);
   if (push_element) {
     Notification notification;
-    notification.channel =
-        push_element->Attr(buzz::QName(buzz::STR_EMPTY, "channel"));
-    const buzz::XmlElement* data_element = push_element->FirstNamed(
-        buzz::QName(kPushNotificationsNamespace, "data"));
+    notification.channel = push_element->Attr(kQnChannel);
+    const buzz::XmlElement* data_element = push_element->FirstNamed(kQnData);
     if (data_element) {
-      base::Base64Decode(data_element->BodyText(),
-                         &notification.data);
+      const std::string& base64_encoded_data = data_element->BodyText();
+      if (!base::Base64Decode(base64_encoded_data, &notification.data)) {
+        LOG(WARNING) << "Could not base64-decode " << base64_encoded_data;
+      }
+    } else {
+      LOG(WARNING) << "No data element found in push element "
+                   << XmlElementToString(*push_element);
     }
+    VLOG(1) << "Received notification " << notification.ToString();
     delegate_->OnNotificationReceived(notification);
   } else {
-    LOG(WARNING) <<
-        "Push notifications: No push element found in response stanza";
+    LOG(WARNING) << "No push element found in stanza "
+                 << XmlElementToString(*stanza);
   }
   return STATE_RESPONSE;
 }
 
 bool PushNotificationsListenTask::HandleStanza(const buzz::XmlElement* stanza) {
-  VLOG(1) << "Push notifications: Stanza received: "
-          << XmlElementToString(*stanza);
   if (IsValidNotification(stanza)) {
     QueueStanza(stanza);
     return true;
@@ -85,13 +91,6 @@ bool PushNotificationsListenTask::HandleStanza(const buzz::XmlElement* stanza) {
 
 bool PushNotificationsListenTask::IsValidNotification(
     const buzz::XmlElement* stanza) {
-  // An update notification has the following form.
-  // <message from=’someservice.google.com’ to={full_jid}>
-  //  <push xmlns=’google:push’ channel={channel name}>
-  //    <recipient to={bare_jid}>{base-64 encoded data}</recipient>
-  //    <data>{base-64 data}</data>
-  //  </push>
-  // </message>
   // We don't do much validation here, just check if the stanza is a message
   // stanza.
   return (stanza->Name() == buzz::QN_MESSAGE);

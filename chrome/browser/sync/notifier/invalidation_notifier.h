@@ -50,8 +50,9 @@ class InvalidationNotifier
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void UpdateEnabledTypes(
-      const syncable::ModelTypeSet& types) OVERRIDE;
-  virtual void SendNotification() OVERRIDE;
+      const syncable::ModelTypeSet& enabled_types) OVERRIDE;
+  virtual void SendNotification(
+      const syncable::ModelTypeSet& changed_types) OVERRIDE;
 
   // notifier::LoginDelegate implementation.
   virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) OVERRIDE;

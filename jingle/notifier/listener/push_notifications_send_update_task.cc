@@ -29,9 +29,10 @@ int PushNotificationsSendUpdateTask::ProcessStart() {
   scoped_ptr<buzz::XmlElement> stanza(
       MakeUpdateMessage(notification_,
                         GetClient()->jid().BareJid()));
-  VLOG(1) << "P2P: Sending notification: " << XmlElementToString(*stanza);
+  VLOG(1) << "Sending notification " << notification_.ToString()
+          << " as stanza " << XmlElementToString(*stanza);
   if (SendStanza(stanza.get()) != buzz::XMPP_RETURN_OK) {
-    LOG(WARNING) << "Could not send: " << XmlElementToString(*stanza);
+    LOG(WARNING) << "Could not send stanza " << XmlElementToString(*stanza);
   }
   return STATE_DONE;
 }
@@ -42,10 +43,10 @@ buzz::XmlElement* PushNotificationsSendUpdateTask::MakeUpdateMessage(
   DCHECK(to_jid_bare.IsBare());
   const buzz::QName kQnPush(kPushNotificationsNamespace, "push");
   const buzz::QName kQnChannel(buzz::STR_EMPTY, "channel");
-  const buzz::QName kQnData(buzz::STR_EMPTY, "data");
+  const buzz::QName kQnData(kPushNotificationsNamespace, "data");
 
   // Create our update stanza. The message is constructed as:
-  // <message from='{fullJid}' to='{bareJid}' type='headline'>
+  // <message from='{full jid}' to='{bare jid}' type='headline'>
   //   <push xmlns='google:push' channel='{channel}'>
   //     <data>{base-64 encoded data}</data>
   //   </push>
@@ -62,7 +63,7 @@ buzz::XmlElement* PushNotificationsSendUpdateTask::MakeUpdateMessage(
   buzz::XmlElement* data = new buzz::XmlElement(kQnData, true);
   std::string base64_data;
   if (!base::Base64Encode(notification.data, &base64_data)) {
-    LOG(WARNING) << "Could not encode data: " << notification.data;
+    LOG(WARNING) << "Could not encode data " << notification.data;
   }
   data->SetBodyText(base64_data);
   push->AddElement(data);

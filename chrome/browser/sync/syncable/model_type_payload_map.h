@@ -32,6 +32,8 @@ ModelTypePayloadMap ModelTypePayloadMapFromBitSet(
     const ModelTypeBitSet& model_types,
     const std::string& payload);
 
+ModelTypeSet ModelTypePayloadMapToSet(const ModelTypePayloadMap& payload_map);
+
 // Make a TypePayloadMap for all the enabled types in a
 // ModelSafeRoutingInfo using a default payload.
 ModelTypePayloadMap ModelTypePayloadMapFromRoutingInfo(

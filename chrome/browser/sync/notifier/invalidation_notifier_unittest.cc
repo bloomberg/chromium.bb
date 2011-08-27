@@ -12,6 +12,7 @@
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/browser/browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
+#include "jingle/notifier/base/notifier_options.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,9 +31,10 @@ class InvalidationNotifierTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    request_context_getter_ = new TestURLRequestContextGetter;
     notifier::NotifierOptions notifier_options;
-    notifier_options.request_context_getter = request_context_getter_;
+    // Note: URLRequestContextGetters are ref-counted.
+    notifier_options.request_context_getter =
+        new TestURLRequestContextGetter();
     invalidation_notifier_.reset(new InvalidationNotifier(notifier_options,
                                                           "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
@@ -41,11 +43,9 @@ class InvalidationNotifierTest : public testing::Test {
   virtual void TearDown() {
     invalidation_notifier_->RemoveObserver(&mock_observer_);
     invalidation_notifier_.reset();
-    request_context_getter_ = NULL;
   }
 
   MessageLoop message_loop_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;
   notifier::FakeBaseTask fake_base_task_;

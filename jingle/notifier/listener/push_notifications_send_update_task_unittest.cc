@@ -47,7 +47,7 @@ TEST_F(PushNotificationsSendUpdateTaskTest, MakeUpdateMessage) {
           "<cli:message to=\"%s\" type=\"headline\" "
               "xmlns:cli=\"jabber:client\">"
             "<push xmlns=\"google:push\" channel=\"%s\">"
-              "<data xmlns=\"\">%s</data>"
+              "<data xmlns=\"google:push\">%s</data>"
             "</push>"
           "</cli:message>",
           to_jid_bare_.Str().c_str(), notification.channel.c_str(),

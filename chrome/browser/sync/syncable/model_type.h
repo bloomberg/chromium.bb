@@ -113,6 +113,8 @@ ModelType GetModelTypeFromExtensionFieldNumber(int field_number);
 // a model type.
 int GetExtensionFieldNumberFromModelType(ModelType model_type);
 
+// TODO(sync): The functions below badly need some cleanup.
+
 // Returns a string that represents the name of |model_type|.
 std::string ModelTypeToString(ModelType model_type);
 
@@ -131,12 +133,6 @@ ModelType ModelTypeFromString(const std::string& model_type_string);
 
 std::string ModelTypeBitSetToString(const ModelTypeBitSet& model_types);
 
-// Converts a string into a model type bitset. If successful, returns true. If
-// failed to parse string, returns false and model_types is unspecified.
-bool ModelTypeBitSetFromString(
-    const std::string& model_type_bitset_string,
-    ModelTypeBitSet* model_types);
-
 // Convert a ModelTypeSet to a ModelTypeBitSet.
 ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set);
 
@@ -147,6 +143,8 @@ ModelTypeBitSet ModelTypeBitSetFromValue(const base::ListValue& value);
 
 // Caller takes ownership of returned list.
 base::ListValue* ModelTypeSetToValue(const ModelTypeSet& model_types);
+
+ModelTypeSet ModelTypeSetFromValue(const base::ListValue& value);
 
 // Returns a string corresponding to the syncable tag for this datatype.
 std::string ModelTypeToRootTag(ModelType type);
