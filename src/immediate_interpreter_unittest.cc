@@ -776,7 +776,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
   for (int iter = 0; iter < 3; ++iter) {
     for (size_t i = 0; i < arraysize(hwsgs_list); ++i) {
       string desc;
-      stime_t disable_time;
+      stime_t disable_time = 0.0;
       switch (iter) {
         case 0:  // test with tap enabled
           desc = StringPrintf("State %zu (tap enabled)", i);
