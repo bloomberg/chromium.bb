@@ -74,6 +74,7 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   if (print_preview_context_.IsModifiable()) {
     draft_metafile.reset(new printing::PreviewMetafile);
     if (!draft_metafile->Init()) {
+      LOG(ERROR) << "Draft PreviewMetafile Init failed";
       return false;
     }
     initial_render_metafile = draft_metafile.get();

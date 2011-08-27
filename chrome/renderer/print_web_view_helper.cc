@@ -577,13 +577,16 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   }
 
   if (!UpdatePrintSettings(job_settings, false)) {
+    LOG(ERROR) << "UpdatePrintSettings failed";
     DidFinishPrinting(FAIL_PRINT);
     return;
   }
 
   // Render Pages for printing.
-  if (!RenderPagesForPrint(pdf_frame, &pdf_element, prepare.get()))
+  if (!RenderPagesForPrint(pdf_frame, &pdf_element, prepare.get())) {
+    LOG(ERROR) << "RenderPagesForPrint failed";
     DidFinishPrinting(FAIL_PRINT);
+  }
 }
 
 bool PrintWebViewHelper::GetPrintFrame(WebKit::WebFrame** frame) {
@@ -635,6 +638,7 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   }
 
   if (!UpdatePrintSettings(settings, true)) {
+    LOG(ERROR) << "UpdatePrintSettings failed";
     DidFinishPrinting(FAIL_PREVIEW);
     return;
   }
@@ -662,10 +666,13 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
 
   // PDF printer device supports alpha blending.
   print_pages_params_->params.supports_alpha_blend = true;
-  if (CreatePreviewDocument())
+  if (CreatePreviewDocument()) {
     DidFinishPrinting(OK);
-  else
+  } else {
+    if (notify_browser_of_print_failure_)
+      LOG(ERROR) << "CreatePreviewDocument failed";
     DidFinishPrinting(FAIL_PREVIEW);
+  }
 }
 
 bool PrintWebViewHelper::CreatePreviewDocument() {
@@ -718,6 +725,7 @@ bool PrintWebViewHelper::FinalizePreviewDocument() {
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(metafile,
                                    &(preview_params.metafile_data_handle))) {
+    LOG(ERROR) << "CopyMetafileDataToSharedMem failed";
     return false;
   }
   Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
@@ -726,6 +734,8 @@ bool PrintWebViewHelper::FinalizePreviewDocument() {
 
 void PrintWebViewHelper::OnPrintingDone(bool success) {
   notify_browser_of_print_failure_ = false;
+  if (success == FAIL_PRINT)
+    LOG(ERROR) << "Failure in OnPrintingDone";
   DidFinishPrinting(success ? OK : FAIL_PRINT);
 }
 
@@ -791,8 +801,10 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame, WebKit::WebNode* node) {
   }
 
   // Render Pages for printing.
-  if (!RenderPagesForPrint(frame, node, NULL))
+  if (!RenderPagesForPrint(frame, node, NULL)) {
+    LOG(ERROR) << "RenderPagesForPrint failed";
     DidFinishPrinting(FAIL_PRINT);
+  }
   ResetScriptedPrintCount();
 }
 
@@ -801,7 +813,7 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
   if (result == FAIL_PRINT) {
     DisplayPrintJobError();
 
-    if (notify_browser_of_print_failure_) {
+    if (notify_browser_of_print_failure_ && print_pages_params_.get()) {
       int cookie = print_pages_params_->params.document_cookie;
       Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
     }
@@ -1260,6 +1272,7 @@ bool PrintWebViewHelper::PreviewPageRendered(int page_number,
   DCHECK_GT(buf_size, 0u);
   if (!CopyMetafileDataToSharedMem(
       metafile, &(preview_page_params.metafile_data_handle))) {
+    LOG(ERROR) << "CopyMetafileDataToSharedMem failed";
     return false;
   }
   preview_page_params.data_size = buf_size;
@@ -1312,8 +1325,10 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   print_params_.reset(new PrintMsg_Print_Params(*print_params));
 
   metafile_.reset(new printing::PreviewMetafile);
-  if (!metafile_->Init())
+  if (!metafile_->Init()) {
+    LOG(ERROR) << "PreviewMetafile Init failed";
     return false;
+  }
 
   // Need to make sure old object gets destroyed first.
   prep_frame_view_.reset(new PrepareFrameAndViewForPrint(*print_params, frame(),
@@ -1322,8 +1337,10 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
                                        prep_frame_view_.get(), print_params);
 
   total_page_count_ = prep_frame_view_->GetExpectedPageCount();
-  if (total_page_count_ == 0)
+  if (total_page_count_ == 0) {
+    LOG(ERROR) << "CreatePreviewDocument got 0 page count";
     return false;
+  }
 
   current_page_index_ = 0;
   if (pages.empty()) {
@@ -1336,6 +1353,8 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
       int page_number = pages[i];
       if (page_number < printing::FIRST_PAGE_INDEX ||
           page_number >= total_page_count_) {
+        LOG(ERROR) << "CreatePreviewDocument got invalid page count "
+                << page_number << " at index " << i;
         return false;
       }
       pages_to_render_.push_back(page_number);
