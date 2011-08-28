@@ -67,13 +67,13 @@ else
     gzip -9 toolchain.tar
     for i in gz bz2 ; do
       chmod a+x toolchain.tar.$i
-      echo "$(SHA1="$(openssl sha1 "toolchain.tar.$i")" ; echo "${SHA1/* /}")" \
+      echo "$(SHA1=$(openssl sha1 toolchain.tar.$i) ; echo ${SHA1/* /})" \
         > toolchain.tar.$i.sha1hash
     done
   )
 
   echo @@@BUILD_STEP archive_build@@@
-  for suffix in {gz,bz2}{,.sha1hash} ; do
+  for suffix in gz gz.sha1hash bz2 bz2.sha1hash ; do
     $GSUTIL -h Cache-Control:no-cache cp -a public-read \
       tools/toolchain.tar.$suffix \
       gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.$suffix

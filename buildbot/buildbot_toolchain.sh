@@ -43,9 +43,9 @@ echo @@@BUILD_STEP tar_toolchain@@@
 tar cvfz naclsdk.tgz sdk/
 chmod a+r naclsdk.tgz
 if [ "$PLATFORM" = "mac" ] ; then
-  echo "$(SHA1="$(openssl sha1 "naclsdk.tgz")" ; echo "${SHA1/* /}")"
+  echo "$(SHA1=$(openssl sha1 naclsdk.tgz) ; echo ${SHA1/* /})"
 else
-  echo "$(SHA1="$(sha1sum -b "naclsdk.tgz")" ; echo "${SHA1:0:40}")"
+  echo "$(SHA1=$(sha1sum -b naclsdk.tgz) ; echo ${SHA1:0:40})"
 fi > naclsdk.tgz.sha1hash
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then

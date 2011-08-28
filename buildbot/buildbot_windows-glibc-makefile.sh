@@ -83,7 +83,7 @@ else
     gzip -9 toolchain.tar
     for i in gz bz2 xz ; do
       chmod a+x toolchain.tar.$i
-      echo "$(SHA1="$(sha1sum -b "toolchain.tar.$i")" ; echo "${SHA1:0:40}")" \
+      echo "$(SHA1=$(sha1sum -b toolchain.tar.$i) ; echo ${SHA1:0:40})" \
         > toolchain.tar.$i.sha1hash
     done
   )
