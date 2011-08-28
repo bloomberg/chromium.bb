@@ -659,7 +659,8 @@ class LoggingTest(unittest.TestCase):
     log = req.read()
     self.assertTrue(':INFO:' not in log, ':INFO: in log: ' + log)
 
-  def testVerboseLogging(self):
+  # crbug.com/94470
+  def DISABLED_testVerboseLogging(self):
     driver = self._factory.GetNewDriver({'chrome.verbose': True})
     url = self._factory.GetServer().GetUrl()
     driver.execute_script('console.log("HI")')
