@@ -180,8 +180,9 @@ BitmapPlatformDevice* BitmapPlatformDevice::CreateWithData(uint8_t* data,
 // data. Therefore, we do not transfer ownership to the SkDevice's bitmap.
 BitmapPlatformDevice::BitmapPlatformDevice(
     BitmapPlatformDeviceData* data, const SkBitmap& bitmap)
-    : PlatformDevice(bitmap),
+    : SkDevice(bitmap),
       data_(data) {
+  SetPlatformDevice(this, this);
 }
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {

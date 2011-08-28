@@ -120,8 +120,9 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
 BitmapPlatformDevice::BitmapPlatformDevice(
     const SkBitmap& bitmap,
     BitmapPlatformDeviceData* data)
-    : PlatformDevice(bitmap),
+    : SkDevice(bitmap),
       data_(data) {
+  SetPlatformDevice(this, this);
 }
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {
@@ -144,6 +145,12 @@ cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
   // buffer directly.
   cairo_surface_mark_dirty(surface);
   return cairo;
+}
+
+void BitmapPlatformDevice::DrawToNativeContext(
+    PlatformSurface surface, int x, int y, const PlatformRect* src_rect) {
+  // Should never be called on Linux.
+  SkASSERT(false);
 }
 
 void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,

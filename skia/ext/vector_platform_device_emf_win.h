@@ -18,14 +18,13 @@ namespace skia {
 // SkCanvas to draw into. This specific device is not not backed by a surface
 // and is thus unreadable. This is because the backend is completely vectorial.
 // This device is a simple wrapper over a Windows device context (HDC) handle.
-class VectorPlatformDeviceEmf : public PlatformDevice {
+class VectorPlatformDeviceEmf : public PlatformDevice, public SkDevice {
  public:
-  SK_API static PlatformDevice* CreateDevice(int width, int height,
-                                             bool isOpaque,
-                                             HANDLE shared_section);
+  SK_API static SkDevice* CreateDevice(int width, int height, bool isOpaque,
+                                       HANDLE shared_section);
 
   // Factory function. The DC is kept as the output context.
-  static VectorPlatformDeviceEmf* create(HDC dc, int width, int height);
+  static SkDevice* create(HDC dc, int width, int height);
 
   VectorPlatformDeviceEmf(HDC dc, const SkBitmap& bitmap);
   virtual ~VectorPlatformDeviceEmf();
@@ -137,4 +136,3 @@ class VectorPlatformDeviceEmf : public PlatformDevice {
 }  // namespace skia
 
 #endif  // SKIA_EXT_VECTOR_PLATFORM_DEVICE_EMF_WIN_H_
-

@@ -6,23 +6,12 @@
 
 namespace skia {
 
-PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
-    : SkDevice(bitmap) {
-  SetPlatformDevice(this, this);
-}
-
-bool PlatformDevice::IsNativeFontRenderingAllowed() {
-  return true;
+PlatformSurface PlatformDevice::BeginPlatformPaint() {
+  return NULL;
 }
 
 void PlatformDevice::EndPlatformPaint() {
   // We don't need to do anything on Linux here.
-}
-
-void PlatformDevice::DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                         const PlatformRect* src_rect) {
-  // Should never be called on Linux.
-  SkASSERT(false);
 }
 
 }  // namespace skia

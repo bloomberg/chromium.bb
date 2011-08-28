@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,14 +51,17 @@ void InitializeDC(HDC context) {
   SkASSERT(res != 0);
 }
 
-PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
-    : SkDevice(bitmap) {
-  SetPlatformDevice(this, this);
+PlatformSurface PlatformDevice::BeginPlatformPaint() {
+  return 0;
 }
 
 void PlatformDevice::EndPlatformPaint() {
   // We don't clear the DC here since it will be likely to be used again.
   // Flushing will be done in onAccessBitmap.
+}
+
+void PlatformDevice::DrawToNativeContext(PlatformSurface surface, int x, int y,
+                                         const PlatformRect* src_rect) {
 }
 
 // static
@@ -233,4 +236,3 @@ void PlatformDevice::LoadClippingRegionToDC(HDC context,
 }
 
 }  // namespace skia
-

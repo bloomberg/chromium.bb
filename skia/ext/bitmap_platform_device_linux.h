@@ -7,8 +7,9 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "skia/ext/platform_device_linux.h"
+#include "skia/ext/platform_device.h"
 
 typedef struct _cairo_surface cairo_surface_t;
 
@@ -56,7 +57,7 @@ namespace skia {
 // shared memory between the renderer and the main process at least. In this
 // case we'll probably create the buffer from a precreated region of memory.
 // -----------------------------------------------------------------------------
-class BitmapPlatformDevice : public PlatformDevice {
+class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
   // A reference counted cairo surface
   class BitmapPlatformDeviceData;
 
@@ -73,22 +74,24 @@ class BitmapPlatformDevice : public PlatformDevice {
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
 
   // This doesn't take ownership of |data|
-  static BitmapPlatformDevice* Create(int width, int height,
-                                      bool is_opaque, uint8_t* data);
+  static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
+                                      uint8_t* data);
 
-  virtual void MakeOpaque(int x, int y, int width, int height);
+  virtual void MakeOpaque(int x, int y, int width, int height) OVERRIDE;
 
   // Overridden from SkDevice:
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
-                             const SkClipStack&);
+                             const SkClipStack&) OVERRIDE;
 
   // Overridden from PlatformDevice:
-  virtual cairo_t* BeginPlatformPaint();
+  virtual cairo_t* BeginPlatformPaint() OVERRIDE;
+  virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
+                                   const PlatformRect* src_rect) OVERRIDE;
 
  protected:
   virtual SkDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                             int height, bool isOpaque, 
-                                             Usage usage);
+                                             int height, bool isOpaque,
+                                             Usage usage) OVERRIDE;
 
  private:
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
