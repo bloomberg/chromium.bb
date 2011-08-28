@@ -236,6 +236,13 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, HandlersRegistered) {
   ui_test_utils::RunMessageLoop();
 
   ASSERT_TRUE(TestController::GetInstance()->result());
+
+  // Close the dialog before finishing the test.
+  ui_test_utils::WindowedNotificationObserver signal(
+      content::NOTIFICATION_TAB_CLOSED, NotificationService::AllSources());
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
+                                              false, false, false, false));
+  signal.Wait();
 }
 
 #if defined(OS_CHROMEOS)
