@@ -81,7 +81,11 @@ else
     xz -k -9 toolchain.tar
     bzip2 -k -9 toolchain.tar
     gzip -9 toolchain.tar
-    chmod a+r toolchain.tar.gz toolchain.tar.bz2 toolchain.tar.xz
+    for i in gz bz2 xz ; do
+      chmod a+x toolchain.tar.$i
+      echo "$(SHA1="$(sha1sum -b "toolchain.tar.$i")" ; echo "${SHA1:0:40}")" \
+        > toolchain.tar.$i.sha1hash
+    done
   )
 
   echo @@@BUILD_STEP untar_toolchain@@@

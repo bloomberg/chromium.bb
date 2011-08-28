@@ -24,7 +24,7 @@ if "%BUILDBOT_SLAVE_TYPE%"=="Trybot" goto SkipUpload
 :: gsutil does not work when called from cygwin - python versions conflict.
 
 echo @@@BUILD_STEP archive_build@@@
-for %%s in (gz bz2 xz) do call^
+for %%s in (gz gz.sha1hash bz2 bz2.sha1hash xz xz.sha1hash) do call^
   ..\..\..\..\scripts\slave\gsutil -h Cache-Control:no-cache cp -a public-read ^
    tools\toolchain.tar.%%s ^
    gs://nativeclient-archive2/x86_toolchain/r%BUILDBOT_GOT_REVISION%/toolchain_win_x86.tar.%%s

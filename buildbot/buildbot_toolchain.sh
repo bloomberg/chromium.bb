@@ -42,6 +42,8 @@ make -j8 clean buildbot-build-with-newlib
 echo @@@BUILD_STEP tar_toolchain@@@
 tar cvfz naclsdk.tgz sdk/
 chmod a+r naclsdk.tgz
+echo "$(SHA1="$(sha1sum -b "naclsdk.tgz")" ; echo "${SHA1:0:40}")" \
+  > naclsdk.tgz.sha1hash
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   # Upload the toolchain before running the tests, in case the tests
@@ -53,12 +55,13 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   (
     gsutil=../buildbot/gsutil.sh
     GS_BASE=gs://nativeclient-archive2/toolchain
-    ${gsutil} -h Cache-Control:no-cache cp -a public-read \
-      naclsdk.tgz \
-      ${GS_BASE}/${BUILDBOT_GOT_REVISION}/naclsdk_${PLATFORM}_x86.tgz
-    ${gsutil} -h Cache-Control:no-cache cp -a public-read \
-      naclsdk.tgz \
-      ${GS_BASE}/latest/naclsdk_${PLATFORM}_x86.tgz
+    for destrevision in ${BUILDBOT_GOT_REVISION} latest ; do
+      for suffix in tgz tgz.sha1hash ; do
+        ${gsutil} -h Cache-Control:no-cache cp -a public-read \
+          naclsdk.${suffix} \
+          ${GS_BASE}/${destrevision}/naclsdk_${PLATFORM}_x86.${suffix}
+      done
+    done
   )
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/@@@
 fi
