@@ -42,8 +42,11 @@ make -j8 clean buildbot-build-with-newlib
 echo @@@BUILD_STEP tar_toolchain@@@
 tar cvfz naclsdk.tgz sdk/
 chmod a+r naclsdk.tgz
-echo "$(SHA1="$(sha1sum -b "naclsdk.tgz")" ; echo "${SHA1:0:40}")" \
-  > naclsdk.tgz.sha1hash
+if [ "$PLATFORM" = "mac" ] ; then
+  echo "$(SHA1="$(openssl sha1 "naclsdk.tgz")" ; echo "${SHA1/* /}")"
+else
+  echo "$(SHA1="$(sha1sum -b "naclsdk.tgz")" ; echo "${SHA1:0:40}")"
+fi > naclsdk.tgz.sha1hash
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   # Upload the toolchain before running the tests, in case the tests
