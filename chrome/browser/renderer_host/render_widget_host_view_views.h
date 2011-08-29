@@ -174,12 +174,14 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 #endif
 
  protected:
-  // Overridden from RenderWidgetHostView / views::View.
+  // Overridden views::View.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void Focus() OVERRIDE;
-  virtual void Blur() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+
+  // Overridden from RenderWidgetHostView
+  virtual void Focus() OVERRIDE;
+  virtual void Blur() OVERRIDE;
 
  private:
   friend class RenderWidgetHostViewViewsWidget;
