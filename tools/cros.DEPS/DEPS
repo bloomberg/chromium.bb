@@ -5,7 +5,7 @@ vars = {
 deps_os = {
   "unix" : {
     "src/third_party/cros":
-      Var("chromiumos_git") + "/platform/cros.git@56c93050",
+      Var("chromiumos_git") + "/platform/cros.git@fe2e76cf",
     "src/third_party/cros_system_api":
       Var("chromiumos_git") + "/platform/system_api.git@d56d4785",
   }
