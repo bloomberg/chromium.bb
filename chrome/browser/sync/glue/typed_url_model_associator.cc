@@ -594,6 +594,11 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
       if (transition == PageTransition::TYPED)
         ++typed_count;
     }
+    // We should have at least one typed visit. This can sometimes happen if
+    // the history DB has an inaccurate count for some reason (there's been
+    // bugs in the history code in the past which has left users in the wild
+    // with incorrect counts - http://crbug.com/84258).
+    DCHECK(typed_count > 0);
 
     if (typed_count > kMaxTypedUrlVisits) {
       only_typed = true;
@@ -628,6 +633,16 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
     typed_url->add_visit_transitions(visit->transition);
   }
   DCHECK_EQ(skip_count, 0);
+
+  if (typed_url->visits_size() == 0) {
+    // If we get here, it's because we don't actually have any TYPED visits
+    // even though the visit's typed_count > 0 (corrupted typed_count). So
+    // let's go ahead and add a RELOAD visit at the most recent visit since
+    // it's not legal to have an empty visit array (yet another workaround
+    // for http://crbug.com/84258).
+    typed_url->add_visits(url.last_visit().ToInternalValue());
+    typed_url->add_visit_transitions(PageTransition::RELOAD);
+  }
   CHECK_GT(typed_url->visits_size(), 0);
   CHECK_LE(typed_url->visits_size(), kMaxTypedUrlVisits);
   CHECK_EQ(typed_url->visits_size(), typed_url->visit_transitions_size());

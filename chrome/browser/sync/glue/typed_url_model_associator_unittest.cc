@@ -311,3 +311,19 @@ TEST_F(TypedUrlModelAssociatorTest, TooManyTypedVisits) {
         typed_url.visit_transitions(i)));
   }
 }
+
+TEST_F(TypedUrlModelAssociatorTest, NoTypedVisits) {
+  history::VisitVector visits;
+  history::URLRow url(MakeTypedUrlRow("http://pie.com/", "pie",
+                                      1, 1000, false, &visits));
+  sync_pb::TypedUrlSpecifics typed_url;
+  TypedUrlModelAssociator::WriteToTypedUrlSpecifics(url, visits, &typed_url);
+  // URLs with no typed URL visits should be translated to a URL with one
+  // reload visit.
+  EXPECT_EQ(1, typed_url.visits_size());
+  EXPECT_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
+  // First two typed visits should be skipped.
+  EXPECT_EQ(1000, typed_url.visits(0));
+  EXPECT_EQ(PageTransition::RELOAD, static_cast<PageTransition::Type>(
+      typed_url.visit_transitions(0)));
+}
