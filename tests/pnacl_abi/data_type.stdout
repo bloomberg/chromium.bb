@@ -1,18 +1,24 @@
 target triple = "armv7-none-linux-gnueabi"
 
 @size_c = global i32 1
+@size_s = global i32 2
 @size_i = global i32 4
 @size_l = global i32 4
+@size_ll = global i32 8
 @size_p = global i32 4
 @size_f = global i32 4
 @size_d = global i32 8
+@size_ld = global i32 8
 @size_vl = global i32 16
 @size_jb = global i32 1024
 @align_c = global i32 1
+@align_s = global i32 2
 @align_i = global i32 4
 @align_l = global i32 4
+@align_ll = global i32 8
 @align_p = global i32 4
 @align_f = global i32 4
 @align_d = global i32 8
+@align_ld = global i32 8
 @align_vl = global i32 4
 @align_jb = global i32 8
