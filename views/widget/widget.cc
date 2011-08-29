@@ -109,7 +109,7 @@ Widget::InitParams::InitParams()
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
-      show_state(ui::SHOW_STATE_DEFAULT),
+      maximize(false),
       double_buffer(false),
       parent(NULL),
       parent_widget(NULL),
@@ -129,7 +129,7 @@ Widget::InitParams::InitParams(Type type)
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
       has_dropshadow(false),
-      show_state(ui::SHOW_STATE_DEFAULT),
+      maximize(false),
       double_buffer(false),
       parent(NULL),
       parent_widget(NULL),
@@ -158,11 +158,10 @@ Widget::Widget()
       frame_type_(FRAME_TYPE_DEFAULT),
       disable_inactive_rendering_(false),
       widget_closed_(false),
-      saved_show_state_(ui::SHOW_STATE_DEFAULT),
+      saved_maximized_state_(false),
       minimum_size_(100, 100),
       focus_on_creation_(true),
-      is_top_level_(false),
-      native_widget_created_(false) {
+      is_top_level_(false) {
 }
 
 Widget::~Widget() {
@@ -312,10 +311,8 @@ void Widget::Init(const InitParams& params) {
     non_client_view_->set_client_view(widget_delegate_->CreateClientView(this));
     SetContentsView(non_client_view_);
     SetInitialBounds(params.bounds);
-    if (params.show_state == ui::SHOW_STATE_MAXIMIZED)
+    if (params.maximize)
       Maximize();
-    else if (params.show_state == ui::SHOW_STATE_MINIMIZED)
-      Minimize();
     UpdateWindowTitle();
   }
 }
@@ -449,7 +446,7 @@ void Widget::Close() {
   if (non_client_view_)
     can_close = non_client_view_->CanClose();
   if (can_close) {
-    SaveWindowPlacement();
+    SaveWindowPosition();
 
     // During tear-down the top-level focus manager becomes unavailable to
     // GTK tabbed panes and their children, so normal deregistration via
@@ -476,16 +473,17 @@ void Widget::EnableClose(bool enable) {
 
 void Widget::Show() {
   if (non_client_view_) {
-    if (saved_show_state_ == ui::SHOW_STATE_MAXIMIZED &&
-        !initial_restored_bounds_.IsEmpty()) {
+    if (saved_maximized_state_ && !initial_restored_bounds_.IsEmpty()) {
       native_widget_->ShowMaximizedWithBounds(initial_restored_bounds_);
     } else {
-      native_widget_->ShowWithWindowState(saved_show_state_);
+      native_widget_->ShowWithState(saved_maximized_state_ ?
+          internal::NativeWidgetPrivate::SHOW_MAXIMIZED :
+          internal::NativeWidgetPrivate::SHOW_RESTORED);
     }
-    // |saved_show_state_| only applies the first time the window is shown.
-    // If we don't reset the value the window may be shown maximized every time
+    // |saved_maximized_state_| only applies the first time the window is shown.
+    // If we don't reset the value the window will be shown maximized every time
     // it is subsequently shown after being hidden.
-    saved_show_state_ = ui::SHOW_STATE_NORMAL;
+    saved_maximized_state_ = false;
   } else {
     native_widget_->Show();
   }
@@ -496,16 +494,14 @@ void Widget::Hide() {
 }
 
 void Widget::ShowInactive() {
-  // If this gets called with saved_show_state_ == ui::SHOW_STATE_MAXIMIZED,
-  // call SetBounds()with the restored bounds to set the correct size. This
-  // normally should not happen, but if it does we should avoid showing unsized
-  // windows.
-  if (saved_show_state_ == ui::SHOW_STATE_MAXIMIZED &&
-      !initial_restored_bounds_.IsEmpty()) {
+  // If this gets called with saved_maximized_state_ == true, call SetBounds()
+  // with the restored bounds to set the correct size. This normally should
+  // not happen, but if it does we should avoid showing unsized windows.
+  if (saved_maximized_state_ && !initial_restored_bounds_.IsEmpty()) {
     SetBounds(initial_restored_bounds_);
-    saved_show_state_ = ui::SHOW_STATE_NORMAL;
+    saved_maximized_state_ = false;
   }
-  native_widget_->ShowWithWindowState(ui::SHOW_STATE_INACTIVE);
+  native_widget_->ShowWithState(internal::NativeWidgetPrivate::SHOW_INACTIVE);
 }
 
 void Widget::Activate() {
@@ -829,7 +825,7 @@ void Widget::EnableInactiveRendering() {
 
 void Widget::OnNativeWidgetActivationChanged(bool active) {
   if (!active) {
-    SaveWindowPlacement();
+    SaveWindowPosition();
 
     // Close any open menus.
     MenuController* menu_controller = MenuController::GetActiveInstance();
@@ -870,8 +866,6 @@ void Widget::OnNativeWidgetCreated() {
 
   if (widget_delegate_->IsModal())
     native_widget_->BecomeModal();
-
-  native_widget_created_ = true;
 }
 
 void Widget::OnNativeWidgetDestroying() {
@@ -892,12 +886,6 @@ gfx::Size Widget::GetMinimumSize() {
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
-
-  // Size changed notifications can fire prior to full initialization
-  // i.e. during session restore.  Avoid saving session state during these
-  // startup procedures.
-  if (native_widget_created_)
-    SaveWindowPlacement();
 }
 
 void Widget::OnNativeWidgetBeginUserBoundsChange() {
@@ -1067,7 +1055,7 @@ bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
   return true;
 }
 
-void Widget::SaveWindowPlacement() {
+void Widget::SaveWindowPosition() {
   // The window delegate does the actual saving for us. It seems like (judging
   // by go/crash) that in some circumstances we can end up here after
   // WM_DESTROY, at which point the window delegate is likely gone. So just
@@ -1075,10 +1063,10 @@ void Widget::SaveWindowPlacement() {
   if (!widget_delegate_)
     return;
 
-  ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
+  bool maximized = false;
   gfx::Rect bounds;
-  native_widget_->GetWindowPlacement(&bounds, &show_state);
-  widget_delegate_->SaveWindowPlacement(bounds, show_state);
+  native_widget_->GetWindowBoundsAndMaximizedState(&bounds, &maximized);
+  widget_delegate_->SaveWindowPlacement(bounds, maximized);
 }
 
 void Widget::SetInitialBounds(const gfx::Rect& bounds) {
@@ -1086,8 +1074,8 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
     return;
 
   gfx::Rect saved_bounds;
-  if (GetSavedWindowPlacement(&saved_bounds, &saved_show_state_)) {
-    if (saved_show_state_ == ui::SHOW_STATE_MAXIMIZED) {
+  if (GetSavedBounds(&saved_bounds, &saved_maximized_state_)) {
+    if (saved_maximized_state_) {
       // If we're going to maximize, wait until Show is invoked to set the
       // bounds. That way we avoid a noticable resize.
       initial_restored_bounds_ = saved_bounds;
@@ -1106,17 +1094,17 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
   }
 }
 
-bool Widget::GetSavedWindowPlacement(gfx::Rect* bounds,
-                                     ui::WindowShowState* show_state) {
+bool Widget::GetSavedBounds(gfx::Rect* bounds, bool* maximize) {
   // First we obtain the window's saved show-style and store it. We need to do
   // this here, rather than in Show() because by the time Show() is called,
   // the window's size will have been reset (below) and the saved maximized
   // state will have been lost. Sadly there's no way to tell on Windows when
   // a window is restored from maximized state, so we can't more accurately
   // track maximized state independently of sizing information.
+  widget_delegate_->GetSavedMaximizedState(maximize);
 
   // Restore the window's placement from the controller.
-  if (widget_delegate_->GetSavedWindowPlacement(bounds, show_state)) {
+  if (widget_delegate_->GetSavedWindowBounds(bounds)) {
     if (!widget_delegate_->ShouldRestoreWindowSize()) {
       bounds->set_size(non_client_view_->GetPreferredSize());
     } else {

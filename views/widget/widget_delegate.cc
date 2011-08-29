@@ -98,24 +98,31 @@ std::wstring WidgetDelegate::GetWindowName() const {
 }
 
 void WidgetDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
-                                         ui::WindowShowState show_state) {
+                                         bool maximized) {
   std::wstring window_name = GetWindowName();
   if (!ViewsDelegate::views_delegate || window_name.empty())
     return;
 
   ViewsDelegate::views_delegate->SaveWindowPlacement(
-      GetWidget(), window_name, bounds, show_state);
+      GetWidget(), window_name, bounds, maximized);
 }
 
-bool WidgetDelegate::GetSavedWindowPlacement(
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
+bool WidgetDelegate::GetSavedWindowBounds(gfx::Rect* bounds) const {
   std::wstring window_name = GetWindowName();
   if (!ViewsDelegate::views_delegate || window_name.empty())
     return false;
 
-  return ViewsDelegate::views_delegate->GetSavedWindowPlacement(
-      window_name, bounds, show_state);
+  return ViewsDelegate::views_delegate->GetSavedWindowBounds(
+      window_name, bounds);
+}
+
+bool WidgetDelegate::GetSavedMaximizedState(bool* maximized) const {
+  std::wstring window_name = GetWindowName();
+  if (!ViewsDelegate::views_delegate || window_name.empty())
+    return false;
+
+  return ViewsDelegate::views_delegate->GetSavedMaximizedState(
+      window_name, maximized);
 }
 
 bool WidgetDelegate::ShouldRestoreWindowSize() const {

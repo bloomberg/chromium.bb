@@ -251,11 +251,11 @@ void NativeWidgetViews::CenterWindow(const gfx::Size& size) {
                        size.width(), size.height());
 }
 
-void NativeWidgetViews::GetWindowPlacement(
+void NativeWidgetViews::GetWindowBoundsAndMaximizedState(
     gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
+    bool* maximized) const {
   *bounds = GetView()->bounds();
-  *show_state = ui::SHOW_STATE_NORMAL;
+  *maximized = false;
 }
 
 void NativeWidgetViews::SetWindowTitle(const std::wstring& title) {
@@ -349,7 +349,7 @@ void NativeWidgetViews::Hide() {
     ReleaseMouseCapture();
 }
 
-void NativeWidgetViews::ShowWithWindowState(ui::WindowShowState show_state) {
+void NativeWidgetViews::ShowWithState(ShowState state) {
   Show();
 }
 

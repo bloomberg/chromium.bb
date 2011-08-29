@@ -137,11 +137,10 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   // Centers the window and sizes it to the specified size.
   virtual void CenterWindow(const gfx::Size& size) = 0;
 
-  // Retrieves the window's current restored bounds and "show" state, for
+  // Retrieves the window's current restored bounds and maximized state, for
   // persisting.
-  virtual void GetWindowPlacement(
-      gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const = 0;
+  virtual void GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
+                                                bool* maximized) const = 0;
 
   // Sets the NativeWindow title.
   virtual void SetWindowTitle(const std::wstring& title) = 0;
@@ -156,6 +155,12 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void SetAccessibleName(const std::wstring& name) = 0;
   virtual void SetAccessibleRole(ui::AccessibilityTypes::Role role) = 0;
   virtual void SetAccessibleState(ui::AccessibilityTypes::State state) = 0;
+
+  enum ShowState {
+    SHOW_RESTORED,
+    SHOW_MAXIMIZED,
+    SHOW_INACTIVE
+  };
 
   // Makes the NativeWindow modal.
   virtual void BecomeModal() = 0;
@@ -179,7 +184,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   // Invoked if the initial show should maximize the window. |restored_bounds|
   // is the bounds of the window when not maximized.
   virtual void ShowMaximizedWithBounds(const gfx::Rect& restored_bounds) = 0;
-  virtual void ShowWithWindowState(ui::WindowShowState show_state) = 0;
+  virtual void ShowWithState(ShowState state) = 0;
   virtual bool IsVisible() const = 0;
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;

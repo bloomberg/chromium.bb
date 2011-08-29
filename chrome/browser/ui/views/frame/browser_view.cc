@@ -790,7 +790,9 @@ bool BrowserView::IsMaximized() const {
 }
 
 bool BrowserView::IsMinimized() const {
-  return frame_->IsMinimized();
+  // TODO(dhollowa): Add support for session restore of minimized state.
+  // http://crbug.com/43274
+  return false;
 }
 
 void BrowserView::SetFullscreen(bool fullscreen) {
@@ -1632,22 +1634,23 @@ std::wstring BrowserView::GetWindowName() const {
 }
 
 void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
-                                      ui::WindowShowState show_state) {
+                                      bool maximized) {
+  // TODO(dhollowa): Add support for session restore of minimized state.
+  // http://crbug.com/43274
+
   // If IsFullscreen() is true, we've just changed into fullscreen mode, and
   // we're catching the going-into-fullscreen sizing and positioning calls,
   // which we want to ignore.
   if (!IsFullscreen() && browser_->ShouldSaveWindowPlacement()) {
-    WidgetDelegate::SaveWindowPlacement(bounds, show_state);
-    browser_->SaveWindowPlacement(bounds, show_state);
+    WidgetDelegate::SaveWindowPlacement(bounds, maximized);
+    browser_->SaveWindowPlacement(bounds,
+                                  maximized ? ui::SHOW_STATE_MAXIMIZED :
+                                              ui::SHOW_STATE_NORMAL);
   }
 }
 
-bool BrowserView::GetSavedWindowPlacement(
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
+bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   *bounds = browser_->GetSavedWindowBounds();
-  *show_state = browser_->GetSavedWindowShowState();
-
   if (browser_->is_type_popup() || browser_->is_type_panel()) {
     // We are a popup window. The value passed in |bounds| represents two
     // pieces of information:
@@ -1682,6 +1685,13 @@ bool BrowserView::GetSavedWindowPlacement(
   // WindowSizer, and we don't want to trigger the Window's built-in "size to
   // default" handling because the browser window has no default preferred
   // size.
+  return true;
+}
+
+bool BrowserView::GetSavedMaximizedState(bool* maximized) const {
+  // TODO(dhollowa): Add support for session restore of minimized state.
+  // http://crbug.com/43274
+  *maximized = browser_->GetSavedWindowShowState() == ui::SHOW_STATE_MAXIMIZED;
   return true;
 }
 

@@ -61,7 +61,7 @@ views::View* ChromeViewsDelegate::GetDefaultParentView() {
 void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
                                               const std::wstring& window_name,
                                               const gfx::Rect& bounds,
-                                              ui::WindowShowState show_state) {
+                                              bool maximized) {
   PrefService* prefs = GetPrefsForWindow(window);
   if (!prefs)
     return;
@@ -73,8 +73,7 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
   window_preferences->SetInteger("top", bounds.y());
   window_preferences->SetInteger("right", bounds.right());
   window_preferences->SetInteger("bottom", bounds.bottom());
-  window_preferences->SetBoolean("maximized",
-                                 show_state == ui::SHOW_STATE_MAXIMIZED);
+  window_preferences->SetBoolean("maximized", maximized);
 
   scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_info_provider(
       WindowSizer::CreateDefaultMonitorInfoProvider());
@@ -86,10 +85,8 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
   window_preferences->SetInteger("work_area_bottom", work_area.bottom());
 }
 
-bool ChromeViewsDelegate::GetSavedWindowPlacement(
-    const std::wstring& window_name,
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
+bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
+                                               gfx::Rect* bounds) const {
   PrefService* prefs = g_browser_process->local_state();
   if (!prefs)
     return false;
@@ -105,13 +102,22 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
     return false;
 
   bounds->SetRect(left, top, right - left, bottom - top);
-
-  bool maximized = false;
-  if (dictionary)
-    dictionary->GetBoolean("maximized", &maximized);
-  *show_state = maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
-
   return true;
+}
+
+bool ChromeViewsDelegate::GetSavedMaximizedState(
+    const std::wstring& window_name,
+    bool* maximized) const {
+  PrefService* prefs = g_browser_process->local_state();
+  if (!prefs)
+    return false;
+
+  DCHECK(prefs->FindPreference(WideToUTF8(window_name).c_str()));
+  const DictionaryValue* dictionary =
+      prefs->GetDictionary(WideToUTF8(window_name).c_str());
+
+  return dictionary && dictionary->GetBoolean("maximized", maximized) &&
+      maximized;
 }
 
 void ChromeViewsDelegate::NotifyAccessibilityEvent(

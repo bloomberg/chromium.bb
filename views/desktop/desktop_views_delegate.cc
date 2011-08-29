@@ -35,13 +35,17 @@ View* DesktopViewsDelegate::GetDefaultParentView() {
 void DesktopViewsDelegate::SaveWindowPlacement(const Widget* widget,
                                                const std::wstring& window_name,
                                                const gfx::Rect& bounds,
-                                               ui::WindowShowState show_state) {
+                                               bool maximized) {
 }
 
-bool DesktopViewsDelegate::GetSavedWindowPlacement(
+bool DesktopViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
+                                                gfx::Rect* bounds) const {
+  return false;
+}
+
+bool DesktopViewsDelegate::GetSavedMaximizedState(
     const std::wstring& window_name,
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
+    bool* maximized) const {
   return false;
 }
 

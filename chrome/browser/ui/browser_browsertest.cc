@@ -974,20 +974,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
   }
 }
 
-// Makes sure the browser doesn't crash when
-// set_show_state(ui::SHOW_STATE_MINIMIZED) has been invoked.
-IN_PROC_BROWSER_TEST_F(BrowserTest, StartMinimized) {
-  // Can't test TYPE_PANEL as they are currently created differently (and can't
-  // end up minimized).
-  Browser::Type types[] = { Browser::TYPE_TABBED, Browser::TYPE_POPUP };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(types); ++i) {
-    Browser* min_browser = new Browser(types[i], browser()->profile());
-    min_browser->set_show_state(ui::SHOW_STATE_MINIMIZED);
-    min_browser->InitBrowserWindow();
-    AddBlankTabAndShow(min_browser);
-  }
-}
-
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.
 // It originally lived in browser_unittest.cc, but has been moved here to make
 // room for real browser unit tests.

@@ -107,11 +107,8 @@ void PanelBrowserView::UpdateTitleBar() {
   GetFrameView()->UpdateTitleBar();
 }
 
-bool PanelBrowserView::GetSavedWindowPlacement(
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
+bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   *bounds = GetPanelBounds();
-  *show_state = ui::SHOW_STATE_NORMAL;
   return true;
 }
 

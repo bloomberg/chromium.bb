@@ -970,11 +970,9 @@ bool SessionService::CreateTabsAndWindows(
                                                               payload.y,
                                                               payload.w,
                                                               payload.h);
-        // SHOW_STATE_INACTIVE is not persisted.
         ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
         if (payload.show_state > ui::SHOW_STATE_DEFAULT &&
-            payload.show_state < ui::SHOW_STATE_MAX &&
-            payload.show_state != ui::SHOW_STATE_INACTIVE) {
+            payload.show_state < ui::SHOW_STATE_MAX) {
           show_state = static_cast<ui::WindowShowState>(payload.show_state);
         } else {
           NOTREACHED();

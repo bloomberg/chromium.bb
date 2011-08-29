@@ -449,9 +449,7 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
   Layout();
 }
 
-bool BrowserView::GetSavedWindowPlacement(
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
+bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame)) {
     // Typically we don't request a full screen size. This means we'll request a
     // non-full screen size, layout/paint at that size, then the window manager
@@ -459,10 +457,9 @@ bool BrowserView::GetSavedWindowPlacement(
     // resize/paint. To avoid this we always request a full screen size.
     *bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(
         GTK_WIDGET(GetWidget()->GetNativeWindow()));
-    *show_state = ui::SHOW_STATE_NORMAL;
     return true;
   }
-  return ::BrowserView::GetSavedWindowPlacement(bounds, show_state);
+  return ::BrowserView::GetSavedWindowBounds(bounds);
 }
 
 void BrowserView::Cut() {
