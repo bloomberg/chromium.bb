@@ -40,14 +40,13 @@ html[dir=rtl] .bookmark .close-button {
 }
 
 .bookmark .favicon {
-  background: no-repeat 50% 50%;
-  background-size: 32px;
+  background: no-repeat 5% 90%;
 }
 
 .bookmark .color-stripe {
   border-bottom-left-radius: 3px 3px;
   border-bottom-right-radius: 3px 3px;
-  bottom: 23px;
+  bottom: 33px;
   height: 3px;
   opacity: 0.5;
   position: absolute;
@@ -61,14 +60,16 @@ html[dir=rtl] .bookmark .close-button {
   height: 23px;
   line-height: 23px;
   overflow: hidden;
+  padding-top: 10px;
   text-align: center;
+  text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .bookmark .button {
   cursor: pointer;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.15);
   border: 1px solid transparent;
   border-radius: 5px;
   bottom: 70px;
@@ -79,13 +80,16 @@ html[dir=rtl] .bookmark .close-button {
 }
 
 .bookmark:hover .button {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
 .bookmark .button-frame {
-  background: -webkit-gradient(radial, 50% 25%, 0, 50% 50%, 80, from(#fff),
-      color-stop(0.68, #f5f5f5), to(#e5e5e5));
+  background-color: #fff;
   border-radius: 5px;
+}
+
+.bookmark:hover .button-frame {
+  background-color: #f7f7f7;
 }
 
 /* The bookmark gets a shadow when clicked, but not when the click is on the

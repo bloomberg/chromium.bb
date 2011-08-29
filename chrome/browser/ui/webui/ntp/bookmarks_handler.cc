@@ -174,7 +174,7 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
     const BookmarkNode* child = node->GetChild(i);
     extension_bookmark_helpers::AddNode(child, items, false);
   }
-  if (node == model->bookmark_bar_node())
+  if (node == model->bookmark_bar_node() && model->other_node()->child_count())
     extension_bookmark_helpers::AddNode(model->other_node(), items, false);
 
   base::ListValue* navigation_items = new base::ListValue();
