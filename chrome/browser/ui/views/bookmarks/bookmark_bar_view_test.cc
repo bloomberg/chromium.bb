@@ -74,13 +74,11 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
-                                   bool maximized) OVERRIDE {}
-  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
-                                    gfx::Rect* bounds) const OVERRIDE {
-    return false;
-  }
-  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
-                                      bool* maximized) const OVERRIDE {
+                                   ui::WindowShowState show_state) OVERRIDE {}
+  virtual bool GetSavedWindowPlacement(
+      const std::wstring& window_name,
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE {
     return false;
   }
 

@@ -637,11 +637,12 @@ void NativeWidgetWin::CenterWindow(const gfx::Size& size) {
   ui::CenterAndSizeWindow(parent, GetNativeView(), size, false);
 }
 
-void NativeWidgetWin::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                                       bool* maximized) const {
+void NativeWidgetWin::GetWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
   WINDOWPLACEMENT wp;
   wp.length = sizeof(wp);
-  const bool succeeded = !!GetWindowPlacement(GetNativeView(), &wp);
+  const bool succeeded = !!::GetWindowPlacement(GetNativeView(), &wp);
   DCHECK(succeeded);
 
   if (bounds != NULL) {
@@ -656,8 +657,14 @@ void NativeWidgetWin::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
                    mi.rcWork.top - mi.rcMonitor.top);
   }
 
-  if (maximized != NULL)
-    *maximized = (wp.showCmd == SW_SHOWMAXIMIZED);
+  if (show_state != NULL) {
+    if (wp.showCmd == SW_SHOWMAXIMIZED)
+      *show_state = ui::SHOW_STATE_MAXIMIZED;
+    else if (wp.showCmd == SW_SHOWMINIMIZED)
+      *show_state = ui::SHOW_STATE_MINIMIZED;
+    else
+      *show_state = ui::SHOW_STATE_NORMAL;
+  }
 }
 
 void NativeWidgetWin::SetWindowTitle(const std::wstring& title) {
@@ -761,7 +768,7 @@ gfx::Rect NativeWidgetWin::GetRestoredBounds() const {
     return gfx::Rect(saved_window_info_.window_rect);
 
   gfx::Rect bounds;
-  GetWindowBoundsAndMaximizedState(&bounds, NULL);
+  GetWindowPlacement(&bounds, NULL);
   return bounds;
 }
 
@@ -877,14 +884,17 @@ void NativeWidgetWin::ShowMaximizedWithBounds(
   SetWindowPlacement(hwnd(), &placement);
 }
 
-void NativeWidgetWin::ShowWithState(ShowState state) {
+void NativeWidgetWin::ShowWithWindowState(ui::WindowShowState show_state) {
   DWORD native_show_state;
-  switch (state) {
-    case SHOW_INACTIVE:
+  switch (show_state) {
+    case ui::SHOW_STATE_INACTIVE:
       native_show_state = SW_SHOWNOACTIVATE;
       break;
-    case SHOW_MAXIMIZED:
+    case ui::SHOW_STATE_MAXIMIZED:
       native_show_state = SW_SHOWMAXIMIZED;
+      break;
+    case ui::SHOW_STATE_MINIMIZED:
+      native_show_state = SW_SHOWMINIMIZED;
       break;
     default:
       native_show_state = GetShowState();
@@ -2176,8 +2186,10 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   // Set type-independent style attributes.
   if (params.child)
     style |= WS_CHILD | WS_VISIBLE;
-  if (params.maximize)
+  if (params.show_state == ui::SHOW_STATE_MAXIMIZED)
     style |= WS_MAXIMIZE;
+  if (params.show_state == ui::SHOW_STATE_MINIMIZED)
+    style |= WS_MINIMIZE;
   if (!params.accept_events)
     ex_style |= WS_EX_TRANSPARENT;
   if (!params.can_activate)

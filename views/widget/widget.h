@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/accessibility/accessibility_types.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "views/focus/focus_manager.h"
@@ -144,8 +145,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     Ownership ownership;
     bool mirror_origin_in_rtl;
     bool has_dropshadow;
-    // Whether the widget should be maximized.
-    bool maximize;
+    // Whether the widget should be maximized or minimized.
+    ui::WindowShowState show_state;
     // Should the widget be double buffered? Default is false.
     bool double_buffer;
     gfx::NativeView parent;
@@ -635,16 +636,17 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns whether capture should be released on mouse release.
   virtual bool ShouldReleaseCaptureOnMouseReleased() const;
 
-  // Persists the window's restored position and maximized state using the
+  // Persists the window's restored position and "show" state using the
   // window delegate.
-  void SaveWindowPosition();
+  void SaveWindowPlacement();
 
   // Sizes and positions the window just after it is created.
   void SetInitialBounds(const gfx::Rect& bounds);
 
-  // Returns the bounds and maximized state from the delegate. Returns true if
+  // Returns the bounds and "show" state from the delegate. Returns true if
   // the delegate wants to use a specified bounds.
-  bool GetSavedBounds(gfx::Rect* bounds, bool* maximize);
+  bool GetSavedWindowPlacement(gfx::Rect* bounds,
+                               ui::WindowShowState* show_state);
 
   // Sets a different InputMethod instance to this widget. The instance
   // must not be initialized, the ownership will be assumed by the widget.
@@ -703,12 +705,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Set to true if the widget is in the process of closing.
   bool widget_closed_;
 
-  // The saved maximized state for this window. See note in SetInitialBounds
+  // The saved "show" state for this window. See note in SetInitialBounds
   // that explains why we save this.
-  bool saved_maximized_state_;
+  ui::WindowShowState saved_show_state_;
 
   // The restored bounds used for the initial show. This is only used if
-  // |saved_maximized_state_| is true.
+  // |saved_show_state_| is maximized.
   gfx::Rect initial_restored_bounds_;
 
   // The smallest size the window can be.
@@ -726,6 +728,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Factory used to create Compositors. Settable by tests.
   static ui::Compositor*(*compositor_factory_)();
+
+  // Tracks whether native widget has been created.
+  bool native_widget_created_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

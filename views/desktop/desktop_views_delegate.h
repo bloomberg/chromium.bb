@@ -23,11 +23,11 @@ class DesktopViewsDelegate : public ViewsDelegate {
   virtual void SaveWindowPlacement(const Widget* widget,
                                    const std::wstring& window_name,
                                    const gfx::Rect& bounds,
-                                   bool maximized) OVERRIDE;
-  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
-                                    gfx::Rect* bounds) const OVERRIDE;
-  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
-                                      bool* maximized) const OVERRIDE;
+                                   ui::WindowShowState show_state) OVERRIDE;
+  virtual bool GetSavedWindowPlacement(
+      const std::wstring& window_name,
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE;
   virtual void NotifyAccessibilityEvent(
       views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE;
   virtual void NotifyMenuItemFocused(

@@ -31,13 +31,16 @@ View* TestViewsDelegate::GetDefaultParentView() {
   return default_parent_view_;
 }
 
-bool TestViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
-                                             gfx::Rect* bounds) const {
-  return false;
+void TestViewsDelegate::SaveWindowPlacement(const Widget* window,
+                                            const std::wstring& window_name,
+                                            const gfx::Rect& bounds,
+                                            ui::WindowShowState show_state) {
 }
 
-bool TestViewsDelegate::GetSavedMaximizedState(const std::wstring& window_name,
-                                               bool* maximized) const {
+bool TestViewsDelegate::GetSavedWindowPlacement(
+    const std::wstring& window_name,
+    gfx::Rect* bounds,
+    ui:: WindowShowState* show_state) const {
   return false;
 }
 

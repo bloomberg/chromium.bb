@@ -394,9 +394,10 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool ExecuteWindowsCommand(int command_id) OVERRIDE;
   virtual std::wstring GetWindowName() const OVERRIDE;
   virtual void SaveWindowPlacement(const gfx::Rect& bounds,
-                                   bool maximized) OVERRIDE;
-  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
-  virtual bool GetSavedMaximizedState(bool* maximized) const OVERRIDE;
+                                   ui::WindowShowState show_state) OVERRIDE;
+  virtual bool GetSavedWindowPlacement(
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::ClientView* CreateClientView(views::Widget* widget) OVERRIDE;
   virtual void OnWindowBeginUserBoundsChange() OVERRIDE;

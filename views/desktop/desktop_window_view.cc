@@ -135,7 +135,7 @@ void DesktopWindowView::CreateDesktopWindow(DesktopType type) {
   params.native_widget = new views::NativeWidgetWayland(window);
 #elif defined(TOOLKIT_USES_GTK)
   params.native_widget = new views::NativeWidgetGtk(window);
-  params.maximize = true;
+  params.show_state = ui::SHOW_STATE_MAXIMIZED;
 #endif
   params.bounds = gfx::Rect(20, 20, 1920, 1200);
   window->Init(params);
