@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/media_export.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
@@ -30,9 +31,9 @@ struct VideoCodecInfo {
   uint32 surface_height;
 };
 
-class VideoDecodeEngine {
+class MEDIA_EXPORT VideoDecodeEngine {
  public:
-  struct EventHandler {
+  struct MEDIA_EXPORT EventHandler {
    public:
     virtual ~EventHandler() {}
     virtual void OnInitializeComplete(const VideoCodecInfo& info) = 0;

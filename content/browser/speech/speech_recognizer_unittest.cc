@@ -75,11 +75,12 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
 
   // testing::Test methods.
   virtual void SetUp() {
-    AudioInputController::set_factory(&audio_input_controller_factory_);
+    AudioInputController::set_factory_for_testing(
+        &audio_input_controller_factory_);
   }
 
   virtual void TearDown() {
-    AudioInputController::set_factory(NULL);
+    AudioInputController::set_factory_for_testing(NULL);
   }
 
   void FillPacketWithTestWaveform() {

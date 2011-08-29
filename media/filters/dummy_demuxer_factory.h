@@ -12,7 +12,7 @@
 
 namespace media {
 
-class DummyDemuxerFactory : public DemuxerFactory {
+class MEDIA_EXPORT DummyDemuxerFactory : public DemuxerFactory {
  public:
   DummyDemuxerFactory(bool has_video, bool has_audio);
   virtual ~DummyDemuxerFactory();

@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "media/base/media_export.h"
 
 // FFmpeg types.
 struct AVBitStreamFilterContext;
@@ -22,7 +23,7 @@ struct AVPacket;
 
 namespace media {
 
-class BitstreamConverter {
+class MEDIA_EXPORT BitstreamConverter {
  public:
   BitstreamConverter() {}
   virtual ~BitstreamConverter() {}
@@ -53,7 +54,7 @@ class IdentityBitstreamConverter : public BitstreamConverter {
   DISALLOW_COPY_AND_ASSIGN(IdentityBitstreamConverter);
 };
 
-class FFmpegBitstreamConverter : public BitstreamConverter {
+class MEDIA_EXPORT FFmpegBitstreamConverter : public BitstreamConverter {
  public:
   // Creates FFmpegBitstreamConverter based on the FFmpeg bistream filter
   // corresponding to |filter_name|.

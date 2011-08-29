@@ -46,7 +46,7 @@ namespace media {
 // the BuildRequest should be in a state where it can be deleted from inside
 // this call. If an error occurs during the build process, RequestComplete()
 // can also be called to signal the error.
-class AsyncDataSourceFactoryBase : public DataSourceFactory {
+class MEDIA_EXPORT AsyncDataSourceFactoryBase : public DataSourceFactory {
  public:
   AsyncDataSourceFactoryBase();
   virtual ~AsyncDataSourceFactoryBase();
@@ -64,7 +64,7 @@ class AsyncDataSourceFactoryBase : public DataSourceFactory {
   virtual DataSourceFactory* Clone() const = 0;
 
  protected:
-  class BuildRequest {
+  class MEDIA_EXPORT BuildRequest {
    public:
     BuildRequest(const std::string& url, BuildCallback* callback);
     virtual ~BuildRequest();

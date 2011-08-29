@@ -6,13 +6,14 @@
 #define MEDIA_BASE_H264_BITSTREAM_CONVERTER_H_
 
 #include "base/basictypes.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
 // H264BitstreamConverter is a class to convert H.264 bitstream from
 // MP4 format (as specified in ISO/IEC 14496-15) into H.264 bytestream
 // (as specified in ISO/IEC 14496-10 Annex B).
-class H264BitstreamConverter {
+class MEDIA_EXPORT H264BitstreamConverter {
  public:
   H264BitstreamConverter();
   ~H264BitstreamConverter();

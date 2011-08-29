@@ -35,7 +35,7 @@ namespace media {
 // FFmpegH264BitstreamConverter uses FFmpeg allocation methods for buffer
 // allocation to ensure compatibility with FFmpeg's memory management.
 
-class FFmpegH264BitstreamConverter : public BitstreamConverter {
+class MEDIA_EXPORT FFmpegH264BitstreamConverter : public BitstreamConverter {
  public:
   // The |stream_context| will be used during conversion and should be the
   // AVCodecContext for the stream sourcing these packets. A reference to

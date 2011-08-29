@@ -20,7 +20,7 @@ class ChunkDemuxerClient;
 // All other URLs are delegated to |delegate_factory_|. The url passed to
 // the constructor represents the "special" URL that indicates that the
 // ChunkDemuxer should be used for playback.
-class ChunkDemuxerFactory : public DemuxerFactory {
+class MEDIA_EXPORT ChunkDemuxerFactory : public DemuxerFactory {
  public:
   // Takes ownership of |delegate_factory|.
   ChunkDemuxerFactory(const std::string& url, DemuxerFactory* delegate_factory,

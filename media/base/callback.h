@@ -24,10 +24,11 @@
 #include "base/callback_old.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
-class AutoCallbackRunner {
+class MEDIA_EXPORT AutoCallbackRunner {
  public:
   // Takes ownership of the callback.
   explicit AutoCallbackRunner(Callback0::Type* callback)

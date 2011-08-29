@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,7 +8,9 @@
 #ifndef MEDIA_FFMPEG_FILE_PROTOCOL_H_
 #define MEDIA_FFMPEG_FILE_PROTOCOL_H_
 
+#include "media/base/media_export.h"
+
 struct URLProtocol;
-extern URLProtocol kFFmpegFileProtocol;
+MEDIA_EXPORT extern URLProtocol kFFmpegFileProtocol;
 
 #endif  // MEDIA_FFMPEG_FILE_PROTOCOL_H_
