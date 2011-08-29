@@ -804,7 +804,7 @@ wlsc_output_set_cursor(struct wlsc_output *output,
 
 	/* Remove always to be on top. */
 	wl_list_remove(&device->sprite->link);
-	if (!use_hardware_cursor)
+	if (!use_hardware_cursor && ec->focus)
 		wl_list_insert(&ec->surface_list, &device->sprite->link);
 	else
 		wl_list_init(&device->sprite->link);
@@ -830,7 +830,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 	glUniform1i(ec->texture_shader.tex_uniform, 0);
 
 	wlsc_output_set_cursor(output, ec->input_device,
-			       !(ec->focus && ec->fade.spring.current < 0.001));
+			       ec->fade.spring.current >= 0.001);
 
 	pixman_region32_init(&new_damage);
 	pixman_region32_copy(&new_damage, &ec->damage);
