@@ -721,7 +721,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
     CommandLine* command_line) {
   static const char* kForwardSwitches[] = {
       switches::kEnableLogging,
-      switches::kEnableAcceleratedPlugins,
+      switches::kDisableAcceleratedPlugins,
       switches::kUseGL,
       switches::kUserDataDir,
       switches::kScrollPixels,
