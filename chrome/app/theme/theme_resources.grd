@@ -503,6 +503,7 @@
         <include name="IDR_OOBE_PROGRESS_LINE_RIGHT" file="oobe_progress_line_right.png" type="BINDATA" />
         <include name="IDR_SHUTDOWN_ICON" file="shutdown_icon.png" type="BINDATA" />
         <include name="IDR_SPINNER" file="spinner.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_ACCESSIBILITY" file="statusbar_accessibility.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_LARGE_ALL" file="statusbar_battery_large_all.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_SMALL_ALL" file="statusbar_battery_small_all.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_CAPS_LOCK" file="statusbar_caps_lock.png" type="BINDATA" />
