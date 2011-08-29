@@ -425,6 +425,10 @@ std::string GetWebstoreItemDetailURLPrefix() {
   return GetWebstoreLaunchURL() + "/detail/";
 }
 
+GURL GetWebstoreItemJsonDataURL(const std::string& extension_id) {
+  return GURL(GetWebstoreItemDetailURLPrefix() + extension_id + "?output=json");
+}
+
 const char* kGalleryUpdateHttpUrl =
     "http://clients2.google.com/service/update2/crx";
 const char* kGalleryUpdateHttpsUrl =

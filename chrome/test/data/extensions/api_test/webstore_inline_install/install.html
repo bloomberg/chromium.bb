@@ -1,12 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="chrome-webstore-item" href="http://cws.com/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm">
+  <link rel="chrome-webstore-item">
 </head>
 <body>
 <script>
-  function runTest() {
-    chrome.webstore.install();
+  function runTest(galleryUrl) {
+    // Link URL has to be generated dynamically in order to include the right
+    // port number. The ID corresponds to the data in the "extension" directory.
+    document.getElementsByTagName('link')[0].href =
+        galleryUrl + '/detail/ecglahbcnmdpdciemllbhojghbkagdje';
+
+    try {
+      chrome.webstore.install();
+    } catch (e) {
+      window.domAutomationController.send(false);
+      throw e;
+    }
     window.domAutomationController.send(true);
   }
 </script>

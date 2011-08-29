@@ -107,6 +107,18 @@ void ExtensionHelper::InlineWebstoreInstall(std::string webstore_item_id) {
       routing_id(), webstore_item_id));
 }
 
+void ExtensionHelper::OnInlineWebstoreInstallResponse(
+    bool success,
+    const std::string& error) {
+  // TODO(mihaip): dispatch these as events to the the WebFrame that initiated
+  // the inline install.
+  if (success) {
+    VLOG(1) << "Inline install succeeded.";
+  } else {
+    VLOG(1) << "Inline install failed: " << error;
+  }
+}
+
 bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
@@ -118,6 +130,8 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateBrowserWindowId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
                         OnNotifyRendererViewType)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_InlineWebstoreInstallResponse,
+                        OnInlineWebstoreInstallResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

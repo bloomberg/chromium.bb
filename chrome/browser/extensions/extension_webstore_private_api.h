@@ -78,11 +78,6 @@ class BeginInstallWithManifestFunction
   // the normal requirement that it is called during a user gesture.
   static void SetIgnoreUserGestureForTests(bool ignore);
 
-  // For use only in tests - sets a flag that makes invocations of
-  // beginInstallWithManifest skip putting up a real dialog, and instead act
-  // as if the dialog choice was to proceed or abort.
-  static void SetAutoConfirmForTests(bool should_proceed);
-
   // Implementing WebstoreInstallHelper::Delegate interface.
   virtual void OnWebstoreParseSuccess(
       const SkBitmap& icon,

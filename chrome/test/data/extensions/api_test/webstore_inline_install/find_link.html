@@ -21,7 +21,7 @@
     }
   }
 
-  function runTest() {
+  function runTest(galleryUrl) {
     // Definitely no link.
     checkNoLinkFound(NO_LINK_EXCEPTION);
 
@@ -32,7 +32,7 @@
 
     // Wrong type, right URL.
     linkNode.rel = 'stylesheet';
-    linkNode.href = 'http://cws.com/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm';
+    linkNode.href = galleryUrl + '/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm';
     checkNoLinkFound(NO_LINK_EXCEPTION);
 
     // Right type, wrong URL.
@@ -42,17 +42,17 @@
 
     // Non-item CWS URL
     linkNode.href =
-        'http://cws.com/someotherpage/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm';
+        galleryUrl + '/someotherpage/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm';
     checkNoLinkFound(INVALID_URL_EXCEPTION);
 
     // Invalid ID
     linkNode.rel = 'chrome-webstore-item';
-    linkNode.href = 'http://cws.com/detail/abc';
+    linkNode.href = galleryUrl + '/detail/abc';
     checkNoLinkFound(INVALID_URL_EXCEPTION);
 
     // Extra CWS URL parameters
     linkNode.href =
-        'http://cws.com/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm?foo=bar';
+        galleryUrl + '/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm?foo=bar';
     checkNoLinkFound(INVALID_URL_EXCEPTION);
 
     // Successful installation is tested elsewhere

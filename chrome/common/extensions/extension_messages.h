@@ -317,3 +317,8 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_InstallApplication,
 // Sent by the renderer to implement chrome.webstore.install().
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_InlineWebstoreInstall,
                     std::string /* Web Store item ID */)
+
+// Send to renderer once the installation mentioned above is complete.
+IPC_MESSAGE_ROUTED2(ExtensionMsg_InlineWebstoreInstallResponse,
+                    bool /* whether the install was successful */,
+                    std::string /* error */)

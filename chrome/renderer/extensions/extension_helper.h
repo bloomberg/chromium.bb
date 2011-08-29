@@ -68,6 +68,7 @@ class ExtensionHelper : public RenderViewObserver,
   void OnGetApplicationInfo(int page_id);
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnUpdateBrowserWindowId(int window_id);
+  void OnInlineWebstoreInstallResponse(bool success, const std::string& error);
 
   // Callback triggered when we finish downloading the application definition
   // file.

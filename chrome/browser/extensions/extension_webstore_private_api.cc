@@ -57,15 +57,6 @@ const char kUserGestureRequiredError[] =
 ProfileSyncService* test_sync_service = NULL;
 bool ignore_user_gesture_for_tests = false;
 
-// A flag used for BeginInstallWithManifest::SetAutoConfirmForTests.
-enum AutoConfirmForTest {
-  DO_NOT_SKIP = 0,
-  PROCEED,
-  ABORT
-};
-AutoConfirmForTest auto_confirm_for_tests = DO_NOT_SKIP;
-
-
 // Returns either the test sync service, or the real one from |profile|.
 ProfileSyncService* GetSyncService(Profile* profile) {
   if (test_sync_service)
@@ -259,61 +250,26 @@ void BeginInstallWithManifestFunction::SetIgnoreUserGestureForTests(
   ignore_user_gesture_for_tests = ignore;
 }
 
-void BeginInstallWithManifestFunction::SetAutoConfirmForTests(
-    bool should_proceed) {
-  auto_confirm_for_tests = should_proceed ? PROCEED : ABORT;
-}
-
 void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     const SkBitmap& icon, DictionaryValue* parsed_manifest) {
   CHECK(parsed_manifest);
   icon_ = icon;
   parsed_manifest_.reset(parsed_manifest);
 
-  // If we were passed a localized name to use in the dialog, create a copy
-  // of the original manifest and replace the name in it.
-  scoped_ptr<DictionaryValue> localized_manifest;
-  if (!localized_name_.empty()) {
-    localized_manifest.reset(parsed_manifest->DeepCopy());
-    localized_manifest->SetString(extension_manifest_keys::kName,
-                                  localized_name_);
-  }
-
-  // Create a dummy extension and show the extension install confirmation
-  // dialog.
-  std::string init_errors;
-  dummy_extension_ = Extension::CreateWithId(
-      FilePath(),
-      Extension::INTERNAL,
-      localized_manifest.get() ? *localized_manifest.get() : *parsed_manifest,
-      Extension::NO_FLAGS,
+  ShowExtensionInstallDialogForManifest(
+      profile(),
+      this,
+      parsed_manifest,
       id_,
-      &init_errors);
+      localized_name_,
+      &icon_,
+      ExtensionInstallUI::INSTALL_PROMPT,
+      &dummy_extension_);
   if (!dummy_extension_.get()) {
     OnWebstoreParseFailure(WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
                            kInvalidManifestError);
     return;
   }
-
-  if (icon_.empty())
-    icon_ = Extension::GetDefaultIcon(dummy_extension_->is_app());
-
-  // In tests, we may have setup to proceed or abort without putting up the real
-  // confirmation dialog.
-  if (auto_confirm_for_tests != DO_NOT_SKIP) {
-    if (auto_confirm_for_tests == PROCEED)
-      this->InstallUIProceed();
-    else
-      this->InstallUIAbort(true);
-    return;
-  }
-
-  ShowExtensionInstallDialog(profile(),
-                             this,
-                             dummy_extension_.get(),
-                             &icon_,
-                             dummy_extension_->GetPermissionMessageStrings(),
-                             ExtensionInstallUI::INSTALL_PROMPT);
 
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

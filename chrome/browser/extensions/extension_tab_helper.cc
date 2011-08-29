@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -154,15 +155,9 @@ void ExtensionTabHelper::OnInlineWebstoreInstall(
     return;
   }
 
-  // For now there is no inline installation UI, we just open the item's Web
-  // Store page in a new tab.
-  GURL webstore_item_url =
-      GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + webstore_item_id);
-  GetBrowser()->OpenURL(OpenURLParams(
-      webstore_item_url,
-      GetBrowser()->GetSelectedTabContents()->GetURL(),
-      NEW_FOREGROUND_TAB,
-      PageTransition::AUTO_BOOKMARK));
+  scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
+      tab_contents(), webstore_item_id, this));
+  installer->BeginInstall();
 }
 
 void ExtensionTabHelper::OnRequest(
@@ -213,22 +208,17 @@ Browser* ExtensionTabHelper::GetBrowser() {
   return NULL;
 }
 
-TabContents* ExtensionTabHelper::GetAssociatedTabContents() const {
-  return tab_contents();
+void ExtensionTabHelper::OnInlineInstallSuccess() {
+  Send(new ExtensionMsg_InlineWebstoreInstallResponse(routing_id(), true, ""));
 }
 
-gfx::NativeWindow ExtensionTabHelper::GetCustomFrameNativeWindow() {
-  if (GetBrowser())
-    return NULL;
+void ExtensionTabHelper::OnInlineInstallFailure(const std::string& error) {
+  Send(new ExtensionMsg_InlineWebstoreInstallResponse(
+      routing_id(), false, error));
+}
 
-  // If there was no browser associated with the function dispatcher delegate,
-  // then this WebUI may be hosted in an ExternalTabContainer, and a framing
-  // window will be accessible through the tab_contents.
-  TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
-  if (tab_contents_delegate)
-    return tab_contents_delegate->GetFrameNativeWindow();
-  else
-    return NULL;
+TabContents* ExtensionTabHelper::GetAssociatedTabContents() const {
+  return tab_contents();
 }
 
 gfx::NativeView ExtensionTabHelper::GetNativeViewOfHost() {

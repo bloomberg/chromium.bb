@@ -3,72 +3,103 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_install_dialog.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/mock_host_resolver.h"
+
+const char kWebstoreDomain[] = "cws.com";
+const char kAppDomain[] = "app.com";
 
 class WebstoreInlineInstallTest : public InProcessBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     EnableDOMAutomation();
 
+    // We start the test server now instead of in
+    // SetUpInProcessBrowserTestFixture so that we can get its port number.
+    ASSERT_TRUE(test_server()->Start());
+
     InProcessBrowserTest::SetUpCommandLine(command_line);
+
+    net::HostPortPair host_port = test_server()->host_port_pair();
+    test_gallery_url_ = base::StringPrintf(
+        "http://%s:%d/files/extensions/api_test/webstore_inline_install",
+        kWebstoreDomain, host_port.port());
     command_line->AppendSwitchASCII(
-        switches::kAppsGalleryURL, "http://cws.com");
+        switches::kAppsGalleryURL, test_gallery_url_);
+
+    GURL crx_url = GenerateTestServerUrl(kWebstoreDomain, "extension.crx");
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAppsGalleryUpdateURL, crx_url.spec());
+
     command_line->AppendSwitch(switches::kEnableInlineWebstoreInstall);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    host_resolver()->AddRule("cws.com", "127.0.0.1");
-    host_resolver()->AddRule("app.com", "127.0.0.1");
-    ASSERT_TRUE(test_server()->Start());
+    host_resolver()->AddRule(kWebstoreDomain, "127.0.0.1");
+    host_resolver()->AddRule(kAppDomain, "127.0.0.1");
   }
 
  protected:
-  GURL GetPageUrl(const std::string& page_filename) {
+  GURL GenerateTestServerUrl(const std::string& domain,
+                             const std::string& page_filename) {
    GURL page_url = test_server()->GetURL(
           "files/extensions/api_test/webstore_inline_install/" + page_filename);
 
     GURL::Replacements replace_host;
-    std::string host_str("app.com");
-    replace_host.SetHostStr(host_str);
+    replace_host.SetHostStr(domain);
     return page_url.ReplaceComponents(replace_host);
   }
+
+  std::string test_gallery_url_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
-  ui_test_utils::NavigateToURL(browser(), GetPageUrl("install.html"));
+  SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
+
+  ui_test_utils::WindowedNotificationObserver load_signal(
+        chrome::NOTIFICATION_EXTENSION_LOADED,
+        Source<Profile>(browser()->profile()));
+
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
 
   bool result = false;
+  std::string script = StringPrintf("runTest('%s')", test_gallery_url_.c_str());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"runTest()", &result));
+      UTF8ToWide(script), &result));
   EXPECT_TRUE(result);
 
-  // The "inline" UI right now is just the store entry in a new tab.
-  if (browser()->tabstrip_model()->count() == 1) {
-    ui_test_utils::WaitForNewTab(browser());
-  }
+  load_signal.Wait();
 
-  TabContents* tab_contents = browser()->GetSelectedTabContents();
-  EXPECT_EQ(
-      GURL("http://cws.com/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"),
-      tab_contents->GetURL());
+  const Extension* extension = browser()->profile()->GetExtensionService()->
+      GetExtensionById("ecglahbcnmdpdciemllbhojghbkagdje", false);
+  EXPECT_TRUE(extension != NULL);
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, FindLink) {
-  ui_test_utils::NavigateToURL(browser(), GetPageUrl("find_link.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "find_link.html"));
 
   bool result = false;
+  std::string script = StringPrintf("runTest('%s')", test_gallery_url_.c_str());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"runTest()", &result));
+      UTF8ToWide(script), &result));
   EXPECT_TRUE(result);
 }

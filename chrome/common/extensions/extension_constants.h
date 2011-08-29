@@ -281,6 +281,10 @@ namespace extension_urls {
   // to get the item detail URL.
   std::string GetWebstoreItemDetailURLPrefix();
 
+  // Returns the URL used to get webstore data (ratings, manifest, icon URL,
+  // etc.) about an extension from the webstore as JSON.
+  GURL GetWebstoreItemJsonDataURL(const std::string& extension_id);
+
   // Return the update URL used by gallery/webstore extensions/apps. The
   // |secure| parameter will be ignored if the update URL is overriden with
   // --apps-gallery-update-url.
