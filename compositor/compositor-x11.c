@@ -209,6 +209,11 @@ x11_output_set_cursor(struct wlsc_output *output_base,
 	return -1;
 }
 
+static void
+x11_output_destroy(struct wlsc_output *output_base)
+{
+	return;
+}
 
 static void
 x11_output_set_wm_protocols(struct x11_output *output)
@@ -408,6 +413,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.prepare_scanout_surface =
 		x11_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = x11_output_set_cursor;
+	output->base.destroy = x11_output_destroy;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
@@ -679,6 +685,8 @@ x11_compositor_get_resources(struct x11_compositor *c)
 static void
 x11_destroy(struct wlsc_compositor *ec)
 {
+	wlsc_compositor_shutdown(ec);
+
 	free(ec);
 }
 

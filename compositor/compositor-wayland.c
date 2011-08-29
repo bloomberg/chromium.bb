@@ -212,6 +212,19 @@ wayland_output_set_cursor(struct wlsc_output *output_base,
 	return -1;
 }
 
+static void
+wayland_output_destroy(struct wlsc_output *output_base)
+{
+	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wlsc_compositor *ec = output->base.compositor;
+
+	eglDestroySurface(ec->display, output->egl_surface);
+	wl_egl_window_destroy(output->parent.egl_window);
+	free(output);
+
+	return;
+}
+
 static int
 wayland_compositor_create_output(struct wayland_compositor *c,
 				 int width, int height)
@@ -271,6 +284,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	output->base.prepare_scanout_surface =
 		wayland_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = wayland_output_set_cursor;
+	output->base.destroy = wayland_output_destroy;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
@@ -510,6 +524,8 @@ wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
 static void
 wayland_destroy(struct wlsc_compositor *ec)
 {
+	wlsc_compositor_shutdown(ec);
+
 	free(ec);
 }
 

@@ -59,6 +59,7 @@ struct drm_output {
 
 	uint32_t crtc_id;
 	uint32_t connector_id;
+	drmModeCrtcPtr original_crtc;
 	GLuint rbo[2];
 	uint32_t fb_id[2];
 	EGLImageKHR image[2];
@@ -255,6 +256,33 @@ out:
 	return ret;
 }
 
+static void
+drm_output_destroy(struct wlsc_output *output_base)
+{
+	struct drm_output *output = (struct drm_output *) output_base;
+	struct drm_compositor *c =
+		(struct drm_compositor *) output_base->compositor;
+	drmModeCrtcPtr origcrtc = output->original_crtc;
+	int i;
+
+	/* Turn off hardware cursor */
+	drm_output_set_cursor(output_base, NULL);
+
+	/* Restore original CRTC state */
+	drmModeSetCrtc(c->drm.fd, origcrtc->crtc_id, origcrtc->buffer_id,
+		origcrtc->x, origcrtc->y, &output->connector_id, 1, &origcrtc->mode);
+	drmModeFreeCrtc(origcrtc);
+
+	/* Destroy output buffers */
+	for (i = 0; i < 2; i++) {
+		drmModeRmFB(c->drm.fd, output->fb_id[i]);
+		c->base.destroy_image(c->base.display, output->image[i]);
+		gbm_bo_destroy(output->bo[i]);
+	}
+
+	free(output);
+}
+
 static int
 on_drm_input(int fd, uint32_t mask, void *data)
 {
@@ -422,6 +450,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->connector_id = connector->connector_id;
 	ec->connector_allocator |= (1 << output->connector_id);
 
+	output->original_crtc = drmModeGetCrtc(ec->drm.fd, output->crtc_id);
+
 	for (i = 0; i < connector->count_modes; i++)
 		drm_output_add_mode(output, &connector->modes[i]);
 	if (connector->count_modes == 0)
@@ -491,6 +521,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.prepare_scanout_surface =
 		drm_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = drm_output_set_cursor;
+	output->base.destroy = drm_output_destroy;
 
 	return 0;
 }
@@ -724,6 +755,8 @@ drm_destroy(struct wlsc_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
 
+	wlsc_compositor_shutdown(ec);
+	gbm_device_destroy(d->gbm);
 	tty_destroy(d->tty);
 
 	free(d);

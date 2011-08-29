@@ -187,6 +187,14 @@ wfd_output_set_cursor(struct wlsc_output *output_base,
 	return -1;
 }
 
+static void
+wfd_output_destroy(struct wlsc_output *output_base)
+{
+	destroy_output(output_base);
+
+	return;
+}
+
 static int
 wfd_output_add_mode(struct wfd_output *output, WFDPortMode mode)
 {
@@ -374,6 +382,7 @@ create_output_for_port(struct wfd_compositor *ec,
 	output->base.prepare_scanout_surface =
 		wfd_output_prepare_scanout_surface;
 	output->base.set_hardware_cursor = wfd_output_set_cursor;
+	output->base.destroy = wfd_output_destroy;
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
@@ -571,6 +580,8 @@ static void
 wfd_destroy(struct wlsc_compositor *ec)
 {
 	struct wfd_compositor *d = (struct wfd_compositor *) ec;
+
+	wlsc_compositor_shutdown(ec);
 
 	udev_unref(d->udev);
 

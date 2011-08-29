@@ -1956,6 +1956,16 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	return 0;
 }
 
+WL_EXPORT int
+wlsc_compositor_shutdown(struct wlsc_compositor *ec)
+{
+	struct wlsc_output *output;
+
+	/* Destroy all outputs associated with this compositor */
+	wl_list_for_each(output, &ec->output_list, link)
+		output->destroy(output);
+}
+
 static int on_term_signal(int signal_number, void *data)
 {
 	struct wl_display *display = data;
