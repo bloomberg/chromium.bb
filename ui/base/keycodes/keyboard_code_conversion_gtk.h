@@ -48,6 +48,11 @@ UI_EXPORT KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
 
 UI_EXPORT int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
 
+// For WebKit DRT testing: simulate the native keycode for the given
+// input |keycode|.  Return the native keycode.
+UI_EXPORT int GdkNativeKeyCodeForWindowsKeyCode(KeyboardCode keycode,
+                                                bool shift);
+
 UI_EXPORT KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event);
 
 } // namespace ui

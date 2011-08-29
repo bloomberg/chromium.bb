@@ -212,6 +212,10 @@ enum {
     VKEY_F1 = ui::VKEY_F1,
 };
 
+#if defined(OS_LINUX)
+int NativeKeyCodeForWindowsKeyCode(int keycode, bool shift);
+#endif
+
 // - Timers
 
 double GetForegroundTabTimerInterval();

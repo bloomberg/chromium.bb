@@ -37,6 +37,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
+#if defined(OS_LINUX)
+#include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#endif
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -611,6 +614,14 @@ void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
       test_environment->webkit_client()->fileSystem());
   fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
 }
+
+// Keyboard code
+#if defined(OS_LINUX)
+int NativeKeyCodeForWindowsKeyCode(int keycode, bool shift) {
+  ui::KeyboardCode code = static_cast<ui::KeyboardCode>(keycode);
+  return ui::GdkNativeKeyCodeForWindowsKeyCode(code, shift);
+}
+#endif
 
 // Timers
 double GetForegroundTabTimerInterval() {
