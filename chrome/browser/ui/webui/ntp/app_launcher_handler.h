@@ -163,6 +163,9 @@ class AppLauncherHandler : public WebUIMessageHandler,
   void OnFaviconForApp(FaviconService::Handle handle,
                        history::FaviconData data);
 
+  // Sends |highlight_app_id_| to the js.
+  void SetAppToBeHighlighted();
+
   // The apps are represented in the extensions model, which
   // outlives us since it's owned by our containing profile.
   ExtensionService* const extension_service_;
@@ -193,6 +196,14 @@ class AppLauncherHandler : public WebUIMessageHandler,
   // When true, we have attempted to install a bookmark app, and are still
   // waiting to hear about success or failure from the extensions system.
   bool attempted_bookmark_app_install_;
+
+  // True if we have executed HandleGetApps() at least once.
+  bool has_loaded_apps_;
+
+  // The ID of the app to be highlighted on the NTP (i.e. shown on the page
+  // and pulsed). This is done for new installs. The actual higlighting occurs
+  // when the app is added to the page (via getAppsCallback or appAdded).
+  std::string highlight_app_id_;
 
   // Hold state for favicon requests.
   CancelableRequestConsumerTSimple<AppInstallInfo*> favicon_consumer_;

@@ -75,7 +75,8 @@ AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extension_service_(extension_service),
       promo_active_(false),
       ignore_changes_(false),
-      attempted_bookmark_app_install_(false) {
+      attempted_bookmark_app_install_(false),
+      has_loaded_apps_(false) {
 }
 
 AppLauncherHandler::~AppLauncherHandler() {}
@@ -221,6 +222,8 @@ bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
 }
 
 WebUIMessageHandler* AppLauncherHandler::Attach(WebUI* web_ui) {
+  registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+      Source<TabContents>(web_ui->tab_contents()));
   return WebUIMessageHandler::Attach(web_ui);
 }
 
@@ -267,6 +270,15 @@ void AppLauncherHandler::Observe(int type,
       if (notification)
         args.Append(SerializeNotification(*notification));
       web_ui_->CallJavascriptFunction("appNotificationChanged", args);
+      break;
+    }
+    case chrome::NOTIFICATION_APP_INSTALLED_TO_NTP: {
+      if (!NewTabUI::NTP4Enabled())
+        break;
+
+      highlight_app_id_ = *Details<const std::string>(details).ptr();
+      if (has_loaded_apps_)
+        SetAppToBeHighlighted();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
@@ -463,12 +475,18 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     ShownSectionsHandler::SetShownSection(prefs, THUMB);
   }
 
+  SetAppToBeHighlighted();
   FillAppDictionary(&dictionary);
   web_ui_->CallJavascriptFunction("getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
   // the apps as they change.
-  if (registrar_.IsEmpty()) {
+  if (!has_loaded_apps_) {
+    pref_change_registrar_.Init(
+        extension_service_->extension_prefs()->pref_service());
+    pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref, this);
+    pref_change_registrar_.Add(prefs::kNTPAppPageNames, this);
+
     registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
         NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -482,12 +500,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
         NotificationService::AllSources());
   }
-  if (pref_change_registrar_.IsEmpty()) {
-    pref_change_registrar_.Init(
-        extension_service_->extension_prefs()->pref_service());
-    pref_change_registrar_.Add(ExtensionPrefs::kExtensionsPref, this);
-    pref_change_registrar_.Add(prefs::kNTPAppPageNames, this);
-  }
+
+  has_loaded_apps_ = true;
 }
 
 void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
@@ -795,6 +809,15 @@ void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
   attempted_bookmark_app_install_ = true;
 }
 
+void AppLauncherHandler::SetAppToBeHighlighted() {
+  if (highlight_app_id_.empty())
+    return;
+
+  scoped_ptr<StringValue> app_id(Value::CreateStringValue(highlight_app_id_));
+  web_ui_->CallJavascriptFunction("ntp4.setAppToBeHighlighted", *app_id);
+  highlight_app_id_.clear();
+}
+
 // static
 void AppLauncherHandler::RegisterUserPrefs(PrefService* pref_service) {
   // TODO(csilv): We will want this to be a syncable preference instead.
@@ -865,7 +888,7 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
     extension_service_->EnableExtension(extension_id);
 
     // Launch app asynchronously so the image will update.
-    StringValue* app_id = Value::CreateStringValue(extension_id);
+    scoped_ptr<StringValue> app_id(Value::CreateStringValue(extension_id));
     web_ui_->CallJavascriptFunction("launchAppAfterEnable", *app_id);
     return;
   }
@@ -915,7 +938,7 @@ void AppLauncherHandler::InstallUIProceed() {
   // If we don't launch the app asynchronously, then the app's disabled
   // icon disappears but isn't replaced by the enabled icon, making a poor
   // visual experience.
-  StringValue* app_id = Value::CreateStringValue(extension->id());
+  scoped_ptr<StringValue> app_id(Value::CreateStringValue(extension->id()));
   web_ui_->CallJavascriptFunction("launchAppAfterEnable", *app_id);
 
   extension_id_prompting_ = "";

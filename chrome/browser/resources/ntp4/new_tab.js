@@ -137,10 +137,6 @@ cr.define('ntp4', function() {
     shownPage = templateData['shown_page_type'];
     shownPageIndex = templateData['shown_page_index'];
 
-    // When a new app has been installed, we will be opened with a hash value
-    // that corresponds to the new app ID.
-    highlightAppId = getAndClearAppIDHash();
-
     // Request data on the apps so we can fill them in.
     // Note that this is kicked off asynchronously.  'getAppsCallback' will be
     // invoked at some point after this function returns.
@@ -234,23 +230,6 @@ cr.define('ntp4', function() {
   }
 
   /**
-   * Gets the app ID stored in the hash of the URL, and resets the hash to
-   * empty. If there is not an app-id in the hash, does nothing.
-   * @return {String} The value of the app-id query string parameter.
-   */
-  function getAndClearAppIDHash() {
-    var hash = location.hash;
-    if (hash.indexOf('#app-id=') == 0) {
-      var appID = hash.split('=')[1];
-      // Clear the hash so if the user bookmarks this page, they'll just get
-      // chrome://newtab/.
-      window.history.replaceState({}, '', '/');
-      return appID;
-    }
-    return '';
-  }
-
-  /**
    * Callback invoked by chrome with the apps available.
    *
    * Note that calls to this function can occur at any time, not just in
@@ -318,12 +297,10 @@ cr.define('ntp4', function() {
         assert(appsPages.length == origPageCount + 1, 'expected new page');
       }
 
-      if (app.id == highlightAppId) {
+      if (app.id == highlightAppId)
         highlightApp = app;
-        highlightAppId = null;
-      } else {
+      else
         appsPages[pageIndex].appendApp(app);
-      }
     }
 
     ntp4.AppsPage.setPromo(data.showPromo ? data : null);
@@ -347,11 +324,10 @@ cr.define('ntp4', function() {
    *     app.
    */
   function appAdded(app, opt_highlight) {
-    // If the page is already open when a new app is installed, the hash will
-    // be set once again.
-    var appID = getAndClearAppIDHash();
-    if (appID == app.id)
+    if (app.id == highlightAppId) {
       opt_highlight = true;
+      highlightAppId = null;
+    }
 
     var pageIndex = app.page_index || 0;
 
@@ -363,9 +339,15 @@ cr.define('ntp4', function() {
     }
 
     var page = appsPages[pageIndex];
-    if (opt_highlight)
-      cardSlider.selectCardByValue(page);
-    page.appendApp(app, true);
+    page.appendApp(app, opt_highlight);
+  }
+
+  /**
+   * Sets that an app should be highlighted if it is added. Called right before
+   * appAdded for new installs.
+   */
+  function setAppToBeHighlighted(appId) {
+    highlightAppId = appId;
   }
 
   /**
@@ -808,6 +790,7 @@ cr.define('ntp4', function() {
     isRTL: isRTL,
     leaveRearrangeMode: leaveRearrangeMode,
     saveAppPageName: saveAppPageName,
+    setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarksData: setBookmarksData,
     setMostVisitedPages: setMostVisitedPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,

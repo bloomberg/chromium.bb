@@ -841,6 +841,11 @@ enum {
   // Sent when the applications in the NTP app launcher have been reordered.
   NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
 
+  // Sent when an app is installed and an NTP has been shown. Source is the
+  // TabContents that was shown, and Details is the string ID of the extension
+  // which was installed.
+  NOTIFICATION_APP_INSTALLED_TO_NTP,
+
 #if defined(OS_CHROMEOS)
   // Sent when WebSocketProxy started accepting connections.
   NOTIFICATION_WEB_SOCKET_PROXY_STARTED,

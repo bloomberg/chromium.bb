@@ -231,12 +231,14 @@ void ExtensionInstallUI::OnImageLoaded(
 // static
 void ExtensionInstallUI::OpenAppInstalledNTP(Browser* browser,
                                              const std::string& app_id) {
-  std::string url = base::StringPrintf(
-      "%s#app-id=%s", chrome::kChromeUINewTabURL, app_id.c_str());
   browser::NavigateParams params =
-      browser->GetSingletonTabNavigateParams(GURL(url));
-  params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+      browser->GetSingletonTabNavigateParams(GURL(chrome::kChromeUINewTabURL));
   browser::Navigate(&params);
+
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+      Source<TabContents>(params.target_contents->tab_contents()),
+      Details<const std::string>(&app_id));
 }
 
 // static

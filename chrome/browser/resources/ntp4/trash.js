@@ -63,8 +63,10 @@ cr.define('ntp4', function() {
       e.preventDefault();
 
       var tile = ntp4.getCurrentlyDraggingTile();
+      var page = tile.tilePage;
       tile.firstChild.removeFromChrome();
       tile.landedOnTrash = true;
+      page.cleanupDrag();
     },
 
     /**
