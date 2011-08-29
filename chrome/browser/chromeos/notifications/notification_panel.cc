@@ -651,11 +651,15 @@ void NotificationPanel::OnMouseLeave() {
 
 void NotificationPanel::OnMouseMotion(const gfx::Point& point) {
   SetActiveView(balloon_container_->FindBalloonView(point));
-  SET_STATE(KEEP_SIZE);
   // We need to set the focus to scroll view to get mouse wheel
   // working. Setting focus when mouse moves on the panel
   // because focus may be taken by other view.
   scroll_view_->RequestFocus();
+  // This method used to set KEEP_SIZE state. However,
+  // some html notifications may want to change their size,
+  // and setting KEEP_SIZE caused them to behave differently
+  // depending on whether user moved mouse over notification
+  // or not.
 }
 
 NotificationPanelTester* NotificationPanel::GetTester() {
