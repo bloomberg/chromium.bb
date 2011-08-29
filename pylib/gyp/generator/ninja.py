@@ -53,50 +53,6 @@ generator_default_variables = {
 # - need ld_host as well.
 generator_supports_multiple_toolsets = False
 
-# TODO: compute cc/cxx/ld/etc. by command-line arguments and system tests.
-NINJA_BASE = """\
-cc = %(cc)s
-cxx = %(cxx)s
-ld = $cxx -Wl,--threads -Wl,--thread-count=4
-cc_host = $cc
-cxx_host = $cxx
-
-rule cc
-  depfile = $out.d
-  description = CC $out
-  command = $cc -MMD -MF $out.d $defines $includes $cflags $cflags_c $
-    -c $in -o $out
-
-rule cxx
-  depfile = $out.d
-  description = CXX $out
-  command = $cxx -MMD -MF $out.d $defines $includes $cflags $cflags_cc $
-    -c $in -o $out
-
-rule alink
-  description = AR $out
-  command = rm -f $out && ar rcsT $out $in
-
-rule solink
-  description = SOLINK $out
-  command = $ld -shared $ldflags -o $out -Wl,-soname=$soname $
-    -Wl,--whole-archive $in -Wl,--no-whole-archive $libs
-
-rule link
-  description = LINK $out
-  command = $ld $ldflags -o $out -Wl,-rpath=\$$ORIGIN/lib $
-    -Wl,--start-group $in -Wl,--end-group $libs
-
-rule stamp
-  description = STAMP $out
-  command = touch $out
-
-rule copy
-  description = COPY $in $out
-  command = ln -f $in $out 2>/dev/null || cp -af $in $out
-
-"""
-
 
 def StripPrefix(arg, prefix):
   if arg.startswith(prefix):
@@ -658,12 +614,53 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # e.g. "out/Debug"
   builddir = os.path.join(generator_flags.get('output_dir', 'out'), config_name)
 
-  master_ninja = OpenOutput(os.path.join(options.toplevel_dir, builddir,
-                                         'build.ninja'))
-  master_ninja.write(NINJA_BASE % {
-      'cc': os.environ.get('CC', 'gcc'),
-      'cxx': os.environ.get('CXX', 'g++'),
-      })
+  master_ninja = ninja_syntax.Writer(
+      OpenOutput(os.path.join(options.toplevel_dir, builddir, 'build.ninja')),
+      width=120)
+
+  # TODO: compute cc/cxx/ld/etc. by command-line arguments and system tests.
+  master_ninja.variable('cc', os.environ.get('CC', 'gcc'))
+  master_ninja.variable('cxx', os.environ.get('CXX', 'g++'))
+  master_ninja.variable('ld', '$cxx -Wl,--threads -Wl,--thread-count=4')
+  master_ninja.variable('cc_host', '$cc')
+  master_ninja.variable('cxx_host', '$cxx')
+  master_ninja.newline()
+
+  master_ninja.rule(
+    'cc',
+    description='CC $out',
+    command=('$cc -MMD -MF $out.d $defines $includes $cflags $cflags_c '
+             '-c $in -o $out'),
+    depfile='$out.d')
+  master_ninja.rule(
+    'cxx',
+    description='CXX $out',
+    command=('$cxx -MMD -MF $out.d $defines $includes $cflags $cflags_cc '
+             '-c $in -o $out'),
+    depfile='$out.d')
+  master_ninja.rule(
+    'alink',
+    description='AR $out',
+    command='rm -f $out && ar rcsT $out $in')
+  master_ninja.rule(
+    'solink',
+    description='SOLINK $out',
+    command=('$ld -shared $ldflags -o $out -Wl,-soname=$soname '
+             '-Wl,--whole-archive $in -Wl,--no-whole-archive $libs'))
+  master_ninja.rule(
+    'link',
+    description='LINK $out',
+    command=('$ld $ldflags -o $out -Wl,-rpath=\$$ORIGIN/lib '
+             '-Wl,--start-group $in -Wl,--end-group $libs'))
+  master_ninja.rule(
+    'stamp',
+    description='STAMP $out',
+    command='touch $out')
+  master_ninja.rule(
+    'copy',
+    description='COPY $in $out',
+    command='ln -f $in $out 2>/dev/null || cp -af $in $out')
+  master_ninja.newline()
 
   all_targets = set()
   for build_file in params['build_files']:
@@ -671,7 +668,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
       all_targets.add(target)
   all_outputs = set()
 
-  subninjas = set()
   target_outputs = {}
   for qualified_target in target_list:
     # qualified_target is like: third_party/icu/icu.gyp:icui18n#target
@@ -694,7 +690,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
                          OpenOutput(os.path.join(options.toplevel_dir,
                                                  builddir,
                                                  output_file)))
-    subninjas.add(output_file)
+    master_ninja.subninja(output_file)
 
     output = writer.WriteSpec(spec, config)
     if output:
@@ -704,10 +700,5 @@ def GenerateOutput(target_list, target_dicts, data, params):
       if qualified_target in all_targets:
         all_outputs.add(output)
 
-  for ninja in subninjas:
-    print >>master_ninja, 'subninja', ninja
-
   if all_outputs:
-    print >>master_ninja, 'build all: phony ||' + ' '.join(all_outputs)
-
-  master_ninja.close()
+    master_ninja.build('all', 'phony', all_outputs)
