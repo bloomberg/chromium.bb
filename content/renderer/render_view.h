@@ -150,6 +150,7 @@ struct WebFindOptions;
 struct WebMediaPlayerAction;
 struct WebPluginParams;
 struct WebPoint;
+struct WebRect;
 struct WebWindowFeatures;
 }
 
@@ -371,6 +372,9 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebExternalPopupMenu* createExternalPopupMenu(
       const WebKit::WebPopupMenuInfo& popup_menu_info,
       WebKit::WebExternalPopupMenuClient* popup_menu_client);
+#if defined(TOUCH_UI)
+  virtual WebKit::WebRect getDeviceRect() const;
+#endif
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
       unsigned quota);
   virtual void didAddMessageToConsole(

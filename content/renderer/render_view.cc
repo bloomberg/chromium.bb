@@ -262,6 +262,10 @@ static const int kDelaySecondsForContentStateSync = 1;
 // The maximum number of popups that can be spawned from one page.
 static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 
+// The default layout width and height for pages when fixed layout is enabled.
+static const int kDefaultLayoutWidth = 980;
+static const int kDefaultLayoutHeight = 640;
+
 static const float kScalingIncrement = 0.1f;
 
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
@@ -1228,6 +1232,16 @@ void RenderView::UpdateURL(WebFrame* frame) {
     accessibility_.reset();
     pending_accessibility_notifications_.clear();
   }
+#if defined(TOUCH_UI)
+  // Only enable fixed layout for normal web content.
+  GURL frame_url = GURL(request.url());
+  if (frame_url.SchemeIs(chrome::kHttpScheme) ||
+      frame_url.SchemeIs(chrome::kHttpsScheme)) {
+    webview()->enableFixedLayoutMode(true);
+    webview()->setFixedLayoutSize(
+        WebSize(kDefaultLayoutWidth, kDefaultLayoutHeight));
+  }
+#endif
 }
 
 // Tell the embedding application that the title of the active page has changed
@@ -1439,6 +1453,12 @@ WebExternalPopupMenu* RenderView::createExternalPopupMenu(
       new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
   return external_popup_menu_.get();
 }
+
+#if defined(TOUCH_UI)
+WebRect RenderView::getDeviceRect() const {
+  return WebRect(0, 0, size().width(), size().height());
+}
+#endif
 
 RenderWidgetFullscreenPepper* RenderView::CreatePepperFullscreenContainer(
     webkit::ppapi::PluginInstance* plugin) {
