@@ -812,8 +812,10 @@ wlsc_output_set_cursor(struct wlsc_output *output,
 
 	prior_was_hardware = wl_list_empty(&device->sprite->link);
 	if (force_sw || output->set_hardware_cursor(output, device) < 0) {
-		if (prior_was_hardware)
+		if (prior_was_hardware) {
 			wlsc_surface_damage(device->sprite);
+			output->set_hardware_cursor(output, NULL);
+		}
 		use_hardware_cursor = 0;
 	} else if (!prior_was_hardware) {
 		wlsc_surface_damage_below(device->sprite);
