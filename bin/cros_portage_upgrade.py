@@ -52,6 +52,7 @@ class PInfo(object):
       'state',               # One of utable.UpgradeTable.STATE_*
       'upgraded_cpv',        # If upgraded, it is to this cpv
       'upgraded_stable',     # Boolean. If upgraded_cpv, indicates if stable.
+      'upgraded_unmasked',   # Boolean. If upgraded_cpv, indicates if unmasked.
       'upstream_cpv',        # latest/stable upstream cpv according to request
       'user_arg',            # Original user arg for this pkg, if applicable
       'version_rev',         # Just revision (e.g. 'r1').  '' if no revision
@@ -85,13 +86,13 @@ class Upgrader(object):
                '_csv_file',     # File path for writing csv output
                '_deps_graph',   # Dependency graph from portage
                '_emptydir',     # Path to temporary empty directory
+               '_equery_regexp',# Regexp mask bits from 'equery list' output
                '_master_archs', # Set. Archs of tables merged into master_table
                '_master_cnt',   # Number of tables merged into master_table
                '_master_table', # Merged table from all board runs
                '_no_upstream_cache', # Boolean.  Delete upstream cache when done
                '_porttree',     # Reference to portage porttree object
                '_rdeps',        # Boolean, if True pass --root-deps=rdeps
-               '_stable_regexp',# Regexp stable bit from 'equery list' output
                '_stable_repo',  # Path to portage-stable
                '_stable_repo_stashed', # True if portage-stable has a git stash
                '_stable_repo_status', # git status report at start of run
@@ -131,7 +132,7 @@ class Upgrader(object):
     self._deps_graph = None
 
     # Pre-compiled regexps for speed.
-    self._stable_regexp = re.compile(r'^\[...\]\s*\[.(.)\]\s+\S+$')
+    self._equery_regexp = re.compile(r'^\[...\]\s*\[(.)(.)\]\s+\S+$')
 
   def _GetPkgKeywordsFile(self):
     """Return the path to the package.keywords file in chromiumos-overlay."""
@@ -417,8 +418,8 @@ class Upgrader(object):
     else:
       return None
 
-  def _IsStable(self, cpv):
-    """Return True if given cpv is stable for current arch, False otherwise."""
+  def _GetMaskBits(self, cpv):
+    """Return two-Boolean tuple (unmasked, stable) for |cpv| on current arch."""
 
     envvars = self._GenPortageEnvvars(self._curr_arch, False)
 
@@ -431,13 +432,15 @@ class Upgrader(object):
                                  )
     output = result.output.strip()
 
-    # Expect output like one of these two cases (~ is for unstable):
+    # Expect output like one of these cases (~ == unstable, M == masked):
     # [-P-] [ ~] sys-fs/fuse-2.7.3:0
     # [-P-] [  ] sys-fs/fuse-2.7.3:0
+    # [-P-] [M ] sys-fs/fuse-2.7.3:0
+    # [-P-] [M~] sys-fs/fuse-2.7.3:0
     for line in output.split('\n'):
-      match = self._stable_regexp.search(line)
+      match = self._equery_regexp.search(line)
       if match:
-        return '~' != match.group(1)
+        return ('M' != match.group(1), '~' != match.group(1))
 
     raise RuntimeError("Unable to determine whether %s is stable from equery "
                        "output:\n%s" % (cpv, output))
@@ -450,13 +453,12 @@ class Upgrader(object):
     the same version in another overlay.
     """
     # Further explanation: this check should always pass, but might not
-    # if the copy/upgrade from upstream did not work and
-    # src/third-party/portage is being used as temporary upstream copy via
-    # 'git checkout cros/gentoo'.  This is just a sanity check.
+    # if the copy/upgrade from upstream did not work.  This is just a
+    # sanity check.
     envvars = self._GenPortageEnvvars(self._curr_arch, not stable_only)
 
     equery = self._GetBoardCmd(self.EQUERY_CMD)
-    cmd = [equery, 'which', cpv]
+    cmd = [equery, 'which', '--include-masked', cpv]
     result = cros_lib.RunCommand(cmd, exit_code=True, error_ok=True,
                                  extra_env=envvars, print_cmd=False,
                                  redirect_stdout=True,
@@ -465,8 +467,56 @@ class Upgrader(object):
     ebuild_path = result.output.strip()
     (ovrly, cat, pn, pv) = self._SplitEBuildPath(ebuild_path)
     if ovrly != overlay:
-      raise RuntimeError('Somehow ebuild for %s is not coming from %s:\n %s' %
+      raise RuntimeError('Somehow ebuild for %s is not coming from %s:\n %s\n'
+                         'Please show this error to the build team.' %
                          (cpv, overlay, ebuild_path))
+
+  def _GiveMaskedError(self, upgraded_cpv, emerge_output):
+    """Raise RuntimeError saying that |upgraded_cpv| is masked off.
+
+    See if hint found in |emerge_output| to improve error emssage.
+    """
+
+    # Expecting emerge_output to have lines like this:
+    #  The following mask changes are necessary to proceed:
+    # #required by =sys-fs/lvm2-2.02.73-r1 (argument)
+    # # /home/mtennant/trunk/src/third_party/chromiumos-overlay/profiles\
+    # /targets/chromeos/package.mask:
+    package_mask = None
+
+    regex_line1 = re.compile(r'#\s*required by =%s' % upgraded_cpv)
+    regex_line2 = re.compile(r'#\s*(\S+/package\.mask):')
+
+    emerge_lines = emerge_output.split('\n')
+    for ix1 in range(len(emerge_lines)):
+      line = emerge_lines[ix1]
+
+      # Look for first line.
+      if regex_line1.search(line):
+        # Look for second line within range_limit lines of first one.
+        range_limit = 3
+        for ix2 in range(ix1 + 1, min(ix1 + range_limit, len(emerge_lines))):
+          line = emerge_lines[ix2]
+          match = regex_line2.search(line)
+          if match:
+            package_mask = match.group(1)
+            break
+        break
+
+    oper.Error("Emerge output for %s on %s follows:" %
+               (upgraded_cpv, self._curr_arch))
+    print emerge_output
+
+    if package_mask:
+      raise RuntimeError("Upgraded package '%s' appears to be masked by a line "
+                         "in\n'%s'\n"
+                         "Full emerge output is above. Address mask issue, "
+                         "then run this again." %
+                         (upgraded_cpv, package_mask))
+    else:
+      raise RuntimeError("Upgraded package '%s' is masked somehow (See full "
+                         "emerge output above). Address that and then run this "
+                         "again." % upgraded_cpv)
 
   def _PkgUpgradeStaged(self, upstream_cpv):
     """Return True if package upgrade is already staged."""
@@ -729,12 +779,25 @@ class Upgrader(object):
   def _VerifyPackageUpgrade(self, info):
     """Verify that the upgraded package in |info| passes checks."""
     # Verify that upgraded package can be emerged and save results.
-    info['upgraded_stable'] = self._IsStable(info['upgraded_cpv'])
+    (unmasked, stable) = self._GetMaskBits(info['upgraded_cpv'])
+    info['upgraded_unmasked'] = unmasked
+    info['upgraded_stable'] = stable
+
     (em_ok, em_cmd, em_out) = self._IsEmergeable(info['upgraded_cpv'],
                                                  info['upgraded_stable'])
     info['emerge_ok'] = em_ok
     info['emerge_cmd'] = em_cmd
     info['emerge_output'] = em_out
+
+    if not info['upgraded_unmasked']:
+      # If the package is masked, then emerge should have failed.
+      if info['emerge_ok']:
+        oper.Error("Emerge passed for masked package!  Something "
+                   "fishy here. Emerge output follows:")
+        print info['emerge_output']
+        raise RuntimeError("Show this to the build team.")
+
+      self._GiveMaskedError(info['upgraded_cpv'], info['emerge_output'])
 
     self._VerifyEbuildOverlay(info['upstream_cpv'], self.STABLE_OVERLAY_NAME,
                               info['upgraded_stable'])
@@ -799,44 +862,42 @@ class Upgrader(object):
                     (info['upgraded_cpv'], self._curr_board))
         else:
           emerge_ok = False
-          oper.Warning('Unable to emerge %s after upgrade.\n'
-                       'The output of "%s" follows:\n' %
-                       (info['upgraded_cpv'], info['emerge_cmd']))
+          oper.Error('Unable to emerge %s after upgrade.\n'
+                     'The output of "%s" follows:' %
+                     (info['upgraded_cpv'], info['emerge_cmd']))
           print info['emerge_output']
 
     if not emerge_ok:
-      raise RuntimeError("One or more emerge failures after upgrade.")
+      raise RuntimeError('Failed to complete upgrades on %s (see above). '
+                         'Address the emerge errors before continuing.' %
+                         self._curr_board)
 
   def _UpgradePackages(self, infolist):
     """Given a list of cpv info maps, adds the upstream cpv to the infos."""
     self._curr_table.Clear()
 
-    for info in infolist:
-      if self._UpgradePackage(info):
-        self._upgrade_cnt += 1
-
-    # The verification of upgrades needs to happen after all upgrades are done.
-    # The reason is that it cannot be guaranteed that infolist is ordered such
-    # that dependencies are satisified after each individual upgrade, because
-    # one or more of the packages may only exist upstream.
-    for info in infolist:
-      if info['upgraded_cpv']:
-        self._VerifyPackageUpgrade(info)
-
-      self._PackageReport(info)
-
     try:
-      self._GiveEmergeResults(infolist)
-    except RuntimeError:
-      # TODO(mtennant): Make this propagate another RuntimeError instead.
+      for info in infolist:
+        if self._UpgradePackage(info):
+          self._upgrade_cnt += 1
 
-      # Failure to emerge the upgraded package(s) must stop the upgrade, or
-      # else the later logic will merrily commit the upgrade changes.
-      oper.Die('Failed to complete upgrades on %s (see above).  Address'
-               ' the emerge errors before continuing.\n'
-               'To reset your changes instead::\n'
-               ' cd %s; git reset --hard; cd -' %
-               (self._curr_board, self._stable_repo))
+      # The verification of upgrades needs to happen after upgrades are done.
+      # The reason is that it cannot be guaranteed that infolist is ordered such
+      # that dependencies are satisified after each individual upgrade, because
+      # one or more of the packages may only exist upstream.
+      for info in infolist:
+        if info['upgraded_cpv']:
+          self._VerifyPackageUpgrade(info)
+
+        self._PackageReport(info)
+
+      self._GiveEmergeResults(infolist)
+    except RuntimeError as ex:
+      oper.Error(str(ex))
+
+      raise RuntimeError('\nTo reset all changes in %s now:\n'
+                         ' cd %s; git reset --hard; cd -' %
+                         (self._stable_repo, self._stable_repo))
       # Allow the changes to stay staged so that the user can attempt to address
       # the issue (perhaps an edit to package.mask is required, or another
       # package must also be upgraded).
