@@ -10,6 +10,7 @@
 #include "gestures/include/immediate_interpreter.h"
 #include "gestures/include/integral_gesture_filter_interpreter.h"
 #include "gestures/include/logging.h"
+#include "gestures/include/lookahead_filter_interpreter.h"
 #include "gestures/include/scaling_filter_interpreter.h"
 
 // C API:
@@ -99,7 +100,8 @@ GestureInterpreter::GestureInterpreter(int version)
   interpreter_.reset(new IntegralGestureFilterInterpreter(
       new ScalingFilterInterpreter(
           new AccelFilterInterpreter(
-              new ImmediateInterpreter))));
+              new LookaheadFilterInterpreter(
+                  new ImmediateInterpreter)))));
 }
 
 GestureInterpreter::~GestureInterpreter() {
