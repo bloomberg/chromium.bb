@@ -265,7 +265,6 @@ cr.define('ntp4', function() {
      * Called when an app is removed from Chrome. Animates its disappearance.
      */
     doRemove: function() {
-      var contents = this.firstChild;
       this.firstChild.classList.add('removing-tile-contents');
     },
 
@@ -276,7 +275,7 @@ cr.define('ntp4', function() {
     onContentsAnimationEnd_: function(e) {
       if (this.firstChild.classList.contains('new-tile-contents'))
         this.firstChild.classList.remove('new-tile-contents');
-      else if (this.firstChild.classList.contains('removing-tile-contents'))
+      if (this.firstChild.classList.contains('removing-tile-contents'))
         this.tilePage.removeTile(this);
     },
   };

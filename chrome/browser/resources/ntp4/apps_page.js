@@ -230,6 +230,18 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Removes the app tile from the page. Should be called after the app has
+     * been uninstalled.
+     */
+    remove: function() {
+      // Unset the ID immediately, because the app is already gone. But leave
+      // the tile on the page as it animates out.
+      this.id = '';
+      var tile = findAncestorByClass(this, 'tile');
+      tile.doRemove();
+    },
+
+    /**
      * Creates the apps-promo section of the app (should only be called for the
      * webstore app).
      * @private

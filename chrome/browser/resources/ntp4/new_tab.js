@@ -377,9 +377,7 @@ cr.define('ntp4', function() {
   function appRemoved(appData) {
     var app = $(appData.id);
     assert(app, 'trying to remove an app that doesn\'t exist');
-
-    var tile = findAncestorByClass(app, 'tile');
-    tile.doRemove();
+    app.remove();
   }
 
   /**
