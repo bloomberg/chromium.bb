@@ -39,6 +39,8 @@ UNINITIALIZED READ
 # assumptions or unhandled syscalls
 
 # http://code.google.com/p/drmemory/issues/detail?id=12
+# Please note: the following suppressions were written in the abscense of
+# private symbols so may need to be updated when we switch to auto-loading PDBs
 UNINITIALIZED READ
 ntdll.dll!Rtl*
 ntdll.dll!Rtl*
@@ -72,9 +74,23 @@ UNINITIALIZED READ
 ...
 SHELL32.dll!ILSaveToStream*
 
-POSSIBLE LEAK
+LEAK
 ...
 SHELL32.dll!SHFileOperation*
+
+UNINITIALIZED READ
+...
+SHELL32.dll!SHGetItemFromDataObject
+
+LEAK
+...
+SHELL32.dll!SHGetItemFromDataObject
+
+LEAK
+ole32.dll!*
+...
+ole32.dll!*
+SHELL32.dll!SHChangeNotifySuspendResume
 
 # http://code.google.com/p/drmemory/issues/detail?id=14
 UNINITIALIZED READ
