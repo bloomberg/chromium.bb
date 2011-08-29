@@ -62,6 +62,7 @@ struct wl_client {
 	uint32_t mask;
 	struct wl_list link;
 	struct wl_map objects;
+	int error;
 };
 
 struct wl_display {
@@ -118,6 +119,7 @@ wl_client_post_error(struct wl_client *client, struct wl_object *object,
 	vsnprintf(buffer, sizeof buffer, msg, ap);
 	va_end(ap);
 
+	client->error = 1;
 	wl_resource_post_event(client->display_resource,
 			       WL_DISPLAY_ERROR, object, code, buffer);
 }
@@ -158,9 +160,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			wl_client_post_error(client, &resource->object,
 					     WL_DISPLAY_ERROR_INVALID_OBJECT,
 					     "invalid object %d", p[0]);
-			wl_connection_consume(connection, size);
-			len -= size;
-			continue;
+			break;
 		}
 
 		object = &resource->object;
@@ -170,9 +170,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 					     "invalid method %d, object %s@%d",
 					     object->interface->name,
 					     object->id, opcode);
-			wl_connection_consume(connection, size);
-			len -= size;
-			continue;
+			break;
 		}
 
 		message = &object->interface->methods[opcode];
@@ -187,12 +185,11 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 					     object->interface->name,
 					     object->id,
 					     message->name);
-			continue;
+			break;
 		} else if (closure == NULL && errno == ENOMEM) {
 			wl_client_post_no_memory(client);
-			continue;
+			break;
 		}
-
 
 		if (wl_debug)
 			wl_closure_print(closure, object, false); 
@@ -201,7 +198,13 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 				  object->implementation[opcode], client);
 
 		wl_closure_destroy(closure);
+
+		if (client->error)
+			break;
 	}
+
+	if (client->error)
+		wl_client_destroy(client);
 
 	return 1;
 }
@@ -321,6 +324,7 @@ wl_client_destroy(struct wl_client *client)
 	
 	printf("disconnect from client %p\n", client);
 
+	wl_client_flush(client);
 	wl_map_for_each(&client->objects, destroy_resource, &time);
 	wl_map_release(&client->objects);
 	wl_event_source_remove(client->source);

@@ -226,8 +226,10 @@ struct wl_selection {
 	struct wl_listener selection_focus_listener;
 };
 
-void
-wl_resource_post_event(struct wl_resource *resource, uint32_t opcode, ...);
+void wl_resource_post_event(struct wl_resource *resource,
+			    uint32_t opcode, ...);
+void wl_resource_post_error(struct wl_resource *resource,
+			    uint32_t code, const char *msg, ...);
 
 int
 wl_display_set_compositor(struct wl_display *display,
