@@ -643,6 +643,8 @@ class TabStripModel : public NotificationObserver {
 
   TabStripSelectionModel selection_model_;
 
+  int32 magic_id_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
 

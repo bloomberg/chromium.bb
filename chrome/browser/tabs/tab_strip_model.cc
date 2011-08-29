@@ -64,7 +64,8 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
     : delegate_(delegate),
       profile_(profile),
       closing_all_(false),
-      order_controller_(NULL) {
+      order_controller_(NULL),
+      magic_id_(0) {
   DCHECK(delegate_);
   registrar_.Add(this,
                  content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
@@ -76,10 +77,13 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
 }
 
 TabStripModel::~TabStripModel() {
+  magic_id_ = 0x1234567;
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabStripModelDeleted());
-  STLDeleteContainerPointers(contents_data_.begin(), contents_data_.end());
+  STLDeleteElements(&contents_data_);
   delete order_controller_;
+  order_controller_ = NULL;
+  magic_id_ = 0x76543210;
 }
 
 void TabStripModel::AddObserver(TabStripModelObserver* observer) {
@@ -117,6 +121,7 @@ void TabStripModel::AppendTabContents(TabContentsWrapper* contents,
 void TabStripModel::InsertTabContentsAt(int index,
                                         TabContentsWrapper* contents,
                                         int add_types) {
+  CHECK(contents);
   bool active = add_types & ADD_ACTIVE;
   // Force app tabs to be pinned.
   bool pin =
@@ -169,7 +174,8 @@ void TabStripModel::InsertTabContentsAt(int index,
 TabContentsWrapper* TabStripModel::ReplaceTabContentsAt(
     int index,
     TabContentsWrapper* new_contents) {
-  DCHECK(ContainsIndex(index));
+  CHECK(new_contents);
+  CHECK(ContainsIndex(index));
   TabContentsWrapper* old_contents = GetContentsAt(index);
 
   ForgetOpenersAndGroupsReferencing(&(old_contents->controller()));
@@ -338,6 +344,8 @@ int TabStripModel::GetWrapperIndex(const TabContents* contents) const {
   int index = 0;
   TabContentsDataVector::const_iterator iter = contents_data_.begin();
   for (; iter != contents_data_.end(); ++iter, ++index) {
+    CHECK(*iter) << magic_id_;
+    CHECK((*iter)->contents) << magic_id_;
     if ((*iter)->contents->tab_contents() == contents)
       return index;
   }
