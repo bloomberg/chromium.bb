@@ -24,34 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 
-namespace {
-
-// We need to know whether we're using a newer GTK at run time because we need
-// to prevent.
-//
-// TODO(erg): Once we've dropped Hardy support, remove this hack.
-typedef void (*gtk_menu_item_set_label_func)(GtkMenuItem*, const gchar*);
-gtk_menu_item_set_label_func gtk_menu_item_set_label_sym =
-#if GTK_CHECK_VERSION(2, 16, 1)
-    gtk_menu_item_set_label;
-#else
-    NULL;
-#endif
-
-void EnsureMenuItemFunctions() {
-#if !GTK_CHECK_VERSION(2, 16, 1)
-  static bool methods_looked_up = false;
-  if (!methods_looked_up) {
-    methods_looked_up = true;
-    gtk_menu_item_set_label_sym =
-        reinterpret_cast<gtk_menu_item_set_label_func>(
-            dlsym(NULL, "gtk_menu_item_set_label"));
-  }
-#endif
-}
-
-}  // namespace
-
 GlobalBookmarkMenu::GlobalBookmarkMenu(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
@@ -74,13 +46,10 @@ void GlobalBookmarkMenu::Init(GtkWidget* bookmark_menu,
                               GtkWidget* bookmark_menu_item) {
   bookmark_menu_.Own(bookmark_menu);
 
-  EnsureMenuItemFunctions();
-  if (gtk_menu_item_set_label_sym) {
-    BookmarkModel* model = profile_->GetBookmarkModel();
-    model->AddObserver(this);
-    if (model->IsLoaded())
-      Loaded(model, false);
-  }
+  BookmarkModel* model = profile_->GetBookmarkModel();
+  model->AddObserver(this);
+  if (model->IsLoaded())
+    Loaded(model, false);
 }
 
 void GlobalBookmarkMenu::RebuildMenuInFuture() {
@@ -167,14 +136,8 @@ void GlobalBookmarkMenu::ConfigureMenuItem(const BookmarkNode* node,
   CHECK(node);
   CHECK(menu_item);
 
-  // This check is only to make things compile on Hardy; this code won't
-  // display any visible widgets in older systems that don't have a global menu
-  // bar.
-  if (gtk_menu_item_set_label_sym) {
-    gtk_menu_item_set_label_sym(
-        GTK_MENU_ITEM(menu_item),
-        bookmark_utils::BuildMenuLabelFor(node).c_str());
-  }
+  gtk_menu_item_set_label(GTK_MENU_ITEM(menu_item),
+                          bookmark_utils::BuildMenuLabelFor(node).c_str());
 
   if (node->is_url()) {
     gtk_widget_set_tooltip_markup(

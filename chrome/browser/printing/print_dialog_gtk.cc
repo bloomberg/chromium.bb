@@ -143,9 +143,7 @@ void PrintDialogGtk::UseDefaultSettings() {
     g_object_ref(printer_);
     gtk_print_settings_set_printer(gtk_settings_,
                                    gtk_printer_get_name(printer_));
-#if GTK_CHECK_VERSION(2, 14, 0)
     page_setup_ = gtk_printer_get_default_page_size(printer_);
-#endif
   }
 
   if (!page_setup_)
@@ -236,10 +234,8 @@ void PrintDialogGtk::ShowDialog(
       GTK_PRINT_CAPABILITY_REVERSE);
   gtk_print_unix_dialog_set_manual_capabilities(GTK_PRINT_UNIX_DIALOG(dialog_),
                                                 cap);
-#if GTK_CHECK_VERSION(2, 18, 0)
   gtk_print_unix_dialog_set_embed_page_setup(GTK_PRINT_UNIX_DIALOG(dialog_),
                                              TRUE);
-#endif
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
   gtk_widget_show(dialog_);
 }

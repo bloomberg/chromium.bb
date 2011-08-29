@@ -44,23 +44,6 @@ GdkCursor* GetInlineCustomCursor(CustomCursorType type) {
   return cursor;
 }
 
-// For GTK 2.16 and beyond, GDK_BLANK_CURSOR is available. Before, we have to
-// use a custom cursor.
-#if !GTK_CHECK_VERSION(2, 16, 0)
-// Get/create a custom cursor which is invisible.
-GdkCursor* GetInvisibleCustomCursor() {
-  static GdkCursor* cursor = NULL;
-  if (cursor)
-    return cursor;
-  const char bits[] = { 0 };
-  const GdkColor color = { 0, 0, 0, 0 };
-  GdkPixmap* bitmap = gdk_bitmap_create_from_data(NULL, bits, 1, 1);
-  cursor = gdk_cursor_new_from_pixmap(bitmap, bitmap, &color, &color, 0, 0);
-  g_object_unref(bitmap);
-  return cursor;
-}
-#endif
-
 }  // end anonymous namespace
 
 int WebCursor::GetCursorType() const {
@@ -143,12 +126,7 @@ int WebCursor::GetCursorType() const {
     case WebCursorInfo::TypeCopy:
       NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeNone:
-// See comment above |GetInvisibleCustomCursor()|.
-#if !GTK_CHECK_VERSION(2, 16, 0)
-      return GDK_CURSOR_IS_PIXMAP;
-#else
       return GDK_BLANK_CURSOR;
-#endif
     case WebCursorInfo::TypeNotAllowed:
       NOTIMPLEMENTED(); return GDK_LAST_CURSOR;
     case WebCursorInfo::TypeZoomIn:
@@ -171,11 +149,6 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
 
 GdkCursor* WebCursor::GetCustomCursor() {
   switch (type_) {
-// See comment above |GetInvisibleCustomCursor()|.
-#if !GTK_CHECK_VERSION(2, 16, 0)
-    case WebCursorInfo::TypeNone:
-      return GetInvisibleCustomCursor();
-#endif
     case WebCursorInfo::TypeZoomIn:
       return GetInlineCustomCursor(CustomCursorZoomIn);
     case WebCursorInfo::TypeZoomOut:

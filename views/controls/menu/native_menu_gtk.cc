@@ -393,11 +393,9 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
                                       gtk_image_new_from_pixbuf(pixbuf));
         g_object_unref(pixbuf);
 
-#if GTK_CHECK_VERSION(2,16,0)
         // Show the image even if the "gtk-menu-images" setting is turned off.
         gtk_image_menu_item_set_always_show_image(
             GTK_IMAGE_MENU_ITEM(menu_item), TRUE);
-#endif
       } else {
         menu_item = gtk_menu_item_new_with_mnemonic(label.c_str());
       }
@@ -606,18 +604,7 @@ void NativeMenuGtk::SendAccessibilityEvent() {
 
   // Get the menu item's label.
   std::string name;
-#if GTK_CHECK_VERSION(2, 16, 0)
   name = gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item));
-#else
-  GList* children = gtk_container_get_children(GTK_CONTAINER(menu_item));
-  for (GList* l = g_list_first(children); l != NULL; l = g_list_next(l)) {
-    GtkWidget* child = static_cast<GtkWidget*>(l->data);
-    if (GTK_IS_LABEL(child)) {
-      name = gtk_label_get_label(GTK_LABEL(child));
-      break;
-    }
-  }
-#endif
 
   if (ViewsDelegate::views_delegate) {
     ViewsDelegate::views_delegate->NotifyMenuItemFocused(

@@ -554,11 +554,6 @@ static void GLibLogHandler(const gchar* log_domain,
       LOG(ERROR) << "Bug 9643: " << log_domain << ": " << message;
       alerted = true;
     }
-  } else if (strstr(message, "gtk_widget_size_allocate(): attempt to "
-                             "allocate widget with width") &&
-             !GTK_CHECK_VERSION(2, 16, 1)) {
-    // This warning only occurs in obsolete versions of GTK and is harmless.
-    // http://crbug.com/11133
   } else if (strstr(message, "Theme file for default has no") ||
              strstr(message, "Theme directory") ||
              strstr(message, "theme pixmap")) {

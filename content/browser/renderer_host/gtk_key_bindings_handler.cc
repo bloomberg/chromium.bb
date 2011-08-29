@@ -56,17 +56,6 @@ GtkWidget* GtkKeyBindingsHandler::CreateNewHandler() {
   gtk_widget_set_events(GTK_WIDGET(handler), 0);
   gtk_widget_set_can_focus(GTK_WIDGET(handler), TRUE);
 
-#if !GTK_CHECK_VERSION(2, 14, 0)
-  // "move-focus", "move-viewport", "select-all" and "toggle-cursor-visible"
-  // have no corresponding virtual methods. Prior to glib 2.18 (gtk 2.14),
-  // there is no way to override the default class handler of a signal.
-  // So we need hook these signal explicitly.
-  g_signal_connect(handler, "move-focus", G_CALLBACK(MoveFocus), NULL);
-  g_signal_connect(handler, "move-viewport", G_CALLBACK(MoveViewport), NULL);
-  g_signal_connect(handler, "select-all", G_CALLBACK(SelectAll), NULL);
-  g_signal_connect(handler, "toggle-cursor-visible",
-                   G_CALLBACK(ToggleCursorVisible), NULL);
-#endif
   return GTK_WIDGET(handler);
 }
 
@@ -95,7 +84,6 @@ void GtkKeyBindingsHandler::HandlerClassInit(HandlerClass *klass) {
   text_view_class->toggle_overwrite = ToggleOverwrite;
   widget_class->show_help = ShowHelp;
 
-#if GTK_CHECK_VERSION(2, 14, 0)
   // "move-focus", "move-viewport", "select-all" and "toggle-cursor-visible"
   // have no corresponding virtual methods. Since glib 2.18 (gtk 2.14),
   // g_signal_override_class_handler() is introduced to override a signal
@@ -115,7 +103,6 @@ void GtkKeyBindingsHandler::HandlerClassInit(HandlerClass *klass) {
   g_signal_override_class_handler("toggle-cursor-visible",
                                   G_TYPE_FROM_CLASS(klass),
                                   G_CALLBACK(ToggleCursorVisible));
-#endif
 }
 
 GType GtkKeyBindingsHandler::HandlerGetType() {
@@ -264,12 +251,6 @@ void GtkKeyBindingsHandler::MoveCursor(
 void GtkKeyBindingsHandler::MoveViewport(
     GtkTextView* text_view, GtkScrollStep step, gint count) {
   // Not supported by webkit.
-#if !GTK_CHECK_VERSION(2, 14, 0)
-  // Before gtk 2.14.0, there is no way to override a non-virtual default signal
-  // handler, so we need stop the signal emission explicitly to prevent the
-  // default handler from being executed.
-  g_signal_stop_emission_by_name(text_view, "move-viewport");
-#endif
 }
 
 void GtkKeyBindingsHandler::PasteClipboard(GtkTextView* text_view) {
@@ -281,12 +262,6 @@ void GtkKeyBindingsHandler::SelectAll(GtkTextView* text_view, gboolean select) {
     GetHandlerOwner(text_view)->EditCommandMatched("SelectAll", "");
   else
     GetHandlerOwner(text_view)->EditCommandMatched("Unselect", "");
-#if !GTK_CHECK_VERSION(2, 14, 0)
-  // Before gtk 2.14.0, there is no way to override a non-virtual default signal
-  // handler, so we need stop the signal emission explicitly to prevent the
-  // default handler from being executed.
-  g_signal_stop_emission_by_name(text_view, "select-all");
-#endif
 }
 
 void GtkKeyBindingsHandler::SetAnchor(GtkTextView* text_view) {
@@ -295,12 +270,6 @@ void GtkKeyBindingsHandler::SetAnchor(GtkTextView* text_view) {
 
 void GtkKeyBindingsHandler::ToggleCursorVisible(GtkTextView* text_view) {
   // Not supported by webkit.
-#if !GTK_CHECK_VERSION(2, 14, 0)
-  // Before gtk 2.14.0, there is no way to override a non-virtual default signal
-  // handler, so we need stop the signal emission explicitly to prevent the
-  // default handler from being executed.
-  g_signal_stop_emission_by_name(text_view, "toggle-cursor-visible");
-#endif
 }
 
 void GtkKeyBindingsHandler::ToggleOverwrite(GtkTextView* text_view) {
@@ -316,10 +285,4 @@ gboolean GtkKeyBindingsHandler::ShowHelp(GtkWidget* widget,
 void GtkKeyBindingsHandler::MoveFocus(GtkWidget* widget,
                                       GtkDirectionType arg1) {
   // Just for disabling the default handler.
-#if !GTK_CHECK_VERSION(2, 14, 0)
-  // Before gtk 2.14.0, there is no way to override a non-virtual default signal
-  // handler, so we need stop the signal emission explicitly to prevent the
-  // default handler from being executed.
-  g_signal_stop_emission_by_name(widget, "move-focus");
-#endif
 }

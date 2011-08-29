@@ -180,11 +180,7 @@ void NativeComboboxGtk::FocusedMenuItemChanged() {
       GtkCellView* cell_view = GTK_CELL_VIEW(child);
       GtkTreePath* path = gtk_cell_view_get_displayed_row(cell_view);
       GtkTreeModel* model = NULL;
-#if GTK_CHECK_VERSION(2, 16, 0)
       model = gtk_cell_view_get_model(cell_view);
-#else
-      g_object_get(cell_view, "model", &model, NULL);
-#endif
       GtkTreeIter iter;
       if (model && gtk_tree_model_get_iter(model, &iter, path)) {
         GValue value = { 0 };

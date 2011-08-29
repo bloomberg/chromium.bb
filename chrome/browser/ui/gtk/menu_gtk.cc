@@ -801,11 +801,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
             gfx::ConvertAcceleratorsFromWindowsStyle(
                 UTF16ToUTF8(model->GetLabelAt(id)));
 
-#if GTK_CHECK_VERSION(2, 16, 0)
         gtk_menu_item_set_label(GTK_MENU_ITEM(widget), label.c_str());
-#else
-        gtk_label_set_label(GTK_LABEL(GTK_BIN(widget)->child), label.c_str());
-#endif
         if (GTK_IS_IMAGE_MENU_ITEM(widget)) {
           SkBitmap icon;
           if (model->GetIconAt(id, &icon)) {
