@@ -1605,7 +1605,7 @@ input_device_attach(struct wl_client *client,
 		    struct wl_resource *buffer_resource, int32_t x, int32_t y)
 {
 	struct wlsc_input_device *device = resource->data;
-	struct wl_buffer *buffer = buffer_resource->data;
+	struct wl_buffer *buffer;
 
 	if (time < device->input_device.pointer_focus_time)
 		return;
@@ -1614,13 +1614,14 @@ input_device_attach(struct wl_client *client,
 	if (device->input_device.pointer_focus->resource.client != client)
 		return;
 
-	if (buffer == NULL) {
+	if (buffer_resource) {
+		buffer = buffer_resource->data;
+		wlsc_input_device_attach_buffer(device, buffer, x, y);
+	} else {
 		wlsc_input_device_set_pointer_image(device,
 						    WLSC_POINTER_LEFT_PTR);
 		return;
 	}
-
-	wlsc_input_device_attach_buffer(device, buffer, x, y);
 }
 
 const static struct wl_input_device_interface input_device_interface = {
