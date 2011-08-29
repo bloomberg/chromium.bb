@@ -2529,11 +2529,8 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   // Workaround for NVIDIA driver bug on OS X; crbug.com/89557,
   // crbug.com/94163. TODO(kbr): figure out reproduction so Apple will
   // fix this.
-  if (needs_mac_nvidia_driver_workaround_) {
+  if (needs_mac_nvidia_driver_workaround_)
     offscreen_saved_frame_buffer_->Create();
-    offscreen_saved_color_texture_->Create();
-    glFlush();
-  }
 
   // Allocate the offscreen saved color texture.
   DCHECK(offscreen_saved_color_format_);
