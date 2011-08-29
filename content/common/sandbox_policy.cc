@@ -287,17 +287,29 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
 // TODO(cpu): Lock down the sandbox more if possible.
 // TODO(apatrick): Use D3D9Ex to render windowless.
 bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
-  policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
-
   if (base::win::GetVersion() > base::win::VERSION_XP) {
     policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                           sandbox::USER_LIMITED);
     if (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
-          gfx::kGLImplementationDesktopName)
-      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-    else
+        gfx::kGLImplementationDesktopName) {
+      policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
       policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    } else {
+      // UI restrictions break when we access Windows from outside our job.
+      // However, we don't want a proxy window in this process because it can
+      // introduce deadlocks where the renderer blocks on the gpu, which in
+      // turn blocks on the browser UI thread. So, instead we forgo a window
+      // message pump entirely and just add job restrictions to prevent child
+      // processes.
+      policy->SetJobLevel(sandbox::JOB_LIMITED_USER,
+                          JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
+                          JOB_OBJECT_UILIMIT_DESKTOP |
+                          JOB_OBJECT_UILIMIT_EXITWINDOWS |
+                          JOB_OBJECT_UILIMIT_DISPLAYSETTINGS);
+      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+    }
   } else {
+    policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
     policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
                           sandbox::USER_LIMITED);
   }
