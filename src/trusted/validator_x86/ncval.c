@@ -24,6 +24,7 @@
 #include <sys/timeb.h>
 #include <time.h>
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/trusted/validator/ncfileutil.h"
@@ -493,9 +494,11 @@ static void usage() {
       "--annotate\n"
       "\tRun validator using annotations that will be understood\n"
       "\tby ncval_annotate.py.\n"
+#if NACL_TARGET_SUBARCH == 32
       "--detailed\n"
       "\tPrint out detailed error messages, rather than use performant\n"
       "\tcode used by sel_ldr\n"
+#endif
       "--errors\n"
       "\tPrint out error and fatal error messages, but not\n"
       "\tinformative and warning messages\n"

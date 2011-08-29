@@ -10,11 +10,14 @@
 /* Defines the internal data structure for the validator state. */
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 struct NaClDecodeTables;
 struct NaClExpVector;
+struct NaClInst;
+struct NaClInstIter;
+struct NaClInstState;
+struct NaClValidatorState;
 
 /* Defines the maximum number of validators that can be registered. */
 #define NACL_MAX_NCVALIDATORS 20
@@ -92,11 +95,11 @@ struct NaClValidatorState {
   /* Cached instruction state. Only guaranteed to be defined when a
    * NaClValidator is called. When not defined, is NULL.
    */
-  NaClInstState* cur_inst_state;
+  struct NaClInstState* cur_inst_state;
   /* Cached instruction. Only guaranteed to be defined when a NaClValidator is
    * called. When not defined, is NULL.
    */
-  const NaClInst* cur_inst;
+  const struct NaClInst* cur_inst;
   /* Cached translation of instruction. Only guaranteed to be defined when a
    * NaClValidator is called. When not defined, is NULL.
    */
@@ -120,5 +123,4 @@ Bool NaClValidatorStateInitializeValidators(NaClValidatorState* state);
 /* Clean up the state associated with validators. */
 void NaClValidatorStateCleanUpValidators(NaClValidatorState* state);
 
-#endif
-  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_ITER_INTERNAL_H__ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_ITER_INTERNAL_H__ */

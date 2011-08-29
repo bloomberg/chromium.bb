@@ -8,8 +8,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NCVALIDATE_ITER_H__
 
 /*
- * ncvalidate_iter.h
- * Type declarations of the iterator state etc.
+ * ncvalidate_iter.h: Validator for the register-based SFI sandbox.
  *
  * This is the interface to the iterator form of the NaCL validator.
  * Basic usage:
@@ -30,12 +29,16 @@
  */
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator/types_memory_model.h"
+#include "native_client/src/trusted/validator/x86/decoder/gen/ncopcode_operand_kind.h"
 #include "native_client/src/trusted/validator/x86/error_reporter.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
-#include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
 #include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
 
 EXTERN_C_BEGIN
+
+struct NaClInstIter;
+struct NaClInstState;
+struct NaClValidatorState;
 
 /* Control flag that when set to FALSE, turns of the printing of validator
  * messages.
@@ -135,7 +138,7 @@ void NaClValidatorStateSetCPUFeatures(NaClValidatorState* state,
  * error messages.
  */
 void NaClValidatorStateSetErrorReporter(NaClValidatorState* state,
-                                        NaClErrorReporter* reporter);
+                                        struct NaClErrorReporter* reporter);
 
 /* A default, null error reporter for a NCInstState* */
 extern NaClErrorReporter kNaClNullErrorReporter;
@@ -293,7 +296,7 @@ typedef void* (*NaClValidatorMemoryCreate)(NaClValidatorState* state);
  *          NaClValidatorMemoryCreate (or NULL if not specified).
  */
 typedef void (*NaClValidator)(NaClValidatorState* state,
-                              NaClInstIter* iter,
+                              struct NaClInstIter* iter,
                               void* local_memory);
 
 /* Defines a post validator function that is called after iterating through
@@ -305,7 +308,7 @@ typedef void (*NaClValidator)(NaClValidatorState* state,
  *          NaClValidatorMemoryCreate (or NULL if not specified).
  */
 typedef void (*NaClValidatorPostValidate)(NaClValidatorState* state,
-                                          NaClInstIter* iter,
+                                          struct NaClInstIter* iter,
                                           void* local_memory);
 
 /* Defines a statistics print routine for a validator function.
@@ -409,7 +412,7 @@ void NaClValidatorPcAddressMessage(int level,
  */
 void NaClValidatorInstMessage(int level,
                               NaClValidatorState* state,
-                              NaClInstState* inst,
+                              struct NaClInstState* inst,
                               const char* format,
                               ...) ATTRIBUTE_FORMAT_PRINTF(4, 5);
 
@@ -424,8 +427,8 @@ void NaClValidatorInstMessage(int level,
  */
 void NaClValidatorTwoInstMessage(int level,
                                  NaClValidatorState* state,
-                                 NaClInstState* inst1,
-                                 NaClInstState* inst2,
+                                 struct NaClInstState* inst1,
+                                 struct NaClInstState* inst2,
                                  const char* format,
                                  ...) ATTRIBUTE_FORMAT_PRINTF(5, 6);
 
