@@ -701,4 +701,4 @@ def GenerateOutput(target_list, target_dicts, data, params):
         all_outputs.add(output)
 
   if all_outputs:
-    master_ninja.build('all', 'phony', all_outputs)
+    master_ninja.build('all', 'phony', list(all_outputs))
