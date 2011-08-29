@@ -10,8 +10,7 @@
           {'name': 'PPP_Printing_QuerySupportedFormats',
            'inputs': [['instance', 'PP_Instance'],
                      ],
-           'outputs': [['formats', 'char[]'],         # PP_PrintOutputFormat_Dev array
-                       ['format_count', 'int32_t'],   # uint32_t
+           'outputs': [['formats', 'int32_t'],   # uint32_t
                       ]
           },
           {'name': 'PPP_Printing_Begin',

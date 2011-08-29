@@ -266,8 +266,7 @@ static void PPP_Printing_QuerySupportedFormatsDispatcher(
       rpc,
       done,
       inputs[0]->u.ival,
-      &(outputs[0]->u.count), outputs[0]->arrays.carr,
-      &(outputs[1]->u.ival)
+      &(outputs[0]->u.ival)
   );
 }
 
@@ -413,7 +412,7 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "PPP_Instance_DidChangeFocus:ib:", PPP_Instance_DidChangeFocusDispatcher },
   { "PPP_Instance_HandleDocumentLoad:ii:i", PPP_Instance_HandleDocumentLoadDispatcher },
   { "PPP_Messaging_HandleMessage:iC:", PPP_Messaging_HandleMessageDispatcher },
-  { "PPP_Printing_QuerySupportedFormats:i:Ci", PPP_Printing_QuerySupportedFormatsDispatcher },
+  { "PPP_Printing_QuerySupportedFormats:i:i", PPP_Printing_QuerySupportedFormatsDispatcher },
   { "PPP_Printing_Begin:iC:i", PPP_Printing_BeginDispatcher },
   { "PPP_Printing_PrintPages:iCi:i", PPP_Printing_PrintPagesDispatcher },
   { "PPP_Printing_End:i:", PPP_Printing_EndDispatcher },

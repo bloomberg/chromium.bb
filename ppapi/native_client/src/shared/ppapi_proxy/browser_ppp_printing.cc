@@ -4,53 +4,38 @@
 
 #include "native_client/src/shared/ppapi_proxy/browser_ppp_printing.h"
 
-// Include file order cannot be observed because ppp_instance declares a
-// structure return type that causes an error on Windows.
-// TODO(sehr, brettw): fix the return types and include order in PPAPI.
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_resource.h"
-#include "srpcgen/ppp_rpc.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
+#include "native_client/src/shared/ppapi_proxy/trusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_resource.h"
 
 namespace ppapi_proxy {
 
 namespace {
 
-const nacl_abi_size_t kPPPrintOutputFormatBytes =
-    static_cast<nacl_abi_size_t>(sizeof(PP_PrintOutputFormat_Dev));
 const nacl_abi_size_t kPPPrintSettingsBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_PrintSettings_Dev));
 const nacl_abi_size_t kPPPrintPageNumberRangeBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_PrintPageNumberRange_Dev));
 
-PP_PrintOutputFormat_Dev* QuerySupportedFormats(PP_Instance instance,
-                                                uint32_t* format_count) {
+uint32_t QuerySupportedFormats(PP_Instance instance) {
   DebugPrintf("PPP_Printing_Dev::QuerySupportedFormats: "
               "instance=%"NACL_PRIu32"\n", instance);
 
-  const PPB_Memory_Dev* ppb_memory = PPBMemoryInterface();
-  const nacl_abi_size_t kMaxFormats = 8;
-  nacl_abi_size_t formats_bytes = kMaxFormats * kPPPrintOutputFormatBytes;
-  char* formats =
-      reinterpret_cast<char*>(ppb_memory->MemAlloc(formats_bytes));
+  int32_t formats = 0;
   NaClSrpcError srpc_result =
       PppPrintingRpcClient::PPP_Printing_QuerySupportedFormats(
           GetMainSrpcChannel(instance),
           instance,
-          &formats_bytes, formats,
-          reinterpret_cast<int32_t*>(format_count));
+          &formats);
 
   DebugPrintf("PPP_Printing_Dev::QuerySupportedFormats: %s\n",
               NaClSrpcErrorString(srpc_result));
 
-  if (*format_count > 0)
-    return reinterpret_cast<PP_PrintOutputFormat_Dev*>(formats);
-
-  ppb_memory->MemFree(formats);
-  return NULL;
+  return static_cast<uint32_t>(formats);
 }
 
 int32_t Begin(PP_Instance instance,

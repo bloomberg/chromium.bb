@@ -176,8 +176,7 @@ class PppPrintingRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Instance instance,
-      nacl_abi_size_t* formats_bytes, char* formats,
-      int32_t* format_count);
+      int32_t* formats);
   static void PPP_Printing_Begin(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

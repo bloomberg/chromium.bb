@@ -14,7 +14,6 @@ namespace {
 
 static const char kPPPPrintingInterface[] = PPP_PRINTING_DEV_INTERFACE;
 
-#ifdef PPP_PRINTING_DEV_USE_0_4
 uint32_t QuerySupportedFormats(PP_Instance instance) {
   void* object =
       pp::Instance::GetPerInstanceObject(instance, kPPPPrintingInterface);
@@ -22,17 +21,6 @@ uint32_t QuerySupportedFormats(PP_Instance instance) {
     return 0;
   return static_cast<Printing_Dev*>(object)->QuerySupportedPrintOutputFormats();
 }
-#else
-PP_PrintOutputFormat_Dev* QuerySupportedFormats(PP_Instance instance,
-                                                uint32_t* format_count) {
-  void* object =
-      pp::Instance::GetPerInstanceObject(instance, kPPPPrintingInterface);
-  if (!object)
-    return NULL;
-  return static_cast<Printing_Dev*>(object)->QuerySupportedPrintOutputFormats(
-      format_count);
-}
-#endif
 
 int32_t Begin(PP_Instance instance,
               const struct PP_PrintSettings_Dev* print_settings) {

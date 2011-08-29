@@ -10,19 +10,17 @@
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
+#include "native_client/src/shared/ppapi_proxy/untrusted/srpcgen/ppp_rpc.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppp.h"
-#include "srpcgen/ppp_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::PPPPrintingInterface;
 
 namespace {
 
-const nacl_abi_size_t kPPPrintOutputFormatBytes =
-    static_cast<nacl_abi_size_t>(sizeof(PP_PrintOutputFormat_Dev));
 const nacl_abi_size_t kPPPrintSettingsBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_PrintSettings_Dev));
 const nacl_abi_size_t kPPPrintPageNumberRangeBytes =
@@ -36,29 +34,15 @@ void PppPrintingRpcServer::PPP_Printing_QuerySupportedFormats(
     // inputs
     PP_Instance instance,
     // outputs
-    nacl_abi_size_t* formats_bytes, char* formats,
-    int32_t* format_count) {
+    int32_t* formats) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
 
-  PP_PrintOutputFormat_Dev* pp_formats =
-      PPPPrintingInterface()->QuerySupportedFormats(
-          instance,
-          reinterpret_cast<uint32_t*>(format_count));
-  if (pp_formats != NULL) {
-    nacl_abi_size_t formats_bytes_needed =
-        *format_count * kPPPrintOutputFormatBytes;
-    if (*formats_bytes >= formats_bytes_needed) {
-      *formats_bytes = formats_bytes_needed;
-      memcpy(pp_formats, formats, formats_bytes_needed);
-    } else {
-      *format_count = 0;
-    }
-    ppapi_proxy::PPBMemoryInterface()->MemFree(pp_formats);
-  }
+  uint32_t pp_formats = PPPPrintingInterface()->QuerySupportedFormats(instance);
+  *formats = static_cast<int32_t>(pp_formats);
 
   DebugPrintf("PPP_Printing::QuerySupportedFormats: "
-              "format_count=%"NACL_PRId32"\n", *format_count);
+              "formats=%"NACL_PRId32"\n", *formats);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

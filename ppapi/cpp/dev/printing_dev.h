@@ -22,12 +22,7 @@ class Printing_Dev {
 
   // PPP_Printing_Dev functions exposed as virtual functions for you to
   // override.
-#ifdef PPP_PRINTING_DEV_USE_0_4
   virtual uint32_t QuerySupportedPrintOutputFormats() = 0;
-#else
-  virtual PP_PrintOutputFormat_Dev* QuerySupportedPrintOutputFormats(
-      uint32_t* format_count) = 0;
-#endif
   virtual int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) = 0;
   virtual Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
                               uint32_t page_range_count) = 0;

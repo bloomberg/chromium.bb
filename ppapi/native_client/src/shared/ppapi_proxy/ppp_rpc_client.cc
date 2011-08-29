@@ -283,15 +283,13 @@ NaClSrpcError PppMessagingRpcClient::PPP_Messaging_HandleMessage(
 NaClSrpcError PppPrintingRpcClient::PPP_Printing_QuerySupportedFormats(
     NaClSrpcChannel* channel,
     PP_Instance instance,
-    nacl_abi_size_t* formats_bytes, char* formats,
-    int32_t* format_count)  {
+    int32_t* formats)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPP_Printing_QuerySupportedFormats:i:Ci",
+      "PPP_Printing_QuerySupportedFormats:i:i",
       instance,
-      formats_bytes, formats,
-      format_count
+      formats
   );
   if (retval == NACL_SRPC_RESULT_INTERNAL)
     ppapi_proxy::CleanUpAfterDeadNexe(instance);

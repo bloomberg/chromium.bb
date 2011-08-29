@@ -310,14 +310,11 @@ class PrintingAdapter : public pp::Printing_Dev {
         proxy->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE));
   }
 
-  PP_PrintOutputFormat_Dev*
-      QuerySupportedPrintOutputFormats(uint32_t* format_count) {
+  uint32_t QuerySupportedPrintOutputFormats() {
     if (ppp_printing_ != NULL) {
-      return ppp_printing_->QuerySupportedFormats(plugin_->pp_instance(),
-                                                  format_count);
+      return ppp_printing_->QuerySupportedFormats(plugin_->pp_instance());
     }
-    *format_count = 0;
-    return NULL;
+    return 0;
   }
 
   int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) {

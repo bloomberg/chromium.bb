@@ -160,8 +160,7 @@ class PppPrintingRpcClient {
   static NaClSrpcError PPP_Printing_QuerySupportedFormats(
       NaClSrpcChannel* channel,
       PP_Instance instance,
-      nacl_abi_size_t* formats_bytes, char* formats,
-      int32_t* format_count);
+      int32_t* formats);
   static NaClSrpcError PPP_Printing_Begin(
       NaClSrpcChannel* channel,
       PP_Instance instance,
