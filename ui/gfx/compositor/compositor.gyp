@@ -76,5 +76,32 @@
         }],
       ],
     },
+    
+    {
+      'target_name': 'compositor_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/ui.gyp:gfx_resources',
+        '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/ui/ui.gyp:ui_resources',
+        'compositor',
+      ],
+      'sources': [
+        'layer_unittest.cc',
+        'run_all_unittests.cc',
+        'test_compositor_host.h',
+        'test_compositor_host_win.cc',
+        'test_suite.cc',
+        'test_suite.h',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+      ],
+    },
+    
   ],
 }

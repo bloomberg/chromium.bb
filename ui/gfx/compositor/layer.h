@@ -44,6 +44,9 @@ class COMPOSITOR_EXPORT Layer {
   const Layer* parent() const { return parent_; }
   Layer* parent() { return parent_; }
 
+  // Returns true if this Layer contains |other| somewhere in its children.
+  bool Contains(const Layer* other) const;
+
   // The transform, relative to the parent.
   void SetTransform(const ui::Transform& transform);
   const ui::Transform& transform() const { return transform_; }
@@ -51,6 +54,13 @@ class COMPOSITOR_EXPORT Layer {
   // The bounds, relative to the parent.
   void SetBounds(const gfx::Rect& bounds);
   const gfx::Rect& bounds() const { return bounds_; }
+
+  // Converts a point from the coordinates of |source| to the coordinates of
+  // |target|. Necessarily, |source| and |target| must inhabit the same Layer
+  // tree.
+  static void ConvertPointToLayer(const Layer* source,
+                                  const Layer* target,
+                                  gfx::Point* point);
 
   // See description in View for details
   void SetFillsBoundsOpaquely(bool fills_bounds_opaquely);
@@ -101,6 +111,12 @@ class COMPOSITOR_EXPORT Layer {
   // Note: For simpicity's sake, currently a hole is only created if the child
   // view has no transfrom with respect to its parent.
   void RecomputeHole();
+
+  bool ConvertPointForAncestor(const Layer* ancestor, gfx::Point* point) const;
+  bool ConvertPointFromAncestor(const Layer* ancestor, gfx::Point* point) const;
+
+  bool GetTransformRelativeTo(const Layer* ancestor,
+                              Transform* transform) const;
 
   Compositor* compositor_;
 

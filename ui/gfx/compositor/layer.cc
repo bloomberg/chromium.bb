@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "ui/gfx/point3.h"
 
 namespace ui {
 
@@ -45,6 +46,14 @@ void Layer::Remove(Layer* child) {
     RecomputeHole();
 }
 
+bool Layer::Contains(const Layer* other) const {
+  for (const Layer* parent = other; parent; parent = parent->parent()) {
+    if (parent == this)
+      return true;
+  }
+  return false;
+}
+
 void Layer::SetTransform(const ui::Transform& transform) {
   transform_ = transform;
 
@@ -57,6 +66,25 @@ void Layer::SetBounds(const gfx::Rect& bounds) {
 
   if (parent() && fills_bounds_opaquely_)
     parent()->RecomputeHole();
+}
+
+// static
+void Layer::ConvertPointToLayer(const Layer* source,
+                                const Layer* target,
+                                gfx::Point* point) {
+  const Layer* inner = NULL;
+  const Layer* outer = NULL;
+  if (source->Contains(target)) {
+    inner = target;
+    outer = source;
+    inner->ConvertPointFromAncestor(outer, point);
+  } else if (target->Contains(source)) {
+    inner = source;
+    outer = target;
+    inner->ConvertPointForAncestor(outer, point);
+  } else {
+    NOTREACHED(); // |source| and |target| are in unrelated hierarchies.
+  }
 }
 
 void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
@@ -142,6 +170,38 @@ void Layer::RecomputeHole() {
   }
   // no opaque child layers, set hole_rect_ to empty
   hole_rect_ = gfx::Rect();
+}
+
+bool Layer::ConvertPointForAncestor(const Layer* ancestor,
+                                    gfx::Point* point) const {
+  ui::Transform transform;
+  bool result = GetTransformRelativeTo(ancestor, &transform);
+  gfx::Point3f p(*point);
+  transform.TransformPoint(p);
+  *point = p.AsPoint();
+  return result;
+}
+
+bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
+                                     gfx::Point* point) const {
+  ui::Transform transform;
+  bool result = GetTransformRelativeTo(ancestor, &transform);
+  gfx::Point3f p(*point);
+  transform.TransformPointReverse(p);
+  *point = p.AsPoint();
+  return result;
+}
+
+bool Layer::GetTransformRelativeTo(const Layer* ancestor,
+                                   ui::Transform* transform) const {
+  const Layer* p = this;
+  for (; p && p != ancestor; p = p->parent()) {
+    if (p->transform().HasChange())
+      transform->ConcatTransform(p->transform());
+    transform->ConcatTranslate(static_cast<float>(p->bounds().x()),
+                               static_cast<float>(p->bounds().y()));
+  }
+  return p == ancestor;
 }
 
 }  // namespace ui
