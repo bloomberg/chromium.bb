@@ -25,6 +25,7 @@
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/drag_controller.h"
 
+class BookmarkContextMenu;
 class Browser;
 class PageNavigator;
 class PrefService;
@@ -373,6 +374,10 @@ class BookmarkBarView : public DetachableToolbarView,
   // over a folder this becomes non-null and manages the menu showing the
   // contents of the node.
   BookmarkMenuController* bookmark_drop_menu_;
+
+  // If non-NULL we're showing a context menu for one of the items on the
+  // bookmark bar.
+  scoped_ptr<BookmarkContextMenu> context_menu_;
 
   // Shows the other bookmark entries.
   views::MenuButton* other_bookmarked_button_;
