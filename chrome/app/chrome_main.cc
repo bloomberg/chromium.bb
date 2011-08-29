@@ -323,6 +323,10 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       // The zygote process opens the resources for the renderers.
       process_type == switches::kZygoteProcess ||
 #endif
+#if defined(OS_MACOSX)
+      // Mac needs them to for scrollbar related images.
+      process_type == switches::kWorkerProcess ||
+#endif
       process_type == switches::kRendererProcess ||
       process_type == switches::kExtensionProcess ||
       process_type == switches::kUtilityProcess;

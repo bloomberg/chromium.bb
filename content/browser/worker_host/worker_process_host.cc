@@ -39,6 +39,7 @@
 #include "net/base/mime_util.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"
+#include "ui/base/ui_base_switches.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -131,6 +132,9 @@ bool WorkerProcessHost::Init(int render_process_id) {
   CommandLine* cmd_line = new CommandLine(exe_path);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kWorkerProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+  std::string locale =
+      content::GetContentClient()->browser()->GetApplicationLocale();
+  cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
   static const char* const kSwitchNames[] = {
     switches::kWebWorkerShareProcesses,
