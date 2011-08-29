@@ -83,7 +83,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
           prefs::kAccessibilityEnabled);
   if (accessibility_enabled == enabled) {
     LOG(INFO) << "Accessibility is already " <<
-        (enabled ? "enabled" : "diabled") << ".  Going to do nothing.";
+        (enabled ? "enabled" : "disabled") << ".  Going to do nothing.";
     return;
   }
 
