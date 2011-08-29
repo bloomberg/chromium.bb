@@ -50,6 +50,10 @@ include_rules = [
   # This file isn't related to grd, so it's fine.
   "+ui/base/l10n/l10n_util_win.h",
 
-  "+views",
+  # Content shouldn't depend on views. While we technically don't need this
+  # line, since the top level DEPS doesn't allow it, we add it to make this
+  # explicit. 
+  "-views",
+
   "+webkit",
 ]
