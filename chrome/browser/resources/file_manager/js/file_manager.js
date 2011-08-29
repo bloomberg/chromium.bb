@@ -1648,6 +1648,8 @@ FileManager.prototype = {
    * @param {Array.<Task>} tasksList The tasks list.
    */
   FileManager.prototype.onTasksFound_ = function(selection, tasksList) {
+    this.taskButtons_.innerHTML = '';
+
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
 
@@ -1683,9 +1685,10 @@ FileManager.prototype = {
       }
       this.renderTaskButton_(task);
     }
-    this.maybeRenderUnmountTask_(selection);
-    // This needs to be done in separate function, as check requires
+
+    // These are done in separate functions, as the checks require
     // asynchronous function calls.
+    this.maybeRenderUnmountTask_(selection);
     this.maybeRenderFormattingTask_(selection);
   };
 
@@ -2478,13 +2481,10 @@ FileManager.prototype = {
       }
     }
 
-    if (this.selection.fileCount > 1) {
+    if (this.selection.totalCount > 0) {
       // If more than one file is selected, make sure all checkboxes are lit
       // up.
       for (var i = 0; i < this.selection.entries.length; i++) {
-        if (!this.selection.entries[i].isFile)
-          continue;
-
         var selectedIndex = this.selection.indexes[i];
         var listItem = this.currentList_.getListItemByIndex(selectedIndex);
         if (listItem)

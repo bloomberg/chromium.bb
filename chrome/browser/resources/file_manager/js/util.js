@@ -254,7 +254,7 @@ var util = {
    * Locate the file referred to by path, creating directories or the file
    * itself if necessary.
    */
-  getOrCreateFile: function(path, successCallback, errorCallback) {
+  getOrCreateFile: function(root, path, successCallback, errorCallback) {
     var dirname = null;
     var basename = null;
 
@@ -272,16 +272,16 @@ var util = {
     }
 
     if (!dirname)
-      return onDirFound(this.filesystem.root);
+      return onDirFound(root);
 
-    this.getOrCreateDirectory(dirname, onDirFound, errorCallback);
+    util.getOrCreateDirectory(root, dirname, onDirFound, errorCallback);
   },
 
   /**
    * Locate the directory referred to by path, creating directories along the
    * way.
    */
-  getOrCreateDirectory: function(path, successCallback, errorCallback) {
+  getOrCreateDirectory: function(root, path, successCallback, errorCallback) {
     var names = path.split('/');
 
     function getOrCreateNextName(dir) {
@@ -297,7 +297,7 @@ var util = {
                        errorCallback);
     }
 
-    getOrCreateNextName(this.filesystem.root);
+    getOrCreateNextName(root);
   },
 
   /**

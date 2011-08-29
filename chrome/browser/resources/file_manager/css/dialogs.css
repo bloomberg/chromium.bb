@@ -12,11 +12,11 @@
   height: 100%;
   width: 100%;
 
-  background-color: rgba(0,0,0,0.05);
-  -webkit-box-shadow: inset 0px 0px 100px #000;
+  background: -webkit-radial-gradient(rgba(127, 127, 127, 0.5),
+                                      rgba(127, 127, 127, 0.5) 35%,
+                                      rgba(0, 0, 0, 0.7));
   opacity: 0;
   -webkit-transition: opacity 0.25s linear;
-
   overflow: hidden;
 
   z-index: 9999;

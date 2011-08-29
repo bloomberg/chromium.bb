@@ -31,7 +31,7 @@ cr.define('cr.ui.dialogs', function() {
    * Number of miliseconds animation is expected to take, plus some margin for
    * error.
    */
-  BaseDialog.ANIMATION_STABLE_DURATION = 500;
+  BaseDialog.ANIMATE_STABLE_DURATION = 500;
 
   BaseDialog.prototype.initDom_ = function() {
     var doc = this.document_;
@@ -123,17 +123,22 @@ cr.define('cr.ui.dialogs', function() {
     var left = (this.document_.body.clientWidth -
                 this.frame_.clientWidth) / 2;
 
+    // Disable transitions so that we can set the initial position of the
+    // dialog right away.
+    this.frame_.style.webkitTransitionProperty = '';
     this.frame_.style.top = (top - 50) + 'px';
     this.frame_.style.left = (left + 10) + 'px';
 
     var self = this;
     setTimeout(function () {
+      // Note that we control the opacity of the *container*, but the top/left
+      // of the *frame*.
+      self.container_.style.opacity = '1';
       self.frame_.style.top = top + 'px';
       self.frame_.style.left = left + 'px';
       self.frame_.style.webkitTransitionProperty = 'left, top';
-      self.container_.style.opacity = '1';
+      self.initialFocusElement_.focus();
       setTimeout(function() {
-        self.initialFocusElement_.focus();
         if (onShow)
           onShow();
       }, BaseDialog.ANIMATE_STABLE_DURATION);
@@ -141,6 +146,8 @@ cr.define('cr.ui.dialogs', function() {
   };
 
   BaseDialog.prototype.hide = function(onHide) {
+    // Note that we control the opacity of the *container*, but the top/left
+    // of the *frame*.
     this.container_.style.opacity = '0';
     this.frame_.style.top = (parseInt(this.frame_.style.top) + 50) + 'px';
     this.frame_.style.left = (parseInt(this.frame_.style.left) - 10) + 'px';
@@ -155,7 +162,6 @@ cr.define('cr.ui.dialogs', function() {
     setTimeout(function() {
       // Wait until the transition is done before removing the dialog.
       self.parentNode_.removeChild(self.container_);
-      self.frame_.style.webkitTransitionProperty = '';
       if (onHide)
         onHide();
     }, BaseDialog.ANIMATE_STABLE_DURATION);

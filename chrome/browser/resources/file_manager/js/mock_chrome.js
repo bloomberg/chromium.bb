@@ -108,7 +108,9 @@ chrome.fileBrowserPrivate = {
       }
     }
 
-    callback(candidateTasks);
+    setTimeout(function() {
+      callback(candidateTasks);
+    }, 200);
   },
 
   /**

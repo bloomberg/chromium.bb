@@ -18,8 +18,8 @@ var harness = {
     function onFilesystem(filesystem) {
       console.log('Filesystem found.');
       self.filesystem = filesystem;
-      util.getOrCreateDirectory('/Downloads', function () {});
-      util.getOrCreateDirectory('/media', function () {});
+      util.getOrCreateDirectory(filesystem.root, '/Downloads', function () {});
+      util.getOrCreateDirectory(filesystem.root, '/media', function () {});
     };
 
     window.webkitRequestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
@@ -131,7 +131,7 @@ var harness = {
       currentSrc = files.shift();
       var destPath = harness.fileManager.currentDirEntry_.fullPath + '/' +
           currentSrc.name.replace(/\^\^/g, '/');
-      util.getOrCreateFile(destPath, onFileFound,
+      util.getOrCreateFile(self.filesystem.root, destPath, onFileFound,
                            util.flog('Error finding path: ' + destPath));
     }
 
