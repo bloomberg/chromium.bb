@@ -209,8 +209,7 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
         hists['NaCl.LoadStatus.SelLdr'][LOAD_VALIDATION_FAILED],
         1)
 
-  TODO(halyavin): Fix this.
-  def DISABLEDtestCrash(self):
+  def testCrash(self):
     hists = self.getHistsForTest('ppapi_crash.html')
     self.assertLoadOK(hists, 3)
     self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Normal', 0)

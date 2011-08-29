@@ -2866,7 +2866,8 @@ irt_variant_tests = [
 nonvariant_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/barebones/nacl.scons',
-    'tests/chrome_extension/nacl.scons',
+# TODO(bradnelson): remove after landing nmf change.
+#    'tests/chrome_extension/nacl.scons',
     'tests/earth/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',
@@ -2918,6 +2919,13 @@ nonvariant_tests = [
     'tests/unittests/shared/srpc/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     ]
+
+
+# TODO(bradnelson): remove after landing nmf change.
+# Filter out ppapi for glibc temporarily.
+if nacl_env.Bit('nacl_glibc'):
+  nonvariant_tests = [t for t in nonvariant_tests
+                      if not t.startswith('tests/ppapi')]
 
 
 nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests + nonvariant_tests)
