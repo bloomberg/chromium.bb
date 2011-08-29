@@ -5,6 +5,9 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 
 #include <algorithm>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-gtype-specialized.h>
+#include <glib-object.h>
 #include <map>
 #include <set>
 
@@ -69,7 +72,7 @@
 //  the "Services" message which list all visible networks. The handler
 //  rebuilds the network lists without destroying existing Network structures,
 //  then requests neccessary updates to be fetched asynchronously from
-//  libcros (RequestNetworkServiceInfo).
+//  libcros (RequestNetworkServiceProperties).
 //
 // TODO(stevenjb): Document cellular data plan handlers.
 //
@@ -114,17 +117,17 @@ const char* kAlwaysInRoamingOperators[] = {
 
 // Safe string constructor since we can't rely on non NULL pointers
 // for string values from libcros.
-static std::string SafeString(const char* s) {
+std::string SafeString(const char* s) {
   return s ? std::string(s) : std::string();
 }
 
 // Erase the memory used by a string, then clear it.
-static void WipeString(std::string* str) {
+void WipeString(std::string* str) {
   str->assign(str->size(), '\0');
   str->clear();
 }
 
-static bool EnsureCrosLoaded() {
+bool EnsureCrosLoaded() {
   if (!CrosLibrary::Get()->EnsureLoaded() ||
       !CrosLibrary::Get()->GetNetworkLibrary()->IsCros()) {
     return false;
@@ -135,7 +138,7 @@ static bool EnsureCrosLoaded() {
   }
 }
 
-static void ValidateUTF8(const std::string& str, std::string* output) {
+void ValidateUTF8(const std::string& str, std::string* output) {
   output->clear();
 
   for (int32 index = 0; index < static_cast<int32>(str.size()); ++index) {
@@ -148,6 +151,136 @@ static void ValidateUTF8(const std::string& str, std::string* output) {
       // Puts REPLACEMENT CHARACTER (U+FFFD) if character is not readable UTF-8
       base::WriteUnicodeCharacter(0xFFFD, output);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// glib
+
+Value* ConvertGlibValue(const GValue* gvalue);
+
+void AppendListElement(const GValue* gvalue, gpointer user_data) {
+  ListValue* list = static_cast<ListValue*>(user_data);
+  Value* value = ConvertGlibValue(gvalue);
+  list->Append(value);
+}
+
+void AppendDictionaryElement(const GValue* keyvalue,
+                             const GValue* gvalue,
+                             gpointer user_data) {
+  DictionaryValue* dict = static_cast<DictionaryValue*>(user_data);
+  std::string key(g_value_get_string(keyvalue));
+  Value* value = ConvertGlibValue(gvalue);
+  dict->SetWithoutPathExpansion(key, value);
+}
+
+Value* ConvertGlibValue(const GValue* gvalue) {
+  if (G_VALUE_HOLDS_STRING(gvalue)) {
+    return Value::CreateStringValue(g_value_get_string(gvalue));
+  } else if (G_VALUE_HOLDS_BOOLEAN(gvalue)) {
+    return Value::CreateBooleanValue(
+        static_cast<bool>(g_value_get_boolean(gvalue)));
+  } else if (G_VALUE_HOLDS_INT(gvalue)) {
+    return Value::CreateIntegerValue(g_value_get_int(gvalue));
+  } else if (G_VALUE_HOLDS_UINT(gvalue)) {
+    return Value::CreateIntegerValue(
+        static_cast<int>(g_value_get_uint(gvalue)));
+  } else if (G_VALUE_HOLDS_UCHAR(gvalue)) {
+    return Value::CreateIntegerValue(
+        static_cast<int>(g_value_get_uchar(gvalue)));
+  } else if (G_VALUE_HOLDS(gvalue, DBUS_TYPE_G_OBJECT_PATH)) {
+    const char* path = static_cast<const char*>(g_value_get_boxed(gvalue));
+    return Value::CreateStringValue(path);
+  } else if (G_VALUE_HOLDS(gvalue, G_TYPE_STRV)) {
+    ListValue* list = new ListValue();
+    for (GStrv strv = static_cast<GStrv>(g_value_get_boxed(gvalue));
+         *strv != NULL; ++strv) {
+      list->Append(Value::CreateStringValue(*strv));
+    }
+    return list;
+  } else if (dbus_g_type_is_collection(G_VALUE_TYPE(gvalue))) {
+    ListValue* list = new ListValue();
+    dbus_g_type_collection_value_iterate(gvalue, AppendListElement, list);
+    return list;
+  } else if (dbus_g_type_is_map(G_VALUE_TYPE(gvalue))) {
+    DictionaryValue* dict = new DictionaryValue();
+    dbus_g_type_map_value_iterate(gvalue, AppendDictionaryElement, dict);
+    return dict;
+  } else if (G_VALUE_HOLDS(gvalue, G_TYPE_VALUE)) {
+    const GValue* bvalue = static_cast<GValue*>(g_value_get_boxed(gvalue));
+    return ConvertGlibValue(bvalue);
+  } else {
+    LOG(ERROR) << "Unrecognized Glib value type: " << G_VALUE_TYPE(gvalue);
+    return Value::CreateNullValue();
+  }
+}
+
+DictionaryValue* ConvertGHashTable(GHashTable* ghash) {
+  DictionaryValue* dict = new DictionaryValue();
+  GHashTableIter iter;
+  gpointer gkey, gvalue;
+  g_hash_table_iter_init(&iter, ghash);
+  while (g_hash_table_iter_next(&iter, &gkey, &gvalue))  {
+    std::string key(static_cast<char*>(gkey));
+    Value* value = ConvertGlibValue(static_cast<GValue*>(gvalue));
+    dict->SetWithoutPathExpansion(key, value);
+  }
+  return dict;
+}
+
+GValue* ConvertBoolToGValue(bool b) {
+  GValue* gvalue = new GValue();
+  g_value_init(gvalue, G_TYPE_BOOLEAN);
+  g_value_set_boolean(gvalue, b);
+  return gvalue;
+}
+
+GValue* ConvertIntToGValue(int i) {
+  // Converting to a 32-bit signed int type in particular, since
+  // that's what flimflam expects in its DBus API
+  GValue* gvalue = new GValue();
+  g_value_init(gvalue, G_TYPE_INT);
+  g_value_set_int(gvalue, i);
+  return gvalue;
+}
+
+GValue* ConvertStringToGValue(const std::string& s) {
+  GValue* gvalue = new GValue();
+  g_value_init(gvalue, G_TYPE_STRING);
+  g_value_set_string(gvalue, s.c_str());
+  return gvalue;
+}
+
+GValue* ConvertValueToGValue(const Value* value) {
+  switch (value->GetType()) {
+    case Value::TYPE_BOOLEAN: {
+      bool out;
+      if (value->GetAsBoolean(&out))
+        return ConvertBoolToGValue(out);
+      break;
+    }
+    case Value::TYPE_INTEGER: {
+      int out;
+      if (value->GetAsInteger(&out))
+        return ConvertIntToGValue(out);
+      break;
+    }
+    case Value::TYPE_STRING: {
+      std::string out;
+      if (value->GetAsString(&out))
+        return ConvertStringToGValue(out);
+      break;
+    }
+    case Value::TYPE_NULL:
+    case Value::TYPE_DOUBLE:
+    case Value::TYPE_BINARY:
+    case Value::TYPE_DICTIONARY:
+    case Value::TYPE_LIST:
+      // Other Value types shouldn't be passed through this mechanism.
+      NOTREACHED() << "Unconverted Value of type: " << value->GetType();
+      return NULL;
+  }
+  NOTREACHED() << "Value conversion failed, type: " << value->GetType();
+  return NULL;
 }
 
 }  // namespace
@@ -263,12 +396,14 @@ bool Network::RequiresUserProfile() const {
 void Network::CopyCredentialsFromRemembered(Network* remembered) {
 }
 
-void Network::SetValueProperty(const char* prop, Value* val) {
+void Network::SetValueProperty(const char* prop, Value* value) {
   DCHECK(prop);
-  DCHECK(val);
+  DCHECK(value);
   if (!EnsureCrosLoaded())
     return;
-  chromeos::SetNetworkServiceProperty(service_path_.c_str(), prop, val);
+  scoped_ptr<GValue> gvalue(ConvertValueToGValue(value));
+  chromeos::SetNetworkServicePropertyGValue(
+      service_path_.c_str(), prop, gvalue.get());
 }
 
 void Network::ClearProperty(const char* prop) {
@@ -2987,12 +3122,12 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   //////////////////////////////////////////////////////////////////////////////
   // Calbacks.
   static void NetworkStatusChangedHandler(
-      void* object, const char* path, const char* key, const Value* value);
+      void* object, const char* path, const char* key, const GValue* value);
   void UpdateNetworkStatus(
       const std::string& path, const std::string& key, const Value& value);
 
   static void NetworkDevicePropertyChangedHandler(
-      void* object, const char* path, const char* key, const Value* value);
+      void* object, const char* path, const char* key, const GValue* gvalue);
   void UpdateNetworkDeviceStatus(
       const std::string& path, const std::string& key, const Value& value);
 
@@ -3012,27 +3147,27 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
                                      const char* error_message);
 
   static void WifiServiceUpdateAndConnect(
-      void* object, const char* service_path, const Value* info);
+      void* object, const char* service_path, GHashTable* ghash);
   static void VPNServiceUpdateAndConnect(
-      void* object, const char* service_path, const Value* info);
+      void* object, const char* service_path, GHashTable* ghash);
 
   static void NetworkManagerStatusChangedHandler(
-      void* object, const char* path, const char* key, const Value* value);
+      void* object, const char* path, const char* key, const GValue* value);
   static void NetworkManagerUpdate(
-      void* object, const char* manager_path, const Value* info);
+      void* object, const char* manager_path, GHashTable* ghash);
 
   static void DataPlanUpdateHandler(void* object,
                                     const char* modem_service_path,
                                     const CellularDataPlanList* dataplan);
 
   static void NetworkServiceUpdate(
-      void* object, const char* service_path, const Value* info);
+      void* object, const char* service_path, GHashTable* ghash);
   static void RememberedNetworkServiceUpdate(
-      void* object, const char* service_path, const Value* info);
+      void* object, const char* service_path, GHashTable* ghash);
   static void ProfileUpdate(
-      void* object, const char* profile_path, const Value* info);
+      void* object, const char* profile_path, GHashTable* ghash);
   static void NetworkDeviceUpdate(
-      void* object, const char* device_path, const Value* info);
+      void* object, const char* device_path, GHashTable* ghash);
 
  private:
   // This processes all Manager update messages.
@@ -3069,11 +3204,11 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
         NetworkLibrary* cros, const NetworkDevice* device) OVERRIDE {}
   };
 
-  typedef std::map<std::string, chromeos::PropertyChangeMonitor>
-          PropertyChangeMonitorMap;
+  typedef std::map<std::string, chromeos::NetworkPropertiesMonitor>
+          NetworkPropertiesMonitorMap;
 
   // For monitoring network manager status changes.
-  PropertyChangeMonitor network_manager_monitor_;
+  NetworkPropertiesMonitor network_manager_monitor_;
 
   // For monitoring data plan changes to the connected cellular network.
   DataPlanUpdateMonitor data_plan_monitor_;
@@ -3082,10 +3217,10 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   scoped_ptr<NetworkLibraryDeviceObserver> network_device_observer_;
 
   // Map of monitored networks.
-  PropertyChangeMonitorMap montitored_networks_;
+  NetworkPropertiesMonitorMap montitored_networks_;
 
   // Map of monitored devices.
-  PropertyChangeMonitorMap montitored_devices_;
+  NetworkPropertiesMonitorMap montitored_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplCros);
 };
@@ -3100,16 +3235,18 @@ NetworkLibraryImplCros::NetworkLibraryImplCros()
 
 NetworkLibraryImplCros::~NetworkLibraryImplCros() {
   if (network_manager_monitor_)
-    chromeos::DisconnectPropertyChangeMonitor(network_manager_monitor_);
+    chromeos::DisconnectNetworkPropertiesMonitor(network_manager_monitor_);
   if (data_plan_monitor_)
     chromeos::DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
-  for (PropertyChangeMonitorMap::iterator iter = montitored_networks_.begin();
+  for (NetworkPropertiesMonitorMap::iterator iter =
+           montitored_networks_.begin();
        iter != montitored_networks_.end(); ++iter) {
-    chromeos::DisconnectPropertyChangeMonitor(iter->second);
+    chromeos::DisconnectNetworkPropertiesMonitor(iter->second);
   }
-  for (PropertyChangeMonitorMap::iterator iter = montitored_devices_.begin();
+  for (NetworkPropertiesMonitorMap::iterator iter =
+           montitored_devices_.begin();
        iter != montitored_devices_.end(); ++iter) {
-    chromeos::DisconnectPropertyChangeMonitor(iter->second);
+    chromeos::DisconnectNetworkPropertiesMonitor(iter->second);
   }
 }
 
@@ -3117,10 +3254,10 @@ void NetworkLibraryImplCros::Init() {
   // First, get the currently available networks. This data is cached
   // on the connman side, so the call should be quick.
   VLOG(1) << "Requesting initial network manager info from libcros.";
-  chromeos::RequestNetworkManagerInfo(&NetworkManagerUpdate, this);
+  chromeos::RequestNetworkManagerProperties(&NetworkManagerUpdate, this);
   network_manager_monitor_ =
-      chromeos::MonitorNetworkManager(&NetworkManagerStatusChangedHandler,
-                                      this);
+      chromeos::MonitorNetworkManagerProperties(
+          &NetworkManagerStatusChangedHandler, this);
   data_plan_monitor_ =
       chromeos::MonitorCellularDataPlan(&DataPlanUpdateHandler, this);
   // Always have at least one device obsever so that device updates are
@@ -3134,20 +3271,19 @@ void NetworkLibraryImplCros::Init() {
 void NetworkLibraryImplCros::MonitorNetworkStart(
     const std::string& service_path) {
   if (montitored_networks_.find(service_path) == montitored_networks_.end()) {
-    chromeos::PropertyChangeMonitor monitor =
-        chromeos::MonitorNetworkService(&NetworkStatusChangedHandler,
-                                        service_path.c_str(),
-                                        this);
+    chromeos::NetworkPropertiesMonitor monitor =
+        chromeos::MonitorNetworkServiceProperties(
+            &NetworkStatusChangedHandler, service_path.c_str(), this);
     montitored_networks_[service_path] = monitor;
   }
 }
 
 void NetworkLibraryImplCros::MonitorNetworkStop(
     const std::string& service_path) {
-  PropertyChangeMonitorMap::iterator iter =
+  NetworkPropertiesMonitorMap::iterator iter =
       montitored_networks_.find(service_path);
   if (iter != montitored_networks_.end()) {
-    chromeos::DisconnectPropertyChangeMonitor(iter->second);
+    chromeos::DisconnectNetworkPropertiesMonitor(iter->second);
     montitored_networks_.erase(iter);
   }
 }
@@ -3155,32 +3291,32 @@ void NetworkLibraryImplCros::MonitorNetworkStop(
 void NetworkLibraryImplCros::MonitorNetworkDeviceStart(
     const std::string& device_path) {
   if (montitored_devices_.find(device_path) == montitored_devices_.end()) {
-    chromeos::PropertyChangeMonitor monitor =
-        chromeos::MonitorNetworkDevice(&NetworkDevicePropertyChangedHandler,
-                                       device_path.c_str(),
-                                       this);
+    chromeos::NetworkPropertiesMonitor monitor =
+        chromeos::MonitorNetworkDeviceProperties(
+            &NetworkDevicePropertyChangedHandler, device_path.c_str(), this);
     montitored_devices_[device_path] = monitor;
   }
 }
 
 void NetworkLibraryImplCros::MonitorNetworkDeviceStop(
     const std::string& device_path) {
-  PropertyChangeMonitorMap::iterator iter =
+  NetworkPropertiesMonitorMap::iterator iter =
       montitored_devices_.find(device_path);
   if (iter != montitored_devices_.end()) {
-    chromeos::DisconnectPropertyChangeMonitor(iter->second);
+    chromeos::DisconnectNetworkPropertiesMonitor(iter->second);
     montitored_devices_.erase(iter);
   }
 }
 
 // static callback
 void NetworkLibraryImplCros::NetworkStatusChangedHandler(
-    void* object, const char* path, const char* key, const Value* value) {
+    void* object, const char* path, const char* key, const GValue* gvalue) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (key == NULL || value == NULL || path == NULL || object == NULL)
+  if (key == NULL || gvalue == NULL || path == NULL || object == NULL)
     return;
+  scoped_ptr<Value> value(ConvertGlibValue(gvalue));
   networklib->UpdateNetworkStatus(std::string(path), std::string(key), *value);
 }
 
@@ -3206,12 +3342,13 @@ void NetworkLibraryImplCros::UpdateNetworkStatus(
 
 // static callback
 void NetworkLibraryImplCros::NetworkDevicePropertyChangedHandler(
-    void* object, const char* path, const char* key, const Value* value) {
+    void* object, const char* path, const char* key, const GValue* gvalue) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (key == NULL || value == NULL || path == NULL || object == NULL)
+  if (key == NULL || gvalue == NULL || path == NULL || object == NULL)
     return;
+  scoped_ptr<Value> value(ConvertGlibValue(gvalue));
   networklib->UpdateNetworkDeviceStatus(std::string(path),
                                         std::string(key),
                                         *value);
@@ -3246,9 +3383,9 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
     NotifyNetworkDeviceChanged(device, index);
     // If a device's power state changes, new properties may become defined.
     if (index == PROPERTY_INDEX_POWERED)
-      chromeos::RequestNetworkDeviceInfo(path.c_str(),
-                                         &NetworkDeviceUpdate,
-                                         this);
+      chromeos::RequestNetworkDeviceProperties(path.c_str(),
+                                               &NetworkDeviceUpdate,
+                                               this);
   }
 }
 
@@ -3293,15 +3430,14 @@ void NetworkLibraryImplCros::CallConnectToNetwork(Network* network) {
 
 // static callback
 void NetworkLibraryImplCros::WifiServiceUpdateAndConnect(
-    void* object, const char* service_path, const Value* info) {
+    void* object, const char* service_path, GHashTable* ghash) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (service_path && info) {
-    DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
-    const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
+  if (service_path && ghash) {
+    scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
     Network* network =
-        networklib->ParseNetwork(std::string(service_path), *dict);
+        networklib->ParseNetwork(std::string(service_path), *(dict.get()));
     DCHECK_EQ(network->type(), TYPE_WIFI);
     networklib->ConnectToWifiNetworkUsingConnectData(
         static_cast<WifiNetwork*>(network));
@@ -3312,24 +3448,24 @@ void NetworkLibraryImplCros::CallRequestWifiNetworkAndConnect(
     const std::string& ssid, ConnectionSecurity security) {
   // Asynchronously request service properties and call
   // WifiServiceUpdateAndConnect.
-  chromeos::RequestHiddenWifiNetwork(ssid.c_str(),
-                                     SecurityToString(security),
-                                     WifiServiceUpdateAndConnect,
-                                     this);
+  chromeos::RequestHiddenWifiNetworkProperties(
+      ssid.c_str(),
+      SecurityToString(security),
+      WifiServiceUpdateAndConnect,
+      this);
 }
 
 // static callback
 void NetworkLibraryImplCros::VPNServiceUpdateAndConnect(
-    void* object, const char* service_path, const Value* info) {
+    void* object, const char* service_path, GHashTable* ghash) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (service_path && info) {
+  if (service_path && ghash) {
     VLOG(1) << "Connecting to new VPN Service: " << service_path;
-    DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
-    const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
+    scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
     Network* network =
-        networklib->ParseNetwork(std::string(service_path), *dict);
+        networklib->ParseNetwork(std::string(service_path), *(dict.get()));
     DCHECK_EQ(network->type(), TYPE_VPN);
     networklib->ConnectToVirtualNetworkUsingConnectData(
         static_cast<VirtualNetwork*>(network));
@@ -3342,11 +3478,12 @@ void NetworkLibraryImplCros::CallRequestVirtualNetworkAndConnect(
     const std::string& service_name,
     const std::string& server_hostname,
     ProviderType provider_type) {
-  chromeos::RequestVirtualNetwork(service_name.c_str(),
-                                  server_hostname.c_str(),
-                                  ProviderTypeToString(provider_type),
-                                  VPNServiceUpdateAndConnect,
-                                  this);
+  chromeos::RequestVirtualNetworkProperties(
+      service_name.c_str(),
+      server_hostname.c_str(),
+      ProviderTypeToString(provider_type),
+      VPNServiceUpdateAndConnect,
+      this);
 }
 
 void NetworkLibraryImplCros::CallDeleteRememberedNetwork(
@@ -3489,10 +3626,10 @@ void NetworkLibraryImplCros::SetCellularDataRoamingAllowed(bool new_value) {
         "w/o cellular device.";
     return;
   }
-  scoped_ptr<Value> value(Value::CreateBooleanValue(new_value));
-  chromeos::SetNetworkDeviceProperty(cellular->device_path().c_str(),
-                                     kCellularAllowRoamingProperty,
-                                     value.get());
+  scoped_ptr<GValue> gvalue(ConvertBoolToGValue(new_value));
+  chromeos::SetNetworkDevicePropertyGValue(cellular->device_path().c_str(),
+                                           kCellularAllowRoamingProperty,
+                                           gvalue.get());
 }
 
 bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
@@ -3519,7 +3656,7 @@ void NetworkLibraryImplCros::RequestNetworkScan() {
     cellular_network()->RefreshDataPlansIfNeeded();
   // Make sure all Manager info is up to date. This will also update
   // remembered networks and visible services.
-  chromeos::RequestNetworkManagerInfo(&NetworkManagerUpdate, this);
+  chromeos::RequestNetworkManagerProperties(&NetworkManagerUpdate, this);
 }
 
 bool NetworkLibraryImplCros::GetWifiAccessPoints(
@@ -3650,35 +3787,30 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
     if (ipconfig_static) {
       // Save any changed details.
       if (ipconfig.address != ipconfig_static->address) {
-        scoped_ptr<Value> value(Value::CreateStringValue(ipconfig.address));
-        chromeos::SetNetworkIPConfigProperty(ipconfig_static->path,
-                                             kAddressProperty,
-                                             value.get());
+        scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.address));
+        chromeos::SetNetworkIPConfigPropertyGValue(
+            ipconfig_static->path, kAddressProperty, gvalue.get());
       }
       if (ipconfig.netmask != ipconfig_static->netmask) {
-        int32 prefixlen = ipconfig.GetPrefixLength();
+        int prefixlen = ipconfig.GetPrefixLength();
         if (prefixlen == -1) {
           VLOG(1) << "IP config prefixlen is invalid for netmask "
                   << ipconfig.netmask;
         } else {
-          scoped_ptr<Value> value(Value::CreateIntegerValue(prefixlen));
-          chromeos::SetNetworkIPConfigProperty(ipconfig_static->path,
-                                               kPrefixlenProperty,
-                                               value.get());
+          scoped_ptr<GValue> gvalue(ConvertIntToGValue(prefixlen));
+          chromeos::SetNetworkIPConfigPropertyGValue(
+              ipconfig_static->path, kPrefixlenProperty, gvalue.get());
         }
       }
       if (ipconfig.gateway != ipconfig_static->gateway) {
-        scoped_ptr<Value> value(Value::CreateStringValue(ipconfig.gateway));
-        chromeos::SetNetworkIPConfigProperty(ipconfig_static->path,
-                                             kGatewayProperty,
-                                             value.get());
+        scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.gateway));
+        chromeos::SetNetworkIPConfigPropertyGValue(
+            ipconfig_static->path, kGatewayProperty, gvalue.get());
       }
       if (ipconfig.name_servers != ipconfig_static->name_servers) {
-        scoped_ptr<Value> value(
-            Value::CreateStringValue(ipconfig.name_servers));
-        chromeos::SetNetworkIPConfigProperty(ipconfig_static->path,
-                                             kNameServersProperty,
-                                             value.get());
+        scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.name_servers));
+        chromeos::SetNetworkIPConfigPropertyGValue(
+            ipconfig_static->path, kNameServersProperty, gvalue.get());
       }
       // Remove dhcp ip config if there is one.
       if (ipconfig_dhcp)
@@ -3697,11 +3829,12 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
 
 // static
 void NetworkLibraryImplCros::NetworkManagerStatusChangedHandler(
-    void* object, const char* path, const char* key, const Value* value) {
+    void* object, const char* path, const char* key, const GValue* gvalue) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  networklib->NetworkManagerStatusChanged(key, value);
+  scoped_ptr<Value> value(ConvertGlibValue(gvalue));
+  networklib->NetworkManagerStatusChanged(key, value.get());
 }
 
 // This processes all Manager update messages.
@@ -3797,18 +3930,17 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
 
 // static
 void NetworkLibraryImplCros::NetworkManagerUpdate(
-    void* object, const char* manager_path, const Value* info) {
+    void* object, const char* manager_path, GHashTable* ghash) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (!info) {
+  if (!ghash) {
     LOG(ERROR) << "Error retrieving manager properties: " << manager_path;
     return;
   }
   VLOG(1) << "Received NetworkManagerUpdate.";
-  DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
-  const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-  networklib->ParseNetworkManager(*dict);
+  scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
+  networklib->ParseNetworkManager(*(dict.get()));
 }
 
 void NetworkLibraryImplCros::ParseNetworkManager(const DictionaryValue& dict) {
@@ -3921,9 +4053,9 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
       // Use update_request map to store network priority.
       network_update_requests_[service_path] = network_priority_order++;
       wifi_scanning_ = true;
-      chromeos::RequestNetworkServiceInfo(service_path.c_str(),
-                                          &NetworkServiceUpdate,
-                                          this);
+      chromeos::RequestNetworkServiceProperties(service_path.c_str(),
+                                                &NetworkServiceUpdate,
+                                                this);
     }
   }
   // Iterate through list of remaining networks that are no longer in the
@@ -3966,25 +4098,24 @@ void NetworkLibraryImplCros::UpdateWatchedNetworkServiceList(
     (*iter)->GetAsString(&service_path);
     if (!service_path.empty()) {
       VLOG(1) << "Watched Service: " << service_path;
-      chromeos::RequestNetworkServiceInfo(service_path.c_str(),
-                                          &NetworkServiceUpdate,
-                                          this);
+      chromeos::RequestNetworkServiceProperties(service_path.c_str(),
+                                                &NetworkServiceUpdate,
+                                                this);
     }
   }
 }
 
 // static
 void NetworkLibraryImplCros::NetworkServiceUpdate(
-    void* object, const char* service_path, const Value* info) {
+    void* object, const char* service_path, GHashTable* ghash) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
   if (service_path) {
-    if (!info)
+    if (!ghash)
       return;  // Network no longer in visible list, ignore.
-    DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
-    const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-    networklib->ParseNetwork(std::string(service_path), *dict);
+    scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
+    networklib->ParseNetwork(std::string(service_path), *(dict.get()));
   }
 }
 
@@ -4077,7 +4208,7 @@ void NetworkLibraryImplCros::UpdateRememberedNetworks(
 void NetworkLibraryImplCros::RequestRememberedNetworksUpdate() {
   VLOG(1) << "RequestRememberedNetworksUpdate";
   // Delete all remembered networks. We delete them because
-  // RequestNetworkProfile is asynchronous and may invoke
+  // RequestNetworkProfileProperties is asynchronous and may invoke
   // UpdateRememberedServiceList multiple times (once per profile).
   // We can do this safely because we do not save any local state for
   // remembered networks. This list updates infrequently.
@@ -4089,24 +4220,23 @@ void NetworkLibraryImplCros::RequestRememberedNetworksUpdate() {
        iter != profile_list_.end(); ++iter) {
     NetworkProfile& profile = *iter;
     VLOG(1) << " Requesting Profile: " << profile.path;
-    chromeos::RequestNetworkProfile(
+    chromeos::RequestNetworkProfileProperties(
         profile.path.c_str(), &ProfileUpdate, this);
   }
 }
 
 // static
 void NetworkLibraryImplCros::ProfileUpdate(
-    void* object, const char* profile_path, const Value* info) {
+    void* object, const char* profile_path, GHashTable* ghash) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (!info) {
+  if (!ghash) {
     LOG(ERROR) << "Error retrieving profile: " << profile_path;
     return;
   }
   VLOG(1) << "Received ProfileUpdate for: " << profile_path;
-  DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
-  const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
+  scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
   ListValue* entries(NULL);
   dict->GetList(kEntriesProperty, &entries);
   DCHECK(entries);
@@ -4141,27 +4271,28 @@ void NetworkLibraryImplCros::UpdateRememberedServiceList(
     // Add service to profile list.
     profile.services.insert(service_path);
     // Request update for remembered network.
-    chromeos::RequestNetworkProfileEntry(profile_path,
-                                         service_path.c_str(),
-                                         &RememberedNetworkServiceUpdate,
-                                         this);
+    chromeos::RequestNetworkProfileEntryProperties(
+        profile_path,
+        service_path.c_str(),
+        &RememberedNetworkServiceUpdate,
+        this);
   }
 }
 
 // static
 void NetworkLibraryImplCros::RememberedNetworkServiceUpdate(
-    void* object, const char* service_path, const Value* info) {
+    void* object, const char* service_path, GHashTable* ghash) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
   if (service_path) {
-    if (!info) {
+    if (!ghash) {
       // Remembered network no longer exists.
       networklib->DeleteRememberedNetwork(std::string(service_path));
     } else {
-      DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
-      const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-      networklib->ParseRememberedNetwork(std::string(service_path), *dict);
+      scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
+      networklib->ParseRememberedNetwork(
+          std::string(service_path), *(dict.get()));
     }
   }
 }
@@ -4204,11 +4335,12 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
       VLOG(1) << "Requesting VPN: " << vpn->name()
               << " Server: " << vpn->server_hostname()
               << " Type: " << provider_type;
-      chromeos::RequestVirtualNetwork(vpn->name().c_str(),
-                                      vpn->server_hostname().c_str(),
-                                      provider_type.c_str(),
-                                      NetworkServiceUpdate,
-                                      this);
+      chromeos::RequestVirtualNetworkProperties(
+          vpn->name().c_str(),
+          vpn->server_hostname().c_str(),
+          provider_type.c_str(),
+          NetworkServiceUpdate,
+          this);
     }
   }
 
@@ -4236,9 +4368,9 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceList(const ListValue* devices) {
         device_map_[device_path] = found->second;
         old_device_map.erase(found);
       }
-      chromeos::RequestNetworkDeviceInfo(device_path.c_str(),
-                                         &NetworkDeviceUpdate,
-                                         this);
+      chromeos::RequestNetworkDeviceProperties(device_path.c_str(),
+                                               &NetworkDeviceUpdate,
+                                               this);
     }
   }
   // Delete any old devices that no longer exist.
@@ -4252,18 +4384,17 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceList(const ListValue* devices) {
 
 // static
 void NetworkLibraryImplCros::NetworkDeviceUpdate(
-    void* object, const char* device_path, const Value* info) {
+    void* object, const char* device_path, GHashTable* ghash) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
   if (device_path) {
-    if (!info) {
+    if (!ghash) {
       // device no longer exists.
       networklib->DeleteDevice(std::string(device_path));
     } else {
-      DCHECK_EQ(info->GetType(), Value::TYPE_DICTIONARY);
-      const DictionaryValue* dict = static_cast<const DictionaryValue*>(info);
-      networklib->ParseNetworkDevice(std::string(device_path), *dict);
+      scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
+      networklib->ParseNetworkDevice(std::string(device_path), *(dict.get()));
     }
   }
 }
