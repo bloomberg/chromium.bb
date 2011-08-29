@@ -9,11 +9,8 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
-#include "views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/widget/widget.h"
-
-using ui::ComboboxModel;  // TODO(beng): remove
 
 namespace views {
 
@@ -23,7 +20,7 @@ const char Combobox::kViewClassName[] = "views/Combobox";
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, public:
 
-Combobox::Combobox(ComboboxModel* model)
+Combobox::Combobox(ui::ComboboxModel* model)
     : native_wrapper_(NULL),
       model_(model),
       listener_(NULL),

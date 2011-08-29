@@ -15,7 +15,6 @@
 namespace ui {
 class ComboboxModel;
 }
-using ui::ComboboxModel;
 
 namespace views {
 
@@ -37,7 +36,7 @@ class VIEWS_EXPORT Combobox : public View {
   };
 
   // |model| is not owned by the combo box.
-  explicit Combobox(ComboboxModel* model);
+  explicit Combobox(ui::ComboboxModel* model);
   virtual ~Combobox();
 
   // Register |listener| for item change events.
@@ -56,7 +55,7 @@ class VIEWS_EXPORT Combobox : public View {
   void SelectionChanged();
 
   // Accessor for |model_|.
-  ComboboxModel* model() const { return model_; }
+  ui::ComboboxModel* model() const { return model_; }
 
   // Set the accessible name of the combo box.
   void SetAccessibleName(const string16& name);
@@ -92,7 +91,7 @@ class VIEWS_EXPORT Combobox : public View {
 
  private:
   // Our model.
-  ComboboxModel* model_;
+  ui::ComboboxModel* model_;
 
   // Item change listener.
   Listener* listener_;

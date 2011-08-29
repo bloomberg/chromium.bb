@@ -16,8 +16,6 @@
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
 
-using ui::ComboboxModel;  // TODO(beng): remove
-
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +41,7 @@ void NativeComboboxGtk::UpdateFromModel() {
 
   GtkListStore* store =
       GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(native_view())));
-  ComboboxModel* model = combobox_->model();
+  ui::ComboboxModel* model = combobox_->model();
   int count = model->GetItemCount();
   gtk_list_store_clear(store);
   GtkTreeIter iter;

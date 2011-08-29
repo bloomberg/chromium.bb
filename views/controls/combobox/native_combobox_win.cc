@@ -15,8 +15,6 @@
 #include "views/controls/combobox/native_combobox_views.h"
 #include "views/widget/widget.h"
 
-using ui::ComboboxModel;  // TODO(beng): remove
-
 namespace views {
 
 // Limit how small a combobox can be.

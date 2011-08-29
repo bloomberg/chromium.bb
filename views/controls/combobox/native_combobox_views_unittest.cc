@@ -18,7 +18,7 @@ namespace {
 // OnKeyReleased() methods.
 class TestCombobox : public views::Combobox {
  public:
-  TestCombobox(ComboboxModel* model)
+  TestCombobox(ui::ComboboxModel* model)
       : Combobox(model),
         key_handled_(false),
         key_received_(false) {
@@ -142,7 +142,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
   NativeComboboxViews* combobox_view_;
 
   // Combobox does not take ownership of model_, which needs to be scoped.
-  scoped_ptr<ComboboxModel> model_;
+  scoped_ptr<ui::ComboboxModel> model_;
 
   // For testing input method related behaviors.
   MockInputMethod* input_method_;
