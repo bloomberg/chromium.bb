@@ -168,6 +168,8 @@ hr.bottom {
 }
 
 .menu-control {
+  font-family: inherit;
+  line-height: 20px;
   width: 250px;
 }
 
@@ -217,7 +219,8 @@ hr.bottom {
 
 #footer button {
   display: none;
-  height: 29px;
+  font-family: inherit;
+  height: 28px;
 }
 
 #oobe.connect #continue-button,
@@ -242,8 +245,10 @@ hr.bottom {
   opacity: 0.4;
 }
 
+#account-picker-dot,
 #enrollment-dot,
-#oauth-enrollment-dot {
+#oauth-enrollment-dot,
+#update-dot {
   display: none;
 }
 
@@ -370,11 +375,10 @@ button {
   -webkit-box-align: center;
   -webkit-box-pack: center;
   -webkit-transition: 0.25s opacity;
-  background: #fff;
+  background: rgba(255, 255, 255, .75);
   bottom: 0;
   display: -webkit-box;
   left: 0;
-  opacity: 0.75;
   padding-bottom: 130px;
   padding: 20px;
   position: fixed;
@@ -655,13 +659,13 @@ body.login-display #progress {
   color: #555;
   display: -webkit-box;
   font-size: inherit;
-  height: 20px;
+  height: 22px;
   margin: 0;
   overflow: hidden;
-  padding-top: 1px;
-  padding-bottom: 1px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   text-overflow: ellipsis;
-  text-align: left;  
+  text-align: left;
   text-indent: 4px;
   white-space: nowrap;
   z-index: 10;
@@ -671,13 +675,12 @@ body.login-display #progress {
   -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   background-image: url('../../shared/images/select.png'),
                     -webkit-linear-gradient(#fefefe, #f8f8f8 40%, #e9e9e9);
-  color: #333;  
+  color: #333;
   background-position: center right;
   background-repeat: no-repeat;
 }
 
 .dropdown-title img {
-  height: 20px;
   maring-top: -1px;
 }
 
