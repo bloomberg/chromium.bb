@@ -109,8 +109,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(tab_contents);
   EXPECT_TRUE(StartsWithASCII(tab_contents->GetURL().spec(),
-                              "chrome://newtab/#app-id=",  // id changes
-                              false));
+                              "chrome://newtab/", false));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
@@ -131,6 +130,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(tab_contents);
   EXPECT_TRUE(StartsWithASCII(tab_contents->GetURL().spec(),
-                              "chrome://newtab/#app-id=",  // id changes
-                              false));
+                              "chrome://newtab/", false));
 }
