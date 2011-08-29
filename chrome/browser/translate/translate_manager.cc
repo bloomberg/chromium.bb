@@ -489,8 +489,13 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   if (!tab->browser_context()->IsOffTheRecord() &&
       TranslatePrefs::ShouldAutoTranslate(prefs, language_code,
           &auto_target_lang)) {
-    TranslatePage(tab, language_code, auto_target_lang);
-    return;
+    // We need to confirm that the saved target language is still supported.
+    // Also, GetLanguageCode will take care of removing country code if any.
+    auto_target_lang = GetLanguageCode(auto_target_lang);
+    if (IsSupportedLanguage(auto_target_lang)) {
+      TranslatePage(tab, language_code, auto_target_lang);
+      return;
+    }
   }
 
   TabContentsWrapper* wrapper =

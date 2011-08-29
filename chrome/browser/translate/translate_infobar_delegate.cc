@@ -89,6 +89,7 @@ void TranslateInfoBarDelegate::SetOriginalLanguage(size_t language_index) {
 
 void TranslateInfoBarDelegate::SetTargetLanguage(size_t language_index) {
   DCHECK_LT(language_index, GetLanguageCount());
+  DCHECK_GE(language_index, 0U);
   target_language_index_ = language_index;
   if (infobar_view_)
     infobar_view_->TargetLanguageChanged();
@@ -348,6 +349,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     if (language_code == target_language)
       target_language_index_ = iter - languages_.begin();
   }
+  DCHECK_NE(kNoIndex, target_language_index_);
 }
 
 bool TranslateInfoBarDelegate::ShouldExpire(
