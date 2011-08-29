@@ -16,8 +16,7 @@ Core wayland protocol
  - Next steps based on EGL_WL_bind_display: create EGLImageKHR from
    shm buffers? async auth in the implementation of the extension?
 
- - wayland-egl: lazy-copy-back swapbuffer, sub-window, scanout flags
-   for fullscreen.
+ - wayland-egl: lazy-copy-back swapbuffer, sub-window.
 
  - configure should provide dx_left, dx_right, dy_top, dy_bottom, or
    dx, dy, width and height.
@@ -28,17 +27,9 @@ Core wayland protocol
    another menu item), but we need events for the popup menu surface
    as well.
 
- - The message format has to include information about number of fds
-   in the message so we can skip a message correctly.  Or we should
-   just give up on trying to recover from unknown messages.  We need
-   to make sure you never get a message from an interface you don't
-   know about (using per-client id space and subscribe) or include
-   information on number of fds, so marshalling logic can skip.
-
- - generate pointer_focus (and drag focus) on raise/lower, move
-   windows, all kinds of changes in surface stacking.
-
  - glyph cache
+
+    - Needs a mechanism to pass buffers to client.
 
       buffer = drm.create_buffer(); /* buffer with stuff in it */
 
@@ -113,7 +104,9 @@ Core wayland protocol
 
     - synaptics, 3-button emulation, scim
 
- - drm bo access control, authentication, flink_to
+ - multi gpu, needs queue and seqno to wait on in requests
+
+Destkop/EWMH type protocol
 
  - Add protocol to let applications specify the effective/logical
    surface rectangle, that is, the edge of the window, ignoring drop
@@ -126,29 +119,27 @@ Core wayland protocol
    unresponsive apps) and a rectangle for the close button (for
    detecting ignored close clicks).
 
- - multi gpu, needs queue and seqno to wait on in requests
+libxkbcommon
 
- - libxkbcommon
+  - pull in actions logic from xserver
 
-    - pull in actions logic from xserver
+  - pull in keycode to keysym logic from libX11
 
-    - pull in keycode to keysym logic from libX11
+  - expose alloc functions in libxkbcommon, drop xserver funcs?
 
-    - expose alloc functions in libxkbcommon, drop xserver funcs?
+  - pull the logic to write the xkb file from xkb_desc and names into
+    libxkbcommon and just build up the new xkb_desc instead of
+    dump+parse? (XkbWriteXKBKeymapForNames followed by
+    xkb_compile_keymap_from_string in XkbDDXLoadKeymapByNames)
 
-    - pull the logic to write the xkb file from xkb_desc and names
-      into libxkbcommon and just build up the new xkb_desc instead of
-      dump+parse? (XkbWriteXKBKeymapForNames followed by
-      xkb_compile_keymap_from_string in XkbDDXLoadKeymapByNames)
+  - pull in keysym defs as XKB_KEY_BackSpace
 
-    - pull in keysym defs as XKB_KEY_BackSpace
+  - figure out what other X headers we can get rid of, make it not
+    need X at all (except when we gen the keysyms).
 
-    - figure out what other X headers we can get rid of, make it not
-      need X at all (except when we gen the keysyms).
+  - Sort out namespace pollution (XkbFoo macros, atom funcs etc).
 
-    - Sort out namespace pollution (XkbFoo macros, atom funcs etc).
-
-    - Sort out 32 bit vmods and serialization
+  - Sort out 32 bit vmods and serialization
 
 
 Clients and ports
@@ -171,13 +162,6 @@ Clients and ports
    http://cgit.freedesktop.org/~bnf/sdl-wayland/
 
  - libva + eglimage + kms integration
-
- - X on Wayland
-
-    - map multiple wayland input devices to MPX in Xorg.
-
-    - rootless; avoid allocating and setting the front buffer, draw
-      window decorations in the X server (!), how to map input?
 
 
 Ideas
