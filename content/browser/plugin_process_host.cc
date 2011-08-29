@@ -22,7 +22,6 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
-#include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
@@ -265,7 +264,6 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
   SetTerminateChildOnShutdown(false);
 
   content::GetContentClient()->browser()->PluginProcessHostCreated(this);
-  AddFilter(new ResolveProxyMsgHelper(NULL));
 
   return true;
 }

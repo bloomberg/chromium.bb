@@ -702,6 +702,11 @@ NPObject* WebPluginImpl::GetPluginElement() {
   return container_->scriptableObjectForElement();
 }
 
+bool WebPluginImpl::FindProxyForUrl(const GURL& url, std::string* proxy_list) {
+  // Proxy resolving doesn't work in single-process mode.
+  return false;
+}
+
 void WebPluginImpl::SetCookie(const GURL& url,
                               const GURL& first_party_for_cookies,
                               const std::string& cookie) {

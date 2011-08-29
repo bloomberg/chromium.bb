@@ -1006,9 +1006,15 @@ NPError NPN_GetValueForURL(NPP id,
   switch (variable) {
     case NPNURLVProxy: {
       result = "DIRECT";
-      if (!webkit_glue::FindProxyForUrl(GURL((std::string(url))), &result))
+      scoped_refptr<PluginInstance> plugin(FindInstance(id));
+      if (!plugin)
         return NPERR_GENERIC_ERROR;
 
+      WebPlugin* webplugin = plugin->webplugin();
+      if (!webplugin)
+        return NPERR_GENERIC_ERROR;
+
+      result = webplugin->FindProxyForUrl(GURL(std::string(url)), &result);
       break;
     }
     case NPNURLVCookie: {

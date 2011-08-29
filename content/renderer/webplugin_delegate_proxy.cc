@@ -433,6 +433,7 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnGetWindowScriptNPObject)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetPluginElement,
                         OnGetPluginElement)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_ResolveProxy, OnResolveProxy)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetCookies, OnGetCookies)
     IPC_MESSAGE_HANDLER(PluginHostMsg_MissingPluginStatus,
@@ -1097,6 +1098,14 @@ void WebPluginDelegateProxy::OnGetWindowScriptNPObject(
   window_script_object_ = (new NPObjectStub(
       npobject, channel_host_.get(), route_id, 0, page_url_))->AsWeakPtr();
   *success = true;
+}
+
+void WebPluginDelegateProxy::OnResolveProxy(const GURL& url,
+                                            bool* result,
+                                            std::string* proxy_list) {
+  *result = false;
+  RenderThread::current()->Send(
+      new ViewHostMsg_ResolveProxy(url, result, proxy_list));
 }
 
 void WebPluginDelegateProxy::OnGetPluginElement(int route_id, bool* success) {

@@ -214,9 +214,6 @@ void GetPlugins(bool refresh,
 // required by the media engine.
 bool IsProtocolSupportedForMedia(const GURL& url);
 
-// Resolves the proxies for the url, returns true on success.
-bool FindProxyForUrl(const GURL& url, std::string* proxy_list);
-
 // Returns the locale that this instance of webkit is running as.  This is of
 // the form language-country (e.g., en-US or pt-BR).
 std::string GetWebKitLocale();

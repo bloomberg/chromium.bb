@@ -101,6 +101,9 @@ class WebPlugin {
   // reference.
   virtual NPObject* GetPluginElement() = 0;
 
+  // Resolves the proxies for the url, returns true on success.
+  virtual bool FindProxyForUrl(const GURL& url, std::string* proxy_list) = 0;
+
   // Cookies
   virtual void SetCookie(const GURL& url,
                          const GURL& first_party_for_cookies,

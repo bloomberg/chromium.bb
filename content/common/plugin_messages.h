@@ -329,6 +329,11 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_GetPluginElement,
                            int /* route id */,
                            bool /* success */)
 
+IPC_SYNC_MESSAGE_ROUTED1_2(PluginHostMsg_ResolveProxy,
+                           GURL /* url */,
+                           bool /* result */,
+                           std::string /* proxy list */)
+
 IPC_MESSAGE_ROUTED3(PluginHostMsg_SetCookie,
                     GURL /* url */,
                     GURL /* first_party_for_cookies */,

@@ -105,6 +105,7 @@ class WebPluginImpl : public WebPlugin,
   virtual void InvalidateRect(const gfx::Rect& rect);
   virtual NPObject* GetWindowScriptNPObject();
   virtual NPObject* GetPluginElement();
+  virtual bool FindProxyForUrl(const GURL& url, std::string* proxy_list);
   virtual void SetCookie(const GURL& url,
                          const GURL& first_party_for_cookies,
                          const std::string& cookie);

@@ -18,7 +18,6 @@
 #include "base/sync_socket.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "content/common/child_process_messages.h"
 #include "content/common/child_process.h"
 #include "content/common/child_thread.h"
 #include "content/common/content_switches.h"
@@ -1404,10 +1403,10 @@ void PepperPluginDelegateImpl::SubscribeToPolicyUpdates(
 }
 
 std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {
-  int net_error;
+  bool result;
   std::string proxy_result;
   RenderThread::current()->Send(
-      new ChildProcessHostMsg_ResolveProxy(url, &net_error, &proxy_result));
+      new ViewHostMsg_ResolveProxy(url, &result, &proxy_result));
   return proxy_result;
 }
 

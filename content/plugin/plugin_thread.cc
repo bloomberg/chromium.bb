@@ -21,12 +21,10 @@
 #include "base/threading/thread_local.h"
 #include "content/common/child_process.h"
 #include "content/common/content_switches.h"
-#include "content/common/child_process_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/plugin/content_plugin_client.h"
 #include "content/plugin/npobject_util.h"
 #include "ipc/ipc_channel_handle.h"
-#include "net/base/net_errors.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
@@ -170,19 +168,3 @@ void PluginThread::OnCreateChannel(int renderer_id,
 void PluginThread::OnNotifyRenderersOfPendingShutdown() {
   PluginChannel::NotifyRenderersOfPendingShutdown();
 }
-
-namespace webkit_glue {
-bool FindProxyForUrl(const GURL& url, std::string* proxy_list) {
-  int net_error;
-  std::string proxy_result;
-
-  bool result = ChildThread::current()->Send(
-      new ChildProcessHostMsg_ResolveProxy(url, &net_error, &proxy_result));
-  if (!result || net_error != net::OK)
-    return false;
-
-  *proxy_list = proxy_result;
-  return true;
-}
-
-}  // namespace webkit_glue

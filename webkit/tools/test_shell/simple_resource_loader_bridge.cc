@@ -54,7 +54,6 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -790,25 +789,6 @@ namespace webkit_glue {
 ResourceLoaderBridge* ResourceLoaderBridge::Create(
     const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
   return new ResourceLoaderBridgeImpl(request_info);
-}
-
-// Issue the proxy resolve request on the io thread, and wait
-// for the result.
-bool FindProxyForUrl(const GURL& url, std::string* proxy_list) {
-  DCHECK(g_request_context);
-
-  scoped_refptr<net::SyncProxyServiceHelper> sync_proxy_service(
-      new net::SyncProxyServiceHelper(g_io_thread->message_loop(),
-      g_request_context->proxy_service()));
-
-  net::ProxyInfo proxy_info;
-  int rv = sync_proxy_service->ResolveProxy(url, &proxy_info,
-                                            net::BoundNetLog());
-  if (rv == net::OK) {
-    *proxy_list = proxy_info.ToPacString();
-  }
-
-  return rv == net::OK;
 }
 
 }  // namespace webkit_glue

@@ -52,14 +52,3 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceDataCollected,
 // Reply to ChildProcessMsg_GetTraceBufferPercentFull.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceBufferPercentFullReply,
                      float /*trace buffer percent full*/)
-
-// NaCl's 64 bit Windows build only links with a bare-minimum number of
-// libraries, and GURL isn't one of them.
-#if !defined(NACL_WIN64)
-// Get the list of proxies to use for |url|, as a semicolon delimited list
-// of "<TYPE> <HOST>:<PORT>" | "DIRECT".
-IPC_SYNC_MESSAGE_CONTROL1_2(ChildProcessHostMsg_ResolveProxy,
-                            GURL /* url */,
-                            int /* network error */,
-                            std::string /* proxy list */)
-#endif

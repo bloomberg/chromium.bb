@@ -5,26 +5,30 @@
 #include "content/browser/resolve_proxy_msg_helper.h"
 
 #include "base/compiler_specific.h"
-#include "content/browser/content_browser_client.h"
-#include "content/common/child_process_messages.h"
-#include "content/common/content_client.h"
+#include "content/common/view_messages.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
-ResolveProxyMsgHelper::ResolveProxyMsgHelper(net::ProxyService* proxy_service)
-    : proxy_service_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
+ResolveProxyMsgHelper::ResolveProxyMsgHelper(
+    net::URLRequestContextGetter* getter)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
           this, &ResolveProxyMsgHelper::OnResolveProxyCompleted)),
-      proxy_service_override_(proxy_service) {
+      context_getter_(getter),
+      proxy_service_(NULL) {
+}
+
+ResolveProxyMsgHelper::ResolveProxyMsgHelper(net::ProxyService* proxy_service)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
+          this, &ResolveProxyMsgHelper::OnResolveProxyCompleted)),
+      proxy_service_(proxy_service) {
 }
 
 bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message,
                                               bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(ResolveProxyMsgHelper, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_ResolveProxy,
-                                    OnResolveProxy)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -44,13 +48,12 @@ void ResolveProxyMsgHelper::OnResolveProxyCompleted(int result) {
   CHECK(!pending_requests_.empty());
 
   const PendingRequest& completed_req = pending_requests_.front();
-  ChildProcessHostMsg_ResolveProxy::WriteReplyParams(
-      completed_req.reply_msg, result, proxy_info_.ToPacString());
+  ViewHostMsg_ResolveProxy::WriteReplyParams(
+      completed_req.reply_msg, result == net::OK, proxy_info_.ToPacString());
   Send(completed_req.reply_msg);
 
   // Clear the current (completed) request.
   pending_requests_.pop_front();
-  proxy_service_ = NULL;
 
   // Start the next request.
   if (!pending_requests_.empty())
@@ -62,19 +65,13 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
 
   // Verify the request wasn't started yet.
   DCHECK(NULL == req.pac_req);
-  DCHECK(NULL == proxy_service_);
 
-  // Start the request.
-  bool ok = GetProxyService(&proxy_service_);
-
-  if (!ok) {
-    // During shutdown, there may be no ProxyService to use, because the
-    // default ChromeURLRequestContext has already been NULL-ed out.
-    LOG(WARNING) << "Failed getting default URLRequestContext";
-    OnResolveProxyCompleted(net::ERR_FAILED);
-    return;
+  if (context_getter_.get()) {
+    proxy_service_ = context_getter_->GetURLRequestContext()->proxy_service();
+    context_getter_ = NULL;
   }
 
+  // Start the request.
   int result = proxy_service_->ResolveProxy(
       req.url, &proxy_info_, &callback_, &req.pac_req, net::BoundNetLog());
 
@@ -83,35 +80,10 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
     OnResolveProxyCompleted(result);
 }
 
-bool ResolveProxyMsgHelper::GetProxyService(net::ProxyService** out) const {
-  // Unit-tests specify their own proxy service to use.
-  if (proxy_service_override_) {
-    *out = proxy_service_override_;
-    return true;
-  }
-
-  // If there is no default request context (say during shut down).
-  // Deprecated; see http://crbug.com/92361
-  net::URLRequestContextGetter* context_getter =
-      content::GetContentClient()->browser()->
-          GetDefaultRequestContextDeprecatedCrBug64339();
-  if (!context_getter)
-    return false;
-
-  // Otherwise use the browser's global proxy service.
-  *out = context_getter->GetURLRequestContext()->proxy_service();
-  return true;
-}
-
 ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
   // Clear all pending requests if the ProxyService is still alive (if we have a
   // default request context or override).
-  // Deprecated; see http://crbug.com/92361
-  net::URLRequestContextGetter* context_getter =
-      content::GetContentClient()->browser()->
-          GetDefaultRequestContextDeprecatedCrBug64339();
-  if (!pending_requests_.empty() &&
-      (context_getter || proxy_service_override_)) {
+  if (!pending_requests_.empty()) {
     PendingRequest req = pending_requests_.front();
     proxy_service_->CancelPacRequest(req.pac_req);
   }
@@ -122,6 +94,5 @@ ResolveProxyMsgHelper::~ResolveProxyMsgHelper() {
     delete it->reply_msg;
   }
 
-  proxy_service_ = NULL;
   pending_requests_.clear();
 }

@@ -1596,6 +1596,13 @@ IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_OpenChannelToPlugin,
                             IPC::ChannelHandle /* channel_handle */,
                             webkit::WebPluginInfo /* info */)
 
+// Get the list of proxies to use for |url|, as a semicolon delimited list
+// of "<TYPE> <HOST>:<PORT>" | "DIRECT".
+IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
+                            GURL /* url */,
+                            bool /* result */,
+                            std::string /* proxy list */)
+
 // A renderer sends this to the browser process when it wants to create a
 // worker.  The browser will create the worker process if necessary, and
 // will return the route id on success.  On error returns MSG_ROUTING_NONE.

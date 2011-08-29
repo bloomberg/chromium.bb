@@ -15,10 +15,6 @@ bool IsPluginProcess() {
 
 namespace webkit_glue {
 
-bool FindProxyForUrl(const GURL& url, std::string* proxy_list) {
-  return false;
-}
-
 std::string BuildUserAgent(bool mimic_windows) {
   chrome::VersionInfo version_info;
   std::string product("Chrome/");

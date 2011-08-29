@@ -414,7 +414,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
 #endif
 
   channel_->AddFilter(new TraceMessageFilter());
-  channel_->AddFilter(new ResolveProxyMsgHelper(NULL));
+  channel_->AddFilter(new ResolveProxyMsgHelper(
+      browser_context()->GetRequestContextForRenderProcess(id())));
   channel_->AddFilter(new QuotaDispatcherHost(
       id(), browser_context()->GetQuotaManager(),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
