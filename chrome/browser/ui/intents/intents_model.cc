@@ -95,7 +95,7 @@ void IntentsModel::GetIntentsTreeNodeDictionary(const IntentsTreeNode& node,
 
   if (node.Type() == IntentsTreeNode::TYPE_ORIGIN) {
     dict->SetString("site", node.GetTitle());
-    dict->SetBoolean("hasChildren", node.child_count() > 0);
+    dict->SetBoolean("hasChildren", !node.empty());
     return;
   }
 

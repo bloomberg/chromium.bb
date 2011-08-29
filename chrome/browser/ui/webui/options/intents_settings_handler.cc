@@ -103,7 +103,7 @@ void IntentsSettingsHandler::RemoveIntent(const base::ListValue* args) {
 
 void IntentsSettingsHandler::RemoveOrigin(IntentsTreeNode* node) {
   // TODO(gbillock): This is a known batch update. Worth optimizing?
-  while (node->child_count() > 0) {
+  while (!node->empty()) {
     IntentsTreeNode* cnode = node->GetChild(0);
     CHECK(cnode->Type() == IntentsTreeNode::TYPE_SERVICE);
     ServiceTreeNode* snode = static_cast<ServiceTreeNode*>(cnode);
