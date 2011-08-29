@@ -67,6 +67,7 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   void CloseTransportSocket();
   void RunUserConnectCallback(int status);
   int ReconsiderProxyAfterError(int error);
+  void ReportSuccessfulProxyConnection();
 
   // Callbacks passed to net APIs.
   net::CompletionCallbackImpl<ProxyResolvingClientSocket>

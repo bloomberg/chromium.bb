@@ -190,6 +190,8 @@ void ProxyResolvingClientSocket::ProcessConnectDone(int status) {
       // Proxy reconsideration pending. Return.
       return;
     CloseTransportSocket();
+  } else {
+    ReportSuccessfulProxyConnection();
   }
   RunUserConnectCallback(status);
 }
@@ -272,6 +274,10 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
     rv = net::ERR_IO_PENDING;
   }
   return rv;
+}
+
+void ProxyResolvingClientSocket::ReportSuccessfulProxyConnection() {
+  network_session_->proxy_service()->ReportSuccess(proxy_info_);
 }
 
 void ProxyResolvingClientSocket::Disconnect() {
