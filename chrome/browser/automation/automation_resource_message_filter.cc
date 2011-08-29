@@ -12,9 +12,9 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/render_messages.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/browser_thread.h"
-#include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
@@ -446,7 +446,8 @@ void AutomationResourceMessageFilter::OnGetCookiesHostResponse(
     return;
   }
 
-  ViewHostMsg_GetCookies::WriteReplyParams(index->second.reply_msg, cookies);
+  ChromeViewHostMsg_GetCookies::WriteReplyParams(index->second.reply_msg,
+                                                 cookies);
   index->second.filter->Send(index->second.reply_msg);
 
   completion_callback_map_.Get().erase(index);

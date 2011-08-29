@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
+#include "ipc/ipc_message.h"
 #include "content/common/content_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 
@@ -109,6 +110,20 @@ class ContentRendererClient {
   virtual bool ShouldOverridePageVisibilityState(
       const RenderView* render_view,
       WebKit::WebPageVisibilityState* override_state) const = 0;
+
+  // Return true if the GetCookie request will be handled by the embedder.
+  // Cookies are returned in the cookie parameter.
+  virtual bool HandleGetCookieRequest(RenderView* sender,
+                                      const GURL& url,
+                                      const GURL& first_party_for_cookies,
+                                      std::string* cookies) = 0;
+
+  // Return true if the SetCookie request will be handled by the embedder.
+  // Cookies to be set are passed in the value parameter.
+  virtual bool HandleSetCookieRequest(RenderView* sender,
+                                      const GURL& url,
+                                      const GURL& first_party_for_cookies,
+                                      const std::string& value) = 0;
 };
 
 }  // namespace content

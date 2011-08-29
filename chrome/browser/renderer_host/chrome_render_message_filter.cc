@@ -143,15 +143,16 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if ((message.type() == ViewHostMsg_GetCookies::ID ||
-       message.type() == ViewHostMsg_SetCookie::ID) &&
+  if ((message.type() == ChromeViewHostMsg_GetCookies::ID ||
+       message.type() == ChromeViewHostMsg_SetCookie::ID) &&
     AutomationResourceMessageFilter::ShouldFilterCookieMessages(
         render_process_id_, message.routing_id())) {
     // ChromeFrame then we need to get/set cookies from the external host.
     IPC_BEGIN_MESSAGE_MAP_EX(ChromeRenderMessageFilter, message,
                              *message_was_ok)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetCookies,
+                                      OnGetCookies)
+      IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetCookie, OnSetCookie)
     IPC_END_MESSAGE_MAP()
     handled = true;
   }

@@ -104,4 +104,19 @@ bool MockContentRendererClient::ShouldOverridePageVisibilityState(
   return false;
 }
 
+bool MockContentRendererClient::HandleGetCookieRequest(
+    RenderView* sender,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    std::string* cookies) {
+  return false;
+}
+
+bool MockContentRendererClient::HandleSetCookieRequest(
+    RenderView* sender,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    const std::string& value) {
+  return false;
+}
 }  // namespace content

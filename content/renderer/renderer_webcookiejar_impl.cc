@@ -6,7 +6,9 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/common/view_messages.h"
+#include "content/renderer/content_renderer_client.h"
 #include "content/renderer/render_thread.h"
+#include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCookie.h"
 #include "webkit/glue/webcookie.h"
 
@@ -20,16 +22,23 @@ void RendererWebCookieJarImpl::setCookie(
     const WebString& value) {
   std::string value_utf8;
   UTF16ToUTF8(value.data(), value.length(), &value_utf8);
-  sender_->Send(new ViewHostMsg_SetCookie(
-      MSG_ROUTING_NONE, url, first_party_for_cookies, value_utf8));
+  if (!content::GetContentClient()->renderer()->HandleSetCookieRequest(
+          sender_, url, first_party_for_cookies, value_utf8)) {
+    sender_->Send(new ViewHostMsg_SetCookie(
+        MSG_ROUTING_NONE, url, first_party_for_cookies, value_utf8));
+  }
 }
 
 WebString RendererWebCookieJarImpl::cookies(
     const WebURL& url, const WebURL& first_party_for_cookies) {
   std::string value_utf8;
-  // NOTE: This may pump events (see RenderThread::Send).
-  sender_->Send(new ViewHostMsg_GetCookies(
-      MSG_ROUTING_NONE, url, first_party_for_cookies, &value_utf8));
+
+  if (!content::GetContentClient()->renderer()->HandleGetCookieRequest(
+          sender_, url, first_party_for_cookies, &value_utf8)) {
+    // NOTE: This may pump events (see RenderThread::Send).
+    sender_->Send(new ViewHostMsg_GetCookies(
+        MSG_ROUTING_NONE, url, first_party_for_cookies, &value_utf8));
+  }
   return WebString::fromUTF8(value_utf8);
 }
 

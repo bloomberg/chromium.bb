@@ -6,6 +6,8 @@
 #define CONTENT_RENDERER_MOCK_CONTENT_RENDERER_CLIENT_H_
 #pragma once
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "content/renderer/content_renderer_client.h"
 
@@ -53,6 +55,14 @@ class MockContentRendererClient : public ContentRendererClient {
   virtual bool ShouldOverridePageVisibilityState(
       const RenderView* render_view,
       WebKit::WebPageVisibilityState* override_state) const OVERRIDE;
+  virtual bool HandleGetCookieRequest(RenderView* sender,
+                                      const GURL& url,
+                                      const GURL& first_party_for_cookies,
+                                      std::string* cookies) OVERRIDE;
+  virtual bool HandleSetCookieRequest(RenderView* sender,
+                                      const GURL& url,
+                                      const GURL& first_party_for_cookies,
+                                      const std::string& value) OVERRIDE;
 };
 
 }  // namespace content

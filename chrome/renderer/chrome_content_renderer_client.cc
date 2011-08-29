@@ -66,6 +66,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/renderer_resources.h"
+#include "ipc/ipc_sync_message.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -683,6 +684,35 @@ bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
   *override_state = WebKit::WebPageVisibilityStatePrerender;
   return true;
 }
+
+bool ChromeContentRendererClient::HandleGetCookieRequest(
+    RenderView* sender,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    std::string* cookies) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
+    IPC::SyncMessage* msg = new ChromeViewHostMsg_GetCookies(
+        MSG_ROUTING_NONE, url, first_party_for_cookies, cookies);
+    msg->EnableMessagePumping();
+    sender->Send(msg);
+    return true;
+  }
+  return false;
+}
+
+bool ChromeContentRendererClient::HandleSetCookieRequest(
+    RenderView* sender,
+    const GURL& url,
+    const GURL& first_party_for_cookies,
+    const std::string& value) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
+    sender->Send(new ChromeViewHostMsg_SetCookie(
+        MSG_ROUTING_NONE, url, first_party_for_cookies, value));
+    return true;
+  }
+  return false;
+}
+
 
 void ChromeContentRendererClient::SetExtensionDispatcher(
     ExtensionDispatcher* extension_dispatcher) {
