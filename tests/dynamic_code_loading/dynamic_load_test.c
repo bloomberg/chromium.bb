@@ -368,6 +368,58 @@ void test_deleting_code() {
   rc = nacl_dyncode_delete(load_area, sizeof(buf));
   assert(rc == 0);
   assert(load_area[0] != buf[0]);
+
+  /* Attempting to unload the code again should fail. */
+  rc = nacl_dyncode_delete(load_area, sizeof(buf));
+  assert(rc == -1);
+  assert(errno == EFAULT);
+}
+
+/* nacl_dyncode_delete() succeeds trivially on the empty range. */
+void test_deleting_zero_size() {
+  uint8_t *load_addr = (uint8_t *) allocate_code_space(1);
+  int rc = nacl_dyncode_delete(load_addr, 0);
+  assert(rc == 0);
+}
+
+void test_deleting_code_from_invalid_ranges() {
+  uint8_t *load_addr = (uint8_t *) allocate_code_space(1) + 32;
+  uint8_t buf[64];
+  int rc;
+
+  /* We specifically want to test using multiple instruction bundles. */
+  assert(sizeof(buf) / NACL_BUNDLE_SIZE >= 2);
+  assert(sizeof(buf) % NACL_BUNDLE_SIZE == 0);
+
+  rc = nacl_dyncode_delete(load_addr, sizeof(buf));
+  assert(rc == -1);
+  assert(errno == EFAULT);
+
+  fill_hlts(buf, sizeof(buf));
+  rc = nacl_dyncode_create(load_addr, buf, sizeof(buf));
+  assert(rc == 0);
+
+  /* Overlapping before. */
+  rc = nacl_dyncode_delete(load_addr - NACL_BUNDLE_SIZE,
+                           sizeof(buf) + NACL_BUNDLE_SIZE);
+  assert(rc == -1);
+  assert(errno == EFAULT);
+  /* Overlapping after. */
+  rc = nacl_dyncode_delete(load_addr, sizeof(buf) + NACL_BUNDLE_SIZE);
+  assert(rc == -1);
+  assert(errno == EFAULT);
+  /* Missing the end of the loaded chunk. */
+  rc = nacl_dyncode_delete(load_addr, sizeof(buf) - NACL_BUNDLE_SIZE);
+  assert(rc == -1);
+  assert(errno == EFAULT);
+  /* Missing the start of the loaded chunk. */
+  rc = nacl_dyncode_delete(load_addr + NACL_BUNDLE_SIZE,
+                           sizeof(buf) - NACL_BUNDLE_SIZE);
+  assert(rc == -1);
+  assert(errno == EFAULT);
+  /* The correct range should work, though. */
+  rc = nacl_dyncode_delete(load_addr, sizeof(buf));
+  assert(rc == 0);
 }
 
 
@@ -398,6 +450,8 @@ int TestMain() {
   RUN_TEST(test_end_of_code_region);
   RUN_TEST(test_hlt_filled_bundle);
   RUN_TEST(test_deleting_code);
+  RUN_TEST(test_deleting_zero_size);
+  RUN_TEST(test_deleting_code_from_invalid_ranges);
   RUN_TEST(test_stress);
 
   /* Test again to make sure we didn't run out of space. */
