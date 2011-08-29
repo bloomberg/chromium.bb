@@ -16,7 +16,7 @@
 #include "content/common/notification_service.h"
 
 #if defined(OS_WIN)
-#include <Objbase.h>
+#include "base/win/windows_version.h"
 #endif
 
 // static
@@ -417,6 +417,22 @@ void ThreadWatcherList::ParseCommandLine(
     uint32* live_threads_threshold) {
   // Determine |unresponsive_threshold| based on switches::kCrashOnHangSeconds.
   *unresponsive_threshold = kUnresponsiveCount;
+
+  if (chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_BETA) {
+    // Increase the unresponsive_threshold in Beta channel to reduce the number
+    // of crashes due to ThreadWatcher.
+    *unresponsive_threshold *= 2;
+  } else {
+    // In Canary and Dev channels, for Windows XP (old systems), double the
+    // unresponsive_threshold to give OS a chance to schedule UI/IO threads a
+    // time slice to respond with a pong message (to get around limitations with
+    // the OS).
+#if defined(OS_WIN)
+    if (base::win::GetVersion() <= base::win::VERSION_XP)
+      *unresponsive_threshold *= 2;
+#endif
+  }
+
   std::string crash_on_hang_seconds =
       command_line.GetSwitchValueASCII(switches::kCrashOnHangSeconds);
   if (!crash_on_hang_seconds.empty()) {
