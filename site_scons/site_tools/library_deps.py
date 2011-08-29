@@ -132,6 +132,11 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'arm_validator_core',
             ],
         }),
+    'arm-thumb2': _AddDefaultLibraryDependencies({
+        'ncvalidate_arm_v2': [
+            'arm_validator_core',
+            ],
+        }),
     }
 
 def AddLibDeps(platform, libraries):

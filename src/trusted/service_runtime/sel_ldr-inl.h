@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*******************************************************************************
@@ -168,6 +168,9 @@ static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
 #   error "What kind of x86 are we on anyway?!?"
 #  endif
 # elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+#  if defined(NACL_TARGET_ARM_THUMB2_MODE)
+  return ((addr & ~(((uintptr_t) nap->bundle_size) - 1)) & ~0xF0000000) | 0xF;
+#  else
   /*
    * TODO(cbiffle): this hardcodes the size of code memory, and needs to become
    * a parameter in NaClApp.  The simplest way to do this is with the change
@@ -175,6 +178,7 @@ static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
    */
 
   return (addr & ~(((uintptr_t) nap->bundle_size) - 1)) & ~0xF0000000;
+#  endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
 # else
 #  error "What architecture are we on?!?"
 # endif

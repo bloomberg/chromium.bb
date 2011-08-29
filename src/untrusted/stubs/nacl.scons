@@ -13,7 +13,7 @@ import os
 
 def GetPlatformSuffix(env):
   platform = env.get('TARGET_FULLARCH')
-  assert platform in ['x86-32',  'x86-64', 'arm']
+  assert platform in ['x86-32',  'x86-64', 'arm', 'arm-thumb2']
   # we do not like hyphens in file names
   return platform.replace('-', '_')
 

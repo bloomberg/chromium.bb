@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -45,9 +45,14 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
 
 
 void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
+#if defined(NACL_TARGET_ARM_THUMB2_MODE)
+  uint16_t *inst = (uint16_t *) start;
+#else
   uint32_t *inst = (uint32_t *) start;
+#endif /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
   uint32_t i;
 
+  CHECK(sizeof *inst == NACL_HALT_LEN);
   CHECK(0 == size % NACL_HALT_LEN);
   /* check that the region start is 4 bytes aligned */
   CHECK(0 == (uint32_t)start % NACL_HALT_LEN);
@@ -71,8 +76,15 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
 
 void  NaClLoadSpringboard(struct NaClApp  *nap) {
   struct NaClPatchInfo  patch_info;
+#if defined(NACL_TARGET_ARM_THUMB2_MODE)
+  /* Springboard begins 2 bytes earlier for thumb2. */
+  const uintptr_t       springboard_addr = NACL_TRAMPOLINE_END -
+                                           NACL_SYSCALL_BLOCK_SIZE -
+                                           NACL_HALT_LEN;
+#else
   const uintptr_t       springboard_addr = NACL_TRAMPOLINE_END -
                                            NACL_SYSCALL_BLOCK_SIZE;
+#endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
   NaClLog(2, "Installing springboard at 0x%08"NACL_PRIxPTR"\n",
           springboard_addr);
 

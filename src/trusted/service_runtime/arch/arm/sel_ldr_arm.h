@@ -15,9 +15,15 @@
 
 #define NACL_THREAD_MAX         8192  /* arbitrary, can be larger */
 
+#if defined(NACL_TARGET_ARM_THUMB2_MODE)
+#define NACL_NOOP_OPCODE        0x46c0      /* mov r8, r8 */
+#define NACL_HALT_OPCODE        0xbe00      /* bkpt 0x0000 */
+#define NACL_HALT_LEN           2           /* length of halt instruction */
+#else
 #define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
 #define NACL_HALT_OPCODE        0xe1266676  /* bkpt 6666 */
 #define NACL_HALT_LEN           4           /* length of halt instruction */
+#endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
 #define NACL_HALT_WORD          NACL_HALT_OPCODE
 
 struct NaClApp;

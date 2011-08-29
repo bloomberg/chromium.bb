@@ -769,9 +769,10 @@ pre_base_env.AddMethod(Banner)
 # This dictionary is used to translate from a platform name to a
 # (arch, subarch) pair
 AVAILABLE_PLATFORMS = {
-    'x86-32' : { 'arch' : 'x86' , 'subarch' : '32' },
-    'x86-64' : { 'arch' : 'x86' , 'subarch' : '64' },
-    'arm'    : { 'arch' : 'arm' , 'subarch' : '32' }
+    'x86-32'      : { 'arch' : 'x86' , 'subarch' : '32' },
+    'x86-64'      : { 'arch' : 'x86' , 'subarch' : '64' },
+    'arm'         : { 'arch' : 'arm' , 'subarch' : '32' },
+    'arm-thumb2'  : { 'arch' : 'arm' , 'subarch' : '32' }
     }
 
 # Look up the platform name from the command line arguments,
@@ -798,18 +799,28 @@ DeclareBit('build_x86_32', 'Building binaries for the x86-32 architecture',
            exclusive_groups='build_arch')
 DeclareBit('build_x86_64', 'Building binaries for the x86-64 architecture',
            exclusive_groups='build_arch')
-DeclareBit('build_arm', 'Building binaries for the ARM architecture',
+DeclareBit('build_arm_arm', 'Building binaries for the ARM architecture',
+           exclusive_groups='build_arch')
+DeclareBit('build_arm_thumb2',
+           'Building binaries for the ARM architecture (thumb2 ISA)',
            exclusive_groups='build_arch')
 DeclareBit('target_x86_32', 'Tools being built will process x86-32 binaries',
            exclusive_groups='target_arch')
 DeclareBit('target_x86_64', 'Tools being built will process x86-36 binaries',
            exclusive_groups='target_arch')
-DeclareBit('target_arm', 'Tools being built will process ARM binaries',
+DeclareBit('target_arm_arm', 'Tools being built will process ARM binaries',
+           exclusive_groups='target_arch')
+DeclareBit('target_arm_thumb2',
+           'Tools being built will process ARM binaries (thumb2 ISA)',
            exclusive_groups='target_arch')
 
 # Shorthand for either the 32 or 64 bit version of x86.
 DeclareBit('build_x86', 'Building binaries for the x86 architecture')
 DeclareBit('target_x86', 'Tools being built will process x86 binaries')
+
+# Shorthand for either arm or thumb2 versions of ARM
+DeclareBit('build_arm', 'Building binaries for the arm architecture')
+DeclareBit('target_arm', 'Tools being built will process arm binaries')
 
 
 def MakeArchSpecificEnv():
@@ -833,17 +844,21 @@ def MakeArchSpecificEnv():
 
   if env.Bit('build_x86_32') or env.Bit('build_x86_64'):
     env.SetBits('build_x86')
+  if env.Bit('build_arm_arm') or env.Bit('build_arm_thumb2'):
+    env.SetBits('build_arm')
 
   if env.Bit('target_x86_32') or env.Bit('target_x86_64'):
     env.SetBits('target_x86')
+  if env.Bit('target_arm_arm') or env.Bit('target_arm_thumb2'):
+    env.SetBits('target_arm')
 
   env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
-  if TARGET_NAME == 'arm' and not env.Bit('bitcode'):
+  if env.Bit('target_arm') and not env.Bit('bitcode'):
     # This has always been a silent default on ARM.
     env.SetBits('bitcode')
 
-  if TARGET_NAME == 'arm':
+  if env.Bit('target_arm'):
     bundle_bits = 4
   else:
     bundle_bits = 5
@@ -1938,6 +1953,8 @@ def MakeBaseTrustedEnv():
     CCFLAGS = ['${EXTRA_CCFLAGS}'],
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
   )
+  if base_env.Bit('target_arm_thumb2'):
+    base_env.Append(CPPDEFINES = ['NACL_TARGET_ARM_THUMB2_MODE=1'])
 
   base_env.Append(
     BUILD_SCONSCRIPTS = [

@@ -210,7 +210,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
 
 def _SetEnvForPnacl(env, root):
   arch = env['TARGET_FULLARCH']
-  assert arch in ['arm', 'x86-32', 'x86-64']
+  assert arch in ['arm', 'arm-thumb2', 'x86-32', 'x86-64']
 
   arch_flag = ' -arch %s' % arch
 

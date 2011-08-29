@@ -461,9 +461,20 @@ NaClErrorCode NaClAppLoadFileDynamically(struct NaClApp *nap,
 
 int NaClAddrIsValidEntryPt(struct NaClApp *nap,
                            uintptr_t      addr) {
+#if defined(NACL_TARGET_ARM_THUMB2_MODE)
+  /*
+   * The entry point needs to be aligned 0xe mod 0x10.  But ARM processors need
+   * an odd target address to indicate that the target is in thumb mode.  When
+   * control is actually transferred, it is to the target address minus one.
+   */
+  if (0xf != (addr & (nap->bundle_size - 1))) {
+    return 0;
+  }
+#else
   if (0 != (addr & (nap->bundle_size - 1))) {
     return 0;
   }
+#endif
 
   return addr < nap->static_text_end;
 }

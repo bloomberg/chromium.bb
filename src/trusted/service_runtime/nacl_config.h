@@ -73,9 +73,20 @@
 
 /*
  * Macro for the start address of the trampolines.
- * The first 64KB (16 pages) are inaccessible to prevent addr16/data16 attacks.
+ */
+#if defined(NACL_TARGET_ARM_THUMB2_MODE)
+/*
+ * Defining the start of the trampolines to something less than 64k allows
+ * better representation with thumb2 immediates.
+ */
+#define NACL_SYSCALL_START_ADDR       0x8000
+#else
+/*
+ * The first 64KB (16 pages) are inaccessible.  On x86, this is to prevent
+ * addr16/data16 attacks.
  */
 #define NACL_SYSCALL_START_ADDR       (16 << NACL_PAGESHIFT)
+#endif
 /* Macro for the start address of a specific trampoline.  */
 #define NACL_SYSCALL_ADDR(syscall_number) \
     (NACL_SYSCALL_START_ADDR + (syscall_number << NACL_SYSCALL_BLOCK_SHIFT))
@@ -105,10 +116,15 @@
  * NACL_TRAMPOLINE_END gives the address of the first byte after the
  * trampolines.
  */
+#if defined(NACL_TARGET_ARM_THUMB2_MODE)
+#define NACL_TRAMPOLINE_START 0x8000
+#define NACL_TRAMPOLINE_SIZE 0x8000
+#else
 #define NACL_NULL_REGION_SHIFT  16
 #define NACL_TRAMPOLINE_START   (1 << NACL_NULL_REGION_SHIFT)
 #define NACL_TRAMPOLINE_SHIFT   16
 #define NACL_TRAMPOLINE_SIZE    (1 << NACL_TRAMPOLINE_SHIFT)
+#endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
 #define NACL_TRAMPOLINE_END     (NACL_TRAMPOLINE_START + NACL_TRAMPOLINE_SIZE)
 
 /*
@@ -183,7 +199,12 @@
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
-# define NACL_HALT         mov pc, #0
+# if defined(NACL_TARGET_ARM_THUMB2_MODE)
+#  define NACL_HALT         bkpt
+# else
+#  define NACL_HALT         mov pc, #0
+# endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
+
 /* 16-byte bundles, 256MB code segment*/
 # define NACL_CONTROL_FLOW_MASK      0xF000000F
 

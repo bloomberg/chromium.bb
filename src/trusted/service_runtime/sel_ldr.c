@@ -428,11 +428,26 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
 
   NaClLog(2, "num_syscalls = %d (0x%x)\n", num_syscalls, num_syscalls);
 
+#if defined(NACL_TARGET_ARM_THUMB2_MODE)
+  CHECK(0 != ((nap->user_entry_pt | nap->initial_entry_pt) & 0x1));
+  /*
+   * Thumb trampolines start 2 bytes before the aligned syscall address used
+   * by ordinary ARM.  We initialize this by adding 0xe to the start address
+   * of each trampoline.  Because the last start address would actually start
+   * into user code above, this allows one fewer trampolines than in ARM.
+   */
+  for (i = 0, addr = nap->mem_start + NACL_SYSCALL_START_ADDR + 0xe;
+       i < num_syscalls - 1;
+       ++i, addr += NACL_SYSCALL_BLOCK_SIZE) {
+    NaClPatchOneTrampoline(nap, addr);
+  }
+#else
   for (i = 0, addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
        i < num_syscalls;
        ++i, addr += NACL_SYSCALL_BLOCK_SIZE) {
     NaClPatchOneTrampoline(nap, addr);
   }
+#endif
 }
 
 void  NaClMemRegionPrinter(void                   *state,
