@@ -827,6 +827,7 @@ endif
 	  for fulllib in libstdc++.so.6.* ; do \
 	    mv "$$fulllib" libstdc++.so.6 ; \
 	    ln -sfn libstdc++.so.6 "$$fulllib" ; \
+	    ln -sfn libstdc++.so.6 libstdc++.so ; \
 	  done ; \
 	) ; done
 	rm -rf "$(DESTDIR)$(SDKROOT)"/{include,lib/*.a*,$(CROSSARCH)/lib{,32}/*.la}
