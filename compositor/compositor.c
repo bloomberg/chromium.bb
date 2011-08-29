@@ -1632,8 +1632,12 @@ static void
 bind_input_device(struct wl_client *client,
 		  void *data, uint32_t version, uint32_t id)
 {
-	wl_client_add_object(client, &wl_display_interface,
-			     &input_device_interface, id, data);
+	struct wl_input_device *device = data;
+	struct wl_resource *resource;
+
+	resource = wl_client_add_object(client, &wl_input_device_interface,
+					&input_device_interface, id, data);
+	wl_list_insert(&device->resource_list, &resource->link);
 }
 
 WL_EXPORT void
