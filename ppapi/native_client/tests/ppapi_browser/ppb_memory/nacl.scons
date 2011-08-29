@@ -8,6 +8,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
+                     'ppb_memory')
 
 nexe = 'ppapi_ppb_memory_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_memory${PROGSUFFIX}',
@@ -24,11 +26,11 @@ ppapi_ppb_memory_nexe = env.ComponentProgram(
                 ])
 
 env.Publish(nexe, 'run',
-            ['ppapi_ppb_memory.html',
-             'ppapi_ppb_memory.nmf'])
+            ['ppapi_ppb_memory.html'])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_memory_browser_test.out',
                               url='ppapi_ppb_memory.html',
+                              nmf='${TEST_DIR}/ppapi_ppb_memory.nmf',
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,

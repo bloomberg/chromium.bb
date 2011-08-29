@@ -8,8 +8,9 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-
 env.Append(CPPPATH=['$SOURCE_ROOT/ppapi/lib/gl/include'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
+                     'ppapi_example_gles2/')
 
 nexe_name = 'ppapi_example_gles2_%s' % env.get('TARGET_FULLARCH')
 obj = env.ComponentObject(
@@ -21,10 +22,11 @@ nexe = env.ComponentProgram(nexe_name, [obj],
 
 # Note that the html is required to run this program.
 env.Publish(nexe_name, 'run',
-            ['ppapi_example_gles2.html', 'ppapi_example_gles2.nmf'])
+            ['ppapi_example_gles2.html'])
 
 test = env.PPAPIBrowserTester('ppapi_example_gles2_test.out',
                               url='ppapi_example_gles2.html',
+                              nmf='${TEST_DIR}/ppapi_example_gles2.nmf',
                               files=env.ExtractPublishedFiles(nexe_name),
                               args=['--enable_experimental_js'])
 
@@ -34,4 +36,4 @@ env.AddNodeToTestSuite(test,
                        # TODO(cstefansen): When fixed set to
                        # env.PPAPIBrowserTesterIsBroken().
                        # code.google.com/p/nativeclient/issues/detail?id=1936
-                       is_broken=True)
+                       is_broken=env.Bit('nacl_glibc'))
