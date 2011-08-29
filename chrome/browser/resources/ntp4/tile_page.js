@@ -417,6 +417,10 @@ cr.define('ntp4', function() {
           this.onCardChanged.bind(this));
     },
 
+    get tiles() {
+      return this.tileElements_;
+    },
+
     get tileCount() {
       return this.tileElements_.length;
     },
@@ -490,9 +494,11 @@ cr.define('ntp4', function() {
      * Removes the given tile and animates the respositioning of the other
      * tiles.
      * @param {HTMLElement} tile The tile to remove from |tileGrid_|.
+     * @param {?boolean} animate If true, tiles will animate.
      */
-    removeTile: function(tile) {
-      this.classList.add('animating-tile-page');
+    removeTile: function(tile, animate) {
+      if (animate)
+        this.classList.add('animating-tile-page');
       var index = Array.prototype.indexOf.call(this.tileElements_, tile);
       tile.parentNode.removeChild(tile);
       this.calculateLayoutValues_();

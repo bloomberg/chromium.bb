@@ -6,27 +6,46 @@
 #define CHROME_BROWSER_UI_WEBUI_NTP_BOOKMARKS_HANDLER_H_
 #pragma once
 
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "content/browser/webui/web_ui.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
 
 class PrefService;
 class Profile;
 
 // The handler for Javascript messages related to the "bookmarks" view.
 class BookmarksHandler : public WebUIMessageHandler,
-                         public NotificationObserver {
+                         public BookmarkModelObserver {
  public:
   explicit BookmarksHandler();
   virtual ~BookmarksHandler();
 
   // WebUIMessageHandler implementation.
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
-  // NotificationObserver
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // BookmarkModelObserver implementation.
+  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkNodeMoved(BookmarkModel* model,
+                                 const BookmarkNode* old_parent,
+                                 int old_index,
+                                 const BookmarkNode* new_parent,
+                                 int new_index) OVERRIDE;
+  virtual void BookmarkNodeAdded(BookmarkModel* model,
+                                 const BookmarkNode* parent,
+                                 int index) OVERRIDE;
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeChanged(BookmarkModel* model,
+                                   const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                          const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                             const BookmarkNode* node) OVERRIDE;
+  virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE;
 
   // Callback for the "getBookmarksData" message.
   void HandleGetBookmarksData(const base::ListValue* args);
@@ -35,7 +54,8 @@ class BookmarksHandler : public WebUIMessageHandler,
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
-  NotificationRegistrar registrar_;
+  BookmarkModel* model_;  // weak
+  bool getBookmarksDataIsPending_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
 };

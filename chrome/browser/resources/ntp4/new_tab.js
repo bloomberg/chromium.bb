@@ -761,12 +761,47 @@ cr.define('ntp4', function() {
     chrome.send('saveAppPageName', [name, index]);
   }
 
+  function bookmarkImportBegan() {
+    bookmarksPage.bookmarkImportBegan();
+  };
+
+  function bookmarkImportEnded() {
+    bookmarksPage.bookmarkImportEnded();
+  };
+
+  function bookmarkNodeAdded(id, bookmark) {
+    bookmarksPage.bookmarkNodeAdded(id, bookmark);
+  };
+
+  function bookmarkNodeChanged(id, changeInfo) {
+    bookmarksPage.bookmarkNodeChanged(id, changeInfo);
+  };
+
+  function bookmarkNodeChildrenReordered(id, reorderInfo) {
+    bookmarksPage.bookmarkNodeChildrenReordered(id, reorderInfo);
+  };
+
+  function bookmarkNodeMoved(id, moveInfo) {
+    bookmarksPage.bookmarkNodeMoved(id, moveInfo);
+  };
+
+  function bookmarkNodeRemoved(id, removeInfo) {
+    bookmarksPage.bookmarkNodeRemoved(id, removeInfo);
+  };
+
   // Return an object with all the exports
   return {
     appAdded: appAdded,
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
     assert: assert,
+    bookmarkImportBegan: bookmarkImportBegan,
+    bookmarkImportEnded: bookmarkImportEnded,
+    bookmarkNodeAdded: bookmarkNodeAdded,
+    bookmarkNodeChanged: bookmarkNodeChanged,
+    bookmarkNodeChildrenReordered: bookmarkNodeChildrenReordered,
+    bookmarkNodeMoved: bookmarkNodeMoved,
+    bookmarkNodeRemoved: bookmarkNodeRemoved,
     enterRearrangeMode: enterRearrangeMode,
     getAppsCallback: getAppsCallback,
     getAppsPageIndex: getAppsPageIndex,

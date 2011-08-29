@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_bookmark_helpers.h"
+#include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -15,29 +16,126 @@
 #include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 
+// TODO(csilv):
+// Much of this implementation is based on the classes defined in
+// extension_bookmarks_module.cc.  Longer term we should consider migrating
+// NTP into an embedded extension which would allow us to leverage the same
+// bookmark APIs as the bookmark manager.
+
+namespace keys = extension_bookmarks_module_constants;
+
 BookmarksHandler::BookmarksHandler() {
-  // TODO(csilv): Register for bookmark model change notifications.
 }
 
-BookmarksHandler::~BookmarksHandler() {}
+BookmarksHandler::~BookmarksHandler() {
+  if (model_)
+    model_->RemoveObserver(this);
+}
+
+WebUIMessageHandler* BookmarksHandler::Attach(WebUI* web_ui) {
+  WebUIMessageHandler::Attach(web_ui);
+  model_ = Profile::FromWebUI(web_ui)->GetBookmarkModel();
+  if (model_)
+    model_->AddObserver(this);
+  return this;
+}
 
 void BookmarksHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getBookmarksData",
       NewCallback(this, &BookmarksHandler::HandleGetBookmarksData));
 }
 
-void BookmarksHandler::Observe(int type,
-                               const NotificationSource& source,
-                               const NotificationDetails& details) {
-  // TODO(csilv): Update UI based on changes to bookmark notifications.
-  switch (type) {
-    case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED: {
-      registrar_.Remove(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                        Source<Profile>(Profile::FromWebUI(web_ui_)));
-      HandleGetBookmarksData(NULL);
-      break;
-    }
+void BookmarksHandler::Loaded(BookmarkModel* model, bool ids_reassigned) {
+  if (getBookmarksDataIsPending_) {
+    HandleGetBookmarksData(NULL);
+    getBookmarksDataIsPending_ = false;
   }
+}
+
+void BookmarksHandler::BookmarkModelBeingDeleted(BookmarkModel* model) {
+  // If this occurs it probably means that this tab will close shortly.
+  // Discard our reference to the model so that we won't use it again.
+  model_ = NULL;
+}
+
+void BookmarksHandler::BookmarkNodeMoved(BookmarkModel* model,
+    const BookmarkNode* old_parent, int old_index,
+    const BookmarkNode* new_parent, int new_index) {
+  const BookmarkNode* node = new_parent->GetChild(new_index);
+  StringValue id(base::Int64ToString(node->id()));
+  DictionaryValue move_info;
+  move_info.SetString(keys::kParentIdKey,
+                      base::Int64ToString(new_parent->id()));
+  move_info.SetInteger(keys::kIndexKey, new_index);
+  move_info.SetString(keys::kOldParentIdKey,
+                      base::Int64ToString(old_parent->id()));
+  move_info.SetInteger(keys::kOldIndexKey, old_index);
+
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeMoved", id, move_info);
+}
+
+void BookmarksHandler::BookmarkNodeAdded(BookmarkModel* model,
+    const BookmarkNode* parent, int index) {
+  const BookmarkNode* node = parent->GetChild(index);
+  StringValue id(base::Int64ToString(node->id()));
+  scoped_ptr<DictionaryValue> node_info(
+      extension_bookmark_helpers::GetNodeDictionary(node, false, false));
+
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeAdded", id, *node_info);
+}
+
+void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
+    const BookmarkNode* parent, int index, const BookmarkNode* node) {
+  StringValue id(base::Int64ToString(node->id()));
+  DictionaryValue remove_info;
+  remove_info.SetString(keys::kParentIdKey,
+                        base::Int64ToString(parent->id()));
+  remove_info.SetInteger(keys::kIndexKey, index);
+
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeRemoved", id, remove_info);
+}
+
+void BookmarksHandler::BookmarkNodeChanged(BookmarkModel* model,
+                                           const BookmarkNode* node) {
+  StringValue id(base::Int64ToString(node->id()));
+  DictionaryValue change_info;
+  change_info.SetString(keys::kTitleKey, node->GetTitle());
+  if (node->is_url())
+    change_info.SetString(keys::kUrlKey, node->url().spec());
+
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeChanged", id, change_info);
+}
+
+void BookmarksHandler::BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                                  const BookmarkNode* node) {
+  // Favicons are handled by through use of the chrome://favicon protocol, so
+  // there's nothing for us to do here (but we need to provide an
+  // implementation).
+}
+
+void BookmarksHandler::BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                                     const BookmarkNode* node) {
+  StringValue id(base::Int64ToString(node->id()));
+  int childCount = node->child_count();
+  ListValue* children = new ListValue();
+  for (int i = 0; i < childCount; ++i) {
+    const BookmarkNode* child = node->GetChild(i);
+    Value* child_id = new StringValue(base::Int64ToString(child->id()));
+    children->Append(child_id);
+  }
+  DictionaryValue reorder_info;
+  reorder_info.Set(keys::kChildIdsKey, children);
+
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeChildrenReordered", id,
+                                  reorder_info);
+}
+
+void BookmarksHandler::BookmarkImportBeginning(BookmarkModel* model) {
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkImportBegan");
+}
+
+void BookmarksHandler::BookmarkImportEnding(BookmarkModel* model) {
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkImportEnded");
 }
 
 void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
@@ -46,8 +144,7 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   BookmarkModel* model = profile->GetBookmarkModel();
   if (!model->IsLoaded()) {
-    registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                   Source<Profile>(profile));
+    getBookmarksDataIsPending_ = true;
     return;
   }
 
@@ -65,7 +162,7 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
 
   const BookmarkNode* node = model->GetNodeByID(id);
   if (!node)
-    return;
+    node = model->root_node();
 
   // We wish to merge the root node with the bookmarks bar node.
   if (model->is_root_node(node))
@@ -96,7 +193,6 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
 // static
 void BookmarksHandler::RegisterUserPrefs(PrefService* prefs) {
   // Default folder is the root node.
-  // TODO(csilv): Should we default to the Bookmarks bar?
   // TODO(csilv): Should we sync this preference?
   prefs->RegisterInt64Pref(prefs::kNTPShownBookmarksFolder, 0,
                            PrefService::UNSYNCABLE_PREF);

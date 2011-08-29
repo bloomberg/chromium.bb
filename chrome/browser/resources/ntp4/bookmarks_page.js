@@ -41,6 +41,9 @@ cr.define('ntp4', function() {
   Bookmark.prototype = {
     __proto__: HTMLDivElement.prototype,
 
+    /**
+     * Initialize the bookmark object.
+     */
     initialize: function() {
       var id = tileId++;
       this.id = 'bookmark_tile_' + id;
@@ -132,9 +135,12 @@ cr.define('ntp4', function() {
   BookmarkTitle.prototype = {
     __proto__: HTMLDivElement.prototype,
 
+    /**
+     * Initialize the bookmark title object.
+     */
     initialize: function(data) {
       this.className = 'title-crumb';
-      this.folderId_ = data.id;
+      this.folderId = data.id;
       this.textContent = data.parentId ? data.title :
           localStrings.getString('bookmarksPage');
 
@@ -147,7 +153,7 @@ cr.define('ntp4', function() {
      * @private
      */
     handleClick_: function(e) {
-      chrome.send('getBookmarksData', [this.folderId_]);
+      chrome.send('getBookmarksData', [this.folderId]);
     },
   };
 
@@ -182,6 +188,9 @@ cr.define('ntp4', function() {
   BookmarksPage.prototype = {
     __proto__: TilePage.prototype,
 
+    /**
+     * Initialize the bookmarks page object.
+     */
     initialize: function() {
       this.classList.add('bookmarks-page');
 
@@ -243,14 +252,156 @@ cr.define('ntp4', function() {
       }
     },
 
+    /**
+     * Determine whether a bookmark ID matches a folder in the current
+     * hierarchy.
+     * @param {string} id The bookmark ID to search for.
+     * @private
+     */
+    isBookmarkInParentHierarchy_: function(id) {
+      var titlesWrapper = $('bookmarks-title-wrapper');
+      var titles = titlesWrapper.querySelectorAll('.title-crumb');
+      for (var i = 0; i < titles.length; i++) {
+        var bookmarkTitle = titles[i];
+        if (bookmarkTitle.folderId == id) {
+          return true;
+        }
+      }
+      return false;
+    },
+
     /** @inheritDoc */
     shouldAcceptDrag: function(dataTransfer) {
       return false;
     },
 
     /**
+     * Invoked before a batch import begins.  We will ignore added/changed
+     * notifications while the operation is in progress.
+     */
+    bookmarkImportBegan: function() {
+      this.importing = true;
+    },
+
+    /**
+     * Invoked after a batch import finishes.  We will reload the bookmarks
+     * page to reflect the new state.
+     */
+    bookmarkImportEnded: function() {
+      this.importing = false;
+      chrome.send('getBookmarksData', []);
+    },
+
+    /**
+     * Invoked when a node has been added.
+     * @param {string} id The id of the newly created bookmark node.
+     * @param {Object} bookmark The new bookmark node.
+     */
+    bookmarkNodeAdded: function(id, bookmark) {
+      if (this.importing) return;
+      if (this.id == bookmark.parentId)
+        this.addTileAt(new Bookmark(bookmark), bookmark.index, false);
+    },
+
+    /**
+     * Invoked when the title or url of a node changes.
+     * @param {string} id The id of the changed node.
+     * @param {Object} changeInfo Details of the changed node.
+     */
+    bookmarkNodeChanged: function(id, changeInfo) {
+      if (this.importing) return;
+
+      // If the current folder or parent is being re-named, reload the page.
+      // TODO(csilv): Optimize this to reload just the titles.
+      if (this.isBookmarkInParentHierarchy_(id)) {
+        chrome.send('getBookmarksData', [this.id]);
+        return;
+      }
+
+      // If the target item is contained in this folder, update just that item.
+      for (var i = 0; i < this.tiles.length; i++) {
+        var tile = this.tiles[i];
+        var data = tile.firstChild.data;
+
+        if (data.id == id) {
+          data.title = changeInfo.title;
+          var title = tile.querySelector('.title');
+          title.textContent = data.title;
+
+          if (changeInfo.url) {
+            data.url = changeInfo.url;
+            var button = tile.querySelector('.button');
+            button.href = title.href = data.url;
+          }
+          break;
+        }
+      }
+    },
+
+    /**
+     * Invoked when the children (just direct children, not descendants) of
+     * a folder have been reordered in some way, such as sorted.
+     * @param {string} id The id of the reordered bookmark node.
+     * @param {!Object} reorderInfo Details of the reordered bookmark node.
+     */
+    bookmarkNodeChildrenReordered: function(id, reorderInfo) {
+      if (this.id == id)
+        chrome.send('getBookmarksData', [this.id]);
+    },
+
+    /**
+     * Invoked when a node has moved.
+     * @param {string} id The id of the moved bookmark node.
+     * @param {!Object} moveInfo Details of the moved bookmark.
+     */
+    bookmarkNodeMoved: function(id, moveInfo) {
+      // TODO(csilv): Optimize this by doing less than reloading the folder.
+      // Reload the current page if the target item is the current folder
+      // or a parent of the current folder.
+      if (this.isBookmarkInParentHierarchy_(id)) {
+        chrome.send('getBookmarksData', [this.id]);
+        return;
+      }
+
+      // Reload the current page if the target item is being moved to/from the
+      // current folder.
+      if (this.id == moveInfo.parentId ||
+          this.id == moveInfo.oldParentId) {
+        chrome.send('getBookmarksData', [this.id]);
+      }
+    },
+
+    /**
+     * Invoked when a node has been removed from a folder.
+     * @param {string} id The id of the removed bookmark node.
+     * @param {!Object} removeInfo Details of the removed bookmark node.
+     */
+    bookmarkNodeRemoved: function(id, removeInfo) {
+      // If the target item is the visibile folder or a parent folder, load
+      // the parent of the removed item.
+      if (this.isBookmarkInParentHierarchy_(id)) {
+        chrome.send('getBookmarksData', [removeInfo.parentId]);
+        return;
+      }
+
+      // If the target item is contained in the visible folder, find the
+      // matching tile and delete it.
+      if (this.id == removeInfo.parentId) {
+        for (var i = 0; i < this.tiles.length; i++) {
+          var tile = this.tiles[i];
+          if (tile.firstChild.data.id == id) {
+            this.removeTile(tile, false);
+            break;
+          }
+        }
+      }
+    },
+
+    /**
      * Set the bookmark data that should be displayed, replacing any existing
      * data.
+     * @param {Object} data Data that shoudl be displayed. Contains arrays
+     *   'items' and 'navigationItems'.
      */
     set data(data) {
       this.id = data.navigationItems[0].id;
