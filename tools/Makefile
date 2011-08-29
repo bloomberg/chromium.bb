@@ -488,10 +488,6 @@ BUILD/stamp-$(CROSSARCH)-pregcc-standalone: \
 	    -C $(PREGCC_BUILD_DIR) \
 	    install-gcc \
 	    install-target-libgcc
-	echo '/* Intentionally empty */' > \
-	    $(PREGCC_PREFIX)/$(CROSSARCH)/lib/libnacl.so
-	echo '/* Intentionally empty */' > \
-	    $(PREGCC_PREFIX)/$(CROSSARCH)/lib/libcrt_platform.a
 	touch $@
 
 
