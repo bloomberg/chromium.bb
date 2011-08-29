@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'ppb_graphics3d')
 
 env.Append(CPPPATH=['$SOURCE_ROOT/ppapi/lib/gl/include'])
 
@@ -30,13 +28,14 @@ ppapi_ppb_graphics3d_nexe = env.ComponentProgram(
 
 dest_copy = env.Publish(nexe, 'run',
                         [ 'ppapi_ppb_graphics3d.html',
+                          'ppapi_ppb_graphics3d.nmf',
                           env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
                                    'browserdata/nacltest.js') ])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_graphics3d_browser_test.out',
                               url='ppapi_ppb_graphics3d.html',
-                              nmf='${TEST_DIR}/ppapi_ppb_graphics3d.nmf',
                               files=[ ppapi_ppb_graphics3d_nexe,
+                                      env.File('ppapi_ppb_graphics3d.nmf'),
                                       env.File('ppapi_ppb_graphics3d.html')],
                               browser_flags=['--enable-accelerated-plugins'])
 

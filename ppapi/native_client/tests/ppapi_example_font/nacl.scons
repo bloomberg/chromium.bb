@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
-                     'ppapi_example_font/')
 
 # Adjust compiler flags to the more forgiving standards used in
 # ppapi/examples/*.
@@ -26,11 +24,10 @@ nexe = env.ComponentProgram(nexe_name, [obj],
 
 # Note that the html is required to run this program.
 env.Publish(nexe_name, 'run',
-            ['ppapi_example_font.html'])
+            ['ppapi_example_font.html', 'ppapi_example_font.nmf'])
 
 test = env.PPAPIBrowserTester('ppapi_example_font_test.out',
                               url='ppapi_example_font.html',
-                              nmf='${TEST_DIR}/ppapi_example_font.nmf',
                               files=env.ExtractPublishedFiles(nexe_name))
 
 env.AddNodeToTestSuite(test,

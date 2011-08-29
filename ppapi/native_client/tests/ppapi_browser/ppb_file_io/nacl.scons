@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'ppb_file_io')
 
 nexe = 'ppapi_ppb_file_io_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_file_io${PROGSUFFIX}',
@@ -30,11 +28,11 @@ env.ComponentProgram(nexe,
 
 env.Publish(nexe, 'run',
             ['ppapi_ppb_file_io.html',
+             'ppapi_ppb_file_io.nmf',
              'ppapi_ppb_file_io.js'])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_file_io_browser_test.out',
                               url='ppapi_ppb_file_io.html',
-                              nmf='${TEST_DIR}/ppapi_ppb_file_io.nmf',
                               browser_flags=['--unlimited-quota-for-files'],
                               files=env.ExtractPublishedFiles(nexe))
 

@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
-                     'ppapi_example_audio/')
 
 nexe_name = 'ppapi_example_audio_%s' % env.get('TARGET_FULLARCH')
 nexe = env.ComponentProgram(nexe_name,
@@ -23,11 +21,10 @@ nexe = env.ComponentProgram(nexe_name,
 
 # Note that the html is required to run this program.
 env.Publish(nexe_name, 'run',
-            ['ppapi_example_audio.html'])
+            ['ppapi_example_audio.html' , 'ppapi_example_audio.nmf'])
 
 test = env.PPAPIBrowserTester('ppapi_example_audio_test.out',
                               url='ppapi_example_audio.html#mute',
-                              nmf='${TEST_DIR}/ppapi_example_audio.nmf',
                               files=[nexe,
                                      env.File('ppapi_example_audio.nmf'),
                                      env.File('ppapi_example_audio.html')])

@@ -8,8 +8,6 @@ Import('env')
 # TODO(robertm): those should not be necessary once we go -std=c99
 env.FilterOut(CFLAGS=['-pedantic'])
 env.FilterOut(CCFLAGS=['-pedantic'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'manifest')
 
 manifest_good_sources = env.ComponentObject('manifest_good.cc'),
 
@@ -38,31 +36,26 @@ env.ComponentProgram(manifest_bad_target,
 env.Publish(manifest_good_target, 'run', [
     'manifest.html',
     manifest_bad_target,
+    'manifest_top.nmf',
+    'manifest_subdir.nmf',
     ('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
      'ppapi_progress_events.js'),
     '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
 ])
 
-file_mapping = []
-if env.Bit('nacl_glibc'):
-  file_mapping.append(
-      ('subdir/runnable-ld.so',env.File('${NACL_SDK_LIB}/runnable-ld.so')))
-file_mapping += [
-    ('subdir/manifest_subdir.nmf',
-    env.File('${STAGING_DIR}/manifest_subdir.nmf')),
-    # the 'good' nexe in the root directory will fail.
-    (manifest_good_target + env['PROGSUFFIX'],
-    env.File('${STAGING_DIR}/%s${PROGSUFFIX}' % manifest_bad_target)),
-    # the 'good' nexe in the subdirectory will succeed.
-    ('subdir/' + manifest_good_target + env['PROGSUFFIX'],
-    env.File('${STAGING_DIR}/%s${PROGSUFFIX}' % manifest_good_target))]
-
 node = env.PPAPIBrowserTester(
     'manifest_browser_test.out',
     url='manifest.html',
-    nmf=['${TEST_DIR}/manifest_top.nmf', '${TEST_DIR}/manifest_subdir.nmf'],
     files=env.ExtractPublishedFiles(manifest_good_target),
-    map_files=file_mapping)
+    map_files=[
+        ('subdir/manifest_subdir.nmf',
+        env.File('${STAGING_DIR}/manifest_subdir.nmf')),
+        # the 'good' nexe in the root directory will fail.
+        (manifest_good_target + env['PROGSUFFIX'],
+        env.File('${STAGING_DIR}/%s${PROGSUFFIX}' % manifest_bad_target)),
+        # the 'good' nexe in the subdirectory will succeed.
+        ('subdir/' + manifest_good_target + env['PROGSUFFIX'],
+        env.File('${STAGING_DIR}/%s${PROGSUFFIX}' % manifest_good_target))])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],

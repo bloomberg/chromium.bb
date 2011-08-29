@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'ppp_input_event')
 
 nexe = 'ppapi_ppp_input_event_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppp_input_event${PROGSUFFIX}',
@@ -27,11 +25,11 @@ ppapi_ppp_input_event_nexe = env.ComponentProgram(
 
 env.Publish(nexe, 'run',
             ['ppapi_ppp_input_event.html',
+             'ppapi_ppp_input_event.nmf',
              'ppapi_ppp_input_event.js'])
 
 node = env.PPAPIBrowserTester('ppapi_ppp_input_event_browser_test.out',
                               url='ppapi_ppp_input_event.html',
-                              nmf='${TEST_DIR}/ppapi_ppp_input_event.nmf',
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,

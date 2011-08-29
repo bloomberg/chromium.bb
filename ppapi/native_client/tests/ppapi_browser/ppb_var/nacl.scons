@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'ppb_var')
 
 nexe = 'ppapi_ppb_var_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_var${PROGSUFFIX}', ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
@@ -26,12 +24,12 @@ env.ComponentProgram(
 # Note that the html is required to run this program.
 env.Publish(nexe, 'run',
             ['ppapi_ppb_var.html',
+             'ppapi_ppb_var.nmf',
              env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
                       'browserdata/nacltest.js')])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_var_browser_test.out',
                               url='ppapi_ppb_var.html',
-                              nmf='${TEST_DIR}/ppapi_ppb_var.nmf',
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,

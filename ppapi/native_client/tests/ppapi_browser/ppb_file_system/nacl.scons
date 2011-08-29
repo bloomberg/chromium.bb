@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'ppb_file_system')
 
 nexe = 'ppapi_ppb_file_system_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_file_system${PROGSUFFIX}',
@@ -25,15 +23,14 @@ env.ComponentProgram(nexe,
 
 env.Publish(nexe, 'run',
             ['ppapi_ppb_file_system.html',
+             'ppapi_ppb_file_system.nmf',
              'ppapi_ppb_file_system.js'])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_file_system_browser_test.out',
                               url='ppapi_ppb_file_system.html',
-                              nmf='${TEST_DIR}/ppapi_ppb_file_system.nmf',
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_ppb_file_system_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                 env.Bit('nacl_glibc'))
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

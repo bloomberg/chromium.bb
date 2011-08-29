@@ -8,8 +8,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'ppb_url_request_info')
 
 nexe = 'ppapi_ppb_url_request_info_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_url_request_info${PROGSUFFIX}',
@@ -27,11 +25,11 @@ ppapi_ppb_url_request_info_nexe = env.ComponentProgram(
 
 env.Publish(nexe, 'run',
             ['ppapi_ppb_url_request_info.html',
+             'ppapi_ppb_url_request_info.nmf',
              'ppapi_ppb_url_request_info.js'])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_url_request_info_browser_test.out',
                               url='ppapi_ppb_url_request_info.html',
-                              nmf='${TEST_DIR}/ppapi_ppb_url_request_info.nmf',
                               files=env.ExtractPublishedFiles(nexe),
                               browser_flags=['--enable-pepper-testing'])
 

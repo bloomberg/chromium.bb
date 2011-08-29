@@ -7,8 +7,6 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'ppb_scrollbar')
 
 nexe = 'ppapi_ppb_scrollbar_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_scrollbar${PROGSUFFIX}',
@@ -26,11 +24,11 @@ ppapi_ppb_scrollbar_nexe = env.ComponentProgram(
 
 env.Publish(nexe, 'run',
             ['ppapi_ppb_scrollbar.html',
+             'ppapi_ppb_scrollbar.nmf',
              'ppapi_ppb_scrollbar.js'])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_scrollbar_browser_test.out',
                               url='ppapi_ppb_scrollbar.html',
-                              nmf='${TEST_DIR}/ppapi_ppb_scrollbar.nmf',
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,

@@ -18,8 +18,6 @@ Import('env')
 # TODO(robertm): those should not be necessary once we go -std=c99
 env.FilterOut(CFLAGS=['-pedantic'])
 env.FilterOut(CCFLAGS=['-pedantic'])
-env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
-                     'bad')
 
 ppapi_bad_files = [
   'ppapi_bad.html',
@@ -34,7 +32,7 @@ ppapi_bad_files = [
   ]
 ppapi_bad = env.Replicate('${STAGING_DIR}', ppapi_bad_files)
 
-nmfs = []
+
 # Compile all nexes embedded into the above html
 for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
               'no_ppp_instance', 'get_ppp_instance_crash',
@@ -42,7 +40,7 @@ for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
               'ppp_instance_didcreate', 'ppp_instance_didcreate_crash',
               'event_replay_crash'
               ]:
-  bad_nmf = '${TEST_DIR}/ppapi_bad_%s.nmf' % kind
+  bad_nmf = 'ppapi_bad_%s.nmf' % kind
   bad_nexe = ('ppapi_bad_%s_%s' % (kind, env.get('TARGET_FULLARCH')))
   env.ComponentProgram(bad_nexe,
                        ['ppapi_bad_%s.cc' % kind],
@@ -50,7 +48,8 @@ for kind in [ 'ppp_initialize', 'ppp_initialize_crash',
                                    'platform',
                                    'pthread',
                                    'gio'])
-  nmfs.append(bad_nmf)
+
+  env.Publish(bad_nexe, 'run', [bad_nmf])
   ppapi_bad_files.extend(env.ExtractPublishedFiles(bad_nexe))
   env.Depends(ppapi_bad, env.Alias(bad_nexe))
 
@@ -61,21 +60,21 @@ env.Alias('ppapi_bad', ppapi_bad)
 node = env.PPAPIBrowserTester(
     'ppapi_bad_browser_test.out',
     url='ppapi_bad.html',
-    nmf=nmfs,
     files=[env.File(f) for f in ppapi_bad_files],
     args=['--allow_404'])
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_ppapi_bad_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                 env.Bit('nacl_glibc'))
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
 
 
 # Bad nexe tests that won't work in PNaCl (native)
 # For example, partly_invalid.nexe has inline assembly in its source files.
+
 ppapi_bad_native_files = [
   env.File('ppapi_bad_native.html'),
+  env.File('partly_invalid.nmf'),
   env.File('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
            'ppapi_progress_events.js'),
   env.File('${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js')
@@ -89,13 +88,11 @@ ppapi_bad_native_files.append(partly_invalid)
 node = env.PPAPIBrowserTester(
     'ppapi_bad_native_test.out',
     url='ppapi_bad_native.html',
-    nmf='${TEST_DIR}/partly_invalid.nmf',
     files=ppapi_bad_native_files,
     )
 
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
-                        'run_ppapi_bad_native_test',
-                         is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                   env.Bit('nacl_glibc') or
-                                   env.Bit('bitcode'))
+                       'run_ppapi_bad_native_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                 env.Bit('bitcode'))
