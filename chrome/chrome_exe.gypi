@@ -387,11 +387,12 @@
               # unnecessary for the "More Helpers" because they're identical
               # to the original helper except for the bits in their Mach-O
               # headers that change to enable or disable special features.
-              # Each .dSYM and Breakpad symbol file is identified by UUID
-              # stored in a Mach-O file's LC_UUID load command. Because the
-              # "More Helpers" share a UUID with the original helper, there's
-              # no need to run dsymutil or dump_syms again. All helpers can
-              # share the same .dSYM and Breakpad symbol file.
+              # Each .dSYM is identified by UUID stored in a Mach-O file's
+              # LC_UUID load command. Because the "More Helpers" share a UUID
+              # with the original helper, there's no need to run dsymutil
+              # again. All helpers can share the same .dSYM. Special handling
+              # is performed in chrome/tools/build/mac/dump_product_syms to
+              # prepare their Breakpad symbol files.
               'postbuild_name': 'Make More Helpers',
               'action': [
                 'tools/build/mac/make_more_helpers.sh',
