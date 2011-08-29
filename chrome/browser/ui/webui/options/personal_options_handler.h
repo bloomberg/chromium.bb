@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/browser_signin.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #if defined(OS_CHROMEOS)
@@ -16,8 +15,7 @@
 
 // Chrome personal options page UI handler.
 class PersonalOptionsHandler : public OptionsPageUIHandler,
-                               public ProfileSyncServiceObserver,
-                               public BrowserSignin::SigninDelegate {
+                               public ProfileSyncServiceObserver {
  public:
   PersonalOptionsHandler();
   virtual ~PersonalOptionsHandler();
@@ -36,10 +34,6 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged();
-
-  // BrowserSignin::SigninDelegate implementation.
-  virtual void OnLoginSuccess();
-  virtual void OnLoginFailure(const GoogleServiceAuthError& error);
 
  private:
   void ObserveThemeChanged();

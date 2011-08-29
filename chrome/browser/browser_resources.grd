@@ -95,7 +95,6 @@
       <include name="IDR_SAFE_BROWSING_PHISHING_BLOCK" file="resources\safe_browsing_phishing_block.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SESSIONS_HTML" file="resources\sessions.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_SESSIONS_JS" file="resources\sessions.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SIGNIN_HTML" file="resources\browser_signin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ERROR_HTML" file="resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SSL_ROAD_BLOCK_HTML" file="resources\ssl_roadblock.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_CONFIGURE_HTML" file="sync\resources\configure.html" flattenhtml="true" type="BINDATA" />

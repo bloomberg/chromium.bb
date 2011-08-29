@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "chrome/browser/browser_signin.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -23,10 +22,6 @@ class WebstorePrivateApi {
   // Allows you to set the ProfileSyncService the function will use for
   // testing purposes.
   static void SetTestingProfileSyncService(ProfileSyncService* service);
-
-  // Allows you to set the BrowserSignin the function will use for
-  // testing purposes.
-  static void SetTestingBrowserSignin(BrowserSignin* signin);
 };
 
 // TODO(asargent): this is being deprecated in favor of
@@ -144,37 +139,6 @@ class GetStoreLoginFunction : public SyncExtensionFunction {
 class SetStoreLoginFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.setStoreLogin");
-};
-
-class PromptBrowserLoginFunction : public AsyncExtensionFunction,
-                                   public NotificationObserver,
-                                   public BrowserSignin::SigninDelegate {
- public:
-  PromptBrowserLoginFunction();
-  // Implements BrowserSignin::SigninDelegate interface.
-  virtual void OnLoginSuccess();
-  virtual void OnLoginFailure(const GoogleServiceAuthError& error);
-
-  // Implements the NotificationObserver interface.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
- protected:
-  virtual ~PromptBrowserLoginFunction();
-  virtual bool RunImpl();
-
- private:
-  // Creates the message for signing in.
-  virtual string16 GetLoginMessage();
-
-  // Are we waiting for a token available notification?
-  bool waiting_for_token_;
-
-  // Used for listening for TokenService notifications.
-  NotificationRegistrar registrar_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.promptBrowserLogin");
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBSTORE_PRIVATE_API_H_

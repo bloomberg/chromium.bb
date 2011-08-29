@@ -122,7 +122,6 @@ class ProfileImpl : public Profile,
   virtual ChromeBlobStorageContext* GetBlobStorageContext();
   virtual ExtensionInfoMap* GetExtensionInfoMap();
   virtual PromoCounter* GetInstantPromoCounter();
-  virtual BrowserSignin* GetBrowserSignin();
   virtual ChromeURLDataManager* GetChromeURLDataManager();
 
 #if defined(OS_CHROMEOS)
@@ -239,7 +238,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_ptr<BrowserSignin> browser_signin_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   bool history_service_created_;
   bool favicon_service_created_;

@@ -555,10 +555,6 @@ quota::QuotaManager* TestingProfile::GetQuotaManager() {
   return quota_manager_.get();
 }
 
-BrowserSignin* TestingProfile::GetBrowserSignin() {
-  return NULL;
-}
-
 bool TestingProfile::HasCreatedDownloadManager() const {
   return false;
 }

@@ -326,15 +326,6 @@ void PersonalOptionsHandler::OnStateChanged() {
     SendProfilesInfo();
 }
 
-void PersonalOptionsHandler::OnLoginSuccess() {
-  OnStateChanged();
-}
-
-void PersonalOptionsHandler::OnLoginFailure(
-    const GoogleServiceAuthError& error) {
-  OnStateChanged();
-}
-
 void PersonalOptionsHandler::ObserveThemeChanged() {
   Profile* profile = Profile::FromWebUI(web_ui_);
 #if defined(TOOLKIT_GTK)

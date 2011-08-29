@@ -20,7 +20,6 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_signin.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -1553,13 +1552,6 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService(
   if (!sync_service_.get())
     InitSyncService(cros_user);
   return sync_service_.get();
-}
-
-BrowserSignin* ProfileImpl::GetBrowserSignin() {
-  if (!browser_signin_.get()) {
-    browser_signin_.reset(new BrowserSignin(this));
-  }
-  return browser_signin_.get();
 }
 
 void ProfileImpl::InitSyncService(const std::string& cros_user) {

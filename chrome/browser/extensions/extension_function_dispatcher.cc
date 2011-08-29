@@ -344,7 +344,6 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetBrowserLoginFunction>();
   RegisterFunction<GetStoreLoginFunction>();
   RegisterFunction<SetStoreLoginFunction>();
-  RegisterFunction<PromptBrowserLoginFunction>();
   RegisterFunction<BeginInstallFunction>();
   RegisterFunction<BeginInstallWithManifestFunction>();
   RegisterFunction<CompleteInstallFunction>();

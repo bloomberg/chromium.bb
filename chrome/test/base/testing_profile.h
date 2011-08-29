@@ -186,7 +186,6 @@ class TestingProfile : public Profile {
   virtual fileapi::FileSystemContext* GetFileSystemContext();
   virtual void SetQuotaManager(quota::QuotaManager* manager);
   virtual quota::QuotaManager* GetQuotaManager();
-  virtual BrowserSignin* GetBrowserSignin();
   virtual bool HasCreatedDownloadManager() const;
 
   // Returns a testing ContextGetter (if one has been created via

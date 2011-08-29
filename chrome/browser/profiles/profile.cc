@@ -594,10 +594,6 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
-  virtual BrowserSignin* GetBrowserSignin() {
-    return profile_->GetBrowserSignin();
-  }
-
   virtual bool IsSameProfile(Profile* profile) {
     return (profile == this) || (profile == profile_);
   }

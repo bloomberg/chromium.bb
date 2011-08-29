@@ -54,7 +54,6 @@ class SpeechRecognizer;
 
 class AutocompleteClassifier;
 class BookmarkModel;
-class BrowserSignin;
 class ChromeAppCacheService;
 class ChromeURLDataManager;
 class Extension;
@@ -357,9 +356,6 @@ class Profile : public content::BrowserContext {
   // is lazily created the first time this method is called.  This is owned
   // by the profile.
   virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
-
-  // Returns the BrowserSignin object assigned to this profile.
-  virtual BrowserSignin* GetBrowserSignin() = 0;
 
   // Returns the request context used for extension-related requests.  This
   // is only used for a separate cookie store currently.

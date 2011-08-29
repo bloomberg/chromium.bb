@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
@@ -54,7 +55,6 @@ const char kUserGestureRequiredError[] =
     "This function must be called during a user gesture";
 
 ProfileSyncService* test_sync_service = NULL;
-BrowserSignin* test_signin = NULL;
 bool ignore_user_gesture_for_tests = false;
 
 // A flag used for BeginInstallWithManifest::SetAutoConfirmForTests.
@@ -74,13 +74,6 @@ ProfileSyncService* GetSyncService(Profile* profile) {
     return profile->GetProfileSyncService();
 }
 
-BrowserSignin* GetBrowserSignin(Profile* profile) {
-  if (test_signin)
-    return test_signin;
-  else
-    return profile->GetBrowserSignin();
-}
-
 bool IsWebStoreURL(Profile* profile, const GURL& url) {
   ExtensionService* service = profile->GetExtensionService();
   const Extension* store = service->GetWebStoreApp();
@@ -95,7 +88,8 @@ bool IsWebStoreURL(Profile* profile, const GURL& url) {
 // the appropriate values in the passed-in |profile|.
 DictionaryValue* CreateLoginResult(Profile* profile) {
   DictionaryValue* dictionary = new DictionaryValue();
-  std::string username = GetBrowserSignin(profile)->GetSignedInUsername();
+  std::string username = profile->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
   dictionary->SetString(kLoginKey, username);
   if (!username.empty()) {
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
@@ -116,11 +110,6 @@ DictionaryValue* CreateLoginResult(Profile* profile) {
 void WebstorePrivateApi::SetTestingProfileSyncService(
     ProfileSyncService* service) {
   test_sync_service = service;
-}
-
-// static
-void WebstorePrivateApi::SetTestingBrowserSignin(BrowserSignin* signin) {
-  test_signin = signin;
 }
 
 // static
@@ -459,120 +448,4 @@ bool SetStoreLoginFunction::RunImpl() {
   ExtensionPrefs* prefs = service->extension_prefs();
   prefs->SetWebStoreLogin(login);
   return true;
-}
-
-PromptBrowserLoginFunction::PromptBrowserLoginFunction()
-    : waiting_for_token_(false) {}
-
-PromptBrowserLoginFunction::~PromptBrowserLoginFunction() {
-}
-
-bool PromptBrowserLoginFunction::RunImpl() {
-  if (!IsWebStoreURL(profile_, source_url()))
-    return false;
-
-  std::string preferred_email;
-  if (args_->GetSize() > 0) {
-    EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &preferred_email));
-  }
-
-  Profile* profile = profile_->GetOriginalProfile();
-
-  // Login can currently only be invoked tab-modal.  Since this is
-  // coming from the webstore, we should always have a tab, but check
-  // just in case.
-  TabContents* tab = dispatcher()->delegate()->GetAssociatedTabContents();
-  if (!tab)
-    return false;
-
-  // We return the result asynchronously, so we addref to keep ourself alive.
-  // Matched with a Release in OnLoginSuccess() and OnLoginFailure().
-  AddRef();
-
-  // Start listening for notifications about the token.
-  TokenService* token_service = profile->GetTokenService();
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 Source<TokenService>(token_service));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                 Source<TokenService>(token_service));
-
-  GetBrowserSignin(profile)->RequestSignin(tab,
-                                           ASCIIToUTF16(preferred_email),
-                                           GetLoginMessage(),
-                                           this);
-
-  // The response will be sent asynchronously in OnLoginSuccess/OnLoginFailure.
-  return true;
-}
-
-string16 PromptBrowserLoginFunction::GetLoginMessage() {
-  using l10n_util::GetStringUTF16;
-  using l10n_util::GetStringFUTF16;
-
-  // TODO(johnnyg): This would be cleaner as an HTML template.
-  // http://crbug.com/60216
-  string16 message;
-  message = ASCIIToUTF16("<p>")
-      + GetStringUTF16(IDS_WEB_STORE_LOGIN_INTRODUCTION_1)
-      + ASCIIToUTF16("</p>");
-  message = message + ASCIIToUTF16("<p>")
-      + GetStringFUTF16(IDS_WEB_STORE_LOGIN_INTRODUCTION_2,
-                        GetStringUTF16(IDS_PRODUCT_NAME))
-      + ASCIIToUTF16("</p>");
-  return message;
-}
-
-void PromptBrowserLoginFunction::OnLoginSuccess() {
-  // Ensure that apps are synced.
-  // - If the user has already setup sync, we add Apps to the current types.
-  // - If not, we create a new set which is just Apps.
-  ProfileSyncService* service = GetSyncService(profile_->GetOriginalProfile());
-  syncable::ModelTypeSet types;
-  if (service->HasSyncSetupCompleted())
-    service->GetPreferredDataTypes(&types);
-  types.insert(syncable::APPS);
-  service->ChangePreferredDataTypes(types);
-  service->SetSyncSetupCompleted();
-
-  // We'll finish up in Observe() when the token is ready.
-  waiting_for_token_ = true;
-}
-
-void PromptBrowserLoginFunction::OnLoginFailure(
-    const GoogleServiceAuthError& error) {
-  SendResponse(false);
-  // Matches the AddRef in RunImpl().
-  Release();
-}
-
-void PromptBrowserLoginFunction::Observe(int type,
-                                         const NotificationSource& source,
-                                         const NotificationDetails& details) {
-  // Make sure this notification is for the service we are interested in.
-  std::string service;
-  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    TokenService::TokenAvailableDetails* available =
-        Details<TokenService::TokenAvailableDetails>(details).ptr();
-    service = available->service();
-  } else if (type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED) {
-    TokenService::TokenRequestFailedDetails* failed =
-        Details<TokenService::TokenRequestFailedDetails>(details).ptr();
-    service = failed->service();
-  } else {
-    NOTREACHED();
-  }
-
-  if (service != GaiaConstants::kGaiaService) {
-    return;
-  }
-
-  DCHECK(waiting_for_token_);
-
-  result_.reset(CreateLoginResult(profile_->GetOriginalProfile()));
-  SendResponse(true);
-
-  // Matches the AddRef in RunImpl().
-  Release();
 }
