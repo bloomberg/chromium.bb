@@ -58,7 +58,10 @@ cr.define('login', function() {
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
       $('signin-frame').hidden = show;
-      $('signin-right').hidden = show;
+
+      // Sign-in right panel is hidden if all its items are hidden.
+      $('signin-right').hidden = show ||
+          ($('createAccount').hidden && $('guestSignin').hidden);
     },
 
     /**

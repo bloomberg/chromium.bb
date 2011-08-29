@@ -11,12 +11,15 @@
 }
 
 #gaia-signin {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  display: -webkit-box;
   height: 470px;
 }
 
 #signin-right {
-  float: right;
   font-size: 12px;
+  height: 100%;
   margin-right: 80px;
   width: 200px;
 }
@@ -30,12 +33,7 @@
 }
 
 #signin-frame {
-  bottom: 0;
   height: 100%;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
   width: 340px;
 }
 
