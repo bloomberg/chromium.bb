@@ -125,13 +125,10 @@ cr.define('oobe', function() {
     userImageList.addEventListener('keydown', function(e) {
       var prevIndex = userImageScreen.selectedUserImage_;
       var len = userImageList.children.length;
-      if (e.keyCode == 39 || e.keyCode == 40) {  // right or down
-        if (prevIndex < len - 1)
-          UserImageScreen.selectUserImage(prevIndex + 1);
-      } else if (e.keyCode == 37 || e.keyCode == 38) {  // left or up
-        if (prevIndex > 0)
-          UserImageScreen.selectUserImage(prevIndex - 1);
-      }
+      if (e.keyCode == 39 || e.keyCode == 40)  // right or down
+        UserImageScreen.selectUserImage((prevIndex + 1) % len);
+      else if (e.keyCode == 37 || e.keyCode == 38)  // left or up
+        UserImageScreen.selectUserImage((prevIndex - 1 + len) % len);
       e.stopPropagation();
     });
   };
