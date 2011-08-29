@@ -6,19 +6,19 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/repost_form_warning_controller.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/content_notification_types.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
                                            TabContents* tab_contents)
     : controller_(new RepostFormWarningController(tab_contents)) {
-  dialog_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaBorder);
-  gtk_box_set_spacing(GTK_BOX(dialog_), gtk_util::kContentAreaSpacing);
+  dialog_ = gtk_vbox_new(FALSE, ui::kContentAreaBorder);
+  gtk_box_set_spacing(GTK_BOX(dialog_), ui::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_HTTP_POST_WARNING).c_str());
   GtkWidget* image = gtk_image_new_from_stock(GTK_STOCK_DIALOG_QUESTION,
@@ -28,7 +28,7 @@ RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_label_set_selectable(GTK_LABEL(label), TRUE);
 
-  GtkWidget *hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget *hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
 
   gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
 
@@ -38,7 +38,7 @@ RepostFormWarningGtk::RepostFormWarningGtk(GtkWindow* parent,
 
   GtkWidget* buttonBox = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(buttonBox), GTK_BUTTONBOX_END);
-  gtk_box_set_spacing(GTK_BOX(buttonBox), gtk_util::kControlSpacing);
+  gtk_box_set_spacing(GTK_BOX(buttonBox), ui::kControlSpacing);
   gtk_box_pack_end(GTK_BOX(dialog_), buttonBox, FALSE, TRUE, 0);
 
   cancel_ = gtk_button_new_from_stock(GTK_STOCK_CANCEL);

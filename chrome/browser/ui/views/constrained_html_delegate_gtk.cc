@@ -6,11 +6,11 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/gfx/rect.h"
 #include "views/widget/native_widget_gtk.h"
 
@@ -29,7 +29,7 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate();
   virtual void OnDialogClose();
   virtual bool GetBackgroundColor(GdkColor* color) {
-    *color = gtk_util::kGdkWhite;
+    *color = ui::kGdkWhite;
     return true;
   }
 

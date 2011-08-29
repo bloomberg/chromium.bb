@@ -22,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 
@@ -102,17 +103,17 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
 
   GtkWidget* content_area =
       gtk_dialog_get_content_area(GTK_DIALOG(create_dialog_));
-  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
 
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(content_area), vbox);
 
   // Create a box containing basic information about the new shortcut: an image
   // on the left, and a description on the right.
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
   gtk_container_set_border_width(GTK_CONTAINER(hbox),
-                                 gtk_util::kControlSpacing);
+                                 ui::kControlSpacing);
 
   // Put the icon preview in place.
   GtkWidget* favicon_image = gtk_image_new_from_pixbuf(favicon_pixbuf_);
@@ -131,7 +132,7 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
   gtk_util::GetWidgetSizeFromResources(
       description_label,
       IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS, -1, &label_width, NULL);
-  label_width -= gtk_util::kControlSpacing * 3 +
+  label_width -= ui::kControlSpacing * 3 +
       gdk_pixbuf_get_width(favicon_pixbuf_);
   gtk_util::SetLabelWidth(description_label, label_width);
 
@@ -243,9 +244,9 @@ void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
       false);  // resizable
   GtkWidget* content_area =
       gtk_dialog_get_content_area(GTK_DIALOG(error_dialog_));
-  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), ui::kContentAreaSpacing);
 
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(content_area), vbox);
 
   // Label on top of the checkboxes.

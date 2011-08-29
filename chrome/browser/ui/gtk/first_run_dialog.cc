@@ -29,6 +29,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_floating_container.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -78,8 +79,8 @@ void SetWelcomePosition(GtkFloatingContainer* container,
   gtk_widget_size_request(label, &req);
 
   int x = base::i18n::IsRTL() ?
-      allocation->width - req.width - gtk_util::kContentAreaSpacing :
-      gtk_util::kContentAreaSpacing;
+      allocation->width - req.width - ui::kContentAreaSpacing :
+      ui::kContentAreaSpacing;
   g_value_set_int(&value, x);
   gtk_container_child_set_property(GTK_CONTAINER(container),
                                    label, "x", &value);
@@ -213,18 +214,18 @@ void FirstRunDialog::ShowSearchEngineWindow() {
 
   GtkWidget* bubble_area_background = gtk_event_box_new();
   gtk_widget_modify_bg(bubble_area_background,
-                       GTK_STATE_NORMAL, &gtk_util::kGdkWhite);
+                       GTK_STATE_NORMAL, &ui::kGdkWhite);
 
   GtkWidget* bubble_area_box = gtk_vbox_new(FALSE, 0);
   gtk_container_set_border_width(GTK_CONTAINER(bubble_area_box),
-                                 gtk_util::kContentAreaSpacing);
+                                 ui::kContentAreaSpacing);
   gtk_container_add(GTK_CONTAINER(bubble_area_background),
                     bubble_area_box);
 
   GtkWidget* explanation = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_FR_SEARCH_TEXT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
-  gtk_util::SetLabelColor(explanation, &gtk_util::kGdkBlack);
+  gtk_util::SetLabelColor(explanation, &ui::kGdkBlack);
   gtk_util::SetLabelWidth(explanation, kExplanationWidth);
   gtk_box_pack_start(GTK_BOX(bubble_area_box), explanation, FALSE, FALSE, 0);
 
@@ -327,7 +328,7 @@ void FirstRunDialog::OnTemplateURLServiceChanged() {
        search_engine_iter < ballot_engines.end();
        ++search_engine_iter) {
     // Create a container for the search engine widgets.
-    GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+    GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
 
     // We show text on Chromium and images on Google Chrome.
     bool show_images = false;

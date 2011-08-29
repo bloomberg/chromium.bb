@@ -8,6 +8,7 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
@@ -22,7 +23,7 @@ BeforeTranslateInfoBar::~BeforeTranslateInfoBar() {
 void BeforeTranslateInfoBar::Init() {
   TranslateInfoBarBase::Init();
 
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox_, hbox, false, 0);
   size_t offset = 0;
   string16 text =

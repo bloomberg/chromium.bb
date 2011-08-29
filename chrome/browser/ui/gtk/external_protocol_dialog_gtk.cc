@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 
@@ -79,9 +80,9 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
   message_text += l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_WARNING);
 
   // Create the content-holding vbox.
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(vbox),
-                                 gtk_util::kContentAreaBorder);
+                                 ui::kContentAreaBorder);
 
   // Add the message text.
   GtkWidget* label = gtk_label_new(message_text.c_str());

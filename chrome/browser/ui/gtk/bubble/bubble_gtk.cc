@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/path.h"

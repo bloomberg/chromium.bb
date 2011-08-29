@@ -33,6 +33,7 @@
 #include "third_party/undoview/undo_view.h"
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
@@ -968,7 +969,7 @@ void OmniboxViewGtk::SetBaseColor() {
     background_color_ptr = &LocationBarViewGtk::kBackgroundColor;
 #endif
     gtk_widget_modify_cursor(
-        text_view_, &gtk_util::kGdkBlack, &gtk_util::kGdkGray);
+        text_view_, &ui::kGdkBlack, &ui::kGdkGray);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
 
 #if !defined(TOOLKIT_VIEWS)

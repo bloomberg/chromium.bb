@@ -60,6 +60,7 @@
 #include "grit/theme_resources_standard.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia_paint.h"
@@ -223,9 +224,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   // Tab to search (the keyword box on the left hand side).
   tab_to_search_full_label_ =
-      theme_service_->BuildLabel("", gtk_util::kGdkBlack);
+      theme_service_->BuildLabel("", ui::kGdkBlack);
   tab_to_search_partial_label_ =
-      theme_service_->BuildLabel("", gtk_util::kGdkBlack);
+      theme_service_->BuildLabel("", ui::kGdkBlack);
   GtkWidget* tab_to_search_label_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(tab_to_search_label_hbox),
                      tab_to_search_full_label_, FALSE, FALSE, 0);

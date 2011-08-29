@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -112,7 +113,7 @@ int InfoBarGtk::AnimatingHeight() const {
 }
 
 GtkWidget* InfoBarGtk::CreateLabel(const std::string& text) {
-  return theme_service_->BuildLabel(text, gtk_util::kGdkBlack);
+  return theme_service_->BuildLabel(text, ui::kGdkBlack);
 }
 
 GtkWidget* InfoBarGtk::CreateLinkButton(const std::string& text) {

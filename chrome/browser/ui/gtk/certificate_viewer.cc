@@ -19,6 +19,7 @@
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/gtk_util.h"
 
@@ -148,7 +149,7 @@ CertificateViewer::CertificateViewer(
       GTK_RESPONSE_CLOSE,
       NULL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      gtk_util::kContentAreaSpacing);
+                      ui::kContentAreaSpacing);
 
   x509_certificate_model::RegisterDynamicOids();
   InitGeneralPage();
@@ -183,11 +184,11 @@ CertificateViewer::~CertificateViewer() {
 
 void CertificateViewer::InitGeneralPage() {
   net::X509Certificate::OSCertHandle cert = cert_chain_list_.front();
-  general_page_vbox_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
+  general_page_vbox_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(general_page_vbox_),
-                                 gtk_util::kContentAreaBorder);
+                                 ui::kContentAreaBorder);
 
-  GtkWidget* uses_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* uses_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(general_page_vbox_), uses_vbox, FALSE, FALSE, 0);
   gtk_box_pack_start(
       GTK_BOX(uses_vbox),
@@ -209,8 +210,8 @@ void CertificateViewer::InitGeneralPage() {
 
   const int num_rows = 21;
   GtkTable* table = GTK_TABLE(gtk_table_new(num_rows, 2, FALSE));
-  gtk_table_set_col_spacing(table, 0, gtk_util::kLabelSpacing);
-  gtk_table_set_row_spacings(table, gtk_util::kControlSpacing);
+  gtk_table_set_col_spacing(table, 0, ui::kLabelSpacing);
+  gtk_table_set_row_spacings(table, ui::kControlSpacing);
 
   gtk_box_pack_start(GTK_BOX(general_page_vbox_), GTK_WIDGET(table),
                      FALSE, FALSE, 0);
@@ -524,11 +525,11 @@ GtkTreeStore* CertificateViewer::CreateFieldsTreeStore(
 }
 
 void CertificateViewer::InitDetailsPage() {
-  details_page_vbox_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
+  details_page_vbox_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(details_page_vbox_),
-                                 gtk_util::kContentAreaBorder);
+                                 ui::kContentAreaBorder);
 
-  GtkWidget* hierarchy_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* hierarchy_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(details_page_vbox_), hierarchy_vbox,
                      FALSE, FALSE, 0);
 
@@ -567,7 +568,7 @@ void CertificateViewer::InitDetailsPage() {
   gtk_box_pack_start(GTK_BOX(hierarchy_vbox),
                      hierarchy_scroll_window, FALSE, FALSE, 0);
 
-  GtkWidget* fields_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* fields_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(details_page_vbox_), fields_vbox,
                      TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(fields_vbox),
@@ -597,7 +598,7 @@ void CertificateViewer::InitDetailsPage() {
   gtk_box_pack_start(GTK_BOX(fields_vbox),
                      fields_scroll_window, TRUE, TRUE, 0);
 
-  GtkWidget* value_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* value_vbox = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(details_page_vbox_), value_vbox,
                      TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(value_vbox),

@@ -41,6 +41,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/gtk/gtk_floating_container.h"
+#include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -48,11 +49,11 @@ namespace {
 
 // Used as the color of the text in the entry box and the text for the results
 // label for failure searches.
-const GdkColor kEntryTextColor = gtk_util::kGdkBlack;
+const GdkColor kEntryTextColor = ui::kGdkBlack;
 
 // Used as the color of the background of the entry box and the background of
 // the find label for successful searches.
-const GdkColor kEntryBackgroundColor = gtk_util::kGdkWhite;
+const GdkColor kEntryBackgroundColor = ui::kGdkWhite;
 const GdkColor kFindFailureBackgroundColor = GDK_COLOR_RGB(255, 102, 102);
 const GdkColor kFindSuccessTextColor = GDK_COLOR_RGB(178, 178, 178);
 
@@ -501,7 +502,7 @@ void FindBarGtk::Observe(int type,
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 0.5);
   } else {
     gtk_widget_modify_cursor(
-        text_entry_, &gtk_util::kGdkBlack, &gtk_util::kGdkGray);
+        text_entry_, &ui::kGdkBlack, &ui::kGdkGray);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL,
                            &kEntryBackgroundColor);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL,
