@@ -354,6 +354,7 @@ const char kOperatorCountryKey[] = "country";
 // Flimflam network technology options.
 const char kNetworkTechnology1Xrtt[] = "1xRTT";
 const char kNetworkTechnologyEvdo[] = "EVDO";
+const char kNetworkTechnologyGsm[] = "GSM";
 const char kNetworkTechnologyGprs[] = "GPRS";
 const char kNetworkTechnologyEdge[] = "EDGE";
 const char kNetworkTechnologyUmts[] = "UMTS";
