@@ -408,6 +408,8 @@ void DownloadManager::AssertQueueStateConsistent(DownloadItem* download) {
     }
   }
 
+  int64 state = download->state();
+  base::debug::Alias(&state);
   if (ContainsKey(active_downloads_, download->id()))
     CHECK_EQ(DownloadItem::IN_PROGRESS, download->state());
   if (DownloadItem::IN_PROGRESS == download->state())
@@ -842,9 +844,9 @@ void DownloadManager::OnDownloadItemAddedToPersistentStore(int32 download_id,
            << " download = " << download->DebugString(true);
 
   // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.
-  CHECK(!ContainsKey(history_downloads_, download->db_handle()));
   int64 largest_handle = largest_db_handle_in_history_;
   base::debug::Alias(&largest_handle);
+  CHECK(!ContainsKey(history_downloads_, db_handle));
 
   AddDownloadItemToHistory(download, db_handle);
 
@@ -998,9 +1000,9 @@ void DownloadManager::OnSavePageItemAddedToPersistentStore(int32 download_id,
   }
 
   // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.
-  CHECK(!ContainsKey(history_downloads_, download->db_handle()));
   int64 largest_handle = largest_db_handle_in_history_;
   base::debug::Alias(&largest_handle);
+  CHECK(!ContainsKey(history_downloads_, db_handle));
 
   AddDownloadItemToHistory(download, db_handle);
 
