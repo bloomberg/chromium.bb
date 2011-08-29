@@ -6,3 +6,5 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
+
+BUG_LEVIN LINUX : inspector/styles/styles-computed-trace.html = TEXT
