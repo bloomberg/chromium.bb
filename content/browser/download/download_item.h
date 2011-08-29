@@ -19,7 +19,6 @@
 #pragma once
 
 #include <string>
-#include <iostream>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -31,7 +30,6 @@
 #include "googleurl/src/gurl.h"
 
 class DownloadFileManager;
-class DownloadId;
 class DownloadManager;
 struct DownloadCreateInfo;
 struct DownloadPersistentStoreInfo;
@@ -124,7 +122,7 @@ class DownloadItem {
                const FilePath& path,
                const GURL& url,
                bool is_otr,
-               DownloadId download_id);
+               int download_id);
 
   virtual ~DownloadItem();
 
@@ -275,7 +273,6 @@ class DownloadItem {
   }
   int64 received_bytes() const { return received_bytes_; }
   int32 id() const { return download_id_; }
-  DownloadId global_id() const;
   base::Time start_time() const { return start_time_; }
   void set_db_handle(int64 handle) { db_handle_ = handle; }
   int64 db_handle() const { return db_handle_; }

@@ -19,7 +19,6 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/download_id.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_manager_delegate.h"
 #include "content/browser/download/download_persistent_store_info.h"
@@ -191,8 +190,8 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
                            const FilePath& path,
                            const GURL& url,
                            bool is_otr,
-                           DownloadId download_id)
-    : download_id_(download_id.local()),
+                           int download_id)
+    : download_id_(download_id),
       full_path_(path),
       url_chain_(1, url),
       referrer_url_(GURL()),
@@ -223,10 +222,6 @@ DownloadItem::~DownloadItem() {
 
   TransitionTo(REMOVING);
   download_manager_->AssertQueueStateConsistent(this);
-}
-
-DownloadId DownloadItem::global_id() const {
-  return DownloadId(download_manager_, id());
 }
 
 void DownloadItem::AddObserver(Observer* observer) {
@@ -580,15 +575,16 @@ void DownloadItem::OnDownloadCompleting(DownloadFileManager* file_manager) {
   if (NeedsRename()) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(file_manager,
-            &DownloadFileManager::RenameCompletingDownloadFile, global_id(),
+            &DownloadFileManager::RenameCompletingDownloadFile, id(),
             GetTargetFilePath(), safety_state() == SAFE));
     return;
   }
 
   Completed();
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
-        file_manager, &DownloadFileManager::CompleteDownload, global_id()));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(file_manager, &DownloadFileManager::CompleteDownload,
+                        id()));
 }
 
 void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
@@ -714,7 +710,7 @@ void DownloadItem::OffThreadCancel(DownloadFileManager* file_manager) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
-          file_manager, &DownloadFileManager::CancelDownload, global_id()));
+          file_manager, &DownloadFileManager::CancelDownload, download_id_));
 }
 
 void DownloadItem::Init(bool active) {

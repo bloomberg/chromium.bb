@@ -236,7 +236,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Downloads -----------------------------------------------------------------
 
-  void GetNextDownloadId(scoped_refptr<DownloadNextIdRequest> request);
   void QueryDownloads(scoped_refptr<DownloadQueryRequest> request);
   void CleanUpInProgressEntries();
   void UpdateDownload(int64 received_bytes, int32 state, int64 db_handle);

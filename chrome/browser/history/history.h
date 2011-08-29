@@ -423,13 +423,6 @@ class HistoryService : public CancelableRequestProvider,
                         CancelableRequestConsumerBase* consumer,
                         DownloadCreateCallback* callback);
 
-  // Implemented by the caller of 'GetNextDownloadId' below.
-  typedef Callback1<int/*next_download_id*/>::Type DownloadNextIdCallback;
-
-  // Runs the callback with the next available download id.
-  Handle GetNextDownloadId(CancelableRequestConsumerBase* consumer,
-                           DownloadNextIdCallback* callback);
-
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
   typedef Callback1<std::vector<DownloadPersistentStoreInfo>*>::Type

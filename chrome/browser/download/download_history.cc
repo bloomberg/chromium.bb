@@ -27,17 +27,6 @@ DownloadHistory::~DownloadHistory() {
     delete i->second.second;
 }
 
-void DownloadHistory::GetNextId(
-    HistoryService::DownloadNextIdCallback* callback) {
-  DCHECK(callback);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!hs) {
-    delete callback;
-    return;
-  }
-  hs->GetNextDownloadId(&history_consumer_, callback);
-}
-
 void DownloadHistory::Load(HistoryService::DownloadQueryCallback* callback) {
   DCHECK(callback);
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);

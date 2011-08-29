@@ -16,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/browser/download/download_manager.h"
 #include "content/browser/resource_context.h"
 #include "net/base/cookie_monster.h"
 
@@ -275,7 +274,6 @@ class ProfileIOData {
   mutable scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   mutable scoped_refptr<quota::QuotaManager> quota_manager_;
   mutable scoped_refptr<HostZoomMap> host_zoom_map_;
-  mutable DownloadManager::GetNextIdThunkType next_download_id_thunk_;
 
   // TODO(willchan): Remove from ResourceContext.
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
