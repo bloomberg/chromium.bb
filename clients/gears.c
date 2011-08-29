@@ -287,14 +287,6 @@ keyboard_focus_handler(struct window *window,
 }
 
 static void
-redraw_handler(struct window *window, void *data)
-{
-	struct gears *gears = data;
-
-	draw_gears(gears);
-}
-
-static void
 frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
 	static const struct wl_callback_listener listener = {
@@ -304,7 +296,7 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 
 	gears->angle = (GLfloat) (time % 8192) * 360 / 8192.0;
 
-	window_schedule_redraw(gears->window);
+	draw_gears(gears);
 
 	if (callback)
 		wl_callback_destroy(callback);
@@ -366,7 +358,6 @@ gears_create(struct display *display)
 	window_set_user_data(gears->window, gears);
 	window_set_resize_handler(gears->window, resize_handler);
 	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler);
-	window_set_redraw_handler(gears->window, redraw_handler);
 
 	frame_callback(gears, NULL, 0);
 
