@@ -1666,10 +1666,12 @@ bind_output(struct wl_client *client,
 {
 	struct wlsc_output *output = data;
 	struct wlsc_mode *mode;
+	struct wl_resource *resource;
 
-	output->resource.client = client;
-	output->resource.object.id = id;
-	wl_resource_post_event(&output->resource,
+	resource = wl_client_add_object(client,
+					&wl_output_interface, NULL, id, data);
+
+	wl_resource_post_event(resource,
 			       WL_OUTPUT_GEOMETRY,
 			       output->x,
 			       output->y,
@@ -1679,7 +1681,7 @@ bind_output(struct wl_client *client,
 			       output->make, output->model);
 
 	wl_list_for_each (mode, &output->mode_list, link) {
-		wl_resource_post_event(&output->resource,
+		wl_resource_post_event(resource,
 				       WL_OUTPUT_MODE,
 				       mode->flags,
 				       mode->width,
