@@ -153,11 +153,38 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
   }
 
   DownloadFile* download_file = GetDownloadFile(id);
+  bool had_error = false;
   for (size_t i = 0; i < contents.size(); ++i) {
     net::IOBuffer* data = contents[i].first;
     const int data_len = contents[i].second;
-    if (download_file)
-      download_file->AppendDataToFile(data->data(), data_len);
+    if (!had_error && download_file) {
+      bool write_succeeded =
+          download_file->AppendDataToFile(data->data(), data_len);
+      if (!write_succeeded) {
+        // Write failed: interrupt the download.
+        DownloadManager* download_manager = download_file->GetDownloadManager();
+        had_error = true;
+
+        int64 bytes_downloaded = download_file->bytes_so_far();
+        // Calling this here in case we get more data, to avoid
+        // processing data after an error.  That could lead to
+        // files that are corrupted if the later processing succeeded.
+        CancelDownload(id);
+        download_file = NULL;  // Was deleted in |CancelDownload|.
+
+        if (download_manager) {
+          BrowserThread::PostTask(
+              BrowserThread::UI,
+              FROM_HERE,
+              NewRunnableMethod(
+                  download_manager,
+                  &DownloadManager::OnDownloadError,
+                  id,
+                  bytes_downloaded,
+                  net::ERR_FAILED));
+        }
+      }
+    }
     data->Release();
   }
 }
@@ -165,10 +192,10 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
 void DownloadFileManager::OnResponseCompleted(
     int id,
     DownloadBuffer* buffer,
-    int os_error,
+    int net_error,
     const std::string& security_info) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << id
-           << " os_error = " << os_error
+           << " net_error = " << net_error
            << " security_info = \"" << security_info << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   delete buffer;
@@ -188,11 +215,32 @@ void DownloadFileManager::OnResponseCompleted(
   if (!download_file->GetSha256Hash(&hash))
     hash.clear();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-        download_manager, &DownloadManager::OnResponseCompleted,
-        id, download_file->bytes_so_far(), os_error, hash));
+  // ERR_CONNECTION_CLOSED is allowed since a number of servers in the wild
+  // advertise a larger Content-Length than the amount of bytes in the message
+  // body, and then close the connection. Other browsers - IE8, Firefox 4.0.1,
+  // and Safari 5.0.4 - treat the download as complete in this case, so we
+  // follow their lead.
+  if (net_error == net::OK || net_error == net::ERR_CONNECTION_CLOSED) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(
+            download_manager,
+            &DownloadManager::OnResponseCompleted,
+            id,
+            download_file->bytes_so_far(),
+            hash));
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(
+            download_manager,
+            &DownloadManager::OnDownloadError,
+            id,
+            download_file->bytes_so_far(),
+            net_error));
+  }
   // We need to keep the download around until the UI thread has finalized
   // the name.
 }
@@ -278,7 +326,7 @@ void DownloadFileManager::RenameInProgressDownloadFile(
   if (!download_file->Rename(full_path)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
-    CancelDownloadOnRename(id);
+    CancelDownloadOnRename(id, net::ERR_FAILED);
   }
 }
 
@@ -326,7 +374,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
   if (!download_file->Rename(new_path)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
-    CancelDownloadOnRename(id);
+    CancelDownloadOnRename(id, net::ERR_FAILED);
     return;
   }
 
@@ -345,7 +393,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
 
 // Called only from RenameInProgressDownloadFile and
 // RenameCompletingDownloadFile on the FILE thread.
-void DownloadFileManager::CancelDownloadOnRename(int id) {
+void DownloadFileManager::CancelDownloadOnRename(int id, int rename_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DownloadFile* download_file = GetDownloadFile(id);
@@ -356,7 +404,7 @@ void DownloadFileManager::CancelDownloadOnRename(int id) {
   if (!download_manager) {
     // Without a download manager, we can't cancel the request normally, so we
     // need to do it here.  The normal path will also update the download
-    // history before cancelling the request.
+    // history before canceling the request.
     download_file->CancelDownloadRequest();
     return;
   }
@@ -364,7 +412,10 @@ void DownloadFileManager::CancelDownloadOnRename(int id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(download_manager,
-                        &DownloadManager::CancelDownload, id));
+                        &DownloadManager::OnDownloadError,
+                        id,
+                        download_file->bytes_so_far(),
+                        rename_error));
 }
 
 void DownloadFileManager::EraseDownload(int id) {

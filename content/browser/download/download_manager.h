@@ -112,14 +112,23 @@ class DownloadManager
   // Notifications sent from the download thread to the UI thread
   void StartDownload(int32 id);
   void UpdateDownload(int32 download_id, int64 size);
+
+  // |download_id| is the ID of the download.
+  // |size| is the number of bytes that have been downloaded.
   // |hash| is sha256 hash for the downloaded file. It is empty when the hash
   // is not available.
-  void OnResponseCompleted(int32 download_id, int64 size, int os_error,
+  void OnResponseCompleted(int32 download_id, int64 size,
                            const std::string& hash);
 
   // Offthread target for cancelling a particular download.  Will be a no-op
   // if the download has already been cancelled.
   void CancelDownload(int32 download_id);
+
+  // Called when there is an error in the download.
+  // |download_id| is the ID of the download.
+  // |size| is the number of bytes that are currently downloaded.
+  // |error| is a download error code.  Indicates what caused the interruption.
+  void OnDownloadError(int32 download_id, int64 size, int error);
 
   // Called from DownloadItem to handle the DownloadManager portion of a
   // Cancel; should not be called from other locations.
@@ -290,8 +299,14 @@ class DownloadManager
   // is not available.
   void OnAllDataSaved(int32 download_id, int64 size, const std::string& hash);
 
-  // An error occurred in the download.
-  void OnDownloadError(int32 download_id, int64 size, int os_error);
+  // Retrieves the download from the |download_id|.
+  // Returns NULL if the download is not active.
+  DownloadItem* GetActiveDownload(int32 download_id);
+
+  // Removes |download| from the active and in progress maps.
+  // Called when the download is cancelled or has an error.
+  // Does nothing if the download is not in the history DB.
+  void RemoveFromActiveList(DownloadItem* download);
 
   // Updates the delegate about the overall download progress.
   void UpdateDownloadProgress();

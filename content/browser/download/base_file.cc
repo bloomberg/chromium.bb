@@ -203,6 +203,10 @@ void BaseFile::AnnotateWithSourceInformation() {
 #endif
 }
 
+void BaseFile::CreateFileStream() {
+  file_stream_.reset(new net::FileStream);
+}
+
 bool BaseFile::Open() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
@@ -210,7 +214,7 @@ bool BaseFile::Open() {
 
   // Create a new file stream if it is not provided.
   if (!file_stream_.get()) {
-    file_stream_.reset(new net::FileStream);
+    CreateFileStream();
     if (file_stream_->Open(full_path_,
                            base::PLATFORM_FILE_OPEN_ALWAYS |
                                base::PLATFORM_FILE_WRITE) != net::OK) {

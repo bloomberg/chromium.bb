@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/download/base_file.h"
+
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_thread.h"
-#include "content/browser/download/base_file.h"
 #include "net/base/file_stream.h"
+#include "net/base/mock_file_stream.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -16,6 +19,8 @@ namespace {
 const char kTestData1[] = "Let's write some data to the file!\n";
 const char kTestData2[] = "Writing more data.\n";
 const char kTestData3[] = "Final line.";
+
+}  // namespace
 
 class BaseFileTest : public testing::Test {
  public:
@@ -51,16 +56,41 @@ class BaseFileTest : public testing::Test {
     EXPECT_EQ(expect_file_survives_, file_util::PathExists(full_path));
   }
 
-  void AppendDataToFile(const std::string& data) {
-    ASSERT_TRUE(base_file_->in_progress());
-    base_file_->AppendDataToFile(data.data(), data.size());
+  bool OpenMockFileStream() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+    FilePath path;
+    if (!file_util::CreateTemporaryFile(&path))
+      return false;
+
+    // Create a new file stream.
+    mock_file_stream_.reset(new net::testing::MockFileStream);
+    if (mock_file_stream_->Open(
+        path,
+        base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE) != 0) {
+      mock_file_stream_.reset();
+      return false;
+    }
+
+    return true;
+  }
+
+  void ForceError(net::Error error) {
+    mock_file_stream_->set_forced_error(error);
+  }
+
+  bool AppendDataToFile(const std::string& data) {
+    EXPECT_TRUE(base_file_->in_progress());
+    bool appended = base_file_->AppendDataToFile(data.data(), data.size());
     expected_data_ += data;
     EXPECT_EQ(static_cast<int64>(expected_data_.size()),
               base_file_->bytes_so_far());
+    return appended;
   }
 
  protected:
   linked_ptr<net::FileStream> file_stream_;
+  linked_ptr<net::testing::MockFileStream> mock_file_stream_;
 
   // BaseClass instance we are testing.
   scoped_ptr<BaseFile> base_file_;
@@ -100,7 +130,7 @@ TEST_F(BaseFileTest, Cancel) {
 // automatically when base_file_ is destructed.
 TEST_F(BaseFileTest, WriteAndDetach) {
   ASSERT_TRUE(base_file_->Initialize(false));
-  AppendDataToFile(kTestData1);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
   base_file_->Finish();
   base_file_->Detach();
   expect_file_survives_ = true;
@@ -109,7 +139,7 @@ TEST_F(BaseFileTest, WriteAndDetach) {
 // Write data to the file and detach it, and calculate its sha256 hash.
 TEST_F(BaseFileTest, WriteWithHashAndDetach) {
   ASSERT_TRUE(base_file_->Initialize(true));
-  AppendDataToFile(kTestData1);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
   base_file_->Finish();
 
   std::string hash;
@@ -130,7 +160,7 @@ TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
   FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
-  AppendDataToFile(kTestData1);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
 
   EXPECT_TRUE(base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
@@ -144,16 +174,16 @@ TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
 // Write data to the file once.
 TEST_F(BaseFileTest, SingleWrite) {
   ASSERT_TRUE(base_file_->Initialize(false));
-  AppendDataToFile(kTestData1);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
   base_file_->Finish();
 }
 
 // Write data to the file multiple times.
 TEST_F(BaseFileTest, MultipleWrites) {
   ASSERT_TRUE(base_file_->Initialize(false));
-  AppendDataToFile(kTestData1);
-  AppendDataToFile(kTestData2);
-  AppendDataToFile(kTestData3);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_TRUE(AppendDataToFile(kTestData2));
+  ASSERT_TRUE(AppendDataToFile(kTestData3));
   std::string hash;
   EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
   base_file_->Finish();
@@ -162,7 +192,7 @@ TEST_F(BaseFileTest, MultipleWrites) {
 // Write data to the file once and calculate its sha256 hash.
 TEST_F(BaseFileTest, SingleWriteWithHash) {
   ASSERT_TRUE(base_file_->Initialize(true));
-  AppendDataToFile(kTestData1);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
   base_file_->Finish();
 
   std::string hash;
@@ -176,9 +206,9 @@ TEST_F(BaseFileTest, MultipleWritesWithHash) {
   std::string hash;
 
   ASSERT_TRUE(base_file_->Initialize(true));
-  AppendDataToFile(kTestData1);
-  AppendDataToFile(kTestData2);
-  AppendDataToFile(kTestData3);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_TRUE(AppendDataToFile(kTestData2));
+  ASSERT_TRUE(AppendDataToFile(kTestData3));
   // no hash before Finish() is called either.
   EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
   base_file_->Finish();
@@ -197,7 +227,7 @@ TEST_F(BaseFileTest, WriteThenRename) {
   FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
-  AppendDataToFile(kTestData1);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
 
   EXPECT_TRUE(base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
@@ -215,16 +245,29 @@ TEST_F(BaseFileTest, RenameWhileInProgress) {
   FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
-  AppendDataToFile(kTestData1);
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
 
   EXPECT_TRUE(base_file_->in_progress());
   EXPECT_TRUE(base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
 
-  AppendDataToFile(kTestData2);
+  ASSERT_TRUE(AppendDataToFile(kTestData2));
 
   base_file_->Finish();
 }
 
-}  // namespace
+// Write data to the file multiple times.
+TEST_F(BaseFileTest, MultipleWritesWithError) {
+  ASSERT_TRUE(OpenMockFileStream());
+  base_file_.reset(new BaseFile(mock_file_stream_->get_path(),
+                                GURL(), GURL(), 0, mock_file_stream_));
+  ASSERT_TRUE(base_file_->Initialize(false));
+  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_TRUE(AppendDataToFile(kTestData2));
+  ForceError(net::ERR_FAILED);
+  ASSERT_FALSE(AppendDataToFile(kTestData3));
+  std::string hash;
+  EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
+  base_file_->Finish();
+}

@@ -78,8 +78,8 @@ class DownloadFileTest : public testing::Test {
                                             &disk_data));
     EXPECT_EQ(expected_data_, disk_data);
 
-    // Make sure the mock BrowserThread outlives the DownloadFile to satisfy
-    // thread checks inside it.
+    // Make sure the Browser and File threads outlive the DownloadFile
+    // to satisfy thread checks inside it.
     file->reset();
   }
 

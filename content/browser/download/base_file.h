@@ -65,6 +65,7 @@ class BaseFile {
   virtual std::string DebugString() const;
 
  protected:
+  virtual void CreateFileStream();  // For testing.
   bool Open();
   void Close();
 
@@ -72,6 +73,9 @@ class BaseFile {
   FilePath full_path_;
 
  private:
+  friend class BaseFileTest;
+  friend class DownloadFileWithMockStream;
+
   static const size_t kSha256HashLen = 32;
 
   // Source URL for the file being downloaded.

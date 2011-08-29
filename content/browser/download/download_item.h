@@ -181,9 +181,9 @@ class DownloadItem {
   void OnDownloadedFileRemoved();
 
   // Download operation had an error.
-  // |size| is the amount of data received so far, and |os_error| is the error
-  // code that the operation received.
-  void Interrupted(int64 size, int os_error);
+  // |size| is the amount of data received at interruption.
+  // |error| is the network error code that the operation received.
+  void Interrupted(int64 size, int error);
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking
