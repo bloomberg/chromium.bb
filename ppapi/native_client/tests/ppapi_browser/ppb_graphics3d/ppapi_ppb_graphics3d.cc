@@ -60,6 +60,7 @@ void TestCreate() {
   PP_Resource graphics3d_id = PPBGraphics3DDev()->
       Create(pp_instance(), kInvalidResource, attribs);
   EXPECT(graphics3d_id != kInvalidResource);
+  PPBCore()->ReleaseResource(graphics3d_id);
   PP_Resource invalid_graphics3d_id = PPBGraphics3DDev()->
       Create(0, kInvalidResource, attribs);
   EXPECT(invalid_graphics3d_id == kInvalidResource);
@@ -68,9 +69,11 @@ void TestCreate() {
   PP_Resource graphics3d_empty_attrib_id = PPBGraphics3DDev()->
       Create(pp_instance(), kInvalidResource, empty_attribs);
   EXPECT(graphics3d_empty_attrib_id != kInvalidResource);
+  PPBCore()->ReleaseResource(graphics3d_empty_attrib_id);
   PP_Resource graphics3d_null_attrib_id = PPBGraphics3DDev()->
       Create(pp_instance(), kInvalidResource, NULL);
   EXPECT(graphics3d_null_attrib_id != kInvalidResource);
+  PPBCore()->ReleaseResource(graphics3d_null_attrib_id);
   TEST_PASSED;
 }
 
@@ -84,6 +87,7 @@ void TestIsGraphics3D() {
       Create(pp_instance(), kInvalidResource, attribs);
   EXPECT(graphics3d_id != kInvalidResource);
   EXPECT(PPBGraphics3DDev()->IsGraphics3D(graphics3d_id) == PP_TRUE);
+  PPBCore()->ReleaseResource(graphics3d_id);
   TEST_PASSED;
 }
 
@@ -109,6 +113,7 @@ void SwapCallback(void* user_data, int32_t result) {
     int32_t result = PPBGraphics3DDev()->SwapBuffers(info->graphics3d_id, cc);
     CHECK(PP_OK_COMPLETIONPENDING == result);
   } else {
+    PPBCore()->ReleaseResource(info->graphics3d_id);
     delete info;
   }
   glSetCurrentContextPPAPI(0);

@@ -21,6 +21,7 @@ CommandBufferNacl::CommandBufferNacl(PP_Resource graphics_3d,
 }
 
 CommandBufferNacl::~CommandBufferNacl() {
+  DebugPrintf("CommandBufferNacl::~CommandBufferNacl()\n");
   iface_core_->ReleaseResource(graphics_3d_);
 }
 

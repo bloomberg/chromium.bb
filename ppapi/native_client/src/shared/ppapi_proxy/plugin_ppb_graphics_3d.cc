@@ -146,6 +146,11 @@ __thread gpu::gles2::GLES2Implementation*
 PluginGraphics3D::PluginGraphics3D() : instance_id_(0) { }
 
 PluginGraphics3D::~PluginGraphics3D() {
+  DebugPrintf("PluginGraphics3D::~PluginGraphics3D()\n");
+  // Explicitly tear down scopted pointers; ordering below matters.
+  gles2_implementation_.reset();
+  gles2_helper_.reset();
+  command_buffer_.reset();
   // Invalidate the cache.
   cached_graphics3d_id = 0;
   cached_implementation = NULL;
