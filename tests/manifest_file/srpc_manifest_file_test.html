@@ -17,8 +17,11 @@ function testMethods(tester, server) {
                 server.namedump());
   })
   tester.addTest('manifest_test', function() {
-    assertEqual('Manifest Contents:\nnmf says hello world\n',
-                server.manifest_test());
+    var str = server.manifest_test();
+    assert(str.indexOf('Manifest Contents:\n') != -1,
+           '"Manifest Contents" not found in "' + str + '"')
+    assert(str.indexOf('nmf says hello world\n') != -1,
+           '"nmf says hello world" not found in "' + str + '"')
   })
 }
 

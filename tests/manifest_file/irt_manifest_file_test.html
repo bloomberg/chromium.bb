@@ -32,7 +32,7 @@ function setupTests(tester, plugin) {
   tester.addAsyncTest('Test_00_Init', function(status) {
     plugin.addEventListener('message', function(message_event) {
       this.removeEventListener('message', arguments.callee, false);
-      var golden = 'File Contents:\n// There should not be CRs in here, just LF termination!\n{\n  "program": {\n    "x86-32": {"url": "irt_manifest_file_test_x86-32.nexe"},\n    "x86-64": {"url": "irt_manifest_file_test_x86-64.nexe"},\n    "arm":    {"url": "irt_manifest_file_test_arm.nexe"}\n  },\n  "files": {\n    "nmf says hello world": {\n      "x86-32": {"url": "irt_manifest_file_test_x86-32.nexe"},\n      "x86-64": {"url": "irt_manifest_file_test_x86-64.nexe"},\n      "arm":    {"url": "irt_manifest_file_test_arm.nexe"}\n    },\n    "test_file": {\n      "portable": {"url": "irt_manifest_file.nmf"}\n    }\n  }\n}\n';
+      var golden = 'File Contents:\nTest File Content';
       status.assertEqual(message_event.data, golden);
       status.pass();
     }, false);

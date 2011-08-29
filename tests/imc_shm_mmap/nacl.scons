@@ -21,7 +21,6 @@ imc_shm_mmap_test_nexe = env.ComponentProgram(imc_shm_mmap_test_nexe_name,
                                                   '${NON_PPAPI_BROWSER_LIBS}',
                                                   '${PTHREAD_LIBS}',
                                                   ])
-env.Publish(imc_shm_mmap_test_nexe_name, 'run', ['imc_shm_mmap_test.nmf'])
 
 imc_shm_mmap_test_nonbrowser = env.ComponentProgram(
     'imc_shm_mmap_test_nonbrowser',

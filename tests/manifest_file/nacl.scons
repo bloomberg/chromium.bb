@@ -5,6 +5,9 @@
 
 Import('env')
 
+# TODO(bradnelson): drop after manifest landing
+Return()
+
 srpc_mf_obj = env.ComponentObject('srpc_manifest_file_test.o',
                                   'srpc_manifest_file_test.c')
 srpc_mf_nexe_name = 'srpc_manifest_file_test_%s' % env.get('TARGET_FULLARCH')
@@ -19,14 +22,14 @@ srpc_mf_nexe = env.ComponentProgram(srpc_mf_nexe_name,
                                         '${PTHREAD_LIBS}',
                                         '${NON_PPAPI_BROWSER_LIBS}'])
 env.Publish(srpc_mf_nexe_name, 'run',
-            ['srpc_manifest_file_test.html',
-             'srpc_manifest_file.nmf'])
+            ['srpc_manifest_file_test.html', 'test_file.txt'])
 
 # chrome_browser_tests
 
 node = env.PPAPIBrowserTester(
     'srpc_mf_browser_test.out',
     url='srpc_manifest_file_test.html',
+    nmf='srpc_manifest_file.nmf',
     files=env.ExtractPublishedFiles(srpc_mf_nexe_name),
     args=['--debug', '--enable_experimental_js'],
 #    osenv=['NACLVERBOSITY=4']
@@ -35,7 +38,8 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_manifest_file_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                 env.Bit('nacl_glibc'))
 
 # post message version
 
@@ -56,14 +60,14 @@ pm_mf_nexe = env.ComponentProgram(pm_mf_nexe_name,
                                               'imc_syscalls',
                                               ])
 env.Publish(pm_mf_nexe_name, 'run',
-            ['pm_manifest_file_test.html',
-             'pm_manifest_file.nmf'])
+            ['pm_manifest_file_test.html', 'test_file.txt'])
 
 # chrome_browser_tests
 
 node = env.PPAPIBrowserTester(
     'pm_mf_browser_test.out',
     url='pm_manifest_file_test.html',
+    nmf='pm_manifest_file.nmf',
     files=env.ExtractPublishedFiles(pm_mf_nexe_name),
     args=['--debug'],
 #    osenv=['NACLVERBOSITY=4,pp_weak_ref=4,weak_ref=4']
@@ -72,7 +76,8 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                       ['chrome_browser_tests'],
                       'run_pm_manifest_file_chrome_browser_test',
-                      is_broken=env.PPAPIBrowserTesterIsBroken())
+                      is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                env.Bit('nacl_glibc'))
 
 
 # post message, pre-init version
@@ -95,14 +100,14 @@ pm_pi_mf_nexe = env.ComponentProgram(pm_pi_mf_nexe_name,
                                                  'imc_syscalls',
                                                  ])
 env.Publish(pm_pi_mf_nexe_name, 'run',
-            ['pm_pre_init_manifest_file_test.html',
-             'pm_pre_init_manifest_file.nmf'])
+            ['pm_pre_init_manifest_file_test.html', 'test_file.txt'])
 
 # chrome_browser_tests
 
 node = env.PPAPIBrowserTester(
     'pm_pi_mf_browser_test.out',
     url='pm_pre_init_manifest_file_test.html',
+    nmf='pm_pre_init_manifest_file.nmf',
     files=env.ExtractPublishedFiles(pm_pi_mf_nexe_name),
     args=['--debug'],
 #    osenv=['NACLVERBOSITY=4,pp_weak_ref=4,weak_ref=4']
@@ -112,7 +117,8 @@ if not env.Bit('irt'):
   env.AddNodeToTestSuite(node,
                          ['chrome_browser_tests'],
                          'run_pm_pi_manifest_file_chrome_browser_test',
-                         is_broken=env.PPAPIBrowserTesterIsBroken())
+                         is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                   env.Bit('nacl_glibc'))
 else:
   # This test cannot be built under irt=0 because it uses __nacl_irt_query,
   # which is not available in the private libraries.
@@ -132,15 +138,16 @@ else:
                                                  'nacl',
                                                  ])
   env.Publish(irt_mf_nexe_name, 'run',
-              ['irt_manifest_file_test.html',
-               'irt_manifest_file.nmf'])
+              ['irt_manifest_file_test.html', 'test_file.txt'])
   node = env.PPAPIBrowserTester(
       'irt_mf_browser_test.out',
       url='irt_manifest_file_test.html',
+      nmf='irt_manifest_file.nmf',
       files=env.ExtractPublishedFiles(irt_mf_nexe_name),
       args=['--debug'],
       )
   env.AddNodeToTestSuite(node,
                          ['chrome_browser_tests'],
                          'run_irt_manifest_file_chrome_browser_test',
-                         is_broken=env.PPAPIBrowserTesterIsBroken())
+                         is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                   env.Bit('nacl_glibc'))

@@ -7,11 +7,13 @@ import atexit
 import glob
 import os
 import platform
+import shutil
 import stat
 import subprocess
 import sys
 import zlib
-sys.path.append("./common")
+sys.path.append('../third_party')
+import simplejson
 
 from SCons.Errors import UserError
 from SCons.Script import GetBuildFailures
@@ -1148,10 +1150,117 @@ def GetPPAPIPluginPath(env, allow_64bit_redirect=True):
 
 pre_base_env.AddMethod(GetPPAPIPluginPath)
 
+
+def CopyLibsForExtensionCommand(target, source, env):
+  source_manifest = str(source[0])
+  target_manifest = str(target[0])
+  shutil.copyfile(source_manifest, target_manifest)
+  target_dir = os.path.dirname(target_manifest)
+  libs_file = open(str(source[1]), 'r')
+  for line in libs_file.readlines():
+    pos = line.find(' => ')
+    if pos < 0:
+      continue
+    lib_name = line[:pos].strip()
+    lib_path = line[pos+4:]
+    pos1 = lib_path.find(' ')
+    if pos1 < 0:
+      continue
+    lib_path = lib_path[:pos1]
+    shutil.copyfile(lib_path, os.path.join(target_dir, lib_name))
+  shutil.copyfile(env.subst('${NACL_SDK_LIB}/runnable-ld.so'),
+                  os.path.join(target_dir, 'runnable-ld.so'))
+  libs_file.close()
+
+
+# Extensions are loaded from directory on disk and so all dynamic libraries
+# they use must be copied to extension directory. The option --extra_serving_dir
+# does not help us in this case.
+def CopyLibsForExtension(env, target_dir, manifest):
+  if not env.Bit('nacl_glibc'):
+    return env.Install(target_dir, manifest)
+  manifest_base_name = os.path.basename(str(env.subst(manifest)))
+  lib_list_node = env.File('${STAGING_DIR}/' + manifest_base_name + '.libs')
+  nmf_node = env.Command(
+      target_dir + '/' + manifest_base_name,
+      [manifest, lib_list_node],
+      CopyLibsForExtensionCommand)
+  return nmf_node
+
+pre_base_env.AddMethod(CopyLibsForExtension)
+
+
+def GenerateManifestFunc(target, source, env):
+  source_file = open(str(source[0]), 'r')
+  obj = simplejson.load(source_file)
+  source_file.close()
+  libs_file = open(str(source[1]), 'r')
+  lib_names = []
+  for line in libs_file.readlines():
+    pos = line.find(' => ')
+    if pos < 0:
+      continue
+    lib_names.append(line[:pos].strip())
+  libs_file.close()
+  if not obj.has_key('files'):
+    obj['files'] = {}
+  for lib_name in lib_names:
+    obj['files']['lib/' + lib_name] = {}
+    obj['files']['lib/' + lib_name]['portable'] = {}
+    obj['files']['lib/' + lib_name]['portable']['url'] = lib_name
+  obj['files']['main.nexe'] = {}
+  for k,v in obj['program'].items():
+    obj['files']['main.nexe'][k] = v.copy()
+    v['url'] = 'runnable-ld.so'
+  target_file = open(str(target[0]), 'w')
+  simplejson.dump(obj, target_file)
+  target_file.close()
+  return 0
+
+
+def GetNexeFromManifest(env, manifest):
+  manifest_file = open(str(env.File(manifest)), 'r')
+  obj = simplejson.load(manifest_file)
+  manifest_file.close()
+  nexe = obj['program'][env.subst('${TARGET_FULLARCH}')]['url']
+  return env.File('${STAGING_DIR}/' + os.path.basename(nexe))
+
+
+manifest_set = set()
+
+def GenerateManifestCommands(env, manifest):
+  manifest = env.subst(manifest)
+  manifest_base_name = os.path.basename(manifest)
+  if not env.Bit('nacl_glibc'):
+    if not manifest_base_name in manifest_set:
+      env.Install('${STAGING_DIR}', manifest)
+      manifest_set.add(manifest_base_name)
+    return ['--file', env.File('${STAGING_DIR}/' + manifest_base_name)]
+  if manifest_base_name in manifest_set:
+    return ['--file', env.File('${STAGING_DIR}/' + manifest_base_name)]
+  manifest_set.add(manifest_base_name)
+  nexe = GetNexeFromManifest(env, manifest)
+  lib_list_node = env.Command(
+      '${STAGING_DIR}/' + manifest_base_name + '.libs',
+      [GetSelLdr(env),
+       '${NACL_SDK_LIB}/runnable-ld.so',
+       nexe,
+       '${SCONSTRUCT_DIR}/DEPS'],
+      '${SOURCES[0]} -a -E LD_TRACE_LOADED_OBJECTS=1 ${SOURCES[1]} '
+      '--library-path ${NACL_SDK_LIB}:${LIB_DIR} ${SOURCES[2].posix} '
+      '> ${TARGET}')
+  nmf_node = env.Command(
+      '${STAGING_DIR}/' + manifest_base_name,
+      [manifest, lib_list_node],
+      GenerateManifestFunc)
+  return ['--file', nmf_node]
+
+
 def PPAPIBrowserTester(env,
                        target,
                        url,
                        files,
+                       nmf=None,
                        map_files=(),
                        extensions=(),
                        timeout=20,
@@ -1203,6 +1312,14 @@ def PPAPIBrowserTester(env,
     command.extend(['--extension', extension])
   for dest_path, dep_file in map_files:
     command.extend(['--map_file', dest_path, dep_file])
+  command.extend(['--extra_serving_dir', '${NACL_SDK_LIB}'])
+  command.extend(['--extra_serving_dir', '${LIB_DIR}'])
+  if not nmf is None:
+    if isinstance(nmf, str):
+      command.extend(GenerateManifestCommands(env, nmf))
+    else:
+      for nmf_file in nmf:
+        command.extend(GenerateManifestCommands(env, nmf_file))
   if 'browser_test_tool' in ARGUMENTS:
     command.extend(['--tool', ARGUMENTS['browser_test_tool']])
   command.extend(args)
@@ -1233,11 +1350,10 @@ def PPAPIBrowserTesterIsBroken(env):
 
 pre_base_env.AddMethod(PPAPIBrowserTesterIsBroken)
 
-# 3D disabled for arm, newlib & pnacl
+
+# 3D is disabled everywhere
 def PPAPIGraphics3DIsBroken(env):
-  return (env.Bit('target_arm') or
-          not env.Bit('nacl_glibc') or
-          env.Bit('bitcode'))
+  return True
 
 pre_base_env.AddMethod(PPAPIGraphics3DIsBroken)
 
@@ -1349,6 +1465,7 @@ pre_base_env.AddMethod(PyAutoTester)
 # rather than the architecture of Python currently running.
 def PyAutoTesterIsBroken(env):
   return (PPAPIBrowserTesterIsBroken(env)
+          or env.Bit('nacl_glibc')
           or (not env.Bit('host_mac')
               and env.Bit('build_x86_32')
               and platform.architecture()[0] == '64bit'))
@@ -2749,7 +2866,8 @@ irt_variant_tests = [
 nonvariant_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/barebones/nacl.scons',
-    'tests/chrome_extension/nacl.scons',
+# TODO(bradnelson): remove after landing nmf change.
+#    'tests/chrome_extension/nacl.scons',
     'tests/earth/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',
@@ -2801,6 +2919,14 @@ nonvariant_tests = [
     'tests/unittests/shared/srpc/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     ]
+
+
+# TODO(bradnelson): remove after landing nmf change.
+# Filter out ppapi for glibc temporarily.
+if nacl_env.Bit('nacl_glibc'):
+  nonvariant_tests = [t for t in nonvariant_tests
+                      if not t.startswith('tests/ppapi')]
+
 
 nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests + nonvariant_tests)
 
