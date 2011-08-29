@@ -98,4 +98,7 @@ env.AddNodeToTestSuite(node,
                         'run_ppapi_bad_native_test',
                          is_broken=env.PPAPIBrowserTesterIsBroken() or
                                    env.Bit('nacl_glibc') or
-                                   env.Bit('bitcode'))
+                                   env.Bit('bitcode') or
+# TODO(halyavin): re-enable this when fixed.
+                                   True
+)
