@@ -253,6 +253,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->height = height;
 
 	surface->buffer = NULL;
+	surface->output = NULL;
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
@@ -1078,9 +1079,16 @@ surface_frame(struct wl_client *client,
 	cb->resource.destroy = destroy_frame_callback;
 	cb->resource.client = client;
 	cb->resource.data = cb;
-	wl_list_insert(es->output->frame_callback_list.prev, &cb->link);
 
 	wl_client_add_resource(client, &cb->resource);
+
+	if (es->output) {
+		wl_list_insert(es->output->frame_callback_list.prev,
+			       &cb->link);
+	} else {
+		wl_list_init(&cb->link);
+		wl_resource_destroy(&cb->resource, 0);
+	}
 }
 
 const static struct wl_surface_interface surface_interface = {
