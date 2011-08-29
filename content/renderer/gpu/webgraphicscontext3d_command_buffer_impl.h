@@ -430,6 +430,10 @@ class WebGraphicsContext3DCommandBufferImpl
       WebGraphicsContext3D::
           WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
 
+#if WEBKIT_USING_SKIA
+  virtual GrGLInterface* grGLInterface();
+#endif
+
  private:
   // SwapBuffers callback.
   void OnSwapBuffersComplete();

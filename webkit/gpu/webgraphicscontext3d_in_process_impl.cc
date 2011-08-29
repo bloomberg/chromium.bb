@@ -107,7 +107,6 @@ bool WebGraphicsContext3DInProcessImpl::initialize(
     bool render_directly_to_web_view) {
   if (!gfx::GLSurface::InitializeOneOff())
     return false;
-  gfx::BindSkiaToInProcessGL();
 
   render_directly_to_web_view_ = render_directly_to_web_view;
   gfx::GLShareGroup* share_group = 0;
@@ -1551,6 +1550,12 @@ WGC3Denum WebGraphicsContext3DInProcessImpl::getGraphicsResetStatusARB() {
   // TODO(kbr): this implementation doesn't support lost contexts yet.
   return GL_NO_ERROR;
 }
+
+#if WEBKIT_USING_SKIA
+GrGLInterface* WebGraphicsContext3DInProcessImpl::grGLInterface() {
+  return gfx::GetInProcessSkiaGLBinding();
+}
+#endif
 
 bool WebGraphicsContext3DInProcessImpl::AngleCreateCompilers() {
   if (!ShInitialize())

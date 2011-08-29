@@ -15,7 +15,7 @@
 
 namespace webkit_glue {
 
-void BindSkiaToCommandBufferGL() {
+GrGLInterface* GetCommandBufferSkiaGLBinding() {
   static SkAutoTUnref<GrGLInterface> cmd_buffer_interface;
   if (NULL == cmd_buffer_interface.get()) {
     GrGLInterface* interface = new GrGLInterface;
@@ -117,7 +117,7 @@ void BindSkiaToCommandBufferGL() {
       glRenderbufferStorageMultisampleEXT;
     interface->fBlitFramebuffer = glBlitFramebufferEXT;
   }
-  GrGLSetDefaultGLInterface(cmd_buffer_interface.get());
+  return cmd_buffer_interface.get();
 }
 
 }  // namespace webkit_glue

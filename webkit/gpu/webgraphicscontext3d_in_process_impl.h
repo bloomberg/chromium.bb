@@ -412,6 +412,10 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
       WebGraphicsContext3D::
           WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) {}
 
+#if WEBKIT_USING_SKIA
+  virtual GrGLInterface* grGLInterface();
+#endif
+
  private:
   // ANGLE related.
   struct ShaderSourceEntry;

@@ -590,7 +590,6 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
     bool render_directly_to_web_view) {
-  webkit_glue::BindSkiaToCommandBufferGL();
 
   // Convert WebGL context creation attributes into GLInProcessContext / EGL
   // size requests.
@@ -1577,6 +1576,13 @@ WGC3Denum WebGraphicsContext3DInProcessCommandBufferImpl::
     getGraphicsResetStatusARB() {
   return context_lost_reason_;
 }
+
+#if WEBKIT_USING_SKIA
+GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
+    grGLInterface() {
+  return webkit_glue::GetCommandBufferSkiaGLBinding();
+}
+#endif
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
   // TODO(kbr): improve the precision here.

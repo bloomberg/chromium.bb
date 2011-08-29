@@ -8,11 +8,13 @@
 
 #include "ui/gfx/gl/gl_export.h"
 
+struct GrGLInterface;
+
 namespace gfx {
 
 // The GPU back-end for skia requires pointers to GL functions. This function
 // binds skia-gpu to the in-process GL
-GL_EXPORT void BindSkiaToInProcessGL();
+GL_EXPORT GrGLInterface* GetInProcessSkiaGLBinding();
 
 }
 

@@ -296,6 +296,5 @@ TestShellWebKitInit::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D* TestShellWebKitInit::createGraphicsContext3D() {
-  gfx::BindSkiaToInProcessGL();
   return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
 }

@@ -71,7 +71,6 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebKit::WebView* web_view,
     bool render_directly_to_web_view) {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
-  webkit_glue::BindSkiaToCommandBufferGL();
   RenderThread* render_thread = RenderThread::current();
   if (!render_thread)
     return false;
@@ -1034,6 +1033,12 @@ void WebGraphicsContext3DCommandBufferImpl::
     WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* cb) {
   swapbuffers_complete_callback_ = cb;
 }
+
+#if WEBKIT_USING_SKIA
+GrGLInterface* WebGraphicsContext3DCommandBufferImpl::grGLInterface() {
+  return webkit_glue::GetCommandBufferSkiaGLBinding();
+}
+#endif
 
 namespace {
 

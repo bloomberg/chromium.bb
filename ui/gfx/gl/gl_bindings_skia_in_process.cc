@@ -469,14 +469,14 @@ GLvoid StubGLViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
 
 namespace gfx {
 
-void BindSkiaToInProcessGL() {
+GrGLInterface* GetInProcessSkiaGLBinding() {
   static SkAutoTUnref<GrGLInterface> host_gl_interface;
   if (NULL == host_gl_interface.get()) {
     GrGLBinding binding;
     switch (gfx::GetGLImplementation()) {
       case gfx::kGLImplementationNone:
         NOTREACHED();
-        return;
+        return NULL;
       case gfx::kGLImplementationDesktopGL:
         binding = kDesktop_GrGLBinding;
         break;
@@ -488,10 +488,10 @@ void BindSkiaToInProcessGL() {
         break;
       case gfx::kGLImplementationMockGL:
         NOTREACHED();
-        return;
+        return NULL;
       default:
         NOTREACHED();
-        return;
+        return NULL;
     }
 
     GrGLInterface* interface = new GrGLInterface;
@@ -602,7 +602,7 @@ void BindSkiaToInProcessGL() {
     interface->fBindFragDataLocationIndexed =
       StubBindFragDataLocationIndexedARB;
   }
-  GrGLSetDefaultGLInterface(host_gl_interface.get());
+  return host_gl_interface.get();
 }
 
 }  // namespace gfx
