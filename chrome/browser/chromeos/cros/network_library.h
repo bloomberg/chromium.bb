@@ -1271,14 +1271,17 @@ class NetworkLibrary {
 
   class NetworkDeviceObserver {
    public:
-    // Called when the state of a single device has changed,
-    // for example SIMLock state for cellular.
+    // Called when the state of a single device has changed.
     virtual void OnNetworkDeviceChanged(NetworkLibrary* cros,
                                         const NetworkDevice* device) {}
 
     // Called when |device| got notification about new networks available.
     virtual void OnNetworkDeviceFoundNetworks(NetworkLibrary* cros,
                                               const NetworkDevice* device) {}
+
+    // Called when |device| got notification about SIM lock change.
+    virtual void OnNetworkDeviceSimLockChanged(NetworkLibrary* cros,
+                                               const NetworkDevice* device) {}
    protected:
     ~NetworkDeviceObserver() {}
   };

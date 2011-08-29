@@ -2844,6 +2844,10 @@ void NetworkLibraryImplBase::NotifyNetworkDeviceChanged(
       FOR_EACH_OBSERVER(NetworkDeviceObserver,
                         *device_observer_list,
                         OnNetworkDeviceFoundNetworks(this, device));
+    } else if (index == PROPERTY_INDEX_SIM_LOCK) {
+      FOR_EACH_OBSERVER(NetworkDeviceObserver,
+                        *device_observer_list,
+                        OnNetworkDeviceSimLockChanged(this, device));
     }
     FOR_EACH_OBSERVER(NetworkDeviceObserver,
                       *device_observer_list,

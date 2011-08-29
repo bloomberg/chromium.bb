@@ -103,8 +103,8 @@ cr.define('mobile', function() {
           $('new-pin-input').value = '';
           $('retype-new-pin-input').value = '';
           $('choose-pin-overlay').hidden = false;
-          $('old-pin-input').focus();
           SimUnlock.enableChoosePinDialog(true);
+          $('old-pin-input').focus();
           break;
         case SimUnlock.SIM_LOCKED_NO_PIN_TRIES_LEFT:
           $('locked-pin-no-tries-overlay').hidden = false;
@@ -234,6 +234,7 @@ cr.define('mobile', function() {
     });
     $('pin-input').addEventListener('keyup', function(event) {
       $('enter-pin-confirm').disabled =
+          $('enter-pin-dismiss').disabled ||
           this.value.length < SimUnlock.PIN_MIN_LENGTH;
     });
     $('enter-pin-confirm').addEventListener('click', function(event) {
@@ -264,6 +265,7 @@ cr.define('mobile', function() {
     });
     $('puk-input').addEventListener('keyup', function(event) {
       $('enter-puk-confirm').disabled =
+          $('enter-puk-dismiss').disabled ||
           this.value.length < SimUnlock.PUK_LENGTH;
     });
     $('enter-puk-confirm').addEventListener('click', function(event) {
@@ -287,6 +289,7 @@ cr.define('mobile', function() {
     });
     $('old-pin-input').addEventListener('keyup', function(event) {
       $('choose-pin-confirm').disabled =
+          $('choose-pin-dismiss').disabled ||
           this.value.length < SimUnlock.PIN_MIN_LENGTH ||
           $('new-pin-input').value.length < SimUnlock.PIN_MIN_LENGTH ||
           $('retype-new-pin-input').value.length < SimUnlock.PIN_MIN_LENGTH;
@@ -306,6 +309,7 @@ cr.define('mobile', function() {
       var oldPinOk = SimUnlock.state != SimUnlock.SIM_NOT_LOCKED_CHANGE_PIN ||
           $('old-pin-input').value.length >= SimUnlock.PIN_MIN_LENGTH;
       $('choose-pin-confirm').disabled =
+          $('choose-pin-dismiss').disabled ||
           this.value.length < SimUnlock.PIN_MIN_LENGTH ||
           $('retype-new-pin-input').value.length < SimUnlock.PIN_MIN_LENGTH ||
           !oldPinOk;
@@ -314,6 +318,7 @@ cr.define('mobile', function() {
       var oldPinOk = SimUnlock.state != SimUnlock.SIM_NOT_LOCKED_CHANGE_PIN ||
           $('old-pin-input').value.length >= SimUnlock.PIN_MIN_LENGTH;
       $('choose-pin-confirm').disabled =
+          $('choose-pin-dismiss').disabled ||
           this.value.length < SimUnlock.PIN_MIN_LENGTH ||
           $('new-pin-input').value.length < SimUnlock.PIN_MIN_LENGTH ||
           !oldPinOk;
