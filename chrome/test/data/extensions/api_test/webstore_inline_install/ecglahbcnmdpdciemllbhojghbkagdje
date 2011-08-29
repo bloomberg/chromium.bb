@@ -1,0 +1,4 @@
+{
+  "icon_url": "webstore_inline_install/extension/icon.png",
+  "manifest": "{\"name\":\"Inline Install Test Extension\",\"version\":\"0.1\",\"icons\":{\"128\":\"icon.png\"},\"permissions\":[\"tabs\"]}"
+}

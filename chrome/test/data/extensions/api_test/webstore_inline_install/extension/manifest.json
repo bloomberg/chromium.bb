@@ -1,0 +1,8 @@
+{
+  "name": "Inline Install Test Extension",
+  "version": "0.1",
+  "icons": {
+    "128": "icon.png"
+  },
+  "permissions": ["tabs"]
+}
