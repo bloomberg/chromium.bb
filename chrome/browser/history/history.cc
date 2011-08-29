@@ -511,6 +511,13 @@ HistoryService::Handle HistoryService::CreateDownload(
                   create_info);
 }
 
+HistoryService::Handle HistoryService::GetNextDownloadId(
+    CancelableRequestConsumerBase* consumer,
+    DownloadNextIdCallback* callback) {
+  return Schedule(PRIORITY_NORMAL, &HistoryBackend::GetNextDownloadId, consumer,
+                  new history::DownloadNextIdRequest(callback));
+}
+
 // Handle queries for a list of all downloads in the history database's
 // 'downloads' table.
 HistoryService::Handle HistoryService::QueryDownloads(

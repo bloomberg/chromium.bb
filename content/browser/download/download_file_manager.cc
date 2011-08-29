@@ -65,9 +65,9 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
     return;
   }
 
-  int32 id = info->download_id;
-  DCHECK(GetDownloadFile(id) == NULL);
-  downloads_[id] = download_file.release();
+  DownloadId global_id(download_manager, info->download_id);
+  DCHECK(GetDownloadFile(global_id) == NULL);
+  downloads_[global_id] = download_file.release();
 
   // The file is now ready, we can un-pause the request and start saving data.
   info->request_handle.ResumeRequest();
@@ -77,11 +77,11 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(download_manager,
-                        &DownloadManager::StartDownload, id));
+                        &DownloadManager::StartDownload, info->download_id));
 }
 
-DownloadFile* DownloadFileManager::GetDownloadFile(int id) {
-  DownloadFileMap::iterator it = downloads_.find(id);
+DownloadFile* DownloadFileManager::GetDownloadFile(DownloadId global_id) {
+  DownloadFileMap::iterator it = downloads_.find(global_id);
   return it == downloads_.end() ? NULL : it->second;
 }
 
@@ -102,19 +102,15 @@ void DownloadFileManager::UpdateInProgressDownloads() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   for (DownloadFileMap::iterator i = downloads_.begin();
        i != downloads_.end(); ++i) {
-    int id = i->first;
+    DownloadId global_id = i->first;
     DownloadFile* download_file = i->second;
     DownloadManager* manager = download_file->GetDownloadManager();
     if (manager) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(manager, &DownloadManager::UpdateDownload,
-                            id, download_file->bytes_so_far()));
+                            global_id.local(), download_file->bytes_so_far()));
     }
   }
-}
-
-int DownloadFileManager::GetNextId() {
-  return next_id_.GetNext();
 }
 
 void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
@@ -144,7 +140,8 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 // download (in the UI thread), we may receive a few more updates before the IO
 // thread gets the cancel message: we just delete the data since the
 // DownloadFile has been deleted.
-void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
+void DownloadFileManager::UpdateDownload(
+    DownloadId global_id, DownloadBuffer* buffer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<DownloadBuffer::Contents> contents;
   {
@@ -152,7 +149,7 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
     contents.swap(buffer->contents);
   }
 
-  DownloadFile* download_file = GetDownloadFile(id);
+  DownloadFile* download_file = GetDownloadFile(global_id);
   for (size_t i = 0; i < contents.size(); ++i) {
     net::IOBuffer* data = contents[i].first;
     const int data_len = contents[i].second;
@@ -163,16 +160,16 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
 }
 
 void DownloadFileManager::OnResponseCompleted(
-    int id,
+    DownloadId global_id,
     DownloadBuffer* buffer,
     int os_error,
     const std::string& security_info) {
-  VLOG(20) << __FUNCTION__ << "()" << " id = " << id
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
            << " os_error = " << os_error
            << " security_info = \"" << security_info << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   delete buffer;
-  DownloadFile* download_file = GetDownloadFile(id);
+  DownloadFile* download_file = GetDownloadFile(global_id);
   if (!download_file)
     return;
 
@@ -180,7 +177,7 @@ void DownloadFileManager::OnResponseCompleted(
 
   DownloadManager* download_manager = download_file->GetDownloadManager();
   if (!download_manager) {
-    CancelDownload(id);
+    CancelDownload(global_id);
     return;
   }
 
@@ -192,7 +189,7 @@ void DownloadFileManager::OnResponseCompleted(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
         download_manager, &DownloadManager::OnResponseCompleted,
-        id, download_file->bytes_so_far(), os_error, hash));
+        global_id.local(), download_file->bytes_so_far(), os_error, hash));
   // We need to keep the download around until the UI thread has finalized
   // the name.
 }
@@ -200,10 +197,10 @@ void DownloadFileManager::OnResponseCompleted(
 // This method will be sent via a user action, or shutdown on the UI thread, and
 // run on the download thread. Since this message has been sent from the UI
 // thread, the download may have already completed and won't exist in our map.
-void DownloadFileManager::CancelDownload(int id) {
-  VLOG(20) << __FUNCTION__ << "()" << " id = " << id;
+void DownloadFileManager::CancelDownload(DownloadId global_id) {
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DownloadFileMap::iterator it = downloads_.find(id);
+  DownloadFileMap::iterator it = downloads_.find(global_id);
   if (it == downloads_.end())
     return;
 
@@ -212,24 +209,24 @@ void DownloadFileManager::CancelDownload(int id) {
            << " download_file = " << download_file->DebugString();
   download_file->Cancel();
 
-  EraseDownload(id);
+  EraseDownload(global_id);
 }
 
-void DownloadFileManager::CompleteDownload(int id) {
+void DownloadFileManager::CompleteDownload(DownloadId global_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  if (!ContainsKey(downloads_, id))
+  if (!ContainsKey(downloads_, global_id))
     return;
 
-  DownloadFile* download_file = downloads_[id];
+  DownloadFile* download_file = downloads_[global_id];
 
   VLOG(20) << " " << __FUNCTION__ << "()"
-           << " id = " << id
+           << " id = " << global_id
            << " download_file = " << download_file->DebugString();
 
   download_file->Detach();
 
-  EraseDownload(id);
+  EraseDownload(global_id);
 }
 
 void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
@@ -249,7 +246,7 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 
   for (std::set<DownloadFile*>::iterator i = to_remove.begin();
        i != to_remove.end(); ++i) {
-    downloads_.erase((*i)->id());
+    downloads_.erase(DownloadId((*i)->GetDownloadManager(), (*i)->id()));
     delete *i;
   }
 }
@@ -263,12 +260,12 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 // 1. tmp -> foo.crdownload (not final, safe)
 // 2. tmp-> Unconfirmed.xxx.crdownload (not final, dangerous)
 void DownloadFileManager::RenameInProgressDownloadFile(
-    int id, const FilePath& full_path) {
-  VLOG(20) << __FUNCTION__ << "()" << " id = " << id
+    DownloadId global_id, const FilePath& full_path) {
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
            << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  DownloadFile* download_file = GetDownloadFile(id);
+  DownloadFile* download_file = GetDownloadFile(global_id);
   if (!download_file)
     return;
 
@@ -278,7 +275,7 @@ void DownloadFileManager::RenameInProgressDownloadFile(
   if (!download_file->Rename(full_path)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
-    CancelDownloadOnRename(id);
+    CancelDownloadOnRename(global_id);
   }
 }
 
@@ -290,13 +287,15 @@ void DownloadFileManager::RenameInProgressDownloadFile(
 // 1. foo.crdownload -> foo (final, safe)
 // 2. Unconfirmed.xxx.crdownload -> xxx (final, validated)
 void DownloadFileManager::RenameCompletingDownloadFile(
-    int id, const FilePath& full_path, bool overwrite_existing_file) {
-  VLOG(20) << __FUNCTION__ << "()" << " id = " << id
+    DownloadId global_id,
+    const FilePath& full_path,
+    bool overwrite_existing_file) {
+  VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
            << " overwrite_existing_file = " << overwrite_existing_file
            << " full_path = \"" << full_path.value() << "\"";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  DownloadFile* download_file = GetDownloadFile(id);
+  DownloadFile* download_file = GetDownloadFile(global_id);
   if (!download_file)
     return;
 
@@ -326,7 +325,7 @@ void DownloadFileManager::RenameCompletingDownloadFile(
   if (!download_file->Rename(new_path)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
-    CancelDownloadOnRename(id);
+    CancelDownloadOnRename(global_id);
     return;
   }
 
@@ -336,19 +335,17 @@ void DownloadFileManager::RenameCompletingDownloadFile(
   download_file->AnnotateWithSourceInformation();
 #endif
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          download_manager, &DownloadManager::OnDownloadRenamedToFinalName, id,
-          new_path, uniquifier));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
+      download_manager, &DownloadManager::OnDownloadRenamedToFinalName,
+      global_id.local(), new_path, uniquifier));
 }
 
 // Called only from RenameInProgressDownloadFile and
 // RenameCompletingDownloadFile on the FILE thread.
-void DownloadFileManager::CancelDownloadOnRename(int id) {
+void DownloadFileManager::CancelDownloadOnRename(DownloadId global_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  DownloadFile* download_file = GetDownloadFile(id);
+  DownloadFile* download_file = GetDownloadFile(global_id);
   if (!download_file)
     return;
 
@@ -364,22 +361,22 @@ void DownloadFileManager::CancelDownloadOnRename(int id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(download_manager,
-                        &DownloadManager::CancelDownload, id));
+                        &DownloadManager::CancelDownload, global_id.local()));
 }
 
-void DownloadFileManager::EraseDownload(int id) {
+void DownloadFileManager::EraseDownload(DownloadId global_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  if (!ContainsKey(downloads_, id))
+  if (!ContainsKey(downloads_, global_id))
     return;
 
-  DownloadFile* download_file = downloads_[id];
+  DownloadFile* download_file = downloads_[global_id];
 
   VLOG(20) << " " << __FUNCTION__ << "()"
-           << " id = " << id
+           << " id = " << global_id
            << " download_file = " << download_file->DebugString();
 
-  downloads_.erase(id);
+  downloads_.erase(global_id);
 
   delete download_file;
 

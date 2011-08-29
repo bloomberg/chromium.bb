@@ -32,7 +32,6 @@
 #include "content/browser/download/save_file_resource_handler.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/resource_context.h"
 #include "content/browser/renderer_host/async_resource_handler.h"
 #include "content/browser/renderer_host/buffered_resource_handler.h"
 #include "content/browser/renderer_host/cross_site_resource_handler.h"
@@ -48,6 +47,7 @@
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
+#include "content/browser/resource_context.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/worker_host/worker_service.h"
@@ -808,12 +808,15 @@ void ResourceDispatcherHost::BeginDownload(
 
   request_id_--;
 
+  DownloadId dl_id = context.next_download_id_thunk().Run();
+
   scoped_refptr<ResourceHandler> handler(
       new DownloadResourceHandler(this,
                                   child_id,
                                   route_id,
                                   request_id_,
                                   url,
+                                  dl_id,
                                   download_file_manager_.get(),
                                   request,
                                   prompt_for_save_location,
@@ -835,7 +838,7 @@ void ResourceDispatcherHost::BeginDownload(
 
   request->set_method("GET");
   request->set_referrer(MaybeStripReferrer(referrer).spec());
-  request->set_context(context.request_context());
+  request->set_context(request_context);
   request->set_load_flags(request->load_flags() |
       net::LOAD_IS_DOWNLOAD);
 
