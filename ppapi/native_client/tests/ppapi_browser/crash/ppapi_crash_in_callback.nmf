@@ -2,6 +2,6 @@
   "program": {
     "x86-32": {"url": "ppapi_crash_in_callback_x86-32.nexe"},
     "x86-64": {"url": "ppapi_crash_in_callback_x86-64.nexe"},
-    "arm": {"url": "ppapi_crash_in_callabck.nexe"}
+    "arm": {"url": "ppapi_crash_in_callback_arm.nexe"}
   }
 }
