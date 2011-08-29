@@ -97,8 +97,14 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest, TestSettingsPageLTR) {\
   RunBidiCheckerOnPage(chrome::kChromeUISettingsURL, false);\
 }
 
+// http://crbug.com/94642
+#if defined(OS_MACOSX)
+#define MAYBE_TestSettingsAutofillPageLTR FLAKY_TestSettingsAutofillPageLTR
+#else
+#define MAYBE_TestSettingsAutofillPageLTR TestSettingsAutofillPageLTR
+#endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTest,
-                       TestSettingsAutofillPageLTR) {
+                       MAYBE_TestSettingsAutofillPageLTR) {
   std::string url(chrome::kChromeUISettingsURL);
   url += std::string(chrome::kAutofillSubPage);
 
