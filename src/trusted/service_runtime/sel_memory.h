@@ -11,6 +11,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_MEMORY_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_MEMORY_H_ 1
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -49,6 +51,11 @@ int   NaCl_mprotect(void          *addr,
 int   NaCl_madvise(void           *start,
                    size_t         length,
                    int            advice) NACL_WUR;
+
+
+#if NACL_LINUX
+extern void *g_nacl_prereserved_sandbox_addr;
+#endif
 
 
 #ifdef __cplusplus
