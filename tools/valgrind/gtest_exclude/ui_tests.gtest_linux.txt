@@ -24,3 +24,16 @@ SessionHistoryTest.BasicBackForward
 
 # Times out on CrOS pretty often. http://crbug.com/92535
 AutomatedUITestBase.FindInPage
+
+# mmap error. See http://crbug.com/28439
+AutomatedUITestBase.Navigate
+AutomationProxyVisibleTest.AppendTab
+ErrorPageTest.IFrameDNSError_GoBackAndForward
+HistoryTester.VerifyHistoryLength1
+LocaleTestsHe.TestStart
+LoginPromptTest.CancelRedundantAuths
+NPAPITesterBase.GetURL
+OptionsUITest.LoadOptionsByURL
+PPAPITest.FileRef
+PPAPITest.Graphics2D
+ResourceDispatcherTest.CrossSiteNavigationNonBuffered
