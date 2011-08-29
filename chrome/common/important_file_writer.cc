@@ -36,22 +36,33 @@ class WriteToDiskTask : public Task {
     // as target file, so it can be moved in one step, and that the temp file
     // is securely created.
     FilePath tmp_file_path;
-    FILE* tmp_file = file_util::CreateAndOpenTemporaryFileInDir(
-        path_.DirName(), &tmp_file_path);
-    if (!tmp_file) {
+    if (!file_util::CreateTemporaryFileInDir(path_.DirName(), &tmp_file_path)) {
       LogFailure("could not create temporary file");
       return;
     }
 
-    size_t bytes_written = fwrite(data_.data(), 1, data_.length(), tmp_file);
-    if (!file_util::CloseFile(tmp_file)) {
+    int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE;
+    base::PlatformFile tmp_file =
+        base::CreatePlatformFile(tmp_file_path, flags, NULL, NULL);
+    if (tmp_file == base::kInvalidPlatformFileValue) {
+      LogFailure("could not open temporary file");
+      return;
+    }
+
+    CHECK_LE(data_.length(), static_cast<size_t>(kint32max));
+    int bytes_written = base::WritePlatformFile(
+        tmp_file, 0, data_.data(), static_cast<int>(data_.length()));
+    base::FlushPlatformFile(tmp_file);  // Ignore return value.
+
+    if (!base::ClosePlatformFile(tmp_file)) {
       LogFailure("failed to close temporary file");
       file_util::Delete(tmp_file_path, false);
       return;
     }
-    if (bytes_written < data_.length()) {
+
+    if (bytes_written < static_cast<int>(data_.length())) {
       LogFailure("error writing, bytes_written=" +
-                 base::Uint64ToString(bytes_written));
+                 base::IntToString(bytes_written));
       file_util::Delete(tmp_file_path, false);
       return;
     }
@@ -102,6 +113,10 @@ bool ImportantFileWriter::HasPendingWrite() const {
 
 void ImportantFileWriter::WriteNow(const std::string& data) {
   DCHECK(CalledOnValidThread());
+  if (data.length() > static_cast<size_t>(kint32max)) {
+    NOTREACHED();
+    return;
+  }
 
   if (HasPendingWrite())
     timer_.Stop();
