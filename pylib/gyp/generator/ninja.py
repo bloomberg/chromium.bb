@@ -47,9 +47,19 @@ generator_default_variables = {
   'RULE_INPUT_NAME': '$name',
 }
 
+# TODO: enable cross compiling once we figure out:
+# - how to not build extra host objects in the non-cross-compile case.
+# - how to decide what the host compiler is (should not just be $cc).
+# - need ld_host as well.
+generator_supports_multiple_toolsets = False
+
+# TODO: compute cc/cxx/ld/etc. by command-line arguments and system tests.
 NINJA_BASE = """\
 cc = %(cc)s
 cxx = %(cxx)s
+ld = $cxx -Wl,--threads -Wl,--thread-count=4
+cc_host = $cc
+cxx_host = $cxx
 
 rule cc
   depfile = $out.d
@@ -69,14 +79,12 @@ rule alink
 
 rule solink
   description = SOLINK $out
-  command = g++ -Wl,--threads -Wl,--thread-count=4 $
-    -shared $ldflags -o $out -Wl,-soname=$soname $
+  command = $ld -shared $ldflags -o $out -Wl,-soname=$soname $
     -Wl,--whole-archive $in -Wl,--no-whole-archive $libs
 
 rule link
   description = LINK $out
-  command = g++ -Wl,--threads -Wl,--thread-count=4 $
-    $ldflags -o $out -Wl,-rpath=\$$ORIGIN/lib $
+  command = $ld $ldflags -o $out -Wl,-rpath=\$$ORIGIN/lib $
     -Wl,--start-group $in -Wl,--end-group $libs
 
 rule stamp
@@ -214,15 +222,21 @@ class NinjaWriter:
     #   Input: foo/bar.gyp, target targ, references baz/out.o
     #   Output: obj/foo/baz/targ.out.o (if qualified)
     #           obj/foo/baz/out.o (otherwise)
+    #     (and obj.host instead of obj for cross-compiles)
     #
     # Why this scheme and not some other one?
     # 1) for a given input, you can compute all derived outputs by matching
     #    its path, even if the input is brought via a gyp file with '..'.
     # 2) simple files like libraries and stamps have a simple filename.
+
+    obj = 'obj'
+    if self.toolset != 'target':
+      obj += '.' + self.toolset
+
     path_dir, path_basename = os.path.split(path)
     if qualified:
       path_basename = self.name + '.' + path_basename
-    return os.path.normpath(os.path.join('obj', self.base_dir, path_dir,
+    return os.path.normpath(os.path.join(obj, self.base_dir, path_dir,
                                          path_basename))
 
   def StampPath(self, name):
@@ -243,6 +257,7 @@ class NinjaWriter:
       return None
 
     self.name = spec['target_name']
+    self.toolset = spec['toolset']
 
     # Compute predepends for all rules.
     # prebuild is the dependencies this target depends on before
@@ -307,6 +322,8 @@ class NinjaWriter:
     |message| is a hand-written description, or None if not available.
     |fallback| is the gyp-level name of the step, usable as a fallback.
     """
+    if self.toolset != 'target':
+      verb += '(%s)' % self.toolset
     if message:
       return '%s %s' % (verb, self.ExpandSpecial(message))
     else:
@@ -417,6 +434,10 @@ class NinjaWriter:
 
   def WriteSources(self, config, sources, predepends):
     """Write build rules to compile all of |sources|."""
+    if self.toolset == 'host':
+      self.ninja.variable('cc', '$cc_host')
+      self.ninja.variable('cxx', '$cxx_host')
+
     self.WriteVariableList('defines',
         ['-D' + MaybeQuoteShellArgument(ninja_syntax.escape(d))
          for d in config.get('defines', [])])
@@ -497,7 +518,7 @@ class NinjaWriter:
                      implicit=list(implicit_deps),
                      variables=extra_bindings)
 
-    if self.name != output:
+    if self.name != output and self.toolset == 'target':
       # Write a short name to build this target.  This benefits both the
       # "build chrome" case as well as the gyp tests, which expect to be
       # able to run actions and build libraries by their short name.
@@ -563,7 +584,10 @@ class NinjaWriter:
     if spec['type'] in ('executable', 'loadable_module'):
       return filename
     elif spec['type'] == 'shared_library':
-      return os.path.join('lib', filename)
+      libdir = 'lib'
+      if self.toolset != 'target':
+        libdir = 'lib/%s' % self.toolset
+      return os.path.join(libdir, filename)
     else:
       return self.GypPathToUniqueOutput(filename, qualified=False)
 
@@ -580,7 +604,11 @@ class NinjaWriter:
     # TODO: we shouldn't need to qualify names; we do it because
     # currently the ninja rule namespace is global, but it really
     # should be scoped to the subninja.
-    rule_name = ('%s.%s' % (self.name, name)).replace(' ', '_')
+    rule_name = self.name
+    if self.toolset == 'target':
+      rule_name += '.' + self.toolset
+    rule_name += '.' + name
+    rule_name = rule_name.replace(' ', '_')
 
     args = args[:]
 
@@ -647,14 +675,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
   target_outputs = {}
   for qualified_target in target_list:
     # qualified_target is like: third_party/icu/icu.gyp:icui18n#target
-    build_file, target, _ = gyp.common.ParseQualifiedTarget(qualified_target)
+    build_file, name, toolset = \
+        gyp.common.ParseQualifiedTarget(qualified_target)
 
     # TODO: what is options.depth and how is it different than
     # options.toplevel_dir?
     build_file = gyp.common.RelativePath(build_file, options.depth)
 
     base_path = os.path.dirname(build_file)
-    output_file = os.path.join('obj', base_path, target + '.ninja')
+    obj = 'obj'
+    if toolset != 'target':
+      obj += '.' + toolset
+    output_file = os.path.join(obj, base_path, name + '.ninja')
     spec = target_dicts[qualified_target]
     config = spec['configurations'][config_name]
 
