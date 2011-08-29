@@ -87,7 +87,6 @@ LEAK
 SHELL32.dll!SHGetItemFromDataObject
 
 LEAK
-ole32.dll!*
 ...
 ole32.dll!*
 SHELL32.dll!SHChangeNotifySuspendResume
@@ -512,6 +511,16 @@ LEAK
 dbghelp.dll!*
 ...
 dbghelp.dll!StackWalk64
+
+# http://code.google.com/p/drmemory/issues/detail?id=569
+# symbols w/o PDB make no sense, so sticking with mod+offs
+POSSIBLE LEAK
+<RPCRT4.dll+0x10636>
+<RPCRT4.dll+0x10610>
+...
+<RPCRT4.dll+0x3474?>
+<ntdll.dll+0x64fde>
+<ntdll.dll+0x447f3>
 
 ############################
 # TODO(timurrrr): investigate these
