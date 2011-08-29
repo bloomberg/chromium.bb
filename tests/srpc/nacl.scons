@@ -23,7 +23,8 @@ srpc_test_nexe = env.ComponentProgram(
         '${PTHREAD_LIBS}'])
 env.Publish(srpc_test_nexe_name, 'run',
     ['srpc_basic.html',
-     'srpc_perf.html'])
+     'srpc_perf.html',
+     'srpc_test.nmf'])
 
 srpc_test_nonbrowser = env.ComponentProgram(
     'srpc_test_nonbrowser', srpc_test_objs,
@@ -42,6 +43,9 @@ srpc_nrd_server_nexe = env.ComponentProgram(
         'gio',
         'm',
         '${PTHREAD_LIBS}'])
+env.Publish(srpc_nrd_server_nexe_name, 'run',
+    ['srpc_nrd_server.nmf'])
+
 
 srpc_nrd_client_nexe_name = ('srpc_nrd_client_%s' %
                              env.get('TARGET_FULLARCH'))
@@ -57,7 +61,9 @@ srpc_nrd_client_nexe = env.ComponentProgram(
         '${PTHREAD_LIBS}'])
 env.Publish(srpc_nrd_client_nexe_name, 'run',
     ['srpc_nrd_xfer.html',
-     srpc_nrd_server_nexe])
+     'srpc_nrd_client.nmf',
+     srpc_nrd_server_nexe,
+     'srpc_nrd_server.nmf'])
 
 
 srpc_bidir_nexe_name = ('srpc_bidir_%s' % env.get('TARGET_FULLARCH'))
@@ -106,7 +112,6 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_basic_chrome_browser_test.out',
     url='srpc_basic.html',
-    nmf='srpc_test.nmf',
     files=env.ExtractPublishedFiles(srpc_test_nexe_name),
     args=['--enable_experimental_js'])
 env.AddNodeToTestSuite(node,
@@ -117,11 +122,9 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_nrd_xfer_chrome_browser_test.out',
     url='srpc_nrd_xfer.html',
-    nmf=['srpc_nrd_client.nmf', 'srpc_nrd_server.nmf'],
     files=env.ExtractPublishedFiles(srpc_nrd_client_nexe_name),
     args=['--enable_experimental_js'])
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_nrd_xfer_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                 env.Bit('nacl_glibc'))
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

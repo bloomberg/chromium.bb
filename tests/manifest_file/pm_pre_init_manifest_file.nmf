@@ -1,3 +1,4 @@
+// There should not be CRs in here, just LF termination!
 {
   "program": {
     "x86-32": {"url": "pm_pre_init_manifest_file_test_x86-32.nexe"},
@@ -11,7 +12,7 @@
       "arm":    {"url": "pm_pre_init_manifest_file_test_arm.nexe"}
     },
     "test_file": {
-      "portable": {"url": "test_file.txt"}
+      "portable": {"url": "pm_pre_init_manifest_file.nmf"}
     }
   }
 }

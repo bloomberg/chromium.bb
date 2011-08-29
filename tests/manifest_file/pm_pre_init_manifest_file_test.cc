@@ -151,7 +151,6 @@ extern "C" void NaClPluginLowLevelInitializationComplete(void) {
   }
   fclose(iob);  // closed desc
 
-  sb.Printf("\n");
   sb.Printf("Opening non-existent file:\n");
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeBySignature(&manifest_channel,

@@ -20,18 +20,14 @@ nexe = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
 # These files need their own install command.
 dest_copy = env.Replicate('$STAGING_DIR/chrome_extension',
                           [env.File('$STAGING_DIR/%s' % nexe),
+                           env.File('$STAGING_DIR/ppapi_test_example.nmf'),
                            'background.html',
                            'manifest.json',
                            'test_bridge.js'])
-dest_copy.append(env.CopyLibsForExtension(
-    '$STAGING_DIR/chrome_extension',
-    '$STAGING_DIR/ppapi_test_example.nmf'))
 
 node = env.PPAPIBrowserTester(
     'chrome_extension_test.out',
     url='chrome_extension_test.html',
-    nmf='${SOURCE_ROOT}/ppapi/native_client/' +
-        'tests/ppapi_test_example/ppapi_test_example.nmf',
     extensions=[env.Dir('$STAGING_DIR/chrome_extension')],
     files=[env.File('chrome_extension_test.html')]
     )

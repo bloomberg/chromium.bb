@@ -38,11 +38,6 @@ def BuildArgParser():
                     metavar='DEST SRC',
                     help='Add file SRC to be served from the HTTP server, '
                     'to be made visible under the path DEST.')
-  parser.add_option('--extra_serving_dir', dest='extra_dirs', action='append',
-                    type='string', default=[],
-                    metavar='DIRNAME',
-                    help='Add directory DIRNAME to be served from the HTTP '
-                    'server to be made visible under the root.')
   parser.add_option('--test_arg', dest='test_args', action='append',
                     type='string', nargs=2, default=[],
                     metavar='KEY VALUE',
@@ -162,8 +157,7 @@ def Run(url, options):
                    dict(options.map_redirects),
                    options.allow_404,
                    options.bandwidth,
-                   listener,
-                   options.extra_dirs)
+                   listener)
 
   browser = browsertester.browserlauncher.ChromeLauncher(options)
 
@@ -229,7 +223,6 @@ def RunFromCommandLine():
   options, args = parser.parse_args()
 
   if len(args) != 0:
-    print args
     parser.error('Invalid arguments')
 
   # Validate the URL

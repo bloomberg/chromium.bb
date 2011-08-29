@@ -35,14 +35,10 @@ env.Alias('test_runner.html', dest_copy)
 
 node = env.PPAPIBrowserTester(
     'inbrowser_test_runner.out', url='test_runner.html',
-    nmf=['${SCONSTRUCT_DIR}/tests/dynamic_code_loading/dynamic_load_test.nmf',
-         '${SCONSTRUCT_DIR}/tests/dynamic_code_loading/dynamic_modify_test.nmf',
-         '${SCONSTRUCT_DIR}/tests/imc_shm_mmap/imc_shm_mmap_test.nmf'],
     files=[env.File('test_runner.html')] + test_files,
     args=['--enable_experimental_js'])
 
 env.AddNodeToTestSuite(node, ['chrome_browser_tests'],
                        'run_inbrowser_test_runner',
                        is_flaky=True, # Don't subject Chrome to our problems.
-                       is_broken=env.PPAPIBrowserTesterIsBroken() or
-                                 env.Bit('nacl_glibc'))
+                       is_broken=env.PPAPIBrowserTesterIsBroken())
