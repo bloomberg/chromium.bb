@@ -155,8 +155,6 @@ const char kWebKitSerifFontFamilyKorean[] =
     "webkit.webprefs.fonts.serif.Hang";
 const char kWebKitSansSerifFontFamilyKorean[] =
     "webkit.webprefs.fonts.sansserif.Hang";
-const char kWebKitCursiveFontFamilyKorean[] =
-    "webkit.webprefs.fonts.cursive.Hang";
 const char kWebKitStandardFontFamilySimplifiedHan[] =
     "webkit.webprefs.fonts.standard.Hans";
 const char kWebKitFixedFontFamilySimplifiedHan[] =
