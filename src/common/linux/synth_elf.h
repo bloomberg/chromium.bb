@@ -149,6 +149,15 @@ class SymbolTable : public Section {
   StringTable& table_;
 };
 
+// A class to build GNU Build ID note sections
+class BuildIDNote : public Section {
+public:
+  BuildIDNote(const uint8_t* id_bytes, size_t id_size, Endianness endianness);
+
+  // Append a new Build ID note section to |elf|.
+  static void AppendSection(ELF& elf, const uint8_t* id_bytes, size_t id_size);
+};
+
 }  // namespace synth_elf
 }  // namespace google_breakpad
 
