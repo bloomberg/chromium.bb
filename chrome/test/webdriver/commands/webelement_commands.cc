@@ -7,14 +7,17 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/third_party/icu/icu_utf.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/webdriver_basic_types.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "chrome/test/webdriver/webdriver_session.h"
+#include "chrome/test/webdriver/webdriver_util.h"
 #include "third_party/webdriver/atoms.h"
 
 namespace webdriver {
@@ -529,48 +532,49 @@ Error* ElementValueCommand::HasAttributeWithLowerCaseValueASCII(
 }
 
 Error* ElementValueCommand::DragAndDropFilePaths() const {
+  ListValue* path_list;
+  if (!GetListParameter("value", &path_list))
+    return new Error(kBadRequest, "Missing or invalid 'value' parameter");
+
+  // Compress array into single string.
+  FilePath::StringType paths_string;
+  for (size_t i = 0; i < path_list->GetSize(); ++i) {
+    FilePath::StringType path_part;
+    if (!path_list->GetString(i, &path_part)) {
+      return new Error(
+          kBadRequest,
+          "'value' is invalid: " + JsonStringify(path_list));
+    }
+    paths_string.append(path_part);
+  }
+
+  // Separate the string into separate paths, delimited by \n.
+  std::vector<FilePath::StringType> paths;
+  base::SplitString(paths_string, '\n', &paths);
+
+  // Return an error if trying to drop multiple paths on a single file input.
   bool multiple = false;
   Error* error = HasAttributeWithLowerCaseValueASCII("multiple", "true",
                                                      &multiple);
-
-  if (error) {
+  if (error)
     return error;
-  }
-
-  ListValue* path_list;
-  if (!GetListParameter("value", &path_list)) {
-    return new Error(kBadRequest, "Missing or invalid 'value' parameter");
-  }
-
-  if (!multiple && path_list->GetSize() > 1) {
+  if (!multiple && paths.size() > 1)
     return new Error(kBadRequest, "The element can not hold multiple files");
-  }
 
-  std::vector<FilePath::StringType> paths;
-  for (size_t i = 0; i < path_list->GetSize(); ++i) {
-    FilePath::StringType path;
-    if (!path_list->GetString(i, &path)) {
-      return new Error(
-          kBadRequest,
-          base::StringPrintf("'value' list item #%" PRIuS " is not a string",
-                             i + 1));
-    }
-
-    if (!file_util::PathExists(FilePath(path))) {
+  // Check the files exist.
+  for (size_t i = 0; i < paths.size(); ++i) {
+    if (!file_util::PathExists(FilePath(paths[i]))) {
       return new Error(
           kBadRequest,
           base::StringPrintf("'%s' does not exist on the file system",
-                             path.c_str()));
+              UTF16ToUTF8(FilePath(paths[i]).LossyDisplayName()).c_str()));
     }
-
-    paths.push_back(path);
   }
 
   Point location;
   error = session_->GetClickableLocation(element, &location);
-  if (error) {
+  if (error)
     return error;
-  }
 
   return session_->DragAndDropFilePaths(location, paths);
 }

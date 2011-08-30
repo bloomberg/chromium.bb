@@ -676,8 +676,7 @@ class FileUploadControlTest(ChromeDriverTest):
     super(FileUploadControlTest, self).setUp()
     self._driver = self.GetNewDriver()
 
-  # See crbug.com/93909.
-  def DISABLED_testSetFilePathToFileUploadControl(self):
+  def testSetFilePathToFileUploadControl(self):
     """Verify a file path is set to the file upload control."""
     self._driver.get(GetTestDataUrl() + '/upload.html')
 
@@ -709,10 +708,9 @@ class FileUploadControlTest(ChromeDriverTest):
     multiple = fileupload_single.get_attribute('multiple')
     self.assertEqual('false', multiple)
     self.assertRaises(WebDriverException, fileupload_single.send_keys,
-                      filepaths[0], filepaths[1], filepaths[2], filepaths[3])
+                      '\n'.join(filepaths))
 
-  # See crbug.com/93909.
-  def DISABLED_testSetMultipleFilePathsToFileUploadControl(self):
+  def testSetMultipleFilePathsToFileUploadControl(self):
     """Verify multiple file paths are set to the file upload control."""
     self._driver.get(GetTestDataUrl() + '/upload.html')
 
@@ -729,8 +727,7 @@ class FileUploadControlTest(ChromeDriverTest):
     fileupload_multi = self._driver.find_element_by_name('fileupload_multi')
     multiple = fileupload_multi.get_attribute('multiple')
     self.assertEqual('true', multiple)
-    fileupload_multi.send_keys(filepaths[0], filepaths[1], filepaths[2],
-                               filepaths[3])
+    fileupload_multi.send_keys('\n'.join(filepaths))
 
     files_on_element = self._driver.execute_script(
         'return document.getElementById("fileupload_multi").files;')
