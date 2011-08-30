@@ -15,6 +15,9 @@
     'variables': {
       'target_base': 'none',
     },
+    'include_dirs': [
+        '<(DEPTH)/ppapi',
+        ],
     'target_conditions': [
       ['target_base=="sel_ldr_launcher"', {
         'sources': [
