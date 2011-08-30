@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
+#include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/test/base/v8_unit_test.h"
 #include "content/common/json_value_serializer.h"
 #include "grit/common_resources.h"
@@ -130,7 +131,7 @@ TEST_F(ExtensionApiJsonValidityTest, Basic) {
 // chrome/renderer/resources/extension_process_bindings.js .
 TEST_F(ExtensionApiJsonValidityTest, MAYBE_WithV8) {
   std::string ext_api_string =
-      bindings_utils::GetStringResource(IDR_EXTENSION_API_JSON);
+      ExtensionBase::GetStringResource(IDR_EXTENSION_API_JSON);
 
   // Create a global variable holding the text of extension_api.json .
   SetGlobalStringVar("ext_api_json_text", ext_api_string);

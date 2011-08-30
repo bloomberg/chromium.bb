@@ -15,6 +15,7 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
@@ -37,8 +38,6 @@ using bindings_utils::ContextInfo;
 using bindings_utils::ContextList;
 using bindings_utils::GetContexts;
 using bindings_utils::GetInfoForCurrentContext;
-using bindings_utils::GetStringResource;
-using bindings_utils::ExtensionBase;
 using bindings_utils::GetPendingRequestMap;
 using bindings_utils::PendingRequestMap;
 using WebKit::WebDataSource;

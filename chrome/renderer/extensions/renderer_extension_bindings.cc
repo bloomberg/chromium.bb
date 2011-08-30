@@ -14,13 +14,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/renderer_resources.h"
-
-using bindings_utils::GetStringResource;
-using bindings_utils::ExtensionBase;
 
 // Message passing API example (in a content script):
 // var extension =

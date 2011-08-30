@@ -25,6 +25,7 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/event_bindings.h"
+#include "chrome/renderer/extensions/extension_base.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
@@ -41,11 +42,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "webkit/glue/webkit_glue.h"
 
-using bindings_utils::GetStringResource;
 using bindings_utils::GetPendingRequestMap;
 using bindings_utils::PendingRequest;
 using bindings_utils::PendingRequestMap;
-using bindings_utils::ExtensionBase;
 using WebKit::WebFrame;
 using WebKit::WebView;
 

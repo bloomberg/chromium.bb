@@ -4,16 +4,15 @@
 
 #include "chrome/renderer/automation/dom_automation_v8_extension.h"
 
-#include "chrome/renderer/extensions/bindings_utils.h"
+#include "chrome/renderer/extensions/extension_base.h"
 #include "grit/renderer_resources.h"
-
-using bindings_utils::GetStringResource;
 
 const char* DomAutomationV8Extension::kName = "chrome/domautomation";
 
 v8::Extension* DomAutomationV8Extension::Get() {
   static v8::Extension* extension =
       new v8::Extension(
-          kName, GetStringResource(IDR_DOM_AUTOMATION_JS), 0, NULL);
+          kName, ExtensionBase::GetStringResource(IDR_DOM_AUTOMATION_JS), 0,
+          NULL);
   return extension;
 }
