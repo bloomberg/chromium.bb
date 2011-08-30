@@ -59,17 +59,24 @@ IRT_X32 = 'scons-out/nacl_irt-x86-32/obj/src/untrusted/irt/irt_core.nexe'
 SEL_LDR_X64 = 'scons-out/opt-linux-x86-64/staging/sel_ldr'
 IRT_X64 = 'scons-out/nacl_irt-x86-64/obj/src/untrusted/irt/irt_core.nexe'
 
-NACL_GCC_X32 = 'toolchain/linux_x86/bin/nacl-gcc'
+NACL_GCC_X32 = 'toolchain/linux_x86_newlib/bin/i686-nacl-gcc'
 
-NACL_GCC_X64 = 'toolchain/linux_x86/bin/nacl64-gcc'
+NACL_GCC_X64 = 'toolchain/linux_x86_newlib/bin/x86_64-nacl-gcc'
 
-GLOBAL_CFLAGS = '-DSTACK_SIZE=0x40000 -DNO_TRAMPOLINES -DNO_LABEL_VALUES'
+GLOBAL_CFLAGS = ' '.join(['-DSTACK_SIZE=0x40000',
+                          '-D__SIZEOF_INT__=4',
+                          '-D__SIZEOF_LONG__=4',
+                          '"-D__INT_LEAST8_TYPE__=signed char"',
+                          '"-D__UINT_LEAST32_TYPE__=unsigned int"',
+                          '-D_XOPEN_SOURCE=600',
+                          '-DNO_TRAMPOLINES',
+                          '-DNO_LABEL_VALUES',])
 ######################################################################
 # LOCAL GCC
 ######################################################################
 COMMANDS_local_gcc = [
     ('compile',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe -lm',
      ),
     ]
 
@@ -125,7 +132,7 @@ TOOLCHAIN_CONFIGS['gcc_cs_arm_O9'] = ToolchainConfig(
 ######################################################################
 COMMANDS_nacl_gcc = [
     ('compile',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe -lm',
      ),
     ('sel_ldr',
      '%(SEL_LDR)s -B %(IRT)s %(tmp)s.exe',
@@ -140,7 +147,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O0'] = ToolchainConfig(
     CC = NACL_GCC_X32,
     SEL_LDR = SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0 -static -Bscons-out/nacl-x86-32/lib/ ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O9'] = ToolchainConfig(
     desc='nacl gcc with optimizations [x86-32]',
@@ -149,7 +156,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O9'] = ToolchainConfig(
     CC = NACL_GCC_X32,
     SEL_LDR = SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O9 -static')
+    CFLAGS = '-O9 -static -Bscons-out/nacl-x86-32/lib/ ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O0'] = ToolchainConfig(
     desc='nacl gcc [x86-64]',
@@ -158,7 +165,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O0'] = ToolchainConfig(
     CC = NACL_GCC_X64,
     SEL_LDR = SEL_LDR_X64,
     IRT = IRT_X64,
-    CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0 -static -Bscons-out/nacl-x86-64/lib/ ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O9'] = ToolchainConfig(
     desc='nacl gcc with optimizations [x86-64]',
@@ -167,7 +174,7 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O9'] = ToolchainConfig(
     CC = NACL_GCC_X64,
     SEL_LDR = SEL_LDR_X64,
     IRT = IRT_X64,
-    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O9 -static -Bscons-out/nacl-x86-64/lib/ ' + GLOBAL_CFLAGS)
 
 
 ######################################################################
@@ -187,7 +194,7 @@ COMMANDS_llvm_pnacl_arm = [
      '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.bc',
      ),
     ('translate-arm',
-     '%(LD)s %(tmp)s.bc -o %(tmp)s.nexe',
+     '%(LD)s %(tmp)s.bc -lm -o %(tmp)s.nexe',
      ),
     ('qemu-sel_ldr',
      '%(EMU)s run %(SEL_LDR)s -B %(IRT)s -Q %(tmp)s.nexe',
@@ -227,8 +234,8 @@ COMMANDS_llvm_pnacl_x86_O0 = [
     ('compile-bc',
      '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.bc',
      ),
-    ('translate-x8632',
-     '%(LD)s %(tmp)s.bc -o %(tmp)s.nexe ',
+    ('translate-x86',
+     '%(LD)s %(tmp)s.bc -lm -o %(tmp)s.nexe ',
      ),
     ('sel_ldr',
      '%(SEL_LDR)s -B %(IRT)s %(tmp)s.nexe',

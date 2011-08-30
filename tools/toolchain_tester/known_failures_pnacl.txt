@@ -1,0 +1,212 @@
+# NOTE:
+# progress on eliminating failures here should be recorded via
+# http://code.google.com/p/nativeclient/issues/detail?id=2204
+# ======================================================================
+# failures in phase sel_ldr
+# ======================================================================
+# ??? TODO
+20080506-1.c
+# ??? TODO
+call-trap-1.c
+# ??? TODO
+pr34070-1.c
+# ??? TODO
+pr34070-2.c
+# ??? TODO
+pr34768-1.c
+# ??? TODO
+pr34971.c
+# ??? TODO
+pr35163.c
+# integer overflow ??? TODO
+pr36077.c
+# integer overflow ??? TODO
+pr40404.c
+# complex va_arg ??? TODO
+va-arg-trap-1.c
+# alignment issues TODO
+alloca-1.c
+# setjmp/longjmp TODO
+built-in-setjmp.c
+# some profiling stuff - probably not compatible with llvm
+eeprof-1.c
+# long long miscompile
+pr42544.c
+# null pointers - llvm is smart about these
+pr44555.c
+# sizeof integer overflow
+pr48197.c
+# preprocessor push/pop_macro feature
+pushpop_macro.c
+# simd style vectors (broken for x8632)
+simd-2.c
+# ??? TODO
+vla-dealloc-1.c
+# ======================================================================
+# failures in phase translate-x8632
+# ======================================================================
+# ??? TODO
+20020720-1.c
+# complex va_arg
+920625-1.c
+# complex va_arg
+920908-1.c
+# complex va_arg
+931004-10.c
+# complex va_arg
+931004-12.c
+# complex va_arg
+931004-14.c
+# complex va_arg
+931004-2.c
+# complex va_arg
+931004-4.c
+# complex va_arg
+931004-6.c
+# complex va_arg
+931004-8.c
+# ??? TODO
+pr20621-1.c
+# complex va_arg
+pr38151.c
+# complex va_arg
+stdarg-3.c
+# complex va_arg
+strct-stdarg-1.c
+# complex va_arg
+strct-varg-1.c
+# complex va_arg
+va-arg-22.c
+# undef signal
+fp-cmp-1.c
+# undef signal
+fp-cmp-2.c
+# undef signal
+fp-cmp-3.c
+# undef signbit
+20080502-1.c
+# undef signbit
+pr35456.c
+# undef isinfl
+pr39228.c
+# undef signal
+20101011-1.c
+# undef __builtin_va_arg_pack
+va-arg-pack-1.c
+# prefetch broken on ARM
+builtin-prefetch-2.c
+# vector broken on ARM
+simd-6.c
+# ======================================================================
+# failures in phase compile-bc
+# ======================================================================
+# asm
+20001009-2.c
+# nested function
+20010209-1.c
+# nested function
+20010605-1.c
+# asm
+20020107-1.c
+# complex va_arg
+20020412-1.c
+# nested function
+20030501-1.c
+# nested function
+20040520-1.c
+# asm
+20050203-1.c
+# asm
+20061031-1.c
+# asm
+20061220-1.c
+# ??? TODO
+20070919-1.c
+# asm
+20071211-1.c
+# ??? TODO
+20071220-1.c
+# asm
+20071220-2.c
+# asm
+20080122-1.c
+# nested function
+20090219-1.c
+# nested function
+920612-2.c
+# nested function
+921017-1.c
+# asm
+960312-1.c
+# asm
+990130-1.c
+# nested function
+nest-align-1.c
+# nested function
+nest-stdar-1.c
+# nested function
+nestfunc-7.c
+# nested function
+pr22061-3.c
+# nested function
+pr22061-4.c
+# asm
+pr38533.c
+# asm
+pr40022.c
+# require networking header files
+20010724-1.c
+# asm
+20030222-1.c
+# asm
+990413-2.c
+# integer overflow
+bitfld-5.c
+# asm
+pr40657.c
+# asm
+pr41239.c
+# asm
+pr43385.c
+# asm
+pr43560.c
+# asm
+pr44852.c
+# asm
+pr45695.c
+# asm
+pr47925.c
+# asm
+pr49218.c
+# asm
+pr49390.c
+# vector ops
+vector-shift.c
+# vector ops
+vector-shift1.c
+# vector ops
+vector-shift2.c
+# vector type
+vector-subscript-1.c
+# vector type
+vector-subscript-2.c
+# vector type
+vector-subscript-3.c
+# asm
+memcpy-chk.c
+# asm
+memmove-chk.c
+# asm
+mempcpy-chk.c
+# asm
+strcat-chk.c
+# asm
+strncat-chk.c
+# compiler hangs
+pr23135.c
+# internal compiler error
+pr44575.c
+# uses __builtin_return_address (internal compiler error x86-64)
+20010122-1.c
+# uses __builtin_return_address (internal compiler error x86-64)
+20030323-1.c

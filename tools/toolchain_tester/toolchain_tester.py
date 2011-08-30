@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# Copyright 2008 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Simple test suite for toolchains espcially llvm arm toolchains.
 
@@ -14,6 +14,10 @@ where options are
 --config <config>
 --append <tag>=<value>
 --verbose
+--show_console
+--exclude=<filename>
+--tmp=<path>
+--check_excludes
 
 e.g. --append "CFLAGS:-lsupc++" will enable C++ eh support
 
@@ -25,6 +29,7 @@ can only run one instance of this at a time.
 import getopt
 import glob
 import os
+import shlex
 import subprocess
 import sys
 import time
@@ -33,13 +38,22 @@ import toolchain_config
 # ======================================================================
 # Options
 # ======================================================================
+# list of streams being logged to (both normal and verbose output)
 REPORT_STREAMS = [sys.stdout]
+# max time (secs) to wait for command any command to complete
 TIMEOUT = 120
+# enable verbose output, e.g. commands being executed
 VERBOSE = 0
+# prefix for temporary files
 TMP_PREFIX = '/tmp/tc_test_'
+# show command output (stdout/stderr)
 SHOW_CONSOLE = 1
+# append these settings to config
 APPEND = []
-
+# exclude these tests
+EXCLUDE = {}
+# check whether excludes are still necessary
+CHECK_EXCLUDES = 0
 # module with settings for compiler, etc.
 CFG = None
 
@@ -103,7 +117,7 @@ def MakeExecutableCustom(config, test, extra):
   d['tmp'] = TMP_PREFIX
   d['src'] = test
   for phase, command in config.GetCommands(d):
-    command = command.split()
+    command = shlex.split(command)
     try:
       retcode = RunCommand(command, SHOW_CONSOLE)
     except Exception, err:
@@ -117,13 +131,16 @@ def MakeExecutableCustom(config, test, extra):
 
 def ParseCommandLineArgs(argv):
   """Process command line options and return the unprocessed left overs."""
-  global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX, CFG, APPEND, SHOW_CONSOLE
+  global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX,
+  global CFG, APPEND, SHOW_CONSOLE, CHECK_EXCLUDES
   try:
     opts, args = getopt.getopt(argv[1:], '',
                                ['verbose',
                                 'show_console',
                                 'append=',
                                 'config=',
+                                'exclude=',
+                                'check_excludes',
                                 'tmp='])
   except getopt.GetoptError, err:
     Print(str(err))  # will print something like 'option -a not recognized'
@@ -136,7 +153,17 @@ def ParseCommandLineArgs(argv):
       VERBOSE = 1
     elif o == 'show_console':
       SHOW_CONSOLE = 1
+    elif o == 'check_excludes':
+      CHECK_EXCLUDES = 1
     elif o == 'tmp':
+      TMP_PREFIX = a
+    elif o == 'exclude':
+      f = open(a)
+      for line in f:
+        if not line.startswith('#'):
+          EXCLUDE[line.strip()] = None
+      f.close()
+      Print('Size of exludes now: %d' % len(EXCLUDE))
       TMP_PREFIX = a
     elif o == 'append':
       tag, value = a.split(":", 1)
@@ -164,13 +191,17 @@ def RunSuite(config, files, extra_flags, errors):
           (no, len(files), no_errors, os.path.basename(test), result))
 
 
+def FilterOutTests(files, exclude):
+  return  [f for f in files if not os.path.basename(f) in exclude]
+
+
 def main(argv):
-  extra = ParseCommandLineArgs(argv)
+  files = ParseCommandLineArgs(argv)
 
   if not CFG:
-    print "ERROR: you must specify a toolchain-config using --config=<config>"
-    print "Available configs are: "
-    print "\n".join(toolchain_config.TOOLCHAIN_CONFIGS.keys())
+    print 'ERROR: you must specify a toolchain-config using --config=<config>'
+    print 'Available configs are: '
+    print '\n'.join(toolchain_config.TOOLCHAIN_CONFIGS.keys())
     print
     return -1
 
@@ -185,21 +216,37 @@ def main(argv):
   config.SanityCheck()
   Print('TMP_PREFIX: %s' % TMP_PREFIX)
 
-
+  # initialize error stats
   errors = {}
   for phase in config.GetPhases():
     errors[phase] = []
 
+  Print('Tests before filtering %d' % len(files))
+  if not CHECK_EXCLUDES:
+    files = FilterOutTests(files, EXCLUDE)
+  Print('Tests after filtering %d' % len(files))
+  RunSuite(config, files, {}, errors)
 
-  RunSuite(config, extra, {}, errors)
-
-
+  # print error report
+  USED_EXCLUDES = {}
+  num_errors = 0
   for k in errors:
     lst = errors[k]
     if not lst: continue
     Banner('%d failures in phase %s' % (len(lst), k))
     for e in lst:
+      if os.path.basename(e) in EXCLUDE:
+        USED_EXCLUDES[os.path.basename(e)] = None
+        continue
       Print(e)
+      num_errors += 1
+
+  if CHECK_EXCLUDES:
+    Banner('Unnecessary exludes:')
+    for e in EXCLUDE:
+      if e not in USED_EXCLUDES:
+        Print(e)
+  return num_errors > 0
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
