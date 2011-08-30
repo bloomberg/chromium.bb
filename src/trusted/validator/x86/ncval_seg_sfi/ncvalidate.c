@@ -378,7 +378,7 @@ void NCValidateSetErrorReporter(struct NCValidatorState* state,
  * validated.
  */
 Bool NCAddressInMemoryRange(const NaClPcAddress address,
-                              struct NCValidatorState* vstate) {
+                            struct NCValidatorState* vstate) {
   return vstate->iadrbase <= address && address < vstate->iadrlimit;
 }
 
@@ -543,12 +543,13 @@ static void ValidateJmpz(const NCDecoderInst *dinst) {
 
 /*
  * The NaCl five-byte safe indirect calling sequence looks like this:
- *   83 e0 f0                 and  $0xfffffff0,%eax
+ *   83 e0 e0                 and  $0xe0,%eax
  *   ff d0                    call *%eax
  * The call may be replaced with a ff e0 jmp. Any register may
  * be used, not just eax. The validator requires exactly this
  * sequence.
- * TODO(brad): validate or write the masks.
+ * Note: The code above assumes 32-bit alignment. Change e0 as appropriate
+ * if a different alignment is used.
  */
 static void ValidateIndirect5(const NCDecoderInst *dinst) {
   NCInstBytesPtr jmpopcode;

@@ -100,8 +100,19 @@ static Bool NCInstLayoutCheck(const NCDecoderInst* dinst) {
   if (dinst == NULL) return TRUE;
   vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
 
-  /* Check basic block boundaries. */
+  /* Check that if first instruction is a basic block, it isn't in the middle
+   * of a pattern.
+   */
   start = dinst->vpc;
+  if ((0 == (start % vstate->alignment)) &&
+      NCGetAdrTable(start - vstate->iadrbase,
+                    vstate->pattern_nonfirst_insts_table)) {
+    NCBadInstructionError(
+        dinst,
+        "Instruction begins basic block, but in middle of nacl pattern\n");
+  }
+
+  /* Check that instruction doesn't cross block boundaries. */
   end = (NaClPcAddress) (start + NCInstBytesLength(&dinst->inst_bytes));
   for (i = start + 1; i < end; ++i) {
     if (0 == (i % vstate->alignment)) {
