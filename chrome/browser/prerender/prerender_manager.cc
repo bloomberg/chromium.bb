@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
@@ -298,11 +297,8 @@ bool PrerenderManager::AddPrerender(
     const GURL& referrer) {
   DCHECK(CalledOnValidThread());
 
-  if (origin == ORIGIN_LINK_REL_PRERENDER &&
-      StartsWithASCII(referrer.host(), std::string("www.google."), true) &&
-      !StartsWithASCII(referrer.path(), std::string("/imgres"), true)) {
+  if (origin == ORIGIN_LINK_REL_PRERENDER && IsGoogleSearchResultURL(referrer))
     origin = ORIGIN_GWS_PRERENDER;
-  }
 
   histograms_->RecordPrerender(origin, url_arg);
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/prerender/prerender_util.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_parse.h"
 #include "googleurl/src/url_util.h"
@@ -59,6 +60,15 @@ uint8 GetQueryStringBasedExperiment(const GURL& url) {
     return exp;
   }
   return kNoExperiment;
+}
+
+bool IsGoogleSearchResultURL(const GURL& url) {
+  if (!StartsWithASCII(url.host(), std::string("www.google."), true))
+    return false;
+  return (url.path().empty() ||
+          StartsWithASCII(url.path(), std::string("/search"), true) ||
+          (url.path() == "/") ||
+          StartsWithASCII(url.path(), std::string("/webhp"), true));
 }
 
 }  // namespace prerender
