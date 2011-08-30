@@ -1880,8 +1880,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
       }
     }
   }
+  // TODO(rogerta): For now, always passing false for google_homeapge_default
+  // argument, so that functionality is disabled.  A follow up CL will set it
+  // correctly.
   RLZTracker::InitRlzDelayed(is_first_run, master_prefs.ping_delay,
-                             google_search_default);
+                             google_search_default, false);
 #endif  // GOOGLE_CHROME_BUILD
 #endif  // OS_WIN
 
