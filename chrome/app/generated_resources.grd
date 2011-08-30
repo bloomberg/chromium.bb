@@ -12164,6 +12164,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the Chrome OS configuration dialog">
         fast
       </message>
+      <message name="IDS_STATUSBAR_ACCESSIBILITY_ENABLED" desc="The tooltip for the status bar button to indicate that accessibility is enabled.">
+	Accessibility features are enabled.
+      </message>
+      <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
+        Disable Spoken Feedback
+      </message>
       <message name="IDS_STATUSBAR_NETWORK_LOCKED" desc="Message displayed while access to network devices is temporarily locked due to mobile network activation">
         Please wait while we set up your mobile network.
       </message>

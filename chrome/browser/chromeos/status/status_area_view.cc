@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/status/accessibility_menu_button.h"
 #include "chrome/browser/chromeos/status/caps_lock_menu_button.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
@@ -32,6 +33,7 @@ const int kSeparation = 5;
 
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
+      accessibility_view_(NULL),
       caps_lock_view_(NULL),
       clock_view_(NULL),
       input_method_view_(NULL),
@@ -45,6 +47,10 @@ void StatusAreaView::Init() {
     memory_view_ = new MemoryMenuButton(host_);
     AddChildView(memory_view_);
   }
+
+  accessibility_view_ = new AccessibilityMenuButton(host_);
+  accessibility_view_->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));
+  AddChildView(accessibility_view_);
 
   caps_lock_view_ = new CapsLockMenuButton(host_);
   caps_lock_view_->set_border(views::Border::CreateEmptyBorder(0, 1, 0, 0));

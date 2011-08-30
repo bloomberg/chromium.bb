@@ -2414,6 +2414,7 @@
         'browser/chromeos/network_state_notifier_browsertest.cc',
         'browser/chromeos/notifications/notification_browsertest.cc',
         'browser/chromeos/panels/panel_browsertest.cc',
+        'browser/chromeos/status/accessibility_menu_button_browsertest.cc',
         'browser/chromeos/status/caps_lock_menu_button_browsertest.cc',
         'browser/chromeos/status/clock_menu_button_browsertest.cc',
         'browser/chromeos/status/input_method_menu_button_browsertest.cc',
