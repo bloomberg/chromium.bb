@@ -1548,7 +1548,8 @@ def FixArch(arch):
               'x8664' : 'X8664',
 
               'arm'   : 'ARM',
-              'armv7' : 'ARM' }
+              'armv7' : 'ARM',
+              'arm-thumb2' : 'ARM' }
   if arch not in archfix:
     Log.Fatal('Unrecognized arch "%s"!', arch)
   return archfix[arch]
