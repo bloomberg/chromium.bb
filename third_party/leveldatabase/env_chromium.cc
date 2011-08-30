@@ -30,7 +30,7 @@
 #include "base/win/win_util.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
 // The following are glibc-specific
 namespace {
 
@@ -46,6 +46,7 @@ int fflush_unlocked(FILE *file) {
   return fflush(file);
 }
 
+#if !defined(OS_ANDROID)
 int fdatasync(int fildes) {
 #if defined(OS_WIN)
   return _commit(fildes);
@@ -53,6 +54,7 @@ int fdatasync(int fildes) {
   return fsync(fildes);
 #endif
 }
+#endif
 
 }
 #endif
