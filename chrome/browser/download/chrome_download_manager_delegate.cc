@@ -257,7 +257,8 @@ void ChromeDownloadManagerDelegate::DownloadProgressUpdated() {
 }
 
 void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
-    int32 download_id, bool is_dangerous_url) {
+    int32 download_id,
+    bool is_dangerous_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download =
@@ -268,10 +269,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
   if (is_dangerous_url)
     download->MarkUrlDangerous();
 
-  download_history_->CheckVisitedReferrerBefore(
-      download_id,
-      download->referrer_url(),
-      NewCallback(this,
+  download_history_->CheckVisitedReferrerBefore(download_id,
+      download->referrer_url(), NewCallback(this,
           &ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone));
 }
 
@@ -474,25 +473,31 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
     bool visited_referrer_before) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  bool auto_open = ShouldOpenFileBasedOnExtension(state.suggested_path);
-  download_util::DownloadDangerLevel danger_level =
-      download_util::GetFileDangerLevel(state.suggested_path.BaseName());
+  // Anything loaded directly from the address bar is OK.
+  if (state.transition_type & PageTransition::FROM_ADDRESS_BAR)
+    return false;
 
-  if (danger_level == download_util::Dangerous)
-    return !(auto_open && state.has_user_gesture);
-
-  if (danger_level == download_util::AllowOnUserGesture &&
-      (!state.has_user_gesture || !visited_referrer_before))
-    return true;
-
+  // Extensions that are not from the gallery are considered dangerous.
   if (IsExtensionDownload(&download)) {
-    // Extensions that are not from the gallery are considered dangerous.
     ExtensionService* service = profile_->GetExtensionService();
     if (!service || !service->IsDownloadFromGallery(download.GetURL(),
                                                     download.referrer_url()))
       return true;
   }
-  return false;
+
+  // Anything the user has marked auto-open is OK if it's user-initiated.
+  if (ShouldOpenFileBasedOnExtension(state.suggested_path) &&
+      state.has_user_gesture)
+    return false;
+
+  // "Allow on user gesture" is OK when we have a user gesture and the hosting
+  // page has been visited before today.
+  download_util::DownloadDangerLevel danger_level =
+      download_util::GetFileDangerLevel(state.suggested_path.BaseName());
+  if (danger_level == download_util::AllowOnUserGesture)
+    return !state.has_user_gesture || !visited_referrer_before;
+
+  return danger_level == download_util::Dangerous;
 }
 
 void ChromeDownloadManagerDelegate::OnItemAddedToPersistentStore(

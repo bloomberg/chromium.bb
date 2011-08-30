@@ -108,6 +108,8 @@ void DispatchOnCommitted(TabContents* tab_contents,
     qualifiers->Append(Value::CreateStringValue("server_redirect"));
   if (transition_type & PageTransition::FORWARD_BACK)
     qualifiers->Append(Value::CreateStringValue("forward_back"));
+  if (transition_type & PageTransition::FROM_ADDRESS_BAR)
+    qualifiers->Append(Value::CreateStringValue("from_address_bar"));
   dict->Set(keys::kTransitionQualifiersKey, qualifiers);
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);

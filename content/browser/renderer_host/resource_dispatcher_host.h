@@ -77,8 +77,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                          ResourceMessageFilter* filter,
                          bool* message_was_ok);
 
-  // Initiates a download from the browser process (as opposed to a resource
-  // request from the renderer or another child process).
+  // Initiates a download by explicit request of the renderer, e.g. due to
+  // alt-clicking a link.
   void BeginDownload(const GURL& url,
                      const GURL& referrer,
                      const DownloadSaveInfo& save_info,
@@ -401,10 +401,9 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                         const GURL& new_first_party_for_cookies);
   void OnReleaseDownloadedFile(int request_id);
 
-  // Creates ResourceDispatcherHostRequestInfo for a browser-initiated request
-  // (a download or a page save). |download| should be true if the request
-  // is a file download.
-  ResourceDispatcherHostRequestInfo* CreateRequestInfoForBrowserRequest(
+  // Creates ResourceDispatcherHostRequestInfo for a download or page save.
+  // |download| should be true if the request is a file download.
+  ResourceDispatcherHostRequestInfo* CreateRequestInfo(
       ResourceHandler* handler,
       int child_id,
       int route_id,

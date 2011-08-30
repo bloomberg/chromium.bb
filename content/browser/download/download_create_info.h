@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 // Used for informing the download manager of a new download, since we don't
@@ -26,7 +27,8 @@ struct DownloadCreateInfo {
                      int64 total_bytes,
                      int32 state,
                      int32 download_id,
-                     bool has_user_gesture);
+                     bool has_user_gesture,
+                     PageTransition::Type transition_type);
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
@@ -67,6 +69,8 @@ struct DownloadCreateInfo {
 
   // True if the download was initiated by user action.
   bool has_user_gesture;
+
+  PageTransition::Type transition_type;
 
   // The handle to the download request information.  Used for operations
   // outside the download system.

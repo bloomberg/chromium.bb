@@ -369,8 +369,13 @@ void Navigate(NavigateParams* params) {
   // inform the target TabContents, and we may need to update the UI.
   PageTransition::Type base_transition =
       PageTransition::StripQualifier(params->transition);
-  bool user_initiated = base_transition == PageTransition::TYPED ||
-                        base_transition == PageTransition::AUTO_BOOKMARK;
+  bool user_initiated = params->transition & PageTransition::FROM_ADDRESS_BAR ||
+      base_transition == PageTransition::TYPED ||
+      base_transition == PageTransition::AUTO_BOOKMARK ||
+      base_transition == PageTransition::GENERATED ||
+      base_transition == PageTransition::START_PAGE ||
+      base_transition == PageTransition::RELOAD ||
+      base_transition == PageTransition::KEYWORD;
 
   // Check if this is a singleton tab that already exists
   int singleton_index = GetIndexOfSingletonTab(params);

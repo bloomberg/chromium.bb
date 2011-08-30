@@ -91,7 +91,7 @@ LocationBarViewMac::LocationBarViewMac(
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
-      transition_(PageTransition::TYPED),
+      transition_(PageTransition::TYPED | PageTransition::FROM_ADDRESS_BAR),
       first_run_bubble_(this) {
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     DCHECK_EQ(i, content_setting_decorations_.size());
@@ -226,7 +226,7 @@ void LocationBarViewMac::OnAutocompleteAccept(const GURL& url,
   if (url.is_valid()) {
     location_input_ = UTF8ToUTF16(url.spec());
     disposition_ = disposition;
-    transition_ = transition;
+    transition_ = transition | PageTransition::FROM_ADDRESS_BAR;
 
     if (command_updater_) {
       if (!alternate_nav_url.is_valid()) {

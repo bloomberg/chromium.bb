@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,6 +104,9 @@ class PageTransition {
 
     // User used the Forward or Back button to navigate among browsing history.
     FORWARD_BACK = 0x01000000,
+
+    // User used the address bar to trigger this navigation.
+    FROM_ADDRESS_BAR = 0x02000000,
 
     // The beginning of a navigation chain.
     CHAIN_START = 0x10000000,

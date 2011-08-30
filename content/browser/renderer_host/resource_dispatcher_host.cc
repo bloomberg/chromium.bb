@@ -589,6 +589,7 @@ void ResourceDispatcherHost::BeginRequest(
           request_data.is_main_frame,
           request_data.frame_id,
           request_data.resource_type,
+          request_data.transition_type,
           upload_size,
           false,  // is download
           ResourceType::IsFrame(request_data.resource_type),  // allow_download
@@ -730,8 +731,7 @@ void ResourceDispatcherHost::OnFollowRedirect(
                          new_first_party_for_cookies);
 }
 
-ResourceDispatcherHostRequestInfo*
-ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
+ResourceDispatcherHostRequestInfo* ResourceDispatcherHost::CreateRequestInfo(
     ResourceHandler* handler,
     int child_id,
     int route_id,
@@ -746,6 +746,7 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                false,     // is_main_frame
                                                -1,        // frame_id
                                                ResourceType::SUB_RESOURCE,
+                                               PageTransition::LINK,
                                                0,         // upload_size
                                                download,  // is_download
                                                download,  // allow_download
@@ -840,8 +841,7 @@ void ResourceDispatcherHost::BeginDownload(
       net::LOAD_IS_DOWNLOAD);
 
   ResourceDispatcherHostRequestInfo* extra_info =
-      CreateRequestInfoForBrowserRequest(
-          handler, child_id, route_id, true, context);
+      CreateRequestInfo(handler, child_id, route_id, true, context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
 
   BeginRequestInternal(request);
@@ -885,8 +885,7 @@ void ResourceDispatcherHost::BeginSaveFile(
 
   // Since we're just saving some resources we need, disallow downloading.
   ResourceDispatcherHostRequestInfo* extra_info =
-      CreateRequestInfoForBrowserRequest(
-          handler, child_id, route_id, false, context);
+      CreateRequestInfo(handler, child_id, route_id, false, context);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
 
   BeginRequestInternal(request);

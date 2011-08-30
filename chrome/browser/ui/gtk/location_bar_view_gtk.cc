@@ -166,7 +166,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       toolbar_model_(browser->toolbar_model()),
       browser_(browser),
       disposition_(CURRENT_TAB),
-      transition_(PageTransition::TYPED),
+      transition_(PageTransition::TYPED | PageTransition::FROM_ADDRESS_BAR),
       first_run_bubble_(this),
       popup_window_mode_(false),
       theme_service_(NULL),
@@ -467,7 +467,7 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
   if (url.is_valid()) {
     location_input_ = UTF8ToUTF16(url.spec());
     disposition_ = disposition;
-    transition_ = transition;
+    transition_ = transition | PageTransition::FROM_ADDRESS_BAR;
 
     if (command_updater_) {
       if (!alternate_nav_url.is_valid()) {

@@ -282,9 +282,9 @@ struct MetricsService::ChildProcessStats {
   // an index for which no value has been assigned.
   ChildProcessStats()
       : process_launches(0),
-      process_crashes(0),
-      instances(0),
-      process_type(ChildProcessInfo::UNKNOWN_PROCESS) {}
+        process_crashes(0),
+        instances(0),
+        process_type(ChildProcessInfo::UNKNOWN_PROCESS) {}
 
   // The number of times that the given child process has been launched
   int process_launches;

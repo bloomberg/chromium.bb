@@ -171,7 +171,7 @@ class ResourceDispatcherTest : public testing::Test,
     request_info.request_type = ResourceType::SUB_RESOURCE;
     request_info.appcache_host_id = appcache::kNoHostId;
     request_info.routing_id = 0;
-    RequestExtraData extra_data(true, 0);
+    RequestExtraData extra_data(true, 0, PageTransition::LINK);
     request_info.extra_data = &extra_data;
 
     return dispatcher_->CreateBridge(request_info);

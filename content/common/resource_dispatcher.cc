@@ -98,10 +98,12 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     RequestExtraData* extra_data =
         static_cast<RequestExtraData*>(request_info.extra_data);
     request_.is_main_frame = extra_data->is_main_frame();
-    request_.frame_id = extra_data->frame_identifier();
+    request_.frame_id = extra_data->frame_id();
+    request_.transition_type = extra_data->transition_type();
   } else {
     request_.is_main_frame = false;
     request_.frame_id = -1;
+    request_.transition_type = PageTransition::LINK;
   }
 }
 

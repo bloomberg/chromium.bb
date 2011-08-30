@@ -2688,9 +2688,10 @@ void RenderView::assignIdentifierToRequest(
   // Ignore
 }
 
-void RenderView::willSendRequest(
-    WebFrame* frame, unsigned identifier, WebURLRequest& request,
-    const WebURLResponse& redirect_response) {
+void RenderView::willSendRequest(WebFrame* frame,
+                                 unsigned identifier,
+                                 WebURLRequest& request,
+                                 const WebURLResponse& redirect_response) {
   WebFrame* top_frame = frame->top();
   if (!top_frame)
     top_frame = frame;
@@ -2699,10 +2700,6 @@ void RenderView::willSendRequest(
   WebDataSource* data_source =
       provisional_data_source ? provisional_data_source : top_data_source;
 
-  bool is_top_frame = (frame == top_frame);
-  request.setExtraData(
-      new RequestExtraData(is_top_frame, frame->identifier()));
-
   GURL request_url(request.url());
   GURL new_url;
   if (content::GetContentClient()->renderer()->WillSendRequest(
@@ -2710,20 +2707,25 @@ void RenderView::willSendRequest(
     request.setURL(WebURL(new_url));
   }
 
-  if (data_source) {
-    NavigationState* state = NavigationState::FromDataSource(data_source);
-    if (state && state->is_cache_policy_override_set())
-      request.setCachePolicy(state->cache_policy_override());
+  PageTransition::Type transition_type = PageTransition::LINK;
+  NavigationState* data_state = NavigationState::FromDataSource(data_source);
+  if (data_state) {
+    if (data_state->is_cache_policy_override_set())
+      request.setCachePolicy(data_state->cache_policy_override());
+    transition_type = data_state->transition_type();
   }
 
-  if (top_data_source) {
-    NavigationState* state = NavigationState::FromDataSource(top_data_source);
-    // TODO(gavinp): separate out prefetching and prerender field trials
-    // if the rel=prerender rel type is sticking around.
-    if (state && (request.targetType() == WebURLRequest::TargetIsPrefetch ||
-                  request.targetType() == WebURLRequest::TargetIsPrerender))
-      state->set_was_prefetcher(true);
-  }
+  request.setExtraData(new RequestExtraData((frame == top_frame),
+      frame->identifier(), transition_type));
+
+  NavigationState* top_data_state =
+      NavigationState::FromDataSource(top_data_source);
+  // TODO(gavinp): separate out prefetching and prerender field trials
+  // if the rel=prerender rel type is sticking around.
+  if (top_data_state &&
+      (request.targetType() == WebURLRequest::TargetIsPrefetch ||
+       request.targetType() == WebURLRequest::TargetIsPrerender))
+    top_data_state->set_was_prefetcher(true);
 
   request.setRequestorID(routing_id_);
   request.setHasUserGesture(frame->isProcessingUserGesture());
