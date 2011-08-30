@@ -59,6 +59,14 @@ void HungWindowDetector::OnTick() {
 
   EnumChildWindows(top_level_window_, ChildWndEnumProc,
                    reinterpret_cast<LPARAM>(this));
+
+  // The window shouldn't be disabled unless we're showing a modal dialog.
+  // If we're not, then reenable the window.
+  if (!::IsWindowEnabled(top_level_window_) &&
+      !::GetWindow(top_level_window_, GW_ENABLEDPOPUP)) {
+    ::EnableWindow(top_level_window_, TRUE);
+  }
+
   enumerating_ = false;
 }
 
