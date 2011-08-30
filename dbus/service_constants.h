@@ -181,6 +181,7 @@ const char kDisconnectFunction[] = "Disconnect";
 const char kRequestScanFunction[] = "RequestScan";
 const char kGetWifiServiceFunction[] = "GetWifiService";
 const char kGetVPNServiceFunction[] = "GetVPNService";
+const char kRemoveServiceFunction[] = "Remove";
 const char kEnableTechnologyFunction[] = "EnableTechnology";
 const char kDisableTechnologyFunction[] = "DisableTechnology";
 const char kAddIPConfigFunction[] = "AddIPConfig";
