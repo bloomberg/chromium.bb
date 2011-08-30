@@ -1651,7 +1651,8 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
 
 bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
   *bounds = browser_->GetSavedWindowBounds();
-  if (browser_->is_type_popup() || browser_->is_type_panel()) {
+  if ((browser_->is_type_popup() || browser_->is_type_panel())
+      && !browser_->is_devtools()) {
     // We are a popup window. The value passed in |bounds| represents two
     // pieces of information:
     // - the position of the window, in screen coordinates (outer position).
