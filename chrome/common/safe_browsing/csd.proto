@@ -20,10 +20,11 @@ message ClientPhishingRequest {
   // client.  This field is ONLY set for UMA-enabled users.
   optional string url = 1;
 
-  // A 5-byte SHA-256 hash prefix of the URL, in SafeBrowsing host sufffix/path
-  // prefix form with query parameters stripped (i.e. "www.example.com/1/2/").
+  // A 5-byte SHA-256 hash prefix of the URL.  Before hashing the URL is
+  // canonicalized, converted to a suffix-prefix expression and broadened
+  // (www prefix is removed and everything past the last '/' is stripped).
   // Unlike "url", this is sent for all users.
-  optional bytes suffix_prefix_hash = 10;
+  optional bytes hash_prefix = 10;
 
   // Score that was computed on the client.  Value is between 0.0 and 1.0.
   // The larger the value the more likely the url is phishing.

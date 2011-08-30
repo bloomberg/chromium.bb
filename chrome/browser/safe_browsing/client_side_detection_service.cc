@@ -278,9 +278,8 @@ void ClientSideDetectionService::SanitizeRequestForPingback(
     ClientPhishingRequest* sanitized_request) {
   DCHECK(full_request.IsInitialized());
   sanitized_request->Clear();
-  if (full_request.has_suffix_prefix_hash()) {
-    sanitized_request->set_suffix_prefix_hash(
-        full_request.suffix_prefix_hash());
+  if (full_request.has_hash_prefix()) {
+    sanitized_request->set_hash_prefix(full_request.hash_prefix());
   }
   sanitized_request->set_client_score(full_request.client_score());
   if (full_request.has_is_phishing()) {

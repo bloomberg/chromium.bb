@@ -666,7 +666,7 @@ TEST_F(ClientSideDetectionServiceTest, SetEnabled) {
 TEST_F(ClientSideDetectionServiceTest, SanitizeRequestForPingback) {
   ClientPhishingRequest request;
   request.set_url("http://www.us.host.com/blah");
-  request.set_suffix_prefix_hash("hash");
+  request.set_hash_prefix("hash");
   request.set_client_score(0.8f);
   request.set_is_phishing(true);
   AddFeature(std::string(features::kUrlTldToken) + "com", 1.0, &request);
@@ -709,7 +709,7 @@ TEST_F(ClientSideDetectionServiceTest, SanitizeRequestForPingback) {
 
   // For easier debugging, we'll check the output protobuf fields individually.
   ClientPhishingRequest expected;
-  expected.set_suffix_prefix_hash(request.suffix_prefix_hash());
+  expected.set_hash_prefix(request.hash_prefix());
   expected.set_client_score(request.client_score());
   expected.set_is_phishing(request.is_phishing());
   AddFeature(features::kUrlNumOtherHostTokensGTOne, 1.0, &expected);
@@ -719,8 +719,7 @@ TEST_F(ClientSideDetectionServiceTest, SanitizeRequestForPingback) {
   AddNonModelFeature(features::kUrlHistoryVisitCount, 5.0, &expected);
 
   EXPECT_FALSE(sanitized_request.has_url());
-  EXPECT_EQ(expected.suffix_prefix_hash(),
-            sanitized_request.suffix_prefix_hash());
+  EXPECT_EQ(expected.hash_prefix(), sanitized_request.hash_prefix());
   EXPECT_FLOAT_EQ(expected.client_score(), sanitized_request.client_score());
   EXPECT_EQ(expected.is_phishing(), sanitized_request.is_phishing());
 

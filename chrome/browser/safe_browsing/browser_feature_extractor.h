@@ -74,9 +74,9 @@ class BrowserFeatureExtractor {
                                ClientPhishingRequest* request,
                                DoneCallback* callback);
 
-  // The size of hash prefix to use for
-  // ClientPhishingRequest.suffix_prefix_hash.  Public for testing.
-  static const int kSuffixPrefixHashLength;
+  // The size of hash prefix to use for ClientPhishingRequest.hash_prefix.
+  // Public for testing.
+  static const int kHashPrefixLength;
 
  private:
   friend class DeleteTask<BrowserFeatureExtractor>;

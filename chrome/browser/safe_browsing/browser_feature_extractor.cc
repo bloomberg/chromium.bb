@@ -9,6 +9,7 @@
 
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -27,7 +28,7 @@
 
 namespace safe_browsing {
 
-const int BrowserFeatureExtractor::kSuffixPrefixHashLength = 5;
+const int BrowserFeatureExtractor::kHashPrefixLength = 5;
 
 BrowseInfo::BrowseInfo() {}
 
@@ -453,9 +454,27 @@ void BrowserFeatureExtractor::ComputeURLHash(
                                       &host, &path, &query);
   DCHECK(!host.empty()) << request->url();
   DCHECK(!path.empty()) << request->url();
-  request->set_suffix_prefix_hash(
-      crypto::SHA256HashString(host + path).substr(
-          0, kSuffixPrefixHashLength));
+
+  // Lowercase the URL.  Note: canonicalization converts the URL to ASCII.
+  // Percent encoded characters will not be lowercased but this is consistent
+  // with what we're doing on the server side.
+  StringToLowerASCII(&host);
+  StringToLowerASCII(&path);
+
+  // Remove leading 'www.' from the host.
+  if (host.size() > 4 && host.substr(0, 4) == "www.") {
+    host.erase(0, 4);
+  }
+  // Remove everything after the last '/' to broaden the pattern.
+  if (path.size() > 1 && *(path.rbegin()) != '/') {
+    // The pattern never ends in foo.com/test? because we stripped CGI params.
+    // Remove everything that comes after the last '/'.
+    size_t last_path = path.rfind("/");
+    path.erase(last_path + 1);
+  }
+
+  request->set_hash_prefix(crypto::SHA256HashString(host + path).substr(
+      0, kHashPrefixLength));
 }
 
 };  // namespace safe_browsing

@@ -488,8 +488,8 @@ TEST_F(BrowserFeatureExtractorTest, URLHashes) {
 
   EXPECT_TRUE(ExtractFeatures(&request));
   EXPECT_EQ(crypto::SHA256HashString("host.com/").substr(
-      0, BrowserFeatureExtractor::kSuffixPrefixHashLength),
-            request.suffix_prefix_hash());
+      0, BrowserFeatureExtractor::kHashPrefixLength),
+            request.hash_prefix());
 
   request.set_url("http://www.host.com/path/");
   history_service()->AddPage(GURL("http://www.host.com/path/"),
@@ -497,9 +497,9 @@ TEST_F(BrowserFeatureExtractorTest, URLHashes) {
   contents()->NavigateAndCommit(GURL("http://www.host.com/path/"));
 
   EXPECT_TRUE(ExtractFeatures(&request));
-  EXPECT_EQ(crypto::SHA256HashString("www.host.com/path/").substr(
-      0, BrowserFeatureExtractor::kSuffixPrefixHashLength),
-            request.suffix_prefix_hash());
+  EXPECT_EQ(crypto::SHA256HashString("host.com/path/").substr(
+      0, BrowserFeatureExtractor::kHashPrefixLength),
+            request.hash_prefix());
 
   request.set_url("http://user@www.host.com:1111/path/123?args");
   history_service()->AddPage(
@@ -509,9 +509,9 @@ TEST_F(BrowserFeatureExtractorTest, URLHashes) {
       GURL("http://user@www.host.com:1111/path/123?args"));
 
   EXPECT_TRUE(ExtractFeatures(&request));
-  EXPECT_EQ(crypto::SHA256HashString("www.host.com/path/123").substr(
-      0, BrowserFeatureExtractor::kSuffixPrefixHashLength),
-            request.suffix_prefix_hash());
+  EXPECT_EQ(crypto::SHA256HashString("host.com/path/").substr(
+      0, BrowserFeatureExtractor::kHashPrefixLength),
+            request.hash_prefix());
 
   // Check that escaping matches the SafeBrowsing specification.
   request.set_url("http://www.host.com/A%21//B");
@@ -520,8 +520,8 @@ TEST_F(BrowserFeatureExtractorTest, URLHashes) {
   contents()->NavigateAndCommit(GURL("http://www.host.com/A%21//B"));
 
   EXPECT_TRUE(ExtractFeatures(&request));
-  EXPECT_EQ(crypto::SHA256HashString("www.host.com/A!/B").substr(
-      0, BrowserFeatureExtractor::kSuffixPrefixHashLength),
-            request.suffix_prefix_hash());
+  EXPECT_EQ(crypto::SHA256HashString("host.com/a!/").substr(
+      0, BrowserFeatureExtractor::kHashPrefixLength),
+            request.hash_prefix());
 }
 }  // namespace safe_browsing
