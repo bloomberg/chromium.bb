@@ -183,7 +183,6 @@ def _SetEnvForX86Sdk(env, sdk_path):
                        '-Wall',
                        '-Wswitch-enum',
                        '-g',
-                       '-fno-builtin',
                        '-fno-stack-protector',
                        '-fdiagnostics-show-option',
                        '-pedantic',
