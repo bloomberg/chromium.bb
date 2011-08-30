@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "content/browser/webui/empty_web_ui_factory.h"
+#include "content/test/test_tab_contents_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -20,7 +21,7 @@ MockContentBrowserClient::~MockContentBrowserClient() {
 
 TabContentsView* MockContentBrowserClient::CreateTabContentsView(
     TabContents* tab_contents) {
-  return NULL;
+  return new TestTabContentsView;
 }
 
 void MockContentBrowserClient::RenderViewHostCreated(

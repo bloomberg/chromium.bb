@@ -4,10 +4,10 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/test/base/testing_browser_process.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
@@ -84,6 +84,22 @@ class TestTabContentsDelegate : public TabContentsDelegate {
   bool renderer_unresponsive_received_;
 };
 
+class DevToolsManagerTestBrowserClient
+    : public content::MockContentBrowserClient {
+ public:
+  DevToolsManagerTestBrowserClient() {
+  }
+
+  virtual DevToolsManager* GetDevToolsManager() OVERRIDE {
+    return &dev_tools_manager_;
+  }
+
+ private:
+  DevToolsManager dev_tools_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsManagerTestBrowserClient);
+};
+
 }  // namespace
 
 class DevToolsManagerTest : public RenderViewHostTestHarness {
@@ -92,10 +108,22 @@ class DevToolsManagerTest : public RenderViewHostTestHarness {
   }
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
+    original_browser_client_ = content::GetContentClient()->browser();
+    content::GetContentClient()->set_browser(&browser_client_);
+
     RenderViewHostTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
   }
+
+  virtual void TearDown() OVERRIDE {
+    RenderViewHostTestHarness::TearDown();
+    content::GetContentClient()->set_browser(original_browser_client_);
+  }
+
+ private:
+  content::ContentBrowserClient* original_browser_client_;
+  DevToolsManagerTestBrowserClient browser_client_;
 };
 
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
@@ -144,13 +172,9 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   TestTabContentsDelegate delegate;
   contents()->set_delegate(&delegate);
 
-  static_cast<TestingBrowserProcess*>(g_browser_process)->
-      SetDevToolsManager(new DevToolsManager());
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  ASSERT_TRUE(manager);
-
   TestDevToolsClientHost client_host;
-  manager->RegisterDevToolsClientHostFor(inspected_rvh, &client_host);
+  content::GetContentClient()->browser()->GetDevToolsManager()->
+      RegisterDevToolsClientHostFor(inspected_rvh, &client_host);
 
   // Start with a short timeout.
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));

@@ -38,6 +38,8 @@
         'test/test_browser_context.h',
         'test/test_content_client.cc',
         'test/test_content_client.h',
+        'test/test_tab_contents_view.cc',
+        'test/test_tab_contents_view.h',
         'test/test_url_fetcher_factory.cc',
         'test/test_url_fetcher_factory.h',
 

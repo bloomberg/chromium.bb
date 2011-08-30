@@ -27,11 +27,6 @@ class TabContentsView : public RenderViewHostDelegate::View {
  public:
   virtual ~TabContentsView();
 
-  // Creates the appropriate type of TabContentsView for the current system.
-  // The return value is a new heap allocated view with ownership passing to
-  // the caller.
-  static TabContentsView* Create(TabContents* tab_contents);
-
   virtual void CreateView(const gfx::Size& initial_size) = 0;
 
   // Sets up the View that holds the rendered web page, receives messages for
