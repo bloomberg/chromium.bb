@@ -256,8 +256,6 @@ chrome_pfq_info = {
   'master' : False,
   'chrome_tests' : True,
   'build_tests' : True,
-  'vm_tests' : False,
-  'quick_vm' : False,
 }
 
 internal = {
