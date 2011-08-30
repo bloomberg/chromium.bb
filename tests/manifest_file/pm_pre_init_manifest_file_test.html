@@ -33,7 +33,7 @@ function setupTests(tester, plugin) {
   tester.addAsyncTest('Test_00_ManifestData', function(status) {
     plugin.addEventListener('message', function(message_event) {
       this.removeEventListener('message', arguments.callee, false);
-      var golden = 'File Contents:\n// There should not be CRs in here, just LF termination!\n{\n  "program": {\n    "x86-32": {"url": "pm_pre_init_manifest_file_test_x86-32.nexe"},\n    "x86-64": {"url": "pm_pre_init_manifest_file_test_x86-64.nexe"},\n    "arm":    {"url": "pm_pre_init_manifest_file_test_arm.nexe"}\n  },\n  "files": {\n    "nmf says hello world": {\n      "x86-32": {"url": "pm_pre_init_manifest_file_test_x86-32.nexe"},\n      "x86-64": {"url": "pm_pre_init_manifest_file_test_x86-64.nexe"},\n      "arm":    {"url": "pm_pre_init_manifest_file_test_arm.nexe"}\n    },\n    "test_file": {\n      "portable": {"url": "pm_pre_init_manifest_file.nmf"}\n    }\n  }\n}\nOpening non-existent file:\nGot descriptor -1, status 0\n';
+      var golden = 'File Contents:\nTest File Content\nOpening non-existent file:\nGot descriptor -1, status 0\n';
       status.log('expecting golden: ' + golden);
       status.log('golden.length: ' + golden.length);
       status.log('message_event.data.length: ' + message_event.data.length);

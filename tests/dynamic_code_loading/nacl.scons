@@ -57,7 +57,6 @@ dynamic_load_test_nexe = prog_env.ComponentProgram(
         '${PTHREAD_LIBS}',
         '${NONIRT_LIBS}'
         ])
-env.Publish(dynamic_load_test_nexe_name, 'run', ['dynamic_load_test.nmf'])
 
 dynamic_modify_test_nexe_name = ('dynamic_modify_test_%s' %
                                  env.get('TARGET_FULLARCH'))
@@ -74,7 +73,6 @@ dynamic_modify_test_nexe = prog_env.ComponentProgram(
         'gio',
         '${PTHREAD_LIBS}',
         '${NONIRT_LIBS}'])
-env.Publish(dynamic_modify_test_nexe_name, 'run', ['dynamic_modify_test.nmf'])
 
 write_to_dyncode_nexe = prog_env.ComponentProgram(
     'write_to_dyncode',

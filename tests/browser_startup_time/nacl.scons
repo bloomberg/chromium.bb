@@ -22,7 +22,6 @@ browser_startup_nexe = env.ComponentProgram(
 
 env.Publish(nexe_name, 'run',
             ['browser_startup_time.html',
-             'browser_startup_time.nmf',
              'browser_startup_time.js'])
 
 test_name = 'browser_startup_time.out'
@@ -35,6 +34,7 @@ output_processor = ['${PYTHON}',
 node = env.PPAPIBrowserTester(
     test_name,
     url='browser_startup_time.html',
+    nmfs=['browser_startup_time.nmf'],
     files=env.ExtractPublishedFiles(nexe_name),
     args=['--enable_experimental_js'],
     process_output=output_processor,

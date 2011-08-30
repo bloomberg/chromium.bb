@@ -34,14 +34,14 @@ srpc_ns_nexe = env.ComponentProgram(srpc_ns_nexe_name,
                                         '${PTHREAD_LIBS}',
                                         '${NON_PPAPI_BROWSER_LIBS}'])
 env.Publish(srpc_ns_nexe_name, 'run',
-            ['srpc_nameservice_test.html',
-             'srpc_nameservice.nmf'])
+            ['srpc_nameservice_test.html'])
 
 # chrome_browser_tests
 
 node = env.PPAPIBrowserTester(
     'srpc_nameservice_browser_test.out',
     url='srpc_nameservice_test.html',
+    nmfs=['srpc_nameservice.nmf'],
     files=env.ExtractPublishedFiles(srpc_ns_nexe_name),
     args=['--debug', '--enable_experimental_js'])
 
@@ -68,14 +68,14 @@ pm_ns_nexe = env.ComponentProgram(pm_ns_nexe_name,
                                               'imc_syscalls',
                                               ])
 env.Publish(pm_ns_nexe_name, 'run',
-            ['pm_nameservice_test.html',
-             'pm_nameservice.nmf'])
+            ['pm_nameservice_test.html'])
 
 # chrome_browser_tests
 
 node = env.PPAPIBrowserTester(
     'pm_nameservice_browser_test.out',
     url='pm_nameservice_test.html',
+    nmfs=['pm_nameservice.nmf'],
     files=env.ExtractPublishedFiles(pm_ns_nexe_name),
     args=['--debug'],
     osenv=['NACLVERBOSITY=0:pp_weak_ref=0:weak_ref=0']
@@ -84,4 +84,5 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_pm_nameservice_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                 env.Bit('nacl_glibc'))

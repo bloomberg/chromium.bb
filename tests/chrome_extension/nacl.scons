@@ -10,7 +10,8 @@ Import('env')
 # BUG(adonovan): test is breaking on ARM.  Disable in haste...
 if env.Bit('target_arm'):
   Return()
-
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
+                     'ppapi_test_example')
 
 nexe = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
 
@@ -20,16 +21,22 @@ nexe = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
 # These files need their own install command.
 dest_copy = env.Replicate('$STAGING_DIR/chrome_extension',
                           [env.File('$STAGING_DIR/%s' % nexe),
-                           env.File('$STAGING_DIR/ppapi_test_example.nmf'),
                            'background.html',
                            'manifest.json',
                            'test_bridge.js'])
+dest_copy.append(env.CopyLibsForExtension(
+    '$STAGING_DIR/chrome_extension',
+    '$STAGING_DIR/ppapi_test_example.nmf'))
 
 node = env.PPAPIBrowserTester(
     'chrome_extension_test.out',
     url='chrome_extension_test.html',
+    # TODO(halyavin): new system with nmfs parameter doesn't work with
+    # old system without it in ppapi tests.
+    # nmfs=['${TEST_DIR}/ppapi_test_example.nmf'],
     extensions=[env.Dir('$STAGING_DIR/chrome_extension')],
-    files=[env.File('chrome_extension_test.html')]
+    files=[env.File('chrome_extension_test.html'),
+           env.File('$STAGING_DIR/ppapi_test_example.nmf')]
     )
 env.Depends(node, dest_copy)
 env.Alias('all_programs', dest_copy)

@@ -20,7 +20,7 @@ cnexe = env.ComponentProgram(c_nexe_name, cobj,
                             EXTRA_LIBS=['earthlib',
                                         '${PPAPI_LIBS}',
                                         'm', 'pthread'])
-env.Publish(c_nexe_name, 'run', ['earth_c.html', 'earth_c.nmf'])
+env.Publish(c_nexe_name, 'run', ['earth_c.html'])
 
 node = env.DemoSelLdrNacl('demo_earth_c', cnexe, args=[])
 # Note: Make this available from top level
@@ -33,7 +33,7 @@ ccnexe = env.ComponentProgram(cc_nexe_name, ccobj,
                                         '${PPAPI_LIBS}',
                                         'ppapi_cpp',
                                         'm', 'pthread'])
-env.Publish(cc_nexe_name, 'run', ['earth_cc.html', 'earth_cc.nmf'])
+env.Publish(cc_nexe_name, 'run', ['earth_cc.html'])
 
 node = env.DemoSelLdrNacl('demo_earth_cc', ccnexe, args=[])
 # Note: Make this available from top level
@@ -65,21 +65,25 @@ if env.Bit('target_arm'):
 node = env.PPAPIBrowserTester(
     'earth_browser_test_c.out',
     url='earth_c.html',
+    nmfs=['earth_c.nmf'],
     files=[cnexe,
            env.File('earth_c.html'),
            env.File('earth_c.nmf'),
            ]
     )
 
-env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_c')
+env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_c',
+                       is_broken=env.Bit('nacl_glibc'))
 
 node = env.PPAPIBrowserTester(
     'earth_browser_test_cc.out',
     url='earth_cc.html',
+    nmfs=['earth_cc.nmf'],
     files=[ccnexe,
            env.File('earth_cc.html'),
            env.File('earth_cc.nmf'),
            ]
     )
 
-env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_cc')
+env.AddNodeToTestSuite(node, ['chrome_browser_tests'], 'earth_browser_test_cc',
+                       is_broken=env.Bit('nacl_glibc'))

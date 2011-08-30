@@ -46,7 +46,11 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     path = self.NormalizePath(path)
     if path in self.server.file_mapping:
       return self.server.file_mapping[path]
-    elif not path.endswith('favicon.ico') and not self.server.allow_404:
+    for extra_dir in self.server.serving_dirs:
+      full_path = os.path.join(extra_dir, path)
+      if os.path.isfile(full_path):
+        return full_path
+    if not path.endswith('favicon.ico') and not self.server.allow_404:
       self.server.listener.ServerError('Cannot find file \'%s\'' % path)
     return path
 
@@ -171,13 +175,15 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 class Server(BaseHTTPServer.HTTPServer):
 
   def Configure(
-      self, file_mapping, redirect_mapping, allow_404, bandwidth, listener):
+    self, file_mapping, redirect_mapping, allow_404, bandwidth, listener,
+    serving_dirs=[]):
     self.file_mapping = file_mapping
     self.redirect_mapping = redirect_mapping
     self.allow_404 = allow_404
     self.bandwidth = bandwidth
     self.listener = listener
     self.rpc_lock = threading.Lock()
+    self.serving_dirs = serving_dirs
 
   def TestingBegun(self, timeout):
     self.test_in_progress = True

@@ -17,7 +17,6 @@ srpc_hw_nexe = env.ComponentProgram(srpc_hw_nexe_name,
 
 env.Publish(srpc_hw_nexe_name, 'run',
             ['srpc_hw.html',
-             'srpc_hw.nmf',
              'srpc_hw_data.html'])
 
 srpc_hw_nonbrowser = env.ComponentProgram('srpc_hw_nonbrowser',
@@ -41,6 +40,7 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_hw_browser_test.out',
     url='srpc_hw.html',
+    nmfs=['srpc_hw.nmf'],
     files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
     args=['--debug', '--enable_experimental_js'])
 
@@ -53,6 +53,7 @@ env.AddNodeToTestSuite(node,
 node = env.PPAPIBrowserTester(
     'srpc_hw_data_browser_test.out',
     url='srpc_hw_data.html',
+    nmfs=['srpc_hw.nmf'],
     files=env.ExtractPublishedFiles(srpc_hw_nexe_name),
     # have to hardcode the port so the data URI can encode an absolute path
     args=['--debug', '--enable_experimental_js'])
@@ -60,4 +61,5 @@ node = env.PPAPIBrowserTester(
 env.AddNodeToTestSuite(node,
                        ['chrome_browser_tests'],
                        'run_srpc_hw_data_chrome_browser_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
+                       is_broken=env.PPAPIBrowserTesterIsBroken() or
+                                 env.Bit('nacl_glibc'))
