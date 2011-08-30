@@ -3927,7 +3927,11 @@ void Browser::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
     case chrome::NOTIFICATION_EXTENSION_LOADED:
-      if (window()->GetLocationBar())
+      // During window creation on Windows we may end up calling into
+      // SHAppBarMessage, which internally spawns a nested message loop. This
+      // makes it possible for us to end up here before window creation has
+      // completed,at which point window_ is NULL. See 94752 for details.
+      if (window() && window()->GetLocationBar())
         window()->GetLocationBar()->UpdatePageActions();
       break;
 
