@@ -843,6 +843,7 @@ bool SyncManager::SyncInternal::UpdateCryptographerFromNigori() {
 
   allstatus_.SetCryptographerReady(cryptographer->is_ready());
   allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
+  allstatus_.SetEncryptedTypes(cryptographer->GetEncryptedTypes());
 
   return cryptographer->is_ready();
 }
@@ -1025,8 +1026,11 @@ void SyncManager::SyncInternal::SetPassphrase(
     cryptographer->GetKeys(specifics.mutable_encrypted());
     specifics.set_using_explicit_passphrase(is_explicit);
     node.SetNigoriSpecifics(specifics);
-    ReEncryptEverything(&trans);
   }
+
+  // Does nothing if everything is already encrypted or the cryptographer has
+  // pending keys.
+  ReEncryptEverything(&trans);
 
   VLOG(1) << "Passphrase accepted, bootstrapping encryption.";
   std::string bootstrap_token;
@@ -1065,7 +1069,7 @@ void SyncManager::SyncInternal::EncryptDataTypes(
 
   Cryptographer* cryptographer = trans.GetCryptographer();
 
-  if (!cryptographer->is_initialized()) {
+  if (!cryptographer->is_ready()) {
     VLOG(1) << "Attempting to encrypt datatypes when cryptographer not "
             << "initialized, prompting for passphrase.";
     ObserverList<SyncManager::Observer> temp_obs_list;
@@ -1089,22 +1093,12 @@ void SyncManager::SyncInternal::EncryptDataTypes(
                  std::inserter(newly_encrypted_types,
                                newly_encrypted_types.begin()));
   allstatus_.SetEncryptedTypes(newly_encrypted_types);
-  if (newly_encrypted_types == current_encrypted_types) {
-    // Set of encrypted types has not changed, just notify and return.
-    ObserverList<SyncManager::Observer> temp_obs_list;
-    CopyObservers(&temp_obs_list);
-    FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
-                      OnEncryptionComplete(current_encrypted_types));
-    return;
-  }
   syncable::FillNigoriEncryptedTypes(newly_encrypted_types, &nigori);
   node.SetNigoriSpecifics(nigori);
-
   cryptographer->SetEncryptedTypes(nigori);
 
-  // TODO(zea): only reencrypt this datatype? ReEncrypting everything is a
-  // safer approach, and should not impact anything that is already encrypted
-  // (redundant changes are ignored).
+  // We reencrypt everything regardless of whether the set of encrypted
+  // types changed to ensure that any stray unencrypted entries are overwritten.
   ReEncryptEverything(&trans);
   return;
 }
@@ -1112,8 +1106,10 @@ void SyncManager::SyncInternal::EncryptDataTypes(
 // TODO(zea): Add unit tests that ensure no sync changes are made when not
 // needed.
 void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
-  syncable::ModelTypeSet encrypted_types =
-      GetEncryptedTypes(trans);
+  Cryptographer* cryptographer = trans->GetCryptographer();
+  if (!cryptographer || !cryptographer->is_ready())
+    return;
+  syncable::ModelTypeSet encrypted_types = GetEncryptedTypes(trans);
   ModelSafeRoutingInfo routes;
   registrar_->GetModelSafeRoutingInfo(&routes);
   std::string tag;

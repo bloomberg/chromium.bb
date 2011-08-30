@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,13 @@ class GetCommitIdsCommand : public SyncerCommand {
 
   // SyncerCommand implementation.
   virtual void ExecuteImpl(sessions::SyncSession* session);
+
+  // Filter |unsynced_handles| to exclude all handles to entries that require
+  // encryption but are in plaintext.
+  static void FilterEntriesNeedingEncryption(
+      const syncable::ModelTypeSet& encrypted_types,
+      syncable::BaseTransaction* trans,
+      syncable::Directory::UnsyncedMetaHandles* unsynced_handles);
 
   // Builds a vector of IDs that should be committed.
   void BuildCommitIds(const vector<int64>& unsynced_handles,

@@ -63,17 +63,27 @@ bool VerifyUnsyncedChangesAreEncrypted(
       NOTREACHED();
       return false;
     }
-    const sync_pb::EntitySpecifics& entry_specifics = entry.Get(SPECIFICS);
-    ModelType type = entry.GetModelType();
-    if (type == PASSWORDS)
-      continue;
-    if (encrypted_types.count(type) > 0 &&
-        !entry_specifics.has_encrypted()) {
-      // This datatype requires encryption but this data is not encrypted.
+    if (EntryNeedsEncryption(encrypted_types, entry))
       return false;
-    }
   }
   return true;
+}
+
+bool EntryNeedsEncryption(const ModelTypeSet& encrypted_types,
+                          const Entry& entry) {
+  if (!entry.Get(UNIQUE_SERVER_TAG).empty())
+    return false;  // We don't encrypt unique server nodes.
+  return SpecificsNeedsEncryption(encrypted_types, entry.Get(SPECIFICS));
+}
+
+bool SpecificsNeedsEncryption(const ModelTypeSet& encrypted_types,
+                              const sync_pb::EntitySpecifics& specifics) {
+  ModelType type = GetModelTypeFromSpecifics(specifics);
+  if (type == PASSWORDS || type == NIGORI)
+    return false;  // These types have their own encryption schemes.
+  if (encrypted_types.count(type) == 0)
+    return false;  // This type does not require encryption
+  return !specifics.has_encrypted();
 }
 
 // Mainly for testing.

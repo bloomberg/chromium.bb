@@ -543,6 +543,55 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   DoTruncationTest(dir, unsynced_handle_view, expected_order);
 }
 
+TEST_F(SyncerTest, GetCommitIdsFilterEntriesNeedingEncryption) {
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  ASSERT_TRUE(dir.good());
+  int64 handle_x = CreateUnsyncedDirectory("X", ids_.MakeLocal("x"));
+  int64 handle_b = CreateUnsyncedDirectory("B", ids_.MakeLocal("b"));
+  int64 handle_c = CreateUnsyncedDirectory("C", ids_.MakeLocal("c"));
+  int64 handle_e = CreateUnsyncedDirectory("E", ids_.MakeLocal("e"));
+  int64 handle_f = CreateUnsyncedDirectory("F", ids_.MakeLocal("f"));
+  sync_pb::EncryptedData encrypted;
+  sync_pb::EntitySpecifics encrypted_bookmark;
+  encrypted_bookmark.mutable_encrypted();
+  AddDefaultExtensionValue(syncable::BOOKMARKS, &encrypted_bookmark);
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
+    MutableEntry entry_x(&wtrans, GET_BY_HANDLE, handle_x);
+    MutableEntry entry_b(&wtrans, GET_BY_HANDLE, handle_b);
+    MutableEntry entry_c(&wtrans, GET_BY_HANDLE, handle_c);
+    MutableEntry entry_e(&wtrans, GET_BY_HANDLE, handle_e);
+    MutableEntry entry_f(&wtrans, GET_BY_HANDLE, handle_f);
+    entry_x.Put(SPECIFICS, encrypted_bookmark);
+    entry_b.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    entry_c.Put(SPECIFICS, DefaultBookmarkSpecifics());
+    entry_e.Put(SPECIFICS, encrypted_bookmark);
+    entry_f.Put(SPECIFICS, DefaultPreferencesSpecifics());
+  }
+
+  syncable::ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::BOOKMARKS);
+  syncable::Directory::UnsyncedMetaHandles unsynced_handles;
+  unsynced_handles.push_back(handle_x);
+  unsynced_handles.push_back(handle_b);
+  unsynced_handles.push_back(handle_c);
+  unsynced_handles.push_back(handle_e);
+  unsynced_handles.push_back(handle_f);
+  // The unencrypted bookmarks should be removed from the list.
+  syncable::Directory::UnsyncedMetaHandles expected_handles;
+  expected_handles.push_back(handle_x);  // Was encrypted.
+  expected_handles.push_back(handle_e);  // Was encrypted.
+  expected_handles.push_back(handle_f);  // Does not require encryption.
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
+    GetCommitIdsCommand::FilterEntriesNeedingEncryption(
+        encrypted_types,
+        &wtrans,
+        &unsynced_handles);
+    EXPECT_EQ(expected_handles, unsynced_handles);
+  }
+}
+
 // TODO(chron): More corner case unit tests around validation.
 TEST_F(SyncerTest, TestCommitMetahandleIterator) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());

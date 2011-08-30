@@ -51,13 +51,10 @@ bool WriteNode::UpdateEntryWithEncryption(
   syncable::ModelType type = syncable::GetModelTypeFromSpecifics(new_specifics);
   DCHECK_GE(type, syncable::FIRST_REAL_MODEL_TYPE);
   syncable::ModelTypeSet encrypted_types = cryptographer->GetEncryptedTypes();
-
   sync_pb::EntitySpecifics generated_specifics;
-  if (type == syncable::PASSWORDS ||        // Has own encryption scheme.
-      type == syncable::NIGORI ||           // Encrypted separately.
-      encrypted_types.count(type) == 0 ||
-      new_specifics.has_encrypted()) {
-    // No encryption required.
+  if (!SpecificsNeedsEncryption(encrypted_types, new_specifics) ||
+      !cryptographer->is_initialized()) {
+    // No encryption required or we are unable to encrypt.
     generated_specifics.CopyFrom(new_specifics);
   } else {
     // Encrypt new_specifics into generated_specifics.
@@ -70,8 +67,6 @@ bool WriteNode::UpdateEntryWithEncryption(
               << " with content: "
               << info;
     }
-    if (!cryptographer->is_initialized())
-      return false;
     syncable::AddDefaultExtensionValue(type, &generated_specifics);
     if (!cryptographer->Encrypt(new_specifics,
                                 generated_specifics.mutable_encrypted())) {

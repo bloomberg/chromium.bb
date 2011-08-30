@@ -8,8 +8,11 @@
 #include <utility>
 #include <vector>
 
+#include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/cryptographer.h"
 
 using std::set;
 using std::vector;
@@ -31,6 +34,15 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   syncable::Directory::UnsyncedMetaHandles all_unsynced_handles;
   SyncerUtil::GetUnsyncedEntries(session->write_transaction(),
                                  &all_unsynced_handles);
+
+  Cryptographer *cryptographer =
+      session->context()->directory_manager()->GetCryptographer(
+          session->write_transaction());
+  if (cryptographer) {
+    FilterEntriesNeedingEncryption(cryptographer->GetEncryptedTypes(),
+                                   session->write_transaction(),
+                                   &all_unsynced_handles);
+  }
   StatusController* status = session->status_controller();
   status->set_unsynced_handles(all_unsynced_handles);
 
@@ -44,6 +56,37 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
     VLOG(1) << "Debug commit batch result:" << verified_commit_ids[i];
 
   status->set_commit_set(*ordered_commit_set_.get());
+}
+
+// We create a new list of unsynced handles which omits all handles to entries
+// that require encryption but are written in plaintext. If any were found we
+// overwrite |unsynced_handles| with this new list, else no change is made.
+// Static.
+void GetCommitIdsCommand::FilterEntriesNeedingEncryption(
+    const syncable::ModelTypeSet& encrypted_types,
+    syncable::BaseTransaction* trans,
+    syncable::Directory::UnsyncedMetaHandles* unsynced_handles) {
+  bool removed_handles = false;
+  syncable::Directory::UnsyncedMetaHandles::iterator iter;
+  syncable::Directory::UnsyncedMetaHandles new_unsynced_handles;
+  new_unsynced_handles.reserve(unsynced_handles->size());
+  // TODO(zea): If this becomes a bottleneck, we should merge this loop into the
+  // AddCreatesAndMoves and AddDeletes loops.
+  for (iter = unsynced_handles->begin();
+       iter != unsynced_handles->end();
+       ++iter) {
+    syncable::Entry entry(trans, syncable::GET_BY_HANDLE, *iter);
+    if (syncable::EntryNeedsEncryption(encrypted_types, entry)) {
+      // This entry requires encryption but is not encrypted (possibly due to
+      // the cryptographer not being initialized). Don't add it to our new list
+      // of unsynced handles.
+      removed_handles = true;
+    } else {
+      new_unsynced_handles.push_back(*iter);
+    }
+  }
+  if (removed_handles)
+    *unsynced_handles = new_unsynced_handles;
 }
 
 void GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
