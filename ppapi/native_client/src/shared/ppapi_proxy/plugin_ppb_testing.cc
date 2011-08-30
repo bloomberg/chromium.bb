@@ -89,6 +89,14 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance) {
   return live_object_count;
 }
 
+PP_Bool IsOutOfProcess() {
+  // The NaCl plugin is run in-process, and all calls are synchronous, so even
+  // though a NaCl module runs in a separate process, it behaves as if it were
+  // in-process. Furthermore, calls off of the main thread are not supported
+  // (same as trusted in-process).
+  return PP_FALSE;
+}
+
 }  // namespace
 
 const PPB_Testing_Dev* PluginTesting::GetInterface() {
@@ -96,7 +104,8 @@ const PPB_Testing_Dev* PluginTesting::GetInterface() {
     ReadImageData,
     RunMessageLoop,
     QuitMessageLoop,
-    GetLiveObjectsForInstance
+    GetLiveObjectsForInstance,
+    IsOutOfProcess
   };
   return &testing_interface;
 }

@@ -53,6 +53,9 @@ class TestPostMessage : public TestCase {
   // nothing happens.
   std::string TestExtraParam();
 
+  // Test sending messages off of the main thread.
+  std::string TestNonMainThread();
+
   typedef std::vector<pp::Var> VarVector;
 
   // This is used to store pp::Var objects we receive via a call to

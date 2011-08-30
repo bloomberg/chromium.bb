@@ -200,11 +200,16 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
   return ResourceTracker::Get()->GetLiveObjectsForInstance(instance_id);
 }
 
+PP_Bool IsOutOfProcess() {
+  return PP_FALSE;
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLiveObjectsForInstance
+  &GetLiveObjectsForInstance,
+  &IsOutOfProcess
 };
 
 // GetInterface ----------------------------------------------------------------
