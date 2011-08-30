@@ -273,15 +273,12 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
     return;
 
   DictionaryValue params;
+  params.SetString("startUrl", kGaiaExtStartPage);
   params.SetString("email", email_);
 
-  std::string url = kGaiaExtStartPage;
   const std::string app_locale = g_browser_process->GetApplicationLocale();
-  if (!app_locale.empty()) {
-    url.append("?hl=");
-    url.append(app_locale);
-  }
-  params.SetString("startUrl", url);
+  if (!app_locale.empty())
+    params.SetString("hl", app_locale);
 
   params.SetBoolean("createAccount",
       UserCrosSettingsProvider::cached_allow_new_user());

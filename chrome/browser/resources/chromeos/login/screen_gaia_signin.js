@@ -86,13 +86,24 @@ cr.define('login', function() {
     onBeforeShow: function(data) {
       console.log('Opening extension: ' + data.startUrl +
                   ', opt_email=' + data.email);
+
       var frame = $('signin-frame');
       frame.addEventListener('load', function(e) {
         console.log('Frame loaded: ' + data.startUrl);
       });
-      frame.contentWindow.location.href = data.startUrl;
-      this.extension_url_ = data.startUrl;
-      // TODO(xiyuan): Pre-populate Gaia with data.email (if any).
+
+      var params = [];
+      if (data.hl)
+        params.push('hl=' + encodeURIComponent(data.hl));
+      if (data.email)
+        params.push('email=' + encodeURIComponent(data.email));
+
+      var url = data.startUrl;
+      if (params.length)
+        url += '?' + params.join('&');
+
+      frame.contentWindow.location.href = url;
+      this.extension_url_ = url;
 
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
