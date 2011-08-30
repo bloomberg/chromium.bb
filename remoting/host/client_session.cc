@@ -23,6 +23,8 @@ static const int64 kRemoteBlockTimeoutMillis = 2000;
 
 namespace remoting {
 
+using protocol::KeyEvent;
+
 ClientSession::ClientSession(
     EventHandler* event_handler,
     UserAuthenticator* user_authenticator,
@@ -71,8 +73,7 @@ void ClientSession::OnAuthorizationComplete(bool success) {
   }
 }
 
-void ClientSession::InjectKeyEvent(const protocol::KeyEvent* event,
-                                   Task* done) {
+void ClientSession::InjectKeyEvent(const KeyEvent* event, Task* done) {
   base::ScopedTaskRunner done_runner(done);
   if (authenticated_ && !ShouldIgnoreRemoteKeyboardInput(event)) {
     RecordKeyEvent(event);
@@ -155,7 +156,7 @@ bool ClientSession::ShouldIgnoreRemoteMouseInput(
 }
 
 bool ClientSession::ShouldIgnoreRemoteKeyboardInput(
-    const protocol::KeyEvent* event) const {
+    const KeyEvent* event) const {
   // If the host user has not yet approved the continuation of the connection,
   // then all remote keyboard input is ignored, except to release keys that
   // were already pressed.
@@ -166,7 +167,7 @@ bool ClientSession::ShouldIgnoreRemoteKeyboardInput(
   return false;
 }
 
-void ClientSession::RecordKeyEvent(const protocol::KeyEvent* event) {
+void ClientSession::RecordKeyEvent(const KeyEvent* event) {
   if (event->pressed()) {
     pressed_keys_.insert(event->keycode());
   } else {
@@ -177,10 +178,10 @@ void ClientSession::RecordKeyEvent(const protocol::KeyEvent* event) {
 void ClientSession::UnpressKeys() {
   std::set<int>::iterator i;
   for (i = pressed_keys_.begin(); i != pressed_keys_.end(); ++i) {
-    protocol::KeyEvent key;
-    key.set_keycode(*i);
-    key.set_pressed(false);
-    input_stub_->InjectKeyEvent(&key, NULL);
+    KeyEvent* key = new KeyEvent();
+    key->set_keycode(*i);
+    key->set_pressed(false);
+    input_stub_->InjectKeyEvent(key, new DeleteTask<KeyEvent>(key));
   }
   pressed_keys_.clear();
 }
