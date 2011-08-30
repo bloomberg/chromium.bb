@@ -1791,3 +1791,11 @@
    ...
    fun:GpuBlacklist::LoadGpuBlacklist
 }
+{
+   bug_94764
+   Heapcheck:Leak
+   fun:remoting::ClientSession::UnpressKeys
+   fun:remoting::ClientSessionTest_UnpressKeys_Test::TestBody
+}
+
+

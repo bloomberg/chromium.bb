@@ -5359,7 +5359,6 @@
    ...
    fun:_ZN12GpuBlacklist16LoadGpuBlacklistERKSsNS_8OsFilterE
 }
-
 {
    bug_94345
    Memcheck:Leak
@@ -5369,13 +5368,19 @@
    fun:_ZN16ObserverListBaseIN11MessageLoop12TaskObserverEE8IteratorC1ERS2_
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
-
 {
    bug_94664
    Memcheck:Cond
    fun:_ZN16BookmarksHandler6LoadedEP13BookmarkModelb
    fun:_ZN13BookmarkModel11DoneLoadingEP19BookmarkLoadDetails
    fun:_ZN15BookmarkStorage14OnLoadFinishedEbRK8FilePath
+}
+{
+   bug_94764
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting13ClientSession11UnpressKeysEv
+   fun:_ZN8remoting34ClientSessionTest_UnpressKeys_Test8TestBodyEv
 }
 
 #-----------------------------------------------------------------------
