@@ -24,10 +24,6 @@ Window::Window(WindowDelegate* delegate)
 }
 
 Window::~Window() {
-  if (delegate_)
-    delegate_->OnWindowDestroyed();
-  if (parent_)
-    parent_->RemoveChild(this);
 }
 
 void Window::Init() {
@@ -74,6 +70,7 @@ void Window::DrawTree() {
   UpdateLayerCanvas();
   Draw();
 
+  // First pass updates the layer bitmaps.
   for (Windows::iterator i = children_.begin(); i != children_.end(); ++i)
     (*i)->DrawTree();
 }
@@ -94,35 +91,8 @@ void Window::RemoveChild(Window* child) {
   children_.erase(i);
 }
 
-// static
-void Window::ConvertPointToWindow(Window* source,
-                                  Window* target,
-                                  gfx::Point* point) {
-  ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
-}
-
 bool Window::OnMouseEvent(const MouseEvent& event) {
   return true;
-}
-
-bool Window::HitTest(const gfx::Point& point) {
-  gfx::Rect local_bounds(gfx::Point(), bounds().size());
-  // TODO(beng): hittest masks.
-  return local_bounds.Contains(point);
-}
-
-Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
-  Windows::const_reverse_iterator i = children_.rbegin();
-  for (; i != children_.rend(); ++i) {
-    Window* child = *i;
-    if (child->visibility() == Window::VISIBILITY_HIDDEN)
-      continue;
-    gfx::Point point_in_child_coords(point);
-    Window::ConvertPointToWindow(this, child, &point_in_child_coords);
-    if (child->HitTest(point_in_child_coords))
-      return child->GetEventHandlerForPoint(point_in_child_coords);
-  }
-  return this;
 }
 
 void Window::UpdateLayerCanvas() {

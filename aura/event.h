@@ -21,8 +21,6 @@ typedef union _XEvent XEvent;
 typedef XEvent* NativeEvent;
 #endif
 
-class Window;
-
 class Event {
  public:
   const NativeEvent& native_event() const { return native_event_; }
@@ -57,11 +55,6 @@ class LocatedEvent : public Event {
  protected:
   explicit LocatedEvent(NativeEvent native_event);
 
-  // Create a new LocatedEvent which is identical to the provided model.
-  // If source / target windows are provided, the model location will be
-  // converted from |source| coordinate system to |target| coordinate system.
-  LocatedEvent(const LocatedEvent& model, Window* source, Window* target);
-
   gfx::Point location_;
 
  private:
@@ -71,11 +64,6 @@ class LocatedEvent : public Event {
 class MouseEvent : public LocatedEvent {
  public:
   explicit MouseEvent(NativeEvent native_event);
-
-  // Create a new MouseEvent which is identical to the provided model.
-  // If source / target windows are provided, the model location will be
-  // converted from |source| coordinate system to |target| coordinate system.
-  MouseEvent(const MouseEvent& model, Window* source, Window* target);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);

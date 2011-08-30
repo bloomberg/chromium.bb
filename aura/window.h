@@ -27,7 +27,6 @@ class WindowDelegate;
 
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
-// TODO(beng): resolve ownership.
 class Window {
  public:
   enum Visibility {
@@ -81,25 +80,8 @@ class Window {
   void AddChild(Window* child);
   void RemoveChild(Window* child);
 
-  static void ConvertPointToWindow(Window* source,
-                                   Window* target,
-                                   gfx::Point* point);
-
   // Handles a mouse event. Returns true if handled.
   bool OnMouseEvent(const MouseEvent& event);
-
-  WindowDelegate* delegate() { return delegate_; }
-
-  // Returns true if the mouse pointer at the specified |point| can trigger an
-  // event for this Window.
-  // TODO(beng):
-  // A Window can supply a hit-test mask to cause some portions of itself to not
-  // trigger events, causing the events to fall through to the Window behind.
-  bool HitTest(const gfx::Point& point);
-
-  // Returns the Window that most closely encloses |point| for the purposes of
-  // event targeting.
-  Window* GetEventHandlerForPoint(const gfx::Point& point);
 
  private:
   typedef std::vector<Window*> Windows;

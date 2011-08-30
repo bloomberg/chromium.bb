@@ -12,19 +12,11 @@ class Canvas;
 
 namespace aura {
 
-class MouseEvent;
-
 // Delegate interface for aura::Window.
 class WindowDelegate {
  public:
-  virtual bool OnMouseEvent(const MouseEvent& event) = 0;
-
   // Asks the delegate to paint window contents into the supplied canvas.
-  virtual void OnPaint(gfx::Canvas* canvas) = 0;
-
-  // Called when the Window has been destroyed (i.e. from its destructor).
-  // The delegate can use this as an opportunity to delete itself if necessary.
-  virtual void OnWindowDestroyed() = 0;
+   virtual void OnPaint(gfx::Canvas* canvas) = 0;
 
  protected:
   virtual ~WindowDelegate() {}

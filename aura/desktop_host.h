@@ -37,9 +37,8 @@ class DesktopHost : public MessageLoop::Dispatcher {
   // Shows the DesktopHost.
   virtual void Show() = 0;
 
-  // Gets/Sets the size of the DesktopHost.
+  // Returns the size of the DesktopHost.
   virtual gfx::Size GetSize() = 0;
-  virtual void SetSize(const gfx::Size& size) = 0;
 };
 
 }  // namespace aura
