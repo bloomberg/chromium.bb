@@ -3,23 +3,60 @@
 <title>Preloader</title>
 
 <script>
-  function ClickOpenLinkInNewWindow() {
-    var eventObject = document.createEvent('MouseEvents');
-    eventObject.initMouseEvent('click');
-    document.getElementById('toClickTarget').dispatchEvent(eventObject);
-    return true;
-  }
-
-  function ClickOpenLink() {
+  function Click() {
     var eventObject = document.createEvent('MouseEvents');
     eventObject.initMouseEvent('click');
     document.getElementById('toClick').dispatchEvent(eventObject);
-    return true;
   }
 
-  function JsOpenLinkInNewWindow() {
+  function ClickTarget() {
+    var eventObject = document.createEvent('MouseEvents');
+    eventObject.initMouseEvent('click');
+    document.getElementById('toClickTarget').dispatchEvent(eventObject);
+  }
+
+  function ShiftClick() {
+    var eventObject = document.createEvent('MouseEvents');
+    eventObject.initMouseEvent('click', true, true, window, 
+                               1, 0, 0, 0, 0, 
+                               false, false, true, false, 0, null);
+    document.getElementById('toClick').dispatchEvent(eventObject);
+  }
+
+  function CtrlClick() {
+    var eventObject = document.createEvent('MouseEvents');
+    eventObject.initMouseEvent('click', true, true, window, 
+                               1, 0, 0, 0, 0, 
+                               true, false, false, false, 0, null);
+    document.getElementById('toClick').dispatchEvent(eventObject);
+  }
+
+  function CtrlShiftClick() {
+    var eventObject = document.createEvent('MouseEvents');
+    eventObject.initMouseEvent('click', true, true, window, 
+                               1, 0, 0, 0, 0, 
+                               true, false, true, false, 0, null);
+    document.getElementById('toClick').dispatchEvent(eventObject);
+  }
+
+  function MetaClick() {
+    var eventObject = document.createEvent('MouseEvents');
+    eventObject.initMouseEvent('click', true, true, window, 
+                               1, 0, 0, 0, 0, 
+                               false, false, false, true, 0, null);
+    document.getElementById('toClick').dispatchEvent(eventObject);
+  }
+
+  function MetaShiftClick() {
+    var eventObject = document.createEvent('MouseEvents');
+    eventObject.initMouseEvent('click', true, true, window, 
+                               1, 0, 0, 0, 0, 
+                               false, false, true, true, 0, null);
+    document.getElementById('toClick').dispatchEvent(eventObject);
+  }
+
+  function WindowOpen() {
     window.open('REPLACE_WITH_PRERENDER_URL');
-    return true;
   }
 </script>
 

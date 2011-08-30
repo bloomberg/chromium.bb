@@ -21,6 +21,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -438,64 +439,70 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     NavigateToURLImpl(dest_url_, disposition);
   }
 
-  void OpenDestUrlInNewWindowViaJs() const {
-    // Make sure in navigating we have a URL to use in the PrerenderManager.
-    TestPrerenderContents* prerender_contents = GetPrerenderContents();
-    ASSERT_TRUE(prerender_contents != NULL);
-    prerender_contents->set_quit_message_loop_on_destruction(false);
-
-    bool open_window_result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(JsOpenLinkInNewWindow())",
-        &open_window_result));
-    EXPECT_TRUE(open_window_result);
-
-    // If the prerender contents has not been destroyed, run message loop.
-    if (GetPrerenderContents() != NULL) {
-      prerender_contents->set_quit_message_loop_on_destruction(true);
-      ui_test_utils::RunMessageLoop();
-    }
+  void OpenDestURLViaClick() const {
+    OpenDestURLWithJSImpl("Click()", true);
   }
 
-  void OpenDestUrlInNewWindowViaClick() const {
-    // Make sure in navigating we have a URL to use in the PrerenderManager.
-    TestPrerenderContents* prerender_contents = GetPrerenderContents();
-    ASSERT_TRUE(prerender_contents != NULL);
-    prerender_contents->set_quit_message_loop_on_destruction(false);
-
-    bool click_prerendered_link_result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(ClickOpenLinkInNewWindow())",
-        &click_prerendered_link_result));
-    EXPECT_TRUE(click_prerendered_link_result);
-
-    // If the prerender contents has not been destroyed, run message loop.
-    if (GetPrerenderContents() != NULL) {
-      prerender_contents->set_quit_message_loop_on_destruction(true);
-      ui_test_utils::RunMessageLoop();
-    }
+  void OpenDestURLViaClickTarget() const {
+    OpenDestURLWithJSImpl("ClickTarget()", false);
   }
 
-  void OpenDestUrlViaClick() const {
-    // Make sure in navigating we have a URL to use in the PrerenderManager.
-    TestPrerenderContents* prerender_contents = GetPrerenderContents();
-    ASSERT_TRUE(prerender_contents != NULL);
-    prerender_contents->set_quit_message_loop_on_destruction(false);
+  void OpenDestURLViaClickNewWindow() const {
+    OpenDestURLWithJSImpl("ShiftClick()", true);
+  }
 
-    bool click_prerendered_link_result = false;
+  void OpenDestURLViaClickNewForegroundTab() const {
+#if defined(OS_MACOSX)
+    OpenDestURLWithJSImpl("MetaShiftClick()", true);
+#else
+    OpenDestURLWithJSImpl("CtrlShiftClick()", true);
+#endif
+  }
+
+  void OpenDestURLViaClickNewBackgroundTab() const {
+#if defined(OS_MACOSX)
+    OpenDestURLWithJSImpl("MetaClick()", false);
+#else
+    OpenDestURLWithJSImpl("CtrlClick()", false);
+#endif
+  }
+
+  void OpenDestURLViaWindowOpen() const {
+    OpenDestURLWithJSImpl("WindowOpen()", false);
+  }
+
+  void ClickToNextPageAfterPrerender(Browser* browser) {
+    ui_test_utils::WindowedNotificationObserver new_page_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        NotificationService::AllSources());
+    RenderViewHost* render_view_host =
+        browser->GetSelectedTabContents()->render_view_host();
+    render_view_host->ExecuteJavascriptInWebFrame(
+        string16(),
+        ASCIIToUTF16("ClickOpenLink()"));
+    new_page_observer.Wait();
+  }
+
+  void NavigateToNextPageAfterPrerender(Browser* browser) {
+    ui_test_utils::NavigateToURL(
+        browser,
+        test_server()->GetURL("files/prerender/prerender_page.html"));
+  }
+
+  // Called after the prerendered page has been navigated to and then away from.
+  // Navigates back through the history to the prerendered page.
+  void GoBackToPrerender(Browser* browser) {
+    ui_test_utils::WindowedNotificationObserver back_nav_observer(
+        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        NotificationService::AllSources());
+    browser->GoBack(CURRENT_TAB);
+    back_nav_observer.Wait();
+    bool original_prerender_page = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(ClickOpenLink())",
-        &click_prerendered_link_result));
-    EXPECT_TRUE(click_prerendered_link_result);
-
-    // If the prerender contents has not been destroyed, run message loop.
-    if (GetPrerenderContents() != NULL) {
-      prerender_contents->set_quit_message_loop_on_destruction(true);
-      ui_test_utils::RunMessageLoop();
-    }
+        browser->GetSelectedTabContents()->render_view_host(), L"",
+        L"window.domAutomationController.send(IsOriginalPrerenderPage())",
+        &original_prerender_page));
+    EXPECT_TRUE(original_prerender_page);
   }
 
   // Should be const but test_server()->GetURL(...) is not const.
@@ -682,6 +689,26 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
           &display_test_result));
       EXPECT_TRUE(display_test_result);
     }
+  }
+
+  // Opens the prerendered page using javascript functions in the
+  // loader page. |javascript_function_name| should be a 0 argument function
+  // which is invoked. |contents_should_be_shown| indicates whether the
+  // prerendered page expects to become visible or stay hidden.
+  void OpenDestURLWithJSImpl(const std::string& javascript_function_name,
+                             bool contents_should_be_shown) const {
+    TestPrerenderContents* prerender_contents = GetPrerenderContents();
+    ASSERT_TRUE(prerender_contents != NULL);
+    prerender_contents->set_should_be_shown(contents_should_be_shown);
+
+    RenderViewHost* render_view_host =
+        browser()->GetSelectedTabContents()->render_view_host();
+    render_view_host->ExecuteJavascriptInWebFrame(
+        string16(),
+        ASCIIToUTF16(javascript_function_name));
+
+    // Run message loop until the prerender contents is destroyed.
+    ui_test_utils::RunMessageLoop();
   }
 
   WaitForLoadPrerenderContentsFactory* prerender_contents_factory_;
@@ -1393,22 +1420,20 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
 
 // Checks that if a page is opened in a new window by javascript the
 // prerendered page is not used.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderWindowOpenerJsOpenInNewPageTest) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowOpenerWindowOpen) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_WINDOW_OPENER,
                    1);
-  OpenDestUrlInNewWindowViaJs();
+  OpenDestURLViaWindowOpen();
 }
 
 // Checks that if a page is opened due to click on a href with target="_blank"
 // the prerendered page is not used.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderWindowOpenerClickOpenInNewPageTest) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowOpenerClickTarget) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_WINDOW_OPENER,
                    1);
-  OpenDestUrlInNewWindowViaClick();
+  OpenDestURLViaClickTarget();
 }
 
 // TODO(shishir): Add a test for the case when the page having the
@@ -1637,48 +1662,115 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelAll) {
   EXPECT_TRUE(GetPrerenderContents() == NULL);
 }
 
-// Flaky on windows: http://crbug.com/92478
-#if defined(OS_WIN)
-#define MAYBE_BackToPrerenderedPage DISABLED_BackToPrerenderedPage
-#else
-#define MAYBE_BackToPrerenderedPage BackToPrerenderedPage
-#endif
+// Prerendering and history tests.
+// The prerendered page is navigated to in several ways [navigate via
+// omnibox, click on link, key-modified click to open in background tab, etc],
+// followed by a navigation to another page from the prerendered page, followed
+// by a back navigation.
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_BackToPrerenderedPage) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNavigateClickGoBack) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_USED,
                    1);
+  NavigateToDestURL();
+  ClickToNextPageAfterPrerender(browser());
+  GoBackToPrerender(browser());
+}
 
-  OpenDestUrlViaClick();
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderNavigateNavigateGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+  NavigateToNextPageAfterPrerender(browser());
+  GoBackToPrerender(browser());
+}
 
-  // Click on the link in the page and wait for it to commit
-  {
-    ui_test_utils::WindowedNotificationObserver new_page_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        NotificationService::AllSources());
-    bool click_link_result = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(ClickOpenLink())",
-        &click_link_result));
-    EXPECT_TRUE(click_link_result);
-    new_page_observer.Wait();
-  }
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickClickGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  OpenDestURLViaClick();
+  ClickToNextPageAfterPrerender(browser());
+  GoBackToPrerender(browser());
+}
 
-  // Now, go back to the prerendered page.
-  {
-    ui_test_utils::WindowedNotificationObserver back_nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        NotificationService::AllSources());
-    browser()->GoBack(CURRENT_TAB);
-    back_nav_observer.Wait();
-    bool original_prerender_page = false;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedTabContents()->render_view_host(), L"",
-        L"window.domAutomationController.send(IsOriginalPrerenderPage())",
-        &original_prerender_page));
-    EXPECT_TRUE(original_prerender_page);
-  }
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNavigateGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  OpenDestURLViaClick();
+  NavigateToNextPageAfterPrerender(browser());
+  GoBackToPrerender(browser());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClickNewWindowClickGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  OpenDestURLViaClickNewWindow();
+  Browser* new_browser = BrowserList::GetLastActive();
+  NavigateToNextPageAfterPrerender(new_browser);
+  GoBackToPrerender(new_browser);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClickNewWindowNavigateGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  OpenDestURLViaClickNewWindow();
+  Browser* new_browser = BrowserList::GetLastActive();
+  ClickToNextPageAfterPrerender(new_browser);
+  GoBackToPrerender(new_browser);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClickNewForegroundTabClickGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  OpenDestURLViaClickNewForegroundTab();
+  NavigateToNextPageAfterPrerender(browser());
+  GoBackToPrerender(browser());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClickNewForegroundTabNavigateGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  OpenDestURLViaClickNewForegroundTab();
+  ClickToNextPageAfterPrerender(browser());
+  GoBackToPrerender(browser());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClickNewBackgroundTabClickGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  OpenDestURLViaClickNewBackgroundTab();
+  // SelectNextTab completes synchronously, in terms of
+  // updating the active index.
+  browser()->SelectNextTab();
+  NavigateToNextPageAfterPrerender(browser());
+  GoBackToPrerender(browser());
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClickNewBackgroundTabNavigateGoBack) {
+  PrerenderTestURL("files/prerender/prerender_page_with_link.html",
+                   FINAL_STATUS_USED,
+                   1);
+  OpenDestURLViaClickNewBackgroundTab();
+  // SelectNextTab completes synchronously, in terms of
+  // updating the active index.
+  browser()->SelectNextTab();
+  ClickToNextPageAfterPrerender(browser());
+  GoBackToPrerender(browser());
 }
 
 }  // namespace prerender

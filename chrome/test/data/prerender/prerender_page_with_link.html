@@ -5,17 +5,19 @@
 <script>
 var pageWasPrerendered = false;
 
-// Make sure plugin was not loaded while prerendering.
 function DidPrerenderPass() {
   pageWasPrerendered = true;
   return true;
+}
+
+function DidDisplayPass() {
+  return pageWasPrerendered;
 }
 
 function ClickOpenLink() {
   var eventObject = document.createEvent('MouseEvents');
   eventObject.initMouseEvent('click');
   document.getElementById('toClick').dispatchEvent(eventObject);
-  return true;
 }
 
 function IsOriginalPrerenderPage() {
