@@ -292,7 +292,8 @@ gboolean BookmarkMenuController::OnButtonReleased(
     // The menu item is a link node.
     if (event->button == 1 || event->button == 2) {
       WindowOpenDisposition disposition =
-          event_utils::DispositionFromEventFlags(event->state);
+        event_utils::DispositionFromGdkState(event->state);
+
       NavigateToMenuItem(sender, disposition);
 
       // We need to manually dismiss the popup menu because we're overriding

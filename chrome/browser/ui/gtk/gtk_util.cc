@@ -21,6 +21,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -35,6 +36,7 @@
 #include "grit/theme_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/events.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -196,13 +198,22 @@ GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
 
 namespace event_utils {
 
-WindowOpenDisposition DispositionFromEventFlags(guint event_flags) {
-  return disposition_utils::DispositionFromClick(
-      event_flags & GDK_BUTTON2_MASK,
-      event_flags & GDK_MOD1_MASK,
-      event_flags & GDK_CONTROL_MASK,
-      event_flags & GDK_META_MASK,
-      event_flags & GDK_SHIFT_MASK);
+// TODO(shinyak) This function will be removed after refactoring.
+WindowOpenDisposition DispositionFromGdkState(guint state) {
+  int event_flags = EventFlagsFromGdkState(state);
+  return browser::DispositionFromEventFlags(event_flags);
+}
+
+int EventFlagsFromGdkState(guint state) {
+  int flags = 0;
+  flags |= (state & GDK_LOCK_MASK) ? ui::EF_CAPS_LOCK_DOWN : 0;
+  flags |= (state & GDK_CONTROL_MASK) ? ui::EF_CONTROL_DOWN : 0;
+  flags |= (state & GDK_SHIFT_MASK) ? ui::EF_SHIFT_DOWN : 0;
+  flags |= (state & GDK_MOD1_MASK) ? ui::EF_ALT_DOWN : 0;
+  flags |= (state & GDK_BUTTON1_MASK) ? ui::EF_LEFT_BUTTON_DOWN : 0;
+  flags |= (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_BUTTON_DOWN : 0;
+  flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_BUTTON_DOWN : 0;
+  return flags;
 }
 
 }  // namespace event_utils
@@ -901,7 +912,7 @@ WindowOpenDisposition DispositionForCurrentButtonPressEvent() {
 
   guint state = event->button.state;
   gdk_event_free(event);
-  return event_utils::DispositionFromEventFlags(state);
+  return event_utils::DispositionFromGdkState(state);
 }
 
 bool GrabAllInput(GtkWidget* widget) {

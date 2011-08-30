@@ -875,6 +875,8 @@
         'browser/download/save_package_file_picker.h',
         'browser/enumerate_modules_model_win.cc',
         'browser/enumerate_modules_model_win.h',
+        'browser/event_disposition.cc',
+        'browser/event_disposition.h',        
         'browser/extensions/apps_promo.cc',
         'browser/extensions/apps_promo.h',
         'browser/extensions/convert_user_script.cc',

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/gtk/gtk_custom_menu.h"
 #include "chrome/browser/ui/gtk/gtk_custom_menu_item.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/views/event_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/accelerator_gtk.h"
 #include "ui/base/models/button_menu_item_model.h"
@@ -707,8 +708,10 @@ void MenuGtk::ExecuteCommand(ui::MenuModel* model, int id) {
 
   GdkEvent* event = gtk_get_current_event();
   if (event && event->type == GDK_BUTTON_RELEASE) {
-    model->ActivatedAtWithDisposition(
-        id, event_utils::DispositionFromEventFlags(event->button.state));
+    WindowOpenDisposition disposition =
+      event_utils::DispositionFromGdkState(event->button.state);
+
+    model->ActivatedAtWithDisposition(id, disposition);
   } else {
     model->ActivatedAt(id);
   }

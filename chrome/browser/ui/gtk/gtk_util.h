@@ -29,10 +29,12 @@ struct RendererPreferences;  // from common/renderer_preferences.h
 
 namespace event_utils {
 
-// Translates event flags into what kind of disposition they represent.
+// Translates GdkEvent state into what kind of disposition they represent.
 // For example, a middle click would mean to open a background tab.
-// event_flags are the state in the GdkEvent structure.
-WindowOpenDisposition DispositionFromEventFlags(guint state);
+WindowOpenDisposition DispositionFromGdkState(guint state);
+
+// Translates event flags into plaform independent event flags.
+int EventFlagsFromGdkState(guint state);
 
 }  // namespace event_utils
 

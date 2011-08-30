@@ -172,7 +172,7 @@ void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
     }
 
     WindowOpenDisposition disposition =
-        event_utils::DispositionFromEventFlags(modifier_state_uint);
+        event_utils::DispositionFromGdkState(modifier_state_uint);
     if ((disposition == CURRENT_TAB) && location_bar_) {
       // Forcibly reset the location bar, since otherwise it won't discard any
       // ongoing user edits, since it doesn't realize this is a user-initiated

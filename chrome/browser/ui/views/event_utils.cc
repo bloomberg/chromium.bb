@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/event_utils.h"
-
+#include "chrome/browser/event_disposition.h"
 #include "content/browser/disposition_utils.h"
 #include "views/events/event.h"
 
@@ -11,13 +11,9 @@ using views::Event;
 
 namespace event_utils {
 
+// TODO(shinyak) After refactoring, this function shoulbe removed.
 WindowOpenDisposition DispositionFromEventFlags(int event_flags) {
-  return disposition_utils::DispositionFromClick(
-      (event_flags & ui::EF_MIDDLE_BUTTON_DOWN) != 0,
-      (event_flags & ui::EF_ALT_DOWN) != 0,
-      (event_flags & ui::EF_CONTROL_DOWN) != 0,
-      false /* meta_key */,
-      (event_flags & ui::EF_SHIFT_DOWN) != 0);
+  return browser::DispositionFromEventFlags(event_flags);
 }
 
 bool IsPossibleDispositionEvent(const views::MouseEvent& event) {
