@@ -100,6 +100,8 @@ class MockPluginDelegate : public PluginDelegate {
       PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
       const gfx::Point& position);
+  virtual FullscreenContainer* CreateFullscreenContainer(
+      PluginInstance* instance);
   virtual gfx::Size GetScreenSize();
   virtual std::string GetDefaultEncoding();
   virtual void ZoomLimitsChanged(double minimum_factor,
