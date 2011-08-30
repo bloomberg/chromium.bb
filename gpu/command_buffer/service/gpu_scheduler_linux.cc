@@ -58,10 +58,4 @@ void GpuScheduler::Destroy() {
   DestroyCommon();
 }
 
-void GpuScheduler::WillSwapBuffers() {
-  if (wrapped_swap_buffers_callback_.get()) {
-    wrapped_swap_buffers_callback_->Run();
-  }
-}
-
 }  // namespace gpu

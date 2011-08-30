@@ -260,6 +260,7 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroySurface, OnDestroySurface)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateTransportTexture,
         OnCreateTransportTexture)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_Echo, OnEcho);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << msg.type();
@@ -409,6 +410,11 @@ void GpuChannel::OnCreateTransportTexture(int32 context_route_id,
        host_id, route_id);
    Send(msg);
  #endif
+}
+
+void GpuChannel::OnEcho(const IPC::Message& message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEcho");
+  Send(new IPC::Message(message));
 }
 
 bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,

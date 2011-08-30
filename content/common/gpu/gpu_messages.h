@@ -307,6 +307,10 @@ IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateTransportTexture,
                      int32, /* context_route_id */
                      int32 /* host_id */)
 
+// Request that the GPU process reply with the given message.
+IPC_MESSAGE_CONTROL1(GpuChannelMsg_Echo,
+                     IPC::Message /* reply */)
+
 //------------------------------------------------------------------------------
 // GPU Command Buffer Messages
 // These are messages between a renderer process to the GPU process relating to
@@ -356,9 +360,6 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_Rescheduled)
 // GPU process to the renderer process.)
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_UpdateState,
                     gpu::CommandBuffer::State /* state */)
-
-// Indicates that a SwapBuffers call has been issued.
-IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_SwapBuffers)
 
 // Create a shared memory transfer buffer. Returns an id that can be used to
 // identify the transfer buffer from a comment.
@@ -417,6 +418,9 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetWindowSize,
 // destroyed for some reason.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
                     gpu::error::ContextLostReason /* reason */)
+
+// Response to a GpuChannelMsg_Echo message.
+IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EchoAck)
 
 // --------------------------------------------------------------------------
 // TransportTexture messages

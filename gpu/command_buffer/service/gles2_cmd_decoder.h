@@ -103,8 +103,10 @@ class GLES2Decoder : public CommonDecoder {
   virtual void SetResizeCallback(
       Callback1<gfx::Size>::Type* callback) = 0;
 
+#if defined(OS_MACOSX)
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
+#endif
 
   // Get the service texture ID corresponding to a client texture ID.
   // If no such record is found then return false.

@@ -54,7 +54,8 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
     : Resource(instance),
       bound_to_instance_(false),
       commit_pending_(false),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
@@ -164,6 +165,9 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
   if (gles2_impl())
     gles2_impl()->SwapBuffers();
 
+  platform_context_->Echo(method_factory_.NewRunnableMethod(
+      &PPB_Graphics3D_Impl::OnSwapBuffers));
+
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -199,8 +203,6 @@ bool PPB_Graphics3D_Impl::InitRaw(PP_Resource share_context,
 
   platform_context_->SetContextLostCallback(
       callback_factory_.NewCallback(&PPB_Graphics3D_Impl::OnContextLost));
-  platform_context_->SetSwapBuffersCallback(
-      callback_factory_.NewCallback(&PPB_Graphics3D_Impl::OnSwapBuffers));
   return true;
 }
 

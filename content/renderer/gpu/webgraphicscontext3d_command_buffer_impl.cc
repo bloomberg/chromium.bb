@@ -49,7 +49,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
       swapbuffers_complete_callback_(0),
       cached_width_(0),
       cached_height_(0),
-      bound_fbo_(0) {
+      bound_fbo_(0),
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 WebGraphicsContext3DCommandBufferImpl::
@@ -137,11 +138,6 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         preferred_extensions,
         attribs,
         active_url);
-    if (context_) {
-      context_->SetSwapBuffersCallback(
-          NewCallback(this,
-              &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete));
-    }
   } else {
     context_ = RendererGLContext::CreateOffscreenContext(
         host,
@@ -230,6 +226,8 @@ void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
     renderview->OnViewContextSwapBuffersPosted();
 #endif
   context_->SwapBuffers();
+  context_->Echo(method_factory_.NewRunnableMethod(
+      &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete));
 #if defined(OS_MACOSX)
   // It appears that making the compositor's on-screen context current on
   // other platforms implies this flush. TODO(kbr): this means that the

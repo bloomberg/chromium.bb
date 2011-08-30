@@ -111,11 +111,6 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
   return true;
 }
 
-void PlatformContext3DImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
-  DCHECK(command_buffer_);
-  command_buffer_->SetSwapBuffersCallback(callback);
-}
-
 unsigned PlatformContext3DImpl::GetBackingTextureId() {
   DCHECK(command_buffer_);
   return parent_texture_id_;
@@ -132,6 +127,10 @@ int PlatformContext3DImpl::GetCommandBufferRouteId() {
 
 void PlatformContext3DImpl::SetContextLostCallback(Callback0::Type* callback) {
   context_lost_callback_.reset(callback);
+}
+
+bool PlatformContext3DImpl::Echo(Task* task) {
+  return command_buffer_->Echo(task);
 }
 
 void PlatformContext3DImpl::OnContextLost() {

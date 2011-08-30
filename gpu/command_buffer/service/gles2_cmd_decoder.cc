@@ -477,7 +477,11 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual ContextGroup* GetContextGroup() { return group_.get(); }
 
   virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
+
+#if defined(OS_MACOSX)
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
+#endif
+
   virtual bool GetServiceTextureId(uint32 client_texture_id,
                                    uint32* service_texture_id);
 
@@ -1284,7 +1288,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLenum offscreen_saved_color_format_;
 
   scoped_ptr<Callback1<gfx::Size>::Type> resize_callback_;
+
+#if defined(OS_MACOSX)
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
+#endif
 
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
@@ -2280,9 +2287,11 @@ void GLES2DecoderImpl::SetResizeCallback(
   resize_callback_.reset(callback);
 }
 
+#if defined(OS_MACOSX)
 void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);
 }
+#endif
 
 bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
                                            uint32* service_texture_id) {
@@ -6579,9 +6588,11 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       // For multisampled buffers, bind the resolved frame buffer so that
       // callbacks can call ReadPixels or CopyTexImage2D.
       ScopedResolvedFrameBufferBinder binder(this, true, false);
+#if defined(OS_MACOSX)
       if (swap_buffers_callback_.get()) {
         swap_buffers_callback_->Run();
       }
+#endif
       return error::kNoError;
     } else {
       ScopedFrameBufferBinder binder(this,
@@ -6602,9 +6613,11 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
       // Run the callback with |binder| in scope, so that the callback can call
       // ReadPixels or CopyTexImage2D.
+#if defined(OS_MACOSX)
       if (swap_buffers_callback_.get()) {
         swap_buffers_callback_->Run();
       }
+#endif
       return error::kNoError;
     }
   } else {
@@ -6615,9 +6628,11 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     }
   }
 
+#if defined(OS_MACOSX)
   if (swap_buffers_callback_.get()) {
     swap_buffers_callback_->Run();
   }
+#endif
 
   return error::kNoError;
 }

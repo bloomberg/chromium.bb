@@ -197,8 +197,12 @@ void GpuCommandBufferStub::OnInitialize(
           NewCallback(this, &GpuCommandBufferStub::OnParseError));
       scheduler_->SetScheduledCallback(
           NewCallback(channel_, &GpuChannel::OnScheduled));
+
+#if defined(OS_MACOSX)
       scheduler_->SetSwapBuffersCallback(
           NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
+#endif
+
       // On TOUCH_UI, the ImageTransportSurface handles co-ordinating the
       // resize with the browser process. The ImageTransportSurface sets it's
       // own resize callback, so we shouldn't do it here.
@@ -407,11 +411,9 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
   Send(reply_message);
 }
 
+#if defined(OS_MACOSX)
 void GpuCommandBufferStub::OnSwapBuffers() {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSwapBuffers");
-  ReportState();
-
-#if defined(OS_MACOSX)
   if (handle_) {
     // To swap on OSX, we have to send a message to the browser to get the
     // context put onscreen.
@@ -427,11 +429,8 @@ void GpuCommandBufferStub::OnSwapBuffers() {
         new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
     scheduler_->SetScheduled(false);
   }
-#else
-  // Notify the upstream commandbuffer that the swapbuffers has completed.
-  Send(new GpuCommandBufferMsg_SwapBuffers(route_id_));
-#endif
 }
+#endif
 
 void GpuCommandBufferStub::OnCommandProcessed() {
   if (watchdog_)
@@ -455,10 +454,9 @@ void GpuCommandBufferStub::AcceleratedSurfaceBuffersSwapped(
   scheduler_->set_acknowledged_swap_buffers_count(swap_buffers_count);
 
   for(uint64 i = 0; i < delta; i++) {
-    // Notify the upstream commandbuffer that the swapbuffers has completed.
-    Send(new GpuCommandBufferMsg_SwapBuffers(route_id_));
-
-    // Wake up the GpuScheduler to start doing work again.
+    // Wake up the GpuScheduler to start doing work again. When the scheduler
+    // wakes up, it will send any deferred echo acknowledgements, triggering
+    // associated swapbuffer callbacks.
     scheduler_->SetScheduled(true);
   }
 }

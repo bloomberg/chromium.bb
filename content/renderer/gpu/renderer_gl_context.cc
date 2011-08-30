@@ -192,10 +192,6 @@ void RendererGLContext::DeleteParentTexture(uint32 texture) {
   gles2_implementation_->DeleteTextures(1, &texture);
 }
 
-void RendererGLContext::SetSwapBuffersCallback(Callback0::Type* callback) {
-  swap_buffers_callback_.reset(callback);
-}
-
 void RendererGLContext::SetContextLostCallback(
     Callback1<ContextLostReason>::Type* callback) {
   context_lost_callback_.reset(callback);
@@ -229,7 +225,12 @@ bool RendererGLContext::SwapBuffers() {
     return false;
 
   gles2_implementation_->SwapBuffers();
+
   return true;
+}
+
+bool RendererGLContext::Echo(Task* task) {
+  return command_buffer_->Echo(task);
 }
 
 scoped_refptr<TransportTextureHost>
@@ -368,9 +369,6 @@ bool RendererGLContext::Initialize(bool onscreen,
     }
   }
 
-  command_buffer_->SetSwapBuffersCallback(
-      NewCallback(this, &RendererGLContext::OnSwapBuffers));
-
   command_buffer_->SetChannelErrorCallback(
       NewCallback(this, &RendererGLContext::OnContextLost));
 
@@ -443,11 +441,6 @@ void RendererGLContext::Destroy() {
   }
 
   channel_ = NULL;
-}
-
-void RendererGLContext::OnSwapBuffers() {
-  if (swap_buffers_callback_.get())
-    swap_buffers_callback_->Run();
 }
 
 void RendererGLContext::OnContextLost() {

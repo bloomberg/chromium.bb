@@ -15,6 +15,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task.h"
 #include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
@@ -65,7 +66,10 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
   virtual void SetContextLostReason(gpu::error::ContextLostReason reason);
-  virtual void OnSwapBuffers();
+
+  // Invoke the task when the channel has been flushed. Takes care of deleting
+  // the task whether the echo succeeds or not.
+  bool Echo(Task* task);
 
   // Reparent a command buffer. TODO(apatrick): going forward, the notion of
   // the parent / child relationship between command buffers is going away in
@@ -74,9 +78,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual bool SetParent(CommandBufferProxy* parent_command_buffer,
                          uint32 parent_texture_id);
 
-  // Set a callback that will be invoked when the SwapBuffers call has been
-  // issued.
-  void SetSwapBuffersCallback(Callback0::Type* callback);
   void SetChannelErrorCallback(Callback0::Type* callback);
 
   // Set a task that will be invoked the next time the window becomes invalid
@@ -104,6 +105,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void OnUpdateState(const gpu::CommandBuffer::State& state);
   void OnNotifyRepaint();
   void OnDestroyed(gpu::error::ContextLostReason reason);
+  void OnEchoAck();
 
   // As with the service, the client takes ownership of the ring buffer.
   int32 num_entries_;
@@ -127,9 +129,11 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   int route_id_;
   unsigned int flush_count_;
 
+  // Tasks to be invoked in echo responses.
+  std::queue<linked_ptr<Task> > echo_tasks_;
+
   scoped_ptr<Task> notify_repaint_task_;
 
-  scoped_ptr<Callback0::Type> swap_buffers_callback_;
   scoped_ptr<Callback0::Type> channel_error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
+#include "base/stl_util.h"
 #include "base/task.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
@@ -45,9 +46,9 @@ bool CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxy, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UpdateState, OnUpdateState);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffers, OnSwapBuffers);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_NotifyRepaint,
                         OnNotifyRepaint);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_EchoAck, OnEchoAck);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -77,6 +78,13 @@ void CommandBufferProxy::OnDestroyed(gpu::error::ContextLostReason reason) {
     // Avoid calling the error callback more than once.
     channel_error_callback_.reset();
   }
+}
+
+void CommandBufferProxy::OnEchoAck() {
+  DCHECK(!echo_tasks_.empty());
+  Task* task = echo_tasks_.front().release();
+  echo_tasks_.pop();
+  task->Run();
 }
 
 void CommandBufferProxy::SetChannelErrorCallback(Callback0::Type* callback) {
@@ -344,9 +352,20 @@ void CommandBufferProxy::SetContextLostReason(
   NOTREACHED();
 }
 
-void CommandBufferProxy::OnSwapBuffers() {
-  if (swap_buffers_callback_.get())
-    swap_buffers_callback_->Run();
+bool CommandBufferProxy::Echo(Task* task) {
+  if (last_state_.error != gpu::error::kNoError) {
+    delete task;
+    return false;
+  }
+
+  if (!Send(new GpuChannelMsg_Echo(GpuCommandBufferMsg_EchoAck(route_id_)))) {
+    delete task;
+    return false;
+  }
+
+  echo_tasks_.push(linked_ptr<Task>(task));
+
+  return true;
 }
 
 bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
@@ -374,10 +393,6 @@ bool CommandBufferProxy::SetParent(CommandBufferProxy* parent_command_buffer,
   }
 
   return result;
-}
-
-void CommandBufferProxy::SetSwapBuffersCallback(Callback0::Type* callback) {
-  swap_buffers_callback_.reset(callback);
 }
 
 void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {

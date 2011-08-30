@@ -150,6 +150,8 @@ class GpuChannel : public IPC::Channel::Listener,
 
   void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
 
+  void OnEcho(const IPC::Message& message);
+
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
   // are destroyed. So a raw pointer is safe.

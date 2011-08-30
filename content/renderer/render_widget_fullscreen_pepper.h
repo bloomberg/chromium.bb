@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 #define CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_
 
+#include "base/task.h"
 #include "content/renderer/render_widget_fullscreen.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
@@ -93,6 +94,8 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   RendererGLContext* context_;
   unsigned int buffer_;
   unsigned int program_;
+
+  ScopedRunnableMethodFactory<RenderWidgetFullscreenPepper> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetFullscreenPepper);
 };

@@ -120,6 +120,14 @@ void GpuScheduler::DidDestroySurface() {
   surface_.reset();
 }
 
+void GpuScheduler::SetSwapBuffersCallback(
+    Callback0::Type* callback) {
+  wrapped_swap_buffers_callback_.reset(callback);
+  decoder_->SetSwapBuffersCallback(
+      NewCallback(this,
+                  &GpuScheduler::WillSwapBuffers));
+}
+
 void GpuScheduler::WillSwapBuffers() {
   DCHECK(decoder_.get());
   DCHECK(decoder_->GetGLContext());

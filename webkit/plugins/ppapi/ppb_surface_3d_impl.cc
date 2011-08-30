@@ -24,7 +24,8 @@ PPB_Surface3D_Impl::PPB_Surface3D_Impl(PP_Instance instance)
     : Resource(instance),
       bound_to_instance_(false),
       swap_initiated_(false),
-      context_(NULL) {
+      context_(NULL),
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_Surface3D_Impl::~PPB_Surface3D_Impl() {
@@ -81,6 +82,8 @@ int32_t PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   gpu::gles2::GLES2Implementation* impl = context_->gles2_impl();
   if (impl)
     context_->gles2_impl()->SwapBuffers();
+  context_->platform_context()->Echo(method_factory_.NewRunnableMethod(
+      &PPB_Surface3D_Impl::OnSwapBuffers));
   // |SwapBuffers()| should not call us back synchronously, but double-check.
   DCHECK(!swap_callback_->completed());
   return PP_OK_COMPLETIONPENDING;
@@ -108,8 +111,6 @@ bool PPB_Surface3D_Impl::BindToContext(PPB_Context3D_Impl* context) {
     plugin_instance->BindGraphics(pp_instance(), 0);
 
   // Unbind from the current context.
-  if (context_ && context_->platform_context())
-    context_->platform_context()->SetSwapBuffersCallback(NULL);
   if (context && context->platform_context()) {
     // Resize the backing texture to the size of the instance when it is bound.
     // TODO(alokp): This should be the responsibility of plugins.
@@ -118,9 +119,6 @@ bool PPB_Surface3D_Impl::BindToContext(PPB_Context3D_Impl* context) {
       const gfx::Size& size = plugin_instance->position().size();
       impl->ResizeCHROMIUM(size.width(), size.height());
     }
-
-    context->platform_context()->SetSwapBuffersCallback(
-        NewCallback(this, &PPB_Surface3D_Impl::OnSwapBuffers));
   }
   context_ = context;
   return true;

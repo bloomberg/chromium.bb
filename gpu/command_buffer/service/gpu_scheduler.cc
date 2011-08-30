@@ -233,14 +233,6 @@ void GpuScheduler::SetResizeCallback(
   decoder_->SetResizeCallback(callback);
 }
 
-void GpuScheduler::SetSwapBuffersCallback(
-    Callback0::Type* callback) {
-  wrapped_swap_buffers_callback_.reset(callback);
-  decoder_->SetSwapBuffersCallback(
-      NewCallback(this,
-                  &GpuScheduler::WillSwapBuffers));
-}
-
 void GpuScheduler::SetCommandProcessedCallback(
     Callback0::Type* callback) {
   command_processed_callback_.reset(callback);

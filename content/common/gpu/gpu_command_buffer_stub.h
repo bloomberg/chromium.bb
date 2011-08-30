@@ -102,6 +102,7 @@ class GpuCommandBufferStub
                uint32 flush_count,
                IPC::Message* reply_message);
   void OnAsyncFlush(int32 put_offset, uint32 flush_count);
+  void OnEcho(const IPC::Message& message);
   void OnRescheduled();
   void OnCreateTransferBuffer(int32 size,
                               int32 id_request,
@@ -117,7 +118,10 @@ class GpuCommandBufferStub
                             IPC::Message* reply_message);
   void OnDestroyVideoDecoder(int32 decoder_route_id);
 
+#if defined(OS_MACOSX)
   void OnSwapBuffers();
+#endif
+
   void OnCommandProcessed();
   void OnParseError();
 

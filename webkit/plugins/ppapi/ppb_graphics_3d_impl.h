@@ -87,6 +87,7 @@ class PPB_Graphics3D_Impl : public ::ppapi::Resource,
   // PluginDelegate's 3D Context. Responsible for providing the command buffer.
   scoped_ptr<PluginDelegate::PlatformContext3D> platform_context_;
   base::ScopedCallbackFactory<PPB_Graphics3D_Impl> callback_factory_;
+  ScopedRunnableMethodFactory<PPB_Graphics3D_Impl> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Graphics3D_Impl);
 };

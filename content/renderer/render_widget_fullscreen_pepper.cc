@@ -227,7 +227,8 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
       plugin_(plugin),
       context_(NULL),
       buffer_(0),
-      program_(0) {
+      program_(0),
+      method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
@@ -363,10 +364,6 @@ void RenderWidgetFullscreenPepper::CreateContext() {
     context_ = NULL;
     return;
   }
-  context_->SetSwapBuffersCallback(
-      NewCallback(this,
-          &RenderWidgetFullscreenPepper::
-              OnSwapBuffersCompleteByRendererGLContext));
   context_->SetContextLostCallback(
       NewCallback(this, &RenderWidgetFullscreenPepper::OnLostContext));
 }
@@ -477,6 +474,8 @@ void RenderWidgetFullscreenPepper::SwapBuffers() {
   DCHECK(context_);
   OnSwapBuffersPosted();
   context_->SwapBuffers();
+  context_->Echo(method_factory_.NewRunnableMethod(
+      &RenderWidgetFullscreenPepper::OnSwapBuffersCompleteByRendererGLContext));
 }
 
 void RenderWidgetFullscreenPepper::OnLostContext(

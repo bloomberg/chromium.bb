@@ -30,6 +30,7 @@
 class AudioMessageFilter;
 class GURL;
 class SkBitmap;
+class Task;
 
 namespace base {
 class MessageLoopProxy;
@@ -165,11 +166,6 @@ class PluginDelegate {
     // Initialize the context.
     virtual bool Init(const int32* attrib_list) = 0;
 
-    // Set an optional callback that will be invoked when the side effects of
-    // a SwapBuffers call become visible to the compositor. Takes ownership
-    // of the callback.
-    virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
-
     // If the plugin instance is backed by an OpenGL, return its ID in the
     // compositors namespace. Otherwise return 0. Returns 0 by default.
     virtual unsigned GetBackingTextureId() = 0;
@@ -186,6 +182,10 @@ class PluginDelegate {
     // Set an optional callback that will be invoked when the context is lost
     // (e.g. gpu process crash). Takes ownership of the callback.
     virtual void SetContextLostCallback(Callback0::Type* callback) = 0;
+
+    // Run the task once the channel has been flushed. Takes care of deleting
+    // the task whether the echo succeeds or not.
+    virtual bool Echo(Task* task) = 0;
   };
 
   class PlatformAudio {
