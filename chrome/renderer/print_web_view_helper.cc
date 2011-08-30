@@ -985,7 +985,6 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
     PrepareFrameAndViewForPrint* prepare,
     PrintMsg_Print_Params* params) {
   PageSizeMargins page_layout_in_points;
-  prepare->UpdatePrintParams(*params);
   PrintWebViewHelper::GetPageSizeAndMarginsInPoints(frame, 0, *params,
                                                     &page_layout_in_points);
   int dpi = GetDPI(params);
@@ -1016,6 +1015,8 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
       page_layout_in_points.margin_top, printing::kPointsPerInch, dpi));
   params->margin_left = static_cast<int>(ConvertUnitDouble(
       page_layout_in_points.margin_left, printing::kPointsPerInch, dpi));
+
+  prepare->UpdatePrintParams(*params);
 }
 
 bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
