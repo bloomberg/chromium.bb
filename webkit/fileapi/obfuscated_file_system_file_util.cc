@@ -5,6 +5,7 @@
 #include "webkit/fileapi/obfuscated_file_system_file_util.h"
 
 #include <queue>
+#include <string>
 #include <vector>
 
 #include "base/file_util.h"
@@ -50,8 +51,8 @@ bool IsRootDirectory(const FilePath& virtual_path) {
 // which FilePath uses wide chars [since they're converted to UTF-8 for storage
 // anyway], but as long as the cost is high enough that one can't cheat on quota
 // by storing data in paths, it doesn't need to be all that accurate.
-const int64 kPathCreationQuotaCost = 146; // Bytes per inode, basically.
-const int64 kPathByteQuotaCost = 2; // Bytes per byte of path length in UTF-8.
+const int64 kPathCreationQuotaCost = 146;  // Bytes per inode, basically.
+const int64 kPathByteQuotaCost = 2;  // Bytes per byte of path length in UTF-8.
 
 int64 GetPathQuotaUsage(
     int growth_in_number_of_paths,
@@ -79,7 +80,7 @@ void UpdatePathQuotaUsage(
     fileapi::FileSystemOperationContext* context,
     const GURL& origin_url,
     fileapi::FileSystemType type,
-    int growth_in_number_of_paths, // -1, 0, or 1
+    int growth_in_number_of_paths,  // -1, 0, or 1
     int64 growth_in_bytes_of_path_length) {
   int64 growth = GetPathQuotaUsage(growth_in_number_of_paths,
       growth_in_bytes_of_path_length);
@@ -646,8 +647,19 @@ class ObfuscatedFileSystemFileEnumerator
     : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   ObfuscatedFileSystemFileEnumerator(
-      FileSystemDirectoryDatabase* db, const FilePath& virtual_root_path)
-      : db_(db) {
+      const FilePath& base_path,
+      FileSystemDirectoryDatabase* db,
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* underlying_file_util,
+      const FilePath& virtual_root_path)
+      : base_path_(base_path),
+        db_(db),
+        context_(context),
+        underlying_file_util_(underlying_file_util) {
+    DCHECK(db_);
+    DCHECK(context_);
+    DCHECK(underlying_file_util_);
+
     FileId file_id;
     FileInfo file_info;
     if (!db_->GetFileWithPath(virtual_root_path, &file_id))
@@ -663,7 +675,7 @@ class ObfuscatedFileSystemFileEnumerator
 
   ~ObfuscatedFileSystemFileEnumerator() {}
 
-  virtual FilePath Next() {
+  virtual FilePath Next() OVERRIDE {
     ProcessRecurseQueue();
     if (display_queue_.empty())
       return FilePath();
@@ -674,7 +686,24 @@ class ObfuscatedFileSystemFileEnumerator
     return current_.file_path;
   }
 
-  virtual bool IsDirectory() {
+  virtual int64 Size() OVERRIDE {
+    if (IsDirectory())
+      return 0;
+
+    base::PlatformFileInfo file_info;
+    FilePath platform_file_path;
+
+    FilePath local_path = base_path_.Append(current_.file_info.data_path);
+    base::PlatformFileError error = underlying_file_util_->GetFileInfo(
+        context_, local_path, &file_info, &platform_file_path);
+    if (error != base::PLATFORM_FILE_OK) {
+      LOG(WARNING) << "Lost a backing file.";
+      return 0;
+    }
+    return file_info.size;
+  }
+
+  virtual bool IsDirectory() OVERRIDE {
     return current_.file_info.is_directory();
   }
 
@@ -710,7 +739,10 @@ class ObfuscatedFileSystemFileEnumerator
   std::queue<FileRecord> display_queue_;
   std::queue<FileRecord> recurse_queue_;
   FileRecord current_;
+  FilePath base_path_;
   FileSystemDirectoryDatabase* db_;
+  FileSystemOperationContext* context_;
+  FileSystemFileUtil* underlying_file_util_;
 };
 
 class ObfuscatedFileSystemOriginEnumerator
@@ -775,7 +807,13 @@ ObfuscatedFileSystemFileUtil::CreateFileEnumerator(
       context->src_origin_url(), context->src_type(), false);
   if (!db)
     return new FileSystemFileUtil::EmptyFileEnumerator();
-  return new ObfuscatedFileSystemFileEnumerator(db, root_path);
+  return new ObfuscatedFileSystemFileEnumerator(
+      GetDirectoryForOriginAndType(context->src_origin_url(),
+                                   context->src_type(), false),
+      db,
+      context,
+      underlying_file_util_.get(),
+      root_path);
 }
 
 PlatformFileError ObfuscatedFileSystemFileUtil::GetFileInfoInternal(

@@ -241,11 +241,13 @@ class LocalFileSystemFileEnumerator
 
   ~LocalFileSystemFileEnumerator() {}
 
-  virtual FilePath Next();
-  virtual bool IsDirectory();
+  virtual FilePath Next() OVERRIDE;
+  virtual int64 Size() OVERRIDE;
+  virtual bool IsDirectory() OVERRIDE;
 
  private:
   file_util::FileEnumerator file_enum_;
+  file_util::FileEnumerator::FindInfo file_util_info_;
   FilePath platform_root_path_;
   FilePath virtual_root_path_;
 };
@@ -254,16 +256,19 @@ FilePath LocalFileSystemFileEnumerator::Next() {
   FilePath next = file_enum_.Next();
   if (next.empty())
     return next;
+  file_enum_.GetFindInfo(&file_util_info_);
 
   FilePath path;
   platform_root_path_.AppendRelativePath(next, &path);
   return virtual_root_path_.Append(path);
 }
 
+int64 LocalFileSystemFileEnumerator::Size() {
+  return file_util::FileEnumerator::GetFilesize(file_util_info_);
+}
+
 bool LocalFileSystemFileEnumerator::IsDirectory() {
-  file_util::FileEnumerator::FindInfo file_util_info;
-  file_enum_.GetFindInfo(&file_util_info);
-  return file_util::FileEnumerator::IsDirectory(file_util_info);
+  return file_util::FileEnumerator::IsDirectory(file_util_info_);
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*

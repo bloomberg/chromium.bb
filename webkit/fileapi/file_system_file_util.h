@@ -5,6 +5,8 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_FILE_UTIL_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_FILE_UTIL_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -223,20 +225,25 @@ class FileSystemFileUtil {
     // Returns an empty string if there are no more results.
     virtual FilePath Next() = 0;
 
+    virtual int64 Size() = 0;
     virtual bool IsDirectory() = 0;
   };
 
   class EmptyFileEnumerator : public AbstractFileEnumerator {
-    virtual FilePath Next() { return FilePath(); }
-    virtual bool IsDirectory() { return false; }
+    virtual FilePath Next() OVERRIDE { return FilePath(); }
+    virtual int64 Size() OVERRIDE { return 0; }
+    virtual bool IsDirectory() OVERRIDE { return false; }
   };
 
   // Returns a pointer to a new instance of AbstractFileEnumerator which is
   // implemented for each FileUtil subclass. The instance needs to be freed
   // by the caller, and its lifetime should not extend past when the current
   // call returns to the main FILE message loop.
+  //
+  // The supplied context must remain valid at least lifetime of the enumerator
+  // instance.
   virtual AbstractFileEnumerator* CreateFileEnumerator(
-      FileSystemOperationContext* unused,
+      FileSystemOperationContext* context,
       const FilePath& root_path);
 
  protected:

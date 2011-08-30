@@ -6,6 +6,7 @@
 #define WEBKIT_FILEAPI_OBFUSCATED_FILE_SYSTEM_FILE_UTIL_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/file_path.h"

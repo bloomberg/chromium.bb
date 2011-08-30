@@ -23,7 +23,6 @@
 #include "webkit/fileapi/local_file_system_file_util.h"
 #include "webkit/fileapi/obfuscated_file_system_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -546,22 +545,10 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   FilePath file_path_each;
   int64 usage = 0;
 
-  // TODO(ericu): This could be made much more efficient if the
-  // AbstractFileEnumerator also had an interface to tell you the size of the
-  // file.  ObfuscatedFileSystemFileEnumerator has already looked up the data,
-  // and it's a big waste to look it up again.  The other implementers could
-  // easily add it on-demand, so as not to waste time when it's not needed.
   while (!(file_path_each = enumerator->Next()).empty()) {
     base::PlatformFileInfo file_info;
     FilePath platform_file_path;
-    if (!enumerator->IsDirectory()) {
-      base::PlatformFileError error = sandbox_file_util_->GetFileInfo(
-          &context, file_path_each, &file_info, &platform_file_path);
-      if (error != base::PLATFORM_FILE_OK)
-        NOTREACHED();
-      else
-        usage += file_info.size;
-    }
+    usage += enumerator->Size();
     usage += ObfuscatedFileSystemFileUtil::ComputeFilePathCost(file_path_each);
   }
   // This clears the dirty flag too.

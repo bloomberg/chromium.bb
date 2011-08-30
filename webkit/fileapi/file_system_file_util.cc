@@ -520,21 +520,28 @@ class FileSystemFileEnumerator
 
   ~FileSystemFileEnumerator() {}
 
-  virtual FilePath Next();
-  virtual bool IsDirectory();
+  virtual FilePath Next() OVERRIDE;
+  virtual int64 Size() OVERRIDE;
+  virtual bool IsDirectory() OVERRIDE;
 
  private:
   file_util::FileEnumerator file_enum_;
+  file_util::FileEnumerator::FindInfo file_util_info_;
 };
 
 FilePath FileSystemFileEnumerator::Next() {
-  return file_enum_.Next();
+  FilePath rv = file_enum_.Next();
+  if (!rv.empty())
+    file_enum_.GetFindInfo(&file_util_info_);
+  return rv;
+}
+
+int64 FileSystemFileEnumerator::Size() {
+  return file_util::FileEnumerator::GetFilesize(file_util_info_);
 }
 
 bool FileSystemFileEnumerator::IsDirectory() {
-  file_util::FileEnumerator::FindInfo file_util_info;
-  file_enum_.GetFindInfo(&file_util_info);
-  return file_util::FileEnumerator::IsDirectory(file_util_info);
+  return file_util::FileEnumerator::IsDirectory(file_util_info_);
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*
