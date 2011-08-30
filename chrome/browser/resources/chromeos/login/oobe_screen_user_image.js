@@ -125,10 +125,20 @@ cr.define('oobe', function() {
     userImageList.addEventListener('keydown', function(e) {
       var prevIndex = userImageScreen.selectedUserImage_;
       var len = userImageList.children.length;
+      var nextIndex;
       if (e.keyCode == 39 || e.keyCode == 40)  // right or down
-        UserImageScreen.selectUserImage((prevIndex + 1) % len);
+        nextIndex = (prevIndex + 1) % len;
       else if (e.keyCode == 37 || e.keyCode == 38)  // left or up
-        UserImageScreen.selectUserImage((prevIndex - 1 + len) % len);
+        nextIndex = (prevIndex - 1 + len) % len;
+      else if (e.keyCode == 13 && prevIndex == 0)
+        // Enter pressed while "Take photo" button active.
+        chrome.send('takePhoto');
+      if (nextIndex == 0)
+        // "Take photo" button: don't send a selection event to Chrome,
+        // just focus element and update selected index.
+        UserImageScreen.selectUserImage(0);
+      else if (nextIndex)
+        chrome.send('selectImage', [userImageList.children[nextIndex].src]);
       e.stopPropagation();
     });
   };
