@@ -465,7 +465,7 @@ base::i18n::TextDirection InputMethodIBus::GetInputTextDirection() {
 }
 
 bool InputMethodIBus::IsActive() {
-  return context_ != NULL;
+  return true;
 }
 
 // static
