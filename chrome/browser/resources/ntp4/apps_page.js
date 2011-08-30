@@ -227,6 +227,8 @@ cr.define('ntp4', function() {
       this.isStore_ = this.appData_.is_webstore;
       if (this.isStore_)
         this.createAppsPromoExtras_();
+
+      this.addEventListener('mousedown', this.onMousedown_, true);
     },
 
     /**
@@ -329,6 +331,19 @@ cr.define('ntp4', function() {
 
       // Don't allow the click to trigger a link or anything
       e.preventDefault();
+    },
+
+    /**
+     * Handler for mousedown on the App. Adds a class that allows us to
+     * not display as :active for right clicks (specifically, don't pulse
+     * on right click).
+     * @param {Event} e The mousedown event.
+     */
+    onMousedown_: function(e) {
+      if (e.button == 2)
+        this.classList.add('right-mouse-down');
+      else
+        this.classList.remove('right-mouse-down');
     },
 
     /**

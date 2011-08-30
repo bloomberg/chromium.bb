@@ -9,12 +9,18 @@
   -webkit-transition: -webkit-transform 0.1s;
 }
 
-.app:active,
+.app:active:not(.right-mouse-down),
 .dragging .app,
 .drag-representation .app {
   /* Don't animate the initial scaling.  */
   -webkit-transition-duration: 0;
   -webkit-transform: scale(1.1);
+}
+
+/* Active gets applied right before .right-mouse-down, so to avoid flicker
+ * we need to make the scale go back to normal without an animation. */
+.app.right-mouse-down {
+  -webkit-transition-duration: 0;
 }
 
 .app-contents > span {

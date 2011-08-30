@@ -30,12 +30,6 @@ body {
   color: $8; /* COLOR_NTP_TEXT */
 }
 
-.app:hover > a,
-.app.dragging > a {
-  color: $12; /* COLOR_NTP_SECTION_TEXT */
-  background-color: $10; /* COLOR_NTP_SECTION */;
-}
-
 .tile-page-scrollbar {
   background-color: $21; /* COLOR_NTP_TEXT_LIGHT */
 }
@@ -52,15 +46,6 @@ body {
 
 .dot input:focus {
   background-color: $2; /* COLOR_NTP_BACKGROUND */
-}
-
-.tile-page-title,
-#footer-content span {
-  color: $21; /* COLOR_NTP_TEXT_LIGHT */
-}
-
-.disclosure-triangle {
-  background-color: $8 /* COLOR_NTP_TEXT */
 }
 
 /* Bookmarks ******************************************************************/

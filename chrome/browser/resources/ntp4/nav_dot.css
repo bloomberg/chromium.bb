@@ -73,7 +73,9 @@
   color: #7f7f7f;
 }
 
-.dot:focus .selection-bar, .dot:hover .selection-bar {
+.dot:focus .selection-bar,
+.dot:hover .selection-bar,
+.dot.drag-target .selection-bar {
   border-color: #b2b2b2;
 }
 

@@ -218,6 +218,7 @@ html[dir='rtl'] #attribution {
   -webkit-transition: width 150ms, right 150ms, background-color 150ms;
 }
 
-.page-switcher:hover {
+.page-switcher:hover,
+.page-switcher.drag-target {
   background-color: rgba(0, 0, 0, 0.2);
 }

@@ -38,7 +38,7 @@ var DragWrapper = (function() {
      * is incremented by |onDragEnter_| and decremented by |onDragLeave_|. This
      * is necessary because dragging over child widgets will fire additional
      * enter and leave events on |this|. A non-zero value does not necessarily
-     * indicate that |isCurrentDragTarget_| is true.
+     * indicate that |isCurrentDragTarget()| is true.
      * @type {number}
      * @private
      */
@@ -48,11 +48,9 @@ var DragWrapper = (function() {
      * Whether the tile page is currently being dragged over with data it can
      * accept.
      * @type {boolean}
-     * @private
      */
-    isCurrentDragTarget_: false,
     get isCurrentDragTarget() {
-      return this.isCurrentDragTarget_;
+      return this.target_.classList.contains('drag-target');
     },
 
     /**
@@ -63,7 +61,7 @@ var DragWrapper = (function() {
     onDragEnter_: function(e) {
       if (++this.dragEnters_ == 1) {
         if (this.handler_.shouldAcceptDrag(e)) {
-          this.isCurrentDragTarget_ = true;
+          this.target_.classList.add('drag-target');
           this.handler_.doDragEnter(e);
         }
       } else {
@@ -82,7 +80,7 @@ var DragWrapper = (function() {
      * @private
      */
     onDragOver_: function(e) {
-      if (!this.isCurrentDragTarget_)
+      if (!this.target_.classList.contains('drag-target'))
         return;
       this.handler_.doDragOver(e);
     },
@@ -94,9 +92,9 @@ var DragWrapper = (function() {
      */
     onDrop_: function(e) {
       this.dragEnters_ = 0;
-      if (!this.isCurrentDragTarget_)
+      if (!this.target_.classList.contains('drag-target'))
         return;
-      this.isCurrentDragTarget_ = false;
+      this.target_.classList.remove('drag-target');
       this.handler_.doDrop(e);
     },
 
@@ -109,7 +107,7 @@ var DragWrapper = (function() {
       if (--this.dragEnters_ > 0)
         return;
 
-      this.isCurrentDragTarget_ = false;
+      this.target_.classList.remove('drag-target');
       this.handler_.doDragLeave();
     },
   };
