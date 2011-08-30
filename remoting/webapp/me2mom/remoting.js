@@ -240,7 +240,7 @@ remoting.tryShare = function() {
   div.appendChild(plugin);
   plugin.onStateChanged = onStateChanged_;
   plugin.logDebugInfo = debugInfoCallback_;
-  plugin.localizeString = chrome.i18n.getMessage;
+  plugin.localize(chrome.i18n.getMessage);
   plugin.connect(getEmail(),
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }

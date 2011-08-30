@@ -42,6 +42,11 @@ NPObject* ObjectFromNPVariant(const NPVariant& variant) {
 
 ScopedRefNPObject::ScopedRefNPObject() : object_(NULL) { }
 
+ScopedRefNPObject::ScopedRefNPObject(NPObject* object)
+    : object_(NULL) {
+  *this = object;
+}
+
 ScopedRefNPObject::~ScopedRefNPObject() {
   *this = NULL;
 }

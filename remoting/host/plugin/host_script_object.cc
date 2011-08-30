@@ -21,7 +21,6 @@
 #include "remoting/host/plugin/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/support_access_verifier.h"
-#include "remoting/host/ui_strings.h"
 
 namespace remoting {
 
@@ -42,12 +41,12 @@ namespace remoting {
 //
 // attribute Function void logDebugInfo(string);
 // attribute Function void onStateChanged();
-// attribute Function string localizeString(string,...);
 //
 // // The |auth_service_with_token| parameter should be in the format
 // // "auth_service:auth_token".  An example would be "oauth2:1/2a3912vd".
 // void connect(string uid, string auth_service_with_token);
 // void disconnect();
+// void localize(string (*localize_func)(string,...));
 
 namespace {
 
@@ -55,11 +54,11 @@ const char* kAttrNameAccessCode = "accessCode";
 const char* kAttrNameAccessCodeLifetime = "accessCodeLifetime";
 const char* kAttrNameClient = "client";
 const char* kAttrNameState = "state";
-const char* kAttrNameLocalizeString = "localizeString";
 const char* kAttrNameLogDebugInfo = "logDebugInfo";
 const char* kAttrNameOnStateChanged = "onStateChanged";
 const char* kFuncNameConnect = "connect";
 const char* kFuncNameDisconnect = "disconnect";
+const char* kFuncNameLocalize = "localize";
 
 // States.
 const char* kAttrNameDisconnected = "DISCONNECTED";
@@ -158,7 +157,8 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
   VLOG(2) << "HasMethod " << method_name;
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
   return (method_name == kFuncNameConnect ||
-          method_name == kFuncNameDisconnect);
+          method_name == kFuncNameDisconnect ||
+          method_name == kFuncNameLocalize);
 }
 
 bool HostNPScriptObject::InvokeDefault(const NPVariant* args,
@@ -180,6 +180,8 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
     return Connect(args, argCount, result);
   } else if (method_name == kFuncNameDisconnect) {
     return Disconnect(args, argCount, result);
+  } else if (method_name == kFuncNameLocalize) {
+    return Localize(args, argCount, result);
   } else {
     SetException("Invoke: unknown method " + method_name);
     return false;
@@ -193,7 +195,6 @@ bool HostNPScriptObject::HasProperty(const std::string& property_name) {
           property_name == kAttrNameAccessCodeLifetime ||
           property_name == kAttrNameClient ||
           property_name == kAttrNameState ||
-          property_name == kAttrNameLocalizeString ||
           property_name == kAttrNameLogDebugInfo ||
           property_name == kAttrNameOnStateChanged ||
           property_name == kAttrNameDisconnected ||
@@ -215,9 +216,6 @@ bool HostNPScriptObject::GetProperty(const std::string& property_name,
 
   if (property_name == kAttrNameOnStateChanged) {
     OBJECT_TO_NPVARIANT(on_state_changed_func_.get(), *result);
-    return true;
-  } else if (property_name == kAttrNameLocalizeString) {
-    OBJECT_TO_NPVARIANT(localize_func_.get(), *result);
     return true;
   } else if (property_name == kAttrNameLogDebugInfo) {
     OBJECT_TO_NPVARIANT(log_debug_info_func_.get(), *result);
@@ -274,17 +272,6 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
     return false;
   }
 
-  if (property_name == kAttrNameLocalizeString) {
-    if (NPVARIANT_IS_OBJECT(*value)) {
-      localize_func_ = NPVARIANT_TO_OBJECT(*value);
-      return true;
-    } else {
-      SetException("SetProperty: unexpected type for property " +
-                   property_name);
-    }
-    return false;
-  }
-
   if (property_name == kAttrNameLogDebugInfo) {
     if (NPVARIANT_IS_OBJECT(*value)) {
       log_debug_info_func_ = NPVARIANT_TO_OBJECT(*value);
@@ -311,11 +298,11 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
   const char* entries[] = {
     kAttrNameAccessCode,
     kAttrNameState,
-    kAttrNameLocalizeString,
     kAttrNameLogDebugInfo,
     kAttrNameOnStateChanged,
     kFuncNameConnect,
     kFuncNameDisconnect,
+    kFuncNameLocalize,
     kAttrNameDisconnected,
     kAttrNameRequestedAccessCode,
     kAttrNameReceivedAccessCode,
@@ -483,7 +470,10 @@ void HostNPScriptObject::FinishConnect(
   host_->AddStatusObserver(register_request_.get());
   host_->set_it2me(true);
 
-  LocalizeStrings();
+  {
+    base::AutoLock auto_lock(ui_strings_lock_);
+    host_->SetUiStrings(ui_strings_);
+  }
 
   // Start the Host.
   host_->Start();
@@ -504,6 +494,25 @@ bool HostNPScriptObject::Disconnect(const NPVariant* args,
   DisconnectInternal();
 
   return true;
+}
+
+bool HostNPScriptObject::Localize(const NPVariant* args,
+                                  uint32_t arg_count,
+                                  NPVariant* result) {
+  CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
+  if (arg_count != 1) {
+    SetException("localize: bad number of arguments");
+    return false;
+  }
+
+  if (NPVARIANT_IS_OBJECT(args[0])) {
+    ScopedRefNPObject localize_func(NPVARIANT_TO_OBJECT(args[0]));
+    LocalizeStrings(localize_func.get());
+    return true;
+  } else {
+    SetException("localize: unexpected type for argument 1");
+    return false;
+  }
 }
 
 void HostNPScriptObject::DisconnectInternal() {
@@ -645,16 +654,19 @@ void HostNPScriptObject::SetException(const std::string& exception_string) {
   LOG(INFO) << exception_string;
 }
 
-void HostNPScriptObject::LocalizeStrings() {
+void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
+  DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
+
   UiStrings ui_strings;
   string16 direction;
-  LocalizeString("@@bidi_dir", &direction);
+  LocalizeString(localize_func, "@@bidi_dir", &direction);
   ui_strings.direction = UTF16ToUTF8(direction) == "rtl" ?
       remoting::UiStrings::RTL : remoting::UiStrings::LTR;
-  LocalizeString(/*i18n-content*/"PRODUCT_NAME", &ui_strings.product_name);
-  LocalizeString(/*i18n-content*/"DISCONNECT_BUTTON",
+  LocalizeString(localize_func, /*i18n-content*/"PRODUCT_NAME",
+                 &ui_strings.product_name);
+  LocalizeString(localize_func, /*i18n-content*/"DISCONNECT_BUTTON",
                  &ui_strings.disconnect_button_text);
-  LocalizeString(
+  LocalizeString(localize_func,
 #if defined(OS_WIN)
       /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_WINDOWS",
 #elif defined(OS_MAC)
@@ -663,24 +675,26 @@ void HostNPScriptObject::LocalizeStrings() {
       /*i18n-content*/"DISCONNECT_BUTTON_PLUS_SHORTCUT_LINUX",
 #endif
       &ui_strings.disconnect_button_text_plus_shortcut);
-  LocalizeString(/*i18n-content*/"CONTINUE_PROMPT",
+  LocalizeString(localize_func, /*i18n-content*/"CONTINUE_PROMPT",
                  &ui_strings.continue_prompt);
-  LocalizeString(/*i18n-content*/"CONTINUE_BUTTON",
+  LocalizeString(localize_func, /*i18n-content*/"CONTINUE_BUTTON",
                  &ui_strings.continue_button_text);
-  LocalizeString(/*i18n-content*/"STOP_SHARING_BUTTON",
+  LocalizeString(localize_func, /*i18n-content*/"STOP_SHARING_BUTTON",
                  &ui_strings.stop_sharing_button_text);
-  LocalizeString(/*i18n-content*/"MESSAGE_SHARED",
+  LocalizeString(localize_func, /*i18n-content*/"MESSAGE_SHARED",
                  &ui_strings.disconnect_message);
 
-  host_->SetUiStrings(ui_strings);
+  base::AutoLock auto_lock(ui_strings_lock_);
+  ui_strings_ = ui_strings;
 }
 
-bool HostNPScriptObject::LocalizeString(const char* tag, string16* result) {
+bool HostNPScriptObject::LocalizeString(NPObject* localize_func,
+                                        const char* tag, string16* result) {
   NPVariant args[2];
   STRINGZ_TO_NPVARIANT(tag, args[0]);
   NPVariant np_result;
   bool is_good = g_npnetscape_funcs->invokeDefault(
-      plugin_, localize_func_.get(), &args[0], 1, &np_result);
+      plugin_, localize_func, &args[0], 1, &np_result);
   if (!is_good) {
     LOG(ERROR) << "Localization failed for " << tag;
     return false;

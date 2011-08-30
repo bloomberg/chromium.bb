@@ -35,6 +35,7 @@ NPObject* ObjectFromNPVariant(const NPVariant& variant);
 class ScopedRefNPObject {
  public:
   ScopedRefNPObject();
+  explicit ScopedRefNPObject(NPObject* object);
   ~ScopedRefNPObject();
 
   // Release the held reference and replace it with |object|, incrementing
