@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "aura/desktop.h"
+#include "aura/event.h"
 #include "aura/window.h"
 #include "aura/window_delegate.h"
 #include "base/at_exit.h"
@@ -12,7 +13,6 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
 
@@ -22,6 +22,10 @@ namespace {
 class DemoWindowDelegate : public aura::WindowDelegate {
  public:
   explicit DemoWindowDelegate(SkColor color) : color_(color) {}
+
+  virtual bool OnMouseEvent(const aura::MouseEvent& event) OVERRIDE {
+    return true;
+  }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
