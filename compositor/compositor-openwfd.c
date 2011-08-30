@@ -190,9 +190,33 @@ wfd_output_set_cursor(struct wlsc_output *output_base,
 static void
 wfd_output_destroy(struct wlsc_output *output_base)
 {
-	destroy_output(output_base);
+	struct wfd_output *output = (struct wfd_output *) output_base;
+	struct wfd_compositor *ec =
+		(struct wfd_compositor *) output->base.compositor;
+	int i;
 
-	return;
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+				  GL_COLOR_ATTACHMENT0,
+				  GL_RENDERBUFFER,
+				  0);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glDeleteRenderbuffers(2, output->rbo);
+
+	for (i = 0; i < 2; i++) {
+		ec->base.destroy_image(ec->base.display, output->image[i]);
+		gbm_bo_destroy(output->bo[i]);
+		wfdDestroySource(ec->dev, output->source[i]);
+	}
+	
+	ec->used_pipelines &= ~(1 << output->pipeline_id);
+	wfdDestroyPipeline(ec->dev, output->pipeline);
+	wfdDestroyPort(ec->dev, output->port);
+
+	wlsc_output_destroy(&output->base);
+	wl_list_remove(&output->base.link);
+
+	free(output);
 }
 
 static int
@@ -440,39 +464,6 @@ create_outputs(struct wfd_compositor *ec, int option_connector)
 }
 
 static int
-destroy_output(struct wfd_output *output)
-{
-	struct wfd_compositor *ec =
-		(struct wfd_compositor *) output->base.compositor;
-	int i;
-
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-				  GL_COLOR_ATTACHMENT0,
-				  GL_RENDERBUFFER,
-				  0);
-
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glDeleteRenderbuffers(2, output->rbo);
-
-	for (i = 0; i < 2; i++) {
-		ec->base.destroy_image(ec->base.display, output->image[i]);
-		gbm_bo_destroy(output->bo[i]);
-		wfdDestroySource(ec->dev, output->source[i]);
-	}
-	
-	ec->used_pipelines &= ~(1 << output->pipeline_id);
-	wfdDestroyPipeline(ec->dev, output->pipeline);
-	wfdDestroyPort(ec->dev, output->port);
-
-	wlsc_output_destroy(&output->base);
-	wl_list_remove(&output->base.link);
-
-	free(output);
-
-	return 0;
-}
-
-static int
 handle_port_state_change(struct wfd_compositor *ec)
 {
 	struct wfd_output *output, *next;
@@ -516,7 +507,7 @@ handle_port_state_change(struct wfd_compositor *ec)
 
 		if (!state && output_port_id == port_id) {
 			x_offset += output->base.current->width;
-			destroy_output(output);
+			wfd_output_destroy(&output->base);
 			continue;
 		}
 
