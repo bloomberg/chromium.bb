@@ -6,6 +6,7 @@
 
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
+#include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_view.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
@@ -20,7 +21,8 @@ namespace content {
 P2PTransportImpl::P2PTransportImpl(
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory)
-    : event_handler_(NULL),
+    : socket_dispatcher_(NULL),
+      event_handler_(NULL),
       state_(STATE_NONE),
       network_manager_(network_manager),
       socket_factory_(socket_factory),
@@ -29,12 +31,14 @@ P2PTransportImpl::P2PTransportImpl(
 }
 
 P2PTransportImpl::P2PTransportImpl(P2PSocketDispatcher* socket_dispatcher)
-    : event_handler_(NULL),
+    : socket_dispatcher_(socket_dispatcher),
+      event_handler_(NULL),
       state_(STATE_NONE),
       network_manager_(new IpcNetworkManager(socket_dispatcher)),
       socket_factory_(new IpcPacketSocketFactory(socket_dispatcher)),
       ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
           this, &P2PTransportImpl::OnTcpConnected)) {
+  DCHECK(socket_dispatcher);
 }
 
 P2PTransportImpl::~P2PTransportImpl() {
@@ -53,9 +57,16 @@ bool P2PTransportImpl::Init(const std::string& name,
   name_ = name;
   event_handler_ = event_handler;
 
-  // TODO(sergeyu): Use STUN/Relay settings from |config|.
-  allocator_.reset(new cricket::BasicPortAllocator(
-      network_manager_.get(), socket_factory_.get()));
+  if (socket_dispatcher_) {
+    allocator_.reset(new P2PPortAllocator(
+        socket_dispatcher_, network_manager_.get(),
+        socket_factory_.get(), config));
+  } else {
+    // Use BasicPortAllocator if we don't have P2PSocketDispatcher
+    // (for unittests).
+    allocator_.reset(new cricket::BasicPortAllocator(
+        network_manager_.get(), socket_factory_.get()));
+  }
 
   DCHECK(!channel_.get());
   channel_.reset(new cricket::P2PTransportChannel(

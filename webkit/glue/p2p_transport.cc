@@ -7,7 +7,9 @@
 namespace webkit_glue {
 
 P2PTransport::Config::Config()
-    : tcp_receive_window(0),
+    : stun_server_port(0),
+      relay_server_port(0),
+      tcp_receive_window(0),
       tcp_send_window(0) {
 }
 

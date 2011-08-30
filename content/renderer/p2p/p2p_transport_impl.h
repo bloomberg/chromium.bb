@@ -33,14 +33,15 @@ class PacketSocketFactory;
 
 namespace content {
 
+class P2PPortAllocator;
 class P2PSocketDispatcher;
 
 class P2PTransportImpl : public webkit_glue::P2PTransport,
                          public sigslot::has_slots<> {
  public:
-  // Create P2PTransportImpl using specified NetworkManager and
+  // Creates P2PTransportImpl using specified NetworkManager and
   // PacketSocketFactory. Takes ownership of |network_manager| and
-  // |socket_factory|.
+  // |socket_factory|. Provided to be used for tests only.
   P2PTransportImpl(talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory);
 
@@ -70,6 +71,7 @@ class P2PTransportImpl : public webkit_glue::P2PTransport,
 
   void OnTcpConnected(int result);
 
+  P2PSocketDispatcher* socket_dispatcher_;
   std::string name_;
   EventHandler* event_handler_;
   State state_;

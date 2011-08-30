@@ -50,9 +50,11 @@ class P2PTransport {
 
     // STUN server address and port, e.g. "stun.example.com:23542".
     std::string stun_server;
+    int stun_server_port;
 
-    // Relay server name, e.g. "relay.example.com".
+    // Relay server address and port, e.g. "relay.example.com:4234".
     std::string relay_server;
+    int relay_server_port;
 
     // Relay token to use for relay servers.
     std::string relay_token;

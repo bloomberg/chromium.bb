@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/socket/socket.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -115,7 +116,11 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
       StringVar* value_str = StringVar::FromPPVar(value);
       if (!value_str)
         return PP_ERROR_BADARGUMENT;
-      config_.stun_server = value_str->value();
+
+      if (!net::ParseHostAndPort(value_str->value(), &config_.stun_server,
+                                 &config_.stun_server_port)) {
+        return PP_ERROR_BADARGUMENT;
+      }
       break;
     }
 
@@ -123,7 +128,11 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
       StringVar* value_str = StringVar::FromPPVar(value);
       if (!value_str)
         return PP_ERROR_BADARGUMENT;
-      config_.relay_server = value_str->value();
+
+      if (!net::ParseHostAndPort(value_str->value(), &config_.relay_server,
+                                 &config_.relay_server_port)) {
+        return PP_ERROR_BADARGUMENT;
+      }
       break;
     }
 
