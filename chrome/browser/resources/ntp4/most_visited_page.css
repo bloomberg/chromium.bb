@@ -62,10 +62,11 @@ html[dir=rtl] .most-visited .close-button {
 
 .most-visited .favicon {
   background: no-repeat 5px 50%;
+  background-size: 32px;
   bottom: 7px;
   box-sizing: border-box;
   display: block;
-  height: 16px;
+  height: 32px;
   position: absolute;
   width: 100%;
 }
@@ -76,8 +77,7 @@ html[dir=rtl] .most-visited .close-button {
   /* Matches height of title.  */
   bottom: 23px;
   height: 3px;
-  /* Matches padding-top of the title. */
-  margin-bottom: 8px;
+  opacity: 0.5;
   position: absolute;
   width: 100%;
   z-index: 100;
@@ -86,8 +86,8 @@ html[dir=rtl] .most-visited .close-button {
 .most-visited .title {
   display: block;
   height: 23px;
+  line-height: 23px;
   overflow: hidden;
-  padding-top: 8px;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;

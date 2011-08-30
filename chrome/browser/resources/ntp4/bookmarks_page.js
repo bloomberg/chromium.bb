@@ -59,10 +59,11 @@ cr.define('ntp4', function() {
       var faviconDiv = this.querySelector('.favicon');
       var faviconUrl;
       if (this.data.url) {
-        faviconUrl = 'chrome://favicon/size/16/' + this.data.url;
+        faviconUrl = 'chrome://favicon/size/32/' + this.data.url;
         chrome.send('getFaviconDominantColor',
                     [faviconUrl, id, 'ntp4.setBookmarksFaviconDominantColor']);
       } else {
+        // TODO(csilv): We need a large (32px) icon for this URL.
         faviconUrl = 'chrome://theme/IDR_BOOKMARK_BAR_FOLDER';
         // TODO(csilv): Should we vary this color by platform?
         this.stripeColor = '#919191';
@@ -88,11 +89,8 @@ cr.define('ntp4', function() {
      *     animate.
      */
     setBounds: function(size, x, y) {
-      this.style.width = size + 'px';
-      this.style.height = heightForWidth(size) + 'px';
-
+      this.style.width = this.style.height = size + 'px';
       this.style.left = x + 'px';
-      this.style.right = x + 'px';
       this.style.top = y + 'px';
     },
 
@@ -173,16 +171,6 @@ cr.define('ntp4', function() {
     maxTileWidth: 150,
   };
   TilePage.initGridValues(bookmarksPageGridValues);
-
-  /**
-   * Calculates the height for a bookmarks tile for a given width. The size
-   * is based on a desired size of 96x72 ratio.
-   * @return {number} The height.
-   */
-  function heightForWidth(width) {
-    // The 2s are for borders, the 31 is for the title.
-    return (width - 2) * 72 / 96 + 2 + 31;
-  }
 
   /**
    * Creates a new BookmarksPage object.
@@ -286,9 +274,6 @@ cr.define('ntp4', function() {
     shouldAcceptDrag: function(dataTransfer) {
       return false;
     },
-
-    /** @inheritDoc */
-    heightForWidth: heightForWidth,
 
     /**
      * Invoked before a batch import begins.  We will ignore added/changed
