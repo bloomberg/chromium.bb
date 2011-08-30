@@ -10,9 +10,12 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/common/notification_service.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
@@ -65,6 +68,10 @@ void UserImageScreen::Show() {
   if (selected_image_index == -1)
     selected_image_index = 0;
   actor_->SelectImage(selected_image_index);
+
+  WizardAccessibilityHelper::GetInstance()->MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT).c_str(),
+      false, false);
 }
 
 void UserImageScreen::Hide() {
@@ -159,4 +166,3 @@ void UserImageScreen::Observe(int type,
 }
 
 }  // namespace chromeos
-
