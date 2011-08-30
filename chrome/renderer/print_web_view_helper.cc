@@ -4,10 +4,6 @@
 
 #include "chrome/renderer/print_web_view_helper.h"
 
-#if defined(OS_MACOSX) && !defined(USE_SKIA)
-#include <CoreGraphics/CGContext.h>
-#endif
-
 #include <string>
 
 #include "base/command_line.h"
@@ -49,6 +45,8 @@
 #include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #elif defined(OS_MACOSX)
+#include <CoreGraphics/CGContext.h>
+
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
@@ -734,7 +732,7 @@ bool PrintWebViewHelper::FinalizePreviewDocument() {
 
 void PrintWebViewHelper::OnPrintingDone(bool success) {
   notify_browser_of_print_failure_ = false;
-  if (success == FAIL_PRINT)
+  if (!success)
     LOG(ERROR) << "Failure in OnPrintingDone";
   DidFinishPrinting(success ? OK : FAIL_PRINT);
 }
