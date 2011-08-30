@@ -4,6 +4,8 @@
 
 #include "aura/event.h"
 
+#include "aura/window.h"
+
 namespace aura {
 
 Event::Event(ui::EventType type, int flags)
@@ -25,6 +27,19 @@ Event::Event(const Event& copy)
       type_(copy.type_),
       time_stamp_(copy.time_stamp_),
       flags_(copy.flags_) {
+}
+
+LocatedEvent::LocatedEvent(const LocatedEvent& model,
+                           Window* source,
+                           Window* target)
+    : Event(model),
+      location_(model.location_) {
+  if (target && target != source)
+    Window::ConvertPointToWindow(source, target, &location_);
+}
+
+MouseEvent::MouseEvent(const MouseEvent& model, Window* source, Window* target)
+    : LocatedEvent(model, source, target) {
 }
 
 }  // namespace aura

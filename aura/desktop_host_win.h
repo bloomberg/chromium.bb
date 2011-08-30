@@ -25,6 +25,7 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) OVERRIDE;
 
  private:
   BEGIN_MSG_MAP_EX(DesktopHostWin)

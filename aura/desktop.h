@@ -6,7 +6,7 @@
 #define AURA_DESKTOP_H_
 #pragma once
 
-#include "aura/window.h"
+#include "aura/root_window.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
@@ -23,13 +23,18 @@ namespace aura {
 
 class DesktopHost;
 class MouseEvent;
-class Window;
 
 // Desktop is responsible for hosting a set of windows.
 class Desktop {
  public:
   Desktop();
   ~Desktop();
+
+  // Shows the desktop host.
+  void Show();
+
+  // Sets the size of the desktop.
+  void SetSize(const gfx::Size& size);
 
   // Shows the desktop host and runs an event loop for it.
   void Run();
@@ -50,7 +55,7 @@ class Desktop {
  private:
   scoped_refptr<ui::Compositor> compositor_;
 
-  scoped_ptr<Window> window_;
+  scoped_ptr<internal::RootWindow> window_;
 
   DesktopHost* host_;
 

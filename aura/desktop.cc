@@ -5,6 +5,7 @@
 #include "aura/desktop.h"
 
 #include "aura/desktop_host.h"
+#include "aura/root_window.h"
 #include "aura/window.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -21,27 +22,34 @@ Desktop::Desktop()
                                        host_->GetSize());
   host_->SetDesktop(this);
   DCHECK(compositor_.get());
-  window_.reset(new Window(NULL));
+  window_.reset(new internal::RootWindow);
 }
 
 Desktop::~Desktop() {
 }
 
-void Desktop::Run() {
+void Desktop::Show() {
   host_->Show();
+}
+
+void Desktop::SetSize(const gfx::Size& size) {
+  host_->SetSize(size);
+}
+
+void Desktop::Run() {
+  Show();
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   MessageLoopForUI::current()->Run(host_);
 }
 
 void Desktop::Draw() {
-  // Second pass renders the layers.
   compositor_->NotifyStart();
   window_->DrawTree();
   compositor_->NotifyEnd();
 }
 
 bool Desktop::OnMouseEvent(const MouseEvent& event) {
-  return window_->OnMouseEvent(event);
+  return window_->HandleMouseEvent(event);
 }
 
 // static

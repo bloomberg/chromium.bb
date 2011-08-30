@@ -47,6 +47,17 @@ gfx::Size DesktopHostWin::GetSize() {
   return gfx::Rect(r).size();
 }
 
+void DesktopHostWin::SetSize(const gfx::Size& size) {
+  SetWindowPos(
+      hwnd(),
+      NULL,
+      0,
+      0,
+      size.width(),
+      size.height(),
+      SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_NOREPOSITION);
+}
+
 void DesktopHostWin::OnClose() {
   // TODO: this obviously shouldn't be here.
   MessageLoopForUI::current()->Quit();
