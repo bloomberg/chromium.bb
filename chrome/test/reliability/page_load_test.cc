@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -668,8 +668,6 @@ class PageLoadTest : public UITest {
     test_dir = test_dir.AppendASCII("sample_pages");
     return test_dir;
   }
-
-  NotificationService notification_service_;
 
   // The pathname of Chrome's crash dumps directory.
   FilePath crash_dumps_dir_path_;
