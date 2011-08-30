@@ -94,7 +94,7 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       chromeos::CrosLanguageOptionsHandler::GetLanguageList(descriptors));
-  ASSERT_EQ(13U, list->GetSize());
+  ASSERT_EQ(8U, list->GetSize());
 
   DictionaryValue* entry = NULL;
   std::string language_code;
