@@ -16,6 +16,7 @@
 
 class FilePath;
 class PrintSystemTaskProxy;
+class TabContentsWrapper;
 
 namespace base {
 class FundamentalValue;
@@ -65,7 +66,8 @@ class PrintPreviewHandler : public WebUIMessageHandler,
  private:
   friend class PrintSystemTaskProxy;
 
-  TabContents* preview_tab();
+  TabContentsWrapper* preview_tab_wrapper() const;
+  TabContents* preview_tab() const;
 
   // Gets the default printer. |args| is unused.
   void HandleGetDefaultPrinter(const base::ListValue* args);
@@ -138,7 +140,7 @@ class PrintPreviewHandler : public WebUIMessageHandler,
                          std::string print_ticket);
 
   // Gets the initiator tab for the print preview tab.
-  TabContents* GetInitiatorTab();
+  TabContentsWrapper* GetInitiatorTab() const;
 
   // Closes the print preview tab.
   void ClosePrintPreviewTab();

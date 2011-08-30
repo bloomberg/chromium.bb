@@ -31,8 +31,7 @@ BackgroundPrintingManager::~BackgroundPrintingManager() {
 
 void BackgroundPrintingManager::OwnTabContents(TabContentsWrapper* contents) {
   DCHECK(CalledOnValidThread());
-  DCHECK(printing::PrintPreviewTabController::IsPrintPreviewTab(
-      contents->tab_contents()));
+  DCHECK(PrintPreviewTabController::IsPrintPreviewTab(contents));
   CHECK(printing_contents_.find(contents) == printing_contents_.end());
 
   printing_contents_.insert(contents);
@@ -51,15 +50,15 @@ void BackgroundPrintingManager::OwnTabContents(TabContentsWrapper* contents) {
   tabstrip->DetachTabContentsAt(tabstrip->GetIndexOfTabContents(contents));
 
   // Activate the initiator tab.
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  PrintPreviewTabController* tab_controller =
+      PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return;
-  TabContents* initiator_tab = tab_controller->GetInitiatorTab(
-      contents->tab_contents());
+  TabContentsWrapper* initiator_tab = tab_controller->GetInitiatorTab(contents);
   if (!initiator_tab)
     return;
-  static_cast<RenderViewHostDelegate*>(initiator_tab)->Activate();
+  static_cast<RenderViewHostDelegate*>(
+      initiator_tab->tab_contents())->Activate();
 }
 
 void BackgroundPrintingManager::Observe(int type,

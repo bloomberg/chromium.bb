@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -28,7 +29,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab = browser()->GetSelectedTabContents();
+  TabContentsWrapper* initiator_tab =
+      browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
   scoped_refptr<printing::PrintPreviewTabController>
@@ -36,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  TabContents* preview_tab =
+  TabContentsWrapper* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created. Current focus is on preview tab.
@@ -45,10 +47,10 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 
   GURL url(chrome::kAboutBlankURL);
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_EQ(url, preview_tab->GetURL());
+  EXPECT_EQ(url, preview_tab->tab_contents()->GetURL());
 
   // Get the print preview tab for initiator tab.
-  TabContents* new_preview_tab =
+  TabContentsWrapper* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New preview tab is created.
@@ -56,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_NE(new_preview_tab, preview_tab);
 
   // Get the print preview tab for old preview tab.
-  TabContents* newest_preview_tab =
+  TabContentsWrapper* newest_preview_tab =
   tab_controller->GetOrCreatePreviewTab(preview_tab);
 
   // Newest preview tab is created and the previously created preview tab is not
@@ -79,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab = browser()->GetSelectedTabContents();
+  TabContentsWrapper* initiator_tab =
+      browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
   scoped_refptr<printing::PrintPreviewTabController>
@@ -87,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  TabContents* preview_tab =
+  TabContentsWrapper* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created. Current focus is on preview tab.
@@ -100,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Get the print preview tab for initiator tab.
-  TabContents* new_preview_tab =
+  TabContentsWrapper* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New preview tab is created.
@@ -108,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_NE(new_preview_tab, preview_tab);
 
   // Get the print preview tab for old preview tab.
-  TabContents* newest_preview_tab =
+  TabContentsWrapper* newest_preview_tab =
   tab_controller->GetOrCreatePreviewTab(preview_tab);
 
   // Make sure preview tab is not created for |preview_tab|.
@@ -129,7 +132,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContents* initiator_tab = browser()->GetSelectedTabContents();
+  TabContentsWrapper* initiator_tab =
+      browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
   scoped_refptr<printing::PrintPreviewTabController>
@@ -137,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
-  TabContents* preview_tab =
+  TabContentsWrapper* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created. Current focus is on preview tab.
@@ -149,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   browser()->Reload(CURRENT_TAB);
 
   // Get the print preview tab for initiator tab.
-  TabContents* new_preview_tab =
+  TabContentsWrapper* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // Old preview tab is activated.
@@ -159,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   // Reload preview tab.
   browser()->Reload(CURRENT_TAB);
   // Get the print preview tab for old preview tab.
-  TabContents* newest_preview_tab =
+  TabContentsWrapper* newest_preview_tab =
   tab_controller->GetOrCreatePreviewTab(preview_tab);
 
   // Make sure new preview tab is not created for |preview_tab|.

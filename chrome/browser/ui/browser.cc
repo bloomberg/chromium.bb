@@ -4392,7 +4392,7 @@ void Browser::UpdatePrintingState(int content_restrictions) {
     enabled = false;
     selected_tab_is_preview_tab =
         printing::PrintPreviewTabController::IsPrintPreviewTab(
-            GetSelectedTabContents());
+            GetSelectedTabContentsWrapper());
   } else if (g_browser_process->local_state()) {
     enabled = g_browser_process->local_state()->
         GetBoolean(prefs::kPrintingEnabled);

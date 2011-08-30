@@ -69,17 +69,21 @@ PrintPreviewMessageHandler::PrintPreviewMessageHandler(
 PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {
 }
 
-TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+TabContentsWrapper* PrintPreviewMessageHandler::GetPrintPreviewTab() {
+  PrintPreviewTabController* tab_controller =
+      PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return NULL;
 
-  return tab_controller->GetPrintPreviewForTab(tab_contents());
+  return tab_controller->GetPrintPreviewForTab(tab_contents_wrapper());
+}
+
+TabContentsWrapper* PrintPreviewMessageHandler::tab_contents_wrapper() {
+  return TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview() {
-  PrintPreviewTabController::PrintPreview(tab_contents());
+  PrintPreviewTabController::PrintPreview(tab_contents_wrapper());
 }
 
 void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
@@ -89,7 +93,7 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
     return;
   }
 
-  TabContents* print_preview_tab = GetPrintPreviewTab();
+  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
   if (!print_preview_tab || !print_preview_tab->web_ui())
     return;
 
@@ -100,7 +104,7 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
 
 void PrintPreviewMessageHandler::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params) {
-  TabContents* print_preview_tab = GetPrintPreviewTab();
+  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
   if (!print_preview_tab || !print_preview_tab->web_ui())
     return;
 
@@ -132,16 +136,13 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
   }
 
   // Get the print preview tab.
-  TabContents* print_preview_tab = GetPrintPreviewTab();
+  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
   // User might have closed it already.
-  if (!print_preview_tab)
+  if (!print_preview_tab || !print_preview_tab->web_ui())
     return;
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(print_preview_tab);
 
   if (params.reuse_existing_data) {
     // Need to match normal rendering where we are expected to send this.
@@ -155,7 +156,7 @@ void PrintPreviewMessageHandler::OnPagesReadyForPreview(
     return;
   }
 
-  wrapper->print_view_manager()->OverrideTitle(tab_contents());
+  print_preview_tab->print_view_manager()->OverrideTitle(tab_contents());
 
   // TODO(joth): This seems like a good match for using RefCountedStaticMemory
   // to avoid the memory copy, but the SetPrintPreviewData call chain below
@@ -176,18 +177,15 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
   StopWorker(document_cookie);
 
   // Inform the print preview tab of the failure.
-  TabContents* print_preview_tab = GetPrintPreviewTab();
+  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
   // User might have closed it already.
-  if (!print_preview_tab)
+  if (!print_preview_tab || !print_preview_tab->web_ui())
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(print_preview_tab);
-
   if (g_browser_process->background_printing_manager()->
-          HasTabContents(wrapper)) {
+          HasTabContents(print_preview_tab)) {
     // Preview tab was hidden to serve the print request.
-    delete wrapper;
+    delete print_preview_tab;
   } else {
     PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
@@ -197,8 +195,8 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
 
 void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
     const PageSizeMargins& page_layout_in_points) {
-  TabContents* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab)
+  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
+  if (!print_preview_tab || !print_preview_tab->web_ui())
     return;
 
   PrintPreviewUI* print_preview_ui =
@@ -236,7 +234,7 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
 
 void PrintPreviewMessageHandler::DidStartLoading() {
   if (tab_contents()->delegate() &&
-      printing::PrintPreviewTabController::IsPrintPreviewTab(tab_contents())) {
+      PrintPreviewTabController::IsPrintPreviewTab(tab_contents_wrapper())) {
     tab_contents()->SetContentRestrictions(CONTENT_RESTRICTION_PRINT);
   }
 }

@@ -89,12 +89,14 @@ bool PrintViewManager::PrintForSystemDialogNow() {
 }
 
 bool PrintViewManager::AdvancedPrintNow() {
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  PrintPreviewTabController* tab_controller =
+      PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return false;
-  TabContents* print_preview_tab =
-      tab_controller->GetPrintPreviewForTab(tab_contents());
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
+  TabContentsWrapper* print_preview_tab =
+      tab_controller->GetPrintPreviewForTab(wrapper);
   if (print_preview_tab) {
     // Preview tab exist for current tab or current tab is preview tab.
     if (!print_preview_tab->web_ui())

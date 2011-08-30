@@ -447,7 +447,10 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleSaveLastPrinter));
 }
 
-TabContents* PrintPreviewHandler::preview_tab() {
+TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {
+  return TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
+}
+TabContents* PrintPreviewHandler::preview_tab() const {
   return web_ui_->tab_contents();
 }
 
@@ -494,7 +497,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   // Increment request count.
   ++regenerate_preview_request_count_;
 
-  TabContents* initiator_tab = GetInitiatorTab();
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (!initiator_tab) {
     ReportUserActionHistogram(INITIATOR_TAB_CLOSED);
     print_preview_ui->OnInitiatorTabClosed();
@@ -510,7 +513,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   }
   if (display_header_footer) {
     settings->SetString(printing::kSettingHeaderFooterTitle,
-                        initiator_tab->GetTitle());
+                        initiator_tab->tab_contents()->GetTitle());
     std::string url;
     NavigationEntry* entry = initiator_tab->controller().GetActiveEntry();
     if (entry)
@@ -531,7 +534,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
                        regenerate_preview_request_count_);
 
-  TabContents* initiator_tab = GetInitiatorTab();
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (initiator_tab) {
     RenderViewHost* rvh = initiator_tab->render_view_host();
     rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->routing_id()));
@@ -604,21 +607,19 @@ void PrintPreviewHandler::HandleHidePreview(const ListValue*) {
 }
 
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(const ListValue*) {
-  TabContentsWrapper* wrapper = NULL;
-  TabContents* initiator_tab = GetInitiatorTab();
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (initiator_tab) {
-    wrapper = TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
     ClearInitiatorTabDetails();
   } else {
     // Initiator tab does not exists. Get the wrapper contents of current tab.
     Browser* browser = BrowserList::GetLastActive();
     if (browser)
-      wrapper = browser->GetSelectedTabContentsWrapper();
+      initiator_tab = browser->GetSelectedTabContentsWrapper();
   }
 
-  if (wrapper)
-    wrapper->print_view_manager()->PreviewPrintingRequestCancelled();
-  delete TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
+  if (initiator_tab)
+    initiator_tab->print_view_manager()->PreviewPrintingRequestCancelled();
+  delete preview_tab_wrapper();
 }
 
 void PrintPreviewHandler::HandleSaveLastPrinter(const ListValue* args) {
@@ -670,13 +671,11 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue*) {
   ReportStats();
   ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
 
-  TabContents* initiator_tab = GetInitiatorTab();
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
-  printing::PrintViewManager* manager = wrapper->print_view_manager();
+  printing::PrintViewManager* manager = initiator_tab->print_view_manager();
   manager->set_observer(this);
   manager->PrintForSystemDialogNow();
 
@@ -694,12 +693,13 @@ void PrintPreviewHandler::HandleReloadCrashedInitiatorTab(const ListValue*) {
   ReportStats();
   ReportUserActionHistogram(INITIATOR_TAB_CRASHED);
 
-  TabContents* initiator_tab = GetInitiatorTab();
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;
 
-  initiator_tab->OpenURL(
-      initiator_tab->GetURL(), GURL(), CURRENT_TAB, PageTransition::RELOAD);
+  TabContents* contents = initiator_tab->tab_contents();
+  contents->OpenURL(contents->GetURL(), GURL(), CURRENT_TAB,
+                    PageTransition::RELOAD);
   ActivateInitiatorTabAndClosePreviewTab();
 }
 
@@ -721,9 +721,11 @@ void PrintPreviewHandler::ReportStats() {
 }
 
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
-  TabContents* initiator_tab = GetInitiatorTab();
-  if (initiator_tab)
-    static_cast<RenderViewHostDelegate*>(initiator_tab)->Activate();
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
+  if (initiator_tab) {
+    static_cast<RenderViewHostDelegate*>(
+        initiator_tab->tab_contents())->Activate();
+  }
   ClosePrintPreviewTab();
 }
 
@@ -822,12 +824,12 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
                                   data_value);
 }
 
-TabContents* PrintPreviewHandler::GetInitiatorTab() {
+TabContentsWrapper* PrintPreviewHandler::GetInitiatorTab() const {
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return NULL;
-  return tab_controller->GetInitiatorTab(preview_tab());
+  return tab_controller->GetInitiatorTab(preview_tab_wrapper());
 }
 
 void PrintPreviewHandler::ClosePrintPreviewTab() {
@@ -848,7 +850,8 @@ void PrintPreviewHandler::ClosePrintPreviewTab() {
 }
 
 void PrintPreviewHandler::OnPrintDialogShown() {
-  static_cast<RenderViewHostDelegate*>(GetInitiatorTab())->Activate();
+  static_cast<RenderViewHostDelegate*>(
+      GetInitiatorTab()->tab_contents())->Activate();
   ClosePrintPreviewTab();
 }
 
@@ -883,13 +886,11 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
 }
 
 void PrintPreviewHandler::OnTabDestroyed() {
-  TabContents* initiator_tab = GetInitiatorTab();
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(initiator_tab);
-  wrapper->print_view_manager()->set_observer(NULL);
+  initiator_tab->print_view_manager()->set_observer(NULL);
 }
 
 void PrintPreviewHandler::OnPrintPreviewFailed() {
@@ -940,7 +941,7 @@ void PrintPreviewHandler::HidePreviewTab() {
 }
 
 void PrintPreviewHandler::ClearInitiatorTabDetails() {
-  TabContents* initiator_tab = GetInitiatorTab();
+  TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (!initiator_tab)
     return;
 
@@ -950,5 +951,5 @@ void PrintPreviewHandler::ClearInitiatorTabDetails() {
   printing::PrintPreviewTabController* tab_controller =
      printing::PrintPreviewTabController::GetInstance();
   if (tab_controller)
-    tab_controller->EraseInitiatorTabInfo(preview_tab());
+    tab_controller->EraseInitiatorTabInfo(preview_tab_wrapper());
 }

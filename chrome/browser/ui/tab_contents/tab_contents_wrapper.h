@@ -123,6 +123,7 @@ class TabContentsWrapper : public TabContentsObserver,
   RenderViewHost* render_view_host() const {
     return tab_contents()->render_view_host();
   }
+  WebUI* web_ui() const { return tab_contents()->web_ui(); }
 
   Profile* profile() const;
 

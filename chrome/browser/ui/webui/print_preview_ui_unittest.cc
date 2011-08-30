@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -32,14 +33,16 @@ TEST_F(PrintPreviewUITest, PrintPreviewData) {
   ASSERT_TRUE(BrowserList::GetLastActive());
 
   browser()->NewTab();
-  TabContents* initiator_tab = browser()->GetSelectedTabContents();
+  TabContentsWrapper* initiator_tab =
+      browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
   scoped_refptr<printing::PrintPreviewTabController>
       controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(controller);
 
-  TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
+  TabContentsWrapper* preview_tab =
+      controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(2, browser()->tab_count());
@@ -90,14 +93,16 @@ TEST_F(PrintPreviewUITest, PrintPreviewDraftPages) {
   ASSERT_TRUE(BrowserList::GetLastActive());
 
   browser()->NewTab();
-  TabContents* initiator_tab = browser()->GetSelectedTabContents();
+  TabContentsWrapper* initiator_tab =
+      browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
   scoped_refptr<printing::PrintPreviewTabController>
       controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(controller);
 
-  TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
+  TabContentsWrapper* preview_tab =
+      controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(2, browser()->tab_count());
@@ -155,14 +160,16 @@ TEST_F(PrintPreviewUITest, GetCurrentPrintPreviewStatus) {
   ASSERT_TRUE(BrowserList::GetLastActive());
 
   browser()->NewTab();
-  TabContents* initiator_tab = browser()->GetSelectedTabContents();
+  TabContentsWrapper* initiator_tab =
+      browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
   scoped_refptr<printing::PrintPreviewTabController>
       controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(controller);
 
-  TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
+  TabContentsWrapper* preview_tab =
+      controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(2, browser()->tab_count());
