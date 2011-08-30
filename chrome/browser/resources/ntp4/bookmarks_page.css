@@ -46,9 +46,11 @@ html[dir=rtl] .bookmark .close-button {
 .bookmark .color-stripe {
   border-bottom-left-radius: 3px 3px;
   border-bottom-right-radius: 3px 3px;
-  bottom: 33px;
+  /* Matches height of title. */
+  bottom: 23px;
   height: 3px;
-  opacity: 0.5;
+  /* Matches padding-top of the title. */
+  margin-bottom: 8px;
   position: absolute;
   width: 100%;
   z-index: 100;
@@ -58,9 +60,8 @@ html[dir=rtl] .bookmark .close-button {
   cursor: pointer;
   display: block;
   height: 23px;
-  line-height: 23px;
   overflow: hidden;
-  padding-top: 10px;
+  padding-top: 8px;
   text-align: center;
   text-decoration: none;
   text-overflow: ellipsis;
@@ -76,7 +77,7 @@ html[dir=rtl] .bookmark .close-button {
   position: relative;
   z-index: 5;
   -webkit-box-flex: 1;
-  -webkit-transition: background-color .15s;  
+  -webkit-transition: background-color .15s;
 }
 
 .bookmark:hover .button {

@@ -91,7 +91,7 @@ cr.define('ntp4', function() {
 
       var faviconDiv = this.querySelector('.favicon');
       var faviconUrl = data.faviconUrl ||
-          'chrome://favicon/size/32/' + data.url;
+          'chrome://favicon/size/16/' + data.url;
       faviconDiv.style.backgroundImage = url(faviconUrl);
       faviconDiv.dir = data.direction;
       if (data.faviconDominantColor) {
@@ -259,8 +259,8 @@ cr.define('ntp4', function() {
    * @return {number} The height.
    */
   function heightForWidth(width) {
-    // The 2s are for borders, the 23 is for the title.
-    return (width - 2) * 132 / 212 + 2 + 23;
+    // The 2s are for borders, the 31 is for the title.
+    return (width - 2) * 132 / 212 + 2 + 31;
   }
 
   var THUMBNAIL_COUNT = 8;
