@@ -154,13 +154,12 @@ class UI_EXPORT RenderText {
   virtual void SetText(const string16& text);
 
   const SelectionModel& selection_model() const { return selection_model_; }
-  void SetSelectionModel(const SelectionModel& sel);
 
   bool cursor_visible() const { return cursor_visible_; }
   void set_cursor_visible(bool visible) { cursor_visible_ = visible; }
 
   bool insert_mode() const { return insert_mode_; }
-  void toggle_insert_mode() { insert_mode_ = !insert_mode_; }
+  void ToggleInsertMode();
 
   bool focused() const { return focused_; }
   void set_focused(bool focused) { focused_ = focused; }
@@ -176,7 +175,7 @@ class UI_EXPORT RenderText {
   // edits take place, and doesn't necessarily correspond to
   // SelectionModel::caret_pos.
   size_t GetCursorPosition() const;
-  void SetCursorPosition(const size_t position);
+  void SetCursorPosition(size_t position);
 
   void SetCaretPlacement(SelectionModel::CaretPlacement placement) {
       selection_model_.set_caret_placement(placement);
@@ -184,16 +183,18 @@ class UI_EXPORT RenderText {
 
   // Moves the cursor left or right. Cursor movement is visual, meaning that
   // left and right are relative to screen, not the directionality of the text.
-  // If |select| is false, the selection range is emptied at the new position.
+  // If |select| is false, the selection start is moved to the same position.
   void MoveCursorLeft(BreakType break_type, bool select);
   void MoveCursorRight(BreakType break_type, bool select);
 
   // Set the selection_model_ to the value of |selection|.
+  // The selection model components are modified if invalid.
   // Returns true if the cursor position or selection range changed.
-  bool MoveCursorTo(const SelectionModel& selection);
+  bool MoveCursorTo(const SelectionModel& selection_model);
 
   // Move the cursor to the position associated with the clicked point.
-  // If |select| is false, the selection range is emptied at the new position.
+  // If |select| is false, the selection start is moved to the same position.
+  // Returns true if the cursor position or selection range changed.
   bool MoveCursorTo(const Point& point, bool select);
 
   size_t GetSelectionStart() const {
@@ -236,13 +237,6 @@ class UI_EXPORT RenderText {
   // Gets the SelectionModel from a visual point in local coordinates.
   virtual SelectionModel FindCursorPosition(const Point& point);
 
-  // Get the visual bounds containing the logical substring within |from| to
-  // |to|. These bounds could be visually discontinuous if the substring is
-  // split by a LTR/RTL level change. These bounds are in local coordinates, but
-  // may be outside the visible region if the text is longer than the textfield.
-  // Subsequent text, cursor, or bounds changes may invalidate returned values.
-  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to);
-
   // Get the visual bounds of a cursor at |selection|. These bounds typically
   // represent a vertical line, but if |insert_mode| is true they contain the
   // bounds of the associated glyph. These bounds are in local coordinates, but
@@ -274,12 +268,30 @@ class UI_EXPORT RenderText {
   virtual SelectionModel GetRightSelectionModel(const SelectionModel& current,
                                                 BreakType break_type);
 
+  // Get the SelectionModels corresponding to visual text ends.
+  // The returned value represents a cursor/caret position without a selection.
+  virtual SelectionModel LeftEndSelectionModel();
+  virtual SelectionModel RightEndSelectionModel();
+
   // Get the logical index of the grapheme preceeding the argument |position|.
   virtual size_t GetIndexOfPreviousGrapheme(size_t position);
+
+  // Get the visual bounds containing the logical substring within |from| to
+  // |to|. These bounds could be visually discontinuous if the substring is
+  // split by a LTR/RTL level change. These bounds are in local coordinates, but
+  // may be outside the visible region if the text is longer than the textfield.
+  // Subsequent text, cursor, or bounds changes may invalidate returned values.
+  // TODO(msw) Re-evaluate this function's necessity and signature.
+  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to);
 
   // Apply composition style (underline) to composition range and selection
   // style (foreground) to selection range.
   void ApplyCompositionAndSelectionStyles(StyleRanges* style_ranges) const;
+
+  // Convert points from the text space to the view space and back.
+  // Handles the display area, display offset, and the application LTR/RTL mode.
+  Point ToTextPoint(const Point& point);
+  Point ToViewPoint(const Point& point);
 
  private:
   friend class RenderTextTest;
@@ -289,8 +301,13 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyleRange);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StyleRangesAdjust);
 
-  // Clear out |style_ranges_|.
-  void ClearStyleRanges();
+  // Sets the selection model, the argument is assumed to be valid.
+  void SetSelectionModel(const SelectionModel& selection_model);
+
+  // Set the cursor to |position|, with the caret trailing the previous
+  // grapheme, or if there is no previous grapheme, leading the cursor position.
+  // If |select| is false, the selection start is moved to the same position.
+  void MoveCursorTo(size_t position, bool select);
 
   bool IsPositionAtWordSelectionBoundary(size_t pos);
 
@@ -328,9 +345,8 @@ class UI_EXPORT RenderText {
   // Get this point with GetUpdatedDisplayOffset (or risk using a stale value).
   Point display_offset_;
 
-  // The cached bounds and offset are invalidated by operations such as
-  // SetCursorPosition, SetSelectionModel, Font related style change, and other
-  // operations that adjust the visible text bounds.
+  // The cached bounds and offset are invalidated by changes to the cursor,
+  // selection, font, and other operations that adjust the visible text bounds.
   bool cached_bounds_and_offset_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);

@@ -6,9 +6,46 @@
 #define UI_GFX_RENDER_TEXT_WIN_H_
 #pragma once
 
+#include <usp10.h>
+
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/render_text.h"
 
 namespace gfx {
+
+namespace internal {
+
+struct TextRun {
+  TextRun();
+
+  ui::Range range;
+  Font font;
+  // TODO(msw): Disambiguate color, strike, etc. from TextRuns.
+  //            Otherwise, this breaks the glyph shaping process.
+  //            See the example at: http://www.catch22.net/tuts/neatpad/12.
+  SkColor foreground;
+  bool strike;
+
+  int width;
+  // The cumulative widths of preceding runs.
+  int preceding_run_widths;
+
+  SCRIPT_ANALYSIS script_analysis;
+
+  scoped_array<WORD> glyphs;
+  scoped_array<WORD> logical_clusters;
+  scoped_array<SCRIPT_VISATTR> visible_attributes;
+  int glyph_count;
+
+  scoped_array<int> advance_widths;
+  scoped_array<GOFFSET> offsets;
+  ABC abc_widths;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TextRun);
+};
+
+}  // namespace internal
 
 // RenderTextWin is the Windows implementation of RenderText using Uniscribe.
 class RenderTextWin : public RenderText {
@@ -16,7 +53,74 @@ class RenderTextWin : public RenderText {
   RenderTextWin();
   virtual ~RenderTextWin();
 
+  // Overridden from RenderText:
+  virtual void SetText(const string16& text) OVERRIDE;
+  virtual void SetDisplayRect(const Rect& r) OVERRIDE;
+  virtual void ApplyStyleRange(StyleRange style_range) OVERRIDE;
+  virtual void ApplyDefaultStyle() OVERRIDE;
+  virtual int GetStringWidth() OVERRIDE;
+  virtual void Draw(Canvas* canvas) OVERRIDE;
+  virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
+  virtual Rect GetCursorBounds(const SelectionModel& selection,
+                               bool insert_mode) OVERRIDE;
+
+ protected:
+  // Overridden from RenderText:
+  virtual SelectionModel GetLeftSelectionModel(const SelectionModel& current,
+                                               BreakType break_type) OVERRIDE;
+  virtual SelectionModel GetRightSelectionModel(const SelectionModel& current,
+                                                BreakType break_type) OVERRIDE;
+  virtual SelectionModel LeftEndSelectionModel() OVERRIDE;
+  virtual SelectionModel RightEndSelectionModel() OVERRIDE;
+  virtual size_t GetIndexOfPreviousGrapheme(size_t position) OVERRIDE;
+  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to) OVERRIDE;
+
  private:
+  void ItemizeLogicalText();
+  void LayoutVisualText(HDC hdc);
+
+  // Return the run index that contains the argument; or the length of the
+  // |runs_| vector if argument exceeds the text length or width.
+  size_t GetRunContainingPosition(size_t position) const;
+  size_t GetRunContainingPoint(const Point& point) const;
+
+  // Return an index belonging to the |next| or previous logical grapheme.
+  // The return value is bounded by 0 and the text length, inclusive.
+  size_t IndexOfAdjacentGrapheme(size_t index, bool next) const;
+
+  // Given a |run|, returns the SelectionModel that contains the logical first
+  // or last caret position inside (not at a boundary of) the run.
+  // The returned value represents a cursor/caret position without a selection.
+  SelectionModel FirstSelectionModelInsideRun(internal::TextRun*) const;
+  SelectionModel LastSelectionModelInsideRun(internal::TextRun*) const;
+
+  // Get the selection model visually left/right of |selection| by one grapheme.
+  // The returned value represents a cursor/caret position without a selection.
+  SelectionModel LeftSelectionModel(const SelectionModel& selection);
+  SelectionModel RightSelectionModel(const SelectionModel& selection);
+
+  // Draw the text, cursor, and selection.
+  void DrawSelection(Canvas* canvas);
+  void DrawVisualText(Canvas* canvas);
+  void DrawCursor(Canvas* canvas);
+
+  bool text_is_dirty_;
+  bool style_is_dirty_;
+
+  // National Language Support native digit and digit substitution settings.
+  SCRIPT_DIGITSUBSTITUTE digit_substitute_;
+
+  SCRIPT_CONTROL script_control_;
+  SCRIPT_STATE script_state_;
+
+  SCRIPT_CACHE script_cache_;
+
+  std::vector<internal::TextRun*> runs_;
+  int string_width_;
+
+  scoped_array<int> visual_to_logical_;
+  scoped_array<int> logical_to_visual_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderTextWin);
 };
 

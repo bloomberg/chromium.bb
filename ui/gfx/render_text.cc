@@ -164,14 +164,8 @@ void RenderText::SetText(const string16& text) {
   cached_bounds_and_offset_valid_ = false;
 }
 
-void RenderText::SetSelectionModel(const SelectionModel& sel) {
-  size_t start = sel.selection_start();
-  size_t end = sel.selection_end();
-  selection_model_.set_selection_start(std::min(start, text().length()));
-  selection_model_.set_selection_end(std::min(end, text().length()));
-  selection_model_.set_caret_pos(std::min(sel.caret_pos(), text().length()));
-  selection_model_.set_caret_placement(sel.caret_placement());
-
+void RenderText::ToggleInsertMode() {
+  insert_mode_ = !insert_mode_;
   cached_bounds_and_offset_valid_ = false;
 }
 
@@ -184,13 +178,8 @@ size_t RenderText::GetCursorPosition() const {
   return selection_model_.selection_end();
 }
 
-void RenderText::SetCursorPosition(const size_t position) {
-  SelectionModel sel(selection_model());
-  sel.set_selection_start(position);
-  sel.set_selection_end(position);
-  sel.set_caret_pos(GetIndexOfPreviousGrapheme(position));
-  sel.set_caret_placement(SelectionModel::TRAILING);
-  SetSelectionModel(sel);
+void RenderText::SetCursorPosition(size_t position) {
+  MoveCursorTo(position, false);
 }
 
 void RenderText::MoveCursorLeft(BreakType break_type, bool select) {
@@ -237,9 +226,26 @@ void RenderText::MoveCursorRight(BreakType break_type, bool select) {
   MoveCursorTo(position);
 }
 
-bool RenderText::MoveCursorTo(const SelectionModel& selection) {
-  bool changed = !selection.Equals(selection_model_);
-  SetSelectionModel(selection);
+bool RenderText::MoveCursorTo(const SelectionModel& selection_model) {
+  SelectionModel sel(selection_model);
+  size_t text_length = text().length();
+  // Enforce valid selection model components.
+  if (sel.selection_start() > text_length)
+    sel.set_selection_start(text_length);
+  if (sel.selection_end() > text_length)
+    sel.set_selection_end(text_length);
+  // The current model only supports caret positions at valid character indices.
+  if (text_length == 0) {
+    sel.set_caret_pos(0);
+    sel.set_caret_placement(SelectionModel::LEADING);
+  } else if (sel.caret_pos() >= text_length) {
+    SelectionModel end = GetTextDirection() == base::i18n::RIGHT_TO_LEFT ?
+        LeftEndSelectionModel() : RightEndSelectionModel();
+    sel.set_caret_pos(end.caret_pos());
+    sel.set_caret_placement(end.caret_placement());
+  }
+  bool changed = !sel.Equals(selection_model_);
+  SetSelectionModel(sel);
   return changed;
 }
 
@@ -251,6 +257,8 @@ bool RenderText::MoveCursorTo(const Point& point, bool select) {
 }
 
 bool RenderText::IsPointInSelection(const Point& point) {
+  if (EmptySelection())
+    return false;
   // TODO(xji): should this check whether the point is inside the visual
   // selection bounds? In case of "abcFED", if "ED" is selected, |point| points
   // to the right half of 'c', is the point in selection?
@@ -265,8 +273,8 @@ void RenderText::ClearSelection() {
 }
 
 void RenderText::SelectAll() {
-  SelectionModel sel(0, text().length(),
-                     text().length(), SelectionModel::LEADING);
+  SelectionModel sel(RightEndSelectionModel());
+  sel.set_selection_start(LeftEndSelectionModel().selection_start());
   SetSelectionModel(sel);
 }
 
@@ -308,12 +316,8 @@ void RenderText::SelectWord() {
       break;
   }
 
-  SelectionModel sel(selection_model());
-  sel.set_selection_start(selection_start);
-  sel.set_selection_end(cursor_position);
-  sel.set_caret_pos(GetIndexOfPreviousGrapheme(cursor_position));
-  sel.set_caret_placement(SelectionModel::TRAILING);
-  SetSelectionModel(sel);
+  MoveCursorTo(selection_start, false);
+  MoveCursorTo(cursor_position, true);
 }
 
 const ui::Range& RenderText::GetCompositionRange() const {
@@ -350,8 +354,8 @@ void RenderText::ApplyDefaultStyle() {
 }
 
 base::i18n::TextDirection RenderText::GetTextDirection() const {
-  // TODO(msw): Bidi implementation, intended to replace the functionality added
-  //  in crrev.com/91881 (discussed in codereview.chromium.org/7324011).
+  if (base::i18n::IsRTL())
+    return base::i18n::RIGHT_TO_LEFT;
   return base::i18n::LEFT_TO_RIGHT;
 }
 
@@ -441,20 +445,6 @@ SelectionModel RenderText::FindCursorPosition(const Point& point) {
     }
   }
   return SelectionModel(left_pos);
-}
-
-std::vector<Rect> RenderText::GetSubstringBounds(size_t from, size_t to) {
-  size_t start = std::min(from, to);
-  size_t end = std::max(from, to);
-  const Font& font = default_style_.font;
-  int start_x = font.GetStringWidth(text().substr(0, start));
-  int end_x = font.GetStringWidth(text().substr(0, end));
-  Rect rect(start_x, 0, end_x - start_x, font.GetHeight());
-  rect.Offset(display_rect_.origin());
-  rect.Offset(GetUpdatedDisplayOffset());
-  // Center the rect vertically in |display_rect_|.
-  rect.Offset(Point(0, (display_rect_.height() - rect.height()) / 2));
-  return std::vector<Rect>(1, rect);
 }
 
 Rect RenderText::GetCursorBounds(const SelectionModel& selection,
@@ -549,9 +539,35 @@ SelectionModel RenderText::GetRightSelectionModel(const SelectionModel& current,
   return SelectionModel(pos, pos, SelectionModel::LEADING);
 }
 
+SelectionModel RenderText::LeftEndSelectionModel() {
+  return SelectionModel(0, 0, SelectionModel::LEADING);
+}
+
+SelectionModel RenderText::RightEndSelectionModel() {
+  size_t cursor = text().length();
+  size_t caret_pos = GetIndexOfPreviousGrapheme(cursor);
+  SelectionModel::CaretPlacement placement = (caret_pos == cursor) ?
+      SelectionModel::LEADING : SelectionModel::TRAILING;
+  return SelectionModel(cursor, caret_pos, placement);
+}
+
 size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) {
   // TODO(msw): Handle complex script.
-  return std::max(static_cast<int>(position - 1), static_cast<int>(0));
+  return std::max(static_cast<long>(position - 1), static_cast<long>(0));
+}
+
+std::vector<Rect> RenderText::GetSubstringBounds(size_t from, size_t to) {
+  size_t start = std::min(from, to);
+  size_t end = std::max(from, to);
+  const Font& font = default_style_.font;
+  int start_x = font.GetStringWidth(text().substr(0, start));
+  int end_x = font.GetStringWidth(text().substr(0, end));
+  Rect rect(start_x, 0, end_x - start_x, font.GetHeight());
+  rect.Offset(display_rect_.origin());
+  rect.Offset(GetUpdatedDisplayOffset());
+  // Center the rect vertically in |display_rect_|.
+  rect.Offset(Point(0, (display_rect_.height() - rect.height()) / 2));
+  return std::vector<Rect>(1, rect);
 }
 
 void RenderText::ApplyCompositionAndSelectionStyles(
@@ -576,6 +592,45 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   }
 }
 
+Point RenderText::ToTextPoint(const Point& point) {
+  Point p(point.Subtract(display_rect().origin()));
+  p = p.Subtract(GetUpdatedDisplayOffset());
+  if (base::i18n::IsRTL())
+    p.Offset(GetStringWidth() - display_rect().width() + 1, 0);
+  return p;
+}
+
+Point RenderText::ToViewPoint(const Point& point) {
+  Point p(point.Add(display_rect().origin()));
+  p = p.Add(GetUpdatedDisplayOffset());
+  if (base::i18n::IsRTL())
+    p.Offset(display_rect().width() - GetStringWidth() - 1, 0);
+  return p;
+}
+
+void RenderText::SetSelectionModel(const SelectionModel& selection_model) {
+  DCHECK_LE(selection_model.selection_start(), text().length());
+  selection_model_.set_selection_start(selection_model.selection_start());
+  DCHECK_LE(selection_model.selection_end(), text().length());
+  selection_model_.set_selection_end(selection_model.selection_end());
+  DCHECK_LT(selection_model.caret_pos(),
+            std::max(text().length(), static_cast<size_t>(1)));
+  selection_model_.set_caret_pos(selection_model.caret_pos());
+  selection_model_.set_caret_placement(selection_model.caret_placement());
+
+  cached_bounds_and_offset_valid_ = false;
+}
+
+void RenderText::MoveCursorTo(size_t position, bool select) {
+  size_t cursor = std::min(position, text().length());
+  size_t caret_pos = GetIndexOfPreviousGrapheme(cursor);
+  SelectionModel::CaretPlacement placement = (caret_pos == cursor) ?
+      SelectionModel::LEADING : SelectionModel::TRAILING;
+  size_t selection_start = select ? GetSelectionStart() : cursor;
+  SelectionModel sel(selection_start, cursor, caret_pos, placement);
+  SetSelectionModel(sel);
+}
+
 bool RenderText::IsPositionAtWordSelectionBoundary(size_t pos) {
   return pos == 0 || (u_isalnum(text()[pos - 1]) && !u_isalnum(text()[pos])) ||
       (!u_isalnum(text()[pos - 1]) && u_isalnum(text()[pos]));
@@ -589,7 +644,6 @@ void RenderText::UpdateCachedBoundsAndOffset() {
   // function will set |cursor_bounds_| and |display_offset_| to correct values.
   cached_bounds_and_offset_valid_ = true;
   cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
-  cursor_bounds_.set_width(std::max(cursor_bounds_.width(), 1));
   // Update |display_offset_| to ensure the current cursor is visible.
   int display_width = display_rect_.width();
   int string_width = GetStringWidth();

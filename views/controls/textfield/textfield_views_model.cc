@@ -398,11 +398,6 @@ bool TextfieldViewsModel::MoveCursorTo(const gfx::Point& point, bool select) {
   return render_text_->MoveCursorTo(point, select);
 }
 
-std::vector<gfx::Rect> TextfieldViewsModel::GetSelectionBounds() const {
-  return render_text_->GetSubstringBounds(render_text_->GetSelectionStart(),
-                                          render_text_->GetCursorPosition());
-}
-
 string16 TextfieldViewsModel::GetSelectedText() const {
   return GetText().substr(render_text_->MinOfSelection(),
       (render_text_->MaxOfSelection() - render_text_->MinOfSelection()));
@@ -421,7 +416,7 @@ void TextfieldViewsModel::SelectRange(const ui::Range& range) {
 void TextfieldViewsModel::SelectSelectionModel(const gfx::SelectionModel& sel) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  render_text_->SetSelectionModel(sel);
+  render_text_->MoveCursorTo(sel);
 }
 
 void TextfieldViewsModel::SelectAll() {
@@ -509,7 +504,7 @@ bool TextfieldViewsModel::Cut() {
                             render_text_->GetSelectionStart(),
                             render_text_->GetSelectionStart(),
                             gfx::SelectionModel::LEADING);
-    render_text_->SetSelectionModel(sel);
+    render_text_->MoveCursorTo(sel);
     DeleteSelection();
     return true;
   }
@@ -589,7 +584,7 @@ void TextfieldViewsModel::SetCompositionText(
     size_t end =
         std::min(range.start() + composition.selection.end(), range.end());
     gfx::SelectionModel sel(start, end);
-    render_text_->SetSelectionModel(sel);
+    render_text_->MoveCursorTo(sel);
   } else {
     render_text_->SetCursorPosition(range.end());
   }
@@ -662,7 +657,7 @@ void TextfieldViewsModel::ReplaceTextInternal(const string16& text,
     size_t cursor = GetCursorPosition();
     gfx::SelectionModel sel(render_text_->selection_model());
     sel.set_selection_start(cursor + text.length());
-    render_text_->SetSelectionModel(sel);
+    render_text_->MoveCursorTo(sel);
   }
   // Edit history is recorded in InsertText.
   InsertTextInternal(text, mergeable);

@@ -90,22 +90,27 @@ void TextfieldExample::ButtonPressed(views::Button* sender,
   } else if (sender == set_) {
     name_->SetText(WideToUTF16(L"[set]"));
   } else if (sender == set_style_) {
-    gfx::StyleRange color;
-    color.foreground = SK_ColorYELLOW;
-    color.range = ui::Range(0, 11);
-    name_->ApplyStyleRange(color);
+    if (!name_->text().empty()) {
+      gfx::StyleRange color;
+      color.foreground = SK_ColorYELLOW;
+      color.range = ui::Range(0, name_->text().length());
+      name_->ApplyStyleRange(color);
 
-    gfx::StyleRange underline;
-    underline.underline = true;
-    underline.foreground = SK_ColorBLUE;
-    underline.range = ui::Range(1, 7);
-    name_->ApplyStyleRange(underline);
+      if (name_->text().length() >= 5) {
+        size_t fifth = name_->text().length() / 5;
+        gfx::StyleRange underline;
+        underline.underline = true;
+        underline.foreground = SK_ColorBLUE;
+        underline.range = ui::Range(1 * fifth, 4 * fifth);
+        name_->ApplyStyleRange(underline);
 
-    gfx::StyleRange strike;
-    strike.strike = true;
-    strike.foreground = SK_ColorRED;
-    strike.range = ui::Range(6, 9);
-    name_->ApplyStyleRange(strike);
+        gfx::StyleRange strike;
+        strike.strike = true;
+        strike.foreground = SK_ColorRED;
+        strike.range = ui::Range(2 * fifth, 3 * fifth);
+        name_->ApplyStyleRange(strike);
+      }
+    }
   }
 }
 

@@ -143,9 +143,6 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // Helper function to call MoveCursorTo on the TextfieldViewsModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);
 
-  // Returns the bounds of selected text.
-  std::vector<gfx::Rect> GetSelectionBounds() const;
-
   // Selection related method
 
   // Returns the selected text.

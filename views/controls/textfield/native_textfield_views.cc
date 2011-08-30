@@ -874,11 +874,12 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         cursor_changed = true;
         break;
       case ui::VKEY_END:
-        model_->MoveCursorRight(gfx::LINE_BREAK, selection);
-        cursor_changed = true;
-        break;
       case ui::VKEY_HOME:
-        model_->MoveCursorLeft(gfx::LINE_BREAK, selection);
+        if ((key_code == ui::VKEY_HOME) ==
+            (GetRenderText()->GetTextDirection() == base::i18n::RIGHT_TO_LEFT))
+          model_->MoveCursorRight(gfx::LINE_BREAK, selection);
+        else
+          model_->MoveCursorLeft(gfx::LINE_BREAK, selection);
         cursor_changed = true;
         break;
       case ui::VKEY_BACK:
@@ -921,7 +922,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         cursor_changed = text_changed = model_->Delete();
         break;
       case ui::VKEY_INSERT:
-        GetRenderText()->toggle_insert_mode();
+        GetRenderText()->ToggleInsertMode();
         cursor_changed = true;
         break;
       default:
