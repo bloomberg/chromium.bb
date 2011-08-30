@@ -69,14 +69,19 @@ hr.bottom {
 }
 
 #header {
-  background: url('chrome://theme/IDR_PRODUCT_LOGO_64') left center no-repeat;
-  background-size: 48px;
-  color: #737373;
+  background: url('chrome://theme/IDR_PRODUCT_LOGO_32') left center no-repeat;
+  background-size: 32px;
+  color: #666;
   display: -webkit-box;
-  font-size: 20px;
-  height: 48px;
-  line-height: 48px;
-  padding-left: 54px;
+  font-size: 23px;
+  height: 47px;
+  line-height: 45px;
+  padding-left: 34px;
+  padding-top: 1px;
+}
+
+#header span {
+  text-transform: lowercase;
 }
 
 #header span,
@@ -87,7 +92,8 @@ hr.bottom {
 }
 
 #header-sections {
-  position: relative;
+  display: inline-block;
+  height: 30px;
 }
 
 .header-section:before {
