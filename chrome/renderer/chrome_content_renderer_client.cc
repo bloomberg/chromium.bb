@@ -204,6 +204,11 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebString internal_scheme(ASCIIToUTF16(chrome::kChromeInternalScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(internal_scheme);
 
+  // chrome: pages should not be accessible by bookmarklets or javascript:
+  // URLs typed in the omnibox.
+  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
+      chrome_ui_scheme);
+
   // chrome-extension: resources shouldn't trigger insecure content warnings.
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
   WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);

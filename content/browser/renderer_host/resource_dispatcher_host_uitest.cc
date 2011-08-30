@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -356,15 +357,22 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   // the ResourceDispatcherHost would think that such navigations were
   // cross-site, because we didn't clean up from the previous request.  Since
   // TabContents was in the NORMAL state, it would ignore the attempt to run
-  // the onunload handler, and the navigation would fail.
-  // (Test by redirecting to javascript:window.location='someURL'.)
+  // the onunload handler, and the navigation would fail. We can't test by
+  // redirecting to javascript:window.location='someURL', since javascript:
+  // URLs are prohibited by policy from interacting with sensitive chrome
+  // pages of which the error page is one.  Instead, use automation to kick
+  // off the navigation, and wait to see that the tab loads.
+  bool success;
   GURL test_url(test_server.GetURL("files/title2.html"));
-  std::string redirect_url = "javascript:window.location='" +
-      test_url.possibly_invalid_spec() + "'";
-  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
-            tab->NavigateToURL(GURL(redirect_url)));
-  EXPECT_TRUE(tab->GetTabTitle(&tab_title));
-  EXPECT_EQ(L"Title Of Awesomeness", tab_title);
+  std::string redirect_script = "window.location='" +
+      test_url.possibly_invalid_spec() + "';" +
+      "window.domAutomationController.send(true);";
+  EXPECT_TRUE(tab->ExecuteAndExtractBool(
+      L"", ASCIIToWide(redirect_script), &success));
+  EXPECT_TRUE(WaitUntilJavaScriptCondition(
+      tab.get(), L"", L"window.domAutomationController.send("
+          L"document.title == 'Title Of Awesomeness')",
+      20000));
 }
 
 TEST_F(ResourceDispatcherTest, CrossOriginRedirectBlocked) {
