@@ -80,8 +80,7 @@ void PopupMenuHelper::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
-  RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
-  DCHECK_EQ(render_view_host_, rvh);
+  DCHECK(Source<RenderWidgetHost>(source).ptr() == render_view_host_);
   render_view_host_ = NULL;
 }
 

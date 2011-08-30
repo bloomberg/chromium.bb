@@ -281,8 +281,9 @@ void InterstitialPage::Observe(int type,
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED:
       if (action_taken_ == NO_ACTION) {
         // The RenderViewHost is being destroyed (as part of the tab being
-        // closed), make sure we clear the blocked requests.
-        RenderViewHost* rvh = Source<RenderViewHost>(source).ptr();
+        // closed); make sure we clear the blocked requests.
+        RenderViewHost* rvh = static_cast<RenderViewHost*>(
+            Source<RenderWidgetHost>(source).ptr());
         DCHECK(rvh->process()->id() == original_child_id_ &&
                rvh->routing_id() == original_rvh_id_);
         TakeActionOnResourceDispatcher(CANCEL);

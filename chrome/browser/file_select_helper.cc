@@ -247,7 +247,7 @@ void FileSelectHelper::RunFileChooser(
   notification_registrar_.RemoveAll();
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderViewHost>(render_view_host));
+      Source<RenderWidgetHost>(render_view_host));
 
   if (!select_file_dialog_.get())
     select_file_dialog_ = SelectFileDialog::Create(this);
@@ -300,7 +300,7 @@ void FileSelectHelper::Observe(int type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
-  DCHECK(Details<RenderViewHost>(details).ptr() == render_view_host_);
+  DCHECK(Source<RenderWidgetHost>(source).ptr() == render_view_host_);
   render_view_host_ = NULL;
 }
 
