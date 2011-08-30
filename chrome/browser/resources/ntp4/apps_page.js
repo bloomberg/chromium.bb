@@ -552,8 +552,17 @@ cr.define('ntp4', function() {
       store.setAppsPromoData(data);
   };
 
+  // Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE
+  // histogram. This should only be invoked from the AppLauncherHandler.
+  function launchAppAfterEnable(appId) {
+    chrome.send('launchApp', [appId, APP_LAUNCH.NTP_APP_RE_ENABLE]);
+  };
+
   return {
     APP_LAUNCH: APP_LAUNCH,
     AppsPage: AppsPage,
+    launchAppAfterEnable: launchAppAfterEnable,
   };
 });
+
+var launchAppAfterEnable = ntp4.launchAppAfterEnable;
