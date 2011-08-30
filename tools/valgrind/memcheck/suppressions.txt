@@ -3879,7 +3879,7 @@
    ...
    fun:_ZN24ViewHostMsg_ResolveProxyC1ERK4GURLPbPSs
    fun:_ZN25ResolveProxyMsgHelperTest13GenerateReplyEv
-   fun:_ZN44ResolveProxyMsgHelperTest_*_Test8TestBodyEv
+   fun:*ResolveProxyMsgHelperTest_*_Test8TestBodyEv
 }
 {
    bug_76490
