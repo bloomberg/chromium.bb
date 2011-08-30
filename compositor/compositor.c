@@ -2029,7 +2029,7 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	return 0;
 }
 
-WL_EXPORT int
+WL_EXPORT void
 wlsc_compositor_shutdown(struct wlsc_compositor *ec)
 {
 	struct wlsc_output *output;

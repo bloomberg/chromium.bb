@@ -359,7 +359,7 @@ wlsc_compositor_get_time(void);
 
 int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
-int
+void
 wlsc_compositor_shutdown(struct wlsc_compositor *ec);
 void
 wlsc_output_move(struct wlsc_output *output, int x, int y);
