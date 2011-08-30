@@ -128,6 +128,16 @@ enum MDARMRegisterNumbers {
 
 /* For (MDRawContextARM).context_flags.  These values indicate the type of
  * context stored in the structure. */
+/* CONTEXT_ARM from the Windows CE 5.0 SDK. This value isn't correct
+ * because this bit can be used for flags. Presumably this value was
+ * never actually used in minidumps, but only in "CEDumps" which
+ * are a whole parallel minidump file format for Windows CE.
+ * Therefore, Breakpad defines its own value for ARM CPUs.
+ */
+#define MD_CONTEXT_ARM_OLD               0x00000040
+/* This value was chosen to avoid likely conflicts with MD_CONTEXT_*
+ * for other CPUs. */
+#define MD_CONTEXT_ARM                   0x40000000
 #define MD_CONTEXT_ARM_INTEGER           (MD_CONTEXT_ARM | 0x00000002)
 #define MD_CONTEXT_ARM_FLOATING_POINT    (MD_CONTEXT_ARM | 0x00000004)
 

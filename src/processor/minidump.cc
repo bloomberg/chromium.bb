@@ -410,6 +410,17 @@ bool MinidumpContext::Read(u_int32_t expected_size) {
       Swap(&context_flags);
 
     u_int32_t cpu_type = context_flags & MD_CONTEXT_CPU_MASK;
+    if (cpu_type == 0) {
+      // Unfortunately the flag for MD_CONTEXT_ARM that was taken
+      // from a Windows CE SDK header conflicts in practice with
+      // the CONTEXT_XSTATE flag. MD_CONTEXT_ARM has been renumbered,
+      // but handle dumps with the legacy value gracefully here.
+      if (context_flags & MD_CONTEXT_ARM_OLD) {
+        context_flags |= MD_CONTEXT_ARM;
+        context_flags &= ~MD_CONTEXT_ARM_OLD;
+        cpu_type = MD_CONTEXT_ARM;
+      }
+    }
 
     // Allocate the context structure for the correct CPU and fill it.  The
     // casts are slightly unorthodox, but it seems better to do that than to
