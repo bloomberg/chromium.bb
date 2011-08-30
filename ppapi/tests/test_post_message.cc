@@ -11,7 +11,6 @@
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
-#include "ppapi/tests/pp_thread.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -29,25 +28,6 @@ const bool kTestBool = true;
 const int32_t kTestInt = 42;
 const double kTestDouble = 42.0;
 const int32_t kThreadsToRun = 10;
-const int32_t kMessagesToSendPerThread = 50;
-
-// The struct that invoke_post_message_thread_func expects for its argument.
-// It includes the instance on which to invoke PostMessage, and the value to
-// pass to PostMessage.
-struct InvokePostMessageThreadArg {
-  InvokePostMessageThreadArg(pp::Instance* i, const pp::Var& v)
-      : instance(i), value_to_send(v) {}
-  pp::Instance* instance;
-  pp::Var value_to_send;
-};
-
-void InvokePostMessageThreadFunc(void* user_data) {
-  InvokePostMessageThreadArg* arg =
-      static_cast<InvokePostMessageThreadArg*>(user_data);
-  for (int32_t i = 0; i < kMessagesToSendPerThread; ++i)
-    arg->instance->PostMessage(arg->value_to_send);
-  delete arg;
-}
 
 }  // namespace
 
@@ -60,8 +40,6 @@ void TestPostMessage::RunTest() {
   RUN_TEST(MessageEvent);
   RUN_TEST(NoHandler);
   RUN_TEST(ExtraParam);
-  if (testing_interface_->IsOutOfProcess())
-    RUN_TEST(NonMainThread);
 }
 
 void TestPostMessage::HandleMessage(const pp::Var& message_data) {
@@ -272,66 +250,6 @@ std::string TestPostMessage::TestExtraParam() {
   pp::Module::Get()->core()->CallOnMainThread(0, callback);
   callback.WaitForResult();
   ASSERT_TRUE(message_data_.empty());
-
-  PASS();
-}
-
-std::string TestPostMessage::TestNonMainThread() {
-  ASSERT_TRUE(ClearListeners());
-  ASSERT_TRUE(AddEchoingListener("message_event.data"));
-  message_data_.clear();
-
-  // Set up a thread for each integer from 0 to (kThreadsToRun - 1).  Make each
-  // thread send the number that matches its index kMessagesToSendPerThread
-  // times.  For good measure, call postMessage from the main thread
-  // kMessagesToSendPerThread times. At the end, we make sure we got all the
-  // values we expected.
-  PP_ThreadType threads[kThreadsToRun];
-  for (int32_t i = 0; i < kThreadsToRun; ++i) {
-    // Set up a thread to send a value of i.
-    void* arg = new InvokePostMessageThreadArg(instance_, pp::Var(i));
-    PP_CreateThread(&threads[i], &InvokePostMessageThreadFunc, arg);
-  }
-  // Invoke PostMessage right now to send a value of (kThreadsToRun).
-  for (int32_t i = 0; i < kMessagesToSendPerThread; ++i)
-    instance_->PostMessage(pp::Var(kThreadsToRun));
-
-  // Now join all threads.
-  for (int32_t i = 0; i < kThreadsToRun; ++i)
-    PP_JoinThread(threads[i]);
-
-  // PostMessage is asynchronous, so we should not receive a response yet.
-  ASSERT_EQ(message_data_.size(), 0);
-
-  // Make sure we got all values that we expected.  Note that because it's legal
-  // for the JavaScript engine to treat our integers as floating points, we
-  // can't just use std::find or equality comparison. So we instead, we convert
-  // each incoming value to an integer, and count them in received_counts.
-  int32_t expected_num = (kThreadsToRun + 1) * kMessagesToSendPerThread;
-  // Count how many we receive per-index.
-  std::vector<int32_t> expected_counts(kThreadsToRun + 1,
-                                       kMessagesToSendPerThread);
-  std::vector<int32_t> received_counts(kThreadsToRun + 1, 0);
-  for (int32_t i = 0; i < expected_num; ++i) {
-    // Run the message loop to get the next expected message.
-    testing_interface_->RunMessageLoop(instance_->pp_instance());
-    // Make sure we got another message in.
-    ASSERT_EQ(message_data_.size(), 1);
-    pp::Var latest_var(message_data_.back());
-    message_data_.clear();
-
-    ASSERT_TRUE(latest_var.is_int() || latest_var.is_double());
-    int32_t received_value = -1;
-    if (latest_var.is_int()) {
-      received_value = latest_var.AsInt();
-    } else if (latest_var.is_double()) {
-      received_value = static_cast<int32_t>(latest_var.AsDouble() + 0.5);
-    }
-    ASSERT_TRUE(received_value >= 0);
-    ASSERT_TRUE(received_value <= kThreadsToRun);
-    ++received_counts[received_value];
-  }
-  ASSERT_EQ(received_counts, expected_counts);
 
   PASS();
 }

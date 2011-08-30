@@ -63,16 +63,11 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
   return result;
 }
 
-PP_Bool IsOutOfProcess() {
-  return PP_TRUE;
-}
-
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLiveObjectsForInstance,
-  &IsOutOfProcess
+  &GetLiveObjectsForInstance
 };
 
 InterfaceProxy* CreateTestingProxy(Dispatcher* dispatcher,

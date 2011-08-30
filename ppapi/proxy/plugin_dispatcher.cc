@@ -109,6 +109,7 @@ bool PluginDispatcher::IsPlugin() const {
 }
 
 bool PluginDispatcher::Send(IPC::Message* msg) {
+  DCHECK(MessageLoop::current());
   TRACE_EVENT2("ppapi proxy", "PluginDispatcher::Send",
                "Class", IPC_MESSAGE_ID_CLASS(msg->type()),
                "Line", IPC_MESSAGE_ID_LINE(msg->type()));

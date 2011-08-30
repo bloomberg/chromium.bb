@@ -200,16 +200,11 @@ uint32_t GetLiveObjectsForInstance(PP_Instance instance_id) {
   return ResourceTracker::Get()->GetLiveObjectsForInstance(instance_id);
 }
 
-PP_Bool IsOutOfProcess() {
-  return PP_FALSE;
-}
-
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
-  &GetLiveObjectsForInstance,
-  &IsOutOfProcess
+  &GetLiveObjectsForInstance
 };
 
 // GetInterface ----------------------------------------------------------------
@@ -369,11 +364,7 @@ const void* GetInterface(const char* name) {
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
   // in production code.
-  // TODO(dmichael): Remove support for 0.6. Note that 0.7 only adds a function
-  // to the end, so returning an 0.7 struct for use by clients of 0.6 just
-  // works in practice.
-  if (strcmp(name, PPB_TESTING_DEV_INTERFACE) == 0 ||
-      strcmp(name, PPB_TESTING_DEV_INTERFACE_0_6) == 0) {
+  if (strcmp(name, PPB_TESTING_DEV_INTERFACE) == 0) {
     if (CommandLine::ForCurrentProcess()->HasSwitch("enable-pepper-testing"))
       return &testing_interface;
   }

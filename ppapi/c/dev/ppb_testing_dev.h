@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,10 +12,8 @@
 
 struct PP_Point;
 
-// TODO(dmichael): Delete support for 0.6.
 #define PPB_TESTING_DEV_INTERFACE_0_6 "PPB_Testing(Dev);0.6"
-#define PPB_TESTING_DEV_INTERFACE_0_7 "PPB_Testing(Dev);0.7"
-#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_7
+#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_6
 
 // This interface contains functions used for unit testing. Do not use in
 // production code. They are not guaranteed to be available in normal plugin
@@ -70,10 +68,6 @@ struct PPB_Testing_Dev {
   // associated with this plugin instance. Used for detecting leaks. Returns
   // (uint32_t)-1 on failure.
   uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
-
-  // Returns PP_TRUE if the plugin is running out-of-process, PP_FALSE
-  // otherwise.
-  PP_Bool (*IsOutOfProcess)();
 };
 
 #endif  /* PPAPI_C_DEV_PPB_TESTING_DEV_H_ */

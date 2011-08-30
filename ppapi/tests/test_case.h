@@ -130,24 +130,18 @@ class TestCaseFactory {
 // RunTest function. This assumes the function name is TestFoo where Foo is the
 // test |name|.
 #define RUN_TEST(name) \
-  do { \
-    force_async_ = false; \
-    instance_->LogTest(#name, Test##name()); \
-  } while (false)
+  force_async_ = false; \
+  instance_->LogTest(#name, Test##name());
 
 // Like RUN_TEST above but forces functions taking callbacks to complete
 // asynchronously on success or error.
 #define RUN_TEST_FORCEASYNC(name) \
-  do { \
-    force_async_ = true; \
-    instance_->LogTest(#name"ForceAsync", Test##name()); \
-  } while (false)
+  force_async_ = true; \
+  instance_->LogTest(#name"ForceAsync", Test##name());
 
 #define RUN_TEST_FORCEASYNC_AND_NOT(name) \
-  do { \
-    RUN_TEST_FORCEASYNC(name); \
-    RUN_TEST(name); \
-  } while (false)
+  RUN_TEST_FORCEASYNC(name); \
+  RUN_TEST(name);
 
 
 // Helper macros for checking values in tests, and returning a location

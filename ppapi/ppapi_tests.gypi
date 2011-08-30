@@ -72,7 +72,6 @@
         'tests/all_cpp_includes.h',
         'tests/arch_dependent_sizes_32.h',
         'tests/arch_dependent_sizes_64.h',
-        'tests/pp_thread.h',
         'tests/test_broker.cc',
         'tests/test_broker.h',
         'tests/test_buffer.cc',
