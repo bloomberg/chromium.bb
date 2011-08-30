@@ -116,9 +116,16 @@ void NPObjectStub::DeleteSoon(bool release_npobject) {
 
   if (npobject_) {
     channel_->RemoveMappingForNPObjectStub(route_id_, npobject_);
-    if (release_npobject)
-      WebBindings::releaseObject(npobject_);
+
+    // We need to NULL npobject_ prior to calling releaseObject() to avoid
+    // problems with re-entrancy. See http://crbug.com/94179#c17 for more
+    // details on how this can happen.
+    NPObject* npobject = npobject_;
     npobject_ = NULL;
+
+    if (release_npobject)
+      WebBindings::releaseObject(npobject);
+
     MessageLoop::current()->PostTask(
       FROM_HERE,
       NewRunnableFunction(
