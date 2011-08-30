@@ -5,11 +5,16 @@
 #import "chrome/browser/ui/cocoa/objc_zombie.h"
 
 #include <dlfcn.h>
+#include <execinfo.h>
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 
 #import <objc/objc-class.h>
 
+#include <algorithm>
+#include <iostream>
+
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
@@ -34,6 +39,15 @@
 @end
 
 namespace {
+
+// The depth of backtrace to store with zombies.  This directly influences
+// the amount of memory required to track zombies, so should be kept as
+// small as is useful.  Unfortunately, too small and it won't poke through
+// deep autorelease and event loop stacks.
+// NOTE(shess): Breakpad currently restricts values to 255 bytes.  The
+// trace is hex-encoded with "0x" prefix and " " separators, meaning
+// the maximum number of 32-bit items which can be encoded is 23.
+const size_t kBacktraceDepth = 20;
 
 // Function which destroys the contents of an object without freeing
 // the object.  On 10.5 this is |object_cxxDestruct()|, which
@@ -71,6 +85,8 @@ size_t g_zombieIndex = 0;
 typedef struct {
   id object;   // The zombied object.
   Class wasa;  // Value of |object->isa| before we replaced it.
+  void* trace[kBacktraceDepth];  // Backtrace at point of deallocation.
+  size_t traceDepth;             // Actual depth of trace[].
 } ZombieRecord;
 
 ZombieRecord* g_zombies = NULL;
@@ -192,6 +208,8 @@ void ZombieDealloc(id self, SEL _cmd) {
   // The new record to swap into |g_zombies|.  If |g_zombieCount| is
   // zero, then |self| will be freed immediately.
   ZombieRecord zombieToFree = {self, wasa};
+  zombieToFree.traceDepth =
+      std::max(backtrace(zombieToFree.trace, kBacktraceDepth), 0);
 
   // Don't involve the lock when creating zombies without a treadmill.
   if (g_zombieCount > 0) {
@@ -213,23 +231,29 @@ void ZombieDealloc(id self, SEL _cmd) {
     object_dispose(zombieToFree.object);
 }
 
-// Attempt to determine the original class of zombie |object|.
-Class ZombieWasa(id object) {
-  // Fat zombies can hold onto their |wasa| past the point where the
-  // object was actually freed.  Note that to arrive here at all,
-  // |object|'s memory must still be accessible.
-  if (object_getClass(object) == g_fatZombieClass)
-    return static_cast<CrFatZombie*>(object)->wasa;
-
-  // For instances which weren't big enough to store |wasa|, check if
-  // the object is still on the treadmill.
+// Search the treadmill for |object| and fill in |*record| if found.
+// Returns YES if found.
+BOOL GetZombieRecord(id object, ZombieRecord* record) {
+  // Holding the lock is reasonable because this should be fast, and
+  // the process is going to crash presently anyhow.
   base::AutoLock pin(lock_);
-  for (size_t i=0; i < g_zombieCount; ++i) {
-    if (g_zombies[i].object == object)
-      return g_zombies[i].wasa;
+  for (size_t i = 0; i < g_zombieCount; ++i) {
+    if (g_zombies[i].object == object) {
+      *record = g_zombies[i];
+      return YES;
+    }
   }
+  return NO;
+}
 
-  return Nil;
+// Dump the symbols.  This is pulled out into a function to make it
+// easy to use DCHECK to dump only in debug builds.
+BOOL DumpDeallocTrace(const void* const* array, int size) {
+  // |cerr| because that's where PrintBacktrace() sends output.
+  std::cerr << "Backtrace from -dealloc:\n";
+  base::debug::StackTrace(array, size).PrintBacktrace();
+
+  return YES;
 }
 
 // Log a message to a freed object.  |wasa| is the object's original
@@ -238,8 +262,19 @@ Class ZombieWasa(id object) {
 // dispatch-related method which is being invoked to send |aSelector|
 // (for instance, -respondsToSelector:).
 void ZombieObjectCrash(id object, SEL aSelector, SEL viaSelector) {
-  Class wasa = ZombieWasa(object);
+  ZombieRecord record;
+  BOOL found = GetZombieRecord(object, &record);
+
+  // The object's class can be in the zombie record, but if that is
+  // not available it can also be in the object itself (in most cases).
+  Class wasa = Nil;
+  if (found) {
+    wasa = record.wasa;
+  } else if (object_getClass(object) == g_fatZombieClass) {
+    wasa = static_cast<CrFatZombie*>(object)->wasa;
+  }
   const char* wasaName = (wasa ? class_getName(wasa) : "<unknown>");
+
   NSString* aString =
       [NSString stringWithFormat:@"Zombie <%s: %p> received -%s",
                                  wasaName, object, sel_getName(aSelector)];
@@ -248,12 +283,36 @@ void ZombieObjectCrash(id object, SEL aSelector, SEL viaSelector) {
     aString = [aString stringByAppendingFormat:@" (via -%s)", viaName];
   }
 
-  // Set a value for breakpad to report, then crash.
+  // Set a value for breakpad to report.
   SetCrashKeyValue(@"zombie", aString);
-  LOG(ERROR) << [aString UTF8String];
+
+  // Hex-encode the backtrace and tuck it into a breakpad key.
+  NSString* deallocTrace = @"<unknown>";
+  if (found && record.traceDepth) {
+    NSMutableArray* hexBacktrace =
+        [NSMutableArray arrayWithCapacity:record.traceDepth];
+    for (size_t i = 0; i < record.traceDepth; ++i) {
+      NSString* s = [NSString stringWithFormat:@"%p", record.trace[i]];
+      [hexBacktrace addObject:s];
+    }
+    deallocTrace = [hexBacktrace componentsJoinedByString:@" "];
+
+    // Warn someone if this exceeds the breakpad limits.
+    DCHECK_LE(strlen([deallocTrace UTF8String]), 255U);
+  }
+  SetCrashKeyValue(@"zombie_dealloc_bt", deallocTrace);
+
+  // Log -dealloc backtrace in debug builds then crash with a useful
+  // stack trace.
+  if (found && record.traceDepth) {
+    DCHECK(DumpDeallocTrace(record.trace, record.traceDepth));
+  } else {
+    DLOG(INFO) << "Unable to generate backtrace from -dealloc.";
+  }
+  DLOG(FATAL) << [aString UTF8String];
 
   // This is how about:crash is implemented.  Using instead of
-  // |baes::debug::BreakDebugger()| or |LOG(FATAL)| to make the top of
+  // |base::debug::BreakDebugger()| or |LOG(FATAL)| to make the top of
   // stack more immediately obvious in crash dumps.
   int* zero = NULL;
   *zero = 0;
