@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/window_sizer.h"
 
@@ -28,26 +29,29 @@ const int kPanelDefaultHeightPixels = 290;
 const double kPanelMaxWidthFactor = 1.0;
 const double kPanelMaxHeightFactor = 0.5;
 
+// Occasionally some system, like Windows, might not bring up or down the bottom
+// bar when the mouse enters or leaves the bottom screen area. This is the
+// maximum time we will wait for the bottom bar visibility change notification.
+// After the time expires, we bring up/down the titlebars as planned.
+const int kMaxMillisecondsWaitForBottomBarVisibilityChange = 1000;
+
 // Single instance of PanelManager.
-scoped_ptr<PanelManager> panel_instance;
+scoped_refptr<PanelManager> panel_instance;
 }  // namespace
 
 // static
 PanelManager* PanelManager::GetInstance() {
-  if (!panel_instance.get()) {
-    panel_instance.reset(new PanelManager());
-  }
+  if (!panel_instance.get())
+    panel_instance = new PanelManager();
   return panel_instance.get();
 }
 
 PanelManager::PanelManager()
-    : max_width_(0),
-      max_height_(0),
-      min_x_(0),
-      current_x_(0),
-      bottom_edge_y_(0),
-      dragging_panel_index_(kInvalidPanelIndex),
-      dragging_panel_original_x_(0) {
+    : dragging_panel_index_(kInvalidPanelIndex),
+      dragging_panel_original_x_(0),
+      delayed_titlebar_action_(NO_ACTION),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
 }
 
@@ -67,13 +71,10 @@ void PanelManager::SetWorkArea(const gfx::Rect& work_area) {
     return;
   work_area_ = work_area;
 
-  min_x_ = work_area.x();
-  current_x_ = work_area.right();
-  bottom_edge_y_ = work_area.bottom();
-  max_width_ = static_cast<int>(work_area.width() * kPanelMaxWidthFactor);
-  max_height_ = static_cast<int>(work_area.height() * kPanelMaxHeightFactor);
+  auto_hiding_desktop_bar_->UpdateWorkArea(work_area_);
+  AdjustWorkAreaForAutoHidingDesktopBars();
 
-  Rearrange(panels_.begin());
+  Rearrange(panels_.begin(), adjusted_work_area_.right());
 }
 
 void PanelManager::FindAndClosePanelOnOverflow(const Extension* extension) {
@@ -97,18 +98,53 @@ void PanelManager::FindAndClosePanelOnOverflow(const Extension* extension) {
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
+  // Adjust the width and height to fit into our constraint.
+  int width = browser->override_bounds().width();
+  int height = browser->override_bounds().height();
+
+  if (width == 0 && height == 0) {
+    width = kPanelDefaultWidthPixels;
+    height = kPanelDefaultHeightPixels;
+  }
+
+  int max_panel_width =
+      static_cast<int>(adjusted_work_area_.width() * kPanelMaxWidthFactor);
+  int max_panel_height =
+      static_cast<int>(adjusted_work_area_.height() * kPanelMaxHeightFactor);
+
+  if (width < kPanelMinWidthPixels)
+    width = kPanelMinWidthPixels;
+  else if (width > max_panel_width)
+    width = max_panel_width;
+
+  if (height < kPanelMinHeightPixels)
+    height = kPanelMinHeightPixels;
+  else if (height > max_panel_height)
+    height = max_panel_height;
+
+  // Compute the origin. Ensure that it falls within the adjusted work area by
+  // closing other panels if needed.
+  int y = adjusted_work_area_.bottom() - height;
+
   const Extension* extension = NULL;
-  gfx::Rect bounds = browser->override_bounds();
-  while (!ComputeBoundsForNextPanel(&bounds, true)) {
+  int x;
+  while ((x = GetRightMostAvaialblePosition() - width) <
+         adjusted_work_area_.x() ) {
     if (!extension)
       extension = Panel::GetExtension(browser);
     FindAndClosePanelOnOverflow(extension);
   }
 
-  Panel* panel = new Panel(browser, bounds);
+  // Now create the panel with the computed bounds.
+  Panel* panel = new Panel(browser, gfx::Rect(x, y, width, height));
   panels_.push_back(panel);
 
   return panel;
+}
+
+int PanelManager::GetRightMostAvaialblePosition() const {
+  return panels_.empty() ? adjusted_work_area_.right() :
+      (panels_.back()->GetBounds().x() - kPanelsHorizontalSpacing);
 }
 
 void PanelManager::Remove(Panel* panel) {
@@ -133,8 +169,7 @@ void PanelManager::DoRemove(Panel* panel) {
     return;
 
   gfx::Rect bounds = (*iter)->GetBounds();
-  current_x_ = bounds.x() + bounds.width();
-  Rearrange(panels_.erase(iter));
+  Rearrange(panels_.erase(iter), bounds.right());
 }
 
 void PanelManager::StartDragging(Panel* panel) {
@@ -268,8 +303,16 @@ void PanelManager::EndDragging(bool cancelled) {
   DelayedRemove();
 }
 
-bool PanelManager::ShouldBringUpTitlebarForAllMinimizedPanels(
-    int mouse_x, int mouse_y) const {
+bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
+  // We should always bring up the titlebar if the mouse is over the
+  // visible auto-hiding bottom bar.
+  if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM) &&
+      auto_hiding_desktop_bar_->GetVisibility(
+              AutoHidingDesktopBar::ALIGN_BOTTOM) ==
+          AutoHidingDesktopBar::VISIBLE &&
+      mouse_y >= adjusted_work_area_.bottom())
+    return true;
+
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     if ((*iter)->ShouldBringUpTitlebar(mouse_x, mouse_y))
@@ -278,7 +321,45 @@ bool PanelManager::ShouldBringUpTitlebarForAllMinimizedPanels(
   return false;
 }
 
-void PanelManager::BringUpOrDownTitlebarForAllMinimizedPanels(bool bring_up) {
+void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
+  // If the auto-hiding bottom bar exists, delay the action until the bottom
+  // bar is fully visible or hidden. We do not want both bottom bar and panel
+  // titlebar to move at the same time but with different speeds.
+  if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM)) {
+    AutoHidingDesktopBar::Visibility visibility = auto_hiding_desktop_bar_->
+        GetVisibility(AutoHidingDesktopBar::ALIGN_BOTTOM);
+    if (visibility != (bring_up ? AutoHidingDesktopBar::VISIBLE
+                                : AutoHidingDesktopBar::HIDDEN)) {
+      // OnAutoHidingDesktopBarVisibilityChanged will handle this.
+      delayed_titlebar_action_ = bring_up ? BRING_UP : BRING_DOWN;
+
+      // Occasionally some system, like Windows, might not bring up or down the
+      // bottom bar when the mouse enters or leaves the bottom screen area.
+      // Thus, we schedule a delayed task to do the work if we do not receive
+      // the bottom bar visibility change notification within a certain period
+      // of time.
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          method_factory_.NewRunnableMethod(
+              &PanelManager::DelayedBringUpOrDownTitlebarsCheck),
+          kMaxMillisecondsWaitForBottomBarVisibilityChange);
+
+      return;
+    }
+  }
+
+  DoBringUpOrDownTitlebars(bring_up);
+}
+
+void PanelManager::DelayedBringUpOrDownTitlebarsCheck() {
+  if (delayed_titlebar_action_ == NO_ACTION)
+    return;
+
+  DoBringUpOrDownTitlebars(delayed_titlebar_action_ == BRING_UP);
+  delayed_titlebar_action_ = NO_ACTION;
+}
+
+void PanelManager::DoBringUpOrDownTitlebars(bool bring_up) {
   for (Panels::const_iterator iter = panels_.begin();
        iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
@@ -297,51 +378,78 @@ void PanelManager::BringUpOrDownTitlebarForAllMinimizedPanels(bool bring_up) {
   }
 }
 
-void PanelManager::Rearrange(Panels::iterator iter_to_start) {
+void PanelManager::AdjustWorkAreaForAutoHidingDesktopBars() {
+  // Note that we do not care about the desktop bar aligned to the top edge
+  // since panels could not reach so high due to size constraint.
+  adjusted_work_area_ = work_area_;
+  if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM)) {
+    int space = auto_hiding_desktop_bar_->GetThickness(
+        AutoHidingDesktopBar::ALIGN_BOTTOM);
+    adjusted_work_area_.set_height(adjusted_work_area_.height() - space);
+  }
+  if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_LEFT)) {
+    int space = auto_hiding_desktop_bar_->GetThickness(
+        AutoHidingDesktopBar::ALIGN_LEFT);
+    adjusted_work_area_.set_x(adjusted_work_area_.x() + space);
+    adjusted_work_area_.set_width(adjusted_work_area_.width() - space);
+  }
+  if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_RIGHT)) {
+    int space = auto_hiding_desktop_bar_->GetThickness(
+        AutoHidingDesktopBar::ALIGN_RIGHT);
+    adjusted_work_area_.set_width(adjusted_work_area_.width() - space);
+  }
+}
+
+int PanelManager::GetBottomPositionForExpansionState(
+    Panel::ExpansionState expansion_state) const {
+  // If there is an auto-hiding desktop bar aligned to the bottom edge, we need
+  // to move the minimize panel down to the bottom edge.
+  int bottom = adjusted_work_area_.bottom();
+  if (expansion_state == Panel::MINIMIZED &&
+      auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM)) {
+    bottom += auto_hiding_desktop_bar_->GetThickness(
+        AutoHidingDesktopBar::ALIGN_BOTTOM);
+  }
+  return bottom;
+}
+
+void PanelManager::OnAutoHidingDesktopBarThicknessChanged() {
+  AdjustWorkAreaForAutoHidingDesktopBars();
+  Rearrange(panels_.begin(), adjusted_work_area_.right());
+}
+
+void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(
+    AutoHidingDesktopBar::Alignment alignment,
+    AutoHidingDesktopBar::Visibility visibility) {
+  if (delayed_titlebar_action_ == NO_ACTION)
+    return;
+
+  AutoHidingDesktopBar::Visibility expected_visibility =
+      delayed_titlebar_action_ == BRING_UP ? AutoHidingDesktopBar::VISIBLE
+                                           : AutoHidingDesktopBar::HIDDEN;
+  if (visibility != expected_visibility)
+    return;
+
+  DoBringUpOrDownTitlebars(delayed_titlebar_action_ == BRING_UP);
+  delayed_titlebar_action_ = NO_ACTION;
+}
+
+void PanelManager::Rearrange(Panels::iterator iter_to_start,
+                             int rightmost_position) {
   if (iter_to_start == panels_.end())
     return;
 
   for (Panels::iterator iter = iter_to_start; iter != panels_.end(); ++iter) {
-    gfx::Rect new_bounds((*iter)->GetBounds());
-    ComputeBoundsForNextPanel(&new_bounds, false);
-    if (new_bounds != (*iter)->GetBounds())
-      (*iter)->SetPanelBounds(new_bounds);
+    Panel* panel = *iter;
+
+    gfx::Rect new_bounds(panel->GetBounds());
+    new_bounds.set_x(rightmost_position - new_bounds.width());
+    new_bounds.set_y(adjusted_work_area_.bottom() - new_bounds.height());
+    if (new_bounds != panel->GetBounds())
+      panel->SetPanelBounds(new_bounds);
+
+    rightmost_position = new_bounds.x() - kPanelsHorizontalSpacing;
   }
-}
-
-bool PanelManager::ComputeBoundsForNextPanel(gfx::Rect* bounds,
-                                             bool allow_size_change) {
-  int width = bounds->width();
-  int height = bounds->height();
-
-  // Update the width and/or height to fit into our constraint.
-  if (allow_size_change) {
-    if (width == 0 && height == 0) {
-      width = kPanelDefaultWidthPixels;
-      height = kPanelDefaultHeightPixels;
-    }
-
-    if (width < kPanelMinWidthPixels)
-      width = kPanelMinWidthPixels;
-    else if (width > max_width_)
-      width = max_width_;
-
-    if (height < kPanelMinHeightPixels)
-      height = kPanelMinHeightPixels;
-    else if (height > max_height_)
-      height = max_height_;
-  }
-
-  int x = current_x_ - width;
-  int y = bottom_edge_y_ - height;
-
-  if (x < min_x_)
-    return false;
-
-  current_x_ -= width + kPanelsHorizontalSpacing;
-
-  bounds->SetRect(x, y, width, height);
-  return true;
 }
 
 void PanelManager::RemoveAll() {

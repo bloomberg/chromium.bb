@@ -84,7 +84,7 @@ bool PanelBrowserView::CanMaximize() const {
 void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
 
-  //// No animation if the panel is being dragged.
+  // No animation if the panel is being dragged.
   if (mouse_dragging_) {
     ::BrowserView::SetBounds(bounds);
     return;
@@ -207,8 +207,10 @@ void PanelBrowserView::OnPanelExpansionStateChanged(
       break;
   }
 
+  int bottom = panel_->manager()->GetBottomPositionForExpansionState(
+      expansion_state);
   gfx::Rect bounds = bounds_;
-  bounds.set_y(bounds.y() + bounds.height() - height);
+  bounds.set_y(bottom - height);
   bounds.set_height(height);
   SetBounds(bounds);
 }

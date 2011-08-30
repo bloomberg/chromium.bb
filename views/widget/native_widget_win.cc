@@ -39,6 +39,7 @@
 #include "views/widget/aero_tooltip_manager.h"
 #include "views/widget/child_window_message_processor.h"
 #include "views/widget/drop_target_win.h"
+#include "views/widget/monitor_win.h"
 #include "views/widget/native_widget_delegate.h"
 #include "views/widget/native_widget_views.h"
 #include "views/widget/root_view.h"
@@ -283,19 +284,6 @@ bool GetMonitorAndRects(const RECT& rect,
   *monitor_rect = monitor_info.rcMonitor;
   *work_area = monitor_info.rcWork;
   return true;
-}
-
-// Returns true if edge |edge| (one of ABE_LEFT, TOP, RIGHT, or BOTTOM) of
-// monitor |monitor| has an auto-hiding taskbar that's always-on-top.
-bool EdgeHasTopmostAutoHideTaskbar(UINT edge, HMONITOR monitor) {
-  APPBARDATA taskbar_data = { 0 };
-  taskbar_data.cbSize = sizeof APPBARDATA;
-  taskbar_data.uEdge = edge;
-  HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAR,
-                                                        &taskbar_data));
-  return ::IsWindow(taskbar) && (monitor != NULL) &&
-      (MonitorFromWindow(taskbar, MONITOR_DEFAULTTONULL) == monitor) &&
-      (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST);
 }
 
 // Links the HWND to its NativeWidget.
@@ -1639,9 +1627,9 @@ LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         return 0;
       }
     }
-    if (EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
+    if (GetTopmostAutoHideTaskbarForEdge(ABE_LEFT, monitor))
       client_rect->left += kAutoHideTaskbarThicknessPx;
-    if (EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
+    if (GetTopmostAutoHideTaskbarForEdge(ABE_TOP, monitor)) {
       if (GetWidget()->ShouldUseNativeFrame()) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
@@ -1657,9 +1645,9 @@ LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         client_rect->top += kAutoHideTaskbarThicknessPx;
       }
     }
-    if (EdgeHasTopmostAutoHideTaskbar(ABE_RIGHT, monitor))
+    if (GetTopmostAutoHideTaskbarForEdge(ABE_RIGHT, monitor))
       client_rect->right -= kAutoHideTaskbarThicknessPx;
-    if (EdgeHasTopmostAutoHideTaskbar(ABE_BOTTOM, monitor))
+    if (GetTopmostAutoHideTaskbarForEdge(ABE_BOTTOM, monitor))
       client_rect->bottom -= kAutoHideTaskbarThicknessPx;
 
     // We cannot return WVR_REDRAW when there is nonclient area, or Windows

@@ -2,75 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
+#include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/net/url_request_mock_http_job.h"
-#include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
-#endif
-
-class PanelBrowserTest : public InProcessBrowserTest {
+class PanelBrowserTest : public BasePanelBrowserTest {
  public:
-  PanelBrowserTest() : InProcessBrowserTest() {
-#if defined(OS_MACOSX)
-    FindBarBridge::disable_animations_during_testing_ = true;
-#endif
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnablePanels);
+  PanelBrowserTest() : BasePanelBrowserTest() {
   }
 
  protected:
-  Panel* CreatePanel(const std::string& name, const gfx::Rect& bounds) {
-    // Opening panels on a Mac causes NSWindowController of the Panel window
-    // to be autoreleased. We need a pool drained after it's done so the test
-    // can close correctly. The NSWindowController of the Panel window controls
-    // lifetime of the Browser object so we want to release it as soon as
-    // possible. In real Chrome, this is done by message pump.
-    // On non-Mac platform, this is an empty class.
-    base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-    Browser* panel_browser = Browser::CreateForApp(Browser::TYPE_PANEL,
-                                                   name,
-                                                   bounds,
-                                                   browser()->profile());
-    EXPECT_TRUE(panel_browser->is_type_panel());
-
-    TabContentsWrapper* tab_contents =
-        new TabContentsWrapper(new TestTabContents(browser()->profile(), NULL));
-    panel_browser->AddTab(tab_contents, PageTransition::LINK);
-
-    Panel* panel = static_cast<Panel*>(panel_browser->window());
-    panel->Show();
-    MessageLoopForUI::current()->RunAllPending();
-
-    return panel;
-  }
-
   void CloseWindowAndWait(Browser* browser) {
     // Closing a browser window may involve several async tasks. Need to use
     // message pump and wait for the notification.
@@ -84,51 +39,30 @@ class PanelBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(browser_count - 1, BrowserList::size());
   }
 
-  // Creates a testing extension.
-  scoped_refptr<Extension> CreateExtension(const FilePath::StringType& path) {
-#if defined(OS_WIN)
-    FilePath full_path(FILE_PATH_LITERAL("c:\\"));
-#else
-    FilePath full_path(FILE_PATH_LITERAL("/"));
-#endif
-    full_path = full_path.Append(path);
-    DictionaryValue input_value;
-    input_value.SetString(extension_manifest_keys::kVersion, "1.0.0.0");
-    input_value.SetString(extension_manifest_keys::kName, "Sample Extension");
-    std::string error;
-    scoped_refptr<Extension> extension = Extension::Create(
-        full_path,  Extension::INVALID, input_value,
-        Extension::STRICT_ERROR_CHECKS, &error);
-    EXPECT_TRUE(extension.get());
-    EXPECT_STREQ("", error.c_str());
-    browser()->GetProfile()->GetExtensionService()->OnLoadSingleExtension(
-        extension.get(), false);
-    return extension;
-  }
-
   void TestCreatePanelOnOverflow() {
     PanelManager* panel_manager = PanelManager::GetInstance();
     EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
-    // Specify the work area for testing purpose.
-    panel_manager->SetWorkArea(gfx::Rect(0, 0, 800, 600));
-
     // Create testing extensions.
+    DictionaryValue empty_value;
     scoped_refptr<Extension> extension1 =
-        CreateExtension(FILE_PATH_LITERAL("extension1"));
+        CreateExtension(FILE_PATH_LITERAL("extension1"),
+        Extension::INVALID, empty_value);
     scoped_refptr<Extension> extension2 =
-        CreateExtension(FILE_PATH_LITERAL("extension2"));
+        CreateExtension(FILE_PATH_LITERAL("extension2"),
+        Extension::INVALID, empty_value);
     scoped_refptr<Extension> extension3 =
-        CreateExtension(FILE_PATH_LITERAL("extension3"));
+        CreateExtension(FILE_PATH_LITERAL("extension3"),
+        Extension::INVALID, empty_value);
 
     // First, create 3 panels.
-    Panel* panel1 = CreatePanel(
+    Panel* panel1 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension1->id()),
         gfx::Rect(0, 0, 250, 200));
-    Panel* panel2 = CreatePanel(
+    Panel* panel2 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension2->id()),
         gfx::Rect(0, 0, 300, 200));
-    Panel* panel3 = CreatePanel(
+    Panel* panel3 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension1->id()),
         gfx::Rect(0, 0, 200, 200));
     ASSERT_EQ(3, panel_manager->num_panels());
@@ -137,7 +71,7 @@ class PanelBrowserTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         Source<Browser>(panel2->browser()));
-    Panel* panel4 = CreatePanel(
+    Panel* panel4 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension2->id()),
         gfx::Rect(0, 0, 280, 200));
     signal.Wait();
@@ -149,7 +83,7 @@ class PanelBrowserTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver signal2(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         Source<Browser>(panel4->browser()));
-    Panel* panel5 = CreatePanel(
+    Panel* panel5 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
         gfx::Rect(0, 0, 300, 200));
     signal2.Wait();
@@ -164,7 +98,7 @@ class PanelBrowserTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver signal4(
         chrome::NOTIFICATION_BROWSER_CLOSED,
         Source<Browser>(panel5->browser()));
-    Panel* panel6 = CreatePanel(
+    Panel* panel6 = CreatePanelWithBounds(
         web_app::GenerateApplicationNameFromExtensionId(extension3->id()),
         gfx::Rect(0, 0, 500, 200));
     signal3.Wait();
@@ -174,10 +108,6 @@ class PanelBrowserTest : public InProcessBrowserTest {
 
     panel1->Close();
     panel6->Close();
-  }
-
-  void SetWorkArea(const gfx::Rect& work_area) {
-    PanelManager::GetInstance()->SetWorkArea(gfx::Rect(0, 0, 800, 600));
   }
 
   int horizontal_spacing() {
@@ -296,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
-  Panel* panel = CreatePanel("PanelTest", gfx::Rect());
+  Panel* panel = CreatePanel("PanelTest");
   EXPECT_EQ(1, panel_manager->num_panels());
 
   gfx::Rect bounds = panel->GetBounds();
@@ -311,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
-  Panel* panel = CreatePanel("PanelTest", gfx::Rect(0, 0, 400, 400));
+  Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 400, 400));
   Browser* browser = panel->browser();
   browser->ShowFindBar();
   ASSERT_TRUE(browser->GetFindBarController()->find_bar()->IsFindBarVisible());
@@ -329,9 +259,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanelOnOverflow) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DragPanels) {
-  // Set work area to make the test consistent on different monitor sizes.
-  SetWorkArea(gfx::Rect(0, 0, 800, 600));
-
   static const int max_panels = 3;
   static const int zero_delta = 0;
   static const int small_delta = 10;
@@ -347,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DragPanels) {
 
   // Tests with a single panel.
   {
-    CreatePanel("PanelTest1", gfx::Rect(0, 0, 100, 100));
+    CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
 
     // Drag left.
     expected_delta_x_after_drag[0] = -big_delta;
@@ -385,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DragPanels) {
 
   // Tests with two panels.
   {
-    CreatePanel("PanelTest2", gfx::Rect(0, 0, 120, 120));
+    CreatePanelWithBounds("PanelTest2", gfx::Rect(0, 0, 120, 120));
 
     // Drag left, small delta, expect no shuffle.
     {
@@ -458,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DragPanels) {
 
   // Tests with three panels.
   {
-    CreatePanel("PanelTest3", gfx::Rect(0, 0, 110, 110));
+    CreatePanelWithBounds("PanelTest3", gfx::Rect(0, 0, 110, 110));
 
     // Drag leftmost panel to become rightmost with two shuffles.
     // We test both shuffles.

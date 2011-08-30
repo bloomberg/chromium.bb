@@ -8,7 +8,10 @@
 
 #include <vector>
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/task.h"
+#include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/rect.h"
 
@@ -16,12 +19,16 @@ class Browser;
 class Panel;
 
 // This class manages a set of panels.
-class PanelManager {
+// Note that the ref count is needed by using PostTask in the implementation.
+class PanelManager : public AutoHidingDesktopBar::Observer,
+                     public base::RefCounted<PanelManager> {
  public:
+  typedef std::vector<Panel*> Panels;
+
   // Returns a single instance.
   static PanelManager* GetInstance();
 
-  ~PanelManager();
+  virtual ~PanelManager();
 
   // Called when the display is changed, i.e. work area is updated.
   void OnDisplayChanged();
@@ -38,31 +45,61 @@ class PanelManager {
   void Drag(int delta_x);
   void EndDragging(bool cancelled);
 
-  // Should we bring up the titlebar, given the current mouse point?
-  bool ShouldBringUpTitlebarForAllMinimizedPanels(int mouse_x,
-                                                  int mouse_y) const;
+  // Returns true if we should bring up the titlebars, given the current mouse
+  // point.
+  bool ShouldBringUpTitlebars(int mouse_x, int mouse_y) const;
 
-  // Brings up or down the title-bar for all minimized panels.
-  void BringUpOrDownTitlebarForAllMinimizedPanels(bool bring_up);
+  // Brings up or down the titlebars for all minimized panels.
+  void BringUpOrDownTitlebars(bool bring_up);
+
+  // Returns the bottom position for the panel per its expansion state. If auto-
+  // hide bottom bar is present, we want to move the minimized panel to the
+  // bottom of the screen, not the bottom of the work area.
+  int GetBottomPositionForExpansionState(
+      Panel::ExpansionState expansion_state) const;
 
   int num_panels() const { return panels_.size(); }
   bool is_dragging_panel() const;
 
- private:
-  friend class PanelBrowserTest;
+#ifdef UNIT_TEST
+  const Panels& panels() const { return panels_; }
+  static int horizontal_spacing() { return kPanelsHorizontalSpacing; }
 
-  typedef std::vector<Panel*> Panels;
+  const gfx::Rect& work_area() const {
+    return work_area_;
+  }
+
+  void set_auto_hiding_desktop_bar(
+      AutoHidingDesktopBar* auto_hiding_desktop_bar) {
+    auto_hiding_desktop_bar_ = auto_hiding_desktop_bar;
+  }
+
+  void SetWorkAreaForTesting(const gfx::Rect& work_area) {
+    SetWorkArea(work_area);
+  }
+#endif
+
+ private:
+  enum TitlebarAction {
+    NO_ACTION,
+    BRING_UP,
+    BRING_DOWN
+  };
 
   PanelManager();
 
-#if UNIT_TEST
-  const Panels& panels() const { return panels_; }
-  static int horizontal_spacing() { return kPanelsHorizontalSpacing; }
-#endif
+  // Overridden from AutoHidingDesktopBar::Observer:
+  virtual void OnAutoHidingDesktopBarThicknessChanged() OVERRIDE;
+  virtual void OnAutoHidingDesktopBarVisibilityChanged(
+      AutoHidingDesktopBar::Alignment alignment,
+      AutoHidingDesktopBar::Visibility visibility) OVERRIDE;
 
   // Applies the new work area. This is called by OnDisplayChanged and the test
   // code.
   void SetWorkArea(const gfx::Rect& work_area);
+
+  // Adjusts the work area to exclude the influence of auto-hiding desktop bars.
+  void AdjustWorkAreaForAutoHidingDesktopBars();
 
   // Handles all the panels that're delayed to be removed.
   void DelayedRemove();
@@ -73,13 +110,7 @@ class PanelManager {
   // Rearranges the positions of the panels starting from the given iterator.
   // This is called when the display space has been changed, i.e. working
   // area being changed or a panel being closed.
-  void Rearrange(Panels::iterator iter_to_start);
-
-  // Computes the bounds for next panel.
-  // |allow_size_change| is used to indicate if the panel size can be changed to
-  // fall within the size constraint, e.g., when the panel is created.
-  // Returns true if computed bounds are within the displayable area.
-  bool ComputeBoundsForNextPanel(gfx::Rect* bounds, bool allow_size_change);
+  void Rearrange(Panels::iterator iter_to_start, int rightmost_position);
 
   // Finds one panel to close so that we may have space for the new panel
   // created by |extension|.
@@ -89,7 +120,15 @@ class PanelManager {
   void DragLeft();
   void DragRight();
 
-  // Horizontal spacing between panels.  Used for unit testing.
+  // Checks if the titlebars have been brought up or down. If not, do not wait
+  // for the notifications to trigger it any more, and start to bring them up or
+  // down immediately.
+  void DelayedBringUpOrDownTitlebarsCheck();
+
+  // Does the real job of bringing up or down the titlebars.
+  void DoBringUpOrDownTitlebars(bool bring_up);
+
+  int GetRightMostAvaialblePosition() const;
 
   Panels panels_;
 
@@ -97,15 +136,15 @@ class PanelManager {
   // when we're in the process of the dragging.
   Panels panels_pending_to_remove_;
 
-  // Current work area used in computing the panel bounds.
+  // The maximum work area avaialble. This area does not include the area taken
+  // by the always-visible (non-auto-hiding) desktop bars.
   gfx::Rect work_area_;
 
-  // Used in computing the bounds of the next panel.
-  int max_width_;
-  int max_height_;
-  int min_x_;
-  int current_x_;
-  int bottom_edge_y_;
+  // The useable work area for computing the panel bounds. This area excludes
+  // the potential area that could be taken by the auto-hiding desktop
+  // bars (we only consider those bars that are aligned to bottom, left, and
+  // right of the screen edges) when they become fully visible.
+  gfx::Rect adjusted_work_area_;
 
   // Panel to drag.
   size_t dragging_panel_index_;
@@ -118,6 +157,12 @@ class PanelManager {
   // the dragging happens. Then it is updated to the position that will be set
   // to when the dragging ends.
   gfx::Rect dragging_panel_bounds_;
+
+  scoped_refptr<AutoHidingDesktopBar> auto_hiding_desktop_bar_;
+
+  TitlebarAction delayed_titlebar_action_;
+
+  ScopedRunnableMethodFactory<PanelManager> method_factory_;
 
   static const int kPanelsHorizontalSpacing = 4;
 

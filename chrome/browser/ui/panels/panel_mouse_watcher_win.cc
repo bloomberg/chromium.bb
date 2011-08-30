@@ -36,7 +36,7 @@ class PanelMouseWatcherWin {
   void OnMouseAction(int mouse_x, int mouse_y);
 
   HHOOK mouse_hook_;
-  bool bring_up_titlebar_;
+  bool bring_up_titlebars_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelMouseWatcherWin);
 };
@@ -45,7 +45,7 @@ scoped_ptr<PanelMouseWatcherWin> mouse_watcher;
 
 PanelMouseWatcherWin::PanelMouseWatcherWin()
     : mouse_hook_(NULL),
-      bring_up_titlebar_(false) {
+      bring_up_titlebars_(false) {
   mouse_hook_ = ::SetWindowsHookEx(
       WH_MOUSE_LL, MouseHookProc, GetCurrentModuleHandle(), 0);
   DCHECK(mouse_hook_);
@@ -69,14 +69,13 @@ LRESULT CALLBACK PanelMouseWatcherWin::MouseHookProc(int code,
 void PanelMouseWatcherWin::OnMouseAction(int mouse_x, int mouse_y) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
-  bool bring_up_titlebar =
-      panel_manager->ShouldBringUpTitlebarForAllMinimizedPanels(
-          mouse_x, mouse_y);
-  if (bring_up_titlebar == bring_up_titlebar_)
+  bool bring_up_titlebars = panel_manager->ShouldBringUpTitlebars(
+      mouse_x, mouse_y);
+  if (bring_up_titlebars == bring_up_titlebars_)
     return;
-  bring_up_titlebar_ = bring_up_titlebar;
+  bring_up_titlebars_ = bring_up_titlebars;
 
-  panel_manager->BringUpOrDownTitlebarForAllMinimizedPanels(bring_up_titlebar);
+  panel_manager->BringUpOrDownTitlebars(bring_up_titlebars);
 }
 
 }  // namespace
