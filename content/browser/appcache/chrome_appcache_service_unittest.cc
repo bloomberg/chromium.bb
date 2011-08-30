@@ -24,6 +24,7 @@ const FilePath::CharType kTestingAppCacheDirname[] =
 // test.
 const char kProtectedManifest[] = "http://www.protected.com/cache.manifest";
 const char kNormalManifest[] = "http://www.normal.com/cache.manifest";
+const char kSessionOnlyManifest[] = "http://www.sessiononly.com/cache.manifest";
 
 }  // namespace
 
@@ -35,6 +36,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
       : message_loop_(MessageLoop::TYPE_IO),
         kProtectedManifestURL(kProtectedManifest),
         kNormalManifestURL(kNormalManifest),
+        kSessionOnlyManifestURL(kSessionOnlyManifest),
         db_thread_(BrowserThread::DB, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         cache_thread_(BrowserThread::CACHE, &message_loop_),
@@ -51,6 +53,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
   ScopedTempDir temp_dir_;
   const GURL kProtectedManifestURL;
   const GURL kNormalManifestURL;
+  const GURL kSessionOnlyManifestURL;
 
  private:
   BrowserThread db_thread_;
@@ -69,6 +72,7 @@ ChromeAppCacheServiceTest::CreateAppCacheService(
   scoped_refptr<quota::MockSpecialStoragePolicy> mock_policy =
       new quota::MockSpecialStoragePolicy;
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());
+  mock_policy->AddSessionOnly(kSessionOnlyManifestURL.GetOrigin());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(appcache_service.get(),
@@ -94,13 +98,16 @@ void ChromeAppCacheServiceTest::InsertDataIntoAppCache(
   AppCacheTestHelper appcache_helper;
   appcache_helper.AddGroupAndCache(appcache_service, kNormalManifestURL);
   appcache_helper.AddGroupAndCache(appcache_service, kProtectedManifestURL);
+  appcache_helper.AddGroupAndCache(appcache_service, kSessionOnlyManifestURL);
 
   // Verify that adding the data succeeded
   std::set<GURL> origins;
   appcache_helper.GetOriginsWithCaches(appcache_service, &origins);
-  ASSERT_EQ(2UL, origins.size());
+  ASSERT_EQ(3UL, origins.size());
   ASSERT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
   ASSERT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) != origins.end());
+  ASSERT_TRUE(origins.find(kSessionOnlyManifestURL.GetOrigin()) !=
+              origins.end());
 }
 
 TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
@@ -125,13 +132,15 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   // The directory is still there
   ASSERT_TRUE(file_util::PathExists(appcache_path));
 
-  // The appcache data is also there
+  // The appcache data is also there, except the session-only origin.
   AppCacheTestHelper appcache_helper;
   std::set<GURL> origins;
   appcache_helper.GetOriginsWithCaches(appcache_service, &origins);
   EXPECT_EQ(2UL, origins.size());
   EXPECT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
   EXPECT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) != origins.end());
+  EXPECT_TRUE(origins.find(kSessionOnlyManifestURL.GetOrigin()) ==
+              origins.end());
 
   // Delete and let cleanup tasks run prior to returning.
   appcache_service = NULL;
@@ -168,6 +177,8 @@ TEST_F(ChromeAppCacheServiceTest, RemoveOnDestruction) {
   EXPECT_EQ(1UL, origins.size());
   EXPECT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
   EXPECT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) == origins.end());
+  EXPECT_TRUE(origins.find(kSessionOnlyManifestURL.GetOrigin()) ==
+              origins.end());
 
   // Delete and let cleanup tasks run prior to returning.
   appcache_service = NULL;

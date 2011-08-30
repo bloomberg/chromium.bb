@@ -68,9 +68,17 @@ bool DeleteGroupAndRelatedRecords(AppCacheDatabase* database,
   return success;
 }
 
-void ClearOnExit(
+// Deletes all appcache data (if clear_all_data is true), or session-only
+// appcache data. Also, schedules the database to be destroyed.
+void CleanUpOnDatabaseThread(
     AppCacheDatabase* database,
-    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy) {
+    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
+    bool clear_all_appcaches) {
+  scoped_ptr<AppCacheDatabase> database_to_delete(database);
+
+  if (!clear_all_appcaches && !special_storage_policy)
+    return;
+
   std::set<GURL> origins;
   database->FindOriginsWithGroups(&origins);
   if (origins.empty())
@@ -84,6 +92,9 @@ void ClearOnExit(
 
   std::set<GURL>::const_iterator origin;
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
+    if (!clear_all_appcaches &&
+        !special_storage_policy->IsStorageSessionOnly(*origin))
+      continue;
     if (special_storage_policy &&
         special_storage_policy->IsStorageProtected(*origin))
       continue;
@@ -1148,16 +1159,14 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
                 std::mem_fun(&DatabaseTask::CancelCompletion));
 
   if (database_) {
-    if (service()->clear_local_state_on_exit()) {
-      AppCacheThread::PostTask(
-          AppCacheThread::db(),
-          FROM_HERE,
-          NewRunnableFunction(
-              ClearOnExit,
-              database_,
-              make_scoped_refptr(service_->special_storage_policy())));
-    }
-    AppCacheThread::DeleteSoon(AppCacheThread::db(), FROM_HERE, database_);
+    AppCacheThread::PostTask(
+        AppCacheThread::db(),
+        FROM_HERE,
+        NewRunnableFunction(
+            CleanUpOnDatabaseThread,
+            database_,
+            make_scoped_refptr(service_->special_storage_policy()),
+            service()->clear_local_state_on_exit()));
   }
 }
 
