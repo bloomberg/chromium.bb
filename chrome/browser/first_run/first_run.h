@@ -74,12 +74,6 @@ class FirstRun {
       bool make_chrome_default,
       ProcessSingleton* process_singleton);
 
-  // Does platform specific setup. Called at the start of AutoImport.
-  static void PlatformSetup();
-
-  // Returns whether the first run should be "organic".
-  static bool IsOrganicFirstRun();
-
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from a standard
   // location and processes it so it becomes the default preferences in the
@@ -105,14 +99,6 @@ class FirstRun {
   // Removes the sentinel file created in ConfigDone(). Returns false if the
   // sentinel file could not be removed.
   static bool RemoveSentinel();
-
-  // Imports settings. This may be done in a separate process depending on the
-  // platform, but it will always block until done. The return value indicates
-  // success.
-  static bool ImportSettings(Profile* profile,
-                             scoped_refptr<ImporterHost> importer_host,
-                             scoped_refptr<ImporterList> importer_list,
-                             int items_to_import);
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser
   // shows the bubble once the main message loop gets going (or refrains from
@@ -145,9 +131,37 @@ class FirstRun {
   // being shown.
   static bool SearchEngineSelectorDisallowed();
 
+  // -- Platform-specific functions --
+
+  // Imports settings. This may be done in a separate process depending on the
+  // platform, but it will always block until done. The return value indicates
+  // success.
+  static bool ImportSettings(Profile* profile,
+                             scoped_refptr<ImporterHost> importer_host,
+                             scoped_refptr<ImporterList> importer_list,
+                             int items_to_import);
+
+  // Does platform specific setup. Called at the start of AutoImport.
+  static void PlatformSetup();
+
+  // Returns whether the first run should be "organic".
+  static bool IsOrganicFirstRun();
+
+  // Returns the path for the master preferences file.
+  static FilePath MasterPrefsPath();
+
  private:
   friend class FirstRunTest;
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
+
+  // Import bookmarks from an html file. The path to the file is provided in
+  // the command line.
+  static int ImportFromFile(Profile* profile, const CommandLine& cmdline);
+
+  // Gives the full path to the sentinel file. The file might not exist.
+  static bool GetFirstRunSentinelFilePath(FilePath* path);
+
+  // -- Platform-specific functions --
 
 #if defined(OS_WIN)
   // Writes the EULA to a temporary file, returned in |*eula_path|, and returns
@@ -176,19 +190,12 @@ class FirstRun {
                              gfx::NativeView parent_window);
 
   // Import browser items in this process. The browser and the items to
-  // import are encoded int the command line.
+  // import are encoded in the command line.
   static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
 
 #else
   static bool ImportBookmarks(const FilePath& import_bookmarks_path);
 #endif
-
-  // Import bookmarks from an html file. The path to the file is provided in
-  // the command line.
-  static int ImportFromFile(Profile* profile, const CommandLine& cmdline);
-
-  // Gives the full path to the sentinel file. The file might not exist.
-  static bool GetFirstRunSentinelFilePath(FilePath* path);
 
   enum FirstRunState {
     FIRST_RUN_UNKNOWN,  // The state is not tested or set yet.

@@ -16,6 +16,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "content/common/result_codes.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/ui_base_switches.h"
@@ -56,4 +57,13 @@ bool FirstRun::IsOrganicFirstRun() {
 void FirstRun::PlatformSetup() {
   // Things that Windows does here (creating a desktop icon, for example) are
   // handled at install time on Linux.
+}
+
+// static
+FilePath FirstRun::MasterPrefsPath() {
+  // The standard location of the master prefs is next to the chrome binary.
+  FilePath master_prefs;
+  if (!PathService::Get(base::DIR_EXE, &master_prefs))
+    return FilePath();
+  return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }

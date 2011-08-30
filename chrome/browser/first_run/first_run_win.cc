@@ -35,6 +35,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/browser/user_metrics.h"
@@ -305,6 +306,15 @@ bool FirstRun::IsOrganicFirstRun() {
   std::wstring brand;
   GoogleUpdateSettings::GetBrand(&brand);
   return GoogleUpdateSettings::IsOrganicFirstRun(brand);
+}
+
+// static
+FilePath FirstRun::MasterPrefsPath() {
+  // The standard location of the master prefs is next to the chrome binary.
+  FilePath master_prefs;
+  if (!PathService::Get(base::DIR_EXE, &master_prefs))
+    return FilePath();
+  return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
 
 // static

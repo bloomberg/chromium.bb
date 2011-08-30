@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -916,6 +917,20 @@ NSString* const kVersionKey = @"KSVersion";
 @end  // @implementation KeystoneGlue
 
 namespace keystone_glue {
+
+std::string BrandCode() {
+  KeystoneGlue* keystoneGlue = [KeystoneGlue defaultKeystoneGlue];
+  NSString* brand_path = [keystoneGlue brandFilePath];
+
+  if (![brand_path length])
+    return std::string();
+
+  std::string brand_code;
+  file_util::ReadFileToString(FilePath([brand_path fileSystemRepresentation]),
+                              &brand_code);
+
+  return brand_code;
+}
 
 bool KeystoneEnabled() {
   return [KeystoneGlue defaultKeystoneGlue] != nil;

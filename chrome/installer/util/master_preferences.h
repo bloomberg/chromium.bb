@@ -24,9 +24,11 @@ class DictionaryValue;
 
 namespace installer {
 
+#if !defined(OS_MACOSX)
 // This is the default name for the master preferences file used to pre-set
 // values in the user profile at first run.
 const char kDefaultMasterPrefs[] = "master_preferences";
+#endif
 
 // The master preferences is a JSON file with the same entries as the
 // 'Default\Preferences' file. This function parses the distribution

@@ -198,6 +198,11 @@ enum BrandFileType {
 // Functions that may be accessed from non-Objective-C C/C++ code.
 namespace keystone_glue {
 
+// Returns the brand code of the installation. Note that beta, dev, and canary
+// channels, as well as some stable builds, may have an empty string as a brand
+// code.
+std::string BrandCode();
+
 // True if Keystone is enabled.
 bool KeystoneEnabled();
 

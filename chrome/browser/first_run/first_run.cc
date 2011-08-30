@@ -150,11 +150,9 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
                                         MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
-  // The standard location of the master prefs is next to the chrome binary.
-  FilePath master_prefs;
-  if (!PathService::Get(base::DIR_EXE, &master_prefs))
+  FilePath master_prefs = MasterPrefsPath();
+  if (master_prefs.empty())
     return true;
-  master_prefs = master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
   installer::MasterPreferences prefs(master_prefs);
   if (!prefs.read_from_file())
     return true;

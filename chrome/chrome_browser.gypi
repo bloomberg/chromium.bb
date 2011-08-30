@@ -1424,6 +1424,8 @@
         'browser/mac/keystone_registration.mm',
         'browser/mac/launchd.cc',
         'browser/mac/launchd.h',
+        'browser/mac/master_prefs.h',
+        'browser/mac/master_prefs.mm',
         'browser/mac/relauncher.cc',
         'browser/mac/relauncher.h',
         'browser/mac/scoped_authorizationref.h',
