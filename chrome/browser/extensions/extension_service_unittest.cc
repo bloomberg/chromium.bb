@@ -40,6 +40,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -3610,6 +3611,48 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
   // Should again do nothing.
   service_->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_FALSE(service_->GetExtensionById(good_crx, true));
+}
+
+TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
+  InitializeEmptyExtensionService();
+
+  // Install the extension.
+  FilePath extension_path = data_dir_.AppendASCII("good.crx");
+  InstallCrx(extension_path, true);
+  EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AppSpecifics* app_specifics =
+      specifics.MutableExtension(sync_pb::app);
+  sync_pb::ExtensionSpecifics* extension_specifics =
+      app_specifics->mutable_extension();
+  extension_specifics->set_id(good_crx);
+  extension_specifics->set_version(
+      service_->GetInstalledExtension(good_crx)->version()->GetString());
+
+  {
+    extension_specifics->set_enabled(true);
+    SyncData sync_data = SyncData::CreateLocalData(good_crx, "Name", specifics);
+    SyncChange sync_change(SyncChange::ACTION_DELETE, sync_data);
+    SyncChangeList list(1);
+    list[0] = sync_change;
+
+    // Should do nothing
+    service_->ProcessSyncChanges(FROM_HERE, list);
+    EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
+  }
+
+  {
+    extension_specifics->set_enabled(false);
+    SyncData sync_data = SyncData::CreateLocalData(good_crx, "Name", specifics);
+    SyncChange sync_change(SyncChange::ACTION_UPDATE, sync_data);
+    SyncChangeList list(1);
+    list[0] = sync_change;
+
+    // Should again do nothing.
+    service_->ProcessSyncChanges(FROM_HERE, list);
+    EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
+  }
 }
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {

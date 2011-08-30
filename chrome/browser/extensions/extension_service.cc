@@ -1891,6 +1891,13 @@ void ExtensionService::ProcessExtensionSyncData(
     const ExtensionSyncData& extension_sync_data,
     SyncBundle& bundle) {
   const std::string& id = extension_sync_data.id();
+  const Extension* extension = GetInstalledExtension(id);
+
+  // TODO(bolms): we should really handle this better.  The particularly bad
+  // case is where an app becomes an extension or vice versa, and we end up with
+  // a zombie extension that won't go away.
+  if (extension && !bundle.filter(*extension))
+    return;
 
   // Handle uninstalls first.
   if (extension_sync_data.uninstalled()) {
@@ -1910,7 +1917,6 @@ void ExtensionService::ProcessExtensionSyncData(
   }
   SetIsIncognitoEnabled(id, extension_sync_data.incognito_enabled());
 
-  const Extension* extension = GetInstalledExtension(id);
   if (extension) {
     // If the extension is already installed, check if it's outdated.
     int result = extension->version()->CompareTo(extension_sync_data.version());
