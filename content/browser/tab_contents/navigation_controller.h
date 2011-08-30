@@ -78,8 +78,17 @@ class NavigationController {
   // NOTE: This can be NULL!!
   //
   // If you are trying to get the current state of the NavigationController,
-  // this is the method you will typically want to call.
+  // this is the method you will typically want to call.  If you want to display
+  // the active entry to the user (e.g., in the location bar), use
+  // GetVisibleEntry instead.
   NavigationEntry* GetActiveEntry() const;
+
+  // Returns the same entry as GetActiveEntry, except that it ignores pending
+  // history navigation entries.  This should be used when displaying info to
+  // the user, so that the location bar and other indicators do not update for
+  // a back/forward navigation until the pending entry commits.  This approach
+  // guards against URL spoofs on slow history navigations.
+  NavigationEntry* GetVisibleEntry() const;
 
   // Returns the index from which we would go back/forward or reload.  This is
   // the last_committed_entry_index_ if pending_entry_index_ is -1.  Otherwise,

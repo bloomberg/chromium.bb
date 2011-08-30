@@ -43,7 +43,7 @@ string16 ToolbarModel::GetText() const {
     Profile* profile =
         Profile::FromBrowserContext(navigation_controller->browser_context());
     languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    NavigationEntry* entry = navigation_controller->GetActiveEntry();
+    NavigationEntry* entry = navigation_controller->GetVisibleEntry();
     if (!navigation_controller->tab_contents()->ShouldDisplayURL()) {
       // Explicitly hide the URL for this tab.
       url = GURL();
@@ -69,7 +69,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
   if (!navigation_controller)  // We might not have a controller on init.
     return NONE;
 
-  NavigationEntry* entry = navigation_controller->GetActiveEntry();
+  NavigationEntry* entry = navigation_controller->GetVisibleEntry();
   if (!entry)
     return NONE;
 
@@ -119,7 +119,7 @@ string16 ToolbarModel::GetEVCertName() const {
   // Note: Navigation controller and active entry are guaranteed non-NULL or
   // the security level would be NONE.
   CertStore::GetInstance()->RetrieveCert(
-      GetNavigationController()->GetActiveEntry()->ssl().cert_id(), &cert);
+      GetNavigationController()->GetVisibleEntry()->ssl().cert_id(), &cert);
   return GetEVCertName(*cert);
 }
 

@@ -1724,7 +1724,10 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   controller().GoToIndex(1);
   // The navigation should have been initiated, transient entry should be gone.
   EXPECT_EQ(url1, controller().GetActiveEntry()->url());
+  // Visible entry does not update for history navigations until commit.
+  EXPECT_EQ(url3, controller().GetVisibleEntry()->url());
   rvh()->SendNavigate(1, url1);
+  EXPECT_EQ(url1, controller().GetVisibleEntry()->url());
 
   // Add a transient and go to an entry after the current one.
   transient_entry = new NavigationEntry;
@@ -1734,9 +1737,11 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   controller().GoToIndex(3);
   // The navigation should have been initiated, transient entry should be gone.
   // Because of the transient entry that is removed, going to index 3 makes us
-  // land on url2.
+  // land on url2 (which is visible after the commit).
   EXPECT_EQ(url2, controller().GetActiveEntry()->url());
+  EXPECT_EQ(url1, controller().GetVisibleEntry()->url());
   rvh()->SendNavigate(2, url2);
+  EXPECT_EQ(url2, controller().GetVisibleEntry()->url());
 
   // Add a transient and go forward.
   transient_entry = new NavigationEntry;
@@ -1747,7 +1752,9 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   controller().GoForward();
   // We should have navigated, transient entry should be gone.
   EXPECT_EQ(url3, controller().GetActiveEntry()->url());
+  EXPECT_EQ(url2, controller().GetVisibleEntry()->url());
   rvh()->SendNavigate(3, url3);
+  EXPECT_EQ(url3, controller().GetVisibleEntry()->url());
 
   // Ensure the URLS are correct.
   EXPECT_EQ(controller().entry_count(), 5);

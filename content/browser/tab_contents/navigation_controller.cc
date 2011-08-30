@@ -285,6 +285,15 @@ NavigationEntry* NavigationController::GetActiveEntry() const {
   return GetLastCommittedEntry();
 }
 
+NavigationEntry* NavigationController::GetVisibleEntry() const {
+  if (transient_entry_index_ != -1)
+    return entries_[transient_entry_index_].get();
+  // Only return pending_entry for new navigations.
+  if (pending_entry_ && pending_entry_->page_id() == -1)
+    return pending_entry_;
+  return GetLastCommittedEntry();
+}
+
 int NavigationController::GetCurrentEntryIndex() const {
   if (transient_entry_index_ != -1)
     return transient_entry_index_;
