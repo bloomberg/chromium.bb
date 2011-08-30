@@ -219,7 +219,7 @@ drm_output_set_cursor(struct wlsc_output *output_base,
 
 	if (eid->sprite->width > 64 || eid->sprite->height > 64)
 		goto out;
-	
+
 	bo = gbm_bo_create_from_egl_image(c->gbm,
 					  c->base.display,
 					  eid->sprite->image, 64, 64,
@@ -261,16 +261,17 @@ drm_output_destroy(struct wlsc_output *output_base)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
-		(struct drm_compositor *) output_base->compositor;
+		(struct drm_compositor *) output->base.compositor;
 	drmModeCrtcPtr origcrtc = output->original_crtc;
 	int i;
 
 	/* Turn off hardware cursor */
-	drm_output_set_cursor(output_base, NULL);
+	drm_output_set_cursor(&output->base, NULL);
 
 	/* Restore original CRTC state */
 	drmModeSetCrtc(c->drm.fd, origcrtc->crtc_id, origcrtc->buffer_id,
-		origcrtc->x, origcrtc->y, &output->connector_id, 1, &origcrtc->mode);
+		       origcrtc->x, origcrtc->y,
+		       &output->connector_id, 1, &origcrtc->mode);
 	drmModeFreeCrtc(origcrtc);
 
 	/* Destroy output buffers */
@@ -479,7 +480,8 @@ create_output_for_connector(struct drm_compositor *ec,
 				      output->base.current->width,
 				      output->base.current->height,
 				      GBM_BO_FORMAT_XRGB8888,
-				      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+				      GBM_BO_USE_SCANOUT |
+				      GBM_BO_USE_RENDERING);
 		output->image[i] = ec->base.create_image(ec->base.display,
 							 NULL,
 							 EGL_NATIVE_PIXMAP_KHR,
@@ -541,7 +543,8 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 	}
 
 	for (i = 0; i < resources->count_connectors; i++) {
-		connector = drmModeGetConnector(ec->drm.fd, resources->connectors[i]);
+		connector = drmModeGetConnector(ec->drm.fd,
+						resources->connectors[i]);
 		if (connector == NULL)
 			continue;
 
@@ -589,7 +592,7 @@ destroy_output(struct drm_output *output)
 		ec->base.destroy_image(ec->base.display, output->image[i]);
 		drmModeRmFB(ec->drm.fd, output->fb_id[i]);
 	}
-	
+
 	ec->crtc_allocator &= ~(1 << output->crtc_id);
 	ec->connector_allocator &= ~(1 << output->connector_id);
 
@@ -620,31 +623,30 @@ update_outputs(struct drm_compositor *ec)
 
 	/* collect new connects */
 	for (i = 0; i < resources->count_connectors; i++) {
-		connector =
-			drmModeGetConnector(ec->drm.fd,
-					    resources->connectors[i]);
+		int connector_id = resources->connectors[i];
+
+		connector = drmModeGetConnector(ec->drm.fd, connector_id);
 		if (connector == NULL ||
 		    connector->connection != DRM_MODE_CONNECTED)
 			continue;
 
-		connected |= (1 << connector->connector_id);
-		
-		if (!(ec->connector_allocator & (1 << connector->connector_id))) {
-			struct wlsc_output *last_output =
+		connected |= (1 << connector_id);
+
+		if (!(ec->connector_allocator & (1 << connector_id))) {
+			struct wlsc_output *last =
 				container_of(ec->base.output_list.prev,
 					     struct wlsc_output, link);
 
 			/* XXX: not yet needed, we die with 0 outputs */
 			if (!wl_list_empty(&ec->base.output_list))
-				x = last_output->x + last_output->current->width;
+				x = last->x + last->current->width;
 			else
 				x = 0;
 			y = 0;
 			create_output_for_connector(ec, resources,
 						    connector, x, y);
-			printf("connector %d connected\n",
-			       connector->connector_id);
-				
+			printf("connector %d connected\n", connector_id);
+
 		}
 		drmModeFreeConnector(connector);
 	}
@@ -679,7 +681,7 @@ static int
 udev_event_is_hotplug(struct udev_device *device)
 {
 	struct udev_list_entry *list, *hotplug_entry;
-	
+
 	list = udev_device_get_properties_list_entry(device);
 
 	hotplug_entry = udev_list_entry_get_by_name(list, "HOTPLUG");
@@ -696,7 +698,7 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 	struct udev_device *event;
 
 	event = udev_monitor_receive_device(ec->udev_monitor);
-	
+
 	if (udev_event_is_hotplug(event))
 		update_outputs(ec);
 
@@ -734,10 +736,14 @@ drm_compositor_create_cursor_image(struct wlsc_compositor *ec,
 
 		glGenTextures(1, &tex);
 		glBindTexture(GL_TEXTURE_2D, tex);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		c->base.image_target_texture_2d(GL_TEXTURE_2D, image);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 64, 64,
@@ -795,7 +801,7 @@ drm_compositor_create(struct wl_display *display,
 {
 	struct drm_compositor *ec;
 	struct udev_enumerate *e;
-        struct udev_list_entry *entry;
+	struct udev_list_entry *entry;
 	struct udev_device *device, *drm_device;
 	const char *path, *device_seat;
 	struct wl_event_loop *loop;
@@ -814,12 +820,12 @@ drm_compositor_create(struct wl_display *display,
 	e = udev_enumerate_new(ec->udev);
 	udev_enumerate_add_match_subsystem(e, "drm");
 
-        udev_enumerate_scan_devices(e);
+	udev_enumerate_scan_devices(e);
 	drm_device = NULL;
-        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
+	udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(ec->udev, path);
-                device_seat =
+		device_seat =
 			udev_device_get_property_value(device, "ID_SEAT");
 		if (!device_seat)
 			device_seat = default_seat;
@@ -830,7 +836,7 @@ drm_compositor_create(struct wl_display *display,
 		udev_device_unref(device);
 	}
 
-        udev_enumerate_unref(e);
+	udev_enumerate_unref(e);
 
 	if (drm_device == NULL) {
 		fprintf(stderr, "no drm device found\n");
@@ -878,7 +884,8 @@ drm_compositor_create(struct wl_display *display,
 	udev_monitor_filter_add_match_subsystem_devtype(ec->udev_monitor,
 							"drm", NULL);
 	ec->udev_drm_source =
-		wl_event_loop_add_fd(loop, udev_monitor_get_fd(ec->udev_monitor),
+		wl_event_loop_add_fd(loop,
+				     udev_monitor_get_fd(ec->udev_monitor),
 				     WL_EVENT_READABLE, udev_drm_event, ec);
 
 	if (udev_monitor_enable_receiving(ec->udev_monitor) < 0) {
@@ -900,7 +907,7 @@ backend_init(struct wl_display *display, char *options)
 	char *p, *value;
 
 	static char * const tokens[] = { "connector", "seat", NULL };
-	
+
 	p = options;
 	seat = default_seat;
 	while (i = getsubopt(&p, tokens, &value), i != -1) {
