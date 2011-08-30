@@ -106,7 +106,7 @@ static const VersionRangeDefinition kDivXVersionRange[] = {
     { "", "", "1.4.3.4", false }
 };
 static const VersionRangeDefinition kRealPlayerVersionRange[] = {
-    { "", "", "12.0.1.633", true }
+    { "", "", "12.0.1.666", true }
 };
 static const VersionRangeDefinition kWindowsMediaPlayerVersionRange[] = {
     { "", "", "", true }
