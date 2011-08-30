@@ -221,15 +221,8 @@ var CardSlider = (function() {
       if (e.wheelDeltaX == 0)
         return;
 
-      var preventDefault = true;
-      // If the horizontal scroll didn't change cards (on the far right of
-      // the NTP), let the browser take a shot at the event as well.
-      if (this.currentCard === 0 && this.mouseWheelScrollAmount_ > 0)
-        preventDefault = false;
-      if (this.currentCard === this.cards_.length - 1 &&
-          this.mouseWheelScrollAmount_ < 0) {
-        preventDefault = false;
-      }
+      // Prevent OS X 10.7+ history swiping on the NTP.
+      e.preventDefault();
 
       // Mac value feels ok with multitouch trackpads and magic mice
       // (with physical scrollwheel, too), but not so great with logitech
@@ -259,9 +252,6 @@ var CardSlider = (function() {
         this.scrollClearTimeout_ =
             setTimeout(this.clearMouseWheelScroll_.bind(this), 500);
       }
-
-      if (preventDefault)
-        e.preventDefault();
     },
 
     /**
