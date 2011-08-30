@@ -3,7 +3,7 @@
       source_lang_id="en" enc_check="möl">
   <outputs>
     <output filename="grit/chrome_frame_dialogs.h" type="rc_header">
-      <emit emit_type='prepend'></emit>
+      <emit emit_type='prepend'>#include "grit/chrome_frame_resources.h"</emit>
     </output>
     <output filename="chrome_frame_dialogs_am.rc" type="rc_all" lang="am" />
     <output filename="chrome_frame_dialogs_ar.rc" type="rc_all" lang="ar" />
@@ -115,14 +115,6 @@
     <file path="../../chrome/app/resources/generated_resources_zh-TW.xtb" lang="zh-TW" />
   </translations>
   <release seq="1" allow_pseudo="false">
-    <includes>
-      <if expr="pp_ifdef('_google_chrome')">
-        <include name="IDI_CHROME_FRAME_ICON" file="../../chrome/app/theme/google_chrome/chrome.ico" type="ICON" />
-      </if>
-      <if expr="not pp_ifdef('_google_chrome')">
-        <include name="IDI_CHROME_FRAME_ICON" file="../../chrome/app/theme/chromium/chromium.ico" type="ICON" />
-      </if>
-    </includes>
     <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->
       <structure name="IDD_CHROME_FRAME_FIND_DIALOG" file="../../chrome/app/cf_resources.rc" type="dialog" >
