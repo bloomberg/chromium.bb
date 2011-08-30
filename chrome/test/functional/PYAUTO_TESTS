@@ -401,6 +401,7 @@
   'FULL': {
     'all': [
       '@CONTINUOUS',
+      'nacl_sdk',
       'translate',
 
       # ==================================================
@@ -419,6 +420,8 @@
       '-translate.TranslateTest.testAlwaysTranslateInIncognito',
       # This test fails due to crbug.com/85633
       '-translate.TranslateTest.testSessionRestore',
+      # The source is behind.  Waiting for dev to automate the update.
+      '-nacl_sdk.NaClSDKTest.testVerifyNaClSDKChecksum',
     ],
 
     'win': [
@@ -458,6 +461,12 @@
     ],
 
     'chromeos': [
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      # No NaCl support on ChromeOS.
+      '-nacl_sdk',
+
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
