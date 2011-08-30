@@ -2,4 +2,4 @@ VALIDATOR: 0000000000000000: 48 8d 65 e0                                  lea %r
 VALIDATOR: ERROR: Illegal assignment to RSP
 VALIDATOR: Checking jump targets: 0 to 4
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

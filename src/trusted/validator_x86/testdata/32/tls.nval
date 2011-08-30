@@ -5,4 +5,4 @@ VALIDATOR: 20: Bad prefix usage
 VALIDATOR: 26: Bad prefix usage
 VALIDATOR: 2d: Bad prefix usage
 VALIDATOR: 37: Bad prefix usage
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***

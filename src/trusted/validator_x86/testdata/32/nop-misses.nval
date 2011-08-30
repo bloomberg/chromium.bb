@@ -7,4 +7,4 @@ VALIDATOR: 33: Bad prefix usage
 VALIDATOR: 4e: Bad prefix usage
 VALIDATOR: 4e: Illegal instruction
 VALIDATOR: 53: Bad prefix usage
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***

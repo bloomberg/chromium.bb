@@ -2,4 +2,4 @@ VALIDATOR: 0000000000020000: e9 fb ff ff bf                               jmp 0x
 VALIDATOR: ERROR: Instruction jumps to bad address
 VALIDATOR: Checking jump targets: 20000 to 20005
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

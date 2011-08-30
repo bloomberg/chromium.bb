@@ -1,2 +1,2 @@
 VALIDATOR: 0: Illegal instruction
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***

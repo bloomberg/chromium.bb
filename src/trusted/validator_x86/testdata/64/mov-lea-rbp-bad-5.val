@@ -4,4 +4,4 @@ VALIDATOR: 0000000000000003: 4a 8d 2c 3c                                  lea %r
 VALIDATOR: ERROR: Illegal change to register RBP
 VALIDATOR: Checking jump targets: 0 to 7
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

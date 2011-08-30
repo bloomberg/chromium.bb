@@ -4,4 +4,4 @@ VALIDATOR: 0000000000000005: 67 48 89 05 cf e0 61 00                      mov [%
 VALIDATOR: ERROR: Assignment to non-64 bit memory address
 VALIDATOR: Checking jump targets: 0 to d
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

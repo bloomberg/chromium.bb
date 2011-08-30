@@ -3,4 +3,4 @@ VALIDATOR: b: Illegal instruction
 VALIDATOR: 10: Illegal instruction
 VALIDATOR: 15: Illegal instruction
 VALIDATOR: 1a: Illegal instruction
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***

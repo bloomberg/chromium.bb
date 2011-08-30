@@ -1,4 +1,4 @@
-D: ***module <hex_text> is safe***
+*** <input> is safe ***
 
 Opcode Histogram;
 2	0x0f	8	0x90	1	0xf4	

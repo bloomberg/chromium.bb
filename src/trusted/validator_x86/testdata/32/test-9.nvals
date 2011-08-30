@@ -1,5 +1,5 @@
 VALIDATOR: 80000000: Unsafe indirect jump
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***
 
 Opcode Histogram;
 6	0x90	1	0xf4	1	0xff	

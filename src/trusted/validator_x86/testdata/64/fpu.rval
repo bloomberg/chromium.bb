@@ -3,4 +3,4 @@ VALIDATOR: Checking that basic blocks are aligned
 VALIDATOR: ERROR: 20: Bad basic block alignment.
 VALIDATOR: ERROR: 40: Bad basic block alignment.
 VALIDATOR: ERROR: 60: Bad basic block alignment.
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

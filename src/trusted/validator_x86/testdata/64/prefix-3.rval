@@ -24,4 +24,4 @@ VALIDATOR: 000000000000002f: 66 66 66 90                                  xchg %
 VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
 VALIDATOR: Checking jump targets: 0 to 3f
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

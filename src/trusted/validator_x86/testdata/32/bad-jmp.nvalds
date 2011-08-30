@@ -1,5 +1,5 @@
 VALIDATOR: 80000000: Doesn't jump to instruction address
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***
 
 Opcode Histogram;
 1	0x7f	1	0xf4	

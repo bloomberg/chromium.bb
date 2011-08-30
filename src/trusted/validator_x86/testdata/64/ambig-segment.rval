@@ -6,4 +6,4 @@ VALIDATOR: 0000000000000000: 64 65 00 c0                                  add %a
 VALIDATOR: ERROR: Specifying different segment registers using prefix bytes is not allowed by Native Client
 VALIDATOR: Checking jump targets: 0 to 4
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

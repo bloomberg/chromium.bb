@@ -1,2 +1,2 @@
 VALIDATOR: 0: Unsafe indirect jump
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***

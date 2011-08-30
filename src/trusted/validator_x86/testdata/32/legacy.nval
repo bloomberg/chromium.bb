@@ -8,4 +8,4 @@ VALIDATOR: 9: Illegal instruction
 VALIDATOR: a: Illegal instruction
 VALIDATOR: b: Illegal instruction
 VALIDATOR: c: Illegal instruction
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***

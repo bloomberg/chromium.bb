@@ -4,4 +4,4 @@ VALIDATOR: 0000000000000000: 89 cd                                        mov %e
 VALIDATOR: ERROR: Illegal assignment to EBP
 VALIDATOR: Checking jump targets: 0 to 7
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

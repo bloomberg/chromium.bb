@@ -4,4 +4,4 @@ VALIDATOR: 0000000000000000: 8e 00                                        mov %e
 VALIDATOR: ERROR: Illegal assignment to segment register RegES
 VALIDATOR: Checking jump targets: 0 to 2
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

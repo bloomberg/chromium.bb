@@ -2,4 +2,4 @@ VALIDATOR: 0000000000000004: ab                                           stosd
 VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: Checking jump targets: 0 to 5
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

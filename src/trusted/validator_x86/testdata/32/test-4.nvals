@@ -6,7 +6,7 @@ VALIDATOR: 80546cb: Bad call alignment
 VALIDATOR: 80546eb: Bad call alignment
 VALIDATOR: 80546eb: JUMP TARGET out of range
 VALIDATOR: 8054737: JUMP TARGET out of range
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***
 
 Opcode Histogram;
 1	0x01	1	0x0f	1	0x29	1	0x51	

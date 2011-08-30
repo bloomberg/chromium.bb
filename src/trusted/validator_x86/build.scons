@@ -285,7 +285,6 @@ def __AddTest(test, test_env, base, ext, command, groups):
 test_env.ComponentLibrary(test_env.NaClTargetArchSuffix('ncdis_util'),
                           ['ncdis_segments.c',
                            'ncval_decode_tables.c',
-                           'ncval_driver.c',
                            'nc_read_segment.c',
                            'ncenuminsts.c'])
 

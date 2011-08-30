@@ -6,4 +6,4 @@ VALIDATOR: 0000000000000006: 47 29 c7                                     sub %r
 VALIDATOR: ERROR: Changing RegR15D changes the value of RegR15
 VALIDATOR: Checking jump targets: 0 to 9
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

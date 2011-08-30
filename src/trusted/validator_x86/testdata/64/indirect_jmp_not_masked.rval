@@ -2,4 +2,4 @@ VALIDATOR: 0000000000000007: 41 ff e1                                     jmp %r
 VALIDATOR: ERROR: Invalid indirect jump
 VALIDATOR: Checking jump targets: 0 to a
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

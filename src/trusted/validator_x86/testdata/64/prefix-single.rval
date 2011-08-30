@@ -56,4 +56,4 @@ VALIDATOR: ERROR: 6c: Bad jump target
 VALIDATOR: ERROR: 6f: Bad jump target
 VALIDATOR: Checking that basic blocks are aligned
 VALIDATOR: ERROR: 60: Bad basic block alignment.
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

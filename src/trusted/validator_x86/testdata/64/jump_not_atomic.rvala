@@ -1,4 +1,4 @@
 VALIDATOR: Checking jump targets: 0 to c
 VALIDATOR: 5: Bad jump target
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

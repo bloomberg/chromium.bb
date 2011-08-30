@@ -1,6 +1,6 @@
 VALIDATOR: 80000005: Bad call alignment
 VALIDATOR: 80000005: Bad jump target
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***
 
 Opcode Histogram;
 1	0x7e	1	0x83	1	0xff	

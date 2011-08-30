@@ -6,4 +6,4 @@ VALIDATOR: 0000000000000005: 48 f0 0f c7 08                               cmpxch
 VALIDATOR: ERROR: Invalid base register in memory offset
 VALIDATOR: Checking jump targets: 0 to a
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

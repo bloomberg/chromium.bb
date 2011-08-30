@@ -172,4 +172,4 @@ VALIDATOR: ERROR: 80: Bad basic block alignment.
 VALIDATOR: ERROR: c0: Bad basic block alignment.
 VALIDATOR: ERROR: e0: Bad basic block alignment.
 VALIDATOR: ERROR: 100: Bad basic block alignment.
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

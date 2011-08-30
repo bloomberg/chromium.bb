@@ -5,7 +5,7 @@ VALIDATOR: 80000010: Bad call alignment
 VALIDATOR: 80000010: JUMP TARGET out of range
 VALIDATOR: 80000016: ret instruction (not allowed)
 VALIDATOR: 80000016: Illegal instruction
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***
 
 Opcode Histogram;
 1	0x00	1	0x55	1	0x83	1	0x89	

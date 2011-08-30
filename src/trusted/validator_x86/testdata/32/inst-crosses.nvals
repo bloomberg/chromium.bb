@@ -1,6 +1,6 @@
 VALIDATOR: 80000000: Bad prefix usage
 VALIDATOR: 8000000e: Illegal instruction
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***
 
 Opcode Histogram;
 1	0x04	1	0x12	1	0x22	1	0x8d	

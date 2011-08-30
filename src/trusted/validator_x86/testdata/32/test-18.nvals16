@@ -1,5 +1,5 @@
 VALIDATOR: 80000007: Illegal instruction
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***
 
 Opcode Histogram;
 1	0x85	1	0xbb	1	0xe1	1	0xf4	

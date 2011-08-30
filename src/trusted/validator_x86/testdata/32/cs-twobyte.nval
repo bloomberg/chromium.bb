@@ -1,2 +1,2 @@
 VALIDATOR: 8: Bad prefix usage
-D: ***MODULE <hex_text> IS UNSAFE***
+*** <input> IS UNSAFE ***

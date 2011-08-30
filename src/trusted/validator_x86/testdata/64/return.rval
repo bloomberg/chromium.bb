@@ -1,3 +1,3 @@
 VALIDATOR: Checking jump targets: 20040 to 2004c
 VALIDATOR: Checking that basic blocks are aligned
-***module is safe***
+*** <input> is safe ***

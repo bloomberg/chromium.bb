@@ -2,4 +2,4 @@ VALIDATOR: 0000000000000000: 23 0c 25 ff ff ff ff                         and %e
 VALIDATOR: ERROR: No base register specified in memory offset
 VALIDATOR: Checking jump targets: 0 to 7
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

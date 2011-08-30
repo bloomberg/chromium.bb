@@ -4,4 +4,4 @@ VALIDATOR: 0000000000000000: 67 ab                                        stosd
 VALIDATOR: ERROR: Assignment to non-64 bit segment address
 VALIDATOR: Checking jump targets: 0 to 2
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

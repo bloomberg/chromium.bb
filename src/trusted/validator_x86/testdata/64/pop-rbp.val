@@ -2,4 +2,4 @@ VALIDATOR: 0000000000000000: 5d                                           pop %r
 VALIDATOR: ERROR: Illegal change to register RBP
 VALIDATOR: Checking jump targets: 0 to 1
 VALIDATOR: Checking that basic blocks are aligned
-***MODULE IS UNSAFE***
+*** <input> IS UNSAFE ***

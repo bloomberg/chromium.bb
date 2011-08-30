@@ -2,4 +2,4 @@ VALIDATOR: 0000000000000000: dc c1                                        fadd %
 VALIDATOR: WARNING: Does not support x87 feature, removing usage(s).
 VALIDATOR: Checking jump targets: 0 to 2
 VALIDATOR: Checking that basic blocks are aligned
-***module is safe***
+*** <input> is safe ***
