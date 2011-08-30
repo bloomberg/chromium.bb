@@ -93,6 +93,7 @@ namespace browser {
 
 void RegisterLocalState(PrefService* local_state) {
   // Prefs in Local State
+  local_state->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
   AppsPromo::RegisterPrefs(local_state);
   Browser::RegisterPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
@@ -194,7 +195,6 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
   if ((current_version & WINDOWS_PREFS) == 0) {
     // Migrate the devtools split location preference.
     local_state->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
-    DCHECK(user_prefs->FindPreference(prefs::kDevToolsSplitLocation));
     if (local_state->HasPrefPath(prefs::kDevToolsSplitLocation)) {
       user_prefs->SetInteger(prefs::kDevToolsSplitLocation,
           local_state->GetInteger(prefs::kDevToolsSplitLocation));
@@ -203,7 +203,6 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
 
     // Migrate the browser window placement preference.
     local_state->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
-    DCHECK(user_prefs->FindPreference(prefs::kBrowserWindowPlacement));
     if (local_state->HasPrefPath(prefs::kBrowserWindowPlacement)) {
       const PrefService::Preference* pref =
           local_state->FindPreference(prefs::kBrowserWindowPlacement);

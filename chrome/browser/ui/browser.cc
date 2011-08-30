@@ -2216,7 +2216,6 @@ void Browser::SetNewHomePagePrefs(PrefService* prefs) {
 void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   prefs->RegisterIntegerPref(prefs::kExtensionSidebarWidth, -1);
-  prefs->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
   prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
   // Educated guess: Chrome has a bundled Flash version supporting
   // clearing LSO data, Chromium hasn't.
