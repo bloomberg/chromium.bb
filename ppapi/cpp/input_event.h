@@ -28,7 +28,7 @@ class Var;
 /// appropriate event-specific object to query the properties.
 ///
 /// <strong>Example:</strong>
-/// @code
+/// <code>
 ///
 /// bool MyInstance::HandleInputEvent(const pp::InputEvent& event) {
 ///   switch (event.GetType()) {
@@ -40,7 +40,7 @@ class Var;
 ///       return false;
 /// }
 ///
-/// @endcode
+/// </code>
 class InputEvent : public Resource {
  public:
   /// Default constructor that creates an is_null() InputEvent object.

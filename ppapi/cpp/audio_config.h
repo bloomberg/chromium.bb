@@ -40,7 +40,8 @@ class Instance;
 /// Data will always be in the native endian format of the platform.
 ///
 /// <strong>Example:</strong>
-/// @code
+/// <code>
+///
 /// // Create an audio config with a supported frame count.
 /// uint32_t sample_frame_count = AudioConfig::RecommendSampleFrameCount(
 ///    PP_AUDIOSAMPLERATE_44100, 4096);
@@ -52,7 +53,7 @@ class Instance;
 ///  Audio audio(instance, config, callback, user_data);
 ///   if (audio.is_null())
 ///     return false;  // Couldn't create audio.
-/// @endcode
+/// </code>
 class AudioConfig : public Resource {
  public:
   /// An empty constructor for an <code>AudioConfig</code> resource.
@@ -63,7 +64,7 @@ class AudioConfig : public Resource {
   /// resulting resource will be is_null(). You can pass the result of
   /// RecommendSampleFrameCount() as the sample frame count.
   ///
-  /// @param[in] instance A pointer to an <code>Instance</code> indentifying
+  /// @param[in] instance A pointer to an <code>Instance</code> identifying
   /// one instance of a module.
   /// @param[in] sample_rate A <code>PP_AudioSampleRate</code> which is either
   /// <code>PP_AUDIOSAMPLERATE_44100</code> or

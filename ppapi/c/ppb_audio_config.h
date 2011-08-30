@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Wed Aug 24 20:49:30 2011. */
+/* From ppb_audio_config.idl modified Mon Aug 29 10:11:34 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -91,13 +91,14 @@ struct PPB_AudioConfig {
    * right channel sample.
    * Data will always be in the native endian format of the platform.
    *
-   * @param[in] instance A <code>PP_Instance indentifying</code> one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    * @param[in] sample_rate A P<code>P_AudioSampleRate</code> which is either
    * <code>PP_AUDIOSAMPLERATE_44100</code> or
    * <code>PP_AUDIOSAMPLERATE_48000</code>.
    * @param[in] sample_frame_count A <code>uint32_t</code> frame count returned
    * from the <code>RecommendSampleFrameCount</code> function.
+   *
    * @return A <code>PP_Resource</code> containing the
    * <code>PPB_Audio_Config</code> if successful or a null resource if the
    * sample frame count or bit rate are not supported.
@@ -124,6 +125,7 @@ struct PPB_AudioConfig {
    * <code>PP_AUDIOSAMPLERATE_48000.</code>
    * @param[in] requested_sample_frame_count A <code>uint_32t</code> requested
    * frame count.
+   *
    * @return A <code>uint32_t</code> containing the recommended sample frame
    * count if successful.
    */
@@ -134,9 +136,10 @@ struct PPB_AudioConfig {
    * IsAudioConfig() determines if the given resource is a
    * <code>PPB_Audio_Config</code>.
    *
-   * @param[in] resource A <code>PP_Resource</code> containing the audio config
-   * resource.
-   * @return A <code>PP_BOOL</code> containing <code>PP_TRUE</code> if the given
+   * @param[in] resource A <code>PP_Resource</code> corresponding to an audio
+   * config resource.
+   *
+   * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if the given
    * resource is an <code>AudioConfig</code> resource, otherwise
    * <code>PP_FALSE</code>.
    */
@@ -145,8 +148,9 @@ struct PPB_AudioConfig {
    * GetSampleRate() returns the sample rate for the given
    * <code>PPB_Audio_Config</code>.
    *
-   * @param[in] config A <code>PP_Resource</code> containing the
+   * @param[in] config A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Audio_Config</code>.
+   *
    * @return A <code>PP_AudioSampleRate</code> containing sample rate or
    * <code>PP_AUDIOSAMPLERATE_NONE</code> if the resource is invalid.
    */
@@ -155,11 +159,12 @@ struct PPB_AudioConfig {
    * GetSampleFrameCount() returns the sample frame count for the given
    * <code>PPB_Audio_Config</code>.
    *
-   * @param[in] config A <code>PP_Resource</code> containing the audio config
-   * resource.
+   * @param[in] config A <code>PP_Resource</code> corresponding to an audio
+   * config resource.
+   *
    * @return A <code>uint32_t</code> containing sample frame count or
-   * 0 if the resource is invalid. See <code>RecommendSampleFrameCount</code>
-   * for more on sample frame counts.
+   * 0 if the resource is invalid. Refer to
+   * RecommendSampleFrameCount() for more on sample frame counts.
    */
   uint32_t (*GetSampleFrameCount)(PP_Resource config);
 };

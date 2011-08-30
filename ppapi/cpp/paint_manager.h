@@ -32,7 +32,7 @@ class Rect;
 ///
 /// <strong>Example:</strong>
 ///
-/// @code
+/// <code>
 ///
 ///  class MyClass : public pp::Instance, public PaintManager::Client {
 ///   public:
@@ -65,7 +65,7 @@ class Rect;
 ///   private:
 ///    pp::PaintManager paint_manager_;
 ///  };
-/// @endcode
+/// </code>
 class PaintManager {
  public:
   class Client {

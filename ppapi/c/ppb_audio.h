@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio.idl modified Wed Aug 24 20:46:25 2011. */
+/* From ppb_audio.idl modified Mon Aug 29 10:11:34 2011. */
 
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
@@ -31,7 +31,7 @@
 /**
  * <code>PPB_Audio_Callback</code> defines the type of an audio callback
  * function used to fill the audio buffer with data. Please see the
- * <code>Create()</code> function in the <code>PPB_Audio</code> interface for
+ * Create() function in the <code>PPB_Audio</code> interface for
  * more details on this callback.
  */
 typedef void (*PPB_Audio_Callback)(void* sample_buffer,
@@ -51,10 +51,12 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * <a href="/chrome/nativeclient/docs/audio.html">Pepper
  * Audio API</a> for information on using this interface.
  * Please see descriptions for each <code>PPB_Audio</code> and
- * <code>PPB_AudioConfig</code> function for more details.
+ * <code>PPB_AudioConfig</code> function for more details. A C example using
+ * <code>PPB_Audio</code> and <code>PPB_AudioConfig</code> follows.
  *
- * A C example using PPB_Audio and PPB_AudioConfig:
- * @code
+ * <strong>Example: </strong>
+ *
+ * <code>
  * void audio_callback(void* sample_buffer,
  *                     uint32_t buffer_size_in_bytes,
  *                     void* user_data) {
@@ -62,7 +64,8 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  *  }
  *
  * ...Assume the application has cached the audio configuration interface in
- * |audio_config_interface| and the audio interface in |audio_interface|...
+ * <code>audio_config_interface</code> and the audio interface in
+ * <code>audio_interface</code>...
  *
  * uint32_t count = audio_config_interface->RecommendSampleFrameCount(
  *     PP_AUDIOSAMPLERATE_44100, 4096);
@@ -72,74 +75,83 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  *     audio_callback, NULL);
  * audio_interface->StartPlayback(pp_audio);
  *
- * ...audio_callback() will now be periodically invoked on a seperate thread...
- * @endcode
+ * ...audio_callback() will now be periodically invoked on a separate thread...
+ * </code>
  */
 struct PPB_Audio {
   /**
-   * Create is a pointer to a function that creates an audio resource.
-   * No sound will be heard until StartPlayback() is called. The callback
-   * is called with the buffer address and given user data whenever the
-   * buffer needs to be filled. From within the callback, you should not
-   * call PPB_Audio functions. The callback will be called on a different
-   * thread than the one which created the interface. For performance-critical
-   * applications (i.e. low-latency audio), the callback should avoid blocking
-   * or calling functions that can obtain locks, such as malloc. The layout and
-   * the size of the buffer passed to the audio callback will be determined by
-   * the device configuration and is specified in the AudioConfig documentation.
+   * Create() creates an audio resource. No sound will be heard until
+   * StartPlayback() is called. The callback is called with the buffer address
+   * and given user data whenever the buffer needs to be filled. From within the
+   * callback, you should not call <code>PPB_Audio</code> functions. The
+   * callback will be called on a different thread than the one which created
+   * the interface. For performance-critical applications (i.e. low-latency
+   * audio), the callback should avoid blocking or calling functions that can
+   * obtain locks, such as malloc. The layout and the size of the buffer passed
+   * to the audio callback will be determined by the device configuration and is
+   * specified in the <code>AudioConfig</code> documentation.
    *
-   * @param[in] instance A PP_Instance indentifying one instance of a module.
-   * @param[in] config A PP_Resource containing the audio config resource.
-   * @param[in] audio_callback A PPB_Audio_Callback callback function that the
-   * browser calls when it needs more samples to play.
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
+   * of a module.
+   * @param[in] config A <code>PP_Resource</code> corresponding to an audio
+   * config resource.
+   * @param[in] audio_callback A <code>PPB_Audio_Callback</code> callback
+   * function that the browser calls when it needs more samples to play.
    * @param[in] user_data A pointer to user data used in the callback function.
    *
-   * @return A PP_Resource containing the audio resource if successful or
-   * 0 if the configuration cannot be honored or the callback is null.
+   * @return A <code>PP_Resource</code> containing the audio resource if
+   * successful or 0 if the configuration cannot be honored or the callback is
+   * null.
    */
   PP_Resource (*Create)(PP_Instance instance,
                         PP_Resource config,
                         PPB_Audio_Callback audio_callback,
                         void* user_data);
   /**
-   * IsAudio is a pointer to a function that determines if the given
-   * resource is an audio resource.
+   * IsAudio() determines if the provided resource is an audio resource.
    *
-   * @param[in] resource A PP_Resource containing a resource.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a generic
+   * resource.
    *
-   * @return A PP_BOOL containing containing PP_TRUE if the given resource is
-   * an Audio resource, otherwise PP_FALSE.
+   * @return A <code>PP_Bool</code> containing containing <code>PP_TRUE</code>
+   * if the given resource is an Audio resource, otherwise
+   * <code>PP_FALSE</code>.
    */
   PP_Bool (*IsAudio)(PP_Resource resource);
   /**
-   * GetCurrrentConfig is a pointer to a function that returns an audio config
-   * resource for the given audio resource.
+   * GetCurrrentConfig() returns an audio config resource for the given audio
+   * resource.
    *
-   * @param[in] config A PP_Resource containing the audio resource.
+   * @param[in] config A <code>PP_Resource</code> corresponding to an audio
+   * resource.
    *
-   * @return A PP_Resource containing the audio config resource if successful.
+   * @return A <code>PP_Resource</code> containing the audio config resource if
+   * successful.
    */
   PP_Resource (*GetCurrentConfig)(PP_Resource audio);
   /**
-   * StartPlayback is a pointer to a function that starts the playback of
-   * the audio resource and begins periodically calling the callback.
+   * StartPlayback() starts the playback of the audio resource and begins
+   * periodically calling the callback.
    *
-   * @param[in] config A PP_Resource containing the audio resource.
+   * @param[in] config A <code>PP_Resource</code> corresponding to an audio
+   * resource.
    *
-   * @return A PP_BOOL containing PP_TRUE if successful, otherwise PP_FALSE.
-   * Also returns PP_TRUE (and be a no-op) if called while playback is already
+   * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if
+   * successful, otherwise <code>PP_FALSE</code>. Also returns
+   * <code>PP_TRUE</code> (and be a no-op) if called while playback is already
    * in progress.
    */
   PP_Bool (*StartPlayback)(PP_Resource audio);
   /**
-   * StopPlayback is a pointer to a function that stops the playback of
-   * the audio resource.
+   * StopPlayback() stops the playback of the audio resource.
    *
-   * @param[in] config A PP_Resource containing the audio resource.
+   * @param[in] config A <code>PP_Resource</code> corresponding to an audio
+   * resource.
    *
-   * @return A PP_BOOL containing PP_TRUE if successful, otherwise PP_FALSE.
-   * Also returns PP_TRUE (and is a no-op) if called while playback is already
-   * stopped. If a callback is in progress, StopPlayback will block until the
+   * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if
+   * successful, otherwise <code>PP_FALSE</code>. Also returns
+   * <code>PP_TRUE</code> (and is a no-op) if called while playback is already
+   * stopped. If a callback is in progress, StopPlayback() will block until the
    * callback completes.
    */
   PP_Bool (*StopPlayback)(PP_Resource audio);

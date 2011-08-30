@@ -24,7 +24,7 @@ interface PPB_Messaging {
    * the DOM element for the given module instance. A call to PostMessage()
    * will not block while the message is processed.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    * @param[in] message A <code>PP_Var</code> containing the data to be sent to
    * JavaScript.
@@ -44,7 +44,7 @@ interface PPB_Messaging {
    *
    * <strong>Example:</strong>
    *
-   * @code
+   * <code>
    *
    * <body>
    *   <object id="plugin"
@@ -57,11 +57,11 @@ interface PPB_Messaging {
    *   </script>
    * </body>
    *
-   * @endcode
+   * </code>
    *
    * The module instance then invokes PostMessage() as follows:
    *
-   * @code
+   * <code>
    *
    *
    *  char hello_world[] = "Hello world!";
@@ -71,7 +71,7 @@ interface PPB_Messaging {
    *  ppb_messaging_interface->PostMessage(instance, hello_var); // Copies var.
    *  ppb_var_interface->Release(hello_var);
    *
-   * @endcode
+   * </code>
    *
    * The browser will pop-up an alert saying "Hello world!"
    */

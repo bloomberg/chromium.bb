@@ -113,7 +113,7 @@ class CompletionCallback {
   ///
   /// <strong>Example:</strong>
   ///
-  /// @code
+  /// <code>
   ///
   /// int32_t OpenURL(pp::URLLoader* loader,
   ///                 pp::URLRequestInfo* url_request_info,
@@ -123,7 +123,7 @@ class CompletionCallback {
   ///   return loader->Open(*loader, *url_request_info, cc);
   /// }
   ///
-  /// @endcode
+  /// </code>
   ///
   /// @param[in] result PP_OK_COMPLETIONPENDING or the result of the completed
   /// operation to be passed to the callback function. PP_OK_COMPLETIONPENDING
@@ -172,7 +172,7 @@ CompletionCallback BlockUntilComplete();
 ///
 /// <strong>Example: </strong>
 ///
-/// @code
+/// <code>
 ///
 ///   class MyHandler {
 ///    public:
@@ -231,7 +231,7 @@ CompletionCallback BlockUntilComplete();
 ///     int64_t offset_;
 ///   };
 ///
-/// @endcode
+/// </code>
 ///
 template <typename T, typename RefCount = NonThreadSafeRefCount>
 class CompletionCallbackFactory {
