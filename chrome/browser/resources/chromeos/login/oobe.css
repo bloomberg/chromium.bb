@@ -278,6 +278,13 @@ hr.bottom {
   width: 32em;
 }
 
+#update #update-cancel-hint {
+  color: #a00;
+  left: 50%;
+  margin: 1em -16em;
+  position: absolute;
+}
+
 #update progress {
   margin: 13px 0;
   width: 380px;

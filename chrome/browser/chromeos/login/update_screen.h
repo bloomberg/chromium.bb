@@ -12,17 +12,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/login/update_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 
 namespace chromeos {
 
 class ScreenObserver;
-class UpdateScreenActor;
 
 // Controller for the update screen. It does not depend on the specific
 // implementation of the screen showing (Views of WebUI based), the dependency
 // is moved to the UpdateScreenActor instead.
 class UpdateScreen: public UpdateLibrary::Observer,
+                    public UpdateScreenActor::Delegate,
                     public WizardScreen {
  public:
   UpdateScreen(ScreenObserver* screen_observer, UpdateScreenActor* actor);
@@ -33,12 +34,13 @@ class UpdateScreen: public UpdateLibrary::Observer,
   virtual void Show();
   virtual void Hide();
 
+  // UpdateScreenActor::Delegate implementation:
+  virtual void CancelUpdate() OVERRIDE;
+  virtual void OnActorDestroyed(UpdateScreenActor* actor) OVERRIDE;
+
   // Checks for updates and performs an update if needed. Made virtual to
   // simplify mocking.
   virtual void StartUpdate();
-
-  // Force cancel update. Made virtual to simplify mocking.
-  virtual void CancelUpdate();
 
   // Reboot check delay get/set, in seconds.
   int reboot_check_delay() const { return reboot_check_delay_; }

@@ -21,6 +21,7 @@ class UpdateScreenHandler : public UpdateScreenActor,
   virtual void Initialize();
 
   // UpdateScreenActor implementation:
+  virtual void SetDelegate(UpdateScreenActor::Delegate* screen) OVERRIDE;
   virtual void Show();
   virtual void Hide();
   virtual void PrepareToShow();
@@ -33,6 +34,12 @@ class UpdateScreenHandler : public UpdateScreenActor,
   virtual void RegisterMessages();
 
  private:
+#if !defined(OFFICIAL_BUILD)
+  // Called when user presses Escape to cancel update.
+  void HandleUpdateCancel(const base::ListValue* args);
+#endif
+
+  UpdateScreenActor::Delegate* screen_;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_;

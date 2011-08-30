@@ -17,7 +17,17 @@ namespace chromeos {
 ViewsUpdateScreenActor::ViewsUpdateScreenActor(ViewScreenDelegate* delegate)
     : DefaultViewScreen<chromeos::UpdateView>(delegate,
                                               kUpdateScreenWidth,
-                                              kUpdateScreenHeight) {
+                                              kUpdateScreenHeight),
+      screen_(NULL) {
+}
+
+ViewsUpdateScreenActor::~ViewsUpdateScreenActor() {
+  if (screen_)
+    screen_->OnActorDestroyed(this);
+}
+
+void ViewsUpdateScreenActor::SetDelegate(UpdateScreenActor::Delegate* screen) {
+  screen_ = screen;
 }
 
 void ViewsUpdateScreenActor::PrepareToShow() {

@@ -19,10 +19,14 @@ const char kUpdateScreen[] = "update";
 
 namespace chromeos {
 
-UpdateScreenHandler::UpdateScreenHandler() : show_on_init_(false) {
+UpdateScreenHandler::UpdateScreenHandler()
+    : screen_(NULL),
+      show_on_init_(false) {
 }
 
 UpdateScreenHandler::~UpdateScreenHandler() {
+  if (screen_)
+    screen_->OnActorDestroyed(this);
 }
 
 void UpdateScreenHandler::GetLocalizedStrings(
@@ -33,6 +37,12 @@ void UpdateScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_CHECKING_FOR_UPDATES));
   localized_strings->SetString("installingUpdateDesc",
       l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE_DESC));
+#if !defined(OFFICIAL_BUILD)
+  localized_strings->SetString("cancelUpdateHint",
+      l10n_util::GetStringUTF16(IDS_UPDATE_CANCEL));
+  localized_strings->SetString("cancelledUpdateMessage",
+      l10n_util::GetStringUTF16(IDS_UPDATE_CANCELLED));
+#endif
 }
 
 void UpdateScreenHandler::Initialize() {
@@ -42,12 +52,19 @@ void UpdateScreenHandler::Initialize() {
   }
 }
 
+void UpdateScreenHandler::SetDelegate(UpdateScreenActor::Delegate* screen) {
+  screen_ = screen;
+}
+
 void UpdateScreenHandler::Show() {
   if (!page_is_ready()) {
     show_on_init_ = true;
     return;
   }
   ShowScreen(kUpdateScreen, NULL);
+#if !defined(OFFICIAL_BUILD)
+  web_ui_->CallJavascriptFunction("oobe.UpdateScreen.enableUpdateCancel");
+#endif
 }
 
 void UpdateScreenHandler::Hide() {
@@ -87,6 +104,18 @@ void UpdateScreenHandler::ShowPreparingUpdatesInfo(bool visible) {
 }
 
 void UpdateScreenHandler::RegisterMessages() {
+#if !defined(OFFICIAL_BUILD)
+  web_ui_->RegisterMessageCallback(
+      "cancelUpdate",
+      NewCallback(this, &UpdateScreenHandler::HandleUpdateCancel));
+#endif
 }
+
+#if !defined(OFFICIAL_BUILD)
+void UpdateScreenHandler::HandleUpdateCancel(const base::ListValue* args) {
+  DCHECK(args && args->empty());
+  screen_->CancelUpdate();
+}
+#endif
 
 }  // namespace chromeos

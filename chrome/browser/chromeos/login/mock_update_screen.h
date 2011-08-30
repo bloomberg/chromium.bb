@@ -26,6 +26,9 @@ class MockUpdateScreenActor : public UpdateScreenActor {
   MockUpdateScreenActor();
   virtual ~MockUpdateScreenActor();
 
+  virtual void SetDelegate(UpdateScreenActor::Delegate* screen) OVERRIDE;
+
+  MOCK_METHOD1(MockSetDelegate, void(UpdateScreenActor::Delegate* screen));
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(PrepareToShow, void());
@@ -33,6 +36,9 @@ class MockUpdateScreenActor : public UpdateScreenActor {
   MOCK_METHOD1(SetProgress, void(int progress));
   MOCK_METHOD1(ShowCurtain, void(bool enable));
   MOCK_METHOD1(ShowPreparingUpdatesInfo, void(bool enable));
+
+ private:
+  UpdateScreenActor::Delegate* screen_;
 };
 
 }  // namespace chromeos

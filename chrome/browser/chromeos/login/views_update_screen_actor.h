@@ -16,8 +16,9 @@ class ViewsUpdateScreenActor : public DefaultViewScreen<UpdateView>,
                                public UpdateScreenActor {
  public:
   explicit ViewsUpdateScreenActor(ViewScreenDelegate* delegate);
-  virtual ~ViewsUpdateScreenActor() {}
+  virtual ~ViewsUpdateScreenActor();
 
+  virtual void SetDelegate(UpdateScreenActor::Delegate* screen) OVERRIDE;
   virtual void PrepareToShow();
   virtual void Show();
   virtual void Hide();
@@ -27,6 +28,8 @@ class ViewsUpdateScreenActor : public DefaultViewScreen<UpdateView>,
   virtual void ShowPreparingUpdatesInfo(bool visible);
 
  private:
+  UpdateScreenActor::Delegate* screen_;
+
   DISALLOW_COPY_AND_ASSIGN(ViewsUpdateScreenActor);
 };
 

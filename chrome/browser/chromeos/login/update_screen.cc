@@ -77,12 +77,15 @@ UpdateScreen::UpdateScreen(ScreenObserver* screen_observer,
       is_shown_(false),
       ignore_idle_status_(true),
       actor_(actor) {
+  actor_->SetDelegate(this);
   GetInstanceSet().insert(this);
 }
 
 UpdateScreen::~UpdateScreen() {
   CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
   GetInstanceSet().erase(this);
+  if (actor_)
+    actor_->SetDelegate(NULL);
 }
 
 void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
@@ -190,6 +193,7 @@ void UpdateScreen::StartUpdate() {
 }
 
 void UpdateScreen::CancelUpdate() {
+  VLOG(1) << "Forced update cancel";
   ExitUpdate(REASON_UPDATE_CANCELED);
 }
 
@@ -291,6 +295,11 @@ bool UpdateScreen::HasCriticalUpdate() {
   // TODO(dpolukhin): Analyze file content. Now we can just assume that
   // if the file exists and not empty, there is critical update.
   return true;
+}
+
+void UpdateScreen::OnActorDestroyed(UpdateScreenActor* actor) {
+  if (actor_ == actor)
+    actor_ = NULL;
 }
 
 }  // namespace chromeos

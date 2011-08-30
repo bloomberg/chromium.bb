@@ -6,6 +6,9 @@
 
 namespace chromeos {
 
+using ::testing::AtLeast;
+using ::testing::NotNull;
+
 MockUpdateScreen::MockUpdateScreen(ScreenObserver* screen_observer,
                                    UpdateScreenActor* actor)
     : UpdateScreen(screen_observer, actor) {
@@ -14,10 +17,19 @@ MockUpdateScreen::MockUpdateScreen(ScreenObserver* screen_observer,
 MockUpdateScreen::~MockUpdateScreen() {
 }
 
-MockUpdateScreenActor::MockUpdateScreenActor() {
+MockUpdateScreenActor::MockUpdateScreenActor()
+    : screen_(NULL) {
+  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
 }
 
 MockUpdateScreenActor::~MockUpdateScreenActor() {
+  if (screen_)
+    screen_->OnActorDestroyed(this);
+}
+
+void MockUpdateScreenActor::SetDelegate(UpdateScreenActor::Delegate* screen) {
+  screen_ = screen;
+  MockSetDelegate(screen);
 }
 
 }  // namespace chromeos

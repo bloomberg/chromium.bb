@@ -10794,6 +10794,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_INSTALLING_UPDATE_DESC" desc="Additional info shown on the updates installation screen during OOBE">
         Your computer will restart when the update is complete.
       </message>
+      <message name="IDS_UPDATE_CANCEL" desc="Message telling to press Escape to cancel update on a non-official build">
+        Press ESCAPE to skip (Non-official builds only).
+      </message>
+      <message name="IDS_UPDATE_CANCELLED" desc="Message shown when the update has been cancelled by user">
+        Cancelling update...
+      </message>
       <message name="IDS_WELCOME_SCREEN_TITLE" desc="Title of the OOBE welcome screen">
         Connect
       </message>

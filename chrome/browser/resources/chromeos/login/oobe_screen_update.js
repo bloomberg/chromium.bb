@@ -47,6 +47,18 @@ cr.define('oobe', function() {
     }
   };
 
+  UpdateScreen.enableUpdateCancel = function() {
+    $('update-cancel-hint').hidden = false;
+    document.addEventListener('keydown', function(e) {
+      if (e.keyCode == 27) {  // Escape
+        var updateCancelHint = $('update-cancel-hint').children[0];
+        updateCancelHint.textContent =
+            localStrings.getString('cancelledUpdateMessage');
+        chrome.send('cancelUpdate');
+      }
+    });
+  };
+
   return {
     UpdateScreen: UpdateScreen
   };
