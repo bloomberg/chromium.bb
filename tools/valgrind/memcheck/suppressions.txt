@@ -3876,11 +3876,10 @@
 {
    bug_76354
    Memcheck:Leak
-   fun:_Znw*
    ...
-   fun:_ZN32ChildProcessHostMsg_ResolveProxyC1ERK4GURLPiPSs
+   fun:_ZN24ViewHostMsg_ResolveProxyC1ERK4GURLPbPSs
    fun:_ZN25ResolveProxyMsgHelperTest13GenerateReplyEv
-   fun:_ZN*ResolveProxyMsgHelperTest_*_Test8TestBodyEv
+   fun:_ZN44ResolveProxyMsgHelperTest_*_Test8TestBodyEv
 }
 {
    bug_76490

@@ -1171,7 +1171,7 @@
 {
    bug_76354
    Heapcheck:Leak
-   fun:*ChildProcessHostMsg_ResolveProxy
+   fun:*ViewHostMsg_ResolveProxy
    fun:ResolveProxyMsgHelperTest::GenerateReply
    fun:ResolveProxyMsgHelperTest_*_Test::TestBody
 }
