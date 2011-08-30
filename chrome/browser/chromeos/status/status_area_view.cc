@@ -119,6 +119,8 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
 void StatusAreaView::MakeButtonsActive(bool active) {
   if (memory_view_)
     memory_view_->set_active(active);
+  accessibility_view()->set_active(active);
+  caps_lock_view()->set_active(active);
   clock_view()->set_active(active);
   input_method_view()->set_active(active);
   network_view()->set_active(active);
