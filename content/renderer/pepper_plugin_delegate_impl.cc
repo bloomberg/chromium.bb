@@ -1299,13 +1299,6 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,
     const gfx::Point& position) {
   int32 render_widget_id = render_view_->routing_id();
-  if (instance->IsFullscreen(instance->pp_instance())) {
-    webkit::ppapi::FullscreenContainer* container =
-        instance->fullscreen_container();
-    DCHECK(container);
-    render_widget_id =
-        static_cast<RenderWidgetFullscreenPepper*>(container)->routing_id();
-  }
 
   int request_id = pending_context_menus_.Add(
       new scoped_refptr<webkit::ppapi::PPB_Flash_Menu_Impl>(menu));
@@ -1367,12 +1360,6 @@ void PepperPluginDelegateImpl::OnCustomContextMenuAction(
   DCHECK(!has_saved_context_menu_action_);
   has_saved_context_menu_action_ = true;
   saved_context_menu_action_ = action;
-}
-
-webkit::ppapi::FullscreenContainer*
-PepperPluginDelegateImpl::CreateFullscreenContainer(
-    webkit::ppapi::PluginInstance* instance) {
-  return render_view_->CreatePepperFullscreenContainer(instance);
 }
 
 gfx::Size PepperPluginDelegateImpl::GetScreenSize() {

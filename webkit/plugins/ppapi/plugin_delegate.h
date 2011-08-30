@@ -79,7 +79,6 @@ namespace webkit {
 namespace ppapi {
 
 class FileIO;
-class FullscreenContainer;
 class PepperFilePath;
 class PluginInstance;
 class PluginModule;
@@ -389,11 +388,6 @@ class PluginDelegate {
       PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,
       const gfx::Point& position) = 0;
-
-  // Create a fullscreen container for a plugin instance. This effectively
-  // switches the plugin to fullscreen.
-  virtual FullscreenContainer* CreateFullscreenContainer(
-      PluginInstance* instance) = 0;
 
   // Gets the size of the screen. The fullscreen window will be created at that
   // size.

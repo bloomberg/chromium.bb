@@ -64,7 +64,6 @@ class Resource;
 namespace webkit {
 namespace ppapi {
 
-class FullscreenContainer;
 class MessageChannel;
 class ObjectVar;
 class PluginDelegate;
@@ -241,10 +240,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // Returns true iff the plugin is a full-page plugin (i.e. not in an iframe or
   // embedded in a page).
   bool IsFullPagePlugin() const;
-
-  FullscreenContainer* fullscreen_container() const {
-    return fullscreen_container_;
-  }
 
   // FunctionGroupBase overrides.
   virtual ::ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI()
@@ -467,10 +462,11 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // to use a more optimized painting path in some cases.
   bool always_on_top_;
 
-  // Plugin container for fullscreen mode. NULL if not in fullscreen mode. Note:
-  // there is a transition state where fullscreen_container_ is non-NULL but
-  // fullscreen_ is false (see above).
-  FullscreenContainer* fullscreen_container_;
+  // Since entering fullscreen mode is an asynchronous operation, we set this
+  // variable to the desired state at the time we issue the fullscreen change
+  // request. The plugin will receive a DidChangeView event when it goes
+  // fullscreen.
+  bool desired_fullscreen_state_;
 
   // True if we are in fullscreen mode. Note: it is false during the transition.
   bool fullscreen_;

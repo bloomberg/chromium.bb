@@ -281,9 +281,6 @@ class PepperPluginDelegateImpl
   void CompleteShowContextMenu(int request_id,
                                bool did_select,
                                unsigned action);
-  virtual webkit::ppapi::FullscreenContainer*
-      CreateFullscreenContainer(
-          webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual gfx::Size GetScreenSize() OVERRIDE;
   virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor)

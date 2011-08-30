@@ -223,11 +223,6 @@ int32_t MockPluginDelegate::ShowContextMenu(
   return PP_ERROR_FAILED;
 }
 
-FullscreenContainer* MockPluginDelegate::CreateFullscreenContainer(
-    PluginInstance* instance) {
-  return NULL;
-}
-
 gfx::Size MockPluginDelegate::GetScreenSize() {
   return gfx::Size(1024, 768);
 }

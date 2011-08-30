@@ -52,7 +52,6 @@
 #include "ui/gfx/skia_util.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
-#include "webkit/plugins/ppapi/fullscreen_container.h"
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -233,7 +232,7 @@ PluginInstance::PluginInstance(
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
-      fullscreen_container_(NULL),
+      desired_fullscreen_state_(false),
       fullscreen_(false),
       message_channel_(NULL),
       sad_plugin_(NULL),
@@ -277,10 +276,6 @@ void PluginInstance::Delete() {
   scoped_refptr<PluginInstance> ref(this);
   instance_interface_->DidDestroy(pp_instance());
 
-  if (fullscreen_container_) {
-    fullscreen_container_->Destroy();
-    fullscreen_container_ = NULL;
-  }
   container_ = NULL;
 }
 
@@ -301,32 +296,21 @@ void PluginInstance::Paint(WebCanvas* canvas,
 }
 
 void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
-  if (fullscreen_container_) {
-    if (rect.IsEmpty())
-      fullscreen_container_->Invalidate();
-    else
-      fullscreen_container_->InvalidateRect(rect);
-  } else {
-    if (!container_ || position_.IsEmpty())
-      return;  // Nothing to do.
-    if (rect.IsEmpty())
-      container_->invalidate();
-    else
-      container_->invalidateRect(rect);
-  }
+  if (!container_ || position_.IsEmpty())
+    return;  // Nothing to do.
+  if (rect.IsEmpty())
+    container_->invalidate();
+  else
+    container_->invalidateRect(rect);
 }
 
 void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
-  if (fullscreen_container_) {
-    fullscreen_container_->ScrollRect(dx, dy, rect);
+  if (full_frame_) {
+    container_->scrollRect(dx, dy, rect);
   } else {
-    if (full_frame_) {
-      container_->scrollRect(dx, dy, rect);
-    } else {
-      // Can't do optimized scrolling since there could be other elements on top
-      // of us.
-      InvalidateRect(rect);
-    }
+    // Can't do optimized scrolling since there could be other elements on top
+    // of us.
+    InvalidateRect(rect);
   }
 }
 
@@ -340,10 +324,7 @@ unsigned PluginInstance::GetBackingTextureId() {
 }
 
 void PluginInstance::CommitBackingTexture() {
-  if (fullscreen_container_)
-    fullscreen_container_->Invalidate();
-  else
-    container_->commitBackingTexture();
+  container_->commitBackingTexture();
 }
 
 void PluginInstance::InstanceCrashed() {
@@ -505,7 +486,7 @@ PP_Var PluginInstance::GetInstanceObject() {
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
                                  const gfx::Rect& clip) {
-  fullscreen_ = (fullscreen_container_ != NULL);
+  fullscreen_ = desired_fullscreen_state_;
   position_ = position;
 
   if (clip.IsEmpty()) {
@@ -779,10 +760,7 @@ bool PluginInstance::PluginHasFocus() const {
 }
 
 void PluginInstance::ReportGeometry() {
-  // If this call was delayed, we may have transitioned back to fullscreen in
-  // the mean time, so only report the geometry if we are actually in normal
-  // mode.
-  if (container_ && !fullscreen_container_)
+  if (container_)
     container_->reportGeometry();
 }
 
@@ -958,7 +936,7 @@ void PluginInstance::PrintEnd() {
 }
 
 bool PluginInstance::IsFullscreenOrPending() {
-  return fullscreen_container_ != NULL;
+  return desired_fullscreen_state_;
 }
 
 void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
@@ -971,22 +949,16 @@ void PluginInstance::SetFullscreen(bool fullscreen, bool delay_report) {
   if (fullscreen == IsFullscreenOrPending())
     return;
 
-  BindGraphics(pp_instance(), 0);
-  VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
-  if (fullscreen) {
-    DCHECK(!fullscreen_container_);
-    fullscreen_container_ = delegate_->CreateFullscreenContainer(this);
+  desired_fullscreen_state_ = fullscreen;
+  if (fullscreen)
+    container_->element().requestFullScreen();
+  else
+    container_->element().document().cancelFullScreen();
+  if (!delay_report) {
+    ReportGeometry();
   } else {
-    DCHECK(fullscreen_container_);
-    fullscreen_container_->Destroy();
-    fullscreen_container_ = NULL;
-    fullscreen_ = false;
-    if (!delay_report) {
-      ReportGeometry();
-    } else {
-      MessageLoop::current()->PostTask(
+    MessageLoop::current()->PostTask(
           FROM_HERE, NewRunnableMethod(this, &PluginInstance::ReportGeometry));
-    }
   }
 }
 
@@ -1033,10 +1005,7 @@ int32_t PluginInstance::Navigate(PPB_URLRequestInfo_Impl* request,
 }
 
 PluginDelegate::PlatformContext3D* PluginInstance::CreateContext3D() {
-  if (fullscreen_container_)
-    return fullscreen_container_->CreateContext3D();
-  else
-    return delegate_->CreateContext3D();
+  return delegate_->CreateContext3D();
 }
 
 bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
@@ -1306,16 +1275,6 @@ PPB_Surface3D_Impl* PluginInstance::GetBoundSurface3D() const {
 }
 
 void PluginInstance::setBackingTextureId(unsigned int id) {
-  // If we have a full-screen container_ then the plugin is fullscreen,
-  // and the parent context is not the one for the browser page, but for the
-  // full-screen window, and so the parent texture ID doesn't correspond to
-  // anything in the page's context.
-  //
-  // TODO(alokp): It would be better at some point to have the equivalent
-  // in the FullscreenContainer so that we don't need to poll
-  if (fullscreen_container_)
-    return;
-
   if (container_)
     container_->setBackingTextureId(id);
 }
@@ -1360,10 +1319,6 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
     InvalidateRect(gfx::Rect());
     return PP_TRUE;
   }
-
-  // Refuse to bind if we're transitioning to fullscreen.
-  if (fullscreen_container_ && !fullscreen_)
-    return PP_FALSE;
 
   EnterResourceNoLock<PPB_Graphics2D_API> enter_2d(device, false);
   PPB_Graphics2D_Impl* graphics_2d = enter_2d.succeeded() ?
@@ -1552,8 +1507,6 @@ void PluginInstance::SubscribeToPolicyUpdates(PP_Instance instance) {
 
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {
   cursor_.reset(cursor);
-  if (fullscreen_container_)
-    fullscreen_container_->DidChangeCursor(*cursor);
 }
 
 }  // namespace ppapi
