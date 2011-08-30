@@ -94,6 +94,8 @@
         'tests/test_file_system.h',
         'tests/test_graphics_2d.cc',
         'tests/test_graphics_2d.h',
+        'tests/test_graphics_3d.cc',
+        'tests/test_graphics_3d.h',
         'tests/test_image_data.cc',
         'tests/test_image_data.h',
         'tests/test_memory.cc',
@@ -129,6 +131,15 @@
       'dependencies': [
         'ppapi.gyp:ppapi_cpp'
       ],
+      'run_as': {
+        'action': [
+          '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
+          '--enable-pepper-testing',
+          '--enable-accelerated-plugins',
+          '--register-pepper-plugins=$(TargetPath);application/x-ppapi-tests',
+          'file://$(ProjectDir)/tests/test_case.html?testcase=',
+        ],
+      },
       'conditions': [
         ['OS=="win"', {
           'defines': [
