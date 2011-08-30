@@ -11,18 +11,6 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "webkit/glue/webmediaplayer_proxy.h"
 
-// Transform destination rect to local coordinates.
-static void TransformToSkIRect(const SkMatrix& matrix,
-                               const gfx::Rect& src_rect,
-                               SkIRect* dest_rect) {
-  SkRect transformed_rect;
-  SkRect skia_dest_rect;
-  skia_dest_rect.iset(src_rect.x(), src_rect.y(),
-                      src_rect.right(), src_rect.bottom());
-  matrix.mapRect(&transformed_rect, skia_dest_rect);
-  transformed_rect.round(dest_rect);
-}
-
 namespace webkit_glue {
 
 VideoRendererImpl::VideoRendererImpl(bool pts_logging)
@@ -127,23 +115,10 @@ bool VideoRendererImpl::CanFastPaint(SkCanvas* canvas,
       SkScalarNearlyZero(total_matrix.getSkewY()) &&
       total_matrix.getScaleX() > 0 &&
       total_matrix.getScaleY() > 0) {
-    // Get the properties of the SkDevice and the clip rect.
     SkDevice* device = canvas->getDevice();
-
-    // Get the boundary of the device.
-    SkIRect device_rect;
-    device->getBounds(&device_rect);
-
-    // Get the pixel config of the device.
     const SkBitmap::Config config = device->config();
-    // Get the total clip rect associated with the canvas.
-    const SkRegion& total_clip = canvas->getTotalClip();
 
-    SkIRect dest_irect;
-    TransformToSkIRect(canvas->getTotalMatrix(), dest_rect, &dest_irect);
-
-    if (config == SkBitmap::kARGB_8888_Config && device->isOpaque() &&
-        device_rect.contains(total_clip.getBounds())) {
+    if (config == SkBitmap::kARGB_8888_Config && device->isOpaque()) {
       return true;
     }
   }
