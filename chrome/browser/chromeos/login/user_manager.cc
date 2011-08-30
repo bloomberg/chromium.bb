@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -544,39 +545,10 @@ void UserManager::SetDefaultUserImage(const std::string& username) {
   if (!g_browser_process)
     return;
 
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  const ListValue* prefs_users = local_state->GetList(kLoggedInUsers);
-  DCHECK(prefs_users);
-  const DictionaryValue* prefs_images =
-      local_state->GetDictionary(kUserImages);
-  DCHECK(prefs_images);
-
-  // We want to distribute default images between users uniformly so that if
-  // there're more users with red image, we won't add red one for sure.
-  // Thus we count how many default images of each color are used and choose
-  // the first color with minimal usage.
-  std::vector<int> colors_count(kDefaultImagesCount, 0);
-  for (ListValue::const_iterator it = prefs_users->begin();
-       it != prefs_users->end();
-       ++it) {
-    std::string email;
-    if ((*it)->GetAsString(&email)) {
-      std::string image_path;
-      int default_image_id = kDefaultImagesCount;
-      if (prefs_images->GetStringWithoutPathExpansion(email, &image_path) &&
-          IsDefaultImagePath(image_path, &default_image_id)) {
-        DCHECK(default_image_id < kDefaultImagesCount);
-        ++colors_count[default_image_id];
-      }
-    }
-  }
-  std::vector<int>::const_iterator min_it =
-      std::min_element(colors_count.begin(), colors_count.end());
-  int selected_id = min_it - colors_count.begin();
-  std::string user_image_path =
-      GetDefaultImagePath(selected_id);
-  int resource_id = kDefaultImageResources[selected_id];
+  // Choose a random default image.
+  int image_id = base::RandInt(0, kDefaultImagesCount - 1);
+  std::string user_image_path = GetDefaultImagePath(image_id);
+  int resource_id = kDefaultImageResources[image_id];
   SkBitmap user_image = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
       resource_id);
 
