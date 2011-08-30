@@ -228,8 +228,11 @@ label {
 
 #session-mode {
   width: 100%;
-  margin: 0;
   -webkit-user-select: none;
+}
+
+#session-client-plugin {
+  margin: 0 0 -4px 0;
 }
 
 #toggle-scaling {
