@@ -1,0 +1,259 @@
+#!/usr/bin/python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Layout tests module that is necessary for tha layout analyzer.
+
+Layout tests are stored in Webkit SVN and LayoutTestCaseManager collects these
+layout test cases (including description).
+"""
+
+import copy
+import csv
+import locale
+import pysvn
+import re
+import sys
+import urllib2
+
+
+# Webkit SVN root location.
+DEFAULT_LAYOUTTEST_LOCATION = (
+    'http://svn.webkit.org/repository/webkit/trunk/LayoutTests/')
+
+# When parsing the test HTML file and finding the test description,
+# this script tries to find the test description using sentences
+# starting with these keywords. This is adhoc but it is the only way
+# since there is no standard for writing test description.
+KEYWORDS_FOR_TEST_DESCRIPTION = ['This test', 'Tests that', 'Test ']
+
+# If cannot find the keywords, this script tries to find test case
+# description by the following tags.
+TAGS_FOR_TEST_DESCRIPTION = ['title', 'p', 'div']
+
+# If cannot find the tags, this script tries to find the test case
+# description in the sentence containing following words.
+KEYWORD_FOR_TEST_DESCRIPTION_FAIL_SAFE = ['PASSED ', 'PASS:']
+
+
+class LayoutTests(object):
+  """A class to store test names in layout tests.
+
+  The test names (including regular expression patterns) are read from a CSV
+  file and used for getting layout test names from Webkit SVN.
+  """
+
+  def __init__(self, layouttest_root_path=DEFAULT_LAYOUTTEST_LOCATION,
+               csv_file_path=None):
+    """Initialize LayoutTests using root and CSV file.
+
+    Args:
+      layouttest_root_path: A location string where Webkit layout tests are
+          stored.
+      csv_file_path: CSV file path. The file contains a list of test names
+          in CSV format. When this parameter is not specified, the names of
+          all layout tests are retrieved under the root directory.
+    """
+    filter_names = []
+    if csv_file_path:
+      filter_names = LayoutTests.GetLayoutTestNamesFromCSV(csv_file_path)
+    parent_location_list = LayoutTests.GetParentDirectoryList(filter_names)
+    if layouttest_root_path.startswith('http://'):
+      name_map = self.GetLayoutTestNamesFromSVN(parent_location_list,
+                                                layouttest_root_path)
+    else:
+      # TODO(imasaki): support other forms such as CSV for reading test names.
+      pass
+    self.name_map = copy.copy(name_map)
+    # Filter names.
+    for lt_name in name_map.keys():
+      match = False
+      for filter_name in filter_names:
+        if re.search(filter_name, lt_name):
+          match = True
+          break
+      if not match:
+        del self.name_map[lt_name]
+    # We get description only for the filtered names.
+    for lt_name in self.name_map.keys():
+      self.name_map[lt_name] = LayoutTests.GetTestDescriptionFromSVN(lt_name)
+
+  @staticmethod
+  def ExtractTestDescription(txt):
+    """Extract the description description from test code in HTML.
+
+    Currently, we have 4 rules described in the code below.
+    (This example falls into rule 1):
+      <p>
+      This tests the intrinsic size of a video element is the default
+      300,150 before metadata is loaded, and 0,0 after
+      metadata is loaded for an audio-only file.
+      </p>
+    The strategy is very adhoc since the original test case files
+    (in HTML format) do not have standard way to store test description.
+
+    Args:
+      txt: A HTML text which may or may not contain test description.
+
+    Returns:
+      A string that contains test description. Returns 'UNKNOWN' if the
+          test description is not found.
+    """
+    # (1) Try to find test description that contains keywords such as
+    #     'test that' and surrounded by p tag.
+    #     This is the most common case.
+    for keyword in KEYWORDS_FOR_TEST_DESCRIPTION:
+      # Try to find <p> and </p>.
+      pattern = r'<p>(.*' + keyword + '.*)</p>'
+      matches = re.search(pattern, txt)
+      if matches is not None:
+          return matches.group(1).strip()
+
+    # (2) Try to find it by using more generic keywords such as 'PASS' etc.
+    for keyword in KEYWORD_FOR_TEST_DESCRIPTION_FAIL_SAFE:
+      # Try to find new lines.
+      pattern = r'\n(.*' + keyword + '.*)\n'
+      matches = re.search(pattern, txt)
+      if matches is not None:
+          # Remove 'p' tag.
+          text = matches.group(1).strip()
+          return text.replace('<p>', '').replace('</p>', '')
+
+    # (3) Try to find it by using HTML tag such as title.
+    for tag in TAGS_FOR_TEST_DESCRIPTION:
+      pattern = r'<' + tag + '>(.*)</' + tag + '>'
+      matches = re.search(pattern, txt)
+      if matches is not None:
+          return matches.group(1).strip()
+
+    # (4) Try to find it by using test description and remove 'p' tag.
+    for keyword in KEYWORDS_FOR_TEST_DESCRIPTION:
+      # Try to find <p> and </p>.
+      pattern = r'\n(.*' + keyword + '.*)\n'
+      matches = re.search(pattern, txt)
+      if matches is not None:
+          # Remove 'p' tag.
+          text = matches.group(1).strip()
+          return text.replace('<p>', '').replace('</p>', '')
+
+    # (5) cannot find test description using existing rules.
+    return 'UNKNOWN'
+
+  @staticmethod
+  def GetLayoutTestNamesFromSVN(parent_location_list,
+                                layouttest_root_path):
+    """Get LayoutTest names from Webkit SVN.
+
+    Args:
+      parent_location_list: a list of locations of parent directories. This is
+          used when getting layout tests using PySVN.list().
+      layouttest_root_path: the root path of the Webkit SVN directory.
+
+    Returns:
+      a map containing test names as keys for de-dupe.
+    """
+    client = pysvn.Client()
+    # Get directory structure in the Webkit SVN.
+    if parent_location_list is None:
+      # Try to get all the layout tests by enabling recursion option.
+      parent_location_list = ['/\S+\.html$']
+      recursion = True
+    else:
+      recursion = False
+    name_map = {}
+    for parent_location in parent_location_list:
+      if parent_location.endswith('/'):
+        file_list = client.list(layouttest_root_path + parent_location,
+                                recurse=recursion)
+        for file_name in file_list:
+          if sys.stdout.isatty():
+            default_encoding = sys.stdout.encoding
+          else:
+            default_encoding = locale.getpreferredencoding()
+          file_name = file_name[0].repos_path.encode(default_encoding)
+          # Remove the word '/truck/LayoutTests'.
+          file_name = file_name.replace('/trunk/LayoutTests/', '')
+          if file_name.endswith('.html'):
+            name_map[file_name] = True
+    return name_map
+
+  @staticmethod
+  def GetLayoutTestNamesFromCSV(csv_file_path):
+    """Get layout test names from CSV file.
+
+    Args:
+      csv_file_path: the path for the CSV file containing test names (including
+          regular expression patterns). The CSV file content has one column and
+          each row contains a test name.
+    """
+    file_object = file(csv_file_path, 'r')
+    reader = csv.reader(file_object)
+    names = [row[0] for row in reader]
+    file_object.close()
+    return names
+
+  @staticmethod
+  def GetParentDirectoryList(names):
+    """Get parent directory list from test names.
+
+    Args:
+      names: a list of test names. The test names also have path information as
+          well (e.g., media/video-zoom.html).
+    """
+    pd_map = {}
+    for name in names:
+      p_dir = name[0:name.rfind('/') + 1]
+      pd_map[p_dir] = True
+    return list(pd_map.iterkeys())
+
+  def JoinWithTestExpectation(self, test_expectations):
+    """Join layout tests with the test expectation file using test name as key.
+
+    Args:
+      test_expectations: a test expectations object.
+
+    Returns:
+      test_info_map contains test name as key and another map as value. The
+          other map contains test description and the test expectation
+          information which contains keyword (e.g., 'GPU') as key (we do
+          not care about values). The map data structure is used since we
+          have to look up these keywords several times.
+    """
+    test_info_map = {}
+    for (lt_name, desc) in self.name_map.items():
+      test_info_map[lt_name] = {}
+      test_info_map[lt_name]['desc'] = desc
+      for (te_name, te_info) in (
+          test_expectations.all_test_expectation_info.items()):
+        if te_name == lt_name or (
+            te_name in lt_name and te_name.endswith('/')):
+          # Only keep the first match when found.
+          test_info_map[lt_name]['te_info'] = te_info
+          break
+    return test_info_map
+
+  @staticmethod
+  def GetTestDescriptionFromSVN(test_location,
+                                root_path=DEFAULT_LAYOUTTEST_LOCATION):
+    """Get test description of a layout test from SVN.
+
+    Using urllib2.urlopen(), this method gets the entire HTML and extracts its
+    test description using |ExtractTestDescription()|.
+
+    Args:
+      test_location: the location of the layout test.
+      root_path: the root path of the Webkit SVN directory.
+
+    Returns:
+      A test description string.
+
+    Raises:
+      A URLError when the layout test is not available.
+    """
+    if test_location.endswith('.html'):
+      url = root_path + test_location
+      resp = urllib2.urlopen(url)
+      if resp.code == 200:
+        return LayoutTests.ExtractTestDescription(resp.read())
+      raise URLError('Fail to get layout test HTML file from %s.' % url)
