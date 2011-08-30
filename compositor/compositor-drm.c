@@ -274,12 +274,26 @@ drm_output_destroy(struct wlsc_output *output_base)
 		       &output->connector_id, 1, &origcrtc->mode);
 	drmModeFreeCrtc(origcrtc);
 
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+				  GL_COLOR_ATTACHMENT0,
+				  GL_RENDERBUFFER,
+				  0);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glDeleteRenderbuffers(2, output->rbo);
+
 	/* Destroy output buffers */
 	for (i = 0; i < 2; i++) {
 		drmModeRmFB(c->drm.fd, output->fb_id[i]);
 		c->base.destroy_image(c->base.display, output->image[i]);
 		gbm_bo_destroy(output->bo[i]);
 	}
+
+	c->crtc_allocator &= ~(1 << output->crtc_id);
+	c->connector_allocator &= ~(1 << output->connector_id);
+
+	wlsc_output_destroy(&output->base);
+	wl_list_remove(&output->base.link);
 
 	free(output);
 }
@@ -573,37 +587,6 @@ create_outputs(struct drm_compositor *ec, int option_connector)
 	return 0;
 }
 
-static int
-destroy_output(struct drm_output *output)
-{
-	struct drm_compositor *ec =
-		(struct drm_compositor *) output->base.compositor;
-	int i;
-
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-				  GL_COLOR_ATTACHMENT0,
-				  GL_RENDERBUFFER,
-				  0);
-
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glDeleteRenderbuffers(2, output->rbo);
-
-	for (i = 0; i < 2; i++) {
-		ec->base.destroy_image(ec->base.display, output->image[i]);
-		drmModeRmFB(ec->drm.fd, output->fb_id[i]);
-	}
-
-	ec->crtc_allocator &= ~(1 << output->crtc_id);
-	ec->connector_allocator &= ~(1 << output->connector_id);
-
-	wlsc_output_destroy(&output->base);
-	wl_list_remove(&output->base.link);
-
-	free(output);
-
-	return 0;
-}
-
 static void
 update_outputs(struct drm_compositor *ec)
 {
@@ -667,7 +650,7 @@ update_outputs(struct drm_compositor *ec)
 				printf("connector %d disconnected\n",
 				       output->connector_id);
 				x_offset += output->base.current->width;
-				destroy_output(output);
+				drm_output_destroy(&output->base);
 			}
 		}
 	}
