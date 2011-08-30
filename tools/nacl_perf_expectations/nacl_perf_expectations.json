@@ -119,7 +119,7 @@
  "nacl-lucid_64-newlib-x86_64-spec/spec2k/runtime_bzip2/nacl.opt.x8664": {"reva": 6006, "revb": 6147, "type": "absolute", "improve": 15, "regress": 19, "sha1": "7aa007d6"},
  "nacl-lucid_64-newlib-x86_64-spec/spec2k/runtime_crafty/nacl.opt.x8664": {"reva": 6006, "revb": 6147, "type": "absolute", "improve": 8, "regress": 11, "sha1": "c2c7550a"},
  "nacl-lucid_64-newlib-x86_64-spec/spec2k/runtime_eon/nacl.opt.x8664": {"reva": 6006, "revb": 6147, "type": "absolute", "improve": 4, "regress": 6, "sha1": "0717879b"},
- "nacl-lucid_64-newlib-x86_64-spec/spec2k/runtime_equake/nacl.opt.x8664": {"reva": 6006, "revb": 6147, "type": "absolute", "improve": 8, "regress": 10, "sha1": "efea221b"},
+ "nacl-lucid_64-newlib-x86_64-spec/spec2k/runtime_equake/nacl.opt.x8664": {"reva": 6365, "revb": 6586, "type": "absolute", "improve": 8, "regress": 11, "sha1": "7b191169"},
  "nacl-lucid_64-newlib-x86_64-spec/spec2k/runtime_gap/nacl.opt.x8664": {"reva": 6006, "revb": 6147, "type": "absolute", "improve": 2, "regress": 4, "sha1": "0a432fad"},
  "nacl-lucid_64-newlib-x86_64-spec/spec2k/runtime_gcc/nacl.opt.x8664": {"reva": 6006, "revb": 6147, "type": "absolute", "improve": 2, "regress": 3, "sha1": "4a59fca3"},
  "nacl-lucid_64-newlib-x86_64-spec/spec2k/runtime_gzip/nacl.opt.x8664": {"reva": 6006, "revb": 6147, "type": "absolute", "improve": 16, "regress": 20, "sha1": "68fe7646"},
