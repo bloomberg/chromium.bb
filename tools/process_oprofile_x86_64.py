@@ -89,10 +89,12 @@ def CheckIfInSelLdrRegion(line, cur_range_base):
     # The header of such a section should look like:
     #
     # 00000000 samples pct anon (tgid:22067 range:0xBASE-0xEND)
-    #   sel_ldr  anon (tgid:22067 range:...)
+    #   (sel_ldr or chrome) anon (tgid:22067 range:...)
     #
     # I.e., 10 fields...
-    if len(fields) == 10 and fields[6] == 'sel_ldr':
+    if (len(fields) == 10
+        and (fields[6] == 'sel_ldr' or fields[6] == 'chrome')
+        and ('anon' == fields[3])):
       Debug('Likely starting sel_ldr section: %s %s' % (fields[3], fields[6]))
       range_token = fields[9]
       range_re = re.compile('range:0x(' + ADDRESS_DIGIT + '+)-0x')
@@ -175,13 +177,13 @@ def GetAddressToEventSelLdr(fd, filter_events, untrusted_base):
   trusted_events = {}
   sel_ldr_range_base = None
   for line in fd:
-
     sel_ldr_range_base = CheckIfInSelLdrRegion(line, sel_ldr_range_base)
-    if sel_ldr_range_base and untrusted_base:
+    if sel_ldr_range_base:
       # If we've parsed the header of the region and know the base of
-      # this range, (and we know the base of the untrusted memory)
-      # start picking up event counts.
-      UpdateAddrEventMap(line, sel_ldr_range_base, untrusted_base,
+      # this range, start picking up event counts.
+      UpdateAddrEventMap(line,
+                         sel_ldr_range_base,
+                         untrusted_base,
                          addr_to_event)
     else:
       CheckTrustedRecord(line, trusted_events, filter_events)
@@ -409,6 +411,7 @@ def main(argv):
                                 'assembly=',
                                 'output=',
                                 'memmap=',
+                                'untrusted_base=',
                                 ])
     assembly_file = None
     assembly_fd = None
@@ -416,9 +419,12 @@ def main(argv):
     oprof_fd = None
     output = sys.stdout
     out_name = None
+    filter_events = False
+    # Get the untrusted base address from either a sel_ldr log
+    # which prints out the mapping, or from the command line directly.
     mapfile_name = None
     mapfile_fd = None
-    filter_events = False
+    untrusted_base = None
     for o, a in opts:
       if o in ('-l', '--oprofilelog'):
         oprof_log = a
@@ -435,35 +441,43 @@ def main(argv):
           mapfile_fd = open(mapfile_name, 'r')
         except IOError:
           pass
+      elif o in ('-b', '--untrusted_base'):
+        untrusted_base = a
       elif o == '-f':
         filter_events = True
       else:
         assert False, 'unhandled option'
 
-    untrusted_base = None
-    if mapfile_fd:
-      Debug('Parsing sel_ldr output for untrusted memory base: %s' %
-            mapfile_name)
-      untrusted_base = GetUntrustedBase(mapfile_fd)
+    if untrusted_base:
+      if mapfile_fd:
+        print 'Error: Specified both untrusted_base directly and w/ memmap file'
+        sys.exit(1)
+      untrusted_base = int(untrusted_base, 16)
     else:
-      assert False, 'Need sel_ldr output for untrusted memory base'
+      if mapfile_fd:
+        Debug('Parsing sel_ldr output for untrusted memory base: %s' %
+              mapfile_name)
+        untrusted_base = GetUntrustedBase(mapfile_fd)
+      else:
+        print 'Error: Need sel_ldr log --memmap or --untrusted_base.'
+        sys.exit(1)
     if assembly_file and oprof_log:
       Debug('Parsing assembly file of nexe: %s' % assembly_file)
       assembly_ranges = GetAssemblyRanges(assembly_fd)
       Debug('Parsing oprofile log: %s' % oprof_log)
-      address_to_events, trusted_events = GetAddressToEventSelLdr(oprof_fd,
-                                            filter_events, untrusted_base)
+      untrusted_events, trusted_events = \
+          GetAddressToEventSelLdr(oprof_fd, filter_events, untrusted_base)
       Debug('Printing the top functions (most events)')
-      PrintTopFunctions(assembly_ranges, address_to_events, trusted_events)
+      PrintTopFunctions(assembly_ranges, untrusted_events, trusted_events)
       Debug('Printing annotated assembly to %s (or stdout)' % out_name)
-      PrintAnnotatedAssembly(assembly_fd, address_to_events, output)
+      PrintAnnotatedAssembly(assembly_fd, untrusted_events, output)
     else:
       print 'Need assembly file(%s) and oprofile log(%s)!' \
           % (assembly_file, oprof_log)
-      sys.exit(2)
+      sys.exit(1)
   except getopt.GetoptError, err:
     print str(err)
-    sys.exit(2)
+    sys.exit(1)
 
 if __name__ == '__main__':
   main(sys.argv)
