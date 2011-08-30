@@ -301,7 +301,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // Queries the plugin for supported print formats and sets |format| to the
   // best format to use. Returns false if the plugin does not support any
   // print format that we can handle (we can handle raster and PDF).
-  bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat_Dev_0_4* format);
+  bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat_Dev* format);
   bool PrintPDFOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
   bool PrintRasterOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
 #if defined(OS_WIN)
@@ -396,7 +396,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
 
   // This is only valid between a successful PrintBegin call and a PrintEnd
   // call.
-  PP_PrintSettings_Dev_0_4 current_print_settings_;
+  PP_PrintSettings_Dev current_print_settings_;
 #if defined(OS_MACOSX)
   // On the Mac, when we draw the bitmap to the PDFContext, it seems necessary
   // to keep the pixels valid until CGContextEndPage is called. We use this
@@ -418,39 +418,8 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 #endif  // OS_LINUX || OS_WIN
 
-  // The plugin print interface.  This nested struct adds functions needed for
-  // backwards compatibility.
-  struct PPP_Printing_Dev_Combined : public PPP_Printing_Dev_0_4 {
-    // Conversion constructor for the most current interface.  Sets all old
-    // functions to NULL, so we know not to try to use them.
-    PPP_Printing_Dev_Combined(const PPP_Printing_Dev_0_4& base_if)
-        : PPP_Printing_Dev_0_4(base_if),
-          QuerySupportedFormats_0_3(NULL),
-          Begin_0_3(NULL) {}
-
-    // Conversion constructor for version 0.3.  Sets unsupported functions to
-    // NULL, so we know not to try to use them.
-    PPP_Printing_Dev_Combined(const PPP_Printing_Dev_0_3& old_if)
-        : PPP_Printing_Dev_0_4(),  // NOTE: The parens are important, to zero-
-                                   // initialize the struct.
-                                   // Except older version of g++ doesn't!
-                                   // So do it explicitly in the ctor.
-          QuerySupportedFormats_0_3(old_if.QuerySupportedFormats),
-          Begin_0_3(old_if.Begin) {
-      QuerySupportedFormats = NULL;
-      Begin = NULL;
-      PrintPages = old_if.PrintPages;
-      End = old_if.End;
-    }
-
-    // The 0.3 version of 'QuerySupportedFormats'.
-    PP_PrintOutputFormat_Dev_0_3* (*QuerySupportedFormats_0_3)(
-        PP_Instance instance, uint32_t* format_count);
-    // The 0.3 version of 'Begin'.
-    int32_t (*Begin_0_3)(PP_Instance instance,
-                         const PP_PrintSettings_Dev_0_3* print_settings);
-  };
-  scoped_ptr<PPP_Printing_Dev_Combined> plugin_print_interface_;
+  // The plugin print interface.
+  const PPP_Printing_Dev* plugin_print_interface_;
 
   // The plugin 3D interface.
   const PPP_Graphics3D_Dev* plugin_graphics_3d_interface_;
