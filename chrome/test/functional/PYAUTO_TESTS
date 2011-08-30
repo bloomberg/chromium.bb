@@ -118,6 +118,8 @@
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
+      # crbug.com/94683
+      '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
     ],
 
     'win': [
