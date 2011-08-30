@@ -554,6 +554,10 @@ add_config('arm-tegra2_arthur-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_arthur',
 }])
 
+add_config('arm-tegra2_asymptote-private-bin', [internal, arm, binary, {
+  'board' : 'tegra2_asymptote',
+}])
+
 add_config('arm-tegra2_dev-board-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_dev-board',
   'prebuilts' : False,
@@ -663,6 +667,11 @@ add_config('arm-tegra2_aebl-release', [
 add_config('arm-tegra2_arthur-release', [
     arm, internal, full, official, release, {
   'board' : 'tegra2_arthur',
+}])
+
+add_config('arm-tegra2_asymptote-release', [
+    arm, internal, full, official, release, {
+  'board' : 'tegra2_asymptote',
 }])
 
 add_config('arm-tegra2_kaen-release', [
