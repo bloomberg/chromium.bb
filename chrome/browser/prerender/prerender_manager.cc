@@ -299,7 +299,8 @@ bool PrerenderManager::AddPrerender(
   DCHECK(CalledOnValidThread());
 
   if (origin == ORIGIN_LINK_REL_PRERENDER &&
-      StartsWithASCII(referrer.host(), std::string("www.google."), true)) {
+      StartsWithASCII(referrer.host(), std::string("www.google."), true) &&
+      !StartsWithASCII(referrer.path(), std::string("/imgres"), true)) {
     origin = ORIGIN_GWS_PRERENDER;
   }
 
