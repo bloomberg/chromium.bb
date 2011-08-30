@@ -47,7 +47,7 @@ class PluginsTest(pyauto.PyUITest):
     if self.IsWin() or self.IsMac():
       plugins = plugins + [
          ('silverlight_new.html', 'Silverlight'),
-         ('quicktime.html', 'Quicktime'),
+         ('quicktime.html', 'QuickTime'),
          ('wmp_new.html', 'Windows Media'),
          ('real.html', 'RealPlayer'),
       ]
@@ -100,7 +100,7 @@ class PluginsTest(pyauto.PyUITest):
 
   def _PluginNeedsAuthorization(self, plugin_name):
     # These plug-ins seek permission to run
-    return plugin_name in ['Java', 'Quicktime', 'Windows Media']
+    return plugin_name in ['Java', 'QuickTime', 'Windows Media', 'RealPlayer']
 
   def testKillAndReloadAllPlugins(self):
     """Verify plugin processes and check if they can reload after killing."""
@@ -148,6 +148,8 @@ class PluginsTest(pyauto.PyUITest):
       url = self.GetFileURLForPath(
           os.path.join(self.DataDir(), 'plugin', fname))
       self.NavigateToURL(url)
+      self.assertTrue(self.WaitUntil(
+          lambda: self._GetPluginPID(plugin_name) is None ))
       self.assertFalse(self._GetPluginPID(plugin_name=plugin_name))
       if plugin_name == 'Shockwave Flash':
         continue  # cannot reload file:// flash URL - crbug.com/47249
