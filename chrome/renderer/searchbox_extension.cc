@@ -293,7 +293,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
   if (args.Length() && args[0]->IsArray()) {
     // For backwards compatibility, also accept an array of strings.
     // TODO(tonyg): Remove this when it is confirmed to be unused.
-    v8::Array* suggestions_array = v8::Array::Cast(*args[0]);
+    v8::Local<v8::Array> suggestions_array =
+        v8::Local<v8::Array>::Cast(args[0]);
     uint32_t length = suggestions_array->Length();
     for (uint32_t i = 0; i < length; i++) {
       std::string suggestion = *v8::String::Utf8Value(
@@ -303,7 +304,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
     }
   } else if (args.Length() && args[0]->IsObject()) {
     // Standard version, object argument.
-    v8::Object* suggestion_json = static_cast<v8::Object*>(*args[0]);
+    v8::Local<v8::Object> suggestion_json =
+        v8::Local<v8::Object>::Cast(args[0]);
     v8::Local<v8::Value> suggestions_field =
         suggestion_json->Get(v8::String::New("suggestions"));
 
