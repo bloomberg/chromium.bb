@@ -22,11 +22,13 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
+#include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Context3D_API;
+using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_VideoDecoder_API;
 
 namespace webkit {
@@ -51,40 +53,48 @@ PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
 
 // static
 PP_Resource PPB_VideoDecoder_Impl::Create(PP_Instance instance,
-                                          PP_Resource context3d_id,
+                                          PP_Resource graphics_context,
                                           const PP_VideoConfigElement* config) {
-  if (!context3d_id)
-    return 0;
-
-  EnterResourceNoLock<PPB_Context3D_API> enter_context(context3d_id, true);
-  if (enter_context.failed())
-    return 0;
+  PluginDelegate::PlatformContext3D* platform_context = NULL;
+  gpu::gles2::GLES2Implementation* gles2_impl = NULL;
+  EnterResourceNoLock<PPB_Context3D_API> enter_context(graphics_context, false);
+  if (enter_context.succeeded()) {
+    PPB_Context3D_Impl* context3d_impl =
+        static_cast<PPB_Context3D_Impl*>(enter_context.object());
+    platform_context = context3d_impl->platform_context();
+    gles2_impl = context3d_impl->gles2_impl();
+  } else {
+    EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context,
+                                                          true);
+    if (enter_context.failed())
+      return 0;
+    PPB_Graphics3D_Impl* graphics3d_impl =
+        static_cast<PPB_Graphics3D_Impl*>(enter_context.object());
+    platform_context = graphics3d_impl->platform_context();
+    gles2_impl = graphics3d_impl->gles2_impl();
+  }
 
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       new PPB_VideoDecoder_Impl(instance));
-  if (decoder->Init(context3d_id, enter_context.object(), config))
+  if (decoder->Init(graphics_context, platform_context, gles2_impl, config))
     return decoder->GetReference();
   return 0;
 }
 
-bool PPB_VideoDecoder_Impl::Init(PP_Resource context3d_id,
-                                 PPB_Context3D_API* context3d,
-                                 const PP_VideoConfigElement* config) {
-  if (!::ppapi::VideoDecoderImpl::Init(context3d_id, context3d, config))
+bool PPB_VideoDecoder_Impl::Init(
+    PP_Resource graphics_context,
+    PluginDelegate::PlatformContext3D* context,
+    gpu::gles2::GLES2Implementation* gles2_impl,
+    const PP_VideoConfigElement* config) {
+  InitCommon(graphics_context, gles2_impl);
+
+  int command_buffer_route_id = context->GetCommandBufferRouteId();
+  if (command_buffer_route_id == 0)
     return false;
 
   std::vector<int32> copied;
   if (!CopyConfigsToVector(config, &copied))
     return false;
-
-  PPB_Context3D_Impl* context3d_impl =
-      static_cast<PPB_Context3D_Impl*>(context3d);
-
-  int command_buffer_route_id =
-      context3d_impl->platform_context()->GetCommandBufferRouteId();
-  if (command_buffer_route_id == 0)
-    return false;
-
 
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)

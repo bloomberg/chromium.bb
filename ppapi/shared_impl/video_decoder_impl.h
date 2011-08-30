@@ -57,10 +57,9 @@ class PPAPI_SHARED_EXPORT VideoDecoderImpl
   // Tell command buffer to process all commands it has received so far.
   void FlushCommandBuffer();
 
-  // Initialize the underlying decoder and return success status.
-  virtual bool Init(PP_Resource context3d_id,
-                    thunk::PPB_Context3D_API* context,
-                    const PP_VideoConfigElement* dec_config);
+  // Initialize the underlying decoder.
+  void InitCommon(PP_Resource graphics_context,
+                  gpu::gles2::GLES2Implementation* gles2_impl);
 
  private:
   // Key: bitstream_buffer_id, value: callback to run when bitstream decode is
@@ -73,7 +72,7 @@ class PPAPI_SHARED_EXPORT VideoDecoderImpl
 
   // The resource ID of the underlying Context3d object being used.  Used only
   // for reference counting to keep it alive for the lifetime of |*this|.
-  PP_Resource context3d_id_;
+  PP_Resource graphics_context_;
 
   // Reference to the GLES2Implementation owned by |context3d_id_|.
   // Context3D is guaranteed to be alive for the lifetime of this class.

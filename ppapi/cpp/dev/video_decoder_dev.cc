@@ -8,6 +8,7 @@
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
+#include "ppapi/cpp/dev/graphics_3d_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -24,6 +25,15 @@ template <> const char* interface_name<PPB_VideoDecoder_Dev>() {
 
 VideoDecoder_Dev::VideoDecoder_Dev(const Instance& instance,
                                    const Context3D_Dev& context,
+                                   const PP_VideoConfigElement* config) {
+  if (!has_interface<PPB_VideoDecoder_Dev>())
+    return;
+  PassRefFromConstructor(get_interface<PPB_VideoDecoder_Dev>()->Create(
+      instance.pp_instance(), context.pp_resource(), config));
+}
+
+VideoDecoder_Dev::VideoDecoder_Dev(const Instance& instance,
+                                   const Graphics3D_Dev& context,
                                    const PP_VideoConfigElement* config) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return;

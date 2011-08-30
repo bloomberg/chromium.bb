@@ -24,7 +24,8 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
 
   // Creates a VideoDecoder object in the plugin process.
   static PP_Resource CreateProxyResource(PP_Instance instance,
-    PP_Resource context3d_id, const PP_VideoConfigElement* config);
+                                         PP_Resource graphics_context,
+                                         const PP_VideoConfigElement* config);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -37,7 +38,7 @@ class PPB_VideoDecoder_Proxy : public InterfaceProxy {
   // Message handlers in the renderer process to receive messages from the
   // plugin process.
   void OnMsgCreate(PP_Instance instance,
-                   const ppapi::HostResource& context3d_id,
+                   const ppapi::HostResource& graphics_context,
                    const std::vector<PP_VideoConfigElement>& config,
                    ppapi::HostResource* result);
   void OnMsgDecode(

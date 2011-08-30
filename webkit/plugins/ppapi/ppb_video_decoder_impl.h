@@ -48,7 +48,7 @@ class PPB_VideoDecoder_Impl : public ::ppapi::Resource,
   // See PPB_VideoDecoder_Dev::Create.  Returns 0 on failure to create &
   // initialize.
   static PP_Resource Create(PP_Instance instance,
-                            PP_Resource context3d_id,
+                            PP_Resource graphics_context,
                             const PP_VideoConfigElement* config);
 
   // Resource overrides.
@@ -77,14 +77,12 @@ class PPB_VideoDecoder_Impl : public ::ppapi::Resource,
   virtual void NotifyEndOfBitstreamBuffer(int32 buffer_id) OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
 
- protected:
-  // VideoDecoderImpl implementation.
-  virtual bool Init(PP_Resource context3d_id,
-                    ::ppapi::thunk::PPB_Context3D_API* context,
-                    const PP_VideoConfigElement* dec_config) OVERRIDE;
-
  private:
   explicit PPB_VideoDecoder_Impl(PP_Instance instance);
+  bool Init(PP_Resource graphics_context,
+            PluginDelegate::PlatformContext3D* context,
+            gpu::gles2::GLES2Implementation* gles2_impl,
+            const PP_VideoConfigElement* config);
 
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.

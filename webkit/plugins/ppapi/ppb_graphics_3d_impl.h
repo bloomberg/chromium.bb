@@ -57,6 +57,10 @@ class PPB_Graphics3D_Impl : public ::ppapi::Resource,
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
 
+  PluginDelegate::PlatformContext3D* platform_context() {
+    return platform_context_.get();
+  }
+
  protected:
   // ppapi::Graphics3DImpl overrides.
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;

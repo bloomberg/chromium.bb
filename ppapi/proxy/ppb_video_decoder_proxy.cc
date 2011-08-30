@@ -11,6 +11,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_context_3d_proxy.h"
+#include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
@@ -18,6 +19,7 @@
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
 using ppapi::thunk::PPB_Context3D_API;
+using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_VideoDecoder_API;
 
 namespace ppapi {
@@ -30,7 +32,7 @@ class VideoDecoder : public Resource, public VideoDecoderImpl {
   virtual ~VideoDecoder();
 
   static VideoDecoder* Create(const HostResource& resource,
-                              PP_Resource context3d_id,
+                              PP_Resource graphics_context,
                               const PP_VideoConfigElement* config);
 
   // Resource overrides.
@@ -206,7 +208,8 @@ bool PPB_VideoDecoder_Proxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
-    PP_Instance instance, PP_Resource context3d_id,
+    PP_Instance instance,
+    PP_Resource graphics_context,
     const PP_VideoConfigElement* config) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   // Dispatcher is null if it cannot find the instance passed to it (i.e. if the
@@ -218,12 +221,23 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
   if (!VideoDecoderImpl::CopyConfigsToVector(config, &copied))
     return 0;
 
-  EnterResourceNoLock<PPB_Context3D_API> enter_context(context3d_id, true);
-  if (enter_context.failed())
-    return 0;
-  Context3D* ppb_context =
-      static_cast<Context3D*>(enter_context.object());
-  HostResource host_context = ppb_context->host_resource();
+  HostResource host_context;
+  gpu::gles2::GLES2Implementation* gles2_impl = NULL;
+
+  EnterResourceNoLock<PPB_Context3D_API> enter_context(graphics_context, false);
+  if (enter_context.succeeded()) {
+    Context3D* context = static_cast<Context3D*>(enter_context.object());
+    host_context = context->host_resource();
+    gles2_impl = context->gles2_impl();
+  } else {
+    EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context,
+                                                          true);
+    if (enter_context.failed())
+      return 0;
+    Graphics3D* context = static_cast<Graphics3D*>(enter_context.object());
+    host_context = context->host_resource();
+    gles2_impl = context->gles2_impl();
+  }
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBVideoDecoder_Create(
@@ -234,13 +248,12 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
 
   // Need a scoped_refptr to keep the object alive during the Init call.
   scoped_refptr<VideoDecoder> decoder(new VideoDecoder(result));
-  if (!decoder->Init(context3d_id, enter_context.object(), config))
-    return 0;
+  decoder->InitCommon(graphics_context, gles2_impl);
   return decoder->GetReference();
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgCreate(
-    PP_Instance instance, const HostResource& context3d_id,
+    PP_Instance instance, const HostResource& graphics_context,
     const std::vector<PP_VideoConfigElement>& config,
     HostResource* result) {
   thunk::EnterFunction<thunk::ResourceCreationAPI> resource_creation(instance,
@@ -254,7 +267,7 @@ void PPB_VideoDecoder_Proxy::OnMsgCreate(
   // Make the resource and get the API pointer to its interface.
   result->SetHostResource(
       instance, resource_creation.functions()->CreateVideoDecoder(
-          instance, context3d_id.host_resource(), &copied.front()));
+          instance, graphics_context.host_resource(), &copied.front()));
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgDecode(
@@ -275,7 +288,7 @@ void PPB_VideoDecoder_Proxy::OnMsgAssignPictureBuffers(
   const PP_PictureBuffer_Dev* buffer_array = &buffers.front();
 
   ppb_video_decoder_target()->AssignPictureBuffers(
-     decoder.host_resource(), buffers.size(), buffer_array);
+      decoder.host_resource(), buffers.size(), buffer_array);
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgReusePictureBuffer(

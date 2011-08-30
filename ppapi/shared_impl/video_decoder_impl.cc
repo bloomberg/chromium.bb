@@ -19,30 +19,27 @@ namespace ppapi {
 VideoDecoderImpl::VideoDecoderImpl()
     : flush_callback_(PP_MakeCompletionCallback(NULL, NULL)),
       reset_callback_(PP_MakeCompletionCallback(NULL, NULL)),
-      context3d_id_(0),
+      graphics_context_(0),
       gles2_impl_(NULL) {
 }
 
 VideoDecoderImpl::~VideoDecoderImpl() {
 }
 
-bool VideoDecoderImpl::Init(PP_Resource context3d_id,
-                            PPB_Context3D_API* context3d,
-                            const PP_VideoConfigElement* decoder_config) {
-  if (!context3d || !decoder_config || !context3d_id)
-    return false;
-
-  DCHECK(!gles2_impl_ && !context3d_id_);
-  gles2_impl_ = context3d->GetGLES2Impl();
-  TrackerBase::Get()->GetResourceTracker()->AddRefResource(context3d_id);
-  context3d_id_ = context3d_id;
-  return true;
+void VideoDecoderImpl::InitCommon(
+    PP_Resource graphics_context,
+    gpu::gles2::GLES2Implementation* gles2_impl) {
+  DCHECK(graphics_context);
+  DCHECK(!gles2_impl_ && !graphics_context_);
+  gles2_impl_ = gles2_impl;
+  TrackerBase::Get()->GetResourceTracker()->AddRefResource(graphics_context);
+  graphics_context_ = graphics_context;
 }
 
 void VideoDecoderImpl::Destroy() {
-  context3d_id_ = 0;
+  graphics_context_ = 0;
   gles2_impl_ = NULL;
-  TrackerBase::Get()->GetResourceTracker()->ReleaseResource(context3d_id_);
+  TrackerBase::Get()->GetResourceTracker()->ReleaseResource(graphics_context_);
 }
 
 bool VideoDecoderImpl::SetFlushCallback(PP_CompletionCallback callback) {
