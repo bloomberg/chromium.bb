@@ -12,6 +12,9 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/sys_info.h"
+#include "base/values.h"
+#include "base/version.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_blacklist.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -78,6 +81,36 @@ ListValue* DxDiagNodeToList(const DxDiagNode& node) {
 }
 
 #endif  // OS_WIN
+
+std::string GetOSString() {
+  std::string rt;
+#if defined(OS_CHROMEOS)
+  rt = "ChromeOS";
+#elif defined(OS_WIN)
+  rt = "Win";
+  std::string version_str = base::SysInfo::OperatingSystemVersion();
+  size_t pos = version_str.find_first_not_of("0123456789.");
+  if (pos != std::string::npos)
+    version_str = version_str.substr(0, pos);
+  scoped_ptr<Version> os_version(Version::GetVersionFromString(version_str));
+  if (os_version.get() && os_version->components().size() >= 2) {
+    const std::vector<uint16>& version_numbers = os_version->components();
+    if (version_numbers[0] == 5)
+      rt += "XP";
+    else if (version_numbers[0] == 6 && version_numbers[1] == 0)
+      rt += "Vista";
+    else if (version_numbers[0] == 6 && version_numbers[1] == 1)
+      rt += "7";
+  }
+#elif defined(OS_LINUX)
+  rt = "Linux";
+#elif defined(OS_MACOSX)
+  rt = "Mac";
+#else
+  rt = "UnknownOS";
+#endif
+  return rt;
+}
 
 }  // namespace anonymous
 
@@ -364,24 +397,45 @@ void GpuDataManager::UpdateGpuFeatureFlags() {
         GpuBlacklist::kOsAny, NULL, gpu_info_);
   }
 
-  uint32 max_entry_id = gpu_blacklist->max_entry_id();
-  if (!gpu_feature_flags_.flags()) {
-    UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-        0, max_entry_id + 1);
-    return;
-  }
-
   // Notify clients that GpuInfo state has changed
   RunGpuInfoUpdateCallbacks();
 
-  // TODO(zmo): move histograming to GpuBlacklist::DetermineGpuFeatureFlags.
-  std::vector<uint32> flag_entries;
-  gpu_blacklist->GetGpuFeatureFlagEntries(
-      GpuFeatureFlags::kGpuFeatureAll, flag_entries);
-  DCHECK_GT(flag_entries.size(), 0u);
-  for (size_t i = 0; i < flag_entries.size(); ++i) {
+  uint32 flags = gpu_feature_flags_.flags();
+  uint32 max_entry_id = gpu_blacklist->max_entry_id();
+  if (flags == 0) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-        flag_entries[i], max_entry_id + 1);
+        0, max_entry_id + 1);
+  } else {
+    std::vector<uint32> flag_entries;
+    gpu_blacklist->GetGpuFeatureFlagEntries(
+        GpuFeatureFlags::kGpuFeatureAll, flag_entries);
+    DCHECK_GT(flag_entries.size(), 0u);
+    for (size_t i = 0; i < flag_entries.size(); ++i) {
+      UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
+          flag_entries[i], max_entry_id + 1);
+    }
+  }
+
+  const GpuFeatureFlags::GpuFeatureType kGpuFeatures[] = {
+      GpuFeatureFlags::kGpuFeatureAccelerated2dCanvas,
+      GpuFeatureFlags::kGpuFeatureAcceleratedCompositing,
+      GpuFeatureFlags::kGpuFeatureWebgl
+  };
+  const std::string kOSString = GetOSString();
+  const std::string kGpuBlacklistFeatureHistogramNames[] = {
+      "GPU.BlacklistAccelerated2dCanvasTestResults" + kOSString,
+      "GPU.BlacklistAcceleratedCompositingTestResults" + kOSString,
+      "GPU.BlacklistWebglTestResults" + kOSString
+  };
+  const size_t kNumFeatures =
+      sizeof(kGpuFeatures) / sizeof(GpuFeatureFlags::GpuFeatureType);
+  for (size_t i = 0; i < kNumFeatures; ++i) {
+    // We can't use UMA_HISTOGRAM_ENUMERATION here because the same name is
+    // expected if the macro is used within a loop.
+    base::Histogram* histogram_pointer = base::LinearHistogram::FactoryGet(
+        kGpuBlacklistFeatureHistogramNames[i], 1, 2, 3,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    histogram_pointer->Add((flags & kGpuFeatures[i]) ? 1 : 0);
   }
 }
 
