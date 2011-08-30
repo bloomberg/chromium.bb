@@ -109,9 +109,9 @@ void ExtensionAppProvider::RefreshAppList() {
 
 void ExtensionAppProvider::RegisterForNotifications() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 NotificationService::AllSources());
+                 Source<Profile>(profile_));
 }
 
 void ExtensionAppProvider::Observe(int type,

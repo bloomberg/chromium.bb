@@ -132,6 +132,7 @@ PromoResourceService::PromoResourceService(Profile* profile)
                          prefs::kNTPPromoResourceCacheUpdate,
                          kStartResourceFetchDelay,
                          kCacheUpdateDelay),
+      profile_(profile),
       web_resource_cache_(NULL),
       channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
   Init();
@@ -393,7 +394,7 @@ void PromoResourceService::UnpackWebStoreSignal(
 
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
-      Source<PromoResourceService>(this),
+      Source<Profile>(profile_),
       NotificationService::NoDetails());
 
   return;

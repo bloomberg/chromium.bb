@@ -424,7 +424,7 @@ void ExtensionManagementEventRouter::Init() {
   for (size_t i = 0; i < arraysize(types); i++) {
     registrar_.Add(this,
                    types[i],
-                   NotificationService::AllSources());
+                   Source<Profile>(profile_));
   }
 }
 
@@ -435,9 +435,7 @@ void ExtensionManagementEventRouter::Observe(
   const char* event_name = NULL;
   Profile* profile = Source<Profile>(source).ptr();
   CHECK(profile);
-  if (!profile_->IsSameProfile(profile)) {
-    return;
-  }
+  CHECK(profile_->IsSameProfile(profile));
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED:

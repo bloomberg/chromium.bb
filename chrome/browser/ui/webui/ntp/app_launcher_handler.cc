@@ -262,6 +262,10 @@ void AppLauncherHandler::Observe(int type,
 
   switch (type) {
     case chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED: {
+      Profile* profile = Source<Profile>(source).ptr();
+      if (!Profile::FromWebUI(web_ui_)->IsSameProfile(profile))
+        return;
+
       const std::string& id = *Details<const std::string>(details).ptr();
       const AppNotification* notification =
           extension_service_->app_notification_manager()->GetLast(id);
@@ -453,7 +457,8 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // b) Conceptually, it doesn't really make sense to count a
   //    prefchange-triggered refresh as a promo 'view'.
   AppsPromo* apps_promo = extension_service_->apps_promo();
-  PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  PrefService* prefs = profile->GetPrefs();
   bool apps_promo_just_expired = false;
   if (apps_promo->ShouldShowPromo(extension_service_->GetAppIds(),
                                   &apps_promo_just_expired)) {
@@ -490,15 +495,15 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
     registrar_.Add(this, chrome::NOTIFICATION_APP_NOTIFICATION_STATE_CHANGED,
         NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-        NotificationService::AllSources());
+        Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-        NotificationService::AllSources());
+        Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-        NotificationService::AllSources());
+        Source<ExtensionPrefs>(extension_service_->extension_prefs()));
     registrar_.Add(this, chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
-        NotificationService::AllSources());
+        Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-        NotificationService::AllSources());
+        Source<Profile>(profile));
   }
 
   has_loaded_apps_ = true;

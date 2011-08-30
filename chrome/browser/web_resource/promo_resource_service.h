@@ -192,6 +192,9 @@ class PromoResourceService
   //   answer_id: the promo's id
   void UnpackWebStoreSignal(const base::DictionaryValue& parsed_json);
 
+  // The profile this service belongs to.
+  Profile* profile_;
+
   // Gets mutable dictionary attached to user's preferences, so that we
   // can write resource data back to user's pref file.
   base::DictionaryValue* web_resource_cache_;
