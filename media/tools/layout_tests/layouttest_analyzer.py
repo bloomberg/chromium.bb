@@ -26,6 +26,9 @@ DEFAULT_GRAPH_FILE = os.path.join('graph', 'graph.html')
 CURRENT_RESULT_FILE_FOR_DEBUG = os.path.join(RESULT_DIR, '2011-08-19-21')
 PREV_TIME_FOR_DEBUG = '2011-08-19-11'
 
+DEFAULT_TEST_GROUP_FILE = os.path.join('testname', 'media.csv')
+DEFAULT_TEST_GROUP_NAME = 'media'
+
 
 def parse_option():
     """Parse command-line options using OptionParser.
@@ -48,7 +51,9 @@ def parse_option():
                              action='store_true', default=False)
     option_parser.add_option('-t', '--trend-graph-location',
                              dest='trend_graph_location',
-                             help=('trend graph location ',
+                             help=('Location of the bug trend file; '
+                                   'file is expected to be in Google '
+                                   'Visualization API trend-line format '
                                    '(defaults to %default)'),
                              default=DEFAULT_GRAPH_FILE)
     option_parser.add_option('-a', '--bug-anno-file-location',
@@ -57,6 +62,17 @@ def parse_option():
                                    'file is expected to be in CSV format '
                                    '(default to %default)'),
                              default=DEFAULT_ANNO_FILE)
+    option_parser.add_option('-n', '--test-group-file-location',
+                             dest='test_group_file_location',
+                             help=('Location of the test group file; '
+                                   'file is expected to be in CSV format '
+                                   '(default to %default)'),
+                             default=DEFAULT_TEST_GROUP_FILE)
+    option_parser.add_option('-x', '--test-group-name',
+                             dest='test_group_name',
+                             help=('Name of test group '
+                                   '(default to %default)'),
+                             default=DEFAULT_TEST_GROUP_NAME)
     return option_parser.parse_args()[0]
 
 
@@ -67,8 +83,7 @@ def main():
 
   # Do the main analysis.
   if not options.debug:
-    layouttests = LayoutTests(csv_file_path=os.path.join('testname',
-                                                         'media.csv'))
+    layouttests = LayoutTests(csv_file_path=options.test_group_file_location)
     analyzer_result_map = layouttest_analyzer_helpers.AnalyzerResultMap(
         layouttests.JoinWithTestExpectation(TestExpectations()))
     (prev_time, prev_analyzer_result_map) = (
@@ -93,7 +108,8 @@ def main():
   layouttest_analyzer_helpers.SendStatusEmail(prev_time, analyzer_result_map,
                                               prev_analyzer_result_map,
                                               anno_map,
-                                              options.receiver_email_address)
+                                              options.receiver_email_address,
+                                              options.test_group_name)
   if not options.debug:
     # Save the current result.
     date = start_time.strftime('%Y-%m-%d-%H')

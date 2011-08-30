@@ -265,7 +265,7 @@ class AnalyzerResultMap:
 
 
 def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
-                    bug_anno_map, receiver_email_address):
+                    bug_anno_map, receiver_email_address, test_group_name):
   """Send status email.
 
   Args:
@@ -277,6 +277,7 @@ def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
     bug_anno_map: bug annotation map where bug name and annotations are
          stored.
     receiver_email_address: receiver's email address.
+    test_group_name: string representing the test group name (e.g., 'media').
   """
   diff_map = analyzer_result_map.CompareToOtherResultMap(
       prev_analyzer_result_map)
@@ -310,9 +311,11 @@ def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
       str += '</ul></ul>'
   localtime = time.asctime(time.localtime(time.time()))
   # TODO(imasaki): remove my name from here.
+  subject = 'Layout Test Analyzer Result (%s): %s' % (test_group_name,
+                                                      localtime)
   SendEmail('imasaki@chromium.org', 'Kenji Imasaki',
-            [receiver_email_address], ['Layout Test Analyzer Result'],
-            'Layout Test Analyzer Result : ' + localtime, str)
+            [receiver_email_address], ['Layout Test Analyzer Result'], subject,
+            str)
 
 
 def SendEmail(sender_email_address, sender_name, receivers_email_addresses,
@@ -369,20 +372,28 @@ def FindLatestTime(time_list):
   |RESULT_DIR|.
 
   Args:
-    time_list: a list of time string in the form of '2011-10-23-23'.
+    time_list: a list of time string in the form of 'Year-Month-Day-Hour'
+        (e.g., 2011-10-23-23). Strings not in this format are ignored.
 
   Returns:
      a string representing latest time among the time_list or None if
-         |time_list| is empty.
+         |time_list| is empty or no valid date string in |time_list|.
   """
   if not time_list:
     return None
   latest_date = None
   for t in time_list:
-    item_date = datetime.strptime(t, '%Y-%m-%d-%H')
-    if latest_date == None or latest_date < item_date:
-      latest_date = item_date
-  return latest_date.strftime('%Y-%m-%d-%H')
+    try:
+      item_date = datetime.strptime(t, '%Y-%m-%d-%H')
+      if latest_date == None or latest_date < item_date:
+        latest_date = item_date
+    except ValueError:
+      # Do nothing.
+      pass
+  if latest_date:
+    return latest_date.strftime('%Y-%m-%d-%H')
+  else:
+    return None
 
 
 def FindLatestResult(result_dir):

@@ -15,9 +15,19 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
 
   def testFindLatestTime(self):
     time_list = ['2011-08-18-19', '2011-08-18-22', '2011-08-18-21',
-                 '2012-01-11-21']
+                 '2012-01-11-21', '.foo']
     self.assertEquals(layouttest_analyzer_helpers.FindLatestTime(time_list),
                       '2012-01-11-21')
+
+  def testFindLatestTimeWithEmptyList(self):
+    time_list = []
+    self.assertEquals(layouttest_analyzer_helpers.FindLatestTime(time_list),
+                      None)
+
+  def testFindLatestTimeWithNoValidStringInList(self):
+    time_list = ['.foo1', '232232']
+    self.assertEquals(layouttest_analyzer_helpers.FindLatestTime(time_list),
+                      None)
 
   def GenerateTestDataWholeAndSkip(self):
     """You should call this method if you want to generate test data."""
