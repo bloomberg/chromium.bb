@@ -61,7 +61,9 @@ class BrowserView : public ::BrowserView,
   virtual void FocusChromeOSStatus() OVERRIDE;
   virtual views::LayoutManager* CreateLayoutManager() const OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const OVERRIDE;
+  virtual bool GetSavedWindowPlacement(
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE;
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;

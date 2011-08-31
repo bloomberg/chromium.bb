@@ -110,16 +110,16 @@ WindowOpenDisposition PanelBrowserView::GetDispositionForPopupBounds(
   return chromeos::BrowserView::DispositionForPopupBounds(bounds);
 }
 
-bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
-  bool res = ::BrowserView::GetSavedWindowBounds(bounds);
-  if (res)
+bool PanelBrowserView::GetSavedWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
+  bool result = ::BrowserView::GetSavedWindowPlacement(bounds, show_state);
+  if (result) {
     LimitBounds(bounds);
-  return res;
-}
-
-bool PanelBrowserView::GetSavedMaximizedState(bool* maximized) const {
-  // Panels have no maximized state.
-  return false;
+    // Panels have no maximized state.
+    *show_state = ui::SHOW_STATE_NORMAL;
+  }
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

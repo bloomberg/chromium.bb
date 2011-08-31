@@ -1004,8 +1004,9 @@ void NativeWidgetGtk::CenterWindow(const gfx::Size& size) {
   SetBoundsConstrained(bounds, NULL);
 }
 
-void NativeWidgetGtk::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                                       bool* maximized) const {
+void NativeWidgetGtk::GetWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* show_state) const {
   // Do nothing for now. ChromeOS isn't yet saving window placement.
 }
 
@@ -1186,9 +1187,9 @@ void NativeWidgetGtk::ShowMaximizedWithBounds(
   Show();
 }
 
-void NativeWidgetGtk::ShowWithState(ShowState state) {
+void NativeWidgetGtk::ShowWithWindowState(ui::WindowShowState show_state) {
   // No concept of maximization (yet) on ChromeOS.
-  if (state == internal::NativeWidgetPrivate::SHOW_INACTIVE)
+  if (show_state == ui::SHOW_STATE_INACTIVE)
     gtk_window_set_focus_on_map(GetNativeWindow(), false);
   gtk_widget_show(GetNativeView());
 }
@@ -2076,10 +2077,14 @@ void NativeWidgetGtk::SaveWindowPosition() {
   if (!GetWidget()->widget_delegate())
     return;
 
-  bool maximized = window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
+  ui::WindowShowState show_state = ui::SHOW_STATE_NORMAL;
+  if (IsMaximized())
+    show_state = ui::SHOW_STATE_MAXIMIZED;
+  else if (IsMinimized())
+    show_state = ui::SHOW_STATE_MINIMIZED;
   GetWidget()->widget_delegate()->SaveWindowPlacement(
       GetWidget()->GetWindowScreenBounds(),
-      maximized);
+      show_state);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

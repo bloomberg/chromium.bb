@@ -16,7 +16,8 @@ enum WindowShowState {
   SHOW_STATE_NORMAL     = 1,
   SHOW_STATE_MINIMIZED  = 2,
   SHOW_STATE_MAXIMIZED  = 3,
-  SHOW_STATE_MAX        = 4
+  SHOW_STATE_INACTIVE   = 4, // Views only, not persisted.
+  SHOW_STATE_MAX        = 5
 };
 
 }  // namespace ui

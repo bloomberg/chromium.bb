@@ -48,8 +48,7 @@ void BrowserFrame::InitBrowserFrame() {
     // Typed panel/popup can only return a size once the widget has been
     // created.
     params.bounds = browser_view_->browser()->GetSavedWindowBounds();
-    params.maximize = browser_view_->browser()->GetSavedWindowShowState() ==
-                          ui::SHOW_STATE_MAXIMIZED;
+    params.show_state = browser_view_->browser()->GetSavedWindowShowState();
   }
   Init(params);
 #if defined(OS_CHROMEOS)

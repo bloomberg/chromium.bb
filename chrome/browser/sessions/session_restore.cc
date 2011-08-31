@@ -598,6 +598,15 @@ class SessionRestoreImpl : public NotificationObserver {
     // tabbed browsers exist.
     Browser* last_browser = NULL;
     bool has_tabbed_browser = false;
+
+    // Determine if there is a visible window.
+    bool has_visible_browser = false;
+    for (std::vector<SessionWindow*>::iterator i = windows->begin();
+         i != windows->end(); ++i) {
+      if ((*i)->show_state != ui::SHOW_STATE_MINIMIZED)
+        has_visible_browser = true;
+    }
+
     for (std::vector<SessionWindow*>::iterator i = windows->begin();
          i != windows->end(); ++i) {
       Browser* browser = NULL;
@@ -613,10 +622,15 @@ class SessionRestoreImpl : public NotificationObserver {
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
         "SessionRestore-CreateRestoredBrowser-Start", false);
 #endif
+        // Show the first window if none are visible.
+        ui::WindowShowState show_state = (*i)->show_state;
+        if (!has_visible_browser) {
+          show_state = ui::SHOW_STATE_NORMAL;
+          has_visible_browser = true;
+        }
+
         browser = CreateRestoredBrowser(
-            static_cast<Browser::Type>((*i)->type),
-            (*i)->bounds,
-            (*i)->show_state);
+            static_cast<Browser::Type>((*i)->type), (*i)->bounds, show_state);
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
         "SessionRestore-CreateRestoredBrowser-End", false);
