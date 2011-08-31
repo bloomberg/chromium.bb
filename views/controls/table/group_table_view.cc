@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ static const int kSeparatorLineThickness = 1;
 const char GroupTableView::kViewClassName[] = "views/GroupTableView";
 
 GroupTableView::GroupTableView(GroupTableModel* model,
-                               const std::vector<TableColumn>& columns,
+                               const std::vector<ui::TableColumn>& columns,
                                TableTypes table_type,
                                bool single_selection,
                                bool resizable_columns,

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,9 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-using ui::TableColumn;
+namespace ui {
+struct TableColumn;
+}
 
 namespace views {
 
@@ -23,7 +25,7 @@ class NativeTableWrapper {
   virtual int GetRowCount() const = 0;
 
   // Inserts/removes a column at the specified index.
-  virtual void InsertColumn(const TableColumn& column, int index) = 0;
+  virtual void InsertColumn(const ui::TableColumn& column, int index) = 0;
   virtual void RemoveColumn(int index) = 0;
 
   // Returns the number of rows that are selected.

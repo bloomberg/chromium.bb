@@ -6,18 +6,16 @@
 #define VIEWS_CONTROLS_TABLE_TABLE_VIEW2_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <map>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
-#include "ui/gfx/rect.h"
-#include "views/controls/table/table_view.h"
-#include "views/controls/table/native_table_wrapper.h"
-#include "views/view.h"
+#include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/table_model_observer.h"
+#include "ui/gfx/canvas.h"
+#include "views/controls/table/native_table_wrapper.h"
+#include "views/controls/table/table_view.h"
+#include "views/view.h"
 
 class SkBitmap;
 
@@ -25,9 +23,6 @@ namespace ui {
 struct TableColumn;
 class TableModel;
 }
-using ui::TableColumn;
-using ui::TableModel;
-using ui::TableModelObserver; // TODO(beng): remove these.
 
 // A TableView2 is a view that displays multiple rows with any number of
 // columns.
@@ -53,7 +48,7 @@ class TableView;
 class TableViewObserver;
 class View;
 
-class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
+class VIEWS_EXPORT TableView2 : public View, public ui::TableModelObserver {
  public:
   typedef TableSelectionIterator iterator;
 
@@ -91,7 +86,7 @@ class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
   // probably not a good idea, as there is no way for the user to increase a
   // column's size in that case.
   // |options| is a bitmask of options. See comments at Options.
-  TableView2(TableModel* model, const std::vector<TableColumn>& columns,
+  TableView2(ui::TableModel* model, const std::vector<ui::TableColumn>& columns,
              TableTypes table_type, int options);
   virtual ~TableView2();
 
@@ -99,8 +94,8 @@ class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
   // If |model| is NULL, the table view cannot be used after this call. This
   // should be called in the containing view's destructor to avoid destruction
   // issues when the model needs to be deleted before the table.
-  void SetModel(TableModel* model);
-  TableModel* model() const { return model_; }
+  void SetModel(ui::TableModel* model);
+  ui::TableModel* model() const { return model_; }
 
   // Returns the number of rows in the table.
   int GetRowCount();
@@ -140,7 +135,7 @@ class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
   iterator SelectionBegin();
   iterator SelectionEnd();
 
-  // TableModelObserver methods.
+  // ui::TableModelObserver methods.
   virtual void OnModelChanged();
   virtual void OnItemsChanged(int start, int length);
   virtual void OnItemsAdded(int start, int length);
@@ -153,8 +148,8 @@ class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
 
   // Replaces the set of known columns without changing the current visible
   // columns.
-  void SetColumns(const std::vector<TableColumn>& columns);
-  void AddColumn(const TableColumn& col);
+  void SetColumns(const std::vector<ui::TableColumn>& columns);
+  void AddColumn(const ui::TableColumn& col);
   bool HasColumn(int id);
 
   // Sets which columns (by id) are displayed.  All transient size and position
@@ -163,7 +158,7 @@ class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
   void SetColumnVisibility(int id, bool is_visible);
   bool IsColumnVisible(int id) const;
 
-  TableColumn GetVisibleColumnAt(int index);
+  ui::TableColumn GetVisibleColumnAt(int index);
   size_t GetVisibleColumnCount();
 
   // Resets the size of the columns based on the sizes passed to the
@@ -207,8 +202,11 @@ class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
 
  private:
+  friend class ListViewParent;
+  friend class TableSelectionIterator;
+
   // Used in the constructors.
-  void Init(const std::vector<TableColumn>& columns);
+  void Init(const std::vector<ui::TableColumn>& columns);
 
   // We need this wrapper to pass the table view to the windows proc handler
   // when subclassing the list view and list view header, as the reinterpret
@@ -219,16 +217,13 @@ class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
     TableView2* table_view;
   };
 
-  friend class ListViewParent;
-  friend class TableSelectionIterator;
-
   // Adds a new column.
-  void InsertColumn(const TableColumn& tc, int index);
+  void InsertColumn(const ui::TableColumn& tc, int index);
 
   // Update headers and internal state after columns have changed
   void OnColumnsChanged();
 
-  TableModel* model_;
+  ui::TableModel* model_;
   TableTypes table_type_;
   TableViewObserver* table_view_observer_;
 
@@ -237,7 +232,7 @@ class VIEWS_EXPORT TableView2 : public View, public TableModelObserver {
   std::vector<int> visible_columns_;
 
   // Mapping of an int id to a TableColumn representing all possible columns.
-  std::map<int, TableColumn> all_columns_;
+  std::map<int, ui::TableColumn> all_columns_;
 
   // Cached value of columns_.size()
   int column_count_;

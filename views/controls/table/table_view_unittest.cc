@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // For WinDDK ATL compatibility, these ATL headers must come first.
+
 #include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <atlbase.h>  // NOLINT
 #include <atlwin.h>  // NOLINT
@@ -23,9 +25,6 @@
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 
-using ui::TableModel;
-using ui::TableModelObserver;  // TODO(beng): remove these
-
 // Put the tests in the views namespace to make it easier to declare them as
 // friend classes.
 namespace views {
@@ -40,7 +39,7 @@ namespace views {
 // 0, 1
 // 1, 1
 // 2, 2
-class TestTableModel : public TableModel {
+class TestTableModel : public ui::TableModel {
  public:
   TestTableModel();
 
@@ -53,14 +52,14 @@ class TestTableModel : public TableModel {
   // Changes the values of the row at |row|.
   void ChangeRow(int row, int c1_value, int c2_value);
 
-  // TableModel
+  // ui::TableModel:
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column_id) OVERRIDE;
-  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
 
  private:
-  TableModelObserver* observer_;
+  ui::TableModelObserver* observer_;
 
   // The data.
   std::vector<std::vector<int> > rows_;
@@ -127,7 +126,7 @@ string16 TestTableModel::GetText(int row, int column_id) {
   return UTF8ToUTF16(base::IntToString(rows_[row][column_id]));
 }
 
-void TestTableModel::SetObserver(TableModelObserver* observer) {
+void TestTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
 }
 
@@ -186,7 +185,7 @@ class TableViewTest : public testing::Test, views::WidgetDelegate {
 void TableViewTest::SetUp() {
   OleInitialize(NULL);
   model_.reset(CreateModel());
-  std::vector<TableColumn> columns;
+  std::vector<ui::TableColumn> columns;
   columns.resize(2);
   columns[0].id = 0;
   columns[1].id = 1;
@@ -513,7 +512,7 @@ void TableView2Test::SetUp() {
   OleInitialize(NULL);
 #endif
   model_.reset(CreateModel());
-  std::vector<TableColumn> columns;
+  std::vector<ui::TableColumn> columns;
   columns.resize(2);
   columns[0].id = 0;
   columns[1].id = 1;

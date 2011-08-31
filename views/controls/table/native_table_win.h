@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,6 @@
 #include "views/controls/table/native_table_wrapper.h"
 
 typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
-
-using ui::TableColumn;
 
 namespace views {
 
@@ -31,7 +29,7 @@ class NativeTableWin : public NativeControlWin, public NativeTableWrapper {
   virtual View* GetView();
   virtual void SetFocus();
   virtual gfx::NativeView GetTestingHandle() const;
-  virtual void InsertColumn(const TableColumn& column, int index);
+  virtual void InsertColumn(const ui::TableColumn& column, int index);
   virtual void RemoveColumn(int index);
   virtual int GetColumnWidth(int column_index) const;
   virtual void SetColumnWidth(int column_index, int width);

@@ -20,8 +20,6 @@
 #include "views/controls/table/table_view_observer.h"
 #include "views/widget/widget.h"
 
-using ui::TableColumn;
-
 namespace views {
 
 // Added to column width to prevent truncation.
@@ -59,7 +57,7 @@ int NativeTableWin::GetRowCount() const {
   return ListView_GetItemCount(native_view());
 }
 
-void NativeTableWin::InsertColumn(const TableColumn& tc, int index) {
+void NativeTableWin::InsertColumn(const ui::TableColumn& tc, int index) {
   if (!native_view())
     return;
 
@@ -67,13 +65,13 @@ void NativeTableWin::InsertColumn(const TableColumn& tc, int index) {
   column.mask = LVCF_TEXT|LVCF_FMT;
   column.pszText = const_cast<LPWSTR>(tc.title.c_str());
   switch (tc.alignment) {
-      case TableColumn::LEFT:
+      case ui::TableColumn::LEFT:
         column.fmt = LVCFMT_LEFT;
         break;
-      case TableColumn::RIGHT:
+      case ui::TableColumn::RIGHT:
         column.fmt = LVCFMT_RIGHT;
         break;
-      case TableColumn::CENTER:
+      case ui::TableColumn::CENTER:
         column.fmt = LVCFMT_CENTER;
         break;
       default:
@@ -292,7 +290,7 @@ bool NativeTableWin::ProcessMessage(UINT message, WPARAM w_param,
         break;
 
       case LVN_COLUMNCLICK: {
-        const TableColumn& column = table_->GetVisibleColumnAt(
+        const ui::TableColumn& column = table_->GetVisibleColumnAt(
             reinterpret_cast<NMLISTVIEW*>(hdr)->iSubItem);
         break;
       }
@@ -585,7 +583,7 @@ void NativeTableWin::UpdateListViewCache(int start, int length, bool add) {
     item.mask |= LVIF_IMAGE;
 
   for (size_t j = start_column; j < table_->GetVisibleColumnCount(); ++j) {
-    TableColumn col = table_->GetVisibleColumnAt(j);
+    ui::TableColumn col = table_->GetVisibleColumnAt(j);
     int max_text_width = ListView_GetStringWidth(native_view(),
                                                  col.title.c_str());
     for (int i = start; i < max_row; ++i) {

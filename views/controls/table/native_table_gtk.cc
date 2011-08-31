@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ gfx::NativeView NativeTableGtk::GetTestingHandle() const {
   return GTK_WIDGET(tree_view_);
 }
 
-void NativeTableGtk::InsertColumn(const TableColumn& column, int index) {
+void NativeTableGtk::InsertColumn(const ui::TableColumn& column, int index) {
   NOTIMPLEMENTED();
 }
 
@@ -292,14 +292,15 @@ void NativeTableGtk::CreateNativeControl() {
   gtk_widget_show_all(native_view());
 }
 
-void NativeTableGtk::InsertTextColumn(const TableColumn& column, int index) {
+void NativeTableGtk::InsertTextColumn(const ui::TableColumn& column,
+                                      int index) {
   GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_insert_column_with_attributes(tree_view_, -1,
                                               UTF16ToUTF8(column.title).c_str(),
                                               renderer, "text", index, NULL);
 }
 
-void NativeTableGtk::InsertIconAndTextColumn(const TableColumn& column,
+void NativeTableGtk::InsertIconAndTextColumn(const ui::TableColumn& column,
                                              int index) {
   // If necessary we could support more than 1 icon and text column and we could
   // make it so it does not have to be the 1st column.

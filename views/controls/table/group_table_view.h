@@ -22,7 +22,7 @@ struct GroupRange {
 };
 
 // The model driving the GroupTableView.
-class GroupTableModel : public TableModel {
+class GroupTableModel : public ui::TableModel {
  public:
   // Populates the passed range with the first row/last row (included)
   // that this item belongs to.
@@ -35,7 +35,7 @@ class VIEWS_EXPORT GroupTableView : public TableView {
    static const char kViewClassName[];
 
   GroupTableView(GroupTableModel* model,
-                 const std::vector<TableColumn>& columns,
+                 const std::vector<ui::TableColumn>& columns,
                  TableTypes table_type, bool single_selection,
                  bool resizable_columns, bool autosize_columns,
                  bool draw_group_separators);

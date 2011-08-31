@@ -26,8 +26,6 @@
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/table/table_view_observer.h"
 
-using ui::TableColumn;
-
 namespace {
 
 int GetViewIndexFromPoint(HWND window, const gfx::Point& p) {
@@ -51,8 +49,8 @@ const int kListViewIconWidthAndPadding = 18;
 // static
 const int TableView::kImageSize = 18;
 
-TableView::TableView(TableModel* model,
-                     const std::vector<TableColumn>& columns,
+TableView::TableView(ui::TableModel* model,
+                     const std::vector<ui::TableColumn>& columns,
                      TableTypes table_type,
                      bool single_selection,
                      bool resizable_columns,
@@ -74,8 +72,8 @@ TableView::TableView(TableModel* model,
       ALLOW_THIS_IN_INITIALIZER_LIST(table_view_wrapper_(this)),
       custom_cell_font_(NULL),
       content_offset_(0) {
-  for (std::vector<TableColumn>::const_iterator i = columns.begin();
-      i != columns.end(); ++i) {
+  for (std::vector<ui::TableColumn>::const_iterator i = columns.begin();
+       i != columns.end(); ++i) {
     AddColumn(*i);
     visible_columns_.push_back(i->id);
   }
@@ -90,7 +88,7 @@ TableView::~TableView() {
     DeleteObject(custom_cell_font_);
 }
 
-void TableView::SetModel(TableModel* model) {
+void TableView::SetModel(ui::TableModel* model) {
   if (model == model_)
     return;
 
@@ -358,18 +356,18 @@ void TableView::OnItemsRemoved(int start, int length) {
     table_view_observer_->OnSelectionChanged();
 }
 
-void TableView::AddColumn(const TableColumn& col) {
+void TableView::AddColumn(const ui::TableColumn& col) {
   DCHECK_EQ(0u, all_columns_.count(col.id));
   all_columns_[col.id] = col;
 }
 
-void TableView::SetColumns(const std::vector<TableColumn>& columns) {
+void TableView::SetColumns(const std::vector<ui::TableColumn>& columns) {
   // Remove the currently visible columns.
   while (!visible_columns_.empty())
     SetColumnVisibility(visible_columns_.front(), false);
 
   all_columns_.clear();
-  for (std::vector<TableColumn>::const_iterator i = columns.begin();
+  for (std::vector<ui::TableColumn>::const_iterator i = columns.begin();
        i != columns.end(); ++i) {
     AddColumn(*i);
   }
@@ -414,7 +412,7 @@ void TableView::SetColumnVisibility(int id, bool is_visible) {
   }
   if (is_visible) {
     visible_columns_.push_back(id);
-    TableColumn& column = all_columns_[id];
+    ui::TableColumn& column = all_columns_[id];
     InsertColumn(column, column_count_);
     if (column.min_visible_width == 0) {
       // ListView_GetStringWidth must be padded or else truncation will occur.
@@ -460,7 +458,7 @@ bool TableView::IsColumnVisible(int id) const {
   return false;
 }
 
-const TableColumn& TableView::GetColumnAtPosition(int pos) {
+const ui::TableColumn& TableView::GetColumnAtPosition(int pos) {
   return all_columns_[visible_columns_[pos]];
 }
 
@@ -765,8 +763,7 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
   // If there's only one column and the title string is empty, don't show a
   // header.
   if (all_columns_.size() == 1) {
-    std::map<int, TableColumn>::const_iterator first =
-        all_columns_.begin();
+    std::map<int, ui::TableColumn>::const_iterator first = all_columns_.begin();
     if (first->second.title.empty())
       style |= LVS_NOCOLUMNHEADER;
   }
@@ -975,7 +972,7 @@ void TableView::ResetColumnSortImage(int column_id, SortDirection direction) {
   Header_SetItem(header, column_index, &header_item);
 }
 
-void TableView::InsertColumn(const TableColumn& tc, int index) {
+void TableView::InsertColumn(const ui::TableColumn& tc, int index) {
   if (!list_view_)
     return;
 
@@ -983,13 +980,13 @@ void TableView::InsertColumn(const TableColumn& tc, int index) {
   column.mask = LVCF_TEXT|LVCF_FMT;
   column.pszText = const_cast<LPWSTR>(tc.title.c_str());
   switch (tc.alignment) {
-      case TableColumn::LEFT:
+      case ui::TableColumn::LEFT:
         column.fmt = LVCFMT_LEFT;
         break;
-      case TableColumn::RIGHT:
+      case ui::TableColumn::RIGHT:
         column.fmt = LVCFMT_RIGHT;
         break;
-      case TableColumn::CENTER:
+      case ui::TableColumn::CENTER:
         column.fmt = LVCFMT_CENTER;
         break;
       default:
@@ -1047,7 +1044,7 @@ LRESULT TableView::OnNotify(int w_param, LPNMHDR hdr) {
       break;
 
     case LVN_COLUMNCLICK: {
-      const TableColumn& column = GetColumnAtPosition(
+      const ui::TableColumn& column = GetColumnAtPosition(
           reinterpret_cast<NMLISTVIEW*>(hdr)->iSubItem);
       if (column.sortable)
         ToggleSortOrder(column.id);
@@ -1327,7 +1324,7 @@ void TableView::ResetColumnSizes() {
 
   for (std::vector<int>::const_iterator i = visible_columns_.begin();
        i != visible_columns_.end(); ++i) {
-    TableColumn& col = all_columns_[*i];
+    ui::TableColumn& col = all_columns_[*i];
     int col_index = static_cast<int>(i - visible_columns_.begin());
     if (col.width == -1) {
       if (col.percent > 0) {
@@ -1345,7 +1342,7 @@ void TableView::ResetColumnSizes() {
   int available_width = width - fixed_width - autosize_width;
   for (std::vector<int>::const_iterator i = visible_columns_.begin();
        i != visible_columns_.end(); ++i) {
-    TableColumn& col = all_columns_[*i];
+    ui::TableColumn& col = all_columns_[*i];
     if (col.width == -1) {
       int col_index = static_cast<int>(i - visible_columns_.begin());
       if (col.percent > 0) {
@@ -1438,7 +1435,7 @@ void TableView::UpdateListViewCache0(int start, int length, bool add) {
       (table_type_ == ICON_AND_TEXT) ? (LVIF_IMAGE | LVIF_TEXT) : LVIF_TEXT;
   item.stateMask = 0;
   for (int j = 0; j < column_count_; ++j) {
-    TableColumn& col = all_columns_[visible_columns_[j]];
+    ui::TableColumn& col = all_columns_[visible_columns_[j]];
     int max_text_width = ListView_GetStringWidth(list_view_, col.title.c_str());
     for (int i = start; i < start + length; ++i) {
       // Set item.
@@ -1560,7 +1557,7 @@ void TableView::UpdateGroups() {
     // re-enable them.
     ListView_EnableGroupView(list_view_, true);
 
-    TableModel::Groups groups = model_->GetGroups();
+    ui::TableModel::Groups groups = model_->GetGroups();
     LVGROUP group = { 0 };
     group.cbSize = sizeof(LVGROUP);
     group.mask = LVGF_HEADER | LVGF_ALIGN | LVGF_GROUPID;

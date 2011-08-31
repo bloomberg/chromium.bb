@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 #define VIEWS_CONTROLS_TABLE_NATIVE_TABLE_GTK_H_
 #pragma once
 
-#include "ui/base/models/table_model.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/base/models/table_model.h"
 #include "views/controls/native_control_gtk.h"
 #include "views/controls/table/native_table_wrapper.h"
 
@@ -31,7 +31,7 @@ class NativeTableGtk : public NativeControlGtk, public NativeTableWrapper {
   virtual View* GetView();
   virtual void SetFocus();
   virtual gfx::NativeView GetTestingHandle() const;
-  virtual void InsertColumn(const TableColumn& column, int index);
+  virtual void InsertColumn(const ui::TableColumn& column, int index);
   virtual void RemoveColumn(int index);
   virtual int GetColumnWidth(int column_index) const;
   virtual void SetColumnWidth(int column_index, int width);
@@ -54,8 +54,8 @@ class NativeTableGtk : public NativeControlGtk, public NativeTableWrapper {
   virtual void CreateNativeControl();
 
  private:
-  void InsertTextColumn(const TableColumn& column, int index);
-  void InsertIconAndTextColumn(const TableColumn& column, int index);
+  void InsertTextColumn(const ui::TableColumn& column, int index);
+  void InsertIconAndTextColumn(const ui::TableColumn& column, int index);
 
   // Sets the content of the row pointed to by |iter| in the tree_view_, using
   // the data in the model at row |index|.

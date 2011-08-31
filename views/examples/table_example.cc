@@ -37,11 +37,11 @@ void TableExample::CreateExampleView(views::View* container) {
   views::GridLayout* layout = new views::GridLayout(container);
   container->SetLayoutManager(layout);
 
-  std::vector<TableColumn> columns;
-  columns.push_back(TableColumn(0, L"Fruit", TableColumn::LEFT, 100));
-  columns.push_back(TableColumn(1, L"Color", TableColumn::LEFT, 100));
-  columns.push_back(TableColumn(2, L"Origin", TableColumn::LEFT, 100));
-  columns.push_back(TableColumn(3, L"Price", TableColumn::LEFT, 100));
+  std::vector<ui::TableColumn> columns;
+  columns.push_back(ui::TableColumn(0, L"Fruit", ui::TableColumn::LEFT, 100));
+  columns.push_back(ui::TableColumn(1, L"Color", ui::TableColumn::LEFT, 100));
+  columns.push_back(ui::TableColumn(2, L"Origin", ui::TableColumn::LEFT, 100));
+  columns.push_back(ui::TableColumn(3, L"Price", ui::TableColumn::LEFT, 100));
   table_ = new views::TableView(this, columns, views::ICON_AND_TEXT,
                                 true, true, true);
   table_->SetObserver(this);

@@ -75,7 +75,8 @@ string16 CertificateSelectorTableModel::GetText(int index, int column_id) {
   return items_[index];
 }
 
-void CertificateSelectorTableModel::SetObserver(TableModelObserver* observer) {
+void CertificateSelectorTableModel::SetObserver(
+    ui::TableModelObserver* observer) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -243,17 +244,15 @@ void SSLClientCertificateSelector::OnDoubleClick() {
 // SSLClientCertificateSelector private methods:
 
 void SSLClientCertificateSelector::CreateCertTable() {
-  std::vector<TableColumn> columns;
-  columns.push_back(TableColumn());
-  table_ = new views::TableView(
-      model_.get(),
-      columns,
-      views::TEXT_ONLY,
-      true,  // single_selection
-      true,  // resizable_columns
-      true);  // autosize_columns
-  table_->SetPreferredSize(
-    gfx::Size(kTableViewWidth, kTableViewHeight));
+  std::vector<ui::TableColumn> columns;
+  columns.push_back(ui::TableColumn());
+  table_ = new views::TableView(model_.get(),
+                                columns,
+                                views::TEXT_ONLY,
+                                true,  // single_selection
+                                true,  // resizable_columns
+                                true);  // autosize_columns
+  table_->SetPreferredSize(gfx::Size(kTableViewWidth, kTableViewHeight));
   table_->SetObserver(this);
 }
 

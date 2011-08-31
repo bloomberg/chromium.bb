@@ -40,15 +40,15 @@ void Table2Example::CreateExampleView(views::View* container) {
   views::GridLayout* layout = new views::GridLayout(container);
   container->SetLayoutManager(layout);
 
-  std::vector<TableColumn> columns;
+  std::vector<ui::TableColumn> columns;
   columns.push_back(
-      TableColumn(0, ASCIIToUTF16("Fruit"), TableColumn::LEFT, 100));
+      ui::TableColumn(0, ASCIIToUTF16("Fruit"), ui::TableColumn::LEFT, 100));
   columns.push_back(
-      TableColumn(1, ASCIIToUTF16("Color"), TableColumn::LEFT, 100));
+      ui::TableColumn(1, ASCIIToUTF16("Color"), ui::TableColumn::LEFT, 100));
   columns.push_back(
-      TableColumn(2, ASCIIToUTF16("Origin"), TableColumn::LEFT, 100));
+      ui::TableColumn(2, ASCIIToUTF16("Origin"), ui::TableColumn::LEFT, 100));
   columns.push_back(
-      TableColumn(3, ASCIIToUTF16("Price"), TableColumn::LEFT, 100));
+      ui::TableColumn(3, ASCIIToUTF16("Price"), ui::TableColumn::LEFT, 100));
   const int options = (views::TableView2::SINGLE_SELECTION |
                        views::TableView2::RESIZABLE_COLUMNS |
                        views::TableView2::AUTOSIZE_COLUMNS |
@@ -109,7 +109,7 @@ SkBitmap Table2Example::GetIcon(int row) {
   return row % 2 ? icon1_ : icon2_;
 }
 
-void Table2Example::SetObserver(TableModelObserver* observer) {
+void Table2Example::SetObserver(ui::TableModelObserver* observer) {
 }
 
 void Table2Example::ButtonPressed(views::Button* sender,
