@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -171,5 +171,12 @@ PP_Module pp_module();
 // call this function to ensure proper test set-up.
 PP_Bool DidCreateDefault(PP_Instance instance,
                          uint32_t argc, const char* argn[], const char* argv[]);
+// Other default implementations of the required PPP_Instance functions.
+void DidDestroyDefault(PP_Instance instance);
+void DidChangeViewDefault(PP_Instance instance,
+                          const struct PP_Rect* position,
+                          const struct PP_Rect* clip);
+void DidChangeFocusDefault(PP_Instance instance, PP_Bool has_focus);
+PP_Bool HandleDocumentLoadDefault(PP_Instance instance, PP_Resource url_loader);
 
 #endif  // NATIVE_CLIENT_TESTS_PPAPI_TEST_PPB_TEMPLATE_TEST_INTERFACE_H

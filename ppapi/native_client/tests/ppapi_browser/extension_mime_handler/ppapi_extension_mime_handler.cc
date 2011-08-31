@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,33 +54,6 @@ const char kKnownFileContents[] =
     "This is not an actual pdf file, just a "
     "test file so we can verify HandleDocumentLoad.";
 
-
-PP_Bool DidCreate(PP_Instance instance,
-                  uint32_t argc,
-                  const char* argn[],
-                  const char* argv[]) {
-  PP_Bool status = DidCreateDefault(instance, argc, argn, argv);
-  printf("DidCreate! %d\n", static_cast<int>(instance));
-  return status;
-}
-
-void DidDestroy(PP_Instance /* instance */) {
-}
-
-void DidChangeView(PP_Instance /* instance */,
-                   const struct PP_Rect* /* position */,
-                   const struct PP_Rect* /* clip */) {
-}
-
-void DidChangeFocus(PP_Instance /* instance */,
-                    PP_Bool /* has_focus */) {
-}
-
-PP_Bool HandleInputEvent(PP_Instance /* instance */,
-                         const struct PP_InputEvent* /* event */) {
-  return PP_FALSE;
-}
-
 void ReadCallback(void* user_data, int32_t pp_error_or_bytes) {
   PP_Resource url_loader = reinterpret_cast<PP_Resource>(user_data);
 
@@ -127,10 +100,10 @@ PP_Bool HandleDocumentLoad(PP_Instance instance,
 }
 
 const PPP_Instance ppp_instance_interface = {
-  DidCreate,
-  DidDestroy,
-  DidChangeView,
-  DidChangeFocus,
+  DidCreateDefault,
+  DidDestroyDefault,
+  DidChangeViewDefault,
+  DidChangeFocusDefault,
   HandleDocumentLoad
 };
 

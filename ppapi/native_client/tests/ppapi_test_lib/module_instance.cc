@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -93,31 +93,31 @@ PP_Bool DidCreateDefault(PP_Instance instance,
   return PP_TRUE;
 }
 
-namespace {
-
-void DidDestroy(PP_Instance /*instance*/) {
+void DidDestroyDefault(PP_Instance /*instance*/) {
 }
 
-void DidChangeView(PP_Instance /*instance*/,
-                   const struct PP_Rect* /*position*/,
-                   const struct PP_Rect* /*clip*/) {
+void DidChangeViewDefault(PP_Instance /*instance*/,
+                          const struct PP_Rect* /*position*/,
+                          const struct PP_Rect* /*clip*/) {
 }
 
-void DidChangeFocus(PP_Instance /*instance*/,
-                    PP_Bool /*has_focus*/) {
+void DidChangeFocusDefault(PP_Instance /*instance*/,
+                           PP_Bool /*has_focus*/) {
 }
 
-PP_Bool HandleDocumentLoad(PP_Instance instance,
-                           PP_Resource url_loader) {
+PP_Bool HandleDocumentLoadDefault(PP_Instance instance,
+                                  PP_Resource url_loader) {
   return PP_TRUE;
 }
 
+namespace {
+
 const PPP_Instance ppp_instance_interface = {
   DidCreateDefault,
-  DidDestroy,
-  DidChangeView,
-  DidChangeFocus,
-  HandleDocumentLoad
+  DidDestroyDefault,
+  DidChangeViewDefault,
+  DidChangeFocusDefault,
+  HandleDocumentLoadDefault
 };
 
 ///////////////////////////////////////////////////////////////////////////////
