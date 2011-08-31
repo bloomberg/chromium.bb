@@ -97,6 +97,10 @@ cr.define('login', function() {
         params.push('hl=' + encodeURIComponent(data.hl));
       if (data.email)
         params.push('email=' + encodeURIComponent(data.email));
+      if (data.test_email)
+        params.push('test_email=' + encodeURIComponent(data.test_email));
+      if (data.test_password)
+        params.push('test_password=' + encodeURIComponent(data.test_password));
 
       var url = data.startUrl;
       if (params.length)

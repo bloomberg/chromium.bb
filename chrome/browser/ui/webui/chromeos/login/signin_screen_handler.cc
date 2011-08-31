@@ -285,6 +285,20 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   params.SetBoolean("guestSignin",
       UserCrosSettingsProvider::cached_allow_guest());
   email_.clear();
+  // Test automation data:
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
+    if (command_line->HasSwitch(switches::kTestAuthEmail)) {
+      params.SetString("test_email",
+                       command_line->GetSwitchValueASCII(
+                           switches::kTestAuthEmail));
+    }
+    if (command_line->HasSwitch(switches::kTestAuthPassword)) {
+      params.SetString("test_password",
+                       command_line->GetSwitchValueASCII(
+                           switches::kTestAuthPassword));
+    }
+  }
   ShowScreen(kGaiaSigninScreen, &params);
 }
 

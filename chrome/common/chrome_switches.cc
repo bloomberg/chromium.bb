@@ -1122,6 +1122,10 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 
+// Enables overriding user credential for GAIA login.
+const char kTestAuthEmail[]                 = "test-auth-email";
+const char kTestAuthPassword[]              = "test-auth-password";
+
 // Enables archive file (zip) handling in file manager.
 const char kEnableArchives[]                = "enable-archives";
 
