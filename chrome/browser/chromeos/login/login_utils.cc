@@ -556,14 +556,6 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
     authenticator_ = NULL;
   }
 
-  // Init extension event routers; this normally happens in browser_main
-  // but on Chrome OS it has to be deferred until the user finishes
-  // logging in and the profile is not OTR.
-  if (user_profile->GetExtensionService() &&
-      user_profile->GetExtensionService()->extensions_enabled()) {
-    user_profile->GetExtensionService()->InitEventRouters();
-  }
-
   // Supply credentials for sync and others to use. Load tokens from disk.
   if (!using_oauth_) {
     // For existing users there's usually a pending online auth request.
