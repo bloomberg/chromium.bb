@@ -122,7 +122,13 @@ void RenderWidgetHostViewViews::InitAsPopup(
   // to tell the parent it's showing a popup so that it doesn't respond to
   // blurs.
   parent->is_showing_context_menu_ = true;
-  views::View::SetBoundsRect(pos);
+
+  // pos is in screen coordinates but a view is positioned relative
+  // to its parent. Here we convert screen coordinates to relative
+  // coordinates.
+  gfx::Point p(pos.x() - parent_host_view->GetViewBounds().x(),
+               pos.y() - parent_host_view->GetViewBounds().y());
+  views::View::SetBounds(p.x(), p.y(), pos.width(), pos.height());
   Show();
 
   if (NeedsInputGrab()) {
