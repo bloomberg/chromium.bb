@@ -38,7 +38,10 @@ namespace {
 // Returns true if we should allow all content types for this URL.  This is
 // true for various internal objects like chrome:// URLs, so UI and other
 // things users think of as "not webpages" don't break.
-static bool ShouldAllowAllContent(const GURL& url) {
+static bool ShouldAllowAllContent(const GURL& url,
+                                  ContentSettingsType content_type) {
+  if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+    return false;
   return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
          url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
@@ -184,7 +187,7 @@ ContentSetting HostContentSettingsMap::GetCookieContentSetting(
     const GURL& url,
     const GURL& first_party_url,
     bool setting_cookie) const {
-  if (ShouldAllowAllContent(first_party_url))
+  if (ShouldAllowAllContent(first_party_url, CONTENT_SETTINGS_TYPE_COOKIES))
     return CONTENT_SETTING_ALLOW;
 
   // First get any host-specific settings.
@@ -245,7 +248,7 @@ ContentSetting HostContentSettingsMap::GetNonDefaultContentSetting(
       const GURL& secondary_url,
       ContentSettingsType content_type,
       const std::string& resource_identifier) const {
-  if (ShouldAllowAllContent(secondary_url))
+  if (ShouldAllowAllContent(secondary_url, content_type))
     return CONTENT_SETTING_ALLOW;
 
   // Iterate through the list of providers and break when the first non default
@@ -284,9 +287,6 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
 ContentSettings HostContentSettingsMap::GetNonDefaultContentSettings(
     const GURL& primary_url,
     const GURL& secondary_url) const {
-  if (ShouldAllowAllContent(secondary_url))
-    return ContentSettings(CONTENT_SETTING_ALLOW);
-
   ContentSettings output(CONTENT_SETTING_DEFAULT);
   for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
     output.settings[j] = GetNonDefaultContentSetting(
