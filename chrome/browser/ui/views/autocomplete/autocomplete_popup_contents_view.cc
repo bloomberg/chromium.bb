@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 
+#include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
@@ -138,11 +139,18 @@ class AutocompletePopupContentsView::AutocompletePopupWidget
     : public views::Widget,
       public base::SupportsWeakPtr<AutocompletePopupWidget> {
  public:
-  AutocompletePopupWidget() {}
-  virtual ~AutocompletePopupWidget() {}
+  AutocompletePopupWidget() : check_on_destroy_(false) {}
+  virtual ~AutocompletePopupWidget() {
+    CHECK(!check_on_destroy_);
+  }
 
  private:
-   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
+  // TODO(sky): remove once we figure out 92497.
+  friend class AutocompletePopupContentsView;
+
+  bool check_on_destroy_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
 };
 
 class AutocompletePopupContentsView::InstantOptInView
@@ -238,7 +246,8 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
       result_font_(font.DeriveFont(kEditFontAdjust)),
       result_bold_font_(result_font_.DeriveFont(0, gfx::Font::BOLD)),
       ignore_mouse_drag_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)),
+      in_move_above_(false) {
   // The following little dance is required because set_border() requires a
   // pointer to a non-const object.
   views::BubbleBorder* bubble_border =
@@ -250,6 +259,7 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
 }
 
 AutocompletePopupContentsView::~AutocompletePopupContentsView() {
+  CHECK(!in_move_above_);
   // We don't need to do anything with |popup_| here.  The OS either has already
   // closed the window, in which case it's been deleted, or it will soon, in
   // which case there's nothing we need to do.
@@ -304,6 +314,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
       // triggered by the popup receiving a message (e.g. LBUTTONUP), and
       // destroying the popup would cause us to read garbage when we unwind back
       // to that level.
+      CHECK(!in_move_above_);
       popup_->Close();  // This will eventually delete the popup.
       popup_.reset();
     }
@@ -362,8 +373,12 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     params.bounds = GetPopupBounds();
     popup_->Init(params);
     popup_->SetContentsView(this);
-    popup_->MoveAbove(
-        GetRelativeWindowForPopup(omnibox_view_->GetNativeView()));
+    {
+      AutoReset<bool> in_move_above_reset(&in_move_above_, true);
+      AutoReset<bool> check_on_destroy_reset(&popup_->check_on_destroy_, true);
+      popup_->MoveAbove(
+          GetRelativeWindowForPopup(omnibox_view_->GetNativeView()));
+    }
     popup_->Show();
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
