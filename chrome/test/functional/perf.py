@@ -20,6 +20,7 @@ import timeit
 
 import pyauto_functional  # Must be imported before pyauto.
 import pyauto
+import test_utils
 
 
 class PerfTest(pyauto.PyUITest):
@@ -42,6 +43,14 @@ class PerfTest(pyauto.PyUITest):
         self.fail('Error processing environment variable: %s' % e)
     pyauto.PyUITest.setUp(self)
 
+  def _LoginToGoogleAccount(self):
+    """Logs in to a testing Google account."""
+    creds = self.GetPrivateInfo()['test_google_account']
+    test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
+    self.assertTrue(self.WaitForInfobarCount(1),
+                    msg='Save password infobar did not appear when logging in.')
+    self.NavigateToURL('about:blank')  # Clear the existing tab.
+
   # TODO(dennisjeffrey): Reorganize the code to create a base PerfTest class
   # to separate out common functionality, then create specialized subclasses
   # such as TabPerfTest that implement the test-specific functionality.
@@ -60,7 +69,7 @@ class PerfTest(pyauto.PyUITest):
     def RunCommand():
       for _ in range(num_invocations):
         python_command()
-    timer = timeit.Timer(stmt=lambda: RunCommand())
+    timer = timeit.Timer(stmt=RunCommand)
     return timer.timeit(number=1) * 1000  # Convert seconds to milliseconds.
 
   def _AvgAndStdDev(self, values):
@@ -94,17 +103,15 @@ class PerfTest(pyauto.PyUITest):
       print '\n%s(\'%s\', %.2f)%s' % (self._PERF_OUTPUT_MARKER_PRE, description,
                                       value, self._PERF_OUTPUT_MARKER_POST)
 
-  def _PrintSummaryResults(self, description, first_val, units, values=[]):
+  def _PrintSummaryResults(self, description, values, units):
     """Logs summary measurement information.
 
     Args:
       description: A string description for the specified results.
-      first_val: A numeric measurement value for a single initial trial.
-      units: A string specifying the units for the specified measurements.
       values: A list of numeric value measurements.
+      units: A string specifying the units for the specified measurements.
     """
     logging.info('Results for: ' + description)
-    logging.debug('Single trial: %.2f %s', first_val, units)
     if values:
       avg, std_dev = self._AvgAndStdDev(values)
       logging.info('Number of iterations: %d', len(values))
@@ -115,7 +122,7 @@ class PerfTest(pyauto.PyUITest):
       logging.info('  Std dev: %.2f %s', std_dev, units)
       self._OutputPerfGraphValue('%s_%s' % (units, description), avg)
     else:
-      self._OutputPerfGraphValue('%s_%s' % (units, description), first_val)
+      logging.info('No results to report.')
 
   def _RunNewTabTest(self, description, open_tab_command, num_tabs=1):
     """Runs a perf test that involves opening new tab(s).
@@ -132,13 +139,6 @@ class PerfTest(pyauto.PyUITest):
     """
     assert callable(open_tab_command)
 
-    # TODO(dennisjeffrey): Consider not taking an initial sample here.
-    orig_elapsed = self._MeasureElapsedTime(open_tab_command, num_tabs)
-    self.assertEqual(1 + num_tabs, self.GetTabCount(),
-                     msg='Did not open %d new tab(s).' % num_tabs)
-    for _ in range(num_tabs):
-      self.GetBrowserWindow(0).GetTab(1).Close(True)
-
     timings = []
     for _ in range(self._num_iterations):
       elapsed = self._MeasureElapsedTime(open_tab_command, num_tabs)
@@ -148,8 +148,7 @@ class PerfTest(pyauto.PyUITest):
         self.GetBrowserWindow(0).GetTab(1).Close(True)
       timings.append(elapsed)
 
-    self._PrintSummaryResults(description, orig_elapsed, 'milliseconds',
-                              values=timings)
+    self._PrintSummaryResults(description, timings, 'milliseconds')
 
   def testNewTab(self):
     """Measures time to open a new tab."""
@@ -158,12 +157,19 @@ class PerfTest(pyauto.PyUITest):
 
   def testNewTabPdf(self):
     """Measures time to open a new tab navigated to a PDF file."""
+    self.assertTrue(
+        os.path.exists(os.path.join(self.DataDir(), 'pyauto_private', 'pdf',
+                                    'TechCrunch.pdf')),
+        msg='Missing required PDF data file.')
     url = self.GetFileURLForDataPath('pyauto_private', 'pdf', 'TechCrunch.pdf')
     self._RunNewTabTest('NewTabPdfPage',
                         lambda: self.AppendTab(pyauto.GURL(url)))
 
   def testNewTabFlash(self):
     """Measures time to open a new tab navigated to a flash page."""
+    self.assertTrue(
+        os.path.exists(os.path.join(self.DataDir(), 'plugin', 'flash.swf')),
+        msg='Missing required flash data file.')
     url = self.GetFileURLForDataPath('plugin', 'flash.swf')
     self._RunNewTabTest('NewTabFlashPage',
                         lambda: self.AppendTab(pyauto.GURL(url)))
@@ -189,7 +195,90 @@ class PerfTest(pyauto.PyUITest):
         msg='Timed out when waiting for v8 benchmark score.')
     val = self.ExecuteJavascript(js, 0, 1)
     score = int(val[val.find(':') + 2:])
-    self._PrintSummaryResults('V8Benchmark', score, 'score')
+    self._PrintSummaryResults('V8Benchmark', [score], 'score')
+
+  # TODO(dennisjeffrey): Move the 3 tests below (Gmail/Cal/Docs) into a separate
+  # test class in this file: LiveWebappLoadTest.
+  def testNewTabGmail(self):
+    """Measures time to open a tab to a logged-in Gmail account.
+
+    Timing starts right before the new tab is opened, and stops as soon as the
+    webpage displays the substring 'Last account activity:'.
+    """
+    EXPECTED_SUBSTRING = 'Last account activity:'
+
+    def _SubstringExistsOnPage():
+      js = """
+          var frame = document.getElementById("canvas_frame");
+          var divs = frame.contentDocument.getElementsByTagName("div");
+          for (var i = 0; i < divs.length; ++i) {
+            if (divs[i].innerHTML.indexOf("%s") >= 0)
+              window.domAutomationController.send("true");
+          }
+          window.domAutomationController.send("false");
+      """ % EXPECTED_SUBSTRING
+      return self.ExecuteJavascript(js, 0, 1)
+
+    def _RunSingleGmailTabOpen():
+      self.AppendTab(pyauto.GURL('http://www.gmail.com'))
+      self.WaitUntil(_SubstringExistsOnPage, timeout=120, expect_retval='true')
+
+    self._LoginToGoogleAccount()
+    self._RunNewTabTest('NewTabGmail', _RunSingleGmailTabOpen)
+
+  def testNewTabCalendar(self):
+    """Measures time to open a tab to a logged-in Calendar account.
+
+    Timing starts right before the new tab is opened, and stops as soon as the
+    webpage displays the calendar print button (title 'Print my calendar').
+    """
+    EXPECTED_SUBSTRING = 'Print my calendar'
+
+    def _DivTitleStartsWith():
+      js = """
+          var divs = document.getElementsByTagName("div");
+          for (var i = 0; i < divs.length; ++i) {
+            if (divs[i].hasOwnProperty("title") &&
+                divs[i].title.indexOf("%s") == 0)
+              window.domAutomationController.send("true");
+          }
+          window.domAutomationController.send("false");
+      """ % EXPECTED_SUBSTRING
+      return self.ExecuteJavascript(js, 0, 1)
+
+    def _RunSingleCalendarTabOpen():
+      self.AppendTab(pyauto.GURL('http://calendar.google.com'))
+      self.WaitUntil(_DivTitleStartsWith, timeout=120, expect_retval='true')
+
+    self._LoginToGoogleAccount()
+    self._RunNewTabTest('NewTabCalendar', _RunSingleCalendarTabOpen)
+
+  def testNewTabDocs(self):
+    """Measures time to open a tab to a logged-in Docs account.
+
+    Timing starts right before the new tab is opened, and stops as soon as the
+    webpage displays the expected substring 'No item selected'.
+    """
+
+    EXPECTED_SUBSTRING = 'No item selected'
+
+    def _SubstringExistsOnPage():
+      js = """
+          var divs = document.getElementsByTagName("div");
+          for (var i = 0; i < divs.length; ++i) {
+            if (divs[i].innerHTML.indexOf("%s") >= 0)
+              window.domAutomationController.send("true");
+          }
+          window.domAutomationController.send("false");
+      """ % EXPECTED_SUBSTRING
+      return self.ExecuteJavascript(js, 0, 1)
+
+    def _RunSingleDocsTabOpen():
+      self.AppendTab(pyauto.GURL('http://docs.google.com'))
+      self.WaitUntil(_SubstringExistsOnPage, timeout=120, expect_retval='true')
+
+    self._LoginToGoogleAccount()
+    self._RunNewTabTest('NewTabDocs', _RunSingleDocsTabOpen)
 
 
 if __name__ == '__main__':
