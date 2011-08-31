@@ -81,7 +81,6 @@ const KeyboardShortcutData* GetBrowserKeyboardShortcutTable(
     {false, false, false, false, kVK_Delete,       0,   IDC_BACK},
     {false, true,  false, false, kVK_Delete,       0,   IDC_FORWARD},
     {true,  true,  false, false, 0,                'c', IDC_DEV_TOOLS_INSPECT},
-    {true,  true,  false, false, 0,                'p', IDC_ADVANCED_PRINT},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
