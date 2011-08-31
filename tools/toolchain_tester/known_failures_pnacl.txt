@@ -154,16 +154,12 @@ pr22061-4.c
 pr38533.c
 # asm
 pr40022.c
-# require networking header files
-20010724-1.c
 # asm
 20030222-1.c
 # asm
 990413-2.c
 # integer overflow
 bitfld-5.c
-# asm
-pr40657.c
 # asm
 pr41239.c
 # asm
@@ -180,18 +176,6 @@ pr47925.c
 pr49218.c
 # asm
 pr49390.c
-# vector ops
-vector-shift.c
-# vector ops
-vector-shift1.c
-# vector ops
-vector-shift2.c
-# vector type
-vector-subscript-1.c
-# vector type
-vector-subscript-2.c
-# vector type
-vector-subscript-3.c
 # asm
 memcpy-chk.c
 # asm

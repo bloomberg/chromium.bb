@@ -1,0 +1,36 @@
+# NOTE: some failures may only occur on one arch
+# validation failure
+align-3.c
+# validation failure
+20020418-1.c
+# validation failure
+call-trap-1.c
+# validation failure
+va-arg-trap-1.c
+# int overflow
+bitfld-5.c
+# profiling (probably cannot work with newlib)
+eeprof-1.c
+# integer overflow
+pr42544.c
+# null pointer
+pr44555.c
+# int overflow
+pr48197.c
+# vector operation
+simd-2.c
+# ???
+vla-dealloc-1.c
+# use signal
+20101011-1.c
+# asm
+990413-2.c
+# __builtin_setjmp not available
+built-in-setjmp.c
+# use signal
+fp-cmp-1.c
+# use signal
+fp-cmp-2.c
+# use signal
+fp-cmp-3.c
+

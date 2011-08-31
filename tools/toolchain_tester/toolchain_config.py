@@ -71,12 +71,13 @@ GLOBAL_CFLAGS = ' '.join(['-DSTACK_SIZE=0x40000',
                           '-D_XOPEN_SOURCE=600',
                           '-DNO_TRAMPOLINES',
                           '-DNO_LABEL_VALUES',])
+
 ######################################################################
 # LOCAL GCC
 ######################################################################
 COMMANDS_local_gcc = [
     ('compile',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe -lm',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe -lm -lstdc++',
      ),
     ]
 
@@ -132,7 +133,7 @@ TOOLCHAIN_CONFIGS['gcc_cs_arm_O9'] = ToolchainConfig(
 ######################################################################
 COMMANDS_nacl_gcc = [
     ('compile',
-     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe -lm',
+     '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe -lm -lstdc++',
      ),
     ('sel_ldr',
      '%(SEL_LDR)s -B %(IRT)s %(tmp)s.exe',
@@ -194,7 +195,7 @@ COMMANDS_llvm_pnacl_arm = [
      '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.bc',
      ),
     ('translate-arm',
-     '%(LD)s %(tmp)s.bc -lm -o %(tmp)s.nexe',
+     '%(LD)s %(tmp)s.bc -lm -lstdc++ -o %(tmp)s.nexe',
      ),
     ('qemu-sel_ldr',
      '%(EMU)s run %(SEL_LDR)s -B %(IRT)s -Q %(tmp)s.nexe',
@@ -235,7 +236,7 @@ COMMANDS_llvm_pnacl_x86_O0 = [
      '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.bc',
      ),
     ('translate-x86',
-     '%(LD)s %(tmp)s.bc -lm -o %(tmp)s.nexe ',
+     '%(LD)s %(tmp)s.bc -lm -lstdc++ -o %(tmp)s.nexe ',
      ),
     ('sel_ldr',
      '%(SEL_LDR)s -B %(IRT)s %(tmp)s.nexe',

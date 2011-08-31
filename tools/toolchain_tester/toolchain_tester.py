@@ -56,7 +56,6 @@ EXCLUDE = {}
 CHECK_EXCLUDES = 0
 # module with settings for compiler, etc.
 CFG = None
-
 # ======================================================================
 # Hook print to we can print to both stdout and a file
 def Print(message):
@@ -131,7 +130,7 @@ def MakeExecutableCustom(config, test, extra):
 
 def ParseCommandLineArgs(argv):
   """Process command line options and return the unprocessed left overs."""
-  global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX,
+  global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX
   global CFG, APPEND, SHOW_CONSOLE, CHECK_EXCLUDES
   try:
     opts, args = getopt.getopt(argv[1:], '',
@@ -160,11 +159,14 @@ def ParseCommandLineArgs(argv):
     elif o == 'exclude':
       f = open(a)
       for line in f:
-        if not line.startswith('#'):
-          EXCLUDE[line.strip()] = None
+        line = line.strip()
+        if not line: continue
+        if line.startswith('#'): continue
+        if line in EXCLUDE:
+          Print('ERROR: duplicate exclude: [%s]' % line)
+        EXCLUDE[line] = None
       f.close()
       Print('Size of exludes now: %d' % len(EXCLUDE))
-      TMP_PREFIX = a
     elif o == 'append':
       tag, value = a.split(":", 1)
       APPEND.append((tag, value))
@@ -191,7 +193,7 @@ def RunSuite(config, files, extra_flags, errors):
           (no, len(files), no_errors, os.path.basename(test), result))
 
 
-def FilterOutTests(files, exclude):
+def FilterOutExcludedTests(files, exclude):
   return  [f for f in files if not os.path.basename(f) in exclude]
 
 
@@ -223,7 +225,7 @@ def main(argv):
 
   Print('Tests before filtering %d' % len(files))
   if not CHECK_EXCLUDES:
-    files = FilterOutTests(files, EXCLUDE)
+    files = FilterOutExcludedTests(files, EXCLUDE)
   Print('Tests after filtering %d' % len(files))
   RunSuite(config, files, {}, errors)
 

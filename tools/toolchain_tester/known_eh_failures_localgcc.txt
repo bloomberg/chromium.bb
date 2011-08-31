@@ -1,0 +1,2 @@
+# internal compiler error
+cond5.C
