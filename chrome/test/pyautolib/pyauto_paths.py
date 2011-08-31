@@ -22,27 +22,20 @@ def GetThirdPartyDir():
 
 def GetBuildDirs():
   """Returns list of possible build directories."""
-  build_dirs = {
-      'linux2': [ os.path.join('out', 'Debug'),
-                  os.path.join('sconsbuild', 'Debug'),
-                  os.path.join('out', 'Release'),
-                  os.path.join('sconsbuild', 'Release')],
-      'linux3': [ os.path.join('out', 'Debug'),
-                  os.path.join('sconsbuild', 'Debug'),
-                  os.path.join('out', 'Release'),
-                  os.path.join('sconsbuild', 'Release')],
-      'darwin': [ os.path.join('xcodebuild', 'Debug'),
-                  os.path.join('xcodebuild', 'Release')],
-      'win32':  [ os.path.join('chrome', 'Debug'),
-                  os.path.join('build', 'Debug'),
-                  os.path.join('chrome', 'Release'),
-                  os.path.join('build', 'Release')],
-      'cygwin': [ os.path.join('chrome', 'Debug'),
-                  os.path.join('chrome', 'Release')],
-  }
+  # List of dirs that can contain a Debug/Release build.
+  outer_dirs = {
+      'linux2': ['out', 'sconsbuild'],
+      'linux3': ['out', 'sconsbuild'],
+      'darwin': ['out', 'xcodebuild'],
+      'win32':  ['chrome', 'build'],
+      'cygwin': ['chrome'],
+  }.get(sys.platform, [])
   src_dir = GetSourceDir()
-  return map(lambda dir: os.path.join(src_dir, dir),
-             build_dirs.get(sys.platform, []))
+  build_dirs = []
+  for dir in outer_dirs:
+    build_dirs += [os.path.join(src_dir, dir, 'Debug')]
+    build_dirs += [os.path.join(src_dir, dir, 'Release')]
+  return build_dirs
 
 
 def GetChromeDriverExe():
