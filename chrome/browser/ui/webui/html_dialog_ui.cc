@@ -86,9 +86,6 @@ ExternalHtmlDialogUI::ExternalHtmlDialogUI(TabContents* tab_contents)
 ExternalHtmlDialogUI::~ExternalHtmlDialogUI() {
 }
 
-void HtmlDialogUIDelegate::OnWindowClosed() {
-}
-
 bool HtmlDialogUIDelegate::HandleContextMenu(const ContextMenuParams& params) {
   return false;
 }

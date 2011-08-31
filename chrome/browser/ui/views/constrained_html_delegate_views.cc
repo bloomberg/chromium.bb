@@ -34,7 +34,6 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
     return this;
   }
   virtual void WindowClosing() OVERRIDE {
-    html_delegate_->OnWindowClosed();
     html_delegate_->OnDialogClosed("");
   }
   virtual views::Widget* GetWidget() OVERRIDE {

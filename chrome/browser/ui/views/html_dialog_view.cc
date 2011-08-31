@@ -67,7 +67,6 @@ gfx::Size HtmlDialogView::GetPreferredSize() {
 bool HtmlDialogView::AcceleratorPressed(const views::Accelerator& accelerator) {
   // Pressing ESC closes the dialog.
   DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
-  OnWindowClosed();
   OnDialogClosed(std::string());
   return true;
 }
@@ -109,10 +108,8 @@ void HtmlDialogView::WindowClosing() {
   // If we still have a delegate that means we haven't notified it of the
   // dialog closing. This happens if the user clicks the Close button on the
   // dialog.
-  if (delegate_) {
-    OnWindowClosed();
+  if (delegate_)
     OnDialogClosed("");
-  }
 }
 
 views::View* HtmlDialogView::GetContentsView() {
@@ -177,11 +174,6 @@ void HtmlDialogView::OnDialogClosed(const std::string& json_retval) {
     dialog_delegate->OnDialogClosed(json_retval);
   }
   GetWidget()->Close();
-}
-
-void HtmlDialogView::OnWindowClosed() {
-  if (delegate_)
-      delegate_->OnWindowClosed();
 }
 
 void HtmlDialogView::OnCloseContents(TabContents* source,

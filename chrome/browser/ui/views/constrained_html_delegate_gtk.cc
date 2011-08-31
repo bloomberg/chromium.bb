@@ -41,7 +41,6 @@ class ConstrainedHtmlDelegateGtk : public views::NativeWidgetGtk,
     return html_tab_contents_.GetContentNativeView();
   }
   virtual void DeleteDelegate() {
-    html_delegate_->OnWindowClosed();
     html_delegate_->OnDialogClosed("");
     tab_container_->ChangeTabContents(NULL);
   }
