@@ -383,10 +383,6 @@ class BrowserWindowGtk : public BrowserWindow,
   CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnButtonPressEvent,
                        GdkEventButton*);
 
-  // Maps and Unmaps the xid of |widget| to |window|.
-  static void MainWindowMapped(GtkWidget* widget);
-  static void MainWindowUnMapped(GtkWidget* widget);
-
   // Tracks focus state of browser.
   CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnFocusIn,
                        GdkEventFocus*);
@@ -475,9 +471,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // UseCustomFrame() above to determine whether to use the custom frame or
   // not.
   BooleanPrefMember use_custom_frame_pref_;
-
-  // A map which translates an X Window ID into its respective GtkWindow.
-  static std::map<XID, GtkWindow*> xid_map_;
 
   // The current window cursor.  We set it to a resize cursor when over the
   // custom frame border.  We set it to NULL if we want the default cursor.

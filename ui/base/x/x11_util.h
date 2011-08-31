@@ -21,6 +21,7 @@
 typedef unsigned long Atom;
 typedef struct _GdkDrawable GdkWindow;
 typedef struct _GtkWidget GtkWidget;
+typedef struct _GtkWindow GtkWindow;
 typedef unsigned long XID;
 typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef struct _XDisplay Display;
@@ -67,22 +68,35 @@ int GetDefaultScreen(Display* display);
 
 // Get the X window id for the default root window
 UI_EXPORT XID GetX11RootWindow();
+
 // Returns the user's current desktop.
 bool GetCurrentDesktop(int* desktop);
+
 // Get the X window id for the given GTK widget.
 UI_EXPORT XID GetX11WindowFromGtkWidget(GtkWidget* widget);
 XID GetX11WindowFromGdkWindow(GdkWindow* window);
+
+// Get the GtkWindow* wrapping a given XID, if any.
+// Returns NULL if there isn't already a GtkWindow* wrapping this XID;
+// see gdk_window_foreign_new() etc. to wrap arbitrary XIDs.
+UI_EXPORT GtkWindow* GetGtkWindowFromX11Window(XID xid);
+
 // Get a Visual from the given widget. Since we don't include the Xlib
 // headers, this is returned as a void*.
 UI_EXPORT void* GetVisualFromGtkWidget(GtkWidget* widget);
+
 // Return the number of bits-per-pixel for a pixmap of the given depth
 UI_EXPORT int BitsPerPixelForPixmapDepth(Display* display, int depth);
+
 // Returns true if |window| is visible.
 UI_EXPORT bool IsWindowVisible(XID window);
+
 // Returns the bounds of |window|.
 UI_EXPORT bool GetWindowRect(XID window, gfx::Rect* rect);
+
 // Return true if |window| has any property with |property_name|.
 UI_EXPORT bool PropertyExists(XID window, const std::string& property_name);
+
 // Get the value of an int, int array, atom array or string property.  On
 // success, true is returned and the value is stored in |value|.
 UI_EXPORT bool GetIntProperty(XID window, const std::string& property_name,

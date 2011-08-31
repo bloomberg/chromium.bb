@@ -309,8 +309,6 @@ void SetWindowCustomClass(GtkWindow* window, const std::string& wmclass) {
 
 }  // namespace
 
-std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
-
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  window_(NULL),
        window_container_(NULL),
@@ -1574,9 +1572,12 @@ BrowserWindowGtk* BrowserWindowGtk::GetBrowserWindowForNativeWindow(
 
 // static
 GtkWindow* BrowserWindowGtk::GetBrowserWindowForXID(XID xid) {
-  std::map<XID, GtkWindow*>::iterator iter =
-      BrowserWindowGtk::xid_map_.find(xid);
-  return (iter != BrowserWindowGtk::xid_map_.end()) ? iter->second : NULL;
+  GtkWindow* window = ui::GetGtkWindowFromX11Window(xid);
+  // Use GetBrowserWindowForNativeWindow() to verify the GtkWindow we found
+  // is actually a browser window (and not e.g. a dialog).
+  if (!GetBrowserWindowForNativeWindow(window))
+    return NULL;
+  return window;
 }
 
 GtkWidget* BrowserWindowGtk::titlebar_widget() const {
@@ -1643,10 +1644,6 @@ void BrowserWindowGtk::ConnectHandlersToSignals() {
                    G_CALLBACK(OnConfigureThunk), this);
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(OnWindowStateThunk), this);
-  g_signal_connect(window_, "map",
-                   G_CALLBACK(MainWindowMapped), NULL);
-  g_signal_connect(window_, "unmap",
-                   G_CALLBACK(MainWindowUnMapped), NULL);
   g_signal_connect(window_, "key-press-event",
                    G_CALLBACK(OnKeyPressThunk), this);
   g_signal_connect(window_, "motion-notify-event",
@@ -2206,21 +2203,6 @@ bool BrowserWindowGtk::HandleTitleBarLeftMousePress(
     return TRUE;
   }
   return FALSE;
-}
-
-// static
-void BrowserWindowGtk::MainWindowMapped(GtkWidget* widget) {
-  // Map the X Window ID of the window to our window.
-  XID xid = ui::GetX11WindowFromGtkWidget(widget);
-  BrowserWindowGtk::xid_map_.insert(
-      std::pair<XID, GtkWindow*>(xid, GTK_WINDOW(widget)));
-}
-
-// static
-void BrowserWindowGtk::MainWindowUnMapped(GtkWidget* widget) {
-  // Unmap the X Window ID.
-  XID xid = ui::GetX11WindowFromGtkWidget(widget);
-  BrowserWindowGtk::xid_map_.erase(xid);
 }
 
 gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
