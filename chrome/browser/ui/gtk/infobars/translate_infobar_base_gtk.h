@@ -27,9 +27,9 @@ class TranslateInfoBarBase : public InfoBarGtk {
 
   // Overridden from InfoBar:
   virtual void GetTopColor(InfoBarDelegate::Type type,
-                           double* r, double* g, double *b);
+                           double* r, double* g, double* b);
   virtual void GetBottomColor(InfoBarDelegate::Type type,
-                              double* r, double* g, double *b);
+                              double* r, double* g, double* b);
 
   // Overridden from ui::AnimationDelegate:
   virtual void AnimationProgressed(const ui::Animation* animation);

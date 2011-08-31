@@ -164,7 +164,7 @@ void InfoBarGtk::AddLabelWithInlineLink(const string16& display_text,
 }
 
 void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
-                             double* r, double* g, double *b) {
+                             double* r, double* g, double* b) {
   SkColor color = theme_service_->UsingNativeTheme() ?
                   theme_service_->GetColor(ThemeService::COLOR_TOOLBAR) :
                   GetInfoBarTopColor(type);
@@ -174,7 +174,7 @@ void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
 }
 
 void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
-                                double* r, double* g, double *b) {
+                                double* r, double* g, double* b) {
   SkColor color = theme_service_->UsingNativeTheme() ?
                   theme_service_->GetColor(ThemeService::COLOR_TOOLBAR) :
                   GetInfoBarBottomColor(type);

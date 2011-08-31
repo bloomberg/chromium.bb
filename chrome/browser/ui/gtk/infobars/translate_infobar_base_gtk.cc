@@ -70,7 +70,7 @@ void TranslateInfoBarBase::Init() {
 }
 
 void TranslateInfoBarBase::GetTopColor(InfoBarDelegate::Type type,
-                                       double* r, double* g, double *b) {
+                                       double* r, double* g, double* b) {
   if (background_error_percent_ <= 0) {
     InfoBarGtk::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
   } else if (background_error_percent_ >= 1) {
@@ -95,7 +95,7 @@ void TranslateInfoBarBase::GetTopColor(InfoBarDelegate::Type type,
 }
 
 void TranslateInfoBarBase::GetBottomColor(InfoBarDelegate::Type type,
-                                          double* r, double* g, double *b) {
+                                          double* r, double* g, double* b) {
   if (background_error_percent_ <= 0) {
     InfoBarGtk::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
   } else if (background_error_percent_ >= 1) {

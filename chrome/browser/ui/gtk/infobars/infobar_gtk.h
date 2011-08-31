@@ -46,9 +46,9 @@ class InfoBarGtk : public InfoBar,
   // Retrieves the component colors for the infobar's background
   // gradient. (This varies by infobars and can be animated to change).
   virtual void GetTopColor(InfoBarDelegate::Type type,
-                           double* r, double* g, double *b);
+                           double* r, double* g, double* b);
   virtual void GetBottomColor(InfoBarDelegate::Type type,
-                              double* r, double* g, double *b);
+                              double* r, double* g, double* b);
 
  protected:
   // Spacing after message (and before buttons).

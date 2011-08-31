@@ -158,6 +158,10 @@ class CustomDrawButton : public NotificationObserver {
 
   void Init();
 
+  // Make this CustomDrawButton always use the chrome style rendering; it will
+  // never render gtk-like.
+  void ForceChromeTheme();
+
   // Flip the image horizontally. Not to be used for RTL/LTR reasons. (In RTL
   // mode, this will unflip the image.)
   void set_flipped(bool flipped) { button_base_.set_flipped(flipped); }
@@ -221,6 +225,9 @@ class CustomDrawButton : public NotificationObserver {
 
   // Our theme provider.
   GtkThemeService* theme_service_;
+
+  // True if we should never do gtk rendering.
+  bool forcing_chrome_theme_;
 
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;

@@ -238,7 +238,8 @@ CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
                                    GtkIconSize stock_size)
     : button_base_(theme_provider, normal_id, pressed_id, hover_id,
                    disabled_id),
-      theme_service_(theme_provider) {
+      theme_service_(theme_provider),
+      forcing_chrome_theme_(false) {
   native_widget_.Own(gtk_image_new_from_stock(stock_id, stock_size));
 
   Init();
@@ -258,7 +259,8 @@ CustomDrawButton::CustomDrawButton(GtkThemeService* theme_provider,
     : button_base_(theme_provider, normal_id, pressed_id, hover_id,
                    disabled_id),
       native_widget_(native_widget),
-      theme_service_(theme_provider) {
+      theme_service_(theme_provider),
+      forcing_chrome_theme_(false) {
   Init();
 
   theme_service_->InitThemesFor(this);
@@ -278,6 +280,11 @@ void CustomDrawButton::Init() {
   g_signal_connect(widget(), "expose-event",
                    G_CALLBACK(OnCustomExposeThunk), this);
   hover_controller_.Init(widget());
+}
+
+void CustomDrawButton::ForceChromeTheme() {
+  forcing_chrome_theme_ = true;
+  SetBrowserTheme();
 }
 
 void CustomDrawButton::Observe(int type,
@@ -350,5 +357,6 @@ void CustomDrawButton::SetBrowserTheme() {
 }
 
 bool CustomDrawButton::UseGtkTheme() {
-  return theme_service_ && theme_service_->UsingNativeTheme();
+  return !forcing_chrome_theme_ && theme_service_ &&
+      theme_service_->UsingNativeTheme();
 }
