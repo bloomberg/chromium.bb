@@ -115,8 +115,6 @@ def GetPreferredTrySlaves():
       'nacl-lucid64_newlib_dbg',
       'nacl-lucid64_newlib_opt',
       'nacl-lucid64_glibc_opt',
-      'nacl-lucid64-pnacl1',
-      'nacl-lucid64-pnacl2',
       'nacl-lucid64_newlib_dbg_valgrind',
       'nacl-lucid64_glibc_dbg_valgrind',
       'nacl-mac10.5_newlib_opt',
@@ -129,4 +127,12 @@ def GetPreferredTrySlaves():
       'nacl-win64_newlib_opt',
       'nacl-win64_glibc_opt',
       'nacl-arm_opt',
+      # pnacl scons bots
+      'nacl-lucid_64-newlib-arm_qemu-pnacl',
+      'nacl-lucid_64-newlib-x86_32-pnacl',
+      'nacl-lucid_64-newlib-x86_64-pnacl',
+      # pnacl spec2k bots
+      'nacl-lucid_64-newlib-arm_qemu-pnacl-spec',
+      'nacl-lucid_64-newlib-x86_32-pnacl-spec',
+      'nacl-lucid_64-newlib-x86_64-pnacl-spec',
   ]
