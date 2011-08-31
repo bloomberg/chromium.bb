@@ -53,10 +53,8 @@ const FilePath::CharType kInternalNaClPluginFileName[] =
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-// File name of the nacl_helper and nacl_helper_bootstrap, Linux only.
+// File name of the nacl_helper, Linux only.
 const FilePath::CharType kInternalNaClHelperFileName[] =
-    FILE_PATH_LITERAL("nacl_helper");
-const FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
     FILE_PATH_LITERAL("nacl_helper_bootstrap");
 #endif
 
@@ -247,11 +245,6 @@ bool PathProvider(int key, FilePath* result) {
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(kInternalNaClHelperFileName);
-      break;
-    case chrome::FILE_NACL_HELPER_BOOTSTRAP:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-      cur = cur.Append(kInternalNaClHelperBootstrapFileName);
       break;
 #endif
     case chrome::FILE_RESOURCES_PACK:

@@ -183,7 +183,9 @@
     ['OS=="linux"', {
       'targets': [
         {
-          'target_name': 'nacl_helper',
+          'target_name': 'nacl_helper.so',
+          # 'executable' will be overridden below when we add the -shared
+          # flag; here it prevents gyp from using the --whole-archive flag
           'type': 'executable',
           'include_dirs': [
             '..',
@@ -192,7 +194,7 @@
             'nacl',
           ],
           'sources': [
-            'nacl/nacl_helper_linux.cc',
+            '../chrome/nacl/nacl_helper_linux.cc',
           ],
           'conditions': [
             ['toolkit_uses_gtk == 1', {
@@ -201,108 +203,36 @@
               ],
             }],
           ],
-          'cflags': ['-fPIE'],
           'link_settings': {
-            'ldflags': ['-pie'],
-          },
-        },
-        {
-          'target_name': 'nacl_helper_bootstrap_munge_phdr',
-          'type': 'executable',
-          'toolsets': ['host'],
-          'sources': [
-            'nacl/nacl_helper_bootstrap_munge_phdr.c',
-          ],
-          'libraries': [
-            '-lelf',
-          ],
-          # This is an ugly kludge because gyp doesn't actually treat
-          # host_arch=x64 target_arch=ia32 as proper cross compilation.
-          # It still wants to compile the "host" program with -m32 et
-          # al.  Though a program built that way can indeed run on the
-          # x86-64 host, we cannot reliably build this program on such a
-          # host because Ubuntu does not provide the full suite of
-          # x86-32 libraries in packages that can be installed on an
-          # x86-64 host; in particular, libelf is missing.  So here we
-          # use the hack of eliding all the -m* flags from the
-          # compilation lines, getting the command close to what they
-          # would be if gyp were to really build properly for the host.
-          # TODO(bradnelson): Clean up with proper cross support.
-          'conditions': [
-            ['host_arch=="x64"', {
-              'cflags/': [['exclude', '-m.*']],
-              'ldflags/': [['exclude', '-m.*']],
-            }],
-          ],
-        },
-        {
-          'target_name': 'nacl_helper_bootstrap_raw',
-          'type': 'executable',
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'nacl/nacl_helper_bootstrap_linux.c',
-            # We list the linker script here for documentation purposes.
-            # But even this doesn't make gyp treat it as a dependency,
-            # so incremental builds won't relink when the script changes.
-            # TODO(bradnelson): Fix the dependency handling.
-            'nacl/nacl_helper_bootstrap_linux.x',
-          ],
-          'cflags': [
-            # The tiny standalone bootstrap program is incompatible with
-            # -fstack-protector, which might be on by default.  That switch
-            # requires using the standard libc startup code, which we do not.
-            '-fno-stack-protector',
-            # We don't want to compile it PIC (or its cousin PIE), because
-            # it goes at an absolute address anyway, and because any kind
-            # of PIC complicates life for the x86-32 assembly code.  We
-            # append -fno-* flags here instead of using a 'cflags!' stanza
-            # to remove -f* flags, just in case some system's compiler
-            # defaults to using PIC for everything.
-            '-fno-pic', '-fno-PIC',
-            '-fno-pie', '-fno-PIE',
-          ],
-          'link_settings': {
-            'ldflags': [
-              # TODO(bradchen): Delete the -B argument when Gold is verified
-              # to produce good results with our custom linker script.
-              # Until then use ld.bfd.
-              '-B', 'tools/ld_bfd',
-              # This programs is (almost) entirely standalone.  It has
-              # its own startup code, so no crt1.o for it.  It is
-              # statically linked, and on x86 it actually does not use
-              # libc at all.  However, on ARM it needs a few (safe)
-              # things from libc, so we don't use '-nostdlib' here.
-              '-static', '-nostartfiles',
-              # Link with our custom linker script to get out special layout.
-              # TODO(bradnelson): Use some <(foo) instead of chrome/ here.
-              '-Wl,--script=chrome/nacl/nacl_helper_bootstrap_linux.x',
-              # On x86-64, the default page size with some
-              # linkers is 2M rather than the real Linux page
-              # size of 4K.  A larger page size is incompatible
-              # with our custom linker script's special layout.
-              '-Wl,-z,max-page-size=0x1000',
-            ],
+            # NOTE: '-shared' overrides 'executable' above
+            'ldflags': ['-shared',
+                        '-Wl,--version-script=chrome/nacl/nacl_helper_exports.txt',
+                      ],
           },
         },
         {
           'target_name': 'nacl_helper_bootstrap',
+          'type': 'executable',
           'dependencies': [
-            'nacl_helper_bootstrap_raw',
-            'nacl_helper_bootstrap_munge_phdr#host',
+            'nacl_helper.so',
           ],
-          'type': 'none',
-          'actions': [{
-              'action_name': 'munge_phdr',
-              'inputs': ['nacl/nacl_helper_bootstrap_munge_phdr.py',
-                         '<(PRODUCT_DIR)/nacl_helper_bootstrap_munge_phdr',
-                         '<(PRODUCT_DIR)/nacl_helper_bootstrap_raw'],
-              'outputs': ['<(PRODUCT_DIR)/nacl_helper_bootstrap'],
-              'message': 'Munging ELF program header',
-              'action': ['python', '<@(_inputs)', '<@(_outputs)']
-            }],
-          }
+          'sources': [
+            '../chrome/nacl/nacl_helper_bootstrap_linux.c',
+          ],
+          # TODO(bradchen): Delete the -B argument when Gold supports
+          # -Ttext properly. Until then use ld.bfd.
+          'link_settings': {
+            'ldflags': ['-B', 'tools/ld_bfd',
+                        # Force text segment at 0x10000 (64KB)
+                        # The max-page-size option is needed on x86-64 linux
+                        # where 4K pages are not the default in the BFD linker.
+                        '-Wl,-Ttext-segment,10000,-z,max-page-size=0x1000',
+                        # reference nacl_helper as a shared library
+                        '<(PRODUCT_DIR)/nacl_helper.so',
+                        '-Wl,-rpath,<(SHARED_LIB_DIR)',
+                      ],
+          },
+        },
       ],
     }],
   ],

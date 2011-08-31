@@ -71,7 +71,6 @@ enum {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   FILE_NACL_HELPER,             // Full path to Linux nacl_helper executable.
-  FILE_NACL_HELPER_BOOTSTRAP,   // ... and nacl_helper_bootstrap executable.
 #endif
   FILE_NACL_PLUGIN,             // Full path to the internal NaCl plugin file.
   FILE_LIBAVCODEC,              // Full path to libavcodec media decoding

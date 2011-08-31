@@ -23,7 +23,6 @@
 #include "content/common/main_function_params.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "ipc/ipc_switches.h"
-#include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 namespace {
 
@@ -117,20 +116,33 @@ void HandleForkRequest(const std::vector<int>& child_fds) {
 
 }  // namespace
 
-static const char kNaClHelperAtZero[] = "at-zero";
+static const void* g_nacl_reserved_space = NULL;
+extern "C" __attribute__((visibility("default")))
+const void* nacl_helper_get_1G_address() {
+  return g_nacl_reserved_space;
+}
 
-int main(int argc, char *argv[]) {
+// nacl_helper_init does the real work of this module. It is invoked as
+// a static constructor and never returns, preventing main() from the
+// nacl_helper_bootstrap program from being called.
+//
+// NOTE This routine must not return.
+extern "C" __attribute__((visibility("default")))
+void nacl_helper_init(int argc, char *argv[],
+                      const char *nacl_reserved_space) {
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
   std::vector<int> empty; // for SendMsg() calls
 
   g_suid_sandbox_active = (NULL != getenv("SBX_D"));
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kNaClHelperAtZero)) {
-    g_nacl_prereserved_sandbox_addr = (void *) (uintptr_t) 0x10000;
+  g_nacl_reserved_space = nacl_reserved_space;
+  if (!nacl_reserved_space) {
+    VLOG(1) << "nacl_reserved_space is NULL";
+  } else {
+    VLOG(1) << "nacl_reserved_space is at "
+            << (void *)nacl_reserved_space;
   }
-
   // Send the zygote a message to let it know we are ready to help
   if (!UnixDomainSocket::SendMsg(kNaClZygoteDescriptor,
                                  kNaClHelperStartupAck,
