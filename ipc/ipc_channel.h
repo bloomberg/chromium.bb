@@ -175,6 +175,13 @@ class IPC_EXPORT Channel : public Message::Sender {
   // ID. Even if true, the server may have already accepted a connection.
   static bool IsNamedServerInitialized(const std::string& channel_id);
 
+#if defined(OS_LINUX)
+  // Sandboxed processes live in a PID namespace, so when sending the IPC hello
+  // message from client to server we need to send the PID from the global
+  // PID namespace.
+  static void SetGlobalPid(int pid);
+#endif
+
  protected:
   // Used in Chrome by the TestSink to provide a dummy channel implementation
   // for testing. TestSink overrides the "interesting" functions in Channel so

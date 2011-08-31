@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/global_descriptors_posix.h"
 #include "base/hash_tables.h"
 #include "base/linux_util.h"
@@ -41,6 +42,7 @@
 #include "content/common/zygote_fork_delegate_linux.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 #include "unicode/timezone.h"
+#include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 
 #if defined(OS_LINUX)
@@ -290,15 +292,24 @@ class Zygote {
     } else if (pid == 0) {
       // In the child process.
       close(pipe_fds[1]);
-      char buffer[1];
+      base::ProcessId real_pid;
       // Wait until the parent process has discovered our PID.  We
       // should not fork any child processes (which the seccomp
       // sandbox does) until then, because that can interfere with the
       // parent's discovery of our PID.
-      if (HANDLE_EINTR(read(pipe_fds[0], buffer, 1)) != 1 ||
-          buffer[0] != 'x') {
+      if (!file_util::ReadFromFD(pipe_fds[0],
+                                 reinterpret_cast<char*>(&real_pid),
+                                 sizeof(real_pid))) {
         LOG(FATAL) << "Failed to synchronise with parent zygote process";
       }
+      if (real_pid <= 0) {
+        LOG(FATAL) << "Invalid pid from parent zygote";
+      }
+#if defined(OS_LINUX)
+      // Sandboxed processes need to send the global, non-namespaced PID when
+      // setting up an IPC channel to their parent.
+      IPC::Channel::SetGlobalPid(real_pid);
+#endif
       close(pipe_fds[0]);
       close(dummy_fd);
       return 0;
@@ -341,7 +352,9 @@ class Zygote {
           goto error;
         }
       } else {
-        if (HANDLE_EINTR(write(pipe_fds[1], "x", 1)) != 1) {
+        int written =
+            HANDLE_EINTR(write(pipe_fds[1], &real_pid, sizeof(real_pid)));
+        if (written != sizeof(real_pid)) {
           LOG(ERROR) << "Failed to synchronise with child process";
           goto error;
         }

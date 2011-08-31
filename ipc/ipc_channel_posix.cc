@@ -293,6 +293,10 @@ bool SocketWriteErrorIsRecoverable() {
 }  // namespace
 //------------------------------------------------------------------------------
 
+#if defined(OS_LINUX)
+int Channel::ChannelImpl::global_pid_ = 0;
+#endif  // OS_LINUX
+
 Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
                                   Mode mode, Listener* listener)
     : mode_(mode),
@@ -997,6 +1001,13 @@ bool Channel::ChannelImpl::IsNamedServerInitialized(
   return file_util::PathExists(FilePath(channel_id));
 }
 
+#if defined(OS_LINUX)
+// static
+void Channel::ChannelImpl::SetGlobalPid(int pid) {
+  global_pid_ = pid;
+}
+#endif  // OS_LINUX
+
 // Called by libevent when we can read from the pipe without blocking.
 void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
   bool send_server_hello_msg = false;
@@ -1109,13 +1120,23 @@ void Channel::ChannelImpl::ClosePipeOnError() {
   }
 }
 
+int Channel::ChannelImpl::GetHelloMessageProcId() {
+  int pid = base::GetCurrentProcId();
+#if defined(OS_LINUX)
+  // Our process may be in a sandbox with a separate PID namespace.
+  if (global_pid_) {
+    pid = global_pid_;
+  }
+#endif
+  return pid;
+}
+
 void Channel::ChannelImpl::QueueHelloMessage() {
   // Create the Hello message
   scoped_ptr<Message> msg(new Message(MSG_ROUTING_NONE,
                                       HELLO_MESSAGE_TYPE,
                                       IPC::Message::PRIORITY_NORMAL));
-
-  if (!msg->WriteInt(base::GetCurrentProcId())) {
+  if (!msg->WriteInt(GetHelloMessageProcId())) {
     NOTREACHED() << "Unable to pickle hello message proc id";
   }
 #if defined(IPC_USES_READWRITE)
@@ -1210,5 +1231,12 @@ void Channel::ResetToAcceptingConnectionState() {
 bool Channel::IsNamedServerInitialized(const std::string& channel_id) {
   return ChannelImpl::IsNamedServerInitialized(channel_id);
 }
+
+#if defined(OS_LINUX)
+// static
+void Channel::SetGlobalPid(int pid) {
+  ChannelImpl::SetGlobalPid(pid);
+}
+#endif  // OS_LINUX
 
 }  // namespace IPC
