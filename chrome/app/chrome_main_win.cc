@@ -38,6 +38,7 @@ void PureCall() {
   __debugbreak();
   _exit(1);
 }
+#pragma optimize("", on)
 
 // Register the invalid param handler and pure call handler to be able to
 // notify breakpad when it happens.
