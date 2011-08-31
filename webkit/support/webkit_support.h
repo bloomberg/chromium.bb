@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class WebURLLoaderMockFactory;
@@ -21,7 +22,6 @@ class WebApplicationCacheHostClient;
 class WebCString;
 class WebFileSystemCallbacks;
 class WebFrame;
-class WebKitClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebPlugin;
