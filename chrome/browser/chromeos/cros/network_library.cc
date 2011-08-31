@@ -1854,11 +1854,11 @@ void NetworkLibraryImplBase::RemoveNetworkObserver(
   if (map_iter != network_observers_.end()) {
     map_iter->second->RemoveObserver(observer);
     if (!map_iter->second->size()) {
+      MonitorNetworkStop(service_path);
       delete map_iter->second;
       network_observers_.erase(map_iter);
     }
   }
-  MonitorNetworkStop(service_path);
 }
 
 void NetworkLibraryImplBase::RemoveObserverForAllNetworks(
@@ -1868,6 +1868,7 @@ void NetworkLibraryImplBase::RemoveObserverForAllNetworks(
   while (map_iter != network_observers_.end()) {
     map_iter->second->RemoveObserver(observer);
     if (!map_iter->second->size()) {
+      MonitorNetworkStop(map_iter->first);
       delete map_iter->second;
       network_observers_.erase(map_iter++);
     } else {
