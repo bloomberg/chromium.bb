@@ -1313,6 +1313,11 @@ def PPAPIBrowserTester(env,
   if 'TRUSTED_ENV' not in env:
     return []
 
+  # No browser tests run on arm-thumb2
+  # Bug http://code.google.com/p/nativeclient/issues/detail?id=2224
+  if env.Bit('target_arm_thumb2'):
+    return []
+
   # Lint the extra arguments that are being passed to the tester.
   special_args = ['--ppapi_plugin', '--sel_ldr', '--irt_library', '--file',
                   '--map_file', '--extension', '--tool', '--browser_flag',
@@ -1381,7 +1386,7 @@ pre_base_env.AddMethod(PPAPIBrowserTester)
 
 # Disabled for ARM because Chrome binaries for ARM are not available.
 def PPAPIBrowserTesterIsBroken(env):
-  return env.Bit('target_arm')
+  return env.Bit('target_arm') or env.Bit('target_arm_thumb2')
 
 pre_base_env.AddMethod(PPAPIBrowserTesterIsBroken)
 
