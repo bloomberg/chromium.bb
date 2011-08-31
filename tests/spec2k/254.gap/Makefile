@@ -30,12 +30,14 @@ src/tietze.c \
 src/unknown.c \
 src/vecffe.c \
 src/vector.c \
-src/word.c 
+src/word.c
 
 IT=gap
 
 CFLAGS_EXTRA = -DSYS_HAS_CALLOC_PROTO  -DSYS_IS_USG -DSYS_HAS_IOCTL_PROTO -DSYS_HAS_TIME_PROTO
 
+# 254.gap relies on signed arithmetic overflow being well-defined.
+CFLAGS_EXTRA += -fwrapv
 
 include ../Makefile.common
 
