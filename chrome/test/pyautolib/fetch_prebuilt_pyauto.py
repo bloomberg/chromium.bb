@@ -20,11 +20,13 @@ Examples:
 """
 
 import glob
+import httplib
 import optparse
 import os
 import shutil
 import sys
 import urllib
+import urlparse
 
 import pyauto_utils
 
@@ -54,21 +56,45 @@ class FetchPrebuilt(object):
     self._outdir = self._options.outdir
     self._url = self._args[0]
 
-    # Setup urls to download
-    self._chrome_zip_name = 'chrome-%s' % { 'linux64': 'linux64bit',
-                                            'linux32': 'linux32bit',
-                                            'mac': 'mac',
-                                            'win': 'win32'
-                                          }[self._options.platform]
+    # Determine name of zip.
+    if not self._options.platform.startswith('linux'):
+      self._chrome_zip_name = 'chrome-%s' % { 'mac': 'mac',
+                                              'win': 'win32'
+                                            }[self._options.platform]
+    else:
+      linux_32_names = ['linux', 'lucid32bit']
+      linux_64_names = ['linux64', 'lucid64bit']
+      linux_names = { 'linux': linux_32_names + linux_64_names,
+                      'linux32': linux_32_names,
+                      'linux64': linux_64_names
+                    }[self._options.platform]
+      for name in linux_names:
+        zip_name = 'chrome-' + name
+        if self._DoesURLExist('%s/%s.zip' % (self._url, zip_name)):
+          self._chrome_zip_name = zip_name
+          break
+      else:
+        raise RuntimeError('Could not find chrome zip at ' + self._url)
+
+    # Setup urls to download.
     self._chrome_zip_url = '%s/%s.zip' % (self._url, self._chrome_zip_name)
     chrome_test_url = '%s/%s.test' % (self._url, self._chrome_zip_name)
     self._pyautolib_py_url = '%s/pyautolib.py' % chrome_test_url
-    self._pyautolib_so_url = '%s/%s' % (chrome_test_url,
-                                        { 'linux64': '_pyautolib.so',
-                                          'linux32': '_pyautolib.so',
-                                          'mac': '_pyautolib.so',
-                                          'win': '_pyautolib.pyd',
-                                         }[self._options.platform])
+    if self._options.platform == 'win':
+      self._pyautolib_so_name = '_pyautolib.pyd'
+      self._chromedriver_name = 'chromedriver.exe'
+    else:
+      self._pyautolib_so_name = '_pyautolib.so'
+      self._chromedriver_name = 'chromedriver'
+    self._pyautolib_so_url = chrome_test_url + '/' + self._pyautolib_so_name
+    self._chromedriver_url = chrome_test_url + '/' + self._chromedriver_name
+
+  def _DoesURLExist(self, url):
+    """Determines whether a resource exists at the given URL."""
+    parsed = urlparse.urlparse(url)
+    conn = httplib.HTTPConnection(parsed.netloc)
+    conn.request('HEAD', parsed.path)
+    return conn.getresponse().status == 200
 
   def Cleanup(self):
     """Remove old binaries, if any."""
@@ -84,9 +110,11 @@ class FetchPrebuilt(object):
     print self._chrome_zip_url
     print self._pyautolib_py_url
     print self._pyautolib_so_url
+    print self._chromedriver_url
     chrome_zip = urllib.urlretrieve(self._chrome_zip_url)[0]
     pyautolib_py = urllib.urlretrieve(self._pyautolib_py_url)[0]
     pyautolib_so = urllib.urlretrieve(self._pyautolib_so_url)[0]
+    chromedriver = urllib.urlretrieve(self._chromedriver_url)[0]
     chrome_unzip_dir = os.path.join(self._outdir, self._chrome_zip_name)
     if os.path.exists(chrome_unzip_dir):
       print 'Cleaning', chrome_unzip_dir
@@ -96,12 +124,8 @@ class FetchPrebuilt(object):
     # Copy over the binaries to outdir
     items_to_copy = {
       pyautolib_py: os.path.join(self._outdir, 'pyautolib.py'),
-      pyautolib_so: os.path.join(self._outdir,
-                                 { 'linux64': '_pyautolib.so',
-                                   'linux32': '_pyautolib.so',
-                                   'mac': '_pyautolib.so',
-                                   'win': '_pyautolib.pyd'
-                                  }[self._options.platform])
+      pyautolib_so: os.path.join(self._outdir, self._pyautolib_so_name),
+      chromedriver: os.path.join(self._outdir, self._chromedriver_name)
     }
     unzip_dir_contents = glob.glob(os.path.join(chrome_unzip_dir, '*'))
     for item in unzip_dir_contents:
@@ -115,6 +139,10 @@ class FetchPrebuilt(object):
     pyauto_utils.RemovePath(chrome_unzip_dir)
 
     # Final setup (if any)
+    # Set executable bit on chromedriver binary.
+    if not self._options.platform == 'win':
+      os.chmod(items_to_copy[chromedriver], 0700)
+
     # Create symlink to .framework on Mac
     if self._options.platform == 'mac':
       mac_app_name = os.path.basename([x for x in unzip_dir_contents
@@ -133,4 +161,3 @@ class FetchPrebuilt(object):
 
 if __name__ == '__main__':
   FetchPrebuilt().Run()
-
