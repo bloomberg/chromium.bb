@@ -119,7 +119,9 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     em::DevicePolicySettingRequest* setting_request =
         request.add_setting_request();
     setting_request->set_key(kChromeDevicePolicySettingKey);
-    backend->ProcessPolicyRequest(token_, "testid", request, &delegate);
+    backend->ProcessPolicyRequest(token_, "testid",
+                                  CloudPolicyDataStore::USER_AFFILIATION_NONE,
+                                  request, &delegate);
 
     MessageLoop::current()->Run();
   }
@@ -170,7 +172,9 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementServiceIntegrationTest,
     em::PolicyFetchRequest* fetch_request = request.add_request();
     fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
     fetch_request->set_policy_type(kChromeUserPolicyType);
-    backend->ProcessPolicyRequest(token_, "testid", request, &delegate);
+    backend->ProcessPolicyRequest(token_, "testid",
+                                  CloudPolicyDataStore::USER_AFFILIATION_NONE,
+                                  request, &delegate);
 
     MessageLoop::current()->Run();
   }
