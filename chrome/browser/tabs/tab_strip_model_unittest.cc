@@ -13,12 +13,10 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
@@ -154,10 +152,6 @@ class TabStripModelTest : public RenderViewHostTestHarness {
   TabStripModelTest()
       : RenderViewHostTestHarness(),
         browser_thread_(BrowserThread::UI, &message_loop_) {
-#if defined(OS_MACOSX)
-    base::SystemMonitor::AllocateSystemIOPorts();
-#endif
-    system_monitor.reset(new base::SystemMonitor);
   }
 
   TabContentsWrapper* CreateTabContents() {
@@ -273,11 +267,6 @@ class TabStripModelTest : public RenderViewHostTestHarness {
   std::wstring test_dir_;
   std::wstring profile_path_;
   std::map<TabContents*, int> foo_;
-
-  // ProfileManager requires a base::SystemMonitor.
-  scoped_ptr<base::SystemMonitor> system_monitor;
-
-  ProfileManager pm_;
 };
 
 class MockTabStripModelObserver : public TabStripModelObserver {

@@ -127,8 +127,6 @@ TestingProfile::TestingProfile()
       incognito_(false),
       last_session_exited_cleanly_(true),
       profile_dependency_manager_(ProfileDependencyManager::GetInstance()) {
-  profile_dependency_manager_->CreateProfileServices(this, true);
-
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Failed to create unique temporary directory.";
 
@@ -152,6 +150,24 @@ TestingProfile::TestingProfile()
       CHECK(temp_dir_.Set(system_tmp_dir));
     }
   }
+
+  profile_path_ = temp_dir_.path();
+
+  Init();
+}
+
+TestingProfile::TestingProfile(const FilePath& path)
+    : start_time_(Time::Now()),
+      testing_prefs_(NULL),
+      incognito_(false),
+      last_session_exited_cleanly_(true),
+      profile_path_(path),
+      profile_dependency_manager_(ProfileDependencyManager::GetInstance()) {
+  Init();
+}
+
+void TestingProfile::Init() {
+  profile_dependency_manager_->CreateProfileServices(this, true);
 
   // Install profile keyed service factory hooks for dummy/test services
   DesktopNotificationServiceFactory::GetInstance()->SetTestingFactory(
@@ -347,8 +363,7 @@ ExtensionService* TestingProfile::CreateExtensionService(
 }
 
 FilePath TestingProfile::GetPath() {
-  DCHECK(temp_dir_.IsValid());  // TODO(phajdan.jr): do it better.
-  return temp_dir_.path();
+  return profile_path_;
 }
 
 TestingPrefService* TestingProfile::GetTestingPrefService() {

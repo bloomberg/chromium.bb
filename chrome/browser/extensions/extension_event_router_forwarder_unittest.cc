@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,33 +37,27 @@ class ExtensionEventRouterForwarderTest : public testing::Test {
  protected:
   ExtensionEventRouterForwarderTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO) {
+        io_thread_(BrowserThread::IO),
+        profile_manager_(
+            static_cast<TestingBrowserProcess*>(g_browser_process)) {
 #if defined(OS_MACOSX)
     base::SystemMonitor::AllocateSystemIOPorts();
 #endif
     dummy.reset(new base::SystemMonitor);
   }
 
-  ~ExtensionEventRouterForwarderTest() {
-  }
-
   virtual void SetUp() {
+    ASSERT_TRUE(profile_manager_.SetUp());
+
     // Inject a BrowserProcess with a ProfileManager.
     ASSERT_TRUE(io_thread_.Start());
 
-    TestingBrowserProcess* browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
-    browser_process->SetProfileManager(new ProfileManager);
-
-    profile1_ = new TestingProfile();
-    profile2_ = new TestingProfile();
-
-    browser_process->profile_manager()->RegisterProfile(profile1_, true);
-    browser_process->profile_manager()->RegisterProfile(profile2_, true);
+    profile1_ = profile_manager_.CreateTestingProfile("one");
+    profile2_ = profile_manager_.CreateTestingProfile("two");
   }
 
   TestingProfile* CreateIncognitoProfile(TestingProfile* base) {
-    TestingProfile* incognito = new TestingProfile();
+    TestingProfile* incognito = new TestingProfile;  // Owned by |base|.
     incognito->set_incognito(true);
     base->SetOffTheRecordProfile(incognito);
     return incognito;
@@ -71,6 +66,7 @@ class ExtensionEventRouterForwarderTest : public testing::Test {
   MessageLoopForUI message_loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
+  TestingProfileManager profile_manager_;
   scoped_ptr<base::SystemMonitor> dummy;
   // Profiles are weak pointers, owned by ProfileManager in |browser_process_|.
   TestingProfile* profile1_;

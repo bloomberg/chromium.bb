@@ -23,7 +23,6 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
-class FilePath;
 class NewProfileLauncher;
 class ProfileInfoCache;
 
@@ -58,7 +57,7 @@ class ProfileManager : public base::NonThreadSafe,
                        public NotificationObserver,
                        public Profile::Delegate {
  public:
-  ProfileManager();
+  explicit ProfileManager(const FilePath& user_data_dir);
   virtual ~ProfileManager();
 
   // Invokes SessionServiceFactory::ShutdownForProfile() for all profiles.
@@ -179,7 +178,7 @@ class ProfileManager : public base::NonThreadSafe,
   virtual void DoFinalInit(Profile* profile, bool go_off_the_record);
 
  private:
-  friend class ExtensionEventRouterForwarderTest;
+  friend class TestingProfileManager;
 
   // This struct contains information about profiles which are being loaded or
   // were loaded.
@@ -227,6 +226,9 @@ class ProfileManager : public base::NonThreadSafe,
 
   NotificationRegistrar registrar_;
 
+  // The path to the user data directory (DIR_USER_DATA).
+  const FilePath user_data_dir_;
+
   // Indicates that a user has logged in and that the profile specified
   // in the --login-profile command line argument should be used as the
   // default.
@@ -252,6 +254,9 @@ class ProfileManager : public base::NonThreadSafe,
 // Same as the ProfileManager, but doesn't initialize some services of the
 // profile. This one is useful in unittests.
 class ProfileManagerWithoutInit : public ProfileManager {
+ public:
+  explicit ProfileManagerWithoutInit(const FilePath& user_data_dir);
+
  protected:
   virtual void DoFinalInit(Profile*, bool) {}
 };

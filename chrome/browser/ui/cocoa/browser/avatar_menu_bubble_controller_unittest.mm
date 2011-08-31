@@ -6,12 +6,14 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/fake_profile_info_interface.h"
+#include "chrome/browser/profiles/avatar_menu_model.h"
+#include "chrome/browser/profiles/avatar_menu_model_observer.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest_mac.h"
 
 class FakeBridge : public AvatarMenuModelObserver {
@@ -21,21 +23,19 @@ class FakeBridge : public AvatarMenuModelObserver {
 
 class AvatarMenuBubbleControllerTest : public CocoaTest {
  public:
+  AvatarMenuBubbleControllerTest()
+      : manager_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
+  }
+
   virtual void SetUp() {
-    info_.reset(new FakeProfileInfo);
+    CocoaTest::SetUp();
+    ASSERT_TRUE(manager_.SetUp());
 
-    profile1_.reset(
-        new AvatarMenuModel::Item(0, FakeProfileInfo::GetTestImage()));
-    profile1_->name = ASCIIToUTF16("Test 1");
-    info()->mock_profiles()->push_back(profile1_.get());
-
-    profile2_.reset(
-        new AvatarMenuModel::Item(1, FakeProfileInfo::GetTestImage()));
-    profile2_->name = ASCIIToUTF16("Test 2");
-    info()->mock_profiles()->push_back(profile2_.get());
+    manager_.CreateTestingProfile("test1", ASCIIToUTF16("Test 1"), 1);
+    manager_.CreateTestingProfile("test2", ASCIIToUTF16("Test 2"), 0);
 
     bridge_ = new FakeBridge;
-    model_ = new AvatarMenuModel(info(), bridge(), NULL);
+    model_ = new AvatarMenuModel(manager_.profile_info_cache(), bridge(), NULL);
 
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
@@ -46,18 +46,13 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
                                                anchoredAt:point];
   }
 
-  FakeProfileInfo* info() { return info_.get(); }
+  TestingProfileManager* manager() { return &manager_; }
   AvatarMenuBubbleController* controller() { return controller_; }
   AvatarMenuModel* model() { return model_; }
   FakeBridge* bridge() { return bridge_; }
 
  private:
-  BrowserTestHelper browser_helper_;
-
-  scoped_ptr<AvatarMenuModel::Item> profile1_;
-  scoped_ptr<AvatarMenuModel::Item> profile2_;
-
-  scoped_ptr<FakeProfileInfo> info_;
+  TestingProfileManager manager_;
 
   // Weak; releases self.
   AvatarMenuBubbleController* controller_;
@@ -108,14 +103,7 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
   scoped_nsobject<NSMutableArray> oldItems([[controller() items] copy]);
 
   // Now create a new profile and notify the delegate.
-  AvatarMenuModel::Item profile3(2, FakeProfileInfo::GetTestImage());
-  profile3.name = ASCIIToUTF16("Test 3");
-  info()->mock_profiles()->push_back(&profile3);
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
+  manager()->CreateTestingProfile("test3", ASCIIToUTF16("Test 3"), 0);
 
   // Testing the bridge is not worth the effort...
   [controller() performLayout];

@@ -58,7 +58,14 @@ class URLRequestContextGetter;
 
 class TestingProfile : public Profile {
  public:
+  // Default constructor that cannot be used with multi-profiles.
   TestingProfile();
+
+  // Multi-profile aware constructor that takes the path to a directory managed
+  // for this profile. This constructor is meant to be used by
+  // TestingProfileManager::CreateTestingProfile. If you need to create multi-
+  // profile profiles, use that factory method instead of this directly.
+  explicit TestingProfile(const FilePath& path);
 
   virtual ~TestingProfile();
 
@@ -287,6 +294,9 @@ class TestingProfile : public Profile {
   TestingPrefService* testing_prefs_;
 
  private:
+  // Common initialization between the two constructors.
+  void Init();
+
   // Destroys favicon service if it has been created.
   void DestroyFaviconService();
 
@@ -377,8 +387,13 @@ class TestingProfile : public Profile {
   // The proxy prefs tracker.
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
-  // We use a temporary directory to store testing profile data.
+  // We use a temporary directory to store testing profile data. In a multi-
+  // profile environment, this is invalid and the directory is managed by the
+  // TestingProfileManager.
   ScopedTempDir temp_dir_;
+  // The path to this profile. This will be valid in either of the two above
+  // cases.
+  FilePath profile_path_;
 
   scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 

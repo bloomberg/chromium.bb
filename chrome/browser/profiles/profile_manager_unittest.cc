@@ -44,7 +44,7 @@ class ProfileManagerTest : public testing::Test {
         db_thread_(BrowserThread::DB, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(local_state_.Get(), NULL, extension_event_router_forwarder_),
-        profile_manager_(new ProfileManagerWithoutInit) {
+        profile_manager_(new ProfileManagerWithoutInit(temp_dir_.path())) {
 #if defined(OS_MACOSX)
     base::SystemMonitor::AllocateSystemIOPorts();
 #endif

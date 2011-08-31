@@ -103,8 +103,10 @@ Profile* ProfileManager::GetLastUsedProfile() {
   return profile_manager->GetLastUsedProfile(user_data_dir);
 }
 
-ProfileManager::ProfileManager() : logged_in_(false),
-                                   will_import_(false) {
+ProfileManager::ProfileManager(const FilePath& user_data_dir)
+    : user_data_dir_(user_data_dir),
+      logged_in_(false),
+      will_import_(false) {
   BrowserList::AddObserver(this);
 #if defined(OS_CHROMEOS)
   registrar_.Add(
@@ -519,10 +521,8 @@ ProfileManager::GetSortedProfilesFromDirectoryMap() {
 
 ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
   if (!profile_info_cache_.get()) {
-    FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     profile_info_cache_.reset(new ProfileInfoCache(
-        g_browser_process->local_state(), user_data_dir));
+        g_browser_process->local_state(), user_data_dir_));
   }
   return *profile_info_cache_.get();
 }
@@ -577,4 +577,8 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
   return true;
 #endif
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles);
+}
+
+ProfileManagerWithoutInit::ProfileManagerWithoutInit(
+    const FilePath& user_data_dir) : ProfileManager(user_data_dir) {
 }

@@ -855,7 +855,9 @@ void BrowserProcessImpl::CreateProfileManager() {
   DCHECK(!created_profile_manager_ && profile_manager_.get() == NULL);
   created_profile_manager_ = true;
 
-  profile_manager_.reset(new ProfileManager());
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  profile_manager_.reset(new ProfileManager(user_data_dir));
 }
 
 void BrowserProcessImpl::CreateLocalState() {

@@ -7,10 +7,9 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
-#include "chrome/browser/profiles/fake_profile_info_interface.h"
-#include "chrome/browser/profiles/profile_info_interface.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/common/notification_service.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -33,91 +32,80 @@ class MockObserver : public AvatarMenuModelObserver {
 
 class AvatarMenuModelTest : public testing::Test {
  public:
-  FakeProfileInfo* cache() {
-    return &cache_;
+  AvatarMenuModelTest()
+      : manager_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
   }
 
-  Browser* browser() {
-    return NULL;
+  virtual void SetUp() {
+    ASSERT_TRUE(manager_.SetUp());
   }
 
-  const gfx::Image& GetTestImage() {
-    return FakeProfileInfo::GetTestImage();
-  }
+  Browser* browser() { return NULL; }
+
+  TestingProfileManager* manager() { return &manager_; }
 
  private:
-  FakeProfileInfo cache_;
+  TestingProfileManager manager_;
 };
 
 TEST_F(AvatarMenuModelTest, InitialCreation) {
-  std::vector<AvatarMenuModel::Item*>* profiles = cache()->mock_profiles();
+  string16 name1(ASCIIToUTF16("Test 1"));
+  string16 name2(ASCIIToUTF16("Test 2"));
 
-  AvatarMenuModel::Item profile1(0, GetTestImage());
-  profile1.name = ASCIIToUTF16("Test 1");
-  profiles->push_back(&profile1);
-
-  AvatarMenuModel::Item profile2(1, GetTestImage());
-  profile2.name = ASCIIToUTF16("Test 2");
-  profiles->push_back(&profile2);
+  manager()->CreateTestingProfile("p1", name1, 0);
+  manager()->CreateTestingProfile("p2", name2, 0);
 
   MockObserver observer;
   EXPECT_EQ(0, observer.change_count());
 
-  AvatarMenuModel model(cache(), &observer, browser());
+  AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
   EXPECT_EQ(0, observer.change_count());
 
   ASSERT_EQ(2U, model.GetNumberOfItems());
 
   const AvatarMenuModel::Item& item1 = model.GetItemAt(0);
   EXPECT_EQ(0U, item1.model_index);
-  EXPECT_EQ(ASCIIToUTF16("Test 1"), item1.name);
+  EXPECT_EQ(name1, item1.name);
 
   const AvatarMenuModel::Item& item2 = model.GetItemAt(1);
   EXPECT_EQ(1U, item2.model_index);
-  EXPECT_EQ(ASCIIToUTF16("Test 2"), item2.name);
+  EXPECT_EQ(name2, item2.name);
 }
 
 
 TEST_F(AvatarMenuModelTest, ChangeOnNotify) {
-  std::vector<AvatarMenuModel::Item*>* profiles = cache()->mock_profiles();
+  string16 name1(ASCIIToUTF16("Test 1"));
+  string16 name2(ASCIIToUTF16("Test 2"));
 
-  AvatarMenuModel::Item profile1(0, GetTestImage());
-  profile1.name = ASCIIToUTF16("Test 1");
-  profiles->push_back(&profile1);
-
-  AvatarMenuModel::Item profile2(1, GetTestImage());
-  profile2.name = ASCIIToUTF16("Test 2");
-  profiles->push_back(&profile2);
+  manager()->CreateTestingProfile("p1", name1, 0);
+  manager()->CreateTestingProfile("p2", name2, 0);
 
   MockObserver observer;
   EXPECT_EQ(0, observer.change_count());
 
-  AvatarMenuModel model(cache(), &observer, browser());
+  AvatarMenuModel model(manager()->profile_info_cache(), &observer, browser());
   EXPECT_EQ(0, observer.change_count());
   EXPECT_EQ(2U, model.GetNumberOfItems());
 
-  AvatarMenuModel::Item profile3(2, GetTestImage());
-  profile3.name = ASCIIToUTF16("Test 3");
-  profiles->insert(profiles->begin() + 1, &profile3);
+  string16 name3(ASCIIToUTF16("Test 3"));
+  manager()->CreateTestingProfile("p3", name3, 0);
 
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      NotificationService::AllSources(),
-      NotificationService::NoDetails());
-  EXPECT_EQ(1, observer.change_count());
+  // Three changes happened via the call to CreateTestingProfile: adding the
+  // profile to the cache, setting the user name, and changing the avatar.
+  EXPECT_EQ(3, observer.change_count());
   ASSERT_EQ(3U, model.GetNumberOfItems());
 
   const AvatarMenuModel::Item& item1 = model.GetItemAt(0);
   EXPECT_EQ(0U, item1.model_index);
-  EXPECT_EQ(ASCIIToUTF16("Test 1"), item1.name);
+  EXPECT_EQ(name1, item1.name);
 
   const AvatarMenuModel::Item& item2 = model.GetItemAt(1);
   EXPECT_EQ(1U, item2.model_index);
-  EXPECT_EQ(ASCIIToUTF16("Test 3"), item2.name);
+  EXPECT_EQ(name2, item2.name);
 
   const AvatarMenuModel::Item& item3 = model.GetItemAt(2);
   EXPECT_EQ(2U, item3.model_index);
-  EXPECT_EQ(ASCIIToUTF16("Test 2"), item3.name);
+  EXPECT_EQ(name3, item3.name);
 }
 
 }  // namespace
