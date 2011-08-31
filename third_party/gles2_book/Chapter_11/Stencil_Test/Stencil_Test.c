@@ -225,6 +225,7 @@ void stDraw ( ESContext *esContext )
       glUniform4fv( userData->colorLoc, 1, colors[i] );
       glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, offset );
    }
+   glStencilMask( 0xff );
 }
 
 ///

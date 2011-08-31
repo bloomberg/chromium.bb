@@ -40,4 +40,5 @@ Local Modifications:
   Improvements in Chapter_11/Stencil_Test:
     - Fixed depth and color values in Stencil Test
     - Removed redundant glGetIntegerv in draw loop
+    - Restore stencil-mask state after every frame
 
