@@ -502,14 +502,6 @@ const char kLanguageMozcIncognitoMode[] =
     "settings.language.mozc_incognito_mode";
 const char kLanguageMozcUseAutoImeTurnOff[] =
     "settings.language.mozc_use_auto_ime_turn_off";
-const char kLanguageMozcUseDateConversion[] =
-    "settings.language.mozc_use_date_conversion";
-const char kLanguageMozcUseSingleKanjiConversion[] =
-    "settings.language.mozc_use_single_kanji_conversion";
-const char kLanguageMozcUseSymbolConversion[] =
-    "settings.language.mozc_use_symbol_conversion";
-const char kLanguageMozcUseNumberConversion[] =
-    "settings.language.mozc_use_number_conversion";
 const char kLanguageMozcUseHistorySuggest[] =
     "settings.language.mozc_use_history_suggest";
 const char kLanguageMozcUseDictionarySuggest[] =

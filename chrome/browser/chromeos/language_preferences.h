@@ -135,7 +135,7 @@ extern const char kMozcSectionName[];
 
 extern const LanguageBooleanPrefs kMozcBooleanPrefs[];
 // See comments at kNumChewingBooleanPrefs for why we hard-code this here.
-const size_t kNumMozcBooleanPrefs = 8;
+const size_t kNumMozcBooleanPrefs = 4;
 
 extern const LanguageMultipleChoicePreference<const char*>
     kMozcMultipleChoicePrefs[];
