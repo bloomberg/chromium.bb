@@ -104,7 +104,7 @@ struct HangulKeyboardNameIDPair {
 
 extern const HangulKeyboardNameIDPair kHangulKeyboardNameIDPairs[];
 // See comments at kNumChewingBooleanPrefs for why we hard-code this here.
-const size_t kNumHangulKeyboardNameIDPairs = 4;
+const size_t kNumHangulKeyboardNameIDPairs = 5;
 
 // ---------------------------------------------------------------------------
 // For Simplified Chinese input method (ibus-pinyin)

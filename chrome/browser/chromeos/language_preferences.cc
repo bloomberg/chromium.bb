@@ -159,6 +159,7 @@ const HangulKeyboardNameIDPair kHangulKeyboardNameIDPairs[] = {
   { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_390, "39" },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_3_SET_NO_SHIFT,
     "3s" },
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_ROMAJA, "ro" },
   // We don't support "Sebeolsik 2 set" keyboard.
 };
 COMPILE_ASSERT(kNumHangulKeyboardNameIDPairs ==
