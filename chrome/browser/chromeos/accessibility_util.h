@@ -21,6 +21,9 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui);
 // EnableAccessibility, above.
 void ToggleAccessibility(WebUI* login_web_ui);
 
+// Speaks the specified string.
+void Speak(const char* speak_str, bool queue, bool interruptible);
+
 }  // namespace accessibility
 }  // namespace chromeos
 

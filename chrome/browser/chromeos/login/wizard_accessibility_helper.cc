@@ -92,7 +92,7 @@ bool WizardAccessibilityHelper::IsAccessibilityEnabled() {
 void WizardAccessibilityHelper::MaybeSpeak(const char* str, bool queue,
     bool interruptible) {
   if (IsAccessibilityEnabled()) {
-    accessibility_handler_->Speak(str, queue, interruptible);
+    accessibility::Speak(str, queue, interruptible);
   }
 }
 
@@ -110,14 +110,7 @@ void WizardAccessibilityHelper::ToggleAccessibility() {
 }
 
 void WizardAccessibilityHelper::SetAccessibilityEnabled(bool enabled) {
-  bool doSpeak = (IsAccessibilityEnabled() != enabled);
   accessibility::EnableAccessibility(enabled, NULL);
-  if (doSpeak) {
-    accessibility_handler_->Speak(enabled ?
-        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_ENABLED).c_str() :
-        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str(),
-        false, true);
-  }
 }
 
 }  // namespace chromeos

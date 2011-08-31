@@ -11,8 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/accessibility_events.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
+#include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -109,25 +108,7 @@ void WizardAccessibilityHandler::Observe(
   std::string description;
   EarconType earcon = NO_EARCON;
   DescribeAccessibilityEvent(type, control_info, &description, &earcon);
-  Speak(description.c_str(), false, true);
-}
-
-void WizardAccessibilityHandler::Speak(const char* speak_str,
-                                       bool queue,
-                                       bool interruptible) {
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    if (queue || !interruptible) {
-      std::string props = "";
-      props.append("enqueue=");
-      props.append(queue ? "1;" : "0;");
-      props.append("interruptible=");
-      props.append(interruptible ? "1;" : "0;");
-      chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-          SetSpeakProperties(props.c_str());
-    }
-    chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-        Speak(speak_str);
-  }
+  accessibility::Speak(description.c_str(), false, true);
 }
 
 void WizardAccessibilityHandler::DescribeAccessibilityEvent(

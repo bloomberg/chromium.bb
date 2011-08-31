@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/file_reader.h"
@@ -19,6 +21,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
 #include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
@@ -97,6 +101,11 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
 
+  Speak(enabled ?
+        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_ENABLED).c_str() :
+        l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str(),
+        false, true);
+
   // Load/Unload ChromeVox
   Profile* profile = ProfileManager::GetDefaultProfile();
   ExtensionService* extension_service =
@@ -144,6 +153,23 @@ void ToggleAccessibility(WebUI* login_web_ui) {
   accessibility_enabled = !accessibility_enabled;
   EnableAccessibility(accessibility_enabled, login_web_ui);
 };
+
+void Speak(const char* speak_str, bool queue, bool interruptible) {
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    if (queue || !interruptible) {
+      std::string props = "";
+      props.append("enqueue=");
+      props.append(queue ? "1;" : "0;");
+      props.append("interruptible=");
+      props.append(interruptible ? "1;" : "0;");
+      chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
+          SetSpeakProperties(props.c_str());
+    }
+    chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
+        Speak(speak_str);
+  }
+}
+
 
 }  // namespace accessibility
 }  // namespace chromeos

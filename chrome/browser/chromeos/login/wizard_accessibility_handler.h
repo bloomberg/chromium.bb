@@ -39,9 +39,6 @@ class WizardAccessibilityHandler : public NotificationObserver {
  public:
   WizardAccessibilityHandler() { }
 
-  // Speaks the specified string.
-  void Speak(const char* speak_str, bool queue, bool interruptible);
-
  private:
   // Override from NotificationObserver.
   virtual void Observe(int type,
