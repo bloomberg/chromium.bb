@@ -579,18 +579,6 @@ int main(int argc, char** argv) {
     return ChromeTestSuite(argc, argv).Run();
   }
 
-  // The exit manager is in charge of calling the dtors of singleton objects.
-  // On Windows, the call to ChromeMain() below will construct one for the
-  // chrome.dll module, but that global is not shared with this module, so if
-  // chrome.dll calls back out to this module and the called code uses a
-  // singleton, we'll need this.  On other platforms, ChromeMain() isn't called
-  // at all below, so this is the lone exit manager for any code after this
-  // point.
-  // NOTE: We can't init this atop main() because ChromeTestSuite, as a subclass
-  // of TestSuite, creates one.  So we wait until after the Run() call above to
-  // create the manager for the code path that _doesn't_ use ChromeTestSuite.
-  base::AtExitManager exit_manager;
-
 #if defined(OS_WIN)
   if (command_line->HasSwitch(switches::kProcessType)) {
     // This is a child process, call ChromeMain.

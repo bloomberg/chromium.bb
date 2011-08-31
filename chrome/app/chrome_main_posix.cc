@@ -8,11 +8,16 @@
 
 #include "base/global_descriptors_posix.h"
 #include "base/logging.h"
-#include "base/process_util.h"
 #include "content/common/chrome_descriptors.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/app/breakpad_mac.h"
+#endif
+
+#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
+extern "C" {
+int tc_set_new_mode(int mode);
+}
 #endif
 
 namespace {
@@ -44,16 +49,16 @@ void SetupSignalHandlers() {
 namespace chrome_main {
 
 void LowLevelInit(void* instance) {
-#if defined(OS_MACOSX)
-  // TODO(mark): Some of these things ought to be handled in
-  // chrome_exe_main_mac.cc.  Under the current architecture, nothing
-  // in chrome_exe_main can rely directly on chrome_dll code on the
-  // Mac, though, so until some of this code is refactored to avoid
-  // such a dependency, it lives here.  See also the TODO(mark)
-  // at InitCrashReporter() and DestructCrashReporter().
-  base::EnableTerminationOnHeapCorruption();
-  base::EnableTerminationOnOutOfMemory();
-#endif  // OS_MACOSX
+  // NOTE(willchan): One might ask why this call is done here rather than in
+  // process_util_linux.cc with the definition of
+  // EnableTerminationOnOutOfMemory().  That's because base shouldn't have a
+  // dependency on TCMalloc.  Really, we ought to have our allocator shim code
+  // implement this EnableTerminationOnOutOfMemory() function.  Whateverz.  This
+  // works for now.
+#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
+  // For tcmalloc, we need to tell it to behave like new.
+  tc_set_new_mode(1);
+#endif
 
   // Set C library locale to make sure CommandLine can parse argument values
   // in correct encoding.

@@ -20,10 +20,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "policy/policy_constants.h"
 
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
-#endif
-
 namespace {
 
 CAppModule _Module;
@@ -43,37 +39,11 @@ void PureCall() {
   _exit(1);
 }
 
-#pragma warning(push)
-// Disables warning 4748 which is: "/GS can not protect parameters and local
-// variables from local buffer overrun because optimizations are disabled in
-// function."  GetStats() will not overflow the passed-in buffer and this
-// function never returns.
-#pragma warning(disable : 4748)
-void OnNoMemory() {
-#if defined(USE_TCMALLOC)
-  // Try to get some information on the stack to make the crash easier to
-  // diagnose from a minidump, being very careful not to do anything that might
-  // try to heap allocate.
-  char buf[32*1024];
-  MallocExtension::instance()->GetStats(buf, sizeof(buf));
-#endif
-  // Kill the process. This is important for security, since WebKit doesn't
-  // NULL-check many memory allocations. If a malloc fails, returns NULL, and
-  // the buffer is then used, it provides a handy mapping of memory starting at
-  // address 0 for an attacker to utilize.
-  __debugbreak();
-  _exit(1);
-}
-#pragma warning(pop)
-#pragma optimize("", on)
-
 // Register the invalid param handler and pure call handler to be able to
 // notify breakpad when it happens.
 void RegisterInvalidParamHandler() {
   _set_invalid_parameter_handler(InvalidParameter);
   _set_purecall_handler(PureCall);
-  // Gather allocation failure.
-  std::set_new_handler(&OnNoMemory);
   // Also enable the new handler for malloc() based failures.
   _set_new_mode(1);
 }

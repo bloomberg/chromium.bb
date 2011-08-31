@@ -588,6 +588,10 @@ int ChromeMain(int argc, char** argv) {
   // There is no HINSTANCE on non-Windows.
   void* instance = NULL;
 #endif
+
+  base::EnableTerminationOnHeapCorruption();
+  base::EnableTerminationOnOutOfMemory();
+
   // LowLevelInit performs startup initialization before we
   // e.g. allocate any memory.  It must be the first call on startup.
   chrome_main::LowLevelInit(instance);
