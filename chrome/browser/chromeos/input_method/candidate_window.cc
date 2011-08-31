@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -1048,6 +1049,8 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   // Clear the existing candidate_views if any.
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
     candidate_area_contents->RemoveChildView(candidate_views_[i]);
+    // Delete the view after getting out the current message loop iteration.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, candidate_views_[i]);
   }
   candidate_views_.clear();
 
