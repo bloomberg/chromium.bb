@@ -214,8 +214,9 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Helper method that starts up a sync test server if required.
   void SetUpTestServerIfRequired();
 
-  // Helper method used to start up a local python sync test server. Returns
-  // true if successful.
+  // Helper method used to start up a local python test server. Note: We set up
+  // an XMPP-only python server if |server_type_| is LOCAL_LIVE_SERVER and mock
+  // gaia credentials are in use. Returns true if successful.
   bool SetUpLocalPythonTestServer();
 
   // Helper method used to start up a local sync test server. Returns true if
@@ -299,10 +300,10 @@ class LiveSyncTest : public InProcessBrowserTest {
   base::ProcessHandle test_server_handle_;
 
   // Fake URLFetcher factory used to mock out GAIA signin.
-  scoped_ptr<FakeURLFetcherFactory> factory_;
+  scoped_ptr<FakeURLFetcherFactory> fake_factory_;
 
-  // URLFetcher factory used to contact sync server.
-  scoped_ptr<URLFetcherFactory> integration_factory_;
+  // The URLFetcherFactory instance used to instantiate |fake_factory_|.
+  scoped_ptr<URLFetcherFactory> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };

@@ -373,12 +373,12 @@ void LiveSyncTest::ReadPasswordFile() {
 void LiveSyncTest::SetupMockGaiaResponses() {
   username_ = "user@gmail.com";
   password_ = "password";
-  integration_factory_.reset(new URLFetcherFactory());
-  factory_.reset(new FakeURLFetcherFactory(integration_factory_.get()));
-  factory_->SetFakeResponse(kClientLoginUrl, "SID=sid\nLSID=lsid", true);
-  factory_->SetFakeResponse(kGetUserInfoUrl, "email=user@gmail.com", true);
-  factory_->SetFakeResponse(kIssueAuthTokenUrl, "auth", true);
-  factory_->SetFakeResponse(kSearchDomainCheckUrl, ".google.com", true);
+  factory_.reset(new URLFetcherFactory());
+  fake_factory_.reset(new FakeURLFetcherFactory(factory_.get()));
+  fake_factory_->SetFakeResponse(kClientLoginUrl, "SID=sid\nLSID=lsid", true);
+  fake_factory_->SetFakeResponse(kGetUserInfoUrl, "email=user@gmail.com", true);
+  fake_factory_->SetFakeResponse(kIssueAuthTokenUrl, "auth", true);
+  fake_factory_->SetFakeResponse(kSearchDomainCheckUrl, ".google.com", true);
 }
 
 // Start up a local sync server based on the value of server_type_, which
@@ -386,8 +386,11 @@ void LiveSyncTest::SetupMockGaiaResponses() {
 void LiveSyncTest::SetUpTestServerIfRequired() {
   if (server_type_ == LOCAL_PYTHON_SERVER) {
     if (!SetUpLocalPythonTestServer())
-      LOG(FATAL) << "Failed to set up local python test server";
+      LOG(FATAL) << "Failed to set up local python sync and XMPP servers";
   } else if (server_type_ == LOCAL_LIVE_SERVER) {
+    // Using mock gaia credentials requires the use of a mock XMPP server.
+    if (username_ == "user@gmail.com" && !SetUpLocalPythonTestServer())
+      LOG(FATAL) << "Failed to set up local python XMPP server";
     if (!SetUpLocalTestServer())
       LOG(FATAL) << "Failed to set up local test server";
   } else if (server_type_ == EXTERNAL_LIVE_SERVER) {
@@ -402,9 +405,11 @@ bool LiveSyncTest::SetUpLocalPythonTestServer() {
       << "Could not launch local python test server.";
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  std::string sync_service_url = sync_server_.GetURL("chromiumsync").spec();
-  cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
-  VLOG(1) << "Started local python test server at " << sync_service_url;
+  if (server_type_ == LOCAL_PYTHON_SERVER) {
+    std::string sync_service_url = sync_server_.GetURL("chromiumsync").spec();
+    cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
+    VLOG(1) << "Started local python sync server at " << sync_service_url;
+  }
 
   int xmpp_port = 0;
   if (!sync_server_.server_data().GetInteger("xmpp_port", &xmpp_port)) {
@@ -426,6 +431,8 @@ bool LiveSyncTest::SetUpLocalPythonTestServer() {
     // The local XMPP server only supports insecure connections.
     cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);
   }
+  VLOG(1) << "Started local python XMPP server at "
+          << xmpp_host_port_pair.ToString();
 
   return true;
 }
