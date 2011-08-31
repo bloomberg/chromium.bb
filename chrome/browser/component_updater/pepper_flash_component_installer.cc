@@ -18,6 +18,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/plugin_constants.h"
 
 namespace {
 
@@ -46,12 +47,6 @@ const char kPepperFlashManifestName[] =
 #else  // OS_LINUX, etc.
     "NixFlapper";
 #endif
-
-const char* kFlashPluginName = "Shockwave Flash";
-const char* kFlashPluginSwfMimeType = "application/x-shockwave-flash";
-const char* kFlashPluginSwfExtension = "swf";
-const char* kFlashPluginSplMimeType = "application/futuresplash";
-const char* kFlashPluginSplExtension = "spl";
 
 // The pepper flash plugins are in a directory with this name.
 const FilePath::CharType kPepperFlashBaseDirectory[] =

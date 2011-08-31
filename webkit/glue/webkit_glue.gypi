@@ -182,6 +182,8 @@
         '../plugins/npapi/webplugin_impl.h',
         '../plugins/npapi/webview_plugin.cc',
         '../plugins/npapi/webview_plugin.h',
+        '../plugins/plugin_constants.cc',
+        '../plugins/plugin_constants.h',
         '../plugins/plugin_switches.cc',
         '../plugins/plugin_switches.h',
         '../plugins/ppapi/callbacks.cc',

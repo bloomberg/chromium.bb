@@ -22,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/user_agent.h"
+#include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_policy.h"
@@ -60,16 +61,7 @@ const char* kRemotingViewerPluginOldMimeType =
     "pepper-application/x-chromoting";
 #endif
 
-const char* kFlashPluginName = "Shockwave Flash";
-const char* kFlashPluginSwfMimeType = "application/x-shockwave-flash";
-const char* kFlashPluginSwfExtension = "swf";
-const char* kFlashPluginSwfDescription = "Shockwave Flash";
-const char* kFlashPluginSplMimeType = "application/futuresplash";
-const char* kFlashPluginSplExtension = "spl";
-const char* kFlashPluginSplDescription = "FutureSplash Player";
-
 #if !defined(NACL_WIN64)  // The code this needs isn't linked on Win64 builds.
-
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
 // and some are extra shared libraries distributed with the browser (these are
