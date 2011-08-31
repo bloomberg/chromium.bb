@@ -12,12 +12,14 @@
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
+using browser_sync::SyncProtocolErrorType;
 using std::string;
 using std::stringstream;
 using syncable::BASE_VERSION;
@@ -100,6 +102,9 @@ bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
 
   std::string local_birthday = dir->store_birthday();
 
+  // TODO(lipalani) : Remove this check here. When the new implementation
+  // becomes the default this check should go away. This is handled by the
+  // switch case in the new implementation.
   if (response->error_code() == ClientToServerResponse::CLEAR_PENDING ||
       response->error_code() == ClientToServerResponse::NOT_MY_BIRTHDAY) {
     // Birthday verification failures result in stopping sync and deleting
@@ -211,6 +216,67 @@ bool IsVeryFirstGetUpdates(const ClientToServerMessage& message) {
   return true;
 }
 
+SyncProtocolErrorType ConvertSyncProtocolErrorTypePBToLocalType(
+    const sync_pb::ClientToServerResponse::ErrorType& error_type) {
+  switch (error_type) {
+    case ClientToServerResponse::SUCCESS:
+      return browser_sync::SYNC_SUCCESS;
+    case ClientToServerResponse::NOT_MY_BIRTHDAY:
+      return browser_sync::NOT_MY_BIRTHDAY;
+    case ClientToServerResponse::THROTTLED:
+      return browser_sync::THROTTLED;
+    case ClientToServerResponse::CLEAR_PENDING:
+      return browser_sync::CLEAR_PENDING;
+    case ClientToServerResponse::TRANSIENT_ERROR:
+      return browser_sync::TRANSIENT_ERROR;
+    case ClientToServerResponse::MIGRATION_DONE:
+      return browser_sync::MIGRATION_DONE;
+    case ClientToServerResponse::UNKNOWN:
+      return browser_sync::UNKNOWN_ERROR;
+    case ClientToServerResponse::USER_NOT_ACTIVATED:
+    case ClientToServerResponse::AUTH_INVALID:
+    case ClientToServerResponse::ACCESS_DENIED:
+      return browser_sync::INVALID_CREDENTIAL;
+    default:
+      NOTREACHED();
+      return browser_sync::UNKNOWN_ERROR;
+  }
+}
+
+browser_sync::ClientAction ConvertClientActionPBToLocalClientAction(
+    const sync_pb::ClientToServerResponse::Error::Action& action) {
+  switch (action) {
+    case ClientToServerResponse::Error::UPGRADE_CLIENT:
+      return browser_sync::UPGRADE_CLIENT;
+    case ClientToServerResponse::Error::CLEAR_USER_DATA_AND_RESYNC:
+      return browser_sync::CLEAR_USER_DATA_AND_RESYNC;
+    case ClientToServerResponse::Error::ENABLE_SYNC_ON_ACCOUNT:
+      return browser_sync::ENABLE_SYNC_ON_ACCOUNT;
+    case ClientToServerResponse::Error::STOP_AND_RESTART_SYNC:
+      return browser_sync::STOP_AND_RESTART_SYNC;
+    case ClientToServerResponse::Error::DISABLE_SYNC_ON_CLIENT:
+      return browser_sync::DISABLE_SYNC_ON_CLIENT;
+    case ClientToServerResponse::Error::UNKNOWN_ACTION:
+      return browser_sync::UNKNOWN_ACTION;
+    default:
+      NOTREACHED();
+      return browser_sync::UNKNOWN_ACTION;
+  }
+}
+
+browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
+    const sync_pb::ClientToServerResponse::Error& error) {
+  browser_sync::SyncProtocolError sync_protocol_error;
+  sync_protocol_error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(
+      error.error_type());
+  sync_protocol_error.error_description = error.error_description();
+  sync_protocol_error.url = error.url();
+  sync_protocol_error.action = ConvertClientActionPBToLocalClientAction(
+      error.action());
+
+  return sync_protocol_error;
+}
+
 }  // namespace
 
 // static
@@ -234,6 +300,55 @@ bool SyncerProtoUtil::PostClientToServerMessage(
                              msg, response))
     return false;
 
+  if (response->has_error()) {
+    // We are talking to a server that is capable of sending the |error| tag.
+    browser_sync::SyncProtocolError sync_protocol_error =
+        ConvertErrorPBToLocalType(response->error());
+
+    // Birthday mismatch overrides any error that is sent by the server.
+    if (!VerifyResponseBirthday(dir, response)) {
+      sync_protocol_error.error_type = browser_sync::NOT_MY_BIRTHDAY;
+       sync_protocol_error.action =
+           browser_sync::DISABLE_SYNC_ON_CLIENT;
+    }
+
+    // Now set the error into the status so the layers above us could read it.
+    sessions::StatusController* status = session->status_controller();
+    status->set_sync_protocol_error(sync_protocol_error);
+
+    // Inform the delegate of the error we got.
+    session->delegate()->OnSyncProtocolError(session->TakeSnapshot());
+
+    // Now do any special handling for the error type and decide on the return
+    // value.
+    switch (sync_protocol_error.error_type) {
+      case browser_sync::UNKNOWN_ERROR:
+        LOG(WARNING) << "Sync protocol out-of-date. The server is using a more "
+                     << "recent version.";
+        return false;
+      case browser_sync::SYNC_SUCCESS:
+        LogResponseProfilingData(*response);
+        return true;
+      case browser_sync::THROTTLED:
+        LOG(WARNING) << "Client silenced by server.";
+        session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
+            GetThrottleDelay(*response));
+        return false;
+      case browser_sync::TRANSIENT_ERROR:
+        return false;
+      case browser_sync::MIGRATION_DONE:
+        HandleMigrationDoneResponse(response, session);
+        return false;
+      default:
+        NOTREACHED();
+        return false;
+    }
+  }
+
+  // TODO(lipalani): Plug this legacy implementation to the new error framework.
+  // New implementation code would have returned before by now. This is waiting
+  // on the frontend code being implemented. Otherwise ripping this would break
+  // sync.
   if (!VerifyResponseBirthday(dir, response)) {
     session->status_controller()->set_syncer_stuck(true);
     session->delegate()->OnShouldStopSyncingPermanently();

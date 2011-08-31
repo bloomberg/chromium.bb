@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -89,6 +90,7 @@ struct SyncerStatus {
 };
 
 // Counters for various errors that can occur repeatedly during a sync session.
+// TODO(lipalani) : Rename this structure to Error.
 struct ErrorCounters {
   ErrorCounters();
 
@@ -105,6 +107,9 @@ struct ErrorCounters {
   // transient errors. When any of these succeed, this counter is reset.
   // TODO(chron): Reduce number of weird counters we use.
   int consecutive_errors;
+
+  // Any protocol errors that we received during this sync session.
+  SyncProtocolError sync_protocol_error;
 };
 
 // Caller takes ownership of the returned dictionary.
@@ -320,7 +325,7 @@ struct AllModelTypeState {
   // Used to build the shared commit message.
   DirtyOnWrite<std::vector<int64> > unsynced_handles;
   DirtyOnWrite<SyncerStatus> syncer_status;
-  DirtyOnWrite<ErrorCounters> error_counters;
+  DirtyOnWrite<ErrorCounters> error;
   SyncCycleControlParameters control_params;
   DirtyOnWrite<int64> num_server_changes_remaining;
   OrderedCommitSet commit_set;

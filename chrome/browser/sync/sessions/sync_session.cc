@@ -108,7 +108,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
   return SyncSessionSnapshot(
       status_controller_->syncer_status(),
-      status_controller_->error_counters(),
+      status_controller_->error(),
       status_controller_->num_server_changes_remaining(),
       is_share_useable,
       initial_sync_ended,

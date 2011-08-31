@@ -126,6 +126,9 @@ class SyncerTest : public testing::Test,
   }
   virtual void OnShouldStopSyncingPermanently() OVERRIDE {
   }
+  virtual void OnSyncProtocolError(
+      const sessions::SyncSessionSnapshot& snapshot) OVERRIDE {
+  }
 
   // ModelSafeWorkerRegistrar implementation.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
@@ -2140,7 +2143,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
   }
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
   StatusController* status(session_->status_controller());
-  EXPECT_TRUE(0 == status->error_counters().num_conflicting_commits);
+  EXPECT_TRUE(0 == status->error().num_conflicting_commits);
 }
 
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {

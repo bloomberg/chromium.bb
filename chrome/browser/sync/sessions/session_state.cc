@@ -382,7 +382,7 @@ bool UpdateProgress::HasConflictingUpdates() const {
 AllModelTypeState::AllModelTypeState(bool* dirty_flag)
     : unsynced_handles(dirty_flag),
       syncer_status(dirty_flag),
-      error_counters(dirty_flag),
+      error(dirty_flag),
       num_server_changes_remaining(dirty_flag, 0),
       commit_set(ModelSafeRoutingInfo()) {
 }

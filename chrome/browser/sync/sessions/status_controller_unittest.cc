@@ -108,21 +108,21 @@ TEST_F(StatusControllerTest, StaysClean) {
 TEST_F(StatusControllerTest, ReadYourWrites) {
   StatusController status(routes_);
   status.increment_num_conflicting_commits_by(1);
-  EXPECT_EQ(1, status.error_counters().num_conflicting_commits);
+  EXPECT_EQ(1, status.error().num_conflicting_commits);
 
   status.set_num_consecutive_transient_error_commits(6);
-  EXPECT_EQ(6, status.error_counters().consecutive_transient_error_commits);
+  EXPECT_EQ(6, status.error().consecutive_transient_error_commits);
   status.increment_num_consecutive_transient_error_commits_by(1);
-  EXPECT_EQ(7, status.error_counters().consecutive_transient_error_commits);
+  EXPECT_EQ(7, status.error().consecutive_transient_error_commits);
   status.increment_num_consecutive_transient_error_commits_by(0);
-  EXPECT_EQ(7, status.error_counters().consecutive_transient_error_commits);
+  EXPECT_EQ(7, status.error().consecutive_transient_error_commits);
 
   status.set_num_consecutive_errors(8);
-  EXPECT_EQ(8, status.error_counters().consecutive_errors);
+  EXPECT_EQ(8, status.error().consecutive_errors);
   status.increment_num_consecutive_errors();
-  EXPECT_EQ(9, status.error_counters().consecutive_errors);
+  EXPECT_EQ(9, status.error().consecutive_errors);
   status.increment_num_consecutive_errors_by(2);
-  EXPECT_EQ(11, status.error_counters().consecutive_errors);
+  EXPECT_EQ(11, status.error().consecutive_errors);
 
   status.set_num_server_changes_remaining(13);
   EXPECT_EQ(13, status.num_server_changes_remaining());
@@ -211,7 +211,7 @@ TEST_F(StatusControllerTest, Unrestricted) {
   status.mutable_commit_response();
   status.updates_response();
   status.mutable_updates_response();
-  status.error_counters();
+  status.error();
   status.syncer_status();
   status.num_server_changes_remaining();
   status.commit_ids();

@@ -54,7 +54,11 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
     FAIL() << "Should not get sessions commit delay.";
   }
   virtual void OnShouldStopSyncingPermanently() OVERRIDE {
-    FAIL() << "Shouldn't be forced to stop syncing.";
+    FAIL() << "Shouldn't be called.";
+  }
+  virtual void OnSyncProtocolError(
+      const sessions::SyncSessionSnapshot& session) OVERRIDE {
+    FAIL() << "Shouldn't be called.";
   }
 
   // ModelSafeWorkerRegistrar implementation.

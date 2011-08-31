@@ -103,8 +103,8 @@ class StatusController {
   }
 
   // Errors and SyncerStatus.
-  const ErrorCounters& error_counters() const {
-    return shared_.error_counters.value();
+  const ErrorCounters& error() const {
+    return shared_.error.value();
   }
   const SyncerStatus& syncer_status() const {
     return shared_.syncer_status.value();
@@ -229,6 +229,7 @@ class StatusController {
   void set_unsynced_handles(const std::vector<int64>& unsynced_handles);
   void increment_num_local_overwrites();
   void increment_num_server_overwrites();
+  void set_sync_protocol_error(const SyncProtocolError& error);
 
   void set_commit_set(const OrderedCommitSet& commit_set);
   void update_conflict_sets_built(bool built);

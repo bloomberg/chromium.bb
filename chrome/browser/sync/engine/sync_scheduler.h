@@ -120,6 +120,8 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   virtual void OnReceivedSessionsCommitDelay(
       const base::TimeDelta& new_delay) OVERRIDE;
   virtual void OnShouldStopSyncingPermanently() OVERRIDE;
+  virtual void OnSyncProtocolError(
+      const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
 
   // ServerConnectionEventListener implementation.
   // TODO(tim): schedule a nudge when valid connection detected? in 1 minute?
@@ -351,6 +353,9 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
   // session snapshot containing data like initial_sync_ended.  Important when
   // the client starts up and does not need to perform an initial sync.
   void SendInitialSnapshot();
+
+  virtual void OnActionableError(const sessions::SyncSessionSnapshot& snapshot);
+
 
   ScopedRunnableMethodFactory<SyncScheduler> method_factory_;
 

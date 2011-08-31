@@ -29,6 +29,41 @@ using syncable::ModelTypePayloadMap;
 using syncable::ModelTypeBitSet;
 using sync_pb::GetUpdatesCallerInfo;
 
+namespace {
+bool ShouldRequestEarlyExit(
+    const browser_sync::SyncProtocolError& error) {
+  switch (error.error_type) {
+    case browser_sync::SYNC_SUCCESS:
+    case browser_sync::MIGRATION_DONE:
+    case browser_sync::THROTTLED:
+    case browser_sync::TRANSIENT_ERROR:
+      return false;
+    case browser_sync::NOT_MY_BIRTHDAY:
+    case browser_sync::CLEAR_PENDING:
+      // If we send terminate sync early then |sync_cycle_ended| notification
+      // would not be sent. If there were no actions then |ACTIONABLE_ERROR|
+      // notification wouldnt be sent either. Then the UI layer would be left
+      // waiting forever. So assert we would send something.
+      DCHECK(error.action != browser_sync::UNKNOWN_ACTION);
+      return true;
+    case browser_sync::INVALID_CREDENTIAL:
+      // The notification for this is handled by PostAndProcessHeaders|.
+      // Server does no have to send any action for this.
+      return true;
+    // Make the default a NOTREACHED. So if a new error is introduced we
+    // think about its expected functionality.
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool IsActionableError(
+    const browser_sync::SyncProtocolError& error) {
+  return (error.action != browser_sync::UNKNOWN_ACTION);
+}
+}  // namespace
+
 SyncScheduler::DelayProvider::DelayProvider() {}
 SyncScheduler::DelayProvider::~DelayProvider() {}
 
@@ -1079,6 +1114,28 @@ void SyncScheduler::OnShouldStopSyncingPermanently() {
   syncer_->RequestEarlyExit();  // Thread-safe.
   Notify(SyncEngineEvent::STOP_SYNCING_PERMANENTLY);
 }
+
+void SyncScheduler::OnActionableError(
+    const sessions::SyncSessionSnapshot& snap) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  SVLOG(2) << "OnActionableError";
+  SyncEngineEvent event(SyncEngineEvent::ACTIONABLE_ERROR);
+  sessions::SyncSessionSnapshot snapshot(snap);
+  event.snapshot = &snapshot;
+  session_context_->NotifyListeners(event);
+}
+
+void SyncScheduler::OnSyncProtocolError(
+    const sessions::SyncSessionSnapshot& snapshot) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  if (ShouldRequestEarlyExit(snapshot.errors.sync_protocol_error)) {
+    SVLOG(2) << "Sync Scheduler requesting early exit.";
+    syncer_->RequestEarlyExit();  // Thread-safe.
+  }
+  if (IsActionableError(snapshot.errors.sync_protocol_error))
+    OnActionableError(snapshot);
+}
+
 
 void SyncScheduler::OnServerConnectionEvent(
     const ServerConnectionEvent& event) {

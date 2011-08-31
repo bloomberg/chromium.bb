@@ -71,6 +71,10 @@ class SyncSessionTest : public testing::Test,
   virtual void OnShouldStopSyncingPermanently() OVERRIDE {
     FailControllerInvocationIfDisabled("OnShouldStopSyncingPermanently");
   }
+  virtual void OnSyncProtocolError(
+      const sessions::SyncSessionSnapshot& snapshot) {
+    FailControllerInvocationIfDisabled("SyncProtocolError");
+  }
 
   // ModelSafeWorkerRegistrar implementation.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {}

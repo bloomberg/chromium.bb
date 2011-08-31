@@ -105,6 +105,10 @@ struct SyncEngineEvent {
     // server data have failed or succeeded.
     CLEAR_SERVER_DATA_SUCCEEDED,
     CLEAR_SERVER_DATA_FAILED,
+
+    // This event is sent when we receive an actionable error. It is upto
+    // the listeners to figure out the action to take using the snapshot sent.
+    ACTIONABLE_ERROR,
   };
 
   explicit SyncEngineEvent(EventCause cause);

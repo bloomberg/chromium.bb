@@ -676,6 +676,8 @@
         'browser/sync/protocol/proto_value_conversions.cc',
         'browser/sync/protocol/proto_value_conversions.h',
         'browser/sync/protocol/service_constants.h',
+        'browser/sync/protocol/sync_protocol_error.cc',
+        'browser/sync/protocol/sync_protocol_error.h',
         'browser/sync/sessions/ordered_commit_set.cc',
         'browser/sync/sessions/ordered_commit_set.h',
         'browser/sync/sessions/session_state.cc',

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
 namespace browser_sync {
@@ -46,7 +47,7 @@ PerModelSafeGroupState* StatusController::GetOrCreateModelSafeGroupState(
 void StatusController::increment_num_conflicting_commits_by(int value) {
   if (value == 0)
     return;
-  shared_.error_counters.mutate()->num_conflicting_commits += value;
+  shared_.error.mutate()->num_conflicting_commits += value;
 }
 
 void StatusController::increment_num_updates_downloaded_by(int value) {
@@ -65,14 +66,14 @@ void StatusController::increment_num_tombstone_updates_downloaded_by(
 }
 
 void StatusController::reset_num_conflicting_commits() {
-  if (shared_.error_counters.value().num_conflicting_commits != 0)
-    shared_.error_counters.mutate()->num_conflicting_commits = 0;
+  if (shared_.error.value().num_conflicting_commits != 0)
+    shared_.error.mutate()->num_conflicting_commits = 0;
 }
 
 void StatusController::set_num_consecutive_transient_error_commits(int value) {
-  if (shared_.error_counters.value().consecutive_transient_error_commits !=
+  if (shared_.error.value().consecutive_transient_error_commits !=
       value) {
-    shared_.error_counters.mutate()->consecutive_transient_error_commits =
+    shared_.error.mutate()->consecutive_transient_error_commits =
         value;
   }
 }
@@ -80,13 +81,13 @@ void StatusController::set_num_consecutive_transient_error_commits(int value) {
 void StatusController::increment_num_consecutive_transient_error_commits_by(
     int value) {
   set_num_consecutive_transient_error_commits(
-      shared_.error_counters.value().consecutive_transient_error_commits +
+      shared_.error.value().consecutive_transient_error_commits +
       value);
 }
 
 void StatusController::set_num_consecutive_errors(int value) {
-  if (shared_.error_counters.value().consecutive_errors != value)
-    shared_.error_counters.mutate()->consecutive_errors = value;
+  if (shared_.error.value().consecutive_errors != value)
+    shared_.error.mutate()->consecutive_errors = value;
 }
 
 void StatusController::set_num_server_changes_remaining(
@@ -127,12 +128,12 @@ void StatusController::set_unsynced_handles(
 
 void StatusController::increment_num_consecutive_errors() {
   set_num_consecutive_errors(
-      shared_.error_counters.value().consecutive_errors + 1);
+      shared_.error.value().consecutive_errors + 1);
 }
 
 void StatusController::increment_num_consecutive_errors_by(int value) {
   set_num_consecutive_errors(
-      shared_.error_counters.value().consecutive_errors + value);
+      shared_.error.value().consecutive_errors + value);
 }
 
 void StatusController::increment_num_successful_bookmark_commits() {
@@ -150,6 +151,11 @@ void StatusController::increment_num_local_overwrites() {
 
 void StatusController::increment_num_server_overwrites() {
   shared_.syncer_status.mutate()->num_server_overwrites++;
+}
+
+void StatusController::set_sync_protocol_error(
+    const SyncProtocolError& error) {
+  shared_.error.mutate()->sync_protocol_error = error;
 }
 
 void StatusController::set_commit_set(const OrderedCommitSet& commit_set) {
