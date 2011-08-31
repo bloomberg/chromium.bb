@@ -4,14 +4,17 @@
 
 #include "chrome/browser/extensions/extension_event_router.h"
 
+#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/child_process_security_policy.h"
@@ -48,6 +51,28 @@ struct ExtensionEventRouter::EventListener {
   }
 };
 
+struct ExtensionEventRouter::ExtensionEvent {
+  std::string extension_id;
+  std::string event_name;
+  std::string event_args;
+  GURL event_url;
+  Profile* restrict_to_profile;
+  std::string cross_incognito_args;
+
+  ExtensionEvent(const std::string& extension_id,
+                 const std::string& event_name,
+                 const std::string& event_args,
+                 const GURL& event_url,
+                 Profile* restrict_to_profile,
+                 const std::string& cross_incognito_args)
+    : extension_id(extension_id),
+      event_name(event_name),
+      event_args(event_args),
+      event_url(event_url),
+      restrict_to_profile(restrict_to_profile),
+      cross_incognito_args(cross_incognito_args) {}
+};
+
 // static
 void ExtensionEventRouter::DispatchEvent(IPC::Message::Sender* ipc_sender,
                                          const std::string& extension_id,
@@ -68,10 +93,12 @@ ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 Source<Profile>(profile_));
+  // TODO(tessamac): also get notified for background page crash/failure.
 }
 
-ExtensionEventRouter::~ExtensionEventRouter() {
-}
+ExtensionEventRouter::~ExtensionEventRouter() {}
 
 void ExtensionEventRouter::AddEventListener(
     const std::string& event_name,
@@ -142,8 +169,10 @@ void ExtensionEventRouter::DispatchEventToRenderers(
     const std::string& event_args,
     Profile* restrict_to_profile,
     const GURL& event_url) {
-  DispatchEventImpl("", event_name, event_args, restrict_to_profile, "",
-                    event_url);
+  linked_ptr<ExtensionEvent> event(
+      new ExtensionEvent("", event_name, event_args, event_url,
+                         restrict_to_profile, ""));
+  DispatchEventImpl(event, false);
 }
 
 void ExtensionEventRouter::DispatchEventToExtension(
@@ -153,8 +182,10 @@ void ExtensionEventRouter::DispatchEventToExtension(
     Profile* restrict_to_profile,
     const GURL& event_url) {
   DCHECK(!extension_id.empty());
-  DispatchEventImpl(extension_id, event_name, event_args, restrict_to_profile,
-                    "", event_url);
+  linked_ptr<ExtensionEvent> event(
+      new ExtensionEvent(extension_id, event_name, event_args, event_url,
+                         restrict_to_profile, ""));
+  DispatchEventImpl(event, false);
 }
 
 void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
@@ -163,24 +194,56 @@ void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
     Profile* restrict_to_profile,
     const std::string& cross_incognito_args,
     const GURL& event_url) {
-  DispatchEventImpl("", event_name, event_args, restrict_to_profile,
-                    cross_incognito_args, event_url);
+  linked_ptr<ExtensionEvent> event(
+      new ExtensionEvent("", event_name, event_args, event_url,
+                         restrict_to_profile, cross_incognito_args));
+  DispatchEventImpl(event, false);
+}
+
+bool ExtensionEventRouter::CanDispatchEventNow(
+    const std::string& extension_id) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLazyBackgroundPages))
+    return true;
+
+  if (extension_id.empty())
+    // TODO(tessamac): Create all background pages. Wait for all to be loaded?
+    //                 or dispatch event to each extension when it's ready?
+    return true;
+
+  const Extension* extension = profile_->GetExtensionService()->
+      GetExtensionById(extension_id, false);  // exclude disabled extensions
+  if (extension && extension->background_url().is_valid()) {
+    ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
+    if (!pm->GetBackgroundHostForExtension(extension)) {
+      pm->CreateBackgroundHost(extension, extension->background_url());
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void ExtensionEventRouter::DispatchEventImpl(
-    const std::string& extension_id,
-    const std::string& event_name,
-    const std::string& event_args,
-    Profile* restrict_to_profile,
-    const std::string& cross_incognito_args,
-    const GURL& event_url) {
+    const linked_ptr<ExtensionEvent>& event, bool was_pending) {
   if (!profile_)
     return;
 
   // We don't expect to get events from a completely different profile.
-  DCHECK(!restrict_to_profile || profile_->IsSameProfile(restrict_to_profile));
+  DCHECK(!event->restrict_to_profile ||
+         profile_->IsSameProfile(event->restrict_to_profile));
 
-  ListenerMap::iterator it = listeners_.find(event_name);
+  if (!CanDispatchEventNow(event->extension_id)) {
+    // Events should not be made pending twice. This may happen if the
+    // background page is shutdown before we finish dispatching pending events.
+    CHECK(!was_pending);
+    // TODO(tessamac): make sure Background Page notification doesn't
+    //                 happen before the event is added to the pending list.
+    AppendEvent(event);
+    return;
+  }
+
+  ListenerMap::iterator it = listeners_.find(event->event_name);
   if (it == listeners_.end())
     return;
 
@@ -196,28 +259,64 @@ void ExtensionEventRouter::DispatchEventImpl(
       continue;
     }
 
-    if (!extension_id.empty() && extension_id != listener->extension_id)
+    if (!event->extension_id.empty() &&
+        event->extension_id != listener->extension_id)
       continue;
 
     // Is this event from a different profile than the renderer (ie, an
     // incognito tab event sent to a normal process, or vice versa).
-    bool cross_incognito = restrict_to_profile &&
-        listener->process->browser_context() != restrict_to_profile;
+    bool cross_incognito = event->restrict_to_profile &&
+        listener->process->browser_context() != event->restrict_to_profile;
     const Extension* extension = service->GetExtensionById(
         listener->extension_id, false);
     // Send the event with different arguments to extensions that can't
     // cross incognito, if necessary.
     if (cross_incognito && !service->CanCrossIncognito(extension)) {
-      if (!cross_incognito_args.empty()) {
+      if (!event->cross_incognito_args.empty()) {
         DispatchEvent(listener->process, listener->extension_id,
-                      event_name, cross_incognito_args, event_url);
+                      event->event_name, event->cross_incognito_args,
+                      event->event_url);
       }
       continue;
     }
 
     DispatchEvent(listener->process, listener->extension_id,
-                  event_name, event_args, event_url);
+                  event->event_name, event->event_args, event->event_url);
   }
+}
+
+void ExtensionEventRouter::AppendEvent(
+    const linked_ptr<ExtensionEvent>& event) {
+  PendingEventsList* events_list = NULL;
+  PendingEventsPerExtMap::iterator it =
+      pending_events_.find(event->extension_id);
+  if (it == pending_events_.end()) {
+    events_list = new PendingEventsList();
+    pending_events_[event->extension_id] =
+        linked_ptr<PendingEventsList>(events_list);
+  } else {
+    events_list = it->second.get();
+  }
+
+  events_list->push_back(event);
+}
+
+void ExtensionEventRouter::DispatchPendingEvents(
+    const std::string &extension_id) {
+  // Find the list of pending events for this extension.
+  PendingEventsPerExtMap::const_iterator map_it =
+      pending_events_.find(extension_id);
+  if (map_it == pending_events_.end())
+    return;
+
+  PendingEventsList* events_list = map_it->second.get();
+  for (PendingEventsList::const_iterator it = events_list->begin();
+       it != events_list->end(); ++it)
+    DispatchEventImpl(*it, true);
+
+  // Delete list.
+  events_list->clear();
+  pending_events_.erase(extension_id);
 }
 
 void ExtensionEventRouter::Observe(int type,
@@ -243,6 +342,13 @@ void ExtensionEventRouter::Observe(int type,
       }
       break;
     }
+    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+      // TODO: dispatch events in queue.  ExtensionHost is in the details.
+      ExtensionHost* eh = Details<ExtensionHost>(details).ptr();
+      DispatchPendingEvents(eh->extension_id());
+      break;
+    }
+    // TODO(tessamac): if background page crashed/failed clear queue.
     default:
       NOTREACHED();
       return;

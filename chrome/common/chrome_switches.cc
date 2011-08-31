@@ -472,6 +472,10 @@ const char kEnableIPCFuzzing[]               = "enable-ipc-fuzzing";
 // attempt to use the existing connection.
 const char kEnableIPPooling[]               = "enable-ip-pooling";
 
+// Enables some extension background pages to be loaded when they are
+// needed rather than when the extensions are first loaded.
+const char kEnableLazyBackgroundPages[]     = "enable-lazy-background-pages";
+
 // Enables MAC cookies in the network stack.  These cookies use HMAC to
 // protect session state from passive network attackers.
 // http://tools.ietf.org/html/draft-hammer-oauth-v2-mac-token

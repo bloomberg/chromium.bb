@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 
 #include "chrome/browser/ui/browser_window.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/site_instance.h"
@@ -55,18 +57,20 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
   ExtensionProcessManager* original_manager_;
 };
 
-static void CreateBackgroundHost(
+static void CreateBackgroundHostForExtensionLoad(
     ExtensionProcessManager* manager, const Extension* extension) {
-  // Start the process for the master page, if it exists.
-  if (extension->background_url().is_valid())
+  // Start the process for the master page, if it exists and we're not lazy.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLazyBackgroundPages) &&
+      extension->background_url().is_valid())
     manager->CreateBackgroundHost(extension, extension->background_url());
 }
 
-static void CreateBackgroundHosts(
+static void CreateBackgroundHostsForProfileStartup(
     ExtensionProcessManager* manager, const ExtensionList* extensions) {
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    CreateBackgroundHost(manager, *extension);
+    CreateBackgroundHostForExtensionLoad(manager, *extension);
   }
 }
 
@@ -288,7 +292,7 @@ void ExtensionProcessManager::Observe(int type,
                                       const NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSIONS_READY: {
-      CreateBackgroundHosts(this,
+      CreateBackgroundHostsForProfileStartup(this,
           Source<Profile>(source).ptr()->GetExtensionService()->extensions());
       break;
     }
@@ -298,7 +302,7 @@ void ExtensionProcessManager::Observe(int type,
           Source<Profile>(source).ptr()->GetExtensionService();
       if (service->is_ready()) {
         const Extension* extension = Details<const Extension>(details).ptr();
-        ::CreateBackgroundHost(this, extension);
+        ::CreateBackgroundHostForExtensionLoad(this, extension);
       }
       break;
     }
@@ -470,6 +474,9 @@ void IncognitoExtensionProcessManager::Observe(
     const NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableLazyBackgroundPages))
+        break;
       // We want to spawn our background hosts as soon as the user opens an
       // incognito window. Watch for new browsers and create the hosts if
       // it matches our profile.
@@ -482,7 +489,7 @@ void IncognitoExtensionProcessManager::Observe(
             Profile::FromBrowserContext(browsing_instance_->browser_context());
         ExtensionService* service = profile->GetExtensionService();
         if (service && service->is_ready())
-          CreateBackgroundHosts(this, service->extensions());
+          CreateBackgroundHostsForProfileStartup(this, service->extensions());
       }
       break;
     }

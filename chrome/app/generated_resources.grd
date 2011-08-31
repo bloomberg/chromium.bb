@@ -4324,6 +4324,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CRXLESS_WEB_APPS_DESCRIPTION" desc="Description of the CRX-less web apps lab">
         Enables support for installing Chrome apps that are deployed using a manifest file on a webpage, rather than by packaging the manifest and icons into a crx file.
       </message>
+      <message name="IDS_FLAGS_LAZY_BACKGROUND_PAGES_NAME" desc="Title of the flag to enable lazy loading of extension background pages.">
+        Lazy Background Pages
+      </message>
+      <message name="IDS_FLAGS_LAZY_BACKGROUND_PAGES_DESCRIPTION" desc="Description of the flag to enable lazy loading of extension background pages.">
+        Enables some extension background pages to be loaded when they are needed rather than when the extensions are first loaded.
+      </message>
       <message name="IDS_FLAGS_CONFLICTS_CHECK_NAME" desc="Title of the run conflicts check flag">
         Check for known conflicts with 3rd party modules.
       </message>

@@ -126,6 +126,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableCrxlessWebApps)
   },
   {
+    "lazy-background-pages",
+    IDS_FLAGS_LAZY_BACKGROUND_PAGES_NAME,
+    IDS_FLAGS_LAZY_BACKGROUND_PAGES_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableLazyBackgroundPages)
+  },
+  {
     "ignore-gpu-blacklist",
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_NAME,
     IDS_FLAGS_IGNORE_GPU_BLACKLIST_DESCRIPTION,
