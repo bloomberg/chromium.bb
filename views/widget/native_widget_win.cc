@@ -7,6 +7,8 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
+#include <algorithm>
+
 #include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/scoped_gdi_object.h"
@@ -679,13 +681,10 @@ void NativeWidgetWin::SetAccessibleName(const std::wstring& name) {
   base::win::ScopedComPtr<IAccPropServices> pAccPropServices;
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
       IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
-  if (SUCCEEDED(hr)) {
-    VARIANT var;
-    var.vt = VT_BSTR;
-    var.bstrVal = SysAllocString(name.c_str());
-    hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
-                                       CHILDID_SELF, PROPID_ACC_NAME, var);
-  }
+  if (SUCCEEDED(hr))
+    hr = pAccPropServices->SetHwndPropStr(GetNativeView(), OBJID_CLIENT,
+                                          CHILDID_SELF, PROPID_ACC_NAME,
+                                          name.c_str());
 }
 
 void NativeWidgetWin::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
@@ -710,6 +709,7 @@ void NativeWidgetWin::SetAccessibleState(ui::AccessibilityTypes::State state) {
   if (SUCCEEDED(hr)) {
     VARIANT var;
     if (state) {
+      var.vt = VT_I4;
       var.lVal = NativeViewAccessibilityWin::MSAAState(state);
       hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
                                          CHILDID_SELF, PROPID_ACC_STATE, var);
@@ -1049,7 +1049,7 @@ void NativeWidgetWin::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void NativeWidgetWin::SetCursor(gfx::NativeCursor cursor) {
-  if(cursor) {
+  if (cursor) {
     previous_cursor_ = ::SetCursor(cursor);
   } else if (previous_cursor_) {
     ::SetCursor(previous_cursor_);
@@ -1597,7 +1597,7 @@ LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
   }
 
   RECT* client_rect = mode ?
-      &reinterpret_cast<NCCALCSIZE_PARAMS*>(l_param)->rgrc[0] :
+      &(reinterpret_cast<NCCALCSIZE_PARAMS*>(l_param)->rgrc[0]) :
       reinterpret_cast<RECT*>(l_param);
   client_rect->left += insets.left();
   client_rect->top += insets.top();
