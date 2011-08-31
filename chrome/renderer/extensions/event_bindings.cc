@@ -32,6 +32,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "v8/include/v8.h"
 
 using bindings_utils::CallFunctionInContext;
 using bindings_utils::ContextInfo;

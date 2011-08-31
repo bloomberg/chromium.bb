@@ -8,8 +8,6 @@
 
 #include <string>
 
-#include "v8/include/v8.h"
-
 class ExtensionDispatcher;
 class GURL;
 class RenderThreadBase;
@@ -17,6 +15,12 @@ class RenderView;
 
 namespace base {
 class ListValue;
+}
+
+namespace v8 {
+class Context;
+class Extension;
+template <class T> class Handle;
 }
 
 namespace WebKit {
