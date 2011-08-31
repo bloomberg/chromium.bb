@@ -17,6 +17,7 @@ from xml.dom import minidom
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import patch as cros_patch
+from chromite.lib import cros_build_lib
 
 
 class TreeIsClosedException(Exception):
@@ -37,14 +38,20 @@ class ValidationPool(object):
   method that grabs the commits that are ready for validation.
   """
 
-  def __init__(self):
+  GLOBAL_DRYRUN = True
+
+  def __init__(self, dryrun):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
     method.
+
+    Args:
+      dryrun: If set to True, do not submit anything to Gerrit.
     """
     self.changes = []
-    self._gerrit_helper = None
+    self.gerrit_helper = None
+    self.dryrun = dryrun | self.GLOBAL_DRYRUN
 
   @classmethod
   def _IsTreeOpen(cls):
@@ -85,33 +92,43 @@ class ValidationPool(object):
     return tree_open
 
   @classmethod
-  def AcquirePool(cls, branch, internal, buildroot):
+  def AcquirePool(cls, branch, internal, buildroot, dryrun):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
 
-    Returns:  ValidationPool object.
+    Args:
+      branch: The branch for the validation pool.
+      internal: If True, use gerrit-int.
+      buildroot: The location of the buildroot used to filter projects.
+      dryrun: Don't submit anything to gerrit.
+    Returns:
+      ValidationPool object.
     Raises:
       TreeIsClosedException: if the tree is closed.
     """
     if cls._IsTreeOpen():
-      pool = ValidationPool()
-      pool._gerrit_helper = gerrit_helper.GerritHelper(internal)
-      raw_changes = pool._gerrit_helper.GrabChangesReadyForCommit(branch)
-      pool.changes = pool._gerrit_helper.FilterProjectsNotInSourceTree(
+      pool = ValidationPool(dryrun)
+      pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
+      raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit(branch)
+      pool.changes = pool.gerrit_helper.FilterProjectsNotInSourceTree(
           raw_changes, buildroot)
       return pool
     else:
       raise TreeIsClosedException()
 
   @classmethod
-  def AcquirePoolFromManifest(cls, manifest, internal, buildroot):
+  def AcquirePoolFromManifest(cls, manifest, internal):
     """Acquires the current pool from a given manifest.
 
-    Returns:  ValidationPool object.
+    Args:
+      manifest: path to the manifest where the pool resides.
+      internal: if true, assume gerrit-int.
+    Returns:
+      ValidationPool object.
     """
     pool = ValidationPool()
-    pool._gerrit_helper = gerrit_helper.GerritHelper(internal)
+    pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
         lkgm_manager.PALADIN_COMMIT_ELEMENT)
@@ -119,7 +136,7 @@ class ValidationPool(object):
       project = pending_commit.getAttribute(lkgm_manager.PALADIN_PROJECT_ATTR)
       change = pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR)
       commit = pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR)
-      pool.changes.append(pool._gerrit_helper.GrabPatchFromGerrit(
+      pool.changes.append(pool.gerrit_helper.GrabPatchFromGerrit(
           project, change, commit))
 
     return pool
@@ -157,21 +174,26 @@ class ValidationPool(object):
     if ValidationPool._IsTreeOpen():
       for change in self.changes:
         logging.info('Change %s will be submitted', change)
-        # TODO(sosa): Remove debug once we are ready to deploy.
-        change.Submit(self._gerrit_helper, debug=True)
+        try:
+          change.Submit(self.gerrit_helper, dryrun=self.dryrun)
+        except cros_build_lib.RunCommandError:
+          change.HandleCouldNotSubmit(self.gerrit_helper,
+                                      dryrun=self.dryrun)
+          # TODO(sosa): Do we re-raise?
         return True
     else:
       raise TreeIsClosedException()
 
   def HandleApplicationFailure(self, changes):
     """Handles changes that were not able to be applied cleanly."""
-    # TODO(sosa): crosbug.com/17708.
     for change in changes:
       logging.info('Change %s did not apply cleanly.', change)
+      change.HandleCouldNotApply(self.gerrit_helper, dryrun=self.dryrun)
 
   def HandleValidationFailure(self):
     """Handles failed changes by removing them from next Validation Pools."""
-    # TODO(sosa): crosbug.com/17708.
+    logging.info('Validation failed for all changes.')
     for change in self.changes:
       logging.info('Validation failed for change %s.', change)
+      change.HandleCouldNotVerify(self.gerrit_helper, dryrun=self.dryrun)
 

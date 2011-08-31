@@ -134,15 +134,87 @@ class GerritPatch(Patch):
     except cros_lib.RunCommandError:
       raise ApplyPatchException(self)
 
-  def Submit(self, helper, debug=False):
-    """Submits patch using Gerrit Review."""
-    cmd = helper.GetGerritReviewCommand(['--submit', '%s,%s' % (
-        self.id, self.patch_number)])
+  # --------------------- Gerrit Operations --------------------------------- #
 
-    if debug:
+  @staticmethod
+  def _RunCommand(cmd, dryrun):
+    """Runs the specified shell cmd if dryrun=False."""
+    if dryrun:
       cros_lib.Info('Would have run: ' + ' '.join(cmd))
     else:
       cros_lib.RunCommand(cmd)
+
+  def HandleCouldNotSubmit(self, helper, dryrun=False):
+    """Handler that is called when the Commit Queue can't submit a change.
+
+    This should be rare, but if an admin overrides the commit queue and commits
+    a change that conflicts with this change, it'll apply, build/validate but
+    receive an error when submitting.
+
+    Args:
+      helper: Instance of gerrit_helper for the gerrit instance.
+      dryrun: If true, do not actually commit anything to Gerrit.
+
+    """
+    msg = ('Paladin: Commit Queue failed to submit your change. '
+           'This is most likely due to an owner of your repo overriding the '
+           'Commit Queue and committing a change that conflicts with yours. '
+           'Please rebase and re-upload your change to re-submit.')
+
+    cmd = helper.GetGerritReviewCommand(
+        ['--code-review=-2', '-m', '%s,' '%s,%s' % (msg, self.gerrit_number,
+                                                    self.patch_number)])
+    GerritPatch._RunCommand(cmd, dryrun)
+
+  def HandleCouldNotVerify(self, helper, dryrun=False):
+    """Handler for when the Commit Queue fails to validate a change.
+
+    This handler notifies set Verified-1 to the review forcing the developer
+    to re-upload a change that works.  There are many reasons why this might be
+    called e.g. build or testing exception.
+
+    Args:
+      helper: Instance of gerrit_helper for the gerrit instance.
+      dryrun: If true, do not actually commit anything to Gerrit.
+
+    """
+    msg = ('Paladin: Commit Queue failed to verify your change. '
+           'If you believe this happened in error, please upload a new '
+           'patch with TEST= updated describing why you believe this to be '
+           'true.')
+    cmd = helper.GetGerritReviewCommand(
+        ['--verified=-1', '-m', '%s,' '%s,%s' % (msg, self.gerrit_number,
+                                                 self.patch_number)])
+    GerritPatch._RunCommand(cmd, dryrun)
+
+  def HandleCouldNotApply(self, helper, dryrun=False):
+    """Handler for when the Commit Queue fails to apply a change.
+
+    This handler notifies set CodeReview-2 to the review forcing the developer
+    to re-upload a rebased change.
+
+    Args:
+      helper: Instance of gerrit_helper for the gerrit instance.
+      dryrun: If true, do not actually commit anything to Gerrit.
+    """
+    msg = ('Paladin: Commit Queue failed to apply your change cleanly. '
+           'Please re-sync, rebase re-upload your change.')
+    cmd = helper.GetGerritReviewCommand(
+        ['--code-review=-2', '-m', '%s,' '%s,%s' % (msg, self.gerrit_number,
+                                                    self.patch_number)])
+    GerritPatch._RunCommand(cmd, dryrun)
+
+  def Submit(self, helper, dryrun=False):
+    """Submits patch using Gerrit Review.
+
+    Args:
+      helper: Instance of gerrit_helper for the gerrit instance.
+      dryrun: If true, do not actually commit anything to Gerrit.
+    """
+    cmd = helper.GetGerritReviewCommand(['--submit', '%s,%s' % (
+        self.gerrit_number, self.patch_number)])
+
+    GerritPatch._RunCommand(cmd, dryrun)
 
   def __str__(self):
     """Returns custom string to identify this patch."""

@@ -467,7 +467,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     if self._build_config['master']:
       try:
         pool = validation_pool.ValidationPool.AcquirePool(
-            self._tracking_branch, internal, self._build_root)
+            self._tracking_branch, internal, self._build_root,
+            self._options.debug)
         # We only have work to do if there are changes to try.
         if pool.changes:
           CommitQueueSyncStage.pool = pool
@@ -484,8 +485,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
       manifest = self.manifest_manager.GetLatestCandidate(
           force_version=self._options.force_version)
       CommitQueueSyncStage.pool = \
-          validation_pool.ValidationPool.AcquirePoolFromManifest(
-              manifest, internal, self._build_root)
+          validation_pool.ValidationPool.AcquirePoolFromManifest(manifest,
+                                                                 internal)
       return manifest
 
   def _PerformStage(self):
