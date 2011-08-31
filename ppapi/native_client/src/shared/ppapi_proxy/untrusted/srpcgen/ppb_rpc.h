@@ -591,6 +591,8 @@ class PpbInputEventRpcClient {
       int32_t mouse_position_x,
       int32_t mouse_position_y,
       int32_t click_count,
+      int32_t mouse_movement_x,
+      int32_t mouse_movement_y,
       PP_Resource* resource_id);
   static NaClSrpcError PPB_InputEvent_CreateWheelInputEvent(
       NaClSrpcChannel* channel,

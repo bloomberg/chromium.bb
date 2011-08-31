@@ -227,7 +227,8 @@ PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
     uint32_t modifiers,
     PP_InputEvent_MouseButton mouse_button,
     const PP_Point* mouse_position,
-    int32_t click_count) {
+    int32_t click_count,
+    const PP_Point* mouse_movement) {
   if (type != PP_INPUTEVENT_TYPE_MOUSEDOWN &&
       type != PP_INPUTEVENT_TYPE_MOUSEUP &&
       type != PP_INPUTEVENT_TYPE_MOUSEMOVE &&
@@ -242,6 +243,7 @@ PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
   data.mouse_button = mouse_button;
   data.mouse_position = *mouse_position;
   data.mouse_click_count = click_count;
+  data.mouse_movement = *mouse_movement;
 
   return (new InputEventImpl(InputEventImpl::InitAsProxy(),
                              instance, data))->GetReference();

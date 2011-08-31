@@ -298,7 +298,9 @@ const void* GetInterface(const char* name) {
   if (strcmp(name, PPB_MESSAGING_INTERFACE_1_0) == 0)
     return ::ppapi::thunk::GetPPB_Messaging_Thunk();
   if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0) == 0)
-    return ::ppapi::thunk::GetPPB_MouseInputEvent_Thunk();
+    return ::ppapi::thunk::GetPPB_MouseInputEvent_1_0_Thunk();
+  if (strcmp(name, PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1) == 0)
+    return ::ppapi::thunk::GetPPB_MouseInputEvent_1_1_Thunk();
   if (strcmp(name, PPB_PROXY_PRIVATE_INTERFACE) == 0)
     return PPB_Proxy_Impl::GetInterface();
   if (strcmp(name, PPB_QUERY_POLICY_DEV_INTERFACE_0_1) == 0)

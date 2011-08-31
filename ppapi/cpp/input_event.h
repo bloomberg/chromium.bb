@@ -123,13 +123,15 @@ class MouseInputEvent : public InputEvent {
   /// @param[in] click_count
   /// TODO(brettw) figure out exactly what this means.
   ///
+  /// @param[in] mouse_movement The change in position of the mouse.
   MouseInputEvent(Instance* instance,
                   PP_InputEvent_Type type,
                   PP_TimeTicks time_stamp,
                   uint32_t modifiers,
                   PP_InputEvent_MouseButton mouse_button,
                   const Point& mouse_position,
-                  int32_t click_count);
+                  int32_t click_count,
+                  const Point& mouse_movement);
 
   /// GetButton() returns the mouse position for a mouse input event.
   ///
@@ -138,8 +140,9 @@ class MouseInputEvent : public InputEvent {
   /// events, and for all non-mouse events.
   PP_InputEvent_MouseButton GetButton() const;
 
-  /// GetPostion() returns the pixel location of a mouse input event. This
-  /// value is in floating-point units to support high-resolution input events.
+  /// GetPosition() returns the pixel location of a mouse input event. When
+  /// the mouse is locked, it returns the last known mouse position just as
+  /// mouse lock was entered.
   ///
   /// @return The point associated with the mouse event, relative to the upper-
   /// left of the instance receiving the event. These values can be negative for
@@ -148,6 +151,15 @@ class MouseInputEvent : public InputEvent {
 
   // TODO(brettw) figure out exactly what this means.
   int32_t GetClickCount() const;
+
+  /// Returns the change in position of the mouse. When the mouse is locked,
+  /// although the mouse position doesn't actually change, this function
+  /// still provides movement information, which indicates what the change in
+  /// position would be had the mouse not been locked.
+  ///
+  /// @return The change in position of the mouse, relative to the previous
+  /// position.
+  Point GetMovement() const;
 };
 
 class WheelInputEvent : public InputEvent {

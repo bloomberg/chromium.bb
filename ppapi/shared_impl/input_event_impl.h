@@ -32,6 +32,7 @@ struct PPAPI_SHARED_EXPORT InputEventData {
   PP_InputEvent_MouseButton mouse_button;
   PP_Point mouse_position;
   int32_t mouse_click_count;
+  PP_Point mouse_movement;
 
   PP_FloatPoint wheel_delta;
   PP_FloatPoint wheel_ticks;
@@ -71,6 +72,7 @@ class PPAPI_SHARED_EXPORT InputEventImpl
   virtual PP_InputEvent_MouseButton GetMouseButton() OVERRIDE;
   virtual PP_Point GetMousePosition() OVERRIDE;
   virtual int32_t GetMouseClickCount() OVERRIDE;
+  virtual PP_Point GetMouseMovement() OVERRIDE;
   virtual PP_FloatPoint GetWheelDelta() OVERRIDE;
   virtual PP_FloatPoint GetWheelTicks() OVERRIDE;
   virtual PP_Bool GetWheelScrollByPage() OVERRIDE;

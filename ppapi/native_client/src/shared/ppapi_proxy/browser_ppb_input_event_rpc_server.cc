@@ -81,6 +81,8 @@ void PpbInputEventRpcServer::PPB_InputEvent_CreateMouseInputEvent(
     int32_t position_x,  // PP_Point.x
     int32_t position_y,  // PP_Point.y
     int32_t click_count,
+    int32_t movement_x,  // PP_Point.x
+    int32_t movement_y,  // PP_Point.y
     PP_Resource* resource_id) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -92,6 +94,7 @@ void PpbInputEventRpcServer::PPB_InputEvent_CreateMouseInputEvent(
     return;
   }
   PP_Point mouse_position = { position_x, position_y };
+  PP_Point mouse_movement = { movement_x, movement_y };
   *resource_id = input_event_if->Create(
         instance,
         static_cast<PP_InputEvent_Type>(type),
@@ -99,7 +102,8 @@ void PpbInputEventRpcServer::PPB_InputEvent_CreateMouseInputEvent(
         static_cast<uint32_t>(modifiers),
         static_cast<PP_InputEvent_MouseButton>(mouse_button),
         &mouse_position,
-        click_count);
+        click_count,
+        &mouse_movement);
   DebugPrintf("PPB_InputEvent::CreateMouseInputEvent: resource_id="
               "%"NACL_PRId32"\n",
               *resource_id);

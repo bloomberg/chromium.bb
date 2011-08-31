@@ -60,10 +60,22 @@ const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetKeyboardInputEventInfo() {
 }
 
 // static
-const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetMouseInputEventInfo() {
+const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetMouseInputEventInfo1_0() {
   static const Info info = {
-    thunk::GetPPB_MouseInputEvent_Thunk(),
-    PPB_MOUSE_INPUT_EVENT_INTERFACE,
+    thunk::GetPPB_MouseInputEvent_1_0_Thunk(),
+    PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0,
+    INTERFACE_ID_NONE,
+    false,
+    &CreateInputEventProxy,
+  };
+  return &info;
+}
+
+// static
+const InterfaceProxy::Info* PPB_InputEvent_Proxy::GetMouseInputEventInfo1_1() {
+  static const Info info = {
+    thunk::GetPPB_MouseInputEvent_1_1_Thunk(),
+    PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1,
     INTERFACE_ID_NONE,
     false,
     &CreateInputEventProxy,

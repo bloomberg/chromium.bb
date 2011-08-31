@@ -29,7 +29,9 @@
                       ['mouse_button', 'int32_t'],  # PP_InputEvent_MouseButton
                       ['mouse_position_x', 'int32_t'],  # PP_Point.x
                       ['mouse_position_y', 'int32_t'],  # PP_Point.y
-                      ['click_count', 'int32_t']
+                      ['click_count', 'int32_t'],
+                      ['mouse_movement_x', 'int32_t'],  # PP_Point.x
+                      ['mouse_movement_y', 'int32_t'],  # PP_Point.y
                      ],
            'outputs': [['resource_id', 'PP_Resource']]
           },

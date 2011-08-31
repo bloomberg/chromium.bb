@@ -41,6 +41,7 @@ struct PPB_Instance_Private;
 struct PPB_KeyboardInputEvent;
 struct PPB_LayerCompositor_Dev;
 struct PPB_Messaging;
+struct PPB_MouseInputEvent_1_0;
 struct PPB_MouseInputEvent;
 struct PPB_QueryPolicy_Dev;
 struct PPB_Scrollbar_0_5_Dev;
@@ -104,7 +105,10 @@ PPAPI_THUNK_EXPORT const PPB_LayerCompositor_Dev*
     GetPPB_LayerCompositor_Thunk();
 PPAPI_THUNK_EXPORT const PPB_QueryPolicy_Dev* GetPPB_QueryPolicy_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Messaging* GetPPB_Messaging_Thunk();
-PPAPI_THUNK_EXPORT const PPB_MouseInputEvent* GetPPB_MouseInputEvent_Thunk();
+PPAPI_THUNK_EXPORT const PPB_MouseInputEvent_1_0*
+    GetPPB_MouseInputEvent_1_0_Thunk();
+PPAPI_THUNK_EXPORT const PPB_MouseInputEvent*
+    GetPPB_MouseInputEvent_1_1_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Scrollbar_0_5_Dev* GetPPB_Scrollbar_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Surface3D_Dev* GetPPB_Surface3D_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Transport_Dev* GetPPB_Transport_Thunk();

@@ -19,6 +19,7 @@ InputEventData::InputEventData()
       mouse_button(PP_INPUTEVENT_MOUSEBUTTON_NONE),
       mouse_position(PP_MakePoint(0, 0)),
       mouse_click_count(0),
+      mouse_movement(PP_MakePoint(0, 0)),
       wheel_delta(PP_MakeFloatPoint(0.0f, 0.0f)),
       wheel_ticks(PP_MakeFloatPoint(0.0f, 0.0f)),
       wheel_scroll_by_page(false),
@@ -73,6 +74,10 @@ PP_Point InputEventImpl::GetMousePosition() {
 
 int32_t InputEventImpl::GetMouseClickCount() {
   return data_.mouse_click_count;
+}
+
+PP_Point InputEventImpl::GetMouseMovement() {
+  return data_.mouse_movement;
 }
 
 PP_FloatPoint InputEventImpl::GetWheelDelta() {

@@ -23,7 +23,8 @@ class PPB_InputEvent_Proxy : public InterfaceProxy {
 
   static const Info* GetInputEventInfo();
   static const Info* GetKeyboardInputEventInfo();
-  static const Info* GetMouseInputEventInfo();
+  static const Info* GetMouseInputEventInfo1_0();
+  static const Info* GetMouseInputEventInfo1_1();
   static const Info* GetWheelInputEventInfo();
 
   // InterfaceProxy implementation.

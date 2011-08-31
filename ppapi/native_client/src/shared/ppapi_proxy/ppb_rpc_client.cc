@@ -1670,6 +1670,8 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateMouseInputEvent(
     int32_t mouse_position_x,
     int32_t mouse_position_y,
     int32_t click_count,
+    int32_t mouse_movement_x,
+    int32_t mouse_movement_y,
     PP_Resource* resource_id)  {
   VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
          ("%s: PPAPI calls are not supported off the main thread\n",
@@ -1677,7 +1679,7 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateMouseInputEvent(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_InputEvent_CreateMouseInputEvent:iidiiiii:i",
+      "PPB_InputEvent_CreateMouseInputEvent:iidiiiiiii:i",
       instance,
       type,
       time_stamp,
@@ -1686,6 +1688,8 @@ NaClSrpcError PpbInputEventRpcClient::PPB_InputEvent_CreateMouseInputEvent(
       mouse_position_x,
       mouse_position_y,
       click_count,
+      mouse_movement_x,
+      mouse_movement_y,
       resource_id
   );
   return retval;

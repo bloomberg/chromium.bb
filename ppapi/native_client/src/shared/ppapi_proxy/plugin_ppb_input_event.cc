@@ -130,19 +130,22 @@ uint32_t GetModifiers(PP_Resource event) {
 
 // Mouse -----------------------------------------------------------------------
 
-PP_Resource CreateMouseInputEvent(PP_Instance instance,
-                                  PP_InputEvent_Type type,
-                                  PP_TimeTicks time_stamp,
-                                  uint32_t modifiers,
-                                  PP_InputEvent_MouseButton mouse_button,
-                                  const PP_Point* mouse_position,
-                                  int32_t click_count) {
+PP_Resource CreateMouseInputEvent1_1(PP_Instance instance,
+                                     PP_InputEvent_Type type,
+                                     PP_TimeTicks time_stamp,
+                                     uint32_t modifiers,
+                                     PP_InputEvent_MouseButton mouse_button,
+                                     const PP_Point* mouse_position,
+                                     int32_t click_count,
+                                     const PP_Point* mouse_movement) {
   DebugPrintf("PPB_InputEvent::CreateMouseInputEvent: instance="
               "%"NACL_PRIu32", type=%d, time_stamp=%lf, modifiers="
               "%"NACL_PRIu32", mouse_button=%d, x=%"NACL_PRId32", y="
-              "%"NACL_PRId32", click_count=%d\n",
+              "%"NACL_PRId32", click_count=%d, movement_x="
+              "%"NACL_PRId32", movement_y=%"NACL_PRId32"\n",
               instance, type, time_stamp, modifiers, mouse_button,
-              mouse_position->x, mouse_position->y, click_count);
+              mouse_position->x, mouse_position->y, click_count,
+              mouse_movement->x, mouse_movement->y);
   PP_Resource resource_id = kInvalidResourceId;
   NaClSrpcError srpc_result =
       PpbInputEventRpcClient::PPB_InputEvent_CreateMouseInputEvent(
@@ -155,10 +158,26 @@ PP_Resource CreateMouseInputEvent(PP_Instance instance,
           mouse_position->x,
           mouse_position->y,
           click_count,
+          mouse_movement->x,
+          mouse_movement->y,
           &resource_id);
   if (srpc_result == NACL_SRPC_RESULT_OK)
     return resource_id;
   return kInvalidResourceId;
+}
+
+PP_Resource CreateMouseInputEvent1_0(PP_Instance instance,
+                                     PP_InputEvent_Type type,
+                                     PP_TimeTicks time_stamp,
+                                     uint32_t modifiers,
+                                     PP_InputEvent_MouseButton mouse_button,
+                                     const PP_Point* mouse_position,
+                                     int32_t click_count) {
+  PP_Point mouse_movement = PP_MakePoint(0, 0);
+  return CreateMouseInputEvent1_1(instance, type, time_stamp, modifiers,
+                                  mouse_button, mouse_position, click_count,
+                                  &mouse_movement);
+
 }
 
 PP_Bool IsMouseInputEvent(PP_Resource resource) {
@@ -184,6 +203,10 @@ PP_Point GetMousePosition(PP_Resource mouse_event) {
 
 int32_t GetMouseClickCount(PP_Resource mouse_event) {
   IMPLEMENT_RESOURCE_THUNK(GetMouseClickCount, mouse_event, 0);
+}
+
+PP_Point GetMouseMovement(PP_Resource mouse_event) {
+  IMPLEMENT_RESOURCE_THUNK(GetMouseMovement, mouse_event, PP_MakePoint(0, 0));
 }
 
 // Wheel -----------------------------------------------------------------------
@@ -306,13 +329,26 @@ const PPB_InputEvent* PluginInputEvent::GetInterface() {
 }
 
 // static
-const PPB_MouseInputEvent* PluginInputEvent::GetMouseInterface() {
-  static const PPB_MouseInputEvent mouse_input_event_interface = {
-    CreateMouseInputEvent,
+const PPB_MouseInputEvent_1_0* PluginInputEvent::GetMouseInterface1_0() {
+  static const PPB_MouseInputEvent_1_0 mouse_input_event_interface = {
+    CreateMouseInputEvent1_0,
     IsMouseInputEvent,
     ::GetMouseButton,
     ::GetMousePosition,
     ::GetMouseClickCount
+  };
+  return &mouse_input_event_interface;
+}
+
+// static
+const PPB_MouseInputEvent* PluginInputEvent::GetMouseInterface1_1() {
+  static const PPB_MouseInputEvent mouse_input_event_interface = {
+    CreateMouseInputEvent1_1,
+    IsMouseInputEvent,
+    ::GetMouseButton,
+    ::GetMousePosition,
+    ::GetMouseClickCount,
+    ::GetMouseMovement
   };
   return &mouse_input_event_interface;
 }
@@ -377,6 +413,10 @@ PP_Point PluginInputEvent::GetMousePosition() const {
 
 int32_t PluginInputEvent::GetMouseClickCount() const {
   return input_event_data_.mouse_click_count;
+}
+
+PP_Point PluginInputEvent::GetMouseMovement() const {
+  return input_event_data_.mouse_movement;
 }
 
 PP_FloatPoint PluginInputEvent::GetWheelDelta() const {

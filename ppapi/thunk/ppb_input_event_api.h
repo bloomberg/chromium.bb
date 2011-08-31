@@ -28,6 +28,7 @@ class PPAPI_THUNK_EXPORT PPB_InputEvent_API {
   virtual PP_InputEvent_MouseButton GetMouseButton() = 0;
   virtual PP_Point GetMousePosition() = 0;
   virtual int32_t GetMouseClickCount() = 0;
+  virtual PP_Point GetMouseMovement() = 0;
   virtual PP_FloatPoint GetWheelDelta() = 0;
   virtual PP_FloatPoint GetWheelTicks() = 0;
   virtual PP_Bool GetWheelScrollByPage() = 0;

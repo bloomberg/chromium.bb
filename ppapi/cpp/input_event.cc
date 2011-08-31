@@ -90,13 +90,14 @@ MouseInputEvent::MouseInputEvent(Instance* instance,
                                  uint32_t modifiers,
                                  PP_InputEvent_MouseButton mouse_button,
                                  const Point& mouse_position,
-                                 int32_t click_count) {
+                                 int32_t click_count,
+                                 const Point& mouse_movement) {
   // Type check the input event before setting it.
   if (!has_interface<PPB_MouseInputEvent>())
     return;
   PassRefFromConstructor(get_interface<PPB_MouseInputEvent>()->Create(
       instance->pp_instance(), type, time_stamp, modifiers, mouse_button,
-      &mouse_position.pp_point(), click_count));
+      &mouse_position.pp_point(), click_count, &mouse_movement.pp_point()));
 }
 
 PP_InputEvent_MouseButton MouseInputEvent::GetButton() const {
@@ -115,6 +116,12 @@ int32_t MouseInputEvent::GetClickCount() const {
   if (!has_interface<PPB_MouseInputEvent>())
     return 0;
   return get_interface<PPB_MouseInputEvent>()->GetClickCount(pp_resource());
+}
+
+Point MouseInputEvent::GetMovement() const {
+  if (!has_interface<PPB_MouseInputEvent>())
+    return Point();
+  return get_interface<PPB_MouseInputEvent>()->GetMovement(pp_resource());
 }
 
 // WheelInputEvent -------------------------------------------------------------

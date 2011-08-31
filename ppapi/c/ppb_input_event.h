@@ -21,7 +21,8 @@
 #define PPB_INPUT_EVENT_INTERFACE PPB_INPUT_EVENT_INTERFACE_1_0
 
 #define PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0 "PPB_MouseInputEvent;1.0"
-#define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_1_0
+#define PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1 "PPB_MouseInputEvent;1.1"
+#define PPB_MOUSE_INPUT_EVENT_INTERFACE PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1
 
 #define PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0 "PPB_WheelInputEvent;1.0"
 #define PPB_WHEEL_INPUT_EVENT_INTERFACE PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0
@@ -413,6 +414,8 @@ struct PPB_MouseInputEvent {
    * @param[in] mouse_position A <code>Point</code> containing the x and y
    * position of the mouse when the event occurred.
    *
+   * @param[in] mouse_movement The change in position of the mouse.
+   *
    * @return A <code>PP_Resource</code> containing the new mouse input event.
    */
   PP_Resource (*Create)(PP_Instance instance,
@@ -421,7 +424,8 @@ struct PPB_MouseInputEvent {
                         uint32_t modifiers,
                         PP_InputEvent_MouseButton mouse_button,
                         const struct PP_Point* mouse_position,
-                        int32_t click_count);
+                        int32_t click_count,
+                        const struct PP_Point* mouse_movement);
   /**
    * IsMouseInputEvent() determines if a resource is a mouse event.
    *
@@ -444,9 +448,11 @@ struct PPB_MouseInputEvent {
    */
   PP_InputEvent_MouseButton (*GetButton)(PP_Resource mouse_event);
   /**
-   * GetPosition() returns the pixel location of a mouse input event.
+   * GetPosition() returns the pixel location of a mouse input event. When
+   * the mouse is locked, it returns the last known mouse position just as
+   * mouse lock was entered.
    *
-   * @param[in] mouse_event A <code>PP_Resource</code> corresponding to an
+   * @param[in] mouse_event A <code>PP_Resource</code> corresponding to a
    * mouse event.
    *
    * @return The point associated with the mouse event, relative to the upper-
@@ -457,6 +463,33 @@ struct PPB_MouseInputEvent {
   /**
    * TODO(brettw) figure out exactly what this means.
    */
+  int32_t (*GetClickCount)(PP_Resource mouse_event);
+  /**
+   * Returns the change in position of the mouse. When the mouse is locked,
+   * although the mouse position doesn't actually change, this function
+   * still provides movement information, which indicates what the change in
+   * position would be had the mouse not been locked.
+   *
+   * @param[in] mouse_event A <code>PP_Resource</code> corresponding to a
+   * mouse event.
+   *
+   * @return The change in position of the mouse, relative to the previous
+   * position.
+   */
+  struct PP_Point (*GetMovement)(PP_Resource mouse_event);
+};
+
+struct PPB_MouseInputEvent_1_0 {
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_InputEvent_Type type,
+                        PP_TimeTicks time_stamp,
+                        uint32_t modifiers,
+                        PP_InputEvent_MouseButton mouse_button,
+                        const struct PP_Point* mouse_position,
+                        int32_t click_count);
+  PP_Bool (*IsMouseInputEvent)(PP_Resource resource);
+  PP_InputEvent_MouseButton (*GetButton)(PP_Resource mouse_event);
+  struct PP_Point (*GetPosition)(PP_Resource mouse_event);
   int32_t (*GetClickCount)(PP_Resource mouse_event);
 };
 

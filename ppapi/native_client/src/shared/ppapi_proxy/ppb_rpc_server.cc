@@ -1351,6 +1351,8 @@ static void PPB_InputEvent_CreateMouseInputEventDispatcher(
       inputs[5]->u.ival,
       inputs[6]->u.ival,
       inputs[7]->u.ival,
+      inputs[8]->u.ival,
+      inputs[9]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -2276,7 +2278,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_ImageData_Describe:i:Chii", PPB_ImageData_DescribeDispatcher },
   { "PPB_InputEvent_RequestInputEvents:iii:i", PPB_InputEvent_RequestInputEventsDispatcher },
   { "PPB_InputEvent_ClearInputEventRequest:ii:", PPB_InputEvent_ClearInputEventRequestDispatcher },
-  { "PPB_InputEvent_CreateMouseInputEvent:iidiiiii:i", PPB_InputEvent_CreateMouseInputEventDispatcher },
+  { "PPB_InputEvent_CreateMouseInputEvent:iidiiiiiii:i", PPB_InputEvent_CreateMouseInputEventDispatcher },
   { "PPB_InputEvent_CreateWheelInputEvent:ididdddi:i", PPB_InputEvent_CreateWheelInputEventDispatcher },
   { "PPB_InputEvent_CreateKeyboardInputEvent:iidiiC:i", PPB_InputEvent_CreateKeyboardInputEventDispatcher },
   { "PPB_Instance_BindGraphics:ii:i", PPB_Instance_BindGraphicsDispatcher },

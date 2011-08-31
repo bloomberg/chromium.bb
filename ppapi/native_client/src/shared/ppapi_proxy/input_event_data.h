@@ -25,6 +25,7 @@ struct InputEventData {
   PP_InputEvent_MouseButton mouse_button;
   int32_t mouse_click_count;
   PP_Point mouse_position;
+  PP_Point mouse_movement;
 
   PP_FloatPoint wheel_delta;
   PP_FloatPoint wheel_ticks;
@@ -38,7 +39,7 @@ struct InputEventData {
 // and alignment. TODO(dmichael): This is only required because we don't pickle
 // the type. As a short-cut, we memcpy it instead. It would be cleaner to
 // pickle this struct.
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(InputEventData, 56);
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(InputEventData, 64);
 
 }  // namespace ppapi_proxy
 

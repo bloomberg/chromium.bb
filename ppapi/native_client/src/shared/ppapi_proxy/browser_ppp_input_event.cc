@@ -44,6 +44,8 @@ PP_Bool HandleInputEvent(PP_Instance instance, PP_Resource input_event) {
           PPBMouseInputEventInterface()->GetPosition(input_event);
       data.mouse_click_count =
           PPBMouseInputEventInterface()->GetClickCount(input_event);
+      data.mouse_movement =
+          PPBMouseInputEventInterface()->GetMovement(input_event);
       break;
     // This event uses the PPB_WheelInputEvent interface.
     case PP_INPUTEVENT_TYPE_WHEEL:

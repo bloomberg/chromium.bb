@@ -27,7 +27,8 @@ class PluginInputEvent : public PluginResource {
   }
 
   static const PPB_InputEvent* GetInterface();
-  static const PPB_MouseInputEvent* GetMouseInterface();
+  static const PPB_MouseInputEvent_1_0* GetMouseInterface1_0();
+  static const PPB_MouseInputEvent* GetMouseInterface1_1();
   static const PPB_WheelInputEvent* GetWheelInterface();
   static const PPB_KeyboardInputEvent* GetKeyboardInterface();
 
@@ -38,6 +39,7 @@ class PluginInputEvent : public PluginResource {
   PP_InputEvent_MouseButton GetMouseButton() const;
   PP_Point GetMousePosition() const;
   int32_t GetMouseClickCount() const;
+  PP_Point GetMouseMovement() const;
 
   PP_FloatPoint GetWheelDelta() const;
   PP_FloatPoint GetWheelTicks() const;

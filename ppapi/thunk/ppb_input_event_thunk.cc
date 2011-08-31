@@ -80,19 +80,39 @@ const PPB_InputEvent g_ppb_input_event_thunk = {
 
 // Mouse -----------------------------------------------------------------------
 
-PP_Resource CreateMouseInputEvent(PP_Instance instance,
-                                  PP_InputEvent_Type type,
-                                  PP_TimeTicks time_stamp,
-                                  uint32_t modifiers,
-                                  PP_InputEvent_MouseButton mouse_button,
-                                  const PP_Point* mouse_position,
-                                  int32_t click_count) {
+PP_Resource CreateMouseInputEvent1_0(PP_Instance instance,
+                                     PP_InputEvent_Type type,
+                                     PP_TimeTicks time_stamp,
+                                     uint32_t modifiers,
+                                     PP_InputEvent_MouseButton mouse_button,
+                                     const PP_Point* mouse_position,
+                                     int32_t click_count) {
+  EnterFunction<ResourceCreationAPI> enter(instance, true);
+  if (enter.failed())
+    return 0;
+
+  PP_Point mouse_movement = PP_MakePoint(0, 0);
+  return enter.functions()->CreateMouseInputEvent(instance, type, time_stamp,
+                                                  modifiers, mouse_button,
+                                                  mouse_position, click_count,
+                                                  &mouse_movement);
+}
+
+PP_Resource CreateMouseInputEvent1_1(PP_Instance instance,
+                                     PP_InputEvent_Type type,
+                                     PP_TimeTicks time_stamp,
+                                     uint32_t modifiers,
+                                     PP_InputEvent_MouseButton mouse_button,
+                                     const PP_Point* mouse_position,
+                                     int32_t click_count,
+                                     const PP_Point* mouse_movement) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
   return enter.functions()->CreateMouseInputEvent(instance, type, time_stamp,
                                                   modifiers, mouse_button,
-                                                  mouse_position, click_count);
+                                                  mouse_position, click_count,
+                                                  mouse_movement);
 }
 
 PP_Bool IsMouseInputEvent(PP_Resource resource) {
@@ -128,12 +148,28 @@ int32_t GetMouseClickCount(PP_Resource mouse_event) {
   return enter.object()->GetMouseClickCount();
 }
 
-const PPB_MouseInputEvent g_ppb_mouse_input_event_thunk = {
-  &CreateMouseInputEvent,
+PP_Point GetMouseMovement(PP_Resource mouse_event) {
+  EnterInputEvent enter(mouse_event, true);
+  if (enter.failed())
+    return PP_MakePoint(0, 0);
+  return enter.object()->GetMouseMovement();
+}
+
+const PPB_MouseInputEvent_1_0 g_ppb_mouse_input_event_1_0_thunk = {
+  &CreateMouseInputEvent1_0,
   &IsMouseInputEvent,
   &GetMouseButton,
   &GetMousePosition,
   &GetMouseClickCount
+};
+
+const PPB_MouseInputEvent g_ppb_mouse_input_event_1_1_thunk = {
+  &CreateMouseInputEvent1_1,
+  &IsMouseInputEvent,
+  &GetMouseButton,
+  &GetMousePosition,
+  &GetMouseClickCount,
+  &GetMouseMovement
 };
 
 // Wheel -----------------------------------------------------------------------
@@ -241,8 +277,12 @@ const PPB_InputEvent* GetPPB_InputEvent_Thunk() {
   return &g_ppb_input_event_thunk;
 }
 
-const PPB_MouseInputEvent* GetPPB_MouseInputEvent_Thunk() {
-  return &g_ppb_mouse_input_event_thunk;
+const PPB_MouseInputEvent_1_0* GetPPB_MouseInputEvent_1_0_Thunk() {
+  return &g_ppb_mouse_input_event_1_0_thunk;
+}
+
+const PPB_MouseInputEvent* GetPPB_MouseInputEvent_1_1_Thunk() {
+  return &g_ppb_mouse_input_event_1_1_thunk;
 }
 
 const PPB_KeyboardInputEvent* GetPPB_KeyboardInputEvent_Thunk() {

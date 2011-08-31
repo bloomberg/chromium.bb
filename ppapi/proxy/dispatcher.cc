@@ -147,7 +147,8 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_ImageData_Proxy::GetInfo());
   AddPPB(PPB_InputEvent_Proxy::GetInputEventInfo());
   AddPPB(PPB_InputEvent_Proxy::GetKeyboardInputEventInfo());
-  AddPPB(PPB_InputEvent_Proxy::GetMouseInputEventInfo());
+  AddPPB(PPB_InputEvent_Proxy::GetMouseInputEventInfo1_0());
+  AddPPB(PPB_InputEvent_Proxy::GetMouseInputEventInfo1_1());
   AddPPB(PPB_InputEvent_Proxy::GetWheelInputEventInfo());
   AddPPB(PPB_Instance_Proxy::GetInfo0_5());
   AddPPB(PPB_Instance_Proxy::GetInfo1_0());

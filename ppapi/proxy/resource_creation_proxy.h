@@ -99,7 +99,8 @@ class ResourceCreationProxy : public FunctionGroupBase,
       uint32_t modifiers,
       PP_InputEvent_MouseButton mouse_button,
       const PP_Point* mouse_position,
-      int32_t click_count) OVERRIDE;
+      int32_t click_count,
+      const PP_Point* mouse_movement) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateSurface3D(PP_Instance instance,
