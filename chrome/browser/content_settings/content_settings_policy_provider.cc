@@ -23,11 +23,6 @@
 
 namespace {
 
-// Base pref path of the prefs that contain the managed default content
-// settings values.
-const std::string kManagedSettings =
-      "profile.managed_default_content_settings";
-
 // The preferences used to manage ContentSettingsTypes.
 const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
   prefs::kManagedDefaultCookiesSetting,
