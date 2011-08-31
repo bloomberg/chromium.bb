@@ -183,7 +183,7 @@ TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
   int page_id = 1;
   NavigateToPrintUrl(tab, page_id++);
 
-  bg_print_manager->OwnTabContents(tab);
+  bg_print_manager->OwnPrintPreviewTab(tab);
 
   EXPECT_EQ(4U, CountAllTabs());
 
@@ -216,7 +216,7 @@ TEST_F(BrowserListTest, TabContentsIteratorBackgroundPrinting) {
   }
   for (std::vector<TabContentsWrapper*>::iterator it = owned_tabs.begin();
        it != owned_tabs.end(); ++it) {
-    bg_print_manager->OwnTabContents(*it);
+    bg_print_manager->OwnPrintPreviewTab(*it);
   }
 
   EXPECT_EQ(6U, CountAllTabs());

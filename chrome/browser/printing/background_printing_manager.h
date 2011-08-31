@@ -20,24 +20,25 @@ namespace printing {
 // Manages hidden tabs that prints documents in the background.
 // The hidden tabs are no longer part of any Browser / TabStripModel.
 // They get deleted when the tab finishes printing.
-class BackgroundPrintingManager
-    : public base::NonThreadSafe,
-      public NotificationObserver {
+class BackgroundPrintingManager : public base::NonThreadSafe,
+                                  public NotificationObserver {
  public:
+  typedef std::set<TabContentsWrapper*> TabContentsWrapperSet;
+
   BackgroundPrintingManager();
   virtual ~BackgroundPrintingManager();
 
-  // Takes ownership of |content| and deletes it when |content| finishes
+  // Takes ownership of |preview_tab| and deletes it when |preview_tab| finishes
   // printing. This removes the TabContentsWrapper from its TabStrip and
   // hides it from the user.
-  void OwnTabContents(TabContentsWrapper* content);
+  void OwnPrintPreviewTab(TabContentsWrapper* preview_tab);
 
   // Let others iterate over the list of background printing tabs.
-  std::set<TabContentsWrapper*>::const_iterator begin();
-  std::set<TabContentsWrapper*>::const_iterator end();
+  TabContentsWrapperSet::const_iterator begin();
+  TabContentsWrapperSet::const_iterator end();
 
-  // Returns true if |printing_contents_| contains |entry|.
-  bool HasTabContents(TabContentsWrapper* entry);
+  // Returns true if |printing_tabs_| contains |preview_tab|.
+  bool HasPrintPreviewTab(TabContentsWrapper* preview_tab);
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
@@ -45,8 +46,8 @@ class BackgroundPrintingManager
                        const NotificationDetails& details) OVERRIDE;
 
  private:
-  // The set of tabs managed by BackgroundPrintingManager.
-  std::set<TabContentsWrapper*> printing_contents_;
+  // The set of print preview tabs managed by BackgroundPrintingManager.
+  TabContentsWrapperSet printing_tabs_;
 
   NotificationRegistrar registrar_;
 

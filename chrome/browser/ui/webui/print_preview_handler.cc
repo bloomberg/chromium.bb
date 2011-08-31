@@ -963,9 +963,9 @@ void PrintPreviewHandler::FileSelectionCanceled(void* params) {
 void PrintPreviewHandler::HidePreviewTab() {
   TabContentsWrapper* preview_tab_wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
-  if (GetBackgroundPrintingManager()->HasTabContents(preview_tab_wrapper))
+  if (GetBackgroundPrintingManager()->HasPrintPreviewTab(preview_tab_wrapper))
     return;
-  GetBackgroundPrintingManager()->OwnTabContents(preview_tab_wrapper);
+  GetBackgroundPrintingManager()->OwnPrintPreviewTab(preview_tab_wrapper);
 }
 
 void PrintPreviewHandler::ClearInitiatorTabDetails() {

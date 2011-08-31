@@ -23,38 +23,40 @@ BackgroundPrintingManager::BackgroundPrintingManager() {
 
 BackgroundPrintingManager::~BackgroundPrintingManager() {
   DCHECK(CalledOnValidThread());
-  // The might be some TabContentsWrappers still in |printing_contents_| at
+  // The might be some TabContentsWrappers still in |printing_tabs_| at
   // this point. E.g. when the last remaining tab is a print preview tab and
   // tries to print. In which case it will fail to print.
   // TODO(thestig) handle this case better.
 }
 
-void BackgroundPrintingManager::OwnTabContents(TabContentsWrapper* contents) {
+void BackgroundPrintingManager::OwnPrintPreviewTab(
+    TabContentsWrapper* preview_tab) {
   DCHECK(CalledOnValidThread());
-  DCHECK(PrintPreviewTabController::IsPrintPreviewTab(contents));
-  CHECK(printing_contents_.find(contents) == printing_contents_.end());
+  DCHECK(PrintPreviewTabController::IsPrintPreviewTab(preview_tab));
+  CHECK(printing_tabs_.find(preview_tab) == printing_tabs_.end());
 
-  printing_contents_.insert(contents);
+  printing_tabs_.insert(preview_tab);
 
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-                 Source<TabContentsWrapper>(contents));
+                 Source<TabContentsWrapper>(preview_tab));
   registrar_.Add(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 Source<TabContents>(contents->tab_contents()));
+                 Source<TabContents>(preview_tab->tab_contents()));
 
-  // Detach |contents| from its tab strip.
+  // Detach |preview_tab| from its tab strip.
   Browser* browser = BrowserList::FindBrowserWithID(
-      contents->restore_tab_helper()->window_id().id());
+      preview_tab->restore_tab_helper()->window_id().id());
   DCHECK(browser);
 
   TabStripModel* tabstrip = browser->tabstrip_model();
-  tabstrip->DetachTabContentsAt(tabstrip->GetIndexOfTabContents(contents));
+  tabstrip->DetachTabContentsAt(tabstrip->GetIndexOfTabContents(preview_tab));
 
   // Activate the initiator tab.
   PrintPreviewTabController* tab_controller =
       PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return;
-  TabContentsWrapper* initiator_tab = tab_controller->GetInitiatorTab(contents);
+  TabContentsWrapper* initiator_tab =
+      tab_controller->GetInitiatorTab(preview_tab);
   if (!initiator_tab)
     return;
   static_cast<RenderViewHostDelegate*>(
@@ -86,7 +88,7 @@ void BackgroundPrintingManager::Observe(int type,
       }
       registrar_.Remove(this, content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                         Source<TabContents>(tab->tab_contents()));
-      printing_contents_.erase(tab);
+      printing_tabs_.erase(tab);
       break;
     }
     default: {
@@ -96,18 +98,19 @@ void BackgroundPrintingManager::Observe(int type,
   }
 }
 
-std::set<TabContentsWrapper*>::const_iterator
+BackgroundPrintingManager::TabContentsWrapperSet::const_iterator
     BackgroundPrintingManager::begin() {
-  return printing_contents_.begin();
+  return printing_tabs_.begin();
 }
 
-std::set<TabContentsWrapper*>::const_iterator
+BackgroundPrintingManager::TabContentsWrapperSet::const_iterator
     BackgroundPrintingManager::end() {
-  return printing_contents_.end();
+  return printing_tabs_.end();
 }
 
-bool BackgroundPrintingManager::HasTabContents(TabContentsWrapper* entry) {
-  return printing_contents_.find(entry) != printing_contents_.end();
+bool BackgroundPrintingManager::HasPrintPreviewTab(
+    TabContentsWrapper* preview_tab) {
+  return printing_tabs_.find(preview_tab) != printing_tabs_.end();
 }
 
 }  // namespace printing

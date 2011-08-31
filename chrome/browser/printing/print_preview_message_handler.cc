@@ -183,7 +183,7 @@ void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
     return;
 
   if (g_browser_process->background_printing_manager()->
-          HasTabContents(print_preview_tab)) {
+          HasPrintPreviewTab(print_preview_tab)) {
     // Preview tab was hidden to serve the print request.
     delete print_preview_tab;
   } else {
