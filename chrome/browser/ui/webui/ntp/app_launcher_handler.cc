@@ -117,24 +117,27 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   bool enabled = service->IsExtensionEnabled(extension->id()) &&
       !service->GetTerminatedExtension(extension->id());
   bool icon_big_exists = true;
+  // Instead of setting grayscale here, we do it in apps_page.js in NTP4.
+  bool grayscale = NewTabUI::NTP4Enabled() ? false : !enabled;
   GURL icon_big =
       ExtensionIconSource::GetIconURL(extension,
                                       Extension::EXTENSION_ICON_LARGE,
                                       ExtensionIconSet::MATCH_EXACTLY,
-                                      !enabled, &icon_big_exists);
+                                      grayscale, &icon_big_exists);
   bool icon_small_exists = true;
   GURL icon_small =
       ExtensionIconSource::GetIconURL(extension,
                                       Extension::EXTENSION_ICON_BITTY,
                                       ExtensionIconSet::MATCH_BIGGER,
-                                      !enabled, &icon_small_exists);
+                                      grayscale, &icon_small_exists);
 
   value->Clear();
   value->SetString("id", extension->id());
   value->SetString("name", extension->name());
   value->SetString("description", extension->description());
   value->SetString("launch_url", extension->GetFullLaunchURL().spec());
-  if (enabled)
+  value->SetBoolean("enabled", enabled);
+  if (NewTabUI::NTP4Enabled() || enabled)
     value->SetString("options_url", extension->options_url().spec());
   value->SetBoolean("can_uninstall",
                     Extension::UserMayDisable(extension->location()));
@@ -147,6 +150,7 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
   value->SetInteger("launch_type",
       prefs->GetLaunchType(extension->id(),
                            ExtensionPrefs::LAUNCH_DEFAULT));
+  value->SetBoolean("offline_enabled", extension->offline_enabled());
   value->SetBoolean("is_component",
       extension->location() == Extension::COMPONENT);
   value->SetBoolean("is_webstore",
@@ -319,8 +323,14 @@ void AppLauncherHandler::Observe(int type,
       }
 
       scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
-      if (app_info.get())
-        web_ui_->CallJavascriptFunction("ntp4.appRemoved", *app_info);
+      scoped_ptr<base::FundamentalValue> uninstall_value(
+          Value::CreateBooleanValue(
+              Details<UnloadedExtensionInfo>(details)->reason ==
+              extension_misc::UNLOAD_REASON_UNINSTALL));
+      if (app_info.get()) {
+        web_ui_->CallJavascriptFunction(
+            "ntp4.appRemoved", *app_info, *uninstall_value);
+      }
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED:

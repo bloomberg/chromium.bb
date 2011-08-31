@@ -319,17 +319,18 @@ cr.define('ntp4', function() {
   }
 
   /**
-   * Called by chrome when a new app has been added to chrome.
-   * @param {Object} app A data structure full of relevant information for the
-   *     app.
+   * Called by chrome when a new app has been added to chrome or has been
+   * enabled if previously disabled.
+   * @param {Object} appData A data structure full of relevant information for
+   *     the app.
    */
-  function appAdded(app, opt_highlight) {
-    if (app.id == highlightAppId) {
+  function appAdded(appData, opt_highlight) {
+    if (appData.id == highlightAppId) {
       opt_highlight = true;
       highlightAppId = null;
     }
 
-    var pageIndex = app.page_index || 0;
+    var pageIndex = appData.page_index || 0;
 
     if (pageIndex >= appsPages.length) {
       while (pageIndex >= appsPages.length) {
@@ -339,7 +340,11 @@ cr.define('ntp4', function() {
     }
 
     var page = appsPages[pageIndex];
-    page.appendApp(app, opt_highlight);
+    var app = $(appData.id);
+    if (app)
+      app.replaceAppData(appData);
+    else
+      page.appendApp(appData, opt_highlight);
   }
 
   /**
@@ -351,15 +356,21 @@ cr.define('ntp4', function() {
   }
 
   /**
-   * Called by chrome when an existing app has been removed/uninstalled from
-   * chrome.
+   * Called by chrome when an existing app has been disabled or
+   * removed/uninstalled from chrome.
    * @param {Object} appData A data structure full of relevant information for
    *     the app.
+   * @param {boolean} isUninstall True if the app is being uninstalled;
+   *     false if the app is being disabled.
    */
-  function appRemoved(appData) {
+  function appRemoved(appData, isUninstall) {
     var app = $(appData.id);
     assert(app, 'trying to remove an app that doesn\'t exist');
-    app.remove();
+
+    if (!isUninstall)
+      app.replaceAppData(appData);
+    else
+      app.remove();
   }
 
   /**
@@ -387,6 +398,18 @@ cr.define('ntp4', function() {
         if (data.apps[j]['id'] == apps[i].appId)
           apps[i].appData = data.apps[j];
       }
+    }
+  }
+
+  /**
+   * Listener for offline status change events. Updates apps that are
+   * not offline-enabled to be grayscale if the browser is offline.
+   */
+  function updateOfflineEnabledApps() {
+    var apps = document.querySelectorAll('.app');
+    for (var i = 0; i < apps.length; ++i) {
+      if (apps[i].appData.enabled && !apps[i].appData.offline_enabled)
+        apps[i].setIcon();
     }
   }
 
@@ -795,7 +818,8 @@ cr.define('ntp4', function() {
     setMostVisitedPages: setMostVisitedPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     showNotification: showNotification,
-    themeChanged: themeChanged
+    themeChanged: themeChanged,
+    updateOfflineEnabledApps: updateOfflineEnabledApps
   };
 });
 
@@ -810,3 +834,5 @@ var recentlyClosedTabs = ntp4.setRecentlyClosedTabs;
 var setMostVisitedPages = ntp4.setMostVisitedPages;
 
 document.addEventListener('DOMContentLoaded', ntp4.initialize);
+window.addEventListener('online', ntp4.updateOfflineEnabledApps);
+window.addEventListener('offline', ntp4.updateOfflineEnabledApps);

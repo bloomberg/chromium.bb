@@ -119,7 +119,7 @@ cr.define('ntp4', function() {
         launchTypeButton.checked = app.appData.launch_type == id;
       });
 
-      this.options_.disabled = !app.appData.options_url;
+      this.options_.disabled = !app.appData.options_url || !app.appData.enabled;
       this.uninstall_.disabled = !app.appData.can_uninstall;
     },
 
@@ -189,8 +189,8 @@ cr.define('ntp4', function() {
         this.useSmallIcon_ = true;
 
       var appImg = this.ownerDocument.createElement('img');
-      appImg.src = this.useSmallIcon_ ? this.appData_.icon_small :
-                                        this.appData_.icon_big;
+      this.appImg_ = appImg;
+      this.setIcon();
       appImgContainer.appendChild(appImg);
 
       if (this.useSmallIcon_) {
@@ -204,7 +204,6 @@ cr.define('ntp4', function() {
         appImgContainer.addEventListener('click', this.onClick_.bind(this));
         appContents.appendChild(appImgContainer);
       }
-      this.appImg_ = appImg;
 
       var appSpan = this.ownerDocument.createElement('span');
       appSpan.textContent = this.appData_.name;
@@ -241,6 +240,19 @@ cr.define('ntp4', function() {
       this.id = '';
       var tile = findAncestorByClass(this, 'tile');
       tile.doRemove();
+    },
+
+    /**
+     * Set the app's icon image from the appData.
+     * @private
+     */
+    setIcon: function() {
+      this.appImg_.src = this.useSmallIcon_ ? this.appData_.icon_small :
+                                              this.appData_.icon_big;
+      if (!this.appData_.enabled ||
+          (!this.appData_.offline_enabled && !navigator.onLine)) {
+        this.appImg_.src += '?grayscale=true';
+      }
     },
 
     /**
@@ -344,6 +356,15 @@ cr.define('ntp4', function() {
         this.classList.add('right-mouse-down');
       else
         this.classList.remove('right-mouse-down');
+    },
+
+    /**
+     * Change the appData and update the appearance of the app.
+     * @param {Object} appData The new data object that describes the app.
+     */
+    replaceAppData: function(appData) {
+      this.appData_ = appData;
+      this.setIcon();
     },
 
     /**
