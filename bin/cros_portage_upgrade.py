@@ -440,7 +440,7 @@ class Upgrader(object):
     for line in output.split('\n'):
       match = self._equery_regexp.search(line)
       if match:
-        return ('M' != match.group(1), '~' != match.group(1))
+        return ('M' != match.group(1), '~' != match.group(2))
 
     raise RuntimeError("Unable to determine whether %s is stable from equery "
                        "output:\n%s" % (cpv, output))
