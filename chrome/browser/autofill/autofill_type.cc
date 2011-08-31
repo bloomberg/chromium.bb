@@ -10,15 +10,11 @@
 
 namespace {
 
-const AutofillType::AutofillTypeDefinition kUnknownAutofillTypeDefinition = {
-  /* UNKNOWN_TYPE */ AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP
-};
-
 AutofillType::AutofillTypeDefinition kAutofillTypeDefinitions[] = {
   // NO_SERVER_DATA
   { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
   // UNKNOWN_TYPE
-  kUnknownAutofillTypeDefinition,
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
   // EMPTY_TYPE
   { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
 
@@ -50,11 +46,11 @@ AutofillType::AutofillTypeDefinition kAutofillTypeDefinitions[] = {
   { AutofillType::PHONE_HOME, AutofillType::PHONE_WHOLE_NUMBER },
 
   // Work phone numbers (values [15,19]) are deprecated.
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
 
   // PHONE_FAX_NUMBER
   { AutofillType::PHONE_FAX, AutofillType::PHONE_NUMBER },
@@ -68,11 +64,11 @@ AutofillType::AutofillTypeDefinition kAutofillTypeDefinitions[] = {
   { AutofillType::PHONE_FAX, AutofillType::PHONE_WHOLE_NUMBER },
 
   // Cell phone numbers (values [25, 29]) are deprecated.
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
 
   // ADDRESS_HOME_LINE1
   { AutofillType::ADDRESS_HOME, AutofillType::ADDRESS_LINE1 },
@@ -105,13 +101,13 @@ AutofillType::AutofillTypeDefinition kAutofillTypeDefinitions[] = {
   { AutofillType::ADDRESS_BILLING, AutofillType::ADDRESS_COUNTRY },
 
   // ADDRESS_SHIPPING values [44,50] are deprecated.
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
-  kUnknownAutofillTypeDefinition,
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
+  { AutofillType::NO_GROUP, AutofillType::NO_SUBGROUP },
 
   // CREDIT_CARD_NAME
   { AutofillType::CREDIT_CARD, AutofillType::NO_SUBGROUP },
