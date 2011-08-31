@@ -603,7 +603,8 @@ class BuildBoardStage(BuilderStage):
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=self._build_config['chroot_replace'],
-          use_sdk=self._build_config['use_sdk'])
+          use_sdk=self._build_config['use_sdk'],
+          chrome_root=self._options.chrome_root)
     else:
       commands.RunChrootUpgradeHooks(self._build_root)
 
@@ -667,6 +668,9 @@ class BuildTargetStage(BuilderStage):
     env = {}
     if self._build_config.get('useflags'):
       env['USE'] = ' '.join(self._build_config['useflags'])
+
+    if self._options.chrome_root:
+      env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
 
     # If we are using ToT toolchain, don't attempt to update
     # the toolchain during build_packages.

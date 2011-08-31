@@ -483,6 +483,15 @@ def _CheckBuildRootOption(option, opt_str, value, parser):
   parser.values.buildroot = os.path.realpath(os.path.expanduser(value))
 
 
+def _CheckChromeRootOption(option, opt_str, value, parser):
+  """Validate and convert chrome_root to full-path form."""
+  value = value.strip()
+  if not value or value == '/':
+    raise optparse.OptionValueError('Invalid chrome_root specified')
+
+  parser.values.chrome_root = os.path.realpath(os.path.expanduser(value))
+
+
 def _CheckChromeRevOption(option, opt_str, value, parser):
   """Validate the chrome_rev option."""
   value = value.strip()
@@ -553,6 +562,10 @@ def _CreateParser():
                     help='This is running on a buildbot')
   group.add_option('--buildnumber',
                    help='build number', type='int', default=0)
+  group.add_option('--chrome_root', default=None, type='string',
+                    action='callback', dest='chrome_root',
+                    callback=_CheckChromeRootOption,
+                    help='Local checkout of Chrome to use.')
   group.add_option('--clobber', action='store_true', dest='clobber',
                     default=False,
                     help='Clears an old checkout before syncing')
