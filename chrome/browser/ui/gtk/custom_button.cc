@@ -222,7 +222,8 @@ CustomDrawButton::CustomDrawButton(int normal_id,
                                    int hover_id,
                                    int disabled_id)
     : button_base_(NULL, normal_id, pressed_id, hover_id, disabled_id),
-      theme_service_(NULL) {
+      theme_service_(NULL),
+      forcing_chrome_theme_(false) {
   Init();
 
   // Initialize the theme stuff with no theme_provider.
