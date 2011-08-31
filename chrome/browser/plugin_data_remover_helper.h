@@ -28,7 +28,7 @@ class PluginDataRemoverHelper : public NotificationObserver {
   // This fires off a request to the PluginList (via PluginDataRemover)
   // on the FILE thread to get the list of installed plug-ins.
   void Init(const char* pref_name,
-            PrefService* prefs,
+            Profile* profile,
             NotificationObserver* observer);
 
   bool GetValue() const { return pref_.GetValue(); }

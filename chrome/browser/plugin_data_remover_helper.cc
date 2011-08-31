@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/plugin_data_remover.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_thread.h"
@@ -17,8 +18,8 @@
 class PluginDataRemoverHelper::Internal
     : public base::RefCountedThreadSafe<PluginDataRemoverHelper::Internal> {
  public:
-  Internal(const char* pref_name, PrefService* prefs)
-      : pref_name_(pref_name), prefs_(prefs) {}
+  Internal(const char* pref_name, Profile* profile)
+      : pref_name_(pref_name), profile_(profile) {}
 
   void StartUpdate() {
     BrowserThread::PostTask(
@@ -26,11 +27,12 @@ class PluginDataRemoverHelper::Internal
         FROM_HERE,
         NewRunnableMethod(
             this,
-            &PluginDataRemoverHelper::Internal::UpdateOnFileThread));
+            &PluginDataRemoverHelper::Internal::UpdateOnFileThread,
+            make_scoped_refptr(PluginPrefs::GetForProfile(profile_))));
   }
 
   void Invalidate() {
-    prefs_ = NULL;
+    profile_ = NULL;
   }
 
  private:
@@ -38,9 +40,9 @@ class PluginDataRemoverHelper::Internal
 
   ~Internal() {}
 
-  void UpdateOnFileThread() {
+  void UpdateOnFileThread(scoped_refptr<PluginPrefs> plugin_prefs) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    bool result = PluginDataRemover::IsSupported();
+    bool result = PluginDataRemover::IsSupported(plugin_prefs);
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -51,13 +53,13 @@ class PluginDataRemoverHelper::Internal
 
   void SetPrefOnUIThread(bool value) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (prefs_)
-      prefs_->SetBoolean(pref_name_.c_str(), value);
+    if (profile_)
+      profile_->GetPrefs()->SetBoolean(pref_name_.c_str(), value);
   }
 
   std::string pref_name_;
   // Weak pointer.
-  PrefService* prefs_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(Internal);
 };
@@ -71,12 +73,12 @@ PluginDataRemoverHelper::~PluginDataRemoverHelper() {
 }
 
 void PluginDataRemoverHelper::Init(const char* pref_name,
-                                   PrefService* prefs,
+                                   Profile* profile,
                                    NotificationObserver* observer) {
-  pref_.Init(pref_name, prefs, observer);
+  pref_.Init(pref_name, profile->GetPrefs(), observer);
   registrar_.Add(this, content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
-  internal_ = make_scoped_refptr(new Internal(pref_name, prefs));
+  internal_ = make_scoped_refptr(new Internal(pref_name, profile));
   internal_->StartUpdate();
 }
 

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/version.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/plugin_service.h"
@@ -165,7 +166,7 @@ void PluginDataRemover::SignalDone() {
 }
 
 // static
-bool PluginDataRemover::IsSupported() {
+bool PluginDataRemover::IsSupported(PluginPrefs* plugin_prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool allow_wildcard = false;
   std::vector<webkit::WebPluginInfo> plugins;
@@ -181,7 +182,7 @@ bool PluginDataRemover::IsSupported() {
           switches::kMinClearSiteDataFlashVersion)));
   if (!min_version.get())
     min_version.reset(Version::GetVersionFromString(kMinFlashVersion));
-  return webkit::IsPluginEnabled(*plugin) &&
+  return plugin_prefs->IsPluginEnabled(*plugin) &&
          version.get() &&
          min_version->CompareTo(*version) == -1;
 }

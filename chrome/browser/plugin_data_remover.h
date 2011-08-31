@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "content/browser/plugin_process_host.h"
 
+class PluginPrefs;
 class Task;
 
 namespace base {
@@ -34,7 +35,7 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   // Returns whether there is a plug-in installed that supports removing
   // LSO data. Because this method possibly has to load the plug-in list, it
   // should only be called on the FILE thread.
-  static bool IsSupported();
+  static bool IsSupported(PluginPrefs* plugin_prefs);
 
   // Indicates whether we are still in the process of removing plug-in data.
   bool is_removing() const { return is_removing_; }

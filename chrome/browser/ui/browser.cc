@@ -2222,13 +2222,6 @@ void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   prefs->RegisterIntegerPref(prefs::kExtensionSidebarWidth, -1);
   prefs->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
-  // Educated guess: Chrome has a bundled Flash version supporting
-  // clearing LSO data, Chromium hasn't.
-#if defined(GOOGLE_CHROME_BUILD)
-  prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled, true);
-#else
-  prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled, false);
-#endif
 }
 
 // static
@@ -2353,6 +2346,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
                              true,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableReferrers,
+                             true,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled,
                              true,
                              PrefService::UNSYNCABLE_PREF);
 }
