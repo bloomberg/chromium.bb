@@ -4,10 +4,15 @@
 
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 
+#include <algorithm>
+#include <string>
+
 #include "base/auto_reset.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/content_settings_pattern.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/content_settings_helper.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/common/notification_service.h"
@@ -16,10 +21,10 @@
 #include "ui/base/models/table_model_observer.h"
 
 struct NotificationExceptionsTableModel::Entry {
-  Entry(const GURL& origin, ContentSetting setting);
+  Entry(const ContentSettingsPattern& origin, ContentSetting setting);
   bool operator<(const Entry& b) const;
 
-  GURL origin;
+  ContentSettingsPattern origin;
   ContentSetting setting;
 };
 
@@ -47,12 +52,9 @@ void NotificationExceptionsTableModel::RemoveRows(const Rows& rows) {
   for (Rows::const_reverse_iterator i(rows.rbegin()); i != rows.rend(); ++i) {
     size_t row = *i;
     Entry* entry = &entries_[row];
-    if (entry->setting == CONTENT_SETTING_ALLOW) {
-      service_->ResetAllowedOrigin(entry->origin);
-    } else {
-      DCHECK_EQ(entry->setting, CONTENT_SETTING_BLOCK);
-      service_->ResetBlockedOrigin(entry->origin);
-    }
+    DCHECK(entry->setting == CONTENT_SETTING_ALLOW ||
+           entry->setting == CONTENT_SETTING_BLOCK);
+    service_->ClearSetting(entry->origin);
     entries_.erase(entries_.begin() + row);  // Note: |entry| is now garbage.
     if (observer_)
       observer_->OnItemsRemoved(row, 1);
@@ -75,7 +77,7 @@ string16 NotificationExceptionsTableModel::GetText(int row,
                                                    int column_id) {
   const Entry& entry = entries_[row];
   if (column_id == IDS_EXCEPTIONS_HOSTNAME_HEADER) {
-    return content_settings_helper::OriginToString16(entry.origin);
+    return UTF8ToUTF16(entry.origin.ToString());
   }
 
   if (column_id == IDS_EXCEPTIONS_ACTION_HEADER) {
@@ -114,18 +116,22 @@ void NotificationExceptionsTableModel::Observe(
 }
 
 void NotificationExceptionsTableModel::LoadEntries() {
-  std::vector<GURL> allowed(service_->GetAllowedOrigins());
-  std::vector<GURL> blocked(service_->GetBlockedOrigins());
-  entries_.reserve(allowed.size() + blocked.size());
-  for (size_t i = 0; i < allowed.size(); ++i)
-    entries_.push_back(Entry(allowed[i], CONTENT_SETTING_ALLOW));
-  for (size_t i = 0; i < blocked.size(); ++i)
-    entries_.push_back(Entry(blocked[i], CONTENT_SETTING_BLOCK));
+  HostContentSettingsMap::SettingsForOneType settings;
+  service_->GetNotificationsSettings(&settings);
+
+  entries_.reserve(settings.size());
+  for (HostContentSettingsMap::SettingsForOneType::const_iterator i =
+           settings.begin();
+       i != settings.end();
+       ++i) {
+    const HostContentSettingsMap::PatternSettingSourceTuple& tuple(*i);
+    entries_.push_back(Entry(tuple.a, tuple.c));
+  }
   std::sort(entries_.begin(), entries_.end());
 }
 
 NotificationExceptionsTableModel::Entry::Entry(
-    const GURL& in_origin,
+    const ContentSettingsPattern& in_origin,
     ContentSetting in_setting)
     : origin(in_origin),
       setting(in_setting) {
@@ -134,5 +140,5 @@ NotificationExceptionsTableModel::Entry::Entry(
 bool NotificationExceptionsTableModel::Entry::operator<(
     const NotificationExceptionsTableModel::Entry& b) const {
   DCHECK_NE(origin, b.origin);
-  return origin < b.origin;
+  return origin.ToString() < b.origin.ToString();
 }

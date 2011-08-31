@@ -60,42 +60,43 @@ TEST_F(NotificationExceptionsTableModelTest, CanCreate) {
 
 TEST_F(NotificationExceptionsTableModelTest, RemoveAll) {
   FillData();
-  EXPECT_EQ(2u, service_->GetAllowedOrigins().size());
-  EXPECT_EQ(3u, service_->GetBlockedOrigins().size());
+  HostContentSettingsMap::SettingsForOneType settings;
+  service_->GetNotificationsSettings(&settings);
+  EXPECT_EQ(5u, settings.size());
   EXPECT_EQ(5, model_->RowCount());
 
   model_->RemoveAll();
   EXPECT_EQ(0, model_->RowCount());
 
-  EXPECT_EQ(0u, service_->GetAllowedOrigins().size());
-  EXPECT_EQ(0u, service_->GetBlockedOrigins().size());
+  service_->GetNotificationsSettings(&settings);
+  EXPECT_EQ(0u, settings.size());
 }
 
 TEST_F(NotificationExceptionsTableModelTest, AlphabeticalOrder) {
   FillData();
   EXPECT_EQ(5, model_->RowCount());
 
-  EXPECT_EQ(ASCIIToUTF16("allowed.com"),
+  EXPECT_EQ(ASCIIToUTF16("http://allowed.com:80"),
             model_->GetText(0, IDS_EXCEPTIONS_HOSTNAME_HEADER));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON),
             model_->GetText(0, IDS_EXCEPTIONS_ACTION_HEADER));
 
-  EXPECT_EQ(ASCIIToUTF16("denied.com"),
+  EXPECT_EQ(ASCIIToUTF16("http://denied.com:80"),
             model_->GetText(1, IDS_EXCEPTIONS_HOSTNAME_HEADER));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON),
             model_->GetText(1, IDS_EXCEPTIONS_ACTION_HEADER));
 
-  EXPECT_EQ(ASCIIToUTF16("denied2.com"),
+  EXPECT_EQ(ASCIIToUTF16("http://denied2.com:80"),
             model_->GetText(2, IDS_EXCEPTIONS_HOSTNAME_HEADER));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON),
             model_->GetText(2, IDS_EXCEPTIONS_ACTION_HEADER));
 
-  EXPECT_EQ(ASCIIToUTF16("e-allowed2.com"),
+  EXPECT_EQ(ASCIIToUTF16("http://e-allowed2.com:80"),
             model_->GetText(3, IDS_EXCEPTIONS_HOSTNAME_HEADER));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON),
             model_->GetText(3, IDS_EXCEPTIONS_ACTION_HEADER));
 
-  EXPECT_EQ(ASCIIToUTF16("f-denied3.com"),
+  EXPECT_EQ(ASCIIToUTF16("http://f-denied3.com:80"),
             model_->GetText(4, IDS_EXCEPTIONS_HOSTNAME_HEADER));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON),
             model_->GetText(4, IDS_EXCEPTIONS_ACTION_HEADER));
@@ -112,8 +113,10 @@ TEST_F(NotificationExceptionsTableModelTest, RemoveRows) {
     model_->RemoveRows(rows);
   }
   EXPECT_EQ(3, model_->RowCount());
-  EXPECT_EQ(0u, service_->GetAllowedOrigins().size());
-  EXPECT_EQ(3u, service_->GetBlockedOrigins().size());
+
+  HostContentSettingsMap::SettingsForOneType settings;
+  service_->GetNotificationsSettings(&settings);
+  EXPECT_EQ(3u, settings.size());
 
   {
     RemoveRowsTableModel::Rows rows;
@@ -123,6 +126,6 @@ TEST_F(NotificationExceptionsTableModelTest, RemoveRows) {
     model_->RemoveRows(rows);
   }
   EXPECT_EQ(0, model_->RowCount());
-  EXPECT_EQ(0u, service_->GetAllowedOrigins().size());
-  EXPECT_EQ(0u, service_->GetBlockedOrigins().size());
+  service_->GetNotificationsSettings(&settings);
+  EXPECT_EQ(0u, settings.size());
 }
