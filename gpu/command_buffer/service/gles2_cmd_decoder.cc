@@ -2534,49 +2534,6 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     RestoreClearState();
   }
-
-  // Workaround for NVIDIA driver bug on OS X; crbug.com/89557,
-  // crbug.com/94103. TODO(kbr): figure out reproduction so Apple will
-  // fix this.
-  if (needs_mac_nvidia_driver_workaround_) {
-    offscreen_saved_frame_buffer_->Create();
-    glFinish();
-  }
-
-  // Allocate the offscreen saved color texture.
-  DCHECK(offscreen_saved_color_format_);
-  offscreen_saved_color_texture_->AllocateStorage(
-      offscreen_size_, offscreen_saved_color_format_);
-
-  offscreen_saved_frame_buffer_->AttachRenderTexture(
-      offscreen_saved_color_texture_.get());
-  if (offscreen_saved_frame_buffer_->CheckStatus() !=
-      GL_FRAMEBUFFER_COMPLETE) {
-    LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
-               << "because offscreen saved FBO was incomplete.";
-    return false;
-  }
-
-  // Destroy the offscreen resolved framebuffers.
-  if (offscreen_resolved_frame_buffer_.get())
-    offscreen_resolved_frame_buffer_->Destroy();
-  if (offscreen_resolved_color_texture_.get())
-    offscreen_resolved_color_texture_->Destroy();
-  offscreen_resolved_color_texture_.reset();
-  offscreen_resolved_frame_buffer_.reset();
-
-  // Clear the offscreen color texture.
-  {
-    ScopedFrameBufferBinder binder(this, offscreen_saved_frame_buffer_->id());
-    glClearColor(0, 0, 0, 0);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glDisable(GL_SCISSOR_TEST);
-    glClear(GL_COLOR_BUFFER_BIT);
-    RestoreClearState();
-  }
-
-  UpdateParentTextureInfo();
-
   return true;
 }
 
@@ -6582,6 +6539,52 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
   if (is_offscreen) {
+    if (offscreen_size_ != offscreen_saved_color_texture_->size()) {
+      // Workaround for NVIDIA driver bug on OS X; crbug.com/89557,
+      // crbug.com/94163. TODO(kbr): figure out reproduction so Apple will
+      // fix this.
+      if (needs_mac_nvidia_driver_workaround_) {
+        offscreen_saved_frame_buffer_->Create();
+        glFinish();
+      }
+
+      // Allocate the offscreen saved color texture.
+      DCHECK(offscreen_saved_color_format_);
+      offscreen_saved_color_texture_->AllocateStorage(
+          offscreen_size_, offscreen_saved_color_format_);
+
+      offscreen_saved_frame_buffer_->AttachRenderTexture(
+          offscreen_saved_color_texture_.get());
+      if (offscreen_saved_frame_buffer_->CheckStatus() !=
+          GL_FRAMEBUFFER_COMPLETE) {
+        LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+                   << "because offscreen saved FBO was incomplete.";
+        return error::kLostContext;
+      }
+
+      // Destroy the offscreen resolved framebuffers.
+      if (offscreen_resolved_frame_buffer_.get())
+        offscreen_resolved_frame_buffer_->Destroy();
+      if (offscreen_resolved_color_texture_.get())
+        offscreen_resolved_color_texture_->Destroy();
+      offscreen_resolved_color_texture_.reset();
+      offscreen_resolved_frame_buffer_.reset();
+
+      // Clear the offscreen color texture.
+      // TODO(piman): Is this still necessary?
+      {
+        ScopedFrameBufferBinder binder(this,
+                                       offscreen_saved_frame_buffer_->id());
+        glClearColor(0, 0, 0, 0);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        glDisable(GL_SCISSOR_TEST);
+        glClear(GL_COLOR_BUFFER_BIT);
+        RestoreClearState();
+      }
+
+      UpdateParentTextureInfo();
+    }
+
     ScopedGLErrorSuppressor suppressor(this);
 
     if (IsOffscreenBufferMultisampled()) {
