@@ -218,7 +218,7 @@ remoting.tryShare = function() {
     remoting.oauth2.refreshAccessToken(function() {
       if (remoting.oauth2.needsNewAccessToken()) {
         // If we still need it, we're going to infinite loop.
-        showShareError_('unable-to-get-token');
+        showShareError_(/*i18n-content*/'ERROR_UNABLE_TO_GET_TOKEN');
         throw 'Unable to get access token';
       }
       remoting.tryShare();
@@ -319,8 +319,8 @@ function onStateChanged_() {
       updateTimeoutStyles_();
       remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CONNECTION);
     } else {
-      // This can only happen if the access code takes more than 5m to get from
-      // the cloud to the web-app, so we don't care how clean this UX is.
+      // This can only happen if the cloud tells us that the code lifetime is
+      // <= 0s, which shouldn't happen so we don't care how clean this UX is.
       remoting.debug.log('Access code already invalid on receipt!');
       remoting.cancelShare();
     }
@@ -346,16 +346,23 @@ function onStateChanged_() {
 }
 
 /**
-* This is that callback that the host plugin invokes to indicate that there
+* This is the callback that the host plugin invokes to indicate that there
 * is additional debug log info to display.
+* @param {string} msg The message (which will not be localized) to be logged.
 */
 function debugInfoCallback_(msg) {
   remoting.debug.log('plugin: ' + msg);
 }
 
-function showShareError_(errorCode) {
-  var errorDiv = document.getElementById(errorCode);
-  errorDiv.style.display = 'block';
+/**
+* Show a host-side error message.
+*
+* @param {string} errorCode The error message to be localized and displayed.
+* @return {void} Nothing.
+*/
+function showShareError_(errorTag) {
+  var errorDiv = document.getElementById('host-plugin-error');
+  l10n.localizeElementFromTag(errorDiv, errorTag);
   remoting.debug.log('Sharing error: ' + errorCode);
   remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
 }
@@ -363,7 +370,17 @@ function showShareError_(errorCode) {
 remoting.cancelShare = function() {
   remoting.debug.log('Canceling share...');
   var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
-  plugin.disconnect();
+  try {
+    plugin.disconnect();
+  } catch (error) {
+    remoting.debug.log('Error disconnecting: ' + error.description +
+                       '. The host plugin probably crashed.');
+    // TODO(jamiewalch): Clean this up. We should have a class representing
+    // the host plugin, like we do for the client, which should handle crash
+    // reporting and it should use a more detailed error message than the
+    // default 'generic' one. See crbug.com/94624
+    showShareError_(/*i18n-content*/'ERROR_GENERIC');
+  }
   disableTimeoutCountdown_();
 }
 
@@ -462,18 +479,15 @@ function startSession_() {
 }
 
 /**
- * @param {ClientError} errorMsg The error to be localized and displayed.
+ * Show a client-side error message.
+ *
+ * @param {ClientError} errorTag The error to be localized and displayed.
  * @return {void} Nothing.
  */
-function showConnectError_(errorMsg) {
+function showConnectError_(errorTag) {
   remoting.debug.log('Connection failed: ' + errorMsg);
-  var translation = chrome.i18n.getMessage(errorMsg);
-  if (translation) {
-    var errorNode = document.getElementById('connect-error-message');
-    errorNode.innerText = translation;
-  } else {
-    remoting.debug.error('Missing translation for ' + errorMsg);
-  }
+  var errorDiv = document.getElementById('connect-error-message');
+  l10n.localizeElementFromTag(errorDiv, errorTag);
   remoting.accessCode = '';
   if (remoting.session) {
     remoting.session.disconnect();
