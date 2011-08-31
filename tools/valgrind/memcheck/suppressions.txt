@@ -5369,13 +5369,6 @@
    fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
-   bug_94664
-   Memcheck:Cond
-   fun:_ZN16BookmarksHandler6LoadedEP13BookmarkModelb
-   fun:_ZN13BookmarkModel11DoneLoadingEP19BookmarkLoadDetails
-   fun:_ZN15BookmarkStorage14OnLoadFinishedEbRK8FilePath
-}
-{
    bug_94764
    Memcheck:Leak
    fun:_Znw*

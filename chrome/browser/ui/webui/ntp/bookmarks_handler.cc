@@ -24,7 +24,7 @@
 
 namespace keys = extension_bookmarks_module_constants;
 
-BookmarksHandler::BookmarksHandler() {
+BookmarksHandler::BookmarksHandler() : getBookmarksDataIsPending_(false) {
 }
 
 BookmarksHandler::~BookmarksHandler() {
