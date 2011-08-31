@@ -10,27 +10,36 @@
 //<![CDATA[
 function setupTests(tester, plugin) {
   function testAndAssertStatus(test, name, status) {
+    if (status === undefined) {
+       status = name + ":PASSED";
+    }
     test.expectEvent(plugin, 'message', function(message) {
-      test.assertEqual(message.data, name + ':' + status);
+      test.assertEqual(message.data, status);
       test.pass();
     });
     plugin.postMessage(name);
   }
 
   tester.addAsyncTest('PPB_Graphics3D Interface', function(test) {
-    testAndAssertStatus(test, 'TestGraphics3DInterface', 'PASSED');
+    testAndAssertStatus(test, 'TestGraphics3DInterface');
   });
   tester.addAsyncTest('PPB_OpenGLES2 Interface', function(test) {
-    testAndAssertStatus(test, 'TestOpenGLES2Interface', 'PASSED');
+    testAndAssertStatus(test, 'TestOpenGLES2Interface');
   });
   tester.addAsyncTest('PPB_Graphics3D::Create', function(test) {
-    testAndAssertStatus(test, 'TestCreate', 'PASSED');
+    testAndAssertStatus(test, 'TestCreate');
   });
   tester.addAsyncTest('PPB_Graphics3D::IsGraphics3D', function(test) {
-    testAndAssertStatus(test, 'TestIsGraphics3D', 'PASSED');
+    testAndAssertStatus(test, 'TestIsGraphics3D');
+  });
+  tester.addAsyncTest('glInitializePPAPI', function(test) {
+    testAndAssertStatus(test, 'Test_glInitializePPAPI');
   });
   tester.addAsyncTest('PPB_Graphics3D::SwapBuffers', function(test) {
-    testAndAssertStatus(test, 'TestSwapBuffers', 'PASSED');
+    testAndAssertStatus(test, 'TestSwapBuffers', 'TestSwapCallback:PASSED');
+  });
+  tester.addAsyncTest('glTerminatePPAPI', function(test) {
+    testAndAssertStatus(test, 'Test_glTerminatePPAPI');
   });
 }
       //]]>
