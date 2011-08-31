@@ -30,8 +30,11 @@ message SessionHeader {
   optional string client_name = 3;
   // The type of device.
   enum DeviceType {
-    TYPE_PC = 1;
-    TYPE_CROS = 2;
+    TYPE_WIN = 1;
+    TYPE_MAC = 2;
+    TYPE_LINUX = 3;
+    TYPE_CROS = 4;
+    TYPE_OTHER = 5;
   }
   optional DeviceType device_type = 4;
 }
