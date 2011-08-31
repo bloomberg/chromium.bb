@@ -22,6 +22,16 @@
 
 const int kMinimumWindowSize = 1;
 
+// Replicate specific 10.6 SDK declarations for building with prior SDKs.
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+
+enum {
+  NSWindowCollectionBehaviorParticipatesInCycle = 1 << 5
+};
+
+#endif  // MAC_OS_X_VERSION_10_6
+
 @implementation PanelWindowControllerCocoa
 
 - (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window {
@@ -45,6 +55,11 @@ const int kMinimumWindowSize = 1;
   // drop-out, which is at NSStatusWindowLevel-2 (23) for OSX 10.6/7.
   // See http://crbug.com/59878.
   [window setLevel:NSModalPanelWindowLevel];
+
+  if (base::mac::IsOSSnowLeopardOrLater()) {
+    [window setCollectionBehavior:
+        NSWindowCollectionBehaviorParticipatesInCycle];
+  }
 
   [titlebar_view_ attach];
 
