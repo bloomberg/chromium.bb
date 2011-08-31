@@ -18,6 +18,9 @@
       ],
       'sources': [
         # TODO(phajdan.jr): All of those files should live in content/test.
+        'browser/download/mock_download_manager.h',
+        'browser/download/mock_download_manager_delegate.cc',
+        'browser/download/mock_download_manager_delegate.h',
         'browser/geolocation/arbitrator_dependency_factories_for_test.cc',
         'browser/geolocation/arbitrator_dependency_factories_for_test.h',
         'browser/geolocation/fake_access_token_store.cc',
@@ -86,7 +89,14 @@
         'browser/device_orientation/provider_unittest.cc',
         'browser/download/base_file_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',
+        'browser/geolocation/device_data_provider_unittest.cc',
         'browser/geolocation/gateway_data_provider_common_unittest.cc',
+        'browser/geolocation/geolocation_provider_unittest.cc',
+        'browser/geolocation/gps_location_provider_unittest_linux.cc',
+        'browser/geolocation/location_arbitrator_unittest.cc',
+        'browser/geolocation/network_location_provider_unittest.cc',
+        'browser/geolocation/wifi_data_provider_common_unittest.cc',
+        'browser/geolocation/wifi_data_provider_linux_unittest.cc',
         'browser/geolocation/wifi_data_provider_unittest_win.cc',
         'browser/geolocation/win7_location_api_unittest_win.cc',
         'browser/geolocation/win7_location_provider_unittest_win.cc',
@@ -127,6 +137,12 @@
         'test/run_all_unittests.cc',
       ],
       'conditions': [
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:dbus',
+            '../dbus/dbus.gyp:dbus_test_support',
+          ],
+        }],
         ['os_posix!=1', {
           'sources!': [
             # TODO(port): port those unit tests.

@@ -2003,6 +2003,7 @@
         'test/sync/test_http_bridge_factory.h',
         'tools/convert_dict/convert_dict_unittest.cc',
         '../content/browser/debugger/devtools_manager_unittest.cc',
+        '../content/browser/download/download_file_unittest.cc',
         '../content/browser/download/save_package_unittest.cc',
         '../content/browser/in_process_webkit/dom_storage_unittest.cc',
         '../content/browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
