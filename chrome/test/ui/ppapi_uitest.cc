@@ -272,7 +272,7 @@ TEST_F(OutOfProcessPPAPITest, FAILS_DirectoryReader) {
 }
 
 #if defined(ENABLE_P2P_APIS)
-// Flaky. http://crbug.com/84295
+// Flaky. http://crbug.com/84294
 TEST_F(PPAPITest, FLAKY_Transport) {
   RunTest("Transport");
 }
