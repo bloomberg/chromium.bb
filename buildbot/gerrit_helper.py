@@ -52,7 +52,8 @@ class GerritHelper():
 
     This methods returns a a list of GerritPatch's to try.
     """
-    query_string = ('status:open AND CodeReview=+2 AND Verified=1 '
+    query_string = ('status:open AND CodeReview=+2 AND Verified=+1 '
+                    'AND NOT CodeReview=-2 AND NOT Verified=-1 '
                     'AND branch:%s' % branch)
     # Whitelist specific repositories.
     query_string = (query_string + ' AND '
