@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -84,11 +85,11 @@ class MockExtensionInstallUIDelegate : public ExtensionInstallUI::Delegate {
         abort_count_(0) {}
 
   // ExtensionInstallUI::Delegate overrides.
-  virtual void InstallUIProceed() {
+  virtual void InstallUIProceed() OVERRIDE {
     proceed_count_++;
   }
 
-  virtual void InstallUIAbort(bool user_initiated) {
+  virtual void InstallUIAbort(bool user_initiated) OVERRIDE {
     abort_count_++;
   }
 

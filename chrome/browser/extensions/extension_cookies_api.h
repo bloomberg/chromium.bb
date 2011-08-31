@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -41,7 +42,7 @@ class ExtensionCookiesEventRouter : public NotificationObserver {
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Handler for the COOKIE_CHANGED event. The method takes the details of such
   // an event and constructs a suitable JSON formatted extension event from it.
@@ -96,7 +97,7 @@ class GetCookieFunction : public CookiesFunction {
  public:
   GetCookieFunction();
   virtual ~GetCookieFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.get")
 
  private:
@@ -115,7 +116,7 @@ class GetAllCookiesFunction : public CookiesFunction {
  public:
   GetAllCookiesFunction();
   virtual ~GetAllCookiesFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAll")
 
  private:
@@ -134,7 +135,7 @@ class SetCookieFunction : public CookiesFunction {
  public:
   SetCookieFunction();
   virtual ~SetCookieFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.set")
 
  private:
@@ -161,7 +162,7 @@ class RemoveCookieFunction : public CookiesFunction {
  public:
   RemoveCookieFunction();
   virtual ~RemoveCookieFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.remove")
 
  private:
@@ -179,7 +180,7 @@ class RemoveCookieFunction : public CookiesFunction {
 // Implements the cookies.getAllCookieStores() extension function.
 class GetAllCookieStoresFunction : public CookiesFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   // GetAllCookieStoresFunction is sync.
   virtual void Run();
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAllCookieStores")

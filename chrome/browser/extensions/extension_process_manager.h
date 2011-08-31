@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -107,7 +108,7 @@ class ExtensionProcessManager : public NotificationObserver {
   // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar registrar_;
 

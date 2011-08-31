@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_API_H__
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -19,19 +20,19 @@ class ExtensionManagementFunction : public SyncExtensionFunction {
 
 class GetAllExtensionsFunction : public ExtensionManagementFunction {
   virtual ~GetAllExtensionsFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("management.getAll");
 };
 
 class GetExtensionByIdFunction : public ExtensionManagementFunction {
   virtual ~GetExtensionByIdFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("management.get");
 };
 
 class GetPermissionWarningsByIdFunction : public ExtensionManagementFunction {
   virtual ~GetPermissionWarningsByIdFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("management.getPermissionWarningsById");
 };
 
@@ -42,26 +43,26 @@ class GetPermissionWarningsByManifestFunction : public AsyncExtensionFunction {
   void OnParseFailure(const std::string& error);
  protected:
   virtual ~GetPermissionWarningsByManifestFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "management.getPermissionWarningsByManifest");
 };
 
 class LaunchAppFunction : public ExtensionManagementFunction {
   virtual ~LaunchAppFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("management.launchApp");
 };
 
 class SetEnabledFunction : public ExtensionManagementFunction {
   virtual ~SetEnabledFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("management.setEnabled");
 };
 
 class UninstallFunction : public ExtensionManagementFunction {
   virtual ~UninstallFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("management.uninstall");
 };
 
@@ -76,7 +77,7 @@ class ExtensionManagementEventRouter : public NotificationObserver {
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar registrar_;
 

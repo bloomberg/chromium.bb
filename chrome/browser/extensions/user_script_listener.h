@@ -8,6 +8,7 @@
 
 #include <list>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/notification_observer.h"
@@ -37,12 +38,12 @@ class UserScriptListener
   UserScriptListener();
 
   // ResourceQueueDelegate:
-  virtual void Initialize(ResourceQueue* resource_queue);
+  virtual void Initialize(ResourceQueue* resource_queue) OVERRIDE;
   virtual bool ShouldDelayRequest(
       net::URLRequest* request,
       const ResourceDispatcherHostRequestInfo& request_info,
-      const GlobalRequestID& request_id);
-  virtual void WillShutdownResourceQueue();
+      const GlobalRequestID& request_id) OVERRIDE;
+  virtual void WillShutdownResourceQueue() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<UserScriptListener>;
@@ -91,7 +92,7 @@ class UserScriptListener
   // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar registrar_;
 

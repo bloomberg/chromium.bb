@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -131,7 +132,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Sends the renderer process a new set of user scripts.
   void SendUpdate(RenderProcessHost* process,

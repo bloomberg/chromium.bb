@@ -8,6 +8,7 @@
 
 #include "chrome/browser/extensions/external_extension_loader.h"
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -27,10 +28,10 @@ class ExternalPolicyExtensionLoader
   // NotificationObserver implementation
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
  protected:
-  virtual void StartLoading();
+  virtual void StartLoading() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
@@ -61,7 +62,7 @@ class ExtensionTestMessageListener : public NotificationObserver {
   // Implements the NotificationObserver interface.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   bool was_satisfied() const { return satisfied_; }
 

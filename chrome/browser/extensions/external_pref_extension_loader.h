@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
@@ -24,10 +25,10 @@ class ExternalPrefExtensionLoader : public ExternalExtensionLoader {
   // to this path.
   explicit ExternalPrefExtensionLoader(int base_path_key);
 
-  virtual const FilePath GetBaseCrxFilePath();
+  virtual const FilePath GetBaseCrxFilePath() OVERRIDE;
 
  protected:
-  virtual void StartLoading();
+  virtual void StartLoading() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;
@@ -50,10 +51,10 @@ class ExternalTestingExtensionLoader : public ExternalExtensionLoader {
       const std::string& json_data,
       const FilePath& fake_base_path);
 
-  virtual const FilePath GetBaseCrxFilePath();
+  virtual const FilePath GetBaseCrxFilePath() OVERRIDE;
 
  protected:
-  virtual void StartLoading();
+  virtual void StartLoading() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<ExternalExtensionLoader>;

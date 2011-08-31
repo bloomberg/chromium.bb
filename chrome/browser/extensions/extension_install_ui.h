@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -93,7 +94,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
   // ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index);
+      SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
 
   // Opens a new tab page and animates the app icon for the app with id
   // |app_id|.

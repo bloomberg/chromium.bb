@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/common/notification_observer.h"
@@ -76,7 +77,7 @@ class ExtensionToolbarModel : public NotificationObserver {
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the extension service and their saved order from the pref service

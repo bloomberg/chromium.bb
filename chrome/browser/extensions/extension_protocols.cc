@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -62,7 +63,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
   // Overridden from URLRequestSimpleJob:
   virtual bool GetData(std::string* mime_type,
                        std::string* charset,
-                       std::string* data) const {
+                       std::string* data) const OVERRIDE {
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     *data = rb.GetRawDataResource(resource_id_).as_string();
 
@@ -109,7 +110,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     response_info_.headers = BuildHttpHeaders(content_security_policy);
   }
 
-  virtual void GetResponseInfo(net::HttpResponseInfo* info) {
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
     *info = response_info_;
   }
 

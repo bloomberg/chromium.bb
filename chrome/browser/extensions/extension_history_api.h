@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -26,7 +27,7 @@ class ExtensionHistoryEventRouter : public NotificationObserver {
   // NotificationObserver::Observe.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   void HistoryUrlVisited(Profile* profile,
                          const history::URLVisitedDetails* details);
@@ -48,7 +49,7 @@ class ExtensionHistoryEventRouter : public NotificationObserver {
 // Base class for history function APIs.
 class HistoryFunction : public AsyncExtensionFunction {
  public:
-  virtual void Run();
+  virtual void Run() OVERRIDE;
   virtual bool RunImpl() = 0;
 
   bool GetUrlFromValue(base::Value* value, GURL* url);
@@ -70,7 +71,7 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   virtual void SendAsyncResponse();
 
   // Override HistoryFunction::RunImpl.
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
  protected:
   // The consumer for the HistoryService callbacks.
@@ -85,7 +86,7 @@ class HistoryFunctionWithCallback : public HistoryFunction {
 class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
  public:
   // Override HistoryFunction.
-  virtual bool RunAsyncImpl();
+  virtual bool RunAsyncImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.getVisits");
 
   // Callback for the history function to provide results.
@@ -97,7 +98,7 @@ class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
 
 class SearchHistoryFunction : public HistoryFunctionWithCallback {
  public:
-  virtual bool RunAsyncImpl();
+  virtual bool RunAsyncImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.search");
 
   // Callback for the history function to provide results.
@@ -107,13 +108,13 @@ class SearchHistoryFunction : public HistoryFunctionWithCallback {
 
 class AddUrlHistoryFunction : public HistoryFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.addUrl");
 };
 
 class DeleteAllHistoryFunction : public HistoryFunctionWithCallback {
  public:
-  virtual bool RunAsyncImpl();
+  virtual bool RunAsyncImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteAll");
 
   // Callback for the history service to acknowledge deletion.
@@ -123,13 +124,13 @@ class DeleteAllHistoryFunction : public HistoryFunctionWithCallback {
 
 class DeleteUrlHistoryFunction : public HistoryFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteUrl");
 };
 
 class DeleteRangeHistoryFunction : public HistoryFunctionWithCallback {
  public:
-  virtual bool RunAsyncImpl();
+  virtual bool RunAsyncImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteRange");
 
   // Callback for the history service to acknowledge deletion.

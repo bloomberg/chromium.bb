@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/notification_observer.h"
@@ -111,7 +112,7 @@ class ExtensionEventRouter : public NotificationObserver {
 
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   Profile* profile_;
 

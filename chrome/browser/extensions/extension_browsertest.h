@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -114,7 +115,7 @@ class ExtensionBrowserTest
   // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   bool loaded_;
   bool installed_;

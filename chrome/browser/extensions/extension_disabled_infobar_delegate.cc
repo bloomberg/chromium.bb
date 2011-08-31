@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -38,8 +39,8 @@ class ExtensionDisabledDialogDelegate
   virtual ~ExtensionDisabledDialogDelegate();
 
   // ExtensionInstallUI::Delegate:
-  virtual void InstallUIProceed();
-  virtual void InstallUIAbort(bool user_initiated);
+  virtual void InstallUIProceed() OVERRIDE;
+  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
   // The UI for showing the install dialog when enabling.
   scoped_ptr<ExtensionInstallUI> install_ui_;

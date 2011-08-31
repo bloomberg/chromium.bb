@@ -87,7 +87,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   ViewType::Type extension_host_type() const { return extension_host_type_; }
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual TabContents* GetAssociatedTabContents() const;
+  virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
   void set_associated_tab_contents(TabContents* associated_tab_contents) {
     associated_tab_contents_ = associated_tab_contents;
   }
@@ -154,36 +154,37 @@ class ExtensionHost : public RenderViewHostDelegate,
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(
       int route_id,
-      const ViewHostMsg_CreateWindow_Params& params);
-  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
-  virtual void CreateNewFullscreenWidget(int route_id);
+      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
+  virtual void CreateNewWidget(int route_id,
+                               WebKit::WebPopupType popup_type) OVERRIDE;
+  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
-                                 bool user_gesture);
+                                 bool user_gesture) OVERRIDE;
   virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos);
-  virtual void ShowCreatedFullscreenWidget(int route_id);
-  virtual void ShowContextMenu(const ContextMenuParams& params);
+                                 const gfx::Rect& initial_pos) OVERRIDE;
+  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
+  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,
                              int selected_item,
                              const std::vector<WebMenuItem>& items,
-                             bool right_aligned);
+                             bool right_aligned) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_operations,
                              const SkBitmap& image,
-                             const gfx::Point& image_offset);
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
-  virtual void GotFocus();
-  virtual void TakeFocus(bool reverse);
-  virtual void UpdatePreferredSize(const gfx::Size& new_size);
+                             const gfx::Point& image_offset) OVERRIDE;
+  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
+  virtual void GotFocus() OVERRIDE;
+  virtual void TakeFocus(bool reverse) OVERRIDE;
+  virtual void UpdatePreferredSize(const gfx::Size& new_size) OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Overridden from content::JavaScriptDialogDelegate:
   virtual void OnDialogClosed(IPC::Message* reply_msg,
@@ -220,8 +221,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   const Browser* GetBrowser() const;
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual Browser* GetBrowser();
-  virtual gfx::NativeView GetNativeViewOfHost();
+  virtual Browser* GetBrowser() OVERRIDE;
+  virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE;
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);

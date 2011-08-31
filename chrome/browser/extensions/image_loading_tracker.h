@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -88,7 +89,7 @@ class ImageLoadingTracker : public NotificationObserver {
   // waiting for the image we remove the entry from load_map_.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // The view that is waiting for the image to load.
   Observer* observer_;

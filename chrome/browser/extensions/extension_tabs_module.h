@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/notification_observer.h"
@@ -59,64 +60,64 @@ bool GetTabById(int tab_id, Profile* profile, bool incognito_enabled,
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {
   virtual ~GetWindowFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("windows.get")
 };
 class GetCurrentWindowFunction : public SyncExtensionFunction {
   virtual ~GetCurrentWindowFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getCurrent")
 };
 class GetLastFocusedWindowFunction : public SyncExtensionFunction {
   virtual ~GetLastFocusedWindowFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getLastFocused")
 };
 class GetAllWindowsFunction : public SyncExtensionFunction {
   virtual ~GetAllWindowsFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("windows.getAll")
 };
 class CreateWindowFunction : public SyncExtensionFunction {
   virtual ~CreateWindowFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("windows.create")
 };
 class UpdateWindowFunction : public SyncExtensionFunction {
   virtual ~UpdateWindowFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("windows.update")
 };
 class RemoveWindowFunction : public SyncExtensionFunction {
   virtual ~RemoveWindowFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("windows.remove")
 };
 
 // Tabs
 class GetTabFunction : public SyncExtensionFunction {
   virtual ~GetTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.get")
 };
 class GetCurrentTabFunction : public SyncExtensionFunction {
   virtual ~GetCurrentTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getCurrent")
 };
 class GetSelectedTabFunction : public SyncExtensionFunction {
   virtual ~GetSelectedTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getSelected")
 };
 class GetAllTabsInWindowFunction : public SyncExtensionFunction {
   virtual ~GetAllTabsInWindowFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.getAllInWindow")
 };
 class CreateTabFunction : public SyncExtensionFunction {
   virtual ~CreateTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.create")
 };
 class UpdateTabFunction : public AsyncExtensionFunction,
@@ -125,7 +126,7 @@ class UpdateTabFunction : public AsyncExtensionFunction,
   UpdateTabFunction();
  private:
   virtual ~UpdateTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message);
   void OnExecuteCodeFinished(int request_id,
                              bool success,
@@ -134,23 +135,23 @@ class UpdateTabFunction : public AsyncExtensionFunction,
 };
 class MoveTabFunction : public SyncExtensionFunction {
   virtual ~MoveTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.move")
 };
 class RemoveTabFunction : public SyncExtensionFunction {
   virtual ~RemoveTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.remove")
 };
 class DetectTabLanguageFunction : public AsyncExtensionFunction,
                                   public NotificationObserver {
  private:
   virtual ~DetectTabLanguageFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
   void GotLanguage(const std::string& language);
   NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.detectLanguage")
@@ -167,11 +168,11 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
   static const int kDefaultQuality;
 
   virtual ~CaptureVisibleTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   virtual bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
   virtual void SendResultFromBitmap(const SkBitmap& screen_capture);
 
   NotificationRegistrar registrar_;

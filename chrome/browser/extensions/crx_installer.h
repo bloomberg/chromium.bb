@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -107,8 +108,8 @@ class CrxInstaller
   void InstallWebApp(const WebApplicationInfo& web_app);
 
   // Overridden from ExtensionInstallUI::Delegate:
-  virtual void InstallUIProceed();
-  virtual void InstallUIAbort(bool user_initiated);
+  virtual void InstallUIProceed() OVERRIDE;
+  virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
   const GURL& original_url() const { return original_url_; }
   void set_original_url(const GURL& val) { original_url_ = val; }
@@ -173,11 +174,11 @@ class CrxInstaller
   bool AllowInstall(const Extension* extension, std::string* error);
 
   // SandboxedExtensionUnpackerClient
-  virtual void OnUnpackFailure(const std::string& error_message);
+  virtual void OnUnpackFailure(const std::string& error_message) OVERRIDE;
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,
                                const base::DictionaryValue* original_manifest,
-                               const Extension* extension);
+                               const Extension* extension) OVERRIDE;
 
   // Returns true if we can skip confirmation because the install was
   // whitelisted.

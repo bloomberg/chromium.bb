@@ -13,6 +13,7 @@
 #include <map>
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
@@ -187,7 +188,7 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Handler for the NOTIFICATION_RETARGETING event. The method takes the
   // details of such an event and stores them for the later
@@ -218,7 +219,7 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
 // API function that returns the state of a given frame.
 class GetFrameFunction : public SyncExtensionFunction {
   virtual ~GetFrameFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.webNavigation.getFrame")
 };
 

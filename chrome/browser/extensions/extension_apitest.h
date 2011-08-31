@@ -9,6 +9,7 @@
 #include <deque>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "content/common/notification_registrar.h"
@@ -51,7 +52,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
    private:
     virtual void Observe(int type,
                          const NotificationSource& source,
-                         const NotificationDetails& details);
+                         const NotificationDetails& details) OVERRIDE;
 
     NotificationRegistrar registrar_;
 
@@ -70,8 +71,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     bool waiting_;
   };
 
-  virtual void SetUpInProcessBrowserTestFixture();
-  virtual void TearDownInProcessBrowserTestFixture();
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
   // Load |extension_name| and wait for pass / fail notification.
   // |extension_name| is a directory in "test/data/extensions/api_test".
@@ -114,7 +115,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   const Extension* GetSingleLoadedExtension();
 
   // All extensions tested by ExtensionApiTest are in the "api_test" dir.
-  virtual void SetUpCommandLine(CommandLine* command_line);
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
   // If it failed, what was the error message?
   std::string message_;

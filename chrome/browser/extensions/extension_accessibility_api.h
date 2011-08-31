@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_old.h"
+#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility_events.h"
@@ -53,7 +54,7 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
   // NotificationObserver::Observe.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   void OnWindowOpened(const AccessibilityWindowInfo* details);
   void OnWindowClosed(const AccessibilityWindowInfo* details);
@@ -85,7 +86,7 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
 // minimize the impact.
 class SetAccessibilityEnabledFunction : public SyncExtensionFunction {
   virtual ~SetAccessibilityEnabledFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.accessibility.setAccessibilityEnabled")
 };
@@ -93,7 +94,7 @@ class SetAccessibilityEnabledFunction : public SyncExtensionFunction {
 // API function that returns the most recent focused control.
 class GetFocusedControlFunction : public SyncExtensionFunction {
   virtual ~GetFocusedControlFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.accessibility.getFocusedControl")
 };

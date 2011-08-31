@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -251,7 +252,7 @@ class ExtensionUpdater : public URLFetcher::Delegate,
   base::TimeDelta DetermineFirstCheckDelay();
 
   // URLFetcher::Delegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source);
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // These do the actual work when a URL fetch completes.
   virtual void OnManifestFetchComplete(const GURL& url,
@@ -334,7 +335,7 @@ class ExtensionUpdater : public URLFetcher::Delegate,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Whether Start() has been called but not Stop().
   bool alive_;

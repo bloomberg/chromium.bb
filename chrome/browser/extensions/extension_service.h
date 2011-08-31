@@ -498,18 +498,20 @@ class ExtensionService
   virtual void OnExternalExtensionFileFound(const std::string& id,
                                             const Version* version,
                                             const FilePath& path,
-                                            Extension::Location location);
+                                            Extension::Location location)
+      OVERRIDE;
 
   virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
                                                  const GURL& update_url,
-                                                 Extension::Location location);
+                                                 Extension::Location location)
+      OVERRIDE;
 
-  virtual void OnExternalProviderReady();
+  virtual void OnExternalProviderReady() OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   // Whether there are any apps installed. Component apps are not included.
   bool HasApps() const;

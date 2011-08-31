@@ -25,7 +25,7 @@ class ExtensionPreferenceEventRouter : public NotificationObserver {
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& details) OVERRIDE;
 
   void OnPrefChanged(PrefService* pref_service, const std::string& pref_key);
 
@@ -69,21 +69,21 @@ class PrefTransformerInterface {
 class GetPreferenceFunction : public SyncExtensionFunction {
  public:
   virtual ~GetPreferenceFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("types.ChromeSetting.get")
 };
 
 class SetPreferenceFunction : public SyncExtensionFunction {
  public:
   virtual ~SetPreferenceFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("types.ChromeSetting.set")
 };
 
 class ClearPreferenceFunction : public SyncExtensionFunction {
  public:
   virtual ~ClearPreferenceFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("types.ChromeSetting.clear")
 };
 

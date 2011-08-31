@@ -209,8 +209,6 @@ void ExtensionInstallUI::OnImageLoaded(
     case PERMISSIONS_PROMPT:
     case RE_ENABLE_PROMPT:
     case INSTALL_PROMPT: {
-      // TODO(jcivelli): http://crbug.com/44771 We should not show an install
-      //                 dialog when installing an app from the gallery.
       NotificationService* service = NotificationService::current();
       service->Notify(chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
           Source<ExtensionInstallUI>(this),
