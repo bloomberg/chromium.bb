@@ -62,11 +62,11 @@ struct display {
 	struct wl_shell *shell;
 	struct wl_shm *shm;
 	struct wl_output *output;
-	struct wl_visual *argb_visual, *premultiplied_argb_visual, *rgb_visual;
 	struct rectangle screen_allocation;
 	int authenticated;
 	EGLDisplay dpy;
-	EGLConfig conf;
+	EGLConfig rgb_config;
+	EGLConfig premul_argb_config;
 	EGLContext ctx;
 	cairo_device_t *device;
 	int fd;
@@ -211,12 +211,19 @@ egl_window_surface_data_destroy(void *p)
 static cairo_surface_t *
 display_create_egl_window_surface(struct display *display,
 				  struct wl_surface *surface,
-				  struct wl_visual *visual,
+				  uint32_t flags,
 				  struct rectangle *rectangle)
 {
 	cairo_surface_t *cairo_surface;
 	struct egl_window_surface_data *data;
+	EGLConfig config;
+	const EGLint *attribs;
 
+	static const EGLint premul_attribs[] = {
+		EGL_ALPHA_FORMAT, EGL_ALPHA_FORMAT_PRE,
+		EGL_NONE
+	};
+	
 	data = malloc(sizeof *data);
 	if (data == NULL)
 		return NULL;
@@ -224,13 +231,20 @@ display_create_egl_window_surface(struct display *display,
 	data->display = display;
 	data->surface = surface;
 
+	if (flags & SURFACE_OPAQUE) {
+		config = display->rgb_config;
+		attribps = NULL;
+	} else {
+		config = display->premultiplied_argb_config;
+		attribs = premul_attribs;
+	}
+
 	data->window = wl_egl_window_create(surface,
 					    rectangle->width,
-					    rectangle->height,
-					    visual);
+					    rectangle->height);
 
-	data->surf = eglCreateWindowSurface(display->dpy, display->conf,
-					    data->window, NULL);
+	data->surf = eglCreateWindowSurface(display->dpy, config,
+					    data->window, attribs);
 
 	cairo_surface = cairo_gl_surface_create_for_egl(display->device,
 							data->surf,
@@ -280,12 +294,13 @@ display_get_image_for_egl_image_surface(struct display *display,
 
 static cairo_surface_t *
 display_create_egl_image_surface(struct display *display,
-				 struct wl_visual *visual,
+				 uint32_t flags,
 				 struct rectangle *rectangle)
 {
 	struct egl_image_surface_data *data;
 	EGLDisplay dpy = display->dpy;
 	cairo_surface_t *surface;
+	EGLConfig config;
 
 	data = malloc(sizeof *data);
 	if (data == NULL)
@@ -294,12 +309,16 @@ display_create_egl_image_surface(struct display *display,
 	data->display = display;
 
 	data->pixmap = wl_egl_pixmap_create(rectangle->width,
-					    rectangle->height,
-					    visual, 0);
+					    rectangle->height, 0);
 	if (data->pixmap == NULL) {
 		free(data);
 		return NULL;
 	}
+
+	if (flags & SURFACE_OPAQUE)
+		config = display->rgb_config;
+	else
+		config = display->premultiplied_argb_config;
 
 	data->image = display->create_image(dpy, NULL,
 					    EGL_NATIVE_PIXMAP_KHR,
@@ -343,7 +362,6 @@ display_create_egl_image_surface_from_file(struct display *display,
 	int stride, i;
 	unsigned char *pixels, *p, *end;
 	struct egl_image_surface_data *data;
-	struct wl_visual *visual;
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
 						   rect->width, rect->height,
@@ -428,7 +446,7 @@ display_create_shm_surface(struct display *display,
 			   struct rectangle *rectangle, uint32_t flags)
 {
 	struct shm_surface_data *data;
-	struct wl_visual *visual;
+	uint32_t format;
 	cairo_surface_t *surface;
 	int stride, fd;
 	char filename[] = "/tmp/wayland-shm-XXXXXX";
@@ -471,15 +489,15 @@ display_create_shm_surface(struct display *display,
 				     data, shm_surface_data_destroy);
 
 	if (flags & SURFACE_OPAQUE)
-		visual = display->rgb_visual;
+		format = WL_SHM_FORMAT_XRGB32;
 	else
-		visual = display->premultiplied_argb_visual;
+		format = WL_SHM_FORMAT_PREMULTIPLIED_ARGB32;
 
 	data->data.buffer = wl_shm_create_buffer(display->shm,
 						 fd,
 						 rectangle->width,
 						 rectangle->height,
-						 stride, visual);
+						 stride, format);
 
 	close(fd);
 
@@ -562,13 +580,6 @@ display_create_surface(struct display *display,
 		       struct rectangle *rectangle,
 		       uint32_t flags)
 {
-	struct wl_visual *visual;
-
-	if (flags & SURFACE_OPAQUE)
-		visual = display->rgb_visual;
-	else
-		visual = display->premultiplied_argb_visual;
-
 	if (check_size(rectangle) < 0)
 		return NULL;
 #ifdef HAVE_CAIRO_EGL
@@ -576,11 +587,11 @@ display_create_surface(struct display *display,
 		if (surface)
 			return display_create_egl_window_surface(display,
 								 surface,
-								 visual,
+								 flags,
 								 rectangle);
 		else
 			return display_create_egl_image_surface(display,
-								visual,
+								flags,
 								rectangle);
 	}
 #endif
@@ -1570,32 +1581,6 @@ window_set_buffer_type(struct window *window, enum window_buffer_type type)
 	window->buffer_type = type;
 }
 
-static void
-compositor_handle_visual(void *data,
-			 struct wl_compositor *compositor,
-			 uint32_t id, uint32_t token)
-{
-	struct display *d = data;
-
-	switch (token) {
-	case WL_COMPOSITOR_VISUAL_ARGB32:
-		d->argb_visual =
-			wl_display_bind(d->display, id, &wl_visual_interface);
-		break;
-	case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
-		d->premultiplied_argb_visual =
-			wl_display_bind(d->display, id, &wl_visual_interface);
-		break;
-	case WL_COMPOSITOR_VISUAL_XRGB32:
-		d->rgb_visual =
-			wl_display_bind(d->display, id, &wl_visual_interface);
-		break;
-	}
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	compositor_handle_visual,
-};
 
 static void
 display_handle_geometry(void *data,
@@ -1770,8 +1755,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	if (strcmp(interface, "wl_compositor") == 0) {
 		d->compositor =
 			wl_display_bind(display, id, &wl_compositor_interface);
-		wl_compositor_add_listener(d->compositor,
-					   &compositor_listener, d);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		d->output = wl_display_bind(display, id, &wl_output_interface);
 		wl_output_add_listener(d->output, &output_listener, d);
@@ -1844,12 +1827,26 @@ init_egl(struct display *d)
 {
 	EGLint major, minor;
 	EGLint n;
-	static const EGLint cfg_attribs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PIXMAP_BIT,
+
+	static const EGLint premul_argb_cfg_attribs[] = {
+		EGL_SURFACE_TYPE,
+			EGL_WINDOW_BIT | EGL_PIXMAP_BIT |
+			EGL_VG_ALPHA_FORMAT_PRE_BIT,
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
 		EGL_ALPHA_SIZE, 1,
+		EGL_DEPTH_SIZE, 1,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+		EGL_NONE
+	};
+
+	static const EGLint rgb_cfg_attribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PIXMAP_BIT,
+		EGL_RED_SIZE, 1,
+		EGL_GREEN_SIZE, 1,
+		EGL_BLUE_SIZE, 1,
+		EGL_ALPHA_SIZE, 0,
 		EGL_DEPTH_SIZE, 1,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
 		EGL_NONE
@@ -1867,12 +1864,19 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-	if (!eglChooseConfig(d->dpy, cfg_attribs, &d->conf, 1, &n) || n != 1) {
-		fprintf(stderr, "failed to choose config\n");
+	if (!eglChooseConfig(d->dpy, premul_argb_cfg_attribs,
+			     &d->premul_argb_config, 1, &n) || n != 1) {
+		fprintf(stderr, "failed to choose premul argb config\n");
 		return -1;
 	}
 
-	d->ctx = eglCreateContext(d->dpy, d->conf, EGL_NO_CONTEXT, NULL);
+	if (!eglChooseConfig(d->dpy, rgb_cfg_attribs,
+			     &d->rgb_config, 1, &n) || n != 1) {
+		fprintf(stderr, "failed to choose rgb config\n");
+		return -1;
+	}
+
+	d->ctx = eglCreateContext(d->dpy, d->rgb_config, EGL_NO_CONTEXT, NULL);
 	if (d->ctx == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return -1;
@@ -1950,14 +1954,6 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	d->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
 	d->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
 
-	if (!d->premultiplied_argb_visual || !d->rgb_visual) {
-		wl_display_roundtrip(d->display);
-		if (!d->premultiplied_argb_visual || !d->rgb_visual) {
-			fprintf(stderr, "failed to retreive visuals\n");
-			return NULL;
-		}
-	}
-
 	create_pointer_surfaces(d);
 
 	display_render_frame(d);
@@ -1994,7 +1990,7 @@ display_get_egl_display(struct display *d)
 EGLConfig
 display_get_egl_config(struct display *d)
 {
-	return d->conf;
+	return d->rgb_config;
 }
 
 struct wl_shell *

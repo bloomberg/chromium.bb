@@ -46,7 +46,6 @@ struct wayland_compositor {
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
 		struct wl_output *output;
-		struct wl_visual *visual;
 
 		struct {
 			int32_t x, y, width, height;
@@ -104,6 +103,7 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
+		EGL_ALPHA_SIZE, 0,
 		EGL_DEPTH_SIZE, 1,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
@@ -257,8 +257,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	wl_surface_set_user_data(output->parent.surface, output);
 
 	output->parent.egl_window =
-		wl_egl_window_create(output->parent.surface,
-				     width, height, c->parent.visual);
+		wl_egl_window_create(output->parent.surface, width, height);
 	if (!output->parent.egl_window) {
 		fprintf(stderr, "failure to create wl_egl_window\n");
 		goto cleanup_output;
@@ -463,25 +462,6 @@ display_add_input(struct wayland_compositor *c, uint32_t id)
 }
 
 static void
-compositor_handle_visual(void *data,
-			 struct wl_compositor *compositor,
-			 uint32_t id, uint32_t token)
-{
-	struct wayland_compositor *c = data;
-
-	switch (token) {
-	case WL_COMPOSITOR_VISUAL_ARGB32:
-		c->parent.visual = wl_display_bind(c->parent.display,
-						   id, &wl_visual_interface);
-		break;
-	}
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	compositor_handle_visual,
-};
-
-static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
@@ -490,8 +470,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	if (strcmp(interface, "wl_compositor") == 0) {
 		c->parent.compositor =
 			wl_display_bind(display, id, &wl_compositor_interface);
-		wl_compositor_add_listener(c->parent.compositor,
-					   &compositor_listener, c);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		c->parent.output =
 			wl_display_bind(display, id, &wl_output_interface);

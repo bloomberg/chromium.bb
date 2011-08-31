@@ -114,10 +114,17 @@ struct wlsc_input_device {
 	struct wl_selection *selection;
 };
 
+enum wlsc_visual {
+	WLSC_NONE_VISUAL,
+	WLSC_ARGB_VISUAL,
+	WLSC_PREMUL_ARGB_VISUAL,
+	WLSC_RGB_VISUAL
+};
+
 struct wlsc_sprite {
 	GLuint texture;
 	EGLImageKHR image;
-	struct wl_visual *visual;
+	uint32_t visual;
 	int width;
 	int height;
 };
@@ -248,7 +255,7 @@ struct wlsc_surface {
 	struct wl_list link;
 	struct wl_list buffer_link;
 	struct wlsc_transform *transform;
-	struct wl_visual *visual;
+	uint32_t visual;
 	struct wlsc_output *output;
 	enum wlsc_surface_map_type map_type;
 	struct wlsc_output *fullscreen_output;

@@ -40,7 +40,6 @@
 
 static struct wl_output *output;
 static struct wl_shm *shm;
-static struct wl_visual *visual;
 static struct screenshooter *screenshooter;
 static int output_width, output_height;
 
@@ -78,17 +77,11 @@ static void
 handle_global(struct wl_display *display, uint32_t id,
 	      const char *interface, uint32_t version, void *data)
 {
-	static int visual_count;
-
 	if (strcmp(interface, "wl_output") == 0) {
 		output = wl_display_bind(display, id, &wl_output_interface);
 		wl_output_add_listener(output, &output_listener, NULL);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		shm = wl_display_bind(display, id, &wl_shm_interface);
-	} else if (strcmp(interface, "wl_visual") == 0) {
-		if  (visual_count++ == 1)
-			visual = wl_display_bind(display, id,
-						 &wl_visual_interface);
 	} else if (strcmp(interface, "screenshooter") == 0) {
 		screenshooter = wl_display_bind(display, id, &screenshooter_interface);
 	}
@@ -124,7 +117,8 @@ create_shm_buffer(int width, int height, void **data_out)
 		return NULL;
 	}
 
-	buffer = wl_shm_create_buffer(shm, fd, width, height, stride, visual);
+	buffer = wl_shm_create_buffer(shm, fd, width, height, stride,
+				      WL_SHM_FORMAT_XRGB32);
 
 	close(fd);
 

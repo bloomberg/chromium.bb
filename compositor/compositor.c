@@ -244,7 +244,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 	surface->surface.resource.client = NULL;
 
 	surface->compositor = compositor;
-	surface->visual = NULL;
+	surface->visual = WLSC_NONE_VISUAL;
 	surface->image = EGL_NO_IMAGE_KHR;
 	surface->saved_texture = 0;
 	surface->x = x;
@@ -308,8 +308,6 @@ WL_EXPORT void
 wlsc_surface_configure(struct wlsc_surface *surface,
 		       int x, int y, int width, int height)
 {
-	struct wlsc_compositor *compositor = surface->compositor;
-
 	wlsc_surface_damage_below(surface);
 
 	surface->x = x;
@@ -321,7 +319,7 @@ wlsc_surface_configure(struct wlsc_surface *surface,
 	wlsc_surface_damage(surface);
 
 	pixman_region32_fini(&surface->opaque);
-	if (surface->visual == &compositor->compositor.rgb_visual)
+	if (surface->visual == WLSC_RGB_VISUAL)
 		pixman_region32_init_rect(&surface->opaque,
 					  surface->x, surface->y,
 					  surface->width, surface->height);
@@ -388,7 +386,18 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 			     es->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
 			     wl_shm_buffer_get_data(buffer));
-		es->visual = buffer->visual;
+
+		switch (wl_shm_buffer_get_format(buffer)) {
+		case WL_SHM_FORMAT_ARGB32:
+			es->visual = WLSC_ARGB_VISUAL;
+			break;
+		case WL_SHM_FORMAT_PREMULTIPLIED_ARGB32:
+			es->visual = WLSC_PREMUL_ARGB_VISUAL;
+			break;
+		case WL_SHM_FORMAT_XRGB32:
+			es->visual = WLSC_RGB_VISUAL;
+			break;
+		}
 
 		surfaces_attached_to = buffer->user_data;
 
@@ -402,7 +411,9 @@ wlsc_buffer_attach(struct wl_buffer *buffer, struct wl_surface *surface)
 					     buffer, NULL);
 		
 		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
-		es->visual = buffer->visual;
+
+		/* FIXME: we need to get the visual from the wl_buffer */
+		es->visual = WLSC_PREMUL_ARGB_VISUAL;
 		es->pitch = es->width;
 	}
 }
@@ -453,7 +464,7 @@ create_sprite_from_png(struct wlsc_compositor *ec,
 		return NULL;
 	}
 
-	sprite->visual = &ec->compositor.premultiplied_argb_visual;
+	sprite->visual = WLSC_PREMUL_ARGB_VISUAL;
 	sprite->width = width;
 	sprite->height = height;
 	sprite->image = EGL_NO_IMAGE_KHR;
@@ -646,14 +657,21 @@ wlsc_surface_draw(struct wlsc_surface *es,
 	if (!pixman_region32_not_empty(&repaint))
 		return;
 
-	if (es->visual == &ec->compositor.argb_visual) {
+	switch (es->visual) {
+	case WLSC_ARGB_VISUAL:
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
-	} else if (es->visual == &ec->compositor.premultiplied_argb_visual) {
+		break;
+	case WLSC_PREMUL_ARGB_VISUAL:
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
-	} else {
+		break;
+	case WLSC_RGB_VISUAL:
 		glDisable(GL_BLEND);
+		break;
+	default:
+		fprintf(stderr, "bogus visual\n");
+		break;
 	}
 
 	if (es->transform == NULL) {
@@ -760,10 +778,9 @@ fade_output(struct wlsc_output *output,
 	surface.transform = NULL;
 
 	if (tint <= 1.0)
-		surface.visual =
-			&compositor->compositor.premultiplied_argb_visual;
+		surface.visual = WLSC_PREMUL_ARGB_VISUAL;
 	else
-		surface.visual = &compositor->compositor.rgb_visual;
+		surface.visual = WLSC_RGB_VISUAL;
 
 	glUseProgram(compositor->solid_shader.program);
 	glUniformMatrix4fv(compositor->solid_shader.proj_uniform,
@@ -855,7 +872,7 @@ wlsc_output_repaint(struct wlsc_output *output)
 
 	es = container_of(ec->surface_list.next, struct wlsc_surface, link);
 
-	if (es->visual == &ec->compositor.rgb_visual &&
+	if (es->visual == WLSC_RGB_VISUAL &&
 	    output->prepare_scanout_surface(output, es) == 0) {
 		/* We're drawing nothing now,
 		 * draw the damaged regions later. */
@@ -1028,10 +1045,9 @@ surface_attach(struct wl_client *client,
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &es->buffer_destroy_listener.link);
 
-	if (es->visual == NULL)
+	if (es->visual == WLSC_NONE_VISUAL)
 		wl_list_insert(&es->compositor->surface_list, &es->link);
 
-	es->visual = buffer->visual;
 	if (x != 0 || y != 0 ||
 	    es->width != buffer->width || es->height != buffer->height)
 		wlsc_surface_configure(es, es->x + x, es->y + y,

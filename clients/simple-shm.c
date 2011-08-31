@@ -34,7 +34,6 @@
 
 struct display {
 	struct wl_display *display;
-	struct wl_visual *xrgb_visual;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
@@ -51,8 +50,7 @@ struct window {
 
 static struct wl_buffer *
 create_shm_buffer(struct display *display,
-		  int width, int height, struct wl_visual *visual,
-		  void **data_out)
+		  int width, int height, uint32_t format, void **data_out)
 {
 	char filename[] = "/tmp/wayland-shm-XXXXXX";
 	struct wl_buffer *buffer;
@@ -82,7 +80,7 @@ create_shm_buffer(struct display *display,
 	}
 
 	buffer = wl_shm_create_buffer(display->shm, fd,
-				      width, height, stride, visual);
+				      width, height, stride, format);
 
 	close(fd);
 
@@ -95,17 +93,16 @@ static struct window *
 create_window(struct display *display, int width, int height)
 {
 	struct window *window;
-	struct wl_visual *visual;
 	
 	window = malloc(sizeof *window);
 	window->display = display;
 	window->width = width;
 	window->height = height;
 	window->surface = wl_compositor_create_surface(display->compositor);
-	visual = display->xrgb_visual;
 	window->buffer = create_shm_buffer(display,
 					   width, height,
-					   visual, &window->data);
+					   WL_SHM_FORMAT_XRGB32,
+					   &window->data);
 
 	wl_shell_set_toplevel(display->shell, window->surface);
 
@@ -144,25 +141,6 @@ static const struct wl_callback_listener frame_listener = {
 };
 
 static void
-compositor_handle_visual(void *data,
-			 struct wl_compositor *compositor,
-			 uint32_t id, uint32_t token)
-{
-	struct display *d = data;
-
-	switch (token) {
-	case WL_COMPOSITOR_VISUAL_XRGB32:
-		d->xrgb_visual = wl_display_bind(d->display,
-						 id, &wl_visual_interface);
-		break;
-	}
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	compositor_handle_visual,
-};
-
-static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
@@ -171,8 +149,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	if (strcmp(interface, "wl_compositor") == 0) {
 		d->compositor =
 			wl_display_bind(display, id, &wl_compositor_interface);
-		wl_compositor_add_listener(d->compositor,
-					   &compositor_listener, d);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		d->shell = wl_display_bind(display, id, &wl_shell_interface);
 	} else if (strcmp(interface, "wl_shm") == 0) {
@@ -205,9 +181,6 @@ create_display(void)
 
 	wl_display_get_fd(display->display, event_mask_update, display);
 	
-	while (!display->xrgb_visual)
-		wl_display_roundtrip(display->display);
-
 	return display;
 }
 

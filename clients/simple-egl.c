@@ -93,7 +93,7 @@ init_egl(struct display *display)
 	};
 
 	static const EGLint config_attribs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_VG_ALPHA_FORMAT_PRE_BIT,
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
@@ -195,26 +195,22 @@ create_surface(struct window *window)
 	struct display *display = window->display;
 	struct wl_visual *visual;
 	EGLBoolean ret;
+	static const EGLint surface_attribs[] = {
+		EGL_ALPHA_FORMAT, EGL_ALPHA_FORMAT_PRE,
+		EGL_NONE
+	};
 	
-	if (!display->premultiplied_argb_visual)
-		wl_display_roundtrip(display->display);
-	if (!display->premultiplied_argb_visual) {
-		fprintf(stderr, "premultiplied argb visual missing\n");
-		exit(1);
-	}
-
 	window->surface = wl_compositor_create_surface(display->compositor);
 	visual = display->premultiplied_argb_visual;
 	window->native =
 		wl_egl_window_create(window->surface,
 				     window->geometry.width,
-				     window->geometry.height,
-				     visual);
+				     window->geometry.height);
 	window->egl_surface =
 		eglCreateWindowSurface(display->egl.dpy,
 				       display->egl.conf,
 				       window->native,
-				       NULL);
+				       surface_attribs);
 
 	wl_shell_set_toplevel(display->shell, window->surface);
 
@@ -289,25 +285,6 @@ static const struct wl_callback_listener frame_listener = {
 };
 
 static void
-compositor_handle_visual(void *data,
-			 struct wl_compositor *compositor,
-			 uint32_t id, uint32_t token)
-{
-	struct display *d = data;
-
-	switch (token) {
-	case WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32:
-		d->premultiplied_argb_visual =
-			wl_display_bind(d->display, id, &wl_visual_interface);
-		break;
-	}
-}
-
-static const struct wl_compositor_listener compositor_listener = {
-	compositor_handle_visual,
-};
-
-static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
@@ -316,8 +293,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	if (strcmp(interface, "wl_compositor") == 0) {
 		d->compositor =
 			wl_display_bind(display, id, &wl_compositor_interface);
-		wl_compositor_add_listener(d->compositor,
-					   &compositor_listener, d);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		d->shell = wl_display_bind(display, id, &wl_shell_interface);
 	}
