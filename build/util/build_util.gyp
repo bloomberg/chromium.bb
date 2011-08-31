@@ -7,7 +7,6 @@
     {
       'target_name': 'lastchange',
       'type': 'none',
-      'toolsets': ['host', 'target'],
       'variables': {
         'lastchange_out_path': '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
         'default_lastchange_path': '../LASTCHANGE.in',

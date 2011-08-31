@@ -5,9 +5,7 @@
 #ifndef NET_BASE_SSL_FALSE_START_BLACKLIST_H_
 #define NET_BASE_SSL_FALSE_START_BLACKLIST_H_
 
-#include <string>
-
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -18,42 +16,64 @@ namespace net {
 // table for fast lookups.
 class SSLFalseStartBlacklist {
  public:
-  // Returns true if |host| (a DNS name in dotted form, e.g. "www.example.com")
-  // is in the blacklist.
-  NET_EXPORT_PRIVATE static bool IsMember(const std::string& host);
+  // IsMember returns true if the given host is in the blacklist.
+  //   host: a DNS name in dotted form (i.e. "www.example.com")
+  NET_EXPORT_PRIVATE static bool IsMember(const char* host);
 
-  // Returns the modified djb2 hash of |host|.
-  // NOTE: This is inline because the code which generates the hash table needs
-  // to use it. However, the generating code cannot link against
-  // ssl_false_start_blacklist.cc because that needs the tables which it
-  // generates.
-  static uint32 Hash(const std::string& host) {
-    uint32 hash = 5381;
-    for (const uint8* in = reinterpret_cast<const uint8*>(host.c_str());
-         *in != 0; ++in)
-      hash = ((hash << 5) + hash) ^ *in;
+  // Hash returns the modified djb2 hash of the given string.
+  static unsigned Hash(const char* str) {
+    // This is inline because the code which generates the hash table needs to
+    // use it. However, the generating code cannot link against
+    // ssl_false_start_blacklist.cc because that needs the tables which it
+    // generates.
+    const unsigned char* in = reinterpret_cast<const unsigned char*>(str);
+    unsigned hash = 5381;
+    unsigned char c;
+
+    while ((c = *in++))
+      hash = ((hash << 5) + hash) ^ c;
     return hash;
   }
 
-  // Returns the last two dot-separated components of |host|, ignoring any
-  // trailing dots.  For example, returns "c.d" for "a.b.c.d.".  Returns an
-  // empty string if |host| does not have two dot-separated components.
-  // NOTE: Inline for the same reason as Hash().
-  static std::string LastTwoComponents(const std::string& host) {
-    size_t last_nondot = host.find_last_not_of('.');
-    if (last_nondot == std::string::npos)
-      return std::string();
-    size_t last_dot = host.find_last_of('.', last_nondot);
-    if ((last_dot == 0) || (last_dot == std::string::npos))
-      return std::string();
-    // NOTE: This next line works correctly even when the call returns npos.
-    size_t components_begin = host.find_last_of('.', last_dot - 1) + 1;
-    return host.substr(components_begin, last_nondot - components_begin + 1);
+  // LastTwoLabels returns a pointer within |host| to the last two labels of
+  // |host|. For example, if |host| is "a.b.c.d" then LastTwoLabels will return
+  // "c.d".
+  //   host: a DNS name in dotted form.
+  //   returns: NULL on error, otherwise a pointer inside |host|.
+  static const char* LastTwoLabels(const char* host) {
+    // See comment in |Hash| for why this function is inline.
+    const size_t len = strlen(host);
+    if (len == 0)
+      return NULL;
+
+    unsigned dots_found = 0;
+    size_t i;
+    for (i = len - 1; i < len; i--) {
+      if (host[i] == '.') {
+        dots_found++;
+        if (dots_found == 2) {
+          i++;
+          break;
+        }
+      }
+    }
+
+    if (i > len)
+      i = 0;
+
+    if (dots_found == 0)
+      return NULL;  // no names with less than two labels are in the blacklist.
+    if (dots_found == 1) {
+      if (host[0] == '.')
+        return NULL;  // ditto
+    }
+
+    return &host[i];
   }
 
   // This is the number of buckets in the blacklist hash table. (Must be a
   // power of two).
-  static const size_t kBuckets = 128;
+  static const unsigned kBuckets = 128;
 
  private:
   // The following two members are defined in
