@@ -232,9 +232,16 @@ void WebUILoginView::InitStatusArea() {
                    kStatusAreaCornerPadding,
                    size.width(),
                    size.height());
-
+#if defined(TOUCH_UI)
+  // TODO(oshima): Window manager doesn't know about touch event, hence can't
+  // activate the window. Use POPUP for now. This will be non issue
+  // once we move to pure views + in chrome WM.
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_POPUP);
+#else
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+#endif
   widget_params.bounds = bounds;
   widget_params.double_buffer = true;
   widget_params.transparent = true;
