@@ -148,24 +148,20 @@ cr.define('cr.ui', function() {
       spliceEvent.added = Array.prototype.slice.call(arguments, 2);
 
       var rv = arr.splice.apply(arr, arguments);
-      var self = this;
 
       // if sortStatus.field is null, this restores original order.
-      this.prepareSort(this.sortStatus.field, function() {
-        var sortPermutation = self.doSort_(self.sortStatus.field,
-                                           self.sortStatus.direction);
-        if (sortPermutation) {
-          var splicePermutation = deletePermutation.map(function(element) {
-              return element != -1 ? sortPermutation[element] : -1;
-            });
-          self.dispatchPermutedEvent_(splicePermutation);
-        } else {
-          self.dispatchPermutedEvent_(deletePermutation);
-        }
+      var sortPermutation = this.doSort_(this.sortStatus.field,
+                                         this.sortStatus.direction);
+      if (sortPermutation) {
+        var splicePermutation = deletePermutation.map(function(element) {
+          return element != -1 ? sortPermutation[element] : -1;
+        });
+        this.dispatchPermutedEvent_(splicePermutation);
+      } else {
+        this.dispatchPermutedEvent_(deletePermutation);
+      }
 
-        self.dispatchEvent(spliceEvent);
-      });
-
+      this.dispatchEvent(spliceEvent);
       return rv;
     },
 
@@ -201,13 +197,10 @@ cr.define('cr.ui', function() {
       this.dispatchEvent(e);
 
       if (this.sortStatus.field) {
-        var self = this;
-        this.prepareSort(self.sortStatus.field, function() {
-          var sortPermutation = self.doSort_(self.sortStatus.field,
-                                             self.sortStatus.direction);
-          if (sortPermutation)
-            self.dispatchPermutedEvent_(sortPermutation);
-        });
+        var sortPermutation = this.doSort_(this.sortStatus.field,
+                                           this.sortStatus.direction);
+        if (sortPermutation)
+          this.dispatchPermutedEvent_(sortPermutation);
       }
     },
 
