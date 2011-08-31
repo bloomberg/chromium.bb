@@ -170,7 +170,7 @@ bool ExportedObject::Register() {
                                                    this,
                                                    error.get());
   if (!success) {
-    LOG(ERROR) << "Failed to regiser the object: " << object_path_ << ": "
+    LOG(ERROR) << "Failed to register the object: " << object_path_ << ": "
                << (error.is_set() ? error.message() : "");
     return false;
   }
@@ -239,7 +239,7 @@ DBusHandlerResult ExportedObject::HandleMessage(
   }
 
   if (!response) {
-    // Something bad happend in the method call.
+    // Something bad happened in the method call.
     scoped_ptr<dbus::ErrorResponse> error_response(
         ErrorResponse::FromMethodCall(method_call.get(),
                                       DBUS_ERROR_FAILED,

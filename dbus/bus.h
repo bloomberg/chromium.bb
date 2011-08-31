@@ -1,4 +1,3 @@
-
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -15,6 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "base/tracked_objects.h"
 
 class MessageLoop;
@@ -42,7 +42,7 @@ class ObjectProxy;
 // In the D-Bus library, we use the two threads:
 //
 // - The origin thread: the thread that created the Bus object.
-// - The D-Bus thread: the thread supplifed by |dbus_thread| option.
+// - The D-Bus thread: the thread supplied by |dbus_thread| option.
 //
 // The origin thread is usually Chrome's UI thread. The D-Bus thread is
 // usually a dedicated thread for the D-Bus library.
@@ -57,7 +57,7 @@ class ObjectProxy;
 // or not (ex. dbus_bus_request_name() internally calls
 // dbus_connection_send_with_reply_and_block(), which is a blocking
 // call). To err on the safe side, we consider all libdbus functions that
-// deal with the connection to dbus-damoen to be blocking.
+// deal with the connection to dbus-daemon to be blocking.
 //
 // SHUTDOWN
 //
@@ -120,7 +120,7 @@ class ObjectProxy;
 //
 // Bus is a ref counted object, to ensure that |this| of the object is
 // alive when callbacks referencing |this| are called. However, after
-// Shutdown() is called, |connection_| can be NULL. Hence, calbacks should
+// Shutdown() is called, |connection_| can be NULL. Hence, callbacks should
 // not rely on that |connection_| is alive.
 class Bus : public base::RefCountedThreadSafe<Bus> {
  public:

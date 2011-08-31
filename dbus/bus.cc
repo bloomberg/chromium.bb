@@ -150,7 +150,7 @@ class Timeout : public base::RefCountedThreadSafe<Timeout> {
     // occur if this function is called after Bus::OnRemoveTimeout().
     if (is_completed)
       return;
-    // Skip if monitoring is cancled.
+    // Skip if monitoring is canceled.
     if (!monitoring_is_active_)
       return;
 
@@ -332,7 +332,7 @@ bool Bus::RequestOwnership(const std::string& service_name) {
                                            DBUS_NAME_FLAG_DO_NOT_QUEUE,
                                            error.get());
   if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-    LOG(ERROR) << "Failed to get the onwership of " << service_name << ": "
+    LOG(ERROR) << "Failed to get the ownership of " << service_name << ": "
                << (dbus_error_is_set(error.get()) ? error.message() : "");
     return false;
   }
@@ -360,7 +360,7 @@ bool Bus::ReleaseOwnership(const std::string& service_name) {
     owned_service_names_.erase(found);
     return true;
   } else {
-    LOG(ERROR) << "Failed to release the onwership of " << service_name << ": "
+    LOG(ERROR) << "Failed to release the ownership of " << service_name << ": "
                << (error.is_set() ? error.message() : "");
     return false;
   }

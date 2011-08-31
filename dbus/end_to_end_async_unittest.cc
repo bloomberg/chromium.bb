@@ -18,7 +18,7 @@
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// The end-to-end test exercises the asynchronos APIs in ObjectProxy and
+// The end-to-end test exercises the asynchronous APIs in ObjectProxy and
 // ExportedObject.
 class EndToEndAsyncTest : public testing::Test {
  public:
@@ -69,7 +69,7 @@ class EndToEndAsyncTest : public testing::Test {
     bus_->Shutdown(base::Bind(&EndToEndAsyncTest::OnShutdown,
                               base::Unretained(this)));
     // Wait until the bus is shutdown. OnShutdown() will be called in
-    // mesage_loop_.
+    // message_loop_.
     message_loop_.Run();
 
     // Shut down the service.
@@ -79,13 +79,13 @@ class EndToEndAsyncTest : public testing::Test {
     // Reset to the default.
     base::ThreadRestrictions::SetIOAllowed(true);
 
-    // Stopping a thread is considred an IO operation, so do this after
+    // Stopping a thread is considered an IO operation, so do this after
     // allowing IO.
     test_service_->Stop();
   }
 
  protected:
-  // Calls the method asynchronosly. OnResponse() will be called once the
+  // Calls the method asynchronously. OnResponse() will be called once the
   // response is received.
   void CallMethod(dbus::MethodCall* method_call,
                   int timeout_ms) {
@@ -238,7 +238,7 @@ TEST_F(EndToEndAsyncTest, TestSignal) {
   const char kMessage[] = "hello, world";
   // Send the test signal from the exported object.
   test_service_->SendTestSignal(kMessage);
-  // Receive the signal with the object proxy. The signal is handeled in
+  // Receive the signal with the object proxy. The signal is handled in
   // EndToEndAsyncTest::OnTestSignal() in the main thread.
   WaitForTestSignal();
   ASSERT_EQ(kMessage, test_signal_string_);

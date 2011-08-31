@@ -10,7 +10,7 @@
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// The end-to-end test exercises the synchronos APIs in ObjectProxy and
+// The end-to-end test exercises the synchronous APIs in ObjectProxy and
 // ExportedObject. The test will launch a thread for the service side
 // operations (i.e. ExportedObject side).
 class EndToEndSyncTest : public testing::Test {

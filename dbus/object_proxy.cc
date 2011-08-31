@@ -218,7 +218,7 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
     // This will take |response_message| and release (unref) it.
     scoped_ptr<dbus::Response> response(
         dbus::Response::FromRawMessage(response_message));
-    // The response is successfuly received.
+    // The response is successfully received.
     response_callback.Run(response.get());
   }
 }

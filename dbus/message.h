@@ -186,7 +186,7 @@ class Response : public Message {
   // exported methods.
   static Response* FromMethodCall(MethodCall* method_call);
 
-  // Returns a newly creaed Response with an empty payload. The caller
+  // Returns a newly created Response with an empty payload. The caller
   // must delete the returned object. Useful for testing.
   static Response* CreateEmpty();
 
