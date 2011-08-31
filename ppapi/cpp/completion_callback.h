@@ -22,6 +22,9 @@ class CompletionCallback {
   /// <code>CompletionCallback</code> that can be passed to a method to
   /// indicate that the calling thread should be blocked until the asynchronous
   /// operation corresponding to the method completes.
+  ///
+  /// <strong>Note:</strong> Blocking completion callbacks are only allowed from
+  /// from background threads.
   CompletionCallback() {
     cc_ = PP_BlockUntilComplete();
   }
@@ -113,7 +116,7 @@ class CompletionCallback {
   ///
   /// <strong>Example:</strong>
   ///
-  /// <code>
+  /// @code
   ///
   /// int32_t OpenURL(pp::URLLoader* loader,
   ///                 pp::URLRequestInfo* url_request_info,
@@ -123,7 +126,7 @@ class CompletionCallback {
   ///   return loader->Open(*loader, *url_request_info, cc);
   /// }
   ///
-  /// </code>
+  /// @endcode
   ///
   /// @param[in] result PP_OK_COMPLETIONPENDING or the result of the completed
   /// operation to be passed to the callback function. PP_OK_COMPLETIONPENDING
@@ -172,7 +175,7 @@ CompletionCallback BlockUntilComplete();
 ///
 /// <strong>Example: </strong>
 ///
-/// <code>
+/// @code
 ///
 ///   class MyHandler {
 ///    public:
@@ -231,7 +234,7 @@ CompletionCallback BlockUntilComplete();
 ///     int64_t offset_;
 ///   };
 ///
-/// </code>
+/// @endcode
 ///
 template <typename T, typename RefCount = NonThreadSafeRefCount>
 class CompletionCallbackFactory {
