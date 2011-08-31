@@ -3,6 +3,7 @@ include_rules = [
   "+chrome/plugin",
   "+grit",  # For generated headers
   "+media/base",  # For initializing media library and media switches.
+  "+ppapi/native_client/src/trusted/plugin/nacl_entry_points.h",  # For NaCl registration.
   "+ppapi/c",
   "+ppapi/proxy",
   "+ppapi/shared_impl",
