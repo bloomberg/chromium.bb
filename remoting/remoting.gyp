@@ -83,7 +83,6 @@
       'webapp/me2mom/scale-to-fit.png',
       'webapp/me2mom/spinner.gif',
       'webapp/me2mom/toolbar.css',
-      'webapp/me2mom/toolbar-stub.png',
       'webapp/me2mom/xhr.js',
     ],
     'remoting_it2me_locale_files': [
