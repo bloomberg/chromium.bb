@@ -143,6 +143,8 @@ class SandboxMountPointProvider
   virtual void EndUpdateOriginOnFileThread(
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
+  virtual void InvalidateUsageCache(const GURL& origin_url,
+                                    FileSystemType type) OVERRIDE;
 
   FileSystemQuotaUtil* quota_util() { return this; }
 

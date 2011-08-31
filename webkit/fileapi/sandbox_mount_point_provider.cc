@@ -524,10 +524,11 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   FilePath usage_file_path =
       base_path.AppendASCII(FileSystemUsageCache::kUsageFileName);
 
+  bool is_valid = FileSystemUsageCache::IsValid(usage_file_path);
   int32 dirty_status = FileSystemUsageCache::GetDirty(usage_file_path);
   bool visited = (visited_origins_.find(origin_url) != visited_origins_.end());
   visited_origins_.insert(origin_url);
-  if (dirty_status == 0 || (dirty_status > 0 && visited)) {
+  if (is_valid && (dirty_status == 0 || (dirty_status > 0 && visited))) {
     // The usage cache is clean (dirty == 0) or the origin is already
     // initialized and running.  Read the cache file to get the usage.
     return FileSystemUsageCache::GetUsage(usage_file_path);
@@ -604,6 +605,15 @@ void SandboxMountPointProvider::EndUpdateOriginOnFileThread(
   FilePath usage_file_path = GetUsageCachePathForOriginAndType(
       origin_url, type);
   FileSystemUsageCache::DecrementDirty(usage_file_path);
+}
+
+void SandboxMountPointProvider::InvalidateUsageCache(
+    const GURL& origin_url, fileapi::FileSystemType type) {
+  DCHECK(type == fileapi::kFileSystemTypeTemporary ||
+         type == fileapi::kFileSystemTypePersistent);
+  FilePath usage_file_path = GetUsageCachePathForOriginAndType(
+      origin_url, type);
+  FileSystemUsageCache::IncrementDirty(usage_file_path);
 }
 
 FileSystemFileUtil* SandboxMountPointProvider::GetFileSystemFileUtil() {

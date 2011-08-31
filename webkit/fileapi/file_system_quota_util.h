@@ -91,6 +91,9 @@ class FileSystemQuotaUtil {
   virtual void EndUpdateOriginOnFileThread(const GURL& origin_url,
                                            fileapi::FileSystemType type) = 0;
 
+  virtual void InvalidateUsageCache(const GURL& origin_url,
+                                    fileapi::FileSystemType type) = 0;
+
   Proxy* proxy() { return proxy_.get(); }
 
  protected:

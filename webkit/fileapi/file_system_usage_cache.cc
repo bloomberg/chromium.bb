@@ -11,18 +11,21 @@
 namespace fileapi {
 
 const char FileSystemUsageCache::kUsageFileName[] = ".usage";
-const char FileSystemUsageCache::kUsageFileHeader[] = "FSU3";
+const char FileSystemUsageCache::kUsageFileHeader[] = "FSU4";
 const int FileSystemUsageCache::kUsageFileHeaderSize = 4;
+
+/* Pickle::{Read,Write}Bool treat bool as int */
 const int FileSystemUsageCache::kUsageFileSize =
     sizeof(Pickle::Header) +
     FileSystemUsageCache::kUsageFileHeaderSize +
-    sizeof(int32) + sizeof(int64);
+    sizeof(int) + sizeof(int32) + sizeof(int64);
 
 // static
 int64 FileSystemUsageCache::GetUsage(const FilePath& usage_file_path) {
+  bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
-  fs_usage = Read(usage_file_path, &dirty);
+  fs_usage = Read(usage_file_path, &is_valid, &dirty);
 
   if (fs_usage < 0)
     return -1;
@@ -32,9 +35,10 @@ int64 FileSystemUsageCache::GetUsage(const FilePath& usage_file_path) {
 
 // static
 int32 FileSystemUsageCache::GetDirty(const FilePath& usage_file_path) {
+  bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
-  fs_usage = Read(usage_file_path, &dirty);
+  fs_usage = Read(usage_file_path, &is_valid, &dirty);
 
   if (fs_usage < 0)
     return -1;
@@ -44,46 +48,67 @@ int32 FileSystemUsageCache::GetDirty(const FilePath& usage_file_path) {
 
 // static
 bool FileSystemUsageCache::IncrementDirty(const FilePath& usage_file_path) {
+  bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
-  fs_usage = Read(usage_file_path, &dirty);
+  fs_usage = Read(usage_file_path, &is_valid, &dirty);
 
   if (fs_usage < 0)
     return false;
 
-  return Write(usage_file_path, dirty + 1, fs_usage) >= 0;
+  return Write(usage_file_path, is_valid, dirty + 1, fs_usage) >= 0;
 }
 
 // static
 bool FileSystemUsageCache::DecrementDirty(const FilePath& usage_file_path) {
+  bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
-  fs_usage = Read(usage_file_path, &dirty);
+  fs_usage = Read(usage_file_path, &is_valid, &dirty);
 
   if (fs_usage < 0 || dirty <= 0)
     return false;
 
-  return Write(usage_file_path, dirty - 1, fs_usage) >= 0;
+  return Write(usage_file_path, is_valid, dirty - 1, fs_usage) >= 0;
+}
+
+// static
+bool FileSystemUsageCache::Invalidate(const FilePath& usage_file_path) {
+  bool is_valid = true;
+  uint32 dirty = 0;
+  int64 fs_usage;
+  fs_usage = Read(usage_file_path, &is_valid, &dirty);
+
+  return fs_usage >= 0 && Write(usage_file_path, false, dirty, fs_usage);
+}
+
+bool FileSystemUsageCache::IsValid(const FilePath& usage_file_path) {
+  bool is_valid = true;
+  uint32 dirty = 0;
+  int64 fs_usage;
+  fs_usage = Read(usage_file_path, &is_valid, &dirty);
+  return is_valid;
 }
 
 // static
 int FileSystemUsageCache::AtomicUpdateUsageByDelta(
     const FilePath& usage_file_path, int64 delta) {
+  bool is_valid = true;
   uint32 dirty = 0;
   int64 fs_usage;
   // TODO(dmikurube): Make sure that usage_file_path is available.
-  fs_usage = Read(usage_file_path, &dirty);
+  fs_usage = Read(usage_file_path, &is_valid, &dirty);
 
   if (fs_usage < 0)
     return -1;
 
-  return Write(usage_file_path, dirty, fs_usage + delta);
+  return Write(usage_file_path, is_valid, dirty, fs_usage + delta);
 }
 
 // static
 int FileSystemUsageCache::UpdateUsage(const FilePath& usage_file_path,
                                       int64 fs_usage) {
-  return Write(usage_file_path, 0, fs_usage);
+  return Write(usage_file_path, true, 0, fs_usage);
 }
 
 // static
@@ -98,6 +123,7 @@ bool FileSystemUsageCache::Delete(const FilePath& usage_file_path) {
 
 // static
 int64 FileSystemUsageCache::Read(const FilePath& usage_file_path,
+                                 bool* is_valid,
                                  uint32* dirty) {
   char buffer[kUsageFileSize];
   const char *header;
@@ -110,6 +136,7 @@ int64 FileSystemUsageCache::Read(const FilePath& usage_file_path,
   int64 fs_usage;
 
   if (!read_pickle.ReadBytes(&iter, &header, kUsageFileHeaderSize) ||
+      !read_pickle.ReadBool(&iter, is_valid) ||
       !read_pickle.ReadUInt32(&iter, dirty) ||
       !read_pickle.ReadInt64(&iter, &fs_usage))
     return -1;
@@ -125,9 +152,12 @@ int64 FileSystemUsageCache::Read(const FilePath& usage_file_path,
 
 // static
 int FileSystemUsageCache::Write(const FilePath& usage_file_path,
-                                uint32 dirty, int64 fs_usage) {
+                                bool is_valid,
+                                uint32 dirty,
+                                int64 fs_usage) {
   Pickle write_pickle;
   write_pickle.WriteBytes(kUsageFileHeader, kUsageFileHeaderSize);
+  write_pickle.WriteBool(is_valid);
   write_pickle.WriteUInt32(dirty);
   write_pickle.WriteInt64(fs_usage);
 

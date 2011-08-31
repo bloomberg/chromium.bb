@@ -1335,3 +1335,80 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestRevokeUsageCache) {
   EXPECT_EQ(expected_quota, SizeInUsageFile());
   EXPECT_EQ(expected_quota, usage());
 }
+
+TEST_F(ObfuscatedFileSystemFileUtilTest, TestInconsistency) {
+  const FilePath kPath1 = FilePath().AppendASCII("hoge");
+  const FilePath kPath2 = FilePath().AppendASCII("fuga");
+
+  scoped_ptr<FileSystemOperationContext> context;
+  base::PlatformFile file;
+  base::PlatformFileInfo file_info;
+  FilePath data_path;
+  bool created = false;
+
+  // Create a non-empty file.
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->EnsureFileExists(context.get(), kPath1, &created));
+  EXPECT_TRUE(created);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->Truncate(context.get(), kPath1, 10));
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->GetFileInfo(
+                context.get(), kPath1, &file_info, &data_path));
+  EXPECT_EQ(10, file_info.size);
+
+  // Destroy database to make inconsistency between database and filesystem.
+  ofsfu()->DestroyDirectoryDatabase(origin(), type());
+
+  // Try to get file info of broken file.
+  context.reset(NewContext(NULL));
+  EXPECT_FALSE(ofsfu()->PathExists(context.get(), kPath1));
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->EnsureFileExists(context.get(), kPath1, &created));
+  EXPECT_TRUE(created);
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->GetFileInfo(
+                context.get(), kPath1, &file_info, &data_path));
+  EXPECT_EQ(0, file_info.size);
+
+  // Make another broken file to |kPath2|.
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->EnsureFileExists(context.get(), kPath2, &created));
+  EXPECT_TRUE(created);
+
+  // Destroy again.
+  ofsfu()->DestroyDirectoryDatabase(origin(), type());
+
+  // Repair broken |kPath1|.
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            ofsfu()->Touch(context.get(), kPath1, base::Time::Now(),
+                           base::Time::Now()));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->EnsureFileExists(context.get(), kPath1, &created));
+  EXPECT_TRUE(created);
+
+  // Copy from sound |kPath1| to broken |kPath2|.
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->CopyOrMoveFile(context.get(), kPath1, kPath2,
+                                    true /* copy */));
+
+  ofsfu()->DestroyDirectoryDatabase(origin(), type());
+  context.reset(NewContext(NULL));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->CreateOrOpen(
+                context.get(), kPath1,
+                base::PLATFORM_FILE_READ | base::PLATFORM_FILE_CREATE,
+                &file, &created));
+  EXPECT_TRUE(created);
+  EXPECT_TRUE(base::GetPlatformFileInfo(file, &file_info));
+  EXPECT_EQ(0, file_info.size);
+  EXPECT_TRUE(base::ClosePlatformFile(file));
+}

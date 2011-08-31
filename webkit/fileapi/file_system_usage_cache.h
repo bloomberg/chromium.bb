@@ -12,8 +12,9 @@ namespace fileapi {
 
 class FileSystemUsageCache {
  public:
-  // Gets the size described in the .usage file even if dirty > 0.
-  // Returns less than zero if the .usage file is not available.
+  // Gets the size described in the .usage file even if dirty > 0 or
+  // is_valid == false.  Returns less than zero if the .usage file is not
+  // available.
   static int64 GetUsage(const FilePath& usage_file_path);
 
   // Gets the dirty count in the .usage file.
@@ -24,6 +25,11 @@ class FileSystemUsageCache {
   // Returns false if no .usage is available.
   static bool IncrementDirty(const FilePath& usage_file_path);
   static bool DecrementDirty(const FilePath& usage_file_path);
+
+  // Notifies quota system that it needs to recalculate the usage cache of the
+  // origin.  Returns false if no .usage is available.
+  static bool Invalidate(const FilePath& usage_file_path);
+  static bool IsValid(const FilePath& usage_file_path);
 
   // Updates the size described in the .usage file.
   static int UpdateUsage(const FilePath& usage_file_path, int64 fs_usage);
@@ -42,12 +48,16 @@ class FileSystemUsageCache {
   static const int kUsageFileHeaderSize;
 
  private:
-  // Read the size and the "dirty" entry described in the .usage file.
+  // Read the size, validity and the "dirty" entry described in the .usage file.
   // Returns less than zero if no .usage file is available.
-  static int64 Read(const FilePath& usage_file_path, uint32* dirty);
+  static int64 Read(const FilePath& usage_file_path,
+                    bool* is_valid,
+                    uint32* dirty);
 
   static int Write(const FilePath& usage_file_path,
-                   uint32 dirty, int64 fs_usage);
+                   bool is_valid,
+                   uint32 dirty,
+                   int64 fs_usage);
 };
 
 }  // namespace fileapi

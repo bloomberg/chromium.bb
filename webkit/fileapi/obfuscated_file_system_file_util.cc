@@ -156,10 +156,20 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateOrOpen(
   }
   if (file_info.is_directory())
     return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-  FilePath data_path = DataPathToLocalPath(context->src_origin_url(),
+  FilePath local_path = DataPathToLocalPath(context->src_origin_url(),
     context->src_type(), file_info.data_path);
-  return underlying_file_util_->CreateOrOpen(
-      context, data_path, file_flags, file_handle, created);
+  base::PlatformFileError error = underlying_file_util_->CreateOrOpen(
+      context, local_path, file_flags, file_handle, created);
+  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    // TODO(tzik): Also invalidate on-memory usage cache in UsageTracker.
+    // TODO(tzik): Delete database entry after ensuring the file lost.
+    context->file_system_context()->GetQuotaUtil(context->src_type())->
+        InvalidateUsageCache(context->src_origin_url(),
+                             context->src_type());
+    LOG(WARNING) << "Lost a backing file.";
+    error = base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  return error;
 }
 
 PlatformFileError ObfuscatedFileSystemFileUtil::EnsureFileExists(
@@ -386,6 +396,15 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CopyOrMoveFile(
   if (copy) {
     FilePath src_data_path = DataPathToLocalPath(context->src_origin_url(),
       context->src_type(), src_file_info.data_path);
+    if (!underlying_file_util_->PathExists(context, src_data_path)) {
+      // TODO(tzik): Also invalidate on-memory usage cache in UsageTracker.
+      context->file_system_context()->GetQuotaUtil(context->src_type())->
+          InvalidateUsageCache(context->src_origin_url(),
+                               context->src_type());
+      LOG(WARNING) << "Lost a backing file.";
+      return base::PLATFORM_FILE_ERROR_FAILED;
+    }
+
     if (overwrite) {
       FilePath dest_data_path = DataPathToLocalPath(context->src_origin_url(),
         context->src_type(), dest_file_info.data_path);
@@ -862,19 +881,22 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
     return base::PLATFORM_FILE_ERROR_FAILED;
   // We use the third- and fourth-to-last digits as the directory.
   int64 directory_number = number % 10000 / 100;
-  FilePath path =
+  // TODO(ericu): local_path is an OS path; underlying_file_util_ isn't
+  // guaranteed to understand OS paths.
+  FilePath local_path =
       GetDirectoryForOriginAndType(origin_url, type, false);
-  if (path.empty())
+  if (local_path.empty())
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  path = path.AppendASCII(StringPrintf("%02" PRIu64, directory_number));
+  local_path = local_path.AppendASCII(StringPrintf("%02" PRIu64,
+                                                   directory_number));
   PlatformFileError error;
   error = underlying_file_util_->CreateDirectory(
-      context, path, false /* exclusive */, false /* recursive */);
+      context, local_path, false /* exclusive */, false /* recursive */);
   if (base::PLATFORM_FILE_OK != error)
     return error;
-  path = path.AppendASCII(StringPrintf("%08" PRIu64, number));
-  FilePath data_path = LocalPathToDataPath(origin_url, type, path);
+  local_path = local_path.AppendASCII(StringPrintf("%08" PRIu64, number));
+  FilePath data_path = LocalPathToDataPath(origin_url, type, local_path);
   if (data_path.empty())
     return base::PLATFORM_FILE_ERROR_FAILED;
   bool created = false;
@@ -882,17 +904,29 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
     DCHECK(!file_flags);
     DCHECK(!handle);
     error = underlying_file_util_->CopyOrMoveFile(
-      context, source_path, path, true /* copy */);
+      context, source_path, local_path, true /* copy */);
     created = true;
   } else {
+    FilePath path;
+    underlying_file_util_->GetLocalFilePath(context, local_path, &path);
+    if (file_util::PathExists(path)) {
+      if (!file_util::Delete(path, true)) {
+        NOTREACHED();
+        return base::PLATFORM_FILE_ERROR_FAILED;
+      }
+      LOG(WARNING) << "A stray file detected";
+      context->file_system_context()->GetQuotaUtil(context->src_type())->
+          InvalidateUsageCache(context->src_origin_url(), context->src_type());
+    }
+
     if (handle) {
       error = underlying_file_util_->CreateOrOpen(
-        context, path, file_flags, handle, &created);
+        context, local_path, file_flags, handle, &created);
       // If this succeeds, we must close handle on any subsequent error.
     } else {
       DCHECK(!file_flags);  // file_flags is only used by CreateOrOpen.
       error = underlying_file_util_->EnsureFileExists(
-          context, path, &created);
+          context, local_path, &created);
     }
   }
   if (error != base::PLATFORM_FILE_OK)
@@ -903,7 +937,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
     if (handle) {
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
-      underlying_file_util_->DeleteFile(context, path);
+      underlying_file_util_->DeleteFile(context, local_path);
     }
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -914,7 +948,7 @@ PlatformFileError ObfuscatedFileSystemFileUtil::CreateFile(
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
     }
-    underlying_file_util_->DeleteFile(context, path);
+    underlying_file_util_->DeleteFile(context, local_path);
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
   UpdatePathQuotaUsage(context, origin_url, type, 1, file_info->name.size());
@@ -1131,14 +1165,26 @@ FilePath ObfuscatedFileSystemFileUtil::GetDirectoryForOrigin(
     return FilePath();
   FilePath directory_name;
   std::string id = GetOriginIdentifierFromURL(origin);
-  if (!create && !origin_database_->HasOriginPath(id))
+
+  bool exists_in_db = origin_database_->HasOriginPath(id);
+  if (!exists_in_db && !create)
     return FilePath();
   if (!origin_database_->GetPathForOrigin(id, &directory_name))
     return FilePath();
+
   FilePath path = file_system_directory_.Append(directory_name);
-  if (!file_util::DirectoryExists(path) &&
-      (!create || !file_util::CreateDirectory(path)))
-    return FilePath();
+  bool exists_in_fs = file_util::DirectoryExists(path);
+  if (!exists_in_db && exists_in_fs) {
+    if (!file_util::Delete(path, true))
+      return FilePath();
+    exists_in_fs = false;
+  }
+
+  if (!exists_in_fs) {
+    if (!create || !file_util::CreateDirectory(path))
+      return FilePath();
+  }
+
   return path;
 }
 
