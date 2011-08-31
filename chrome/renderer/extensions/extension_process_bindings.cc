@@ -326,8 +326,8 @@ class ExtensionImpl : public ExtensionBase {
     // Compose output array. This API call only accepts kARGB_8888_Config images
     // so we rely on each pixel occupying 4 bytes.
     // Note(mnaganov): to speed this up, you may use backing store
-    // technique from CreateExternalArray() of samples/shell.cc.
-    v8::Local<v8::Object> bitmap_array = v8::Array::New(width * height);
+    // technique from CreateExternalArray() of v8/src/d8.cc.
+    v8::Local<v8::Array> bitmap_array(v8::Array::New(width * height));
     for (int i = 0; i != width * height; ++i) {
       bitmap_array->Set(v8::Integer::New(i),
                         v8::Integer::New(pixels[i] & 0xFFFFFF));
