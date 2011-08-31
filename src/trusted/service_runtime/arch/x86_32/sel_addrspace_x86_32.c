@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #if NACL_LINUX
@@ -111,18 +111,19 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
     NaClLog(LOG_FATAL, ("NaClMprotectGuards: zero-based sandbox is"
                         " supported on Linux only.\n"));
 #else
-    /* Attempt to protect low memory one page at a time, iterating
-     * through pages starting immediately after NULL page, and
-     * ending at NACL_SYSCALL_START_ADDR, the base of the region
-     * allocated in Chrome by nacl_helper.
+    /*
+     * Attempt to protect low memory from zero to NACL_SYSCALL_START_ADDR,
+     * the base of the region allocated in Chrome by nacl_helper.
      *
      * It is normal for mmap() calls to fail with EPERM if the indicated
      * page is less than vm.mmap_min_addr (see /proc/sys/vm/mmap_min_addr).
+     * Hence, we adaptively move the bottom of the region up a page at a
+     * time until we succeed in getting a reservation.
      */
-    for (page_addr = NACL_PAGESIZE;
+    for (page_addr = 0;
          page_addr < NACL_SYSCALL_START_ADDR;
          page_addr += NACL_PAGESIZE) {
-      mmap_rval = mmap((void *)page_addr,
+      mmap_rval = mmap((void *) page_addr,
                        NACL_SYSCALL_START_ADDR - page_addr,
                        PROT_NONE,
                        MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_NORESERVE,
