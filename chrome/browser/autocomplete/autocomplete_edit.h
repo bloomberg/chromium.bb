@@ -401,14 +401,6 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   void GetInfoForCurrentText(AutocompleteMatch* match,
                              GURL* alternate_nav_url) const;
 
-  // Returns true if |text| (which is display text in the current context)
-  // parses as a URL, and in that case sets |url| to the calculated URL.
-  // Subtle note: This ignores the desired_tld_ (unlike GetDataForURLExport()
-  // and CurrentTextIsURL()).  The view needs this because it calls this
-  // function during copy handling, when the control key is down to trigger the
-  // copy.
-  bool GetURLForText(const string16& text, GURL* url) const;
-
   // Reverts the edit box from a temporary text back to the original user text.
   // If |revert_popup| is true then the popup will be reverted as well.
   void RevertTemporaryText(bool revert_popup);

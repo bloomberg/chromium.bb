@@ -134,11 +134,19 @@ TEST(AutocompleteEditTest, AdjustTextForCopy) {
 
     // Tests that we don't get double http if the user manually inserts http.
     { "a.de/", 0, false, "http://a.de/", "http://a.de/", true, "http://a.de/" },
+
+    // Makes sure intranet urls get 'http://' prefixed to them.
+    { "b/foo", 0, true, "b/foo", "http://b/foo", true, "http://b/foo" },
+
+    // Verifies a search term 'foo' doesn't end up with http.
+    { "www.google.com/search?", 0, false, "foo", "foo", false, "" },
   };
   TestingOmniboxView view;
   TestingAutocompleteEditController controller;
   TestingProfile profile;
   AutocompleteEditModel model(&view, &controller, &profile);
+  profile.CreateAutocompleteClassifier();
+  profile.CreateTemplateURLService();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {
     model.UpdatePermanentText(ASCIIToUTF16(input[i].perm_text));

@@ -385,32 +385,34 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
   if (sel_min != 0)
     return;
 
-  // We can't use CurrentTextIsURL() or GetDataForURLExport() because right now
-  // the user is probably holding down control to cause the copy, which will
-  // screw up our calculation of the desired_tld.
-  if (!GetURLForText(*text, url))
-    return;  // Can't be parsed as a url, no need to adjust text.
-
   if (!user_input_in_progress() && is_all_selected) {
     // The user selected all the text and has not edited it. Use the url as the
     // text so that if the scheme was stripped it's added back, and the url
     // is unescaped (we escape parts of the url for display).
+    *url = PermanentURL();
     *text = UTF8ToUTF16(url->spec());
     *write_url = true;
     return;
   }
 
+  // We can't use CurrentTextIsURL() or GetDataForURLExport() because right now
+  // the user is probably holding down control to cause the copy, which will
+  // screw up our calculation of the desired_tld.
+  AutocompleteMatch match;
+  profile_->GetAutocompleteClassifier()->Classify(*text, string16(),
+        KeywordIsSelected(), true, &match, NULL);
+  if (match.transition != PageTransition::TYPED)
+    return;
+  *url = match.destination_url;
+
   // Prefix the text with 'http://' if the text doesn't start with 'http://',
   // the text parses as a url with a scheme of http, the user selected the
   // entire host, and the user hasn't edited the host or manually removed the
   // scheme.
-  GURL perm_url;
-  if (GetURLForText(permanent_text_, &perm_url) &&
-      perm_url.SchemeIs(chrome::kHttpScheme) &&
-      url->SchemeIs(chrome::kHttpScheme) &&
-      perm_url.host() == url->host()) {
+  GURL perm_url(PermanentURL());
+  if (perm_url.SchemeIs(chrome::kHttpScheme) &&
+      url->SchemeIs(chrome::kHttpScheme) && perm_url.host() == url->host()) {
     *write_url = true;
-
     string16 http = ASCIIToUTF16(chrome::kHttpScheme) +
         ASCIIToUTF16(chrome::kStandardSchemeSeparator);
     if (text->compare(0, http.length(), http) != 0)
@@ -971,18 +973,6 @@ void AutocompleteEditModel::GetInfoForCurrentText(
         UserTextFromDisplayText(view_->GetText()), GetDesiredTLD(),
         KeywordIsSelected(), true, match, alternate_nav_url);
   }
-}
-
-bool AutocompleteEditModel::GetURLForText(const string16& text,
-                                          GURL* url) const {
-  GURL parsed_url;
-  const AutocompleteInput::Type type = AutocompleteInput::Parse(
-      UserTextFromDisplayText(text), string16(), NULL, NULL, &parsed_url);
-  if (type != AutocompleteInput::URL)
-    return false;
-
-  *url = parsed_url;
-  return true;
 }
 
 void AutocompleteEditModel::RevertTemporaryText(bool revert_popup) {
