@@ -18,7 +18,6 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/nudge_source.h"
 #include "chrome/browser/sync/engine/polling_constants.h"
@@ -90,8 +89,13 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
       const base::TimeDelta& delay, NudgeSource source,
       const syncable::ModelTypePayloadMap& types_with_payloads,
       const tracked_objects::Location& nudge_location);
-  void ScheduleConfig(const syncable::ModelTypeBitSet& types,
-      sync_api::ConfigureReason reason);
+
+  // Note: The source argument of this function must come from the subset of
+  // GetUpdatesCallerInfo values related to configurations.
+  void ScheduleConfig(
+      const syncable::ModelTypeBitSet& types,
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
+
   void ScheduleClearUserData();
   void ScheduleCleanupDisabledTypes();
 

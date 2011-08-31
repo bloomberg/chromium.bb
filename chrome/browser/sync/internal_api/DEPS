@@ -11,4 +11,5 @@ include_rules = [
   "+chrome/browser/password_manager/encryptor.h",
 
   "+chrome/common/net/gaia/google_service_auth_error.h",
+  "+chrome/common/net/http_return.h",
 ]

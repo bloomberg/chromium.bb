@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_ENGINE_HTTP_POST_PROVIDER_INTERFACE_H_
-#define CHROME_BROWSER_SYNC_ENGINE_HTTP_POST_PROVIDER_INTERFACE_H_
+#ifndef CHROME_BROWSER_SYNC_INTERNAL_API_HTTP_POST_PROVIDER_INTERFACE_H_
+#define CHROME_BROWSER_SYNC_INTERNAL_API_HTTP_POST_PROVIDER_INTERFACE_H_
 #pragma once
 
 #include <string>
@@ -63,4 +63,4 @@ class HttpPostProviderInterface {
 
 }  // namespace sync_api
 
-#endif  // CHROME_BROWSER_SYNC_ENGINE_HTTP_POST_PROVIDER_INTERFACE_H_
+#endif  // CHROME_BROWSER_SYNC_INTERNAL_API_HTTP_POST_PROVIDER_INTERFACE_H_

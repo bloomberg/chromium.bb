@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/engine/http_post_provider_interface.h"
-#include "chrome/browser/sync/engine/http_post_provider_factory.h"
+#include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
+#include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
 
 namespace browser_sync {
 

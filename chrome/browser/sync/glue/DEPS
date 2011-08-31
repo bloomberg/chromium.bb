@@ -5,13 +5,11 @@ include_rules = [
   "-chrome/browser/sync/syncable",
   "-chrome/browser/sync/util",
 
+  "+chrome/browser/sync/internal_api",
+
   # Should these live in their own "includes" (e.g) directory(ies)?
   # Bug 19878.
-  "+chrome/browser/sync/engine/configure_reason.h",
-  "+chrome/browser/sync/engine/http_post_provider_factory.h",
-  "+chrome/browser/sync/engine/http_post_provider_interface.h",
   "+chrome/browser/sync/engine/model_safe_worker.h",
-  "+chrome/browser/sync/engine/syncapi.h",
   "+chrome/browser/sync/notifier/sync_notifier.h",
   "+chrome/browser/sync/notifier/sync_notifier_factory.h",
   "+chrome/browser/sync/syncable/model_type.h",

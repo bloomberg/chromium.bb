@@ -104,24 +104,6 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
   }
 }
 
-GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
-    sync_api::ConfigureReason reason) {
-  switch (reason) {
-    case sync_api::CONFIGURE_REASON_RECONFIGURATION:
-      return GetUpdatesCallerInfo::RECONFIGURATION;
-    case sync_api::CONFIGURE_REASON_MIGRATION:
-      return GetUpdatesCallerInfo::MIGRATION;
-    case sync_api::CONFIGURE_REASON_NEW_CLIENT:
-      return GetUpdatesCallerInfo::NEW_CLIENT;
-    case sync_api::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
-      return GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
-    default:
-      NOTREACHED();
-  }
-
-  return GetUpdatesCallerInfo::UNKNOWN;
-}
-
 SyncScheduler::WaitInterval::WaitInterval(Mode mode, TimeDelta length)
     : mode(mode), had_nudge(false), length(length) { }
 
@@ -138,6 +120,19 @@ SyncScheduler::WaitInterval::WaitInterval(Mode mode, TimeDelta length)
 namespace {
 
 const int kDefaultSessionsCommitDelaySeconds = 10;
+
+bool IsConfigRelatedUpdateSourceValue(
+    GetUpdatesCallerInfo::GetUpdatesSource source) {
+  switch (source) {
+    case GetUpdatesCallerInfo::RECONFIGURATION:
+    case GetUpdatesCallerInfo::MIGRATION:
+    case GetUpdatesCallerInfo::NEW_CLIENT:
+    case GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
+      return true;
+    default:
+      return false;
+  }
+}
 
 }  // namespace
 
@@ -571,9 +566,11 @@ void GetModelSafeParamsForTypes(const ModelTypeBitSet& types,
   }
 }
 
-void SyncScheduler::ScheduleConfig(const ModelTypeBitSet& types,
-                                   sync_api::ConfigureReason reason) {
+void SyncScheduler::ScheduleConfig(
+    const ModelTypeBitSet& types,
+    GetUpdatesCallerInfo::GetUpdatesSource source) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  DCHECK(IsConfigRelatedUpdateSourceValue(source));
   SVLOG(2) << "Scheduling a config";
   ModelSafeRoutingInfo routes;
   std::vector<ModelSafeWorker*> workers;
@@ -582,8 +579,7 @@ void SyncScheduler::ScheduleConfig(const ModelTypeBitSet& types,
 
   PostTask(FROM_HERE, "ScheduleConfigImpl",
            method_factory_.NewRunnableMethod(
-               &SyncScheduler::ScheduleConfigImpl, routes, workers,
-               GetSourceFromReason(reason)));
+               &SyncScheduler::ScheduleConfigImpl, routes, workers, source));
 }
 
 void SyncScheduler::ScheduleConfigImpl(

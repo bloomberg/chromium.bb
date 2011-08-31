@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/engine/change_reorder_buffer.h"
+#include "chrome/browser/sync/internal_api/change_reorder_buffer.h"
 
 #include <limits>
 #include <queue>

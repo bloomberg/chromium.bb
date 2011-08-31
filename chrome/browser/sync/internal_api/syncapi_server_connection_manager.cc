@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
+#include "chrome/browser/sync/internal_api/syncapi_server_connection_manager.h"
 
-#include "chrome/browser/sync/engine/http_post_provider_factory.h"
-#include "chrome/browser/sync/engine/http_post_provider_interface.h"
+#include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
+#include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/common/net/http_return.h"
 

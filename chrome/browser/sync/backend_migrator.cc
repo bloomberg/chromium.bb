@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "base/string_number_conversions.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
+#include "chrome/browser/sync/internal_api/configure_reason.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"

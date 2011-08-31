@@ -11,8 +11,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/sync/engine/configure_reason.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
 namespace browser_sync {

@@ -12,16 +12,17 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/all_status.h"
-#include "chrome/browser/sync/engine/change_reorder_buffer.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
-#include "chrome/browser/sync/engine/net/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncapi_internal.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/sync_scheduler.h"
 #include "chrome/browser/sync/internal_api/base_node.h"
+#include "chrome/browser/sync/internal_api/change_reorder_buffer.h"
+#include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
+#include "chrome/browser/sync/internal_api/syncapi_server_connection_manager.h"
 #include "chrome/browser/sync/internal_api/user_share.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -75,6 +77,7 @@ using syncable::EntryKernelMutationSet;
 using syncable::ModelType;
 using syncable::ModelTypeBitSet;
 using syncable::SPECIFICS;
+using sync_pb::GetUpdatesCallerInfo;
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -85,6 +88,24 @@ static const int kSyncSchedulerDelayMsec = 250;
 #if defined(OS_CHROMEOS)
 static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
 #endif  // OS_CHROMEOS
+
+GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
+    sync_api::ConfigureReason reason) {
+  switch (reason) {
+    case sync_api::CONFIGURE_REASON_RECONFIGURATION:
+      return GetUpdatesCallerInfo::RECONFIGURATION;
+    case sync_api::CONFIGURE_REASON_MIGRATION:
+      return GetUpdatesCallerInfo::MIGRATION;
+    case sync_api::CONFIGURE_REASON_NEW_CLIENT:
+      return GetUpdatesCallerInfo::NEW_CLIENT;
+    case sync_api::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
+      return GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
+    default:
+      NOTREACHED();
+  }
+
+  return GetUpdatesCallerInfo::UNKNOWN;
+}
 
 } // namespace
 
@@ -698,7 +719,7 @@ void SyncManager::RequestConfig(const syncable::ModelTypeBitSet& types,
     return;
   }
   StartConfigurationMode(NULL);
-  data_->scheduler()->ScheduleConfig(types, reason);
+  data_->scheduler()->ScheduleConfig(types, GetSourceFromReason(reason));
 }
 
 void SyncManager::StartConfigurationMode(ModeChangeCallback* callback) {

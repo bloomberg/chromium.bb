@@ -6,8 +6,8 @@
 // actions to achieve the ordering constraint required by the SyncObserver
 // interface of the SyncAPI.
 
-#ifndef CHROME_BROWSER_SYNC_ENGINE_CHANGE_REORDER_BUFFER_H_
-#define CHROME_BROWSER_SYNC_ENGINE_CHANGE_REORDER_BUFFER_H_
+#ifndef CHROME_BROWSER_SYNC_INTERNAL_API_CHANGE_REORDER_BUFFER_H_
+#define CHROME_BROWSER_SYNC_INTERNAL_API_CHANGE_REORDER_BUFFER_H_
 #pragma once
 
 #include <map>
@@ -120,4 +120,4 @@ class ChangeReorderBuffer {
 
 }  // namespace sync_api
 
-#endif  // CHROME_BROWSER_SYNC_ENGINE_CHANGE_REORDER_BUFFER_H_
+#endif  // CHROME_BROWSER_SYNC_INTERNAL_API_CHANGE_REORDER_BUFFER_H_

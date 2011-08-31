@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_old.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/sync/engine/configure_reason.h"
+#include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/weak_handle.h"
