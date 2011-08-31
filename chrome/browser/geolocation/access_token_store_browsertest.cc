@@ -17,6 +17,7 @@ namespace {
 const BrowserThread::ID kExpectedClientThreadId = BrowserThread::IO;
 const char* kRefServerUrl1 = "https://test.domain.example/foo?id=bar.bar";
 const char* kRefServerUrl2 = "http://another.domain.example/foo?id=bar.bar#2";
+const char* kOldDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
 
 class GeolocationAccessTokenStoreTest
     : public InProcessBrowserTest {
@@ -105,7 +106,6 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId))
       << "Callback from token factory should be from the same thread as the "
          "LoadAccessTokenStores request was made on";
-  EXPECT_TRUE(token_to_set_ || token_to_expect_) << "No work to do?";
   AccessTokenStore::AccessTokenSet::const_iterator item =
       access_token_set.find(ref_url_);
   if (!token_to_expect_) {
@@ -139,6 +139,19 @@ IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {
   DoTestStepAndWaitForResults(kRefServerUrl2, NULL, &ref_token2);
   DoTestStepAndWaitForResults(kRefServerUrl2, &ref_token2, NULL);
   DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, NULL);
+}
+
+IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, OldUrlRemoval) {
+  const string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
+  ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Set a token for the old default network provider url.
+  DoTestStepAndWaitForResults(kOldDefaultNetworkProviderUrl,
+                              NULL, &ref_token1);
+  // Check that the token related to the old default network provider url
+  // was deleted.
+  DoTestStepAndWaitForResults(kOldDefaultNetworkProviderUrl,
+                              NULL, NULL);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, CancelRequest) {

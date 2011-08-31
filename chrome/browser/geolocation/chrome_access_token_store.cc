@@ -14,6 +14,12 @@
 #include "content/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
+namespace {
+// This was the default location service url for Chrome versions 14 and earlier
+// but is no longer supported.
+const char* kOldDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
+}  // namespace
+
 void ChromeAccessTokenStore::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
 }
@@ -26,11 +32,12 @@ void ChromeAccessTokenStore::LoadDictionaryStoreInUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (request->canceled())
     return;
-  const DictionaryValue* token_dictionary =
-          g_browser_process->local_state()->GetDictionary(
-              prefs::kGeolocationAccessToken);
+  DictionaryPrefUpdate update(g_browser_process->local_state(),
+                              prefs::kGeolocationAccessToken);
+  DictionaryValue* token_dictionary = update.Get();
 
   AccessTokenStore::AccessTokenSet access_token_set;
+  bool has_old_network_provider_url = false;
   // The dictionary value could be NULL if the pref has never been set.
   if (token_dictionary != NULL) {
     for (DictionaryValue::key_iterator it = token_dictionary->begin_keys();
@@ -38,9 +45,16 @@ void ChromeAccessTokenStore::LoadDictionaryStoreInUIThread(
       GURL url(*it);
       if (!url.is_valid())
         continue;
+      if (url.spec() == kOldDefaultNetworkProviderUrl) {
+        has_old_network_provider_url = true;
+        continue;
+      }
       token_dictionary->GetStringWithoutPathExpansion(*it,
                                                       &access_token_set[url]);
     }
+    if (has_old_network_provider_url)
+      token_dictionary->RemoveWithoutPathExpansion(
+          kOldDefaultNetworkProviderUrl, NULL);
   }
   request->ForwardResultAsync(MakeTuple(access_token_set));
 }
@@ -61,8 +75,8 @@ void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
       server_url.spec(), Value::CreateStringValue(token));
 }
 
-void ChromeAccessTokenStore::SaveAccessToken(
-      const GURL& server_url, const string16& access_token) {
+void ChromeAccessTokenStore::SaveAccessToken(const GURL& server_url,
+                                             const string16& access_token) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableFunction(
       &SetAccessTokenOnUIThread, server_url, access_token));
 }

@@ -10,7 +10,7 @@
 
 namespace {
 
-const char* kDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
+const char* kDefaultNetworkProviderUrl = "https://maps.googleapis.com/maps/api/browserlocation/json";
 GeolocationArbitratorDependencyFactory* g_dependency_factory_for_test = NULL;
 
 }  // namespace
