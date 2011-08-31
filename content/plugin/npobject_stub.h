@@ -11,7 +11,6 @@
 
 #include <vector>
 
-#include "base/debug/stack_trace.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/plugin/npobject_base.h"
@@ -86,24 +85,6 @@ class NPObjectStub : public IPC::Channel::Listener,
                   IPC::Message* reply_msg);
 
  private:
-  //----------------------------------------------------------------------------
-  // Temporary code for debugging 94179
-  // TODO(eroman): Delete this when done investigating.
-  //----------------------------------------------------------------------------
-  void CheckIsAlive();
-  static void DeleteSoonHelper(
-      const base::debug::StackTrace& task_origin_stack_trace,
-      NPObjectStub* stub);
-
-  bool has_deletion_stack_trace_;
-  base::debug::StackTrace deletion_stack_trace_;
-
-  // Value to indicate whether this instance is alive or dead.
-  static const int kTokenAlive = 0x1Cd9fe38;
-  static const int kTokenDead = 0xDEADBEEF;
-  int liveness_token_;
-  //----------------------------------------------------------------------------
-
   NPObject* npobject_;
   scoped_refptr<PluginChannelBase> channel_;
   int route_id_;

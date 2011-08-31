@@ -16,35 +16,13 @@
 
 using WebKit::WebBindings;
 
-// TODO(eroman): Remove this when done investigating 94179.
-//
-// The following disables optimizations for all the functions in this file.
-//
-// At a minimum we want to disable frame pointer optimization ("y"), so that
-// base::debug::StackTrace() works better. We also prevent inlining of these
-// functions so that StackTrace() is more complete. (The StackTrace() will
-// probably not be able to go deeper than these functions since the callers
-// will probably have FPO).
-//
-// Note that disabling optimizations causes warning 4748 which I have had to
-// disable throughout this file. That warning was:
-//
-//     /GS can not protect parameters and local variables from local buffer
-//     overrun because optimizations are disabled in function
-#if defined(COMPILER_MSVC)
-#pragma optimize("", off)
-MSVC_PUSH_DISABLE_WARNING(4748)
-#endif
-
 NPObjectStub::NPObjectStub(
     NPObject* npobject,
     PluginChannelBase* channel,
     int route_id,
     gfx::NativeViewId containing_window,
     const GURL& page_url)
-    : has_deletion_stack_trace_(false),
-      liveness_token_(kTokenAlive),
-      npobject_(npobject),
+    : npobject_(npobject),
       channel_(channel),
       route_id_(route_id),
       containing_window_(containing_window),
@@ -57,63 +35,11 @@ NPObjectStub::NPObjectStub(
 }
 
 NPObjectStub::~NPObjectStub() {
-  // Crash if this is a double free!
-  CheckIsAlive();
-
   channel_->RemoveRoute(route_id_);
   CHECK(!npobject_);
-
-  // Mark the object as dead.
-  liveness_token_ = kTokenDead;
-
-  if (!has_deletion_stack_trace_) {
-    // We will probably have already set a more specific stack trace from
-    // DeleteSoonHelper. In case we got deleted from somewhere else, save the
-    // current thread's stack trace.
-    has_deletion_stack_trace_ = true;
-    deletion_stack_trace_ = base::debug::StackTrace();
-  }
-
-  // I doubt this is necessary to prevent optimization, but it can't hurt.
-  base::debug::Alias(&liveness_token_);
-  base::debug::Alias(&has_deletion_stack_trace_);
-  base::debug::Alias(&deletion_stack_trace_);
-}
-
-// static
-void NPObjectStub::DeleteSoonHelper(
-    const base::debug::StackTrace& task_origin_stack_trace,
-    NPObjectStub* stub) {
-  // Make sure the deletion stacktrace is going to be on the stack.
-  base::debug::StackTrace origin = task_origin_stack_trace;
-  base::debug::Alias(&origin);
-
-  stub->CheckIsAlive();
-
-  // Use the task origin's stacktrace as our deletion stacktrace
-  // (rather than the current thread's callstack).
-  stub->has_deletion_stack_trace_ = true;
-  stub->deletion_stack_trace_ = task_origin_stack_trace;
-
-  delete stub;
-}
-
-void NPObjectStub::CheckIsAlive() {
-  // Copy the deletion stacktrace onto stack in case we crash.
-  base::debug::StackTrace deletion_stack_trace = deletion_stack_trace_;
-  base::debug::Alias(&deletion_stack_trace);
-
-  // Copy the token onto stack in case it mismatches so we can explore its
-  // value.
-  int liveness_token = liveness_token_;
-  base::debug::Alias(&liveness_token);
-
-  CHECK_EQ(liveness_token, kTokenAlive);
 }
 
 void NPObjectStub::DeleteSoon(bool release_npobject) {
-  CheckIsAlive();
-
   if (npobject_) {
     channel_->RemoveMappingForNPObjectStub(route_id_, npobject_);
 
@@ -126,17 +52,11 @@ void NPObjectStub::DeleteSoon(bool release_npobject) {
     if (release_npobject)
       WebBindings::releaseObject(npobject);
 
-    MessageLoop::current()->PostTask(
-      FROM_HERE,
-      NewRunnableFunction(
-          &NPObjectStub::DeleteSoonHelper,
-          base::debug::StackTrace(),
-          this));
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 }
 
 bool NPObjectStub::Send(IPC::Message* msg) {
-  CheckIsAlive();
   return channel_->Send(msg);
 }
 
@@ -472,9 +392,3 @@ void NPObjectStub::OnEvaluate(const std::string& script,
   NPObjectMsg_Evaluate::WriteReplyParams(reply_msg, result_param, return_value);
   channel_->Send(reply_msg);
 }
-
-// Restore compiler optimizations and warnings.
-#if defined(COMPILER_MSVC)
-MSVC_POP_WARNING()
-#pragma optimize("", on)
-#endif
