@@ -13,8 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/content_settings/content_settings_notification_provider.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
-#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/content_settings.h"
 #include "content/common/notification_observer.h"
@@ -23,11 +24,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 
-class ContentSettingsPattern;
 class Extension;
 class Notification;
 class NotificationDelegate;
 class NotificationUIManager;
+class NotificationsPrefsCache;
 class PrefService;
 class Profile;
 class TabContents;
@@ -82,6 +83,8 @@ class DesktopNotificationService : public NotificationObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  NotificationsPrefsCache* prefs_cache() { return prefs_cache_; }
+
   // Creates a data:xxxx URL which contains the full HTML for a notification
   // using supplied icon, title, and text, run through a template which contains
   // the standard formatting for notifications.
@@ -105,16 +108,22 @@ class DesktopNotificationService : public NotificationObserver,
   // NOTE: This should only be called on the UI thread.
   void ResetToDefaultContentSetting();
 
-  // Returns all notifications settings. |settings| is cleared before
-  // notifications setting are passed to it.
-  void GetNotificationsSettings(
-      HostContentSettingsMap::SettingsForOneType* settings);
+  // Returns all origins that explicitly have been allowed.
+  std::vector<GURL> GetAllowedOrigins();
 
-  // Clears the notifications setting for the given pattern.
-  void ClearSetting(const ContentSettingsPattern& pattern);
+  // Returns all origins that explicitly have been denied.
+  std::vector<GURL> GetBlockedOrigins();
+
+  // Removes an origin from the "explicitly allowed" set.
+  void ResetAllowedOrigin(const GURL& origin);
+
+  // Removes an origin from the "explicitly denied" set.
+  void ResetBlockedOrigin(const GURL& origin);
 
   // Clears the sets of explicitly allowed and denied origins.
   void ResetAllOrigins();
+
+  static void RegisterUserPrefs(PrefService* user_prefs);
 
   ContentSetting GetContentSetting(const GURL& origin);
 
@@ -124,8 +133,11 @@ class DesktopNotificationService : public NotificationObserver,
       HasPermission(const GURL& origin);
 
  private:
+  void InitPrefs();
   void StartObserving();
   void StopObserving();
+
+  void OnPrefsChanged(const std::string& pref_name);
 
   // Takes a notification object and shows it in the UI.
   void ShowNotification(const Notification& notification);
@@ -141,10 +153,17 @@ class DesktopNotificationService : public NotificationObserver,
   // The profile which owns this object.
   Profile* profile_;
 
+  // A cache of preferences which is accessible only on the IO thread
+  // to service synchronous IPCs.
+  scoped_refptr<NotificationsPrefsCache> prefs_cache_;
+
   // Non-owned pointer to the notification manager which manages the
   // UI for desktop toasts.
   NotificationUIManager* ui_manager_;
 
+  scoped_ptr<content_settings::NotificationProvider> provider_;
+
+  PrefChangeRegistrar prefs_registrar_;
   NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);

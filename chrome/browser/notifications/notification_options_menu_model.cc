@@ -4,8 +4,6 @@
 
 #include "chrome/browser/notifications/notification_options_menu_model.h"
 
-#include <string>
-
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -16,6 +14,7 @@
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"

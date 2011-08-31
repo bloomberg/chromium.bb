@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
@@ -88,6 +89,10 @@ class DesktopNotificationsTest : public testing::Test {
 
   void DenyOrigin(const GURL& origin) {
     service_->DenyPermission(origin);
+  }
+
+  int HasPermission(const GURL& origin) {
+    return service_->prefs_cache()->HasPermission(origin);
   }
 
   // Constructs a notification parameter structure for use in tests.

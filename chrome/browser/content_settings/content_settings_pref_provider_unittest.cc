@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/default_pref_store.h"
@@ -678,7 +677,7 @@ TEST_F(PrefProviderTest, SyncObsoleteGeolocationPref) {
         key, settings_dictionary->DeepCopy());
 
     key = std::string(
-        primary_pattern_2.ToString() + "," +
+        primary_pattern_2.ToString()+ "," +
         secondary_pattern.ToString());
     all_settings_dictionary->SetWithoutPathExpansion(
         key, settings_dictionary->DeepCopy());
@@ -732,142 +731,6 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
                 secondary_url,
                 CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
                 std::string()));
-  provider.ShutdownOnUIThread();
-}
-
-TEST_F(PrefProviderTest, MigrateObsoleteNotificationsPref) {
-  TestingProfile profile;
-  PrefService* prefs = profile.GetPrefs();
-  GURL allowed_url("http://www.foo.com");
-  GURL allowed_url2("http://www.example.com");
-  GURL denied_url("http://www.bar.com");
-
-  // Set obsolete preference.
-  scoped_ptr<ListValue> allowed_origin_list(new ListValue());
-  allowed_origin_list->AppendIfNotPresent(
-      Value::CreateStringValue(allowed_url.spec()));
-  prefs->Set(prefs::kDesktopNotificationAllowedOrigins,
-             *allowed_origin_list);
-
-  scoped_ptr<ListValue> denied_origin_list(new ListValue());
-  denied_origin_list->AppendIfNotPresent(
-      Value::CreateStringValue(denied_url.spec()));
-  prefs->Set(prefs::kDesktopNotificationDeniedOrigins,
-             *denied_origin_list);
-
-  content_settings::PrefProvider provider(prefs, false);
-
-  // Test if the migrated settings are loaded and available.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, provider.GetContentSetting(
-      allowed_url,
-      allowed_url,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, provider.GetContentSetting(
-      denied_url,
-      denied_url,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT, provider.GetContentSetting(
-      allowed_url2,
-      allowed_url2,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  // Check if the settings where migrated correctly.
-  const DictionaryValue* const_all_settings_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
-  EXPECT_EQ(2U, const_all_settings_dictionary->size());
-  EXPECT_TRUE(const_all_settings_dictionary->HasKey(
-      ContentSettingsPattern::FromURLNoWildcard(allowed_url).ToString() + "," +
-      ContentSettingsPattern::Wildcard().ToString()));
-  EXPECT_TRUE(const_all_settings_dictionary->HasKey(
-      ContentSettingsPattern::FromURLNoWildcard(denied_url).ToString() + "," +
-      ContentSettingsPattern::Wildcard().ToString()));
-
-  // Check that notifications settings were not synced to the obsolete content
-  // settings pattern preference.
-  const DictionaryValue* const_obsolete_patterns_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
-  EXPECT_TRUE(const_obsolete_patterns_dictionary->empty());
-
-  // Change obsolete preference. This could be triggered by sync if sync is used
-  // with an old version of chrome.
-  allowed_origin_list.reset(new ListValue());
-  allowed_origin_list->AppendIfNotPresent(
-      Value::CreateStringValue(allowed_url2.spec()));
-  prefs->Set(prefs::kDesktopNotificationAllowedOrigins,
-             *allowed_origin_list);
-
-  // Test if the changed obsolete preference was migrated correctly.
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, provider.GetContentSetting(
-      allowed_url2,
-      allowed_url2,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT, provider.GetContentSetting(
-      allowed_url,
-      allowed_url,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK, provider.GetContentSetting(
-      denied_url,
-      denied_url,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      ""));
-  // Check that geolocation settings were not synced to the obsolete content
-  // settings pattern preference.
-  const_obsolete_patterns_dictionary =
-      prefs->GetDictionary(prefs::kContentSettingsPatterns);
-  EXPECT_TRUE(const_obsolete_patterns_dictionary->empty());
-
-  provider.ShutdownOnUIThread();
-}
-
-TEST_F(PrefProviderTest, SyncObsoleteNotificationsPref) {
-  TestingProfile profile;
-  PrefService* prefs = profile.GetPrefs();
-
-  content_settings::PrefProvider provider(prefs, false);
-
-  // Changing the preferences prefs::kContentSettingsPatternPairs.
-  ContentSettingsPattern primary_pattern=
-      ContentSettingsPattern::FromString("http://www.bar.com");
-  ContentSettingsPattern primary_pattern_2 =
-      ContentSettingsPattern::FromString("http://www.example.com");
-  ContentSettingsPattern secondary_pattern =
-      ContentSettingsPattern::Wildcard();
-  GURL primary_url("http://www.bar.com");
-  GURL primary_url_2("http://www.example.com");
-
-  {
-    DictionaryPrefUpdate update(prefs,
-                                prefs::kContentSettingsPatternPairs);
-    DictionaryValue* all_settings_dictionary = update.Get();
-
-    scoped_ptr<DictionaryValue> settings_dictionary(new DictionaryValue());
-    settings_dictionary->SetInteger("notifications", CONTENT_SETTING_BLOCK);
-    std::string key(
-        primary_pattern.ToString() + "," +
-        secondary_pattern.ToString());
-    all_settings_dictionary->SetWithoutPathExpansion(
-        key, settings_dictionary->DeepCopy());
-
-    settings_dictionary.reset(new DictionaryValue());
-    settings_dictionary->SetInteger("notifications", CONTENT_SETTING_ALLOW);
-    key = primary_pattern_2.ToString() + "," + secondary_pattern.ToString();
-    all_settings_dictionary->SetWithoutPathExpansion(
-        key, settings_dictionary->DeepCopy());
-  }
-
-  // Test if the obsolete notifications preference is kept in sync if the new
-  // preference is changed by a sync.
-  const ListValue* denied_origin_list =
-      prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
-  EXPECT_EQ(1U, denied_origin_list->GetSize());
-  const ListValue* allowed_origin_list =
-      prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
-  EXPECT_EQ(1U, allowed_origin_list->GetSize());
-
   provider.ShutdownOnUIThread();
 }
 

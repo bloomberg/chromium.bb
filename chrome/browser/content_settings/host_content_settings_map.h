@@ -42,8 +42,6 @@ class HostContentSettingsMap
       public NotificationObserver,
       public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
-  // TODO(markusheintz): I sold my soul to the devil on order to add this tuple.
-  // I really want my soul back, so I really will change this ASAP.
   typedef Tuple4<ContentSettingsPattern,
                  ContentSettingsPattern,
                  ContentSetting,

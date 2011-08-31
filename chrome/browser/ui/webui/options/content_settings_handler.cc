@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_settings_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -167,12 +168,13 @@ DictionaryValue* GetGeolocationExceptionForPage(
 // in the desktop notifications exceptions table. Ownership of the pointer is
 // passed to the caller.
 DictionaryValue* GetNotificationExceptionForPage(
-    const ContentSettingsPattern& pattern,
+    const GURL& url,
     ContentSetting setting) {
   DictionaryValue* exception = new DictionaryValue();
-  exception->SetString(kDisplayPattern, pattern.ToString());
+  exception->SetString(kDisplayPattern,
+                       content_settings_helper::OriginToString(url));
   exception->SetString(kSetting, ContentSettingToString(setting));
-  exception->SetString(kOrigin, pattern.ToString());
+  exception->SetString(kOrigin, url.spec());
   return exception;
 }
 
@@ -508,17 +510,17 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
 
-  HostContentSettingsMap::SettingsForOneType settings;
-  service->GetNotificationsSettings(&settings);
+  std::vector<GURL> allowed(service->GetAllowedOrigins());
+  std::vector<GURL> blocked(service->GetBlockedOrigins());
 
   ListValue exceptions;
-  for (HostContentSettingsMap::SettingsForOneType::const_iterator i =
-           settings.begin();
-       i != settings.end();
-       ++i) {
-    const HostContentSettingsMap::PatternSettingSourceTuple& tuple(*i);
+  for (size_t i = 0; i < allowed.size(); ++i) {
     exceptions.Append(
-        GetNotificationExceptionForPage(tuple.a, tuple.c));
+        GetNotificationExceptionForPage(allowed[i], CONTENT_SETTING_ALLOW));
+  }
+  for (size_t i = 0; i < blocked.size(); ++i) {
+    exceptions.Append(
+        GetNotificationExceptionForPage(blocked[i], CONTENT_SETTING_BLOCK));
   }
 
   StringValue type_string(
@@ -649,11 +651,14 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     rv = args->GetString(arg_i++, &setting);
     DCHECK(rv);
     ContentSetting content_setting = ContentSettingFromString(setting);
-
-    DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
-           content_setting == CONTENT_SETTING_BLOCK);
-    DesktopNotificationServiceFactory::GetForProfile(profile)->
-        ClearSetting(ContentSettingsPattern::FromString(origin));
+    if (content_setting == CONTENT_SETTING_ALLOW) {
+      DesktopNotificationServiceFactory::GetForProfile(profile)->
+          ResetAllowedOrigin(GURL(origin));
+    } else {
+      DCHECK_EQ(content_setting, CONTENT_SETTING_BLOCK);
+      DesktopNotificationServiceFactory::GetForProfile(profile)->
+          ResetBlockedOrigin(GURL(origin));
+    }
   } else {
     std::string mode;
     bool rv = args->GetString(arg_i++, &mode);

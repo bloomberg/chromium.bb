@@ -261,9 +261,9 @@ extern const char kShowUpdatePromotionInfoBar[];
 #endif
 extern const char kUseCustomChromeFrame[];
 extern const char kShowOmniboxSearchHint[];
-extern const char kDesktopNotificationDefaultContentSetting[];  // OBSOLETE
-extern const char kDesktopNotificationAllowedOrigins[];  // OBSOLETE
-extern const char kDesktopNotificationDeniedOrigins[];  // OBSOLETE
+extern const char kDesktopNotificationDefaultContentSetting[];
+extern const char kDesktopNotificationAllowedOrigins[];
+extern const char kDesktopNotificationDeniedOrigins[];
 extern const char kDesktopNotificationPosition[];
 extern const char kDefaultContentSettings[];
 extern const char kPerHostContentSettings[];  // OBSOLETE

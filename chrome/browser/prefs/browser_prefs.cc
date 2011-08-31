@@ -164,6 +164,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   PinnedTabCodec::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
+  DesktopNotificationService::RegisterUserPrefs(user_prefs);
   PrefProxyConfigService::RegisterPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
