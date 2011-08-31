@@ -92,6 +92,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -2505,11 +2506,16 @@ void Browser::WebIntentDispatchHelper(TabContents* tab,
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
     return;
 
+  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab);
+
   DLOG(INFO) << "Browser tab contents received intent:"
              << "\naction=" << UTF16ToASCII(action)
              << "\ntype=" << UTF16ToASCII(type)
              << "\nrenderer_id=" << routing_id
              << "\nid=" << intent_id;
+
+  tcw->web_intent_picker_controller()->ShowDialog(action, type);
 }
 
 void Browser::ExecuteCommandWithDisposition(

@@ -13472,6 +13472,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_REGISTER_INTENT_HANDLER_DENY" desc="Text to show for the deny button for the register intent handler request infobar.">
       No
     </message>
+    <message name="IDS_CHOOSE_INTENT_HANDLER_MESSAGE" desc="Text to display when user is choosing a intent handler to respond to a web intent.">
+      Complete action using:
+    </message>
 
     <!-- PDF with unsupported feature Info Bar -->
     <message name="IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they have Adobe Reader installed.">
