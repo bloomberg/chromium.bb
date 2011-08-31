@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
@@ -46,7 +47,8 @@ enum GPUProcessLifetimeEvent {
 };
 
 // A global map from GPU process host ID to GpuProcessHost.
-static IDMap<GpuProcessHost> g_hosts_by_id;
+static base::LazyInstance<IDMap<GpuProcessHost> > g_hosts_by_id(
+    base::LINKER_INITIALIZED);
 
 // Number of times the gpu process has crashed in the current browser session.
 static int g_gpu_crash_count = 0;
@@ -178,8 +180,8 @@ GpuProcessHost* GpuProcessHost::GetForRenderer(
   // The current policy is to ignore the renderer ID and use a single GPU
   // process for all renderers. Later this will be extended to allow the
   // use of multiple GPU processes.
-  if (!g_hosts_by_id.IsEmpty()) {
-    IDMap<GpuProcessHost>::iterator it(&g_hosts_by_id);
+  if (!g_hosts_by_id.Pointer()->IsEmpty()) {
+    IDMap<GpuProcessHost>::iterator it(g_hosts_by_id.Pointer());
     return it.GetCurrentValue();
   }
 
@@ -218,7 +220,7 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   if (host_id == 0)
     return NULL;
 
-  return g_hosts_by_id.Lookup(host_id);
+  return g_hosts_by_id.Pointer()->Lookup(host_id);
 }
 
 GpuProcessHost::GpuProcessHost(int host_id)
@@ -232,9 +234,9 @@ GpuProcessHost::GpuProcessHost(int host_id)
 
   // If the 'single GPU process' policy ever changes, we still want to maintain
   // it for 'gpu thread' mode and only create one instance of host and thread.
-  DCHECK(!in_process_ || g_hosts_by_id.IsEmpty());
+  DCHECK(!in_process_ || g_hosts_by_id.Pointer()->IsEmpty());
 
-  g_hosts_by_id.AddWithID(this, host_id_);
+  g_hosts_by_id.Pointer()->AddWithID(this, host_id_);
 
   // Post a task to create the corresponding GpuProcessHostUIShim.  The
   // GpuProcessHostUIShim will be destroyed if either the browser exits,
@@ -260,7 +262,7 @@ GpuProcessHost::~GpuProcessHost() {
     queued_messages_.pop();
   }
 
-  g_hosts_by_id.Remove(host_id_);
+  g_hosts_by_id.Pointer()->Remove(host_id_);
 
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,

@@ -9,6 +9,7 @@
 #include "base/id_map.h"
 #include "base/process_util.h"
 #include "base/debug/trace_event.h"
+#include "base/lazy_instance.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -31,7 +32,8 @@ namespace {
 #undef DestroyAll
 #endif
 
-IDMap<GpuProcessHostUIShim> g_hosts_by_id;
+base::LazyInstance<IDMap<GpuProcessHostUIShim> > g_hosts_by_id(
+    base::LINKER_INITIALIZED);
 
 class SendOnIOThreadTask : public Task {
  public:
@@ -71,7 +73,7 @@ void RouteToGpuProcessHostUIShimTask::Run() {
 
 GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
     : host_id_(host_id) {
-  g_hosts_by_id.AddWithID(this, host_id_);
+  g_hosts_by_id.Pointer()->AddWithID(this, host_id_);
 }
 
 // static
@@ -89,8 +91,8 @@ void GpuProcessHostUIShim::Destroy(int host_id) {
 // static
 void GpuProcessHostUIShim::DestroyAll() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  while (!g_hosts_by_id.IsEmpty()) {
-    IDMap<GpuProcessHostUIShim>::iterator it(&g_hosts_by_id);
+  while (!g_hosts_by_id.Pointer()->IsEmpty()) {
+    IDMap<GpuProcessHostUIShim>::iterator it(g_hosts_by_id.Pointer());
     delete it.GetCurrentValue();
   }
 }
@@ -98,7 +100,7 @@ void GpuProcessHostUIShim::DestroyAll() {
 // static
 GpuProcessHostUIShim* GpuProcessHostUIShim::FromID(int host_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return g_hosts_by_id.Lookup(host_id);
+  return g_hosts_by_id.Pointer()->Lookup(host_id);
 }
 
 bool GpuProcessHostUIShim::Send(IPC::Message* msg) {
@@ -137,7 +139,7 @@ void GpuProcessHostUIShim::SendToGpuHost(int host_id, IPC::Message* msg) {
 
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
-  g_hosts_by_id.Remove(host_id_);
+  g_hosts_by_id.Pointer()->Remove(host_id_);
 }
 
 bool GpuProcessHostUIShim::OnControlMessageReceived(
