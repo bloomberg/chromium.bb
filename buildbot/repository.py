@@ -136,9 +136,8 @@ class RepoRepository(object):
         self.Initialize()
 
       self._ReinitializeIfNecessary(local_manifest)
-      cros_lib.OldRunCommand(['repo', 'sync', '--quiet', '--jobs', '4'],
-                             cwd=self.directory, redirect_stdout=True,
-                             redirect_stderr=True, num_retries=2)
+      cros_lib.OldRunCommand(['repo', 'sync', '--jobs', '4'],
+                             cwd=self.directory, num_retries=2)
       FixExternalRepoPushUrls(self.directory)
     except cros_lib.RunCommandError, e:
       err_msg = 'Failed to sync sources %s' % e.message
