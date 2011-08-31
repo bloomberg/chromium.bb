@@ -39,12 +39,14 @@ found in the LICENSE file.
     </section> <!-- loading-mode -->
 
     <div class="top-primary"
-         data-ui-mode="client.unconnected host.unshared"
+         data-ui-mode="client host"
          hidden>
       <span id="email-status">
         <span id="current-email"></span>
+        <span data-ui-mode="client.unconnected host.unshared">
         (<a href="#" onclick="remoting.clearOAuth2();"
                 i18n-content="SIGN_OUT_BUTTON"></a>)
+        </span>
       </span>
     </div>
 
