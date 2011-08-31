@@ -3677,7 +3677,7 @@ are declared in build/common.gypi.
 
       <!-- Theme preview info bar -->
       <message name="IDS_THEME_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when a theme has been installed.">
-        Installed theme "<ph name="THEME_NAME">$1<ex>Snowflake Theme</ex></ph>"
+        Installed theme "<ph name="THEME_NAME">$1<ex>Snowflake Theme</ex></ph>".
       </message>
       <message name="IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON" desc="Text displayed on the button to undo a theme installation and go back to the previous theme.">
         Undo
@@ -10515,7 +10515,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access the user's physical location">
       <ph name="URL">
         $1<ex>maps.google.com</ex>
-      </ph> wants to track your physical location
+      </ph> wants to track your physical location.
     </message>
     <message name="IDS_GEOLOCATION_ALLOW_BUTTON" desc="A button in geolocation infobar for allowing access to geolocation for a given domain.">
       Allow
