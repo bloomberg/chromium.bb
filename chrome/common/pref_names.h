@@ -72,6 +72,7 @@ extern const char kWebKitStandardFontFamilyKorean[];
 extern const char kWebKitFixedFontFamilyKorean[];
 extern const char kWebKitSerifFontFamilyKorean[];
 extern const char kWebKitSansSerifFontFamilyKorean[];
+extern const char kWebKitCursiveFontFamilyKorean[];
 extern const char kWebKitStandardFontFamilySimplifiedHan[];
 extern const char kWebKitFixedFontFamilySimplifiedHan[];
 extern const char kWebKitSerifFontFamilySimplifiedHan[];
