@@ -417,6 +417,17 @@ void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths) {
     paths->push_back(path + "?" + query);
 }
 
+void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls) {
+  std::vector<std::string> hosts, paths;
+  GenerateHostsToCheck(url, &hosts);
+  GeneratePathsToCheck(url, &paths);
+  for (size_t h = 0; h < hosts.size(); ++h) {
+    for (size_t p = 0; p < paths.size(); ++p) {
+      urls->push_back(hosts[h] + paths[p]);
+    }
+  }
+}
+
 int GetHashIndex(const SBFullHash& hash,
                  const std::vector<SBFullHashResult>& full_hashes) {
   for (size_t i = 0; i < full_hashes.size(); ++i) {
@@ -431,21 +442,16 @@ int GetUrlHashIndex(const GURL& url,
   if (full_hashes.empty())
     return -1;
 
-  std::vector<std::string> hosts, paths;
-  GenerateHostsToCheck(url, &hosts);
-  GeneratePathsToCheck(url, &paths);
+  std::vector<std::string> patterns;
+  GeneratePatternsToCheck(url, &patterns);
 
-  for (size_t h = 0; h < hosts.size(); ++h) {
-    for (size_t p = 0; p < paths.size(); ++p) {
-      SBFullHash key;
-      crypto::SHA256HashString(hosts[h] + paths[p],
-                               key.full_hash,
-                               sizeof(SBFullHash));
-      int index = GetHashIndex(key, full_hashes);
-      if (index != -1) return index;
-    }
+  for (size_t i = 0; i < patterns.size(); ++i) {
+    SBFullHash key;
+    crypto::SHA256HashString(patterns[i], key.full_hash, sizeof(SBFullHash));
+    int index = GetHashIndex(key, full_hashes);
+    if (index != -1)
+      return index;
   }
-
   return -1;
 }
 

@@ -296,6 +296,9 @@ void GenerateHostsToCheck(const GURL& url, std::vector<std::string>* hosts);
 // Given a URL, returns all the paths we need to check.
 void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths);
 
+// Given a URL, returns all the patterns we need to check.
+void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls);
+
 int GetHashIndex(const SBFullHash& hash,
                  const std::vector<SBFullHashResult>& full_hashes);
 

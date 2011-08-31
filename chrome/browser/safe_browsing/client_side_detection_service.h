@@ -50,6 +50,7 @@ class URLRequestStatus;
 
 namespace safe_browsing {
 class ClientPhishingRequest;
+class ClientPhishingResponse;
 class ClientSideModel;
 
 class ClientSideDetectionService : public URLFetcher::Delegate,
@@ -167,6 +168,8 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, SetEnabled);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, IsBadIpAddress);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
+                           IsFalsePositiveResponse);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            ModelHasValidHashIds);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            SanitizeRequestForPingback);
@@ -262,6 +265,12 @@ class ClientSideDetectionService : public URLFetcher::Delegate,
   // Returns true iff all the hash id's in the client-side model point to
   // valid hashes in the model.
   static bool ModelHasValidHashIds(const ClientSideModel& model);
+
+  // Returns true iff the response is phishing (phishy() is true) and if the
+  // given URL matches one of the whitelisted expressions in the given
+  // ClientPhishingResponse.
+  static bool IsFalsePositiveResponse(const GURL& url,
+                                      const ClientPhishingResponse& response);
 
   // Whether the service is running or not.  When the service is not running,
   // it won't download the model nor report detected phishing URLs.
