@@ -32,6 +32,13 @@ class MenuRunnerImpl;
 // the MenuRunner while the menu is running, your object is effectively still
 // on the stack. A return value of MENU_DELETED indicated this. In most cases
 // if RunMenuAt() returns MENU_DELETED, you should return immediately.
+//
+// Similarly you should avoid creating MenuRunner on the stack. Doing so means
+// MenuRunner may not be immediately destroyed if your object is destroyed,
+// resulting in possible callbacks to your now deleted object. Instead you
+// should define MenuRunner as a scoped_ptr in your class so that when your
+// object is destroyed MenuRunner initiates the proper cleanup and ensures your
+// object isn't accessed again.
 class VIEWS_EXPORT MenuRunner {
  public:
   enum RunTypes {

@@ -14,6 +14,7 @@
 class TranslateInfoBarDelegate;
 namespace views {
 class MenuButton;
+class MenuRunner;
 }
 
 class AfterTranslateInfoBar : public TranslateInfoBarBase,
@@ -52,6 +53,8 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
   LanguagesMenuModel original_language_menu_model_;
   LanguagesMenuModel target_language_menu_model_;
   OptionsMenuModel options_menu_model_;
+
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   // True if the target language comes before the original one.
   bool swapped_language_buttons_;

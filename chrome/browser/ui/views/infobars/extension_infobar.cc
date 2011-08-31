@@ -149,11 +149,10 @@ void ExtensionInfoBar::RunMenu(View* source, const gfx::Point& pt) {
   scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
       new ExtensionContextMenuModel(extension, browser, NULL);
   views::MenuModelAdapter options_menu_delegate(options_menu_contents.get());
-  views::MenuRunner options_menu_runner(options_menu_delegate.CreateMenu());
-
+  menu_runner_.reset(new views::MenuRunner(options_menu_delegate.CreateMenu()));
   gfx::Point screen_point;
   views::View::ConvertPointToScreen(menu_, &screen_point);
-  if (options_menu_runner.RunMenuAt(GetWidget(), menu_,
+  if (menu_runner_->RunMenuAt(GetWidget(), menu_,
           gfx::Rect(screen_point, menu_->size()), views::MenuItemView::TOPLEFT,
           views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
     return;

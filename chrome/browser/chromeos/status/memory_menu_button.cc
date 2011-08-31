@@ -212,11 +212,11 @@ void MemoryMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // View passed in must be a views::MenuButton, i.e. the MemoryMenuButton.
   DCHECK_EQ(source, this);
 
-  views::MenuRunner menu_runner(CreateMenu());
+  menu_runner_.reset(new views::MenuRunner(CreateMenu()));
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  if (menu_runner.RunMenuAt(
+  if (menu_runner_->RunMenuAt(
           source->GetWidget()->GetTopLevelWidget(), this, bounds,
           views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)

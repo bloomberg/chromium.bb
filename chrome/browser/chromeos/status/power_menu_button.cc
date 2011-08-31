@@ -222,7 +222,7 @@ class PowerMenuButton::StatusView : public View {
 
   void OnMouseReleased(const views::MouseEvent& event) {
     if (event.IsLeftMouseButton()) {
-      DCHECK(menu_button_->menu_runner_);
+      DCHECK(menu_button_->menu_runner_.get());
       menu_button_->menu_runner_->Cancel();
     }
   }
@@ -244,8 +244,7 @@ PowerMenuButton::PowerMenuButton(StatusAreaHost* host)
       battery_index_(-1),
       battery_time_to_full_(TimeDelta::FromMicroseconds(kInitialMS)),
       battery_time_to_empty_(TimeDelta::FromMicroseconds(kInitialMS)),
-      status_(NULL),
-      menu_runner_(NULL) {
+      status_(NULL) {
   UpdateIconAndLabelInfo();
   CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
 }
@@ -319,7 +318,7 @@ void PowerMenuButton::OnLocaleChanged() {
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   views::MenuItemView* menu = new views::MenuItemView(this);
   // MenuRunner takes ownership of |menu|.
-  views::MenuRunner menu_runner(menu);
+  menu_runner_.reset(new views::MenuRunner(menu));
   views::MenuItemView* submenu = menu->AppendMenuItem(
           POWER_BATTERY_PERCENTAGE_ITEM,
           std::wstring(),
@@ -334,14 +333,13 @@ void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   gfx::Point screen_location;
   views::View::ConvertPointToScreen(source, &screen_location);
   gfx::Rect bounds(screen_location, source->size());
-  AutoReset<views::MenuRunner*> menu_runner_reseter(&menu_runner_,
-                                                    &menu_runner);
-  if (menu_runner.RunMenuAt(
+  if (menu_runner_->RunMenuAt(
           source->GetWidget()->GetTopLevelWidget(), this, bounds,
           views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
   status_ = NULL;
+  menu_runner_.reset(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

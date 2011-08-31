@@ -75,6 +75,8 @@ class MemoryMenuButton : public StatusAreaButton,
   // Number of renderer kills we have observed.
   int renderer_kills_;
 
+  scoped_ptr<views::MenuRunner> menu_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(MemoryMenuButton);
 };
 

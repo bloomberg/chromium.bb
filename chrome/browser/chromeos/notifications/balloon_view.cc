@@ -121,12 +121,11 @@ class NotificationControlView : public views::View,
     CreateOptionsMenu();
 
     views::MenuModelAdapter menu_model_adapter(options_menu_contents_.get());
-    views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
+    menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
 
     gfx::Point screen_location;
-    views::View::ConvertPointToScreen(options_menu_button_,
-                                      &screen_location);
-    if (menu_runner.RunMenuAt(
+    views::View::ConvertPointToScreen(options_menu_button_, &screen_location);
+    if (menu_runner_->RunMenuAt(
             source->GetWidget()->GetTopLevelWidget(), options_menu_button_,
             gfx::Rect(screen_location, options_menu_button_->size()),
             views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
@@ -189,6 +188,7 @@ class NotificationControlView : public views::View,
 
   // The options menu.
   scoped_ptr<ui::SimpleMenuModel> options_menu_contents_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
   views::MenuButton* options_menu_button_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationControlView);

@@ -144,11 +144,10 @@ void PageActionImageView::ShowContextMenu(const gfx::Point& p,
   scoped_refptr<ExtensionContextMenuModel> context_menu_model(
       new ExtensionContextMenuModel(extension, owner_->browser(), this));
   views::MenuModelAdapter menu_model_adapter(context_menu_model.get());
-  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
-
+  menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
-  if (menu_runner.RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
+  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
           views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;

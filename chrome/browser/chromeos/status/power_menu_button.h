@@ -80,7 +80,7 @@ class PowerMenuButton : public StatusAreaButton,
   StatusView* status_;
 
   // If non-null the menu is showing.
-  views::MenuRunner* menu_runner_;
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMenuButton);
 };
