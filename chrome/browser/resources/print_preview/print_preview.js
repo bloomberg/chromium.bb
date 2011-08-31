@@ -461,8 +461,7 @@ function cancelPendingPrintRequest() {
 function sendPrintDocumentRequest() {
   var printerList = $('printer-list');
   var printer = printerList[printerList.selectedIndex];
-  chrome.send('saveLastPrinter', [printer.textContent,
-                                  cloudprint.getData(printer)]);
+  chrome.send('saveLastPrinter', [printer.value, cloudprint.getData(printer)]);
   chrome.send('print', [JSON.stringify(getSettings()),
                         cloudprint.getPrintTicketJSON(printer)]);
 }
