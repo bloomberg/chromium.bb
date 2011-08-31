@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/ui/webui/screenshot_source.h"
 #include "chrome/browser/userfeedback/proto/common.pb.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "chrome/browser/userfeedback/proto/math.pb.h"
@@ -68,8 +69,7 @@ class BugReportUtil {
       , int problem_type
       , const std::string& page_url_text
       , const std::string& description
-      , const char* png_data
-      , int png_data_length
+      , ScreenshotDataPtr png_data
       , int png_width
       , int png_height
 #if defined(OS_CHROMEOS)

@@ -30,7 +30,7 @@ void BugReportData::UpdateData(Profile* profile,
                                const int problem_type,
                                const std::string& page_url,
                                const std::string& description,
-                               const std::vector<unsigned char>& image
+                               ScreenshotDataPtr image
 #if defined(OS_CHROMEOS)
                                , const std::string& user_email
                                , const bool send_sys_info
@@ -61,16 +61,12 @@ void BugReportData::SendReport() {
   sent_report_ = true;
 #endif
 
-  int image_data_size = image_.size();
-  char* image_data = image_data_size ?
-      reinterpret_cast<char*>(&(image_.front())) : NULL;
   gfx::Rect& screen_size = BugReportUtil::GetScreenshotSize();
   BugReportUtil::SendReport(profile_
                             , problem_type_
                             , page_url_
                             , description_
-                            , image_data
-                            , image_data_size
+                            , image_
                             , screen_size.width()
                             , screen_size.height()
 #if defined(OS_CHROMEOS)

@@ -2379,8 +2379,6 @@
 	'browser/ui/cocoa/browser_window_utils.mm',
         'browser/ui/cocoa/bubble_view.h',
         'browser/ui/cocoa/bubble_view.mm',
-        'browser/ui/cocoa/bug_report_window_controller.h',
-        'browser/ui/cocoa/bug_report_window_controller.mm',
         'browser/ui/cocoa/certificate_viewer.mm',
         'browser/ui/cocoa/chrome_browser_window.h',
         'browser/ui/cocoa/chrome_browser_window.mm',

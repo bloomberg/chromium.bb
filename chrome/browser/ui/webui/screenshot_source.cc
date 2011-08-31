@@ -4,115 +4,111 @@
 
 #include "chrome/browser/ui/webui/screenshot_source.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 
-static const char kCurrentScreenshot[] = "current";
+static const char kCurrentScreenshotFilename[] = "current";
 #if defined(OS_CHROMEOS)
-static const char kSavedScreenshots[] = "saved/";
+static const char kSavedScreenshotsBasePath[] = "saved/";
 #endif
-
-static const char kScreenshotsRelativePath[] = "/Screenshots/";
-
-#if defined(OS_CHROMEOS)
-// Read the file from the screenshots directory into the read_bytes vector.
-void ReadScreenshot(const std::string& filename,
-                   std::vector<unsigned char>* read_bytes,
-                   base::WaitableEvent* read_complete) {
-  read_bytes->clear();
-
-  FilePath fileshelf_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &fileshelf_path)) {
-    read_complete->Signal();
-    return;
-  }
-
-  FilePath file(fileshelf_path.value() + std::string(kScreenshotsRelativePath) +
-                filename);
-
-  int64 file_size = 0;
-  if (!file_util::GetFileSize(file, &file_size)) {
-    read_complete->Signal();
-    return;
-  }
-
-  // expand vector to file size
-  read_bytes->resize(file_size);
-  // read file into the vector
-  int bytes_read = 0;
-  if (!(bytes_read = file_util::ReadFile(file,
-                                         reinterpret_cast<char*>(
-                                             &read_bytes->front()),
-                                             static_cast<int>(file_size))))
-    read_bytes->clear();
-
-  // We're done, if successful, read_bytes will have the data
-  // otherwise, it'll be empty.
-  read_complete->Signal();
-}
-
-// Get a saved screenshot - read on the FILE thread.
-std::vector<unsigned char> GetSavedScreenshot(std::string filename) {
-  base::WaitableEvent read_complete(true, false);
-  std::vector<unsigned char> bytes;
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          NewRunnableFunction(&ReadScreenshot, filename,
-                                              &bytes, &read_complete));
-  read_complete.Wait();
-  return bytes;
-}
-#endif
-
-std::vector<unsigned char> ScreenshotSource::GetScreenshot(
-    const std::string& full_path) {
-  // Strip the query param value - we only use it as a hack to ensure our
-  // image gets reloaded instead of being pulled from the browser cache
-  std::string path = full_path.substr(0, full_path.find_first_of("?"));
-  if (path == kCurrentScreenshot) {
-    return current_screenshot_;
-#if defined(OS_CHROMEOS)
-  } else if (path.compare(0, strlen(kSavedScreenshots),
-                          kSavedScreenshots) == 0) {
-    // Split the saved screenshot filename from the path
-    std::string filename = path.substr(strlen(kSavedScreenshots));
-
-    return GetSavedScreenshot(filename);
-#endif
-  } else {
-    std::vector<unsigned char> ret;
-    // TODO(rkc): Weird vc bug, return std::vector<unsigned char>() causes
-    // the object assigned to the return value of this function magically
-    // change it's address 0x0; look into this eventually.
-    return ret;
-  }
-}
 
 ScreenshotSource::ScreenshotSource(
     std::vector<unsigned char>* current_screenshot)
     : DataSource(chrome::kChromeUIScreenshotPath, MessageLoop::current()) {
   // Setup the last screenshot taken.
   if (current_screenshot)
-    current_screenshot_ = *current_screenshot;
+    current_screenshot_.reset(new ScreenshotData(*current_screenshot));
   else
-    current_screenshot_.clear();
+    current_screenshot_.reset(new ScreenshotData());
 }
 
 ScreenshotSource::~ScreenshotSource() {}
 
-void ScreenshotSource::StartDataRequest(const std::string& path,
-                                            bool is_incognito,
-                                            int request_id) {
-  SendResponse(request_id, new RefCountedBytes(GetScreenshot(path)));
+void ScreenshotSource::StartDataRequest(const std::string& path, bool,
+                                        int request_id) {
+  SendScreenshot(path, request_id);
 }
 
 std::string ScreenshotSource::GetMimeType(const std::string&) const {
   // We need to explicitly return a mime type, otherwise if the user tries to
   // drag the image they get no extension.
   return "image/png";
+}
+
+ScreenshotDataPtr ScreenshotSource::GetCachedScreenshot(
+    const std::string& screenshot_path) {
+  std::map<std::string, ScreenshotDataPtr>::iterator pos;
+  std::string path = screenshot_path.substr(
+      0, screenshot_path.find_first_of("?"));
+  if ((pos = cached_screenshots_.find(path)) != cached_screenshots_.end()) {
+    return pos->second;
+  } else {
+    return ScreenshotDataPtr(new ScreenshotData);
+  }
+}
+
+void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
+                                      int request_id) {
+  // Strip the query param value - we only use it as a hack to ensure our
+  // image gets reloaded instead of being pulled from the browser cache
+  std::string path = screenshot_path.substr(
+      0, screenshot_path.find_first_of("?"));
+  if (path == kCurrentScreenshotFilename) {
+    CacheAndSendScreenshot(path, request_id, current_screenshot_);
+#if defined(OS_CHROMEOS)
+  } else if (path.compare(0, strlen(kSavedScreenshotsBasePath),
+                          kSavedScreenshotsBasePath) == 0) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&ScreenshotSource::SendSavedScreenshot,
+                                       base::Unretained(this), path,
+                                       request_id));
+#endif
+  } else {
+    CacheAndSendScreenshot(
+        path, request_id, ScreenshotDataPtr(new ScreenshotData()));
+  }
+}
+
+#if defined(OS_CHROMEOS)
+void ScreenshotSource::SendSavedScreenshot(const std::string& screenshot_path,
+                                           int request_id) {
+  ScreenshotDataPtr read_bytes(new ScreenshotData);
+  std::string filename = screenshot_path.substr(
+      strlen(kSavedScreenshotsBasePath));
+
+  FilePath fileshelf_path;
+  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &fileshelf_path)) {
+    CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
+    return;
+  }
+
+  int64 file_size = 0;
+  FilePath file = fileshelf_path.Append(filename);
+  if (!file_util::GetFileSize(file, &file_size)) {
+    CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
+    return;
+  }
+
+  read_bytes->resize(file_size);
+  if (!file_util::ReadFile(file, reinterpret_cast<char*>(&read_bytes->front()),
+                           static_cast<int>(file_size)))
+    read_bytes->clear();
+
+  CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
+}
+#endif
+
+void ScreenshotSource::CacheAndSendScreenshot(
+    const std::string& screenshot_path,
+    int request_id,
+    ScreenshotDataPtr bytes) {
+  cached_screenshots_[screenshot_path] = bytes;
+  SendResponse(request_id, new RefCountedBytes(*bytes));
 }

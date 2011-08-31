@@ -40,7 +40,6 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
@@ -743,6 +742,9 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
           sync_ui_util::UpdateSyncItem(item, enable, lastProfile);
           break;
         }
+        case IDC_FEEDBACK:
+          enable = NO;
+          break;
         default:
           enable = menuState_->IsCommandEnabled(tag) ?
                    [self keyWindowIsNotModal] : NO;
@@ -861,17 +863,6 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       else
         Browser::OpenHelpWindow(lastProfile);
       break;
-    case IDC_FEEDBACK: {
-      Browser* browser = BrowserList::GetLastActive();
-      TabContents* currentTab =
-          browser ? browser->GetSelectedTabContents() : NULL;
-      BugReportWindowController* controller =
-          [[BugReportWindowController alloc]
-              initWithTabContents:currentTab
-                          profile:[self lastProfile]];
-      [controller runModalDialog];
-      break;
-    }
     case IDC_SYNC_BOOKMARKS:
       // The profile may be NULL during shutdown -- see
       // http://code.google.com/p/chromium/issues/detail?id=43048 .

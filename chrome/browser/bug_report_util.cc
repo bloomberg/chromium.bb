@@ -253,8 +253,7 @@ void BugReportUtil::SendReport(
     , int problem_type
     , const std::string& page_url_text
     , const std::string& description
-    , const char* png_data
-    , int png_data_length
+    , ScreenshotDataPtr image_data_ptr
     , int png_width
     , int png_height
 #if defined(OS_CHROMEOS)
@@ -309,7 +308,7 @@ void BugReportUtil::SendReport(
   AddFeedbackData(&feedback_data, std::string(kOsVersionTag), os_version);
 
   // Include the page image if we have one.
-  if (png_data) {
+  if (image_data_ptr.get() && image_data_ptr->size()) {
     userfeedback::PostedScreenshot screenshot;
     screenshot.set_mime_type(kPngMimeType);
     // Set the dimensions of the screenshot
@@ -317,7 +316,10 @@ void BugReportUtil::SendReport(
     dimensions.set_width(static_cast<float>(png_width));
     dimensions.set_height(static_cast<float>(png_height));
     *(screenshot.mutable_dimensions()) = dimensions;
-    screenshot.set_binary_content(std::string(png_data, png_data_length));
+
+    int image_data_size = image_data_ptr->size();
+    char* image_data = reinterpret_cast<char*>(&(image_data_ptr->front()));
+    screenshot.set_binary_content(std::string(image_data, image_data_size));
 
     // Set the screenshot object in feedback
     *(feedback_data.mutable_screenshot()) = screenshot;

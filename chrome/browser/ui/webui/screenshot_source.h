@@ -5,14 +5,19 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SCREENSHOT_SOURCE_H_
 #define CHROME_BROWSER_UI_WEBUI_SCREENSHOT_SOURCE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
+typedef std::vector<unsigned char> ScreenshotData;
+typedef linked_ptr<ScreenshotData> ScreenshotDataPtr;
+
 // ScreenshotSource is the data source that serves screenshots (saved
-// or current) to the bug report html ui
+// or current) to the bug report html ui.
 class ScreenshotSource : public ChromeURLDataManager::DataSource {
  public:
   explicit ScreenshotSource(
@@ -26,12 +31,36 @@ class ScreenshotSource : public ChromeURLDataManager::DataSource {
 
   virtual std::string GetMimeType(const std::string&) const;
 
-  std::vector<unsigned char> GetScreenshot(const std::string& path);
+  // Get the screenshot specified by the given relative path that we've cached
+  // from a previous request to the screenshots source.
+  // Note: This method strips the query string from the given path.
+  ScreenshotDataPtr GetCachedScreenshot(const std::string& screenshot_path);
 
  private:
   virtual ~ScreenshotSource();
 
-  std::vector<unsigned char> current_screenshot_;
+  // Send the screenshot specified by the given relative path to the requestor.
+  // This is the ancestor for SendSavedScreenshot and CacheAndSendScreenshot.
+  // All calls to send a screenshot should only call this method.
+  // Note: This method strips the query string from the given path.
+  void SendScreenshot(const std::string& screenshot_path, int request_id);
+#if defined(OS_CHROMEOS)
+  // Send a saved screenshot image file specified by the given screenshot path
+  // to the requestor.
+  void SendSavedScreenshot(const std::string& screenshot_path, int request_id);
+#endif
+  // Sends the screenshot data to the requestor while caching it locally to the
+  // class instance, indexed by path.
+  void CacheAndSendScreenshot(const std::string& screenshot_path,
+                              int request_id,
+                              ScreenshotDataPtr bytes);
+
+  // Pointer to the screenshot data for the current screenshot.
+  ScreenshotDataPtr current_screenshot_;
+
+  // Key: Relative path to the screenshot (including filename)
+  // Value: Pointer to the screenshot data associated with the path.
+  std::map<std::string, ScreenshotDataPtr> cached_screenshots_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotSource);
 };
