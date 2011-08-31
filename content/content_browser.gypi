@@ -83,8 +83,6 @@
         'browser/debugger/devtools_agent_host.h',
         'browser/debugger/devtools_client_host.cc',
         'browser/debugger/devtools_client_host.h',
-        'browser/debugger/devtools_handler.cc',
-        'browser/debugger/devtools_handler.h',
         'browser/debugger/devtools_http_protocol_handler.cc',
         'browser/debugger/devtools_http_protocol_handler.h',
         'browser/debugger/devtools_manager.cc',

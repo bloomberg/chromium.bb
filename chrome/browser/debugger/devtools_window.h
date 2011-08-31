@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "content/browser/debugger/devtools_client_host.h"
+#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -33,8 +35,9 @@ class Value;
 
 class DevToolsWindow
     : public DevToolsClientHost,
-      public NotificationObserver,
-      public TabContentsDelegate {
+      private NotificationObserver,
+      private TabContentsDelegate,
+      private RenderViewHostObserver {
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
@@ -54,11 +57,6 @@ class DevToolsWindow
   virtual void InspectedTabClosing();
   virtual void TabReplaced(TabContents* new_tab);
   virtual RenderViewHost* GetClientRenderViewHost();
-  virtual void RequestActivate();
-  virtual void RequestSetDocked(bool docked);
-  virtual void RequestClose();
-  virtual void RequestSaveAs(const std::string& suggested_file_name,
-                             const std::string& content);
   RenderViewHost* GetRenderViewHost();
 
   void Show(DevToolsToggleAction action);
@@ -68,8 +66,11 @@ class DevToolsWindow
   bool is_docked() { return docked_; }
 
  private:
-  DevToolsWindow(Profile* profile, RenderViewHost* inspected_rvh, bool docked,
-                 bool shared_worker_frontend);
+  static DevToolsWindow* Create(Profile* profile,
+                                RenderViewHost* inspected_rvh,
+                                bool docked, bool shared_worker_frontend);
+  DevToolsWindow(TabContentsWrapper* tab_contents, Profile* profile,
+                 RenderViewHost* inspected_rvh, bool docked);
 
   void CreateDevToolsBrowser();
   bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
@@ -84,7 +85,8 @@ class DevToolsWindow
 
   void ScheduleAction(DevToolsToggleAction action);
   void DoAction();
-  GURL GetDevToolsUrl();
+  static GURL GetDevToolsUrl(Profile* profile, bool docked,
+                             bool shared_worker_frontend);
   void UpdateTheme();
   void AddDevToolsExtensionsToClient();
   void CallClientFunction(const string16& function_name,
@@ -118,6 +120,19 @@ class DevToolsWindow
                                               DevToolsToggleAction action);
   static DevToolsWindow* AsDevToolsWindow(DevToolsClientHost*);
 
+  // RenderViewHostObserver overrides.
+  virtual void RenderViewHostDestroyed() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  void OnForwardToAgent(const IPC::Message& message);
+  void OnActivateWindow();
+  void OnCloseWindow();
+  void OnRequestDockWindow();
+  void OnRequestUndockWindow();
+  void OnSaveAs(const std::string& file_name,
+                const std::string& content);
+  void RequestSetDocked(bool docked);
+
   Profile* profile_;
   TabContentsWrapper* inspected_tab_;
   TabContentsWrapper* tab_contents_;
@@ -125,7 +140,6 @@ class DevToolsWindow
   bool docked_;
   bool is_loaded_;
   DevToolsToggleAction action_on_load_;
-  const bool shared_worker_frontend_;
   NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };

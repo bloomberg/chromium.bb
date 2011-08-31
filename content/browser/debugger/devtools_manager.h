@@ -52,10 +52,10 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
   bool ForwardToDevToolsAgent(DevToolsClientHost* from,
                               const IPC::Message& message);
-  void ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
+  void ForwardToDevToolsClient(DevToolsAgentHost* agent_host,
                                const IPC::Message& message);
 
-  void RuntimePropertyChanged(RenderViewHost* inspected_rvh,
+  void RuntimePropertyChanged(DevToolsAgentHost* agent_host,
                               const std::string& name,
                               const std::string& value);
 

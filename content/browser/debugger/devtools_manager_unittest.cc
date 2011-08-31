@@ -7,6 +7,7 @@
 #include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
@@ -158,7 +159,8 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
   IPC::Message m;
-  manager.ForwardToDevToolsClient(rvh(), m);
+  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(rvh());
+  manager.ForwardToDevToolsClient(agent_host, m);
   EXPECT_TRUE(&m == client_host.last_sent_message);
 
   client_host.Close();

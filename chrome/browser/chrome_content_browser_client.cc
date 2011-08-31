@@ -55,7 +55,6 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/debugger/devtools_handler.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -132,7 +131,6 @@ TabContentsView* ChromeContentBrowserClient::CreateTabContentsView(
 void ChromeContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
   new ChromeRenderViewHostObserver(render_view_host);
-  new DevToolsHandler(render_view_host);
   new ExtensionMessageHandler(render_view_host);
 }
 

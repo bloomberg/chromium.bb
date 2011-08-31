@@ -30,7 +30,9 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
+#include "content/browser/content_browser_client.h"
 #include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/worker_devtools_manager_io.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -39,6 +41,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/bindings_policy.h"
+#include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 
@@ -81,7 +84,7 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
 // static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
-  return new DevToolsWindow(profile, NULL, false, true);
+  return Create(profile, NULL, false, true);
 }
 
 // static
@@ -108,25 +111,34 @@ void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
 }
 
 
-DevToolsWindow::DevToolsWindow(Profile* profile,
+DevToolsWindow* DevToolsWindow::Create(
+    Profile* profile,
+    RenderViewHost* inspected_rvh,
+    bool docked,
+    bool shared_worker_frontend) {
+  // Create TabContents with devtools.
+  TabContentsWrapper* tab_contents =
+      Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  tab_contents->render_view_host()->AllowBindings(BindingsPolicy::WEB_UI);
+  tab_contents->controller().LoadURL(
+      GetDevToolsUrl(profile, docked, shared_worker_frontend),
+      GURL(),
+      PageTransition::START_PAGE);
+  return new DevToolsWindow(tab_contents, profile, inspected_rvh, docked);
+}
+
+DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
+                               Profile* profile,
                                RenderViewHost* inspected_rvh,
-                               bool docked,
-                               bool shared_worker_frontend)
-    : profile_(profile),
+                               bool docked)
+    : RenderViewHostObserver(tab_contents->render_view_host()),
+      profile_(profile),
       inspected_tab_(NULL),
+      tab_contents_(tab_contents),
       browser_(NULL),
       docked_(docked),
       is_loaded_(false),
-      action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE),
-      shared_worker_frontend_(shared_worker_frontend) {
-  // Create TabContents with devtools.
-  tab_contents_ =
-      Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  tab_contents_->tab_contents()->
-      render_view_host()->AllowBindings(BindingsPolicy::WEB_UI);
-  tab_contents_->controller().LoadURL(
-      GetDevToolsUrl(), GURL(), PageTransition::START_PAGE);
-
+      action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE) {
   // Wipe out page icon so that the default application icon is used.
   NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
   entry->favicon().set_bitmap(SkBitmap());
@@ -155,8 +167,7 @@ DevToolsWindow::~DevToolsWindow() {
 }
 
 void DevToolsWindow::SendMessageToClient(const IPC::Message& message) {
-  RenderViewHost* target_host =
-      tab_contents_->tab_contents()->render_view_host();
+  RenderViewHost* target_host = tab_contents_->render_view_host();
   IPC::Message* m =  new IPC::Message(message);
   m->set_routing_id(target_host->routing_id());
   target_host->Send(m);
@@ -237,7 +248,7 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
   ScheduleAction(action);
 }
 
-void DevToolsWindow::RequestActivate() {
+void DevToolsWindow::OnActivateWindow() {
   if (!docked_) {
     if (!browser_->window()->IsActive()) {
       browser_->window()->Activate();
@@ -283,14 +294,14 @@ void DevToolsWindow::RequestSetDocked(bool docked) {
   Show(DEVTOOLS_TOGGLE_ACTION_NONE);
 }
 
-void DevToolsWindow::RequestClose() {
+void DevToolsWindow::OnCloseWindow() {
     DCHECK(docked_);
     NotifyCloseListener();
     InspectedTabClosing();
 }
 
-void DevToolsWindow::RequestSaveAs(const std::string& suggested_file_name,
-                                   const std::string& content) {
+void DevToolsWindow::OnSaveAs(const std::string& suggested_file_name,
+                              const std::string& content) {
   DevToolsFileUtil::SaveAs(tab_contents_->profile(),
                            suggested_file_name,
                            content);
@@ -485,8 +496,9 @@ std::string SkColorToRGBAString(SkColor color) {
       base::DoubleToString(SkColorGetA(color) / 255.0).c_str());
 }
 
-GURL DevToolsWindow::GetDevToolsUrl() {
-  ThemeService* tp = ThemeServiceFactory::GetForProfile(profile_);
+GURL DevToolsWindow::GetDevToolsUrl(Profile* profile, bool docked,
+                                    bool shared_worker_frontend) {
+  ThemeService* tp = ThemeServiceFactory::GetForProfile(profile);
   CHECK(tp);
 
   SkColor color_toolbar =
@@ -497,10 +509,10 @@ GURL DevToolsWindow::GetDevToolsUrl() {
   std::string url_string = StringPrintf(
       "%sdevtools.html?docked=%s&toolbarColor=%s&textColor=%s%s",
       chrome::kChromeUIDevToolsURL,
-      docked_ ? "true" : "false",
+      docked ? "true" : "false",
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str(),
-      shared_worker_frontend_ ? "&isSharedWorker=true" : "");
+      shared_worker_frontend ? "&isSharedWorker=true" : "");
   return GURL(url_string);
 }
 
@@ -577,7 +589,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     Profile* profile = Profile::FromBrowserContext(
         inspected_rvh->process()->browser_context());
     bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
-    window = new DevToolsWindow(profile, inspected_rvh, docked, false);
+    window = Create(profile, inspected_rvh, docked, false);
     manager->RegisterDevToolsClientHostFor(inspected_rvh, window);
     do_open = true;
   }
@@ -600,6 +612,42 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   if (client_host->GetClientRenderViewHost() != NULL)
     return static_cast<DevToolsWindow*>(client_host);
   return NULL;
+}
+
+void DevToolsWindow::RenderViewHostDestroyed() {
+  // Don't delete |this| here, do it on NOTIFICATION_TAB_CLOSING event.
+}
+
+bool DevToolsWindow::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(DevToolsWindow, message)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToAgent, OnForwardToAgent)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ActivateWindow, OnActivateWindow)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_CloseWindow, OnCloseWindow)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestDockWindow, OnRequestDockWindow)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestUndockWindow,
+                        OnRequestUndockWindow)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAs,
+                        OnSaveAs)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void DevToolsWindow::OnForwardToAgent(const IPC::Message& message) {
+  if (DevToolsManager::GetInstance()->
+          ForwardToDevToolsAgent(this, message))
+    return;
+  WorkerDevToolsManagerIO::ForwardToWorkerDevToolsAgentOnUIThread(
+      this, message);
+}
+
+void DevToolsWindow::OnRequestDockWindow() {
+  RequestSetDocked(true);
+}
+
+void DevToolsWindow::OnRequestUndockWindow() {
+  RequestSetDocked(false);
 }
 
 content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {

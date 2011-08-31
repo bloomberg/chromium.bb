@@ -55,24 +55,6 @@ class DevToolsClientHost {
   // TabStripModel::ReplaceTabContentsAt.
   virtual void TabReplaced(TabContents* new_tab) = 0;
 
-  // Default front-end implementation requests that the window representing
-  // this client host is activated.
-  virtual void RequestActivate() {}
-
-  // Default front-end implementation requests that the window representing
-  // this client host is (un)docked.
-  virtual void RequestSetDocked(bool docked) {}
-
-  // Default front-end implementation requests that the window representing
-  // this client host is closed.
-  virtual void RequestClose() {}
-
-  // Default front-end implementation requests that the Save As dialog using
-  // default save location is shown with |suggested_file_name| as the default
-  // name and |content| as the data to save.
-  virtual void RequestSaveAs(const std::string& suggested_file_name,
-                             const std::string& content) {}
-
   // Returns client (front-end) RenderViewHost implementation of this
   // client host if applicable. NULL otherwise.
   virtual RenderViewHost* GetClientRenderViewHost();

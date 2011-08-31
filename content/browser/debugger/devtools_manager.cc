@@ -75,9 +75,9 @@ bool DevToolsManager::ForwardToDevToolsAgent(DevToolsClientHost* from,
   return true;
 }
 
-void DevToolsManager::ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
+void DevToolsManager::ForwardToDevToolsClient(DevToolsAgentHost* agent_host,
                                               const IPC::Message& message) {
-  DevToolsClientHost* client_host = GetDevToolsClientHostFor(inspected_rvh);
+  DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
   if (!client_host) {
     // Client window was closed while there were messages
     // being sent to it.
@@ -86,11 +86,9 @@ void DevToolsManager::ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
   client_host->SendMessageToClient(message);
 }
 
-void DevToolsManager::RuntimePropertyChanged(RenderViewHost* inspected_rvh,
+void DevToolsManager::RuntimePropertyChanged(DevToolsAgentHost* agent_host,
                                              const std::string& name,
                                              const std::string& value) {
-  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
-      inspected_rvh);
   RuntimePropertiesMap::iterator it =
       runtime_properties_map_.find(agent_host);
   if (it == runtime_properties_map_.end()) {
@@ -232,10 +230,8 @@ void DevToolsManager::SendAttachToAgent(DevToolsAgentHost* agent_host) {
 }
 
 void DevToolsManager::SendDetachToAgent(DevToolsAgentHost* agent_host) {
-  if (agent_host) {
-    agent_host->SendMessageToAgent(new DevToolsAgentMsg_Detach(
-        MSG_ROUTING_NONE));
-  }
+  agent_host->SendMessageToAgent(new DevToolsAgentMsg_Detach(
+      MSG_ROUTING_NONE));
 }
 
 void DevToolsManager::BindClientHost(

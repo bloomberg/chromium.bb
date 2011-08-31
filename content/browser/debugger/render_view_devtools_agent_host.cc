@@ -5,9 +5,13 @@
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 
 #include "base/basictypes.h"
+#include "content/browser/content_browser_client.h"
+#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
+#include "content/common/devtools_messages.h"
 #include "content/common/notification_service.h"
 
 RenderViewDevToolsAgentHost::Instances RenderViewDevToolsAgentHost::instances_;
@@ -21,9 +25,8 @@ DevToolsAgentHost* RenderViewDevToolsAgentHost::FindFor(
 }
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
-    : render_view_host_(rvh) {
-  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
-                 Source<RenderViewHost>(rvh));
+    : RenderViewHostObserver(rvh),
+      render_view_host_(rvh) {
   instances_[rvh] = this;
 }
 
@@ -44,15 +47,48 @@ int RenderViewDevToolsAgentHost::GetRenderProcessId() {
   return render_view_host_->process()->id();
 }
 
-void RenderViewDevToolsAgentHost::Observe(int type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDER_VIEW_HOST_DELETED);
+RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
+  instances_.erase(render_view_host_);
+}
+
+void RenderViewDevToolsAgentHost::RenderViewHostDestroyed() {
   NotifyCloseListener();
   delete this;
 }
 
-RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
-  instances_.erase(render_view_host_);
+bool RenderViewDevToolsAgentHost::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderViewDevToolsAgentHost, message)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToClient, OnForwardToClient)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RuntimePropertyChanged,
+                        OnRuntimePropertyChanged)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCache, OnClearBrowserCache)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ClearBrowserCookies,
+                        OnClearBrowserCookies)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void RenderViewDevToolsAgentHost::OnRuntimePropertyChanged(
+    const std::string& name,
+    const std::string& value) {
+  DevToolsManager::GetInstance()->RuntimePropertyChanged(
+      this, name, value);
+}
+
+void RenderViewDevToolsAgentHost::OnForwardToClient(
+    const IPC::Message& message) {
+  DevToolsManager::GetInstance()->ForwardToDevToolsClient(
+      this, message);
+}
+
+void RenderViewDevToolsAgentHost::OnClearBrowserCache() {
+  content::GetContentClient()->browser()->ClearCache(render_view_host_);
+}
+
+void RenderViewDevToolsAgentHost::OnClearBrowserCookies() {
+  content::GetContentClient()->browser()->ClearCookies(render_view_host_);
 }
 

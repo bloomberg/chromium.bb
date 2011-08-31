@@ -10,13 +10,12 @@
 
 #include "base/basictypes.h"
 #include "content/browser/debugger/devtools_agent_host.h"
-#include "content/common/notification_observer.h"
-#include "content/common/notification_registrar.h"
+#include "content/browser/renderer_host/render_view_host_observer.h"
 
 class RenderViewHost;
 
 class RenderViewDevToolsAgentHost : public DevToolsAgentHost,
-                                    public NotificationObserver {
+                                    private RenderViewHostObserver {
  public:
   static DevToolsAgentHost* FindFor(RenderViewHost*);
 
@@ -29,13 +28,17 @@ class RenderViewDevToolsAgentHost : public DevToolsAgentHost,
   virtual void NotifyClientClosing();
   virtual int GetRenderProcessId();
 
-  // Overridden from NotificationObserver:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // RenderViewHostObserver overrides.
+  virtual void RenderViewHostDestroyed() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  void OnForwardToClient(const IPC::Message& message);
+  void OnRuntimePropertyChanged(const std::string& name,
+                                const std::string& value);
+  void OnClearBrowserCache();
+  void OnClearBrowserCookies();
 
   RenderViewHost* render_view_host_;
-  NotificationRegistrar registrar_;
 
   typedef std::map<RenderViewHost*, RenderViewDevToolsAgentHost*> Instances;
   static Instances instances_;
