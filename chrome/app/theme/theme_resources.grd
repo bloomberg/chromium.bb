@@ -112,6 +112,11 @@
       <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_16" file="download_progress_foreground16.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_32" file="download_progress_foreground32.png" type="BINDATA" />
       <include name="IDR_EXTENSION_DEFAULT_ICON" file="extension_default_icon.png" type="BINDATA" />
+      <include name="IDR_EXTENSIONS_PERMISSIONS_LOCK" file="extensions_permissions_lock.png" type="BINDATA" />
+      <include name="IDR_EXTENSIONS_RATING_STAR_HALF_LEFT" file="extensions_rating_star_half_left.png" type="BINDATA" />
+      <include name="IDR_EXTENSIONS_RATING_STAR_HALF_RIGHT" file="extensions_rating_star_half_right.png" type="BINDATA" />
+      <include name="IDR_EXTENSIONS_RATING_STAR_OFF" file="extensions_rating_star_off.png" type="BINDATA" />
+      <include name="IDR_EXTENSIONS_RATING_STAR_ON" file="extensions_rating_star_on.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_SECTION" file="extensions_section.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT" file="find_next.png" type="BINDATA" />
       <include name="IDR_FINDINPAGE_NEXT_H" file="find_next_h.png" type="BINDATA" />
