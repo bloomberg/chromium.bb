@@ -22,9 +22,11 @@
 
 #import "base/mac/cocoa_protocols.h"
 #import "base/memory/scoped_nsobject.h"
+#import "base/memory/scoped_ptr.h"
 
 @class MultiKeyEquivalentButton;
 class TabContents;
+class TabContentsObserverBridge;
 
 @interface HungRendererController : NSWindowController<NSTableViewDataSource> {
  @private
@@ -37,6 +39,9 @@ class TabContents;
   // The TabContents for which this dialog is open.  Should never be
   // NULL while this dialog is open.
   TabContents* hungContents_;
+
+  // Observes |hungContents_| in case it closes while the panel is up.
+  scoped_ptr<TabContentsObserverBridge> hungContentsObserver_;
 
   // Backing data for |tableView_|.  Titles of each TabContents that
   // shares a renderer process with |hungContents_|.
@@ -64,6 +69,10 @@ class TabContents;
 // this dialog was created for, this function will close the dialog.
 // If |contents| has a different process, this function does nothing.
 - (void)endForTabContents:(TabContents*)contents;
+
+// Called by |hungContentsObserver_| to indicate that |hungContents_|
+// has gone away.
+- (void)renderViewGone;
 
 @end  // HungRendererController
 

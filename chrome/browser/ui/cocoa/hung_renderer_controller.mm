@@ -36,6 +36,29 @@ namespace {
 HungRendererController* g_instance = NULL;
 }  // namespace
 
+class TabContentsObserverBridge : public TabContentsObserver {
+ public:
+  TabContentsObserverBridge(TabContents* tab_contents,
+                            HungRendererController* controller)
+    : TabContentsObserver(tab_contents),
+      controller_(controller) {
+  }
+
+ protected:
+  // TabContentsObserver overrides:
+  virtual void RenderViewGone() OVERRIDE {
+    [controller_ renderViewGone];
+  }
+  virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {
+    [controller_ renderViewGone];
+  }
+
+ private:
+  HungRendererController* controller_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(TabContentsObserverBridge);
+};
+
 @implementation HungRendererController
 
 - (id)initWithWindowNibName:(NSString*)nibName {
@@ -134,9 +157,15 @@ HungRendererController* g_instance = NULL;
   [self autorelease];
 }
 
+// TODO(shess): This could observe all of the tabs referenced in the
+// loop, updating the dialog and keeping it up so long as any remain.
+// Tabs closed by their renderer will close the dialog (that's
+// activity!), so it would not add much value.  Also, the views
+// implementation only monitors the initiating tab.
 - (void)showForTabContents:(TabContents*)contents {
   DCHECK(contents);
   hungContents_ = contents;
+  hungContentsObserver_.reset(new TabContentsObserverBridge(contents, self));
   scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); ++it) {
@@ -165,6 +194,11 @@ HungRendererController* g_instance = NULL;
     // Cannot call performClose:, because the close button is disabled.
     [self close];
   }
+}
+
+- (void)renderViewGone {
+  // Cannot call performClose:, because the close button is disabled.
+  [self close];
 }
 
 @end
