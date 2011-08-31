@@ -111,11 +111,6 @@ class WebPlugin {
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies) = 0;
 
-  // When a default plugin has downloaded the plugin list and finds it is
-  // available, it calls this method to notify the renderer. Also it will update
-  // the status when user clicks on the plugin to install.
-  virtual void OnMissingPluginStatus(int status) = 0;
-
   // Handles GetURL/GetURLNotify/PostURL/PostURLNotify requests initiated
   // by plugins.  If the plugin wants notification of the result, notify_id will
   // be non-zero.

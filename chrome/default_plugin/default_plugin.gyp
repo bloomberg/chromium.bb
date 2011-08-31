@@ -32,6 +32,8 @@
         'plugin_impl_mac.mm',
         'plugin_impl_win.cc',
         'plugin_impl_win.h',
+        'plugin_installer_base.cc',
+        'plugin_installer_base.h',      
         'plugin_main.cc',
         'plugin_main.h',
       ],

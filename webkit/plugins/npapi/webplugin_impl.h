@@ -111,8 +111,6 @@ class WebPluginImpl : public WebPlugin,
                          const std::string& cookie);
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies);
-  virtual void OnMissingPluginStatus(int status);
-
   virtual void URLRedirectResponse(bool allow, int resource_id);
 
   // Given a (maybe partial) url, completes using the base url.

@@ -123,7 +123,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   virtual void DidReceiveManualData(const char* buffer, int length);
   virtual void DidFinishManualLoading();
   virtual void DidManualLoadFail();
-  virtual void InstallMissingPlugin();
   virtual WebPluginResourceClient* CreateResourceClient(
       unsigned long resource_id, const GURL& url, int notify_id);
   virtual WebPluginResourceClient* CreateSeekableResourceClient(

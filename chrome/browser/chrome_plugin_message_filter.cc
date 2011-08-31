@@ -5,12 +5,18 @@
 #include "chrome/browser/chrome_plugin_message_filter.h"
 
 #include "chrome/browser/browser_process.h"
-#include "content/browser/browser_thread.h"
 #include "chrome/browser/plugin_download_helper.h"
+#include "chrome/browser/plugin_installer_infobar_delegate.h"
+#include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_plugin_messages.h"
+#include "content/browser/browser_thread.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/common/plugin_messages.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "webkit/plugins/npapi/default_plugin_shared.h"
 
 static const char kDefaultPluginFinderURL[] =
     "https://dl-ssl.google.com/edgedl/chrome/plugins/plugins2.xml";
@@ -26,10 +32,12 @@ bool ChromePluginMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromePluginMessageFilter, message)
 #if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_DownloadUrl, OnDownloadUrl)
+    IPC_MESSAGE_HANDLER(ChromePluginProcessHostMsg_DownloadUrl, OnDownloadUrl)
 #endif
-    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_GetPluginFinderUrl,
+    IPC_MESSAGE_HANDLER(ChromePluginProcessHostMsg_GetPluginFinderUrl,
                         OnGetPluginFinderUrl)
+    IPC_MESSAGE_HANDLER(ChromePluginProcessHostMsg_MissingPluginStatus,
+                        OnMissingPluginStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -70,4 +78,55 @@ void ChromePluginMessageFilter::OnGetPluginFinderUrl(
   } else {
     plugin_finder_url->clear();
   }
+}
+
+void ChromePluginMessageFilter::OnMissingPluginStatus(
+    int status, int render_process_id, int render_view_id,
+    gfx::NativeWindow window) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableFunction(
+          &ChromePluginMessageFilter::HandleMissingPluginStatus,
+          status, render_process_id, render_view_id, window));
+}
+
+// static
+void ChromePluginMessageFilter::HandleMissingPluginStatus(
+    int status, int render_process_id, int render_view_id,
+    gfx::NativeWindow window) {
+// TODO(PORT): pull in when plug-ins work
+#if defined(OS_WIN)
+  RenderViewHost* host = RenderViewHost::FromID(render_process_id,
+                                                render_view_id);
+  if (!host || !host->delegate() || !host->delegate()->GetAsTabContents())
+    return;
+
+  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
+      host->delegate()->GetAsTabContents());
+  if (!tcw)
+    return;
+
+  if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
+    tcw->AddInfoBar(
+        new PluginInstallerInfoBarDelegate(
+            host->delegate()->GetAsTabContents(), window));
+    return;
+  }
+
+  DCHECK_EQ(webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD,
+            status);
+  for (size_t i = 0; i < tcw->infobar_count(); ++i) {
+    InfoBarDelegate* delegate = tcw->GetInfoBarDelegateAt(i);
+    if (delegate->AsPluginInstallerInfoBarDelegate() != NULL) {
+      tcw->RemoveInfoBar(delegate);
+      return;
+    }
+  }
+#else
+  // TODO(port): Implement the infobar that accompanies the default plugin.
+  // Linux: http://crbug.com/10952
+  // Mac: http://crbug.com/17392
+  NOTIMPLEMENTED();
+#endif  // OS_WIN}
 }

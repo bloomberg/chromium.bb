@@ -285,11 +285,6 @@ class RenderView : public RenderWidget,
   // Notification that the given plugin has crashed.
   void PluginCrashed(const FilePath& plugin_path);
 
-  // Notification that the default plugin has done something about a missing
-  // plugin. See default_plugin_shared.h for possible values of |status|.
-  void OnMissingPluginStatus(WebPluginDelegateProxy* delegate,
-                             int status);
-
   // Create a new NPAPI plugin.
   WebKit::WebPlugin* CreateNPAPIPlugin(WebKit::WebFrame* frame,
                                        const WebKit::WebPluginParams& params,
@@ -815,7 +810,6 @@ class RenderView : public RenderWidget,
       const std::vector<GURL>& links,
       const std::vector<FilePath>& local_paths,
       const FilePath& local_directory_name);
-  void OnInstallMissingPlugin();
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
   void OnMoveOrResizeStarted();
@@ -1123,10 +1117,6 @@ class RenderView : public RenderWidget,
 #endif
 
   // Plugins -------------------------------------------------------------------
-
-  // Remember the first uninstalled plugin, so that we can ask the plugin
-  // to install itself when user clicks on the info bar.
-  base::WeakPtr<webkit::npapi::WebPluginDelegate> first_default_plugin_;
 
   PepperPluginDelegateImpl pepper_delegate_;
 

@@ -116,10 +116,6 @@ void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
   WindowlessPaint(context, rect);
 }
 
-void WebPluginDelegateImpl::InstallMissingPlugin() {
-  NOTIMPLEMENTED();
-}
-
 bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   DCHECK(!windowed_handle_);
   DCHECK(!plug_);

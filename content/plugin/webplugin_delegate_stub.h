@@ -97,7 +97,6 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   void OnDidReceiveManualData(const std::vector<char>& buffer);
   void OnDidFinishManualLoading();
   void OnDidManualLoadFail();
-  void OnInstallMissingPlugin();
   void OnHandleURLRequestReply(unsigned long resource_id,
                                const GURL& url,
                                int notify_id);

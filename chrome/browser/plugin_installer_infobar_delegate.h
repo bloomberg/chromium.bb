@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "ui/gfx/native_widget_types.h"
 
 class TabContents;
 
@@ -14,7 +15,8 @@ class TabContents;
 // a missing plugin.
 class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit PluginInstallerInfoBarDelegate(TabContents* tab_contents);
+  PluginInstallerInfoBarDelegate(TabContents* tab_contents,
+                                 gfx::NativeWindow window);
 
  private:
   virtual ~PluginInstallerInfoBarDelegate();
@@ -32,6 +34,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // The containing TabContents
   TabContents* tab_contents_;
+  gfx::NativeWindow window_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstallerInfoBarDelegate);
 };

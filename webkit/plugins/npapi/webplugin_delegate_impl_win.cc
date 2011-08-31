@@ -532,14 +532,6 @@ void WebPluginDelegateImpl::Paint(WebKit::WebCanvas* canvas,
   }
 }
 
-void WebPluginDelegateImpl::InstallMissingPlugin() {
-  NPEvent evt;
-  evt.event = default_plugin::kInstallMissingPluginMessage;
-  evt.lParam = 0;
-  evt.wParam = 0;
-  instance()->NPP_HandleEvent(&evt);
-}
-
 bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   DCHECK(!windowed_handle_);
 

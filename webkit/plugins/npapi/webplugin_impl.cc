@@ -737,10 +737,6 @@ std::string WebPluginImpl::GetCookies(const GURL& url,
   return UTF16ToUTF8(cookie_jar->cookies(url, first_party_for_cookies));
 }
 
-void WebPluginImpl::OnMissingPluginStatus(int status) {
-  NOTREACHED();
-}
-
 void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
   for (size_t i = 0; i < clients_.size(); ++i) {
     if (clients_[i].id == static_cast<unsigned long>(resource_id)) {

@@ -118,9 +118,6 @@ class WebPluginDelegate {
   // Indicates a failure in data receipt.
   virtual void DidManualLoadFail() = 0;
 
-  // Only supported when the plugin is the default plugin.
-  virtual void InstallMissingPlugin() = 0;
-
   // Creates a WebPluginResourceClient instance and returns the same.
   virtual WebPluginResourceClient* CreateResourceClient(
       unsigned long resource_id,

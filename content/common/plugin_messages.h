@@ -83,18 +83,11 @@ IPC_MESSAGE_CONTROL0(PluginProcessMsg_NotifyRenderersOfPendingShutdown)
 IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_ChannelCreated,
                      IPC::ChannelHandle /* channel_handle */)
 
-IPC_SYNC_MESSAGE_CONTROL0_1(PluginProcessHostMsg_GetPluginFinderUrl,
-                            std::string /* plugin finder URL */)
-
 #if defined(OS_WIN)
 // Destroys the given window's parent on the UI thread.
 IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginWindowDestroyed,
                      HWND /* window */,
                      HWND /* parent */)
-
-IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_DownloadUrl,
-                     std::string /* URL */,
-                     HWND /* caller window */)
 
 IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_ReparentPluginWindow,
                      HWND /* window */,
@@ -261,8 +254,6 @@ IPC_MESSAGE_ROUTED0(PluginMsg_DidFinishManualLoading)
 
 IPC_MESSAGE_ROUTED0(PluginMsg_DidManualLoadFail)
 
-IPC_MESSAGE_ROUTED0(PluginMsg_InstallMissingPlugin)
-
 IPC_MESSAGE_ROUTED3(PluginMsg_HandleURLRequestReply,
                     unsigned long /* resource_id */,
                     GURL /* url */,
@@ -343,9 +334,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PluginHostMsg_GetCookies,
                            GURL /* url */,
                            GURL /* first_party_for_cookies */,
                            std::string /* cookies */)
-
-IPC_MESSAGE_ROUTED1(PluginHostMsg_MissingPluginStatus,
-                    int /* status */)
 
 IPC_MESSAGE_ROUTED0(PluginHostMsg_CancelDocumentLoad)
 

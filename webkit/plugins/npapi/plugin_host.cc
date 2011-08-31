@@ -781,28 +781,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       rv = NPERR_NO_ERROR;
       break;
     }
-    case webkit::npapi::default_plugin::kMissingPluginStatusStart +
-         webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE:
-    // fall through
-    case webkit::npapi::default_plugin::kMissingPluginStatusStart +
-         webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD: {
-      // This is a hack for the default plugin to send notification to
-      // renderer.  Even though we check if the plugin is the default plugin,
-      // we still need to worry about future standard change that may conflict
-      // with the variable definition, in order to avoid duplicate case clauses
-      // in this big switch statement.
-      scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin.get()) {
-        NOTREACHED();
-        return NPERR_INVALID_INSTANCE_ERROR;
-      }
-      if (plugin->plugin_lib()->plugin_info().path.value() ==
-            webkit::npapi::kDefaultPluginLibraryName) {
-        plugin->webplugin()->OnMissingPluginStatus(variable -
-            webkit::npapi::default_plugin::kMissingPluginStatusStart);
-      }
-      break;
-    }
   #if defined(OS_MACOSX)
     case NPNVpluginDrawingModel: {
       // return the drawing model that was negotiated when we initialized.

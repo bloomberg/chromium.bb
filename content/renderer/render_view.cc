@@ -651,7 +651,6 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_InstallMissingPlugin, OnInstallMissingPlugin)
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
@@ -1326,32 +1325,6 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
   return Send(message);
 }
 
-void RenderView::OnMissingPluginStatus(
-    WebPluginDelegateProxy* delegate,
-    int status) {
-#if defined(OS_WIN)
-  if (!first_default_plugin_) {
-    // Show the InfoBar for the first available plugin.
-    if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
-      first_default_plugin_ = delegate->AsWeakPtr();
-      Send(new ViewHostMsg_MissingPluginStatus(routing_id_, status));
-    }
-  } else {
-    // Closes the InfoBar if user clicks on the plugin (instead of the InfoBar)
-    // to start the download/install.
-    if (status ==
-        webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD) {
-      Send(new ViewHostMsg_MissingPluginStatus(routing_id_, status));
-    }
-  }
-#else
-  // TODO(port): Implement the infobar that accompanies the default plugin.
-  // Linux: http://crbug.com/10952
-  // Mac: http://crbug.com/17392
-  NOTIMPLEMENTED();
-#endif
-}
-
 // WebKit::WebViewClient ------------------------------------------------------
 
 WebView* RenderView::createView(
@@ -1511,9 +1484,6 @@ void RenderView::didStartLoading() {
   }
 
   is_loading_ = true;
-  // Clear the pointer so that we can assign it only when there is an unknown
-  // plugin on a page.
-  first_default_plugin_.reset();
 
   Send(new ViewHostMsg_DidStartLoading(routing_id_));
 
@@ -3625,12 +3595,6 @@ void RenderView::OnCustomContextMenuAction(
     pepper_delegate_.OnCustomContextMenuAction(custom_context, action);
   else
     webview()->performCustomContextMenuAction(action);
-}
-
-void RenderView::OnInstallMissingPlugin() {
-  // This could happen when the first default plugin is deleted.
-  if (first_default_plugin_)
-    first_default_plugin_->InstallMissingPlugin();
 }
 
 void RenderView::OnEnumerateDirectoryResponse(

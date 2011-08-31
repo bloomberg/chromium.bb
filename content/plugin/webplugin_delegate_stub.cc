@@ -7,7 +7,9 @@
 #include "build/build_config.h"
 
 #include "base/command_line.h"
+#include "base/string_number_conversions.h"
 #include "content/common/content_client.h"
+#include "content/common/content_constants.h"
 #include "content/common/content_switches.h"
 #include "content/common/plugin_messages.h"
 #include "content/plugin/npobject_stub.h"
@@ -122,7 +124,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_DidFinishManualLoading,
                         OnDidFinishManualLoading)
     IPC_MESSAGE_HANDLER(PluginMsg_DidManualLoadFail, OnDidManualLoadFail)
-    IPC_MESSAGE_HANDLER(PluginMsg_InstallMissingPlugin, OnInstallMissingPlugin)
     IPC_MESSAGE_HANDLER(PluginMsg_HandleURLRequestReply,
                         OnHandleURLRequestReply)
     IPC_MESSAGE_HANDLER(PluginMsg_HTTPRangeRequestReply,
@@ -179,9 +180,22 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
       path, mime_type_, parent);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);
+    std::vector<std::string> arg_names = params.arg_names;
+    std::vector<std::string> arg_values = params.arg_values;
+
+    if (path.value() == webkit::npapi::kDefaultPluginLibraryName) {
+      // Add the renderer process id and Render view routing id to the list of
+      // parameters passed to the plugin.
+      arg_names.push_back(content::kDefaultPluginRenderViewId);
+      arg_values.push_back(base::IntToString(
+          params.host_render_view_routing_id));
+
+      arg_names.push_back(content::kDefaultPluginRenderProcessId);
+      arg_values.push_back(base::IntToString(channel_->renderer_id()));
+    }
     *result = delegate_->Initialize(params.url,
-                                    params.arg_names,
-                                    params.arg_values,
+                                    arg_names,
+                                    arg_values,
                                     webplugin_,
                                     params.load_manually);
   }
@@ -361,10 +375,6 @@ void WebPluginDelegateStub::OnDidFinishManualLoading() {
 
 void WebPluginDelegateStub::OnDidManualLoadFail() {
   delegate_->DidManualLoadFail();
-}
-
-void WebPluginDelegateStub::OnInstallMissingPlugin() {
-  delegate_->InstallMissingPlugin();
 }
 
 void WebPluginDelegateStub::OnHandleURLRequestReply(

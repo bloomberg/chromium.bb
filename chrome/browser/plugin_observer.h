@@ -23,10 +23,6 @@ class PluginObserver : public TabContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  // Returns the PluginInstallerInfoBarDelegate, creating it if necessary.
-  PluginInstallerInfoBarDelegate* GetPluginInstaller();
-
-  void OnMissingPluginStatus(int status);
   void OnCrashedPlugin(const FilePath& plugin_path);
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
 

@@ -114,7 +114,6 @@ class WebPluginDelegateProxy
   virtual void DidReceiveManualData(const char* buffer, int length);
   virtual void DidFinishManualLoading();
   virtual void DidManualLoadFail();
-  virtual void InstallMissingPlugin();
   virtual webkit::npapi::WebPluginResourceClient* CreateResourceClient(
       unsigned long resource_id, const GURL& url, int notify_id);
   virtual webkit::npapi::WebPluginResourceClient* CreateSeekableResourceClient(
@@ -154,7 +153,6 @@ class WebPluginDelegateProxy
                    const std::string& cookie);
   void OnGetCookies(const GURL& url, const GURL& first_party_for_cookies,
                     std::string* cookies);
-  void OnMissingPluginStatus(int status);
   void OnCancelDocumentLoad();
   void OnInitiateHTTPRangeRequest(const std::string& url,
                                   const std::string& range_info,

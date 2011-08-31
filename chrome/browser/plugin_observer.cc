@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
@@ -21,7 +20,6 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -294,7 +292,6 @@ PluginObserver::~PluginObserver() {
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
                         OnBlockedOutdatedPlugin)
@@ -302,33 +299,6 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return true;
-}
-
-PluginInstallerInfoBarDelegate* PluginObserver::GetPluginInstaller() {
-  if (plugin_installer_ == NULL)
-    plugin_installer_.reset(new PluginInstallerInfoBarDelegate(tab_contents()));
-  return plugin_installer_->AsPluginInstallerInfoBarDelegate();
-}
-
-void PluginObserver::OnMissingPluginStatus(int status) {
-  // TODO(PORT): pull in when plug-ins work
-#if defined(OS_WIN)
-  if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
-    tab_contents_->AddInfoBar(
-        new PluginInstallerInfoBarDelegate(tab_contents()));
-    return;
-  }
-
-  DCHECK_EQ(webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD,
-            status);
-  for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
-    InfoBarDelegate* delegate = tab_contents_->GetInfoBarDelegateAt(i);
-    if (delegate->AsPluginInstallerInfoBarDelegate() != NULL) {
-      tab_contents_->RemoveInfoBar(delegate);
-      return;
-    }
-  }
-#endif
 }
 
 void PluginObserver::OnCrashedPlugin(const FilePath& plugin_path) {

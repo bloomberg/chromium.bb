@@ -260,10 +260,6 @@ std::string WebPluginProxy::GetCookies(const GURL& url,
   return cookies;
 }
 
-void WebPluginProxy::OnMissingPluginStatus(int status) {
-  Send(new PluginHostMsg_MissingPluginStatus(route_id_, status));
-}
-
 WebPluginResourceClient* WebPluginProxy::GetResourceClient(int id) {
   ResourceClientMap::iterator iterator = resource_clients_.find(id);
   // The IPC messages which deal with streams are now asynchronous. It is

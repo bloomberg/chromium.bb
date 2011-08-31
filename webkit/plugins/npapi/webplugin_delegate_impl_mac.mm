@@ -640,10 +640,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   return handled;
 }
 
-void WebPluginDelegateImpl::InstallMissingPlugin() {
-  NOTIMPLEMENTED();
-}
-
 #pragma mark -
 
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(

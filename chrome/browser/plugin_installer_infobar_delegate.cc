@@ -13,11 +13,13 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/plugins/npapi/default_plugin_shared.h"
 
 PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
-    TabContents* tab_contents)
+    TabContents* tab_contents, gfx::NativeWindow window)
     : ConfirmInfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents) {
+      tab_contents_(tab_contents),
+      window_(window) {
 }
 
 PluginInstallerInfoBarDelegate::~PluginInstallerInfoBarDelegate() {
@@ -48,8 +50,13 @@ string16 PluginInstallerInfoBarDelegate::GetButtonLabel(
 }
 
 bool PluginInstallerInfoBarDelegate::Accept() {
-  RenderViewHost* host = tab_contents_->render_view_host();
-  host->Send(new ViewMsg_InstallMissingPlugin(host->routing_id()));
+  // TODO(PORT) for other platforms.
+#ifdef OS_WIN
+  ::PostMessage(window_,
+                webkit::npapi::default_plugin::kInstallMissingPluginMessage,
+                0,
+                0);
+#endif  // OS_WIN
   return true;
 }
 

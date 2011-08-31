@@ -10,9 +10,12 @@
 
 #include "chrome/default_plugin/install_dialog.h"
 #include "chrome/default_plugin/plugin_database_handler.h"
+#include "chrome/default_plugin/plugin_installer_base.h"
 #include "chrome/default_plugin/plugin_install_job_monitor.h"
+#include "chrome/default_plugin/plugin_main.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/base/win/window_impl.h"
+#include "webkit/plugins/npapi/default_plugin_shared.h"
 
 // Possible plugin installer states.
 enum PluginInstallerState {
@@ -34,7 +37,8 @@ class PluginDatabaseHandler;
 // Provides the plugin installation functionality. This class is
 // instantiated with the information like the mime type of the
 // target plugin, the display mode, etc.
-class PluginInstallerImpl : public ui::WindowImpl {
+class PluginInstallerImpl : public PluginInstallerBase,
+                            public ui::WindowImpl {
  public:
   static const int kRefreshPluginsMessage  = WM_APP + 1;
 
@@ -50,6 +54,9 @@ class PluginInstallerImpl : public ui::WindowImpl {
     MESSAGE_HANDLER(kRefreshPluginsMessage, OnRefreshPlugins)
     MESSAGE_HANDLER(WM_COPYDATA, OnCopyData)
     MESSAGE_HANDLER(WM_SETCURSOR, OnSetCursor)
+    MESSAGE_HANDLER(
+        webkit::npapi::default_plugin::kInstallMissingPluginMessage,
+        OnInstallPluginMessage)
   END_MSG_MAP()
 
   // Initializes the plugin with the instance information, mime type
@@ -190,6 +197,9 @@ class PluginInstallerImpl : public ui::WindowImpl {
                         BOOL& handled);
   LRESULT OnSetCursor(UINT message, WPARAM wparam, LPARAM lparam,
                       BOOL& handled);
+  // Handles the install plugin message coming from the plugin infobar.
+  LRESULT OnInstallPluginMessage(UINT message, WPARAM wparam, LPARAM lparam,
+                                 BOOL& handled);
 
   // Refreshes the loaded plugin list and reloads the current page.
   LRESULT OnRefreshPlugins(UINT message, WPARAM wparam, LPARAM lparam,
@@ -310,6 +320,12 @@ class PluginInstallerImpl : public ui::WindowImpl {
   HFONT underline_font_;
   // Tooltip Window.
   HWND tooltip_;
+
+  // Count of plugin instances.
+  static int instance_count_;
+
+  // Set to true if the plugin install infobar is to be shown.
+  static bool show_install_infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstallerImpl);
 };

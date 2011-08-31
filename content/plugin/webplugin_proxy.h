@@ -80,7 +80,6 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies);
 
-  virtual void OnMissingPluginStatus(int status);
   // class-specific methods
 
   // Returns a WebPluginResourceClient object given its id, or NULL if no

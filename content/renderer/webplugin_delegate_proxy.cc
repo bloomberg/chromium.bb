@@ -413,10 +413,6 @@ void WebPluginDelegateProxy::DidManualLoadFail() {
   Send(new PluginMsg_DidManualLoadFail(instance_id_));
 }
 
-void WebPluginDelegateProxy::InstallMissingPlugin() {
-  Send(new PluginMsg_InstallMissingPlugin(instance_id_));
-}
-
 bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
   content::GetContentClient()->SetActiveURL(page_url_);
 
@@ -436,8 +432,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginHostMsg_ResolveProxy, OnResolveProxy)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetCookies, OnGetCookies)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_MissingPluginStatus,
-                        OnMissingPluginStatus)
     IPC_MESSAGE_HANDLER(PluginHostMsg_URLRequest, OnHandleURLRequest)
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelDocumentLoad, OnCancelDocumentLoad)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InitiateHTTPRangeRequest,
@@ -1136,11 +1130,6 @@ void WebPluginDelegateProxy::OnGetCookies(const GURL& url,
   DCHECK(cookies);
   if (plugin_)
     *cookies = plugin_->GetCookies(url, first_party_for_cookies);
-}
-
-void WebPluginDelegateProxy::OnMissingPluginStatus(int status) {
-  if (render_view_)
-    render_view_->OnMissingPluginStatus(this, status);
 }
 
 void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,

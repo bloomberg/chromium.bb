@@ -13,6 +13,9 @@ const size_t kMaxTitleChars = 4 * 1024;
 const size_t kMaxURLChars = 2 * 1024 * 1024;
 const size_t kMaxURLDisplayChars = 32 * 1024;
 
+const char kDefaultPluginRenderViewId[] = "PluginRenderViewId";
+const char kDefaultPluginRenderProcessId[] = "PluginRenderProcessId";
+
 }  // namespace content
 
 #undef FPL

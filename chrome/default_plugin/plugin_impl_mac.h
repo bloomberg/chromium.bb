@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "chrome/default_plugin/plugin_installer_base.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -39,7 +40,7 @@ class PluginDatabaseHandler;
 // Provides the plugin installation functionality. This class is
 // instantiated with the information like the mime type of the
 // target plugin, the display mode, etc.
-class PluginInstallerImpl {
+class PluginInstallerImpl : public PluginInstallerBase {
  public:
   // mode is the plugin instantiation mode, i.e. whether it is a full
   // page plugin (NP_FULL) or an embedded plugin (NP_EMBED)
@@ -133,7 +134,7 @@ class PluginInstallerImpl {
   //   Describes why the notification was sent.
   void URLNotify(const char* url, NPReason reason);
 
-  // Used by the renderer to indicate plugin install through the infobar.
+  // Used by the renderer to pass events (for e.g. input events) to the plugin.
   int16 NPP_HandleEvent(void* event);
 
   const std::string& mime_type() const { return mime_type_; }

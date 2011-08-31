@@ -93,6 +93,7 @@ enum IPCMessageStart {
   TextInputClientMsgStart,
   ChromeUtilityMsgStart,
   MediaStreamMsgStart,
+  ChromePluginMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

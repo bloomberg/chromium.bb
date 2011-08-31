@@ -9,7 +9,9 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_plugin_messages.h"
 #include "chrome/default_plugin/plugin_main.h"
+#include "content/common/child_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/default_plugin_resources.h"
 #include "grit/webkit_strings.h"
@@ -55,7 +57,8 @@ bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   image_ = rb.GetNativeImageNamed(IDR_PLUGIN_ICON);
 
-  return true;
+  return PluginInstallerBase::Initialize(module_handle, instance, mime_type,
+                                         argc, argn, argv);
 }
 
 bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {
@@ -192,9 +195,10 @@ void PluginInstallerImpl::ShowInstallDialog() {
 }
 
 void PluginInstallerImpl::NotifyPluginStatus(int status) {
-  default_plugin::g_browser->getvalue(
-      instance_,
-      static_cast<NPNVariable>(
-          webkit::npapi::default_plugin::kMissingPluginStatusStart + status),
-      NULL);
+  ChildThread::current()->Send(
+      new ChromePluginProcessHostMsg_MissingPluginStatus(
+          status,
+          renderer_process_id(),
+          render_view_id(),
+          0));
 }

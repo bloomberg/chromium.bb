@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_plugin_messages.h"
 #include "chrome/default_plugin/plugin_main.h"
 #include "content/common/child_thread.h"
 #include "content/common/plugin_messages.h"
@@ -22,6 +23,9 @@
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 
 static const int TOOLTIP_MAX_WIDTH = 500;
+
+int PluginInstallerImpl::instance_count_ = 0;
+bool PluginInstallerImpl::show_install_infobar_ = true;
 
 PluginInstallerImpl::PluginInstallerImpl(int16 mode)
     : instance_(NULL),
@@ -40,9 +44,14 @@ PluginInstallerImpl::PluginInstallerImpl(int16 mode)
           new PluginInstallationJobMonitorThread()),
       plugin_database_handler_(*this),
       plugin_download_url_for_display_(false) {
+  instance_count_++;
 }
 
 PluginInstallerImpl::~PluginInstallerImpl() {
+  instance_count_--;
+  if (instance_count_ == 0)
+    show_install_infobar_ = true;
+
   if (!disable_plugin_finder_)
     installation_job_monitor_thread_->Stop();
 
@@ -72,7 +81,7 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
   mime_type_ = mime_type;
 
   ChildThread::current()->Send(
-      new PluginProcessHostMsg_GetPluginFinderUrl(&plugin_finder_url_));
+      new ChromePluginProcessHostMsg_GetPluginFinderUrl(&plugin_finder_url_));
   if (plugin_finder_url_.empty())
     disable_plugin_finder_ = true;
 
@@ -89,8 +98,8 @@ bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
   } else {
     DisplayStatus(IDS_DEFAULT_PLUGIN_GET_PLUGIN_MSG_PLUGIN_FINDER_DISABLED);
   }
-
-  return true;
+  return PluginInstallerBase::Initialize(module_handle, instance, mime_type,
+                                         argc, argn, argv);
 }
 
 void PluginInstallerImpl::Shutdown() {
@@ -257,8 +266,6 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
     if (plugin_available) {
       DVLOG(1) << "Plugin available for mime type " << mime_type_;
       DisplayAvailablePluginStatus();
-      NotifyPluginStatus(
-          webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE);
     } else {
       DLOG(WARNING) << "No plugin available for mime type " << mime_type_;
       DisplayStatus(IDS_DEFAULT_PLUGIN_NO_PLUGIN_AVAILABLE_MSG);
@@ -267,15 +274,6 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
 }
 
 int16 PluginInstallerImpl::NPP_HandleEvent(void* event) {
-  NPEvent* npp_event = static_cast<NPEvent*>(event);
-  if (npp_event->event ==
-          webkit::npapi::default_plugin::kInstallMissingPluginMessage) {
-    // We could get this message because InfoBar may not be in sync with our
-    // internal processing. So we need to check the status.
-    if (plugin_installer_state() == PluginListDownloaded) {
-      ShowInstallDialog();
-    }
-  }
   return 0;
 }
 
@@ -330,6 +328,12 @@ bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {
   UpdateWindow(hwnd());
   ShowWindow(hwnd(), SW_SHOW);
 
+  // Show the infobar only once.
+  if (show_install_infobar_) {
+    show_install_infobar_ = false;
+    NotifyPluginStatus(
+        webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE);
+  }
   return true;
 }
 
@@ -342,7 +346,7 @@ void PluginInstallerImpl::DownloadPlugin() {
   DisplayStatus(IDS_DEFAULT_PLUGIN_DOWNLOADING_PLUGIN_MSG);
 
   if (!plugin_download_url_for_display_) {
-    ChildThread::current()->Send(new PluginProcessHostMsg_DownloadUrl(
+    ChildThread::current()->Send(new ChromePluginProcessHostMsg_DownloadUrl(
         plugin_download_url_, hwnd()));
   } else {
     default_plugin::g_browser->geturl(instance(),
@@ -624,6 +628,18 @@ LRESULT PluginInstallerImpl::OnCopyData(UINT message, WPARAM wparam,
   return 0;
 }
 
+LRESULT PluginInstallerImpl::OnInstallPluginMessage(UINT message,
+                                                    WPARAM wparam,
+                                                    LPARAM lparam,
+                                                    BOOL& handled) {
+  // We could get this message because InfoBar may not be in sync with our
+  // internal processing. So we need to check the status.
+  if (plugin_installer_state() == PluginListDownloaded) {
+    ShowInstallDialog();
+  }
+  return 0;
+}
+
 bool PluginInstallerImpl::InitializeResources(HINSTANCE module_handle) {
   DCHECK(icon_ == NULL);
   DCHECK(regular_font_ == NULL);
@@ -650,9 +666,10 @@ bool PluginInstallerImpl::InitializeResources(HINSTANCE module_handle) {
 }
 
 void PluginInstallerImpl::NotifyPluginStatus(int status) {
-  default_plugin::g_browser->getvalue(
-      instance_,
-      static_cast<NPNVariable>(
-          webkit::npapi::default_plugin::kMissingPluginStatusStart + status),
-      NULL);
+  ChildThread::current()->Send(
+      new ChromePluginProcessHostMsg_MissingPluginStatus(
+          status,
+          renderer_process_id(),
+          render_view_id(),
+          hwnd()));
 }
