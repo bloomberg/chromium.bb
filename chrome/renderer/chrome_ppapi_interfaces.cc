@@ -16,7 +16,7 @@
 
 #if !defined(DISABLE_NACL)
 #include "native_client/src/shared/imc/nacl_imc.h"
-#include "native_client/src/trusted/plugin/nacl_entry_points.h"
+#include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #endif
 
 namespace chrome {
