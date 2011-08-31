@@ -79,6 +79,7 @@
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
+#include "webkit/plugins/plugin_switches.h"
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
@@ -370,7 +371,8 @@ const void* GetInterface(const char* name) {
   // specified. This allows us to prevent people from (ab)using this interface
   // in production code.
   if (strcmp(name, PPB_TESTING_DEV_INTERFACE) == 0) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch("enable-pepper-testing"))
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnablePepperTesting))
       return &testing_interface;
   }
   return NULL;
