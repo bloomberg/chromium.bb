@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_observer.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
 
 class ContentSettingsObserver;
@@ -20,7 +21,6 @@ class DomAutomationController;
 class ExtensionDispatcher;
 class ExternalHostBindings;
 class FilePath;
-class GURL;
 class SkBitmap;
 class TranslateHelper;
 struct ThumbnailScore;
@@ -177,6 +177,10 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   // Page_id from the last page we indexed. This prevents us from indexing the
   // same page twice in a row.
   int32 last_indexed_page_id_;
+  // The toplevel URL that was last indexed.  This is used together with the
+  // page id to decide whether to reindex in certain cases like history
+  // replacement.
+  GURL last_indexed_url_;
 
   // Insecure content may be permitted for the duration of this render view.
   bool allow_displaying_insecure_content_;

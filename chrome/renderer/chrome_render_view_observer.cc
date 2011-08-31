@@ -25,7 +25,6 @@
 #include "content/common/bindings_policy.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/content_renderer_client.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/data_url.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
@@ -186,6 +185,14 @@ static FaviconURL::IconType ToFaviconType(WebIconURL::Type type) {
   }
   return FaviconURL::INVALID_ICON;
 }
+
+namespace {
+GURL StripRef(const GURL& url) {
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements);
+}
+}  // namespace
 
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     RenderView* render_view,
@@ -700,8 +707,12 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   if (load_id != render_view()->page_id())
     return;  // This capture call is no longer relevant due to navigation.
 
-  if (load_id == last_indexed_page_id_)
-    return;  // we already indexed this page
+  // Skip indexing if this is not a new load.  Note that the case where
+  // load_id == last_indexed_page_id_ is more complicated, since we need to
+  // reindex if the toplevel URL has changed (such as from a redirect), even
+  // though this may not cause the page id to be incremented.
+  if (load_id < last_indexed_page_id_)
+    return;
 
   if (!render_view()->webview())
     return;
@@ -720,13 +731,29 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   if (ds && ds->hasUnreachableURL())
     return;
 
+  bool same_page_id = last_indexed_page_id_ == load_id;
   if (!preliminary_capture)
     last_indexed_page_id_ = load_id;
 
   // Get the URL for this page.
   GURL url(main_frame->document().url());
-  if (url.is_empty())
+  if (url.is_empty()) {
+    if (!preliminary_capture)
+      last_indexed_url_ = GURL();
     return;
+  }
+
+  // If the page id is unchanged, check whether the URL (ignoring fragments)
+  // has changed.  If so, we need to reindex.  Otherwise, assume this is a
+  // reload, in-page navigation, or some other load type where we don't want to
+  // reindex.  Note: subframe navigations after onload increment the page id,
+  // so these will trigger a reindex.
+  GURL stripped_url(StripRef(url));
+  if (same_page_id && stripped_url == last_indexed_url_)
+    return;
+
+  if (!preliminary_capture)
+    last_indexed_url_ = stripped_url;
 
   // Retrieve the frame's full text.
   string16 contents;
