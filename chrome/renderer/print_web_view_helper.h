@@ -6,7 +6,6 @@
 #define CHROME_RENDERER_PRINT_WEB_VIEW_HELPER_H_
 #pragma once
 
-#include <utility>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -109,6 +108,8 @@ class PrintWebViewHelper : public RenderViewObserver,
                            OnPrintForPrintPreview);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
                            OnPrintForPrintPreviewFail);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
+                           OnPrintPreviewForSelectedPages);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintLayoutTest);
@@ -139,8 +140,8 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Returns true if print preview should continue, false on failure.
   bool RenderPreviewPage(int page_number);
 
-  // Finalize the print preview document.
-  bool FinalizePreviewDocument();
+  // Finalize the print ready preview document.
+  bool FinalizePrintReadyDocument();
 
   // Print / preview the node under the context menu.
   void OnPrintNodeUnderContextMenu();
@@ -302,6 +303,7 @@ class PrintWebViewHelper : public RenderViewObserver,
 
   scoped_ptr<PrintMsg_PrintPages_Params> print_pages_params_;
   bool is_preview_;
+  bool is_print_ready_metafile_sent_;
 
   // Used for scripted initiated printing blocking.
   base::Time last_cancelled_script_print_;
@@ -339,8 +341,11 @@ class PrintWebViewHelper : public RenderViewObserver,
     // rendering took.
     void RenderedPreviewPage(const base::TimeDelta& page_time);
 
-    // Finalizes the print preview document.
-    void FinalizePreviewDocument();
+    // Updates the print preview context when the required pages are rendered.
+    void AllPagesRendered();
+
+    // Finalizes the print ready preview document.
+    void FinalizePrintReadyDocument();
 
     // Cleanup after print preview finishes.
     void Finished();
@@ -352,11 +357,16 @@ class PrintWebViewHelper : public RenderViewObserver,
     int GetNextPageNumber();
     bool IsReadyToRender() const;
     bool IsModifiable() const;
+    bool IsLastPageOfPrintReadyMetafile() const;
+
+    // Setters
+    void set_generate_draft_pages(bool generate_draft_pages);
 
     // Getters
     WebKit::WebFrame* frame() const;
     WebKit::WebNode* node() const;
     int total_page_count() const;
+    bool generate_draft_pages();
     printing::PreviewMetafile* metafile() const;
     const PrintMsg_Print_Params& print_params() const;
     const gfx::Size& GetPrintCanvasSize() const;
@@ -383,13 +393,17 @@ class PrintWebViewHelper : public RenderViewObserver,
     // Total page count in the renderer.
     int total_page_count_;
 
-    // Number of pages to render.
-    int actual_page_count_;
-
     // The current page to render.
     int current_page_index_;
 
+    // List of page indices that need to be rendered.
     std::vector<int> pages_to_render_;
+
+    // True, when draft pages needs to be generated.
+    bool generate_draft_pages_;
+
+    // Specifies the total number of pages in the print ready metafile.
+    int print_ready_metafile_page_count_;
 
     base::TimeDelta document_render_time_;
     base::TimeTicks begin_time_;

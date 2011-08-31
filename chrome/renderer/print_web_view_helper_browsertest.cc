@@ -50,6 +50,7 @@ void CreatePrintSettingsDictionary(DictionaryValue* dict) {
   dict->SetBoolean(printing::kIsFirstRequest, true);
   dict->SetBoolean(printing::kSettingDefaultMarginsSelected, true);
   dict->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
+  dict->SetBoolean(printing::kSettingGenerateDraftData, true);
 }
 
 }  // namespace
@@ -327,12 +328,12 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   void VerifyPrintPreviewGenerated(bool generated_preview) {
     const IPC::Message* preview_msg =
         render_thread_.sink().GetUniqueMessageMatching(
-            PrintHostMsg_PagesReadyForPreview::ID);
+            PrintHostMsg_MetafileReadyForPrinting::ID);
     bool did_get_preview_msg = (NULL != preview_msg);
     ASSERT_EQ(generated_preview, did_get_preview_msg);
     if (did_get_preview_msg) {
-      PrintHostMsg_PagesReadyForPreview::Param preview_param;
-      PrintHostMsg_PagesReadyForPreview::Read(preview_msg, &preview_param);
+      PrintHostMsg_MetafileReadyForPrinting::Param preview_param;
+      PrintHostMsg_MetafileReadyForPrinting::Read(preview_msg, &preview_param);
       EXPECT_NE(0, preview_param.a.document_cookie);
       EXPECT_NE(0, preview_param.a.expected_pages_count);
       EXPECT_NE(0U, preview_param.a.data_size);
@@ -343,6 +344,28 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
     bool print_failed = (render_thread_.sink().GetUniqueMessageMatching(
         PrintHostMsg_PrintingFailed::ID) != NULL);
     EXPECT_EQ(did_fail, print_failed);
+  }
+
+  // |page_number| is 0-based.
+  void VerifyDidPreviewPage(bool generate_draft_pages, int page_number) {
+    bool msg_found = false;
+    size_t msg_count = render_thread_.sink().message_count();
+    for (size_t i = 0; i < msg_count; ++i) {
+      const IPC::Message* msg = render_thread_.sink().GetMessageAt(i);
+      if (msg->type() == PrintHostMsg_DidPreviewPage::ID) {
+        PrintHostMsg_DidPreviewPage::Param page_param;
+        PrintHostMsg_DidPreviewPage::Read(msg, &page_param);
+        if (page_param.a.page_number == page_number) {
+          msg_found = true;
+          if (generate_draft_pages)
+            EXPECT_NE(0U, page_param.a.data_size);
+          else
+            EXPECT_EQ(0U, page_param.a.data_size);
+          break;
+        }
+      }
+    }
+    ASSERT_EQ(generate_draft_pages, msg_found);
   }
 
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperPreviewTest);
@@ -360,6 +383,40 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
 
   EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+}
+
+// Test to verify that complete metafile is generated for a subset of pages
+// without creating draft pages.
+TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
+  LoadHTML(kHelloWorldHTML);
+
+  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+
+  // Set a page range and update the dictionary to generate only the complete
+  // metafile with the selected pages. Page numbers used in the dictionary
+  // are 1-based.
+  DictionaryValue* page_range = new DictionaryValue();
+  page_range->SetInteger(printing::kSettingPageRangeFrom, 1);
+  page_range->SetInteger(printing::kSettingPageRangeTo, 1);
+
+  ListValue* page_range_array = new ListValue();
+  page_range_array->Append(page_range);
+
+  dict.Set(printing::kSettingPageRange, page_range_array);
+  dict.SetBoolean(printing::kSettingGenerateDraftData, false);
+
+  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
+
+  // Verify that we did not create the draft metafile for the first page.
+  VerifyDidPreviewPage(false, 0);
+
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(true);

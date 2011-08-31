@@ -497,6 +497,7 @@ PrintWebViewHelper::PrintWebViewHelper(RenderView* render_view)
       RenderViewObserverTracker<PrintWebViewHelper>(render_view),
       print_web_view_(NULL),
       is_preview_(switches::IsPrintPreviewEnabled()),
+      is_print_ready_metafile_sent_(false),
       user_cancelled_scripted_print_count_(0),
       notify_browser_of_print_failure_(true) {
 }
@@ -656,14 +657,24 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
     preview_params.preview_request_id =
         print_pages_params_->params.preview_request_id;
 
-    Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+    Send(new PrintHostMsg_MetafileReadyForPrinting(routing_id(),
+                                                   preview_params));
     return;
   }
   // Always clear |old_print_pages_params_| before rendering the pages.
   old_print_pages_params_.reset();
+  is_print_ready_metafile_sent_ = false;
 
   // PDF printer device supports alpha blending.
   print_pages_params_->params.supports_alpha_blend = true;
+
+  bool generate_draft_pages = false;
+  if (!settings.GetBoolean(printing::kSettingGenerateDraftData,
+                           &generate_draft_pages)) {
+    NOTREACHED();
+  }
+  print_preview_context_.set_generate_draft_pages(generate_draft_pages);
+
   if (CreatePreviewDocument()) {
     DidFinishPrinting(OK);
   } else {
@@ -683,6 +694,7 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   params.is_modifiable = print_preview_context_.IsModifiable();
   params.document_cookie = print_pages_params_->params.document_cookie;
   params.preview_request_id = print_pages_params_->params.preview_request_id;
+  params.clear_preview_data = print_preview_context_.generate_draft_pages();
   Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params));
   if (CheckForCancel())
     return false;
@@ -693,17 +705,20 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
       return false;
     if (CheckForCancel())
       return false;
-  };
-
-  // Finished generating preview. Finalize the document.
-  if (!FinalizePreviewDocument())
-    return false;
+    if (print_preview_context_.IsLastPageOfPrintReadyMetafile()) {
+      // Finished generating preview. Finalize the document.
+      if (!FinalizePrintReadyDocument())
+        return false;
+    }
+  }
+  print_preview_context_.AllPagesRendered();
   print_preview_context_.Finished();
   return true;
 }
 
-bool PrintWebViewHelper::FinalizePreviewDocument() {
-  print_preview_context_.FinalizePreviewDocument();
+bool PrintWebViewHelper::FinalizePrintReadyDocument() {
+  DCHECK(!is_print_ready_metafile_sent_);
+  print_preview_context_.FinalizePrintReadyDocument();
 
   // Get the size of the resulting metafile.
   printing::PreviewMetafile* metafile = print_preview_context_.metafile();
@@ -726,7 +741,9 @@ bool PrintWebViewHelper::FinalizePreviewDocument() {
     LOG(ERROR) << "CopyMetafileDataToSharedMem failed";
     return false;
   }
-  Send(new PrintHostMsg_PagesReadyForPreview(routing_id(), preview_params));
+  is_print_ready_metafile_sent_ = true;
+
+  Send(new PrintHostMsg_MetafileReadyForPrinting(routing_id(), preview_params));
   return true;
 }
 
@@ -1254,8 +1271,10 @@ bool PrintWebViewHelper::PreviewPageRendered(int page_number,
   DCHECK_GE(page_number, printing::FIRST_PAGE_INDEX);
 
   // For non-modifiable files, |metafile| should be NULL, so do not bother
-  // sending a message.
-  if (!print_preview_context_.IsModifiable()) {
+  // sending a message. If we don't generate draft metafiles, |metafile| is
+  // NULL.
+  if (!print_preview_context_.IsModifiable() ||
+      !print_preview_context_.generate_draft_pages()) {
     DCHECK(!metafile);
     return true;
   }
@@ -1286,8 +1305,9 @@ bool PrintWebViewHelper::PreviewPageRendered(int page_number,
 PrintWebViewHelper::PrintPreviewContext::PrintPreviewContext()
     : frame_(NULL),
       total_page_count_(0),
-      actual_page_count_(0),
       current_page_index_(0),
+      generate_draft_pages_(true),
+      print_ready_metafile_page_count_(0),
       state_(UNINITIALIZED) {
 }
 
@@ -1341,22 +1361,24 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
     return false;
   }
 
+  int selected_page_count = pages.size();
   current_page_index_ = 0;
-  if (pages.empty()) {
-    actual_page_count_ = total_page_count_;
-    for (int i = 0; i < actual_page_count_; ++i)
+  print_ready_metafile_page_count_ = selected_page_count;
+  pages_to_render_ = pages;
+
+  if (selected_page_count == 0) {
+    print_ready_metafile_page_count_ = total_page_count_;
+    // Render all pages.
+    for (int i = 0; i < total_page_count_; i++)
       pages_to_render_.push_back(i);
-  } else {
-    actual_page_count_ = pages.size();
-    for (int i = 0; i < actual_page_count_; ++i) {
-      int page_number = pages[i];
-      if (page_number < printing::FIRST_PAGE_INDEX ||
-          page_number >= total_page_count_) {
-        LOG(ERROR) << "CreatePreviewDocument got invalid page count "
-                << page_number << " at index " << i;
-        return false;
+  } else if (generate_draft_pages_) {
+    int pages_index = 0;
+    for (int i = 0; i < total_page_count_; i++) {
+      if (pages_index < selected_page_count && i == pages[pages_index]) {
+        pages_index++;
+        continue;
       }
-      pages_to_render_.push_back(page_number);
+      pages_to_render_.push_back(i);
     }
   }
 
@@ -1373,16 +1395,20 @@ void PrintWebViewHelper::PrintPreviewContext::RenderedPreviewPage(
   UMA_HISTOGRAM_TIMES("PrintPreview.RenderPDFPageTime", page_time);
 }
 
-void PrintWebViewHelper::PrintPreviewContext::FinalizePreviewDocument() {
+void PrintWebViewHelper::PrintPreviewContext::AllPagesRendered() {
   DCHECK_EQ(RENDERING, state_);
   state_ = DONE;
+  prep_frame_view_->FinishPrinting();
+}
+
+void PrintWebViewHelper::PrintPreviewContext::FinalizePrintReadyDocument() {
+  if (state_ != DONE && state_ != RENDERING)
+    NOTREACHED();
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
-
-  prep_frame_view_->FinishPrinting();
   metafile_->FinishDocument();
 
-  if (actual_page_count_ <= 0) {
+  if (print_ready_metafile_page_count_ <= 0) {
     NOTREACHED();
     return;
   }
@@ -1394,7 +1420,7 @@ void PrintWebViewHelper::PrintPreviewContext::FinalizePreviewDocument() {
   UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTime",
                              total_time);
   UMA_HISTOGRAM_MEDIUM_TIMES("PrintPreview.RenderAndGeneratePDFTimeAvgPerPage",
-                             total_time / actual_page_count_);
+                             total_time / pages_to_render_.size());
 }
 
 void PrintWebViewHelper::PrintPreviewContext::Finished() {
@@ -1410,7 +1436,7 @@ void PrintWebViewHelper::PrintPreviewContext::Failed() {
 
 int PrintWebViewHelper::PrintPreviewContext::GetNextPageNumber() {
   DCHECK_EQ(RENDERING, state_);
-  if (current_page_index_ >= actual_page_count_)
+  if ((size_t)(current_page_index_) == pages_to_render_.size())
     return -1;
   return pages_to_render_[current_page_index_++];
 }
@@ -1429,6 +1455,16 @@ bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
   return mime != "application/pdf";
 }
 
+bool PrintWebViewHelper::PrintPreviewContext::IsLastPageOfPrintReadyMetafile()
+    const {
+  return current_page_index_ == print_ready_metafile_page_count_;
+}
+
+void PrintWebViewHelper::PrintPreviewContext::set_generate_draft_pages(
+    bool generate_draft_pages) {
+  generate_draft_pages_ = generate_draft_pages;
+}
+
 WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {
   return frame_;
 }
@@ -1440,6 +1476,10 @@ WebKit::WebNode* PrintWebViewHelper::PrintPreviewContext::node() const {
 int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {
   DCHECK(IsReadyToRender());
   return total_page_count_;
+}
+
+bool PrintWebViewHelper::PrintPreviewContext::generate_draft_pages() {
+  return generate_draft_pages_;
 }
 
 printing::PreviewMetafile*

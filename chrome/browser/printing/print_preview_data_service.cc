@@ -49,6 +49,16 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
     page_data_map_[index] = const_cast<RefCountedBytes*>(data);
   }
 
+  // Returns the available draft page count.
+  int GetAvailableDraftPageCount() {
+    int page_data_map_size = page_data_map_.size();
+    if (page_data_map_.find(printing::COMPLETE_PREVIEW_DOCUMENT_INDEX) !=
+        page_data_map_.end()) {
+      page_data_map_size--;
+    }
+    return page_data_map_size;
+  }
+
  private:
   friend class base::RefCounted<PrintPreviewDataStore>;
 
@@ -104,4 +114,11 @@ void PrintPreviewDataService::RemoveEntry(
   PreviewDataStoreMap::iterator it = data_store_map_.find(preview_ui_addr_str);
   if (it != data_store_map_.end())
     data_store_map_.erase(it);
+}
+
+int PrintPreviewDataService::GetAvailableDraftPageCount(
+    const std::string& preview_ui_addr_str) {
+  if (data_store_map_.find(preview_ui_addr_str) != data_store_map_.end())
+    return data_store_map_[preview_ui_addr_str]->GetAvailableDraftPageCount();
+  return 0;
 }

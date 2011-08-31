@@ -41,6 +41,9 @@ class PrintPreviewUI : public ChromeWebUI {
   // Clear the existing print preview data.
   void ClearAllPreviewData();
 
+  // Returns the available draft page count.
+  int GetAvailableDraftPageCount();
+
   // Setters
   void SetInitiatorTabURLAndTitle(const std::string& initiator_url,
                                   const string16& initiator_tab_title);
@@ -80,6 +83,8 @@ class PrintPreviewUI : public ChromeWebUI {
   void OnPreviewDataIsAvailable(int expected_pages_count,
                                 int preview_request_id);
 
+  // Notifies the Web UI renderer to reuse the preview data.
+  // |preview_request_id| indicates which request resulted in this response.
   void OnReusePreviewData(int preview_request_id);
 
   // Notifies the Web UI that preview tab is destroyed. This is the last chance

@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -479,6 +480,7 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
+  DCHECK(args->GetSize() == 3);
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
@@ -519,6 +521,31 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
     if (entry)
       url = entry->virtual_url().spec();
     settings->SetString(printing::kSettingHeaderFooterURL, url);
+  }
+
+  bool generate_draft_data = false;
+  if (!settings->GetBoolean(printing::kSettingGenerateDraftData,
+                            &generate_draft_data)) {
+    NOTREACHED();
+  }
+
+  if (!generate_draft_data) {
+    int draft_page_count = -1;
+    bool preview_modifiable = false;
+    std::string draft_page_count_str;
+    if (!args->GetString(1, &draft_page_count_str) ||
+        !base::StringToInt(draft_page_count_str, &draft_page_count)) {
+      NOTREACHED();
+      draft_page_count = -1;
+    }
+
+    if (!args->GetBoolean(2, &preview_modifiable))
+      NOTREACHED();
+
+    if (draft_page_count != -1 && preview_modifiable &&
+        print_preview_ui->GetAvailableDraftPageCount() != draft_page_count) {
+      settings->SetBoolean(printing::kSettingGenerateDraftData, true);
+    }
   }
 
   VLOG(1) << "Print preview request start";

@@ -39,7 +39,7 @@ PrintPreviewWebUITest.prototype = {
     MockPrintPreviewHandler.prototype = {
       getDefaultPrinter: function() {},
       getPrinters: function() {},
-      getPreview: function(settings) {},
+      getPreview: function(settings, draft_page_count, modifiable) {},
       print: function(settings) {},
       getPrinterCapabilities: function(printerName) {},
       showSystemDialog: function() {},
@@ -72,8 +72,8 @@ PrintPreviewWebUITest.prototype = {
         }));
     var savedArgs = new SaveMockArguments();
     mockHandler.stubs().getPreview(savedArgs.match(NOT_NULL)).
-        will(callFunctionWithSavedArgs(savedArgs, function(options) {
-          updatePrintPreview('title', true, 1, JSON.parse(options).requestID);
+        will(callFunctionWithSavedArgs(savedArgs, function(args) {
+          updatePrintPreview(1, JSON.parse(args[0]).requestID);
         }));
 
     mockHandler.stubs().getPrinters().
@@ -143,19 +143,21 @@ PrintPreviewWebUITest.prototype = {
    * attaches an HTMLDivElement to the |mainview| element with attributes and
    * empty methods, which are used by testing and that would be provided by the
    * HTMLEmbedElement when the PDF plugin exists.
-   * @param {string} previewUid Preview unique identifier.
+   * @param {number} srcDataIndex Preview data source index.
    */
-  createPDFPlugin: function(previewUid) {
+  createPDFPlugin: function(srcDataIndex) {
     var pdfViewer = $('pdf-viewer');
     if (pdfViewer)
       return;
 
+    var previewUid = 1;
     pdfViewer = document.createElement('div');
     pdfViewer.setAttribute('id', 'pdf-viewer');
     pdfViewer.setAttribute('type',
                            'application/x-google-chrome-print-preview-pdf');
     pdfViewer.setAttribute(
-        'src', 'chrome://print/' + previewUid + '/print.pdf');
+        'src',
+        'chrome://print/' + previewUid + '/' + srcDataIndex + '/print.pdf');
     pdfViewer.setAttribute('aria-live', 'polite');
     pdfViewer.setAttribute('aria-atomic', 'true');
     function fakeFunction() {}
@@ -341,9 +343,8 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
 TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
   var savedArgs = new SaveMockArguments();
   this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
-      will(callFunctionWithSavedArgs(savedArgs, function(options) {
-        updatePrintPreview('title', true, 2,
-                           JSON.parse(options).requestID);
+      will(callFunctionWithSavedArgs(savedArgs, function(args) {
+        updatePrintPreview(2, JSON.parse(args[0]).requestID);
       }));
 
   this.mockGlobals.expects(once()).updateWithPrinterCapabilities(

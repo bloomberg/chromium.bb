@@ -24,6 +24,12 @@ const MORE_PRINTERS = 'morePrinters';
 const SIGN_IN = 'signIn';
 const PRINT_TO_PDF = 'Print to PDF';
 
+// State of the print preview settings.
+var printSettings = new PrintSettings();
+
+// Print ready data index.
+const PRINT_READY_DATA_INDEX = -1;
+
 // The name of the default or last used printer.
 var defaultOrLastUsedPrinterName = '';
 
@@ -38,6 +44,9 @@ var initialPreviewRequestID = -1;
 
 // True when a pending print file request exists.
 var hasPendingPrintDocumentRequest = false;
+
+// True when a pending print ready document request exists.
+var hasPendingPrintReadyDocumentRequest = false;
 
 // True when preview tab is hidden.
 var isTabHidden = false;
@@ -68,6 +77,11 @@ var showingSystemDialog = false;
 var firstCloudPrintOptionPos = 0;
 var lastCloudPrintOptionPos = firstCloudPrintOptionPos;
 
+// Store the current previewUid.
+var currentPreviewUid = '';
+
+// True if we need to generate draft preview data.
+var generateDraftData = true;
 
 // TODO(abodenha@chromium.org) A lot of cloud print specific logic has
 // made its way into this file.  Refactor to create a cleaner boundary
@@ -336,7 +350,8 @@ function getSettings() {
        'headerFooterEnabled': headerFooterSettings.hasHeaderFooter(),
        'defaultMarginsSelected': marginSettings.isDefaultMarginsSelected(),
        'margins': marginSettings.customMargins,
-       'requestID': -1};
+       'requestID': -1,
+       'generateDraftData': generateDraftData};
 
   var printerList = $('printer-list');
   var selectedPrinter = printerList.selectedIndex;
@@ -413,7 +428,7 @@ function getSelectedPrinterName() {
  * called once the preview loads.
  */
 function requestToPrintDocument() {
-  hasPendingPrintDocumentRequest = hasPendingPreviewRequest;
+  hasPendingPrintDocumentRequest = hasPendingPrintReadyDocumentRequest;
   var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
 
   if (hasPendingPrintDocumentRequest) {
@@ -467,15 +482,50 @@ function sendPrintDocumentRequest() {
 }
 
 /**
+ * Loads the selected preview pages.
+ */
+function loadSelectedPages() {
+  hasPendingPreviewRequest = false;
+  pageSettings.updatePageSelection();
+  var pageSet = pageSettings.previouslySelectedPages;
+  var pageCount = pageSet.length;
+  if (pageCount == 0 || currentPreviewUid == '')
+    return;
+
+  cr.dispatchSimpleEvent(document, 'updateSummary');
+  for (var i = 0; i < pageCount; i++)
+    onDidPreviewPage(pageSet[i] - 1, currentPreviewUid, lastPreviewRequestID);
+}
+
+/**
  * Asks the browser to generate a preview PDF based on current print settings.
  */
 function requestPrintPreview() {
-  hasPendingPreviewRequest = true;
-  layoutSettings.updateState();
   if (!isTabHidden)
     showLoadingAnimation();
 
-  chrome.send('getPreview', [JSON.stringify(getSettingsWithRequestID())]);
+  if (!hasPendingPreviewRequest && previewModifiable &&
+      hasOnlyPageSettingsChanged()) {
+    loadSelectedPages();
+    generateDraftData = false;
+  } else {
+    hasPendingPreviewRequest = true;
+    generateDraftData = true;
+    pageSettings.updatePageSelection();
+  }
+
+  printSettings.save();
+  layoutSettings.updateState();
+  hasPendingPrintReadyDocumentRequest = true;
+
+  var totalPageCount = pageSettings.totalPageCount;
+  if (!previewModifiable && totalPageCount > 0)
+    generateDraftData = false;
+
+  var pageCount = totalPageCount != undefined ? totalPageCount : -1;
+  chrome.send('getPreview', [JSON.stringify(getSettingsWithRequestID()),
+                             String(pageCount),
+                             previewModifiable]);
 }
 
 /**
@@ -889,12 +939,18 @@ function onDidPreviewPage(pageNumber, previewUid, previewResponseId) {
   if (!previewModifiable)
     return;
 
-  var pageIndex = pageSettings.previouslySelectedPages.indexOf(pageNumber + 1);
-
   if (pageSettings.requestPrintPreviewIfNeeded())
     return;
-  if (pageIndex == 0)
-    createPDFPlugin(previewUid);
+
+  var pageIndex = pageSettings.previouslySelectedPages.indexOf(pageNumber + 1);
+  if (pageIndex == -1)
+    return;
+
+  currentPreviewUid = previewUid;
+  if (pageIndex == 0) {
+    createPDFPlugin(pageNumber);
+    hasPendingPreviewRequest = false;
+  }
 
   $('pdf-viewer').loadPreviewPage(
       getPageSrcURL(previewUid, pageNumber), pageIndex);
@@ -913,10 +969,12 @@ function updatePrintPreview(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
   hasPendingPreviewRequest = false;
+  hasPendingPrintReadyDocumentRequest = false;
 
   if (!previewModifiable) {
     // If the preview is not modifiable the plugin has not been created yet.
-    createPDFPlugin(previewUid);
+    currentPreviewUid = previewUid;
+    createPDFPlugin(PRINT_READY_DATA_INDEX);
   }
 
   cr.dispatchSimpleEvent(document, 'updatePrintButton');
@@ -926,28 +984,43 @@ function updatePrintPreview(previewUid, previewResponseId) {
 }
 
 /**
- * Create the PDF plugin or reload the existing one.
- * @param {string} previewUid Preview unique identifier.
+ * Check if only page selection has been changed since the last preview request
+ * and is valid.
+ * @return {boolean} true if the new page selection is valid.
  */
-function createPDFPlugin(previewUid) {
+function hasOnlyPageSettingsChanged() {
+  var tempPrintSettings = new PrintSettings();
+  tempPrintSettings.save();
+
+  return !!(printSettings.deviceName == tempPrintSettings.deviceName &&
+            printSettings.isLandscape == tempPrintSettings.isLandscape &&
+            printSettings.hasHeaderFooter ==
+                tempPrintSettings.hasHeaderFooter &&
+            pageSettings.hasPageSelectionChangedAndIsValid());
+}
+
+/**
+ * Create the PDF plugin or reload the existing one.
+ * @param {number} srcDataIndex Preview data source index.
+ */
+function createPDFPlugin(srcDataIndex) {
   var pdfViewer = $('pdf-viewer');
+  var srcURL = getPageSrcURL(currentPreviewUid, srcDataIndex);
   if (pdfViewer) {
     // Need to call this before the reload(), where the plugin resets its
     // internal page count.
     pdfViewer.goToPage('0');
+    pdfViewer.resetPrintPreviewUrl(srcURL);
     pdfViewer.reload();
     pdfViewer.grayscale(!colorSettings.isColor());
     return;
   }
 
-  // Get the complete preview document.
-  var dataIndex = previewModifiable ? '0' : '-1';
-
   pdfViewer = document.createElement('embed');
   pdfViewer.setAttribute('id', 'pdf-viewer');
   pdfViewer.setAttribute('type',
                          'application/x-google-chrome-print-preview-pdf');
-  pdfViewer.setAttribute('src', getPageSrcURL(previewUid, dataIndex));
+  pdfViewer.setAttribute('src', srcURL);
   pdfViewer.setAttribute('aria-live', 'polite');
   pdfViewer.setAttribute('aria-atomic', 'true');
   $('mainview').appendChild(pdfViewer);
@@ -965,7 +1038,8 @@ function checkCompatiblePluginExists() {
             dummyPlugin.goToPage &&
             dummyPlugin.removePrintButton &&
             dummyPlugin.loadPreviewPage &&
-            dummyPlugin.printPreviewPageCount);
+            dummyPlugin.printPreviewPageCount &&
+            dummyPlugin.resetPrintPreviewUrl);
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);
@@ -979,6 +1053,24 @@ function setDefaultValuesAndRegeneratePreview(resetMargins) {
     marginSettings.resetMarginsIfNeeded();
   pageSettings.resetState();
   requestPrintPreview();
+}
+
+/**
+ * Class that represents the state of the print settings.
+ */
+function PrintSettings() {
+  this.deviceName = '';
+  this.isLandscape = '';
+  this.hasHeaderFooter = '';
+}
+
+/**
+ *  Takes a snapshot of the print settings.
+ */
+PrintSettings.prototype.save = function() {
+  this.deviceName = getSelectedPrinterName();
+  this.isLandscape = layoutSettings.isLandscape();
+  this.hasHeaderFooter = headerFooterSettings.hasHeaderFooter();
 }
 
 /// Pull in all other scripts in a single shot.

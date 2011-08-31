@@ -104,6 +104,11 @@ void PrintPreviewUI::ClearAllPreviewData() {
   print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
 }
 
+int PrintPreviewUI::GetAvailableDraftPageCount() {
+  return print_preview_data_service()->GetAvailableDraftPageCount(
+      preview_ui_addr_str_);
+}
+
 void PrintPreviewUI::SetInitiatorTabURLAndTitle(
     const std::string& initiator_url,
     const string16& job_title) {

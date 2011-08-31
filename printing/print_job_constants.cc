@@ -43,6 +43,9 @@ const char kSettingDeviceName[] = "deviceName";
 // Print job duplex mode.
 const char kSettingDuplexMode[] = "duplex";
 
+// True, when a new set of draft preview data is required.
+const char kSettingGenerateDraftData[] = "generateDraftData";
+
 // Option to print headers and Footers: true if selected, false if not.
 const char kSettingHeaderFooterEnabled[] = "headerFooterEnabled";
 

@@ -202,6 +202,9 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidGetPreviewPageCount_Params)
 
   // The id of the preview request.
   IPC_STRUCT_MEMBER(int, preview_request_id)
+
+  // Indicates whether the existing preview data needs to be cleared or not.
+  IPC_STRUCT_MEMBER(bool, clear_preview_data)
 IPC_STRUCT_END()
 
 // Parameters to describe a rendered page.
@@ -365,7 +368,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PrintHostMsg_CheckForCancel,
 // Sends back to the browser the complete rendered document for print preview
 // that was requested by a PrintMsg_PrintPreview message. The memory handle in
 // this message is already valid in the browser process.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_PagesReadyForPreview,
+IPC_MESSAGE_ROUTED1(PrintHostMsg_MetafileReadyForPrinting,
                     PrintHostMsg_DidPreviewDocument_Params /* params */)
 
 // Tell the browser printing failed.

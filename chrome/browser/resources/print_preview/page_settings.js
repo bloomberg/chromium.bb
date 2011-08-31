@@ -177,9 +177,8 @@ cr.define('print_preview', function() {
     /**
      * Updates |this.previouslySelectedPages_| with the currently selected
      * pages.
-     * @private
      */
-    updatePageSelection_: function() {
+    updatePageSelection: function() {
       this.previouslySelectedPages_ = this.selectedPagesSet;
     },
 
@@ -191,6 +190,14 @@ cr.define('print_preview', function() {
     hasPageSelectionChanged_: function() {
       return !areArraysEqual(this.previouslySelectedPages_,
                              this.selectedPagesSet);
+    },
+
+    /**
+     * Checks if the page selection has changed and is valid.
+     * @return {boolean} true if the page selection is changed and is valid.
+     */
+    hasPageSelectionChangedAndIsValid: function() {
+      return this.isPageSelectionValid() && this.hasPageSelectionChanged_();
     },
 
     /**
@@ -212,8 +219,8 @@ cr.define('print_preview', function() {
      * @return {boolean} true if a new preview was requested.
      */
     requestPrintPreviewIfNeeded: function() {
-      if (this.isPageSelectionValid() && this.hasPageSelectionChanged_()) {
-        this.updatePageSelection_();
+      if (this.hasPageSelectionChangedAndIsValid()) {
+        this.updatePageSelection();
         requestPrintPreview();
         return true;
       }
@@ -274,7 +281,6 @@ cr.define('print_preview', function() {
         cr.dispatchSimpleEvent(document, 'updatePrintButton');
         return;
       }
-      this.previouslySelectedPages_ = this.selectedPagesSet;
       requestPrintPreview();
     },
 

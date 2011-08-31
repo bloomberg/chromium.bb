@@ -40,6 +40,9 @@ class PrintPreviewDataService {
   // Remove the corresponding PrintPreviewUI entry from the map.
   void RemoveEntry(const std::string& preview_ui_addr_str);
 
+  // Returns the available draft page count.
+  int GetAvailableDraftPageCount(const std::string& preview_ui_addr_str);
+
  private:
   friend struct DefaultSingletonTraits<PrintPreviewDataService>;
 

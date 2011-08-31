@@ -127,24 +127,33 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   // Calculate the dpi adjustment.
   float scale_factor = static_cast<float>(print_params.desired_dpi /
                                           print_params.dpi);
+  scoped_ptr<Metafile> draft_metafile;
+  printing::Metafile* initial_render_metafile =
+      print_preview_context_.metafile();
+
+  if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
+    draft_metafile.reset(new printing::PreviewMetafile);
+    initial_render_metafile = draft_metafile.get();
+  }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   printing::Metafile* render_page_result =
       RenderPage(print_params, &scale_factor, page_number, true,
-                 print_preview_context_.frame(),
-                 print_preview_context_.metafile());
+                 print_preview_context_.frame(), initial_render_metafile);
   // In the preview flow, RenderPage will never return a new metafile.
-  DCHECK_EQ(render_page_result, print_preview_context_.metafile());
-
+  DCHECK_EQ(render_page_result, initial_render_metafile);
   print_preview_context_.RenderedPreviewPage(
       base::TimeTicks::Now() - begin_time);
 
-  scoped_ptr<printing::Metafile> page_metafile;
-  if (print_preview_context_.IsModifiable()) {
-    page_metafile.reset(
+  if (draft_metafile.get()) {
+    draft_metafile->FinishDocument();
+  } else if (print_preview_context_.IsModifiable() &&
+             print_preview_context_.generate_draft_pages()){
+    DCHECK(!draft_metafile.get());
+    draft_metafile.reset(
         print_preview_context_.metafile()->GetMetafileForCurrentPage());
   }
-  return PreviewPageRendered(page_number, page_metafile.get());
+  return PreviewPageRendered(page_number, draft_metafile.get());
 }
 
 Metafile* PrintWebViewHelper::RenderPage(
@@ -184,8 +193,11 @@ Metafile* PrintWebViewHelper::RenderPage(
   // can't be a stack object.
   SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
   canvas->unref();  // SkRefPtr and new both took a reference.
-  if (is_preview)
+  if (is_preview) {
     printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
+    printing::MetafileSkiaWrapper::SetDraftMode(canvas.get(),
+                                                is_print_ready_metafile_sent_);
+  }
 
   float webkit_scale_factor = frame->printPage(page_number, canvas.get());
 

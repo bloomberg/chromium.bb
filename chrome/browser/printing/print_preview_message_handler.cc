@@ -99,6 +99,10 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
 
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+
+  if (!params.is_modifiable || params.clear_preview_data)
+    print_preview_ui->ClearAllPreviewData();
+
   print_preview_ui->OnDidGetPreviewPageCount(params);
 }
 
@@ -111,10 +115,6 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
   PrintPreviewUI* print_preview_ui =
       static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
   int page_number = params.page_number;
-
-  if (page_number == FIRST_PAGE_INDEX)
-    print_preview_ui->ClearAllPreviewData();
-
   if (page_number >= FIRST_PAGE_INDEX && params.data_size) {
     RefCountedBytes* data_bytes =
         GetDataFromHandle(params.metafile_data_handle, params.data_size);
@@ -125,7 +125,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
   }
 }
 
-void PrintPreviewMessageHandler::OnPagesReadyForPreview(
+void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     const PrintHostMsg_DidPreviewDocument_Params& params) {
   // Always try to stop the worker.
   StopWorker(params.document_cookie);
@@ -219,8 +219,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnDidGetPreviewPageCount)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage,
                         OnDidPreviewPage)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_PagesReadyForPreview,
-                        OnPagesReadyForPreview)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting,
+                        OnMetafileReadyForPrinting)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDefaultPageLayout,
