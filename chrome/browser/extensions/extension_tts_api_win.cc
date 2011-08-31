@@ -43,7 +43,6 @@ class ExtensionTtsPlatformImplWin : public ExtensionTtsPlatformImpl {
   void OnSpeechEvent();
 
   base::win::ScopedComPtr<ISpVoice> speech_synthesizer_;
-  bool paused_;
 
   // These apply to the current utterance only.
   std::wstring utterance_;
@@ -99,11 +98,6 @@ bool ExtensionTtsPlatformImplWin::Speak(
     speech_synthesizer_->SetVolume(static_cast<uint16>(params.volume * 100));
   }
 
-  if (paused_) {
-    speech_synthesizer_->Resume();
-    paused_ = false;
-  }
-
   // TODO(dmazzoni): convert SSML to SAPI xml. http://crbug.com/88072
 
   utterance_ = UTF8ToWide(src_utterance);
@@ -111,7 +105,6 @@ bool ExtensionTtsPlatformImplWin::Speak(
   char_position_ = 0;
   std::wstring merged_utterance = prefix + utterance_ + suffix;
   prefix_len_ = prefix.size();
-
 
   HRESULT result = speech_synthesizer_->Speak(
       merged_utterance.c_str(),
@@ -121,19 +114,21 @@ bool ExtensionTtsPlatformImplWin::Speak(
 }
 
 bool ExtensionTtsPlatformImplWin::StopSpeaking() {
-  if (speech_synthesizer_ && !paused_) {
+  if (speech_synthesizer_) {
     // Clear the stream number so that any further events relating to this
     // utterance are ignored.
     stream_number_ = 0;
 
-    speech_synthesizer_->Pause();
-    paused_ = true;
+    if (IsSpeaking()) {
+      // Stop speech by speaking the empty string with the purge flag.
+      speech_synthesizer_->Speak(L"", SPF_ASYNC | SPF_PURGEBEFORESPEAK, NULL);
+    }
   }
   return true;
 }
 
 bool ExtensionTtsPlatformImplWin::IsSpeaking() {
-  if (speech_synthesizer_ && !paused_) {
+  if (speech_synthesizer_) {
     SPVOICESTATUS status;
     HRESULT result = speech_synthesizer_->GetStatus(&status, NULL);
     if (result == S_OK) {
@@ -192,8 +187,7 @@ void ExtensionTtsPlatformImplWin::OnSpeechEvent() {
 }
 
 ExtensionTtsPlatformImplWin::ExtensionTtsPlatformImplWin()
-  : speech_synthesizer_(NULL),
-    paused_(false) {
+  : speech_synthesizer_(NULL) {
   CoCreateInstance(
       CLSID_SpVoice,
       NULL,
