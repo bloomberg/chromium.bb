@@ -35,6 +35,7 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
   static const char kParamOAuthToken[];
   static const char kParamPlatform[];
   static const char kParamRequest[];
+  static const char kParamUserAffiliation[];
 
   // String constants for the device and app type we report to the server.
   static const char kValueAppType[];
@@ -42,6 +43,8 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
   static const char kValueRequestPolicy[];
   static const char kValueRequestRegister[];
   static const char kValueRequestUnregister[];
+  static const char kValueUserAffiliationManaged[];
+  static const char kValueUserAffiliationNone[];
 
  private:
   friend class DeviceManagementJobBase;
@@ -70,8 +73,13 @@ class DeviceManagementBackendImpl : public DeviceManagementBackend {
   virtual void ProcessPolicyRequest(
       const std::string& device_management_token,
       const std::string& device_id,
+      CloudPolicyDataStore::UserAffiliation affiliation,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* response_delegate);
+
+  // Converts a user affiliation to the appropriate query parameter value.
+  static const char* UserAffiliationToString(
+      CloudPolicyDataStore::UserAffiliation affiliation);
 
   // Keeps track of the jobs currently in flight.
   JobSet pending_jobs_;

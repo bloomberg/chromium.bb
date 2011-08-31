@@ -213,6 +213,8 @@ void BrowserPolicyConnector::InitializeUserPolicy(const std::string& user_name,
     user_policy_token_cache_->Load();
 
     user_data_store_->set_user_name(user_name);
+    user_data_store_->set_user_affiliation(GetUserAffiliation(user_name));
+
     if (token_service_ &&
         token_service_->HasTokenForService(
             GaiaConstants::kDeviceManagementService)) {
@@ -335,6 +337,21 @@ void BrowserPolicyConnector::InitializeDevicePolicySubsystem() {
         kServiceInitializationStartupDelay);
   }
 #endif
+}
+
+CloudPolicyDataStore::UserAffiliation
+    BrowserPolicyConnector::GetUserAffiliation(const std::string& user_name) {
+#if defined(OS_CHROMEOS)
+  if (install_attributes_.get()) {
+    size_t pos = user_name.find('@');
+    if (pos != std::string::npos &&
+        user_name.substr(pos + 1) == install_attributes_->GetDomain()) {
+      return CloudPolicyDataStore::USER_AFFILIATION_MANAGED;
+    }
+  }
+#endif
+
+  return CloudPolicyDataStore::USER_AFFILIATION_NONE;
 }
 
 // static

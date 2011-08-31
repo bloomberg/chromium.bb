@@ -44,9 +44,10 @@ class MockDeviceManagementBackend : public DeviceManagementBackend {
       const em::DeviceUnregisterRequest& request,
       DeviceUnregisterResponseDelegate* delegate));
 
-  MOCK_METHOD4(ProcessPolicyRequest, void(
+  MOCK_METHOD5(ProcessPolicyRequest, void(
       const std::string& device_management_token,
       const std::string& device_id,
+      CloudPolicyDataStore::UserAffiliation affiliation,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate));
 
@@ -83,7 +84,7 @@ ACTION(MockDeviceManagementBackendSucceedSpdyCloudPolicy) {
   // implementing support for signature verification).
   fetch_response->set_policy_data_signature("TODO");
   fetch_response->set_new_public_key("TODO");
-  arg3->HandlePolicyResponse(response);
+  arg4->HandlePolicyResponse(response);
 }
 
 ACTION_P(MockDeviceManagementBackendFailRegister, error) {
@@ -91,7 +92,7 @@ ACTION_P(MockDeviceManagementBackendFailRegister, error) {
 }
 
 ACTION_P(MockDeviceManagementBackendFailPolicy, error) {
-  arg3->OnError(error);
+  arg4->OnError(error);
 }
 
 }  // namespace policy
