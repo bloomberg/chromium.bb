@@ -97,6 +97,12 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   // Loads the default image for |request_id| and returns to the client.
   void LoadDefaultImage(int request_id);
 
+  // Tries loading component extension image. These usually come from resources
+  // instead of file system. Returns false if a given |icon| does not have
+  // a corresponding image in bundled resources.
+  bool TryLoadingComponentExtensionImage(const ExtensionResource& icon,
+                                         int request_id);
+
   // Loads the extension's |icon| for the given |request_id| and returns the
   // image to the client.
   void LoadExtensionImage(const ExtensionResource& icon, int request_id);
