@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
@@ -47,14 +48,14 @@ base::NativeLibrary LoadLibrary(const char* filename) {
 // TODO(backer): Find a more principled (less heavy handed) way to prevent a
 // race in the bindings initialization.
 #if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
-base::Lock g_lock;
+base::LazyInstance<base::Lock> g_lock(base::LINKER_INITIALIZED);
 #endif
 
 }  // namespace anonymous
 
 bool InitializeGLBindings(GLImplementation implementation) {
 #if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
-  base::AutoLock locked(g_lock);
+  base::AutoLock locked(g_lock.Get());
 #endif
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
