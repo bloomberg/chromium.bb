@@ -405,7 +405,6 @@ size_t PPB_URLLoader_Impl::FillUserBuffer() {
   buffer_.erase(buffer_.begin(), buffer_.begin() + bytes_to_copy);
 
   // If the buffer is getting too empty, resume asynchronous loading.
-  DCHECK(!is_asynchronous_load_suspended_);
   if (is_asynchronous_load_suspended_ &&
       buffer_.size() <= static_cast<size_t>(
           request_data_.prefetch_buffer_lower_threshold)) {
