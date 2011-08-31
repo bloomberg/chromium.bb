@@ -109,9 +109,6 @@ class SK_API PlatformDevice {
   virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
                                    const PlatformRect* src_rect) = 0;
 
-  // Sets the opacity of each pixel in the specified region to be opaque.
-  virtual void MakeOpaque(int x, int y, int width, int height) { }
-
   // Returns if GDI is allowed to render text to this device.
   virtual bool IsNativeFontRenderingAllowed();
 

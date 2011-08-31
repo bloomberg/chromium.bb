@@ -52,7 +52,6 @@ class SK_API BitmapPlatformDevice : public PlatformDevice, public SkDevice {
 
   virtual void DrawToNativeContext(HDC dc, int x, int y,
                                    const RECT* src_rect) OVERRIDE;
-  virtual void MakeOpaque(int x, int y, int width, int height) OVERRIDE;
 
   // Loads the given transform and clipping region into the HDC. This is
   // overridden from SkDevice.

@@ -44,7 +44,6 @@ class BitmapPlatformDevice : public PlatformDevice, public SkDevice {
   virtual CGContextRef GetBitmapContext();
   virtual void DrawToNativeContext(CGContextRef context, int x, int y,
                                    const CGRect* src_rect) OVERRIDE;
-  virtual void MakeOpaque(int x, int y, int width, int height) OVERRIDE;
 
   // SkDevice overrides
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
