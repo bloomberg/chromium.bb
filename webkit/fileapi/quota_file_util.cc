@@ -45,48 +45,25 @@ bool CanCopy(
   return true;
 }
 
-// A helper class to hook quota_util() methods before and after modifications.
-class ScopedOriginUpdateHelper {
- public:
-  explicit ScopedOriginUpdateHelper(
-      FileSystemOperationContext* operation_context,
-      const GURL& origin_url,
-      FileSystemType type)
-      : operation_context_(operation_context),
-        origin_url_(origin_url),
-        type_(type) {
-    DCHECK(operation_context_);
-    DCHECK(operation_context_->file_system_context());
-    DCHECK(type != kFileSystemTypeUnknown);
-    quota_util_ =
-        operation_context_->file_system_context()->GetQuotaUtil(type_);
-    quota_manager_proxy_ =
-        operation_context_->file_system_context()->quota_manager_proxy();
-    if (quota_util_)
-      quota_util_->StartUpdateOriginOnFileThread(origin_url_, type_);
-  }
+void NotifyUpdate(FileSystemOperationContext* operation_context,
+                  const GURL& origin_url,
+                  FileSystemType type,
+                  int64 growth) {
+  DCHECK(operation_context);
+  DCHECK(operation_context->file_system_context());
+  DCHECK(type != kFileSystemTypeUnknown);
 
-  ~ScopedOriginUpdateHelper() {
-    if (quota_util_)
-      quota_util_->EndUpdateOriginOnFileThread(origin_url_, type_);
-  }
+  FileSystemQuotaUtil* quota_util =
+      operation_context->file_system_context()->GetQuotaUtil(type);
+  QuotaManagerProxy* quota_manager_proxy =
+      operation_context->file_system_context()->quota_manager_proxy();
 
-  void NotifyUpdate(int64 growth) {
-    operation_context_->set_allowed_bytes_growth(
-        operation_context_->allowed_bytes_growth() - growth);
-    if (quota_util_)
-      quota_util_->UpdateOriginUsageOnFileThread(
-          quota_manager_proxy_, origin_url_, type_, growth);
-  }
-
- private:
-  FileSystemOperationContext* operation_context_;
-  FileSystemQuotaUtil* quota_util_;
-  QuotaManagerProxy* quota_manager_proxy_;
-  const GURL& origin_url_;
-  FileSystemType type_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedOriginUpdateHelper);
-};
+  operation_context->set_allowed_bytes_growth(
+      operation_context->allowed_bytes_growth() - growth);
+  if (quota_util)
+    quota_util->UpdateOriginUsageOnFileThread(
+        quota_manager_proxy, origin_url, type, growth);
+}
 
 }  // namespace (anonymous)
 
@@ -108,13 +85,6 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
     const FilePath& dest_file_path,
     bool copy) {
   DCHECK(fs_context);
-
-  // TODO(kinuko): For cross-filesystem move case we need 2 helpers, one for
-  // src and one for dest.
-  ScopedOriginUpdateHelper helper(
-      fs_context,
-      fs_context->dest_origin_url(),
-      fs_context->dest_type());
 
   int64 growth = 0;
 
@@ -138,7 +108,10 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
   if (error == base::PLATFORM_FILE_OK) {
     // TODO(kinuko): For cross-filesystem move case, call this with -growth
     // for source and growth for dest.
-    helper.NotifyUpdate(growth);
+    NotifyUpdate(fs_context,
+                 fs_context->dest_origin_url(),
+                 fs_context->dest_type(),
+                 growth);
   }
 
   return error;
@@ -148,10 +121,6 @@ base::PlatformFileError QuotaFileUtil::DeleteFile(
     FileSystemOperationContext* fs_context,
     const FilePath& file_path) {
   DCHECK(fs_context);
-  ScopedOriginUpdateHelper helper(
-      fs_context,
-      fs_context->src_origin_url(),
-      fs_context->src_type());
 
   int64 growth = 0;
   base::PlatformFileInfo file_info;
@@ -163,7 +132,10 @@ base::PlatformFileError QuotaFileUtil::DeleteFile(
       fs_context, file_path);
 
   if (error == base::PLATFORM_FILE_OK)
-    helper.NotifyUpdate(growth);
+    NotifyUpdate(fs_context,
+                 fs_context->src_origin_url(),
+                 fs_context->src_type(),
+                 growth);
 
   return error;
 }
@@ -173,10 +145,6 @@ base::PlatformFileError QuotaFileUtil::Truncate(
     const FilePath& path,
     int64 length) {
   int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
-  ScopedOriginUpdateHelper helper(
-      fs_context,
-      fs_context->src_origin_url(),
-      fs_context->src_type());
 
   int64 growth = 0;
   base::PlatformFileInfo file_info;
@@ -192,7 +160,10 @@ base::PlatformFileError QuotaFileUtil::Truncate(
       fs_context, path, length);
 
   if (error == base::PLATFORM_FILE_OK)
-    helper.NotifyUpdate(growth);
+    NotifyUpdate(fs_context,
+                 fs_context->src_origin_url(),
+                 fs_context->src_type(),
+                 growth);
 
   return error;
 }

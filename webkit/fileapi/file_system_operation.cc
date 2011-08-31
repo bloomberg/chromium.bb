@@ -23,6 +23,39 @@
 
 namespace fileapi {
 
+class FileSystemOperation::ScopedQuotaUtilHelper {
+ public:
+  ScopedQuotaUtilHelper(FileSystemContext* context,
+                        const GURL& origin_url,
+                        FileSystemType type);
+  ~ScopedQuotaUtilHelper();
+
+ private:
+  FileSystemQuotaUtil* quota_util_;
+  const GURL& origin_url_;
+  FileSystemType type_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedQuotaUtilHelper);
+};
+
+FileSystemOperation::ScopedQuotaUtilHelper::ScopedQuotaUtilHelper(
+    FileSystemContext* context, const GURL& origin_url, FileSystemType type)
+    : origin_url_(origin_url), type_(type) {
+  DCHECK(context);
+  DCHECK(type != kFileSystemTypeUnknown);
+  quota_util_ = context->GetQuotaUtil(type_);
+  if (quota_util_) {
+    DCHECK(quota_util_->proxy());
+    quota_util_->proxy()->StartUpdateOrigin(origin_url_, type_);
+  }
+}
+
+FileSystemOperation::ScopedQuotaUtilHelper::~ScopedQuotaUtilHelper() {
+  if (quota_util_) {
+    DCHECK(quota_util_->proxy());
+    quota_util_->proxy()->EndUpdateOrigin(origin_url_, type_);
+  }
+}
+
 FileSystemOperation::FileSystemOperation(
     FileSystemCallbackDispatcher* dispatcher,
     scoped_refptr<base::MessageLoopProxy> proxy,
@@ -104,6 +137,12 @@ void FileSystemOperation::DelayedCreateFileForQuota(
   } else {
     file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
   }
+
+  quota_util_helper_.reset(new ScopedQuotaUtilHelper(
+      file_system_context(),
+      file_system_operation_context_.src_origin_url(),
+      file_system_operation_context_.src_type()));
+
   FileSystemFileUtilProxy::EnsureFileExists(
       file_system_operation_context_,
       proxy_,
@@ -152,6 +191,12 @@ void FileSystemOperation::DelayedCreateDirectoryForQuota(
   } else {
     file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
   }
+
+  quota_util_helper_.reset(new ScopedQuotaUtilHelper(
+      file_system_context(),
+      file_system_operation_context_.src_origin_url(),
+      file_system_operation_context_.src_type()));
+
   FileSystemFileUtilProxy::CreateDirectory(
       file_system_operation_context_,
       proxy_,
@@ -208,6 +253,12 @@ void FileSystemOperation::DelayedCopyForQuota(quota::QuotaStatusCode status,
   } else {
     file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
   }
+
+  quota_util_helper_.reset(new ScopedQuotaUtilHelper(
+      file_system_context(),
+      file_system_operation_context_.dest_origin_url(),
+      file_system_operation_context_.dest_type()));
+
   FileSystemFileUtilProxy::Copy(
       file_system_operation_context_,
       proxy_,
@@ -263,6 +314,12 @@ void FileSystemOperation::DelayedMoveForQuota(quota::QuotaStatusCode status,
   } else {
     file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
   }
+
+  quota_util_helper_.reset(new ScopedQuotaUtilHelper(
+      file_system_context(),
+      file_system_operation_context_.dest_origin_url(),
+      file_system_operation_context_.dest_type()));
+
   FileSystemFileUtilProxy::Move(
       file_system_operation_context_,
       proxy_,
@@ -444,6 +501,12 @@ void FileSystemOperation::DelayedWriteForQuota(quota::QuotaStatusCode status,
   } else {
     file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
   }
+
+  quota_util_helper_.reset(new ScopedQuotaUtilHelper(
+      file_system_context(),
+      file_system_operation_context_.src_origin_url(),
+      file_system_operation_context_.src_type()));
+
   FileSystemFileUtilProxy::CreateOrOpen(
       file_system_operation_context_,
       proxy_,
@@ -488,6 +551,12 @@ void FileSystemOperation::DelayedTruncateForQuota(quota::QuotaStatusCode status,
   } else {
     file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
   }
+
+  quota_util_helper_.reset(new ScopedQuotaUtilHelper(
+      file_system_context(),
+      file_system_operation_context_.src_origin_url(),
+      file_system_operation_context_.src_type()));
+
   FileSystemFileUtilProxy::Truncate(
       file_system_operation_context_,
       proxy_,
@@ -581,6 +650,11 @@ void FileSystemOperation::DelayedOpenFileForQuota(quota::QuotaStatusCode status,
   } else {
     file_system_operation_context_.set_allowed_bytes_growth(quota - usage);
   }
+
+  quota_util_helper_.reset(new ScopedQuotaUtilHelper(
+      file_system_context(),
+      file_system_operation_context_.src_origin_url(),
+      file_system_operation_context_.src_type()));
 
   FileSystemFileUtilProxy::CreateOrOpen(
       file_system_operation_context_,

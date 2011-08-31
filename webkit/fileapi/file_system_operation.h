@@ -17,8 +17,8 @@
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace base {
@@ -38,6 +38,7 @@ class FileSystemCallbackDispatcher;
 class FileSystemContext;
 class FileWriterDelegate;
 class FileSystemOperationTest;
+class FileSystemQuotaUtil;
 
 // This class is designed to serve one-time file system operation per instance.
 // Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,
@@ -92,6 +93,8 @@ class FileSystemOperation {
   void Cancel(FileSystemOperation* cancel_operation);
 
  private:
+  class ScopedQuotaUtilHelper;
+
   FileSystemContext* file_system_context() const {
     return file_system_operation_context_.file_system_context();
   }
@@ -238,6 +241,8 @@ class FileSystemOperation {
   FileSystemOperationContext file_system_operation_context_;
 
   base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;
+
+  scoped_ptr<ScopedQuotaUtilHelper> quota_util_helper_;
 
   // These are all used only by Write().
   friend class FileWriterDelegate;
