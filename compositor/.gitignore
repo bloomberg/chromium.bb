@@ -3,3 +3,5 @@ screenshooter-protocol.c
 screenshooter-server-protocol.h
 meego-tablet-protocol.c
 meego-tablet-server-protocol.h
+xserver-protocol.c
+xserver-server-protocol.h

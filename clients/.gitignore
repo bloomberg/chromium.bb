@@ -8,7 +8,8 @@ resizor
 screenshooter-client-protocol.h
 screenshooter-protocol.c
 screenshot
-simple-client
+simple-egl
+simple-shm
 smoke
 terminal
 view
