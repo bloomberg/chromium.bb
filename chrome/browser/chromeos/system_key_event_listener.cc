@@ -8,6 +8,7 @@
 #include <X11/XF86keysym.h>
 #include <X11/XKBlib.h>
 
+#include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
@@ -174,6 +175,11 @@ void SystemKeyEventListener::OnVolumeMute() {
   // Always muting (and not toggling) as per final decision on
   // http://crosbug.com/3751
   audio_handler_->SetMuted(true);
+
+  SendAccessibilityVolumeNotification(
+      audio_handler_->GetVolumePercent(),
+      audio_handler_->IsMuted());
+
   ShowVolumeBubble();
 }
 
@@ -185,6 +191,11 @@ void SystemKeyEventListener::OnVolumeDown() {
     audio_handler_->SetVolumePercent(0.0);
   else
     audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
+
+  SendAccessibilityVolumeNotification(
+      audio_handler_->GetVolumePercent(),
+      audio_handler_->IsMuted());
+
   ShowVolumeBubble();
 }
 
@@ -199,6 +210,11 @@ void SystemKeyEventListener::OnVolumeUp() {
   } else {
     audio_handler_->AdjustVolumeByPercent(kStepPercentage);
   }
+
+  SendAccessibilityVolumeNotification(
+      audio_handler_->GetVolumePercent(),
+      audio_handler_->IsMuted());
+
   ShowVolumeBubble();
 }
 

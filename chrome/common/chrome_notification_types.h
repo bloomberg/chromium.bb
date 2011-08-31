@@ -626,6 +626,11 @@ enum {
   // Details will be an AccessibilityMenuInfo.
   NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
 
+  // Notification that the volume was changed, for propagating
+  // to an accessibility extension.
+  // Details will be an AccessibilityVolumeInfo.
+  NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED,
+
   // Content Settings --------------------------------------------------------
 
   // Sent when content settings change. The source is a HostContentSettings

@@ -8,25 +8,34 @@
 
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_service.h"
 
 namespace keys = extension_accessibility_api_constants;
 
 void SendAccessibilityNotification(
-    int type, AccessibilityControlInfo* info) {
+    int type, AccessibilityEventInfo* info) {
   Profile *profile = info->profile();
   if (profile->ShouldSendAccessibilityEvents()) {
     NotificationService::current()->Notify(
         type,
         Source<Profile>(profile),
-        Details<AccessibilityControlInfo>(info));
+        Details<AccessibilityEventInfo>(info));
   }
+}
+
+void SendAccessibilityVolumeNotification(double volume, bool is_muted) {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  AccessibilityVolumeInfo info(profile, volume, is_muted);
+  SendAccessibilityNotification(
+      chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED, &info);
 }
 
 AccessibilityControlInfo::AccessibilityControlInfo(
     Profile* profile, const std::string& control_name)
-    : profile_(profile), name_(control_name) {
+    : AccessibilityEventInfo(profile), name_(control_name) {
 }
 
 AccessibilityControlInfo::~AccessibilityControlInfo() {
@@ -186,6 +195,22 @@ void AccessibilityListBoxInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetString(keys::kValueKey, value_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
   dict->SetInteger(keys::kItemCountKey, item_count_);
+}
+
+AccessibilityVolumeInfo::AccessibilityVolumeInfo(Profile* profile,
+                                                 double volume,
+                                                 bool is_muted)
+    : AccessibilityEventInfo(profile),
+      volume_(volume),
+      is_muted_(is_muted) {
+  DCHECK(profile);
+  DCHECK_GE(volume, 0.0);
+  DCHECK_LE(volume, 100.0);
+}
+
+void AccessibilityVolumeInfo::SerializeToDict(DictionaryValue *dict) const {
+  dict->SetDouble(keys::kVolumeKey, volume_);
+  dict->SetBoolean(keys::kIsVolumeMutedKey, is_muted_);
 }
 
 AccessibilityMenuInfo::AccessibilityMenuInfo(Profile* profile,

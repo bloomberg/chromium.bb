@@ -7,8 +7,9 @@
 #pragma once
 
 #include <string>
+#include "base/compiler_specific.h"
 
-class AccessibilityControlInfo;
+class AccessibilityEventInfo;
 class Profile;
 
 namespace base {
@@ -16,35 +17,50 @@ class DictionaryValue;
 }
 
 // Use the NotificationService to post the given accessibility
-// notification type with AccessibilityControlInfo details to any
+// notification type with AccessibilityEventInfo details to any
 // listeners.  Will not send if the profile's pause level is nonzero
 // (using profile->PauseAccessibilityEvents).
 void SendAccessibilityNotification(
-    int type, AccessibilityControlInfo* info);
+    int type, AccessibilityEventInfo* info);
+void SendAccessibilityVolumeNotification(double volume, bool is_muted);
+
+// Abstract parent class for accessibility event information passed to event
+// listeners.
+class AccessibilityEventInfo {
+ public:
+  virtual ~AccessibilityEventInfo() {}
+
+  // Serialize this class as a DictionaryValue that can be converted to
+  // a JavaScript object.
+  virtual void SerializeToDict(base::DictionaryValue* dict) const = 0;
+
+  Profile* profile() const { return profile_; }
+
+ protected:
+  explicit AccessibilityEventInfo(Profile* profile) : profile_(profile) {}
+
+  // The profile this control belongs to.
+  Profile* profile_;
+};
 
 // Abstract parent class for accessibility information about a control
 // passed to event listeners.
-class AccessibilityControlInfo {
+class AccessibilityControlInfo : public AccessibilityEventInfo {
  public:
   virtual ~AccessibilityControlInfo();
 
   // Serialize this class as a DictionaryValue that can be converted to
   // a JavaScript object.
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
   // Return the specific type of this control, which will be one of the
   // string constants defined in extension_accessibility_api_constants.h.
   virtual const char* type() const = 0;
 
-  Profile* profile() const { return profile_; }
-
   const std::string& name() const { return name_; }
 
  protected:
   AccessibilityControlInfo(Profile* profile, const std::string& control_name);
-
-  // The profile this control belongs to.
-  Profile* profile_;
 
   // The name of the control, like "OK" or "Password".
   std::string name_;
@@ -253,6 +269,20 @@ class AccessibilityMenuInfo : public AccessibilityControlInfo {
   AccessibilityMenuInfo(Profile* profile, const std::string& menu_name);
 
   virtual const char* type() const;
+};
+
+// Accessibility information about a volume; this class is used by
+// onVolumeUp, onVolumeDown, and onVolumeMute event listeners.
+class AccessibilityVolumeInfo : public AccessibilityEventInfo {
+ public:
+  // |volume| must range between 0 to 100.
+  AccessibilityVolumeInfo(Profile* profile, double volume, bool is_muted);
+
+  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+
+ private:
+  double volume_;
+  bool is_muted_;
 };
 
 // Accessibility information about a menu item; this class is used by

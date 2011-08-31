@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,8 @@ extern const char kSelectionStartKey[];
 extern const char kSelectionEndKey[];
 extern const char kCheckedKey[];
 extern const char kHasSubmenuKey[];
+extern const char kVolumeKey[];
+extern const char kIsVolumeMutedKey[];
 
 // Events.
 extern const char kOnWindowOpened[];
@@ -31,6 +33,7 @@ extern const char kOnControlAction[];
 extern const char kOnTextChanged[];
 extern const char kOnMenuOpened[];
 extern const char kOnMenuClosed[];
+extern const char kOnVolumeChanged[];
 
 // Types of controls that can receive accessibility events
 extern const char kTypeButton[];
@@ -43,6 +46,7 @@ extern const char kTypeMenuItem[];
 extern const char kTypeRadioButton[];
 extern const char kTypeTab[];
 extern const char kTypeTextBox[];
+extern const char kTypeVolume[];
 extern const char kTypeWindow[];
 
 };  // namespace extension_accessibility_api_constants

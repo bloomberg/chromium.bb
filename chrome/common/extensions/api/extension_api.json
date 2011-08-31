@@ -382,6 +382,15 @@
           "selectionStart": {"type": "integer", "description": "The index of the character where the selection starts, if this control contains editable text."},
           "selectionEnd": {"type": "integer", "description": "The index of the character where the selection ends, if this control contains editable text."}
         }
+      },
+      {
+        "id": "AccessibilityVolumeInfo",
+        "type": "object",
+        "description": "Information about the volume.",
+        "properties": {
+          "volume": {"type": "double", "description": "The value of the volume percent. This must be between 0.0 and 100.0."},
+          "isVolumeMuted": {"type": "boolean", "description": "True if the volume is muted."}
+        }
       }
     ],
     "functions": [
@@ -501,6 +510,18 @@
             "$ref": "AccessibilityObject",
             "name": "menu",
             "description": "Information about the menu that was closed."
+          }
+        ]
+      },
+      {
+        "name": "onVolumeChanged",
+        "type": "function",
+        "description": "Fired when the volume is changed.",
+        "parameters": [
+          {
+            "$ref": "AccessibilityVolumeInfo",
+            "name": "volume",
+            "description": "Information about the current state of the system volume control, including whether it is muted."
           }
         ]
       }
