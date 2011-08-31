@@ -258,6 +258,7 @@ Browser::Browser(Type type, Profile* profile)
       is_attempting_to_close_browser_(false),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       show_state_(ui::SHOW_STATE_DEFAULT),
+      is_session_restore_(false),
       method_factory_(this),
       block_command_execution_(false),
       last_blocked_command_id_(-1),

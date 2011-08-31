@@ -168,6 +168,15 @@ class Browser : public TabHandlerDelegate,
   bool bounds_overridden() const {
     return !override_bounds_.IsEmpty();
   }
+  // Set indicator that this browser is being created via session restore.
+  // This is used on the Mac (only) to determine animation style when the
+  // browser window is shown.
+  void set_is_session_restore(bool is_session_restore) {
+    is_session_restore_ = is_session_restore;
+  }
+  bool is_session_restore() const {
+    return is_session_restore_;
+  }
 
   // Creates the Browser Window. Prefer to use the static helpers above where
   // possible. This does not show the window. You need to call window()->Show()
@@ -1316,6 +1325,9 @@ class Browser : public TabHandlerDelegate,
   // shell shortcut's startup info.
   gfx::Rect override_bounds_;
   ui::WindowShowState show_state_;
+
+  // Tracks when this browser is being created by session restore.
+  bool is_session_restore_;
 
   // The following factory is used to close the frame at a later time.
   ScopedRunnableMethodFactory<Browser> method_factory_;

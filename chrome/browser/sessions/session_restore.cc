@@ -714,6 +714,7 @@ class SessionRestoreImpl : public NotificationObserver {
     Browser* browser = new Browser(type, profile_);
     browser->set_override_bounds(bounds);
     browser->set_show_state(show_state);
+    browser->set_is_session_restore(true);
     browser->InitBrowserWindow();
     return browser;
   }
@@ -731,6 +732,8 @@ class SessionRestoreImpl : public NotificationObserver {
       return;
 
     browser->window()->Show();
+    browser->set_is_session_restore(false);
+
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
     //                initial focus explicitly.
     browser->GetSelectedTabContents()->view()->SetInitialFocus();
