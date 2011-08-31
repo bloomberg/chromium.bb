@@ -363,7 +363,7 @@ function debugInfoCallback_(msg) {
 function showShareError_(errorTag) {
   var errorDiv = document.getElementById('host-plugin-error');
   l10n.localizeElementFromTag(errorDiv, errorTag);
-  remoting.debug.log('Sharing error: ' + errorCode);
+  remoting.debug.log('Sharing error: ' + errorTag);
   remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
 }
 
@@ -485,7 +485,7 @@ function startSession_() {
  * @return {void} Nothing.
  */
 function showConnectError_(errorTag) {
-  remoting.debug.log('Connection failed: ' + errorMsg);
+  remoting.debug.log('Connection failed: ' + errorTag);
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, errorTag);
   remoting.accessCode = '';
