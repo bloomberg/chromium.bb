@@ -265,7 +265,7 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
                   IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
                   node, menu, enabled);
     AddItemToMenu(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                  IDS_BOOKMARK_BAR_OPEN_INCOGNITO,
+                  IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
                   node, menu, enabled);
   }
 }
