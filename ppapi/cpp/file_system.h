@@ -29,7 +29,7 @@ class FileSystem : public Resource {
 
   /// This constructor creates a file system object of the given type.
   ///
-  /// @param[in] instance A <code>Instance</code> indentifying the instance
+  /// @param[in] instance A <code>Instance</code> identifying the instance
   /// with the file.
   /// @param[in] type A file system type as defined by
   /// <code>PP_FileSystemType</code> enum.

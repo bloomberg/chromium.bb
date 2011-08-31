@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Wed Aug 24 20:51:24 2011. */
+/* From ppb_file_io.idl modified Mon Aug 29 10:11:34 2011. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
@@ -77,7 +77,7 @@ struct PPB_FileIO {
   /**
    * Create() creates a new FileIO object.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * with the file.
    *
    * @return A <code>PP_Resource</code> corresponding to a FileIO if

@@ -29,7 +29,8 @@ class URLResponseInfo : public Resource {
   /// A constructor used when you have received a <code>PP_Resource</code> as a
   /// return value that has already been reference counted.
   ///
-  /// @param[in] resource A <code>PP_Resource</code>.
+  /// @param[in] resource A <code>PP_Resource</code> corresponding to a
+  /// resource.
   URLResponseInfo(PassRef, PP_Resource resource);
 
   /// The copy constructor for <code>URLResponseInfo</code>.

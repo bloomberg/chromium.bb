@@ -56,7 +56,8 @@ class Resource {
   /// A constructor used when a <code>PP_Resource</code> is provided as a
   /// return value whose reference count we need to increment.
   ///
-  /// @param[in] resource A <code>PP_Resource</code>.
+  /// @param[in] resource A <code>PP_Resource</code> corresponding to a
+  /// resource.
   explicit Resource(PP_Resource resource);
 
   /// PassRefFromConstructor is called by derived class' constructors to
@@ -71,7 +72,8 @@ class Resource {
   /// since it was returned by the browser, already had its reference count
   /// increased).
   ///
-  /// @param[in] resource A PP_Resource.
+  /// @param[in] resource A <code>PP_Resource</code> corresponding to a
+  /// resource.
   void PassRefFromConstructor(PP_Resource resource);
 
  private:

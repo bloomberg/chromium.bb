@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_system.idl modified Wed Aug 24 20:52:19 2011. */
+/* From ppb_file_system.idl modified Mon Aug 29 10:11:34 2011. */
 
 #ifndef PPAPI_C_PPB_FILE_SYSTEM_H_
 #define PPAPI_C_PPB_FILE_SYSTEM_H_
@@ -36,7 +36,7 @@
 struct PPB_FileSystem {
   /** Create() creates a file system object of the given type.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * with the file.
    * @param[in] type A file system type as defined by
    * <code>PP_FileSystemType</code> enum.

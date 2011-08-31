@@ -26,7 +26,8 @@ class Core {
   /// AddRefResource() increments the reference count for the provided
   /// <code>resource</code>.
   ///
-  /// @param[in] resource A <code>PP_Resource</code> containing the resource.
+  /// @param[in] resource A <code>PP_Resource</code> corresponding to a
+  /// resource.
   void AddRefResource(PP_Resource resource) {
     interface_->AddRefResource(resource);
   }
@@ -35,7 +36,8 @@ class Core {
   /// <code>resource</code>. The resource will be deallocated if the
   /// reference count reaches zero.
   ///
-  /// @param[in] resource A <code>PP_Resource</code> containing the resource.
+  /// @param[in] resource A <code>PP_Resource</code> corresponding to a
+  /// resource.
   void ReleaseResource(PP_Resource resource) {
     interface_->ReleaseResource(resource);
   }

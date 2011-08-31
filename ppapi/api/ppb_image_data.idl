@@ -106,7 +106,7 @@ interface PPB_ImageData {
    * memory, but may contain data from a previous image produced by the same
    * module if the bitmap was cached and re-used.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    * @param[in] format The desired image data format.
    * @param[in] size A pointer to a <code>PP_Size</code> containing the image
@@ -118,7 +118,7 @@ interface PPB_ImageData {
    * current contents of the bitmap will be undefined, and the module should
    * be sure to set all the pixels.
    *
-   * @return A <code>PP_Resource</code> with a nonzero ID on succes or zero on
+   * @return A <code>PP_Resource</code> with a nonzero ID on success or zero on
    * failure. Failure means the instance, image size, or format was invalid.
    */
   PP_Resource Create(

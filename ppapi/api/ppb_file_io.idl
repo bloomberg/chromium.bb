@@ -57,7 +57,7 @@ interface PPB_FileIO {
   /**
    * Create() creates a new FileIO object.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * with the file.
    *
    * @return A <code>PP_Resource</code> corresponding to a FileIO if

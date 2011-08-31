@@ -38,7 +38,7 @@ class Audio : public Resource {
   /// the device configuration and is specified in the <code>AudioConfig</code>
   /// documentation.
   ///
-  /// @param[in] instance A pointer to an <code>Instance</code> indentifying one
+  /// @param[in] instance A pointer to an <code>Instance</code> identifying one
   /// instance of a module.
   /// @param[in] config An <code>AudioConfig</code> containing the audio config
   /// resource.

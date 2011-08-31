@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_loader.idl modified Wed Aug 24 20:48:35 2011. */
+/* From ppb_url_loader.idl modified Mon Aug 29 10:11:34 2011. */
 
 #ifndef PPAPI_C_PPB_URL_LOADER_H_
 #define PPAPI_C_PPB_URL_LOADER_H_
@@ -55,7 +55,7 @@ struct PPB_URLLoader {
    * any UI dialogs that need to be shown to the user can be positioned
    * relative to the window containing the instance.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    *
    * @return A <code>PP_Resource</code> corresponding to a URLLoader if

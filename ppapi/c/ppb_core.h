@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_core.idl modified Tue Jul 19 13:37:04 2011. */
+/* From ppb_core.idl modified Tue Aug 23 11:13:37 2011. */
 
 #ifndef PPAPI_C_PPB_CORE_H_
 #define PPAPI_C_PPB_CORE_H_
@@ -40,13 +40,15 @@ struct PPB_Core {
    *
    * AddRefResource() adds a reference to a resource.
    *
-   * @param[in] config A <code>PP_Resource</code> containing the resource.
+   * @param[in] config A <code>PP_Resource</code> corresponding to a
+   * resource.
    */
   void (*AddRefResource)(PP_Resource resource);
   /**
    * ReleaseResource() removes a reference from a resource.
    *
-   * @param[in] config A <code>PP_Resource</code> containing the resource.
+   * @param[in] config A <code>PP_Resource</code> corresponding to a
+   * resource.
    */
   void (*ReleaseResource)(PP_Resource resource);
   /**

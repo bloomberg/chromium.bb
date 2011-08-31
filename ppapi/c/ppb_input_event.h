@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Wed Aug 17 11:16:34 2011. */
+/* From ppb_input_event.idl modified Wed Aug 24 09:43:38 2011. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -336,9 +336,10 @@ struct PPB_InputEvent {
    * IsInputEvent() returns true if the given resource is a valid input event
    * resource.
    *
-   * @param[in] resource A <code>PP_Resource</code>.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to a generic
+   * resource.
    *
-   * @return True if the given resource is a valid input event
+   * @return <code>PP_TRUE</code> if the given resource is a valid input event
    * resource.
    */
   PP_Bool (*IsInputEvent)(PP_Resource resource);
@@ -346,7 +347,8 @@ struct PPB_InputEvent {
    * GetType() returns the type of input event for the given input event
    * resource.
    *
-   * @param[in] resource A <code>PP_Resource</code> containing the input event.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to an input
+   * event.
    *
    * @return A <code>PP_InputEvent_Type</code> if its a valid input event or
    * <code>PP_INPUTEVENT_TYPE_UNDEFINED</code> if the resource is invalid.
@@ -358,7 +360,7 @@ struct PPB_InputEvent {
    * some overhead. Use this value to compare the times the user generated two
    * events without being sensitive to variable processing time.
    *
-   * @param[in] resource A <code>PP_Resource</code> containing the event.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to the event.
    *
    * @return The return value is in time ticks, which is a monotonically
    * increasing clock not related to the wall clock time. It will not change
@@ -372,7 +374,8 @@ struct PPB_InputEvent {
    * at the time of the event. This is a combination of the flags in the
    * <code>PP_InputEvent_Modifier</code> enum.
    *
-   * @param[in] resource A <code>PP_Resource</code> containing the input event.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to an input
+   * event.
    *
    * @return The modifiers associated with the event, or 0 if the given
    * resource is not a valid event resource.
@@ -422,7 +425,7 @@ struct PPB_MouseInputEvent {
   /**
    * IsMouseInputEvent() determines if a resource is a mouse event.
    *
-   * @param[in] resource A <code>PP_Resource</code> containing the event.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to an event.
    *
    * @return <code>PP_TRUE</code> if the given resource is a valid mouse input
    * event, otherwise <code>PP_FALSE</code>.
@@ -432,8 +435,8 @@ struct PPB_MouseInputEvent {
    * GetButton() returns the mouse button that generated a mouse down or up
    * event.
    *
-   * @param[in] mouse_event A <code>PP_Resource</code> containing the mouse
-   * event.
+   * @param[in] mouse_event A <code>PP_Resource</code> corresponding to a
+   * mouse event.
    *
    * @return The mouse button associated with mouse down and up events. This
    * value will be <code>PP_EVENT_MOUSEBUTTON_NONE</code> for mouse move,
@@ -443,8 +446,8 @@ struct PPB_MouseInputEvent {
   /**
    * GetPosition() returns the pixel location of a mouse input event.
    *
-   * @param[in] mouse_event A <code>PP_Resource</code> containing the mouse
-   * event.
+   * @param[in] mouse_event A <code>PP_Resource</code> corresponding to an
+   * mouse event.
    *
    * @return The point associated with the mouse event, relative to the upper-
    * left of the instance receiving the event. These values can be negative for
@@ -496,7 +499,8 @@ struct PPB_WheelInputEvent {
   /**
    * IsWheelInputEvent() determines if a resource is a wheel event.
    *
-   * @param[in] wheel_event A <code>PP_Resource</code> containing the event.
+   * @param[in] wheel_event A <code>PP_Resource</code> corresponding to an
+   * event.
    *
    * @return <code>PP_TRUE</code> if the given resource is a valid wheel input
    * event.
@@ -518,7 +522,7 @@ struct PPB_WheelInputEvent {
    * possible, for example, on some trackpads and newer mice that don't have
    * "clicks".
    *
-   * @param[in] wheel_event A <code>PP_Resource</code> containing the wheel
+   * @param[in] wheel_event A <code>PP_Resource</code> corresponding to a wheel
    * event.
    *
    * @return The vertical and horizontal scroll values. The units are either in
@@ -538,7 +542,7 @@ struct PPB_WheelInputEvent {
    * want or pixel values. An example may be cycling between different items in
    * a game.
    *
-   * @param[in] wheel_event A <code>PP_Resource</code> containing the wheel
+   * @param[in] wheel_event A <code>PP_Resource</code> corresponding to a wheel
    * event.
    *
    * @return The number of "clicks" of the scroll wheel. You may receive
@@ -554,7 +558,7 @@ struct PPB_WheelInputEvent {
    * GetScrollByPage() indicates if the scroll delta x/y indicates pages or
    * lines to scroll by.
    *
-   * @param[in] wheel_event A <code>PP_Resource</code> containing the wheel
+   * @param[in] wheel_event A <code>PP_Resource</code> corresponding to a wheel
    * event.
    *
    * @return <code>PP_TRUE</code> if the event is a wheel event and the user is
@@ -605,7 +609,7 @@ struct PPB_KeyboardInputEvent {
   /**
    * IsKeyboardInputEvent() determines if a resource is a keyboard event.
    *
-   * @param[in] resource A <code>PP_Resource</code> containing the event.
+   * @param[in] resource A <code>PP_Resource</code> corresponding to an event.
    *
    * @return <code>PP_TRUE</code> if the given resource is a valid input event.
    */
@@ -614,8 +618,8 @@ struct PPB_KeyboardInputEvent {
    * GetKeyCode() returns the DOM keyCode field for the keyboard event.
    * Chrome populates this with the Windows-style Virtual Key code of the key.
    *
-   * @param[in] key_event A <code>PP_Resource</code> containing the keyboard
-   * event.
+   * @param[in] key_event A <code>PP_Resource</code> corresponding to a
+   * keyboard event.
    *
    * @return The DOM keyCode field for the keyboard event.
    */
@@ -624,7 +628,7 @@ struct PPB_KeyboardInputEvent {
    * GetCharacterText() returns the typed character as a UTF-8 string for the
    * given character event.
    *
-   * @param[in] character_event A <code>PP_Resource</code> containing the
+   * @param[in] character_event A <code>PP_Resource</code> corresponding to a
    * keyboard event.
    *
    * @return A string var representing a single typed character for character

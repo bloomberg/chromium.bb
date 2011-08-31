@@ -29,8 +29,8 @@ class ImageData : public Resource {
   /// reference count of the underlying Image resource.
   struct PassRef {};
 
-  /// A constructor used when you have received a PP_Resource as a return
-  /// value that has already been reference counted.
+  /// A constructor used when you have received a <code>PP_Resource</code> as a
+  /// return value that has already been reference counted.
   ///
   /// @param[in] resource A PP_Resource corresponding to image data.
   ImageData(PassRef, PP_Resource resource);
@@ -46,7 +46,7 @@ class ImageData : public Resource {
   /// with the provided parameters. The resulting object will be is_null() if
   /// the allocation failed.
   ///
-  /// @param[in] instance A <code>PP_Instance</code> indentifying one instance
+  /// @param[in] instance A <code>PP_Instance</code> identifying one instance
   /// of a module.
   ///
   /// @param[in] format A PP_ImageDataFormat containing desired image format.

@@ -38,7 +38,7 @@ interface PPB_URLLoader {
    * any UI dialogs that need to be shown to the user can be positioned
    * relative to the window containing the instance.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    *
    * @return A <code>PP_Resource</code> corresponding to a URLLoader if

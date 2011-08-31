@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_instance.idl modified Mon Aug 15 11:01:06 2011. */
+/* From ppp_instance.idl modified Tue Aug 23 11:29:06 2011. */
 
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
@@ -58,7 +58,7 @@ struct PPP_Instance {
    * If this function reports a failure (by returning <code>PP_FALSE</code>),
    * the instance will be deleted.
    *
-   * @param[in] instance A new <code>PP_Instance</code> indentifying one
+   * @param[in] instance A new <code>PP_Instance</code> identifying one
    * instance of a module. This is an opaque handle.
    *
    * @param[in] argc The number of arguments contained in <code>argn</code>
@@ -106,7 +106,7 @@ struct PPP_Instance {
    * instances are being deleted, and no cleanup functions will be called.
    * The module will just be unloaded and the process terminated.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    */
   void (*DidDestroy)(PP_Instance instance);
@@ -121,7 +121,7 @@ struct PPP_Instance {
    * the size doesn't change, so you should always check that the size is
    * actually different before doing any reallocations.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * that has changed.
    *
    * @param[in] position The location on the page of the instance. This is
@@ -140,7 +140,7 @@ struct PPP_Instance {
    * the clip when the instance is partially visible. Instead, update the entire
    * region. The time saved doing partial paints is usually not significant and
    * it can create artifacts when scrolling (this notification is sent
-   * asynchronously from scolling so there can be flashes of old content in the
+   * asynchronously from scrolling so there can be flashes of old content in the
    * exposed regions).
    */
   void (*DidChangeView)(PP_Instance instance,
@@ -160,7 +160,7 @@ struct PPP_Instance {
    * to make sure you're returning true from the mouse click in
    * <code>HandleInputEvent</code>.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * receiving the input event.
    *
    * @param[in] has_focus Indicates the new focused state of the instance.
@@ -185,7 +185,7 @@ struct PPP_Instance {
    * data. In response to this method, the module should call
    * ReadResponseBody() to read the incoming data.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying the instance
+   * @param[in] instance A <code>PP_Instance</code> identifying the instance
    * that should do the load.
    *
    * @param[in] url_loader An open <code>PPB_URLLoader</code> instance.

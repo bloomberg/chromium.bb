@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_instance.idl modified Mon Aug 15 11:01:06 2011. */
+/* From ppb_instance.idl modified Tue Aug 23 11:25:50 2011. */
 
 #ifndef PPAPI_C_PPB_INSTANCE_H_
 #define PPAPI_C_PPB_INSTANCE_H_
@@ -21,7 +21,7 @@
 
 /**
  * @file
- * This file defines the PPB_Instance interface implemented by the
+ * This file defines the <code>PPB_Instance</code> interface implemented by the
  * browser and containing pointers to functions related to
  * the module instance on a web page.
  */
@@ -54,8 +54,8 @@ struct PPB_Instance {
    * Binding a device will invalidate that portion of the web page to flush the
    * contents of the new device to the screen.
    *
-   * @param[in] instance A PP_Instance indentifying one instance of a module.
-   * @param[in] device A PP_Resource representing the graphics device.
+   * @param[in] instance A PP_Instance identifying one instance of a module.
+   * @param[in] device A PP_Resource corresponding to a graphics device.
    *
    * @return <code>PP_Bool</code> containing <code>PP_TRUE</code> if bind was
    * successful or <code>PP_FALSE</code> if the device was not the correct
@@ -70,7 +70,7 @@ struct PPB_Instance {
    * page specifies an iframe to a resource with a MIME type registered by the
    * module.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    *
    * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if the

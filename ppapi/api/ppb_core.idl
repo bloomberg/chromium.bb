@@ -23,14 +23,16 @@ interface PPB_Core {
    *
    * AddRefResource() adds a reference to a resource.
    *
-   * @param[in] config A <code>PP_Resource</code> containing the resource.
+   * @param[in] config A <code>PP_Resource</code> corresponding to a
+   * resource.
    */
   void AddRefResource([in] PP_Resource resource);
 
   /**
    * ReleaseResource() removes a reference from a resource.
    *
-   * @param[in] config A <code>PP_Resource</code> containing the resource.
+   * @param[in] config A <code>PP_Resource</code> corresponding to a
+   * resource.
    */
   void ReleaseResource([in] PP_Resource resource);
 

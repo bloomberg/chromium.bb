@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_image_data.idl modified Wed Aug 24 20:50:01 2011. */
+/* From ppb_image_data.idl modified Mon Aug 29 10:11:34 2011. */
 
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
@@ -132,7 +132,7 @@ struct PPB_ImageData {
    * memory, but may contain data from a previous image produced by the same
    * module if the bitmap was cached and re-used.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    * @param[in] format The desired image data format.
    * @param[in] size A pointer to a <code>PP_Size</code> containing the image
@@ -144,7 +144,7 @@ struct PPB_ImageData {
    * current contents of the bitmap will be undefined, and the module should
    * be sure to set all the pixels.
    *
-   * @return A <code>PP_Resource</code> with a nonzero ID on succes or zero on
+   * @return A <code>PP_Resource</code> with a nonzero ID on success or zero on
    * failure. Failure means the instance, image size, or format was invalid.
    */
   PP_Resource (*Create)(PP_Instance instance,

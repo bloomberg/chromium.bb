@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_url_request_info.idl modified Wed Aug 24 20:53:00 2011. */
+/* From ppb_url_request_info.idl modified Mon Aug 29 10:11:34 2011. */
 
 #ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
@@ -166,7 +166,7 @@ struct PPB_URLRequestInfo {
   /**
    * Create() creates a new <code>URLRequestInfo</code> object.
    *
-   * @param[in] instance A <code>PP_Instance</code> indentifying one instance
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance
    * of a module.
    *
    * @return A <code>PP_Resource</code> identifying the
@@ -224,7 +224,7 @@ struct PPB_URLRequestInfo {
    *
    * @param[in] request A <code>PP_Resource</code> corresponding to a
    * <code>URLRequestInfo</code>.
-   * @param[in] file_ref A <code>PP_Resource</code> containing the file
+   * @param[in] file_ref A <code>PP_Resource</code> corresponding to a file
    * reference.
    * @param[in] start_offset An optional starting point offset within the
    * file.
