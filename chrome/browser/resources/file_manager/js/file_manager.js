@@ -935,7 +935,8 @@ FileManager.prototype = {
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.grid_.selectionModel.addEventListener(
         'change', this.onSelectionChanged_.bind(this));
-
+    this.grid_.selectionModel.addEventListener(
+        'leadIndexChange', this.onLeadIndexChanged_.bind(this));
     cr.ui.contextMenuHandler.addContextMenuProperty(this.grid_);
     this.grid_.contextMenu = this.fileContextMenu_;
     this.grid_.addEventListener('mousedown',
@@ -974,6 +975,8 @@ FileManager.prototype = {
         'dblclick', this.onDetailDoubleClick_.bind(this));
     this.table_.selectionModel.addEventListener(
         'change', this.onSelectionChanged_.bind(this));
+    this.table_.selectionModel.addEventListener(
+        'leadIndexChange', this.onLeadIndexChanged_.bind(this));
 
     cr.ui.contextMenuHandler.addContextMenuProperty(this.table_);
     this.table_.contextMenu = this.fileContextMenu_;
@@ -1486,7 +1489,6 @@ FileManager.prototype = {
     var selection = this.selection = {
       entries: [],
       urls: [],
-      leadEntry: null,
       totalCount: 0,
       fileCount: 0,
       directoryCount: 0,
@@ -1541,13 +1543,6 @@ FileManager.prototype = {
       } else {
         selection.directoryCount += 1;
       }
-    }
-
-    var leadIndex = this.currentList_.selectionModel.leadIndex;
-    if (leadIndex > -1) {
-      selection.leadEntry = this.dataModel_.item(leadIndex);
-    } else {
-      selection.leadEntry = selection.entries[0];
     }
 
     var self = this;
@@ -1976,28 +1971,27 @@ FileManager.prototype = {
     // selcted.
     this.previewImage_.classList.remove('multiple-selected');
 
-    if (!this.selection.totalCount) {
+    var leadEntry = this.getLeadEntry();
+    if (!leadEntry) {
       this.previewFilename_.textContent = '';
       return;
     }
-
-    var previewName = this.selection.leadEntry.name;
+    var previewName = leadEntry.name;
     if (this.currentDirEntry_.name == '')
       previewName = this.getLabelForRootPath_(previewName);
 
     this.previewFilename_.textContent = previewName;
 
-    var iconType = this.getIconType(this.selection.leadEntry);
+    var iconType = this.getIconType(leadEntry);
     if (iconType == 'image') {
       if (fileManager.selection.totalCount > 1)
         this.previewImage_.classList.add('multiple-selected');
     }
 
     var self = this;
-    var leadEntry = this.selection.leadEntry;
 
     this.getThumbnailURL(leadEntry, function(iconType, url) {
-      if (self.selection.leadEntry != leadEntry) {
+      if (self.getLeadEntry() != leadEntry) {
         // Selection has changed since we asked, nevermind.
         return;
       }
@@ -2011,10 +2005,10 @@ FileManager.prototype = {
       }
     });
 
-    this.getDescription(this.selection.leadEntry, function(desc){
+    this.getDescription(this.getLeadEntry(), function(desc) {
       self.clearDescription_();
 
-      if (self.selection.leadEntry != leadEntry) {
+      if (self.getLeadEntry() != leadEntry) {
         return;
       }
 
@@ -2038,6 +2032,15 @@ FileManager.prototype = {
         self.descriptionTable_.appendChild(descriptionBody);
       }
     });
+  };
+
+  FileManager.prototype.getLeadEntry = function() {
+    var leadIndex = this.currentList_.selectionModel.leadIndex;
+    if (leadIndex > -1) {
+      return this.dataModel_.item(leadIndex);
+    } else {
+      return null;
+    }
   };
 
   FileManager.prototype.formatMetadataValue_ = function(obj) {
@@ -2439,13 +2442,13 @@ FileManager.prototype = {
    */
   FileManager.prototype.onSelectionChanged_ = function(event) {
     this.summarizeSelection_();
-    this.updatePreview_();
 
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       // If this is a save-as dialog, copy the selected file into the filename
       // input text box.
-      if (this.selection.leadEntry && this.selection.leadEntry.isFile)
-        this.filenameInput_.value = this.selection.leadEntry.name;
+      var leadEntry = this.getLeadEntry();
+      if (leadEntry && leadEntry.isFile)
+        this.filenameInput_.value = leadEntry.name;
     }
 
     this.updateOkButton_();
@@ -2493,6 +2496,15 @@ FileManager.prototype = {
     }
   };
 
+  /**
+   * Update the UI then the lead item changes.
+   *
+   * @param {cr.Event} event The change event.
+   */
+  FileManager.prototype.onLeadIndexChanged_ = function(event) {
+    this.updatePreview_();
+  };
+
   FileManager.prototype.updateOkButton_ = function(event) {
     var selectable;
 
@@ -2535,7 +2547,7 @@ FileManager.prototype = {
       return;
     }
 
-    var entry = this.selection.leadEntry;
+    var entry = this.getLeadEntry();
     if (!entry) {
       console.log('Invalid selection');
       return;
@@ -3023,11 +3035,12 @@ FileManager.prototype = {
         break;
 
       case 13:  // Enter => Change directory or complete dialog.
-        if (this.selection.totalCount == 1 &&
-            this.selection.leadEntry.isDirectory &&
+        var leadEntry = this.getLeadEntry();
+        if (leadEntry &&
+            leadEntry.isDirectory &&
             this.dialogType_ != FileManager.SELECT_FOLDER) {
           event.preventDefault();
-          this.onDirectoryAction(this.selection.leadEntry);
+          this.onDirectoryAction(leadEntry);
         } else if (!this.okButton_.disabled) {
           event.preventDefault();
           this.onOk_();
@@ -3225,11 +3238,13 @@ FileManager.prototype = {
     if (ary.length > 1)
       throw new Error('Too many files selected!');
 
+    var selectedEntry = this.dataModel_.item(selectedIndexes[0]);
+
     if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER) {
-      if (!this.selection.leadEntry.isDirectory)
+      if (!selectedEntry.isDirectory)
         throw new Error('Selected entry is not a folder!');
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE) {
-      if (!this.selection.leadEntry.isFile)
+      if (!selectedEntry.isFile)
         throw new Error('Selected entry is not a file!');
     }
 
