@@ -93,32 +93,27 @@
     <request name="create_surface">
       <arg name="id" type="new_id" interface="wl_surface"/>
     </request>
-
-    <enum name="visual">
-      <entry name="argb32" value="0"/>
-      <entry name="premultiplied_argb32" value="1"/>
-      <entry name="xrgb32" value="2"/>
-    </enum>
-
-    <event name="token_visual">
-      <arg name="name" type="uint"/>
-      <arg name="token" type="uint"/>
-    </event>
   </interface>
 
   <!-- Shared memory support -->
   <interface name="wl_shm" version="1">
     <enum name="error">
-      <entry name="invalid_visual" value="0"/>
+      <entry name="invalid_format" value="0"/>
       <entry name="invalid_stride" value="1"/>
       <entry name="invalid_fd" value="2"/>
+    </enum>
+
+    <enum name="format">
+      <entry name="argb32" value="0"/>
+      <entry name="premultiplied_argb32" value="1"/>
+      <entry name="xrgb32" value="2"/>
     </enum>
 
     <!-- Transfer a shm buffer to the server.  The allocated buffer
          would include at least stride * height bytes starting at the
          beginning of fd.  The file descriptor is transferred over the
          socket using AF_UNIX magical features. width, height, stride
-         and visual describe the respective properties of the pixel
+         and format describe the respective properties of the pixel
          data contained in the buffer. -->
     <request name="create_buffer">
       <arg name="id" type="new_id" interface="wl_buffer"/>
@@ -126,8 +121,12 @@
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
       <arg name="stride" type="uint"/>
-      <arg name="visual" type="object" interface="wl_visual"/>
+      <arg name="format" type="uint"/>
     </request>
+
+    <event name="format">
+      <arg name="format" type="uint"/>
+    </event>
   </interface>
 
 
@@ -546,11 +545,5 @@
       <arg name="refresh" type="int"/>
     </event>
   </interface>
-
-
-  <!-- A visual is the pixel format.  The different visuals are
-       currently only identified by the order they are advertised by
-       the 'global' events.  We need something better.  -->
-  <interface name="wl_visual" version="1"/>
 
 </protocol>

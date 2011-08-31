@@ -117,11 +117,6 @@ struct wl_resource {
 	void *data;
 };
 
-struct wl_visual {
-	struct wl_object object;
-	uint32_t name;
-};
-
 struct wl_shm_callbacks {
 	void (*buffer_created)(struct wl_buffer *buffer);
 
@@ -134,14 +129,10 @@ struct wl_shm_callbacks {
 
 struct wl_compositor {
 	const struct wl_compositor_interface *interface;
-	struct wl_visual argb_visual;
-	struct wl_visual premultiplied_argb_visual;
-	struct wl_visual rgb_visual;
 };
 
 struct wl_buffer {
 	struct wl_resource resource;
-	struct wl_visual *visual;
 	int32_t width, height;
 	uint32_t busy_count;
 	void *user_data;
@@ -285,10 +276,12 @@ wl_shm_buffer_get_data(struct wl_buffer *buffer);
 int32_t
 wl_shm_buffer_get_stride(struct wl_buffer *buffer);
 
+uint32_t
+wl_shm_buffer_get_format(struct wl_buffer *buffer);
+
 struct wl_buffer *
 wl_shm_buffer_create(struct wl_shm *shm, int width, int height,
-		     int stride, struct wl_visual *visual,
-		     void *data);
+		     int stride, uint32_t visual, void *data);
 
 int
 wl_buffer_is_shm(struct wl_buffer *buffer);

@@ -41,6 +41,7 @@ struct wl_shm_buffer {
 	struct wl_buffer buffer;
 	struct wl_shm *shm;
 	int32_t stride;
+	uint32_t format;
 	void *data;
 };
 
@@ -81,8 +82,7 @@ const static struct wl_buffer_interface shm_buffer_interface = {
 static struct wl_shm_buffer *
 wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
 		   int32_t width, int32_t height,
-		   int32_t stride, struct wl_visual *visual,
-		   void *data)
+		   int32_t stride, uint32_t format, void *data)
 {
 	struct wl_shm_buffer *buffer;
 
@@ -92,7 +92,7 @@ wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
 
 	buffer->buffer.width = width;
 	buffer->buffer.height = height;
-	buffer->buffer.visual = visual;
+	buffer->format = format;
 	buffer->stride = stride;
 	buffer->data = data;
 
@@ -115,17 +115,22 @@ wl_shm_buffer_init(struct wl_shm *shm, struct wl_client *client, uint32_t id,
 static void
 shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t id, int fd, int32_t width, int32_t height,
-		  uint32_t stride, struct wl_resource *visual_resource)
+		  uint32_t stride, uint32_t format)
 {
 	struct wl_shm *shm = resource->data;
 	struct wl_shm_buffer *buffer;
-	struct wl_visual *visual = visual_resource->data;
 	void *data;
 
-	if (!visual || visual_resource->object.interface != &wl_visual_interface) {
+
+	switch (format) {
+	case WL_SHM_FORMAT_ARGB32:
+	case WL_SHM_FORMAT_PREMULTIPLIED_ARGB32:
+	case WL_SHM_FORMAT_XRGB32:
+		break;
+	default:
 		wl_client_post_error(client, &resource->object,
-				     WL_SHM_ERROR_INVALID_VISUAL,
-				     "invalid visual");
+				     WL_SHM_ERROR_INVALID_FORMAT,
+				     "invalid format");
 		close(fd);
 		return;
 	}
@@ -151,8 +156,7 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	buffer = wl_shm_buffer_init(shm, client, id,
-				    width, height, stride, visual,
-				    data);
+				    width, height, stride, format, data);
 	if (buffer == NULL) {
 		munmap(data, stride * height);
 		wl_client_post_no_memory(client);
@@ -170,8 +174,15 @@ static void
 bind_shm(struct wl_client *client,
 	 void *data, uint32_t version, uint32_t id)
 {
-	wl_client_add_object(client,
-			     &wl_shm_interface, &shm_interface, id, data);
+	struct wl_resource *resource;
+
+	resource = wl_client_add_object(client, &wl_shm_interface,
+					&shm_interface, id, data);
+
+	wl_resource_post_event(resource, WL_SHM_FORMAT, WL_SHM_FORMAT_ARGB32);
+	wl_resource_post_event(resource, WL_SHM_FORMAT,
+			       WL_SHM_FORMAT_PREMULTIPLIED_ARGB32);
+	wl_resource_post_event(resource, WL_SHM_FORMAT, WL_SHM_FORMAT_XRGB32);
 }
 
 WL_EXPORT struct wl_shm *
@@ -231,4 +242,12 @@ wl_shm_buffer_get_data(struct wl_buffer *buffer_base)
 		return NULL;
 
 	return buffer->data;
+}
+
+WL_EXPORT uint32_t
+wl_shm_buffer_get_format(struct wl_buffer *buffer_base)
+{
+	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
+
+	return buffer->format;
 }

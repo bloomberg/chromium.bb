@@ -858,28 +858,6 @@ compositor_bind(struct wl_client *client,
 					compositor->interface, id, compositor);
 	if (resource == NULL)
 		return;
-
-	wl_resource_post_event(resource,
-			       WL_COMPOSITOR_TOKEN_VISUAL,
-			       compositor->argb_visual.name,
-			       WL_COMPOSITOR_VISUAL_ARGB32);
-
-	wl_resource_post_event(resource,
-			       WL_COMPOSITOR_TOKEN_VISUAL,
-			       compositor->premultiplied_argb_visual.name,
-			       WL_COMPOSITOR_VISUAL_PREMULTIPLIED_ARGB32);
-
-	wl_resource_post_event(resource,
-			       WL_COMPOSITOR_TOKEN_VISUAL,
-			       compositor->rgb_visual.name,
-			       WL_COMPOSITOR_VISUAL_XRGB32);
-}
-
-static void
-bind_visual(struct wl_client *client,
-	    void *data, uint32_t version, uint32_t id)
-{
-	wl_client_add_object(client, &wl_visual_interface, NULL, id, data);
 }
 
 WL_EXPORT int
@@ -894,25 +872,6 @@ wl_compositor_init(struct wl_compositor *compositor,
 				       compositor, compositor_bind);
 	if (!global)
 		return -1;
-
-	global = wl_display_add_global(display, &wl_visual_interface,
-				       &compositor->argb_visual, bind_visual);
-	if (!global)
-		return -1;
-	compositor->argb_visual.name = global->name;
-	
-	global = wl_display_add_global(display, &wl_visual_interface,
-				       &compositor->premultiplied_argb_visual,
-				       bind_visual);
-	if (!global)
-		return -1;
-	compositor->premultiplied_argb_visual.name = global->name;
-
-	global = wl_display_add_global(display, &wl_visual_interface,
-				       &compositor->rgb_visual, bind_visual);
-	if (!global)
-		return -1;
-	compositor->rgb_visual.name = global->name;
 
 	return 0;
 }
