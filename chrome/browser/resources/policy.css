@@ -1,0 +1,143 @@
+body {
+  color: black;
+  cursor: default;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  margin: 0 10px;
+  min-width: 47em;
+}
+
+button {
+  font-size: 0.9em;
+}
+
+#header {
+  border-bottom: 1px solid #000;
+  padding-top: 20px;
+}
+
+#about-policy-title {
+  -webkit-padding-end: 24px;
+  -webkit-user-select: none;
+  border-bottom: 1px solid #c6c9ce;
+  color: #53637d;
+  cursor: pointer;
+  font-size: 200%;
+  font-weight: normal;
+  margin: 0;
+  padding-bottom: 14px;
+  padding-top: 13px;
+  text-shadow: white 0 1px 2px;
+}
+
+#main-content {
+  min-height: 100%;
+}
+
+#status-title,
+#policies-title {
+  font-size: 120%;
+  font-weight: bold;
+  width: 65%;
+}
+
+section {
+  border-bottom: 1px solid #eee;
+  margin-top: 17px;
+  padding-bottom: 20px;
+  width: 100%;
+}
+
+.separator {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+#fetch-policies,
+#unsent-policies-control {
+  -webkit-box-flex: 1;
+}
+
+#fetch-policies,
+#unsent-policies-control,
+#search {
+  bottom: 3px;
+  position: relative;
+}
+
+#fetch-policies {
+  direction: rtl;
+}
+
+#checkbox-and-label {
+  -webkit-padding-end: 20px;
+  float: right;
+}
+
+html[dir='rtl'] #checkbox-and-label {
+  float: left;
+}
+
+#search-field {
+  bottom: 2px;
+  position: relative;
+}
+
+#status-pane {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  margin: 0 10%;
+}
+
+.status-box {
+  border: 1px solid #d9d9d9;
+  margin: 20px 100px;
+  min-height: 140px;
+  min-width: 300px;
+  overflow: hidden;
+  padding: 2px;
+  width: 30%;
+}
+
+legend {
+  padding: 0.2em 0.5em;
+}
+
+.status-box ul {
+  -webkit-padding-start: 10px;
+  list-style-type: none;
+}
+
+.status-box li {
+  padding: 3px;
+}
+
+#no-policies-text {
+  font-weight: bold;
+  margin: 20px;
+  text-align: center;
+}
+
+#policy-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+#policy-table th td {
+  border: 1px solid #fff;
+  border-collapse: collapse;
+}
+
+#policy-table th {
+  background-color: #dadadd;
+  padding: 10px;
+}
+
+#policy-table td {
+  background-color: #eaeef3;
+  overflow: hidden;
+  padding: 10px;
+  text-overflow: ellipsis;
+  width: 20%;
+}

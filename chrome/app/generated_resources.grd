@@ -4160,6 +4160,60 @@ Keep your key file in a safe place. You will need it to create new versions of y
         There are multiple simultaneous users of Chrome on this computer. Only the first user to launch Chrome can modify these preferences. Sorry about that!
       </message>
 
+      <!-- about:policy -->
+      <message name="IDS_POLICY_TITLE" desc="The title for the about:policies page.">
+        Policies
+      </message>
+      <message name="IDS_POLICY_FETCH" desc="The label for the button that fetches policies.">
+        Fetch policies now
+      </message>
+      <message name="IDS_POLICY_STATUS_TITLE" desc="The title for the status section.">
+        Status
+      </message>
+      <message name="IDS_POLICY_DEVICE_POLICIES" desc="The title for the device policies status box.">
+        Device Policies
+      </message>
+      <message name="IDS_POLICY_USER_POLICIES" desc="The title for the user policies status box.">
+        User policies
+      </message>
+      <message name="IDS_POLICY_ENROLLMENT_DOMAIN" desc="The label for the enrollment domain in the status boxes.">
+        Enrollment domain:
+      </message>
+      <message name="IDS_POLICY_LAST_FETCHED" desc="The label for the last fetched time in the status boxes.">
+        Last fetched:
+      </message>
+      <message name="IDS_POLICY_FETCH_INTERVAL" desc="The label for the fetch interval in the status boxes.">
+        Fetch interval:
+      </message>
+      <message name="IDS_POLICY_SERVER_STATUS" desc="The label for the server status in the status boxes.">
+        Status:
+      </message>
+      <message name="IDS_POLICY_SHOW_UNSENT" desc="The label for the checkbox that enables/disables the display of policies not sent by the server.">
+        Also show policies not sent by the server
+      </message>
+      <message name="IDS_POLICY_FILTER" desc="The placeholder for the search box.">
+        Filter policies by name
+      </message>
+      <message name="IDS_POLICY_NO_POLICIES_SET" desc="The text that appears if no policies were received
+      by the client.">
+        No policies are currently active!
+      </message>
+      <message name="IDS_POLICY_APPLIES_TO" desc="The table header for the column in the policy table that details whether a policy is a user or a device policy.">
+        Applies To
+      </message>
+      <message name="IDS_POLICY_LEVEL" desc="The table header for the column in the policy table that details whether a policy is mandatory or recommended.">
+        Level
+      </message>
+      <message name="IDS_POLICY_ENTRY_NAME" desc="The table header for the column in the policy table that contains the name of the policy.">
+        Policy Name
+      </message>
+      <message name="IDS_POLICY_ENTRY_VALUE" desc="The table header for the column in the policy table that contains the value of the policy.">
+        Policy Value
+      </message>
+      <message name="IDS_POLICY_ENTRY_STATUS" desc="The table header for the column in policy table that contains the status of the policy.">
+        Status
+      </message>
+
       <!-- about:flags -->
       <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">
         Careful, these experiments may bite

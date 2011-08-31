@@ -20,9 +20,6 @@
     <h1 id="about-policy-title" i18n-content="policyTitle"></h1>
   </div>
   <div id="main-content">
-    <section id="description-section">
-      <p i18n-content="aboutPolicyDescription"></p>
-    </section>
     <section id="status-section">
       <div class="separator">
         <span id="status-title" i18n-content="statusPaneTitle"></span>
@@ -65,7 +62,7 @@
           </div>
           <div id="search">
             <input id="search-field" type="search" incremental
-                      placeholder="Filter policies by name">
+                i18n-values="placeholder: filterPoliciesText">
           </div>
         </div>
         <div>
@@ -73,7 +70,8 @@
             <div id="no-policies-text" i18n-content="noPoliciesSet"></div>
           </div>
           <div id="policies"
-              jsvalues=".style.visibility: anyPoliciesSet ? 'visible': 'hidden'">
+              jsvalues=".style.display: anyPoliciesSet ?
+              '': 'none'">
             <table id="policy-table">
               <tr>
               <th i18n-content="appliesToTableHeader"></th>
@@ -82,11 +80,11 @@
               <th i18n-content="policyValueTableHeader"></th>
               <th i18n-content="policyStatusTableHeader"></th>
               </tr>
-              <tr jsselect="policies" 
-                  jsvalues=".className: Policy.isPolicySet($this)?
+              <tr jsselect="policies"
+                  jsvalues=".className: $this.set ?
                   'policy-set': 'policy-unset';
                   .style.display: Policy.shouldDisplayPolicy($this) ?
-                  'table-row': 'none'">
+                  '': 'none'">
               <td>
                 <span class="policy-type" jscontent="sourceType"></span>
               </td>

@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
+#include "chrome/browser/ui/webui/policy_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/browser/ui/webui/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/sessions_ui.h"
@@ -195,6 +196,8 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
+  if (url.host() == chrome::kChromeUIPolicyHost)
+    return &NewWebUI<PolicyUI>;
   if (url.host() == chrome::kChromeUISessionsHost)
     return &NewWebUI<SessionsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)
