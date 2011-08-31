@@ -96,7 +96,6 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
   }
 
   virtual ~SelectionHandleView() {
-    widget_->Close();
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -178,7 +177,6 @@ class TouchSelectionControllerImpl::TouchContextMenuView
   }
 
   virtual ~TouchContextMenuView() {
-    widget_->Close();
   }
 
   virtual void SetVisible(bool visible) OVERRIDE {
