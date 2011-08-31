@@ -57,13 +57,9 @@ int NaClManifestProxyCtor(struct NaClManifestProxy    *self,
                           void                        *thread_factory_data,
                           struct NaClApp              *nap);
 
-void NaClManifestProxyDtor(struct NaClRefCount *vself);
-
 int NaClManifestProxyConnectionCtor(struct NaClManifestProxyConnection  *self,
                                     struct NaClManifestProxy            *server,
                                     struct NaClDesc                     *conn);
-
-void NaClMaifestProxyConnectionDtor(struct NaClRefCount *vself);
 
 int NaClManifestProxyConnectionFactory(
     struct NaClSimpleService            *vself,

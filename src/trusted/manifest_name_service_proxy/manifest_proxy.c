@@ -192,7 +192,7 @@ int NaClManifestProxyCtor(struct NaClManifestProxy    *self,
   return 1;
 }
 
-void NaClManifestProxyDtor(struct NaClRefCount *vself) {
+static void NaClManifestProxyDtor(struct NaClRefCount *vself) {
   struct NaClManifestProxy *self =
       (struct NaClManifestProxy *) vself;
 
@@ -257,7 +257,7 @@ void NaClManifestProxyConnectionRevHandleConnect(
   NaClLog(4, "Leaving NaClManifestProxyConnectionRevHandleConnect\n");
 }
 
-void NaClManifestProxyConnectionDtor(struct NaClRefCount *vself) {
+static void NaClManifestProxyConnectionDtor(struct NaClRefCount *vself) {
   struct NaClManifestProxyConnection *self =
       (struct NaClManifestProxyConnection *) vself;
   NaClLog(4,
