@@ -8,7 +8,9 @@
       'target_name': 'skia',
       'type': '<(component)',
       'sources': [
-        '../third_party/skia/gpu/src/GrAddPathRenderers_none.cpp',
+        '../third_party/skia/gpu/src/GrAAHairLinePathRenderer.cpp',
+        '../third_party/skia/gpu/src/GrAAHairLinePathRenderer.h',
+        '../third_party/skia/gpu/src/GrAddPathRenderers_aahairline.cpp',
         '../third_party/skia/gpu/src/GrAllocPool.cpp',
         '../third_party/skia/gpu/src/GrAtlas.cpp',
         '../third_party/skia/gpu/src/GrBufferAllocPool.cpp',
