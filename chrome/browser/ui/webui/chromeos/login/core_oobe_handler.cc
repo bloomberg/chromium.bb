@@ -90,8 +90,8 @@ void CoreOobeHandler::OnBootTimesLabelTextUpdated(
 
 void CoreOobeHandler::UpdateLabel(const std::string& id,
                                   const std::string& text) {
-  base::StringValue id_value(ASCIIToUTF16(id));
-  base::StringValue text_value(ASCIIToUTF16(text));
+  base::StringValue id_value(UTF8ToUTF16(id));
+  base::StringValue text_value(UTF8ToUTF16(text));
   web_ui_->CallJavascriptFunction("cr.ui.Oobe.setLabelText",
                                   id_value,
                                   text_value);
