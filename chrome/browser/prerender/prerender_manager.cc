@@ -20,7 +20,7 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_history.h"
-#include "chrome/browser/prerender/prerender_observer.h"
+#include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -590,10 +590,10 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   // Update PPLT metrics:
   // If the tab has finished loading, record a PPLT of 0.
   // If the tab is still loading, reset its start time to the current time.
-  PrerenderObserver* prerender_observer =
-      new_tab_contents->prerender_observer();
-  DCHECK(prerender_observer != NULL);
-  prerender_observer->PrerenderSwappedIn();
+  PrerenderTabHelper* prerender_tab_helper =
+      new_tab_contents->prerender_tab_helper();
+  DCHECK(prerender_tab_helper != NULL);
+  prerender_tab_helper->PrerenderSwappedIn();
 
   // See if we have any pending prerender requests for this routing id and start
   // the preload if we do.

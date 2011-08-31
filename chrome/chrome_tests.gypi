@@ -1597,7 +1597,7 @@
         'browser/profiles/profile_dependency_manager_unittest.cc',
         'browser/profiles/profile_info_cache_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
-        'browser/remoting/firewall_traversal_tab_helper_unittest.cc',
+        'browser/remoting/firewall_traversal_observer_unittest.cc',
         'browser/renderer_host/accelerated_plugin_view_mac_unittest.mm',
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
         'browser/renderer_host/text_input_client_mac_unittest.mm',

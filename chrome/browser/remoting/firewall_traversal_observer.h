@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_REMOTING_FIREWALL_TRAVERSAL_TAB_HELPER_H_
-#define CHROME_BROWSER_REMOTING_FIREWALL_TRAVERSAL_TAB_HELPER_H_
+#ifndef CHROME_BROWSER_REMOTING_FIREWALL_TRAVERSAL_OBSERVER_H_
+#define CHROME_BROWSER_REMOTING_FIREWALL_TRAVERSAL_OBSERVER_H_
 #pragma once
 
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -15,11 +15,11 @@
 // the remoting plugin.
 // TODO(dmaclach): Replace this with a more generic mechanism for
 //                 plugins to access preferences. http://crbug.com/90543
-class FirewallTraversalTabHelper : public NotificationObserver,
-                                   public TabContentsObserver {
+class FirewallTraversalObserver : public NotificationObserver,
+                                  public TabContentsObserver {
  public:
-  explicit FirewallTraversalTabHelper(TabContents* tab_contents);
-  virtual ~FirewallTraversalTabHelper();
+  explicit FirewallTraversalObserver(TabContents* tab_contents);
+  virtual ~FirewallTraversalObserver();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -37,7 +37,7 @@ class FirewallTraversalTabHelper : public NotificationObserver,
   // Registers and unregisters us for notifications.
   PrefChangeRegistrar pref_change_registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(FirewallTraversalTabHelper);
+  DISALLOW_COPY_AND_ASSIGN(FirewallTraversalObserver);
 };
 
-#endif  // CHROME_BROWSER_REMOTING_FIREWALL_TRAVERSAL_TAB_HELPER_H_
+#endif  // CHROME_BROWSER_REMOTING_FIREWALL_TRAVERSAL_OBSERVER_H_

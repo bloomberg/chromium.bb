@@ -13,23 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/printing/print_view_manager.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_synced_tab_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_synced_tab_delegate.h"
 #include "content/common/notification_registrar.h"
-
-namespace IPC {
-class Message;
-}
-
-namespace prerender {
-class PrerenderObserver;
-}
-
-namespace printing {
-class PrintPreviewMessageHandler;
-}
 
 class AutocompleteHistoryManager;
 class AutofillManager;
@@ -44,7 +31,7 @@ class ExternalProtocolObserver;
 class FaviconTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
-class FirewallTraversalTabHelper;
+class FirewallTraversalObserver;
 class InfoBarDelegate;
 class HistoryTabHelper;
 class NavigationController;
@@ -52,13 +39,32 @@ class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
 class PluginObserver;
+class Profile;
 class RestoreTabHelper;
 class SearchEngineTabHelper;
 class TabContentsSSLHelper;
 class TabContentsWrapperDelegate;
+class TabContentsWrapperSyncedTabDelegate;
 class TabSpecificContentSettings;
 class ThumbnailGenerator;
 class TranslateTabHelper;
+
+namespace browser_sync {
+class SyncedTabDelegate;
+}
+
+namespace IPC {
+class Message;
+}
+
+namespace prerender {
+class PrerenderTabHelper;
+}
+
+namespace printing {
+class PrintViewManager;
+class PrintPreviewMessageHandler;
+}
 
 namespace safe_browsing {
 class ClientSideDetectionHost;
@@ -156,14 +162,25 @@ class TabContentsWrapper : public TabContentsObserver,
     return extension_tab_helper_.get();
   }
 
-  FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
-
   FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
+  FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
   HistoryTabHelper* history_tab_helper() { return history_tab_helper_.get(); }
   PasswordManager* password_manager() { return password_manager_.get(); }
 
+  prerender::PrerenderTabHelper* prerender_tab_helper() {
+    return prerender_tab_helper_.get();
+  }
+
   printing::PrintViewManager* print_view_manager() {
     return print_view_manager_.get();
+  }
+
+  RestoreTabHelper* restore_tab_helper() {
+    return restore_tab_helper_.get();
+  }
+
+  const RestoreTabHelper* restore_tab_helper() const {
+    return restore_tab_helper_.get();
   }
 
   safe_browsing::ClientSideDetectionHost* safebrowsing_detection_host() {
@@ -182,18 +199,6 @@ class TabContentsWrapper : public TabContentsObserver,
 
   TranslateTabHelper* translate_tab_helper() {
     return translate_tab_helper_.get();
-  }
-
-  prerender::PrerenderObserver* prerender_observer() {
-    return prerender_observer_.get();
-  }
-
-  RestoreTabHelper* restore_tab_helper() {
-    return restore_tab_helper_.get();
-  }
-
-  const RestoreTabHelper* restore_tab_helper() const {
-    return restore_tab_helper_.get();
   }
 
   // Overrides -----------------------------------------------------------------
@@ -306,17 +311,19 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
-  scoped_ptr<FirewallTraversalTabHelper> firewall_traversal_tab_helper_;
   scoped_ptr<HistoryTabHelper> history_tab_helper_;
-  scoped_ptr<RestoreTabHelper> restore_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,
   // per documentation in password_manager.h.
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
 
+  scoped_ptr<prerender::PrerenderTabHelper> prerender_tab_helper_;
+
   // Handles print job for this contents.
   scoped_ptr<printing::PrintViewManager> print_view_manager_;
+
+  scoped_ptr<RestoreTabHelper> restore_tab_helper_;
 
   // Handles IPCs related to SafeBrowsing client-side phishing detection.
   scoped_ptr<safe_browsing::ClientSideDetectionHost>
@@ -336,11 +343,11 @@ class TabContentsWrapper : public TabContentsObserver,
   // and silently do their thing live here.)
 
   scoped_ptr<DownloadRequestLimiterObserver> download_request_limiter_observer_;
-  scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
-  scoped_ptr<PluginObserver> plugin_observer_;
-  scoped_ptr<prerender::PrerenderObserver> prerender_observer_;
-  scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<ExtensionWebNavigationTabObserver> webnavigation_observer_;
+  scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
+  scoped_ptr<FirewallTraversalObserver> firewall_traversal_observer_;
+  scoped_ptr<PluginObserver> plugin_observer_;
+  scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;
 
   // TabContents (MUST BE LAST) ------------------------------------------------

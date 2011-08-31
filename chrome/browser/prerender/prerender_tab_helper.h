@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_
-#define CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_
+#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
+#define CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
@@ -17,12 +17,12 @@ namespace prerender {
 class PrerenderContents;
 class PrerenderManager;
 
-// PrerenderObserver is responsible for recording perceived pageload times
+// PrerenderTabHelper is responsible for recording perceived pageload times
 // to compare PLT's with prerendering enabled and disabled.
-class PrerenderObserver : public TabContentsObserver {
+class PrerenderTabHelper : public TabContentsObserver {
  public:
-  explicit PrerenderObserver(TabContentsWrapper* tab);
-  virtual ~PrerenderObserver();
+  explicit PrerenderTabHelper(TabContentsWrapper* tab);
+  virtual ~PrerenderTabHelper();
 
   // TabContentsObserver implementation.
   virtual void ProvisionalChangeToMainFrameUrl(const GURL& url,
@@ -77,9 +77,9 @@ class PrerenderObserver : public TabContentsObserver {
   GURL current_hover_url_;
   base::TimeTicks current_hover_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrerenderObserver);
+  DISALLOW_COPY_AND_ASSIGN(PrerenderTabHelper);
 };
 
 }  // namespace prerender
 
-#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_OBSERVER_H_
+#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_

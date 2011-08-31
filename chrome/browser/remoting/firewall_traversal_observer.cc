@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/remoting/firewall_traversal_tab_helper.h"
+#include "chrome/browser/remoting/firewall_traversal_observer.h"
 
 #include "base/stringprintf.h"
 #include "base/json/json_writer.h"
@@ -16,7 +16,7 @@
 #include "content/common/view_messages.h"
 #include "ipc/ipc_message_macros.h"
 
-FirewallTraversalTabHelper::FirewallTraversalTabHelper(
+FirewallTraversalObserver::FirewallTraversalObserver(
     TabContents* tab_contents)
     : TabContentsObserver(tab_contents) {
   // Register for notifications about all interested prefs change.
@@ -32,13 +32,13 @@ FirewallTraversalTabHelper::FirewallTraversalTabHelper(
   }
 }
 
-FirewallTraversalTabHelper::~FirewallTraversalTabHelper() {
+FirewallTraversalObserver::~FirewallTraversalObserver() {
   // We don't want any notifications while we're running our destructor.
   pref_change_registrar_.RemoveAll();
 }
 
 // static
-void FirewallTraversalTabHelper::RegisterUserPrefs(PrefService* prefs) {
+void FirewallTraversalObserver::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kRemoteAccessClientFirewallTraversal,
                              true,
                              PrefService::UNSYNCABLE_PREF);
@@ -47,9 +47,10 @@ void FirewallTraversalTabHelper::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
 }
 
-void FirewallTraversalTabHelper::Observe(int type,
-                                const NotificationSource& source,
-                                const NotificationDetails& details) {
+void FirewallTraversalObserver::Observe(
+    int type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name_in = Details<std::string>(details).ptr();
@@ -68,7 +69,7 @@ void FirewallTraversalTabHelper::Observe(int type,
   }
 }
 
-void FirewallTraversalTabHelper::UpdateFirewallTraversalState() {
+void FirewallTraversalObserver::UpdateFirewallTraversalState() {
   const char* pref_name = prefs::kRemoteAccessClientFirewallTraversal;
   Profile* profile =
       Profile::FromBrowserContext(tab_contents()->browser_context());
@@ -82,9 +83,9 @@ void FirewallTraversalTabHelper::UpdateFirewallTraversalState() {
                                                              policy));
 }
 
-bool FirewallTraversalTabHelper::OnMessageReceived(const IPC::Message& msg) {
+bool FirewallTraversalObserver::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(FirewallTraversalTabHelper, msg)
+  IPC_BEGIN_MESSAGE_MAP(FirewallTraversalObserver, msg)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestRemoteAccessClientFirewallTraversal,
                         UpdateFirewallTraversalState)
 

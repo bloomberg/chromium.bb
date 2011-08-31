@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prerender/prerender_observer.h"
+#include "chrome/browser/prerender/prerender_tab_helper.h"
 
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
@@ -95,7 +95,7 @@ void RecordPageviewEvent(PAGEVIEW_EVENTS event) {
 
 }  // namespace
 
-class PrerenderObserver::HoverData {
+class PrerenderTabHelper::HoverData {
  public:
   void SetHoverThreshold(int threshold_ms) {
     hover_threshold_ = base::TimeDelta::FromMilliseconds(threshold_ms);
@@ -179,7 +179,7 @@ class PrerenderObserver::HoverData {
   base::TimeDelta hover_threshold_;
 };
 
-PrerenderObserver::PrerenderObserver(TabContentsWrapper* tab)
+PrerenderTabHelper::PrerenderTabHelper(TabContentsWrapper* tab)
     : TabContentsObserver(tab->tab_contents()),
       tab_(tab),
       pplt_load_start_(),
@@ -188,11 +188,11 @@ PrerenderObserver::PrerenderObserver(TabContentsWrapper* tab)
     last_hovers_[i].SetHoverThreshold(kMinHoverThresholdsMs[i]);
 }
 
-PrerenderObserver::~PrerenderObserver() {
+PrerenderTabHelper::~PrerenderTabHelper() {
 }
 
-void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url,
-                                                        bool has_opener_set) {
+void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(const GURL& url,
+                                                         bool has_opener_set) {
   RecordPageviewEvent(PAGEVIEW_EVENT_NEW_URL);
   if (IsTopSite(url))
     RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_NEW_URL);
@@ -207,8 +207,8 @@ void PrerenderObserver::ProvisionalChangeToMainFrameUrl(const GURL& url,
   MaybeUsePrerenderedPage(url, has_opener_set);
 }
 
-bool PrerenderObserver::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(PrerenderObserver, message)
+bool PrerenderTabHelper::OnMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(PrerenderTabHelper, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnMsgUpdateTargetURL)
@@ -216,10 +216,10 @@ bool PrerenderObserver::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                                          bool is_main_frame,
-                                                          bool has_opener_set,
-                                                          const GURL& url) {
+void PrerenderTabHelper::OnDidStartProvisionalLoadForFrame(int64 frame_id,
+                                                           bool is_main_frame,
+                                                           bool has_opener_set,
+                                                           const GURL& url) {
   if (is_main_frame) {
     RecordPageviewEvent(PAGEVIEW_EVENT_LOAD_START);
     if (IsTopSite(url))
@@ -236,7 +236,7 @@ void PrerenderObserver::OnDidStartProvisionalLoadForFrame(int64 frame_id,
   }
 }
 
-void PrerenderObserver::OnMsgUpdateTargetURL(int32 page_id, const GURL& url) {
+void PrerenderTabHelper::OnMsgUpdateTargetURL(int32 page_id, const GURL& url) {
   for (int i = 0; i < kNumHoverThresholds; i++)
     last_hovers_[i].RecordHover(url);
 
@@ -247,7 +247,7 @@ void PrerenderObserver::OnMsgUpdateTargetURL(int32 page_id, const GURL& url) {
   }
 }
 
-void PrerenderObserver::DidStopLoading() {
+void PrerenderTabHelper::DidStopLoading() {
   // Don't include prerendered pages in the PPLT metric until after they are
   // swapped in.
 
@@ -261,7 +261,7 @@ void PrerenderObserver::DidStopLoading() {
   pplt_load_start_ = base::TimeTicks();
 }
 
-PrerenderManager* PrerenderObserver::MaybeGetPrerenderManager() const {
+PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
   Profile* profile =
       Profile::FromBrowserContext(tab_contents()->browser_context());
   if (!profile)
@@ -269,8 +269,8 @@ PrerenderManager* PrerenderObserver::MaybeGetPrerenderManager() const {
   return profile->GetPrerenderManager();
 }
 
-bool PrerenderObserver::MaybeUsePrerenderedPage(const GURL& url,
-                                                bool has_opener_set) {
+bool PrerenderTabHelper::MaybeUsePrerenderedPage(const GURL& url,
+                                                 bool has_opener_set) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return false;
@@ -280,14 +280,14 @@ bool PrerenderObserver::MaybeUsePrerenderedPage(const GURL& url,
                                                     has_opener_set);
 }
 
-bool PrerenderObserver::IsPrerendering() {
+bool PrerenderTabHelper::IsPrerendering() {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return false;
   return prerender_manager->IsTabContentsPrerendering(tab_contents());
 }
 
-void PrerenderObserver::PrerenderSwappedIn() {
+void PrerenderTabHelper::PrerenderSwappedIn() {
   // Ensure we are not prerendering any more.
   DCHECK(!IsPrerendering());
   if (pplt_load_start_.is_null()) {
@@ -300,7 +300,7 @@ void PrerenderObserver::PrerenderSwappedIn() {
   }
 }
 
-void PrerenderObserver::MaybeLogCurrentHover(bool was_used) {
+void PrerenderTabHelper::MaybeLogCurrentHover(bool was_used) {
   if (current_hover_url_.is_empty())
     return;
 
@@ -325,7 +325,7 @@ void PrerenderObserver::MaybeLogCurrentHover(bool was_used) {
   current_hover_url_ = GURL();
 }
 
-bool PrerenderObserver::IsTopSite(const GURL& url) const {
+bool PrerenderTabHelper::IsTopSite(const GURL& url) const {
   PrerenderManager* pm = MaybeGetPrerenderManager();
   return (pm && pm->IsTopSite(url));
 }

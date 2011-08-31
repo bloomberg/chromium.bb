@@ -30,10 +30,11 @@
 #include "chrome/browser/pdf_unsupported_feature.h"
 #include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prerender/prerender_observer.h"
+#include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/remoting/firewall_traversal_tab_helper.h"
+#include "chrome/browser/remoting/firewall_traversal_observer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -229,13 +230,13 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
-  firewall_traversal_tab_helper_.reset(
-      new FirewallTraversalTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
-  restore_tab_helper_.reset(new RestoreTabHelper(this));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
+  prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
+  print_view_manager_.reset(new printing::PrintViewManager(this));
+  restore_tab_helper_.reset(new RestoreTabHelper(this));
 #if defined(ENABLE_SAFE_BROWSING)
   if (profile()->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
       g_browser_process->safe_browsing_detection_service()) {
@@ -247,17 +248,16 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   ssl_helper_.reset(new TabContentsSSLHelper(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
-  print_view_manager_.reset(new printing::PrintViewManager(this));
 
   // Create the per-tab observers.
-  external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   download_request_limiter_observer_.reset(
       new DownloadRequestLimiterObserver(contents));
-  plugin_observer_.reset(new PluginObserver(this));
-  prerender_observer_.reset(new prerender::PrerenderObserver(this));
-  print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   webnavigation_observer_.reset(
       new ExtensionWebNavigationTabObserver(contents));
+  external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
+  firewall_traversal_observer_.reset(new FirewallTraversalObserver(contents));
+  plugin_observer_.reset(new PluginObserver(this));
+  print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   // Start the in-browser thumbnailing if the feature is enabled.
   if (switches::IsInBrowserThumbnailingEnabled()) {
     thumbnail_generation_observer_.reset(new ThumbnailGenerator);
