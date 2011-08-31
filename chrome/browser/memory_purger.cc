@@ -23,7 +23,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
-#include "v8/include/v8.h"
 
 // PurgeMemoryHelper -----------------------------------------------------------
 
