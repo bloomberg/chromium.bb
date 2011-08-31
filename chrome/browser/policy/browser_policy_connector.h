@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
@@ -134,11 +133,6 @@ class BrowserPolicyConnector : public NotificationObserver {
   // from InitializeDevicePolicy since it needs to wait for the message loops to
   // be running.
   void InitializeDevicePolicySubsystem();
-
-  // Works out the user affiliation by checking the given |user_name| against
-  // the installation attributes.
-  policy::CloudPolicyDataStore::UserAffiliation GetUserAffiliation(
-      const std::string& user_name);
 
   static BrowserPolicyConnector* CreateForTests();
   static ConfigurationPolicyProvider* CreateManagedPlatformProvider();

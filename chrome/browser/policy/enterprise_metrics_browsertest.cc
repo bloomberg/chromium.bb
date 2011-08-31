@@ -76,9 +76,7 @@ class DeviceManagementBackendTestHelper {
     DevicePolicyResponseDelegateMock delegate;
     EXPECT_CALL(delegate, OnError(_)).Times(AnyNumber());
     EXPECT_CALL(delegate, HandlePolicyResponse(_)).Times(AnyNumber());
-    backend_->ProcessPolicyRequest("token", "testid",
-                                   CloudPolicyDataStore::USER_AFFILIATION_NONE,
-                                   request, &delegate);
+    backend_->ProcessPolicyRequest("token", "testid", request, &delegate);
   }
 
   void UnmockCreateBackend() {

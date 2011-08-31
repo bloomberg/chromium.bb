@@ -34,8 +34,6 @@ const char DeviceManagementBackendImpl::kParamDeviceType[] = "devicetype";
 const char DeviceManagementBackendImpl::kParamOAuthToken[] = "oauth_token";
 const char DeviceManagementBackendImpl::kParamPlatform[] = "platform";
 const char DeviceManagementBackendImpl::kParamRequest[] = "request";
-const char DeviceManagementBackendImpl::kParamUserAffiliation[] =
-    "user_affiliation";
 
 // String constants for the device and app type we report to the server.
 const char DeviceManagementBackendImpl::kValueAppType[] = "Chrome";
@@ -44,9 +42,6 @@ const char DeviceManagementBackendImpl::kValueRequestPolicy[] = "policy";
 const char DeviceManagementBackendImpl::kValueRequestRegister[] = "register";
 const char DeviceManagementBackendImpl::kValueRequestUnregister[] =
     "unregister";
-const char DeviceManagementBackendImpl::kValueUserAffiliationManaged[] =
-    "managed";
-const char DeviceManagementBackendImpl::kValueUserAffiliationNone[] = "none";
 
 namespace {
 
@@ -75,6 +70,7 @@ const int kPolicyNotFound = 902; // This error is not sent as HTTP status code.
 // should be removed once the DM Server has been updated.
 const int kPendingApprovalLegacy = 491;
 const int kDeviceNotFoundLegacy = 901;
+
 
 #if defined(OS_CHROMEOS)
 // Machine info keys.
@@ -388,7 +384,6 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
       DeviceManagementBackendImpl* backend_impl,
       const std::string& device_management_token,
       const std::string& device_id,
-      const std::string& user_affiliation,
       const em::DevicePolicyRequest& request,
       DeviceManagementBackend::DevicePolicyResponseDelegate* delegate)
       : DeviceManagementJobBase(
@@ -397,8 +392,6 @@ class DeviceManagementPolicyJob : public DeviceManagementJobBase {
           device_id),
         delegate_(delegate) {
     SetDeviceManagementToken(device_management_token);
-    SetQueryParam(DeviceManagementBackendImpl::kParamUserAffiliation,
-                  user_affiliation);
     em::DeviceManagementRequest request_wrapper;
     request_wrapper.mutable_policy_request()->CopyFrom(request);
     SetPayload(request_wrapper);
@@ -545,27 +538,12 @@ void DeviceManagementBackendImpl::ProcessUnregisterRequest(
 void DeviceManagementBackendImpl::ProcessPolicyRequest(
     const std::string& device_management_token,
     const std::string& device_id,
-    CloudPolicyDataStore::UserAffiliation affiliation,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchRequested,
                             kMetricPolicySize);
   AddJob(new DeviceManagementPolicyJob(this, device_management_token, device_id,
-                                       UserAffiliationToString(affiliation),
                                        request, delegate));
-}
-
-// static
-const char* DeviceManagementBackendImpl::UserAffiliationToString(
-    CloudPolicyDataStore::UserAffiliation affiliation) {
-  switch (affiliation) {
-    case CloudPolicyDataStore::USER_AFFILIATION_MANAGED:
-      return kValueUserAffiliationManaged;
-    case CloudPolicyDataStore::USER_AFFILIATION_NONE:
-      return kValueUserAffiliationNone;
-  }
-  NOTREACHED();
-  return kValueUserAffiliationNone;
 }
 
 }  // namespace policy

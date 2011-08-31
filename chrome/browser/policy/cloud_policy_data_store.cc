@@ -83,8 +83,7 @@ CloudPolicyDataStore::CloudPolicyDataStore(
     const std::string& policy_type,
     const std::string& machine_model,
     const std::string& machine_id)
-    : user_affiliation_(USER_AFFILIATION_NONE),
-      policy_register_type_(policy_register_type),
+    : policy_register_type_(policy_register_type),
       policy_type_(policy_type),
       machine_model_(machine_model),
       machine_id_(machine_id),
@@ -149,11 +148,6 @@ void CloudPolicyDataStore::set_user_name(const std::string& user_name) {
   user_name_ = user_name;
 }
 
-void CloudPolicyDataStore::set_user_affiliation(
-    UserAffiliation user_affiliation) {
-  user_affiliation_ = user_affiliation;
-}
-
 const std::string& CloudPolicyDataStore::device_token() const {
   return device_token_;
 }
@@ -193,11 +187,6 @@ bool CloudPolicyDataStore::token_cache_loaded() const {
 
 const std::string& CloudPolicyDataStore::user_name() const {
   return user_name_;
-}
-
-const CloudPolicyDataStore::UserAffiliation
-    CloudPolicyDataStore::user_affiliation() const {
-  return user_affiliation_;
 }
 
 void CloudPolicyDataStore::AddObserver(

@@ -34,15 +34,6 @@ class CloudPolicyDataStore {
     virtual void OnCredentialsChanged() = 0;
   };
 
-  // Describes the affilitation of a user w.r.t. the managed state of the
-  // device.
-  enum UserAffiliation {
-    // User is on the same domain the device was registered with.
-    USER_AFFILIATION_MANAGED,
-    // No affiliation between device and user user.
-    USER_AFFILIATION_NONE,
-  };
-
   ~CloudPolicyDataStore();
 
   // Create CloudPolicyData with constants initialized for fetching user
@@ -77,7 +68,6 @@ class CloudPolicyDataStore {
 
   void set_device_id(const std::string& device_id);
   void set_user_name(const std::string& user_name);
-  void set_user_affiliation(UserAffiliation user_affiliation);
 
   const std::string& device_id() const;
   const std::string& device_token() const;
@@ -90,7 +80,6 @@ class CloudPolicyDataStore {
   const std::string& policy_type() const;
   bool token_cache_loaded() const;
   const std::string& user_name() const;
-  const UserAffiliation user_affiliation() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -112,7 +101,6 @@ class CloudPolicyDataStore {
 
   // Data necessary for constructing policy requests.
   std::string device_token_;
-  UserAffiliation user_affiliation_;
 
   // Constants that won't change over the life-time of a cloud policy
   // subsystem.

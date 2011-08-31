@@ -257,7 +257,6 @@ void CloudPolicyController::SendPolicyRequest() {
 
   backend_->ProcessPolicyRequest(data_store_->device_token(),
                                  data_store_->device_id(),
-                                 data_store_->user_affiliation(),
                                  policy_request, this);
 }
 

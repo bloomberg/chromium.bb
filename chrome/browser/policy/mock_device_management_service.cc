@@ -30,15 +30,13 @@ void ProxyDeviceManagementBackend::ProcessUnregisterRequest(
   backend_->ProcessUnregisterRequest(device_management_token, device_id,
                                      request, delegate);
 }
-
 void ProxyDeviceManagementBackend::ProcessPolicyRequest(
     const std::string& device_management_token,
     const std::string& device_id,
-    CloudPolicyDataStore::UserAffiliation affiliation,
     const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
   backend_->ProcessPolicyRequest(device_management_token, device_id,
-                                 affiliation, request, delegate);
+                                 request, delegate);
 }
 
 MockDeviceManagementService::MockDeviceManagementService()
