@@ -60,15 +60,18 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 // static
-string16 HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
-  const string16& input_text = input.text();
+bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
+  const string16& input_text = input->text();
   // Fixup and canonicalize user input.
+  // NOTE: This purposefully doesn't take input.desired_tld() into account; if
+  // it did, then holding "ctrl" would change all the results from the provider,
+  // not just the What You Typed Result.
   const GURL canonical_gurl(URLFixerUpper::FixupURL(UTF16ToUTF8(input_text),
                                                     std::string()));
   std::string canonical_gurl_str(canonical_gurl.possibly_invalid_spec());
   if (canonical_gurl_str.empty()) {
     // This probably won't happen, but there are no guarantees.
-    return input_text;
+    return false;
   }
 
   // If the user types a number, GURL will convert it to a dotted quad.
@@ -77,11 +80,11 @@ string16 HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
   // for hostname beginning with numbers (e.g. input of "17173" will be matched
   // against "0.0.67.21" instead of the original "17173", failing to find
   // "17173.com"), swap the original hostname in for the fixed-up one.
-  if ((input.type() != AutocompleteInput::URL) &&
+  if ((input->type() != AutocompleteInput::URL) &&
       canonical_gurl.HostIsIPAddress()) {
     std::string original_hostname =
-        UTF16ToUTF8(input_text.substr(input.parts().host.begin,
-                                      input.parts().host.len));
+        UTF16ToUTF8(input_text.substr(input->parts().host.begin,
+                                      input->parts().host.len));
     const url_parse::Parsed& parts =
         canonical_gurl.parsed_for_possibly_invalid_spec();
     // parts.host must not be empty when HostIsIPAddress() is true.
@@ -125,7 +128,10 @@ string16 HistoryProvider::FixupUserInput(const AutocompleteInput& input) {
   else if (num_output_slashes > num_input_slashes)
     output.erase(output.length() - num_output_slashes + num_input_slashes);
 
-  return output;
+  url_parse::Parsed parts;
+  URLFixerUpper::SegmentURL(output, &parts);
+  input->UpdateText(output, parts);
+  return !output.empty();
 }
 
 // static

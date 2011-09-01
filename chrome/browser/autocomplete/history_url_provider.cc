@@ -490,17 +490,8 @@ void HistoryURLProvider::RunAutocompletePasses(
   if (fixup_input_and_run_pass_1) {
     // Do some fixup on the user input before matching against it, so we provide
     // good results for local file paths, input with spaces, etc.
-    // NOTE: This purposefully doesn't take input.desired_tld() into account; if
-    // it did, then holding "ctrl" would change all the results from the
-    // HistoryURLProvider provider, not just the What You Typed Result.
-    const string16 fixed_text(FixupUserInput(input));
-    if (fixed_text.empty()) {
-      // Conceivably fixup could result in an empty string (although I don't
-      // have cases where this happens offhand).  We can't do anything with
-      // empty input, so just bail; otherwise we'd crash later.
+    if (!FixupUserInput(&params->input))
       return;
-    }
-    params->input.set_text(fixed_text);
 
     // Pass 1: Get the in-memory URL database, and use it to find and promote
     // the inline autocomplete match, if any.
@@ -678,10 +669,14 @@ bool HistoryURLProvider::FixupExactSuggestion(
 bool HistoryURLProvider::CanFindIntranetURL(
     history::URLDatabase* db,
     const AutocompleteInput& input) const {
+  // Normally passing the first two conditions below ought to guarantee the
+  // third condition, but because FixupUserInput() can run and modify the
+  // input's text and parts between Parse() and here, it seems better to be
+  // paranoid and check.
   if ((input.type() != AutocompleteInput::UNKNOWN) ||
-      !LowerCaseEqualsASCII(input.scheme(), chrome::kHttpScheme))
+      !LowerCaseEqualsASCII(input.scheme(), chrome::kHttpScheme) ||
+      !input.parts().host.is_nonempty())
     return false;
-  DCHECK(input.parts().host.is_nonempty());
   const string16 host(input.text().substr(input.parts().host.begin,
                                           input.parts().host.len));
   if (net::RegistryControlledDomainService::GetRegistryLength(

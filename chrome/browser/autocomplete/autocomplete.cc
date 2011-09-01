@@ -456,6 +456,11 @@ string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
       formatted_url : url_with_path;
 }
 
+void AutocompleteInput::UpdateText(const string16& text,
+                                   const url_parse::Parsed& parts) {
+  text_ = text;
+  parts_ = parts;
+}
 
 bool AutocompleteInput::Equals(const AutocompleteInput& other) const {
   return (text_ == other.text_) &&

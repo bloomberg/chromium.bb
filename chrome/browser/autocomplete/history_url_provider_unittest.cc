@@ -540,3 +540,18 @@ TEST_F(HistoryURLProviderTest, IntranetURLsWithPaths) {
         test_cases[i].has_output ? 1 : 0);
   }
 }
+
+TEST_F(HistoryURLProviderTest, CrashDueToFixup) {
+  // This test passes if we don't crash.  The results don't matter.
+  const char* const test_cases[] = {
+    "//c",
+    "\\@st"
+  };
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    AutocompleteInput input(ASCIIToUTF16(test_cases[i]), string16(), false,
+                            false, true, AutocompleteInput::ALL_MATCHES);
+    autocomplete_->Start(input, false);
+    if (!autocomplete_->done())
+      MessageLoop::current()->Run();
+  }
+}

@@ -60,17 +60,8 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
 
   // Do some fixup on the user input before matching against it, so we provide
   // good results for local file paths, input with spaces, etc.
-  // NOTE: This purposefully doesn't take input.desired_tld() into account; if
-  // it did, then holding "ctrl" would change all the results from the
-  // HistoryQuickProvider provider, not just the What You Typed Result.
-  const string16 fixed_text(FixupUserInput(input));
-  if (fixed_text.empty()) {
-    // Conceivably fixup could result in an empty string (although I don't
-    // have cases where this happens offhand).  We can't do anything with
-    // empty input, so just bail; otherwise we'd crash later.
+  if (!FixupUserInput(&autocomplete_input_))
     return;
-  }
-  autocomplete_input_.set_text(fixed_text);
 
   // TODO(pkasting): We should just block here until this loads.  Any time
   // someone unloads the history backend, we'll get inconsistent inline

@@ -266,9 +266,9 @@ class AutocompleteInput {
   const string16& text() const { return text_; }
 
   // Use of this setter is risky, since no other internal state is updated
-  // besides |text_|.  Only callers who know that they're not changing the
-  // type/scheme/etc. should use this.
-  void set_text(const string16& text) { text_ = text; }
+  // besides |text_| and |parts_|.  Only callers who know that they're not
+  // changing the type/scheme/etc. should use this.
+  void UpdateText(const string16& text, const url_parse::Parsed& parts);
 
   // User's desired TLD, if one is not already present in the text to
   // autocomplete.  When this is non-empty, it also implies that "www." should
