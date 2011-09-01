@@ -1,7 +1,7 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Build "SRPC" interfaces from specifications.
 
@@ -25,7 +25,7 @@ import sys
 import os
 
 COPYRIGHT_AND_AUTOGEN_COMMENT = """\
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
