@@ -38,7 +38,7 @@ class ValidationPool(object):
   method that grabs the commits that are ready for validation.
   """
 
-  GLOBAL_DRYRUN = True
+  GLOBAL_DRYRUN = False
 
   def __init__(self, dryrun):
     """Initializes an instance by setting default valuables to instance vars.
