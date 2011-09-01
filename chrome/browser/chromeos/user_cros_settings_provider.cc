@@ -7,6 +7,8 @@
 #include <map>
 #include <set>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -20,13 +22,11 @@
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
-#include "chrome/browser/chromeos/login/ownership_status_checker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/options/options_util.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/browser_thread.h"
 
@@ -58,69 +58,21 @@ const char* kListSettings[] = {
   kAccountsPrefUsers
 };
 
-// This class provides the means to migrate settings to the signed settings
-// store. It does one of three things - store the settings in the policy blob
-// immediately if the current user is the owner. Uses the
-// SignedSettingsTempStorage if there is no owner yet, or waits for an
-// OWNERSHIP_CHECKED notification to delay the storing until the owner has
-// logged in.
-class MigrationHelper : public NotificationObserver {
- public:
-  explicit MigrationHelper() : callback_(NULL) {
-    registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_CHECKED,
-                   NotificationService::AllSources());
+// Only write the property if the owner is the current logged on user.
+void StartStorePropertyOpIfOwner(const std::string& name,
+                                 const std::string& value,
+                                 SignedSettingsHelper::Callback* callback) {
+  if (OwnershipService::GetSharedInstance()->CurrentUserIsOwner()) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(
+                                &SignedSettingsHelper::StartStorePropertyOp,
+                                base::Unretained(SignedSettingsHelper::Get()),
+                                name,
+                                value,
+                                callback));
   }
-
-  void set_callback(SignedSettingsHelper::Callback* callback) {
-    callback_ = callback;
-  }
-
-  void AddMigrationValue(const std::string& path, const std::string& value) {
-    migration_values_[path] = value;
-  }
-
-  void MigrateValues(void) {
-    ownership_checker_.reset(new OwnershipStatusChecker(NewCallback(
-        this, &MigrationHelper::DoMigrateValues)));
-  }
-
-  // NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_OWNERSHIP_CHECKED)
-      MigrateValues();
-  }
-
- private:
-  void DoMigrateValues(OwnershipService::Status status,
-                       bool current_user_is_owner) {
-    ownership_checker_.reset(NULL);
-
-    // We can call StartStorePropertyOp in two cases - either if the owner is
-    // currently logged in and the policy can be updated immediately or if there
-    // is no owner yet in which case the value will be temporarily stored in the
-    // SignedSettingsTempStorage until the device is owned. If none of these
-    // cases is met then we will wait for user change notification and retry.
-    if (current_user_is_owner || status != OwnershipService::OWNERSHIP_TAKEN) {
-      std::map<std::string, std::string>::const_iterator i;
-      for (i = migration_values_.begin(); i != migration_values_.end(); ++i) {
-        // Queue all values for storing.
-        SignedSettingsHelper::Get()->StartStorePropertyOp(i->first, i->second,
-                                                          callback_);
-      }
-      migration_values_.clear();
-    }
-  }
-
-  NotificationRegistrar registrar_;
-  scoped_ptr<OwnershipStatusChecker> ownership_checker_;
-  SignedSettingsHelper::Callback* callback_;
-
-  std::map<std::string, std::string> migration_values_;
-
-  DISALLOW_COPY_AND_ASSIGN(MigrationHelper);
-};
+}
 
 bool IsControlledBooleanSetting(const std::string& pref_path) {
   // TODO(nkostylev): Using std::find for 4 value array generates this warning
@@ -337,7 +289,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
   UserCrosSettingsTrust()
       : ownership_service_(OwnershipService::GetSharedInstance()),
         retries_left_(kNumRetriesLimit) {
-    migration_helper_.set_callback(this);
     // Start prefetching Boolean and String preferences.
     Reload();
   }
@@ -401,10 +352,14 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
         // Temporarily allow it until we fix http://crbug.com/62626
         base::ThreadRestrictions::ScopedAllowIO allow_io;
         stats_consent = GoogleUpdateSettings::GetCollectStatsConsent();
-        // Make sure the values will get eventually written to the policy file.
-        migration_helper_.AddMigrationValue(
-            path, stats_consent ? "true" : "false");
-        migration_helper_.MigrateValues();
+        // Only store settings if the owner is logged on, otherwise the write
+        // will fail, triggering another read and we'll end up in an infinite
+        // loop. Owner check needs to be done on the FILE thread.
+        BrowserThread::PostTask(BrowserThread::FILE,
+                                FROM_HERE,
+                                base::Bind(&StartStorePropertyOpIfOwner, path,
+                                           stats_consent ? "true" : "false",
+                                           this));
         UpdateCacheBool(path, stats_consent, USE_VALUE_SUPPLIED);
         LOG(WARNING) << "No metrics policy set will revert to checking "
                      << "consent file which is "
@@ -536,7 +491,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
   base::hash_map< std::string, std::vector< Task* > > callbacks_;
 
   OwnershipService* ownership_service_;
-  MigrationHelper migration_helper_;
 
   // In order to guard against occasional failure to fetch a property
   // we allow for some number of retries.

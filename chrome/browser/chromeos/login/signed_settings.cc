@@ -772,9 +772,12 @@ std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
     return pol.release_channel().release_channel();
 
   } else if (prop == kStatsReportingPref) {
-    if (pol.has_metrics_enabled()) {
-      return kVeritas[pol.metrics_enabled().metrics_enabled()];
+    if (!pol.has_metrics_enabled() ||
+        !pol.metrics_enabled().metrics_enabled()) {
+      return kVeritas[0];  // Default to not collecting metrics.
     }
+    return kVeritas[pol.metrics_enabled().metrics_enabled()];
+
   }
   return std::string();
 }

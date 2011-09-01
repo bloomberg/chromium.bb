@@ -28,16 +28,13 @@ void OwnershipStatusChecker::Core::Check() {
   DCHECK(origin_loop_->BelongsToCurrentThread());
   OwnershipService::Status status =
       OwnershipService::GetSharedInstance()->GetStatus(false);
-  // We can only report the OWNERSHIP_NONE status without executing code on the
-  // file thread because checking whether the current user is owner needs file
-  // access.
-  if (status == OwnershipService::OWNERSHIP_NONE) {
+  if (status != OwnershipService::OWNERSHIP_UNKNOWN) {
     // Take a spin on the message loop in order to avoid reentrancy in callers.
     origin_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this,
                           &OwnershipStatusChecker::Core::ReportResult,
-                          status, false));
+                          status));
   } else {
     // Switch to the file thread to make the blocking call.
     BrowserThread::PostTask(
@@ -56,20 +53,18 @@ void OwnershipStatusChecker::Core::CheckOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   OwnershipService::Status status =
       OwnershipService::GetSharedInstance()->GetStatus(true);
-  bool current_user_is_owner =
-      OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
   origin_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
                         &OwnershipStatusChecker::Core::ReportResult,
-                        status, current_user_is_owner));
+                        status));
 }
 
 void OwnershipStatusChecker::Core::ReportResult(
-    OwnershipService::Status status, bool current_user_is_owner) {
+    OwnershipService::Status status) {
   DCHECK(origin_loop_->BelongsToCurrentThread());
   if (callback_.get()) {
-    callback_->Run(status, current_user_is_owner);
+    callback_->Run(status);
     callback_.reset();
   }
 }

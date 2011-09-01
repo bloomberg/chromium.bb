@@ -136,8 +136,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Handles result of ownership check and starts enterprise enrollment if
   // applicable.
-  void OnEnrollmentOwnershipCheckCompleted(OwnershipService::Status status,
-                                           bool current_user_is_owner);
+  void OnEnrollmentOwnershipCheckCompleted(OwnershipService::Status status);
 
   void set_login_performer_delegate(LoginPerformer::Delegate* d) {
     login_performer_delegate_.reset(d);
