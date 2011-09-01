@@ -81,6 +81,15 @@ class ComponentUpdateService {
   // Controls the component updater behavior.
   class Configurator {
    public:
+    enum Events {
+      kManifestCheck,
+      kComponentUpdated,
+      kManifestError,
+      kNetworkError,
+      kUnpackError,
+      kInstallerError
+    };
+
     virtual ~Configurator() {}
     // Delay in seconds from calling Start() to the first update check.
     virtual int InitialDelay() = 0;
@@ -98,6 +107,10 @@ class ComponentUpdateService {
     virtual net::URLRequestContextGetter* RequestContext() = 0;
     // True means that all ops are peformed in this process.
     virtual bool InProcess() = 0;
+    // The component updater will call this function when an interesting event
+    // happens. It should be used mostly as a place to add application specific
+    // logging or telemetry. |extra| is |event| dependent.
+    virtual void OnEvent(Events event, int extra) = 0;
   };
 
   // Start doing update checks and installing new versions of registered

@@ -65,6 +65,8 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
   // Don't use the utility process to decode files.
   virtual bool InProcess() OVERRIDE { return true; }
 
+  virtual void OnEvent(Events event, int extra) OVERRIDE { }
+
   // Set how many update checks are called, the default value is just once.
   void SetLoopCount(int times) { times_ = times; }
 
@@ -281,6 +283,10 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 // the notifications above NOTIFICATION_COMPONENT_UPDATE_FOUND and
 // NOTIFICATION_COMPONENT_UPDATE_READY should have been fired. We do two loops
 // so the second time arround there should be nothing left to do.
+// We also check that only 3 network requests are issued:
+// 1- manifest check
+// 2- download crx
+// 3- second manifest check.
 TEST_F(ComponentUpdaterTest, InstallCrx) {
   MessageLoop message_loop;
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
@@ -316,7 +322,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   const char expected_update_url_2[] =
       "http://localhost/upd?x=id%3D"
       "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc";
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc";
 
   const char expected_crx_url[] =
       "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
@@ -333,6 +339,10 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   component_updater()->Start();
   message_loop.Run();
 
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
+  EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
+  EXPECT_EQ(3, interceptor->hit_count());
+
   ASSERT_EQ(5ul, notification_tracker().size());
 
   TestNotificationTracker::Event ev1 = notification_tracker().at(1);
@@ -346,10 +356,6 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 
   TestNotificationTracker::Event ev4 = notification_tracker().at(4);
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev3.type);
-
-  EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
-  EXPECT_EQ(1, static_cast<TestInstaller*>(com1.installer)->install_count());
-  EXPECT_EQ(2, interceptor->hit_count());
 
   component_updater()->Stop();
   delete com1.installer;

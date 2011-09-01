@@ -60,6 +60,14 @@ static std::string HexStringToID(const std::string& hexstr) {
   return id;
 }
 
+// Returns given a crx id it returns a small number, less than 100, that has a
+// decent chance of being unique among the registered components. It also has
+// the nice property that can be trivially computed by hand.
+static int CrxIdtoUMAId(const std::string& id) {
+  CHECK(id.size() > 2);
+  return id[0] + id[1] + id[2] - ('a' * 3);
+}
+
 // Helper to do version check for components.
 bool IsVersionNewer(const Version& current, const std::string& proposed) {
   Version proposed_ver(proposed);
@@ -582,6 +590,8 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
     if (crx->status != CrxUpdateItem::kChecking)
       continue;  // Not updating this component now.
 
+    config_->OnEvent(Configurator::kManifestCheck, CrxIdtoUMAId(crx->id));
+
     if (it->version.empty()) {
       // No version means no update available.
       crx->status = CrxUpdateItem::kNoUpdate;
@@ -625,6 +635,7 @@ void CrxUpdateService::OnParseUpdateManifestFailed(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   size_t count = ChangeItemStatus(CrxUpdateItem::kChecking,
                                   CrxUpdateItem::kNoUpdate);
+  config_->OnEvent(Configurator::kManifestError, static_cast<int>(count));
   DCHECK_GT(count, 0ul);
   ScheduleNextRun(false);
 }
@@ -641,6 +652,7 @@ void CrxUpdateService::OnURLFetchComplete(const URLFetcher* source,
     size_t count = ChangeItemStatus(CrxUpdateItem::kDownloading,
                                     CrxUpdateItem::kNoUpdate);
     DCHECK_EQ(count, 1ul);
+    config_->OnEvent(Configurator::kNetworkError, CrxIdtoUMAId(context->id));
     url_fetcher_.reset();
     ScheduleNextRun(false);
   } else {
@@ -696,6 +708,20 @@ void CrxUpdateService::DoneInstalling(const std::string& component_id,
   if (item->status == CrxUpdateItem::kUpdated)
     item->component.version = item->next_version;
 
+  Configurator::Events event;
+  switch (error) {
+    case ComponentUnpacker::kNone:
+      event = Configurator::kComponentUpdated;
+      break;
+    case ComponentUnpacker::kInstallerError:
+      event = Configurator::kInstallerError;
+      break;
+    default:
+      event = Configurator::kUnpackError;
+      break;
+  }
+
+  config_->OnEvent(event, CrxIdtoUMAId(component_id));
   ScheduleNextRun(false);
 }
 

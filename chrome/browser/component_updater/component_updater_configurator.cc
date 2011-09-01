@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -46,6 +47,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual size_t UrlSizeLimit() OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
   virtual bool InProcess() OVERRIDE;
+  virtual void OnEvent(Events event, int val) OVERRIDE;
 
  private:
   net::URLRequestContextGetter* url_request_getter_;
@@ -94,6 +96,32 @@ net::URLRequestContextGetter* ChromeConfigurator::RequestContext() {
 
 bool ChromeConfigurator::InProcess() {
   return !out_of_process_;
+}
+
+void ChromeConfigurator::OnEvent(Events event, int val) {
+  switch (event) {
+    case kManifestCheck:
+      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.ManifestCheck", val, 100);
+      break;
+    case kComponentUpdated:
+      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.ComponentUpdated", val, 100);
+      break;
+    case kManifestError:
+      UMA_HISTOGRAM_COUNTS_100("ComponentUpdater.ManifestError", val);
+      break;
+    case kNetworkError:
+      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.NetworkError", val, 100);
+      break;
+    case kUnpackError:
+      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.UnpackError", val, 100);
+      break;
+    case kInstallerError:
+      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.InstallError", val, 100);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(
