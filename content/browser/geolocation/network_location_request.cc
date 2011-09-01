@@ -163,28 +163,6 @@ GURL FormRequestURL(const std::string& url,
   return GURL(request_string);
 }
 
-void AddString(const std::string& property_name, const std::string& value,
-               std::string* wifi_params) {
-  DCHECK(wifi_params);
-  if (!value.empty()) {
-    if (!wifi_params->empty())
-      *wifi_params += '|';
-    *wifi_params += property_name;
-    *wifi_params += value;
-  }
-}
-
-void AddInteger(const std::string& property_name, int value,
-                std::string* wifi_params) {
-  DCHECK(wifi_params);
-  if (value != kint32min) {
-    if (!wifi_params->empty())
-        *wifi_params += '|';
-      *wifi_params += property_name;
-      *wifi_params += base::IntToString(value);
-  }
-}
-
 void AddWifiData(const WifiData& wifi_data,
                  int age_milliseconds,
                  std::vector<std::string>* params) {
@@ -207,22 +185,21 @@ void AddWifiData(const WifiData& wifi_data,
       access_points_by_signal_strength.begin();
       iter != access_points_by_signal_strength.end();
       ++iter) {
-    std::string wifi_params;
-    AddString("mac:", UTF16ToUTF8((*iter)->mac_address), &wifi_params);
-    AddInteger("ss:", (*iter)->radio_signal_strength, &wifi_params);
-    AddInteger("age:", age_milliseconds, &wifi_params);
-    AddInteger("chan:", (*iter)->channel, &wifi_params);
-    AddInteger("snr:", (*iter)->signal_to_noise, &wifi_params);
+    std::string wifi_params = "wifi=";
+    wifi_params += "mac:" +
+        EscapeQueryParamValue(UTF16ToUTF8((*iter)->mac_address), false);
+    wifi_params += "%7Css:" +
+        base::IntToString((*iter)->radio_signal_strength);
+    if (kint32min != age_milliseconds)
+      wifi_params += "%7Cage:" + base::IntToString(age_milliseconds);
+    wifi_params += "%7Cchan:" + base::IntToString((*iter)->channel);
+    wifi_params += "%7Csnr:" + base::IntToString((*iter)->signal_to_noise);
     std::string ssid = UTF16ToUTF8((*iter)->ssid);
-    // Backslash characters in the ssid need backslash-escaping to avoid
-    // escaping a following wifi parameter separator.
-    ReplaceSubstringsAfterOffset(&ssid, 0, "\\", "\\\\");
     // Pipe characters in the ssid need backslash-escaping to avoid being
     // interpreted as the wifi parameter separator.
     ReplaceSubstringsAfterOffset(&ssid, 0, "|", "\\|");
-    AddString("ssid:", ssid, &wifi_params);
-    params->push_back(
-        "wifi=" + EscapeQueryParamValue(wifi_params, false));
+    wifi_params += "%7Cssid:" + EscapeQueryParamValue(ssid, false);
+    params->push_back(wifi_params);
   }
 }
 

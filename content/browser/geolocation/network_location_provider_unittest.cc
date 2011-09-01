@@ -181,7 +181,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
       ap.radio_signal_strength = ap_count - i;
       ap.channel = IndexToChannel(i);
       ap.signal_to_noise = i + 42;
-      ap.ssid = ASCIIToUTF16("Some nice+network|name\\");
+      ap.ssid = ASCIIToUTF16("Some nice+network|name");
       data.access_point_data.insert(ap);
     }
     return data;
@@ -193,12 +193,12 @@ class GeolocationNetworkProviderTest : public testing::Test {
     for (int i = 0; i < ap_count; ++i) {
       std::string wifi_part;
       wifi_part += "wifi=";
-      wifi_part += "mac%3A" + base::StringPrintf("%02d-34-56-78-54-32", i);
-      wifi_part += "%7Css%3A" + base::IntToString(start_index + ap_count - i);
-      wifi_part += "%7Cage%3A0";
-      wifi_part += "%7Cchan%3A" + base::IntToString(IndexToChannel(i));
-      wifi_part += "%7Csnr%3A" + base::IntToString(i + 42);
-      wifi_part += "%7Cssid%3ASome%20nice%2Bnetwork%5C%7Cname%5C%5C";
+      wifi_part += "mac:" + base::StringPrintf("%02d-34-56-78-54-32", i);
+      wifi_part += "%7Css:" + base::IntToString(start_index + ap_count - i);
+      wifi_part += "%7Cage:0";
+      wifi_part += "%7Cchan:" + base::IntToString(IndexToChannel(i));
+      wifi_part += "%7Csnr:" + base::IntToString(i + 42);
+      wifi_part += "%7Cssid:Some%20nice%2Bnetwork%5C%7Cname";
       wifi_data.push_back(wifi_part);
     }
     return wifi_data;
@@ -351,7 +351,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   // in length by not including access points with the lowest signal strength
   // in the request.
   EXPECT_LT(fetcher->original_url().spec().size(), size_t(2048));
-  CheckRequestIsValid(fetcher->original_url().spec(), 0, 16, 4, "");
+  CheckRequestIsValid(fetcher->original_url().spec(), 0, 19, 1, "");
 }
 
 TEST_F(GeolocationNetworkProviderTest, MultipleStartProvider) {
