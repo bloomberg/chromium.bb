@@ -43,6 +43,116 @@ struct evdev_input_device {
 	int is_touchpad, old_x_value, old_y_value, reset_x_value, reset_y_value;
 };
 
+static inline void
+evdev_process_key(struct evdev_input_device *device,
+                        struct input_event *e, int value, int time)
+{
+	switch (e->code) {
+	case BTN_TOUCH:
+	case BTN_TOOL_PEN:
+	case BTN_TOOL_RUBBER:
+	case BTN_TOOL_BRUSH:
+	case BTN_TOOL_PENCIL:
+	case BTN_TOOL_AIRBRUSH:
+	case BTN_TOOL_FINGER:
+	case BTN_TOOL_MOUSE:
+	case BTN_TOOL_LENS:
+		device->tool = value ? e->code : 0;
+		if (device->is_touchpad)
+		{
+			device->reset_x_value = 1;
+			device->reset_y_value = 1;
+		}
+		break;
+
+	case BTN_LEFT:
+	case BTN_RIGHT:
+	case BTN_MIDDLE:
+	case BTN_SIDE:
+	case BTN_EXTRA:
+	case BTN_FORWARD:
+	case BTN_BACK:
+	case BTN_TASK:
+		notify_button(&device->master->base.input_device,
+			      time, e->code, value);
+		break;
+
+	default:
+		notify_key(&device->master->base.input_device,
+			   time, e->code, value);
+		break;
+	}
+}
+
+static inline void
+evdev_process_absolute_motion(struct evdev_input_device *device,
+			struct input_event *e, int value, int *x, int *y,
+			int *absolute_event)
+{
+	/* FIXME: Obviously we need to not hardcode these here, but
+	 * instead get the values from the output it's associated with. */
+	const int screen_width = 1024, screen_height = 600;
+
+	switch (e->code) {
+	case ABS_X:
+		*absolute_event = device->tool;
+		*x = (value - device->min_x) * screen_width /
+			(device->max_x - device->min_x);
+		break;
+	case ABS_Y:
+		*absolute_event = device->tool;
+		*y = (value - device->min_y) * screen_height /
+			(device->max_y - device->min_y);
+		break;
+	}
+}
+
+static inline void
+evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
+			struct input_event *e, int value, int *dx, int *dy)
+{
+	/* FIXME: Make this configurable somehow. */
+	const int touchpad_speed = 700;
+
+	switch (e->code) {
+	case ABS_X:
+		value -= device->min_x;
+		if (device->reset_x_value)
+			device->reset_x_value = 0;
+		else {
+			*dx = (value - device->old_x_value) * touchpad_speed /
+				(device->max_x - device->min_x);
+		}
+		device->old_x_value = value;
+		break;
+	case ABS_Y:
+		value -= device->min_y;
+		if (device->reset_y_value)
+			device->reset_y_value = 0;
+		else {
+			*dy = (value - device->old_y_value) * touchpad_speed /
+				/* maybe use x size here to have the same scale? */
+				(device->max_y - device->min_y);
+		}
+		device->old_y_value = value;
+		break;
+	}
+}
+
+static inline void
+evdev_process_relative_motion(struct input_event *e, int value, int *dx,
+			int *dy)
+{
+	switch (e->code) {
+	case REL_X:
+		*dx += value;
+		break;
+	case REL_Y:
+		*dy += value;
+		break;
+	}
+}
+
 static int
 evdev_input_device_data(int fd, uint32_t mask, void *data)
 {
@@ -52,13 +162,6 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	int len, value, dx, dy, absolute_event;
 	int x, y;
 	uint32_t time;
-
-	/* FIXME: Obviously we need to not hardcode these here, but
-	 * instead get the values from the output it's associated with. */
-	const int screen_width = 1024, screen_height = 600;
-	
-	/* FIXME: Make this configurable somehow. */
-	const int touchpad_speed = 700;
 
 	ec = (struct wlsc_compositor *)
 		device->master->base.input_device.compositor;
@@ -86,97 +189,20 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 
 		switch (e->type) {
 		case EV_REL:
-			switch (e->code) {
-			case REL_X:
-				dx += value;
-				break;
-
-			case REL_Y:
-				dy += value;
-				break;
-			}
+			evdev_process_relative_motion(e, value, &dx, &dy);
 			break;
-
 		case EV_ABS:
-			if (device->is_touchpad) {
-				switch (e->code) {
-				case ABS_X:
-					value -= device->min_x;
-					if (device->reset_x_value)
-						device->reset_x_value = 0;
-					else {
-						dx = (value - device->old_x_value) * touchpad_speed /
-							(device->max_x - device->min_x);
-					}
-					device->old_x_value = value;
-					break;
-				case ABS_Y:
-					value -= device->min_y;
-					if (device->reset_y_value)
-						device->reset_y_value = 0;
-					else {
-						dy = (value - device->old_y_value) * touchpad_speed /
-							/* maybe use x size here to have the same scale? */
-							(device->max_y - device->min_y);
-					}
-					device->old_y_value = value;
-					break;
-				}
-			} else {
-				switch (e->code) {
-				case ABS_X:
-					absolute_event = device->tool;
-					x = (value - device->min_x) * screen_width /
-						(device->max_x - device->min_x);
-					break;
-				case ABS_Y:
-					absolute_event = device->tool;
-					y = (value - device->min_y) * screen_height /
-						(device->max_y - device->min_y);
-					break;
-				}
-			}
+			if (device->is_touchpad)
+				evdev_process_absolute_motion_touchpad(device,
+					e, value, &dx, &dy);
+			else
+				evdev_process_absolute_motion(device, e, value,
+					&x, &y, &absolute_event);
 			break;
-
 		case EV_KEY:
 			if (value == 2)
 				break;
-
-			switch (e->code) {
-			case BTN_TOUCH:
-			case BTN_TOOL_PEN:
-			case BTN_TOOL_RUBBER:
-			case BTN_TOOL_BRUSH:
-			case BTN_TOOL_PENCIL:
-			case BTN_TOOL_AIRBRUSH:
-			case BTN_TOOL_FINGER:
-			case BTN_TOOL_MOUSE:
-			case BTN_TOOL_LENS:
-				device->tool = value ? e->code : 0;
-				if (device->is_touchpad)
-				{
-					device->reset_x_value = 1;
-					device->reset_y_value = 1;
-				}
-				break;
-
-			case BTN_LEFT:
-			case BTN_RIGHT:
-			case BTN_MIDDLE:
-			case BTN_SIDE:
-			case BTN_EXTRA:
-			case BTN_FORWARD:
-			case BTN_BACK:
-			case BTN_TASK:
-				notify_button(&device->master->base.input_device,
-					      time, e->code, value);
-				break;
-
-			default:
-				notify_key(&device->master->base.input_device,
-					   time, e->code, value);
-				break;
-			}
+			evdev_process_key(device, e, value, time);
 		}
 	}
 
