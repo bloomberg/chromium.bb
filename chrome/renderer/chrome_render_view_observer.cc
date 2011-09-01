@@ -852,6 +852,8 @@ bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
   SkDevice* device = skia::GetTopDevice(canvas);
 
   const SkBitmap& src_bmp = device->accessBitmap(false);
+  // Cut off the vertical scrollbars (if any).
+  int src_bmp_width = view->mainFrame()->contentsSize().width;
 
   SkRect dest_rect = { 0, 0, SkIntToScalar(w), SkIntToScalar(h) };
   float dest_aspect = dest_rect.width() / dest_rect.height();
@@ -859,7 +861,7 @@ bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
   // Get the src rect so that we can preserve the aspect ratio while filling
   // the destination.
   SkIRect src_rect;
-  if (src_bmp.width() < dest_rect.width() ||
+  if (src_bmp_width < dest_rect.width() ||
       src_bmp.height() < dest_rect.height()) {
     // Source image is smaller: we clip the part of source image within the
     // dest rect, and then stretch it to fill the dest rect. We don't respect
@@ -868,17 +870,17 @@ bool ChromeRenderViewObserver::CaptureFrameThumbnail(WebView* view,
                  static_cast<S16CPU>(dest_rect.height()));
     score->good_clipping = false;
   } else {
-    float src_aspect = static_cast<float>(src_bmp.width()) / src_bmp.height();
+    float src_aspect = static_cast<float>(src_bmp_width) / src_bmp.height();
     if (src_aspect > dest_aspect) {
       // Wider than tall, clip horizontally: we center the smaller thumbnail in
       // the wider screen.
       S16CPU new_width = static_cast<S16CPU>(src_bmp.height() * dest_aspect);
-      S16CPU x_offset = (src_bmp.width() - new_width) / 2;
+      S16CPU x_offset = (src_bmp_width - new_width) / 2;
       src_rect.set(x_offset, 0, new_width + x_offset, src_bmp.height());
       score->good_clipping = false;
     } else {
-      src_rect.set(0, 0, src_bmp.width(),
-                   static_cast<S16CPU>(src_bmp.width() / dest_aspect));
+      src_rect.set(0, 0, src_bmp_width,
+                   static_cast<S16CPU>(src_bmp_width / dest_aspect));
       score->good_clipping = true;
     }
   }
