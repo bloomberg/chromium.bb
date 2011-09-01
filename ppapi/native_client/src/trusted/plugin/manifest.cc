@@ -198,25 +198,30 @@ bool GetKeyUrl(const Json::Value& dictionary,
                const nacl::string& key,
                const nacl::string& sandbox_isa,
                nacl::string* full_url,
-               nacl::string* error_string,
-               bool* is_portable) {
-  CHECK(full_url != NULL && error_string != NULL);
+               ErrorInfo* error_info,
+               bool* is_portable,
+               const Manifest* manifest) {
+  CHECK(full_url != NULL && error_info != NULL);
+  *full_url = "";
   if (!dictionary.isMember(key)) {
-    *error_string = "file key not found in manifest";
+    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+                          "file key not found in manifest");
     return false;
   }
   const Json::Value& isa_dict = dictionary[key];
   if (isa_dict.isMember(sandbox_isa)) {
-    *full_url = isa_dict[sandbox_isa][kUrlKey].asString();
+    nacl::string relative_url = isa_dict[sandbox_isa][kUrlKey].asString();
     *is_portable = false;
-    return true;
+    return manifest->ResolveURL(relative_url, full_url, error_info);
   }
   if (isa_dict.isMember(kPortableKey)) {
-    *full_url = isa_dict[kPortableKey][kUrlKey].asString();
+    nacl::string relative_url = isa_dict[kPortableKey][kUrlKey].asString();
     *is_portable = true;
-    return true;
+    return manifest->ResolveURL(relative_url, full_url, error_info);
   }
-  *error_string = "neither ISA-specific nor portable representations exist";
+  error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+                        "neither ISA-specific nor portable representations"
+                        " exist");
   return false;
 }
 
@@ -394,13 +399,8 @@ bool Manifest::ResolveKey(const nacl::string& key,
 
   *full_url = "";
   if (key == kProgramKey) {
-    nacl::string error_string;
-    if (!GetKeyUrl(dictionary_, key, sandbox_isa_,
-                   full_url, &error_string, is_portable)) {
-      error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL, error_string);
-      return false;
-    }
-    return true;
+    return GetKeyUrl(dictionary_, key, sandbox_isa_,
+                     full_url, error_info, is_portable, this);
   }
   nacl::string::const_iterator p = find(key.begin(), key.end(), '/');
   if (p == key.end()) {
@@ -430,14 +430,8 @@ bool Manifest::ResolveKey(const nacl::string& key,
     *is_portable = false;
     return false;
   }
-  nacl::string error_string;
-  if (!GetKeyUrl(files, rest, sandbox_isa_,
-                 full_url, &error_string, is_portable)) {
-    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL, error_string);
-    *full_url = "";
-    return false;
-  }
-  return true;
+  return GetKeyUrl(files, rest, sandbox_isa_,
+                   full_url, error_info, is_portable, this);
 }
 
 // TODO(jvoung): We won't need these if we figure out how to install llc and ld.
