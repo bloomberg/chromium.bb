@@ -84,6 +84,9 @@ class RepoRepository(object):
     clobber: Clobbers the directory as part of initialization.
   """
   DEFAULT_MANIFEST = 'default'
+  # Use our own repo, in case android.kernel.org (the default location) is down.
+  _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL,
+              '--no-repo-verify']
 
   def __init__(self, repo_url, directory, branch=None):
     self.repo_url = repo_url
@@ -95,12 +98,11 @@ class RepoRepository(object):
     assert not os.path.exists(os.path.join(self.directory, '.repo')), \
         'Repo already initialized.'
     # Base command.
-    init_cmd = ['repo', 'init', '--manifest-url', self.repo_url]
+    init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
 
     # Handle branch / manifest options.
     if self.branch: init_cmd.extend(['--manifest-branch', self.branch])
-    cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n',
-                        redirect_stdout=True, redirect_stderr=True)
+    cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
 
   def _ReinitializeIfNecessary(self, local_manifest):
     """Reinitializes the repository if the manifest has changed."""
@@ -118,7 +120,7 @@ class RepoRepository(object):
     logging.debug('Moving to manifest defined by %s' % local_manifest)
     # If no manifest passed in, assume default.
     if local_manifest == self.DEFAULT_MANIFEST:
-      cros_lib.RunCommand(['repo', 'init', '--manifest-name=default.xml'],
+      cros_lib.RunCommand(self._INIT_CMD + ['--manifest-name=default.xml'],
                           cwd=self.directory, input='\n\ny\n')
     else:
       # The 10x speed up magic.
