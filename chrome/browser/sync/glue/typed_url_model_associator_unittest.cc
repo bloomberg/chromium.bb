@@ -66,9 +66,8 @@ TEST_F(TypedUrlModelAssociatorTest, MergeUrls) {
                                                           3, false));
   history::URLRow new_row1(GURL("http://pie.com/"));
   std::vector<history::VisitInfo> new_visits1;
-  EXPECT_EQ(TypedUrlModelAssociator::DIFF_NONE,
-            TypedUrlModelAssociator::MergeUrls(specs1, row1, &visits1,
-                                               &new_row1, &new_visits1));
+  EXPECT_TRUE(TypedUrlModelAssociator::MergeUrls(specs1, row1, &visits1,
+      &new_row1, &new_visits1) == TypedUrlModelAssociator::DIFF_NONE);
 
   history::VisitVector visits2;
   history::URLRow row2(MakeTypedUrlRow("http://pie.com/", "pie",
@@ -81,9 +80,9 @@ TEST_F(TypedUrlModelAssociatorTest, MergeUrls) {
                                             2, 3, true, &expected_visits2));
   history::URLRow new_row2(GURL("http://pie.com/"));
   std::vector<history::VisitInfo> new_visits2;
-  EXPECT_EQ(TypedUrlModelAssociator::DIFF_LOCAL_ROW_CHANGED,
-            TypedUrlModelAssociator::MergeUrls(specs2, row2, &visits2,
-                                               &new_row2, &new_visits2));
+  EXPECT_TRUE(TypedUrlModelAssociator::MergeUrls(specs2, row2, &visits2,
+                                                 &new_row2, &new_visits2) ==
+      TypedUrlModelAssociator::DIFF_LOCAL_ROW_CHANGED);
   EXPECT_TRUE(URLsEqual(new_row2, expected2));
 
   history::VisitVector visits3;

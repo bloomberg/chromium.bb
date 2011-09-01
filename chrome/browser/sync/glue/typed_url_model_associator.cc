@@ -127,8 +127,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         history::URLRow new_url(*ix);
 
         std::vector<history::VisitInfo> added_visits;
-        int difference = MergeUrls(typed_url, *ix, &visits, &new_url,
-                                   &added_visits);
+        MergeResult difference =
+            MergeUrls(typed_url, *ix, &visits, &new_url, &added_visits);
         if (difference & DIFF_UPDATE_NODE) {
           sync_api::WriteNode write_node(&trans);
           if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
@@ -439,7 +439,7 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
 }
 
 // static
-int TypedUrlModelAssociator::MergeUrls(
+TypedUrlModelAssociator::MergeResult TypedUrlModelAssociator::MergeUrls(
     const sync_pb::TypedUrlSpecifics& node,
     const history::URLRow& url,
     history::VisitVector* visits,
@@ -464,7 +464,7 @@ int TypedUrlModelAssociator::MergeUrls(
 
   // This is a bitfield representing what we'll need to update with the output
   // value.
-  int different = DIFF_NONE;
+  MergeResult different = DIFF_NONE;
 
   // Check if the non-incremented values changed.
   if ((node_title.compare(url.title()) != 0) ||
