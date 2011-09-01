@@ -415,8 +415,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
                            supports_replacement, input.prefer_keyword(),
                            input.allow_exact_keyword_match());
   }
-  // TODO(dominich): Confidence. Not sure how to calculate it for this provider.
-  AutocompleteMatch result(this, relevance, 0.0f, false,
+  AutocompleteMatch result(this, relevance, false,
       supports_replacement ? AutocompleteMatch::SEARCH_OTHER_ENGINE :
                              AutocompleteMatch::HISTORY_KEYWORD);
   result.fill_into_edit.assign(keyword);

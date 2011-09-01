@@ -36,9 +36,9 @@ class ShortcutsBackendTest : public testing::Test,
   void TearDown();
 
   virtual void OnShortcutsLoaded() OVERRIDE;
-  virtual void OnShortcutAddedOrUpdated(Shortcut shortcut) OVERRIDE;
+  virtual void OnShortcutAddedOrUpdated(const Shortcut& shortcut) OVERRIDE;
   virtual void OnShortcutsRemoved(
-      std::vector<std::string> shortcut_ids) OVERRIDE;
+      const std::vector<std::string>& shortcut_ids) OVERRIDE;
 
   void InitBackend();
 
@@ -70,13 +70,13 @@ void ShortcutsBackendTest::OnShortcutsLoaded() {
   MessageLoop::current()->Quit();
 }
 
-void ShortcutsBackendTest::OnShortcutAddedOrUpdated(Shortcut shortcut) {
+void ShortcutsBackendTest::OnShortcutAddedOrUpdated(const Shortcut& shortcut) {
   notified_shortcut_ = shortcut;
   MessageLoop::current()->Quit();
 }
 
 void ShortcutsBackendTest::OnShortcutsRemoved(
-    std::vector<std::string> shortcut_ids) {
+    const std::vector<std::string>& shortcut_ids) {
   notified_shortcut_ids_ = shortcut_ids;
   MessageLoop::current()->Quit();
 }

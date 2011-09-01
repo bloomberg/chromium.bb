@@ -85,7 +85,6 @@ struct AutocompleteMatch {
   AutocompleteMatch();
   AutocompleteMatch(AutocompleteProvider* provider,
                     int relevance,
-                    float confidence,
                     bool deletable,
                     Type type);
   ~AutocompleteMatch();
@@ -139,10 +138,6 @@ struct AutocompleteMatch {
   // TODO(pkasting): http://b/1111299 This should be calculated algorithmically,
   // rather than being a fairly fixed value defined by the table above.
   int relevance;
-
-  // The confidence of the match. Calculated per provider and a measure in the
-  // range [0, 1].
-  float confidence;
 
   // True if the user should be able to delete this match.
   bool deletable;

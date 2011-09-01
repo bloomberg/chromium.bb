@@ -70,12 +70,6 @@ class HistoryQuickProvider : public HistoryProvider {
       const history::ScoredHistoryMatch& history_match,
       int* max_match_score);
 
-  // Determines the confidence of |match| by comparing the |raw_score| to the
-  // sum of the scores of |matches|. Returns a float in the range [0, 1].
-  static float CalculateConfidence(
-      const history::ScoredHistoryMatch& match,
-      const history::ScoredHistoryMatches& matches);
-
   // Returns the index that should be used for history lookups.
   history::InMemoryURLIndex* GetIndex();
 

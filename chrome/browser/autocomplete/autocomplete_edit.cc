@@ -41,53 +41,6 @@
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace {
-
-enum PredictAction {
-  PREDICT_ACTION_INSTANT = 0,
-  PREDICT_ACTION_PRERENDER,
-  PREDICT_ACTION_PRECONNECT,
-  PREDICT_ACTION_NONE,
-  LAST_PREDICT_ACTION = PREDICT_ACTION_NONE
-};
-
-// Given a match, return a recommended action.
-PredictAction RecommendPredictAction(const AutocompleteMatch& match) {
-  // TODO(dominich): These numbers are not final and should be tweaked as
-  // confidence calculation is finalized.
-  static const float kConfidenceCutoff[LAST_PREDICT_ACTION] = {
-    0.99f,
-    0.90f,
-    0.10f
-  };
-
-  for (int i = 0; i < LAST_PREDICT_ACTION; ++i)
-    if (match.confidence >= kConfidenceCutoff[i])
-      return static_cast<PredictAction>(i);
-  return PREDICT_ACTION_NONE;
-}
-
-// Return true if the suggestion type warrants a TCP/IP preconnection.
-// i.e., it is now quite likely that the user will select the related domain.
-bool IsPreconnectable(AutocompleteMatch::Type type) {
-  UMA_HISTOGRAM_ENUMERATION("Autocomplete.MatchType", type,
-                            AutocompleteMatch::NUM_TYPES);
-  switch (type) {
-    // Matches using the user's default search engine.
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
-    case AutocompleteMatch::SEARCH_HISTORY:
-    case AutocompleteMatch::SEARCH_SUGGEST:
-      // A match that uses a non-default search engine (e.g. for tab-to-search).
-    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
-}  // end namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditController
 
@@ -132,7 +85,8 @@ AutocompleteEditModel::AutocompleteEditModel(
       profile_(profile),
       in_revert_(false),
       allow_exact_keyword_match_(false),
-      instant_complete_behavior_(INSTANT_COMPLETE_DELAYED) {
+      instant_complete_behavior_(INSTANT_COMPLETE_DELAYED),
+      network_action_predictor_(profile) {
 }
 
 AutocompleteEditModel::~AutocompleteEditModel() {
@@ -254,40 +208,33 @@ bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
 
 void AutocompleteEditModel::OnChanged() {
   const AutocompleteMatch current_match = CurrentMatch();
-  UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence",
-                           current_match.confidence * 100);
-
-  PredictAction predict_action = PREDICT_ACTION_NONE;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPrerenderFromOmnibox)) {
-    predict_action = RecommendPredictAction(current_match);
-    UMA_HISTOGRAM_ENUMERATION("Autocomplete.PredictAction",
-                              predict_action, LAST_PREDICT_ACTION + 1);
-  } else if (!in_revert_ && controller_->GetTabContentsWrapper()) {
-    predict_action = PREDICT_ACTION_INSTANT;
-  }
-
   string16 suggested_text;
-  bool might_support_instant = false;
-  switch (predict_action) {
-    case PREDICT_ACTION_INSTANT:
-      might_support_instant =
-          TryInstantFallbackToPrerender(current_match, &suggested_text);
-      break;
-    case PREDICT_ACTION_PRERENDER:
-      DoPrerender(current_match);
-      break;
-    case PREDICT_ACTION_PRECONNECT:
-      DoPreconnect(current_match);
-      break;
-    case PREDICT_ACTION_NONE:
-      break;
-    default:
-      NOTREACHED() << "Unexpected predict action: " << predict_action;
-      break;
-  }
+  if (!DoInstant(current_match, &suggested_text)) {
+    // Confer with the NetworkActionPredictor to determine what action, if any,
+    // we should take.
+    NetworkActionPredictor::Action action = NetworkActionPredictor::ACTION_NONE;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kPrerenderFromOmnibox)) {
+      action = network_action_predictor_.RecommendAction(user_text_,
+                                                         current_match);
+      UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action", action,
+                                NetworkActionPredictor::LAST_PREDICT_ACTION);
+    }
 
-  if (!might_support_instant) {
+    switch (action) {
+      case NetworkActionPredictor::ACTION_PRERENDER:
+        DoPrerender(current_match);
+        break;
+      case NetworkActionPredictor::ACTION_PRECONNECT:
+        DoPreconnect(current_match);
+        break;
+      case NetworkActionPredictor::ACTION_NONE:
+        break;
+      default:
+        NOTREACHED() << "Unexpected predict action: " << action;
+        break;
+    }
+
     // Hide any suggestions we might be showing.
     view_->SetInstantSuggestion(string16(), false);
 
@@ -1027,18 +974,17 @@ bool AutocompleteEditModel::ShouldAllowExactKeywordMatch(
   return keyword.length() && popup_->GetKeywordForText(keyword, &keyword);
 }
 
-bool AutocompleteEditModel::TryInstantFallbackToPrerender(
-    const AutocompleteMatch& match,
-    string16* suggested_text) {
+bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
+                                      string16* suggested_text) {
   DCHECK(suggested_text);
+
+  if (in_revert_)
+    return false;
+
   InstantController* instant = controller_->GetInstant();
 
-  if (!instant) {
-    // Fall back to prerendering if necessary and possible.
-    if (user_input_in_progress() && popup_->IsOpen())
-      DoPrerender(match);
+  if (!instant)
     return false;
-  }
 
   TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
 
@@ -1073,8 +1019,10 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
 void AutocompleteEditModel::DoPreconnect(const AutocompleteMatch& match) {
   if (!match.destination_url.SchemeIs(chrome::kExtensionScheme)) {
     // Warm up DNS Prefetch cache, or preconnect to a search service.
+    UMA_HISTOGRAM_ENUMERATION("Autocomplete.MatchType", match.type,
+                              AutocompleteMatch::NUM_TYPES);
     chrome_browser_net::AnticipateOmniboxUrl(match.destination_url,
-                                             IsPreconnectable(match.type));
+        NetworkActionPredictor::IsPreconnectable(match));
     // We could prefetch the alternate nav URL, if any, but because there
     // can be many of these as a user types an initial series of characters,
     // the OS DNS cache could suffer eviction problems for minimal gain.

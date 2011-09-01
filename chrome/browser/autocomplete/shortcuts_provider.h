@@ -50,9 +50,11 @@ class ShortcutsProvider
   static const int kMaxScore;
 
   // ShortcutsBackendObserver:
-  virtual void OnShortcutsLoaded();
-  virtual void OnShortcutAddedOrUpdated(shortcuts_provider::Shortcut shortcut);
-  virtual void OnShortcutsRemoved(std::vector<std::string> shortcut_ids);
+  virtual void OnShortcutsLoaded() OVERRIDE;
+  virtual void OnShortcutAddedOrUpdated(
+      const shortcuts_provider::Shortcut& shortcut) OVERRIDE;
+  virtual void OnShortcutsRemoved(
+      const std::vector<std::string>& shortcut_ids) OVERRIDE;
 
   void DeleteMatchesWithURLs(const std::set<GURL>& urls);
   void DeleteShortcutsWithURLs(const std::set<GURL>& urls);

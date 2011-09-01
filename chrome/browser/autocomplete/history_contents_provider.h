@@ -40,15 +40,13 @@ class HistoryContentsProvider : public HistoryProvider {
   // without modifying the larger and slower results structure.
   struct MatchReference {
     MatchReference(const history::URLResult* result,
-                   int relevance,
-                   float confidence);
+                   int relevance);
 
     static bool CompareRelevance(const MatchReference& lhs,
                                  const MatchReference& rhs);
 
     const history::URLResult* result;
     int relevance;  // Score of relevance computed by CalculateRelevance.
-    float confidence;  // Confidence computed by CalculateConfidence.
   };
 
   virtual ~HistoryContentsProvider();
@@ -71,12 +69,6 @@ class HistoryContentsProvider : public HistoryProvider {
   // Calculates and returns the relevance of a particular result. See the
   // chart in autocomplete.h for the list of values this returns.
   int CalculateRelevance(const history::URLResult& result);
-
-  // Calculates and returns the confidence for a particular result. This is
-  // calculated by comparing the result's |visit_count| to that of all the
-  // results.
-  float CalculateConfidence(const history::URLResult& result,
-                            const history::QueryResults& results) const;
 
   // Queries the bookmarks for any bookmarks whose title matches input. All
   // matches are added directly to results_.

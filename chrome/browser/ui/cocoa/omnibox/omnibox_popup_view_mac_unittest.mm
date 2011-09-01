@@ -88,8 +88,7 @@ class OmniboxPopupViewMacTest : public PlatformTest {
   // needs.  Fake one for us to use.
   static AutocompleteMatch MakeMatch(const string16 &contents,
                                      const string16 &description) {
-    AutocompleteMatch m(NULL, 1, 0.0f, true,
-                        AutocompleteMatch::URL_WHAT_YOU_TYPED);
+    AutocompleteMatch m(NULL, 1, true, AutocompleteMatch::URL_WHAT_YOU_TYPED);
     m.contents = contents;
     m.description = description;
     return m;

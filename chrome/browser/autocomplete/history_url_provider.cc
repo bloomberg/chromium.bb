@@ -201,48 +201,6 @@ bool CompareHistoryMatch(const history::HistoryMatch& a,
   return a.url_info.last_visit() > b.url_info.last_visit();
 }
 
-// Determines the confidence for a |match| when compared to all the |matches|.
-// Returns a number in the range [0, 1].
-float CalculateConfidence(const history::HistoryMatch& match,
-                          const history::HistoryMatches& matches) {
-  // Calculate a score based on typed count.
-  const float typed_numerator = match.url_info.typed_count();
-  float typed_denominator = 0.0f;
-  for (history::HistoryMatches::const_iterator it = matches.begin();
-       it != matches.end(); ++it) {
-    typed_denominator += it->url_info.typed_count();
-  }
-  const float typed_score = (typed_denominator > 0.0f) ?
-      (typed_numerator / typed_denominator) : 0.0f;
-
-  // Calculate a score based on visit count
-  const float visit_numerator = match.url_info.visit_count();
-  float visit_denominator = 0.0f;
-  for (history::HistoryMatches::const_iterator it = matches.begin();
-       it != matches.end(); ++it) {
-    visit_denominator += it->url_info.visit_count();
-  }
-  const float visit_score = (visit_denominator > 0.0f) ?
-      (visit_numerator / visit_denominator) : 0.0f;
-
-  // Calculate a score based on innermost matching.
-  const float innermost_score = (match.innermost_match ? 1.0f : 0.0f);
-
-  // TODO(dominich): Add a boost for bookmarked pages?
-  // Prefer typed count to visit count as:
-  // - It's a better indicator of what the user wants to open given that they
-  //   are typing in the address bar (users tend to open certain URLs by typing
-  //   and others by e.g. bookmarks, so visit_count is a good indicator of
-  //   overall interest but a bad one for specifically omnibox interest).
-  // - Since the DB query is sorted by typed_count, the results may be
-  //   effectively a random selection as far as visit_counts are concerned
-  //   (meaning many high-visit_count-URLs may be present in one query and
-  //   absent in a similar one), leading to wild swings in confidence for the
-  //   same result across distinct queries.
-  // Add a boost for innermost matches (matches after scheme or 'www.').
-  return (0.5f * typed_score) + (0.3f * visit_score) + (0.2f * innermost_score);
-}
-
 }  // namespace
 
 HistoryURLProviderParams::HistoryURLProviderParams(
@@ -415,8 +373,6 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     AutocompleteMatch ac_match =
         HistoryMatchToACMatch(params, match, history_matches, NORMAL,
                               history_matches.size() - 1 - i);
-    UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence_HistoryUrl",
-                             ac_match.confidence * 100);
     params->matches.push_back(ac_match);
   }
 }
@@ -597,12 +553,9 @@ const history::Prefix* HistoryURLProvider::BestPrefix(
 AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     const AutocompleteInput& input,
     bool trim_http) {
-  // TODO(dominich): Find a confidence measure for this.
   AutocompleteMatch match(this,
-      CalculateRelevance(input.type(), WHAT_YOU_TYPED, 0), 0.0f, false,
+      CalculateRelevance(input.type(), WHAT_YOU_TYPED, 0), false,
       AutocompleteMatch::URL_WHAT_YOU_TYPED);
-  UMA_HISTOGRAM_COUNTS_100("Autocomplete.Confidence_HistoryUrl",
-                           match.confidence * 100);
 
   const GURL& url = input.canonicalized_url();
   if (url.is_valid()) {
@@ -887,7 +840,6 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   const history::URLRow& info = history_match.url_info;
   AutocompleteMatch match(this,
       CalculateRelevance(params->input.type(), match_type, match_number),
-      CalculateConfidence(history_match, history_matches),
       !!info.visit_count(), AutocompleteMatch::HISTORY_URL);
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());

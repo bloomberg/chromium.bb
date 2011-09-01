@@ -47,10 +47,10 @@ class ShortcutsBackend : public base::RefCountedThreadSafe<ShortcutsBackend>,
     // This callback is called when addition or change was processed by the
     // database.
     virtual void OnShortcutAddedOrUpdated(
-        shortcuts_provider::Shortcut shortcut) = 0;
+        const shortcuts_provider::Shortcut& shortcut) = 0;
     // Called when shortcuts are removed from the database.
     virtual void OnShortcutsRemoved(
-        std::vector<std::string> shortcut_ids) = 0;
+        const std::vector<std::string>& shortcut_ids) = 0;
    protected:
     virtual ~ShortcutsBackendObserver() {}
   };

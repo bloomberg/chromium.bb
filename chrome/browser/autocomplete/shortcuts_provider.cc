@@ -117,7 +117,7 @@ void ShortcutsProvider::OnShortcutsLoaded() {
   LoadShortcuts();
 }
 
-void ShortcutsProvider::OnShortcutAddedOrUpdated(Shortcut shortcut) {
+void ShortcutsProvider::OnShortcutAddedOrUpdated(const Shortcut& shortcut) {
   shortcuts_provider::GuidToShortcutsIteratorMap::iterator it =
       guid_map_.find(shortcut.id);
   if (it != guid_map_.end()) {
@@ -128,7 +128,7 @@ void ShortcutsProvider::OnShortcutAddedOrUpdated(Shortcut shortcut) {
 }
 
 void ShortcutsProvider::OnShortcutsRemoved(
-    std::vector<std::string> shortcuts_ids) {
+    const std::vector<std::string>& shortcuts_ids) {
   for (size_t i = 0; i < shortcuts_ids.size(); ++i) {
     shortcuts_provider::GuidToShortcutsIteratorMap::iterator it =
         guid_map_.find(shortcuts_ids[i]);
@@ -183,9 +183,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const AutocompleteInput& input,
     const string16& term_string,
     ShortcutMap::iterator it) {
-  // TODO(dominich): Use the same score calculation for confidence and
-  // relevance.
-  AutocompleteMatch match(this, CalculateScore(term_string, it->second), 0.0f,
+  AutocompleteMatch match(this, CalculateScore(term_string, it->second),
                           true, AutocompleteMatch::HISTORY_TITLE);
   match.destination_url = it->second.url;
   DCHECK(match.destination_url.is_valid());

@@ -115,7 +115,7 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
 
 void BuiltinProvider::AddMatch(const string16& match_string,
                                const ACMatchClassifications& styles) {
-  AutocompleteMatch match(this, kRelevance, 0.0f, false,
+  AutocompleteMatch match(this, kRelevance, false,
                           AutocompleteMatch::NAVSUGGEST);
   match.fill_into_edit = match_string;
   match.destination_url = GURL(match_string);

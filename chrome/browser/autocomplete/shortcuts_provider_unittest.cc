@@ -21,13 +21,14 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 using base::TimeDelta;
+
+namespace {
 
 struct TestShortcutInfo {
   std::string url;
@@ -93,6 +94,8 @@ struct TestShortcutInfo {
     "www.daysagotest.com/d.html", "0,1,8,3,11,1",
     "Test - site", "0,0", 1, 4},
 };
+
+}  // end namespace
 
 class ShortcutsProviderTest : public testing::Test,
                               public ACProviderListener {
@@ -569,7 +572,7 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
   EXPECT_FALSE(provider_->shortcuts_map_.end() ==
                provider_->shortcuts_map_.find(ASCIIToUTF16("erase")));
 
-  AutocompleteMatch match(provider_, 1200, 0.0f, true,
+  AutocompleteMatch match(provider_, 1200, true,
                           AutocompleteMatch::HISTORY_TITLE);
 
   match.destination_url = GURL(shortcuts_to_test_delete[0].url);

@@ -119,6 +119,8 @@
         'browser/autocomplete/history_url_provider.h',
         'browser/autocomplete/keyword_provider.cc',
         'browser/autocomplete/keyword_provider.h',
+        'browser/autocomplete/network_action_predictor.cc',
+        'browser/autocomplete/network_action_predictor.h',
         'browser/autocomplete/search_provider.cc',
         'browser/autocomplete/search_provider.h',
         'browser/autocomplete/shortcuts_provider.cc',

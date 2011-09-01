@@ -56,11 +56,7 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
         // We have a match, might be a partial match.
         // TODO(finnur): Figure out what type to return here, might want to have
         // the extension icon/a generic icon show up in the Omnibox.
-        // TODO(dominich): Confidence would require us to create a match set and
-        // then iterate over to create the AutocompleteMatch objects. Currently
-        // confidence is used for instant/prerender/DNS preconnect and we may
-        // not want to do those for extension apps anyway.
-        AutocompleteMatch match(this, 0, 0.0f, false,
+        AutocompleteMatch match(this, 0, false,
                                 AutocompleteMatch::EXTENSION_APP);
         match.fill_into_edit = url;
         match.destination_url = GURL(url);

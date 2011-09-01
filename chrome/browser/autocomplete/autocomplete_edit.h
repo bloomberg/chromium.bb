@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/network_action_predictor.h"
 #include "chrome/common/instant_types.h"
 #include "content/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -22,6 +23,7 @@ class AutocompleteEditModel;
 class AutocompletePopupModel;
 class AutocompleteResult;
 class InstantController;
+class NetworkActionPredictor;
 class OmniboxView;
 class Profile;
 class SkBitmap;
@@ -420,11 +422,9 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
                                     const string16& new_user_text,
                                     size_t caret_position);
 
-  // Tries to start an instant preview for |match|. If instant is not supported,
-  // tries to start a prerender for it instead. Returns true if instant is
+  // Tries to start an instant preview for |match|. Returns true if instant is
   // supported. |suggested_text| must be non-NULL.
-  bool TryInstantFallbackToPrerender(const AutocompleteMatch& match,
-                                     string16* suggested_text);
+  bool DoInstant(const AutocompleteMatch& match, string16* suggested_text);
 
   // Starts a prerender for the given |match|.
   void DoPrerender(const AutocompleteMatch& match);
@@ -554,6 +554,9 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
 
   // Last value of InstantCompleteBehavior supplied to |SetSuggestedText|.
   InstantCompleteBehavior instant_complete_behavior_;
+
+  // Used to determine what network actions to take in different circumstances.
+  NetworkActionPredictor network_action_predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditModel);
 };
