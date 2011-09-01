@@ -427,6 +427,13 @@ const char kL2TPIPSecClientCertIDProperty[] = "L2TPIPsec.ClientCertID";
 const char kL2TPIPSecPSKProperty[] = "L2TPIPsec.PSK";
 const char kL2TPIPSecUserProperty[] = "L2TPIPsec.User";
 const char kL2TPIPSecPasswordProperty[] = "L2TPIPsec.Password";
+const char kL2TPIPSecGroupNameProperty[] = "L2TPIPsec.GroupName";
+
+// Flimflam OpenVPN property names.
+const char kOpenVPNUserProperty[] = "OpenVPN.User";
+const char kOpenVPNPasswordProperty[] = "OpenVPN.Password";
+const char kOpenVPNOTPProperty[] = "OpenVPN.OTP";
+const char kOpenVPNPINProperty[] = "OpenVPN.PIN";
 
 // IPConfig property names.
 const char kMethodProperty[] = "Method";
