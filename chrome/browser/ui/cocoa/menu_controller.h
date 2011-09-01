@@ -26,6 +26,7 @@ class MenuModel;
   ui::MenuModel* model_;  // weak
   scoped_nsobject<NSMenu> menu_;
   BOOL useWithPopUpButtonCell_;  // If YES, 0th item is blank
+  BOOL isMenuOpen_;
 }
 
 @property(nonatomic, assign) ui::MenuModel* model;
