@@ -22,12 +22,12 @@ namespace {
 const int kCurrentVersion = 3;
 const int kCompatibleVersion = 3;
 
-const char* kGroupsTable = "Groups";
-const char* kCachesTable = "Caches";
-const char* kEntriesTable = "Entries";
-const char* kFallbackNameSpacesTable = "FallbackNameSpaces";
-const char* kOnlineWhiteListsTable = "OnlineWhiteLists";
-const char* kDeletableResponseIdsTable = "DeletableResponseIds";
+const char kGroupsTable[] = "Groups";
+const char kCachesTable[] = "Caches";
+const char kEntriesTable[] = "Entries";
+const char kFallbackNameSpacesTable[] = "FallbackNameSpaces";
+const char kOnlineWhiteListsTable[] = "OnlineWhiteLists";
+const char kDeletableResponseIdsTable[] = "DeletableResponseIds";
 
 const struct {
   const char* table_name;
