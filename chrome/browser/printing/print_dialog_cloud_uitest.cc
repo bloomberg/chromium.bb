@@ -227,7 +227,7 @@ net::URLRequestJob* PrintDialogCloudTest::Factory(net::URLRequest* request,
 
 #if defined(OS_WIN)
 // http://crbug.com/94864
-#define MAYBE_HandlersRegistered FLAKY_HandlersRegistered
+#define MAYBE_HandlersRegistered DISABLED_HandlersRegistered
 #else
 #define MAYBE_HandlersRegistered HandlersRegistered
 #endif
