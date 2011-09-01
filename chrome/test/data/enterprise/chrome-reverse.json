@@ -42,5 +42,6 @@
   "SearchSuggestEnabled": false,
   "ShowHomeButton": false,
   "SyncDisabled": false,
-  "TranslateEnabled": false
+  "TranslateEnabled": false,
+  "Disable3DAPIs": false
 }

@@ -115,6 +115,7 @@ class EnterpriseTest(pyauto.PyUITest):
                      msg='Default value of the preference is wrong.')
     self.assertRaises(pyauto.JSONInterfaceError,
                       lambda: self.SetPrefs(key, newval))
+
   def _GetPluginPID(self, plugin_name):
     """Fetch the pid of the plugin process with name |plugin_name|."""
     child_processes = self.GetBrowserInfo()['child_processes']
@@ -364,6 +365,17 @@ class EnterpriseTest(pyauto.PyUITest):
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
     self._CheckIfPrefCanBeModified(pyauto.kEditBookmarksEnabled, True, False)
+
+  def testDisable3DAPI(self):
+    """Verify when disable 3D API policy is set, webGL page does not work."""
+
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+
+    self._CheckIfPrefCanBeModified(pyauto.kDisable3DAPIs, True, False)
+    self.assertEqual(self.GetDOMValue('document.createElement("canvas").' +
+                                      'getContext("experimental-webgl")' +
+                                      '== null ? "ok" : ""'), 'ok')
 
 class EnterpriseTestReverse(pyauto.PyUITest):
   """Test for the Enterprise features that uses the opposite values of the
@@ -660,7 +672,17 @@ class EnterpriseTestReverse(pyauto.PyUITest):
     if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
       return
     self._CheckIfPrefCanBeModified(pyauto.kEditBookmarksEnabled, False, True)
-   
+
+  def testEnable3DAPI(self):
+    """Verify when disable 3D API policy set to 0, webGL page works."""
+    if self.GetBrowserInfo()['properties']['branding'] != 'Google Chrome':
+      return
+
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kDisable3DAPIs))
+    self.assertEqual(self.GetDOMValue('document.createElement("canvas").' +
+                                      'getContext("experimental-webgl")' +
+                                      '!= null ? "ok" : ""'), 'ok')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

@@ -92,3 +92,4 @@ Windows Registry Editor Version 5.00
 "SyncDisabled"=dword:1
 "DeveloperToolsDisabled"=dword:1
 "TranslateEnabled"=dword:1
+"Disable3DAPIs"=dword:1

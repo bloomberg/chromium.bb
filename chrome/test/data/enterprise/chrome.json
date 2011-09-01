@@ -71,5 +71,6 @@
   "SearchSuggestEnabled": true,
   "ShowHomeButton": true,
   "SyncDisabled": true,
-  "TranslateEnabled": true
+  "TranslateEnabled": true,
+  "Disable3DAPIs": true
 }

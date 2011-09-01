@@ -37,3 +37,4 @@ Windows Registry Editor Version 5.00
 "ShowHomeButton"=dword:0
 "SyncDisabled"=dword:0
 "TranslateEnabled"=dword:0
+"Disable3DAPIs"=dword:0
