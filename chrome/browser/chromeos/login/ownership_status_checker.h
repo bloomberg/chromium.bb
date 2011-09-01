@@ -23,8 +23,9 @@ namespace chromeos {
 class OwnershipStatusChecker {
  public:
   // Callback function type. The status code is guaranteed to be different from
-  // OWNERSHIP_UNKNOWN.
-  typedef Callback1<OwnershipService::Status>::Type Callback;
+  // OWNERSHIP_UNKNOWN. The bool parameter is true iff the current logged in
+  // user is the owner.
+  typedef Callback2<OwnershipService::Status, bool>::Type Callback;
 
   explicit OwnershipStatusChecker(Callback* callback);
   ~OwnershipStatusChecker();
@@ -44,7 +45,8 @@ class OwnershipStatusChecker {
 
    private:
     void CheckOnFileThread();
-    void ReportResult(OwnershipService::Status status);
+    void ReportResult(OwnershipService::Status status,
+                      bool current_user_is_owner);
 
     scoped_ptr<Callback> callback_;
     scoped_refptr<base::MessageLoopProxy> origin_loop_;
