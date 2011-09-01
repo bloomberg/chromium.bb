@@ -316,8 +316,10 @@ void SigninManager::OnUserInfoSuccess(const std::string& email) {
       Source<Profile>(profile_),
       Details<const GoogleServiceSigninSuccessDetails>(&details));
 
-  DCHECK(profile_->GetTokenService()->AreOAuthCredentialsValid());
-  profile_->GetTokenService()->StartFetchingOAuthTokens();
+  TokenService* token_service = profile_->GetTokenService();
+  CHECK(token_service);
+  DCHECK(token_service->AreOAuthCredentialsValid());
+  token_service->StartFetchingOAuthTokens();
 }
 
 void SigninManager::OnUserInfoFailure(const GoogleServiceAuthError& error) {
