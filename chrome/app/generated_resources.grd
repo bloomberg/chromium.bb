@@ -4282,11 +4282,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FOCUS_EXISTING_TAB_ON_OPEN_DESCRIPTION" desc="Description of the 'Focus existing tab on open' lab.">
         Typing a URL of an existing tab into the omnibox results in refocusing the tab instead of loading in the current tab.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Description of the 'Enable Native Client' lab.">
+      <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Name of the 'Enable Native Client' lab.">
         Native Client
       </message>
       <message name="IDS_FLAGS_ENABLE_NACL_DESCRIPTION" desc="Description of the 'Enable Native Client' lab.">
-        Enable support for Native Client.
+        Enable Native Client for all web applications, even those that were not installed from the Chrome Web Store.
       </message>
       <message name="IDS_FLAGS_ENABLE_SHORTCUTS_PROVIDER" desc="Name of the 'Enable better ranking of previously selected shortcuts in omnibox' lab.">
         Enable 'shortcuts' in the omnibox.
