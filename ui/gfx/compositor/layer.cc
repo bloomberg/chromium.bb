@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
+#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/point3.h"
 
 namespace ui {
@@ -15,7 +17,8 @@ Layer::Layer(Compositor* compositor)
     : compositor_(compositor),
       texture_(compositor->CreateTexture()),
       parent_(NULL),
-      fills_bounds_opaquely_(false) {
+      fills_bounds_opaquely_(false),
+      delegate_(NULL) {
 }
 
 Layer::~Layer() {
@@ -106,9 +109,17 @@ void Layer::SetTexture(ui::Texture* texture) {
 
 void Layer::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
   texture_->SetCanvas(canvas, origin, bounds_.size());
+  invalid_rect_ = gfx::Rect();
+}
+
+void Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
+  invalid_rect_ = invalid_rect_.Union(invalid_rect);
+  compositor_->SchedulePaint();
 }
 
 void Layer::Draw() {
+  UpdateLayerCanvas();
+
   ui::TextureDrawParams texture_draw_params;
   for (Layer* layer = this; layer; layer = layer->parent_) {
     texture_draw_params.transform.ConcatTransform(layer->transform_);
@@ -158,6 +169,24 @@ void Layer::DrawRegion(const ui::TextureDrawParams& params,
                        const gfx::Rect& region_to_draw) {
   if (!region_to_draw.IsEmpty())
     texture_->Draw(params, region_to_draw);
+}
+
+void Layer::UpdateLayerCanvas() {
+  // If we have no delegate, that means that whoever constructed the Layer is
+  // setting its canvas directly with SetCanvas().
+  if (!delegate_)
+    return;
+  gfx::Rect local_bounds = gfx::Rect(gfx::Point(), bounds_.size());
+  gfx::Rect draw_rect = invalid_rect_.Intersect(local_bounds);
+  if (draw_rect.IsEmpty()) {
+    invalid_rect_ = gfx::Rect();
+    return;
+  }
+  scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(
+      draw_rect.width(), draw_rect.height(), false));
+  canvas->TranslateInt(draw_rect.x(), draw_rect.y());
+  delegate_->OnPaint(canvas.get());
+  SetCanvas(*canvas->AsCanvasSkia(), bounds().origin());
 }
 
 void Layer::RecomputeHole() {

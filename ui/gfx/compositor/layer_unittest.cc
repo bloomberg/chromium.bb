@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
@@ -12,15 +14,50 @@ namespace ui {
 
 namespace {
 
-class LayerTest : public testing::Test {
+class TestLayerDelegate : public LayerDelegate {
+public:
+  explicit TestLayerDelegate(Layer* owner) : owner_(owner), color_index_(0) {}
+  virtual ~TestLayerDelegate() {}
+
+  void AddColor(SkColor color) {
+    colors_.push_back(color);
+  }
+
+  gfx::Size paint_size() const { return paint_size_; }
+  int color_index() const { return color_index_; }
+
+  // Overridden from LayerDelegate:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    SkBitmap contents = canvas->AsCanvasSkia()->ExtractBitmap();
+    paint_size_ = gfx::Size(contents.width(), contents.height());
+    canvas->FillRectInt(colors_.at(color_index_), 0, 0,
+                        contents.width(),
+                        contents.height());
+    color_index_ = ++color_index_ % colors_.size();
+
+    MessageLoop::current()->Quit();
+  }
+
+private:
+  Layer* owner_;
+  std::vector<SkColor> colors_;
+  int color_index_;
+  gfx::Size paint_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
+};
+
+class LayerTest : public testing::Test,
+                  public TestCompositorHostDelegate {
  public:
-  LayerTest() {}
+  LayerTest() : root_layer_(NULL) {}
   virtual ~LayerTest() {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
+    root_layer_ = NULL;
     const gfx::Rect host_bounds(10, 10, 500, 500);
-    window_.reset(TestCompositorHost::Create(host_bounds));
+    window_.reset(TestCompositorHost::Create(host_bounds, this));
     window_->Show();
   }
 
@@ -71,12 +108,22 @@ class LayerTest : public testing::Test {
   }
 
   void RunPendingMessages() {
-    MessageLoop main_message_loop(MessageLoop::TYPE_UI);
     MessageLoopForUI::current()->Run(NULL);
   }
 
+ protected:
+  void set_root_layer(Layer* root_layer) { root_layer_ = root_layer; }
+
  private:
+  // Overridden from TestCompositorHostDelegate:
+  virtual void Draw() {
+    if (root_layer_)
+      DrawLayerChildren(root_layer_);
+  }
+
+  MessageLoopForUI message_loop_;
   scoped_ptr<TestCompositorHost> window_;
+  Layer* root_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTest);
 };
@@ -156,6 +203,33 @@ TEST_F(LayerTest, ConvertPointToLayer_Medium) {
   Layer::ConvertPointToLayer(l1.get(), l3.get(), &point2_in_l1_coords);
   gfx::Point point2_in_l3_coords(-15, -15);
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
+}
+
+TEST_F(LayerTest, Delegate) {
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorBLACK,
+                                        gfx::Rect(20, 20, 400, 400)));
+  TestLayerDelegate delegate(l1.get());
+  l1->set_delegate(&delegate);
+  delegate.AddColor(SK_ColorWHITE);
+  delegate.AddColor(SK_ColorYELLOW);
+  delegate.AddColor(SK_ColorGREEN);
+
+  set_root_layer(l1.get());
+
+  l1->SchedulePaint(gfx::Rect(0, 0, 400, 400));
+  RunPendingMessages();
+  EXPECT_EQ(delegate.color_index(), 1);
+  EXPECT_EQ(delegate.paint_size(), l1->bounds().size());
+
+  l1->SchedulePaint(gfx::Rect(10, 10, 200, 200));
+  RunPendingMessages();
+  EXPECT_EQ(delegate.color_index(), 2);
+  EXPECT_EQ(delegate.paint_size(), gfx::Size(200, 200));
+
+  l1->SchedulePaint(gfx::Rect(5, 5, 50, 50));
+  RunPendingMessages();
+  EXPECT_EQ(delegate.color_index(), 0);
+  EXPECT_EQ(delegate.paint_size(), gfx::Size(50, 50));
 }
 
 }  // namespace ui

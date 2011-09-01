@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/layer_delegate.h"
 
 class SkCanvas;
 
@@ -30,6 +32,9 @@ class COMPOSITOR_EXPORT Layer {
  public:
   explicit Layer(Compositor* compositor);
   ~Layer();
+
+  LayerDelegate* delegate() { return delegate_; }
+  void set_delegate(LayerDelegate* delegate) { delegate_ = delegate; }
 
   // Adds a new Layer to this Layer.
   void Add(Layer* child);
@@ -79,6 +84,11 @@ class COMPOSITOR_EXPORT Layer {
   // Resets the canvas of the texture.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
 
+  // Adds |invalid_rect| to the Layer's pending invalid rect, and schedules a
+  // repaint if the Layer has an associated LayerDelegate that can handle the
+  // repaint.
+  void SchedulePaint(const gfx::Rect& invalid_rect);
+
 // Draws the layer with hole if hole is non empty.
 // hole looks like:
 //
@@ -102,6 +112,10 @@ class COMPOSITOR_EXPORT Layer {
   // calls Texture::Draw only if the region to be drawn is non empty
   void DrawRegion(const ui::TextureDrawParams& params,
                   const gfx::Rect& region_to_draw);
+
+  // Called during the Draw() pass to freshen the Layer's contents from the
+  // delegate.
+  void UpdateLayerCanvas();
 
   // A hole in a layer is an area in the layer that does not get drawn
   // because this area is covered up with another layer which is known to be
@@ -133,6 +147,10 @@ class COMPOSITOR_EXPORT Layer {
   bool fills_bounds_opaquely_;
 
   gfx::Rect hole_rect_;
+
+  gfx::Rect invalid_rect_;
+
+  LayerDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

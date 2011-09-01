@@ -18,12 +18,21 @@ namespace ui {
 
 class Compositor;
 
+class TestCompositorHostDelegate {
+ public:
+  virtual void Draw() = 0;
+
+ protected:
+  virtual ~TestCompositorHostDelegate() {}
+};
+
 class TestCompositorHost : public MessageLoop::Dispatcher {
  public:
   virtual ~TestCompositorHost() {}
 
   // Creates a new TestCompositorHost. The caller owns the returned value.
-  static TestCompositorHost* Create(const gfx::Rect& bounds);
+  static TestCompositorHost* Create(const gfx::Rect& bounds,
+                                    TestCompositorHostDelegate* delegate);
 
   // Shows the TestCompositorHost.
   virtual void Show() = 0;
