@@ -4,12 +4,10 @@
 
 #include "chrome/app/chrome_main.h"
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/metrics/stats_table.h"
@@ -34,6 +32,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
+#include "content/app/content_main.h"
+#include "content/app/content_main_delegate.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/content_client.h"
 #include "content/common/content_counters.h"
@@ -136,8 +136,7 @@ extern int ServiceProcessMain(const MainFunctionParams&);
 // We use extern C for the prototype DLLEXPORT to avoid C++ name mangling.
 extern "C" {
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
-                                 sandbox::SandboxInterfaceInfo* sandbox_info,
-                                 TCHAR* command_line_unused);
+                                 sandbox::SandboxInterfaceInfo* sandbox_info);
 }
 #elif defined(OS_POSIX)
 extern "C" {
@@ -574,74 +573,80 @@ int RunNamedProcessTypeMain(const std::string& process_type,
   return 1;
 }
 
+class ChromeMainDelegate : public content::ContentMainDelegate {
+ public:
+  virtual bool BasicStartupComplete(
+      int* exit_code,
+      base::mac::ScopedNSAutoreleasePool* autorelease_pool) OVERRIDE {
+    autorelease_pool_ = autorelease_pool;
+#if defined(OS_CHROMEOS)
+    chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
+#endif
+
+#if defined(OS_MACOSX)
+    chrome_main::SetUpBundleOverrides();
+    chrome::common::mac::EnableCFBundleBlocker();
+#endif
+
+    Profiling::ProcessStarted();
+
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+
+#if defined(OS_POSIX)
+    if (HandleVersionSwitches(command_line)) {
+      *exit_code = 0;
+      return true;  // Got a --version switch; exit with a success error code.
+    }
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+    // This will directly exit if the user asked for help.
+    HandleHelpSwitches(command_line);
+#endif
+#endif  // OS_POSIX
+
+    // If we are in diagnostics mode this is the end of the line. After the
+    // diagnostics are run the process will invariably exit.
+    if (command_line.HasSwitch(switches::kDiagnostics)) {
+      *exit_code = DiagnosticsMain(command_line);
+      return true;
+    }
+
+#if defined(OS_WIN)
+    // Must do this before any other usage of command line!
+    if (HasDeprecatedArguments(command_line.GetCommandLineString())) {
+      *exit_code = 1;
+      return true;
+    }
+#endif
+
+    return false;
+  }
+
+  base::mac::ScopedNSAutoreleasePool* autorelease_pool() {
+    return autorelease_pool_;
+  }
+
+ private:
+  base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
+};
+
 }  // namespace
 
 #if defined(OS_WIN)
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
-                                 sandbox::SandboxInterfaceInfo* sandbox_info,
-                                 TCHAR* command_line_unused) {
-  // argc/argv are ignored on Windows; see command_line.h for details.
-  int argc = 0;
-  char** argv = NULL;
+                                 sandbox::SandboxInterfaceInfo* sandbox_info) {
+  ChromeMainDelegate chrome_main_delegate;
+  content::ContentMain(instance, sandbox_info, &chrome_main_delegate);
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, char** argv) {
-  // There is no HINSTANCE on non-Windows.
-  void* instance = NULL;
+  ChromeMainDelegate chrome_main_delegate;
+  content::ContentMain(argc, argv, &chrome_main_delegate);
 #endif
 
-  base::EnableTerminationOnHeapCorruption();
-  base::EnableTerminationOnOutOfMemory();
-
-  // LowLevelInit performs startup initialization before we
-  // e.g. allocate any memory.  It must be the first call on startup.
-  chrome_main::LowLevelInit(instance);
-
-  // The exit manager is in charge of calling the dtors of singleton objects.
-  base::AtExitManager exit_manager;
-
-  // We need this pool for all the objects created before we get to the
-  // event loop, but we don't want to leave them hanging around until the
-  // app quits. Each "main" needs to flush this pool right before it goes into
-  // its main event loop to get rid of the cruft.
-  base::mac::ScopedNSAutoreleasePool autorelease_pool;
-
-#if defined(OS_CHROMEOS)
-  chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
-#endif
-
-#if defined(OS_MACOSX)
-  chrome_main::SetUpBundleOverrides();
-  chrome::common::mac::EnableCFBundleBlocker();
-#endif
-
-  CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  Profiling::ProcessStarted();
-
-#if defined(OS_POSIX)
-  if (HandleVersionSwitches(command_line))
-    return 0;  // Got a --version switch; exit with a success error code.
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  // This will directly exit if the user asked for help.
-  HandleHelpSwitches(command_line);
-#endif
-#endif  // OS_POSIX
-
   std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  // If we are in diagnostics mode this is the end of the line. After the
-  // diagnostics are run the process will invariably exit.
-  if (command_line.HasSwitch(switches::kDiagnostics)) {
-    return DiagnosticsMain(command_line);
-  }
-
-#if defined(OS_WIN)
-  // Must do this before any other usage of command line!
-  if (HasDeprecatedArguments(command_line.GetCommandLineString()))
-    return 1;
-#endif
+        command_line.GetSwitchValueASCII(switches::kProcessType);
 
 #if defined(OS_MACOSX)
   // We need to allocate the IO Ports before the Sandbox is initialized or
@@ -927,7 +932,7 @@ int ChromeMain(int argc, char** argv) {
   startup_timer.Stop();  // End of Startup Time Measurement.
 
   MainFunctionParams main_params(command_line, sandbox_wrapper,
-                                 &autorelease_pool);
+                                 chrome_main_delegate.autorelease_pool());
 
   // Note: If you are adding a new process type below, be sure to adjust the
   // AdjustLinuxOOMScore function too.
@@ -946,7 +951,12 @@ int ChromeMain(int argc, char** argv) {
 
   logging::CleanupChromeLogging();
 
-  chrome_main::LowLevelShutdown();
+#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
+  // TODO(mark): See the TODO(mark) at InitCrashReporter.
+  DestructCrashReporter();
+#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
+
+  content::ContentMainEnd();
 
   return exit_code;
 }

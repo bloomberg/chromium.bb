@@ -4,12 +4,6 @@
 
 #include "chrome/app/chrome_main.h"
 
-#include <atlbase.h>
-#include <atlapp.h>
-#include <malloc.h>
-#include <new.h>
-#include <shlobj.h>
-
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -21,33 +15,6 @@
 #include "policy/policy_constants.h"
 
 namespace {
-
-CAppModule _Module;
-
-#pragma optimize("", off)
-// Handlers for invalid parameter and pure call. They generate a breakpoint to
-// tell breakpad that it needs to dump the process.
-void InvalidParameter(const wchar_t* expression, const wchar_t* function,
-                      const wchar_t* file, unsigned int line,
-                      uintptr_t reserved) {
-  __debugbreak();
-  _exit(1);
-}
-
-void PureCall() {
-  __debugbreak();
-  _exit(1);
-}
-#pragma optimize("", on)
-
-// Register the invalid param handler and pure call handler to be able to
-// notify breakpad when it happens.
-void RegisterInvalidParamHandler() {
-  _set_invalid_parameter_handler(InvalidParameter);
-  _set_purecall_handler(PureCall);
-  // Also enable the new handler for malloc() based failures.
-  _set_new_mode(1);
-}
 
 // Checks if the registry key exists in the given hive and expands any
 // variables in the string.
@@ -67,20 +34,6 @@ bool LoadUserDataDirPolicyFromRegistry(HKEY hive,
 }  // namespace
 
 namespace chrome_main {
-
-void LowLevelInit(void* instance) {
-  RegisterInvalidParamHandler();
-
-  _Module.Init(NULL, static_cast<HINSTANCE>(instance));
-}
-
-void LowLevelShutdown() {
-#ifdef _CRTDBG_MAP_ALLOC
-  _CrtDumpMemoryLeaks();
-#endif  // _CRTDBG_MAP_ALLOC
-
-  _Module.Term();
-}
 
 void CheckUserDataDirPolicy(FilePath* user_data_dir) {
   DCHECK(user_data_dir);

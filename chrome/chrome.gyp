@@ -29,6 +29,7 @@
       'syncapi_core',
       'utility',
       'service',
+      '../content/content.gyp:content_app',
       '../content/content.gyp:content_gpu',
       '../content/content.gyp:content_ppapi_plugin',
       '../content/content.gyp:content_worker',

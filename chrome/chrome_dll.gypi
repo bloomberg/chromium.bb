@@ -716,6 +716,7 @@
             # to avoid making common compile on 64 bit on Windows.
             '../chrome/common/chrome_content_client.cc',
             '../chrome/common/chrome_content_plugin_client.cc',
+            '../content/app/content_main.cc',
             '../content/common/child_process.cc',
             '../content/common/child_thread.cc',
             '../content/common/content_client.cc',

@@ -31,7 +31,7 @@
 
 namespace {
 // The entry point signature of chrome.dll.
-typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
+typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*);
 
 typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 
@@ -363,7 +363,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
   if (!entry_point)
     return chrome::RESULT_CODE_BAD_PROCESS_TYPE;
 
-  int rc = entry_point(instance, sbox_info, ::GetCommandLineW());
+  int rc = entry_point(instance, sbox_info);
   return OnBeforeExit(rc, file);
 }
 
