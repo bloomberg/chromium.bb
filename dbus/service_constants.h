@@ -206,6 +206,7 @@ const char kPassphraseRequiredProperty[] = "PassphraseRequired";
 const char kSaveCredentialsProperty[] = "SaveCredentials";
 const char kSignalStrengthProperty[] = "Strength";
 const char kNameProperty[] = "Name";
+const char kGuidProperty[] = "GUID";
 const char kStateProperty[] = "State";
 const char kTypeProperty[] = "Type";
 const char kDeviceProperty[] = "Device";
@@ -235,24 +236,34 @@ const char kWifiChannelProperty[] = "WiFi.Channel";
 
 // Flimflam EAP property names.
 const char kEapIdentityProperty[] = "EAP.Identity";
-const char kEAPEAPProperty[] = "EAP.EAP";
+const char kEapMethodProperty[] = "EAP.EAP";
 const char kEapPhase2AuthProperty[] = "EAP.InnerEAP";
 const char kEapAnonymousIdentityProperty[] = "EAP.AnonymousIdentity";
-const char kEAPClientCertProperty[] = "EAP.ClientCert";
-const char kEAPCertIDProperty[] = "EAP.CertID";
+const char kEapClientCertProperty[] = "EAP.ClientCert";
+const char kEapCertIdProperty[] = "EAP.CertID";
 const char kEapClientCertNssProperty[] = "EAP.ClientCertNSS";
 const char kEapPrivateKeyProperty[] = "EAP.PrivateKey";
 const char kEapPrivateKeyPasswordProperty[] = "EAP.PrivateKeyPassword";
-const char kEAPKeyIDProperty[] = "EAP.KeyID";
+const char kEapKeyIdProperty[] = "EAP.KeyID";
 const char kEapCaCertProperty[] = "EAP.CACert";
-const char kEapCaCertIDProperty[] = "EAP.CACertID";
+const char kEapCaCertIdProperty[] = "EAP.CACertID";
 const char kEapCaCertNssProperty[] = "EAP.CACertNSS";
-const char kEapUseSystemCAsProperty[] = "EAP.UseSystemCAs";
-const char kEAPPINProperty[] = "EAP.PIN";
+const char kEapUseSystemCasProperty[] = "EAP.UseSystemCAs";
+const char kEapPinProperty[] = "EAP.PIN";
 const char kEapPasswordProperty[] = "EAP.Password";
 const char kEapKeyMgmtProperty[] = "EAP.KeyMgmt";
+// Deprecated (duplicates)
+const char kEAPEAPProperty[] = "EAP.EAP";
+const char kEAPClientCertProperty[] = "EAP.ClientCert";
+const char kEAPCertIDProperty[] = "EAP.CertID";
+const char kEAPKeyIDProperty[] = "EAP.KeyID";
+const char kEapCaCertIDProperty[] = "EAP.CACertID";
+const char kEapUseSystemCAsProperty[] = "EAP.UseSystemCAs";
+const char kEAPPINProperty[] = "EAP.PIN";
+
 
 // Flimflam Cellular Service property names.
+const char kTechnologyFamilyProperty[] = "Cellular.Family";
 const char kActivationStateProperty[] = "Cellular.ActivationState";
 const char kNetworkTechnologyProperty[] = "Cellular.NetworkTechnology";
 const char kRoamingStateProperty[] = "Cellular.RoamingState";
@@ -263,6 +274,7 @@ const char kPaymentURLProperty[] = "Cellular.OlpUrl";
 const char kUsageURLProperty[] = "Cellular.UsageUrl";
 const char kCellularApnProperty[] = "Cellular.APN";
 const char kCellularLastGoodApnProperty[] = "Cellular.LastGoodAPN";
+const char kCellularApnListProperty[] = "Cellular.APNList";
 
 // Flimflam Manager property names.
 const char kProfilesProperty[] = "Profiles";
@@ -276,6 +288,7 @@ const char kOfflineModeProperty[] = "OfflineMode";
 const char kActiveProfileProperty[] = "ActiveProfile";
 const char kDevicesProperty[] = "Devices";
 const char kCheckPortalListProperty[] = "CheckPortalList";
+const char kArpGatewayProperty[] = "ArpGateway";
 const char kCountryProperty[] = "Country";
 const char kPortalURLProperty[] = "PortalURL";
 
@@ -336,6 +349,7 @@ const char kLongNameProperty[] = "long_name";
 const char kStatusProperty[] = "status";
 const char kShortNameProperty[] = "short_name";
 const char kTechnologyProperty[] = "technology";
+const char kNetworkIdProperty[] = "network_id";
 
 // Flimflam SIMLock status types.
 const char kSIMLockPin[] = "sim-pin";
@@ -343,9 +357,12 @@ const char kSIMLockPuk[] = "sim-puk";
 
 // APN info property names.
 const char kApnProperty[] = "apn";
-const char kNetworkIdProperty[] = "network_id";
-const char kUsernameProperty[] = "username";
-const char kPasswordProperty[] = "password";
+const char kApnNetworkIdProperty[] = "network_id";
+const char kApnUsernameProperty[] = "username";
+const char kApnPasswordProperty[] = "password";
+const char kApnNameProperty[] = "name";
+const char kApnLocalizedNameProperty[] = "localized_name";
+const char kApnLanguageProperty[] = "language";
 
 // Operator info property names.
 const char kOperatorNameKey[] = "name";
@@ -422,18 +439,24 @@ const char kSecurityPsk[] = "psk";
 const char kSecurityNone[] = "none";
 
 // Flimflam L2TPIPsec property names.
-const char kL2TPIPSecCACertNSSProperty[] = "L2TPIPsec.CACertNSS";
-const char kL2TPIPSecClientCertIDProperty[] = "L2TPIPsec.ClientCertID";
-const char kL2TPIPSecPSKProperty[] = "L2TPIPsec.PSK";
-const char kL2TPIPSecUserProperty[] = "L2TPIPsec.User";
-const char kL2TPIPSecPasswordProperty[] = "L2TPIPsec.Password";
-const char kL2TPIPSecGroupNameProperty[] = "L2TPIPsec.GroupName";
+const char kL2tpIpsecCaCertNssProperty[] = "L2TPIPsec.CACertNSS";
+const char kL2tpIpsecClientCertIdProperty[] = "L2TPIPsec.ClientCertID";
+const char kL2tpIpsecClientCertSlotProp[] = "L2TPIPsec.ClientCertSlot";
+const char kL2tpIpsecPinProperty[] = "L2TPIPsec.PIN";
+const char kL2tpIpsecPskProperty[] = "L2TPIPsec.PSK";
+const char kL2tpIpsecUserProperty[] = "L2TPIPsec.User";
+const char kL2tpIpsecPasswordProperty[] = "L2TPIPsec.Password";
+const char kL2tpIpsecGroupNameProperty[] = "L2TPIPsec.GroupName";
 
 // Flimflam OpenVPN property names.
 const char kOpenVPNUserProperty[] = "OpenVPN.User";
 const char kOpenVPNPasswordProperty[] = "OpenVPN.Password";
 const char kOpenVPNOTPProperty[] = "OpenVPN.OTP";
 const char kOpenVPNPINProperty[] = "OpenVPN.PIN";
+
+// FlimFlam technology family options
+const char kTechnologyFamilyCdma[] = "CDMA";
+const char kTechnologyFamilyGsm[] = "GSM";
 
 // IPConfig property names.
 const char kMethodProperty[] = "Method";
@@ -456,25 +479,24 @@ const char kTypeDHCP6[] = "dhcp6";
 const char kTypePPP[] = "ppp";
 
 // Flimflam error options.
-const char kErrorOutOfRange[] = "out-of-range";
-const char kErrorPinMissing[] = "pin-missing";
-const char kErrorDhcpFailed[] = "dhcp-failed";
-const char kErrorConnectFailed[] = "connect-failed";
+const char kErrorAaaFailed[] = "aaa-failed";
+const char kErrorActivationFailed[] = "activation-failed";
 const char kErrorBadPassphrase[] = "bad-passphrase";
 const char kErrorBadWEPKey[] = "bad-wepkey";
-const char kErrorActivationFailed[] = "activation-failed";
+const char kErrorConnectFailed[] = "connect-failed";
+const char kErrorDNSLookupFailed[] = "dns-lookup-failed";
+const char kErrorDhcpFailed[] = "dhcp-failed";
+const char kErrorHTTPGetFailed[] = "http-get-failed";
+const char kErrorInternal[] = "internal-error";
 const char kErrorNeedEvdo[] = "need-evdo";
 const char kErrorNeedHomeNetwork[] = "need-home-network";
 const char kErrorOtaspFailed[] = "otasp-failed";
-const char kErrorAaaFailed[] = "aaa-failed";
-const char kErrorInternal[] = "internal-error";
-const char kErrorDNSLookupFailed[] = "dns-lookup-failed";
-const char kErrorHTTPGetFailed[] = "http-get-failed";
+const char kErrorOutOfRange[] = "out-of-range";
+const char kErrorPinMissing[] = "pin-missing";
 
 // Flimflam error messages.
 const char kErrorPassphraseRequiredMsg[] = "Passphrase required";
-const char kErrorIncorrectPinMsg[] =
-    "org.chromium.flimflam.Error.IncorrectPin";
+const char kErrorIncorrectPinMsg[] = "org.chromium.flimflam.Error.IncorrectPin";
 const char kErrorPinBlockedMsg[] = "org.chromium.flimflam.Error.PinBlocked";
 const char kErrorPinRequiredMsg[] = "org.chromium.flimflam.Error.PinRequired";
 
