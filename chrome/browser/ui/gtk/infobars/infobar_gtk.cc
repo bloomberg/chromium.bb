@@ -28,9 +28,6 @@ const int kElementPadding = 5;
 const int kLeftPadding = 5;
 const int kRightPadding = 5;
 
-// The total height of the info bar.
-const int kInfoBarHeight = 37;
-
 // Spacing between buttons.
 const int kButtonButtonSpacing = 3;
 
@@ -67,7 +64,6 @@ InfoBarGtk::InfoBarGtk(TabContentsWrapper* owner, InfoBarDelegate* delegate)
                    G_CALLBACK(OnBackgroundExposeThunk), this);
   gtk_container_add(GTK_CONTAINER(padding), hbox_);
   gtk_container_add(GTK_CONTAINER(bg_box_), padding);
-  gtk_widget_set_size_request(bg_box_, -1, kInfoBarHeight);
 
   // Add the icon on the left, if any.
   gfx::Image* icon = delegate->GetIcon();
@@ -247,10 +243,10 @@ void InfoBarGtk::PlatformSpecificShow(bool animate) {
 }
 
 void InfoBarGtk::PlatformSpecificOnHeightsRecalculated() {
-  GtkRequisition req;
-  gtk_widget_size_request(bg_box_, &req);
+  gtk_widget_set_size_request(bg_box_, -1, bar_target_height());
   gtk_expanded_container_move(GTK_EXPANDED_CONTAINER(widget_.get()),
-                              bg_box_, 0, bar_height() - req.height);
+                              bg_box_, 0,
+                              bar_height() - bar_target_height());
 
   gtk_widget_set_size_request(widget_.get(), -1, bar_height());
   gtk_widget_queue_draw(widget_.get());

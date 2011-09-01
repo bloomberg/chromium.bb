@@ -62,6 +62,9 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   CHROMEGTK_CALLBACK_1(ExtensionInfoBarGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
 
+  CHROMEGTK_CALLBACK_1(ExtensionInfoBarGtk, gboolean, OnExpose,
+                       GdkEventExpose*);
+
   ImageLoadingTracker tracker_;
 
   ExtensionInfoBarDelegate* delegate_;

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -34,6 +35,9 @@ ExtensionInfoBarGtk::ExtensionInfoBarGtk(TabContentsWrapper* owner,
   // extensions_infobar.css, and the close button provided by some GTK+ themes
   // won't look good on this background.
   close_button_->ForceChromeTheme();
+
+  int height = delegate->height();
+  SetBarTargetHeight((height > 0) ? (height + kSeparatorLineHeight) : 0);
 
   BuildWidgets();
 }
@@ -129,7 +133,9 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   }
 
   signals_.Connect(button_, "button-press-event",
-                   G_CALLBACK(OnButtonPressThunk), this);
+                   G_CALLBACK(&OnButtonPressThunk), this);
+  signals_.Connect(view_->native_view(), "expose-event",
+                   G_CALLBACK(&OnExposeThunk), this);
   signals_.Connect(view_->native_view(), "size_allocate",
                    G_CALLBACK(&OnSizeAllocateThunk), this);
 }
@@ -183,6 +189,15 @@ gboolean ExtensionInfoBarGtk::OnButtonPress(GtkWidget* widget,
   menu->PopupForWidget(widget, event->button, event->time);
 
   return TRUE;
+}
+
+gboolean ExtensionInfoBarGtk::OnExpose(GtkWidget* sender,
+                                       GdkEventExpose* event) {
+  // We also need to draw our infobar arrows over the renderer.
+  static_cast<InfoBarContainerGtk*>(container())->
+      PaintInfobarBitsOn(sender, event, this);
+
+  return FALSE;
 }
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(TabContentsWrapper* owner) {
