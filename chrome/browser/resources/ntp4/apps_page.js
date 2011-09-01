@@ -413,6 +413,15 @@ cr.define('ntp4', function() {
       tile.tilePage.cleanupDrag();
       tile.parentNode.removeChild(tile);
     },
+
+    /**
+     * Called when a drag is starting on the tile. Updates dataTransfer with
+     * data for this tile.
+     */
+    setDragData: function(dataTransfer) {
+      dataTransfer.setData('Text', this.appData_.name);
+      dataTransfer.setData('URL', this.appData_.launch_url);
+    },
   };
 
   var TilePage = ntp4.TilePage;
