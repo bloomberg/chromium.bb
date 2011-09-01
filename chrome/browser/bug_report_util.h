@@ -55,9 +55,6 @@ class BugReportUtil {
   //     all the call sites or making it a wrapper around another util.
   static void SetOSVersion(std::string *os_version);
 
-  // This sets the address of the feedback server to be used by SendReport
-  static void SetFeedbackServer(const std::string& server);
-
   // Send the feedback report after the specified delay
   static void DispatchFeedback(Profile* profile, std::string* feedback_data,
                                int64 delay);
@@ -103,8 +100,6 @@ class BugReportUtil {
 #if defined(OS_CHROMEOS)
   static bool ValidFeedbackSize(const std::string& content);
 #endif
-
-  static std::string feedback_server_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BugReportUtil);
 };

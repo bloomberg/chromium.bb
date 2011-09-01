@@ -174,14 +174,6 @@ void BugReportUtil::SetOSVersion(std::string* os_version) {
 }
 
 // static
-std::string BugReportUtil::feedback_server_("");
-
-// static
-void BugReportUtil::SetFeedbackServer(const std::string& server) {
-  feedback_server_ = server;
-}
-
-// static
 void BugReportUtil::DispatchFeedback(Profile* profile,
                                      std::string* post_body,
                                      int64 delay) {
