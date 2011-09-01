@@ -163,8 +163,9 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetAura::GetWindowBoundsAndMaximizedState(gfx::Rect* bounds,
-                                                       bool* maximized) const {
+void NativeWidgetAura::GetWindowPlacement(
+    gfx::Rect* bounds,
+    ui::WindowShowState* maximized) const {
   NOTIMPLEMENTED();
 }
 
@@ -258,7 +259,7 @@ void NativeWidgetAura::ShowMaximizedWithBounds(
   NOTIMPLEMENTED();
 }
 
-void NativeWidgetAura::ShowWithState(ShowState state) {
+void NativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
   NOTIMPLEMENTED();
 }
 
