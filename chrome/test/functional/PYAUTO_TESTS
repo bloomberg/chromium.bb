@@ -155,8 +155,6 @@
       '-ntp.NTPTest.testLaunchAppRegularTab',
       '-ntp.NTPTest.testLaunchAppWithDefaultSettings',
       '-ntp.NTPTest.testUninstallApp',
-      # crbug.com/91222
-      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
       # crbug.com/70694, crbug.com/73078
       '-passwords.PasswordTest.testInfoBarDisappearByReload',
       '-passwords.PasswordTest.testNeverSavePasswords',

@@ -102,9 +102,10 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar('accept', infobar_index=0)
     self.NavigateToURL(url_logout)
     self.AppendTab(pyauto.GURL(url_https))  # New tab to avoid bug 70694
-    # Wait until accounts page load to detect value in username field.
-    self.WaitUntil(lambda: self.GetDOMValue('document.readyState', 0, 1),
-                   expect_retval='complete')
+    # Wait until username is filled by the Password manager on the login page.
+    self.assertTrue(self.WaitUntil(
+        lambda: self.GetDOMValue('document.getElementById("Email").value',
+                                 0, 0) != ''))
     test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
                                               tab_index=1, windex=0)
     self.ExecuteJavascript('document.getElementById("gaia_loginform").submit();'
