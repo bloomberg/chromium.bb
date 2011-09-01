@@ -256,7 +256,8 @@ Worker::Worker(MyInstance *instance)
       ref_count_(2),  // one for the master and one for the dame...
       queue_head_(NULL),
       queue_insert_(&queue_head_),
-      should_exit_(false) {
+      should_exit_(false),
+      ns_channel_initialized_(false) {
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cv_);
 }
@@ -424,7 +425,7 @@ bool Worker::InitializeChannel(nacl::StringBuffer *sb) {
   }
   sb->Printf("NaClSrpcClientCtor succeeded\n");
   close(ns);
-  ns_channel_initialized_ = 1;
+  ns_channel_initialized_ = true;
   return true;
 }
 
