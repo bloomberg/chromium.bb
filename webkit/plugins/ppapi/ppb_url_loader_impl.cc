@@ -304,6 +304,7 @@ void PPB_URLLoader_Impl::didReceiveData(WebURLLoader* loader,
                                         int data_length,
                                         int encoded_data_length) {
   bytes_received_ += data_length;
+  UpdateStatus();
 
   buffer_.insert(buffer_.end(), data, data + data_length);
   if (user_buffer_) {
