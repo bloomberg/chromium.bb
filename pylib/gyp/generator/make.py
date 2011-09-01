@@ -1862,7 +1862,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # After the framework is built, package it. Needs to happen before
       # postbuilds, since postbuilds depend on this.
       if self.type in ('shared_library', 'loadable_module'):
-        self.WriteLn('\t@$(call do_cmd,mac_package_framework,0,0,%s)' %
+        self.WriteLn('\t@$(call do_cmd,mac_package_framework,,,%s)' %
             self.xcode_settings.GetFrameworkVersion())
 
       # Bundle postbuilds can depend on the whole bundle, so run them after
