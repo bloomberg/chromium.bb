@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ FileDescriptorSet::~FileDescriptorSet() {
 }
 
 bool FileDescriptorSet::Add(int fd) {
-  if (descriptors_.size() == MAX_DESCRIPTORS_PER_MESSAGE)
+  if (descriptors_.size() == kMaxDescriptorsPerMessage)
     return false;
 
   struct base::FileDescriptor sd;
@@ -47,14 +47,14 @@ bool FileDescriptorSet::Add(int fd) {
 }
 
 bool FileDescriptorSet::AddAndAutoClose(int fd) {
-  if (descriptors_.size() == MAX_DESCRIPTORS_PER_MESSAGE)
+  if (descriptors_.size() == kMaxDescriptorsPerMessage)
     return false;
 
   struct base::FileDescriptor sd;
   sd.fd = fd;
   sd.auto_close = true;
   descriptors_.push_back(sd);
-  DCHECK(descriptors_.size() <= MAX_DESCRIPTORS_PER_MESSAGE);
+  DCHECK(descriptors_.size() <= kMaxDescriptorsPerMessage);
   return true;
 }
 
@@ -122,7 +122,7 @@ void FileDescriptorSet::CommitAll() {
 }
 
 void FileDescriptorSet::SetDescriptors(const int* buffer, unsigned count) {
-  DCHECK_LE(count, MAX_DESCRIPTORS_PER_MESSAGE);
+  DCHECK(count <= kMaxDescriptorsPerMessage);
   DCHECK_EQ(descriptors_.size(), 0u);
   DCHECK_EQ(consumed_descriptor_highwater_, 0u);
 

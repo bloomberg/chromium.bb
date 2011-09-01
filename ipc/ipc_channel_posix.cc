@@ -585,8 +585,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
       p = input_buf_;
       end = p + bytes_read;
     } else {
-      if (input_overflow_buf_.size() >
-         static_cast<size_t>(kMaximumMessageSize - bytes_read)) {
+      if (input_overflow_buf_.size() > (kMaximumMessageSize - bytes_read)) {
         input_overflow_buf_.clear();
         LOG(ERROR) << "IPC message is too big";
         return false;
@@ -676,7 +675,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           }
 
           if (header_fds >
-              FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE) {
+              FileDescriptorSet::kMaxDescriptorsPerMessage) {
             // There are too many descriptors in this message
             error = "Message requires an excessive number of descriptors";
           }
@@ -782,7 +781,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
     msgh.msg_iov = &iov;
     msgh.msg_iovlen = 1;
     char buf[CMSG_SPACE(
-        sizeof(int[FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE]))];
+        sizeof(int) * FileDescriptorSet::kMaxDescriptorsPerMessage)];
 
     ssize_t bytes_written = 1;
     int fd_written = -1;
@@ -793,7 +792,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       struct cmsghdr *cmsg;
       const unsigned num_fds = msg->file_descriptor_set()->size();
 
-      DCHECK_LE(num_fds, FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE);
+      DCHECK(num_fds <= FileDescriptorSet::kMaxDescriptorsPerMessage);
       if (msg->file_descriptor_set()->ContainsDirectoryDescriptor()) {
         LOG(FATAL) << "Panic: attempting to transport directory descriptor over"
                       " IPC. Aborting to maintain sandbox isolation.";
@@ -815,7 +814,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       msgh.msg_controllen = cmsg->cmsg_len;
 
       // DCHECK_LE above already checks that
-      // num_fds < MAX_DESCRIPTORS_PER_MESSAGE so no danger of overflow.
+      // num_fds < kMaxDescriptorsPerMessage so no danger of overflow.
       msg->header()->num_fds = static_cast<uint16>(num_fds);
 
 #if defined(IPC_USES_READWRITE)

@@ -31,9 +31,7 @@ class IPC_EXPORT FileDescriptorSet
   //
   // In debugging mode, it's a fatal error to try and add more than this number
   // of descriptors to a FileDescriptorSet.
-  enum {
-    MAX_DESCRIPTORS_PER_MESSAGE = 5,
-  };
+  static const size_t kMaxDescriptorsPerMessage = 5;
 
   // ---------------------------------------------------------------------------
   // Interfaces for building during message serialisation...

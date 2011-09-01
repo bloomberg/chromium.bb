@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,10 +67,8 @@ TEST(FileDescriptorSet, BasicAddAndClose) {
 TEST(FileDescriptorSet, MaxSize) {
   scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
-  for (unsigned i = 0;
-       i < FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE; ++i) {
+  for (size_t i = 0; i < FileDescriptorSet::kMaxDescriptorsPerMessage; ++i)
     ASSERT_TRUE(set->Add(kFDBase + 1 + i));
-  }
 
   ASSERT_TRUE(!set->Add(kFDBase));
 

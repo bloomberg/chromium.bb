@@ -128,19 +128,18 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // We read from the pipe into this buffer
   char input_buf_[Channel::kReadBufferSize];
 
-  enum {
-    // We assume a worst case: kReadBufferSize bytes of messages, where each
-    // message has no payload and a full complement of descriptors.
-    MAX_READ_FDS = (Channel::kReadBufferSize / sizeof(IPC::Message::Header)) *
-                   FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE,
-  };
+  // We assume a worst case: kReadBufferSize bytes of messages, where each
+  // message has no payload and a full complement of descriptors.
+  static const size_t kMaxReadFDs =
+      (Channel::kReadBufferSize / sizeof(IPC::Message::Header)) *
+      FileDescriptorSet::kMaxDescriptorsPerMessage;
 
   // This is a control message buffer large enough to hold kMaxReadFDs
 #if defined(OS_MACOSX)
   // TODO(agl): OSX appears to have non-constant CMSG macros!
   char input_cmsg_buf_[1024];
 #else
-  char input_cmsg_buf_[CMSG_SPACE(sizeof(int) * MAX_READ_FDS)];
+  char input_cmsg_buf_[CMSG_SPACE(sizeof(int) * kMaxReadFDs)];
 #endif
 
   // Large messages that span multiple pipe buffers, get built-up using

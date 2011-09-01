@@ -94,14 +94,12 @@ class IPC_EXPORT Channel : public Message::Sender {
 #endif
   };
 
-  enum {
-    // The maximum message size in bytes. Attempting to receive a
-    // message of this size or bigger results in a channel error.
-    kMaximumMessageSize = 128 * 1024 * 1024,
+  // The maximum message size in bytes. Attempting to receive a message of this
+  // size or bigger results in a channel error.
+  static const size_t kMaximumMessageSize = 128 * 1024 * 1024;
 
-    // Ammount of data to read at once from the pipe.
-    kReadBufferSize = 4 * 1024
-  };
+  // Ammount of data to read at once from the pipe.
+  static const size_t kReadBufferSize = 4 * 1024;
 
   // Initialize a Channel.
   //
