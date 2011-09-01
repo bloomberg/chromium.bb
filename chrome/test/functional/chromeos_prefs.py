@@ -17,14 +17,15 @@ class ChromeosPrefsTest(pyauto.PyUITest):
   k_logged_in_users = 'LoggedInUsers'
   k_user_images = 'UserImages'
 
-  def testDefaultUserImage(self):
-    """Verify changing default user image prefs work."""
+  def testAllUserImage(self):
+    """Verify changing all available default user images in Change picture."""
 
     # Defined in src/chrome/browser/chromeos/login/default_user_images.cc
-    image1 = u'default:4'
-    image2 = u'default:5'
+    images = []
+    for i in range(0, 19):
+      images.append(u'default:%d' % i)
 
-    for image in image1, image2:
+    for image in images:
       logged_in_user = \
           self.GetLocalStatePrefsInfo().Prefs(
               ChromeosPrefsTest.k_logged_in_users)[0]
