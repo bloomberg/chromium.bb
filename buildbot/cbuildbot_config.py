@@ -524,7 +524,7 @@ add_config('x86-alex-pre-flight-branch', [internal, {
 
   'uprev' : True,
   'overlays': 'both',
-  'push_overlays': None,
+  'push_overlays': 'both',
 }])
 
 add_config('x86-mario-pre-flight-branch', [internal, {
