@@ -59,6 +59,10 @@ class DataTypeManagerImpl : public DataTypeManager {
   bool GetControllersNeedingStart(
       std::vector<DataTypeController*>* needs_start);
 
+  // If there's a pending reconfigure, processes it and returns true.
+  // Otherwise, returns false.
+  bool ProcessReconfigure();
+
   void Restart(sync_api::ConfigureReason reason, bool enable_nigori);
   void DownloadReady(bool success);
   void NotifyStart();
@@ -88,8 +92,12 @@ class DataTypeManagerImpl : public DataTypeManager {
   bool needs_reconfigure_;
 
   // The reason for the last reconfigure attempt. Not this will be set to a
-  // valid value only if needs_reconfigure_ is set.
+  // valid value only when |needs_reconfigure_| is set.
   sync_api::ConfigureReason last_configure_reason_;
+  // Whether enable_nigori was set on the last reconfigure attempt.
+  // Like |last_configure_reason_|, set to a valid value only when
+  // |needs_reconfigure_| is set.
+  bool last_enable_nigori_;
 
   base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
 

@@ -95,15 +95,16 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   bool is_share_useable = true;
   syncable::ModelTypeBitSet initial_sync_ended;
   std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+       i < syncable::MODEL_TYPE_COUNT; ++i) {
     syncable::ModelType type(syncable::ModelTypeFromInt(i));
     if (routing_info_.count(type) != 0) {
       if (dir->initial_sync_ended_for_type(type))
         initial_sync_ended.set(type);
       else
         is_share_useable = false;
-      dir->GetDownloadProgressAsString(type, &download_progress_markers[i]);
     }
+    dir->GetDownloadProgressAsString(type, &download_progress_markers[i]);
   }
 
   return SyncSessionSnapshot(

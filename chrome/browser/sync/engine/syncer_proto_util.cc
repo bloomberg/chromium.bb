@@ -93,6 +93,7 @@ void SyncerProtoUtil::HandleMigrationDoneResponse(
     to_migrate.insert(syncable::GetModelTypeFromExtensionFieldNumber(
         response->migrated_data_type_id(i)));
   }
+  // TODO(akalin): This should be a set union.
   session->status_controller()->set_types_needing_local_migration(to_migrate);
 }
 

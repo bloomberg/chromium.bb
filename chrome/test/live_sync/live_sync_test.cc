@@ -534,7 +534,7 @@ bool LiveSyncTest::AwaitQuiescence() {
   return ProfileSyncServiceHarness::AwaitQuiescence(clients());
 }
 
-bool LiveSyncTest::ServerSupportsNotificationControl() {
+bool LiveSyncTest::ServerSupportsNotificationControl() const {
   EXPECT_NE(SERVER_TYPE_UNDECIDED, server_type_);
 
   // Supported only if we're using the python testserver.
@@ -546,6 +546,14 @@ void LiveSyncTest::DisableNotifications() {
   std::string path = "chromiumsync/disablenotifications";
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
   ASSERT_EQ("Notifications disabled",
+            UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
+}
+
+void LiveSyncTest::EnableNotifications() {
+  ASSERT_TRUE(ServerSupportsNotificationControl());
+  std::string path = "chromiumsync/enablenotifications";
+  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
+  ASSERT_EQ("Notifications enabled",
             UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
 }
 
@@ -564,7 +572,7 @@ void LiveSyncTest::TriggerNotification(
             UTF16ToASCII(browser()->GetSelectedTabContents()->GetTitle()));
 }
 
-bool LiveSyncTest::ServerSupportsErrorTriggering() {
+bool LiveSyncTest::ServerSupportsErrorTriggering() const {
   EXPECT_NE(SERVER_TYPE_UNDECIDED, server_type_);
 
   // Supported only if we're using the python testserver.

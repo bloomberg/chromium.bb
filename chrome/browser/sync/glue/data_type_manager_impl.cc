@@ -70,6 +70,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(SyncBackendHost* backend,
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
       last_configure_reason_(sync_api::CONFIGURE_REASON_UNKNOWN),
+      last_enable_nigori_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(backend_);
   // Ensure all data type controllers are stopped.
@@ -105,7 +106,7 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
 }
 
 void DataTypeManagerImpl::Configure(const TypeSet& desired_types,
-                                        sync_api::ConfigureReason reason) {
+                                    sync_api::ConfigureReason reason) {
   ConfigureImpl(desired_types, reason, true);
 }
 
@@ -142,14 +143,7 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
             << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
     last_configure_reason_ = reason;
-
-    // Note we should never be in a state to reconfigure with nigori disabled.
-    // Reconfigures serve to store teh configure request from the user if
-    // another one is already in progress. Since enable_nigori is set to false
-    // only on migration and migration code should not initialize configure
-    // if there is already one in progress, enable_nigori should always be true
-    // if we are here.
-    DCHECK(enable_nigori);
+    last_enable_nigori_ = enable_nigori;
     return;
   }
 
@@ -235,8 +229,43 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
       enable_nigori);
 }
 
+bool DataTypeManagerImpl::ProcessReconfigure() {
+  if (!needs_reconfigure_) {
+    return false;
+  }
+  // An attempt was made to reconfigure while we were already configuring.
+  // This can be because a passphrase was accepted or the user changed the
+  // set of desired types. Either way, |last_requested_types_| will contain
+  // the most recent set of desired types, so we just call configure.
+  // Note: we do this whether or not GetControllersNeedingStart is true,
+  // because we may need to stop datatypes.
+  SetBlockedAndNotify();
+  VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
+          << " busy.";
+
+  // Unwind the stack before executing configure. The method configure and its
+  // callees are not re-entrant.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&DataTypeManagerImpl::ConfigureImpl,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 last_requested_types_,
+                 last_configure_reason_,
+                 last_enable_nigori_));
+
+  needs_reconfigure_ = false;
+  last_configure_reason_ = sync_api::CONFIGURE_REASON_UNKNOWN;
+  last_enable_nigori_ = false;
+  return true;
+}
+
 void DataTypeManagerImpl::DownloadReady(bool success) {
   DCHECK_EQ(state_, DOWNLOAD_PENDING);
+
+  // Ignore |success| if we need to reconfigure anyway.
+  if (ProcessReconfigure()) {
+    return;
+  }
 
   if (!success) {
     Abort(UNRECOVERABLE_ERROR, FROM_HERE, needs_start_[0]->type());
@@ -258,28 +287,7 @@ void DataTypeManagerImpl::StartNextType() {
   }
 
   DCHECK_EQ(state_, CONFIGURING);
-
-  if (needs_reconfigure_) {
-    // An attempt was made to reconfigure while we were already configuring.
-    // This can be because a passphrase was accepted or the user changed the
-    // set of desired types. Either way, |last_requested_types_| will contain
-    // the most recent set of desired types, so we just call configure.
-    // Note: we do this whether or not GetControllersNeedingStart is true,
-    // because we may need to stop datatypes.
-    SetBlockedAndNotify();
-    VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
-            << " busy.";
-
-    // Unwind the stack before executing configure. The method configure and its
-    // callees are not re-entrant.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&DataTypeManagerImpl::Configure,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   last_requested_types_,
-                   last_configure_reason_));
-
-    needs_reconfigure_ = false;
-    last_configure_reason_ = sync_api::CONFIGURE_REASON_UNKNOWN;
+  if (ProcessReconfigure()) {
     return;
   }
 

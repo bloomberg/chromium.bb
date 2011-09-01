@@ -117,7 +117,7 @@ class SyncBackendHost {
   // Create a SyncBackendHost with a reference to the |frontend| that it serves
   // and communicates to via the SyncFrontend interface (on the same thread
   // it used to call the constructor).
-  explicit SyncBackendHost(Profile* profile);
+  SyncBackendHost(const std::string& name, Profile* profile);
   // For testing.
   // TODO(skrul): Extract an interface so this is not needed.
   SyncBackendHost();
@@ -248,7 +248,7 @@ class SyncBackendHost {
   class Core : public base::RefCountedThreadSafe<SyncBackendHost::Core>,
                public sync_api::SyncManager::Observer {
    public:
-    Core(Profile* profile, SyncBackendHost* backend);
+    Core(const std::string& name, SyncBackendHost* backend);
 
     // SyncManager::Observer implementation.  The Core just acts like an air
     // traffic controller here, forwarding incoming messages to appropriate
@@ -437,7 +437,8 @@ class SyncBackendHost {
 
     void FinishConfigureDataTypesOnFrontendLoop();
 
-    Profile* profile_;
+    // Name used for debugging.
+    const std::string name_;
 
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
@@ -523,7 +524,10 @@ class SyncBackendHost {
   // to safely talk back to the SyncFrontend.
   MessageLoop* const frontend_loop_;
 
-  Profile* profile_;
+  Profile* const profile_;
+
+  // Name used for debugging (set from profile_->GetDebugName()).
+  const std::string name_;
 
   sync_notifier::SyncNotifierFactory sync_notifier_factory_;
 

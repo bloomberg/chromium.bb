@@ -397,7 +397,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 }
 
 void ProfileSyncService::CreateBackend() {
-  backend_.reset(new SyncBackendHost(profile_));
+  backend_.reset(new SyncBackendHost(profile_->GetDebugName(), profile_));
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
@@ -611,11 +611,11 @@ void ProfileSyncService::OnUnrecoverableError(
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
 
   NotifyObservers();
-  LOG(ERROR) << "Unrecoverable error detected -- ProfileSyncService unusable."
-      << message;
   std::string location;
   from_here.Write(true, true, &location);
-  LOG(ERROR) << location;
+  LOG(ERROR)
+      << "Unrecoverable error detected at " << location
+      << " -- ProfileSyncService unusable: " << message;
 
   // Shut all data types down.
   MessageLoop::current()->PostTask(FROM_HERE,
@@ -1234,7 +1234,9 @@ void ProfileSyncService::ConfigureDataTypeManager() {
 
     // We create the migrator at the same time.
     migrator_.reset(
-        new browser_sync::BackendMigrator(this, data_type_manager_.get()));
+        new browser_sync::BackendMigrator(
+            profile_->GetDebugName(), GetUserShare(),
+            this, data_type_manager_.get()));
   }
 
   syncable::ModelTypeSet types;
@@ -1303,9 +1305,9 @@ void ProfileSyncService::LogUnsyncedItems(int level) const {
               << "initialized";
 }
 
-bool ProfileSyncService::HasPendingBackendMigration() const {
-  return migrator_.get() &&
-      migrator_->state() != browser_sync::BackendMigrator::IDLE;
+browser_sync::BackendMigrator*
+    ProfileSyncService::GetBackendMigratorForTest() {
+  return migrator_.get();
 }
 
 void ProfileSyncService::GetModelSafeRoutingInfo(

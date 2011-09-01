@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(akalin): Rename this file to migration_test.cc.
+
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
@@ -19,303 +21,368 @@ using bookmarks_helper::IndexedURLTitle;
 using preferences_helper::BooleanPrefMatches;
 using preferences_helper::ChangeBooleanPref;
 
-// Tests to make sure that the migration cycle works properly,
-// i.e. doesn't stall.
+namespace {
 
-class MigrationCycleTest : public LiveSyncTest {
+// Utility functions to make a model type set out of a small number of
+// model types.
+
+syncable::ModelTypeSet MakeSet(syncable::ModelType type) {
+  syncable::ModelTypeSet model_types;
+  model_types.insert(type);
+  return model_types;
+}
+
+syncable::ModelTypeSet MakeSet(syncable::ModelType type1,
+                               syncable::ModelType type2) {
+  syncable::ModelTypeSet model_types;
+  model_types.insert(type1);
+  model_types.insert(type2);
+  return model_types;
+}
+
+// An ordered list of model types sets to migrate.  Used by
+// RunMigrationTest().
+typedef std::deque<syncable::ModelTypeSet> MigrationList;
+
+// Utility functions to make a MigrationList out of a small number of
+// model types / model type sets.
+
+MigrationList MakeList(const syncable::ModelTypeSet& model_types) {
+  return MigrationList(1, model_types);
+}
+
+MigrationList MakeList(const syncable::ModelTypeSet& model_types1,
+                       const syncable::ModelTypeSet& model_types2) {
+  MigrationList migration_list;
+  migration_list.push_back(model_types1);
+  migration_list.push_back(model_types2);
+  return migration_list;
+}
+
+MigrationList MakeList(syncable::ModelType type) {
+  return MakeList(MakeSet(type));
+}
+
+MigrationList MakeList(syncable::ModelType type1,
+                       syncable::ModelType type2) {
+  return MakeList(MakeSet(type1), MakeSet(type2));
+}
+
+class MigrationTest : public LiveSyncTest {
  public:
-  MigrationCycleTest() : LiveSyncTest(SINGLE_CLIENT) {}
-  virtual ~MigrationCycleTest() {}
+  explicit MigrationTest(TestType test_type) : LiveSyncTest(test_type) {}
+  virtual ~MigrationTest() {}
+
+  // TODO(akalin): Add more MODIFY_(data type) trigger methods, as
+  // well as a poll-based trigger method.
+  enum TriggerMethod { MODIFY_PREF, MODIFY_BOOKMARK, TRIGGER_NOTIFICATION };
+
+  syncable::ModelTypeSet GetPreferredDataTypes() {
+    syncable::ModelTypeSet preferred_data_types;
+    GetClient(0)->service()->GetPreferredDataTypes(&preferred_data_types);
+    // Make sure all clients have the same preferred data types.
+    for (int i = 1; i < num_clients(); ++i) {
+      syncable::ModelTypeSet other_preferred_data_types;
+      GetClient(i)->service()->GetPreferredDataTypes(
+          &other_preferred_data_types);
+      EXPECT_EQ(preferred_data_types, other_preferred_data_types);
+    }
+    return preferred_data_types;
+  }
+
+  // Returns a MigrationList with every enabled data type in its own
+  // set.
+  MigrationList GetPreferredDataTypesList() {
+    MigrationList migration_list;
+    const syncable::ModelTypeSet& preferred_data_types =
+        GetPreferredDataTypes();
+    for (syncable::ModelTypeSet::const_iterator it =
+             preferred_data_types.begin();
+         it != preferred_data_types.end(); ++it) {
+      migration_list.push_back(MakeSet(*it));
+    }
+    return migration_list;
+  }
+
+  // Trigger a migration for the given types with the given method.
+  void TriggerMigration(const syncable::ModelTypeSet& model_types,
+                        TriggerMethod trigger_method) {
+    switch (trigger_method) {
+      case MODIFY_PREF:
+        // Unlike MODIFY_BOOKMARK, MODIFY_PREF doesn't cause a
+        // notification to happen (since model association on a
+        // boolean pref clobbers the local value), so it doesn't work
+        // for anything but single-client tests.
+        ASSERT_EQ(1, num_clients());
+        ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+        ChangeBooleanPref(0, prefs::kShowHomeButton);
+        break;
+      case MODIFY_BOOKMARK:
+        ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))));
+        break;
+      case TRIGGER_NOTIFICATION:
+        TriggerNotification(model_types);
+        break;
+      default:
+        ADD_FAILURE();
+    }
+  }
+
+  // Block until all clients have completed migration for the given
+  // types.
+  void AwaitMigration(const syncable::ModelTypeSet& migrate_types) {
+    for (int i = 0; i < num_clients(); ++i) {
+      ASSERT_TRUE(GetClient(i)->AwaitMigration(migrate_types));
+    }
+  }
+
+  bool ShouldRunMigrationTest() const {
+    if (!ServerSupportsNotificationControl() ||
+        !ServerSupportsErrorTriggering()) {
+      LOG(WARNING) << "Test skipped in this server environment.";
+      return false;
+    }
+    return true;
+  }
+
+  // Makes sure migration works with the given migration list and
+  // trigger method.
+  void RunMigrationTest(const MigrationList& migration_list,
+                       TriggerMethod trigger_method) {
+    ASSERT_TRUE(ShouldRunMigrationTest());
+
+    // If we have only one client, turn off notifications to avoid the
+    // possibility of spurious sync cycles.
+    bool do_test_without_notifications =
+        (trigger_method != TRIGGER_NOTIFICATION && num_clients() == 1);
+
+    if (do_test_without_notifications) {
+      DisableNotifications();
+    }
+
+    // Phase 1: Trigger the migrations on the server.
+    for (MigrationList::const_iterator it = migration_list.begin();
+         it != migration_list.end(); ++it) {
+      TriggerMigrationDoneError(*it);
+    }
+
+    // Phase 2: Trigger each migration individually and wait for it to
+    // complete.  (Multiple migrations may be handled by each
+    // migration cycle, but there's no guarantee of that, so we have
+    // to trigger each migration individually.)
+    for (MigrationList::const_iterator it = migration_list.begin();
+         it != migration_list.end(); ++it) {
+      TriggerMigration(*it, trigger_method);
+      AwaitMigration(*it);
+    }
+
+    // Phase 3: Wait for all clients to catch up.
+    AwaitQuiescence();
+
+    // Re-enable notifications if we disabled it.
+    if (do_test_without_notifications) {
+      EnableNotifications();
+    }
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MigrationCycleTest);
+  DISALLOW_COPY_AND_ASSIGN(MigrationTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MigrationCycleTest, PrefsOnly) {
-  if (!ServerSupportsNotificationControl() ||
-      !ServerSupportsErrorTriggering()) {
-    LOG(WARNING) << "Test skipped in this server environment.";
-    return;
-  }
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  DisableNotifications();
-
-  // Phase 1: Trigger a preference migration on the server.
-  syncable::ModelTypeSet migrate_types;
-  migrate_types.insert(syncable::PREFERENCES);
-  TriggerMigrationDoneError(migrate_types);
-
-  // Phase 2: Modify a pref (to trigger migration) and wait for a sync
-  // cycle.
-  // TODO(akalin): Shouldn't need to wait for full sync cycle; see
-  // 93167.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
-}
-
-// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationCycleTest,
-                       DISABLED_PrefsOnlyTriggerNotification) {
-  if (!ServerSupportsNotificationControl() ||
-      !ServerSupportsErrorTriggering()) {
-    LOG(WARNING) << "Test skipped in this server environment.";
-    return;
-  }
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  // Phase 1: Trigger a preference migration on the server.
-  syncable::ModelTypeSet migrate_types;
-  migrate_types.insert(syncable::PREFERENCES);
-  TriggerMigrationDoneError(migrate_types);
-
-  // Phase 2: Synthesize a notification (to trigger migration) and
-  // wait for a sync cycle.
-  // TODO(akalin): Shouldn't need to wait for full sync cycle; see
-  // 93167.
-  TriggerNotification(migrate_types);
-  ASSERT_TRUE(GetClient(0)->AwaitNextSyncCycleCompletion("Migration"));
-}
-
-// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_PrefsNigori) {
-  if (!ServerSupportsNotificationControl() ||
-      !ServerSupportsErrorTriggering()) {
-    LOG(WARNING) << "Test skipped in this server environment.";
-    return;
-  }
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  DisableNotifications();
-
-  // Phase 1: Trigger a preference and nigori migration on the server.
-  {
-    syncable::ModelTypeSet migrate_types;
-    migrate_types.insert(syncable::PREFERENCES);
-    TriggerMigrationDoneError(migrate_types);
-  }
-  {
-    syncable::ModelTypeSet migrate_types;
-    migrate_types.insert(syncable::NIGORI);
-    TriggerMigrationDoneError(migrate_types);
-  }
-
-  // Phase 2: Modify a pref (to trigger migration) and wait for a sync
-  // cycle.
-  // TODO(akalin): Shouldn't need to wait for full sync cycle; see
-  // 93167.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
-}
-
-// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationCycleTest, DISABLED_BookmarksPrefs) {
-  if (!ServerSupportsNotificationControl() ||
-      !ServerSupportsErrorTriggering()) {
-    LOG(WARNING) << "Test skipped in this server environment.";
-    return;
-  }
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  DisableNotifications();
-
-  // Phase 1: Trigger a bookmark and preference migration on the
-  // server.
-  {
-    syncable::ModelTypeSet migrate_types;
-    migrate_types.insert(syncable::BOOKMARKS);
-    TriggerMigrationDoneError(migrate_types);
-  }
-  {
-    syncable::ModelTypeSet migrate_types;
-    migrate_types.insert(syncable::PREFERENCES);
-    TriggerMigrationDoneError(migrate_types);
-  }
-
-  // Phase 2: Modify a bookmark (to trigger migration) and wait for a
-  // sync cycle.
-  // TODO(akalin): Shouldn't need to wait for full sync cycle; see
-  // 93167.
-  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Migration"));
-}
-
-// TODO(akalin): Add tests where the migration trigger is a poll.
-
-class MigrationErrorsTest : public LiveSyncTest {
+class MigrationSingleClientTest : public MigrationTest {
  public:
-  MigrationErrorsTest() : LiveSyncTest(TWO_CLIENT) {}
-  virtual ~MigrationErrorsTest() {}
+  MigrationSingleClientTest() : MigrationTest(SINGLE_CLIENT) {}
+  virtual ~MigrationSingleClientTest() {}
+
+  void RunSingleClientMigrationTest(const MigrationList& migration_list,
+                                    TriggerMethod trigger_method) {
+    if (!ShouldRunMigrationTest()) {
+      return;
+    }
+    ASSERT_TRUE(SetupSync());
+    RunMigrationTest(migration_list, trigger_method);
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MigrationErrorsTest);
+  DISALLOW_COPY_AND_ASSIGN(MigrationSingleClientTest);
 };
 
-// Easiest possible test of migration errors: triggers a server migration on
-// one datatype, then modifies some other datatype.
-// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
-                       DISABLED_MigratePrefsThenModifyBookmark) {
-  if (!ServerSupportsErrorTriggering()) {
-    LOG(WARNING) << "Test skipped in this server environment.";
-    return;
+// The simplest possible migration tests -- a single data type.
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyModifyPref) {
+  RunSingleClientMigrationTest(MakeList(syncable::PREFERENCES), MODIFY_PREF);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyModifyBookmark) {
+  RunSingleClientMigrationTest(MakeList(syncable::PREFERENCES),
+                               MODIFY_BOOKMARK);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       PrefsOnlyTriggerNotification) {
+  RunSingleClientMigrationTest(MakeList(syncable::PREFERENCES),
+                               TRIGGER_NOTIFICATION);
+}
+
+// Nigori is handled specially, so we test that separately.
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, NigoriOnly) {
+  RunSingleClientMigrationTest(MakeList(syncable::PREFERENCES),
+                               TRIGGER_NOTIFICATION);
+}
+
+// A little more complicated -- two data types.
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       BookmarksPrefsIndividually) {
+  RunSingleClientMigrationTest(
+      MakeList(syncable::BOOKMARKS, syncable::PREFERENCES),
+      MODIFY_PREF);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, BookmarksPrefsBoth) {
+  RunSingleClientMigrationTest(
+      MakeList(MakeSet(syncable::BOOKMARKS, syncable::PREFERENCES)),
+      MODIFY_BOOKMARK);
+}
+
+// Two data types with one being nigori.
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriIndividiaully) {
+  RunSingleClientMigrationTest(
+      MakeList(syncable::PREFERENCES, syncable::NIGORI),
+      TRIGGER_NOTIFICATION);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriBoth) {
+  RunSingleClientMigrationTest(
+      MakeList(MakeSet(syncable::PREFERENCES, syncable::NIGORI)),
+      MODIFY_PREF);
+}
+
+// The whole shebang -- all data types.
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesIndividually) {
+  ASSERT_TRUE(SetupClients());
+  RunSingleClientMigrationTest(GetPreferredDataTypesList(), MODIFY_BOOKMARK);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       AllTypesIndividuallyTriggerNotification) {
+  ASSERT_TRUE(SetupClients());
+  RunSingleClientMigrationTest(GetPreferredDataTypesList(),
+                               TRIGGER_NOTIFICATION);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesAtOnce) {
+  ASSERT_TRUE(SetupClients());
+  RunSingleClientMigrationTest(MakeList(GetPreferredDataTypes()),
+                               MODIFY_PREF);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       AllTypesAtOnceTriggerNotification) {
+  ASSERT_TRUE(SetupClients());
+  RunSingleClientMigrationTest(MakeList(GetPreferredDataTypes()),
+                               TRIGGER_NOTIFICATION);
+}
+
+// All data types plus nigori.
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       AllTypesWithNigoriIndividually) {
+  ASSERT_TRUE(SetupClients());
+  MigrationList migration_list = GetPreferredDataTypesList();
+  migration_list.push_front(MakeSet(syncable::NIGORI));
+  RunSingleClientMigrationTest(migration_list, MODIFY_BOOKMARK);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesWithNigoriAtOnce) {
+  ASSERT_TRUE(SetupClients());
+  syncable::ModelTypeSet all_types = GetPreferredDataTypes();
+  all_types.insert(syncable::NIGORI);
+  RunSingleClientMigrationTest(MakeList(all_types), MODIFY_PREF);
+}
+
+class MigrationTwoClientTest : public MigrationTest {
+ public:
+  MigrationTwoClientTest() : MigrationTest(TWO_CLIENT) {}
+  virtual ~MigrationTwoClientTest() {}
+
+  // Helper function that verifies that preferences sync still works.
+  void VerifyPrefSync() {
+    ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+    ChangeBooleanPref(0, prefs::kShowHomeButton);
+    ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+    ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
   }
 
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  void RunTwoClientMigrationTest(const MigrationList& migration_list,
+                                    TriggerMethod trigger_method) {
+    if (!ShouldRunMigrationTest()) {
+      return;
+    }
+    ASSERT_TRUE(SetupSync());
 
-  // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+    // Make sure pref sync works before running the migration test.
+    VerifyPrefSync();
 
-  // Phase 2: Trigger a preference migration on the server.
-  syncable::ModelTypeSet migrate_types;
-  migrate_types.insert(syncable::PREFERENCES);
-  TriggerMigrationDoneError(migrate_types);
+    RunMigrationTest(migration_list, trigger_method);
 
-  // Phase 3: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+    // Make sure pref sync still works after running the migration
+    // test.
+    VerifyPrefSync();
+  }
 
-  // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MigrationTwoClientTest);
+};
+
+// Easiest possible test of migration errors: triggers a server
+// migration on one datatype, then modifies some other datatype.
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
+                       MigratePrefsThenModifyBookmark) {
+  RunTwoClientMigrationTest(MakeList(syncable::PREFERENCES),
+                            MODIFY_BOOKMARK);
 }
 
 // Triggers a server migration on two datatypes, then makes a local
 // modification to one of them.
-// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
-                       DISABLED_MigratePrefsAndBookmarksThenModifyBookmark) {
-  if (!ServerSupportsErrorTriggering()) {
-    LOG(WARNING) << "Test skipped in this server environment.";
-    return;
-  }
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-
-  // Phase 2: Trigger a migration on the server.
-  syncable::ModelTypeSet migrate_types;
-  migrate_types.insert(syncable::PREFERENCES);
-  migrate_types.insert(syncable::BOOKMARKS);
-  TriggerMigrationDoneError(migrate_types);
-
-  // Phase 3: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
+                       MigratePrefsAndBookmarksThenModifyBookmark) {
+  RunTwoClientMigrationTest(
+      MakeList(syncable::PREFERENCES, syncable::BOOKMARKS),
+      MODIFY_BOOKMARK);
 }
 
 // Migrate every datatype in sequence; the catch being that the server
 // will only tell the client about the migrations one at a time.
-// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
-                       DISABLED_MigrationHellWithoutNigori) {
-  if (!ServerSupportsErrorTriggering()) {
-    LOG(WARNING) << "Test skipped in this server environment.";
-    return;
-  }
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-
-  // Phase 2: Queue up a horrendous number of migrations on the server.
-  // Let the first nudge be a datatype that's neither prefs nor bookmarks.
-  syncable::ModelTypeSet migrate_themes;
-  migrate_themes.insert(syncable::THEMES);
-  TriggerMigrationDoneError(migrate_themes);
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE; i < syncable::MODEL_TYPE_COUNT;
-       ++i) {
-    if (i == syncable::NIGORI) {
-      continue;
-    }
-    syncable::ModelTypeSet migrate_types;
-    migrate_types.insert(syncable::ModelTypeFromInt(i));
-    TriggerMigrationDoneError(migrate_types);
-  }
-
-  // Phase 3: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigrationHellWithoutNigori) {
+  ASSERT_TRUE(SetupClients());
+  MigrationList migration_list = GetPreferredDataTypesList();
+  // Let the first nudge be a datatype that's neither prefs nor
+  // bookmarks.
+  migration_list.push_front(MakeSet(syncable::THEMES));
+  RunTwoClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 
-// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationErrorsTest,
-                       DISABLED_MigrationHellWithNigori) {
-  if (!ServerSupportsErrorTriggering()) {
-    LOG(WARNING) << "Test skipped in this server environment.";
-    return;
-  }
-
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-
-  // Phase 2: Queue up a horrendous number of migrations on the server.
-  // Let the first nudge be a datatype that's neither prefs nor bookmarks.
-  syncable::ModelTypeSet migrate_themes;
-  migrate_themes.insert(syncable::THEMES);
-  TriggerMigrationDoneError(migrate_themes);
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE; i < syncable::MODEL_TYPE_COUNT;
-       ++i) {
-    // TODO(lipalani): If all types are disabled syncer freaks out. Fix it.
-    if (i == syncable::BOOKMARKS) {
-      continue;
-    }
-    syncable::ModelTypeSet migrate_types;
-    migrate_types.insert(syncable::ModelTypeFromInt(i));
-    TriggerMigrationDoneError(migrate_types);
-  }
-
-  // Phase 3: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigrationHellWithNigori) {
+  ASSERT_TRUE(SetupClients());
+  MigrationList migration_list = GetPreferredDataTypesList();
+  // Let the first nudge be a datatype that's neither prefs nor
+  // bookmarks.
+  migration_list.push_front(MakeSet(syncable::THEMES));
+  // Pop off one so that we don't migrate all data types; the syncer
+  // freaks out if we do that (see http://crbug.com/94882).
+  ASSERT_GE(migration_list.size(), 2u);
+  ASSERT_NE(migration_list.back(), MakeSet(syncable::NIGORI));
+  migration_list.back() = MakeSet(syncable::NIGORI);
+  RunTwoClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 
-class MigrationReconfigureTest : public LiveSyncTest {
+class MigrationReconfigureTest : public MigrationTwoClientTest {
  public:
-  MigrationReconfigureTest() : LiveSyncTest(TWO_CLIENT) {}
+  MigrationReconfigureTest() {}
 
   virtual void SetUpCommandLine(CommandLine* cl) OVERRIDE {
     AddTestSwitches(cl);
@@ -339,10 +406,7 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
   ASSERT_FALSE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 
   // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  VerifyPrefSync();
 
   // Phase 2: Trigger setting the sync_tabs field.
   TriggerSetSyncTabs();
@@ -352,19 +416,14 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabs) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   // Phase 4: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  VerifyPrefSync();
 
   // Phase 5: Verify that sessions are registered and enabled.
   ASSERT_TRUE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
   ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 }
 
-// TODO(akalin): Fails (times out) due to http://crbug.com/92928.
-IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest,
-                       DISABLED_SetSyncTabsAndMigrate) {
+IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest, SetSyncTabsAndMigrate) {
   if (!ServerSupportsErrorTriggering()) {
     LOG(WARNING) << "Test skipped in this server environment.";
     return;
@@ -375,30 +434,20 @@ IN_PROC_BROWSER_TEST_F(MigrationReconfigureTest,
   ASSERT_FALSE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 
   // Phase 1: Before migrating anything, create & sync a preference.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  VerifyPrefSync();
 
   // Phase 2: Trigger setting the sync_tabs field.
   TriggerSetSyncTabs();
 
   // Phase 3: Trigger a preference migration on the server.
-  syncable::ModelTypeSet migrate_types;
-  migrate_types.insert(syncable::PREFERENCES);
-  TriggerMigrationDoneError(migrate_types);
-
-  // Phase 4: Modify a bookmark and wait for it to sync.
-  ASSERT_TRUE(AddURL(0, IndexedURLTitle(0), GURL(IndexedURL(0))) != NULL);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  RunMigrationTest(MakeList(syncable::PREFERENCES), MODIFY_BOOKMARK);
 
   // Phase 5: Verify that preferences can still be synchronized.
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
-  ChangeBooleanPref(0, prefs::kShowHomeButton);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+  VerifyPrefSync();
 
   // Phase 6: Verify that sessions are registered and enabled.
   ASSERT_TRUE(GetClient(0)->IsTypeRegistered(syncable::SESSIONS));
   ASSERT_TRUE(GetClient(0)->IsTypePreferred(syncable::SESSIONS));
 }
+
+}  // namespace

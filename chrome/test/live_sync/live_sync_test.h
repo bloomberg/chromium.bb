@@ -142,11 +142,15 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // Returns true if the server being used supports controlling
   // notifications.
-  bool ServerSupportsNotificationControl();
+  bool ServerSupportsNotificationControl() const;
 
   // Disable notifications on the server.  This operation is available
   // only if ServerSupportsNotificationControl() returned true.
   void DisableNotifications();
+
+  // Enable notifications on the server.  This operation is available
+  // only if ServerSupportsNotificationControl() returned true.
+  void EnableNotifications();
 
   // Trigger a notification to be sent to all clients.  This operation
   // is available only if ServerSupportsNotificationControl() returned
@@ -154,7 +158,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   void TriggerNotification(const syncable::ModelTypeSet& changed_types);
 
   // Returns true if the server being used supports injecting errors.
-  bool ServerSupportsErrorTriggering();
+  bool ServerSupportsErrorTriggering() const;
 
   // Triggers a migration for one or more datatypes, and waits
   // for the server to complete it.  This operation is available

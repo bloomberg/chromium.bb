@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/engine/syncer_end_command.h"
 
+#include "base/logging.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -17,6 +18,7 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   // Always send out a cycle ended notification, regardless of end-state.
   SyncEngineEvent event(SyncEngineEvent::SYNC_CYCLE_ENDED);
   sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
+  VLOG(1) << "Sending snapshot: " << snapshot.ToString();
   event.snapshot = &snapshot;
   session->context()->NotifyListeners(event);
   VLOG(1) << this << " sent sync end snapshot";

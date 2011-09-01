@@ -1008,7 +1008,8 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   RunLoop();
 
   scheduler()->ScheduleCleanupDisabledTypes();
-  PumpLoop();
+  // Only need to pump once, as ScheduleCleanupDisabledTypes()
+  // schedules the job directly.
   PumpLoop();
 
   scheduler()->Stop();

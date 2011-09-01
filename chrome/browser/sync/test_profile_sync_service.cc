@@ -51,7 +51,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     bool set_initial_sync_ended_on_init,
     bool synchronous_init,
     bool fail_initial_download)
-    : browser_sync::SyncBackendHost(profile),
+    : browser_sync::SyncBackendHost(profile->GetDebugName(), profile),
       synchronous_init_(synchronous_init),
       fail_initial_download_(fail_initial_download) {}
 

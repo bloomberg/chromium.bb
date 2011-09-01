@@ -352,7 +352,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // UnrecoverableErrorHandler implementation.
   virtual void OnUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message);
+      const std::string& message) OVERRIDE;
 
   // The functions below (until ActivateDataType()) should only be
   // called if sync_initialized() is true.
@@ -378,9 +378,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Logs the current unsynced items in the sync database. Useful for debugging.
   void LogUnsyncedItems(int level) const;
 
-  // Returns whether or not the sync service is reconfiguring due
-  // to server-initiated resynchronization.
-  bool HasPendingBackendMigration() const;
+  // Used by ProfileSyncServiceHarness.  May return NULL.
+  browser_sync::BackendMigrator* GetBackendMigratorForTest();
 
   // Get the current routing information for all enabled model types.
   // If a model type is not enabled (that is, if the syncer should not

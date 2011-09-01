@@ -33,9 +33,11 @@ class UIModelWorker;
 class SyncBackendRegistrar : public ModelSafeWorkerRegistrar {
  public:
   // |initial_types| contains the initial set of types to sync
-  // (initially put in the passive group).  Does not take ownership of
-  // |profile| or |sync_loop|.  Must be created on the UI thread.
+  // (initially put in the passive group).  |name| is used for
+  // debugging.  Does not take ownership of |profile| or |sync_loop|.
+  // Must be created on the UI thread.
   SyncBackendRegistrar(const syncable::ModelTypeSet& initial_types,
+                       const std::string& name,
                        Profile* profile,
                        MessageLoop* sync_loop);
 
@@ -107,6 +109,9 @@ class SyncBackendRegistrar : public ModelSafeWorkerRegistrar {
   // called with |lock_| held.  May be called on any thread.
   bool IsCurrentThreadSafeForModel(
       syncable::ModelType model_type) const;
+
+  // Name used for debugging.
+  const std::string name_;
 
   Profile* const profile_;
 

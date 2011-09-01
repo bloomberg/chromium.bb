@@ -12,6 +12,8 @@
 #include <sstream>
 #include <vector>
 
+#include "base/base64.h"
+#include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -107,6 +109,7 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
   if (IsSyncAlreadySetup()) {
     service_ = profile_->GetProfileSyncService();
     service_->AddObserver(this);
+    ignore_result(TryListeningToMigrationEvents());
     wait_state_ = FULLY_SYNCED;
   }
 }
@@ -180,6 +183,13 @@ bool ProfileSyncServiceHarness::SetupSync(
       (syncable::MODEL_TYPE_COUNT - syncable::FIRST_REAL_MODEL_TYPE));
   service()->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
+  // Subscribe sync client to notifications from the backend migrator
+  // (possible only after choosing data types).
+  if (!TryListeningToMigrationEvents()) {
+    NOTREACHED();
+    return false;
+  }
+
   // Make sure that a partner client hasn't already set an explicit passphrase.
   if (wait_state_ == SET_PASSPHRASE_FAILED) {
     LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
@@ -208,6 +218,16 @@ bool ProfileSyncServiceHarness::SetupSync(
   service()->SetSyncSetupCompleted();
 
   return true;
+}
+
+bool ProfileSyncServiceHarness::TryListeningToMigrationEvents() {
+  browser_sync::BackendMigrator* migrator =
+      service_->GetBackendMigratorForTest();
+  if (migrator && !migrator->HasMigrationObserver(this)) {
+    migrator->AddMigrationObserver(this);
+    return true;
+  }
+  return false;
 }
 
 void ProfileSyncServiceHarness::SignalStateCompleteWithNextState(
@@ -344,6 +364,20 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
       break;
     }
+    case WAITING_FOR_MIGRATION_TO_START: {
+      VLOG(1) << GetClientInfoString("WAITING_FOR_MIGRATION_TO_START");
+      if (HasPendingBackendMigration()) {
+        SignalStateCompleteWithNextState(WAITING_FOR_MIGRATION_TO_FINISH);
+      }
+      break;
+    }
+    case WAITING_FOR_MIGRATION_TO_FINISH: {
+      VLOG(1) << GetClientInfoString("WAITING_FOR_MIGRATION_TO_FINISH");
+      if (!HasPendingBackendMigration()) {
+        SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
+      }
+      break;
+    }
     case SERVER_UNREACHABLE: {
       VLOG(1) << GetClientInfoString("SERVER_UNREACHABLE");
       if (GetStatus().server_reachable) {
@@ -384,6 +418,40 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
 }
 
 void ProfileSyncServiceHarness::OnStateChanged() {
+  RunStateChangeMachine();
+}
+
+void ProfileSyncServiceHarness::OnMigrationStateChange() {
+  // Update migration state.
+  if (HasPendingBackendMigration()) {
+    // Merge current pending migration types into
+    // |pending_migration_types_|.
+    syncable::ModelTypeSet new_pending_migration_types =
+        service()->GetBackendMigratorForTest()->
+        GetPendingMigrationTypesForTest();
+    syncable::ModelTypeSet temp;
+    std::set_union(pending_migration_types_.begin(),
+                   pending_migration_types_.end(),
+                   new_pending_migration_types.begin(),
+                   new_pending_migration_types.end(),
+                   std::inserter(temp, temp.end()));
+    std::swap(pending_migration_types_, temp);
+    VLOG(1) << profile_debug_name_ << ": new pending migration types "
+            << syncable::ModelTypeSetToString(pending_migration_types_);
+  } else {
+    // Merge just-finished pending migration types into
+    // |migration_types_|.
+    syncable::ModelTypeSet temp;
+    std::set_union(pending_migration_types_.begin(),
+                   pending_migration_types_.end(),
+                   migrated_types_.begin(),
+                   migrated_types_.end(),
+                   std::inserter(temp, temp.end()));
+    std::swap(migrated_types_, temp);
+    pending_migration_types_.clear();
+    VLOG(1) << profile_debug_name_ << ": new migrated types "
+            << syncable::ModelTypeSetToString(migrated_types_);
+  }
   RunStateChangeMachine();
 }
 
@@ -469,17 +537,6 @@ bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(
     return true;
   }
 
-  return AwaitSyncCycleCompletionHelper(reason);
-}
-
-bool ProfileSyncServiceHarness::AwaitNextSyncCycleCompletion(
-    const std::string& reason) {
-  VLOG(1) << GetClientInfoString("AwaitNextSyncCycleCompletion");
-  return AwaitSyncCycleCompletionHelper(reason);
-}
-
-bool ProfileSyncServiceHarness::AwaitSyncCycleCompletionHelper(
-    const std::string& reason) {
   if (wait_state_ == SERVER_UNREACHABLE) {
     // Client was offline; wait for it to go online, and then wait for sync.
     AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
@@ -520,6 +577,53 @@ bool ProfileSyncServiceHarness::AwaitExponentialBackoffVerification() {
   AwaitStatusChangeWithTimeout(kExponentialBackoffVerificationTimeoutMs,
       "Verify Exponential backoff");
   return (retry_verifier_.Succeeded());
+}
+
+bool ProfileSyncServiceHarness::AwaitMigration(
+    const syncable::ModelTypeSet& expected_migrated_types) {
+  VLOG(1) << GetClientInfoString("AwaitMigration");
+  VLOG(1) << profile_debug_name_ << ": waiting until migration is done for "
+          << syncable::ModelTypeSetToString(expected_migrated_types);
+  while (true) {
+    bool migration_finished =
+        std::includes(migrated_types_.begin(), migrated_types_.end(),
+                      expected_migrated_types.begin(),
+                      expected_migrated_types.end());
+    VLOG(1) << "Migrated types "
+            << syncable::ModelTypeSetToString(migrated_types_)
+            << (migration_finished ? " contains " : " does not contain ")
+            << syncable::ModelTypeSetToString(expected_migrated_types);
+    if (migration_finished) {
+      return true;
+    }
+
+    if (HasPendingBackendMigration()) {
+      wait_state_ = WAITING_FOR_MIGRATION_TO_FINISH;
+    } else {
+      wait_state_ = WAITING_FOR_MIGRATION_TO_START;
+      AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
+                                   "Wait for migration to start");
+      if (wait_state_ != WAITING_FOR_MIGRATION_TO_FINISH) {
+        VLOG(1) << profile_debug_name_
+                << ": wait state = " << wait_state_
+                << " after migration start is not "
+                << "WAITING_FOR_MIGRATION_TO_FINISH";
+        return false;
+      }
+    }
+    AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
+                                 "Wait for migration to finish");
+    if (wait_state_ != WAITING_FOR_NOTHING) {
+      VLOG(1) << profile_debug_name_
+              << ": wait state = " << wait_state_
+              << " after migration finish is not WAITING_FOR_NOTHING";
+      return false;
+    }
+    if (!AwaitSyncCycleCompletion(
+            "Config sync cycle after migration cycle")) {
+      return false;
+    }
+  }
 }
 
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
@@ -631,7 +735,7 @@ bool ProfileSyncServiceHarness::IsSynced() {
       !service()->HasUnsyncedItems() &&
       !snap->has_more_to_sync &&
       snap->unsynced_count == 0 &&
-      !service()->HasPendingBackendMigration() &&
+      !HasPendingBackendMigration() &&
       service()->passphrase_required_reason() !=
       sync_api::REASON_SET_PASSPHRASE_FAILED;
   VLOG(1) << GetClientInfoString(
@@ -639,10 +743,20 @@ bool ProfileSyncServiceHarness::IsSynced() {
   return is_synced;
 }
 
+bool ProfileSyncServiceHarness::HasPendingBackendMigration() {
+  browser_sync::BackendMigrator* migrator =
+      service()->GetBackendMigratorForTest();
+  return migrator && migrator->state() != browser_sync::BackendMigrator::IDLE;
+}
+
 bool ProfileSyncServiceHarness::MatchesOtherClient(
     ProfileSyncServiceHarness* partner) {
-  if (!IsSynced())
+  // TODO(akalin): Shouldn't this belong with the intersection check?
+  // Otherwise, this function isn't symmetric.
+  if (!IsSynced()) {
+    VLOG(2) << profile_debug_name_ << ": not synced, assuming doesn't match";
     return false;
+  }
 
   // Only look for a match if we have at least one enabled datatype in
   // common with the partner client.
@@ -653,11 +767,38 @@ bool ProfileSyncServiceHarness::MatchesOtherClient(
                         other_types.end(),
                         inserter(intersection_types,
                                  intersection_types.begin()));
+
+  VLOG(2) << profile_debug_name_ << ", " << partner->profile_debug_name_
+          << ": common types are "
+          << syncable::ModelTypeSetToString(intersection_types);
+
+  if (!intersection_types.empty() && !partner->IsSynced()) {
+    VLOG(2) << "non-empty common types and "
+            << partner->profile_debug_name_ << " isn't synced";
+    return false;
+  }
+
   for (syncable::ModelTypeSet::iterator i = intersection_types.begin();
-       i != intersection_types.end();
-       ++i) {
-    if (!partner->IsSynced() ||
-        partner->GetUpdatedTimestamp(*i) != GetUpdatedTimestamp(*i)) {
+       i != intersection_types.end(); ++i) {
+    const std::string timestamp = GetUpdatedTimestamp(*i);
+    const std::string partner_timestamp = partner->GetUpdatedTimestamp(*i);
+    if (timestamp != partner_timestamp) {
+      if (VLOG_IS_ON(2)) {
+        std::string timestamp_base64, partner_timestamp_base64;
+        if (!base::Base64Encode(timestamp, &timestamp_base64)) {
+          NOTREACHED();
+        }
+        if (!base::Base64Encode(
+                partner_timestamp, &partner_timestamp_base64)) {
+          NOTREACHED();
+        }
+        VLOG(2) << syncable::ModelTypeToString(*i) << ": "
+                << profile_debug_name_ << " timestamp = "
+                << timestamp_base64 << ", "
+                << partner->profile_debug_name_
+                << " partner timestamp = "
+                << partner_timestamp_base64;
+      }
       return false;
     }
   }
@@ -824,7 +965,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
          << ", service_is_pushing_changes: "
          << ServiceIsPushingChanges()
          << ", has_pending_backend_migration: "
-         << service()->HasPendingBackendMigration();
+         << HasPendingBackendMigration();
     } else {
       os << "Sync session snapshot not available";
     }

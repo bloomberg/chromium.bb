@@ -84,7 +84,7 @@ TEST_F(SyncBackendHostTest, InitShutdown) {
   TestingProfile profile;
   profile.CreateRequestContext();
 
-  SyncBackendHost backend(&profile);
+  SyncBackendHost backend(profile.GetDebugName(), &profile);
 
   // TODO(akalin): Handle this in SyncBackendHost instead of in
   // ProfileSyncService, or maybe figure out a way to share the

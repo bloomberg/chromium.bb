@@ -97,6 +97,10 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
   void ScheduleClearUserData();
+  // If this is called before Start(), the cleanup is guaranteed to
+  // happen before the Start finishes.
+  //
+  // TODO(akalin): Figure out how to test this.
   void ScheduleCleanupDisabledTypes();
 
   // Change status of notifications in the SyncSessionContext.
@@ -312,7 +316,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate,
       const std::vector<ModelSafeWorker*>& workers,
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
   void ScheduleClearUserDataImpl();
-  void ScheduleCleanupDisabledTypesImpl();
 
   // Returns true if the client is currently in exponential backoff.
   bool IsBackingOff() const;

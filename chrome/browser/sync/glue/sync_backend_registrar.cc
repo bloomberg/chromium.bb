@@ -46,8 +46,10 @@ bool IsOnThreadForGroup(ModelSafeGroup group) {
 }  // namespace
 
 SyncBackendRegistrar::SyncBackendRegistrar(
-    const syncable::ModelTypeSet& initial_types, Profile* profile,
+    const syncable::ModelTypeSet& initial_types,
+    const std::string& name, Profile* profile,
     MessageLoop* sync_loop) :
+    name_(name),
     profile_(profile),
     sync_loop_(sync_loop),
     ui_worker_(new UIModelWorker()),
@@ -137,6 +139,17 @@ syncable::ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
        it != types_to_remove.end(); ++it) {
     routing_info_.erase(*it);
   }
+
+  // TODO(akalin): Use SVLOG/SLOG if we add any more logging.
+  VLOG(1) << name_ << ": Adding types "
+          << syncable::ModelTypeSetToString(types_to_add)
+          << " (with newly-added types "
+          << syncable::ModelTypeSetToString(newly_added_types)
+          << ") and removing types "
+          << syncable::ModelTypeSetToString(types_to_remove)
+          << " to get new routing info "
+          << ModelSafeRoutingInfoToString(routing_info_);
+
   return newly_added_types;
 }
 

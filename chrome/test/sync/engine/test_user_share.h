@@ -16,7 +16,7 @@
 //       test_user_share_.TearDown();
 //     }
 //    protected:
-//     TestUserShare user_share_;
+//     TestUserShare test_user_share_;
 //   };
 //
 // Then, in your tests:

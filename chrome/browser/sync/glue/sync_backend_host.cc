@@ -23,9 +23,11 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
+#include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
@@ -50,13 +52,20 @@ namespace browser_sync {
 using sessions::SyncSessionSnapshot;
 using sync_api::SyncCredentials;
 
-SyncBackendHost::SyncBackendHost(Profile* profile)
-    : core_(new Core(profile,
-                     ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+// Helper macros to log with the syncer thread name; useful when there
+// are multiple syncers involved.
+
+#define SLOG(severity) LOG(severity) << name_ << ": "
+
+#define SVLOG(verbose_level) VLOG(verbose_level) << name_ << ": "
+
+SyncBackendHost::SyncBackendHost(const std::string& name, Profile* profile)
+    : core_(new Core(name, ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       initialization_state_(NOT_INITIALIZED),
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(profile),
+      name_(name),
       sync_notifier_factory_(webkit_glue::GetUserAgent(GURL()),
                              profile_->GetRequestContext(),
                              *CommandLine::ForCurrentProcess()),
@@ -71,6 +80,7 @@ SyncBackendHost::SyncBackendHost()
       sync_thread_("Chrome_SyncThread"),
       frontend_loop_(MessageLoop::current()),
       profile_(NULL),
+      name_("Unknown"),
       sync_notifier_factory_(webkit_glue::GetUserAgent(GURL()),
                              NULL,
                              *CommandLine::ForCurrentProcess()),
@@ -101,6 +111,7 @@ void SyncBackendHost::Initialize(
     initial_types_with_nigori.insert(syncable::NIGORI);
 
   registrar_.reset(new SyncBackendRegistrar(initial_types_with_nigori,
+                                            name_,
                                             profile_,
                                             sync_thread_.message_loop()));
 
@@ -173,7 +184,7 @@ void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
 }
 
 void SyncBackendHost::StartSyncingWithServer() {
-  VLOG(1) << "SyncBackendHost::StartSyncingWithServer called.";
+  SVLOG(1) << "SyncBackendHost::StartSyncingWithServer called.";
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
 }
@@ -181,15 +192,15 @@ void SyncBackendHost::StartSyncingWithServer() {
 void SyncBackendHost::SetPassphrase(const std::string& passphrase,
                                     bool is_explicit) {
   if (!IsNigoriEnabled()) {
-    LOG(WARNING) << "Silently dropping SetPassphrase request.";
+    SLOG(WARNING) << "Silently dropping SetPassphrase request.";
     return;
   }
 
   // This should only be called by the frontend.
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
   if (core_->processing_passphrase()) {
-    VLOG(1) << "Attempted to call SetPassphrase while already waiting for "
-            << " result from previous SetPassphrase call. Silently dropping.";
+    SVLOG(1) << "Attempted to call SetPassphrase while already waiting for "
+             << " result from previous SetPassphrase call. Silently dropping.";
     return;
   }
   core_->set_processing_passphrase();
@@ -282,7 +293,7 @@ void SyncBackendHost::ConfigureDataTypes(
   // Cleanup disabled types before starting configuration so that
   // callers can assume that the data types are cleaned up once
   // configuration is done.
-  if (!types_to_remove.empty()) {
+  if (!types_to_remove_with_nigori.empty()) {
     sync_thread_.message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(
@@ -315,13 +326,13 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   // complete, the configure_state_.ready_task_ is run via an
   // OnInitializationComplete notification.
 
-  VLOG(1) << "Syncer in config mode. SBH executing"
-          << "FinishConfigureDataTypesOnFrontendLoop";
+  SVLOG(1) << "Syncer in config mode. SBH executing "
+           << "FinishConfigureDataTypesOnFrontendLoop";
 
   if (pending_config_mode_state_->added_types.empty() &&
       !core_->sync_manager()->InitialSyncEndedForAllEnabledTypes()) {
-    LOG(WARNING) << "No new types, but initial sync not finished."
-                 << "Possible sync db corruption / removal.";
+    SLOG(WARNING) << "No new types, but initial sync not finished."
+                  << "Possible sync db corruption / removal.";
     // TODO(tim): Log / UMA / count this somehow?
     // TODO(tim): If no added types, we could (should?) config only for
     // types that are needed... but this is a rare corruption edge case or
@@ -333,8 +344,7 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   // If we've added types, we always want to request a nudge/config (even if
   // the initial sync is ended), in case we could not decrypt the data.
   if (pending_config_mode_state_->added_types.empty()) {
-    VLOG(1) << "SyncBackendHost(" << this << "): No new types added. "
-            << "Calling ready_task directly";
+    SVLOG(1) << "No new types added; calling ready_task directly";
     // No new types - just notify the caller that the types are available.
     pending_config_mode_state_->ready_task.Run(true);
   } else {
@@ -346,8 +356,8 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
     if (IsNigoriEnabled()) {
       types_to_config.insert(syncable::NIGORI);
     }
-    VLOG(1) <<  "SyncBackendHost(" << this << "):New Types added. "
-            << "Calling DoRequestConfig";
+    SVLOG(1) << "Types " << ModelTypeSetToString(types_to_config)
+            << " added; calling DoRequestConfig";
     sync_thread_.message_loop()->PostTask(FROM_HERE,
          NewRunnableMethod(core_.get(),
                            &SyncBackendHost::Core::DoRequestConfig,
@@ -409,8 +419,8 @@ void SyncBackendHost::Core::NotifyPassphraseRequired(
     processing_passphrase_ = false;
 
   if (processing_passphrase_) {
-    VLOG(1) << "Core received OnPassphraseRequired while processing a "
-            << "passphrase. Silently dropping.";
+    SVLOG(1) << "Core received OnPassphraseRequired while processing a "
+             << "passphrase. Silently dropping.";
     return;
   }
 
@@ -436,7 +446,7 @@ void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
   TokenAvailableDetails details(GaiaConstants::kSyncService, token);
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_TOKEN_UPDATED,
-      Source<Profile>(profile_),
+      Source<Profile>(host_->profile_),
       Details<const TokenAvailableDetails>(&details));
 }
 
@@ -518,8 +528,9 @@ void SyncBackendHost::LogUnsyncedItems(int level) const {
   return core_->sync_manager()->LogUnsyncedItems(level);
 }
 
-SyncBackendHost::Core::Core(Profile* profile, SyncBackendHost* backend)
-    : profile_(profile),
+SyncBackendHost::Core::Core(const std::string& name,
+                            SyncBackendHost* backend)
+    : name_(name),
       host_(backend),
       registrar_(NULL),
       processing_passphrase_(false) {
@@ -575,7 +586,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   registrar_ = options.registrar;
   DCHECK(registrar_);
 
-  sync_manager_.reset(new sync_api::SyncManager(profile_->GetDebugName())),
+  sync_manager_.reset(new sync_api::SyncManager(name_));
   sync_manager_->AddObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
   success = sync_manager_->Init(
@@ -705,6 +716,8 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
 
   host_->last_snapshot_.reset(snapshot);
 
+  SVLOG(1) << "Got snapshot " << snapshot->ToString();
+
   const syncable::ModelTypeSet& to_migrate =
       snapshot->syncer_status.types_needing_local_migration;
   if (!to_migrate.empty())
@@ -727,6 +740,11 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
     DCHECK(
         std::includes(state->types_to_add.begin(), state->types_to_add.end(),
                       state->added_types.begin(), state->added_types.end()));
+    SVLOG(1)
+        << "Added types: "
+        << syncable::ModelTypeSetToString(state->added_types)
+        << ", configured types: "
+        << syncable::ModelTypeBitSetToString(snapshot->initial_sync_ended);
     syncable::ModelTypeBitSet added_types =
         syncable::ModelTypeBitSetFromSet(state->added_types);
     bool found_all_added =
@@ -898,8 +916,12 @@ void SyncBackendHost::Core::SaveChanges() {
 void SyncBackendHost::Core::DeleteSyncDataFolder() {
   if (file_util::DirectoryExists(host_->sync_data_folder_path())) {
     if (!file_util::Delete(host_->sync_data_folder_path(), true))
-      LOG(DFATAL) << "Could not delete the Sync Data folder.";
+      SLOG(DFATAL) << "Could not delete the Sync Data folder.";
   }
 }
+
+#undef SVLOG
+
+#undef SLOG
 
 }  // namespace browser_sync

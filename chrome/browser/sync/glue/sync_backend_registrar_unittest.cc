@@ -74,8 +74,7 @@ class SyncBackendRegistrarTest : public testing::Test {
 
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(),
-                                 &profile, &loop_);
+  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
   EXPECT_FALSE(registrar.IsNigoriEnabled());
   {
     std::vector<ModelSafeWorker*> workers;
@@ -94,8 +93,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   initial_types.insert(BOOKMARKS);
   initial_types.insert(NIGORI);
   initial_types.insert(PASSWORDS);
-  SyncBackendRegistrar registrar(initial_types,
-                                 &profile, &loop_);
+  SyncBackendRegistrar registrar(initial_types, "test", &profile, &loop_);
   EXPECT_TRUE(registrar.IsNigoriEnabled());
   {
     std::vector<ModelSafeWorker*> workers;
@@ -116,8 +114,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
 
 TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(),
-                                 &profile, &loop_);
+  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
 
   // Add.
   ModelTypeSet types1;
@@ -159,7 +156,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
 TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   InSequence in_sequence;
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), &profile, &loop_);
+  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
   StrictMock<ChangeProcessorMock> change_processor_mock;
   EXPECT_CALL(change_processor_mock, StartImpl(&profile));
   EXPECT_CALL(change_processor_mock, IsRunning())
@@ -193,7 +190,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   BrowserThread db_thread(BrowserThread::DB, &loop_);
   InSequence in_sequence;
   TestingProfile profile;
-  SyncBackendRegistrar registrar(ModelTypeSet(), &profile, &loop_);
+  SyncBackendRegistrar registrar(ModelTypeSet(), "test", &profile, &loop_);
   StrictMock<ChangeProcessorMock> change_processor_mock;
   EXPECT_CALL(change_processor_mock, StartImpl(&profile));
   EXPECT_CALL(change_processor_mock, IsRunning())

@@ -445,11 +445,13 @@ void SyncScheduler::ScheduleClearUserData() {
                &SyncScheduler::ScheduleClearUserDataImpl));
 }
 
+// TODO(sync): Remove the *Impl methods for the other Schedule*
+// functions, too.
 void SyncScheduler::ScheduleCleanupDisabledTypes() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  PostTask(FROM_HERE, "ScheduleCleanupDisabledTypes",
-           method_factory_.NewRunnableMethod(
-               &SyncScheduler::ScheduleCleanupDisabledTypesImpl));
+  ScheduleSyncSessionJob(
+      TimeDelta::FromSeconds(0), SyncSessionJob::CLEANUP_DISABLED_TYPES,
+      CreateSyncSession(SyncSourceInfo()), FROM_HERE);
 }
 
 void SyncScheduler::ScheduleNudge(
@@ -493,13 +495,6 @@ void SyncScheduler::ScheduleClearUserDataImpl() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   ScheduleSyncSessionJob(
       TimeDelta::FromSeconds(0), SyncSessionJob::CLEAR_USER_DATA,
-      CreateSyncSession(SyncSourceInfo()), FROM_HERE);
-}
-
-void SyncScheduler::ScheduleCleanupDisabledTypesImpl() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  ScheduleSyncSessionJob(
-      TimeDelta::FromSeconds(0), SyncSessionJob::CLEANUP_DISABLED_TYPES,
       CreateSyncSession(SyncSourceInfo()), FROM_HERE);
 }
 
@@ -1037,6 +1032,8 @@ SyncSession* SyncScheduler::CreateSyncSession(const SyncSourceInfo& source) {
   ModelSafeRoutingInfo routes;
   std::vector<ModelSafeWorker*> workers;
   session_context_->registrar()->GetModelSafeRoutingInfo(&routes);
+  VLOG(2) << "Creating sync session with routes "
+          << ModelSafeRoutingInfoToString(routes);
   session_context_->registrar()->GetWorkers(&workers);
   SyncSourceInfo info(source);
 
