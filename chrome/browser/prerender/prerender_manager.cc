@@ -238,8 +238,7 @@ class PrerenderManager::MostVisitedSites : public NotificationObserver {
 };
 
 bool PrerenderManager::IsTopSite(const GURL& url) const {
-  DCHECK(most_visited_.get());
-  return most_visited_->IsTopSite(url);
+  return most_visited_.get() && most_visited_->IsTopSite(url);
 }
 
 PrerenderManager::PrerenderManager(Profile* profile,
@@ -252,8 +251,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
       runnable_method_factory_(this),
       prerender_history_(new PrerenderHistory(kHistoryLength)),
-      histograms_(new PrerenderHistograms()),
-      most_visited_(new MostVisitedSites(profile)) {
+      histograms_(new PrerenderHistograms()) {
   // There are some assumptions that the PrerenderManager is on the UI thread.
   // Any other checks simply make sure that the PrerenderManager is accessed on
   // the same thread that it was created on.
