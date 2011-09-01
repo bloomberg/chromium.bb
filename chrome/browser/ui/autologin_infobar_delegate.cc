@@ -138,6 +138,11 @@ void AutoLoginInfoBarDelegate::ShowIfAutoLoginRequested(
     net::URLRequest* request,
     int child_id,
     int route_id) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAutologin)) {
+    return;
+  }
+
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.

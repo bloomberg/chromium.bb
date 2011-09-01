@@ -406,6 +406,11 @@ const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 // automatically due to privacy concerns.
 const char kEnableAutofillFeedback[]        = "enable-autofill-feedback";
 
+// Enables the pre- and auto-login features.  When a user signs in to sync,
+// the browser's cookie jar is pre-filled with GAIA cookies.  When the user
+// visits a GAIA login page, an info bar can help the user login.
+const char kEnableAutologin[]               = "enable-autologin";
+
 // This flag enables UI for clearing server data.  Temporarily in place
 // until there's a server endpoint deployed.
 const char kEnableClearServerData[]         = "enable-clear-server-data";

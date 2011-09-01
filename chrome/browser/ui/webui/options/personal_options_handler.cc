@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -316,9 +317,12 @@ void PersonalOptionsHandler::OnStateChanged() {
   web_ui_->CallJavascriptFunction("PersonalOptions.setSyncStatusErrorVisible",
                                   *visible);
 
-  visible.reset(Value::CreateBooleanValue(service->AreCredentialsAvailable()));
-  web_ui_->CallJavascriptFunction("PersonalOptions.setAutoLoginVisible",
-                                  *visible);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin)) {
+    visible.reset(Value::CreateBooleanValue(
+        service->AreCredentialsAvailable()));
+    web_ui_->CallJavascriptFunction("PersonalOptions.setAutoLoginVisible",
+                                    *visible);
+  }
 
   // Set profile creation text and button if multi-profiles switch is on.
   visible.reset(Value::CreateBooleanValue(multiprofile_));

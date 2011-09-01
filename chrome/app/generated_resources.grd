@@ -4490,13 +4490,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION" desc="Description for the flag to turn on smooth scrolling">
         Enable the experimental smooth scrolling implementation.
       </message>
-      <message name="IDS_FLAGS_PRE_LOGIN_NAME" desc="Title for the flag to pre-login the user">
-        Turn off pre-login
+      <message name="IDS_FLAGS_ENABLE_AUTOLOGIN_NAME" desc="Title for the flag to auto-login the user">
+        Enable pre- and auto-login
       </message>
-      <message name="IDS_FLAGS_PRE_LOGIN_DESCRIPTION" desc="Description for the flag to pre-login the user">
-        When pre-login is turned on, connecting a profile to a Google Account will add the account's cookies
+      <message name="IDS_FLAGS_ENABLE_AUTOLOGIN_DESCRIPTION" desc="Description for the flag to pre-login the user">
+        When enabled, connecting a profile to a Google Account will add the account's credentials
         to the profile's cookie jar, so that retyping the username and password in the browser is not necessary.
-        Pre-login is always disabled if the profile is not connected to a Google Account.
+        Visiting a Google Account login page will also trigger an infobar allowing easy sign in with the connected account.
+        Pre- and auto-login are always disabled if the profile is not connected to a Google Account, regardless of this flag.
       </message>
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME" desc="Title for the flag to show Autofill field type predictions for all forms">
         Show Autofill predictions
