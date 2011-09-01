@@ -8,6 +8,7 @@
 See gclient_smoketest.py for integration tests.
 """
 
+from __future__ import with_statement
 import Queue
 import logging
 import os
@@ -94,6 +95,7 @@ class GclientTest(trial_dir.TestCase):
         'solutions = [\n'
         '  { "name": "foo", "url": "svn://example.com/foo" },\n'
         '  { "name": "bar", "url": "svn://example.com/bar" },\n'
+        '  { "name": "bar/empty", "url": "svn://example.com/bar_empty" },\n'
         ']')
     write(
         os.path.join('foo', 'DEPS'),
@@ -108,6 +110,10 @@ class GclientTest(trial_dir.TestCase):
         'deps = {\n'
         '  "foo/dir1/dir2": "/dir1/dir2",\n'
         '}')
+    write(
+        os.path.join('bar/empty', 'DEPS'),
+        'deps = {\n'
+        '}')
 
     obj = gclient.GClient.LoadCurrentConfig(options)
     self._check_requirements(obj.dependencies[0], {})
@@ -115,14 +121,23 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', args)
     # The trick here is to manually process the list to make sure it's out of
     # order.
-    obj.dependencies[0].dependencies.sort(key=lambda x: x.name, reverse=reverse)
+    for i in obj.dependencies:
+      i.dependencies.sort(key=lambda x: x.name, reverse=reverse)
     actual = self._get_processed()
-    # We don't care of the ordering of this item.
+    # We don't care of the ordering of these items:
+    self.assertEquals(
+        ['svn://example.com/bar', 'svn://example.com/foo'], sorted(actual[0:2]))
+    actual = actual[2:]
+    # Ordering may not be exact in case of parallel jobs.
+    self.assertTrue(
+        actual.index('svn://example.com/bar/dir1/dir2') >
+        actual.index('svn://example.com/foo/dir1'))
     actual.remove('svn://example.com/bar/dir1/dir2')
+
+    # Ordering may not be exact in case of parallel jobs.
+    actual.remove('svn://example.com/bar_empty')
     self.assertEquals(
         [
-          'svn://example.com/foo',
-          'svn://example.com/bar',
           'svn://example.com/foo/dir1',
           'svn://example.com/foo/dir1/dir4',
           'svn://example.com/foo/dir1/dir2/dir3',
@@ -133,19 +148,28 @@ class GclientTest(trial_dir.TestCase):
         obj.dependencies[0],
         {
           'foo/dir1': ['foo'],
-          'foo/dir1/dir2/dir3': ['foo', 'foo/dir1'],
-          'foo/dir1/dir2/dir3/dir4': ['foo', 'foo/dir1', 'foo/dir1/dir2/dir3'],
+          'foo/dir1/dir2/dir3': ['foo', 'foo/dir1', 'foo/dir1/dir2'],
+          'foo/dir1/dir2/dir3/dir4':
+              ['foo', 'foo/dir1', 'foo/dir1/dir2', 'foo/dir1/dir2/dir3'],
           'foo/dir1/dir4': ['foo', 'foo/dir1'],
         })
     self._check_requirements(
         obj.dependencies[1],
         {
-          'foo/dir1/dir2': ['bar'],
+          'foo/dir1/dir2': ['bar', 'foo', 'foo/dir1'],
+        })
+    self._check_requirements(
+        obj,
+        {
+          'foo': [],
+          'bar': [],
+          'bar/empty': ['bar'],
         })
 
   def _check_requirements(self, solution, expected):
     for dependency in solution.dependencies:
-      self.assertEquals(expected.pop(dependency.name), dependency.requirements)
+      self.assertEquals(
+          expected.pop(dependency.name), sorted(dependency.requirements))
     self.assertEquals({}, expected)
 
   def _get_processed(self):

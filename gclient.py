@@ -141,6 +141,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
 
   def __init__(self, parent, name, url, safesync_url, custom_deps,
                custom_vars, deps_file, should_process):
+    # Warning: this function can be called from any thread. Both
+    # self.dependencies and self.requirements are read and modified from
+    # multiple threads at the same time. Sad.
     GClientKeywords.__init__(self)
     gclient_utils.WorkItem.__init__(self)
     self.parent = parent
@@ -167,11 +170,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # This dependency had its hook run
     self.hooks_ran = False
     # Required dependencies to run before running this one:
-    self.requirements = []
-    if self.parent and self.parent.name:
-      self.requirements.append(self.parent.name)
-    if isinstance(self.url, self.FromImpl):
-      self.requirements.append(self.url.module_name)
+    self.requirements = set()
+
+    self._FindDependencies()
 
     # Sanity checks
     if not self.name and self.parent:
@@ -184,6 +185,54 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     if '/' in self.deps_file or '\\' in self.deps_file:
       raise gclient_utils.Error('deps_file name must not be a path, just a '
                                 'filename. %s' % self.deps_file)
+
+  def _FindDependencies(self):
+    """Setup self.requirements and find any other dependency who would have self
+    as a requirement.
+    """
+    # self.parent is implicitly a requirement. This will be recursive by
+    # definition.
+    if self.parent and self.parent.name:
+      self.requirements.add(self.parent.name)
+
+    # For a tree with at least 2 levels*, the leaf node needs to depend
+    # on the level higher up in an orderly way.
+    # This becomes messy for >2 depth as the DEPS file format is a dictionary,
+    # thus unsorted, while the .gclient format is a list thus sorted.
+    #
+    # * _recursion_limit is hard coded 2 and there is no hope to change this
+    # value.
+    #
+    # Interestingly enough, the following condition only works in the case we
+    # want: self is a 2nd level node. 3nd level node wouldn't need this since
+    # they already have their parent as a requirement.
+    if self.parent in self.root_parent().dependencies:
+      root_deps = self.root_parent().dependencies
+      for i in range(0, root_deps.index(self.parent)):
+        value = root_deps[i]
+        if value.name:
+          self.requirements.add(value.name)
+
+    if isinstance(self.url, self.FromImpl):
+      self.requirements.add(self.url.module_name)
+
+    if self.name:
+      def yield_full_tree(root):
+        """Depth-first recursion."""
+        yield root
+        for i in root.dependencies:
+          for j in yield_full_tree(i):
+            yield j
+
+      for obj in yield_full_tree(self.root_parent()):
+        if obj is self or not obj.name:
+          continue
+        # Step 1: Find any requirements self may need.
+        if self.name.startswith(posixpath.join(obj.name, '')):
+          self.requirements.add(obj.name)
+        # Step 2: Find any requirements self may impose.
+        if obj.name.startswith(posixpath.join(self.name, '')):
+          obj.requirements.add(self.name)
 
   def LateOverride(self, url):
     """Resolves the parsed url from url.
@@ -406,16 +455,6 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     if self.recursion_limit() > 0:
       # Then we can parse the DEPS file.
       self.ParseDepsFile()
-      # Adjust the implicit dependency requirement; e.g. if a DEPS file contains
-      # both src/foo and src/foo/bar, src/foo/bar is implicitly dependent of
-      # src/foo. Yes, it's O(n^2)... It's important to do that before
-      # enqueueing them.
-      for s in self.dependencies:
-        for s2 in self.dependencies:
-          if s is s2:
-            continue
-          if s.name.startswith(posixpath.join(s2.name, '')):
-            s.requirements.append(s2.name)
 
       # Parse the dependencies of this dependency.
       for s in self.dependencies:
