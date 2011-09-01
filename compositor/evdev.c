@@ -87,11 +87,12 @@ evdev_process_key(struct evdev_input_device *device,
 static inline void
 evdev_process_absolute_motion(struct evdev_input_device *device,
 			struct input_event *e, int value, int *x, int *y,
-			int *absolute_event)
+			int *absolute_event, struct wlsc_compositor *ec)
 {
-	/* FIXME: Obviously we need to not hardcode these here, but
-	 * instead get the values from the output it's associated with. */
-	const int screen_width = 1024, screen_height = 600;
+	const int screen_width = container_of(ec->output_list.prev,
+			struct wlsc_output, link)->current->width;
+	const int screen_height = container_of(ec->output_list.prev,
+			struct wlsc_output, link)->current->height;
 
 	switch (e->code) {
 	case ABS_X:
@@ -197,7 +198,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 					e, value, &dx, &dy);
 			else
 				evdev_process_absolute_motion(device, e, value,
-					&x, &y, &absolute_event);
+					&x, &y, &absolute_event, ec);
 			break;
 		case EV_KEY:
 			if (value == 2)
