@@ -316,12 +316,10 @@ class InstantTest : public InProcessBrowserTest {
 // DISABLED http://crbug.com/80118
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnChangeEvent) {
-#elif defined(OS_MACOSX)
+#else
 // http://crbug.com/85387
 IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnChangeEvent) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
-#endif  // OS_LINUX
+#endif  // !OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
@@ -769,12 +767,10 @@ IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnSubmitEvent) {
 // DISABLED http://crbug.com/80118
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnCancelEvent) {
-#elif defined(OS_MACOSX)
+#else
 // http://crbug.com/85387
 IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnCancelEvent) {
-#else
-IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
-#endif  // OS_LINUX
+#endif  // !OS_LINUX
   ASSERT_TRUE(test_server()->Start());
   EnableInstant();
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
