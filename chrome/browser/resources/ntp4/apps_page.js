@@ -481,7 +481,7 @@ cr.define('ntp4', function() {
     /** @inheritdoc */
     doDragOver: function(e) {
       var tile = ntp4.getCurrentlyDraggingTile();
-      if (!tile.querySelector('.app')) {
+      if (tile && !tile.querySelector('.app')) {
         e.preventDefault();
         this.setDropEffect(e.dataTransfer);
       } else {
