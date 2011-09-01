@@ -38,7 +38,13 @@ static const int kFaviconTitleSpacing = 4;
 static const int kTitleCloseButtonSpacing = 3;
 static const int kStandardTitleWidth = 175;
 static const int kCloseButtonVertFuzz = 0;
+#if defined(TOUCH_UI)
+static const int kTabIconSize = 32;
+static const int kCloseButtonHorzFuzz = -10;
+#else
+static const int kTabIconSize = kFaviconSize;
 static const int kCloseButtonHorzFuzz = 5;
+#endif
 
 // Vertical adjustment to the favicon when the tab has a large icon.
 static const int kAppTapFaviconVerticalAdjustment = 2;
@@ -233,7 +239,7 @@ void Tab::Layout() {
 
   // The height of the content of the Tab is the largest of the favicon,
   // the title text and the close button graphic.
-  int content_height = std::max(kFaviconSize, font_height());
+  int content_height = std::max(kTabIconSize, font_height());
   gfx::Size close_button_size(close_button()->GetPreferredSize());
   content_height = std::max(content_height, close_button_size.height());
 
@@ -241,17 +247,17 @@ void Tab::Layout() {
   showing_icon_ = ShouldShowIcon();
   if (showing_icon_) {
     // Use the size of the favicon as apps use a bigger favicon size.
-    int favicon_top = kTopPadding + content_height / 2 - kFaviconSize / 2;
+    int favicon_top = kTopPadding + content_height / 2 - kTabIconSize / 2;
     int favicon_left = lb.x();
     favicon_bounds_.SetRect(favicon_left, favicon_top,
-                            kFaviconSize, kFaviconSize);
+                            kTabIconSize, kTabIconSize);
     if (data().mini && width() < kMiniTabRendererAsNormalTabWidth) {
       // Adjust the location of the favicon when transitioning from a normal
       // tab to a mini-tab.
       int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
       int ideal_delta = width() - GetMiniWidth();
       if (ideal_delta < mini_delta) {
-        int ideal_x = (GetMiniWidth() - kFaviconSize) / 2;
+        int ideal_x = (GetMiniWidth() - kTabIconSize) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
              static_cast<float>(mini_delta)) *
@@ -612,7 +618,7 @@ SkBitmap Tab::DrawHoverGlowBitmap(int width_input, int height_input) {
 int Tab::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
-  return (width() - kLeftPadding - kRightPadding) / kFaviconSize;
+  return (width() - kLeftPadding - kRightPadding) / kTabIconSize;
 }
 
 bool Tab::ShouldShowIcon() const {

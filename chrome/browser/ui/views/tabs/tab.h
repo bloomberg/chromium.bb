@@ -61,6 +61,9 @@ class Tab : public BaseTab {
   virtual const gfx::Rect& GetIconBounds() const OVERRIDE;
   virtual void DataChanged(const TabRendererData& old) OVERRIDE;
 
+  // Returns whether the Tab should display a close button.
+  virtual bool ShouldShowCloseBox() const;
+
  private:
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -86,9 +89,6 @@ class Tab : public BaseTab {
 
   // Returns whether the Tab should display a favicon.
   bool ShouldShowIcon() const;
-
-  // Returns whether the Tab should display a close button.
-  bool ShouldShowCloseBox() const;
 
   // Gets the throb value for the tab. When a tab is not selected the
   // active background is drawn at |GetThrobValue()|%. This is used for hover,

@@ -109,6 +109,23 @@ class TabStrip : public BaseTabStrip,
   // Horizontal gap between mini and non-mini-tabs.
   static const int mini_to_non_mini_gap_;
 
+ protected:
+  // Retrieves the Tab at the specified index. Remember, the specified index
+  // is in terms of tab_data, *not* the model.
+  Tab* GetTabAtTabDataIndex(int tab_data_index) const;
+
+  // Returns the tab at the specified index. If a remove animation is on going
+  // and the index is >= the index of the tab being removed, the index is
+  // incremented. While a remove operation is on going the indices of the model
+  // do not line up with the indices of the view. This method adjusts the index
+  // accordingly.
+  //
+  // Use this instead of GetTabAtTabDataIndex if the index comes from the model.
+  Tab* GetTabAtModelIndex(int model_index) const;
+
+  // Returns the number of mini-tabs.
+  int GetMiniTabCount() const;
+
  private:
   friend class DraggedTabController;
 
@@ -145,22 +162,6 @@ class TabStrip : public BaseTabStrip,
 
   // Set the images for the new tab button.
   void LoadNewTabButtonImage();
-
-  // Retrieves the Tab at the specified index. Remember, the specified index
-  // is in terms of tab_data, *not* the model.
-  Tab* GetTabAtTabDataIndex(int tab_data_index) const;
-
-  // Returns the tab at the specified index. If a remove animation is on going
-  // and the index is >= the index of the tab being removed, the index is
-  // incremented. While a remove operation is on going the indices of the model
-  // do not line up with the indices of the view. This method adjusts the index
-  // accordingly.
-  //
-  // Use this instead of GetTabAtTabDataIndex if the index comes from the model.
-  Tab* GetTabAtModelIndex(int model_index) const;
-
-  // Returns the number of mini-tabs.
-  int GetMiniTabCount() const;
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -257,8 +258,13 @@ class TabStrip : public BaseTabStrip,
   // able to lay it out before we are able to get its image from the
   // ui::ThemeProvider.  It also makes sense to do this, because the size of the
   // new tab button should not need to be calculated dynamically.
+#if defined(TOUCH_UI)
+  static const int kNewTabButtonWidth = 66;
+  static const int kNewTabButtonHeight = 39;
+#else
   static const int kNewTabButtonWidth = 28;
   static const int kNewTabButtonHeight = 18;
+#endif
 
   // Valid for the lifetime of a drag over us.
   scoped_ptr<DropInfo> drop_info_;

@@ -55,7 +55,8 @@ TouchTabStripController::~TouchTabStripController() {
 void TouchTabStripController::TabDetachedAt(TabContentsWrapper* contents,
                                             int model_index) {
   if (consumer_.HasPendingRequests()) {
-    TouchTab* touch_tab = tabstrip()->GetTouchTabAtModelIndex(model_index);
+    TouchTab* touch_tab =
+        static_cast<TouchTab*>(tabstrip()->GetBaseTabAtModelIndex(model_index));
     consumer_.CancelAllRequestsForClientData(touch_tab);
   }
   BrowserTabStripController::TabDetachedAt(contents, model_index);
@@ -66,8 +67,9 @@ void TouchTabStripController::TabChangedAt(TabContentsWrapper* contents,
                                            TabChangeType change_type) {
   // Clear the large icon if we are loading a different URL in the same tab.
   if (change_type == LOADING_ONLY) {
-    TouchTab* touch_tab = tabstrip()->GetTouchTabAtModelIndex(model_index);
-    if (!touch_tab->touch_icon().isNull()) {
+    TouchTab* touch_tab =
+        static_cast<TouchTab*>(tabstrip()->GetBaseTabAtModelIndex(model_index));
+      if (!touch_tab->touch_icon().isNull()) {
       GURL existing_tab_url = GetURLWithoutFragment(touch_tab->data().url);
       GURL page_url = GetURLWithoutFragment(contents->tab_contents()->GetURL());
       // Reset touch icon if the url are different.
@@ -94,8 +96,9 @@ void TouchTabStripController::SetTabRendererDataFromModel(
     return;
 
   // Use the touch icon if any.
-  TouchTab* touch_tab = tabstrip()->GetTouchTabAtModelIndex(model_index);
-  if (!touch_tab->touch_icon().isNull()) {
+  TouchTab* touch_tab =
+      static_cast<TouchTab*>(tabstrip()->GetBaseTabAtModelIndex(model_index));
+    if (!touch_tab->touch_icon().isNull()) {
     data->favicon = touch_tab->touch_icon();
     return;
   }

@@ -88,6 +88,9 @@
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" type="BINDATA" />
       <include name="IDR_NEWTAB_BUTTON" file="newtab.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_BUTTON_H" file="newtab_h.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p.png" type="BINDATA" />
       <include name="IDR_SETTINGS_FAVICON" file="settings_favicon.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l.png" type="BINDATA" />
@@ -103,15 +106,35 @@
       <include name="IDR_STOP_D" file="stop_d.png" type="BINDATA" />
       <include name="IDR_STOP_H" file="stop_h.png" type="BINDATA" />
       <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" type="BINDATA" />
+      <include name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" type="BINDATA" />
+      <include name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" type="BINDATA" />
+      <include name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" type="BINDATA" />
+      <include name="IDR_TAB_CLOSE" file="tab_close.png" type="BINDATA" />
+      <include name="IDR_TAB_CLOSE_H" file="tab_close_h.png" type="BINDATA" />
+      <include name="IDR_TAB_CLOSE_MASK" file="tab_close_mask.png" type="BINDATA" />
+      <include name="IDR_TAB_CLOSE_P" file="tab_close_p.png" type="BINDATA" />
+      <include name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" type="BINDATA" />
+      <include name="IDR_TAB_DROP_UP" file="tab_drop_up.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_LEFT" file="tab_inactive_left.png" type="BINDATA" />
+      <include name="IDR_TAB_INACTIVE_RIGHT" file="tab_inactive_right.png" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_THEME_FRAME" file="theme_frame_default2.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default2.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_LEFT" file="theme_frame_default2_upper_left.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_RIGHT" file="theme_frame_default2_upper_right.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO" file="theme_frame_default2_incognito.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="theme_frame_default2_incognito.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INCOGNITO_LEFT" file="theme_frame_default2_incognito_upper_left.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INCOGNITO_RIGHT" file="theme_frame_default2_incognito_upper_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('chromeos')">
         <include name="IDR_THEME_FRAME" file="theme_frame_default.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO" file="theme_frame_default_incognito.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="theme_frame_default_incognito_inactive.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background2.png" type="BINDATA" />

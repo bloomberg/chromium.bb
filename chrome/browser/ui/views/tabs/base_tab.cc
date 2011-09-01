@@ -430,10 +430,6 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
   if (bounds.IsEmpty())
     return;
 
-  // The size of bounds has to be kFaviconSize x kFaviconSize.
-  DCHECK_EQ(kFaviconSize, bounds.width());
-  DCHECK_EQ(kFaviconSize, bounds.height());
-
   bounds.set_x(GetMirroredXForRect(bounds));
 
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
