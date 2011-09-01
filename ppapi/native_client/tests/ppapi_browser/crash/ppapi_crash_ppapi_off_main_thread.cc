@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // Test that we kill the nexe on a CHECK and handle it gracefully on the
 // trusted side when untrusted code makes unsupported PPAPI calls
 // on other than the main thread.
+
+#include <pthread.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
