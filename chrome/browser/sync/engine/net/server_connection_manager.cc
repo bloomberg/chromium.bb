@@ -58,7 +58,15 @@ const char* HttpResponse::GetServerConnectionCodeString(
 
 #undef ENUM_CASE
 
-bool ServerConnectionManager::Post::ReadBufferResponse(
+ServerConnectionManager::Connection::Connection(
+    ServerConnectionManager* scm) : scm_(scm), timing_info_(0) {
+}
+
+ServerConnectionManager::Connection::~Connection() {
+  scm_->OnConnectionDestroyed(this);
+}
+
+bool ServerConnectionManager::Connection::ReadBufferResponse(
     string* buffer_out,
     HttpResponse* response,
     bool require_response) {
@@ -79,7 +87,7 @@ bool ServerConnectionManager::Post::ReadBufferResponse(
   return true;
 }
 
-bool ServerConnectionManager::Post::ReadDownloadResponse(
+bool ServerConnectionManager::Connection::ReadDownloadResponse(
     HttpResponse* response,
     string* buffer_out) {
   const int64 bytes_read = ReadResponse(buffer_out,
@@ -108,7 +116,7 @@ string StripTrailingSlash(const string& s) {
 }  // namespace
 
 // TODO(chron): Use a GURL instead of string concatenation.
-string ServerConnectionManager::Post::MakeConnectionURL(
+string ServerConnectionManager::Connection::MakeConnectionURL(
     const string& sync_server,
     const string& path,
     bool use_ssl) const {
@@ -120,8 +128,8 @@ string ServerConnectionManager::Post::MakeConnectionURL(
   return connection_url;
 }
 
-int ServerConnectionManager::Post::ReadResponse(string* out_buffer,
-                                                int length) {
+int ServerConnectionManager::Connection::ReadResponse(string* out_buffer,
+                                                      int length) {
   int bytes_read = buffer_.length();
   CHECK(length <= bytes_read);
   out_buffer->assign(buffer_);
@@ -160,14 +168,39 @@ ServerConnectionManager::ServerConnectionManager(
       get_time_path_(kSyncServerGetTimePath),
       error_count_(0),
       server_status_(HttpResponse::NONE),
-      server_reachable_(false) {
+      server_reachable_(false),
+      terminated_(false),
+      active_connection_(NULL) {
 }
 
 ServerConnectionManager::~ServerConnectionManager() {
 }
 
+ServerConnectionManager::Connection*
+ServerConnectionManager::MakeActiveConnection() {
+  base::AutoLock lock(terminate_connection_lock_);
+  DCHECK(!active_connection_);
+  if (terminated_)
+    return NULL;
+
+  active_connection_ = MakeConnection();
+  return active_connection_;
+}
+
+void ServerConnectionManager::OnConnectionDestroyed(Connection* connection) {
+  DCHECK(connection);
+  base::AutoLock lock(terminate_connection_lock_);
+  // |active_connection_| can be NULL already if it was aborted. Also,
+  // it can legitimately be a different Connection object if a new Connection
+  // was created after a previous one was Aborted and destroyed.
+  if (active_connection_ != connection)
+    return;
+
+  active_connection_ = NULL;
+}
+
 void ServerConnectionManager::NotifyStatusChanged() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   FOR_EACH_OBSERVER(ServerConnectionEventListener, listeners_,
      OnServerConnectionEvent(
          ServerConnectionEvent(server_status_, server_reachable_)));
@@ -175,7 +208,7 @@ void ServerConnectionManager::NotifyStatusChanged() {
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(
     const PostBufferParams* params, ScopedServerStatusWatcher* watcher) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
   return PostBufferToPath(params, path, auth_token(), watcher);
@@ -184,7 +217,7 @@ bool ServerConnectionManager::PostBufferWithCachedAuth(
 bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,
     const string& path, const string& auth_token,
     ScopedServerStatusWatcher* watcher) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(watcher != NULL);
 
   if (auth_token.empty()) {
@@ -192,10 +225,19 @@ bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,
     return false;
   }
 
-  scoped_ptr<Post> post(MakePost());
+  // When our connection object falls out of scope, it clears itself from
+  // active_connection_.
+  scoped_ptr<Connection> post(MakeActiveConnection());
+  if (!post.get()) {
+    params->response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
+    return false;
+  }
+
   post->set_timing_info(params->timing_info);
-  bool ok = post->Init(path.c_str(), auth_token, params->buffer_in,
-                       params->response);
+  // Note that |post| may be aborted by now, which will just cause Init to fail
+  // with CONNECTION_UNAVAILABLE.
+  bool ok = post->Init(
+      path.c_str(), auth_token, params->buffer_in, params->response);
 
   if (params->response->server_status == HttpResponse::SYNC_AUTH_ERROR) {
     InvalidateAndClearAuthToken();
@@ -215,7 +257,8 @@ bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,
 }
 
 bool ServerConnectionManager::CheckTime(int32* out_time) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Verify that the server really is reachable by checking the time. We need
   // to do this because of wifi interstitials that intercept messages from the
   // client and return HTTP OK instead of a redirect.
@@ -224,7 +267,9 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
   string post_body = "command=get_time";
 
   for (int i = 0 ; i < 3;  i++) {
-    scoped_ptr<Post> post(MakePost());
+    scoped_ptr<Connection> post(MakeActiveConnection());
+    if (!post.get())
+      break;
 
     // Note that the server's get_time path doesn't require authentication.
     string get_time_path =
@@ -257,18 +302,18 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
 }
 
 bool ServerConnectionManager::IsServerReachable() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   int32 time;
   return CheckTime(&time);
 }
 
 bool ServerConnectionManager::IsUserAuthenticated() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return IsGoodReplyFromServer(server_status_);
 }
 
 bool ServerConnectionManager::CheckServerReachable() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   const bool server_is_reachable = IsServerReachable();
   if (server_reachable_ != server_is_reachable) {
     server_reachable_ = server_is_reachable;
@@ -278,7 +323,7 @@ bool ServerConnectionManager::CheckServerReachable() {
 }
 
 bool ServerConnectionManager::IncrementErrorCount() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   error_count_++;
 
   if (error_count_ > kMaxConnectionErrorsBeforeReset) {
@@ -299,7 +344,7 @@ bool ServerConnectionManager::IncrementErrorCount() {
 void ServerConnectionManager::SetServerParameters(const string& server_url,
                                                   int port,
                                                   bool use_ssl) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_server_ = server_url;
   sync_server_port_ = port;
   use_ssl_ = use_ssl;
@@ -334,18 +379,30 @@ std::string ServerConnectionManager::GetServerHost() const {
 
 void ServerConnectionManager::AddListener(
     ServerConnectionEventListener* listener) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   listeners_.AddObserver(listener);
 }
 
 void ServerConnectionManager::RemoveListener(
     ServerConnectionEventListener* listener) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   listeners_.RemoveObserver(listener);
 }
 
-ServerConnectionManager::Post* ServerConnectionManager::MakePost() {
+ServerConnectionManager::Connection* ServerConnectionManager::MakeConnection()
+{
   return NULL;  // For testing.
+}
+
+void ServerConnectionManager::TerminateAllIO() {
+  base::AutoLock lock(terminate_connection_lock_);
+  terminated_ = true;
+  if (active_connection_)
+    active_connection_->Abort();
+
+  // Sever our ties to this connection object. Note that it still may exist,
+  // since we don't own it, but it has been neutered.
+  active_connection_ = NULL;
 }
 
 bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
