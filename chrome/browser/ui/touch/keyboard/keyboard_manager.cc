@@ -25,6 +25,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/gfx/screen.h"
 #include "views/ime/text_input_type_tracker.h"
 #include "views/widget/widget.h"
 
@@ -139,9 +140,16 @@ KeyboardWidget::KeyboardWidget()
       target_(NULL),
       keyboard_height_(kDefaultKeyboardHeight) {
 
+  // The default position of the keyboard widget should be at the bottom,
+  // spanning the entire width of the screen.
+  gfx::Rect area = gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point());
+
   // Initialize the widget first.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
+  params.bounds = gfx::Rect(area.x(),
+                            area.y() + area.height() - keyboard_height_,
+                            area.width(), keyboard_height_);
   Init(params);
 
   // Setup the DOM view to host the keyboard.
@@ -197,11 +205,6 @@ KeyboardWidget::~KeyboardWidget() {
 
 void KeyboardWidget::ShowKeyboardForWidget(views::Widget* widget) {
   SetTarget(widget);
-
-  gfx::Rect rect = target_->GetWindowScreenBounds();
-  rect.set_y(rect.y() + rect.height() - keyboard_height_);
-  rect.set_height(keyboard_height_);
-  SetBounds(rect);
 
   transform_.reset(new ui::InterpolatedTranslation(
       gfx::Point(0, keyboard_height_), gfx::Point()));
@@ -374,10 +377,12 @@ void KeyboardWidget::Observe(int type,
       if (height != keyboard_height_) {
         DCHECK_GE(height, 0) << "Keyboard height should not be negative.";
 
+        int old_height = keyboard_height_;
         keyboard_height_ = height;
-        gfx::Size size = GetWindowScreenBounds().size();
-        size.set_height(keyboard_height_);
-        SetSize(size);
+        gfx::Rect rect = GetWindowScreenBounds();
+        rect.set_y(rect.y() + old_height - keyboard_height_);
+        rect.set_height(keyboard_height_);
+        SetBounds(rect);
 
         // TODO(sad): Notify the target widget that the size has changed so it
         // can update its display accordingly if it wanted to.
