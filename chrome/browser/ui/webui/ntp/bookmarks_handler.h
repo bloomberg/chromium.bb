@@ -54,8 +54,11 @@ class BookmarksHandler : public WebUIMessageHandler,
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
+  // A weak reference to the current bookmarks model.
   BookmarkModel* model_;  // weak
-  bool getBookmarksDataIsPending_;
+
+  // True if the DOM layer is ready.
+  bool dom_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
 };

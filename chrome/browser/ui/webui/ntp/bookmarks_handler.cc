@@ -24,7 +24,7 @@
 
 namespace keys = extension_bookmarks_module_constants;
 
-BookmarksHandler::BookmarksHandler() : getBookmarksDataIsPending_(false) {
+BookmarksHandler::BookmarksHandler() : dom_ready_(false) {
 }
 
 BookmarksHandler::~BookmarksHandler() {
@@ -46,10 +46,8 @@ void BookmarksHandler::RegisterMessages() {
 }
 
 void BookmarksHandler::Loaded(BookmarkModel* model, bool ids_reassigned) {
-  if (getBookmarksDataIsPending_) {
+  if (dom_ready_)
     HandleGetBookmarksData(NULL);
-    getBookmarksDataIsPending_ = false;
-  }
 }
 
 void BookmarksHandler::BookmarkModelBeingDeleted(BookmarkModel* model) {
@@ -61,6 +59,7 @@ void BookmarksHandler::BookmarkModelBeingDeleted(BookmarkModel* model) {
 void BookmarksHandler::BookmarkNodeMoved(BookmarkModel* model,
     const BookmarkNode* old_parent, int old_index,
     const BookmarkNode* new_parent, int new_index) {
+  if (!dom_ready_) return;
   const BookmarkNode* node = new_parent->GetChild(new_index);
   StringValue id(base::Int64ToString(node->id()));
   DictionaryValue move_info;
@@ -76,6 +75,7 @@ void BookmarksHandler::BookmarkNodeMoved(BookmarkModel* model,
 
 void BookmarksHandler::BookmarkNodeAdded(BookmarkModel* model,
     const BookmarkNode* parent, int index) {
+  if (!dom_ready_) return;
   const BookmarkNode* node = parent->GetChild(index);
   StringValue id(base::Int64ToString(node->id()));
   scoped_ptr<DictionaryValue> node_info(
@@ -86,6 +86,7 @@ void BookmarksHandler::BookmarkNodeAdded(BookmarkModel* model,
 
 void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
     const BookmarkNode* parent, int index, const BookmarkNode* node) {
+  if (!dom_ready_) return;
   StringValue id(base::Int64ToString(node->id()));
   DictionaryValue remove_info;
   remove_info.SetString(keys::kParentIdKey,
@@ -97,6 +98,7 @@ void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
 
 void BookmarksHandler::BookmarkNodeChanged(BookmarkModel* model,
                                            const BookmarkNode* node) {
+  if (!dom_ready_) return;
   StringValue id(base::Int64ToString(node->id()));
   DictionaryValue change_info;
   change_info.SetString(keys::kTitleKey, node->GetTitle());
@@ -115,6 +117,7 @@ void BookmarksHandler::BookmarkNodeFaviconChanged(BookmarkModel* model,
 
 void BookmarksHandler::BookmarkNodeChildrenReordered(BookmarkModel* model,
                                                      const BookmarkNode* node) {
+  if (!dom_ready_) return;
   StringValue id(base::Int64ToString(node->id()));
   int childCount = node->child_count();
   ListValue* children = new ListValue();
@@ -131,22 +134,23 @@ void BookmarksHandler::BookmarkNodeChildrenReordered(BookmarkModel* model,
 }
 
 void BookmarksHandler::BookmarkImportBeginning(BookmarkModel* model) {
-  web_ui_->CallJavascriptFunction("ntp4.bookmarkImportBegan");
+  if (dom_ready_)
+    web_ui_->CallJavascriptFunction("ntp4.bookmarkImportBegan");
 }
 
 void BookmarksHandler::BookmarkImportEnding(BookmarkModel* model) {
-  web_ui_->CallJavascriptFunction("ntp4.bookmarkImportEnded");
+  if (dom_ready_)
+    web_ui_->CallJavascriptFunction("ntp4.bookmarkImportEnded");
 }
 
 void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
+  dom_ready_ = true;
+
   // At startup, Bookmarks may not be fully loaded. If this is the case,
   // we'll wait for the notification to arrive.
   Profile* profile = Profile::FromWebUI(web_ui_);
   BookmarkModel* model = profile->GetBookmarkModel();
-  if (!model->IsLoaded()) {
-    getBookmarksDataIsPending_ = true;
-    return;
-  }
+  if (!model->IsLoaded()) return;
 
   int64 id;
   std::string id_string;
