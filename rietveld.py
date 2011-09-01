@@ -15,6 +15,7 @@ The following hypothesis are made:
 
 import logging
 import os
+import re
 import sys
 import time
 import urllib2
@@ -131,15 +132,13 @@ class Rietveld(object):
         # Ignore the diff.
         out.append(patch.FilePatchDelete(filename, state['is_binary']))
       elif status in ('A', 'M'):
-        # TODO(maruel): Rietveld support is still weird, add this line once it's
-        # safe to use.
-        # props = state.get('property_changes', '').splitlines() or []
-        props = []
+        svn_props = self.parse_svn_properties(
+            state.get('property_changes', ''), filename)
         if state['is_binary']:
           out.append(patch.FilePatchBinary(
               filename,
               self.get_file_content(issue, patchset, state['id']),
-              props,
+              svn_props,
               is_new=(status[0] == 'A')))
         else:
           # Ignores num_chunks since it may only contain an header.
@@ -149,23 +148,67 @@ class Rietveld(object):
             if e.code == 404:
               raise patch.UnsupportedPatchFormat(
                   filename, 'File doesn\'t have a diff.')
-          out.append(patch.FilePatchDiff(filename, diff, props))
+          out.append(patch.FilePatchDiff(filename, diff, svn_props))
           if status[0] == 'A':
             # It won't be set for empty file.
             out[-1].is_new = True
       else:
-        # Line too long (N/80)
-        # pylint: disable=C0301
-        # TODO: Add support for MM, A+, etc. Rietveld removes the svn properties
-        # from the diff.
-        # Example of mergeinfo across branches:
-        # http://codereview.chromium.org/202046/diff/1/third_party/libxml/xmlcatalog_dummy.cc
-        # svn:eol-style property that is lost in the diff
-        # http://codereview.chromium.org/202046/diff/1/third_party/libxml/xmllint_dummy.cc
-        # Change with no diff, only svn property change:
-        # http://codereview.chromium.org/6462019/
+        # TODO(maruel): Add support for MM, A+, etc. Rietveld removes the svn
+        # properties from the diff.
         raise patch.UnsupportedPatchFormat(filename, status)
     return patch.PatchSet(out)
+
+  @staticmethod
+  def parse_svn_properties(rietveld_svn_props, filename):
+    """Returns a list of tuple [('property', 'newvalue')].
+
+    rietveld_svn_props is the exact format from 'svn diff'.
+    """
+    rietveld_svn_props = rietveld_svn_props.splitlines()
+    svn_props = []
+    if not rietveld_svn_props:
+      return svn_props
+    # 1. Ignore svn:mergeinfo.
+    # 2. Accept svn:eol-style and svn:executable.
+    # 3. Refuse any other.
+    # \n
+    # Added: svn:ignore\n
+    #    + LF\n
+    while rietveld_svn_props:
+      spacer = rietveld_svn_props.pop(0)
+      if spacer or not rietveld_svn_props:
+        # svn diff always put a spacer between the unified diff and property
+        # diff
+        raise patch.UnsupportedPatchFormat(
+            filename, 'Failed to parse svn properties.')
+
+      # Something like 'Added: svn:eol-style'. Note the action is localized.
+      # *sigh*.
+      action = rietveld_svn_props.pop(0)
+      match = re.match(r'^(\w+): (.+)$', action)
+      if not match or not rietveld_svn_props:
+        raise patch.UnsupportedPatchFormat(
+            filename, 'Failed to parse svn properties.')
+
+      if match.group(2) == 'svn:mergeinfo':
+        # Silently ignore the content.
+        rietveld_svn_props.pop(0)
+        continue
+
+      if match.group(1) not in ('Added', 'Modified'):
+        # Will fail for our French friends.
+        raise patch.UnsupportedPatchFormat(
+            filename, 'Unsupported svn property operation.')
+
+      if match.group(2) in ('svn:eol-style', 'svn:executable'):
+        # '   + foo' where foo is the new value. That's fragile.
+        content = rietveld_svn_props.pop(0)
+        match2 = re.match(r'^   \+ (.*)$', content)
+        if not match2:
+          raise patch.UnsupportedPatchFormat(
+              filename, 'Unsupported svn property format.')
+        svn_props.append((match.group(2), match2.group(1)))
+    return svn_props
 
   def update_description(self, issue, description):
     """Sets the description for an issue on Rietveld."""

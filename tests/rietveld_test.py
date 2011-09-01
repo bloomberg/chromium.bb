@@ -73,6 +73,43 @@ class RietveldTest(unittest.TestCase):
     # This is because Rietveld._send() always returns the same buffer.
     self.assertEquals(output, obj.get())
 
+  def testSvnProperties(self):
+    # Line too long (N/80)
+    # pylint: disable=C0301
+
+    # To test one of these, run something like
+    # import json, pprint, urllib
+    # url = 'http://codereview.chromium.org/api/202046/1'
+    # pprint.pprint(json.load(urllib.urlopen(url))['files'])
+
+    # svn:mergeinfo across branches:
+    # http://codereview.chromium.org/202046/diff/1/third_party/libxml/xmlcatalog_dummy.cc
+    self.assertEquals(
+        [('svn:eol-style', 'LF')],
+        rietveld.Rietveld.parse_svn_properties(
+          u'\nAdded: svn:eol-style\n   + LF\n', 'foo'))
+
+    # svn:eol-style property that is lost in the diff
+    # http://codereview.chromium.org/202046/diff/1/third_party/libxml/xmllint_dummy.cc
+    self.assertEquals(
+        [],
+        rietveld.Rietveld.parse_svn_properties(
+          u'\nAdded: svn:mergeinfo\n'
+          '   Merged /branches/chrome_webkit_merge_branch/third_party/'
+          'libxml/xmldummy_mac.cc:r69-2775\n',
+          'foo'))
+
+    self.assertEquals(
+        [],
+        rietveld.Rietveld.parse_svn_properties(u'', 'foo'))
+
+    try:
+      rietveld.Rietveld.parse_svn_properties(u'\n', 'foo')
+      self.fail()
+    except rietveld.patch.UnsupportedPatchFormat, e:
+      self.assertEquals('foo', e.filename)
+    # TODO(maruel): Change with no diff, only svn property change:
+    # http://codereview.chromium.org/6462019/
 
 
 if __name__ == '__main__':
