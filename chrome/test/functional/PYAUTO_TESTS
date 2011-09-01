@@ -462,6 +462,9 @@
       # ==================================================
       # crbug.com/83459
       '-instant.InstantTest.testPreFetchInstantURLSetsNoCookies',
+
+      # crbug.com/95035
+      '-enterprise.EnterpriseTestReverse.testEnable3DAPI',
     ],
 
     'chromeos': [
