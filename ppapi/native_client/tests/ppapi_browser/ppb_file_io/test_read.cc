@@ -1,15 +1,15 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "native_client/tests/ppapi_test_lib/test_interface.h"
-#include "native_client/tests/ppapi_browser/ppb_file_io/common.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
+#include "ppapi/native_client/tests/ppapi_browser/ppb_file_io/common.h"
 
 namespace {
 
@@ -157,18 +157,8 @@ void TestParallelReadFile(PP_FileSystemType system_type) {
 
 }  // namespace
 
-void TestPartialFileReadLocalPersistent() {
-  TestPartialFileRead(PP_FILESYSTEMTYPE_LOCALPERSISTENT);
-  TEST_PASSED;
-}
-
 void TestPartialFileReadLocalTemporary() {
   TestPartialFileRead(PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  TEST_PASSED;
-}
-
-void TestCompleteReadLocalPersistent() {
-  TestCompleteReadFile(PP_FILESYSTEMTYPE_LOCALPERSISTENT);
   TEST_PASSED;
 }
 
@@ -178,11 +168,6 @@ void TestCompleteReadLocalTemporary() {
 }
 
 // Test multiple reads of a file using multiple callbacks and different offsets.
-void TestParallelReadLocalPersistent() {
-  TestParallelReadFile(PP_FILESYSTEMTYPE_LOCALPERSISTENT);
-  TEST_PASSED;
-}
-
 void TestParallelReadLocalTemporary() {
   TestParallelReadFile(PP_FILESYSTEMTYPE_LOCALTEMPORARY);
   TEST_PASSED;

@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/third_party/ppapi/c/pp_errors.h"
-#include "native_client/src/third_party/ppapi/c/ppb_core.h"
-#include "native_client/src/third_party/ppapi/c/ppb_file_io.h"
-#include "native_client/src/third_party/ppapi/c/ppb_file_ref.h"
-#include "native_client/src/third_party/ppapi/c/ppb_file_system.h"
-#include "native_client/src/third_party/ppapi/c/ppb_url_loader.h"
-#include "native_client/tests/ppapi_browser/ppb_file_io/common.h"
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "native_client/tests/ppapi_test_lib/test_interface.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/ppb_file_ref.h"
+#include "ppapi/c/ppb_file_system.h"
+#include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/native_client/tests/ppapi_browser/ppb_file_io/common.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
 
@@ -151,18 +151,8 @@ void TestOpenExistingFile(PP_FileSystemType system_type) {
 
 }  // namespace
 
-void TestOpenExistingFileLocalPersistent() {
-  TestOpenExistingFile(PP_FILESYSTEMTYPE_LOCALPERSISTENT);
-  TEST_PASSED;
-}
-
 void TestOpenExistingFileLocalTemporary() {
   TestOpenExistingFile(PP_FILESYSTEMTYPE_LOCALTEMPORARY);
-  TEST_PASSED;
-}
-
-void TestOpenNonExistingFileLocalPersistent() {
-  TestOpenNonExistingFile(PP_FILESYSTEMTYPE_LOCALPERSISTENT);
   TEST_PASSED;
 }
 

@@ -1,12 +1,12 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/tests/ppapi_browser/ppb_file_io/test_sequence_element.h"
+#include "ppapi/native_client/tests/ppapi_browser/ppb_file_io/test_sequence_element.h"
 
 #include "native_client/src/include/nacl_scoped_ptr.h"
-#include "native_client/src/third_party/ppapi/c/ppb_core.h"
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "ppapi/c/ppb_core.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
 
 namespace common {
 
