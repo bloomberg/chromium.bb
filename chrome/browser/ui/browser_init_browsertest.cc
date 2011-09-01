@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
@@ -14,13 +15,15 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BrowserInitTest : public ExtensionBrowserTest {
  protected:
   // Helper functions return void so that we can ASSERT*().
-  // Use ASSERT_FALSE(HasFatalFailure()) after calling these functions
-  // to stop the test if an assert fails.
+  // Use ASSERT_NO_FATAL_FAILURE around calls to these functions to stop the
+  // test if an assert fails.
   void LoadApp(const std::string& app_name,
                const Extension** out_app_extension) {
     ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(app_name.c_str())));
@@ -100,13 +103,83 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   BrowserList::RemoveObserver(&observer);
 }
 
+// Verify that startup URLs are honored when the process already exists but has
+// no tabbed browser windows (eg. as if the process is running only due to a
+// background application.
+IN_PROC_BROWSER_TEST_F(BrowserInitTest,
+                       StartupURLsOnNewWindowWithNoTabbedBrowsers) {
+  // Use a couple arbitrary URLs.
+  std::vector<GURL> urls;
+  urls.push_back(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+  urls.push_back(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title2.html"))));
+
+  // Set the startup preference to open these URLs.
+  SessionStartupPref pref(SessionStartupPref::URLS);
+  pref.urls = urls;
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+
+  // Close the browser.
+  browser()->window()->Close();
+
+  // Do a simple non-process-startup browser launch.
+  CommandLine dummy(CommandLine::NO_PROGRAM);
+  BrowserInit::LaunchWithProfile launch(FilePath(), dummy);
+  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
+
+  // This should have created a new browser window.  |browser()| is still
+  // around at this point, even though we've closed it's window.
+  Browser* new_browser = NULL;
+  ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
+
+  // The new browser should have one tab for each URL.
+  ASSERT_EQ(static_cast<int>(urls.size()), new_browser->tab_count());
+  for (size_t i=0; i < urls.size(); i++) {
+    EXPECT_EQ(urls[i], new_browser->GetTabContentsAt(i)->GetURL());
+  }
+}
+
+// Verify that startup URLs aren't used when the process already exists
+// and has other tabbed browser windows.  This is the common case of starting a
+// new browser.
+IN_PROC_BROWSER_TEST_F(BrowserInitTest,
+                       StartupURLsOnNewWindow) {
+  // Use a couple arbitrary URLs.
+  std::vector<GURL> urls;
+  urls.push_back(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+  urls.push_back(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title2.html"))));
+
+  // Set the startup preference to open these URLs.
+  SessionStartupPref pref(SessionStartupPref::URLS);
+  pref.urls = urls;
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+
+  // Do a simple non-process-startup browser launch.
+  CommandLine dummy(CommandLine::NO_PROGRAM);
+  BrowserInit::LaunchWithProfile launch(FilePath(), dummy);
+  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
+
+  // This should have created a new browser window.
+  Browser* new_browser = NULL;
+  ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
+
+  // The new browser should have exactly one tab (not the startup URLs).
+  ASSERT_EQ(1, new_browser->tab_count());
+}
+
 // App shortcuts are not implemented on mac os.
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutNoPref) {
   // Load an app with launch.container = 'tab'.
   const Extension* extension_app = NULL;
-  LoadApp("app_with_tab_container", &extension_app);
-  ASSERT_FALSE(HasFatalFailure());  // Check for ASSERT failures in LoadApp().
+  ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Add --app-id=<extension->id()> to the command line.
   CommandLine command_line(CommandLine::NO_PROGRAM);
@@ -118,8 +191,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutNoPref) {
   // No pref was set, so the app should have opened in a window.
   // The launch should have created a new browser.
   Browser* new_browser = NULL;
-  FindOneOtherBrowser(&new_browser);
-  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
   // Expect an app window.
   EXPECT_TRUE(new_browser->is_app());
@@ -132,8 +204,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutNoPref) {
 
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutWindowPref) {
   const Extension* extension_app = NULL;
-  LoadApp("app_with_tab_container", &extension_app);
-  ASSERT_FALSE(HasFatalFailure());  // Check for ASSERT failures in LoadApp().
+  ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Set a pref indicating that the user wants to open this app in a window.
   SetAppLaunchPref(extension_app->id(), ExtensionPrefs::LAUNCH_WINDOW);
@@ -147,8 +218,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutWindowPref) {
   // window.  The launch should have created a new browser. Find the new
   // browser.
   Browser* new_browser = NULL;
-  FindOneOtherBrowser(&new_browser);
-  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
   // Expect an app window.
   EXPECT_TRUE(new_browser->is_app());
@@ -162,8 +232,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutWindowPref) {
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutTabPref) {
   // Load an app with launch.container = 'tab'.
   const Extension* extension_app = NULL;
-  LoadApp("app_with_tab_container", &extension_app);
-  ASSERT_FALSE(HasFatalFailure());  // Check for ASSERT failures in LoadApp().
+  ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Set a pref indicating that the user wants to open this app in a window.
   SetAppLaunchPref(extension_app->id(), ExtensionPrefs::LAUNCH_REGULAR);
@@ -178,8 +247,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutTabPref) {
   ASSERT_EQ(2u, BrowserList::GetBrowserCount(browser()->profile()));
 
   Browser* new_browser = NULL;
-  FindOneOtherBrowser(&new_browser);
-  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
   // The tab should be in a tabbed window.
   EXPECT_TRUE(new_browser->is_type_tabbed());
@@ -194,8 +262,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutTabPref) {
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
   // Load an app with launch.container = 'panel'.
   const Extension* extension_app = NULL;
-  LoadApp("app_with_panel_container", &extension_app);
-  ASSERT_FALSE(HasFatalFailure());  // Check for ASSERT failures in LoadApp().
+  ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_panel_container", &extension_app));
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
@@ -204,8 +271,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenAppShortcutPanel) {
 
   // The launch should have created a new browser, with a panel type.
   Browser* new_browser = NULL;
-  FindOneOtherBrowser(&new_browser);
-  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
   // Expect an app panel.
 #if defined(OS_CHROMEOS)

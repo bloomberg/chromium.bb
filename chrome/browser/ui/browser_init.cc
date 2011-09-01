@@ -879,17 +879,23 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
   }
 
   if (!process_startup) {
+    // Even if we're not starting a new process, this may conceptually be
+    // "startup" for the user and so should be handled in a similar way.  Eg.,
+    // Chrome may have been running in the background due to an app with a
+    // background page being installed, or running with only an app window
+    // displayed.
     SessionService* service = SessionServiceFactory::GetForProfile(profile_);
-    if (service && service->RestoreIfNecessary(urls_to_open)) {
-      // We're already running and session restore wanted to run. This can
-      // happen at various points, such as if there is only an app window
-      // running and the user double clicked the chrome icon. Return so we don't
-      // open the urls.
-      return;
+    if (service && service->ShouldNewWindowStartSession()) {
+      // Restore the last session if any.
+      if (service->RestoreIfNecessary(urls_to_open))
+        return;
+      // Open user-specified URLs like pinned tabs and startup tabs.
+      if (ProcessSpecifiedURLs(urls_to_open))
+        return;
     }
   }
 
-  // Session restore didn't occur, open the urls.
+  // Session startup didn't occur, open the urls.
 
   Browser* browser = NULL;
   std::vector<GURL> adjust_urls = urls_to_open;
@@ -946,6 +952,17 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
     return true;
   }
 
+  Browser* browser = ProcessSpecifiedURLs(urls_to_open);
+  if (!browser)
+    return false;
+
+  AddInfoBarsIfNecessary(browser);
+  return true;
+}
+
+Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
+    const std::vector<GURL>& urls_to_open) {
+  SessionStartupPref pref = GetSessionStartupPref(command_line_, profile_);
   std::vector<Tab> tabs = PinnedTabCodec::ReadPinnedTabs(profile_);
 
   RecordAppLaunches(profile_, urls_to_open, tabs);
@@ -966,11 +983,10 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
   }
 
   if (tabs.empty())
-    return false;
+    return NULL;
 
   Browser* browser = OpenTabsInBrowser(NULL, true, tabs);
-  AddInfoBarsIfNecessary(browser);
-  return true;
+  return browser;
 }
 
 void BrowserInit::LaunchWithProfile::AddUniqueURLs(

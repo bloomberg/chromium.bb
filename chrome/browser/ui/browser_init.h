@@ -144,10 +144,11 @@ class BrowserInit {
     // should open in a tab, do so.
     bool OpenApplicationTab(Profile* profile);
 
-    // Invoked from OpenURLsInBrowser to handle processing of urls. This may
-    // do any of the following:
+    // Invoked from Launch to handle processing of urls. This may do any of the
+    // following:
     // . Invoke ProcessStartupURLs if |process_startup| is true.
-    // . Restore the last session if necessary.
+    // . If |process_startup| is false, restore the last session if necessary,
+    //   or invoke ProcessSpecifiedURLs.
     // . Open the urls directly.
     void ProcessLaunchURLs(bool process_startup,
                            const std::vector<GURL>& urls_to_open);
@@ -155,15 +156,24 @@ class BrowserInit {
     // Does the following:
     // . If the user's startup pref is to restore the last session (or the
     //   command line flag is present to force using last session), it is
-    //   restored, and true is returned.
-    // . Attempts to restore any pinned tabs from last run of chrome and:
-    //   . If urls_to_open is non-empty, they are opened and true is returned.
-    //   . If the user's startup pref is to launch a specific set of URLs they
-    //     are opened.
-    //
-    // Otherwise false is returned, which indicates the caller must create a
-    // new browser.
+    //   restored.
+    // . Otherwise invoke ProcessSpecifiedURLs
+    // If a browser was created, true is returned.  Otherwise returns false and
+    // the caller must create a new browser.
     bool ProcessStartupURLs(const std::vector<GURL>& urls_to_open);
+
+    // Invoked from either ProcessLaunchURLs or ProcessStartupURLs to handle
+    // processing of URLs where the behavior is common between process startup
+    // and launch via an existing process (i.e. those explicitly specified by
+    // the user somehow).  Does the following:
+    // . Attempts to restore any pinned tabs from last run of chrome.
+    // . If urls_to_open is non-empty, they are opened.
+    // . If the user's startup pref is to launch a specific set of URLs they
+    //   are opened.
+    //
+    // If any tabs were opened, the Browser which was created is returned.
+    // Otherwise null is returned and the caller must create a new browser.
+    Browser* ProcessSpecifiedURLs(const std::vector<GURL>& urls_to_open);
 
     // Adds a Tab to |tabs| for each url in |urls| that doesn't already exist
     // in |tabs|.

@@ -484,8 +484,7 @@ void SessionService::Init() {
       NotificationService::AllSources());
 }
 
-bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
-                                        Browser* browser) {
+bool SessionService::ShouldNewWindowStartSession() {
   if (!has_open_trackable_browsers_ && !BrowserInit::InProcessStartup() &&
       !SessionRestore::IsRestoring()
 #if defined(OS_MACOSX)
@@ -495,6 +494,15 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
       && !app_controller_mac::IsOpeningNewWindow()
 #endif
       ) {
+    return true;
+  }
+
+  return false;
+}
+
+bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
+                                        Browser* browser) {
+  if (ShouldNewWindowStartSession()) {
     // We're going from no tabbed browsers to a tabbed browser (and not in
     // process startup), restore the last session.
     if (move_on_new_browser_) {
