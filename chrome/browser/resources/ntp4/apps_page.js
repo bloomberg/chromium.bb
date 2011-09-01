@@ -238,8 +238,7 @@ cr.define('ntp4', function() {
       // Unset the ID immediately, because the app is already gone. But leave
       // the tile on the page as it animates out.
       this.id = '';
-      var tile = findAncestorByClass(this, 'tile');
-      tile.doRemove();
+      this.tile.doRemove();
     },
 
     /**
@@ -409,9 +408,8 @@ cr.define('ntp4', function() {
     removeFromChrome: function() {
       chrome.send('uninstallApp', [this.appData_.id, true]);
 
-      var tile = this.parentNode;
-      tile.tilePage.cleanupDrag();
-      tile.parentNode.removeChild(tile);
+      this.tile.tilePage.cleanupDrag();
+      this.tile.parentNode.removeChild(tile);
     },
 
     /**
@@ -523,8 +521,6 @@ cr.define('ntp4', function() {
     addOutsideData_: function(dataTransfer, index) {
       var url = dataTransfer.getData('url');
       assert(url);
-      if (!url)
-        return;
 
       // If the dataTransfer has html data, use that html's text contents as the
       // title of the new link.
@@ -597,8 +593,23 @@ cr.define('ntp4', function() {
       store.setAppsPromoData(data);
   };
 
-  // Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE
-  // histogram. This should only be invoked from the AppLauncherHandler.
+
+  /**
+   * Callback invoked by chrome whenever an app preference changes.
+   * @param {Object} data An object with all the data on available
+   *     applications.
+   */
+  function appsPrefChangeCallback(data) {
+    for (var i = 0; i < data.apps.length; ++i) {
+      $(data.apps[i].id).appData = data.apps[i];
+    }
+  }
+
+  /**
+   * Launches the specified app using the APP_LAUNCH_NTP_APP_RE_ENABLE
+   * histogram. This should only be invoked from the AppLauncherHandler.
+   * @param {String} appID The ID of the app.
+   */
   function launchAppAfterEnable(appId) {
     chrome.send('launchApp', [appId, APP_LAUNCH.NTP_APP_RE_ENABLE]);
   };
@@ -606,8 +617,12 @@ cr.define('ntp4', function() {
   return {
     APP_LAUNCH: APP_LAUNCH,
     AppsPage: AppsPage,
+    appsPrefChangeCallback: appsPrefChangeCallback,
     launchAppAfterEnable: launchAppAfterEnable,
   };
 });
 
+// TODO(estade): update the content handlers to use ntp namespace instead of
+// making these global.
+var appsPrefChangeCallback = ntp4.appsPrefChangeCallback;
 var launchAppAfterEnable = ntp4.launchAppAfterEnable;

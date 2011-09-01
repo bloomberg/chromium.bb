@@ -388,16 +388,8 @@ cr.define('ntp4', function() {
    *     applications.
    */
   function appsPrefChangeCallback(data) {
-    var apps = document.querySelectorAll('.app');
-
-    // This is an expensive operation. We minimize how frequently it's called
-    // by only calling it for changes across different instances of the NTP
-    // (i.e. two separate tabs both showing NTP).
-    for (var j = 0; j < data.apps.length; ++j) {
-      for (var i = 0; i < apps.length; ++i) {
-        if (data.apps[j]['id'] == apps[i].appId)
-          apps[i].appData = data.apps[j];
-      }
+    for (var i = 0; i < data.apps.length; ++i) {
+      $(data.apps[i].id).appData = data.apps[i];
     }
   }
 
