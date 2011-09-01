@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -48,6 +49,27 @@ class DownloadItemSorter : public std::binary_function<DownloadItem*,
     return lhs->start_time() > rhs->start_time();
   }
 };
+
+enum DownloadsDOMEvent {
+  DOWNLOADS_DOM_EVENT_GET_DOWNLOADS = 0,
+  DOWNLOADS_DOM_EVENT_OPEN_FILE = 1,
+  DOWNLOADS_DOM_EVENT_DRAG = 2,
+  DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS = 3,
+  DOWNLOADS_DOM_EVENT_DISCARD_DANGEROUS = 4,
+  DOWNLOADS_DOM_EVENT_SHOW = 5,
+  DOWNLOADS_DOM_EVENT_PAUSE = 6,
+  DOWNLOADS_DOM_EVENT_REMOVE = 7,
+  DOWNLOADS_DOM_EVENT_CANCEL = 8,
+  DOWNLOADS_DOM_EVENT_CLEAR_ALL = 9,
+  DOWNLOADS_DOM_EVENT_OPEN_FOLDER = 10,
+  DOWNLOADS_DOM_EVENT_MAX
+};
+
+void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Download.DOMEvent",
+                            event,
+                            DOWNLOADS_DOM_EVENT_MAX);
+}
 
 }  // namespace
 
@@ -215,6 +237,7 @@ void DownloadsDOMHandler::ModelChanged() {
 }
 
 void DownloadsDOMHandler::HandleGetDownloads(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_GET_DOWNLOADS);
   std::wstring new_search = UTF16ToWideHack(ExtractStringValue(args));
   if (search_text_.compare(new_search) != 0) {
     search_text_ = new_search;
@@ -227,12 +250,14 @@ void DownloadsDOMHandler::HandleGetDownloads(const ListValue* args) {
 }
 
 void DownloadsDOMHandler::HandleOpenFile(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FILE);
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->OpenDownload();
 }
 
 void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DRAG);
   DownloadItem* file = GetDownloadByValue(args);
   if (file) {
     IconManager* im = g_browser_process->icon_manager();
@@ -248,30 +273,35 @@ void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
 }
 
 void DownloadsDOMHandler::HandleSaveDangerous(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->DangerousDownloadValidated();
 }
 
 void DownloadsDOMHandler::HandleDiscardDangerous(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DISCARD_DANGEROUS);
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
 }
 
 void DownloadsDOMHandler::HandleShow(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SHOW);
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->ShowDownloadInShell();
 }
 
 void DownloadsDOMHandler::HandlePause(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_PAUSE);
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->TogglePause();
 }
 
 void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_REMOVE);
   DownloadItem* file = GetDownloadByValue(args);
   if (file) {
     // TODO(rdsmith): Change to DCHECK when http://crbug.com/84508 is fixed.
@@ -281,12 +311,14 @@ void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
 }
 
 void DownloadsDOMHandler::HandleCancel(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CANCEL);
   DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Cancel(true);
 }
 
 void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CLEAR_ALL);
   download_manager_->RemoveAllDownloads();
 
   Profile* profile =
@@ -298,6 +330,7 @@ void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
 }
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(const ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FOLDER);
   FilePath path = DownloadPrefs::FromDownloadManager(download_manager_)->
       download_path();
 
