@@ -9,7 +9,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/trials/http_throttling_trial.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/browser_thread.h"
@@ -79,13 +78,19 @@ void NetPrefObserver::RegisterPrefs(PrefService* prefs) {
                              false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kHttpThrottlingEnabled,
-                             false,
+                             true,
                              PrefService::UNSYNCABLE_PREF);
+  // TODO(joi): This pref really means "user has not explicitly turned
+  // anti-DDoS throttling on or off". Rename it soon (2011/8/26) or
+  // remove it altogether (more likely).
   prefs->RegisterBooleanPref(prefs::kHttpThrottlingMayExperiment,
                              true,
                              PrefService::UNSYNCABLE_PREF);
 
-  // This is the earliest point at which we can set up the trial, as
-  // it relies on prefs for parameterization.
-  CreateHttpThrottlingTrial(prefs);
+  // For users who created their profile while throttling was off by
+  // default, but have never explicitly turned it on or off, we turn
+  // it on which is the new default.
+  if (prefs->GetBoolean(prefs::kHttpThrottlingMayExperiment)) {
+    prefs->SetBoolean(prefs::kHttpThrottlingEnabled, true);
+  }
 }

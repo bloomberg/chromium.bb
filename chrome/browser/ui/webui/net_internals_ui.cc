@@ -630,16 +630,10 @@ void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
 
   // We never receive OnEnableHttpThrottling unless the user has modified
   // the value of the checkbox on the about:net-internals page.  Once the
-  // user does that, we no longer allow experiments to control its value.
+  // user does that, we no longer change its value automatically (e.g.
+  // by changing the default or running an experiment).
   if (http_throttling_may_experiment_.GetValue()) {
     http_throttling_may_experiment_.SetValue(false);
-
-    // Disable the ongoing trial so that histograms after this point
-    // show as being in the "Default" group of the trial.
-    base::FieldTrial* trial = base::FieldTrialList::Find(
-        "HttpThrottlingEnabled");
-    if (trial)
-      trial->Disable();
   }
 }
 

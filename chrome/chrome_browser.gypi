@@ -2244,8 +2244,6 @@
         'browser/translate/translate_tab_helper.h',
         'browser/transport_security_persister.cc',
         'browser/transport_security_persister.h',
-        'browser/trials/http_throttling_trial.cc',
-        'browser/trials/http_throttling_trial.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog_queue.cc',
