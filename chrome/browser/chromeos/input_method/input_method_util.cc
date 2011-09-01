@@ -369,6 +369,12 @@ const ExtraLanguage kExtraLanguages[] = {
   { "id",           "xkb:us::eng" },  // For Indonesian, use US keyboard layout.
   // The code "fil" comes from app/l10_util.cc.
   { "fil",          "xkb:us::eng" },  // For Filipino, use US keyboard layout.
+  // Indic Languages
+  { "bn",           "xkb:us::eng" },  // For Bengali, use US keyboard layout.
+  { "gu",           "xkb:us::eng" },  // For Gujarati, use US keyboard layout.
+  { "ml",           "xkb:us::eng" },  // For Malayalam, use US keyboard layout.
+  { "mr",           "xkb:us::eng" },  // For Marathi, use US keyboard layout.
+  { "ta",           "xkb:us::eng" },  // For Tamil, use US keyboard layout.
   // For Netherlands, use US international keyboard layout.
   { "nl",           "xkb:us:intl:eng" },
   // The code "es-419" comes from app/l10_util.cc.

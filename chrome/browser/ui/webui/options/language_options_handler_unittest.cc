@@ -94,7 +94,7 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       chromeos::CrosLanguageOptionsHandler::GetLanguageList(descriptors));
-  ASSERT_EQ(8U, list->GetSize());
+  ASSERT_EQ(13U, list->GetSize());
 
   DictionaryValue* entry = NULL;
   std::string language_code;
@@ -109,12 +109,21 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   ASSERT_TRUE(entry->GetString("code", &language_code));
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
+  EXPECT_EQ("bn", language_code);
+  EXPECT_EQ("Bengali", display_name);
+  EXPECT_EQ("\u09AC\u09BE\u0982\u09B2\u09BE", native_display_name);
+
+  // This comes from kExtraLanguages.
+  ASSERT_TRUE(list->GetDictionary(1, &entry));
+  ASSERT_TRUE(entry->GetString("code", &language_code));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
   EXPECT_EQ("nl", language_code);
   EXPECT_EQ("Dutch", display_name);
   EXPECT_EQ("Nederlands", native_display_name);
 
   // This comes from kExtraLanguages.
-  ASSERT_TRUE(list->GetDictionary(1, &entry));
+  ASSERT_TRUE(list->GetDictionary(2, &entry));
   ASSERT_TRUE(entry->GetString("code", &language_code));
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
@@ -122,7 +131,7 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   EXPECT_EQ("English (Australia)", display_name);
   EXPECT_EQ("English (Australia)", native_display_name);
 
-  ASSERT_TRUE(list->GetDictionary(2, &entry));
+  ASSERT_TRUE(list->GetDictionary(3, &entry));
   ASSERT_TRUE(entry->GetString("code", &language_code));
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
@@ -131,7 +140,7 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   EXPECT_EQ("English (United States)", native_display_name);
 
   // This comes from kExtraLanguages.
-  ASSERT_TRUE(list->GetDictionary(3, &entry));
+  ASSERT_TRUE(list->GetDictionary(4, &entry));
   ASSERT_TRUE(entry->GetString("code", &language_code));
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
@@ -139,7 +148,7 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   EXPECT_EQ("Filipino", display_name);
   EXPECT_EQ("Filipino", native_display_name);
 
-  ASSERT_TRUE(list->GetDictionary(4, &entry));
+  ASSERT_TRUE(list->GetDictionary(5, &entry));
   ASSERT_TRUE(entry->GetString("code", &language_code));
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
@@ -148,7 +157,16 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   EXPECT_EQ("fran\u00E7ais", native_display_name);
 
   // This comes from kExtraLanguages.
-  ASSERT_TRUE(list->GetDictionary(5, &entry));
+  ASSERT_TRUE(list->GetDictionary(6, &entry));
+  ASSERT_TRUE(entry->GetString("code", &language_code));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
+  EXPECT_EQ("gu", language_code);
+  EXPECT_EQ("Gujarati", display_name);
+  EXPECT_EQ("\u0A97\u0AC1\u0A9C\u0AB0\u0ABE\u0AA4\u0AC0", native_display_name);
+
+  // This comes from kExtraLanguages.
+  ASSERT_TRUE(list->GetDictionary(7, &entry));
   ASSERT_TRUE(entry->GetString("code", &language_code));
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
@@ -156,7 +174,7 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   EXPECT_EQ("Indonesian", display_name);
   EXPECT_EQ("Bahasa Indonesia", native_display_name);
 
-  ASSERT_TRUE(list->GetDictionary(6, &entry));
+  ASSERT_TRUE(list->GetDictionary(8, &entry));
   ASSERT_TRUE(entry->GetString("code", &language_code));
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
@@ -165,13 +183,40 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
   EXPECT_EQ("\u65E5\u672C\u8A9E", native_display_name);
 
   // This comes from kExtraLanguages.
-  ASSERT_TRUE(list->GetDictionary(7, &entry));
+  ASSERT_TRUE(list->GetDictionary(9, &entry));
+  ASSERT_TRUE(entry->GetString("code", &language_code));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
+  EXPECT_EQ("ml", language_code);
+  EXPECT_EQ("Malayalam", display_name);
+  EXPECT_EQ("\u0D2E\u0D32\u0D2F\u0D3E\u0D33\u0D02", native_display_name);
+
+  // This comes from kExtraLanguages.
+  ASSERT_TRUE(list->GetDictionary(10, &entry));
+  ASSERT_TRUE(entry->GetString("code", &language_code));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
+  EXPECT_EQ("mr", language_code);
+  EXPECT_EQ("Marathi", display_name);
+  EXPECT_EQ("\u092E\u0930\u093E\u0920\u0940", native_display_name);
+
+  // This comes from kExtraLanguages.
+  ASSERT_TRUE(list->GetDictionary(11, &entry));
   ASSERT_TRUE(entry->GetString("code", &language_code));
   ASSERT_TRUE(entry->GetString("displayName", &display_name));
   ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
   EXPECT_EQ("es-419", language_code);
   EXPECT_EQ("Spanish (Latin America)", display_name);
   EXPECT_EQ("espa\u00F1ol (Latinoam\u00E9rica)", native_display_name);
+
+  // This comes from kExtraLanguages.
+  ASSERT_TRUE(list->GetDictionary(12, &entry));
+  ASSERT_TRUE(entry->GetString("code", &language_code));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("nativeDisplayName", &native_display_name));
+  EXPECT_EQ("ta", language_code);
+  EXPECT_EQ("Tamil", display_name);
+  EXPECT_EQ("\u0BA4\u0BAE\u0BBF\u0BB4\u0BCD", native_display_name);
 }
 #endif  // defined(OS_CHROMEOS)
 
