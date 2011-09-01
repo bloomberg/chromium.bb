@@ -1909,6 +1909,7 @@
         'browser/ui/webui/ntp/shown_sections_handler_unittest.cc',
         'browser/ui/webui/options/chromeos/virtual_keyboard_manager_handler_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
+        'browser/ui/webui/print_preview_handler_unittest.cc',
         'browser/ui/webui/print_preview_ui_unittest.cc',
         'browser/ui/webui/sync_internals_ui_unittest.cc',
         'browser/ui/webui/theme_source_unittest.cc',
@@ -2077,6 +2078,7 @@
             ['exclude', '^../content/browser/geolocation/wifi_data_provider_linux_unittest.cc'],
             # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
             # print preview is enabled on CrOS.
+            ['exclude', '^browser/ui/webui/print_preview_handler_unittest.cc'],
             ['exclude', '^browser/ui/webui/print_preview_ui_unittest.cc'],
           ],
         }, { # else: chromeos == 0

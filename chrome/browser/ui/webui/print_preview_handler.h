@@ -65,6 +65,8 @@ class PrintPreviewHandler : public WebUIMessageHandler,
 
  private:
   friend class PrintSystemTaskProxy;
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
+                           ActivateInitiatorTabOnPrint);
 
   TabContentsWrapper* preview_tab_wrapper() const;
   TabContents* preview_tab() const;

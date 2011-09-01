@@ -112,6 +112,8 @@ class PrintPreviewUI : public ChromeWebUI {
   void OnCancelPendingPreviewRequest();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
+                           ActivateInitiatorTabOnPrint);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewTabControllerUnitTest,
                            TitleAfterReload);
 
