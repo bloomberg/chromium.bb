@@ -268,6 +268,8 @@ void SelectFileDialogImpl::FileWasSelected(NSSavePanel* dialog,
   parents_.erase(parent_window);
   type_map_.erase(dialog);
 
+  [dialog setDelegate:nil];
+
   if (!listener_)
     return;
 
