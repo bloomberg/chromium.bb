@@ -276,8 +276,10 @@ void MetricsLog::WritePluginList(
   DCHECK(!locked_);
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  PluginPrefs* plugin_prefs =
-      PluginPrefs::GetForProfile(profile_manager->GetLoadedProfiles().front());
+  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+  PluginPrefs* plugin_prefs = NULL;
+  if (!profiles.empty())
+    plugin_prefs = PluginPrefs::GetForProfile(profiles.front());
 
   OPEN_ELEMENT_FOR_SCOPE("plugins");
 
@@ -297,7 +299,8 @@ void MetricsLog::WritePluginList(
 #endif
     WriteAttribute("filename", CreateBase64Hash(filename_bytes));
     WriteAttribute("version", UTF16ToUTF8(iter->version));
-    WriteIntAttribute("disabled", !plugin_prefs->IsPluginEnabled(*iter));
+    if (plugin_prefs)
+      WriteIntAttribute("disabled", !plugin_prefs->IsPluginEnabled(*iter));
   }
 }
 
