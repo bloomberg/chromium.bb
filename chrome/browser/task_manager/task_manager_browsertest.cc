@@ -295,10 +295,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
 
   // Open a new tab to an app URL before the app is loaded.
   GURL url(base_url.Resolve("path1/empty.html"));
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   AddTabAtIndex(0, url, PageTransition::TYPED);
-  observer.Wait();
+  ui_test_utils::WaitForNavigation(
+      &browser()->GetSelectedTabContents()->controller());
 
   // Check that the third entry's title starts with "Tab:".
   string16 tab_prefix = l10n_util::GetStringFUTF16(

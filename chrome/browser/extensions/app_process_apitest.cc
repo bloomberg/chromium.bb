@@ -38,8 +38,6 @@ static void WindowOpenHelper(Browser* browser,
                              RenderViewHost* opener_host,
                              const GURL& url,
                              bool newtab_process_should_equal_opener) {
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       opener_host, L"", L"window.open('" + UTF8ToWide(url.spec()) + L"');"));
 
@@ -50,7 +48,9 @@ static void WindowOpenHelper(Browser* browser,
   EXPECT_TRUE(last_active_browser);
   TabContents* newtab = last_active_browser->GetSelectedTabContents();
   EXPECT_TRUE(newtab);
-  observer.Wait();
+  if (!newtab->controller().GetLastCommittedEntry() ||
+      newtab->controller().GetLastCommittedEntry()->url() != url)
+    ui_test_utils::WaitForNavigation(&newtab->controller());
   EXPECT_EQ(url, newtab->controller().GetLastCommittedEntry()->url());
   if (newtab_process_should_equal_opener)
     EXPECT_EQ(opener_host->process(), newtab->render_view_host()->process());
@@ -61,9 +61,6 @@ static void WindowOpenHelper(Browser* browser,
 // Simulates a page navigating itself to an URL, and waits for the navigation.
 static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   bool result = false;
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       contents->render_view_host(), L"",
       L"window.addEventListener('unload', function() {"
@@ -72,7 +69,10 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
       L"window.location = '" + UTF8ToWide(url.spec()) + L"';",
       &result));
   ASSERT_TRUE(result);
-  observer.Wait();
+
+  if (!contents->controller().GetLastCommittedEntry() ||
+      contents->controller().GetLastCommittedEntry()->url() != url)
+    ui_test_utils::WaitForNavigation(&contents->controller());
   EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());
 }
 
@@ -285,20 +285,16 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
 
   // Enable app and reload via JavaScript.
   EnableExtension(app->id());
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->render_view_host(),
                                                L"", L"location.reload();"));
-  observer.Wait();
+  ui_test_utils::WaitForNavigation(&contents->controller());
   EXPECT_TRUE(contents->render_view_host()->process()->is_extension_process());
 
   // Disable app and reload via JavaScript.
   DisableExtension(app->id());
-  ui_test_utils::WindowedNotificationObserver observer2(
-      content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(contents->render_view_host(),
                                                L"", L"location.reload();"));
-  observer2.Wait();
+  ui_test_utils::WaitForNavigation(&contents->controller());
   EXPECT_FALSE(contents->render_view_host()->process()->is_extension_process());
 }
 

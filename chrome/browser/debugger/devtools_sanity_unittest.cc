@@ -116,11 +116,11 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     GURL url = test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
 
-    ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
     inspected_rvh_ = GetInspectedTab()->render_view_host();
     window_ = DevToolsWindow::OpenDevToolsWindow(inspected_rvh_);
-    observer.Wait();
+    RenderViewHost* client_rvh = window_->GetRenderViewHost();
+    TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();
+    ui_test_utils::WaitForNavigation(&client_contents->controller());
   }
 
   TabContents* GetInspectedTab() {

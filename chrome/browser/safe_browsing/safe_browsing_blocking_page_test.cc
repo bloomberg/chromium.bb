@@ -14,7 +14,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -320,6 +319,12 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest,
           Source<TabContents>(contents));
   }
 
+  void WaitForNavigation() {
+    NavigationController* controller =
+        &browser()->GetSelectedTabContents()->controller();
+    ui_test_utils::WaitForNavigation(controller);
+  }
+
   void AssertReportSent() {
     // When a report is scheduled in the IO thread we should get notified.
     ui_test_utils::RunMessageLoop();
@@ -417,12 +422,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareProceed) {
   AddURLResult(url, SafeBrowsingService::URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
   SendCommand("\"proceed\"");    // Simulate the user clicking "proceed"
-  observer.Wait();
+  WaitForNavigation();    // Wait until we finish the navigation.
   AssertNoInterstitial(true);    // Assert the interstitial is gone.
   EXPECT_EQ(url, browser()->GetSelectedTabContents()->GetURL());
 }
@@ -445,12 +446,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingProceed) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
   SendCommand("\"proceed\"");   // Simulate the user clicking "proceed".
-  observer.Wait();
+  WaitForNavigation();    // Wait until we finish the navigation.
   AssertNoInterstitial(true);    // Assert the interstitial is gone
   EXPECT_EQ(url, browser()->GetSelectedTabContents()->GetURL());
 }
@@ -461,12 +458,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
   SendCommand("\"reportError\"");   // Simulate the user clicking "report error"
-  observer.Wait();
+  WaitForNavigation();    // Wait until we finish the navigation.
   AssertNoInterstitial(false);    // Assert the interstitial is gone
 
   // We are in the error reporting page.
@@ -481,12 +474,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->controller()));
   SendCommand("\"learnMore\"");   // Simulate the user clicking "learn more"
-  observer.Wait();
+  WaitForNavigation();    // Wait until we finish the navigation.
   AssertNoInterstitial(false);    // Assert the interstitial is gone
 
   // We are in the help page.
