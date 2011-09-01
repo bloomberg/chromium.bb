@@ -1184,8 +1184,8 @@ for_selectRule (void)
 	  transRule = (TranslationTableRule *) & table->ruleArea[ruleOffset];
 	  transOpcode = transRule->opcode;
 	  transCharslen = transRule->charslen;
-	  if ((transCharslen < 3 && transCharslen <= length) || 
-	  ((transCharslen <= length) 
+	  if (tryThis == 1 ||
+ 	  ((transCharslen <= length) 
 	  && validMatch ()))
 	    {
 	      /* check this rule */
