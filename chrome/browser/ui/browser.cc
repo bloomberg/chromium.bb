@@ -51,6 +51,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
@@ -2435,7 +2436,7 @@ void Browser::JSOutOfMemoryHelper(TabContents* tab) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
   if (tcw) {
-    tcw->AddInfoBar(new SimpleAlertInfoBarDelegate(
+    tcw->infobar_tab_helper()->AddInfoBar(new SimpleAlertInfoBarDelegate(
         tab, NULL, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
         true));
   }
@@ -2469,9 +2470,8 @@ void Browser::RegisterProtocolHandlerHelper(TabContents* tab,
       registry->CanSchemeBeOverridden(handler.protocol())) {
     UserMetrics::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
-    tcw->AddInfoBar(new RegisterProtocolHandlerInfoBarDelegate(tab,
-                                                               registry,
-                                                               handler));
+    tcw->infobar_tab_helper()->AddInfoBar(
+        new RegisterProtocolHandlerInfoBarDelegate(tab, registry, handler));
   }
 }
 
@@ -2500,7 +2500,8 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
   intent.action = action;
   intent.type = type;
   intent.title = title;
-  tcw->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(tab, intent));
+  tcw->infobar_tab_helper()->AddInfoBar(
+      new RegisterIntentHandlerInfoBarDelegate(tab, intent));
 }
 
 // static
@@ -3710,7 +3711,7 @@ void Browser::RendererResponsive(TabContents* source) {
 void Browser::WorkerCrashed(TabContents* source) {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(source);
-  wrapper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+  wrapper->infobar_tab_helper()->AddInfoBar(new SimpleAlertInfoBarDelegate(
       source, NULL, l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT),
       true));
 }

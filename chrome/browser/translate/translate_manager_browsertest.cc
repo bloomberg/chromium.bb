@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/stringprintf.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/infobar.h"
@@ -52,7 +53,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
       : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
-  // Simluates navigating to a page and getting the page contents and language
+  // Simulates navigating to a page and getting the page contents and language
   // for that navigation.
   void SimulateNavigation(const GURL& url,
                           const std::string& lang,
@@ -87,11 +88,15 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     return true;
   }
 
+  InfoBarTabHelper* infobar_tab_helper() {
+    return contents_wrapper()->infobar_tab_helper();
+  }
+
   // Returns the translate infobar if there is 1 infobar and it is a translate
   // infobar.
   TranslateInfoBarDelegate* GetTranslateInfoBar() {
-    return (contents_wrapper()->infobar_count() == 1) ?
-        contents_wrapper()->GetInfoBarDelegateAt(0)->
+    return (infobar_tab_helper()->infobar_count() == 1) ?
+        infobar_tab_helper()->GetInfoBarDelegateAt(0)->
             AsTranslateInfoBarDelegate() : NULL;
   }
 
@@ -102,7 +107,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     if (!infobar)
       return false;
     infobar->InfoBarDismissed();  // Simulates closing the infobar.
-    contents_wrapper()->RemoveInfoBar(infobar);
+    infobar_tab_helper()->RemoveInfoBar(infobar);
     return true;
   }
 
@@ -135,7 +140,7 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     if (!infobar)
       return false;
     infobar->TranslationDeclined();
-    contents_wrapper()->RemoveInfoBar(infobar);
+    infobar_tab_helper()->RemoveInfoBar(infobar);
     return true;
   }
 
@@ -632,18 +637,18 @@ TEST_F(TranslateManagerTest, MultipleOnPageContents) {
 
   // Simulate clicking 'Nope' (don't translate).
   EXPECT_TRUE(DenyTranslation());
-  EXPECT_EQ(0U, contents_wrapper()->infobar_count());
+  EXPECT_EQ(0U, infobar_tab_helper()->infobar_count());
 
   // Send a new PageContents, we should not show an infobar.
   SimulateOnTranslateLanguageDetermined("fr", true);
-  EXPECT_EQ(0U, contents_wrapper()->infobar_count());
+  EXPECT_EQ(0U, infobar_tab_helper()->infobar_count());
 
   // Do the same steps but simulate closing the infobar this time.
   SimulateNavigation(GURL("http://www.youtube.fr"), "fr", true);
   EXPECT_TRUE(CloseTranslateInfoBar());
-  EXPECT_EQ(0U, contents_wrapper()->infobar_count());
+  EXPECT_EQ(0U, infobar_tab_helper()->infobar_count());
   SimulateOnTranslateLanguageDetermined("fr", true);
-  EXPECT_EQ(0U, contents_wrapper()->infobar_count());
+  EXPECT_EQ(0U, infobar_tab_helper()->infobar_count());
 }
 
 // Test that reloading the page brings back the infobar.

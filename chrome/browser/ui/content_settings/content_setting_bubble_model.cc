@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
@@ -317,7 +318,7 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
 
   virtual ~ContentSettingCookiesBubbleModel() {
     if (settings_changed()) {
-      tab_contents()->AddInfoBar(
+      tab_contents()->infobar_tab_helper()->AddInfoBar(
           new CollectedCookiesInfoBarDelegate(tab_contents()->tab_contents()));
     }
   }

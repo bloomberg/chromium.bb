@@ -12,6 +12,7 @@
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
@@ -337,9 +338,6 @@ void DesktopNotificationService::RequestPermission(
   if (!tab)
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-
   // If |origin| hasn't been seen before and the default content setting for
   // notifications is "ask", show an infobar.
   // The cache can only answer queries on the IO thread once it's initialized,
@@ -347,7 +345,9 @@ void DesktopNotificationService::RequestPermission(
   ContentSetting setting = GetContentSetting(origin);
   if (setting == CONTENT_SETTING_ASK) {
     // Show an info bar requesting permission.
-    wrapper->AddInfoBar(
+    TabContentsWrapper* wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(tab);
+    wrapper->infobar_tab_helper()->AddInfoBar(
         new NotificationPermissionInfoBarDelegate(
             tab, origin, DisplayNameForOrigin(origin), process_id,
             route_id, callback_context));

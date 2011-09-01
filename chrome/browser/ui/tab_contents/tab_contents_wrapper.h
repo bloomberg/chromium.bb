@@ -32,7 +32,7 @@ class FaviconTabHelper;
 class FileSelectObserver;
 class FindTabHelper;
 class FirewallTraversalObserver;
-class InfoBarDelegate;
+class InfoBarTabHelper;
 class HistoryTabHelper;
 class NavigationController;
 class OmniboxSearchHint;
@@ -104,6 +104,9 @@ class TabContentsWrapper : public TabContentsObserver,
   // Captures a snapshot of the page.
   void CaptureSnapshot();
 
+  // Stop this tab rendering in fullscreen mode.
+  void ExitFullscreenMode();
+
   // Helper to retrieve the existing instance that wraps a given TabContents.
   // Returns NULL if there is no such existing instance.
   // NOTE: This is not intended for general use. It is intended for situations
@@ -166,6 +169,7 @@ class TabContentsWrapper : public TabContentsObserver,
   FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
   HistoryTabHelper* history_tab_helper() { return history_tab_helper_.get(); }
+  InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
   PasswordManager* password_manager() { return password_manager_.get(); }
 
   prerender::PrerenderTabHelper* prerender_tab_helper() {
@@ -220,48 +224,12 @@ class TabContentsWrapper : public TabContentsObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  // Infobars ------------------------------------------------------------------
-
-  // Adds an InfoBar for the specified |delegate|.
-  //
-  // If infobars are disabled for this tab or the tab already has a delegate
-  // which returns true for InfoBarDelegate::EqualsDelegate(delegate),
-  // |delegate| is closed immediately without being added.
-  void AddInfoBar(InfoBarDelegate* delegate);
-
-  // Removes the InfoBar for the specified |delegate|.
-  //
-  // If infobars are disabled for this tab, this will do nothing, on the
-  // assumption that the matching AddInfoBar() call will have already closed the
-  // delegate (see above).
-  void RemoveInfoBar(InfoBarDelegate* delegate);
-
-  // Replaces one infobar with another, without any animation in between.
-  //
-  // If infobars are disabled for this tab, |new_delegate| is closed immediately
-  // without being added, and nothing else happens.
-  //
-  // NOTE: This does not perform any EqualsDelegate() checks like AddInfoBar().
-  void ReplaceInfoBar(InfoBarDelegate* old_delegate,
-                      InfoBarDelegate* new_delegate);
-
-  // Enumeration and access functions.
-  size_t infobar_count() const { return infobars_.size(); }
-  // WARNING: This does not sanity-check |index|!
-  InfoBarDelegate* GetInfoBarDelegateAt(size_t index);
-  void set_infobars_enabled(bool value) { infobars_enabled_ = value; }
-
-  // Stop this tab rendering in fullscreen mode.
-  void ExitFullscreenMode();
-
  private:
   // Internal helpers ----------------------------------------------------------
 
   // Message handlers.
   void OnSnapshot(const SkBitmap& bitmap);
   void OnPDFHasUnsupportedFeature();
-  void OnDidBlockDisplayingInsecureContent();
-  void OnDidBlockRunningInsecureContent();
 
   // Returns the server that can provide alternate error pages.  If the returned
   // URL is empty, the default error page built into WebKit will be used.
@@ -280,17 +248,10 @@ class TabContentsWrapper : public TabContentsObserver,
   // safe browsing preference has changed.
   void UpdateSafebrowsingDetectionHost();
 
-  void RemoveInfoBarInternal(InfoBarDelegate* delegate, bool animate);
-  void RemoveAllInfoBars(bool animate);
-
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   TabContentsWrapperDelegate* delegate_;
-
-  // Delegates for InfoBars associated with this TabContentsWrapper.
-  std::vector<InfoBarDelegate*> infobars_;
-  bool infobars_enabled_;
 
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
@@ -317,6 +278,7 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
   scoped_ptr<HistoryTabHelper> history_tab_helper_;
+  scoped_ptr<InfoBarTabHelper> infobar_tab_helper_;
 
   // PasswordManager and its delegate. The delegate must outlive the manager,
   // per documentation in password_manager.h.

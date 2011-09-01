@@ -7,6 +7,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -378,8 +379,9 @@ void CollectedCookiesWin::DeleteDelegate() {
 
 bool CollectedCookiesWin::Cancel() {
   if (status_changed_) {
-    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(tab_contents_));
+    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
+        infobar_tab_helper()->AddInfoBar(
+            new CollectedCookiesInfoBarDelegate(tab_contents_));
   }
 
   return true;

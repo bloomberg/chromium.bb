@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_infobar_module_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -56,7 +57,7 @@ bool ShowInfoBarFunction::RunImpl() {
     return false;
   }
 
-  tab_contents->AddInfoBar(
+  tab_contents->infobar_tab_helper()->AddInfoBar(
       new ExtensionInfoBarDelegate(browser, tab_contents->tab_contents(),
                                    GetExtension(), url, height));
 

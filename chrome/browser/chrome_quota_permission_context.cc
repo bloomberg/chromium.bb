@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
@@ -143,7 +144,7 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
 
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  wrapper->AddInfoBar(new RequestQuotaInfoBarDelegate(
+  wrapper->infobar_tab_helper()->AddInfoBar(new RequestQuotaInfoBarDelegate(
       tab_contents, this,
       origin_url, requested_quota,
       wrapper->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),

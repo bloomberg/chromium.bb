@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -36,7 +37,7 @@ InfoBarDelegate* CreateInfobar(TabContents* tab_contents,
       google_url_tracker, new_google_url);
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  wrapper->AddInfoBar(infobar);
+  wrapper->infobar_tab_helper()->AddInfoBar(infobar);
   return infobar;
 }
 

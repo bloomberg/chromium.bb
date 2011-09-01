@@ -29,6 +29,7 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -209,7 +210,7 @@ void CheckForPopularForms(const std::vector<FormStructure*>& forms,
                                     ASCIIToUTF16(form_signature),
                                     UTF8ToUTF16((*it)->source_url().spec()));
 
-      tab_contents_wrapper->AddInfoBar(
+      tab_contents_wrapper->infobar_tab_helper()->AddInfoBar(
           new AutofillFeedbackInfoBarDelegate(tab_contents, text, link,
                                               message));
       break;
@@ -736,7 +737,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // it.
   scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
   if (imported_credit_card && tab_contents()) {
-    tab_contents_wrapper_->AddInfoBar(
+    tab_contents_wrapper_->infobar_tab_helper()->AddInfoBar(
         new AutofillCCInfoBarDelegate(tab_contents(),
                                       scoped_credit_card.release(),
                                       personal_data_,

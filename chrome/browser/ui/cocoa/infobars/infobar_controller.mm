@@ -7,6 +7,7 @@
 #include "base/logging.h"  // for NOTREACHED()
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -281,7 +282,7 @@ const float kTextBaselineShift = -1.0;
   // so that inner event loops don't cause us to try and remove the infobar
   // twice?  http://crbug.com/54253
   if (owner_)
-    owner_->RemoveInfoBar(delegate_);
+    owner_->infobar_tab_helper()->RemoveInfoBar(delegate_);
   owner_ = NULL;
 }
 

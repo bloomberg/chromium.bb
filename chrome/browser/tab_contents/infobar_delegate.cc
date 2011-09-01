@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -96,6 +97,6 @@ bool InfoBarDelegate::ShouldExpireInternal(
 void InfoBarDelegate::RemoveSelf() {
   if (owner_) {
     TabContentsWrapper::GetCurrentWrapperForContents(owner_)->
-        RemoveInfoBar(this);  // Clears |owner_|.
+        infobar_tab_helper()->RemoveInfoBar(this);  // Clears |owner_|.
   }
 }

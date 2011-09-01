@@ -13,6 +13,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/infobar.h"
@@ -331,7 +332,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
       observer.Wait();
     }
 
-    tab_contents_wrapper->RemoveInfoBar(infobar_);
+    tab_contents_wrapper->infobar_tab_helper()->RemoveInfoBar(infobar_);
     LOG(WARNING) << "infobar response set";
     infobar_ = NULL;
     EXPECT_GT(settings_state.state_map().size(), state_map_size);
@@ -576,12 +577,12 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
 
-  size_t num_infobars_before_cancel =
-      current_browser_->GetSelectedTabContentsWrapper()->infobar_count();
+  InfoBarTabHelper* infobar_helper = current_browser_->
+      GetSelectedTabContentsWrapper()->infobar_tab_helper();
+  size_t num_infobars_before_cancel = infobar_helper->infobar_count();
   // Change the iframe, and ensure the infobar is gone.
   IFrameLoader change_iframe_1(current_browser_, 1, current_url_);
-  size_t num_infobars_after_cancel =
-      current_browser_->GetSelectedTabContentsWrapper()->infobar_count();
+  size_t num_infobars_after_cancel = infobar_helper->infobar_count();
   EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
 }
 
