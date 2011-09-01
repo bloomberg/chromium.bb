@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "media/base/limits.h"
 #include "media/filters/audio_file_reader.h"
 #include "media/filters/in_memory_url_protocol.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioBus.h"
@@ -39,6 +40,14 @@ bool DecodeAudioFileData(
   double file_sample_rate = reader.sample_rate();
   double duration = reader.duration().InSecondsF();
   size_t number_of_frames = static_cast<size_t>(reader.number_of_frames());
+
+  // Apply sanity checks to make sure crazy values aren't coming out of
+  // FFmpeg.
+  if (!number_of_channels ||
+      number_of_channels > static_cast<size_t>(media::Limits::kMaxChannels) ||
+      file_sample_rate < media::Limits::kMinSampleRate ||
+      file_sample_rate > media::Limits::kMaxSampleRate)
+    return false;
 
   // TODO(crogers) : do sample-rate conversion with FFmpeg.
   // For now, we're ignoring the requested 'sample_rate' and returning
