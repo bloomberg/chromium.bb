@@ -555,7 +555,7 @@
 <translation id="5612754943696799373">Dopustiti preuzimanje?</translation>
 <translation id="347699201225182431">Ovo proširenje nalazi se na crnoj listi.</translation>
 <translation id="2565875069387440417">Prijavite se svojim Google računom</translation>
-<translation id="6353618411602605519">Hrvatska tipkovnica</translation>
+<translation id="6353618411602605519">hrvatska tipkovnica</translation>
 <translation id="5515810278159179124">Nemoj dopustiti nijednoj web-lokaciji da prati moju fizičku lokaciju</translation>
 <translation id="5999606216064768721">Koristi naslovnu traku sustava i obrube</translation>
 <translation id="904752364881701675">Niže lijevo</translation>
@@ -991,7 +991,7 @@
 <translation id="3733127536501031542">SSL poslužitelj s iskorakom</translation>
 <translation id="3614837889828516995">Ispiši u PDF</translation>
 <translation id="5745056705311424885">Otkriven je USB memorijski privjesak</translation>
-<translation id="7651319298187296870">Prijava je obavezna za korisnički certifikat.</translation>
+<translation id="7651319298187296870">Za korisnički certifikat obavezna je prijava.</translation>
 <translation id="626568068055008686">Netočna zaporka ili oštećena datoteka.</translation>
 <translation id="5895875028328858187">Prikaži obavijesti kada je malo podataka ili su blizu isteka roka.</translation>
 <translation id="939598580284253335">Unesite zaporku</translation>
@@ -1476,7 +1476,7 @@
 <translation id="8816996941061600321">&amp;Upravitelj datoteka</translation>
 <translation id="2773223079752808209">Korisnička podrška</translation>
 <translation id="4585473702689066695">Povezivanje s mrežom &quot;<ph name="NAME"/>&quot; nije uspjelo.</translation>
-<translation id="4647175434312795566">Prihvaćam ugovor</translation>
+<translation id="4647175434312795566">Prihvatite ugovor</translation>
 <translation id="1084824384139382525">Kopiraj adresu &amp;veze</translation>
 <translation id="1221462285898798023">Pokrenite <ph name="PRODUCT_NAME"/> kao normalni korisnik. Za korijensko pokretanje morate navesti alternativni parametar --user-data-dir za pohranu podataka profila.</translation>
 <translation id="3220586366024592812">Pao je proces konektora <ph name="CLOUD_PRINT_NAME"/>. Pokrenuti ponovo?</translation>
@@ -1952,7 +1952,7 @@
 <translation id="5843685321177053287">Rukovanje s uslugom upravljanja uređajima na čekanju je...</translation>
 <translation id="2052389551707911401">Sati: <ph name="NUMBER_MANY"/></translation>
 <translation id="7026338066939101231">Pomak unatrag</translation>
-<translation id="5411472733320185105">Ne upotrebljavaj proxy postavke za te hostove i domene:</translation>
+<translation id="5411472733320185105">Ne upotrebljavaj proxy postavke za ove hostove i domene:</translation>
 <translation id="6691936601825168937">&amp;Proslijedi</translation>
 <translation id="6566142449942033617">Nije uspjelo učitavanje putanje &quot;<ph name="PLUGIN_PATH"/>&quot; za dodatak.</translation>
 <translation id="7065534935986314333">O sustavu</translation>
@@ -2402,7 +2402,7 @@
 <translation id="1352060938076340443">Prekinuto</translation>
 <translation id="8571226144504132898">Rječnik simbola</translation>
 <translation id="7229570126336867161">Potreban je EVDO</translation>
-<translation id="7582844466922312471">Mobilni podaci</translation>
+<translation id="7582844466922312471">mobilne podatke </translation>
 <translation id="945522503751344254">Pošalji povratne informacije</translation>
 <translation id="4539401194496451708">Upotreba profila za Chrome<ph name="USER_EMAIL_ADDRESS"/>. Posljednja sinkronizacija: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Kreditna kartica (druga)</translation>
@@ -2605,7 +2605,7 @@
 <translation id="8396532978067103567">Netočna zaporka.</translation>
 <translation id="5981759340456370804">Detaljna statistika</translation>
 <translation id="8160015581537295331">Španjolska tipkovnica</translation>
-<translation id="3505920073976671674">Odabir mreže </translation>
+<translation id="3505920073976671674">Odaberite mrežu</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/>dan</translation>
 <translation id="1782924894173027610">Poslužitelj sinkronizacije je zauzet, pokušajte ponovo kasnije.</translation>
 <translation id="6512448926095770873">Zatvori ovu stranicu</translation>
@@ -2995,7 +2995,7 @@
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="1732215134274276513">Otkvači kartice</translation>
 <translation id="4084682180776658562">Oznaka</translation>
-<translation id="8859057652521303089">Odaberite jezik:</translation>
+<translation id="8859057652521303089">Odaberite svoj jezik:</translation>
 <translation id="3030138564564344289">Pokušajte preuzeti ponovno</translation>
 <translation id="4381091992796011497">Ime korisnika:</translation>
 <translation id="5830720307094128296">Spremi stranicu &amp;kao...</translation>

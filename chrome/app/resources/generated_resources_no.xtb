@@ -31,7 +31,7 @@
 <translation id="1497897566809397301">Tillat at nettsteder lagrer data på maskinen (anbefales)</translation>
 <translation id="3275778913554317645">Åpne som vindu</translation>
 <translation id="4553117311324416101">Google har oppdaget at skadelig programvare kan bli installert på datamaskinen din hvis du går videre. Hvis du har besøkt dette nettstedet tidligere eller stoler på nettstedet, er det mulig at det nylig har blitt kompromittert av en hacker. Du bør ikke fortsette, og kanskje heller prøve igjen i morgen eller navigere et annet sted.</translation>
-<translation id="509988127256758334">Fi&amp;nn:</translation>
+<translation id="509988127256758334">&amp;Finn:</translation>
 <translation id="1420684932347524586">Beklager. Forsøket på å opprette tilfeldig RSA-privatnøkkel mislyktes.</translation>
 <translation id="2501173422421700905">Sertifikat på vent</translation>
 <translation id="2313634973119803790">Nettverksteknologi:</translation>
@@ -310,7 +310,7 @@
 <translation id="1985136186573666099"><ph name="PRODUCT_NAME"/> bruker innstillingene for datamaskinens systemmellomtjener for å koble til nettverket.</translation>
 <translation id="4808139931410481934">Aktiver vindu 2</translation>
 <translation id="6508261954199872201">Program: <ph name="APP_NAME"/></translation>
-<translation id="5585645215698205895">&amp;Ned</translation>
+<translation id="5585645215698205895">N&amp;ed</translation>
 <translation id="8366757838691703947">Alle data på enheten fjernes.</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
 <translation id="7747704580171477003">Muliggjør fortløpende ny design for siden Ny fane.</translation>
@@ -2101,7 +2101,7 @@ tillate tredjeparts informasjonskapsler. Hvis dette        ikke løser problemet
 <translation id="2815448242176260024">Aldri lagre passord</translation>
 <translation id="2989805286512600854">Åpne i ny fane</translation>
 <translation id="8687485617085920635">Neste vindu</translation>
-<translation id="4122118036811378575">&amp;Finn neste</translation>
+<translation id="4122118036811378575">Finn &amp;neste</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="2610780100389066815">Signering med Microsoft-klareringsliste</translation>
 <translation id="8289811203643526145">Administrer sertifikater...</translation>

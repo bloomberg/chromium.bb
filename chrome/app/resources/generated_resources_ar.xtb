@@ -1025,7 +1025,7 @@
 <translation id="8705331520020532516">الرقم التسلسلي</translation>
 <translation id="1665770420914915777">استخدام صفحة &quot;علامة تبويب جديدة&quot;</translation>
 <translation id="2629089419211541119">قبل <ph name="NUMBER_ONE"/> ساعة</translation>
-<translation id="1691063574428301566">سيعاد تشغيل الكمبيوتر بعد اكتمال التحديث.</translation>
+<translation id="1691063574428301566">ستتم إعادة تشغيل الكمبيوتر بعد اكتمال التحديث.</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="3415261598051655619">يمكن الوصول إليه بواسطة النص البرمجي:</translation>
 <translation id="2335122562899522968">تُعين هذه الصفحة ملفات تعريف الارتباط.</translation>
@@ -1738,7 +1738,7 @@
 <translation id="8401363965527883709">مربّع اختيار دون تحديد</translation>
 <translation id="7771452384635174008">تخطيط</translation>
 <translation id="6188939051578398125">أدخل أسماء أو عناوين.</translation>
-<translation id="8443621894987748190">اختيار صورة الحساب</translation>
+<translation id="8443621894987748190">اختيار صورة حسابك</translation>
 <translation id="10122177803156699">عرض حالتي</translation>
 <translation id="5260878308685146029">عدد الدقائق المتبقية: <ph name="NUMBER_TWO"/></translation>
 <translation id="2192505247865591433">من:</translation>
@@ -2198,7 +2198,7 @@
 <translation id="4567836003335927027">بياناتك على <ph name="WEBSITE_1"/></translation>
 <translation id="756445078718366910">فتح نافذة المتصفح</translation>
 <translation id="4126154898592630571">تحويل التاريخ/الوقت</translation>
-<translation id="6132383530370527946">الطباعة الصغيرة</translation>
+<translation id="6132383530370527946">اتفاقية المستخدم</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 مع تشفير RSA</translation>
 <translation id="6392373519963504642">لوحة المفاتيح الكورية</translation>
 <translation id="7887334752153342268">تكرار</translation>
@@ -2430,7 +2430,7 @@
 <translation id="6358975074282722691">قبل <ph name="NUMBER_TWO"/> ثانية</translation>
 <translation id="5423849171846380976">نشطة</translation>
 <translation id="6748105842970712833">تم تعطيل بطاقة SIM</translation>
-<translation id="7323391064335160098">دعم الشبكة الظاهرية الخاصة (VPN)</translation>
+<translation id="7323391064335160098">دعم VPN</translation>
 <translation id="3929673387302322681">تطوير - غير ثابت</translation>
 <translation id="4251486191409116828">أخفق إنشاء اختصار للتطبيق</translation>
 <translation id="7077872827894353012">معالجات البروتوكول التي تم تجاهلها</translation>
@@ -3005,7 +3005,7 @@
 <translation id="1803557475693955505">تعذر تحميل صفحة الخلفية '<ph name="BACKGROUND_PAGE"/>'.</translation>
 <translation id="5818334088068591797">أين تواجهك المشكلات؟ (مطلوب)</translation>
 <translation id="6264485186158353794">الرجوع إلى وضع الأمان</translation>
-<translation id="7705524343798198388">الشبكة الظاهرية الخاصة (VPN)</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="7739677892468726004">تخصيص الملف الشخصي...</translation>
 <translation id="5130080518784460891">Eten</translation>
 <translation id="5847724078457510387">يسرد هذا الموقع جميع الشهادات الصالحة في نظام أسماء النطاقات. وبالرغم من ذلك، يستخدم الخادم شهادة غير مدرجة.</translation>

@@ -921,7 +921,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="7033648024564583278">Iniciando proceso de grabación...</translation>
 <translation id="3759371141211657149">Administrar configuración de controladores...</translation>
 <translation id="2246340272688122454">Descargando imagen de recuperación...</translation>
-<translation id="5305688511332277257">No hay certificados instalados.</translation>
+<translation id="5305688511332277257">No hay certificados instalados</translation>
 <translation id="7770995925463083016">hace <ph name="NUMBER_TWO"/> minutos</translation>
 <translation id="2816269189405906839">Método de entrada de chino (cangjie)</translation>
 <translation id="8395901698320285466">Dimensiones</translation>
@@ -952,7 +952,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="3371861036502301517">Error de instalación de extensión</translation>
 <translation id="644038709730536388">Obtén más información sobre cómo protegerte ante software malicioso online.</translation>
 <translation id="2155931291251286316">Permitir siempre pop-ups de <ph name="HOST"/></translation>
-<translation id="3445830502289589282">Fase 2 de la autenticación:</translation>
+<translation id="3445830502289589282">Fase 2 autenticación:</translation>
 <translation id="5650551054760837876">No se han encontrado resultados de búsqueda.</translation>
 <translation id="5494362494988149300">Abrir al &amp;finalizar</translation>
 <translation id="540323899562948110">Personalizar perfil...</translation>
@@ -1000,7 +1000,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="3733127536501031542">Servidor SSL con certificado Step-Up</translation>
 <translation id="3614837889828516995">Imprimir en formato PDF</translation>
 <translation id="5745056705311424885">Memoria USB detectada</translation>
-<translation id="7651319298187296870">Es necesario iniciar sesión para usar el certificado de usuario.</translation>
+<translation id="7651319298187296870">Inicia sesión para el certificado de usuario.</translation>
 <translation id="626568068055008686">La contraseña es incorrecta o el archivo está dañado.</translation>
 <translation id="5895875028328858187">Mostrar notificaciones cuando haya pocos datos o van a caducar</translation>
 <translation id="939598580284253335">Introducir frase de contraseña</translation>
@@ -1129,7 +1129,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="8494214181322051417">¡Nuevo!</translation>
 <translation id="2386255080630008482">Se ha revocado el certificado de servidor.</translation>
 <translation id="2135787500304447609">&amp;Reanudar</translation>
-<translation id="8309505303672555187">Seleccionar una red:</translation>
+<translation id="8309505303672555187">Selecciona una red:</translation>
 <translation id="6143635259298204954">No se puede descomprimir la extensión. Para descomprimir de forma segura una extensión, debe existir una ruta al directorio de tu perfil que no contenga ningún enlace simbólico. No existe ninguna ruta de este tipo para tu perfil.</translation>
 <translation id="1813414402673211292">Eliminar datos de navegación</translation>
 <translation id="4062903950301992112">Si eres consciente de que el hecho de acceder a este sitio puede dañar tu ordenador, haz clic en el enlace <ph name="PROCEED_LINK"/>.</translation>
@@ -1234,7 +1234,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="608057490819882785">¿Seguro que quieres eliminar de este ordenador el perfil &quot;<ph name="PROFILE_NAME"/>&quot; y todos los datos asociados a él? Ten en cuenta que esta acción no se puede deshacer.</translation>
 <translation id="6588399906604251380">Habilitar la revisión ortográfica</translation>
 <translation id="7053983685419859001">Bloquear</translation>
-<translation id="2485056306054380289">Certificado CA del servidor:</translation>
+<translation id="2485056306054380289">Certificado CA servidor:</translation>
 <translation id="6462109140674788769">Teclado griego</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
 <translation id="8887733174653581061">Siempre delante</translation>
@@ -1311,7 +1311,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="8580634710208701824">Volver a cargar marco</translation>
 <translation id="1018656279737460067">Cancelado</translation>
 <translation id="7606992457248886637">Entidades emisoras</translation>
-<translation id="707392107419594760">Seleccionar el teclado:</translation>
+<translation id="707392107419594760">Selecciona el teclado:</translation>
 <translation id="2007404777272201486">Notificar un error...</translation>
 <translation id="1783075131180517613">Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="2390045462562521613">Dejar de recordar esta red</translation>
@@ -1457,7 +1457,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="7460131386973988868">Permite configurar direcciones IP estáticas. Puede que no funcione.</translation>
 <translation id="4224803122026931301">Excepciones de ubicaciones</translation>
 <translation id="749452993132003881">Hiragana</translation>
-<translation id="8226742006292257240">A continuación, se indica la contraseña del TPM generada aleatoriamente que se ha asignado a tu ordenador:</translation>
+<translation id="8226742006292257240">Esta es la contraseña del TPM generada aleatoriamente que se ha asignado a tu ordenador:</translation>
 <translation id="8487693399751278191">Importar marcadores ahora...</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">Advertencia: algo falla aquí</translation>
@@ -1793,7 +1793,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="8401363965527883709">Casilla de verificación sin seleccionar</translation>
 <translation id="7771452384635174008">Diseño</translation>
 <translation id="6188939051578398125">Introduce nombres o direcciones de correo electrónico.</translation>
-<translation id="8443621894987748190">Selecciona la foto de tu cuenta.</translation>
+<translation id="8443621894987748190">Seleccionar la imagen de tu cuenta</translation>
 <translation id="10122177803156699">Mostrarme</translation>
 <translation id="5260878308685146029">Faltan <ph name="NUMBER_TWO"/> minutos</translation>
 <translation id="2192505247865591433">De:</translation>
@@ -3278,7 +3278,7 @@ donde puedes encontrar más información o inhabilitar esta función.</translati
 <translation id="2766006623206032690">Pe&amp;gar y acceder</translation>
 <translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="969892804517981540">Build oficial</translation>
-<translation id="445923051607553918">Conectarse a una red Wi-Fi</translation>
+<translation id="445923051607553918">Conexión a una red Wi-Fi</translation>
 <translation id="100242374795662595">Dispositivo desconocido</translation>
 <translation id="9087725134750123268">Eliminar cookies y datos de otros sitios</translation>
 <translation id="5050255233730056751">URL introducidas</translation>

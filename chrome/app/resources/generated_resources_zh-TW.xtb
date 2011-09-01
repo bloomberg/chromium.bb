@@ -53,7 +53,7 @@
 <translation id="4764776831041365478"><ph name="URL"/> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
 <translation id="6156863943908443225">指令碼快取</translation>
 <translation id="4610656722473172270">Google 工具列</translation>
-<translation id="7845201717638045845">您複製並貼上的資料</translation>
+<translation id="7845201717638045845">您複製和貼上的資料</translation>
 <translation id="151501797353681931">由 Safari 匯入</translation>
 <translation id="7880025619322806991">入口網站狀態</translation>
 <translation id="6706684875496318067">不允許使用 <ph name="PLUGIN_NAME"/> 外掛程式。</translation>
@@ -254,7 +254,7 @@
 <translation id="443008484043213881">工具</translation>
 <translation id="2529657954821696995">荷蘭文鍵盤</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
-<translation id="6585234750898046415">選擇要在登入畫面中顯示的個人帳戶圖片。</translation>
+<translation id="6585234750898046415">請選擇登入畫面上的個人帳戶圖片。</translation>
 <translation id="7957054228628133943">管理封鎖彈出式視窗設定...</translation>
 <translation id="179767530217573436">過去 4 週</translation>
 <translation id="2279770628980885996">伺服器嘗試處理要求時遇到意外狀況。</translation>
@@ -1116,7 +1116,7 @@
 <translation id="8494214181322051417">新功能！</translation>
 <translation id="2386255080630008482">伺服器憑證已遭撤銷。</translation>
 <translation id="2135787500304447609">繼續(&amp;R)</translation>
-<translation id="8309505303672555187">選取網路：</translation>
+<translation id="8309505303672555187">選擇網路：</translation>
 <translation id="6143635259298204954">無法為擴充功能解除封裝。如要安全解除封裝，設定檔目錄的路徑不能包含符號連結。您的設定檔中沒有符合條件的路徑。</translation>
 <translation id="1813414402673211292">清除瀏覽資料</translation>
 <translation id="4062903950301992112">這個網站可能會損害您的電腦。如果您瞭解這種風險性，可以選擇<ph name="PROCEED_LINK"/>。</translation>
@@ -1264,7 +1264,7 @@
 <translation id="7014051144917845222"><ph name="PRODUCT_NAME"/> 試圖連線至 <ph name="HOST_NAME"/> 的要求遭到拒絕。網站可能無法使用，或是您的網路設定可能有誤。</translation>
 <translation id="6648524591329069940">Serif 字型</translation>
 <translation id="6896758677409633944">複製</translation>
-<translation id="5260508466980570042">抱歉，系統無法驗證您的電子郵件位址或密碼，請再試一次。</translation>
+<translation id="5260508466980570042">抱歉，系統無法驗證您的電子郵件地址或密碼，請再試一次。</translation>
 <translation id="7887998671651498201">下列的外掛程式無回應: <ph name="PLUGIN_NAME"/>您想要中止嗎？</translation>
 <translation id="173188813625889224">方向</translation>
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> 秒</translation>
@@ -1290,7 +1290,7 @@
 <translation id="8580634710208701824">重新載入頁框</translation>
 <translation id="1018656279737460067">已取消</translation>
 <translation id="7606992457248886637">授權單位</translation>
-<translation id="707392107419594760">選取您的鍵盤：</translation>
+<translation id="707392107419594760">選擇鍵盤：</translation>
 <translation id="2007404777272201486">回報問題...</translation>
 <translation id="1783075131180517613">請更新您的同步通關密語。</translation>
 <translation id="2390045462562521613">不記錄這個網路</translation>
@@ -1746,7 +1746,7 @@
 <translation id="8401363965527883709">未勾選的核取方塊</translation>
 <translation id="7771452384635174008">配置</translation>
 <translation id="6188939051578398125">輸入姓名或地址。</translation>
-<translation id="8443621894987748190">選擇帳戶的顯示相片</translation>
+<translation id="8443621894987748190">選擇個人帳戶圖片</translation>
 <translation id="10122177803156699">顯示</translation>
 <translation id="5260878308685146029">剩下 <ph name="NUMBER_TWO"/> 分鐘</translation>
 <translation id="2192505247865591433">自：</translation>
@@ -2594,7 +2594,7 @@
 <translation id="8396532978067103567">密碼有誤。</translation>
 <translation id="5981759340456370804">統計資料</translation>
 <translation id="8160015581537295331">西班牙文鍵盤</translation>
-<translation id="3505920073976671674">選取網路</translation>
+<translation id="3505920073976671674">選擇網路</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> 天</translation>
 <translation id="1782924894173027610">同步伺服器忙碌中，請稍後再試。</translation>
 <translation id="6512448926095770873">離開此頁</translation>
@@ -2987,7 +2987,7 @@
 <translation id="8808478386290700967">Web Store</translation>
 <translation id="1732215134274276513">取消固定分頁</translation>
 <translation id="4084682180776658562">書籤</translation>
-<translation id="8859057652521303089">選取您的語言：</translation>
+<translation id="8859057652521303089">選擇語言：</translation>
 <translation id="3030138564564344289">重新嘗試下載</translation>
 <translation id="4381091992796011497">使用者名稱：</translation>
 <translation id="5830720307094128296">另存網頁(&amp;A)...</translation>

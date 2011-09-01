@@ -299,7 +299,7 @@
 <translation id="406070391919917862">Aplikacje działające w tle</translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="3214837514330816581">Usuń zsynchronizowane dane w Panelu nawigacyjnym</translation>
-<translation id="2580170710466019930">Zaczekaj, aż program <ph name="PRODUCT_NAME"/> zainstaluje najnowsze aktualizacje systemowe.</translation>
+<translation id="2580170710466019930">Zaczekaj, aż <ph name="PRODUCT_NAME"/> zainstaluje najnowsze aktualizacje.</translation>
 <translation id="7428061718435085649">Przy użyciu lewego i prawego klawisza Shift wybierz drugiego i trzeciego kandydata</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="2850297146577954246">Każdy tekst mówiony przy użyciu syntezatora mowy</translation>
@@ -1047,7 +1047,7 @@
 <translation id="8705331520020532516">Numer seryjny</translation>
 <translation id="1665770420914915777">Nowa karta</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> godz. temu</translation>
-<translation id="1691063574428301566">Po ukończeniu aktualizacji komputer zostanie ponownie uruchomiony.</translation>
+<translation id="1691063574428301566">Po ukończeniu aktualizacji komputer uruchomi się ponownie.</translation>
 <translation id="131364520783682672">Caps Lock</translation>
 <translation id="3415261598051655619">Dostępny dla skryptu:</translation>
 <translation id="2335122562899522968">Ta strona ustawia pliki cookie.</translation>
@@ -2119,7 +2119,7 @@
 <translation id="5227808808023563348">Znajdź poprzedni tekst</translation>
 <translation id="6650142020817594541">W tej witrynie jest zalecana wtyczka Google Chrome Frame (już zainstalowana).</translation>
 <translation id="6780786534712515143">Gdy wyszukiwanie dynamiczne jest włączone, wczytywanie większości stron internetowych rozpoczyna się w momencie wpisania adresu URL w omniboksie, jeszcze przed naciśnięciem klawisza Enter. Ponadto, jeśli wybrana wyszukiwarka domyślna obsługuje tę funkcję, wyniki wyszukiwania są wyświetlane na bieżąco w trakcie wpisywania zapytania w omniboksie, a podpowiadane przewidywane hasła pomagają zawęzić wyszukiwanie.\n\nWyniki wyszukiwania są pobierane już podczas wpisywania zapytania, dlatego wyszukiwarka domyślna może rejestrować wprowadzany tekst jako wyszukiwane hasła.\n</translation>
-<translation id="6503077044568424649">Najczęściej odwiedzane</translation>
+<translation id="6503077044568424649">Najczęstsze</translation>
 <translation id="4625904365165566833">Niestety, nie masz uprawnień do zalogowania się. Skontaktuj się z właścicielem notebooka.</translation>
 <translation id="7450633916678972976">Uwaga: po kliknięciu opcji „Wyślij zgłoszenie” przeglądarka Chrome wraz ze zgłoszeniem przesyła dziennik
         z wersją przeglądarki Chrome, wersją systemu operacyjnego i odpowiednim adresem URL.
@@ -2697,7 +2697,7 @@
 <translation id="3718288130002896473">Zachowanie</translation>
 <translation id="2168725742002792683">Rozszerzenia plików</translation>
 <translation id="7861805612256278846">nie zalogowano się</translation>
-<translation id="1753905327828125965">Najczęściej odwiedzane</translation>
+<translation id="1753905327828125965">Najczęstsze</translation>
 <translation id="8116972784401310538">&amp;Menedżer zakładek</translation>
 <translation id="1849632043866553433">Pamięci podręczne aplikacji</translation>
 <translation id="3591607774768458617">Ten język jest aktualnie używany w produkcie <ph name="PRODUCT_NAME"/>.</translation>

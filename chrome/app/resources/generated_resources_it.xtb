@@ -650,7 +650,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="1006316751839332762">Passphrase di crittografia</translation>
 <translation id="8795916974678578410">Nuova finestra</translation>
 <translation id="2733275712367076659">Hai certificati da queste organizzazioni che ti identificano:</translation>
-<translation id="4801512016965057443">Consenti roaming dati cellulare</translation>
+<translation id="4801512016965057443">Consenti roaming dati mobile</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="4839122884004914586">Override dell'elenco di software di rendering</translation>
 <translation id="2046040965693081040">Usa pagine correnti</translation>
@@ -984,7 +984,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="798525203920325731">Spazi dei nomi di rete</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME"/> non è stato in grado di completare l'installazione ma continuerà a essere eseguito dall'immagine disco.</translation>
 <translation id="6186893483313227582">Icona <ph name="VALUE"/></translation>
-<translation id="7025190659207909717">Gestione del servizio dati cellulare</translation>
+<translation id="7025190659207909717">Gestione del servizio dati mobile</translation>
 <translation id="8265096285667890932">Utilizza schede laterali</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="3949593566929137881">Inserisci il PIN della scheda SIM</translation>
@@ -2429,7 +2429,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="1352060938076340443">Interrotto</translation>
 <translation id="8571226144504132898">Dizionario dei simboli</translation>
 <translation id="7229570126336867161">Occorre EVDO</translation>
-<translation id="7582844466922312471">Dati cellulare</translation>
+<translation id="7582844466922312471">Dati mobile</translation>
 <translation id="945522503751344254">Invia feedback</translation>
 <translation id="4539401194496451708">Profilo Google Chrome in uso: <ph name="USER_EMAIL_ADDRESS"/>. Ultima sincronizzazione: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Carta di credito (altra)</translation>
@@ -2490,7 +2490,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="5438430601586617544">(Non pacchettizata)</translation>
 <translation id="6460601847208524483">Trova successivo</translation>
 <translation id="8433186206711564395">Impostazioni di rete</translation>
-<translation id="4856478137399998590">Il servizio dati cellulare è attivo e pronto all'uso</translation>
+<translation id="4856478137399998590">Il servizio dati mobile è attivo e pronto all'uso</translation>
 <translation id="3978212384680351466">Preferiti sincronizzati</translation>
 <translation id="1676388805288306495">Cambia carattere e lingua predefiniti per le pagine web.</translation>
 <translation id="3648607100222897006">Queste funzioni sperimentali potrebbero essere modificate, essere interrotte o scomparire in qualsiasi momento. Non offriamo assolutamente alcuna garanzia su ciò potrebbe accadere se attivi uno di questi esperimenti: il tuo browser potrebbe persino andare in autocombustione! Scherzi a parte, il browser potrebbe eliminare tutti i tuoi dati oppure la tua sicurezza e la tua privacy potrebbero essere compromesse in modi inaspettati. Tutti gli esperimenti che attivi saranno abilitati per tutti gli utenti di questo browser. Procedi con cautela.</translation>
@@ -2985,7 +2985,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="8828933418460119530">Nome DNS</translation>
 <translation id="988159990683914416">Build</translation>
 <translation id="8026354464835030469"><ph name="BURNT_AMOUNT"/> su un totale sconosciuto</translation>
-<translation id="4114470632216071239">Blocca scheda SIM (richiedi il PIN per l'uso dei dati cellulare)</translation>
+<translation id="4114470632216071239">Blocca scheda SIM (richiedi il PIN per l'uso dei dati mobile)</translation>
 <translation id="2183426022964444701">Seleziona la directory principale dell'estensione.</translation>
 <translation id="2517143724531502372">I cookie provenienti da <ph name="DOMAIN"/> sono consentiti solo per questa sessione.</translation>
 <translation id="9018524897810991865">Conferma preferenze di sincronizzazione</translation>
@@ -3164,7 +3164,7 @@ e fai clic su OK<ph name="END_BOLD"/>.</translation>
 <translation id="2149973817440762519">Modifica Preferito</translation>
 <translation id="5431318178759467895">A colori</translation>
 <translation id="7064842770504520784">Personalizza impostazioni di sincronizzazione...</translation>
-<translation id="2784407158394623927">Attivazione del servizio dati cellulare</translation>
+<translation id="2784407158394623927">Attivazione del servizio dati mobile</translation>
 <translation id="3679848754951088761"><ph name="SOURCE_ORIGIN"/></translation>
 <translation id="6920989436227028121">Apri in una scheda normale</translation>
 <translation id="4057041477816018958"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/></translation>

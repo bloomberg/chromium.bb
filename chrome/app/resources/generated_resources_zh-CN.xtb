@@ -1237,7 +1237,7 @@
 <translation id="608057490819882785">您确定要从计算机中删除个人资料“<ph name="PROFILE_NAME"/>”以及所有相关数据吗？此操作无法撤消！</translation>
 <translation id="6588399906604251380">启用拼写检查</translation>
 <translation id="7053983685419859001">禁止</translation>
-<translation id="2485056306054380289">服务器 CA 证书：</translation>
+<translation id="2485056306054380289">服务器CA证书：</translation>
 <translation id="6462109140674788769">希腊语键盘</translation>
 <translation id="2727712005121231835">实际大小</translation>
 <translation id="8887733174653581061">前端显示</translation>
@@ -1331,7 +1331,7 @@
 <translation id="4807098396393229769">持卡人姓名</translation>
 <translation id="4094130554533891764">它可以现在访问：</translation>
 <translation id="4131410914670010031">黑白色</translation>
-<translation id="3800503346337426623">跳过登录并以访客身份浏览</translation>
+<translation id="3800503346337426623">不登录并以访客身份浏览</translation>
 <translation id="2615413226240911668">但是，此页中包含其他不安全的资源。他人能在传输过程中查看这些资源，攻击者也可以进行修改，从而改变网页的外观。</translation>
 <translation id="197288927597451399">保留</translation>
 <translation id="5880867612172997051">网络访问已暂停</translation>
@@ -1458,7 +1458,7 @@
 <translation id="7460131386973988868">启用静态 IP 配置。可能无法正常工作。</translation>
 <translation id="4224803122026931301">位置例外情况</translation>
 <translation id="749452993132003881">平假名</translation>
-<translation id="8226742006292257240">以下是已指定给您计算机的随机生成的 TPM 密码：</translation>
+<translation id="8226742006292257240">以下是一个分配给您计算机的、随机生成的 TPM 密码：</translation>
 <translation id="8487693399751278191">点这就开始啦！</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="7484580869648358686">警告：此页面包含危险内容！</translation>

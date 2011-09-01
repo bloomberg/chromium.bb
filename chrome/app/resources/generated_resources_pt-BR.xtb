@@ -25,7 +25,7 @@
 <translation id="859285277496340001">O certificado não especifica um mecanismo para verificar se ele foi revogado.</translation>
 <translation id="2010799328026760191">Teclas modificadoras...</translation>
 <translation id="3300394989536077382">Assinado por</translation>
-<translation id="654233263479157500">Utilize um serviço da web para ajudar a solucionar erros de navegação</translation>
+<translation id="654233263479157500">Utilizar um serviço da web para ajudar a solucionar erros de navegação</translation>
 <translation id="4940047036413029306">Aspas</translation>
 <translation id="1526811905352917883">Foi necessário tentar se conectar utilizando o SSL 3.0. Geralmente, isso significa que o servidor está utilizando versões antigas de software e pode apresentar outros problemas de segurança.</translation>
 <translation id="1497897566809397301">Permitir a configuração de dados locais (recomendado)</translation>
@@ -383,7 +383,7 @@
 <translation id="5098647635849512368">Não é possível encontrar o caminho absoluto para o diretório do pacote.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="6380224340023442078">Configurações de conteúdo...</translation>
-<translation id="950108145290971791">Ativar o Instantâneo para pesquisar e navegar mais rapidamente?</translation>
+<translation id="950108145290971791">Ativar o Google Instant para pesquisar e navegar mais rapidamente?</translation>
 <translation id="144136026008224475">Obter mais extensões &gt;&gt;</translation>
 <translation id="5486326529110362464">O valor inserido para a chave privada deve existir.</translation>
 <translation id="9039663905644212491">PEAP</translation>
@@ -949,7 +949,7 @@
 <translation id="3371861036502301517">Falha na instalação da extensão</translation>
 <translation id="644038709730536388">Saiba mais sobre como se proteger do software prejudicial on-line.</translation>
 <translation id="2155931291251286316">Sempre mostrar pop-ups de <ph name="HOST"/></translation>
-<translation id="3445830502289589282">Autenticação da fase 2:</translation>
+<translation id="3445830502289589282">Aut. da fase 2:</translation>
 <translation id="5650551054760837876">Nenhum resultado de pesquisa encontrado.</translation>
 <translation id="5494362494988149300">Abrir quando estiver &amp;concluído</translation>
 <translation id="540323899562948110">Personalizar perfil...</translation>
@@ -1003,7 +1003,7 @@
 <translation id="939598580284253335">Inserir senha</translation>
 <translation id="8418240940464873056">Modo letras japonesas (Hanja)</translation>
 <translation id="7917972308273378936">Teclado lituano</translation>
-<translation id="8371806639176876412">A entrada da omnibox pode ser registrada</translation>
+<translation id="8371806639176876412">A entrada da caixa de pesquisa poderá ser registrada</translation>
 <translation id="4216499942524365685">Os detalhes de login da sua conta estão desatualizados. Clique para inserir novamente sua senha.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY"/> [<ph name="ISSUED_TO"/>]</translation>
 <translation id="8899388739470541164">Vietnamita</translation>
@@ -1175,7 +1175,7 @@
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="7434823369735508263">Teclado Dvorak do Reino Unido</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> dias</translation>
-<translation id="1707463636381878959">Compartilhar esta rede com outros usuários</translation>
+<translation id="1707463636381878959">Compartilhar esta rede</translation>
 <translation id="2084978867795361905">MS-IME</translation>
 <translation id="7227669995306390694"><ph name="NETWORK"/> não possui plano de dados</translation>
 <translation id="3481915276125965083">Os seguintes pop-ups foram bloqueados nesta página:</translation>
@@ -1223,7 +1223,7 @@
 <translation id="2078019350989722914">Avisar antes de sair (<ph name="KEY_EQUIVALENT"/>)</translation>
 <translation id="7965010376480416255">Memória compartilhada</translation>
 <translation id="2951809536086907720">tipo de heurística: <ph name="HEURISTIC_TYPE"/>\ntipo de servidor: <ph name="SERVER_TYPE"/>\nassinatura do campo: <ph name="FIELD_SIGNATURE"/>\nassinatura do formulário: <ph name="FORM_SIGNATURE"/>\n ID do experimento: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
-<translation id="6248988683584659830">Pesquisar definições</translation>
+<translation id="6248988683584659830">Pesquisar nas configurações</translation>
 <translation id="8323232699731382745">senha da rede</translation>
 <translation id="104086161873270383">Novo Perfil</translation>
 <translation id="2750306679399709583">$1 x $2</translation>
@@ -1231,7 +1231,7 @@
 <translation id="608057490819882785">Tem certeza de que deseja excluir perfil &quot;<ph name="PROFILE_NAME"/>&quot; e todos os dados associados a ele neste computador? Esta ação não poderá ser revertida.</translation>
 <translation id="6588399906604251380">Ativar o corretor ortográfico</translation>
 <translation id="7053983685419859001">Bloquear</translation>
-<translation id="2485056306054380289">Certificado de CA do servidor:</translation>
+<translation id="2485056306054380289">Cert. AC do servidor:</translation>
 <translation id="6462109140674788769">Teclado grego</translation>
 <translation id="2727712005121231835">Tamanho real</translation>
 <translation id="8887733174653581061">Sempre na parte superior</translation>
@@ -2459,7 +2459,7 @@
 <translation id="6860097299815761905">Configurações de proxy...</translation>
 <translation id="3672159315667503033"><ph name="URL"/> quer armazenar permanentemente dados grandes no computador local.</translation>
 <translation id="373572798843615002">1 guia</translation>
-<translation id="4162393307849942816"><ph name="BEGIN_BOLD"/>Você está navegando como visitante<ph name="END_BOLD"/>. As páginas que você visualiza nesta janela não aparecerão no histórico do navegador ou no histórico de pesquisa nem deixarão outros rastros, como cookies, no computador depois que você sair. Os downloads que você fizer e os favoritos que criar não serão preservados.
+<translation id="4162393307849942816"><ph name="BEGIN_BOLD"/>Você está navegando como visitante<ph name="END_BOLD"/>. As páginas em que você navegar nesta janela não aparecerão no histórico do navegador ou no histórico de pesquisa, nem deixarão outros rastros (como cookies) depois que você sair. Os downloads que você fizer e os favoritos que criar não serão mantidos.
         <ph name="LINE_BREAK"/>
         <ph name="BEGIN_LINK"/>Saiba mais<ph name="END_LINK"/> sobre o modo de visitante.</translation>
 <translation id="827924395145979961">As páginas não estão carregando</translation>
@@ -2527,7 +2527,7 @@
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="8954894007019320973">(Continuação)</translation>
 <translation id="3748412725338508953">Houve muitos redirecionamentos.</translation>
-<translation id="5833726373896279253">Essas configurações somente poderão ser modificadas pelo proprietário:</translation>
+<translation id="5833726373896279253">Estas definições somente poderão ser alteradas pelo proprietário:</translation>
 <translation id="6858960932090176617">Ativa o Auditor XSS (proteção de scripts entre sites) do WebKit. Esse recurso tem como objetivo protegê-lo de ataques de sites maliciosos. Ele melhora sua segurança, mas pode não ser compatível com todos os sites.</translation>
 <translation id="6005282720244019462">Teclado da América Latina</translation>
 <translation id="8831104962952173133">Phishing detectado.</translation>
@@ -2834,7 +2834,7 @@
 <translation id="3308006649705061278">UO (Unidade organizacional)</translation>
 <translation id="8912362522468806198">Conta do Google</translation>
 <translation id="4443536555189480885">&amp;Ajuda</translation>
-<translation id="340485819826776184">Use um serviço de previsão para ajudar a preencher as pesquisas e os URLs digitados na barra de endereço</translation>
+<translation id="340485819826776184">Utilizar um serviço de previsão para ajudar a preencher pesquisas e URLs digitados na barra de endereço</translation>
 <translation id="4074900173531346617">Certificado do signatário do e-mail</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="9052208328806230490">Você registrou suas impressoras com <ph name="CLOUD_PRINT_NAME"/> utilizando a conta <ph name="EMAIL"/></translation>
@@ -3092,7 +3092,7 @@
 <translation id="3488065109653206955">Ativado parcialmente</translation>
 <translation id="1481244281142949601">Sua sandbox é adequada.</translation>
 <translation id="4849517651082200438">Não instalar</translation>
-<translation id="8602882075393902833">Ativar o Instantâneo para pesquisar e navegar mais rapidamente</translation>
+<translation id="8602882075393902833">Ativar o Google Instant para pesquisar e navegar mais rapidamente</translation>
 <translation id="6349678711452810642">Tornar padrão</translation>
 <translation id="6263284346895336537">Não crítico</translation>
 <translation id="6409731863280057959">Pop-ups</translation>
@@ -3215,7 +3215,7 @@
 <translation id="122082903575839559">Algoritmo de assinatura do certificado</translation>
 <translation id="2181257377760181418">Permite a visualização na guia de uma operação de impressão.</translation>
 <translation id="7240120331469437312">Nome alternativo do requerente do certificado</translation>
-<translation id="6900113680982781280">Ativar preenchimento automático para preencher formulários da web com apenas um clique</translation>
+<translation id="6900113680982781280">Ativar preenchimento automático e preencher formulários com apenas um clique</translation>
 <translation id="1131850611586448366">O site em <ph name="HOST_NAME"/> foi denunciado como um site de &quot;phishing&quot;. Os sites de phishing enganam os usuários para que divulguem informações pessoais ou financeiras, geralmente tentando se passar por instituições confiáveis, como bancos.</translation>
 <translation id="5413218268059792983">Pesquisar usando <ph name="SEARCH_ENGINE"/> a partir daqui</translation>
 <translation id="1049337682107026577">Digite sua senha de sincronização</translation>

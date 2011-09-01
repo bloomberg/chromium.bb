@@ -1984,7 +1984,7 @@
 <translation id="5843685321177053287">Очекује се успостављање комуникације са услугом управљања уређајем...</translation>
 <translation id="2052389551707911401">Сати: <ph name="NUMBER_MANY"/></translation>
 <translation id="7026338066939101231">Смањење</translation>
-<translation id="5411472733320185105">Не користите подешавања проксија за ове хостове и домене:</translation>
+<translation id="5411472733320185105">Не користи подешавања проксија за ове хостове и домене:</translation>
 <translation id="6691936601825168937">&amp;Проследи</translation>
 <translation id="6566142449942033617">Није било могуће учитати „<ph name="PLUGIN_PATH"/>“ за додатак.</translation>
 <translation id="7065534935986314333">О систему</translation>
@@ -2442,7 +2442,7 @@
 <translation id="1352060938076340443">Прекинуто</translation>
 <translation id="8571226144504132898">Речник симбола</translation>
 <translation id="7229570126336867161">Потребан је EVDO</translation>
-<translation id="7582844466922312471">Подаци за мобилне уређаје</translation>
+<translation id="7582844466922312471">податке за мобилне уређаје</translation>
 <translation id="945522503751344254">Пошаљи повратне информације</translation>
 <translation id="4539401194496451708">Користи Chrome профил <ph name="USER_EMAIL_ADDRESS"/>. Последњи пут синхронизовано: <ph name="LAST_SYNC_TIME"/></translation>
 <translation id="7369847606959702983">Кредитна картица (друга)</translation>

@@ -285,7 +285,7 @@
 <translation id="41293960377217290">Ein Proxy-Server ist ein Server, der als &quot;Vermittler&quot; zwischen Ihrem Computer und anderen Servern agiert. Zurzeit ist Ihr System so konfiguriert, dass ein Proxy-Server verwendet wird,
         <ph name="PRODUCT_NAME"/>
         kann jedoch keine Verbindung zu ihm herstellen.</translation>
-<translation id="4520722934040288962">Nach Opener auswählen</translation>
+<translation id="4520722934040288962">Nach Ursprungsseite auswählen</translation>
 <translation id="3873139305050062481">Eleme&amp;nt überprüfen</translation>
 <translation id="7445762425076701745">Die Identität des Servers, mit dem Sie verbunden sind, kann nicht vollständig überprüft werden. Sie sind mit einem Server verbunden, dessen Name nur innerhalb Ihres Netzwerks gültig ist und dessen Inhaberschaft von einer externen Zertifizierungsstelle nicht überprüft werden kann. Da einige Zertifizierungsstellen ungeachtet dessen dennoch Zertifikate für diese Namen ausstellen, gibt es keine Möglichkeit, sicherzustellen, dass Sie mit der gewünschten Website und nicht mit einem Angreifer verbunden sind.</translation>
 <translation id="1556537182262721003">Erweiterungsverzeichnis konnte nicht in Profil verschoben werden.</translation>
@@ -943,7 +943,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="3371861036502301517">Fehler beim Installieren der Erweiterung</translation>
 <translation id="644038709730536388">Weitere Informationen zum Selbstschutz vor schädlicher Software im Internet.</translation>
 <translation id="2155931291251286316">Pop-ups von <ph name="HOST"/> immer zulassen</translation>
-<translation id="3445830502289589282">Authentifizierung Phase 2:</translation>
+<translation id="3445830502289589282">Authentifizierung 2:</translation>
 <translation id="5650551054760837876">Keine Suchergebnisse gefunden.</translation>
 <translation id="5494362494988149300">Nach &amp;Fertigstellung öffnen</translation>
 <translation id="540323899562948110">Profil anpassen...</translation>
@@ -1169,7 +1169,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="5669267381087807207">Wird aktiviert</translation>
 <translation id="7434823369735508263">Englische Dvorak-Tastatur</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> Tage</translation>
-<translation id="1707463636381878959">Dieses Netzwerk für andere Nutzer freigeben</translation>
+<translation id="1707463636381878959">Dieses Netzwerk für andere freigeben</translation>
 <translation id="2084978867795361905">MS-IME</translation>
 <translation id="7227669995306390694"><ph name="NETWORK"/> kein Datentarif</translation>
 <translation id="3481915276125965083">Die folgenden Pop-ups wurden auf dieser Seite blockiert:</translation>
@@ -1466,7 +1466,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="6459488832681039634">Auswahl suchen</translation>
 <translation id="2392369802118427583">Aktivieren</translation>
 <translation id="9040421302519041149">Der Zugriff auf dieses Netzwerk ist geschützt.</translation>
-<translation id="5659593005791499971">E-Mail</translation>
+<translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="8235325155053717782">Fehler <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
 <translation id="6584878029876017575">Microsoft-Lebensdauersignatur</translation>
 <translation id="562901740552630300">Gehen Sie zu 
@@ -1837,7 +1837,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 
 <ph name="EXTENSION_FILE"/></translation>
 <translation id="16620462294541761">Ihr Passwort konnte leider nicht bestätigt werden. Versuchen Sie es noch einmal.</translation>
-<translation id="3058072209957292419">Konfiguration experimenteller statischer IPs</translation>
+<translation id="3058072209957292419">Experimentelle Konfiguration statischer IPs</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="1394630846966197578">Verbindung zu Spracherkennungsservern fehlgeschlagen</translation>
 <translation id="2498765460639677199">Riesig</translation>
@@ -1956,7 +1956,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="1002064594444093641">Frame d&amp;rucken...</translation>
 <translation id="7234674978021619913">Wir haben <ph name="HOST_NAME"/> bereits informiert, dass wir Malware auf der Website gefunden haben. Weitere Informationen zu den Problemen auf <ph name="HOST_NAME2"/> erhalten Sie auf der Google-<ph name="DIAGNOSTIC_PAGE"/>.</translation>
-<translation id="8202390211066742724">Der Nutzer hat eine DNS-Serveradresse angegeben.</translation>
+<translation id="8202390211066742724">Benutzerdefinierte DNS-Serveradresse</translation>
 <translation id="4608500690299898628">&amp;Suchen...</translation>
 <translation id="7582582252461552277">Dieses Netzwerk bevorzugen</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
@@ -2689,7 +2689,7 @@ nicht auf unsichere Verbindungen zurück.</translation>
 <translation id="2557899542277210112">Platzieren Sie Ihre Lesezeichen hier in der Lesezeichenleiste, um schnell auf sie zugreifen zu können.</translation>
 <translation id="2749881179542288782">Grammatik zusammen mit Rechtschreibung prüfen</translation>
 <translation id="5105855035535475848">Tabs anheften</translation>
-<translation id="6892450194319317066">Nach Opener auswählen</translation>
+<translation id="6892450194319317066">Nach Ursprungsseite auswählen</translation>
 <translation id="5414121716219514204"><ph name="ENGINE_HOST_NAME"/> möchte Ihre Suchmaschine sein.</translation>
 <translation id="2752805177271551234">Eingabeverlauf verwenden</translation>
 <translation id="7268365133021434339">Tabs schließen</translation>

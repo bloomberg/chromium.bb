@@ -31,7 +31,7 @@
 <translation id="1497897566809397301">Yerel verilerin ayarlanmasına izin ver (önerilen)</translation>
 <translation id="3275778913554317645">Pencere olarak aç</translation>
 <translation id="4553117311324416101">Google, devam etmeniz halinde bilgisayarınıza yüklenebilecek kötü amaçlı yazılımlar tespit etti. Bu siteyi daha önce ziyaret ettiyseniz veya güvendiğiniz bir siteyse, bu kötü amaçlı yazılımlar siteye kısa bir süre içinde eklenmiş olabilir. Şu anda bu siteyi açmamanızı tavsiye ediyoruz. Yarın yeniden deneyebilirsiniz ya da başka bir siteye gitmeyi düşünebilirsiniz.</translation>
-<translation id="509988127256758334">&amp;Aranan:</translation>
+<translation id="509988127256758334">A&amp;ranan:</translation>
 <translation id="1420684932347524586">Hata! Rastgele RSA özel anahtarı oluşturulamadı.</translation>
 <translation id="2501173422421700905">Sertifika Beklemede</translation>
 <translation id="2313634973119803790">Ağ teknolojisi:</translation>
@@ -263,7 +263,7 @@
 <translation id="179767530217573436">son 4 hafta</translation>
 <translation id="2279770628980885996">Sunucu isteği gerçekleştirmeyi denerken beklenmedik bir koşulla karşılaşıldı.</translation>
 <translation id="8079135502601738761">Bu PDF dokümanın bazı bölümleri görüntülenemiyor. Adobe Reader ile açılsın mı?</translation>
-<translation id="9123413579398459698">FTP proxy</translation>
+<translation id="9123413579398459698">FTP proxy'si</translation>
 <translation id="3887875461425980041">Flash'ın PPAPI sürümü kullanılıyorsa, ayrı bir eklenti işleminde değil her oluşturucu işleminde onu çalıştırın.</translation>
 <translation id="1751752860232137596">Deneysel yumuşak kaydırma özelliğini etkinleştirin.</translation>
 <translation id="8534801226027872331">Bu durumda, tarayıcınıza sunulan sertifika hata içeriyor ve anlaşılamıyor. Bu, sertifikanın içindeki kimlik bilgilerini veya bağlantı güvenliğini sağlamak için kullanılan diğer bazı bilgileri anlayamadığımız anlamına gelebilir. İlerlememelisiniz.</translation>
@@ -278,7 +278,7 @@
 <translation id="4422347585044846479">Bu sayfanın yer imini düzenle</translation>
 <translation id="1880905663253319515">&quot;<ph name="CERTIFICATE_NAME"/>&quot; sertifikası silinsin mi?</translation>
 <translation id="8546306075665861288">Resim önbelleği</translation>
-<translation id="5904093760909470684">Proxy Yapılandırma</translation>
+<translation id="5904093760909470684">Proxy yapılandırması</translation>
 <translation id="3348643303702027858">OS Kurtarma Medyası oluşturma işlemi iptal edildi.</translation>
 <translation id="3391060940042023865">Aşağıdaki eklenti bozuldu: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4237016987259239829">Ağ Bağlantısı Hatası</translation>
@@ -648,7 +648,7 @@
 <translation id="7810202088502699111">Bu sayfadaki pop-up'lar engellendi.</translation>
 <translation id="8190698733819146287">Dilleri ve girişi özelleştir...</translation>
 <translation id="3808873045540128170">Bu artık iflah olmaz!</translation>
-<translation id="646727171725540434">HTTP proxy</translation>
+<translation id="646727171725540434">HTTP proxy'si</translation>
 <translation id="7576690715254076113">Harmanla</translation>
 <translation id="6355108086588020252">Bazı ayarlar yöneticiniz tarafından devre dışı bırakılmış.</translation>
 <translation id="1006316751839332762">Şifreleme parolası</translation>
@@ -1448,7 +1448,7 @@
 <translation id="5527463195266282916">Uzantının eski sürümüne geçilmeye çalışıldı.</translation>
 <translation id="3289566588497100676">Kolay sembol girişi</translation>
 <translation id="6507969014813375884">Basitleştirilmiş Çince</translation>
-<translation id="7314244761674113881">SOCKS ana makinesi</translation>
+<translation id="7314244761674113881">SOCKS Ana makine</translation>
 <translation id="4630590996962964935">Geçersiz karakter: $1</translation>
 <translation id="5285794783728826432">Web sitelerini tanımlamak için bu sertifikaya güvenin.</translation>
 <translation id="7460131386973988868">Statik IP yapılandırmayı etkinleştirir. Çalışmayabilir.</translation>

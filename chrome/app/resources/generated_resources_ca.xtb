@@ -1492,7 +1492,7 @@
 <translation id="8816996941061600321">Gestor de &amp;fitxers</translation>
 <translation id="2773223079752808209">Atenció al client</translation>
 <translation id="4585473702689066695">So n'ha pogut connectar a la xarxa &quot;<ph name="NAME"/>&quot;.</translation>
-<translation id="4647175434312795566">Accepto l'acord</translation>
+<translation id="4647175434312795566">Accepteu l'acord </translation>
 <translation id="1084824384139382525">Copia l'adr&amp;eça de l'enllaç</translation>
 <translation id="1221462285898798023">Inicieu <ph name="PRODUCT_NAME"/> com a usuari normal. Per executar-lo com a arrel, heu d'especificar un directori de dades d'usuari alternatiu per emmagatzemar la informació del perfil.</translation>
 <translation id="3220586366024592812">El procés del connector <ph name="CLOUD_PRINT_NAME"/> s'ha bloquejat. Voleu reiniciar-lo?</translation>
@@ -1673,7 +1673,7 @@
 <translation id="7609538960069667341">Crea un perfil nou de <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="720658115504386855">Les lletres no distingeixen entre majúscules i minúscules</translation>
 <translation id="2454247629720664989">Paraula clau</translation>
-<translation id="3950820424414687140">Inicia la sessió</translation>
+<translation id="3950820424414687140">Inicieu la sessió</translation>
 <translation id="4626106357471783850">Cal reiniciar <ph name="PRODUCT_NAME"/> per aplicar l'actualització.</translation>
 <translation id="1697068104427956555">Seleccioneu una regió quadrada de la imatge.</translation>
 <translation id="2840798130349147766">Bases de dades web</translation>
@@ -2633,7 +2633,7 @@
 <translation id="8396532978067103567">Contrasenya incorrecta.</translation>
 <translation id="5981759340456370804">Estadístiques</translation>
 <translation id="8160015581537295331">Teclat espanyol</translation>
-<translation id="3505920073976671674">Selecciona una xarxa</translation>
+<translation id="3505920073976671674">Seleccioneu una xarxa</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> dia</translation>
 <translation id="1782924894173027610">El servidor de sincronització està ocupat; torneu-ho a provar d'aquí a una estona.</translation>
 <translation id="6512448926095770873">Abandona aquesta pàgina</translation>
