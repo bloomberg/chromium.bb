@@ -388,7 +388,8 @@ enum {
 typedef void (*tty_vt_func_t)(struct wlsc_compositor *compositor, int event);
 
 struct tty *
-tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func);
+tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func,
+	   int tty_nr);
 
 void
 tty_destroy(struct tty *tty);

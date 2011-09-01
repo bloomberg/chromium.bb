@@ -594,7 +594,7 @@ static const char default_seat[] = "seat0";
 
 static struct wlsc_compositor *
 wfd_compositor_create(struct wl_display *display,
-		      int connector, const char *seat)
+		      int connector, const char *seat, int tty)
 {
 	struct wfd_compositor *ec;
 	struct wl_event_loop *loop;
@@ -655,7 +655,7 @@ wfd_compositor_create(struct wl_display *display,
 		wl_event_loop_add_fd(loop,
 				     wfdDeviceEventGetFD(ec->dev, ec->event),
 				     WL_EVENT_READABLE, on_wfd_event, ec);
-	ec->tty = tty_create(&ec->base, vt_func);
+	ec->tty = tty_create(&ec->base, vt_func, tty);
 
 	return &ec->base;
 }
@@ -669,8 +669,9 @@ backend_init(struct wl_display *display, char *options)
 	int connector = 0, i;
 	const char *seat;
 	char *p, *value;
+	int tty = 1;
 
-	static char * const tokens[] = { "connector", "seat", NULL };
+	static char * const tokens[] = { "connector", "seat", "tty", NULL };
 	
 	p = options;
 	seat = default_seat;
@@ -682,8 +683,11 @@ backend_init(struct wl_display *display, char *options)
 		case 1:
 			seat = value;
 			break;
+		case 2:
+			tty = value;
+			break;
 		}
 	}
 
-	return wfd_compositor_create(display, connector, seat);
+	return wfd_compositor_create(display, connector, seat, tty);
 }

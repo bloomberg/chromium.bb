@@ -779,7 +779,7 @@ static const char default_seat[] = "seat0";
 
 static struct wlsc_compositor *
 drm_compositor_create(struct wl_display *display,
-		      int connector, const char *seat)
+		      int connector, const char *seat, int tty)
 {
 	struct drm_compositor *ec;
 	struct udev_enumerate *e;
@@ -856,7 +856,7 @@ drm_compositor_create(struct wl_display *display,
 	ec->drm_source =
 		wl_event_loop_add_fd(loop, ec->drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
-	ec->tty = tty_create(&ec->base, vt_func);
+	ec->tty = tty_create(&ec->base, vt_func, tty);
 
 	ec->udev_monitor = udev_monitor_new_from_netlink(ec->udev, "udev");
 	if (ec->udev_monitor == NULL) {
@@ -887,8 +887,9 @@ backend_init(struct wl_display *display, char *options)
 	int connector = 0, i;
 	const char *seat;
 	char *p, *value;
+	int tty = 1;
 
-	static char * const tokens[] = { "connector", "seat", NULL };
+	static char * const tokens[] = { "connector", "seat", "tty", NULL };
 
 	p = options;
 	seat = default_seat;
@@ -900,8 +901,11 @@ backend_init(struct wl_display *display, char *options)
 		case 1:
 			seat = value;
 			break;
+		case 2:
+			tty = strtol(value, NULL, 0);
+			break;
 		}
 	}
 
-	return drm_compositor_create(display, connector, seat);
+	return drm_compositor_create(display, connector, seat, tty);
 }

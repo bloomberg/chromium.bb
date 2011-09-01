@@ -89,22 +89,27 @@ on_tty_input(int fd, uint32_t mask, void *data)
 }
 
 struct tty *
-tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func)
+tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func,
+           int tty_nr)
 {
 	struct termios raw_attributes;
 	struct vt_mode mode = { 0 };
 	int ret;
 	struct tty *tty;
 	struct wl_event_loop *loop;
+	char filename[16];
 
 	tty = malloc(sizeof *tty);
 	if (tty == NULL)
 		return NULL;
 
+	snprintf(filename, sizeof filename, "/dev/tty%d", tty_nr);
+	fprintf(stderr, "compositor: using %s\n", filename);
+
 	memset(tty, 0, sizeof *tty);
 	tty->compositor = compositor;
 	tty->vt_func = vt_func;
-	tty->fd = open("/dev/tty", O_RDWR | O_NOCTTY);
+	tty->fd = open(filename, O_RDWR | O_NOCTTY);
 	if (tty->fd <= 0) {
 		fprintf(stderr, "failed to open active tty: %m\n");
 		return NULL;
