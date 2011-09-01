@@ -128,18 +128,18 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	case WL_SHM_FORMAT_XRGB32:
 		break;
 	default:
-		wl_client_post_error(client, &resource->object,
-				     WL_SHM_ERROR_INVALID_FORMAT,
-				     "invalid format");
+		wl_resource_post_error(resource,
+				       WL_SHM_ERROR_INVALID_FORMAT,
+				       "invalid format");
 		close(fd);
 		return;
 	}
 
 	if (width < 0 || height < 0 || stride < width) {
-		wl_client_post_error(client, &resource->object,
-				     WL_SHM_ERROR_INVALID_STRIDE,
-				     "invalid width, height or stride (%dx%d, %u)",
-				     width, height, stride);
+		wl_resource_post_error(resource,
+				       WL_SHM_ERROR_INVALID_STRIDE,
+				       "invalid width, height or stride (%dx%d, %u)",
+				       width, height, stride);
 		close(fd);
 		return;
 	}
@@ -149,9 +149,9 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 
 	close(fd);
 	if (data == MAP_FAILED) {
-		wl_client_post_error(client, &resource->object,
-				     WL_SHM_ERROR_INVALID_FD,
-				     "failed mmap fd %d", fd);
+		wl_resource_post_error(resource,
+				       WL_SHM_ERROR_INVALID_FD,
+				       "failed mmap fd %d", fd);
 		return;
 	}
 
@@ -159,7 +159,7 @@ shm_create_buffer(struct wl_client *client, struct wl_resource *resource,
 				    width, height, stride, format, data);
 	if (buffer == NULL) {
 		munmap(data, stride * height);
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 		return;
 	}
 
