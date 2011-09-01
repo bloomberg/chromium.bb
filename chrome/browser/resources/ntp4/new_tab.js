@@ -181,9 +181,18 @@ cr.define('ntp4', function() {
     if (localStrings.getString('ntp4_intro_message')) {
       infoBubble = new cr.ui.Bubble;
       infoBubble.anchorNode = mostVisitedPage.navigationDot;
-      infoBubble.text = localStrings.getString('ntp4_intro_message');
-      infoBubble.show();
 
+      var bubbleContent = $('ntp4-intro-bubble-contents');
+      infoBubble.content = bubbleContent;
+      bubbleContent.hidden = false;
+
+      infoBubble.handleCloseEvent = function() {
+        this.hide();
+        chrome.send('introMessageDismissed');
+      }
+      infoBubble.querySelector('a').onclick = infoBubble.hide.bind(infoBubble);
+
+      infoBubble.show();
       chrome.send('introMessageSeen');
     }
 
@@ -663,9 +672,9 @@ cr.define('ntp4', function() {
   }
 
   /**
-    * Timeout ID.
-    * @type {number}
-    */
+   * Timeout ID.
+   * @type {number}
+   */
   var notificationTimeout_ = 0;
 
   /**

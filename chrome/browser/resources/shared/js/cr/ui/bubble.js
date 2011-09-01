@@ -20,18 +20,31 @@ cr.define('cr.ui', function() {
       this.className = 'bubble';
       this.innerHTML =
           '<div class=\"bubble-contents\"></div>' +
+          '<div class=\"bubble-close\"></div>' +
           '<div class=\"bubble-shadow\"></div>' +
           '<div class=\"bubble-arrow\"></div>';
 
       this.hidden = true;
+      this.handleCloseEvent = this.hide;
     },
 
     /**
-     * Sets the text message within the bubble.
-     * @param {String} text The message string.
+     * Sets the child node of the bubble.
+     * @param {node} An HTML element
      */
-    set text(text) {
-      this.querySelector('.bubble-contents').textContent = text;
+    set content(node) {
+      var bubbleContent = this.querySelector('.bubble-contents');
+      bubbleContent.innerHTML = "";
+      bubbleContent.appendChild(node);
+    },
+
+    /**
+     * Handles close event which is triggered when the close button
+     * is clicked. By default is set to this.hide.
+     * @param {function} A function with no parameters
+     */
+    set handleCloseEvent(func) {
+      this.handleCloseEvent_ = func;
     },
 
     /**
@@ -100,7 +113,9 @@ cr.define('cr.ui', function() {
           break;
 
         case 'mousedown':
-          if (!this.contains(e.target))
+          if (e.target == this.querySelector('.bubble-close'))
+            this.handleCloseEvent_();
+          else if (!this.contains(e.target))
             this.hide();
           break;
       }

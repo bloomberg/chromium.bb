@@ -105,7 +105,7 @@ cr.define('ntp4', function() {
       if (this.ownerDocument.activeElement != this.input_)
         this.focus();
 
-      chrome.send('navigationDotUsed');
+      chrome.send('introMessageDismissed');
       e.stopPropagation();
     },
 

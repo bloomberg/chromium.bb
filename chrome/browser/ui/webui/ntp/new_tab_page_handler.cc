@@ -4,25 +4,30 @@
 
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 
-#include "chrome/common/pref_names.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "content/common/notification_service.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 static const int kIntroDisplayMax = 10;
+
+// The URL of a knowledge-base article about the new NTP.
+static const char kNTP4IntroURL[] =
+  "http://www.google.com/support/chrome/bin/answer.py?answer=95451";
 
 void NewTabPageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("closePromo", NewCallback(
       this, &NewTabPageHandler::HandleClosePromo));
   web_ui_->RegisterMessageCallback("pageSelected", NewCallback(
       this, &NewTabPageHandler::HandlePageSelected));
-  web_ui_->RegisterMessageCallback("navigationDotUsed", NewCallback(
-      this, &NewTabPageHandler::HandleNavDotUsed));
+  web_ui_->RegisterMessageCallback("introMessageDismissed", NewCallback(
+      this, &NewTabPageHandler::HandleIntroMessageDismissed));
   web_ui_->RegisterMessageCallback("introMessageSeen", NewCallback(
       this, &NewTabPageHandler::HandleIntroMessageSeen));
 }
@@ -49,7 +54,7 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
   prefs->SetInteger(prefs::kNTPShownPage, page_id | index);
 }
 
-void NewTabPageHandler::HandleNavDotUsed(const ListValue* args) {
+void NewTabPageHandler::HandleIntroMessageDismissed(const ListValue* args) {
   PrefService* prefs = Profile::FromWebUI(web_ui_)->GetPrefs();
   prefs->SetInteger(prefs::kNTP4IntroDisplayCount, kIntroDisplayMax + 1);
 }
@@ -100,6 +105,9 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
     } else {
       values->SetString("ntp4_intro_message",
                         l10n_util::GetStringUTF16(IDS_NTP4_INTRO_MESSAGE));
+      values->SetString("ntp4_intro_url", kNTP4IntroURL);
+      values->SetString("learn_more",
+                        l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     }
   }
 }
