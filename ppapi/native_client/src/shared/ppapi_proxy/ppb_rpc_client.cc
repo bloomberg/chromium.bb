@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1311,27 +1311,6 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_SetAttribs(
       "PPB_Graphics3D_SetAttribs:iI:i",
       context,
       attrib_list_bytes, attrib_list,
-      pp_error
-  );
-  return retval;
-}
-
-NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_ResizeBuffers(
-    NaClSrpcChannel* channel,
-    PP_Resource context,
-    int32_t width,
-    int32_t height,
-    int32_t* pp_error)  {
-  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
-         ("%s: PPAPI calls are not supported off the main thread\n",
-          __FUNCTION__));
-  NaClSrpcError retval;
-  retval = NaClSrpcInvokeBySignature(
-      channel,
-      "PPB_Graphics3D_ResizeBuffers:iii:i",
-      context,
-      width,
-      height,
       pp_error
   );
   return retval;

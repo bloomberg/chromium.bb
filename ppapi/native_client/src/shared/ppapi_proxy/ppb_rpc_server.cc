@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1055,22 +1055,6 @@ static void PPB_Graphics3D_SetAttribsDispatcher(
       done,
       inputs[0]->u.ival,
       inputs[1]->u.count, inputs[1]->arrays.iarr,
-      &(outputs[0]->u.ival)
-  );
-}
-
-static void PPB_Graphics3D_ResizeBuffersDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PpbGraphics3DRpcServer::PPB_Graphics3D_ResizeBuffers(
-      rpc,
-      done,
-      inputs[0]->u.ival,
-      inputs[1]->u.ival,
-      inputs[2]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -2260,7 +2244,6 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Graphics3D_Create:iiI:i", PPB_Graphics3D_CreateDispatcher },
   { "PPB_Graphics3D_GetAttribs:iI:Ii", PPB_Graphics3D_GetAttribsDispatcher },
   { "PPB_Graphics3D_SetAttribs:iI:i", PPB_Graphics3D_SetAttribsDispatcher },
-  { "PPB_Graphics3D_ResizeBuffers:iii:i", PPB_Graphics3D_ResizeBuffersDispatcher },
   { "PPB_Graphics3D_SwapBuffers:ii:i", PPB_Graphics3D_SwapBuffersDispatcher },
   { "PPB_Graphics3DTrusted_CreateRaw:iiI:i", PPB_Graphics3DTrusted_CreateRawDispatcher },
   { "PPB_Graphics3DTrusted_InitCommandBuffer:ii:i", PPB_Graphics3DTrusted_InitCommandBufferDispatcher },

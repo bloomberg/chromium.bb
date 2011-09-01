@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -136,21 +136,6 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_SetAttribs(
     return;
   *pp_error = ppapi_proxy::PPBGraphics3DInterface()->SetAttribs(
       graphics3d_id, attrib_list);
-  rpc->result = NACL_SRPC_RESULT_OK;
-}
-
-void PpbGraphics3DRpcServer::PPB_Graphics3D_ResizeBuffers(
-    NaClSrpcRpc* rpc,
-    NaClSrpcClosure* done,
-    PP_Resource graphics3d_id,
-    int32_t width,
-    int32_t height,
-    int32_t* pp_error) {
-  DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_ResizeBuffers(...)\n");
-  NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  *pp_error = ppapi_proxy::PPBGraphics3DInterface()->ResizeBuffers(
-      graphics3d_id, width, height);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -539,13 +539,6 @@ class PpbGraphics3DRpcServer {
       NaClSrpcClosure* done,
       PP_Resource context,
       nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
-      int32_t* pp_error);
-  static void PPB_Graphics3D_ResizeBuffers(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      PP_Resource context,
-      int32_t width,
-      int32_t height,
       int32_t* pp_error);
   static void PPB_Graphics3D_SwapBuffers(
       NaClSrpcRpc* rpc,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -108,20 +108,15 @@ int32_t SetAttribs(PP_Resource graphics3d_id,
 int32_t ResizeBuffers(PP_Resource graphics3d_id,
                       int32_t width,
                       int32_t height) {
-  int32_t pp_error;
-  NaClSrpcError retval =
-      PpbGraphics3DRpcClient::PPB_Graphics3D_ResizeBuffers(
-          GetMainSrpcChannel(),
-          graphics3d_id,
-          width,
-          height,
-          &pp_error);
-  if (retval != NACL_SRPC_RESULT_OK) {
+  if ((width < 0) || (height < 0))
     return PP_ERROR_BADARGUMENT;
-  }
-  return pp_error;
+  gpu::gles2::GLES2Implementation* impl =
+      PluginGraphics3D::implFromResource(graphics3d_id);
+  if (impl == NULL)
+    return PP_ERROR_BADRESOURCE;
+  impl->ResizeCHROMIUM(width, height);
+  return PP_OK;
 }
-
 
 int32_t SwapBuffs(PP_Resource graphics3d_id,
                   struct PP_CompletionCallback callback) {

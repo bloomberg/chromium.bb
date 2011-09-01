@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -39,15 +39,6 @@
             'outputs': [['pp_error', 'int32_t']
                        ],
            },
-           # For PPB_Graphics3D.ResizeBuffers(...)
-           {'name': 'PPB_Graphics3D_ResizeBuffers',
-            'inputs': [['context', 'PP_Resource'],
-                       ['width', 'int32_t'],
-                       ['height', 'int32_t']
-                      ],
-            'outputs': [['pp_error', 'int32_t']
-                       ],
-          },
           # For PPB_Graphics3D.SwapBuffers(...)
           {'name': 'PPB_Graphics3D_SwapBuffers',
            'inputs': [['context', 'PP_Resource'],
