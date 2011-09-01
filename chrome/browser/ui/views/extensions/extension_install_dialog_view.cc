@@ -66,8 +66,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView {
   ExtensionInstallDialogView(ExtensionInstallUI::Delegate* delegate,
                              const Extension* extension,
                              SkBitmap* icon,
-                             const std::vector<string16>& permissions,
-                             ExtensionInstallUI::PromptType type);
+                             const ExtensionInstallUI::Prompt& prompt);
   virtual ~ExtensionInstallDialogView();
 
  private:
@@ -112,9 +111,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView {
   // whether the extension requires any permissions.
   int right_column_width_;
 
-  // The type of install dialog, which must be INSTALL_PROMPT or
-  // RE_ENABLE_PROMPT.
-  ExtensionInstallUI::PromptType type_;
+  ExtensionInstallUI::Prompt prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
@@ -123,15 +120,14 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
-    const std::vector<string16>& permissions,
-    ExtensionInstallUI::PromptType type)
+    const ExtensionInstallUI::Prompt& prompt)
     : delegate_(delegate),
       icon_(NULL),
       heading_(NULL),
       will_have_access_to_(NULL),
       permission_box_(NULL),
       right_column_width_(0),
-      type_(type) {
+      prompt_(prompt) {
   // Scale down to icon size, but allow smaller icons (don't scale up).
   gfx::Size size(icon->width(), icon->height());
   if (size.width() > kIconSize || size.height() > kIconSize)
@@ -144,7 +140,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   AddChildView(icon_);
 
   heading_ = new views::Label(UTF16ToWide(
-      l10n_util::GetStringFUTF16(ExtensionInstallUI::kHeadingIds[type_],
+      l10n_util::GetStringFUTF16(ExtensionInstallUI::kHeadingIds[prompt.type],
                                  UTF8ToUTF16(extension->name()))));
   heading_->SetFont(heading_->font().DeriveFont(kHeadingFontSizeDelta,
                                                 gfx::Font::BOLD));
@@ -152,12 +148,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(heading_);
 
-  if (permissions.empty()) {
+  if (prompt.permissions.empty()) {
     right_column_width_ = kNoPermissionsRightColumnWidth;
   } else {
     right_column_width_ = kPermissionBoxWidth;
     will_have_access_to_ = new views::Label(UTF16ToWide(
-        l10n_util::GetStringUTF16(ExtensionInstallUI::kWarningIds[type_])));
+        l10n_util::GetStringUTF16(
+            ExtensionInstallUI::kWarningIds[prompt.type])));
     will_have_access_to_->SetMultiLine(true);
     will_have_access_to_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(will_have_access_to_);
@@ -171,8 +168,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     AddChildView(permission_box_);
   }
 
-  for (size_t i = 0; i < permissions.size(); ++i) {
-    views::Label* label = new views::Label(UTF16ToWide(permissions[i]));
+  for (size_t i = 0; i < prompt.permissions.size(); ++i) {
+    views::Label* label = new views::Label(UTF16ToWide(prompt.permissions[i]));
     label->SetMultiLine(true);
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     permission_box_->AddChildView(label);
@@ -273,10 +270,10 @@ std::wstring ExtensionInstallDialogView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
     case MessageBoxFlags::DIALOGBUTTON_OK:
-      return UTF16ToWide(
-          l10n_util::GetStringUTF16(ExtensionInstallUI::kButtonIds[type_]));
+      return UTF16ToWide(l10n_util::GetStringUTF16(
+          ExtensionInstallUI::kButtonIds[prompt_.type]));
     case MessageBoxFlags::DIALOGBUTTON_CANCEL: {
-        int id = ExtensionInstallUI::kAbortButtonIds[type_];
+        int id = ExtensionInstallUI::kAbortButtonIds[prompt_.type];
         return UTF16ToWide(l10n_util::GetStringUTF16(id > 0 ? id : IDS_CANCEL));
       }
     default:
@@ -305,7 +302,7 @@ bool ExtensionInstallDialogView::IsModal() const {
 
 std::wstring ExtensionInstallDialogView::GetWindowTitle() const {
   return UTF16ToWide(
-      l10n_util::GetStringUTF16(ExtensionInstallUI::kTitleIds[type_]));
+      l10n_util::GetStringUTF16(ExtensionInstallUI::kTitleIds[prompt_.type]));
 }
 
 views::View* ExtensionInstallDialogView::GetContentsView() {
@@ -317,8 +314,7 @@ void ShowExtensionInstallDialog(
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
-    const std::vector<string16>& permissions,
-    ExtensionInstallUI::PromptType type) {
+    const ExtensionInstallUI::Prompt& prompt) {
 #if defined(OS_CHROMEOS)
   // Use a tabbed browser window as parent on ChromeOS.
   Browser* browser = BrowserList::FindTabbedBrowser(profile, true);
@@ -337,7 +333,7 @@ void ShowExtensionInstallDialog(
   }
 
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      delegate, extension, icon, permissions, type);
+      delegate, extension, icon, prompt);
 
   views::Widget* window =  browser::CreateViewsWindow(
       browser_window->GetNativeHandle(), dialog);

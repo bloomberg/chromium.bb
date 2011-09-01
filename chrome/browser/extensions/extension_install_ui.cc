@@ -41,17 +41,20 @@
 // static
 const int ExtensionInstallUI::kTitleIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_TITLE,
+  IDS_EXTENSION_INSTALL_PROMPT_TITLE,
   IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
   IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE
 };
 // static
 const int ExtensionInstallUI::kHeadingIds[NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+  IDS_EXTENSION_INSTALL_PROMPT_HEADING,
   IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING,
   IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING
 };
 // static
 const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
+  IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
   IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON
@@ -60,10 +63,12 @@ const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
 const int ExtensionInstallUI::kAbortButtonIds[NUM_PROMPT_TYPES] = {
   0,
   0,
+  0,
   IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON
 };
 // static
 const int ExtensionInstallUI::kWarningIds[NUM_PROMPT_TYPES] = {
+  IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO,
@@ -75,6 +80,12 @@ namespace {
 const int kIconSize = 69;
 
 }  // namespace
+
+ExtensionInstallUI::Prompt::Prompt(PromptType type) : type(type) {
+}
+
+ExtensionInstallUI::Prompt::~Prompt() {
+}
 
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile),
@@ -214,10 +225,10 @@ void ExtensionInstallUI::OnImageLoaded(
           Source<ExtensionInstallUI>(this),
           NotificationService::NoDetails());
 
-      std::vector<string16> warnings =
-          permissions_->GetWarningMessages();
+      Prompt prompt(prompt_type_);
+      prompt.permissions = permissions_->GetWarningMessages();
       ShowExtensionInstallDialog(
-          profile_, delegate_, extension_, &icon_, warnings, prompt_type_);
+          profile_, delegate_, extension_, &icon_, prompt);
       break;
     }
     default:

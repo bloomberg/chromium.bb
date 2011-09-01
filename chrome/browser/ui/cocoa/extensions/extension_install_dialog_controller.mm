@@ -62,13 +62,12 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
                  extension:(const Extension*)extension
                   delegate:(ExtensionInstallUI::Delegate*)delegate
                       icon:(SkBitmap*)icon
-                  warnings:(const std::vector<string16>&)warnings
-                      type:(ExtensionInstallUI::PromptType)type {
+                    prompt:(const ExtensionInstallUI::Prompt&)prompt {
   NSString* nibpath = nil;
 
-  // We use a different XIB in the case of no warnings, that is a little bit
-  // more nicely laid out.
-  if (warnings.empty()) {
+  // We use a different XIB in the case of no permission warnings, that is a
+  // little bit more nicely laid out.
+  if (prompt.permissions.empty()) {
     nibpath = [base::mac::MainAppBundle()
                pathForResource:@"ExtensionInstallPromptNoWarnings"
                         ofType:@"nib"];
@@ -85,25 +84,26 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
     delegate_ = delegate;
 
     title_.reset(
-        [l10n_util::GetNSStringF(ExtensionInstallUI::kHeadingIds[type],
+        [l10n_util::GetNSStringF(ExtensionInstallUI::kHeadingIds[prompt.type],
                                  UTF8ToUTF16(extension->name())) retain]);
     subtitle_.reset(
-         [l10n_util::GetNSString(ExtensionInstallUI::kWarningIds[type])
+         [l10n_util::GetNSString(ExtensionInstallUI::kWarningIds[prompt.type])
           retain]);
-    button_.reset([l10n_util::GetNSString(ExtensionInstallUI::kButtonIds[type])
-                   retain]);
-    int cancel_id = ExtensionInstallUI::kAbortButtonIds[type];
+    button_.reset([l10n_util::GetNSString(
+                      ExtensionInstallUI::kButtonIds[prompt.type]) retain]);
+    int cancel_id = ExtensionInstallUI::kAbortButtonIds[prompt.type];
     cancel_button_.reset([l10n_util::GetNSString(
         cancel_id > 0 ? cancel_id : IDS_CANCEL) retain]);
 
-    // We display the warnings as a simple text string, separated by newlines.
-    if (!warnings.empty()) {
+    // We display the permission warnings as a simple text string, separated by
+    // newlines.
+    if (!prompt.permissions.empty()) {
       string16 joined_warnings;
-      for (size_t i = 0; i < warnings.size(); ++i) {
+      for (size_t i = 0; i < prompt.permissions.size(); ++i) {
         if (i > 0)
           joined_warnings += UTF8ToUTF16("\n\n");
 
-        joined_warnings += warnings[i];
+        joined_warnings += prompt.permissions[i];
       }
 
       warnings_.reset(
@@ -211,8 +211,7 @@ void ShowExtensionInstallDialog(
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,
     SkBitmap* icon,
-    const std::vector<string16>& warnings,
-    ExtensionInstallUI::PromptType type) {
+    const ExtensionInstallUI::Prompt& prompt) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort(false);
@@ -234,8 +233,7 @@ void ShowExtensionInstallDialog(
                    extension:extension
                     delegate:delegate
                         icon:icon
-                    warnings:warnings
-                        type:type];
+                      prompt:prompt];
 
   [controller runAsModalSheet];
 }

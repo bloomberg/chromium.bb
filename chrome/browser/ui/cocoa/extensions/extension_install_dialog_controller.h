@@ -55,8 +55,7 @@ class Profile;
                  extension:(const Extension*)extension
                   delegate:(ExtensionInstallUI::Delegate*)delegate
                       icon:(SkBitmap*)bitmap
-                  warnings:(const std::vector<string16>&)warnings
-                      type:(ExtensionInstallUI::PromptType)type;
+                    prompt:(const ExtensionInstallUI::Prompt&)prompt;
 - (void)runAsModalSheet;
 - (IBAction)cancel:(id)sender;
 - (IBAction)ok:(id)sender;

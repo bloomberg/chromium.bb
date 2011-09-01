@@ -107,8 +107,8 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
   scoped_ptr<MockExtensionInstallUIDelegate> delegate(
       new MockExtensionInstallUIDelegate);
 
-  std::vector<string16> warnings;
-  warnings.push_back(UTF8ToUTF16("warning 1"));
+  ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
+  prompt.permissions.push_back(UTF8ToUTF16("warning 1"));
 
   scoped_nsobject<ExtensionInstallDialogController>
     controller([[ExtensionInstallDialogController alloc]
@@ -117,8 +117,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
                             extension:extension_.get()
                             delegate:delegate.get()
                                 icon:&icon_
-                            warnings:warnings
-                                type:ExtensionInstallUI::INSTALL_PROMPT]);
+                              prompt:prompt]);
 
   [controller window];  // force nib load
 
@@ -141,7 +140,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
 
   EXPECT_TRUE([controller warningsField] != nil);
   EXPECT_NSEQ([[controller warningsField] stringValue],
-              base::SysUTF16ToNSString(warnings[0]));
+              base::SysUTF16ToNSString(prompt.permissions[0]));
 
   EXPECT_TRUE([controller warningsBox] != nil);
 
@@ -164,18 +163,17 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalOK) {
   scoped_ptr<MockExtensionInstallUIDelegate> delegate(
       new MockExtensionInstallUIDelegate);
 
-  std::vector<string16> warnings;
-  warnings.push_back(UTF8ToUTF16("warning 1"));
+  ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
+  prompt.permissions.push_back(UTF8ToUTF16("warning 1"));
 
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
-              initWithParentWindow:test_window()
-              profile:helper_.profile()
-              extension:extension_.get()
-              delegate:delegate.get()
-              icon:&icon_
-              warnings:warnings
-              type:ExtensionInstallUI::INSTALL_PROMPT]);
+               initWithParentWindow:test_window()
+                            profile:helper_.profile()
+                          extension:extension_.get()
+                           delegate:delegate.get()
+                               icon:&icon_
+                             prompt:prompt]);
 
   [controller window];  // force nib load
   [controller ok:nil];
@@ -192,34 +190,34 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   scoped_ptr<MockExtensionInstallUIDelegate> delegate2(
       new MockExtensionInstallUIDelegate);
 
-  std::vector<string16> one_warning;
-  one_warning.push_back(UTF8ToUTF16("warning 1"));
+  ExtensionInstallUI::Prompt one_warning_prompt(
+      ExtensionInstallUI::INSTALL_PROMPT);
+  one_warning_prompt.permissions.push_back(UTF8ToUTF16("warning 1"));
 
-  std::vector<string16> two_warnings;
-  two_warnings.push_back(UTF8ToUTF16("warning 1"));
-  two_warnings.push_back(UTF8ToUTF16("warning 2"));
+  ExtensionInstallUI::Prompt two_warnings_prompt(
+      ExtensionInstallUI::INSTALL_PROMPT);
+  two_warnings_prompt.permissions.push_back(UTF8ToUTF16("warning 1"));
+  two_warnings_prompt.permissions.push_back(UTF8ToUTF16("warning 2"));
 
   scoped_nsobject<ExtensionInstallDialogController>
   controller1([[ExtensionInstallDialogController alloc]
-              initWithParentWindow:test_window()
-              profile:helper_.profile()
-              extension:extension_.get()
-              delegate:delegate1.get()
-              icon:&icon_
-              warnings:one_warning
-              type:ExtensionInstallUI::INSTALL_PROMPT]);
+                initWithParentWindow:test_window()
+                             profile:helper_.profile()
+                           extension:extension_.get()
+                            delegate:delegate1.get()
+                                icon:&icon_
+                              prompt:one_warning_prompt]);
 
   [controller1 window];  // force nib load
 
   scoped_nsobject<ExtensionInstallDialogController>
   controller2([[ExtensionInstallDialogController alloc]
-               initWithParentWindow:test_window()
-               profile:helper_.profile()
-               extension:extension_.get()
-               delegate:delegate2.get()
-               icon:&icon_
-               warnings:two_warnings
-               type:ExtensionInstallUI::INSTALL_PROMPT]);
+                initWithParentWindow:test_window()
+                             profile:helper_.profile()
+                           extension:extension_.get()
+                            delegate:delegate2.get()
+                                icon:&icon_
+                              prompt:two_warnings_prompt]);
 
   [controller2 window];  // force nib load
 
@@ -252,17 +250,19 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsSkinny) {
       new MockExtensionInstallUIDelegate);
 
   // No warnings should trigger skinny prompt.
+  ExtensionInstallUI::Prompt no_warnings_prompt(
+      ExtensionInstallUI::INSTALL_PROMPT);
+
   std::vector<string16> warnings;
 
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
-              initWithParentWindow:test_window()
-              profile:helper_.profile()
-              extension:extension_.get()
-              delegate:delegate.get()
-              icon:&icon_
-              warnings:warnings
-              type:ExtensionInstallUI::INSTALL_PROMPT]);
+               initWithParentWindow:test_window()
+                            profile:helper_.profile()
+                          extension:extension_.get()
+                           delegate:delegate.get()
+                               icon:&icon_
+                             prompt:no_warnings_prompt]);
 
   [controller window];  // force nib load
 

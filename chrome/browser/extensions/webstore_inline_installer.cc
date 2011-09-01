@@ -24,6 +24,10 @@
 const char kManifestKey[] = "manifest";
 const char kIconUrlKey[] = "icon_url";
 const char kLocalizedNameKey[] = "localized_name";
+const char kLocalizedDescriptionKey[] = "localized_description";
+const char kUsersKey[] = "users";
+const char kAverageRatingKey[] = "average_rating";
+const char kRatingCountKey[] = "rating_count";
 
 const char kInvalidWebstoreItemId[] = "Invalid webstore item ID";
 const char kWebstoreRequestError[] = "Could not fetch data from webstore";
@@ -181,9 +185,26 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
     return;
   }
 
-  // Localized name is optional.
-  if (webstore_data->HasKey(kLocalizedNameKey) &&
-      !webstore_data->GetString(kLocalizedNameKey, &localized_name_)) {
+  // Number of users, average rating and rating count are required.
+  if (!webstore_data->GetString(kUsersKey, &localized_user_count_) ||
+      !webstore_data->GetDouble(kAverageRatingKey, &average_rating_) ||
+      !webstore_data->GetInteger(kRatingCountKey, &rating_count_)) {
+    CompleteInstall(kInvalidWebstoreResponseError);
+    return;
+  }
+
+  if (average_rating_ < ExtensionInstallUI::kMinExtensionRating ||
+      average_rating_ >ExtensionInstallUI::kMaxExtensionRating) {
+    CompleteInstall(kInvalidWebstoreResponseError);
+    return;
+  }
+
+  // Localized name and description are optional.
+  if ((webstore_data->HasKey(kLocalizedNameKey) &&
+      !webstore_data->GetString(kLocalizedNameKey, &localized_name_)) ||
+      (webstore_data->HasKey(kLocalizedDescriptionKey) &&
+      !webstore_data->GetString(
+          kLocalizedDescriptionKey, &localized_description_))) {
     CompleteInstall(kInvalidWebstoreResponseError);
     return;
   }
@@ -229,17 +250,23 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
 
   Profile* profile = Profile::FromBrowserContext(
       tab_contents_->browser_context());
-  scoped_refptr<Extension> dummy_extension;
+
+  ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INLINE_INSTALL_PROMPT);
+  prompt.localized_user_count = localized_user_count_;
+  prompt.average_rating = average_rating_;
+  prompt.rating_count = rating_count_;
+
   ShowExtensionInstallDialogForManifest(profile,
                                         this,
                                         manifest,
                                         id_,
                                         localized_name_,
+                                        localized_description_,
                                         &icon_,
-                                        ExtensionInstallUI::INSTALL_PROMPT,
-                                        &dummy_extension);
+                                        prompt,
+                                        &dummy_extension_);
 
-  if (!dummy_extension.get()) {
+  if (!dummy_extension_.get()) {
     CompleteInstall(kInvalidManifestError);
     return;
   }

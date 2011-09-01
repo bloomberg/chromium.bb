@@ -90,8 +90,13 @@ class WebstoreInlineInstaller
 
   // Extracted from the webstore JSON data response.
   std::string localized_name_;
+  std::string localized_description_;
+  std::string localized_user_count_;
+  double average_rating_;
+  int rating_count_;
   scoped_ptr<DictionaryValue> webstore_data_;
   scoped_ptr<DictionaryValue> manifest_;
+  scoped_refptr<Extension> dummy_extension_;
   SkBitmap icon_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebstoreInlineInstaller);

@@ -30,10 +30,34 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   enum PromptType {
     UNSET_PROMPT_TYPE = -1,
     INSTALL_PROMPT = 0,
+    INLINE_INSTALL_PROMPT,
     RE_ENABLE_PROMPT,
     PERMISSIONS_PROMPT,
     NUM_PROMPT_TYPES
   };
+
+  // Extra information needed to display an installation or uninstallation
+  // prompt.
+  struct Prompt {
+    explicit Prompt(PromptType type);
+    ~Prompt();
+
+    PromptType type;
+    // Permissions that are being requested (may not be all of an extension's
+    // permissions if only additional ones are being requested)
+    std::vector<string16> permissions;
+
+    // These fields are populated only when the prompt type is
+    // INLINE_INSTALL_PROMPT
+    // Already formatted to be locale-specific.
+    std::string localized_user_count;
+    // Range is kMinExtensionRating to kMaxExtensionRating
+    double average_rating;
+    int rating_count;
+  };
+
+  static const int kMinExtensionRating = 0;
+  static const int kMaxExtensionRating = 5;
 
   // A mapping from PromptType to message ID for various dialog content.
   static const int kTitleIds[NUM_PROMPT_TYPES];

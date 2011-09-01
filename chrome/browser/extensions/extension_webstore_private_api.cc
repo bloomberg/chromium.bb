@@ -256,14 +256,17 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
   icon_ = icon;
   parsed_manifest_.reset(parsed_manifest);
 
+  ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
+
   ShowExtensionInstallDialogForManifest(
       profile(),
       this,
       parsed_manifest,
       id_,
       localized_name_,
+      "", // no localized description
       &icon_,
-      ExtensionInstallUI::INSTALL_PROMPT,
+      prompt,
       &dummy_extension_);
   if (!dummy_extension_.get()) {
     OnWebstoreParseFailure(WebstoreInstallHelper::Delegate::MANIFEST_ERROR,

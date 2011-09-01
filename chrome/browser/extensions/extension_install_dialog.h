@@ -25,22 +25,25 @@ void ShowExtensionInstallDialog(Profile* profile,
                                 ExtensionInstallUI::Delegate* delegate,
                                 const Extension* extension,
                                 SkBitmap* icon,
-                                const std::vector<string16>& permissions,
-                                ExtensionInstallUI::PromptType type);
+                                const ExtensionInstallUI::Prompt& prompt);
 
 // Wrapper around ShowExtensionInstallDialog that shows the install dialog for
 // a given manifest (that corresponds to an extension about to be installed with
-// ID |id|). If the name in the manifest is a localized placeholder, it may be
-// overidden with |localized_name| (which may be empty). The Extension instance
-// that's parsed is returned via |dummy_extension|.
+// ID |id|). If the name or description in the manifest is a localized
+// placeholder, it may be overidden with |localized_name| or
+// |localized_description| (which may be empty). The Extension instance
+// that's parsed is returned via |dummy_extension|. |prompt| should be fully
+// populated except for the permissions field, which will be extracted from the
+// extension.
 void ShowExtensionInstallDialogForManifest(
     Profile *profile,
     ExtensionInstallUI::Delegate* delegate,
     const base::DictionaryValue* manifest,
     const std::string& id,
     const std::string& localized_name,
+    const std::string& localized_description,
     SkBitmap* icon,
-    ExtensionInstallUI::PromptType type,
+    const ExtensionInstallUI::Prompt& prompt,
     scoped_refptr<Extension>* dummy_extension);
 
 // For use only in tests - sets a flag that makes invocations of

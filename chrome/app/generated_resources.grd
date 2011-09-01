@@ -3730,6 +3730,19 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO" desc="Second line in the content area of the extension or app permissions prompt. Note that the exact wording is important. This should mean that the extension _wants to_ access the listed privileges, but not necessarily that it will or needs to. This message appeared because the user must approve new permissions of the extension or app.">
         It could access:
       </message>
+      <message name="IDS_EXTENSION_PERMISSION_LINE" desc="Template for item in list of privileges that an extension or app has">
+        • <ph name="PERMISSION">$1<ex>Your data on all websites</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_RATING_COUNT" desc="Number of ratings an app or extensions has (displayed after star icons)">
+        (<ph name="RATING_COUNT">$1<ex>46</ex></ph>)
+      </message>
+      <message name="IDS_EXTENSION_USER_COUNT" desc="Number of users an app or extension has">
+        <ph name="USER_COUNT">$1<ex>10,479</ex></ph> users
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_STORE_LINK" desc="Anchor text for link to Chrome Web Store in app or extension installation dialog">
+        View details
+      </message>
+
 
       <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
         All data on your computer and the websites you visit

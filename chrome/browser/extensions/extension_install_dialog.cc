@@ -23,14 +23,21 @@ void ShowExtensionInstallDialogForManifest(
     const DictionaryValue* manifest,
     const std::string& id,
     const std::string& localized_name,
+    const std::string& localized_description,
     SkBitmap* icon,
-    ExtensionInstallUI::PromptType type,
+    const ExtensionInstallUI::Prompt& prompt,
     scoped_refptr<Extension>* dummy_extension) {
   scoped_ptr<DictionaryValue> localized_manifest;
-  if (!localized_name.empty()) {
+  if (!localized_name.empty() || !localized_description.empty()) {
     localized_manifest.reset(manifest->DeepCopy());
-    localized_manifest->SetString(extension_manifest_keys::kName,
-                                  localized_name);
+    if (!localized_name.empty()) {
+      localized_manifest->SetString(extension_manifest_keys::kName,
+                                    localized_name);
+    }
+    if (!localized_description.empty()) {
+      localized_manifest->SetString(extension_manifest_keys::kDescription,
+                                    localized_description);
+    }
   }
 
   std::string init_errors;
@@ -59,13 +66,15 @@ void ShowExtensionInstallDialogForManifest(
     return;
   }
 
+  ExtensionInstallUI::Prompt filled_out_prompt = prompt;
+  filled_out_prompt.permissions =
+      (*dummy_extension)->GetPermissionMessageStrings();
+
   ShowExtensionInstallDialog(profile,
                              delegate,
                              dummy_extension->get(),
                              icon,
-                             (*dummy_extension)->GetPermissionMessageStrings(),
-                             ExtensionInstallUI::INSTALL_PROMPT);
-  return;
+                             filled_out_prompt);
 }
 
 void SetExtensionInstallDialogForManifestAutoConfirmForTests(
