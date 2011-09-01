@@ -305,13 +305,17 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Handles the blur event of |this.selectedPagesTextfield|.
+     * Handles the blur event of |this.selectedPagesTextfield|. Un-checks
+     * |this.selectedPagesRadioButton| if the input field is empty.
      * @private
      */
     onSelectedPagesTextfieldBlur_: function() {
-      this.selectedPagesRadioButton.checked = true;
-      this.validateSelectedPages_();
-      cr.dispatchSimpleEvent(document, 'updatePrintButton');
+      clearTimeout(this.timerId_);
+      if (!this.selectedPagesText.length) {
+        this.allPagesRadioButton_.checked = true;
+        this.validateSelectedPages_();
+      }
+      this.onSelectedPagesMayHaveChanged_();
     },
 
     /**
@@ -349,16 +353,8 @@ cr.define('print_preview', function() {
           this.onSelectedPagesTextfieldInput_.bind(this);
       this.selectedPagesTextfield.onfocus =
           this.addTimerToSelectedPagesTextfield_.bind(this);
-
-      // Handler for the blur event on |this.selectedPagesTextfield|. Un-checks
-      // |this.selectedPagesRadioButton| if the input field is empty.
-      this.selectedPagesTextfield.onblur = function() {
-        if (!this.selectedPagesText.length)
-          this.allPagesRadioButton_.checked = true;
-
-        clearTimeout(this.timerId_);
-        this.onSelectedPagesMayHaveChanged_();
-      }.bind(this);
+      this.selectedPagesTextfield.onblur =
+          this.onSelectedPagesTextfieldBlur_.bind(this);
     }
   };
 
