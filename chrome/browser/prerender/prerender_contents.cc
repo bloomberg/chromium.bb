@@ -258,12 +258,6 @@ void PrerenderContents::StartPrerendering(
       this, content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<TabContents>(new_contents));
 
-  // Register to be told when the RenderView is ready, so we can hide it.
-  // It will automatically be set to visible when we resize it, otherwise.
-  notification_registrar_.Add(this,
-                              content::NOTIFICATION_TAB_CONTENTS_CONNECTED,
-                              Source<TabContents>(new_contents));
-
   // Register for redirect notifications sourced from |this|.
   notification_registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
@@ -381,20 +375,17 @@ void PrerenderContents::Observe(int type,
             new ChromeViewMsg_SetIsPrerendering(
                 new_render_view_host->routing_id(),
                 true));
-      }
-      break;
-    }
 
-    case content::NOTIFICATION_TAB_CONTENTS_CONNECTED: {
-      if (prerender_contents_.get()) {
-        DCHECK_EQ(Source<TabContents>(source).ptr(),
-                  prerender_contents_->tab_contents());
-        // Set the new TabContents and its RenderViewHost as hidden, to reduce
-        // resource usage.  This can only be done after the size has been sent
-        // to the RenderView, which is why it's done here.
+        // Make sure the size of the RenderViewHost has been passed to the new
+        // RenderView.  Otherwise, the size may not be sent until the
+        // RenderViewReady event makes it from the render process to the UI
+        // thread of the browser process.  When the RenderView receives its
+        // size, is also sets itself to be visible, which would then break the
+        // visibility API.
+        new_render_view_host->WasResized();
         prerender_contents_->tab_contents()->HideContents();
       }
-      return;
+      break;
     }
 
     case content::NOTIFICATION_CREATING_NEW_WINDOW_CANCELLED: {

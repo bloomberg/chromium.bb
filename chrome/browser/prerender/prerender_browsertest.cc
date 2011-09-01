@@ -103,19 +103,21 @@ class TestPrerenderContents : public PrerenderContents {
       Profile* profile,
       const GURL& url,
       const GURL& referrer,
-      int number_of_loads,
+      int expected_number_of_loads,
       FinalStatus expected_final_status)
       : PrerenderContents(prerender_manager, prerender_tracker, profile,
                           url, referrer, ORIGIN_LINK_REL_PRERENDER,
                           PrerenderManager::kNoExperiment),
         number_of_loads_(0),
-        expected_number_of_loads_(number_of_loads),
+        expected_number_of_loads_(expected_number_of_loads),
         expected_final_status_(expected_final_status),
         new_render_view_host_(NULL),
         was_hidden_(false),
         was_shown_(false),
         should_be_shown_(expected_final_status == FINAL_STATUS_USED),
         quit_message_loop_on_destruction_(true) {
+    if (expected_number_of_loads == 0)
+      MessageLoopForUI::current()->Quit();
   }
 
   virtual ~TestPrerenderContents() {
@@ -127,9 +129,8 @@ class TestPrerenderContents : public PrerenderContents {
     // navigation, so this should be happen for every PrerenderContents for
     // which a RenderViewHost is created, regardless of whether or not it's
     // used.
-    if (new_render_view_host_) {
+    if (new_render_view_host_)
       EXPECT_TRUE(was_hidden_);
-    }
 
     // A used PrerenderContents will only be destroyed when we swap out
     // TabContents, at the end of a navigation caused by a call to
@@ -185,6 +186,8 @@ class TestPrerenderContents : public PrerenderContents {
   void set_quit_message_loop_on_destruction(bool value) {
     quit_message_loop_on_destruction_ = value;
   }
+
+  int number_of_loads() const { return number_of_loads_; }
 
  private:
   virtual void OnRenderViewHostCreated(
@@ -244,13 +247,10 @@ class TestPrerenderContents : public PrerenderContents {
 class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
  public:
   WaitForLoadPrerenderContentsFactory(
-      int number_of_loads,
+      int expected_number_of_loads,
       const std::deque<FinalStatus>& expected_final_status_queue)
-      : number_of_loads_(number_of_loads) {
-    expected_final_status_queue_.resize(expected_final_status_queue.size());
-    std::copy(expected_final_status_queue.begin(),
-              expected_final_status_queue.end(),
-              expected_final_status_queue_.begin());
+      : expected_number_of_loads_(expected_number_of_loads),
+        expected_final_status_queue_(expected_final_status_queue) {
     VLOG(1) << "Factory created with queue length " <<
                expected_final_status_queue_.size();
   }
@@ -273,12 +273,12 @@ class WaitForLoadPrerenderContentsFactory : public PrerenderContents::Factory {
     VLOG(1) << expected_final_status_queue_.size() << " left in the queue.";
     return new TestPrerenderContents(prerender_manager, prerender_tracker,
                                      profile, url,
-                                     referrer, number_of_loads_,
+                                     referrer, expected_number_of_loads_,
                                      expected_final_status);
   }
 
  private:
-  int number_of_loads_;
+  int expected_number_of_loads_;
   std::deque<FinalStatus> expected_final_status_queue_;
 };
 
@@ -403,30 +403,32 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   // Overload for a single expected final status
   void PrerenderTestURL(const std::string& html_file,
                         FinalStatus expected_final_status,
-                        int total_navigations) {
+                        int expected_number_of_loads) {
     std::deque<FinalStatus> expected_final_status_queue(1,
                                                         expected_final_status);
     PrerenderTestURL(html_file,
                      expected_final_status_queue,
-                     total_navigations);
+                     expected_number_of_loads);
   }
 
   void PrerenderTestURL(
       const std::string& html_file,
       const std::deque<FinalStatus>& expected_final_status_queue,
-      int total_navigations) {
+      int expected_number_of_loads) {
     PrerenderTestURLImpl(test_server()->GetURL(html_file),
                          expected_final_status_queue,
-                         total_navigations);
+                         expected_number_of_loads);
   }
 
   void PrerenderTestURL(
       const GURL& url,
       FinalStatus expected_final_status,
-      int total_navigations) {
+      int expected_number_of_loads) {
     std::deque<FinalStatus> expected_final_status_queue(1,
                                                         expected_final_status);
-    PrerenderTestURLImpl(url, expected_final_status_queue, total_navigations);
+    PrerenderTestURLImpl(url,
+                         expected_final_status_queue,
+                         expected_number_of_loads);
   }
 
   void NavigateToDestURL() const {
@@ -574,7 +576,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   void PrerenderTestURLImpl(
       const GURL& url,
       const std::deque<FinalStatus>& expected_final_status_queue,
-      int total_navigations) {
+      int expected_number_of_loads) {
     dest_url_ = url;
 
     std::vector<net::TestServer::StringPair> replacement_text;
@@ -602,7 +604,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     prerender_manager()->mutable_config().https_allowed = true;
     ASSERT_TRUE(prerender_contents_factory_ == NULL);
     prerender_contents_factory_ =
-        new WaitForLoadPrerenderContentsFactory(total_navigations,
+        new WaitForLoadPrerenderContentsFactory(expected_number_of_loads,
                                                 expected_final_status_queue);
     prerender_manager()->SetPrerenderContentsFactory(
         prerender_contents_factory_);
@@ -622,7 +624,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       ASSERT_TRUE(prerender_contents != NULL);
       EXPECT_EQ(FINAL_STATUS_MAX, prerender_contents->final_status());
 
-      if (call_javascript_) {
+      if (call_javascript_ && expected_number_of_loads > 0) {
         // Check if page behaves as expected while in prerendered state.
         bool prerender_test_result = false;
         ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -632,7 +634,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(prerender_test_result);
       }
     } else {
-      // In the failure case, we should have removed dest_url_ from the
+      // In the failure case, we should have removed |dest_url_| from the
       // prerender_manager.
       EXPECT_TRUE(prerender_contents == NULL);
     }
@@ -647,6 +649,18 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     // in.
     if (disposition == NEW_BACKGROUND_TAB)
       GetPrerenderContents()->set_should_be_shown(false);
+
+    // In the case of zero loads, need to wait for the page load to complete
+    // before running any Javascript.
+    scoped_ptr<ui_test_utils::WindowedNotificationObserver> page_load_observer;
+    TabContents* tab_contents =
+        GetPrerenderContents()->prerender_contents()->tab_contents();
+    if (GetPrerenderContents()->number_of_loads() == 0) {
+      page_load_observer.reset(
+          new ui_test_utils::WindowedNotificationObserver(
+              content::NOTIFICATION_LOAD_STOP,
+              Source<NavigationController>(&tab_contents->controller())));
+    }
 
     // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
     // the current tab.  As that tab is going to end up deleted, and may never
@@ -664,23 +678,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(GetPrerenderContents() == NULL);
 
     if (call_javascript_) {
-      // Check if page behaved as expected when actually displayed.
-
-      // Locate the navigated TabContents.
-      TabContents* tab_contents = NULL;
-      switch (disposition) {
-        case CURRENT_TAB:
-        case NEW_FOREGROUND_TAB:
-          tab_contents = browser()->GetSelectedTabContents();
-          break;
-        case NEW_BACKGROUND_TAB:
-          tab_contents =
-              browser()->GetTabContentsAt(browser()->active_index() + 1);
-          break;
-        default:
-          ASSERT_TRUE(false) << "Unsupported creation disposition";
-      }
-      ASSERT_TRUE(tab_contents);
+      if (page_load_observer.get())
+        page_load_observer->Wait();
 
       bool display_test_result = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -737,12 +736,29 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
   NavigateToDestURL();
 }
 
+// Checks that the visibility API works when the prerender is quickly opened
+// in a new tab before it stops loading.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityQuickSwitch) {
+  PrerenderTestURL("files/prerender/prerender_visibility_quick.html",
+                   FINAL_STATUS_USED, 0);
+  NavigateToDestURL();
+}
+
 // Checks that the visibility API works when opening a page in a new hidden
 // tab.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityBackgroundTab) {
   PrerenderTestURL("files/prerender/prerender_visibility_hidden.html",
                    FINAL_STATUS_USED,
                    1);
+  NavigateToDestURLWithDisposition(NEW_BACKGROUND_TAB);
+}
+
+// Checks that the visibility API works when opening a page in a new hidden
+// tab, which is switched to before it stops loading.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderVisibilityBackgroundTabQuickSwitch) {
+  PrerenderTestURL("files/prerender/prerender_visibility_hidden_quick.html",
+                   FINAL_STATUS_USED, 0);
   NavigateToDestURLWithDisposition(NEW_BACKGROUND_TAB);
 }
 
@@ -753,6 +769,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibilityForegroundTab) {
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURLWithDisposition(NEW_FOREGROUND_TAB);
+}
+
+// Checks that the visibility API works when the prerender is quickly opened
+// in a new tab foreground before it stops loading.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderVisibilityForegroundTabQuickSwitch) {
+  PrerenderTestURL("files/prerender/prerender_visibility_quick.html",
+                   FINAL_STATUS_USED, 0);
+  NavigateToDestURL();
 }
 
 // Checks that the prerendering of a page is canceled correctly when a
