@@ -53,6 +53,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
@@ -1885,7 +1886,7 @@ void TestingAutomationProvider::GetInfoBarCount(int handle, size_t* count) {
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(
               nav_controller->tab_contents());
-      *count = wrapper->infobar_count();
+      *count = wrapper->infobar_tab_helper()->infobar_count();
     }
   }
 }
@@ -1899,18 +1900,16 @@ void TestingAutomationProvider::ClickInfoBarAccept(
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
     if (nav_controller) {
-      TabContentsWrapper* wrapper =
+      InfoBarTabHelper* infobar_helper =
           TabContentsWrapper::GetCurrentWrapperForContents(
-              nav_controller->tab_contents());
-      if (info_bar_index < wrapper->infobar_count()) {
+              nav_controller->tab_contents())->infobar_tab_helper();
+      if (info_bar_index < infobar_helper->infobar_count()) {
         if (wait_for_navigation) {
           new NavigationNotificationObserver(nav_controller, this,
                                              reply_message, 1, false, false);
         }
         InfoBarDelegate* delegate =
-            TabContentsWrapper::GetCurrentWrapperForContents(
-                nav_controller->tab_contents())->GetInfoBarDelegateAt(
-                    info_bar_index);
+            infobar_helper->GetInfoBarDelegateAt(info_bar_index);
         if (delegate->AsConfirmInfoBarDelegate())
           delegate->AsConfirmInfoBarDelegate()->Accept();
         success = true;
@@ -2528,11 +2527,12 @@ void TestingAutomationProvider::SetWindowDimensions(
 ListValue* TestingAutomationProvider::GetInfobarsInfo(TabContents* tc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tc);
-  for (size_t i = 0; i < wrapper->infobar_count(); ++i) {
+  InfoBarTabHelper* infobar_helper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tc)->
+          infobar_tab_helper();
+  for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
-    InfoBarDelegate* infobar = wrapper->GetInfoBarDelegateAt(i);
+    InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
     if (infobar->AsConfirmInfoBarDelegate()) {
       // Also covers ThemeInstalledInfoBarDelegate.
       infobar_item->SetString("type", "confirm_infobar");
@@ -2596,23 +2596,27 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     reply.SendError("Invalid or missing args");
     return;
   }
+
   TabContentsWrapper* tab_contents =
       browser->GetTabContentsWrapperAt(tab_index);
   if (!tab_contents) {
     reply.SendError(StringPrintf("No such tab at index %d", tab_index));
     return;
   }
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+
   InfoBarDelegate* infobar = NULL;
   size_t infobar_index = static_cast<size_t>(infobar_index_int);
-  if (infobar_index >= tab_contents->infobar_count() ||
-      !(infobar = tab_contents->GetInfoBarDelegateAt(infobar_index))) {
+  if (infobar_index >= infobar_helper->infobar_count()) {
     reply.SendError(StringPrintf("No such infobar at index %" PRIuS,
                                  infobar_index));
     return;
   }
+  infobar = infobar_helper->GetInfoBarDelegateAt(infobar_index);
+
   if ("dismiss" == action) {
     infobar->InfoBarDismissed();
-    tab_contents->RemoveInfoBar(infobar);
+    infobar_helper->RemoveInfoBar(infobar);
     reply.SendSuccess(NULL);
     return;
   }
@@ -2624,10 +2628,10 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     }
     if ("accept" == action) {
       if (confirm_infobar->Accept())
-        tab_contents->RemoveInfoBar(infobar);
+        infobar_helper->RemoveInfoBar(infobar);
     } else if ("cancel" == action) {
       if (confirm_infobar->Cancel())
-        tab_contents->RemoveInfoBar(infobar);
+        infobar_helper->RemoveInfoBar(infobar);
     }
     reply.SendSuccess(NULL);
     return;
@@ -3896,10 +3900,11 @@ TabContentsWrapper* GetTabContentsWrapperFromDict(const Browser* browser,
 // Get the TranslateInfoBarDelegate from TabContents.
 TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
     TabContents* tab_contents) {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  for (size_t i = 0; i < wrapper->infobar_count(); i++) {
-    InfoBarDelegate* infobar = wrapper->GetInfoBarDelegateAt(i);
+  InfoBarTabHelper* infobar_helper =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
+          infobar_tab_helper();
+  for (size_t i = 0; i < infobar_helper->infobar_count(); i++) {
+    InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
     if (infobar->AsTranslateInfoBarDelegate())
       return infobar->AsTranslateInfoBarDelegate();
   }
@@ -4101,7 +4106,7 @@ void TestingAutomationProvider::SelectTranslateOption(
     // This is the function called when an infobar is dismissed or when the
     // user clicks the 'Nope' translate button.
     translate_bar->TranslationDeclined();
-    tab_contents_wrapper->RemoveInfoBar(translate_bar);
+    tab_contents_wrapper->infobar_tab_helper()->RemoveInfoBar(translate_bar);
     reply.SendSuccess(NULL);
   } else {
     reply.SendError("Invalid string found for option.");

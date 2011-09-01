@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -54,7 +55,7 @@ void SelectFileDialog::SelectFile(Type type,
     if (source_contents) {
       TabContentsWrapper* wrapper =
           TabContentsWrapper::GetCurrentWrapperForContents(source_contents);
-      wrapper->AddInfoBar(new SimpleAlertInfoBarDelegate(
+      wrapper->infobar_tab_helper()->AddInfoBar(new SimpleAlertInfoBarDelegate(
           source_contents,
           NULL,
           l10n_util::GetStringUTF16(IDS_FILE_SELECTION_DIALOG_INFOBAR),

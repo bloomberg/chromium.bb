@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_updater.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -177,14 +178,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissionsAndUninstall) {
 
   // Make sure the "disable extension" infobar is present.
   ASSERT_EQ(0, browser()->active_index());
-  TabContentsWrapper* wrapper = browser()->GetTabContentsWrapperAt(0);
-  ASSERT_EQ(1U, wrapper->infobar_count());
+  InfoBarTabHelper* infobar_helper = browser()->GetTabContentsWrapperAt(0)->
+      infobar_tab_helper();
+  ASSERT_EQ(1U, infobar_helper->infobar_count());
 
   // Uninstall, and check that the infobar went away.
   ExtensionService* service = browser()->profile()->GetExtensionService();
   std::string id = service->disabled_extensions()->at(0)->id();
   UninstallExtension(id);
-  ASSERT_EQ(0U, wrapper->infobar_count());
+  ASSERT_EQ(0U, infobar_helper->infobar_count());
 
   // Now select a new tab, and switch back to the first tab which had the
   // infobar. We should not crash.

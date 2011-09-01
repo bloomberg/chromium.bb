@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
@@ -219,7 +220,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 - (void)windowWillClose:(NSNotification*)notif {
   if (contentSettingsChanged_) {
     TabContentsWrapper::GetCurrentWrapperForContents(tabContents_)->
-        AddInfoBar(new CollectedCookiesInfoBarDelegate(tabContents_));
+        infobar_tab_helper()->AddInfoBar(
+            new CollectedCookiesInfoBarDelegate(tabContents_));
   }
   [allowedOutlineView_ setDelegate:nil];
   [blockedOutlineView_ setDelegate:nil];

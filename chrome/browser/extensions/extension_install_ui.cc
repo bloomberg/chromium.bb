@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -259,11 +260,12 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
   TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
   if (!tab_contents)
     return;
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
 
   // First find any previous theme preview infobars.
   InfoBarDelegate* old_delegate = NULL;
-  for (size_t i = 0; i < tab_contents->infobar_count(); ++i) {
-    InfoBarDelegate* delegate = tab_contents->GetInfoBarDelegateAt(i);
+  for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
+    InfoBarDelegate* delegate = infobar_helper->GetInfoBarDelegateAt(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
         delegate->AsThemePreviewInfobarDelegate();
     if (theme_infobar) {
@@ -283,9 +285,9 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
       previous_using_native_theme);
 
   if (old_delegate)
-    tab_contents->ReplaceInfoBar(old_delegate, new_delegate);
+    infobar_helper->ReplaceInfoBar(old_delegate, new_delegate);
   else
-    tab_contents->AddInfoBar(new_delegate);
+    infobar_helper->AddInfoBar(new_delegate);
 }
 
 void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {

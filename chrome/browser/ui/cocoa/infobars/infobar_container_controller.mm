@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/infobar.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
@@ -139,9 +140,11 @@ class InfoBarNotificationObserver : public NotificationObserver {
 
   currentTabContents_ = contents;
   if (currentTabContents_) {
-    for (size_t i = 0; i < currentTabContents_->infobar_count(); ++i) {
-      InfoBar* infobar = currentTabContents_->GetInfoBarDelegateAt(i)->
-          CreateInfoBar(currentTabContents_);
+    InfoBarTabHelper* infobar_helper =
+        currentTabContents_->infobar_tab_helper();
+    for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
+      InfoBar* infobar = infobar_helper->
+          GetInfoBarDelegateAt(i)->CreateInfoBar(currentTabContents_);
       [self addInfoBar:infobar animate:NO];
     }
 
