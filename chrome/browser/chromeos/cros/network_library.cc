@@ -1630,8 +1630,6 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   void ConnectToWifiNetworkUsingConnectData(WifiNetwork* wifi);
   // Called from CallRequestVirtualNetworkAndConnect.
   void ConnectToVirtualNetworkUsingConnectData(VirtualNetwork* vpn);
-  // Called from DisconnectFromNetwork.
-  void NetworkDisconnectCompleted(const std::string& service_path);
   // Called from GetSignificantDataPlan.
   const CellularDataPlan* GetSignificantDataPlanFromVector(
       const CellularDataPlanVector* plans) const;
@@ -2597,23 +2595,6 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkUsingConnectData(
 
 /////////////////////////////////////////////////////////////////////////////
 
-// Called from DisconnectFromNetwork().
-void NetworkLibraryImplBase::NetworkDisconnectCompleted(
-    const std::string& service_path) {
-  VLOG(1) << "Disconnect from network: " << service_path;
-  Network* network = FindNetworkByPath(service_path);
-  if (network) {
-    network->set_connected(false);
-    if (network == active_wifi_)
-      active_wifi_ = NULL;
-    else if (network == active_cellular_)
-      active_cellular_ = NULL;
-    else if (network == active_virtual_)
-      active_virtual_ = NULL;
-    NotifyNetworkManagerChanged(true);  // Forced update.
-  }
-}
-
 void NetworkLibraryImplBase::ForgetNetwork(const std::string& service_path) {
   // Remove network from remembered list and notify observers.
   DeleteRememberedNetwork(service_path);
@@ -2774,9 +2755,29 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
                  << service_path;
     return;
   }
+  Network* remembered_network = found->second;
+
+  // Update any associated network service before removing from profile
+  // so that flimflam doesn't recreate the service (e.g. when we disconenct it).
+  Network* network = FindNetworkFromRemembered(remembered_network);
+  if (network) {
+    // Clear the stored credentials for any forgotten networks.
+    network->EraseCredentials();
+    SetProfileType(network, PROFILE_NONE);
+    // Remove VPN from list of networks.
+    if (network->type() == TYPE_VPN) {
+      const char* service_path = network->service_path().c_str();
+      if (network->connected())
+        chromeos::RequestNetworkServiceDisconnect(service_path);
+      chromeos::RequestRemoveNetworkService(service_path);
+    }
+  } else {
+    // Network is not in service list.
+    VLOG(2) << "Remembered Network not in service list: "
+            << remembered_network->unique_id();
+  }
 
   // Delete remembered network from lists.
-  Network* remembered_network = found->second;
   remembered_network_map_.erase(found);
 
   if (remembered_network->type() == TYPE_WIFI) {
@@ -2794,6 +2795,7 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
     if (iter != remembered_virtual_networks_.end())
       remembered_virtual_networks_.erase(iter);
   }
+
   // Delete remembered network from all profiles it is in.
   for (NetworkProfileList::iterator iter = profile_list_.begin();
        iter != profile_list_.end(); ++iter) {
@@ -2807,18 +2809,6 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
                                   remembered_network->service_path());
       profile.services.erase(found);
     }
-  }
-
-  // Update any associated visible network.
-  Network* network = FindNetworkFromRemembered(remembered_network);
-  if (network) {
-    // Clear the stored credentials for any visible forgotten networks.
-    network->EraseCredentials();
-    SetProfileType(network, PROFILE_NONE);
-  } else {
-    // Network is not in visible list.
-    VLOG(2) << "Remembered Network not visible: "
-            << remembered_network->unique_id();
   }
 
   delete remembered_network;
@@ -3688,8 +3678,9 @@ bool NetworkLibraryImplCros::GetWifiAccessPoints(
 
 void NetworkLibraryImplCros::DisconnectFromNetwork(const Network* network) {
   DCHECK(network);
-  if (chromeos::DisconnectFromNetwork(network->service_path().c_str()))
-    NetworkDisconnectCompleted(network->service_path());
+  // Asynchronous disconnect request. Network state will be updated through
+  // the network manager once disconnect completes.
+  chromeos::RequestNetworkServiceDisconnect(network->service_path().c_str());
 }
 
 void NetworkLibraryImplCros::CallEnableNetworkDeviceType(
@@ -4761,7 +4752,14 @@ bool NetworkLibraryImplStub::GetWifiAccessPoints(
 }
 
 void NetworkLibraryImplStub::DisconnectFromNetwork(const Network* network) {
-  NetworkDisconnectCompleted(network->service_path());
+  // Update the network state here since no network manager in stub impl.
+  (const_cast<Network*>(network))->set_connected(false);
+  if (network == active_wifi_)
+    active_wifi_ = NULL;
+  else if (network == active_cellular_)
+    active_cellular_ = NULL;
+  else if (network == active_virtual_)
+    active_virtual_ = NULL;
 }
 
 NetworkIPConfigVector NetworkLibraryImplStub::GetIPConfigs(
