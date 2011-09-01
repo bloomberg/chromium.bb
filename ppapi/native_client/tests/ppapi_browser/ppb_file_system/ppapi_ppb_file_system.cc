@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,18 @@
 
 namespace {
 
-void OpenCallback(void* /*data*/, int32_t /*result*/) {
+struct OpenCallbackData {
+  explicit OpenCallbackData(PP_Resource file_system)
+      : file_system(file_system) {}
+
+  PP_Resource file_system;
+};
+
+void OpenCallback(void* data, int32_t result) {
+  EXPECT(result == PP_OK);
+  OpenCallbackData* callback_data = reinterpret_cast<OpenCallbackData*>(data);
+  PPBCore()->ReleaseResource(callback_data->file_system);
+  delete callback_data;
 }
 
 const PP_FileSystemType kFileSystemTypes[] = {
@@ -92,11 +103,9 @@ void TestIsFileSystem() {
 void TestOpen() {
   const PPB_Core* ppb_core = PPBCore();
   const PPB_FileSystem* ppb_file_system = PPBFileSystem();
-  PP_Resource file_system = kInvalidResource;
+  static PP_Resource file_system = kInvalidResource;
   PP_CompletionCallback nop_callback =
       MakeTestableCompletionCallback("NopCallback", OpenCallback);
-  PP_CompletionCallback open_callback =
-      MakeTestableCompletionCallback("OpenCallback", OpenCallback, NULL);
   int32_t pp_error = PP_ERROR_FAILED;
   int64_t kSize = 1024;  // Dummy value.
 
@@ -130,20 +139,21 @@ void TestOpen() {
 
     // Test success for asynchronous open.
     file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
+    OpenCallbackData* callback_data = new OpenCallbackData(file_system);
+    PP_CompletionCallback open_callback = MakeTestableCompletionCallback(
+        "OpenCallback", OpenCallback, callback_data);
     pp_error = ppb_file_system->Open(file_system, kSize, open_callback);
-    ppb_core->ReleaseResource(file_system);
     EXPECT(pp_error == PP_OK_COMPLETIONPENDING);
-    open_callback =
-        MakeTestableCompletionCallback("OpenCallback", OpenCallback);
 
     // Test fail for multiple opens.
     file_system = ppb_file_system->Create(pp_instance(), kFileSystemTypes[i]);
+    callback_data = new OpenCallbackData(file_system);
+    open_callback = MakeTestableCompletionCallback(
+        "OpenCallback", OpenCallback, callback_data);
     pp_error = ppb_file_system->Open(file_system, kSize, open_callback);
     CHECK(pp_error == PP_OK_COMPLETIONPENDING);  // Previously tested.
     pp_error = ppb_file_system->Open(file_system, kSize, nop_callback);
-    ppb_core->ReleaseResource(file_system);
-    // TODO(polina, sanga): take out PP_ERROR_FAILED when chrome is fixed.
-    EXPECT(pp_error == PP_ERROR_FAILED || pp_error == PP_ERROR_INPROGRESS);
+    EXPECT(pp_error == PP_ERROR_INPROGRESS);
   }
   TEST_PASSED;
 }
