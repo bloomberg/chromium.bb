@@ -143,67 +143,121 @@ eh_tests() {
 }
 
 #@
-#@ pnacl-x8632-O0-torture
+#@ pnacl-x8632-torture
 #@
-pnacl-x8632-O0-torture() {
+pnacl-x8632-torture() {
   prereq-x8632
   prereq-pnacl
   eh_tests llvm_pnacl_x8632_O0 known_eh_failures_pnacl.txt "$@"
+  eh_tests llvm_pnacl_x8632_O3 known_eh_failures_pnacl.txt "$@"
   standard_tests llvm_pnacl_x8632_O0 known_failures_pnacl.txt "$@"
+  standard_tests llvm_pnacl_x8632_O3 known_failures_pnacl.txt "$@"
 }
 
 #@
-#@ pnacl-x8664-O0-torture
+#@ pnacl-x8664-torture
 #@
-pnacl-x8664-O0-torture() {
+pnacl-x8664-torture() {
   prereq-x8664
   prereq-pnacl
   eh_tests llvm_pnacl_x8664_O0 known_eh_failures_pnacl.txt "$@"
+  eh_tests llvm_pnacl_x8664_O3 known_eh_failures_pnacl.txt "$@"
   standard_tests llvm_pnacl_x8664_O0 known_failures_pnacl.txt "$@"
+  standard_tests llvm_pnacl_x8664_O3 known_failures_pnacl.txt "$@"
 }
 
 #@
-#@ pnacl-arm-O0-torture
+#@ pnacl-arm-torture
 #@
-pnacl-arm-O0-torture() {
+pnacl-arm-torture() {
   prereq-arm
   prereq-pnacl
   eh_tests llvm_pnacl_arm_O0 known_eh_failures_pnacl.txt "$@"
+  eh_tests llvm_pnacl_arm_O3 known_eh_failures_pnacl.txt "$@"
   standard_tests llvm_pnacl_arm_O0 known_failures_pnacl.txt "$@"
+  standard_tests llvm_pnacl_arm_O3 known_failures_pnacl.txt "$@"
 }
 
 #@
-#@ naclgcc-x8632-O0-torture
+#@ naclgcc-x8632-torture
 #@
-naclgcc-x8632-O0-torture() {
+naclgcc-x8632-torture() {
   prereq-x8632
   eh_tests nacl_gcc_x8632_O0 known_eh_failures_naclgcc.txt "$@"
+  eh_tests nacl_gcc_x8632_O3 known_eh_failures_naclgcc.txt "$@"
   standard_tests nacl_gcc_x8632_O0 known_failures_naclgcc.txt "$@"
+  standard_tests nacl_gcc_x8632_O3 known_failures_naclgcc.txt "$@"
 }
 
 #@
-#@ naclgcc-x8664-O0-torture
+#@ naclgcc-x8664-torture
 #@
-naclgcc-x8664-O0-torture() {
+naclgcc-x8664-torture() {
   prereq-x8664
   eh_tests nacl_gcc_x8664_O0 known_eh_failures_naclgcc.txt "$@"
+  eh_tests nacl_gcc_x8664_O3 known_eh_failures_naclgcc.txt "$@"
   standard_tests nacl_gcc_x8664_O0 known_failures_naclgcc.txt "$@"
+  standard_tests nacl_gcc_x8664_O3 known_failures_naclgcc.txt "$@"
 }
 
 #@
-#@ localgcc-x8632-O0-torture
+#@ localgcc-x8632-torture
 #@
-localgcc-x8632-O0-torture() {
+localgcc-x8632-torture() {
   eh_tests local_gcc_x8632_O0 known_eh_failures_localgcc.txt "$@"
+  eh_tests local_gcc_x8632_O3 known_eh_failures_localgcc.txt "$@"
   standard_tests local_gcc_x8632_O0 known_failures_localgcc.txt "$@"
+  standard_tests local_gcc_x8632_O3 known_failures_localgcc.txt "$@"
 }
 
 #@
-#@ localgcc-x8664-O0-torture
+#@ localgcc-x8664-torture
 #@
-localgcc-x8664-O0-torture() {
+localgcc-x8664-torture() {
   eh_tests local_gcc_x8664_O0 known_eh_failures_localgcc.txt "$@"
+  eh_tests local_gcc_x8664_O3 known_eh_failures_localgcc.txt "$@"
   standard_tests local_gcc_x8664_O0 known_failures_localgcc.txt "$@"
+  standard_tests local_gcc_x8664_O3 known_failures_localgcc.txt "$@"
+}
+
+#@
+#@ trybot-pnacl-arm-torture
+#@
+trybot-pnacl-arm-torture() {
+  install-tests
+  pnacl-arm-torture
+}
+
+#@
+#@ trybot-pnacl-x8632-torture
+#@
+trybot-pnacl-x8632-torture() {
+  install-tests
+  pnacl-x8632-torture
+}
+
+#@
+#@ trybot-pnacl-x8664-torture
+#@
+trybot-pnacl-x8664-torture() {
+  install-tests
+  pnacl-x8664-torture
+}
+
+#@
+#@ trybot-pnacl-x8632-torture
+#@
+trybot-naclgcc-x8632-torture() {
+  install-tests
+  naclgcc-x8632-torture
+}
+
+#@
+#@ trybot-pnacl-x8664-torture
+#@
+trybot-naclgcc-x8664-torture() {
+  install-tests
+  naclgcc-x8664-torture
 }
 
 ######################################################################

@@ -194,3 +194,14 @@ pr44575.c
 20010122-1.c
 # uses __builtin_return_address (internal compiler error x86-64)
 20030323-1.c
+# ======================================================================
+# additional failures at -O3
+# ======================================================================
+20071210-1.c
+bcp-1.c
+builtin-constant.c
+pr22493-1.c
+pr33779-2.c
+pr34768-2.c
+pr45262.c
+compare-fp-3.c

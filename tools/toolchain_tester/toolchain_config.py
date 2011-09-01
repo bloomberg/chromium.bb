@@ -120,13 +120,13 @@ TOOLCHAIN_CONFIGS['gcc_cs_arm_O0'] = ToolchainConfig(
     EMU_SCRIPT = EMU_SCRIPT,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['gcc_cs_arm_O9'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['gcc_cs_arm_O3'] = ToolchainConfig(
     desc='codesourcery cross gcc [arm]',
     commands=COMMANDS_gcc_cs_arm,
     tools_needed=[GCC_CS_ARM, EMU_SCRIPT ],
     CC = GCC_CS_ARM,
     EMU_SCRIPT = EMU_SCRIPT,
-    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # # NACL + SEL_LDR [X86]
@@ -150,14 +150,14 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O0'] = ToolchainConfig(
     IRT = IRT_X32,
     CFLAGS = '-O0 -static -Bscons-out/nacl-x86-32/lib/ ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O9'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O3'] = ToolchainConfig(
     desc='nacl gcc with optimizations [x86-32]',
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X32, SEL_LDR_X32],
     CC = NACL_GCC_X32,
     SEL_LDR = SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O9 -static -Bscons-out/nacl-x86-32/lib/ ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -static -Bscons-out/nacl-x86-32/lib/ ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O0'] = ToolchainConfig(
     desc='nacl gcc [x86-64]',
@@ -168,15 +168,14 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O0'] = ToolchainConfig(
     IRT = IRT_X64,
     CFLAGS = '-O0 -static -Bscons-out/nacl-x86-64/lib/ ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O9'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
     desc='nacl gcc with optimizations [x86-64]',
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X64, SEL_LDR_X64],
     CC = NACL_GCC_X64,
     SEL_LDR = SEL_LDR_X64,
     IRT = IRT_X64,
-    CFLAGS = '-O9 -static -Bscons-out/nacl-x86-64/lib/ ' + GLOBAL_CFLAGS)
-
+    CFLAGS = '-O3 -static -Bscons-out/nacl-x86-64/lib/ ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [ARM]
@@ -215,7 +214,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
 
-TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O9'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     desc='pnacl llvm with optimizations [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_LLVM_GCC, PNACL_LD, EMU_SCRIPT, SEL_LDR_ARM],
@@ -224,7 +223,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O9'] = ToolchainConfig(
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
     IRT = IRT_ARM,
-    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8632]
@@ -254,7 +253,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     IRT = IRT_X32,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O9'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_LLVM_GCC, PNACL_LD, SEL_LDR_X32],
@@ -262,12 +261,11 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O9'] = ToolchainConfig(
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8664]
 ######################################################################
-
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
@@ -279,7 +277,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     IRT = IRT_X64,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O9'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_LLVM_GCC, PNACL_LD, SEL_LDR_X64],
@@ -287,4 +285,4 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O9'] = ToolchainConfig(
     LD = PNACL_LD + ' -arch x86-64',
     SEL_LDR = SEL_LDR_X64,
     IRT = IRT_X64,
-    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -static ' + GLOBAL_CFLAGS)

@@ -14,3 +14,5 @@ init-temp1.C
 init-temp2.C
 # terminate called after throwing an instance of 'int*'
 spec9.C
+# additional failures at -O3 (x8664 only)
+registers1.C
