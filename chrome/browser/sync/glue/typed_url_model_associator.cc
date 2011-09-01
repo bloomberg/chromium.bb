@@ -85,6 +85,11 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
           ix->id(), ix->last_visit(), 0, PageTransition::TYPED, 0);
       visit_vectors[ix->id()].push_back(visit);
     }
+    // Checking DB consistency to try to track down http://crbug.com/94733 - if
+    // we start hitting this DCHECK, we can try to fixup the data by adding our
+    // own mock visit as we do for empty visit vectors.
+    DCHECK_EQ(ix->last_visit().ToInternalValue(),
+              visit_vectors[ix->id()].back().visit_time.ToInternalValue());
     DCHECK(CheckVisitOrdering(visit_vectors[ix->id()]));
   }
 
@@ -151,6 +156,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
             // visit vector contains all the items in typed_url.visits.
             DCHECK(visits.size() > 0);
           }
+          DCHECK_EQ(new_url.last_visit().ToInternalValue(),
+                    visits.back().visit_time.ToInternalValue());
           WriteToSyncNode(new_url, visits, &write_node);
         }
         if (difference & DIFF_LOCAL_TITLE_CHANGED) {
@@ -568,7 +575,8 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
 
   DCHECK(!url.last_visit().is_null());
   DCHECK(!visits.empty());
-  DCHECK(url.last_visit() == visits.back().visit_time);
+  DCHECK_EQ(url.last_visit().ToInternalValue(),
+            visits.back().visit_time.ToInternalValue());
 
   typed_url->set_url(url.url().spec());
   typed_url->set_title(UTF16ToUTF8(url.title()));
