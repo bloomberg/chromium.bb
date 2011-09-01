@@ -69,6 +69,7 @@ class MockPrinter {
   // Functions that changes settings of a pseudo printer.
   void ResetPrinter();
   void SetDefaultPrintSettings(const PrintMsg_Print_Params& params);
+  void UseInvalidSettings();
 
   // Functions that handles IPC events.
   void GetDefaultPrintSettings(PrintMsg_Print_Params* params);
@@ -141,6 +142,9 @@ class MockPrinter {
   string16 date_;
   string16 title_;
   string16 url_;
+
+  // Used for generating invalid settings.
+  bool use_invalid_settings_;
 
   std::vector<scoped_refptr<MockPrinterPage> > pages_;
 

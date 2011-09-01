@@ -104,6 +104,10 @@ class PrintPreviewUI : public ChromeWebUI {
   // Notifies the Web UI renderer that file selection has been cancelled.
   void OnFileSelectionCancelled();
 
+  // Notifies the Web UI that the printer is unavailable or its settings are
+  // invalid.
+  void OnInvalidPrinterSettings();
+
   // Notifies the Web UI to cancel the pending preview request.
   void OnCancelPendingPreviewRequest();
 

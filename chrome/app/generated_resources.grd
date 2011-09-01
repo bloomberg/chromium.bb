@@ -5963,6 +5963,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_FAILED" desc="Message to display when print preview fails.">
         Print preview failed.
       </message>
+      <message name="IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS" desc="Message to display when selected printer is not reachable or its settings are invalid.">
+        Selected printer is not available or not installed correctly.  Check your printer or select another printer.
+      </message>
       <message name="IDS_PRINT_PREVIEW_INITIATOR_TAB_CRASHED" desc="Error message displayed when print preview fails because the tab that initiated the print preview crashed.">
         Print is unavailable because the page you were trying to print has crashed.
       </message>

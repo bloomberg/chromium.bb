@@ -237,6 +237,10 @@ void PrintPreviewUI::OnPrintPreviewFailed() {
   CallJavascriptFunction("printPreviewFailed");
 }
 
+void PrintPreviewUI::OnInvalidPrinterSettings() {
+  CallJavascriptFunction("invalidPrinterSettings");
+}
+
 PrintPreviewDataService* PrintPreviewUI::print_preview_data_service() {
   return PrintPreviewDataService::GetInstance();
 }

@@ -382,3 +382,9 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewFailed,
 // Tell the browser print preview was cancelled.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewCancelled,
                     int /* document cookie */)
+
+// Tell the browser print preview found the selected printer has invalid
+// settings (which typically caused by disconnected network printer or printer
+// driver is bogus).
+IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewInvalidPrinterSettings,
+                    int /* document cookie */)

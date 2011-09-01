@@ -46,6 +46,7 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
       const PrintHostMsg_DidPreviewDocument_Params& params);
   void OnPrintPreviewFailed(int document_cookie);
   void OnPrintPreviewCancelled(int document_cookie);
+  void OnInvalidPrinterSettings(int document_cookie);
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);
 };

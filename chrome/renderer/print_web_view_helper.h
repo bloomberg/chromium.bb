@@ -110,6 +110,10 @@ class PrintWebViewHelper : public RenderViewObserver,
                            OnPrintForPrintPreviewFail);
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
                            OnPrintPreviewForSelectedPages);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
+                           OnPrintPreviewUsingInvalidPrinterSettings);
+  FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperPreviewTest,
+                           OnPrintForPrintPreviewUsingInvalidPrinterSettings);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   FRIEND_TEST_ALL_PREFIXES(PrintWebViewHelperTest, PrintLayoutTest);
@@ -168,7 +172,9 @@ class PrintWebViewHelper : public RenderViewObserver,
   // Print Settings -----------------------------------------------------------
 
   // Initialize print page settings with default settings.
-  bool InitPrintSettings(WebKit::WebFrame* frame, WebKit::WebNode* node);
+  bool InitPrintSettings(WebKit::WebFrame* frame,
+                         WebKit::WebNode* node,
+                         bool is_preview);
 
   // Initialize print page settings with default settings and prepare the frame
   // for print. A new PrepareFrameAndViewForPrint is created to fulfill the

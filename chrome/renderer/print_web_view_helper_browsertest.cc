@@ -346,6 +346,13 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
     EXPECT_EQ(did_fail, print_failed);
   }
 
+  void VerifyPrintPreviewInvalidPrinterSettings(bool settings_invalid) {
+    bool print_preview_invalid_printer_settings =
+        (render_thread_.sink().GetUniqueMessageMatching(
+            PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID) != NULL);
+    EXPECT_EQ(settings_invalid, print_preview_invalid_printer_settings);
+  }
+
   // |page_number| is 0-based.
   void VerifyDidPreviewPage(bool generate_draft_pages, int page_number) {
     bool msg_found = false;
@@ -485,4 +492,45 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
   VerifyPrintFailed(true);
   VerifyPagesPrinted(false);
 }
+
+// Tests that when default printer has invalid printer settings, print preview
+// receives error message.
+TEST_F(PrintWebViewHelperPreviewTest,
+       OnPrintPreviewUsingInvalidPrinterSettings) {
+  LoadHTML(kPrintPreviewHTML);
+
+  PrintWebViewHelper::Get(view_)->OnInitiatePrintPreview();
+
+  // Set mock printer to provide invalid settings.
+  render_thread_.printer()->UseInvalidSettings();
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  PrintWebViewHelper::Get(view_)->OnPrintPreview(dict);
+
+  // We should have received invalid printer settings from |printer_|.
+  VerifyPrintPreviewInvalidPrinterSettings(true);
+  EXPECT_EQ(0, render_thread_.print_preview_pages_remaining());
+
+  // It should receive the invalid printer settings message only.
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(false);
+}
+
+TEST_F(PrintWebViewHelperPreviewTest,
+       OnPrintForPrintPreviewUsingInvalidPrinterSettings) {
+  LoadHTML(kPrintPreviewHTML);
+
+  // Set mock printer to provide invalid settings.
+  render_thread_.printer()->UseInvalidSettings();
+
+  // Fill in some dummy values.
+  DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
+
+  VerifyPagesPrinted(false);
+}
+
 #endif  // !defined(OS_CHROMEOS)

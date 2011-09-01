@@ -44,7 +44,8 @@ MockPrinter::MockPrinter()
     display_header_footer_(false),
     date_(ASCIIToUTF16("date")),
     title_(ASCIIToUTF16("title")),
-    url_(ASCIIToUTF16("url")) {
+    url_(ASCIIToUTF16("url")),
+    use_invalid_settings_(false) {
   page_size_.SetSize(static_cast<int>(8.5 * dpi_),
                      static_cast<int>(11.0 * dpi_));
   printable_size_.SetSize(static_cast<int>((7.5 * dpi_)),
@@ -85,6 +86,12 @@ void MockPrinter::SetDefaultPrintSettings(const PrintMsg_Print_Params& params) {
   date_ = params.date;
   title_ = params.title;
   url_ = params.url;
+}
+
+void MockPrinter::UseInvalidSettings() {
+  use_invalid_settings_ = true;
+  PrintMsg_Print_Params empty_param;
+  SetDefaultPrintSettings(empty_param);
 }
 
 void MockPrinter::ScriptedPrint(int cookie,
@@ -238,7 +245,7 @@ bool MockPrinter::SaveBitmap(
 }
 
 int MockPrinter::CreateDocumentCookie() {
-  return ++current_document_cookie_;
+  return use_invalid_settings_ ? 0 : ++current_document_cookie_;
 }
 
 void MockPrinter::SetPrintParams(PrintMsg_Print_Params* params) {

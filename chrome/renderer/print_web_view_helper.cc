@@ -571,7 +571,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   WebFrame* pdf_frame = pdf_element.document().frame();
   scoped_ptr<PrepareFrameAndViewForPrint> prepare;
   if (!InitPrintSettingsAndPrepareFrame(pdf_frame, &pdf_element, &prepare)) {
-    NOTREACHED() << "Failed to initialize print page settings";
+    LOG(ERROR) << "Failed to initialize print page settings";
     return;
   }
 
@@ -631,8 +631,11 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   print_preview_context_.OnPrintPreview();
 
   if (!InitPrintSettings(print_preview_context_.frame(),
-                         print_preview_context_.node())) {
-    NOTREACHED();
+                         print_preview_context_.node(),
+                         true)) {
+    Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
+         routing_id(),
+         print_pages_params_->params.document_cookie));
     return;
   }
 
@@ -1037,7 +1040,8 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
 }
 
 bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
-                                           WebKit::WebNode* node) {
+                                           WebKit::WebNode* node,
+                                           bool is_preview) {
   DCHECK(frame);
   PrintMsg_PrintPages_Params settings;
 
@@ -1046,27 +1050,33 @@ bool PrintWebViewHelper::InitPrintSettings(WebKit::WebFrame* frame,
   // Check if the printer returned any settings, if the settings is empty, we
   // can safely assume there are no printer drivers configured. So we safely
   // terminate.
+  bool result = true;
   if (PrintMsg_Print_Params_IsEmpty(settings.params)) {
-    render_view()->runModalAlertDialog(
-        frame,
-        l10n_util::GetStringUTF16(IDS_DEFAULT_PRINTER_NOT_FOUND_WARNING));
-    return false;
+    if (!is_preview) {
+      render_view()->runModalAlertDialog(
+          frame,
+          l10n_util::GetStringUTF16(
+              IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS));
+    }
+    result = false;
   }
-  if (settings.params.dpi < kMinDpi || settings.params.document_cookie == 0) {
+
+  if (result &&
+      (settings.params.dpi < kMinDpi || settings.params.document_cookie == 0)) {
     // Invalid print page settings.
     NOTREACHED();
-    return false;
+    result = false;
   }
 
   settings.pages.clear();
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
-  return true;
+  return result;
 }
 
 bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
     WebKit::WebFrame* frame, WebKit::WebNode* node,
     scoped_ptr<PrepareFrameAndViewForPrint>* prepare) {
-  if (!InitPrintSettings(frame, node))
+  if (!InitPrintSettings(frame, node, false))
     return false;
 
   DCHECK(!prepare->get());

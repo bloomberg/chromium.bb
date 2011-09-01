@@ -49,6 +49,8 @@ PrintPreviewDataSource::PrintPreviewDataSource()
 #endif
   AddLocalizedString("launchNativeDialog", IDS_PRINT_PREVIEW_NATIVE_DIALOG);
   AddLocalizedString("previewFailed", IDS_PRINT_PREVIEW_FAILED);
+  AddLocalizedString("invalidPrinterSettings",
+                     IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS);
   AddLocalizedString("initiatorTabCrashed",
                      IDS_PRINT_PREVIEW_INITIATOR_TAB_CRASHED);
   AddLocalizedString("initiatorTabClosed",

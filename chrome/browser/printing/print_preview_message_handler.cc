@@ -209,6 +209,26 @@ void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
   StopWorker(document_cookie);
 }
 
+void PrintPreviewMessageHandler::OnInvalidPrinterSettings(int document_cookie) {
+  // Always need to stop the worker.
+  if (document_cookie) {
+    StopWorker(document_cookie);
+  }
+
+  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
+  if (!print_preview_tab || !print_preview_tab->web_ui())
+    return;
+
+  if (g_browser_process->background_printing_manager()->
+          HasPrintPreviewTab(print_preview_tab)) {
+    delete print_preview_tab;
+  } else {
+    PrintPreviewUI* print_preview_ui =
+        static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+    print_preview_ui->OnInvalidPrinterSettings();
+  }
+}
+
 bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -227,6 +247,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnDidGetDefaultPageLayout)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewCancelled,
                         OnPrintPreviewCancelled)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewInvalidPrinterSettings,
+                        OnInvalidPrinterSettings)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

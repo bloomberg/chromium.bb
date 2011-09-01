@@ -863,6 +863,14 @@ function printPreviewFailed() {
 }
 
 /**
+ * Display an error message when encountered invalid printer settings.
+ * Called from PrintPreviewMessageHandler::OnInvalidDefaultPrinter().
+ */
+function invalidPrinterSettings() {
+  displayErrorMessage(localStrings.getString('invalidPrinterSettings'));
+}
+
+/**
  * Called when the PDF plugin loads its document.
  */
 function onPDFLoad() {
