@@ -89,19 +89,4 @@ void VideoDecoderImpl::FlushCommandBuffer() {
     gles2_impl_->Flush();
 }
 
-bool VideoDecoderImpl::CopyConfigsToVector(
-    const PP_VideoConfigElement* configs_to_copy,
-    std::vector<PP_VideoConfigElement>* out_configs) {
-  // TODO(fischman/vrk): This is still broken. We need to get rid of the silly
-  // PP_VideoConfigElement vector in favor of a struct (see TODO in
-  // ppb_video_decoder_dev.h).
-  const PP_VideoConfigElement* current = configs_to_copy;
-  while (current && *current != PP_VIDEOATTR_DICTIONARY_TERMINATOR) {
-    out_configs->push_back(*current);
-    out_configs->push_back(*(current + 1));
-    current += 2;
-  }
-  return true;
-}
-
 }  // namespace ppapi

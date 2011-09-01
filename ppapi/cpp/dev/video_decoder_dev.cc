@@ -23,22 +23,22 @@ template <> const char* interface_name<PPB_VideoDecoder_Dev>() {
 
 }  // namespace
 
-VideoDecoder_Dev::VideoDecoder_Dev(const Instance& instance,
+VideoDecoder_Dev::VideoDecoder_Dev(const Instance* instance,
                                    const Context3D_Dev& context,
-                                   const PP_VideoConfigElement* config) {
+                                   PP_VideoDecoder_Profile profile) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_VideoDecoder_Dev>()->Create(
-      instance.pp_instance(), context.pp_resource(), config));
+      instance->pp_instance(), context.pp_resource(), profile));
 }
 
-VideoDecoder_Dev::VideoDecoder_Dev(const Instance& instance,
+VideoDecoder_Dev::VideoDecoder_Dev(const Instance* instance,
                                    const Graphics3D_Dev& context,
-                                   const PP_VideoConfigElement* config) {
+                                   PP_VideoDecoder_Profile profile) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return;
   PassRefFromConstructor(get_interface<PPB_VideoDecoder_Dev>()->Create(
-      instance.pp_instance(), context.pp_resource(), config));
+      instance->pp_instance(), context.pp_resource(), profile));
 }
 
 VideoDecoder_Dev::VideoDecoder_Dev(PP_Resource resource) : Resource(resource) {

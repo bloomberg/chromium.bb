@@ -3,6 +3,7 @@ include_rules = [
   "+gpu/command_buffer",
   "+libEGL",
   "+libGLESv2",
+  "+media/video/video_decode_accelerator.h",
   "+skia",
   "+third_party/angle/include",
   "+third_party/openmax",

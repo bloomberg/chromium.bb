@@ -39,11 +39,6 @@ class PPAPI_SHARED_EXPORT VideoDecoderImpl
   // PPB_VideoDecoder_API implementation.
   virtual void Destroy() OVERRIDE;
 
-  // Copy C-style config list into |out_configs| vector.
-  static bool CopyConfigsToVector(
-      const PP_VideoConfigElement* configs_to_copy,
-      std::vector<PP_VideoConfigElement>* out_configs);
-
  protected:
   bool SetFlushCallback(PP_CompletionCallback callback);
   bool SetResetCallback(PP_CompletionCallback callback);

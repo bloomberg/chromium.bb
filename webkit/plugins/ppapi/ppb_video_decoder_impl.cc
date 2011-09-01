@@ -51,10 +51,19 @@ PPB_VideoDecoder_API* PPB_VideoDecoder_Impl::AsPPB_VideoDecoder_API() {
   return this;
 }
 
+// Convert PP_VideoDecoder_Profile to media::VideoDecodeAccelerator::Profile.
+static media::VideoDecodeAccelerator::Profile PPToMediaProfile(
+    const PP_VideoDecoder_Profile pp_profile) {
+  // TODO(fischman,vrk): this assumes the enum values in the two Profile types
+  // match up exactly.  Add a COMPILE_ASSERT for this somewhere.
+  return static_cast<media::VideoDecodeAccelerator::Profile>(pp_profile);
+}
+
 // static
-PP_Resource PPB_VideoDecoder_Impl::Create(PP_Instance instance,
-                                          PP_Resource graphics_context,
-                                          const PP_VideoConfigElement* config) {
+PP_Resource PPB_VideoDecoder_Impl::Create(
+    PP_Instance instance,
+    PP_Resource graphics_context,
+    PP_VideoDecoder_Profile profile) {
   PluginDelegate::PlatformContext3D* platform_context = NULL;
   gpu::gles2::GLES2Implementation* gles2_impl = NULL;
   EnterResourceNoLock<PPB_Context3D_API> enter_context(graphics_context, false);
@@ -76,7 +85,7 @@ PP_Resource PPB_VideoDecoder_Impl::Create(PP_Instance instance,
 
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       new PPB_VideoDecoder_Impl(instance));
-  if (decoder->Init(graphics_context, platform_context, gles2_impl, config))
+  if (decoder->Init(graphics_context, platform_context, gles2_impl, profile))
     return decoder->GetReference();
   return 0;
 }
@@ -85,15 +94,11 @@ bool PPB_VideoDecoder_Impl::Init(
     PP_Resource graphics_context,
     PluginDelegate::PlatformContext3D* context,
     gpu::gles2::GLES2Implementation* gles2_impl,
-    const PP_VideoConfigElement* config) {
+    PP_VideoDecoder_Profile profile) {
   InitCommon(graphics_context, gles2_impl);
 
   int command_buffer_route_id = context->GetCommandBufferRouteId();
   if (command_buffer_route_id == 0)
-    return false;
-
-  std::vector<int32> copied;
-  if (!CopyConfigsToVector(config, &copied))
     return false;
 
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
@@ -106,7 +111,7 @@ bool PPB_VideoDecoder_Impl::Init(
     return false;
 
   FlushCommandBuffer();
-  return platform_video_decoder_->Initialize(copied);
+  return platform_video_decoder_->Initialize(PPToMediaProfile(profile));
 }
 
 int32_t PPB_VideoDecoder_Impl::Decode(

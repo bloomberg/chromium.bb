@@ -43,9 +43,9 @@ class GpuVideoDecodeAccelerator
   // Function to delegate sending to actual sender.
   virtual bool Send(IPC::Message* message);
 
-  // Initialize the accelerator with the given configuration and send the
+  // Initialize the accelerator with the given profile and send the
   // |init_done_msg| when done.
-  void Initialize(const std::vector<int32>& configs,
+  void Initialize(const media::VideoDecodeAccelerator::Profile profile,
                   IPC::Message* init_done_msg);
 
  private:

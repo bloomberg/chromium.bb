@@ -238,13 +238,13 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 
 GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
     int command_buffer_route_id,
-    const std::vector<int32>& configs,
+    media::VideoDecodeAccelerator::Profile profile,
     media::VideoDecodeAccelerator::Client* client) {
   AutoLock lock(context_lock_);
   ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
   DCHECK(it != proxies_.end());
   CommandBufferProxy* proxy = it->second;
-  return proxy->CreateVideoDecoder(configs, client);
+  return proxy->CreateVideoDecoder(profile, client);
 }
 
 CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(

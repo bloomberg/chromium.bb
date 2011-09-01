@@ -119,7 +119,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateVideoDecoder(
       PP_Instance instance,
       PP_Resource context3d_id,
-      const PP_VideoConfigElement* config) = 0;
+      PP_VideoDecoder_Profile profile) = 0;
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) = 0;
   virtual PP_Resource CreateWheelInputEvent(

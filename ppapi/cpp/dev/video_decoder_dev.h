@@ -25,12 +25,12 @@ class Instance;
 class VideoDecoder_Dev : public Resource {
  public:
   // See PPB_VideoDecoder_Dev::Create.
-  VideoDecoder_Dev(const Instance& instance,
+  VideoDecoder_Dev(const Instance* instance,
                    const Context3D_Dev& context,
-                   const PP_VideoConfigElement* config);
-  VideoDecoder_Dev(const Instance& instance,
+                   PP_VideoDecoder_Profile profile);
+  VideoDecoder_Dev(const Instance* instance,
                    const Graphics3D_Dev& context,
-                   const PP_VideoConfigElement* config);
+                   PP_VideoDecoder_Profile profile);
 
   explicit VideoDecoder_Dev(PP_Resource resource);
   virtual ~VideoDecoder_Dev();

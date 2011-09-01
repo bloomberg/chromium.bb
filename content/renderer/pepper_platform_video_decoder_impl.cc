@@ -24,7 +24,7 @@ PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
 
 PlatformVideoDecoderImpl::~PlatformVideoDecoderImpl() {}
 
-bool PlatformVideoDecoderImpl::Initialize(const std::vector<int32>& configs) {
+bool PlatformVideoDecoderImpl::Initialize(Profile profile) {
   // TODO(vrk): Support multiple decoders.
   if (decoder_)
     return true;
@@ -45,7 +45,7 @@ bool PlatformVideoDecoderImpl::Initialize(const std::vector<int32>& configs) {
 
   // Send IPC message to initialize decoder in GPU process.
   decoder_ = channel->CreateVideoDecoder(
-      command_buffer_route_id_, configs, this);
+      command_buffer_route_id_, profile, this);
   return decoder_.get() != NULL;
 }
 

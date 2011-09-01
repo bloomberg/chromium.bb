@@ -235,16 +235,11 @@ void GLES2DemoInstance::DidChangeView(
 }
 
 void GLES2DemoInstance::InitializeDecoders() {
-  PP_VideoConfigElement configs[] = {
-    PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_PROFILE,
-    PP_H264PROFILE_BASELINE,
-    PP_VIDEOATTR_DICTIONARY_TERMINATOR,
-  };
-
   assert(video_decoders_.empty());
   for (int i = 0; i < kNumDecoders; ++i) {
     DecoderClient* client = new DecoderClient(
-        this, new pp::VideoDecoder_Dev(*this, *context_, configs));
+        this, new pp::VideoDecoder_Dev(
+            this, *context_, PP_VIDEODECODER_H264PROFILE_BASELINE));
     assert(!client->decoder()->is_null());
     assert(video_decoders_.insert(std::make_pair(
         client->decoder()->pp_resource(), client)).second);

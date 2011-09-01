@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE_0_15 "PPB_VideoDecoder(Dev);0.15"
-#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_15
+#define PPB_VIDEODECODER_DEV_INTERFACE_0_16 "PPB_VideoDecoder(Dev);0.16"
+#define PPB_VIDEODECODER_DEV_INTERFACE PPB_VIDEODECODER_DEV_INTERFACE_0_16
 
 // Video decoder interface.
 //
@@ -35,14 +35,12 @@ struct PPB_VideoDecoder_Dev {
   // Parameters:
   //   |instance| pointer to the plugin instance.
   //   |context_3d| a PPB_Context3D_Dev resource in which decoding will happen.
-  //   |decoder_config| the configuration to use to initialize the decoder.
+  //   |profile| the video stream's format profile.
   //
   // The created decoder is returned as PP_Resource. 0 means failure.
-  // TODO(fischman/vrk): Get rid of silly PP_VideoConfigElement* vector in favor
-  // of config struct.
   PP_Resource (*Create)(PP_Instance instance,
                         PP_Resource context,
-                        const PP_VideoConfigElement* decoder_config);
+                        enum PP_VideoDecoder_Profile profile);
 
   // Tests whether |resource| is a video decoder created through Create
   // function of this interface.

@@ -575,18 +575,11 @@ void EglRenderingVDAClient::CreateDecoder() {
     return;
 
   // Configure the decoder.
-  int32 config_array[] = {
-    media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_FOURCC,
-    media::VIDEOCODECFOURCC_H264,
-    media::VIDEOATTRIBUTEKEY_VIDEOCOLORFORMAT, media::VIDEOCOLORFORMAT_RGBA,
-  };
-  std::vector<int32> config(
-    config_array, config_array + arraysize(config_array));
-  if (profile_ != -1) {
-    config.push_back(media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_PROFILE);
-    config.push_back(profile_);
-  }
-  CHECK(decoder_->Initialize(config));
+  media::VideoDecodeAccelerator::Profile profile =
+      media::VideoDecodeAccelerator::H264PROFILE_BASELINE;
+  if (profile_ != -1)
+    profile = static_cast<media::VideoDecodeAccelerator::Profile>(profile_);
+  CHECK(decoder_->Initialize(profile));
 }
 
 void EglRenderingVDAClient::ProvidePictureBuffers(

@@ -17,6 +17,7 @@
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -103,6 +104,8 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(content::CauseForGpuLaunch)
 IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
+
+IPC_ENUM_TRAITS(media::VideoDecodeAccelerator::Profile)
 
 //------------------------------------------------------------------------------
 // GPU Messages
@@ -389,7 +392,7 @@ IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_GetTransferBuffer,
 
 // Create and initialize a hardware video decoder, returning its new route_id.
 IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
-                           std::vector<int32> /* configs */,
+                           media::VideoDecodeAccelerator::Profile /* profile */,
                            int /* route_id */)
 
 // Release all resources held by the named hardware video decoder.

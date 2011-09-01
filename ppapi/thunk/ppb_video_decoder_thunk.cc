@@ -18,11 +18,11 @@ typedef EnterResource<PPB_VideoDecoder_API> EnterVideoDecoder;
 
 PP_Resource Create(PP_Instance instance,
                    PP_Resource context_3d,
-                   const PP_VideoConfigElement* config) {
+                   PP_VideoDecoder_Profile profile) {
   EnterFunction<ResourceCreationAPI> enter(instance, true);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateVideoDecoder(instance, context_3d, config);
+  return enter.functions()->CreateVideoDecoder(instance, context_3d, profile);
 }
 
 PP_Bool IsVideoDecoder(PP_Resource resource) {

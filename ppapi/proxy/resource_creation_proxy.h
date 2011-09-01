@@ -117,7 +117,7 @@ class ResourceCreationProxy : public FunctionGroupBase,
   virtual PP_Resource CreateVideoDecoder(
       PP_Instance instance,
       PP_Resource context3d_id,
-      const PP_VideoConfigElement* config) OVERRIDE;
+      PP_VideoDecoder_Profile profile) OVERRIDE;
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) OVERRIDE;
   virtual PP_Resource CreateWheelInputEvent(

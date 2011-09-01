@@ -537,7 +537,7 @@ void GpuCommandBufferStub::ReportState() {
 }
 
 void GpuCommandBufferStub::OnCreateVideoDecoder(
-    const std::vector<int32>& configs,
+    media::VideoDecodeAccelerator::Profile profile,
     IPC::Message* reply_message) {
   int decoder_route_id = channel_->GenerateRouteID();
   GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(
@@ -546,7 +546,7 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
       new GpuVideoDecodeAccelerator(this, decoder_route_id, this);
   video_decoders_.AddWithID(decoder, decoder_route_id);
   channel_->AddRoute(decoder_route_id, decoder);
-  decoder->Initialize(configs, reply_message);
+  decoder->Initialize(profile, reply_message);
 }
 
 void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {

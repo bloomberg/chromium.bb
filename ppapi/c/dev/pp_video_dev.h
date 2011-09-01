@@ -13,157 +13,29 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-// Enumeration defining global dictionary ranges for various purposes that are
-// used to handle the configurations of the video decoder.
-//
-// IMPORTANT! Dictionary keys and corresponding values MUST match the ones found
-// in VideoDecodeAccelerator interface in Chromium media stack
-// (media/video/video_decode_accelerator.h)!
-enum PP_VideoAttributeDictionary {
-  PP_VIDEOATTR_DICTIONARY_TERMINATOR = 0,
+// Video decoder configuration-related enums.
 
-  PP_VIDEOATTR_DICTIONARY_BITSTREAM_FORMAT_BASE = 0x100,
-  // Array of key/value pairs describing video configuration.
-  // It could include any keys from PP_VideoKey. Its last element shall be
-  // PP_VIDEOATTR_BITSTREAMFORMATKEY_NONE with no corresponding value.
-  // An example:
-  // {
-  //   PP_VIDEOATTR_BITSTREAMFORMATKEY_FOURCC,      PP_VIDEODECODECID_VP8,
-  //   PP_VIDEOATTR_BITSTREAMFORMATKEY_VP8_PROFILE,  (PP_VP8PROFILE_1 |
-  //                                        PP_VP8PROFILE_2 |
-  //                                        PP_VP8PROFILE_3),
-  //   PP_VIDEOATTR_DICTIONARY_TERMINATOR
-  // };
-  // Keys for defining video bitstream format.
-  // Value is type of PP_VideoCodecFourcc. Commonly known attributes values are
-  // defined in PP_VideoCodecFourcc enumeration.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_FOURCC,
-  // Bitrate in bits/s. Attribute value is 32-bit unsigned integer.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_BITRATE,
-  // Width and height of the input video bitstream, if known by the application.
-  // Decoder will expect the bitstream to match these values and does memory
-  // considerations accordingly.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_WIDTH,
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_HEIGHT,
-  // Following attributes are applicable only in case of VP8.
-  // Key for VP8 profile attribute. Attribute value is bitmask of flags defined
-  // in PP_VP8Profile_Dev enumeration.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_VP8_PROFILE,
-  // Number of partitions per picture. Attribute value is unsigned 32-bit
-  // integer.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_VP8_NUM_OF_PARTITIONS,
-  // Following attributes are applicable only in case of H.264.
-  // Value is bitmask collection from the flags defined in PP_H264Profile.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_PROFILE,
-  // Value is type of PP_H264Level.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_LEVEL,
-  // Value is type of PP_H264PayloadFormat_Dev.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_PAYLOADFORMAT,
-  // Subset for H.264 features, attribute value 0 signifies unsupported.
-  // This is needed in case decoder has partial support for certain profile.
-  // Default for features are enabled if they're part of supported profile.
-  // H264 tool called Flexible Macroblock Ordering.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_FEATURE_FMO,
-  // H264 tool called Arbitrary Slice Ordering.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_FEATURE_ASO,
-  // H264 tool called Interlacing.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_FEATURE_INTERLACE,
-  // H264 tool called Context-Adaptive Binary Arithmetic Coding.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_FEATURE_CABAC,
-  // H264 tool called Weighted Prediction.
-  PP_VIDEOATTR_BITSTREAMFORMATKEY_H264_FEATURE_WEIGHTEDPREDICTION,
+// NOTE: these must be kept in sync with the versions in
+// media/video/video_decode_accelerator.h!
 
-  PP_VIDEOATTR_DICTIONARY_COLOR_FORMAT_BASE = 0x1000,
-  // This specifies the output color format for a decoded frame. Value is one
-  // of the values in PP_ColorFormat_Dev enumeration.
-  PP_VIDEOATTR_PICTUREFORMATKEY_COLORFORMAT
+// Video stream profile.
+enum PP_VideoDecoder_Profile {
+  // Keep the values in this enum unique, as they imply format (h.264 vs. VP8,
+  // for example), and keep the values for a particular format grouped together
+  // for clarity.
+  PP_VIDEODECODER_H264PROFILE_NONE = 0,
+  PP_VIDEODECODER_H264PROFILE_BASELINE,
+  PP_VIDEODECODER_H264PROFILE_MAIN,
+  PP_VIDEODECODER_H264PROFILE_EXTENDED,
+  PP_VIDEODECODER_H264PROFILE_HIGH,
+  PP_VIDEODECODER_H264PROFILE_HIGH10PROFILE,
+  PP_VIDEODECODER_H264PROFILE_HIGH422PROFILE,
+  PP_VIDEODECODER_H264PROFILE_HIGH444PREDICTIVEPROFILE,
+  PP_VIDEODECODER_H264PROFILE_SCALABLEBASELINE,
+  PP_VIDEODECODER_H264PROFILE_SCALABLEHIGH,
+  PP_VIDEODECODER_H264PROFILE_STEREOHIGH,
+  PP_VIDEODECODER_H264PROFILE_MULTIVIEWHIGH
 };
-PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoAttributeDictionary, 4);
-typedef int32_t PP_VideoConfigElement;
-
-enum PP_VideoCodecFourcc {
-  PP_VIDEOCODECFOURCC_NONE = 0,
-  PP_VIDEOCODECFOURCC_VP8 = 0x00385056,  // a.k.a. Fourcc 'VP8\0'.
-  PP_VIDEOCODECFOURCC_H264 = 0x31637661  // a.k.a. Fourcc 'avc1'.
-};
-PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoCodecFourcc, 4);
-
-// VP8 specific information to be carried over the APIs.
-// Enumeration for flags defining supported VP8 profiles.
-enum PP_VP8Profile_Dev {
-  PP_VP8PROFILE_NONE = 0,
-  PP_VP8PROFILE_0 = 1,
-  PP_VP8PROFILE_1 = 1 << 1,
-  PP_VP8PROFILE_2 = 1 << 2,
-  PP_VP8PROFILE_3 = 1 << 3
-};
-PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VP8Profile_Dev, 4);
-
-// H.264 specific information to be carried over the APIs.
-// Enumeration for flags defining supported H.264 profiles.
-enum PP_H264Profile_Dev {
-  PP_H264PROFILE_NONE = 0,
-  PP_H264PROFILE_BASELINE = 1,
-  PP_H264PROFILE_MAIN = 1 << 2,
-  PP_H264PROFILE_EXTENDED = 1 << 3,
-  PP_H264PROFILE_HIGH = 1 << 4,
-  PP_H264PROFILE_HIGH10PROFILE = 1 << 5,
-  PP_H264PROFILE_HIGH422PROFILE = 1 << 6,
-  PP_H264PROFILE_HIGH444PREDICTIVEPROFILE = 1 << 7,
-  PP_H264PROFILE_SCALABLEBASELINE = 1 << 8,
-  PP_H264PROFILE_SCALABLEHIGH = 1 << 9,
-  PP_H264PROFILE_STEREOHIGH = 1 << 10,
-  PP_H264PROFILE_MULTIVIEWHIGH = 1 << 11
-};
-PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_H264Profile_Dev, 4);
-
-// Enumeration for defining H.264 level of decoder implementation.
-enum PP_H264Level_Dev {
-  PP_H264LEVEL_NONE = 0,
-  PP_H264LEVEL_10 = 1,
-  PP_H264LEVEL_1B = PP_H264LEVEL_10 | 1 << 1,
-  PP_H264LEVEL_11 = PP_H264LEVEL_1B | 1 << 2,
-  PP_H264LEVEL_12 = PP_H264LEVEL_11 | 1 << 3,
-  PP_H264LEVEL_13 = PP_H264LEVEL_12 | 1 << 4,
-  PP_H264LEVEL_20 = PP_H264LEVEL_13 | 1 << 5,
-  PP_H264LEVEL_21 = PP_H264LEVEL_20 | 1 << 6,
-  PP_H264LEVEL_22 = PP_H264LEVEL_21 | 1 << 7,
-  PP_H264LEVEL_30 = PP_H264LEVEL_22 | 1 << 8,
-  PP_H264LEVEL_31 = PP_H264LEVEL_30 | 1 << 9,
-  PP_H264LEVEL_32 = PP_H264LEVEL_31 | 1 << 10,
-  PP_H264LEVEL_40 = PP_H264LEVEL_32 | 1 << 11,
-  PP_H264LEVEL_41 = PP_H264LEVEL_40 | 1 << 12,
-  PP_H264LEVEL_42 = PP_H264LEVEL_41 | 1 << 13,
-  PP_H264LEVEL_50 = PP_H264LEVEL_42 | 1 << 14,
-  PP_H264LEVEL_51 = PP_H264LEVEL_50 | 1 << 15
-};
-PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_H264Level_Dev, 4);
-
-// Enumeration to describe which payload format is used within the exchanged
-// bitstream buffers.
-enum PP_H264PayloadFormat_Dev {
-  PP_H264PAYLOADFORMAT_NONE = 0,
-  // NALUs separated by Start Code.
-  PP_H264PAYLOADFORMAT_BYTESTREAM = 1,
-  // Exactly one raw NALU per buffer.
-  PP_H264PAYLOADFORMAT_ONE_NALU_PER_BUFFER = 1 << 1,
-  // NALU separated by 1-byte interleaved length field.
-  PP_H264PAYLOADFORMAT_ONE_BYTE_INTERLEAVED_LENGTH = 1 << 2,
-  // NALU separated by 2-byte interleaved length field.
-  PP_H264PAYLOADFORMAT_TWO_BYTE_INTERLEAVED_LENGTH = 1 << 3,
-  // NALU separated by 4-byte interleaved length field.
-  PP_H264PAYLOADFORMAT_FOUR_BYTE_INTERLEAVED_LENGTH = 1 << 4
-};
-PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_H264PayloadFormat_Dev, 4);
-
-// Enumeration for various color formats.
-enum PP_ColorFormat_Dev {
-  // Value represents 32-bit RGBA format where each component is 8-bit in order
-  // R-G-B-A. Regardless of endianness of the architecture color components are
-  // stored in this order in the memory.
-  PP_VIDEOATTR_COLORFORMAT_RGBA = 0
-};
-PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_ColorFormat_Dev, 4);
 
 // The data structure for video bitstream buffer.
 struct PP_VideoBitstreamBuffer_Dev {

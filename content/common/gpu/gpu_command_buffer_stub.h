@@ -114,8 +114,9 @@ class GpuCommandBufferStub
   void OnDestroyTransferBuffer(int32 id, IPC::Message* reply_message);
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
 
-  void OnCreateVideoDecoder(const std::vector<int32>& configs,
-                            IPC::Message* reply_message);
+  void OnCreateVideoDecoder(
+      media::VideoDecodeAccelerator::Profile profile,
+      IPC::Message* reply_message);
   void OnDestroyVideoDecoder(int32 decoder_route_id);
 
 #if defined(OS_MACOSX)

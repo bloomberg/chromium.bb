@@ -42,7 +42,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   OmxVideoDecodeAccelerator(media::VideoDecodeAccelerator::Client* client);
 
   // media::VideoDecodeAccelerator implementation.
-  bool Initialize(const std::vector<int32>& config) OVERRIDE;
+  bool Initialize(Profile profile) OVERRIDE;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
@@ -81,9 +81,6 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
     EGLImageKHR egl_image;
   };
   typedef std::map<int32, OutputPicture> OutputPictureById;
-
-  // Verify that |config| is compatible with this class and hardware.
-  bool VerifyConfigs(const std::vector<int32>& configs);
 
   MessageLoop* message_loop_;
   OMX_HANDLETYPE component_handle_;
@@ -185,7 +182,7 @@ class OmxVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   Client* client_;
 
   // These two members are only used during Initialization.
-  // OMX_VIDEO_AVCProfile requested during Initialization.
+  // OMX_AVCProfile requested during Initialization.
   uint32 profile_;
   bool component_name_is_nvidia_h264ext_;
 

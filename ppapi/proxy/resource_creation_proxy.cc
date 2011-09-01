@@ -305,9 +305,9 @@ PP_Resource ResourceCreationProxy::CreateVideoCapture(PP_Instance instance) {
 PP_Resource ResourceCreationProxy::CreateVideoDecoder(
     PP_Instance instance,
     PP_Resource context3d_id,
-    const PP_VideoConfigElement* config) {
+    PP_VideoDecoder_Profile profile) {
   return PPB_VideoDecoder_Proxy::CreateProxyResource(
-      instance, context3d_id, config);
+      instance, context3d_id, profile);
 }
 
 PP_Resource ResourceCreationProxy::CreateVideoLayer(

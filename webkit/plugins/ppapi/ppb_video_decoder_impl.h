@@ -19,7 +19,6 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 struct PP_PictureBuffer_Dev;
-struct PP_VideoDecoderConfig_Dev;
 struct PP_VideoBitstreamBuffer_Dev;
 struct PPB_VideoDecoder_Dev;
 struct PPP_VideoDecoder_Dev;
@@ -49,7 +48,7 @@ class PPB_VideoDecoder_Impl : public ::ppapi::Resource,
   // initialize.
   static PP_Resource Create(PP_Instance instance,
                             PP_Resource graphics_context,
-                            const PP_VideoConfigElement* config);
+                            PP_VideoDecoder_Profile profile);
 
   // Resource overrides.
   virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
@@ -82,7 +81,7 @@ class PPB_VideoDecoder_Impl : public ::ppapi::Resource,
   bool Init(PP_Resource graphics_context,
             PluginDelegate::PlatformContext3D* context,
             gpu::gles2::GLES2Implementation* gles2_impl,
-            const PP_VideoConfigElement* config);
+            PP_VideoDecoder_Profile profile);
 
   // This is NULL before initialization, and if this PPB_VideoDecoder_Impl is
   // swapped with another.

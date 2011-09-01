@@ -28,7 +28,7 @@ void TestVideoDecoder::QuitMessageLoop() {
 
 std::string TestVideoDecoder::TestCreateFailure() {
   PP_Resource decoder = video_decoder_interface_->Create(
-      instance_->pp_instance(), 0, NULL);
+      instance_->pp_instance(), 0, static_cast<PP_VideoDecoder_Profile>(-1));
   if (decoder != 0)
     return "Create: error detecting invalid context & configs";
 

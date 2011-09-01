@@ -33,7 +33,7 @@ class VideoDecoder : public Resource, public VideoDecoderImpl {
 
   static VideoDecoder* Create(const HostResource& resource,
                               PP_Resource graphics_context,
-                              const PP_VideoConfigElement* config);
+                              PP_VideoDecoder_Profile profile);
 
   // Resource overrides.
   virtual PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
@@ -210,15 +210,11 @@ bool PPB_VideoDecoder_Proxy::OnMessageReceived(const IPC::Message& msg) {
 PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
     PP_Instance instance,
     PP_Resource graphics_context,
-    const PP_VideoConfigElement* config) {
+    PP_VideoDecoder_Profile profile) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   // Dispatcher is null if it cannot find the instance passed to it (i.e. if the
   // client passes in an invalid instance).
   if (!dispatcher)
-    return 0;
-
-  std::vector<PP_VideoConfigElement> copied;
-  if (!VideoDecoderImpl::CopyConfigsToVector(config, &copied))
     return 0;
 
   HostResource host_context;
@@ -242,7 +238,7 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBVideoDecoder_Create(
       INTERFACE_ID_PPB_VIDEO_DECODER_DEV, instance,
-      host_context, copied, &result));
+      host_context, profile, &result));
   if (result.is_null())
     return 0;
 
@@ -254,20 +250,17 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
 
 void PPB_VideoDecoder_Proxy::OnMsgCreate(
     PP_Instance instance, const HostResource& graphics_context,
-    const std::vector<PP_VideoConfigElement>& config,
+    PP_VideoDecoder_Profile profile,
     HostResource* result) {
   thunk::EnterFunction<thunk::ResourceCreationAPI> resource_creation(instance,
                                                                      true);
   if (resource_creation.failed())
     return;
 
-  std::vector<PP_VideoConfigElement> copied = config;
-  copied.push_back(PP_VIDEOATTR_DICTIONARY_TERMINATOR);
-
   // Make the resource and get the API pointer to its interface.
   result->SetHostResource(
       instance, resource_creation.functions()->CreateVideoDecoder(
-          instance, graphics_context.host_resource(), &copied.front()));
+          instance, graphics_context.host_resource(), profile));
 }
 
 void PPB_VideoDecoder_Proxy::OnMsgDecode(

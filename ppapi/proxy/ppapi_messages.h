@@ -44,6 +44,7 @@
 
 IPC_ENUM_TRAITS(PP_InputEvent_Type)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
+IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
@@ -1020,7 +1021,7 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVideoCapture_StopCapture,
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBVideoDecoder_Create,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* context */,
-                           std::vector<PP_VideoConfigElement> /* config */,
+                           PP_VideoDecoder_Profile /* profile */,
                            ppapi::HostResource /* result */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBVideoDecoder_Decode,
                     ppapi::HostResource /* video_decoder */,

@@ -60,8 +60,7 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-bool GpuVideoDecodeAcceleratorHost::Initialize(
-    const std::vector<int32>& configs) {
+bool GpuVideoDecodeAcceleratorHost::Initialize(Profile profile) {
   NOTREACHED();
   return true;
 }

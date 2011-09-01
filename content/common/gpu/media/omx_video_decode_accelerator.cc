@@ -46,36 +46,35 @@ static bool AreOMXFunctionPointersInitialized() {
           omx_free_handle && omx_deinit);
 }
 
-// Maps the media::H264Profile members to the OMX_VIDEO_AVCPROFILETYPE members.
+// Maps h264-related Profile enum values to OMX_VIDEO_AVCPROFILETYPE values.
 static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
   switch (profile) {
-    case media::H264PROFILE_NONE:
-      return OMX_VIDEO_AVCProfileMax;
-    case media::H264PROFILE_BASELINE:
+    case media::VideoDecodeAccelerator::H264PROFILE_BASELINE:
       return OMX_VIDEO_AVCProfileBaseline;
-    case media::H264PROFILE_MAIN:
+    case media::VideoDecodeAccelerator::H264PROFILE_MAIN:
       return OMX_VIDEO_AVCProfileMain;
-    case media::H264PROFILE_EXTENDED:
+    case media::VideoDecodeAccelerator::H264PROFILE_EXTENDED:
       return OMX_VIDEO_AVCProfileExtended;
-    case media::H264PROFILE_HIGH:
+    case media::VideoDecodeAccelerator::H264PROFILE_HIGH:
       return OMX_VIDEO_AVCProfileHigh;
-    case media::H264PROFILE_HIGH10PROFILE:
+    case media::VideoDecodeAccelerator::H264PROFILE_HIGH10PROFILE:
       return OMX_VIDEO_AVCProfileHigh10;
-    case media::H264PROFILE_HIGH422PROFILE:
+    case media::VideoDecodeAccelerator::H264PROFILE_HIGH422PROFILE:
       return OMX_VIDEO_AVCProfileHigh422;
-    case media::H264PROFILE_HIGH444PREDICTIVEPROFILE:
+    case media::VideoDecodeAccelerator::H264PROFILE_HIGH444PREDICTIVEPROFILE:
       return OMX_VIDEO_AVCProfileHigh444;
     // Below enums don't have equivalent enum in Openmax.
-    case media::H264PROFILE_SCALABLEBASELINE:
-    case media::H264PROFILE_SCALABLEHIGH:
-    case media::H264PROFILE_STEREOHIGH:
-    case media::H264PROFILE_MULTIVIEWHIGH:
+    case media::VideoDecodeAccelerator::H264PROFILE_SCALABLEBASELINE:
+    case media::VideoDecodeAccelerator::H264PROFILE_SCALABLEHIGH:
+    case media::VideoDecodeAccelerator::H264PROFILE_STEREOHIGH:
+    case media::VideoDecodeAccelerator::H264PROFILE_MULTIVIEWHIGH:
       // Nvidia OMX video decoder requires the same resources (as that of the
       // High profile) in every profile higher to the Main profile.
       return OMX_VIDEO_AVCProfileHigh444;
+    default:
+      NOTREACHED();
+      return OMX_VIDEO_AVCProfileMax;
   }
-  NOTREACHED();
-  return OMX_VIDEO_AVCProfileMax;
 }
 
 // Helper macros for dealing with failure.  If |result| evaluates false, emit
@@ -133,44 +132,6 @@ void OmxVideoDecodeAccelerator::SetEglState(
   egl_context_ = egl_context;
 }
 
-bool OmxVideoDecodeAccelerator::VerifyConfigs(
-    const std::vector<int32>& configs) {
-  size_t cur;
-  for (cur = 0; cur + 1 < configs.size(); cur++) {
-    uint32 n = configs[cur++];
-    uint32 v = configs[cur];
-    if ((n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_FOURCC &&
-         v == media::VIDEOCODECFOURCC_H264) ||
-        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_BITRATE &&
-         v < 14000000 /* Baseline supports up to 14Mbps. */) ||
-        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_WIDTH &&
-         v <= 1920 /* Baseline supports upto 1080p. */) ||
-        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_HEIGHT &&
-         v <= 1080 /* Baseline supports up to 1080p. */) ||
-        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_LEVEL ||
-         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_PAYLOADFORMAT ||
-         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_FMO ||
-         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_ASO ||
-         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_INTERLACE ||
-         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_CABAC ||
-         /* TODO(fischman) Shorten the enum name. */
-         n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_FEATURE_WEIGHTEDPREDICTION)
-         ||
-        (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_PROFILE &&
-        (v == media::H264PROFILE_BASELINE || v == media::H264PROFILE_MAIN ||
-         v == media::H264PROFILE_HIGH)) ||
-        (n == media::VIDEOATTRIBUTEKEY_VIDEOCOLORFORMAT &&
-         v == media::VIDEOCOLORFORMAT_RGBA)) {
-      if (n == media::VIDEOATTRIBUTEKEY_BITSTREAMFORMAT_H264_PROFILE) {
-        profile_ = v;
-      }
-      continue;
-    }
-    return false;
-  }
-  return cur == configs.size();
-}
-
 // This is to initialize the OMX data structures to default values.
 template <typename T>
 static void InitParam(const OmxVideoDecodeAccelerator& dec, T* param) {
@@ -179,10 +140,15 @@ static void InitParam(const OmxVideoDecodeAccelerator& dec, T* param) {
   param->nSize = sizeof(T);
 }
 
-bool OmxVideoDecodeAccelerator::Initialize(const std::vector<int32>& config) {
+bool OmxVideoDecodeAccelerator::Initialize(Profile profile) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  RETURN_ON_FAILURE(VerifyConfigs(config), "Invalid config", INVALID_ARGUMENT,
-                    false);
+
+  RETURN_ON_FAILURE(profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX,
+                    "Only h264 supported", INVALID_ARGUMENT, false);
+  profile_ = MapH264ProfileToOMXAVCProfile(profile);
+  RETURN_ON_FAILURE(profile_ != OMX_VIDEO_AVCProfileMax,
+                    "Unexpected profile", INVALID_ARGUMENT, false);
+
   if (!CreateComponent())  // Does its own RETURN_ON_FAILURE dances.
     return false;
 
@@ -515,9 +481,8 @@ void OmxVideoDecodeAccelerator::OnReachedIdleInInitializing() {
   DCHECK_EQ(client_state_, OMX_StateLoaded);
   client_state_ = OMX_StateIdle;
   // Query the resources with the component.
-  if (component_name_is_nvidia_h264ext_ &&
-      (profile_ != OMX_VIDEO_AVCProfileMax)) {
-    OMX_INDEXTYPE  extension_index;
+  if (component_name_is_nvidia_h264ext_) {
+    OMX_INDEXTYPE extension_index;
     OMX_ERRORTYPE result = OMX_GetExtensionIndex(
         component_handle_,
         const_cast<char*>("OMX.Nvidia.index.config.checkresources"),
@@ -527,9 +492,7 @@ void OmxVideoDecodeAccelerator::OnReachedIdleInInitializing() {
                           PLATFORM_FAILURE,);
     OMX_VIDEO_PARAM_PROFILELEVELTYPE video_profile_level;
     InitParam(*this, &video_profile_level);
-    video_profile_level.eProfile = MapH264ProfileToOMXAVCProfile(profile_);
-    RETURN_ON_FAILURE(video_profile_level.eProfile != OMX_VIDEO_AVCProfileMax,
-                      "Unexpected profile", INVALID_ARGUMENT,);
+    video_profile_level.eProfile = profile_;
     result = OMX_SetConfig(component_handle_, extension_index,
                            &video_profile_level);
     RETURN_ON_OMX_FAILURE(result,

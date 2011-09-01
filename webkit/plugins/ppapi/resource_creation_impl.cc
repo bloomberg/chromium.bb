@@ -276,8 +276,8 @@ PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {
 PP_Resource ResourceCreationImpl::CreateVideoDecoder(
     PP_Instance instance,
     PP_Resource context3d_id,
-    const PP_VideoConfigElement* config) {
-  return PPB_VideoDecoder_Impl::Create(instance, context3d_id, config);
+    PP_VideoDecoder_Profile profile) {
+  return PPB_VideoDecoder_Impl::Create(instance, context3d_id, profile);
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoLayer(PP_Instance instance,

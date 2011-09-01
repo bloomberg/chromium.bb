@@ -104,7 +104,7 @@ void GpuVideoDecodeAccelerator::NotifyError(
 }
 
 void GpuVideoDecodeAccelerator::Initialize(
-    const std::vector<int32>& configs,
+    const media::VideoDecodeAccelerator::Profile profile,
     IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_.get());
   DCHECK(!init_done_msg_);
@@ -117,7 +117,7 @@ void GpuVideoDecodeAccelerator::Initialize(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->scheduler()->decoder()->GetGLContext()->GetHandle());
   video_decode_accelerator_ = omx_decoder;
-  video_decode_accelerator_->Initialize(configs);
+  video_decode_accelerator_->Initialize(profile);
 #else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);

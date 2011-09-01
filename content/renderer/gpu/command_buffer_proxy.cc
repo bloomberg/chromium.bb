@@ -401,10 +401,10 @@ void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
 
 scoped_refptr<GpuVideoDecodeAcceleratorHost>
 CommandBufferProxy::CreateVideoDecoder(
-    const std::vector<int32>& configs,
+    media::VideoDecodeAccelerator::Profile profile,
     media::VideoDecodeAccelerator::Client* client) {
   int decoder_route_id;
-  if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, configs,
+  if (!Send(new GpuCommandBufferMsg_CreateVideoDecoder(route_id_, profile,
                                                        &decoder_route_id))) {
     LOG(ERROR) << "Send(GpuChannelMsg_CreateVideoDecoder) failed";
     return NULL;
