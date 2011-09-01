@@ -76,6 +76,10 @@ gfx::Image* ThemeInstalledInfoBarDelegate::GetIcon() const {
       IDR_INFOBAR_THEME);
 }
 
+InfoBarDelegate::Type ThemeInstalledInfoBarDelegate::GetInfoBarType() const {
+  return PAGE_ACTION_TYPE;
+}
+
 ThemeInstalledInfoBarDelegate*
     ThemeInstalledInfoBarDelegate::AsThemePreviewInfobarDelegate() {
   return this;

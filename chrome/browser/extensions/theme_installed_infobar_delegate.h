@@ -41,6 +41,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
  private:
   // ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;
+  virtual Type GetInfoBarType() const OVERRIDE;
   virtual ThemeInstalledInfoBarDelegate*
       AsThemePreviewInfobarDelegate() OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
