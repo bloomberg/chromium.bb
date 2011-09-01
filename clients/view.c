@@ -278,7 +278,7 @@ main(int argc, char *argv[])
 	struct display *d;
 	int i;
 
-	d = display_create(&argc, &argv, option_entries, NULL);
+	d = display_create(&argc, &argv, option_entries);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

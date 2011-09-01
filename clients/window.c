@@ -66,7 +66,7 @@ struct display {
 	int authenticated;
 	EGLDisplay dpy;
 	EGLConfig rgb_config;
-	EGLConfig premul_argb_config;
+	EGLConfig premultiplied_argb_config;
 	EGLContext ctx;
 	cairo_device_t *device;
 	int fd;
@@ -233,7 +233,7 @@ display_create_egl_window_surface(struct display *display,
 
 	if (flags & SURFACE_OPAQUE) {
 		config = display->rgb_config;
-		attribps = NULL;
+		attribs = NULL;
 	} else {
 		config = display->premultiplied_argb_config;
 		attribs = premul_attribs;
@@ -393,8 +393,7 @@ display_create_egl_image_surface_from_file(struct display *display,
 		}
 	}
 
-	visual = display->premultiplied_argb_visual;
-	surface = display_create_egl_image_surface(display, visual, rect);
+	surface = display_create_egl_image_surface(display, 0, rect);
 	if (surface == NULL) {
 		g_object_unref(pixbuf);
 		return NULL;
@@ -1864,7 +1863,7 @@ init_egl(struct display *d)
 	}
 
 	if (!eglChooseConfig(d->dpy, premul_argb_cfg_attribs,
-			     &d->premul_argb_config, 1, &n) || n != 1) {
+			     &d->premultiplied_argb_config, 1, &n) || n != 1) {
 		fprintf(stderr, "failed to choose premul argb config\n");
 		return -1;
 	}
