@@ -13,7 +13,6 @@ using std::ostream;
 using std::string;
 
 namespace syncable {
-const Id kNullId;  // Currently == root.
 
 ostream& operator<<(ostream& out, const Id& id) {
   out << id.s_;
@@ -69,6 +68,10 @@ Id Id::GetLeastIdForLexicographicComparison() {
   Id id;
   id.s_.clear();
   return id;
+}
+
+Id GetNullId() {
+  return Id();  // Currently == root.
 }
 
 }  // namespace syncable

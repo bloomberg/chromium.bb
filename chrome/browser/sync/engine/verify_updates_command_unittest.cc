@@ -74,7 +74,7 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
 };
 
 TEST_F(VerifyUpdatesCommandTest, AllVerified) {
-  string root = syncable::kNullId.GetServerId();
+  string root = syncable::GetNullId().GetServerId();
 
   CreateLocalItem("b1", root, syncable::BOOKMARKS);
   CreateLocalItem("b2", root, syncable::BOOKMARKS);

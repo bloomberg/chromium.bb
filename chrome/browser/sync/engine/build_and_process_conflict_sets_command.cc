@@ -341,10 +341,10 @@ class LocallyDeletedPathChecker {
                                           const syncable::Entry& log_entry) {
     syncable::Entry parent(trans, syncable::GET_BY_ID, id);
     if (!parent.good())
-      return syncable::kNullId;
+      return syncable::GetNullId();
     syncable::Id parent_id = parent.Get(syncable::PARENT_ID);
     if (parent_id == check_id)
-      return syncable::kNullId;
+      return syncable::GetNullId();
     return parent_id;
   }
 };

@@ -35,15 +35,19 @@ namespace browser_sync {
 using sessions::SyncSession;
 
 // static
-const int64 BuildCommitCommand::kFirstPosition =
-    std::numeric_limits<int64>::min();
+int64 BuildCommitCommand::GetFirstPosition() {
+  return std::numeric_limits<int64>::min();
+}
 
 // static
-const int64 BuildCommitCommand::kLastPosition =
-    std::numeric_limits<int64>::max();
+int64 BuildCommitCommand::GetLastPosition() {
+  return std::numeric_limits<int64>::max();
+}
 
 // static
-const int64 BuildCommitCommand::kGap = 1LL << 20;
+int64 BuildCommitCommand::GetGap() {
+  return 1LL << 20;
+}
 
 BuildCommitCommand::BuildCommitCommand() {}
 BuildCommitCommand::~BuildCommitCommand() {}
@@ -185,7 +189,8 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
         sync_entry->set_insert_after_item_id(prev_id_string);
 
         // Compute a numeric position based on what we know locally.
-        std::pair<int64, int64> position_block(kFirstPosition, kLastPosition);
+        std::pair<int64, int64> position_block(
+            GetFirstPosition(), GetLastPosition());
         std::map<Id, std::pair<int64, int64> >::iterator prev_pos =
             position_map.find(prev_id);
         if (prev_pos != position_map.end()) {
@@ -220,7 +225,9 @@ int64 BuildCommitCommand::FindAnchorPosition(syncable::IdField direction,
     }
     next_id = next_entry.Get(direction);
   }
-  return direction == syncable::PREV_ID ? kFirstPosition : kLastPosition;
+  return
+      direction == syncable::PREV_ID ?
+      GetFirstPosition() : GetLastPosition();
 }
 
 int64 BuildCommitCommand::InterpolatePosition(const int64 lo,
@@ -228,19 +235,19 @@ int64 BuildCommitCommand::InterpolatePosition(const int64 lo,
   DCHECK_LE(lo, hi);
 
   // The first item to be added under a parent gets a position of zero.
-  if (lo == kFirstPosition && hi == kLastPosition)
+  if (lo == GetFirstPosition() && hi == GetLastPosition())
     return 0;
 
   // For small gaps, we do linear interpolation.  For larger gaps,
-  // we use an additive offset of |kGap|.  We are careful to avoid
+  // we use an additive offset of |GetGap()|.  We are careful to avoid
   // signed integer overflow.
   uint64 delta = static_cast<uint64>(hi) - static_cast<uint64>(lo);
-  if (delta <= static_cast<uint64>(kGap*2))
+  if (delta <= static_cast<uint64>(GetGap()*2))
     return lo + (static_cast<int64>(delta) + 7) / 8;  // Interpolate.
-  else if (lo == kFirstPosition)
-    return hi - kGap;  // Extend range just before successor.
+  else if (lo == GetFirstPosition())
+    return hi - GetGap();  // Extend range just before successor.
   else
-    return lo + kGap;  // Use or extend range just after predecessor.
+    return lo + GetGap();  // Use or extend range just after predecessor.
 }
 
 

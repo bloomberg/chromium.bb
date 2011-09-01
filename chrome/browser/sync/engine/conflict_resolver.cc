@@ -288,7 +288,7 @@ bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,
   Id id = parent_id;
   // As we will be crawling the path of deleted entries there's a chance we'll
   // end up having to reparent an item as there will be an invalid parent.
-  Id reroot_id = syncable::kNullId;
+  Id reroot_id = syncable::GetNullId();
   // Similarly crawling deleted items means we risk loops.
   int loop_detection = conflict_set->size();
   while (!id.IsRoot() && --loop_detection >= 0) {

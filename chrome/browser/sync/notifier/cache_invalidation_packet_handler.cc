@@ -28,12 +28,16 @@ namespace {
 const char kBotJid[] = "tango@bot.talk.google.com";
 const char kServiceUrl[] = "http://www.google.com/chrome/sync";
 
-const buzz::QName kQnData("google:notifier", "data");
-const buzz::QName kQnSeq("", "seq");
-const buzz::QName kQnSid("", "sid");
-const buzz::QName kQnServiceUrl("", "serviceUrl");
-const buzz::QName kQnProtocolVersion("", "protocolVersion");
-const buzz::QName kQnChannelContext("", "channelContext");
+buzz::QName GetQnData() { return buzz::QName("google:notifier", "data"); }
+buzz::QName GetQnSeq() { return buzz::QName("", "seq"); }
+buzz::QName GetQnSid() { return buzz::QName("", "sid"); }
+buzz::QName GetQnServiceUrl() { return buzz::QName("", "serviceUrl"); }
+buzz::QName GetQnProtocolVersion() {
+  return buzz::QName("", "protocolVersion");
+}
+buzz::QName GetQnChannelContext() {
+  return buzz::QName("", "channelContext");
+}
 
 // TODO(akalin): Move these task classes out so that they can be
 // unit-tested.  This'll probably be done easier once we consolidate
@@ -94,23 +98,23 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
   bool IsValidCacheInvalidationIqPacket(const buzz::XmlElement* stanza) {
     // We deliberately minimize the verification we do here: see
     // http://crbug.com/71285 .
-    return MatchRequestIq(stanza, buzz::STR_SET, kQnData);
+    return MatchRequestIq(stanza, buzz::STR_SET, GetQnData());
   }
 
   bool GetCacheInvalidationIqPacketData(const buzz::XmlElement* stanza,
                                         std::string* data) {
     DCHECK(IsValidCacheInvalidationIqPacket(stanza));
     const buzz::XmlElement* cache_invalidation_iq_packet =
-        stanza->FirstNamed(kQnData);
+        stanza->FirstNamed(GetQnData());
     if (!cache_invalidation_iq_packet) {
       LOG(ERROR) << "Could not find cache invalidation IQ packet element";
       return false;
     }
     // Look for a channelContext attribute in the content of the stanza.  If
     // present, remember it so it can be echoed back.
-    if (cache_invalidation_iq_packet->HasAttr(kQnChannelContext)) {
+    if (cache_invalidation_iq_packet->HasAttr(GetQnChannelContext())) {
       context_change_callback_->Run(
-          cache_invalidation_iq_packet->Attr(kQnChannelContext));
+          cache_invalidation_iq_packet->Attr(GetQnChannelContext()));
     }
     *data = cache_invalidation_iq_packet->BodyText();
     return true;
@@ -187,15 +191,15 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
       int seq, const std::string& sid, const std::string& channel_context) {
     buzz::XmlElement* iq = MakeIq(buzz::STR_SET, to_jid, task_id);
     buzz::XmlElement* cache_invalidation_iq_packet =
-        new buzz::XmlElement(kQnData, true);
+        new buzz::XmlElement(GetQnData(), true);
     iq->AddElement(cache_invalidation_iq_packet);
-    cache_invalidation_iq_packet->SetAttr(kQnSeq, base::IntToString(seq));
-    cache_invalidation_iq_packet->SetAttr(kQnSid, sid);
-    cache_invalidation_iq_packet->SetAttr(kQnServiceUrl, kServiceUrl);
+    cache_invalidation_iq_packet->SetAttr(GetQnSeq(), base::IntToString(seq));
+    cache_invalidation_iq_packet->SetAttr(GetQnSid(), sid);
+    cache_invalidation_iq_packet->SetAttr(GetQnServiceUrl(), kServiceUrl);
     cache_invalidation_iq_packet->SetAttr(
-        kQnProtocolVersion, MakeProtocolVersion());
+        GetQnProtocolVersion(), MakeProtocolVersion());
     if (!channel_context.empty()) {
-      cache_invalidation_iq_packet->SetAttr(kQnChannelContext,
+      cache_invalidation_iq_packet->SetAttr(GetQnChannelContext(),
                                             channel_context);
     }
     cache_invalidation_iq_packet->SetBodyText(msg);

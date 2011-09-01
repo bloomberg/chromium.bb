@@ -174,7 +174,7 @@ syncable::Id SyncerUtil::FindLocalIdToUpdate(
             // we don't server delete the item, because we don't allow it to
             // exist locally at all.  So the item will remain orphaned on
             // the server, and we won't pay attention to it.
-            return syncable::kNullId;
+            return syncable::GetNullId();
           }
         }
         // Target this change to the existing local entry; later,

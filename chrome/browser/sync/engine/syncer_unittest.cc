@@ -435,7 +435,7 @@ class SyncerTest : public testing::Test,
 
   // Helper getters that work without a transaction, to reduce boilerplate.
   Id Get(int64 metahandle, syncable::IdField field) const {
-    return GetField(metahandle, field, syncable::kNullId);
+    return GetField(metahandle, field, syncable::GetNullId());
   }
 
   string Get(int64 metahandle, syncable::StringField field) const {

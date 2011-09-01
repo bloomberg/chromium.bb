@@ -155,7 +155,7 @@ int64 MakeServerNodeForType(UserShare* share,
   entry.Put(syncable::BASE_VERSION, 1);
   entry.Put(syncable::SERVER_VERSION, 1);
   entry.Put(syncable::IS_UNAPPLIED_UPDATE, false);
-  entry.Put(syncable::SERVER_PARENT_ID, syncable::kNullId);
+  entry.Put(syncable::SERVER_PARENT_ID, syncable::GetNullId());
   entry.Put(syncable::SERVER_IS_DIR, true);
   entry.Put(syncable::IS_DIR, true);
   entry.Put(syncable::SERVER_SPECIFICS, specifics);

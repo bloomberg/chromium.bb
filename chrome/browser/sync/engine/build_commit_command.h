@@ -24,10 +24,10 @@ class BuildCommitCommand : public SyncerCommand {
  private:
   FRIEND_TEST_ALL_PREFIXES(BuildCommitCommandTest, InterpolatePosition);
 
-  // Constants controlling range of values.
-  static const int64 kFirstPosition;
-  static const int64 kLastPosition;
-  static const int64 kGap;
+  // Functions returning constants controlling range of values.
+  static int64 GetFirstPosition();
+  static int64 GetLastPosition();
+  static int64 GetGap();
 
   void AddExtensionsActivityToMessage(sessions::SyncSession* session,
                                       CommitMessage* message);

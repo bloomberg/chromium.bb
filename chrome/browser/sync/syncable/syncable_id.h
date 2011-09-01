@@ -123,7 +123,7 @@ class Id {
   std::string s_;
 };
 
-extern const Id kNullId;
+Id GetNullId();
 
 }  // namespace syncable
 

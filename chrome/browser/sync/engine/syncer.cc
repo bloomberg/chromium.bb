@@ -343,7 +343,7 @@ void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {
 
 void ClearServerData(syncable::MutableEntry* entry) {
   entry->Put(SERVER_NON_UNIQUE_NAME, "");
-  entry->Put(SERVER_PARENT_ID, syncable::kNullId);
+  entry->Put(SERVER_PARENT_ID, syncable::GetNullId());
   entry->Put(SERVER_MTIME, 0);
   entry->Put(SERVER_CTIME, 0);
   entry->Put(SERVER_VERSION, 0);

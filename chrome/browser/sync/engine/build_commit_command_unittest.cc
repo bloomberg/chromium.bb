@@ -18,8 +18,8 @@ class BuildCommitCommandTest : public SyncerCommandTest {
 };
 
 TEST_F(BuildCommitCommandTest, InterpolatePosition) {
-  EXPECT_LT(BuildCommitCommand::kFirstPosition,
-            BuildCommitCommand::kLastPosition);
+  EXPECT_LT(BuildCommitCommand::GetFirstPosition(),
+            BuildCommitCommand::GetLastPosition());
 
   // Dense ranges.
   EXPECT_EQ(10, command_.InterpolatePosition(10, 10));
@@ -35,56 +35,62 @@ TEST_F(BuildCommitCommandTest, InterpolatePosition) {
   EXPECT_EQ(12, command_.InterpolatePosition(10, 20));
 
   // Sparse ranges.
-  EXPECT_EQ(0x32535ffe3dc97LL + BuildCommitCommand::kGap,
+  EXPECT_EQ(0x32535ffe3dc97LL + BuildCommitCommand::GetGap(),
       command_.InterpolatePosition(0x32535ffe3dc97LL, 0x61abcd323122cLL));
-  EXPECT_EQ(~0x61abcd323122cLL + BuildCommitCommand::kGap,
+  EXPECT_EQ(~0x61abcd323122cLL + BuildCommitCommand::GetGap(),
       command_.InterpolatePosition(~0x61abcd323122cLL, ~0x32535ffe3dc97LL));
 
   // Lower limits
-  EXPECT_EQ(BuildCommitCommand::kFirstPosition + 0x20,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition,
-                                   BuildCommitCommand::kFirstPosition + 0x100));
-  EXPECT_EQ(BuildCommitCommand::kFirstPosition + 2,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition + 1,
-                                   BuildCommitCommand::kFirstPosition + 2));
-  EXPECT_EQ(BuildCommitCommand::kFirstPosition + BuildCommitCommand::kGap/8 + 1,
+  EXPECT_EQ(BuildCommitCommand::GetFirstPosition() + 0x20,
       command_.InterpolatePosition(
-          BuildCommitCommand::kFirstPosition + 1,
-          BuildCommitCommand::kFirstPosition + 1 + BuildCommitCommand::kGap));
+          BuildCommitCommand::GetFirstPosition(),
+          BuildCommitCommand::GetFirstPosition() + 0x100));
+  EXPECT_EQ(BuildCommitCommand::GetFirstPosition() + 2,
+      command_.InterpolatePosition(BuildCommitCommand::GetFirstPosition() + 1,
+                                   BuildCommitCommand::GetFirstPosition() + 2));
+  EXPECT_EQ(BuildCommitCommand::GetFirstPosition() +
+            BuildCommitCommand::GetGap()/8 + 1,
+      command_.InterpolatePosition(
+          BuildCommitCommand::GetFirstPosition() + 1,
+          BuildCommitCommand::GetFirstPosition() + 1 +
+          BuildCommitCommand::GetGap()));
 
   // Extremal cases.
   EXPECT_EQ(0,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition,
-                                   BuildCommitCommand::kLastPosition));
-  EXPECT_EQ(BuildCommitCommand::kFirstPosition + 1 + BuildCommitCommand::kGap,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition + 1,
-                                   BuildCommitCommand::kLastPosition));
-  EXPECT_EQ(BuildCommitCommand::kFirstPosition + 1 + BuildCommitCommand::kGap,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition + 1,
-                                   BuildCommitCommand::kLastPosition - 1));
-  EXPECT_EQ(BuildCommitCommand::kLastPosition - 1 - BuildCommitCommand::kGap,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition,
-                                   BuildCommitCommand::kLastPosition - 1));
+      command_.InterpolatePosition(BuildCommitCommand::GetFirstPosition(),
+                                   BuildCommitCommand::GetLastPosition()));
+  EXPECT_EQ(BuildCommitCommand::GetFirstPosition() + 1 +
+            BuildCommitCommand::GetGap(),
+      command_.InterpolatePosition(BuildCommitCommand::GetFirstPosition() + 1,
+                                   BuildCommitCommand::GetLastPosition()));
+  EXPECT_EQ(BuildCommitCommand::GetFirstPosition() + 1 +
+            BuildCommitCommand::GetGap(),
+      command_.InterpolatePosition(BuildCommitCommand::GetFirstPosition() + 1,
+                                   BuildCommitCommand::GetLastPosition() - 1));
+  EXPECT_EQ(BuildCommitCommand::GetLastPosition() - 1 -
+            BuildCommitCommand::GetGap(),
+      command_.InterpolatePosition(BuildCommitCommand::GetFirstPosition(),
+                                   BuildCommitCommand::GetLastPosition() - 1));
 
   // Edge cases around zero.
-  EXPECT_EQ(BuildCommitCommand::kGap,
-      command_.InterpolatePosition(0, BuildCommitCommand::kLastPosition));
-  EXPECT_EQ(BuildCommitCommand::kGap + 1,
-      command_.InterpolatePosition(1, BuildCommitCommand::kLastPosition));
-  EXPECT_EQ(BuildCommitCommand::kGap - 1,
-      command_.InterpolatePosition(-1, BuildCommitCommand::kLastPosition));
-  EXPECT_EQ(-BuildCommitCommand::kGap,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition, 0));
-  EXPECT_EQ(-BuildCommitCommand::kGap + 1,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition, 1));
-  EXPECT_EQ(-BuildCommitCommand::kGap - 1,
-      command_.InterpolatePosition(BuildCommitCommand::kFirstPosition, -1));
-  EXPECT_EQ(BuildCommitCommand::kGap / 8,
-      command_.InterpolatePosition(0, BuildCommitCommand::kGap));
-  EXPECT_EQ(BuildCommitCommand::kGap / 4,
-      command_.InterpolatePosition(0, BuildCommitCommand::kGap*2));
-  EXPECT_EQ(BuildCommitCommand::kGap,
-      command_.InterpolatePosition(0, BuildCommitCommand::kGap*2 + 1));
+  EXPECT_EQ(BuildCommitCommand::GetGap(),
+      command_.InterpolatePosition(0, BuildCommitCommand::GetLastPosition()));
+  EXPECT_EQ(BuildCommitCommand::GetGap() + 1,
+      command_.InterpolatePosition(1, BuildCommitCommand::GetLastPosition()));
+  EXPECT_EQ(BuildCommitCommand::GetGap() - 1,
+      command_.InterpolatePosition(-1, BuildCommitCommand::GetLastPosition()));
+  EXPECT_EQ(-BuildCommitCommand::GetGap(),
+      command_.InterpolatePosition(BuildCommitCommand::GetFirstPosition(), 0));
+  EXPECT_EQ(-BuildCommitCommand::GetGap() + 1,
+      command_.InterpolatePosition(BuildCommitCommand::GetFirstPosition(), 1));
+  EXPECT_EQ(-BuildCommitCommand::GetGap() - 1,
+      command_.InterpolatePosition(BuildCommitCommand::GetFirstPosition(), -1));
+  EXPECT_EQ(BuildCommitCommand::GetGap() / 8,
+      command_.InterpolatePosition(0, BuildCommitCommand::GetGap()));
+  EXPECT_EQ(BuildCommitCommand::GetGap() / 4,
+      command_.InterpolatePosition(0, BuildCommitCommand::GetGap()*2));
+  EXPECT_EQ(BuildCommitCommand::GetGap(),
+      command_.InterpolatePosition(0, BuildCommitCommand::GetGap()*2 + 1));
 }
 
 }  // namespace browser_sync

@@ -92,7 +92,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     entry.Put(syncable::SERVER_VERSION, next_revision_++);
     entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
     entry.Put(syncable::SERVER_NON_UNIQUE_NAME, item_id);
-    entry.Put(syncable::SERVER_PARENT_ID, syncable::kNullId);
+    entry.Put(syncable::SERVER_PARENT_ID, syncable::GetNullId());
     entry.Put(syncable::SERVER_IS_DIR, false);
     entry.Put(syncable::SERVER_SPECIFICS, specifics);
     if (is_unique)  // For top-level nodes.
@@ -144,7 +144,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
 };
 
 TEST_F(ApplyUpdatesCommandTest, Simple) {
-  string root_server_id = syncable::kNullId.GetServerId();
+  string root_server_id = syncable::GetNullId().GetServerId();
   CreateUnappliedNewItemWithParent("parent",
                                    DefaultBookmarkSpecifics(),
                                    root_server_id);
@@ -168,7 +168,7 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
 TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
   // Set a bunch of updates which are difficult to apply in the order
   // they're received due to dependencies on other unseen items.
-  string root_server_id = syncable::kNullId.GetServerId();
+  string root_server_id = syncable::GetNullId().GetServerId();
   CreateUnappliedNewItemWithParent("a_child_created_first",
                                    DefaultBookmarkSpecifics(),
                                    "parent");
@@ -220,7 +220,7 @@ TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
 
 TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
   // See what happens when there's a mixture of good and bad updates.
-  string root_server_id = syncable::kNullId.GetServerId();
+  string root_server_id = syncable::GetNullId().GetServerId();
   CreateUnappliedNewItemWithParent("first_unknown_item",
                                    DefaultBookmarkSpecifics(),
                                    "unknown_parent");
@@ -293,7 +293,7 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
   sync_pb::EntitySpecifics encrypted_bookmark;
   encrypted_bookmark.mutable_encrypted();
   AddDefaultExtensionValue(syncable::BOOKMARKS, &encrypted_bookmark);
-  string root_server_id = syncable::kNullId.GetServerId();
+  string root_server_id = syncable::GetNullId().GetServerId();
   CreateUnappliedNewItemWithParent("folder",
                                    encrypted_bookmark,
                                    root_server_id);
