@@ -36,6 +36,7 @@ struct evdev_input {
 struct evdev_input_device {
 	struct evdev_input *master;
 	struct wl_event_source *source;
+	struct wlsc_output *output;
 	int tool, new_x, new_y;
 	int base_x, base_y;
 	int fd;
@@ -91,23 +92,21 @@ evdev_process_key(struct evdev_input_device *device,
 static inline void
 evdev_process_absolute_motion(struct evdev_input_device *device,
 			struct input_event *e, int value, int *x, int *y,
-			int *absolute_event, struct wlsc_compositor *ec)
+			int *absolute_event)
 {
-	const int screen_width = container_of(ec->output_list.prev,
-			struct wlsc_output, link)->current->width;
-	const int screen_height = container_of(ec->output_list.prev,
-			struct wlsc_output, link)->current->height;
+	const int screen_width = device->output->current->width;
+	const int screen_height = device->output->current->height;
 
 	switch (e->code) {
 	case ABS_X:
 		*absolute_event = device->tool;
 		*x = (value - device->min_x) * screen_width /
-			(device->max_x - device->min_x);
+			(device->max_x - device->min_x) + device->output->x;
 		break;
 	case ABS_Y:
 		*absolute_event = device->tool;
 		*y = (value - device->min_y) * screen_height /
-			(device->max_y - device->min_y);
+			(device->max_y - device->min_y) + device->output->y;
 		break;
 	}
 }
@@ -202,7 +201,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 					e, value, &dx, &dy);
 			else
 				evdev_process_absolute_motion(device, e, value,
-					&x, &y, &absolute_event, ec);
+					&x, &y, &absolute_event);
 			break;
 		case EV_KEY:
 			if (value == 2)
@@ -283,10 +282,15 @@ evdev_input_device_create(struct evdev_input *master,
 {
 	struct evdev_input_device *device;
 	struct wl_event_loop *loop;
+	struct wlsc_compositor *ec;
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
 		return NULL;
+
+	ec = (struct wlsc_compositor *) master->base.input_device.compositor;
+	device->output = 
+		container_of(ec->output_list.next, struct wlsc_output, link);
 
 	device->tool = 1;
 	device->new_x = 1;
