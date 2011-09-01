@@ -1208,6 +1208,9 @@ const char kExtensionSidebarWidth[] = "extensions.sidebar.width";
 // Number of times the NTP4 informational bubble has been shown.
 const char kNTP4IntroDisplayCount[] = "ntp.intro_display_count";
 
+// Suppress the NTP4 infor bubble for once.
+const char kNTP4SuppressIntroOnce[] = "ntp.supress_intro_once";
+
 // New Tab Page URLs that should not be shown as most visited thumbnails.
 const char kNTPMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 

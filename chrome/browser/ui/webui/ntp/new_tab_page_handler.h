@@ -39,6 +39,10 @@ class NewTabPageHandler : public WebUIMessageHandler {
   // message is displayed.
   void HandleIntroMessageSeen(const ListValue* args);
 
+  // Callback for "introMessageSuppressed". This is called when ntp4 intro
+  // message has been suppressed.
+  static void HandleIntroMessageSuppressed(PrefService* prefs);
+
   // Register NTP preferences.
   static void RegisterUserPrefs(PrefService* prefs);
 

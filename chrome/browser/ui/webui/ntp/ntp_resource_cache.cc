@@ -183,6 +183,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   pref_change_registrar_.Add(prefs::kNTPShownSections, this);
   pref_change_registrar_.Add(prefs::kNTPShownPage, this);
   pref_change_registrar_.Add(prefs::kNTP4IntroDisplayCount, this);
+  pref_change_registrar_.Add(prefs::kNTP4SuppressIntroOnce , this);
 }
 
 NTPResourceCache::~NTPResourceCache() {}

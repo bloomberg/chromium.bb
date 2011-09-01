@@ -528,6 +528,12 @@ void Browser::InitBrowserWindow() {
     // Reset the preference so we don't show the bubble for subsequent windows.
     local_state->ClearPref(prefs::kShouldShowFirstRunBubble);
     window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
+
+    // Suppress ntp4 bubble if first run bubble will be shown on the same page.
+    PrefService* prefs = profile_->GetPrefs();
+    if (prefs->GetBoolean(prefs::kHomePageIsNewTabPage)) {
+      prefs->SetBoolean(prefs::kNTP4SuppressIntroOnce, true);
+    }
   }
   if (local_state->FindPreference(
       prefs::kAutofillPersonalDataManagerFirstRun) &&

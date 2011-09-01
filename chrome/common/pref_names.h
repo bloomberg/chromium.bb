@@ -437,6 +437,7 @@ extern const char kExtensionSidebarWidth[];
 extern const char kNTPTipsResourceServer[];
 
 extern const char kNTP4IntroDisplayCount[];
+extern const char kNTP4SuppressIntroOnce[];
 extern const char kNTPMostVisitedURLsBlacklist[];
 extern const char kNTPMostVisitedPinnedURLs[];
 extern const char kNTPPromoResourceCache[];
