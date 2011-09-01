@@ -1226,6 +1226,7 @@ def GenerateManifestFunc(target, source, env):
   source_file.close()
   libs_file = open(str(source[1]), 'r')
   lib_names = []
+  arch = env.subst('${TARGET_FULLARCH}')
   for line in libs_file.readlines():
     lib_info = ParseLibInfoInRunnableLdLog(line)
     if lib_info:
@@ -1236,8 +1237,8 @@ def GenerateManifestFunc(target, source, env):
     obj['files'] = {}
   for lib_name in lib_names:
     obj['files']['lib/' + lib_name] = {}
-    obj['files']['lib/' + lib_name]['portable'] = {}
-    obj['files']['lib/' + lib_name]['portable']['url'] = lib_name
+    obj['files']['lib/' + lib_name][arch] = {}
+    obj['files']['lib/' + lib_name][arch]['url'] = lib_name
   obj['files']['main.nexe'] = {}
   for k, v in obj['program'].items():
     obj['files']['main.nexe'][k] = v.copy()
