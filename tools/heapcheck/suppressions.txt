@@ -1334,14 +1334,6 @@
    fun:sync_notifier::::InvalidationNotifierTest_Basic_Test::TestBody
 }
 {
-   bug_79794
-   Heapcheck:Leak
-   ...
-   fun:FormStructure::LogQualityMetrics
-   fun:AutofillManager::OnFormSubmitted
-   fun:AutofillManagerTest::FormSubmitted
-}
-{
    bug_80196
    Heapcheck:Leak
    fun:CallbackRunner* NewCallback
