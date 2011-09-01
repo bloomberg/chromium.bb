@@ -117,6 +117,9 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
+// Disable smooth scrolling for testing.
+const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
+
 // Prevent plugins from running.
 const char kDisablePlugins[]                = "disable-plugins";
 

@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "content/common/content_switches.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -55,6 +56,9 @@ class PPAPITest : public UITest {
     // TODO(dumi): remove this switch once we have a quota management
     // system in place.
     launch_arguments_.AppendSwitch(switches::kUnlimitedQuotaForFiles);
+
+    // Smooth scrolling confuses the scrollbar test.
+    launch_arguments_.AppendSwitch(switches::kDisableSmoothScrolling);
   }
 
   void RunTest(const std::string& test_case) {

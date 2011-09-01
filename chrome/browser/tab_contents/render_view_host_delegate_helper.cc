@@ -460,8 +460,18 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         prefs->GetBoolean(prefs::kWebKitAllowDisplayingInsecureContent);
     web_prefs.allow_running_insecure_content =
         prefs->GetBoolean(prefs::kWebKitAllowRunningInsecureContent);
-    web_prefs.enable_scroll_animator =
-        command_line.HasSwitch(switches::kEnableSmoothScrolling);
+
+#if defined(OS_MACOSX)
+    bool default_enable_scroll_animator = true;
+#else
+    // On CrOS, the launcher always passes in the --enable flag.
+    bool default_enable_scroll_animator = false;
+#endif
+    web_prefs.enable_scroll_animator = default_enable_scroll_animator;
+    if (command_line.HasSwitch(switches::kEnableSmoothScrolling))
+      web_prefs.enable_scroll_animator = true;
+    if (command_line.HasSwitch(switches::kDisableSmoothScrolling))
+      web_prefs.enable_scroll_animator = false;
 
     // The user stylesheet watcher may not exist in a testing profile.
     if (profile->GetUserStyleSheetWatcher()) {

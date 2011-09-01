@@ -46,6 +46,7 @@ extern const char kDisableJavaScript[];
 extern const char kDisableJavaScriptI18NAPI[];
 extern const char kDisableLocalStorage[];
 extern const char kDisableLogging[];
+extern const char kDisableSmoothScrolling[];
 extern const char kDisablePlugins[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisableRendererAccessibility[];
