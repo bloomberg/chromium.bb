@@ -353,16 +353,16 @@
 }
 
 {
-   ThreadSanitizer sanity test (ToolsSanityTest.DataRace).
-   ThreadSanitizer:Race
-   fun:*TOOLS_SANITY_TEST_CONCURRENT_THREAD::ThreadMain
+  ThreadSanitizer sanity test (ToolsSanityTest.DataRace).
+  ThreadSanitizer:Race
+  fun:*TOOLS_SANITY_TEST_CONCURRENT_THREAD::ThreadMain
 }
 
 {
-   Benign race (or even a false positive) on atomics in ThreadCollisionWarner
-   ThreadSanitizer:Race
-   fun:base::subtle::NoBarrier_Store
-   fun:base::ThreadCollisionWarner::Leave
+  Benign race (or even a false positive) on atomics in ThreadCollisionWarner
+  ThreadSanitizer:Race
+  fun:base::subtle::NoBarrier_Store
+  fun:base::ThreadCollisionWarner::Leave
 }
 
 ############################
@@ -612,64 +612,67 @@
   fun:ResourceDispatcher::OnRequestComplete
 }
 {
-   bug_93757
-   ThreadSanitizer:Race
-   fun:__memset_sse2
-   fun:VisitedLinkMaster::CreateURLTable
+  bug_93757
+  ThreadSanitizer:Race
+  fun:__memset_sse2
+  fun:VisitedLinkMaster::CreateURLTable
 }
 {
-   bug_93932_a
-   ThreadSanitizer:Race
-   ...
-   fun:frame_thread_free
-   fun:ff_thread_free
-   fun:avcodec_close
-   fun:avcodec_close
-   fun:media::FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine
-   fun:scoped_ptr::reset
-   fun:media::FFmpegVideoDecodeEngineTest::~FFmpegVideoDecodeEngineTest
+  bug_93932_a
+  ThreadSanitizer:Race
+  ...
+  fun:frame_thread_free
+  fun:ff_thread_free
+  fun:avcodec_close
+  fun:avcodec_close
+  fun:media::FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine
+  fun:scoped_ptr::reset
+  fun:media::FFmpegVideoDecodeEngineTest::~FFmpegVideoDecodeEngineTest
 }
 {
-   bug_93932_b
-   ThreadSanitizer:Race
-   ...
-   fun:ff_thread_decode_frame
-   fun:avcodec_decode_video2
-   ...
-   fun:media::FFmpegVideoDecodeEngine::DecodeFrame
-   fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
-   fun:media::DemuxCompleteActionP2::gmock_Impl::gmock_PerformImpl
-   fun:testing::internal::ActionHelper::Perform
-   fun:media::DemuxCompleteActionP2::gmock_Impl::Perform
-   fun:testing::Action::Perform
-   fun:testing::internal::ActionResultHolder::PerformAction
-   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
-   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
-   fun:testing::internal::FunctionMockerBase::InvokeWith
-   fun:testing::internal::FunctionMocker::Invoke
-   fun:media::FFmpegVideoDecodeEngineTest::ProduceVideoSample
-   fun:media::FFmpegVideoDecodeEngine::ReadInput
+  bug_93932_b
+  ThreadSanitizer:Race
+  ...
+  fun:ff_thread_decode_frame
+  fun:avcodec_decode_video2
+  ...
+  fun:media::FFmpegVideoDecodeEngine::DecodeFrame
+  fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
+  fun:media::DemuxCompleteActionP2::gmock_Impl::gmock_PerformImpl
+  fun:testing::internal::ActionHelper::Perform
+  fun:media::DemuxCompleteActionP2::gmock_Impl::Perform
+  fun:testing::Action::Perform
+  fun:testing::internal::ActionResultHolder::PerformAction
+  fun:testing::internal::FunctionMockerBase::UntypedPerformAction
+  fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
+  fun:testing::internal::FunctionMockerBase::InvokeWith
+  fun:testing::internal::FunctionMocker::Invoke
+  fun:media::FFmpegVideoDecodeEngineTest::ProduceVideoSample
+  fun:media::FFmpegVideoDecodeEngine::ReadInput
 }
 {
-   bug_93932_c
-   ThreadSanitizer:Race
-   fun:Replace_memcpy
-   fun:memcpy
-   fun:media::CopyPlane
-   fun:media::Copy*Plane
-   fun:media::FFmpegVideoDecodeEngine::DecodeFrame
-   fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
-   fun:media::DemuxCompleteActionP2::gmock_Impl::gmock_PerformImpl
-   fun:testing::internal::ActionHelper::Perform
-   fun:media::DemuxCompleteActionP2::gmock_Impl::Perform
-   fun:testing::Action::Perform
-   fun:testing::internal::ActionResultHolder::PerformAction
-   fun:testing::internal::FunctionMockerBase::UntypedPerformAction
-   fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
-   fun:testing::internal::FunctionMockerBase::InvokeWith
-   fun:testing::internal::FunctionMocker::Invoke
-   fun:media::FFmpegVideoDecodeEngineTest::ProduceVideoSample
-   fun:media::FFmpegVideoDecodeEngine::ReadInput
+  bug_93932_c
+  ThreadSanitizer:Race
+  fun:Replace_memcpy
+  fun:memcpy
+  fun:media::CopyPlane
+  fun:media::Copy*Plane
+  fun:media::FFmpegVideoDecodeEngine::DecodeFrame
+  fun:media::FFmpegVideoDecodeEngine::ConsumeVideoSample
+  fun:media::DemuxCompleteActionP2::gmock_Impl::gmock_PerformImpl
+  fun:testing::internal::ActionHelper::Perform
+  fun:media::DemuxCompleteActionP2::gmock_Impl::Perform
+  fun:testing::Action::Perform
+  fun:testing::internal::ActionResultHolder::PerformAction
+  fun:testing::internal::FunctionMockerBase::UntypedPerformAction
+  fun:testing::internal::UntypedFunctionMockerBase::UntypedInvokeWith
+  fun:testing::internal::FunctionMockerBase::InvokeWith
+  fun:testing::internal::FunctionMocker::Invoke
+  fun:media::FFmpegVideoDecodeEngineTest::ProduceVideoSample
+  fun:media::FFmpegVideoDecodeEngine::ReadInput
 }
-
-
+{
+  bug_93932_d
+  ThreadSanitizer:Race
+  fun:frame_worker_thread
+}
