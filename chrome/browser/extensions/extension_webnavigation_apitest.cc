@@ -144,7 +144,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationFailures) {
       RunExtensionSubtest("webnavigation", "test_failures.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
+// Fails almost consistently on Mac only.  http://crbug.com/94932
+#if defined(OS_MACOSX)
+#define MAYBE_WebNavigationUserAction FAILS_WebNavigationUserAction
+#else
+#define MAYBE_WebNavigationUserAction WebNavigationUserAction
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationUserAction) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
