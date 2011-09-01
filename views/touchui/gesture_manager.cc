@@ -4,7 +4,7 @@
 
 #include "views/touchui/gesture_manager.h"
 #ifndef NDEBUG
-#include <iostream>
+#include <ostream>
 #endif
 
 #include "base/logging.h"

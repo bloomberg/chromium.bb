@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <deque>
-#include <iostream>
+#include <ostream>
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -31,7 +31,7 @@
 // the macro is defined. See the EventRecorder class interface
 // within the EpollServer class for more details.
 #ifdef EPOLL_SERVER_EVENT_TRACING
-#include <iostream>
+#include <ostream>
 #include "base/logging.h"
 #endif
 

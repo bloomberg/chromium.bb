@@ -6,7 +6,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include <iostream>
+#include <ostream>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"

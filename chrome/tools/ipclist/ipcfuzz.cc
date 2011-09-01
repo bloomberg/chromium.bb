@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
-#include <iostream>
+#include <ostream>
 #include <set>
 #include <vector>
 

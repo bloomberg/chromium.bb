@@ -4,7 +4,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/web_intent_data.h"
-#include <iostream>
+#include <ostream>
 
 WebIntentData::WebIntentData() {}
 

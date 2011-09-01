@@ -4,7 +4,7 @@
 
 #include "ui/gfx/transform.h"
 
-#include <iostream>
+#include <ostream>
 #include <limits>
 
 #include "base/basictypes.h"

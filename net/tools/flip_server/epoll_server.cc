@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include <stdlib.h>  // for abort
 #include <errno.h>    // for errno and strerror_r
 #include <algorithm>
-#include <iostream>
+#include <ostream>
 #include <utility>
 #include <vector>
 
