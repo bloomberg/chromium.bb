@@ -15,7 +15,7 @@ import __builtin__
 import sys
 import SCons
 import usage_log
-
+import time
 
 def _HostPlatform():
   """Returns the current host platform.
@@ -86,7 +86,11 @@ def BuildEnvironmentSConscripts(env):
       # under $TARGET_ROOT/$OBJ_ROOT with things from above the current
       # directory. When we are passed a SConscript that is already under
       # $TARGET_ROOT, we should not use build_dir.
+      start = time.clock()
       ec.SConscript(c_script, exports={'env': ec}, duplicate=0)
+      if SCons.Script.ARGUMENTS.get('verbose'):
+        print "[%5d] Loaded" %  (1000 * (time.clock() - start)), c_script
+
     elif not ec.RelativePath('$MAIN_DIR', c_dir).startswith('..'):
       # The above expression means: if c_dir is $MAIN_DIR or anything
       # under it. Going from c_dir to $TARGET_ROOT and dropping the not fails
@@ -94,8 +98,11 @@ def BuildEnvironmentSConscripts(env):
       # Also, if we are passed a SConscript that
       # is not under $MAIN_DIR, we should fail loudly, because it is unclear how
       # this will correspond to things under $OBJ_ROOT.
+      start = time.clock()
       ec.SConscript(c_script, variant_dir='$OBJ_ROOT/' + c_dir,
                     exports={'env': ec}, duplicate=0)
+      if SCons.Script.ARGUMENTS.get('verbose'):
+        print "[%5d] Loaded" %  (1000 * (time.clock() - start)), c_script
     else:
       raise SCons.Error.UserError(
           'Bad location for a SConscript. "%s" is not under '

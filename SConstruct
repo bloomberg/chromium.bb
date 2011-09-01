@@ -35,6 +35,9 @@ Dir('src/third_party_mod/gtest').addRepository(
 # Underlay things migrating to ppapi repo.
 Dir('..').addRepository(Dir('#/../ppapi'))
 
+# turning garbage collection off reduces startup time by 10%
+import gc
+gc.disable()
 # ----------------------------------------------------------
 # REPORT
 # ----------------------------------------------------------
