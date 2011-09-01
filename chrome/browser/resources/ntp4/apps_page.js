@@ -59,7 +59,7 @@ cr.define('ntp4', function() {
       this.uninstall_.addEventListener('activate',
                                        this.onUninstall_.bind(this));
 
-      if (!cr.isMac && !cr.isChromeOs) {
+      if (!cr.isMac && !cr.isChromeOS) {
         menu.appendChild(cr.ui.MenuItem.createSeparator());
         this.createShortcut_ = this.appendMenuItem_('appcreateshortcut');
         this.createShortcut_.addEventListener(
