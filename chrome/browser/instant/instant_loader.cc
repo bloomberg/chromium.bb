@@ -771,6 +771,39 @@ void InstantLoader::MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
                  string16(), true);
 }
 
+bool InstantLoader::IsNavigationPending() const {
+  return preview_contents_.get() &&
+      preview_contents_->controller().pending_entry();
+}
+
+void InstantLoader::Observe(int type,
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+#if defined(OS_MACOSX)
+  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
+    if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
+      preview_contents_->tab_contents()->GetRenderWidgetHostView()->
+          SetTakesFocusOnlyOnMouseDown(true);
+    }
+    return;
+  }
+#endif
+  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
+    content::LoadCommittedDetails* load_details =
+        Details<content::LoadCommittedDetails>(details).ptr();
+    if (load_details->is_main_frame) {
+      if (load_details->http_status_code == kHostBlacklistStatusCode) {
+        delegate_->AddToBlacklist(this, load_details->entry->url());
+      } else {
+        SetHTTPStatusOK(load_details->http_status_code == 200);
+      }
+    }
+    return;
+  }
+
+  NOTREACHED() << "Got a notification we didn't register for.";
+}
+
 void InstantLoader::SetCompleteSuggestedText(
     const string16& complete_suggested_text,
     InstantCompleteBehavior behavior) {
@@ -840,34 +873,6 @@ void InstantLoader::ShowPreview() {
     ready_ = true;
     delegate_->InstantStatusChanged(this);
   }
-}
-
-void InstantLoader::Observe(int type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
-#if defined(OS_MACOSX)
-  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
-      preview_contents_->tab_contents()->GetRenderWidgetHostView()->
-          SetTakesFocusOnlyOnMouseDown(true);
-    }
-    return;
-  }
-#endif
-  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    content::LoadCommittedDetails* load_details =
-        Details<content::LoadCommittedDetails>(details).ptr();
-    if (load_details->is_main_frame) {
-      if (load_details->http_status_code == kHostBlacklistStatusCode) {
-        delegate_->AddToBlacklist(this, load_details->entry->url());
-      } else {
-        SetHTTPStatusOK(load_details->http_status_code == 200);
-      }
-    }
-    return;
-  }
-
-  NOTREACHED() << "Got a notification we didn't register for.";
 }
 
 void InstantLoader::PageFinishedLoading() {

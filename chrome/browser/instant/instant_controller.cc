@@ -286,8 +286,11 @@ void InstantController::DestroyPreviewContentsAndLeaveActive() {
 }
 
 bool InstantController::IsCurrent() {
+  // TODO(mmenke):  See if we can do something more intelligent in the
+  //                navigation pending case.
   return loader_manager_.get() && loader_manager_->active_loader() &&
       loader_manager_->active_loader()->ready() &&
+      !loader_manager_->active_loader()->IsNavigationPending() &&
       !loader_manager_->active_loader()->needs_reload() &&
       !update_timer_.IsRunning();
 }
@@ -335,7 +338,8 @@ void InstantController::OnAutocompleteLostFocus(
   // not receive a mouseDown event.  Therefore, we should destroy the preview.
   // Otherwise, the RWHV was clicked, so we commit the preview.
   if (!is_displayable() || !GetPreviewContents() ||
-      !IsMouseDownFromActivate()) {
+      !IsMouseDownFromActivate() ||
+      loader_manager_->active_loader()->IsNavigationPending()) {
     DestroyPreviewContents();
   } else if (IsShowingInstant()) {
     SetCommitOnMouseUp();
@@ -346,7 +350,8 @@ void InstantController::OnAutocompleteLostFocus(
 #else
 void InstantController::OnAutocompleteLostFocus(
     gfx::NativeView view_gaining_focus) {
-  if (!is_active() || !GetPreviewContents()) {
+  if (!is_active() || !GetPreviewContents() ||
+      loader_manager_->active_loader()->IsNavigationPending()) {
     DestroyPreviewContents();
     return;
   }

@@ -945,3 +945,62 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontPersistSearchbox) {
                   &result));
   EXPECT_TRUE(result);
 }
+
+// Verify that when the TabContents has a pending RenderViewHost, we won't use
+// the Instant TabContents.
+// DISABLED http://crbug.com/80118
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_PendingRenderViewHost) {
+#else
+IN_PROC_BROWSER_TEST_F(InstantTest, PendingRenderViewHost) {
+#endif  // OS_LINUX
+  ASSERT_TRUE(test_server()->Start());
+  EnableInstant();
+
+  // Open and load URL.
+  GURL url(test_server()->GetURL("files/instant/empty.html"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(url.spec()));
+
+  // Check that we have a preview TabContents.
+  ASSERT_TRUE(browser()->instant());
+  TabContentsWrapper* preview_contents_wrapper =
+      browser()->instant()->GetPreviewContents();
+  ASSERT_TRUE(preview_contents_wrapper);
+  ASSERT_TRUE(preview_contents_wrapper->tab_contents());
+
+  // Enter "chrome://about" in the location bar, as it will trigger a cross-site
+  // navigation in Instant's TabContents.
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  location_bar_->location_entry()->SetUserText(
+      ASCIIToUTF16(chrome::kChromeUIAboutURL));
+
+  // Check that we reused the same Instant TabContentsWrapper.
+  ASSERT_TRUE(browser()->instant());
+  ASSERT_EQ(preview_contents_wrapper,
+            browser()->instant()->GetPreviewContents());
+
+  // Check that a new site instance is pending, indicating a cross-site
+  // navigation that has yet to complete.
+  ASSERT_NE(preview_contents_wrapper->tab_contents()->GetSiteInstance(),
+            preview_contents_wrapper->tab_contents()->GetPendingSiteInstance());
+
+  // We want to be able to wait until the old TabContents has navigated to
+  // the about page.  Since we navigate while the preview still has a pending
+  // RenderView, the navigation will occur in the original TabContents instead.
+  TabContents* contents = browser()->GetSelectedTabContents();
+  ui_test_utils::WindowedNotificationObserver notification_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      Source<NavigationController>(&contents->controller()));
+
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN));
+
+  // Check that we did not swap in the Instant TabContents, but destroyed it
+  // instead.
+  ASSERT_EQ(browser()->GetSelectedTabContents(), contents);
+  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
+  ASSERT_FALSE(browser()->instant()->is_active());
+
+  // Make sure we navigated to the correct URL.
+  notification_observer.Wait();
+  EXPECT_EQ(contents->GetURL().spec(), std::string(chrome::kChromeUIAboutURL));
+}

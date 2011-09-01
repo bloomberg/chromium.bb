@@ -74,6 +74,10 @@ class InstantLoader : public NotificationObserver {
   void MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
                            const TemplateURL* template_url);
 
+  // Returns true if the preview NavigationController's TabContents has a
+  // pending NavigationEntry.
+  bool IsNavigationPending() const;
+
   // NotificationObserver:
   virtual void Observe(int type,
                        const NotificationSource& source,
