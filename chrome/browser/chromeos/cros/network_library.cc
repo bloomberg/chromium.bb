@@ -128,8 +128,7 @@ void WipeString(std::string* str) {
 }
 
 bool EnsureCrosLoaded() {
-  if (!CrosLibrary::Get()->EnsureLoaded() ||
-      !CrosLibrary::Get()->GetNetworkLibrary()->IsCros()) {
+  if (!CrosLibrary::Get()->libcros_loaded()) {
     return false;
   } else {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
@@ -3252,6 +3251,8 @@ NetworkLibraryImplCros::~NetworkLibraryImplCros() {
 }
 
 void NetworkLibraryImplCros::Init() {
+  CHECK(CrosLibrary::Get()->libcros_loaded())
+      << "libcros must be loaded before NetworkLibraryImplCros::Init()";
   // First, get the currently available networks. This data is cached
   // on the connman side, so the call should be quick.
   VLOG(1) << "Requesting initial network manager info from libcros.";
@@ -4779,16 +4780,20 @@ void NetworkLibraryImplStub::SetIPConfig(const NetworkIPConfig& ipconfig) {
 
 // static
 NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {
-  // Use static global to avoid recursive GetImpl() call from EnsureCrosLoaded.
-  static NetworkLibrary* network_library = NULL;
-  if (network_library == NULL) {
-    if (stub || !CrosLibrary::Get()->EnsureLoaded())
-      network_library = new NetworkLibraryImplStub();
-    else
-      network_library = new NetworkLibraryImplCros();
-    network_library->Init();
+  NetworkLibrary* impl;
+  // If CrosLibrary failed to load, use the stub implementation, since the
+  // cros implementation would crash on any libcros call.
+  if (!CrosLibrary::Get()->libcros_loaded()) {
+    LOG(WARNING) << "NetworkLibrary: falling back to stub impl.";
+    stub = true;
   }
-  return network_library;
+  if (stub)
+    impl = new NetworkLibraryImplStub();
+  else
+    impl = new NetworkLibraryImplCros();
+  impl->Init();
+
+  return impl;
 }
 
 /////////////////////////////////////////////////////////////////////////////

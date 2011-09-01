@@ -236,6 +236,9 @@ class ParallelAuthenticatorTest : public testing::Test {
   std::string hash_ascii_;
   GaiaAuthConsumer::ClientLoginResult result_;
 
+  // Initializes / shuts down a stub CrosLibrary.
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+
   // Mocks, destroyed by CrosLibrary class.
   MockCryptohomeLibrary* mock_library_;
   MockLibraryLoader* loader_;

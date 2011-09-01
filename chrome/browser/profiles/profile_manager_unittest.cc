@@ -10,6 +10,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/io_thread.h"
@@ -27,6 +28,10 @@
 #include "content/common/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#endif
 
 namespace {
 // This global variable is used to check that value returned to different
@@ -81,6 +86,10 @@ class ProfileManagerTest : public testing::Test {
   IOThread io_thread_;
 
   scoped_ptr<base::SystemMonitor> system_monitor_dummy_;
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+#endif
 
   // Also will test profile deletion.
   scoped_ptr<ProfileManager> profile_manager_;

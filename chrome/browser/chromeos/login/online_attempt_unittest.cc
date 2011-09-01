@@ -102,6 +102,9 @@ class OnlineAttemptTest : public testing::Test {
   TestAttemptState state_;
   scoped_ptr<MockAuthAttemptStateResolver> resolver_;
   scoped_refptr<OnlineAttempt> attempt_;
+
+  // Initializes / shuts down a stub CrosLibrary.
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 };
 
 TEST_F(OnlineAttemptTest, LoginSuccess) {

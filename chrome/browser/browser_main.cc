@@ -1317,12 +1317,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
   InitializeToolkit(parameters);
 
 #if defined(OS_CHROMEOS)
-  // Stub out chromeos implementations. We need to do as early as possible
-  // because it is initialized on first use when it is initialized
-  // SetUseStubImpl doesn't do anything.
-  if (parameters.command_line_.HasSwitch(switches::kStubCros))
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
-
+  // Initialize CrosLibrary only for the browser, unless running tests
+  // (which do their own CrosLibrary setup).
+  if (!parameters.ui_task) {
+    bool use_stub = parameters.command_line_.HasSwitch(switches::kStubCros);
+    chromeos::CrosLibrary::Initialize(use_stub);
+  }
   // Replace the default NetworkChangeNotifierFactory with ChromeOS specific
   // implementation.
   net::NetworkChangeNotifier::SetFactory(
@@ -2152,7 +2152,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
   ignore_result(browser_process.release());
   browser_shutdown::Shutdown();
 
+  // Release BrowserMainParts here, before shutting down CrosLibrary, since
+  // some of the classes initialized there have CrosLibrary dependencies.
+  parts.reset(NULL);
+
 #if defined(OS_CHROMEOS)
+  if (!parameters.ui_task)
+    chromeos::CrosLibrary::Shutdown();
+
   // To be precise, logout (browser shutdown) is not yet done, but the
   // remaining work is negligible, hence we say LogoutDone here.
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker("LogoutDone",
@@ -2188,4 +2195,3 @@ void RecordPreReadExperimentTime(const char* name, base::TimeDelta time) {
   }
 #endif
 }
-

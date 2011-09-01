@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
-#include "base/lazy_instance.h"
 #include "chrome/browser/chromeos/cros/brightness_library.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
+#include "third_party/cros/chromeos_cros_api.h"
 
 #define DEFINE_GET_LIBRARY_METHOD(class_prefix, var_prefix)                    \
 class_prefix##Library* CrosLibrary::Get##class_prefix##Library() {             \
@@ -30,18 +30,17 @@ void CrosLibrary::TestApi::Set##class_prefix##Library(                         \
   library_->var_prefix##_lib_.SetImpl(library, own);                           \
 }
 
-
 namespace chromeos {
 
-static base::LazyInstance<CrosLibrary> g_cros_library(
-    base::LINKER_INITIALIZED);
+static CrosLibrary* g_cros_library = NULL;
 
-CrosLibrary::CrosLibrary() : library_loader_(NULL),
-                             own_library_loader_(false),
-                             use_stub_impl_(false),
-                             loaded_(false),
-                             load_error_(false),
-                             test_api_(NULL) {
+CrosLibrary::CrosLibrary(bool use_stub)
+    : library_loader_(NULL),
+      own_library_loader_(false),
+      use_stub_impl_(use_stub),
+      libcros_loaded_(false),
+      load_error_(false),
+      test_api_(NULL) {
 }
 
 CrosLibrary::~CrosLibrary() {
@@ -50,8 +49,33 @@ CrosLibrary::~CrosLibrary() {
 }
 
 // static
+void CrosLibrary::Initialize(bool use_stub) {
+  CHECK(!g_cros_library) << "CrosLibrary: Multiple calls to Initialize().";
+  g_cros_library = new CrosLibrary(use_stub);
+  if (use_stub) {
+    VLOG(1) << "CrosLibrary Initialized with Stub Impl.";
+    return;
+  }
+  // Attempt to load libcros here, so that we can log, show warnings, and
+  // set load_error_string_ immediately.
+  if (g_cros_library->LoadLibcros())
+    VLOG(1) << "CrosLibrary Initialized, version = " << kCrosAPIVersion;
+  else
+    LOG(WARNING) << "CrosLibrary failed to Initialize.";
+}
+
+// static
+void CrosLibrary::Shutdown() {
+  CHECK(g_cros_library) << "CrosLibrary::Shutdown() called with NULL library";
+  VLOG(1) << "CrosLibrary Shutting down...";
+  delete g_cros_library;
+  g_cros_library = NULL;
+  VLOG(1) << "  CrosLibrary Shutdown completed.";
+}
+
+// static
 CrosLibrary* CrosLibrary::Get() {
-  return g_cros_library.Pointer();
+  return g_cros_library;
 }
 
 DEFINE_GET_LIBRARY_METHOD(Brightness, brightness);
@@ -67,19 +91,16 @@ DEFINE_GET_LIBRARY_METHOD(ScreenLock, screen_lock);
 DEFINE_GET_LIBRARY_METHOD(SpeechSynthesis, speech_synthesis);
 DEFINE_GET_LIBRARY_METHOD(Update, update);
 
-bool CrosLibrary::EnsureLoaded() {
-  if (use_stub_impl_)
-    return true;
-
-  if (!loaded_ && !load_error_) {
+bool CrosLibrary::LoadLibcros() {
+  if (!libcros_loaded_ && !load_error_) {
     if (!library_loader_) {
       library_loader_ = LibraryLoader::GetImpl();
       own_library_loader_ = true;
     }
-    loaded_ = library_loader_->Load(&load_error_string_);
-    load_error_ = !loaded_;
+    libcros_loaded_ = library_loader_->Load(&load_error_string_);
+    load_error_ = !libcros_loaded_;
   }
-  return loaded_;
+  return libcros_loaded_;
 }
 
 CrosLibrary::TestApi* CrosLibrary::GetTestApi() {
@@ -88,12 +109,10 @@ CrosLibrary::TestApi* CrosLibrary::GetTestApi() {
   return test_api_.get();
 }
 
-void CrosLibrary::TestApi::SetUseStubImpl() {
-  library_->use_stub_impl_ = true;
-}
-
 void CrosLibrary::TestApi::ResetUseStubImpl() {
   library_->use_stub_impl_ = false;
+  if (!library_->LoadLibcros())
+    LOG(WARNING) << "ResetUseStubImpl: Unable to load libcros.";
 }
 
 void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
@@ -105,7 +124,7 @@ void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
   library_->library_loader_ = loader;
   // Reset load flags when loader changes. Otherwise some tests are really not
   // going to be happy.
-  library_->loaded_ = false;
+  library_->libcros_loaded_ = false;
   library_->load_error_ = false;
 }
 

@@ -8,9 +8,7 @@
 
 #include <string>
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/chrome_switches.h"
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;
@@ -42,12 +40,8 @@ class CrosLibrary {
   // mock objects).
   class TestApi {
    public:
-    // Use the stub implementations of the library. This is mainly for
-    // running the chromeos build of chrome on the desktop.
-    void SetUseStubImpl();
-
-    // Reset the stub implementations of the library, called after
-    // SetUseStubImp is called.
+    // Resets the stub implementation of the library and loads libcros.
+    // Used by tests that need to run with libcros (i.e. on a device).
     void ResetUseStubImpl();
 
     // Passing true for own for these setters will cause them to be deleted
@@ -73,7 +67,15 @@ class CrosLibrary {
     CrosLibrary* library_;
   };
 
-  // This gets the CrosLibrary.
+  // Sets the global instance. Must be called before any calls to Get().
+  static void Initialize(bool use_stub);
+
+  // Destroys the global instance. Must be called before AtExitManager is
+  // destroyed to ensure a clean shutdown.
+  static void Shutdown();
+
+  // Gets the global instance. Returns NULL if Initialize() has not been
+  // called (or Shutdown() has been called).
   static CrosLibrary* Get();
 
   BrightnessLibrary* GetBrightnessLibrary();
@@ -92,9 +94,12 @@ class CrosLibrary {
   // Getter for Test API that gives access to internal members of this class.
   TestApi* GetTestApi();
 
-  // Ensures that the library is loaded, loading it if needed. If the library
-  // could not be loaded, returns false.
-  bool EnsureLoaded();
+  // TODO(stevenjb): Deprecate this. Libraries should fall back to stub
+  // implementations if libcros_loaded() is false, and/or use libcros_loaded()
+  // to protect calls to libcros. http://crosbug.com/19886
+  bool EnsureLoaded() { return use_stub_impl_ || libcros_loaded_; }
+
+  bool libcros_loaded() { return libcros_loaded_; }
 
   // Returns an unlocalized string describing the last load error (if any).
   const std::string& load_error_string() {
@@ -105,8 +110,10 @@ class CrosLibrary {
   friend struct base::DefaultLazyInstanceTraits<chromeos::CrosLibrary>;
   friend class CrosLibrary::TestApi;
 
-  CrosLibrary();
+  explicit CrosLibrary(bool use_stub);
   virtual ~CrosLibrary();
+
+  bool LoadLibcros();
 
   LibraryLoader* library_loader_;
 
@@ -127,9 +134,6 @@ class CrosLibrary {
     L* GetDefaultImpl(bool use_stub_impl) {
       if (!library_) {
         own_ = true;
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kStubCros))
-          use_stub_impl = true;
         library_ = L::GetImpl(use_stub_impl);
       }
       return library_;
@@ -165,7 +169,7 @@ class CrosLibrary {
   // Stub implementations of the libraries should be used.
   bool use_stub_impl_;
   // True if libcros was successfully loaded.
-  bool loaded_;
+  bool libcros_loaded_;
   // True if the last load attempt had an error.
   bool load_error_;
   // Contains the error string from the last load attempt.
@@ -180,11 +184,11 @@ class CrosLibrary {
 class ScopedStubCrosEnabler {
  public:
   ScopedStubCrosEnabler() {
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+    chromeos::CrosLibrary::Initialize(true);
   }
 
   ~ScopedStubCrosEnabler() {
-    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
+    chromeos::CrosLibrary::Shutdown();
   }
 
  private:

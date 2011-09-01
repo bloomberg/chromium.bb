@@ -16,11 +16,13 @@ const int kNotifyCycleTimeMs = 20 * 60 * 1000;  // 20 minutes.
 }  // namespace
 
 UpgradeDetectorChromeos::UpgradeDetectorChromeos() {
-  chromeos::CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(this);
+  if (chromeos::CrosLibrary::Get())
+    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(this);
 }
 
 UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {
-  chromeos::CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
+  if (chromeos::CrosLibrary::Get())
+    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
 }
 
 void UpgradeDetectorChromeos::UpdateStatusChanged(
