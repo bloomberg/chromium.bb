@@ -4,6 +4,7 @@
 
 #include "views/widget/native_widget_aura.h"
 
+#include "aura/event.h"
 #include "aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
@@ -103,12 +104,12 @@ ui::Compositor* NativeWidgetAura::GetCompositor() {
 }
 
 void NativeWidgetAura::MarkLayerDirty() {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
                                                          View** ancestor) {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
@@ -125,7 +126,7 @@ void* NativeWidgetAura::GetNativeWindowProperty(const char* name) const {
 }
 
 TooltipManager* NativeWidgetAura::GetTooltipManager() const {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return NULL;
 }
 
@@ -149,7 +150,7 @@ void NativeWidgetAura::ReleaseMouseCapture() {
 }
 
 bool NativeWidgetAura::HasMouseCapture() const {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return false;
 }
 
@@ -291,12 +292,12 @@ void NativeWidgetAura::Minimize() {
 }
 
 bool NativeWidgetAura::IsMaximized() const {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return false;
 }
 
 bool NativeWidgetAura::IsMinimized() const {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
   return false;
 }
 
@@ -333,11 +334,11 @@ void NativeWidgetAura::RunShellDrag(View* view,
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
-  NOTIMPLEMENTED();
+  window_->SchedulePaintInRect(rect);
 }
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
-  NOTIMPLEMENTED();
+  //NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::ClearNativeFocus() {
@@ -361,8 +362,16 @@ void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::WindowDelegate implementation:
 
+bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
+  return delegate_->OnMouseEvent(MouseEvent(event));
+}
+
 void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
   delegate_->OnNativeWidgetPaint(canvas);
+}
+
+void NativeWidgetAura::OnWindowDestroyed() {
+  delete this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

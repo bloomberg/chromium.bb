@@ -17,7 +17,7 @@ class MouseEvent;
 // Delegate interface for aura::Window.
 class WindowDelegate {
  public:
-  virtual bool OnMouseEvent(const MouseEvent& event) = 0;
+  virtual bool OnMouseEvent(MouseEvent* event) = 0;
 
   // Asks the delegate to paint window contents into the supplied canvas.
   virtual void OnPaint(gfx::Canvas* canvas) = 0;

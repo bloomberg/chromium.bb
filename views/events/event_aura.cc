@@ -4,6 +4,7 @@
 
 #include "views/events/event.h"
 
+#include "aura/event.h"
 #include "base/logging.h"
 
 namespace views {
@@ -16,13 +17,11 @@ int GetKeyStateFlags() {
 }
 
 ui::EventType EventTypeFromNative(NativeEvent native_event) {
-  NOTIMPLEMENTED();
-  return ui::ET_UNKNOWN;
+  return native_event->type();
 }
 
 int EventFlagsFromNative(NativeEvent native_event) {
-  NOTIMPLEMENTED();
-  return 0;
+  return native_event->flags();
 }
 
 }
@@ -51,9 +50,8 @@ void Event::InitWithNativeEvent2(NativeEvent2 native_event_2,
 // LocatedEvent, protected:
 
 LocatedEvent::LocatedEvent(NativeEvent native_event)
-    : Event(native_event, EventTypeFromNative(native_event),
-            EventFlagsFromNative(native_event)),
-      location_(0, 0 /* TODO(beng): obtain */) {
+    : Event(native_event, native_event->type(), native_event->flags()),
+      location_(static_cast<aura::LocatedEvent*>(native_event)->location()) {
 }
 
 LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
@@ -68,9 +66,7 @@ LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
 // KeyEvent, public:
 
 KeyEvent::KeyEvent(NativeEvent native_event)
-    : Event(native_event,
-            EventTypeFromNative(native_event),
-            GetKeyStateFlags()),
+    : Event(native_event, native_event->type(), GetKeyStateFlags()),
       key_code_(ui::VKEY_UNKNOWN /* TODO: obtain */),
       character_(0),
       unmodified_character_(0) {

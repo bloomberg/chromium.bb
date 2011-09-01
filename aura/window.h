@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/rect.h"
 
 class SkCanvas;
@@ -28,7 +29,7 @@ class WindowDelegate;
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
 // TODO(beng): resolve ownership.
-class Window {
+class Window : public ui::LayerDelegate {
  public:
   enum Visibility {
     // Don't display the window onscreen and don't let it receive mouse
@@ -61,8 +62,8 @@ class Window {
   void SetBounds(const gfx::Rect& bounds, int anim_ms);
   const gfx::Rect& bounds() const { return bounds_; }
 
-  // Marks the window as needing to be painted.
-  void SchedulePaint(const gfx::Rect& bounds);
+  // Marks the a portion of window as needing to be painted.
+  void SchedulePaintInRect(const gfx::Rect& rect);
 
   // Sets the contents of the window.
   void SetCanvas(const SkCanvas& canvas, const gfx::Point& origin);
@@ -110,19 +111,17 @@ class Window {
   // Draws the Window's contents.
   void Draw();
 
+  // Schedules a paint for the Window's entire bounds.
+  void SchedulePaint();
+
+  // Overridden from ui::LayerDelegate:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
   WindowDelegate* delegate_;
 
   Visibility visibility_;
 
   scoped_ptr<ui::Layer> layer_;
-
-  // Union of regions passed to SchedulePaint. Cleaned when UpdateLayerCanvas is
-  // invoked.
-  gfx::Rect dirty_rect_;
-
-  // If true UpdateLayerCanvas paints all. This is set when the window is first
-  // created to trigger painting the complete bounds.
-  bool needs_paint_all_;
 
   // Bounds of the window in the desktop's coordinate system.
   gfx::Rect bounds_;

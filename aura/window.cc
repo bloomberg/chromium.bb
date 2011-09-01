@@ -18,7 +18,6 @@ namespace aura {
 Window::Window(WindowDelegate* delegate)
     : delegate_(delegate),
       visibility_(VISIBILITY_HIDDEN),
-      needs_paint_all_(true),
       parent_(NULL),
       id_(-1) {
 }
@@ -32,6 +31,7 @@ Window::~Window() {
 
 void Window::Init() {
   layer_.reset(new ui::Layer(Desktop::GetInstance()->compositor()));
+  layer_->set_delegate(this);
 }
 
 void Window::SetVisibility(Visibility visibility) {
@@ -39,6 +39,8 @@ void Window::SetVisibility(Visibility visibility) {
     return;
 
   visibility_ = visibility;
+  if (visibility_ != VISIBILITY_HIDDEN)
+    SchedulePaint();
 }
 
 void Window::SetBounds(const gfx::Rect& bounds, int anim_ms) {
@@ -48,11 +50,8 @@ void Window::SetBounds(const gfx::Rect& bounds, int anim_ms) {
   layer_->SetBounds(bounds);
 }
 
-void Window::SchedulePaint(const gfx::Rect& bounds) {
-  if (dirty_rect_.IsEmpty())
-    dirty_rect_ = bounds;
-  else
-    dirty_rect_ = dirty_rect_.Union(bounds);
+void Window::SchedulePaintInRect(const gfx::Rect& rect) {
+  layer_->SchedulePaint(rect);
 }
 
 void Window::SetCanvas(const SkCanvas& canvas, const gfx::Point& origin) {
@@ -71,9 +70,7 @@ void Window::SetParent(Window* parent) {
 }
 
 void Window::DrawTree() {
-  UpdateLayerCanvas();
   Draw();
-
   for (Windows::iterator i = children_.begin(); i != children_.end(); ++i)
     (*i)->DrawTree();
 }
@@ -125,28 +122,17 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
   return this;
 }
 
-void Window::UpdateLayerCanvas() {
-  if (needs_paint_all_) {
-    needs_paint_all_ = false;
-    dirty_rect_ = gfx::Rect(0, 0, bounds().width(), bounds().height());
-  }
-  gfx::Rect dirty_rect = dirty_rect_.Intersect(
-      gfx::Rect(0, 0, bounds().width(), bounds().height()));
-  dirty_rect_.SetRect(0, 0, 0, 0);
-  if (dirty_rect.IsEmpty())
-    return;
-  if (delegate_) {
-    scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvas(
-        dirty_rect.width(), dirty_rect.height(), false));
-    canvas->TranslateInt(dirty_rect.x(), dirty_rect.y());
-    delegate_->OnPaint(canvas.get());
-    SetCanvas(*canvas->AsCanvasSkia(), bounds().origin());
-  }
-}
-
 void Window::Draw() {
   if (visibility_ != VISIBILITY_HIDDEN)
     layer_->Draw();
+}
+
+void Window::SchedulePaint() {
+  SchedulePaintInRect(gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
+}
+
+void Window::OnPaint(gfx::Canvas* canvas) {
+  delegate_->OnPaint(canvas);
 }
 
 }  // namespace aura

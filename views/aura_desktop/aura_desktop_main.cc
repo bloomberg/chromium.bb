@@ -27,8 +27,13 @@ class DemoWindowDelegate : public aura::WindowDelegate {
  public:
   explicit DemoWindowDelegate(SkColor color) : color_(color) {}
 
+  virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE {
+    return true;
+  }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
+  }
+  virtual void OnWindowDestroyed() OVERRIDE {
   }
 
  private:
@@ -39,14 +44,32 @@ class DemoWindowDelegate : public aura::WindowDelegate {
 
 class TestView : public views::View {
  public:
-  TestView() {}
+  TestView() : color_shifting_(false), color_(SK_ColorYELLOW) {}
   virtual ~TestView() {}
 
  private:
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) {
-    canvas->FillRectInt(SK_ColorYELLOW, 0, 0, width(), height());
+    canvas->FillRectInt(color_, 0, 0, width(), height());
   }
+  virtual bool OnMousePressed(const views::MouseEvent& event) {
+    color_shifting_ = true;
+    return true;
+  }
+  virtual void OnMouseMoved(const views::MouseEvent& event) {
+    if (color_shifting_) {
+      color_ = SkColorSetRGB((SkColorGetR(color_) + 5) % 255,
+                             SkColorGetG(color_),
+                             SkColorGetB(color_));
+      SchedulePaint();
+    }
+  }
+  virtual void OnMouseReleased(const views::MouseEvent& event) {
+    color_shifting_ = false;
+  }
+
+  bool color_shifting_;
+  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };

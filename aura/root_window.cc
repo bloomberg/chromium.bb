@@ -24,9 +24,11 @@ bool RootWindow::HandleMouseEvent(const MouseEvent& event) {
     target = GetEventHandlerForPoint(event.location());
   if (event.type() == ui::ET_MOUSE_PRESSED && !mouse_pressed_handler_)
     mouse_pressed_handler_ = target;
+  if (event.type() == ui::ET_MOUSE_RELEASED)
+    mouse_pressed_handler_ = NULL;
   if (target->delegate()) {
     MouseEvent translated_event(event, this, target);
-    return target->delegate()->OnMouseEvent(translated_event);
+    return target->delegate()->OnMouseEvent(&translated_event);
   }
   return false;
 }

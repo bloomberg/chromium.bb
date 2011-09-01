@@ -23,7 +23,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
  public:
   explicit DemoWindowDelegate(SkColor color) : color_(color) {}
 
-  virtual bool OnMouseEvent(const aura::MouseEvent& event) OVERRIDE {
+  virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE {
     return true;
   }
 

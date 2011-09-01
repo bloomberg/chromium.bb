@@ -23,7 +23,7 @@ class TestWindowDelegate : public WindowDelegate {
   virtual ~TestWindowDelegate() {}
 
   // Overridden from WindowDelegate:
-  virtual bool OnMouseEvent(const MouseEvent& event) OVERRIDE { return false; }
+  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE { return false; }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);
   }
