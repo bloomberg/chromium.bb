@@ -247,9 +247,16 @@ class NinjaWriter:
 
     # The final output of our target depends on the last output of the
     # above steps.
+    output = None
     final_deps = link_deps or sources_predepends or prebuild
     if final_deps:
-      return self.WriteTarget(spec, config, final_deps)
+      output = self.WriteTarget(spec, config, final_deps)
+      if self.name != output and self.toolset == 'target':
+        # Write a short name to build this target.  This benefits both the
+        # "build chrome" case as well as the gyp tests, which expect to be
+        # able to run actions and build libraries by their short name.
+        self.ninja.build(self.name, 'phony', output)
+    return output
 
   def WriteActionsRulesCopies(self, spec, extra_sources, prebuild):
     """Write out the Actions, Rules, and Copies steps.  Return any outputs
@@ -424,6 +431,14 @@ class NinjaWriter:
     return outputs
 
   def WriteTarget(self, spec, config, final_deps):
+    if spec['type'] == 'none':
+      # This target doesn't have any explicit final output, but is instead
+      # used for its effects before the final output (e.g. copies steps).
+      # Reuse the existing output if it's easy.
+      if len(final_deps) == 1:
+        return final_deps[0]
+      # Otherwise, fall through to writing out a stamp file.
+
     output = self.ComputeOutput(spec)
 
     output_uses_linker = spec['type'] in ('executable', 'loadable_module',
@@ -446,7 +461,7 @@ class NinjaWriter:
           else:
             # TODO: Chrome-specific HACK.  Chrome runs this lastchange rule on
             # every build, but we don't want to rebuild when it runs.
-            if 'lastchange.stamp' not in input:
+            if 'lastchange' not in input:
               implicit_deps.add(input)
         final_deps.extend(list(extra_deps))
     command_map = {
@@ -473,12 +488,6 @@ class NinjaWriter:
     self.ninja.build(output, command, final_deps,
                      implicit=list(implicit_deps),
                      variables=extra_bindings)
-
-    if self.name != output and self.toolset == 'target':
-      # Write a short name to build this target.  This benefits both the
-      # "build chrome" case as well as the gyp tests, which expect to be
-      # able to run actions and build libraries by their short name.
-      self.ninja.build(self.name, 'phony', output)
 
     return output
 
