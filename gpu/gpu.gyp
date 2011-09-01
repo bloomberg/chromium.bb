@@ -59,6 +59,7 @@
         'command_buffer/common/gles2_cmd_utils.h',
         'command_buffer/common/id_allocator.cc',
         'command_buffer/common/id_allocator.h',
+        'command_buffer/common/logging.cc',
         'command_buffer/common/logging.h',
         'command_buffer/common/thread_local.h',
         'command_buffer/common/types.h',

@@ -88,6 +88,8 @@ command_buffer_common_srcs = [
     'command_buffer/common/cmd_buffer_common.cc',
     'command_buffer/common/gles2_cmd_format.cc',
     'command_buffer/common/gles2_cmd_utils.cc',
+    'command_buffer/common/logging.cc',
+    'command_buffer/common/logging.h',
     ]
 
 command_buffer_client_srcs = [

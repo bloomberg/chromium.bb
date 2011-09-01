@@ -7,7 +7,7 @@
 
 #include <assert.h>
 
-#include <iostream>
+#include <ostream>
 
 // Windows defines an ERROR macro.
 #ifdef ERROR
@@ -132,19 +132,17 @@ class Logger {
         << y_name << "(" << y << ")) failed. ";
   }
 
-  ~Logger() {
-    if (!condition_) {
-      std::cerr << std::endl;
-      std::cerr.flush();
-      if (level_ == FATAL)
-        assert(false);
-    }
-  }
+  // Retrieves the stream that we write to. This header cannot depend on
+  // <iostream> because that will add static initializers to all files that
+  // include this header.
+  std::ostream& stream();
+
+  ~Logger();
 
   template <typename T>
   Logger& operator<<(const T& value) {
     if (!condition_)
-      std::cerr << value;
+      stream() << value;
     return *this;
   }
 
