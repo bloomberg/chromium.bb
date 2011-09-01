@@ -4,9 +4,6 @@
 
 #include "ui/gfx/compositor/test_suite.h"
 
-#include "base/file_path.h"
-#include "base/path_service.h"
-#include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"

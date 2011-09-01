@@ -76,7 +76,6 @@
         }],
       ],
     },
-    
     {
       'target_name': 'compositor_unittests',
       'type': 'executable',
@@ -102,6 +101,5 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
     },
-    
   ],
 }
