@@ -26,6 +26,8 @@ NaClForkDelegate::NaClForkDelegate()
       sandboxed_(false),
       fd_(-1) {}
 
+const char kNaClHelperAtZero[] = "--at-zero";
+
 void NaClForkDelegate::Init(const bool sandboxed,
                             const int browserdesc,
                             const int sandboxdesc) {
@@ -48,18 +50,18 @@ void NaClForkDelegate::Init(const bool sandboxed,
   const bool use_helper = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kNaClLinuxHelper);
   FilePath helper_exe;
-  if (use_helper && PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe)) {
+  FilePath helper_bootstrap_exe;
+  if (use_helper &&
+      PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe) &&
+      PathService::Get(chrome::FILE_NACL_HELPER_BOOTSTRAP,
+                       &helper_bootstrap_exe)) {
     CommandLine::StringVector argv = CommandLine::ForCurrentProcess()->argv();
-    argv[0] = helper_exe.value();
+    argv[0] = helper_bootstrap_exe.value();
+    argv[1] = helper_exe.value();
+    argv[2] = kNaClHelperAtZero;
     base::LaunchOptions options;
     options.fds_to_remap = &fds_to_map;
     options.clone_flags = CLONE_FS | SIGCHLD;
-    // LD_BIND_NOW forces non-lazy binding in the dynamic linker, to
-    // prevent the linker from trying to look at the text of the nacl_helper
-    // program after it has been replaced by the nacl module.
-    base::environment_vector env;
-    env.push_back(std::make_pair("LD_BIND_NOW", "1"));
-    options.environ = &env;
     ready_ = base::LaunchProcess(argv, options, NULL);
     // parent and error cases are handled below
   }

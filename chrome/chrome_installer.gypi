@@ -410,7 +410,7 @@
           '<(PRODUCT_DIR)/xdg-mime',
           '<(PRODUCT_DIR)/xdg-settings',
           '<(PRODUCT_DIR)/locales/en-US.pak',
-          '<(PRODUCT_DIR)/nacl_helper.so',
+          '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap',
         ],
         'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
