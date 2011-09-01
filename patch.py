@@ -32,18 +32,21 @@ class FilePatchBase(object):
   is_new = False
 
   def __init__(self, filename):
-    self.filename = None
-    self._set_filename(filename)
+    self.filename = self._process_filename(filename)
 
-  def _set_filename(self, filename):
-    self.filename = filename.replace('\\', '/')
+  @staticmethod
+  def _process_filename(filename):
+    filename = filename.replace('\\', '/')
     # Blacklist a few characters for simplicity.
     for i in ('%', '$', '..', '\'', '"'):
-      if i in self.filename:
-        self._fail('Can\'t use \'%s\' in filename.' % i)
+      if i in filename:
+        raise UnsupportedPatchFormat(
+            filename, 'Can\'t use \'%s\' in filename.' % i)
     for i in ('/', 'CON', 'COM'):
-      if self.filename.startswith(i):
-        self._fail('Filename can\'t start with \'%s\'.' % i)
+      if filename.startswith(i):
+        raise UnsupportedPatchFormat(
+            filename, 'Filename can\'t start with \'%s\'.' % i)
+    return filename
 
   def get(self):  # pragma: no coverage
     raise NotImplementedError('Nothing to grab')
@@ -54,9 +57,11 @@ class FilePatchBase(object):
     relpath = relpath.replace('\\', '/')
     if relpath[0] == '/':
       self._fail('Relative path starts with %s' % relpath[0])
-    self._set_filename(posixpath.join(relpath, self.filename))
+    self.filename = self._process_filename(
+        posixpath.join(relpath, self.filename))
 
   def _fail(self, msg):
+    """Shortcut function to raise UnsupportedPatchFormat."""
     raise UnsupportedPatchFormat(self.filename, msg)
 
 
