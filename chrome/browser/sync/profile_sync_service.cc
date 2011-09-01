@@ -326,9 +326,9 @@ void ProfileSyncService::RegisterPreferences() {
                                     enable_by_default,
                                     PrefService::UNSYNCABLE_PREF);
 
-  // We started prompting people about new data types starting with the
-  // rollout of TYPED_URLs - all previously launched data types are treated
-  // as if they are already acknowledged.
+  // We will start prompting people about new data types after the launch of
+  // SESSIONS - all previously launched data types are treated as if they are
+  // already acknowledged.
   syncable::ModelTypeBitSet model_set;
   model_set.set(syncable::BOOKMARKS);
   model_set.set(syncable::PREFERENCES);
@@ -340,6 +340,8 @@ void ProfileSyncService::RegisterPreferences() {
   model_set.set(syncable::NIGORI);
   model_set.set(syncable::SEARCH_ENGINES);
   model_set.set(syncable::APPS);
+  model_set.set(syncable::TYPED_URLS);
+  model_set.set(syncable::SESSIONS);
   pref_service->RegisterListPref(prefs::kAcknowledgedSyncTypes,
                                  syncable::ModelTypeBitSetToValue(model_set),
                                  PrefService::UNSYNCABLE_PREF);
@@ -1569,6 +1571,10 @@ void ProfileSyncService::AcknowledgeSyncedTypes() {
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 }
 
+// TODO(sync): When we add the next new data type, add code to the NTP to
+// display a "new data type available" notification based on these
+// unacknowledged types, or remove this code if we decide to just bake this
+// in to the "new feature" canned text.
 syncable::ModelTypeBitSet ProfileSyncService::GetUnacknowledgedTypes() const {
   syncable::ModelTypeBitSet unacknowledged;
   if (HasSyncSetupCompleted() &&

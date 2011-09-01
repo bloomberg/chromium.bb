@@ -24,9 +24,6 @@ class NewTabPageHandler : public WebUIMessageHandler {
   // Callback for "closePromo".
   void HandleClosePromo(const ListValue* args);
 
-  // Callback for "closeSyncNotification".
-  void HandleCloseSyncNotification(const ListValue* args);
-
   // Callback for "pageSelected".
   void HandlePageSelected(const ListValue* args);
 

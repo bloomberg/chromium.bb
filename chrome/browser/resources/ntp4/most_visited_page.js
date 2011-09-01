@@ -326,35 +326,12 @@ cr.define('ntp4', function() {
       if (!this.data_) {
         this.createTiles_();
         this.data_ = data.slice(0, THUMBNAIL_COUNT);
-        // Display the sync notification when the page is first initialized - we
-        // don't want to display the notification multiple times, so we do this
-        // here instead of refreshData().
-        if (templateData.syncNotification)
-          this.showSyncNotification_();
       } else {
         this.data_ = refreshData(this.data_, data);
       }
 
       this.updateTiles_();
       logEvent('mostVisited.layout: ' + (Date.now() - startTime));
-    },
-
-    /**
-     * Displays a sync-related notification on the NTP.
-     * @private
-     */
-    showSyncNotification_: function() {
-      var advancedOptionsLink = {
-        action: function() {
-          chrome.send('SyncTypeLinkClicked');
-        },
-        text: templateData.syncLinkText
-      };
-      ntp4.showNotification(templateData.syncNotification,
-                            [advancedOptionsLink],
-                            function() {
-                              chrome.send('closeSyncNotification');
-                            });
     },
 
     /** @inheritDoc */

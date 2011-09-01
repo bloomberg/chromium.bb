@@ -110,8 +110,6 @@ void NewTabPageSyncHandler::RegisterMessages() {
       NewCallback(this, &NewTabPageSyncHandler::HandleGetSyncMessage));
   web_ui_->RegisterMessageCallback("SyncLinkClicked",
       NewCallback(this, &NewTabPageSyncHandler::HandleSyncLinkClicked));
-  web_ui_->RegisterMessageCallback("SyncTypeLinkClicked",
-      NewCallback(this, &NewTabPageSyncHandler::HandleSyncTypeLinkClicked));
 }
 
 void NewTabPageSyncHandler::HandleGetSyncMessage(const ListValue* args) {
@@ -168,15 +166,6 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   } else {
     // User clicked the 'Start now' link to begin syncing.
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
-    sync_service_->ShowLoginDialog();
-  }
-}
-
-void NewTabPageSyncHandler::HandleSyncTypeLinkClicked(const ListValue* args) {
-  if (sync_service_->HasSyncSetupCompleted()) {
-    sync_service_->AcknowledgeSyncedTypes();
-    sync_service_->ShowConfigure(false);
-  } else {
     sync_service_->ShowLoginDialog();
   }
 }

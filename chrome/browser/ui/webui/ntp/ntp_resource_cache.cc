@@ -424,12 +424,6 @@ void NTPResourceCache::CreateNewTabHTML() {
         "serverpromo",
         profile_->GetPrefs()->GetString(prefs::kNTPPromoLine));
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
-  } else {
-    // Not showing a server-provided promo, so check if we need to show a
-    // notification from the sync service instead (don't want to show both).
-    // If no notification is desired, the "syncNotification" attribute is set
-    // to the empty string.
-    localized_strings.SetString("syncNotification", GetSyncTypeMessage());
   }
 
   // Load the new tab page appropriate for this build
@@ -469,31 +463,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   }
 
   new_tab_html_ = base::RefCountedString::TakeString(&full_html);
-}
-
-string16 NTPResourceCache::GetSyncTypeMessage() {
-  if (profile_->HasProfileSyncService()) {
-    syncable::ModelTypeBitSet unacknowledged =
-        profile_->GetProfileSyncService()->GetUnacknowledgedTypes();
-
-    // TODO(sync): As we add new data types, we'll probably need some more
-    // generic string to display to the user, since the method below won't
-    // scale indefinitely (we'd need N*(N+1)/2 different strings to represent
-    // all the combinations of unacknowledged types). But for now, we just
-    // have sessions and typed urls so this is OK.
-    if (unacknowledged.test(syncable::SESSIONS) &&
-        unacknowledged.test(syncable::TYPED_URLS)) {
-      return l10n_util::GetStringUTF16(IDS_SYNC_ADDED_SESSIONS_AND_TYPED_URLS);
-    } else if (unacknowledged.test(syncable::SESSIONS)) {
-      return l10n_util::GetStringUTF16(IDS_SYNC_ADDED_SESSIONS);
-    } else if (unacknowledged.test(syncable::TYPED_URLS)) {
-      return l10n_util::GetStringUTF16(IDS_SYNC_ADDED_TYPED_URLS);
-    } else {
-      // Shouldn't be possible for any other types to be unacknowledged.
-      CHECK(!unacknowledged.any());
-    }
-  }
-  return string16();
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {

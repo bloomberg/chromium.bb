@@ -1027,10 +1027,6 @@ function showNotification(message, actionText, opt_f, opt_delay) {
   function closeNotification() {
     if (notification.classList.contains('promo'))
       chrome.send('closePromo');
-    if (notification.classList.contains('syncnotify')) {
-      chrome.send('closeSyncNotification');
-      // Make sure we don't reshow the notification now that it's closed.
-      syncNotificationHidden = true;
     }
     hideNotification();
   }
@@ -1038,7 +1034,6 @@ function showNotification(message, actionText, opt_f, opt_delay) {
   // Remove classList entries from previous notifications.
   notification.classList.remove('first-run');
   notification.classList.remove('promo');
-  notification.classList.remove('syncnotify');
 
   var messageContainer = notificationElement.firstElementChild;
   var actionLink = notificationElement.querySelector('#action-link');
@@ -1107,23 +1102,6 @@ function showPromoNotification() {
                    60000);
   var notificationElement = $('notification');
   notification.classList.add('promo');
-}
-
-// Set to true by closeNotification() if the sync notification has been hidden
-// by the user.
-var syncNotificationHidden;
-
-function showSyncNotification() {
-  // Don't show the notification if it's already been hidden by the user.
-  if (syncNotificationHidden)
-    return;
-  showNotification(parseHtmlSubset(localStrings.getString(
-                                     'syncNotification')),
-                   localStrings.getString('syncLinkText'),
-                   function () { chrome.send('SyncTypeLinkClicked'); },
-                   60000);
-  var notificationElement = $('notification');
-  notification.classList.add('syncnotify');
 }
 
 $('main').addEventListener('click', function(e) {
@@ -1487,9 +1465,6 @@ function setMostVisitedPages(data, hasBlacklistedUrls) {
     showPromoNotification();
   }
 
-  if (localStrings.getString('syncNotification')) {
-    showSyncNotification();
-  }
 }
 
 function maybeDoneLoading() {

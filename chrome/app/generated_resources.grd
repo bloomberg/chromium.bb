@@ -9690,15 +9690,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_ADVANCED_OPTIONS" desc="The text in the link that brings up the sync configure screen in the new tab page new data type notification.">
         Advanced options
       </message>
-      <message name="IDS_SYNC_ADDED_SESSIONS_AND_TYPED_URLS" desc="The text in the new tab page notifying the user that we've enabled session and typed url sync.">
-        New! Chrome is now syncing your Omnibox History and Foreign Sessions.
-      </message>
-      <message name="IDS_SYNC_ADDED_SESSIONS" desc="The text in the new tab page notifying the user that we've enabled session sync.">
-        New! Chrome is now syncing your Foreign Sessions.
-      </message>
-      <message name="IDS_SYNC_ADDED_TYPED_URLS" desc="The text in the new tab page notifying the user that we've enabled typed url sync.">
-        New! Chrome is now syncing your Omnibox History.
-      </message>
 
       <!-- Sync / Extension interaction messages -->
       <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_SYNC_OPTION" desc="The label of a button allowing the user to choose to disable sync when an extension is believed to be causing sync problems preventing sync operation.">

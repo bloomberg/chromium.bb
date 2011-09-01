@@ -19,8 +19,6 @@ static const int kIntroDisplayMax = 10;
 void NewTabPageHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("closePromo", NewCallback(
       this, &NewTabPageHandler::HandleClosePromo));
-  web_ui_->RegisterMessageCallback("closeSyncNotification", NewCallback(
-      this, &NewTabPageHandler::HandleCloseSyncNotification));
   web_ui_->RegisterMessageCallback("pageSelected", NewCallback(
       this, &NewTabPageHandler::HandlePageSelected));
   web_ui_->RegisterMessageCallback("navigationDotUsed", NewCallback(
@@ -36,13 +34,6 @@ void NewTabPageHandler::HandleClosePromo(const ListValue* args) {
   service->Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED,
                   Source<NewTabPageHandler>(this),
                   NotificationService::NoDetails());
-}
-
-void NewTabPageHandler::HandleCloseSyncNotification(const ListValue* args) {
-  ProfileSyncService* service =
-      Profile::FromWebUI(web_ui_)->GetProfileSyncService();
-  if (service)
-    service->AcknowledgeSyncedTypes();
 }
 
 void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
