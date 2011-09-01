@@ -676,3 +676,13 @@
   ThreadSanitizer:Race
   fun:frame_worker_thread
 }
+{
+   bug_93932_e
+   ThreadSanitizer:Race
+   ...
+   fun:frame_thread_free
+   fun:avcodec_close
+   fun:media::FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine
+   fun:scoped_ptr::reset
+   fun:media::FFmpegVideoDecodeEngineTest::~FFmpegVideoDecodeEngineTest
+}
