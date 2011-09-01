@@ -18,23 +18,44 @@ import "sync.proto";
 
 // Properties of custom search engine sync objects.
 message SearchEngineSpecifics {
+  // The description of the search engine.
   optional string short_name = 1;
+  // The search engine keyword for omnibox access.
   optional string keyword = 2;
+  // A URL to the favicon to show in the search engines options page.
   optional string favicon_url = 3;
+  // The actual parameterized search engine query URL.
   optional string url = 4;
+  // A flag signifying whether it is safe to automatically modify this search
+  // engine entry or not.
   optional bool safe_for_autoreplace = 5;
+  // The URL to the OSD file this search engine entry came from.
   optional string originating_url = 6;
+  // The date this search engine entry was created. A UTC timestamp with units
+  // in microseconds.
   optional int64 date_created = 7;
+  // A list of supported input encodings.
   optional string input_encodings = 8;
+  // Whether this entry is shown in the list of default search engines or not.
   optional bool show_in_default_list = 9;
+  // The parameterized URL that provides suggestions as the user types.
   optional string suggestions_url = 10;
+  // The ID associated with the prepopulate data this search engine comes from.
+  // Set to zero if it was not prepopulated.
   optional int32 prepopulate_id = 11;
+  // Whether to autogenerate a keyword for the search engine or not.
   optional bool autogenerate_keyword = 12;
-  optional int32 logo_id = 13;
+  // ID 13 reserved - previously used by |logo_id|, now deprecated.
+  // Whether or not this search engine entry was created automatically by an
+  // administrator via group policy.
   optional bool created_by_policy = 14;
+  // The parameterized URL that is used for Instant results.
   optional string instant_url = 15;
-  optional int64 id = 16;
+  // ID 16 reserved - previously used by |id|, now deprecated.
+  // The last time this entry was modified by a user. A UTC timestamp with units
+  // in microseconds.
   optional int64 last_modified = 17;
+  // The primary identifier of this search engine entry for Sync.
   optional string sync_guid = 18;
 }
 

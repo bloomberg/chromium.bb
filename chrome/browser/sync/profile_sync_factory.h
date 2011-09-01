@@ -138,6 +138,13 @@ class ProfileSyncFactory {
   virtual SyncComponents CreateSessionSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
+
+  // Instantiates both a model associator and change processor for the search
+  // engine data type.  The pointers in the return struct are owned by the
+  // caller.
+  virtual SyncComponents CreateSearchEngineSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_H__

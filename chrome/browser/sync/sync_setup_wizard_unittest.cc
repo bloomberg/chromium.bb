@@ -324,8 +324,8 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
       "{\"keepEverythingSynced\":false,\"syncBookmarks\":true,"
       "\"syncPreferences\":true,\"syncThemes\":false,\"syncPasswords\":false,"
       "\"syncAutofill\":false,\"syncExtensions\":false,\"syncTypedUrls\":true,"
-      "\"syncApps\":true,\"syncSessions\":false,\"usePassphrase\":false,"
-      "\"encryptAllData\":false}";
+      "\"syncApps\":true,\"syncSearchEngines\":false,\"syncSessions\":false,"
+      "\"usePassphrase\":false,\"encryptAllData\":false}";
   data_type_choices_value.Append(new StringValue(data_type_choices));
 
   // Simulate the user choosing data types; bookmarks, prefs, typed URLS, and
@@ -341,6 +341,7 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::EXTENSIONS));
   EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::TYPED_URLS));
   EXPECT_EQ(1U, service_->chosen_data_types_.count(syncable::APPS));
+  EXPECT_EQ(0U, service_->chosen_data_types_.count(syncable::SEARCH_ENGINES));
 
   CloseSetupUI();
 }

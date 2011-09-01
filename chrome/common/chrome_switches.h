@@ -152,6 +152,7 @@ extern const char kEnableShortcutsProvider[];
 extern const char kEnableSmoothScrolling[];
 extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSyncOAuth[];
+extern const char kEnableSyncSearchEngines[];
 extern const char kEnableSyncSessions[];
 extern const char kEnableSyncedBookmarksFolder[];
 extern const char kEnableTabGroupsContextMenu[];

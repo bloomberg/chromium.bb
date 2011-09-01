@@ -158,7 +158,6 @@ class TemplateURLServiceSyncTest : public testing::Test {
     ASSERT_EQ(JoinString(expected.input_encodings(), ';'),
               JoinString(actual.input_encodings(), ';'));
     ASSERT_TRUE(expected.GetFaviconURL() == actual.GetFaviconURL());
-    ASSERT_EQ(expected.id(), actual.id());
     ASSERT_EQ(expected.safe_for_autoreplace(), actual.safe_for_autoreplace());
     ASSERT_EQ(expected.show_in_default_list(), actual.show_in_default_list());
     ASSERT_TRUE(expected.date_created() == actual.date_created());

@@ -307,6 +307,9 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncApps,
                                     enable_by_default,
                                     PrefService::UNSYNCABLE_PREF);
+  pref_service->RegisterBooleanPref(prefs::kSyncSearchEngines,
+                                    enable_by_default,
+                                    PrefService::UNSYNCABLE_PREF);
   pref_service->RegisterBooleanPref(prefs::kSyncSessions,
                                     enable_by_default,
                                     PrefService::UNSYNCABLE_PREF);
@@ -543,6 +546,8 @@ const char* ProfileSyncService::GetPrefNameForDataType(
       return prefs::kSyncExtensions;
     case syncable::APPS:
       return prefs::kSyncApps;
+    case syncable::SEARCH_ENGINES:
+      return prefs::kSyncSearchEngines;
     case syncable::SESSIONS:
       return prefs::kSyncSessions;
     default:

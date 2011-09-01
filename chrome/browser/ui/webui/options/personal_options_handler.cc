@@ -181,6 +181,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_THEMES));
   localized_strings->SetString("syncapps",
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_APPS));
+  localized_strings->SetString("syncsearchengines",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SEARCH_ENGINES));
   localized_strings->SetString("syncsessions",
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SESSIONS));
 

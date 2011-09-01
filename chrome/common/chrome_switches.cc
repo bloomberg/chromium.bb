@@ -526,6 +526,9 @@ const char kEnableSSLCachedInfo[]  = "enable-ssl-cached-info";
 // Enable OAuth sign-in for sync.
 const char kEnableSyncOAuth[]               = "enable-sync-oauth";
 
+// Enable syncing custom search engines.
+const char kEnableSyncSearchEngines[]       = "enable-sync-search-engines";
+
 // Enable syncing browser sessions.
 const char kEnableSyncSessions[]            = "enable-sync-sessions";
 

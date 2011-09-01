@@ -322,6 +322,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSyncSessions)
   },
   {
+    "sync-search-engines",
+    IDS_FLAGS_SYNC_SEARCH_ENGINES_NAME,
+    IDS_FLAGS_SYNC_SEARCH_ENGINES_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSyncSearchEngines)
+  },
+  {
     "enable-smooth-scrolling",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME,
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION,

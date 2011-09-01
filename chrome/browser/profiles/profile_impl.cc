@@ -682,6 +682,11 @@ ProfileImpl::~ProfileImpl() {
   // Remove pref observers
   pref_change_registrar_.RemoveAll();
 
+  // The sync service needs to be deleted before the services it calls.
+  // TODO(stevet): Make ProfileSyncService into a PKS and let the PDM take care
+  // of the cleanup below.
+  sync_service_.reset();
+
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
   if (db_tracker_) {
@@ -699,9 +704,6 @@ ProfileImpl::~ProfileImpl() {
     download_manager_->Shutdown();
     download_manager_ = NULL;
   }
-
-  // The sync service needs to be deleted before the services it calls.
-  sync_service_.reset();
 
   // Password store uses WebDB, shut it down before the WebDB has been shutdown.
   if (password_store_.get())

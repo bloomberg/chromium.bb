@@ -274,10 +274,8 @@ DictionaryValue* SearchEngineSpecificsToValue(
   SET_STR(suggestions_url);
   SET_INT32(prepopulate_id);
   SET_BOOL(autogenerate_keyword);
-  SET_INT32(logo_id);
   SET_BOOL(created_by_policy);
   SET_STR(instant_url);
-  SET_INT64(id);
   SET_INT64(last_modified);
   SET_STR(sync_guid);
   return value;

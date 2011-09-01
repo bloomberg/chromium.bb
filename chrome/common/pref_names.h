@@ -477,7 +477,6 @@ extern const char kGpuBlacklistUpdate[];
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsSplitLocation[];
-extern const char kSyncSessions[];
 
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];
@@ -492,6 +491,8 @@ extern const char kSyncThemes[];
 extern const char kSyncTypedUrls[];
 extern const char kSyncExtensions[];
 extern const char kSyncManaged[];
+extern const char kSyncSearchEngines[];
+extern const char kSyncSessions[];
 extern const char kSyncSuppressStart[];
 extern const char kGoogleServicesUsername[];
 extern const char kSyncUsingOAuth[];

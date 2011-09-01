@@ -2088,6 +2088,8 @@
         'browser/sync/glue/password_model_worker.h',
         'browser/sync/glue/preference_data_type_controller.cc',
         'browser/sync/glue/preference_data_type_controller.h',
+        'browser/sync/glue/search_engine_data_type_controller.cc',
+        'browser/sync/glue/search_engine_data_type_controller.h',
         'browser/sync/glue/session_change_processor.cc',
         'browser/sync/glue/session_change_processor.h',
         'browser/sync/glue/session_data_type_controller.cc',

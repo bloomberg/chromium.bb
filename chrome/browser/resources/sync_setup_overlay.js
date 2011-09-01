@@ -256,6 +256,7 @@ cr.define('options', function() {
           "syncExtensions": syncAll || $('extensions-checkbox').checked,
           "syncTypedUrls": syncAll || $('typed-urls-checkbox').checked,
           "syncApps": syncAll || $('apps-checkbox').checked,
+          "syncSearchEngines": syncAll || $('search-engines-checkbox').checked,
           "syncSessions": syncAll || $('sessions-checkbox').checked,
           "encryptAllData": encryptAllData,
           "usePassphrase": usePassphrase,
@@ -349,14 +350,20 @@ cr.define('options', function() {
       } else {
         $('apps-item').className = "sync-item-hide";
       }
-
-      this.setCheckboxesToKeepEverythingSynced_(args.keepEverythingSynced);
+      if (args.searchEnginesRegistered) {
+        $('search-engines-checkbox').checked = args.syncSearchEngines;
+        $('search-engines-item').className = "sync-item-show";
+      } else {
+        $('search-engines-item').className = "sync-item-hide";
+      }
       if (args.sessionsRegistered) {
         $('sessions-checkbox').checked = args.syncSessions;
         $('sessions-item').className = "sync-item-show";
       } else {
         $('sessions-item').className = "sync-item-hide";
       }
+
+      this.setCheckboxesToKeepEverythingSynced_(args.keepEverythingSynced);
     },
 
     setEncryptionRadios_: function(args) {

@@ -113,6 +113,12 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
   if (sync_typed_urls)
     config->data_types.insert(syncable::TYPED_URLS);
 
+  bool sync_search_engines;
+  if (!result->GetBoolean("syncSearchEngines", &sync_search_engines))
+    return false;
+  if (sync_search_engines)
+    config->data_types.insert(syncable::SEARCH_ENGINES);
+
   bool sync_sessions;
   if (!result->GetBoolean("syncSessions", &sync_sessions))
     return false;
@@ -232,6 +238,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "extensions", IDS_SYNC_DATATYPE_EXTENSIONS },
     { "typedURLs", IDS_SYNC_DATATYPE_TYPED_URLS },
     { "apps", IDS_SYNC_DATATYPE_APPS },
+    { "searchEngines", IDS_SYNC_DATATYPE_SEARCH_ENGINES },
     { "foreignSessions", IDS_SYNC_DATATYPE_SESSIONS },
     { "syncZeroDataTypesError", IDS_SYNC_ZERO_DATA_TYPES_ERROR },
     { "abortedError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },

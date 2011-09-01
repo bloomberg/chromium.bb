@@ -301,6 +301,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED));
   localized_strings.SetString("closedwindowsingle",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
+  localized_strings.SetString("searchengines",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SEARCH_ENGINES));
   localized_strings.SetString("foreignsessions",
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SESSIONS));
   localized_strings.SetString("closedwindowmultiple",

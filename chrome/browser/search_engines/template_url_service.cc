@@ -867,11 +867,9 @@ SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
       turl.suggestions_url()->url() : std::string());
   se_specifics->set_prepopulate_id(turl.prepopulate_id());
   se_specifics->set_autogenerate_keyword(turl.autogenerate_keyword());
-  se_specifics->set_logo_id(turl.logo_id());
   se_specifics->set_created_by_policy(turl.created_by_policy());
   se_specifics->set_instant_url(turl.instant_url() ?
       turl.instant_url()->url() : std::string());
-  se_specifics->set_id(turl.id());
   se_specifics->set_last_modified(turl.last_modified().ToInternalValue());
   se_specifics->set_sync_guid(turl.sync_guid());
   return SyncData::CreateLocalData(se_specifics->sync_guid(),
@@ -900,10 +898,8 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromSyncData(
   turl->SetSuggestionsURL(specifics.suggestions_url(), 0, 0);
   turl->SetPrepopulateId(specifics.prepopulate_id());
   turl->set_autogenerate_keyword(specifics.autogenerate_keyword());
-  turl->set_logo_id(specifics.logo_id());
   turl->set_created_by_policy(specifics.created_by_policy());
   turl->SetInstantURL(specifics.instant_url(), 0, 0);
-  turl->set_id(specifics.id());
   turl->set_last_modified(
       base::Time::FromInternalValue(specifics.last_modified()));
   turl->set_sync_guid(specifics.sync_guid());
@@ -1522,6 +1518,10 @@ void TemplateURLService::SetDefaultSearchProviderNoNotify(
 
   if (service_.get())
     service_->SetDefaultSearchProvider(url);
+
+  // Inform sync the change to the show_in_default_list flag.
+  if (url)
+    ProcessTemplateURLChange(url, SyncChange::ACTION_UPDATE);
 }
 
 void TemplateURLService::AddNoNotify(TemplateURL* template_url) {
