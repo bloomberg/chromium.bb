@@ -588,6 +588,10 @@ add_config('stumpy-private-bin', [internal, binary, {
   'board' : 'stumpy',
 }])
 
+add_config('lumpy-private-bin', [internal, binary, {
+  'board' : 'lumpy',
+}])
+
 add_config('x86-alex-toolchain', [internal, full, official, {
   'board' : 'x86-alex',
   'build_tests' : True,
@@ -652,6 +656,10 @@ add_config('x86-zgb_he-release', [internal, full, official, release, {
 
 add_config('stumpy-release', [internal, full, official, release, {
   'board' : 'stumpy',
+}])
+
+add_config('lumpy-release', [internal, full, official, release, {
+  'board' : 'lumpy',
 }])
 
 add_config('arm-tegra2_seaboard-release', [
