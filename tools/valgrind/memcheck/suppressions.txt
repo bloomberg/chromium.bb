@@ -1909,6 +1909,23 @@
    fun:_ZN3net18CertVerifierWorker3RunEv
 }
 {
+   bug_32624_f
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PR_GetCurrentThread
+   fun:PR_SetError
+   fun:PORT_SetError_Util
+   fun:cert_FindExtensionByOID
+   fun:cert_FindExtension
+   fun:CERT_FindCertExtension
+   fun:cert_VerifySubjectAltName
+   fun:CERT_VerifyCertName
+   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net18CertVerifierWorker3RunEv
+}
+{
   bug_34554_a
   Memcheck:Leak
   fun:malloc
