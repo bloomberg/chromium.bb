@@ -112,7 +112,7 @@ shell_move(struct wl_client *client, struct wl_resource *resource,
 	struct wlsc_surface *es = surface_resource->data;
 
 	if (wlsc_surface_move(es, wd, time) < 0)
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 }
 
 struct wlsc_resize_grab {
@@ -256,7 +256,7 @@ shell_resize(struct wl_client *client, struct wl_resource *resource,
 	/* FIXME: Reject if fullscreen */
 
 	if (wlsc_surface_resize(es, wd, time, edges, resource) < 0)
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 }
 
 static void
@@ -452,7 +452,7 @@ drag_offer(struct wl_client *client,
 	if (p)
 		*p = strdup(type);
 	if (!p || !*p)
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 }
 
 static void
@@ -568,7 +568,7 @@ shell_create_drag(struct wl_client *client,
 
 	drag = malloc(sizeof *drag);
 	if (drag == NULL) {
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 		return;
 	}
 
@@ -655,7 +655,7 @@ selection_offer(struct wl_client *client,
 	if (p)
 		*p = strdup(type);
 	if (!p || !*p)
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 }
 
 static void
@@ -736,7 +736,7 @@ shell_create_selection(struct wl_client *client,
 
 	selection = malloc(sizeof *selection);
 	if (selection == NULL) {
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 		return;
 	}
 

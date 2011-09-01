@@ -1088,7 +1088,7 @@ surface_frame(struct wl_client *client,
 
 	cb = malloc(sizeof *cb);
 	if (cb == NULL) {
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 		return;
 	}
 		
@@ -1171,7 +1171,7 @@ compositor_create_surface(struct wl_client *client,
 
 	surface = wlsc_surface_create(ec, 0, 0, 0, 0);
 	if (surface == NULL) {
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 		return;
 	}
 

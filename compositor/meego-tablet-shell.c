@@ -435,7 +435,7 @@ tablet_shell_create_client(struct wl_client *client,
 
 	tablet_client = malloc(sizeof *tablet_client);
 	if (tablet_client == NULL) {
-		wl_client_post_no_memory(client);
+		wl_resource_post_no_memory(resource);
 		return;
 	}
 
