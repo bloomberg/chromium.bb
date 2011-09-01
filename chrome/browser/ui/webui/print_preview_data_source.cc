@@ -63,8 +63,6 @@ PrintPreviewDataSource::PrintPreviewDataSource()
   AddLocalizedString("copiesLabel", IDS_PRINT_PREVIEW_COPIES_LABEL);
   AddLocalizedString("examplePageRangeText",
                      IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT);
-  AddLocalizedString("invalidNumberOfCopies",
-                     IDS_PRINT_PREVIEW_INVALID_NUMBER_OF_COPIES);
   AddLocalizedString("layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL);
   AddLocalizedString("optionAllPages", IDS_PRINT_PREVIEW_OPTION_ALL_PAGES);
   AddLocalizedString("optionBw", IDS_PRINT_PREVIEW_OPTION_BW);

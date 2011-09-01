@@ -82,13 +82,8 @@ cr.define('print_preview', function() {
       var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
       var copies = printToPDF ? 1 : copiesSettings.numberOfCopies;
 
-      if (!printToPDF && !copiesSettings.isValid()) {
-        this.summary_.innerHTML =
-            localStrings.getString('invalidNumberOfCopies');
-        return;
-      }
-
-      if (!pageSettings.isPageSelectionValid()) {
+      if ((!printToPDF && !copiesSettings.isValid()) ||
+          !pageSettings.isPageSelectionValid()) {
         this.summary_.innerHTML = '';
         return;
       }
