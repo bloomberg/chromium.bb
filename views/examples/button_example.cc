@@ -38,7 +38,7 @@ void ButtonExample::CreateExampleView(views::View* container) {
 
 void ButtonExample::ButtonPressed(views::Button* sender,
                                   const views::Event& event) {
-  PrintStatus(L"Pressed! count:%d", ++count_);
+  PrintStatus("Pressed! count:%d", ++count_);
 
   if (event.IsControlDown()) {
     if (event.IsShiftDown()) {

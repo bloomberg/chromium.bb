@@ -133,7 +133,7 @@ void Table2Example::ButtonPressed(views::Button* sender,
 }
 
 void Table2Example::OnSelectionChanged() {
-  PrintStatus(L"Selection changed: %d", table_->GetFirstSelectedRow());
+  PrintStatus("Selection changed: %d", table_->GetFirstSelectedRow());
 }
 
 void Table2Example::OnDoubleClick() {

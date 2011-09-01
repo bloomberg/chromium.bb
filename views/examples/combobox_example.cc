@@ -21,7 +21,7 @@ class ComboboxModelExample : public ui::ComboboxModel {
 
   // Overridden from ui::ComboboxModel:
   virtual string16 GetItemAt(int index) OVERRIDE {
-    return WideToUTF16Hack(base::StringPrintf(L"Item %d", index));
+    return UTF8ToUTF16(base::StringPrintf("Item %d", index));
   }
 
  private:
@@ -54,9 +54,8 @@ void ComboboxExample::CreateExampleView(views::View* container) {
 void ComboboxExample::ItemChanged(views::Combobox* combo_box,
                                   int prev_index,
                                   int new_index) {
-  PrintStatus(L"Selected: index=%d, label=%ls",
-      new_index, UTF16ToWideHack(
-          combo_box->model()->GetItemAt(new_index)).c_str());
+  PrintStatus("Selected: index=%d, label=%s",
+      new_index, UTF16ToUTF8(combo_box->model()->GetItemAt(new_index)).c_str());
 }
 
 }  // namespace examples

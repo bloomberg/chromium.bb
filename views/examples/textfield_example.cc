@@ -66,9 +66,9 @@ void TextfieldExample::CreateExampleView(views::View* container) {
 void TextfieldExample::ContentsChanged(views::Textfield* sender,
                                        const string16& new_contents) {
   if (sender == name_) {
-    PrintStatus(L"Name [%ls]", UTF16ToWideHack(new_contents).c_str());
+    PrintStatus("Name [%s]", UTF16ToUTF8(new_contents).c_str());
   } else if (sender == password_) {
-    PrintStatus(L"Password [%ls]", UTF16ToWideHack(new_contents).c_str());
+    PrintStatus("Password [%s]", UTF16ToUTF8(new_contents).c_str());
   }
 }
 
@@ -80,7 +80,7 @@ bool TextfieldExample::HandleKeyEvent(views::Textfield* sender,
 void TextfieldExample::ButtonPressed(views::Button* sender,
                                      const views::Event& event) {
   if (sender == show_password_) {
-    PrintStatus(L"Password [%ls]", UTF16ToWideHack(password_->text()).c_str());
+    PrintStatus("Password [%s]", UTF16ToUTF8(password_->text()).c_str());
   } else if (sender == clear_all_) {
     string16 empty;
     name_->SetText(empty);

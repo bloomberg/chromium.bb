@@ -61,10 +61,10 @@ ExampleBase::ExampleBase(ExamplesMain* main)
 }
 
 // Prints a message in the status area, at the bottom of the window.
-void ExampleBase::PrintStatus(const wchar_t* format, ...) {
+void ExampleBase::PrintStatus(const char* format, ...) {
   va_list ap;
   va_start(ap, format);
-  std::wstring msg;
+  std::string msg;
   base::StringAppendV(&msg, format, ap);
   main_->SetStatus(msg);
 }

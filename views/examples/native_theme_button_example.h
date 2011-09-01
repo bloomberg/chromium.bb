@@ -31,7 +31,7 @@ class ExampleNativeThemeButton : public views::CustomButton,
                            views::Combobox* cb_state);
   virtual ~ExampleNativeThemeButton();
 
-  std::wstring MessWithState();
+  std::string MessWithState();
 
  private:
   // Overridden from View:

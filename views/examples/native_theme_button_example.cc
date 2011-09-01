@@ -11,8 +11,8 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/canvas.h"
 #include "views/controls/label.h"
-#include "views/native_theme_painter.h"
 #include "views/layout/grid_layout.h"
+#include "views/native_theme_painter.h"
 
 namespace {
 
@@ -84,15 +84,15 @@ ExampleNativeThemeButton::ExampleNativeThemeButton(
 ExampleNativeThemeButton::~ExampleNativeThemeButton() {
 }
 
-std::wstring ExampleNativeThemeButton::MessWithState() {
-  const wchar_t* message = NULL;
+std::string ExampleNativeThemeButton::MessWithState() {
+  const char* message = NULL;
   switch(GetThemePart()) {
   case gfx::NativeTheme::kPushButton:
-    message = L"Pressed! count:%d";
+    message = "Pressed! count:%d";
     break;
   case gfx::NativeTheme::kRadio:
     is_checked_ = !is_checked_;
-    message = is_checked_ ? L"Checked! count:%d" : L"Unchecked! count:%d";
+    message = is_checked_ ? "Checked! count:%d" : "Unchecked! count:%d";
     break;
   case gfx::NativeTheme::kCheckbox:
     if (is_indeterminate_) {
@@ -105,8 +105,8 @@ std::wstring ExampleNativeThemeButton::MessWithState() {
       is_indeterminate_ = true;
     }
 
-    message = is_checked_ ? L"Checked! count:%d" :
-      is_indeterminate_ ? L"Indeterminate! count:%d" : L"Unchecked! count:%d";
+    message = is_checked_ ? "Checked! count:%d" :
+      is_indeterminate_ ? "Indeterminate! count:%d" : "Unchecked! count:%d";
     break;
   default:
     DCHECK(false);

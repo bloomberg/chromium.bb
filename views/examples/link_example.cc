@@ -29,7 +29,7 @@ void LinkExample::CreateExampleView(views::View* container) {
 }
 
 void LinkExample::LinkClicked(views::Link* source, int event_flags) {
-  PrintStatus(L"Link clicked");
+  PrintStatus("Link clicked");
 }
 
 }  // namespace examples

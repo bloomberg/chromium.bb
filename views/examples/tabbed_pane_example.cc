@@ -81,7 +81,7 @@ void TabbedPaneExample::TabSelectedAt(int index) {
 }
 
 void TabbedPaneExample::PrintStatus() {
-  ExampleBase::PrintStatus(L"Tab Count:%d, Selected Tab:%d",
+  ExampleBase::PrintStatus("Tab Count:%d, Selected Tab:%d",
                            tabbed_pane_->GetTabCount(),
                            tabbed_pane_->GetSelectedTabIndex());
 }

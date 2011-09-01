@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/process_util.h"
+#include "base/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "views/controls/button/text_button.h"
@@ -65,8 +66,8 @@ const views::Widget* ExamplesMain::GetWidget() const {
   return contents_->GetWidget();
 }
 
-void ExamplesMain::SetStatus(const std::wstring& status) {
-  status_label_->SetText(status);
+void ExamplesMain::SetStatus(const std::string& status) {
+  status_label_->SetText(UTF8ToWide(status));
 }
 
 void ExamplesMain::Run() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class ExamplesMain : public views::WidgetDelegate {
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
   // Prints a message in the status area, at the bottom of the window.
-  void SetStatus(const std::wstring& status);
+  void SetStatus(const std::string& status);
 
   // Creates all examples and runs the UI event loop.
   void Run();

@@ -101,7 +101,7 @@ SkBitmap TableExample::GetIcon(int row) {
 void TableExample::SetObserver(ui::TableModelObserver* observer) {}
 
 void TableExample::OnSelectionChanged() {
-  PrintStatus(L"Selection changed");
+  PrintStatus("Selection changed");
 }
 
 void TableExample::OnDoubleClick() {}
