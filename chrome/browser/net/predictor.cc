@@ -29,10 +29,9 @@ using base::TimeDelta;
 namespace chrome_browser_net {
 
 // static
+const int Predictor::kPredictorReferrerVersion = 2;
 const double Predictor::kPreconnectWorthyExpectedValue = 0.8;
-// static
 const double Predictor::kDNSPreresolutionWorthyExpectedValue = 0.1;
-// static
 const double Predictor::kDiscardableExpectedValue = 0.05;
 // The goal is of trimming is to to reduce the importance (number of expected
 // subresources needed) by a factor of 2 after about 24 hours of uptime. We will
@@ -45,13 +44,9 @@ const double Predictor::kDiscardableExpectedValue = 0.05;
 // system that uses a higher trim ratio when the list is large.
 // static
 const double Predictor::kReferrerTrimRatio = 0.97153;
-
-// static
 const TimeDelta Predictor::kDurationBetweenTrimmings = TimeDelta::FromHours(1);
-// static
 const TimeDelta Predictor::kDurationBetweenTrimmingIncrements =
     TimeDelta::FromSeconds(15);
-// static
 const size_t Predictor::kUrlsTrimmedPerIncrement = 5u;
 
 class Predictor::LookupRequest {
@@ -606,7 +601,7 @@ void Predictor::TrimReferrersNow() {
 void Predictor::SerializeReferrers(ListValue* referral_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   referral_list->Clear();
-  referral_list->Append(new base::FundamentalValue(PREDICTOR_REFERRER_VERSION));
+  referral_list->Append(new base::FundamentalValue(kPredictorReferrerVersion));
   for (Referrers::const_iterator it = referrers_.begin();
        it != referrers_.end(); ++it) {
     // Serialize the list of subresource names.
@@ -626,7 +621,7 @@ void Predictor::DeserializeReferrers(const ListValue& referral_list) {
   int format_version = -1;
   if (referral_list.GetSize() > 0 &&
       referral_list.GetInteger(0, &format_version) &&
-      format_version == PREDICTOR_REFERRER_VERSION) {
+      format_version == kPredictorReferrerVersion) {
     for (size_t i = 1; i < referral_list.GetSize(); ++i) {
       ListValue* motivator;
       if (!referral_list.GetList(i, &motivator)) {

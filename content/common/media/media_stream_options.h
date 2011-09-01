@@ -42,13 +42,13 @@ enum MediaStreamType {
 
 // StreamDeviceInfo describes information about a device.
 struct StreamDeviceInfo {
+  static const int kNoId;
+
   StreamDeviceInfo();
   StreamDeviceInfo(MediaStreamType service_param,
                    const std::string& name_param,
                    const std::string& device_param,
                    bool opened);
-
-  enum { kNoId = -1 };
 
   // Describes the capture type.
   MediaStreamType stream_type;

@@ -53,7 +53,7 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
  public:
   // A version number for prefs that are saved. This should be incremented when
   // we change the format so that we discard old data.
-  enum { PREDICTOR_REFERRER_VERSION = 2 };
+  static const int kPredictorReferrerVersion;
 
   // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued through |host_resolver|.

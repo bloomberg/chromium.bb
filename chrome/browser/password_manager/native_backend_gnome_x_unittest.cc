@@ -47,7 +47,7 @@ struct MockKeyringItem {
                               : value_uint32 == x.value_uint32;
     }
 
-    enum { UINT32, STRING } type;
+    enum Type { UINT32, STRING } type;
     uint32_t value_uint32;
     std::string value_string;
   };

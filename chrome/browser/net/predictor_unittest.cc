@@ -263,12 +263,12 @@ TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
 
 // Return a motivation_list if we can find one for the given motivating_host (or
 // NULL if a match is not found).
-static ListValue* FindSerializationMotivation(
-    const GURL& motivation, const ListValue& referral_list) {
+static ListValue* FindSerializationMotivation(const GURL& motivation,
+                                              const ListValue& referral_list) {
   CHECK_LT(0u, referral_list.GetSize());  // Room for version.
   int format_version = -1;
   CHECK(referral_list.GetInteger(0, &format_version));
-  CHECK_EQ(Predictor::PREDICTOR_REFERRER_VERSION, format_version);
+  CHECK_EQ(Predictor::kPredictorReferrerVersion, format_version);
   ListValue* motivation_list(NULL);
   for (size_t i = 1; i < referral_list.GetSize(); ++i) {
     referral_list.GetList(i, &motivation_list);
@@ -284,7 +284,7 @@ static ListValue* FindSerializationMotivation(
 static ListValue* NewEmptySerializationList() {
   base::ListValue* list = new base::ListValue;
   list->Append(
-      new base::FundamentalValue(Predictor::PREDICTOR_REFERRER_VERSION));
+      new base::FundamentalValue(Predictor::kPredictorReferrerVersion));
   return list;
 }
 

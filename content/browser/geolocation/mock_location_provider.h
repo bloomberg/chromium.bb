@@ -32,7 +32,7 @@ class MockLocationProvider : public LocationProviderBase {
   virtual void OnPermissionGranted(const GURL& requesting_frame);
 
   Geoposition position_;
-  enum { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;
+  enum State { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;
   GURL permission_granted_url_;
   MockLocationProvider** self_ref_;
 

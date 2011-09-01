@@ -21,7 +21,7 @@ class PageTransition {
   //
   // A type is made of a core value and a set of qualifiers. A type has one
   // core value and 0 or or more qualifiers.
-  enum {
+  enum TypeEnum {
     // User got to this page by clicking a link on another page.
     LINK = 0,
 

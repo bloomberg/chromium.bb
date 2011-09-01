@@ -6,6 +6,9 @@
 
 namespace media_stream {
 
+// static
+const int StreamDeviceInfo::kNoId = -1;
+
 StreamDeviceInfo::StreamDeviceInfo()
     : stream_type(kNoService),
       in_use(false),

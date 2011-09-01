@@ -11,7 +11,7 @@
 //
 namespace content {
 
-enum {
+enum NotificationType {
   NOTIFICATION_CONTENT_START = 0,
 
   // General -----------------------------------------------------------------

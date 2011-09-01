@@ -10,7 +10,7 @@
 
 namespace chrome {
 
-enum {
+enum NotificationType {
   NOTIFICATION_CHROME_START = content::NOTIFICATION_CONTENT_END,
 
   // Browser-window ----------------------------------------------------------

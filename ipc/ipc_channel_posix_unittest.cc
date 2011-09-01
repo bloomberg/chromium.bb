@@ -23,9 +23,7 @@
 
 namespace {
 
-enum {
-  QUIT_MESSAGE = 47
-};
+static const uint32 kQuitMessage = 47;
 
 class IPCChannelPosixTestListener : public IPC::Channel::Listener {
  public:
@@ -44,7 +42,7 @@ class IPCChannelPosixTestListener : public IPC::Channel::Listener {
   virtual ~IPCChannelPosixTestListener() {}
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    EXPECT_EQ(message.type(), QUIT_MESSAGE);
+    EXPECT_EQ(message.type(), kQuitMessage);
     status_ = MESSAGE_RECEIVED;
     QuitRunLoop();
     return true;
@@ -88,7 +86,7 @@ class IPCChannelPosixTestListener : public IPC::Channel::Listener {
   // The current status of the listener.
   STATUS status_;
   // If |quit_only_on_message_| then the listener will only break out of
-  // the run loop when the QUIT_MESSAGE is received.
+  // the run loop when kQuitMessage is received.
   bool quit_only_on_message_;
 };
 
@@ -144,7 +142,7 @@ void IPCChannelPosixTest::SetUpSocket(IPC::ChannelHandle *handle,
   if (mode == IPC::Channel::MODE_NAMED_SERVER) {
     // Only one server at a time. Cleanup garbage if it exists.
     unlink(name.c_str());
-      // Make sure the path we need exists.
+    // Make sure the path we need exists.
     FilePath path(name);
     FilePath dir_path = path.DirName();
     ASSERT_TRUE(file_util::CreateDirectory(dir_path));
@@ -229,8 +227,8 @@ TEST_F(IPCChannelPosixTest, AdvancedConnected) {
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
-  IPC::Message* message = new IPC::Message(0, // routing_id
-                                           QUIT_MESSAGE, // message type
+  IPC::Message* message = new IPC::Message(0,  // routing_id
+                                           kQuitMessage,  // message type
                                            IPC::Message::PRIORITY_NORMAL);
   channel.Send(message);
   SpinRunLoop(TestTimeouts::action_timeout_ms());
@@ -268,8 +266,8 @@ TEST_F(IPCChannelPosixTest, ResetState) {
   SpinRunLoop(TestTimeouts::action_max_timeout_ms());
   ASSERT_EQ(IPCChannelPosixTestListener::CONNECTED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
-  IPC::Message* message = new IPC::Message(0, // routing_id
-                                           QUIT_MESSAGE, // message type
+  IPC::Message* message = new IPC::Message(0,  // routing_id
+                                           kQuitMessage,  // message type
                                            IPC::Message::PRIORITY_NORMAL);
   channel.Send(message);
   SpinRunLoop(TestTimeouts::action_timeout_ms());
@@ -327,8 +325,8 @@ TEST_F(IPCChannelPosixTest, MultiConnection) {
   EXPECT_EQ(exit_code, 0);
   ASSERT_EQ(IPCChannelPosixTestListener::DENIED, listener.status());
   ASSERT_TRUE(channel.HasAcceptedConnection());
-  IPC::Message* message = new IPC::Message(0, // routing_id
-                                           QUIT_MESSAGE, // message type
+  IPC::Message* message = new IPC::Message(0,  // routing_id
+                                           kQuitMessage,  // message type
                                            IPC::Message::PRIORITY_NORMAL);
   channel.Send(message);
   SpinRunLoop(TestTimeouts::action_timeout_ms());

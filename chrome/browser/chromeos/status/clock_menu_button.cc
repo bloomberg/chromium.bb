@@ -27,7 +27,7 @@
 namespace {
 
 // views::MenuItemView item ids
-enum {
+enum ClockMenuItem {
   CLOCK_DISPLAY_ITEM,
   CLOCK_OPEN_OPTIONS_ITEM
 };
