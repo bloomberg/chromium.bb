@@ -374,6 +374,7 @@ typedef struct
   int lineNumber;
   EncodingType encoding;
   int status;
+  int linelen;
   int linepos;
   int checkencoding[2];
   widechar line[MAXSTRING];
@@ -603,16 +604,23 @@ getALine (FileInfo * nested)
 {
 /*Read a line of widechar's from an input file */
   int ch;
-  int numchars = 0;
+  int pch;
+  nested->linelen = 0;
   while ((ch = getAChar (nested)) != EOF)
     {
       if (ch == 13)
 	continue;
-      if (ch == 10 || numchars >= MAXSTRING)
+if (pch == '\\' && ch == 10)
+{
+nested->linelen--;
+continue;
+}
+      if (ch == 10 || nested->linelen >= MAXSTRING)
 	break;
-      nested->line[numchars++] = (widechar) ch;
+      nested->line[nested->linelen++] = (widechar) ch;
+      pch = ch;
     }
-  nested->line[numchars] = 0;
+  nested->line[nested->linelen] = 0;
   nested->linepos = 0;
   if (ch == EOF)
     return 0;
@@ -624,27 +632,25 @@ static int lastToken;
 static int
 getToken (FileInfo * nested, CharsString * result, const char *description)
 {
-/*Find the next string of contiguous nonblank characters. If this is the 
-* last token on the line, return 2 instead of 1. */
+/*Find the next string of contiguous non-whitespace characters. If this 
+ * is the last token on the line, return 2 instead of 1. */
   while (nested->line[nested->linepos] &&
-	 (nested->line[nested->linepos] == 32
-	  || nested->line[nested->linepos] == 9))
+	 nested->line[nested->linepos] <= 32)
     nested->linepos++;
   result->length = 0;
   while (nested->line[nested->linepos] &&
-	 !(nested->line[nested->linepos] == 32
-	   || nested->line[nested->linepos] == 9))
+	 nested->line[nested->linepos] > 32)
     result->chars[result->length++] = nested->line[nested->linepos++];
   if (!result->length)
     {
+      /* Not enough tokens*/
       if (description)
 	compileError (nested, "%s not specified.", description);
       return 0;
     }
   result->chars[result->length] = 0;
   while (nested->line[nested->linepos] &&
-	 (nested->line[nested->linepos] == 32
-	  || nested->line[nested->linepos] == 9))
+	 nested->line[nested->linepos] <= 32)
     nested->linepos++;
   if (nested->line[nested->linepos] == 0)
     {
@@ -1445,15 +1451,15 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		  ok = 1;
 		  break;
 		case 'f':
-		  character = '\f';
+		  character = 12;
 		  ok = 1;
 		  break;
 		case 'n':
-		  character = '\n';
+		  character = 10;
 		  ok = 1;
 		  break;
 		case 'r':
-		  character = '\r';
+		  character = 13;
 		  ok = 1;
 		  break;
 		case 's':
@@ -1461,11 +1467,11 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 		  ok = 1;
 		  break;
 		case 't':
-		  character = '\t';
+		  character = 9;
 		  ok = 1;
 		  break;
 		case 'v':
-		  character = '\v';
+		  character = 22;
 		  ok = 1;
 		  break;
 		case 'w':
@@ -1977,7 +1983,7 @@ compilePassDots (FileInfo * nested, widechar * source, CharsString * dest)
 }
 
 static int
-compileContextChars (FileInfo * nested, widechar * source, CharsString * dest)
+compilePassString (FileInfo * nested, widechar * source, CharsString * dest)
 {
   int k = 1;
   int kk = 0;
@@ -2080,7 +2086,7 @@ compilePassOpcode (FileInfo * nested, TranslationTableOpcode opcode)
 	    return 0;
 	  }
 	passInstructions[passIC++] = pass_string;
-	returned = compileContextChars (nested, &test.chars[k], &holdString);
+	returned = compilePassString (nested, &test.chars[k], &holdString);
 	goto testDoCharsDots;
       case pass_dots:
 	passInstructions[passIC++] = pass_dots;
@@ -2243,7 +2249,7 @@ compilePassOpcode (FileInfo * nested, TranslationTableOpcode opcode)
 	    return 0;
 	  }
 	passInstructions[passIC++] = pass_string;
-	returned = compileContextChars (nested, &action.chars[k],
+	returned = compilePassString (nested, &action.chars[k],
 					&holdString);
 	goto actionDoCharsDots;
       case pass_dots:
