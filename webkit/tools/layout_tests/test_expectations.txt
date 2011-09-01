@@ -6,5 +6,6 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
-BUG_LEVIN : fast/multicol/inherit-column-values.html = MISSING
-BUG_LEVIN : fast/multicol/initial-column-values.html = MISSING
+
+// rebaselined upstream already!
+BUG_LEVIN : http/tests/eventsource/existent-eventsource-status-error-iframe-crash.html = FAIL
