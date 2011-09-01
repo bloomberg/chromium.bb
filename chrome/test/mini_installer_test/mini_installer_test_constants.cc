@@ -70,14 +70,14 @@ const wchar_t kChromeDiffInstallerLocation[] =
 }  // namespace mini_installer_constants
 
 namespace switches {
+// Help.
+extern const char kInstallerHelp[] = "help";
+
 // Back up the profile.
 const char kInstallerTestBackup[] = "backup";
 
 // Control the build under test.
 const char kInstallerTestBuild[] = "build";
-
-// Uninstall before running the tests.
-const char kInstallerTestClean[] = "clean";
 
 // Force the installer tests to run, regardless of the current platform.
 const char kInstallerTestForce[] = "force";

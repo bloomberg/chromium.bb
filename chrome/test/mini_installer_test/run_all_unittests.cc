@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,19 +47,12 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   base::TestSuite test_suite(argc, argv);
-  if (command_line.HasSwitch(switches::kInstallerTestClean)) {
-    printf("Current version of Chrome will be uninstalled "
-           "from all levels before proceeding with tests.\n");
-  } else if (command_line.HasSwitch(switches::kInstallerTestBackup)) {
-    BackUpProfile(command_line.HasSwitch(
-        installer::switches::kChromeFrame));
-  } else {
+
+  if (command_line.HasSwitch(switches::kInstallerHelp)) {
     printf("This test needs command line arguments.\n");
-    printf("Usage: %ls -{clean|backup} [-build <version>] [-force] \n",
+    printf("Usage: %ls [-backup] [-build <version>] [-force] \n",
            command_line.GetProgram().value().c_str());
-    printf("-clean arg will uninstall your chrome at all levels"
-           " and also delete profile.\n"
-           "-backup arg will make a copy of User Data before uninstalling"
+    printf("-backup arg will make a copy of User Data before uninstalling"
            " your chrome at all levels. The copy will be named as"
            " User Data Copy.\n"
            "-build specifies the build to be tested, e.g., 3.0.195.24."
@@ -70,11 +63,15 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  if (command_line.HasSwitch(switches::kInstallerTestBackup)) {
+    BackUpProfile(command_line.HasSwitch(
+        installer::switches::kChromeFrame));
+  }
+
   if (base::win::GetVersion() < base::win::VERSION_VISTA ||
       command_line.HasSwitch(switches::kInstallerTestForce)) {
     return test_suite.Run();
-  } else {
-    printf("These tests don't run on this platform.\n");
-    return 0;
   }
+  printf("These tests don't run on this platform.\n");
+  return 0;
 }
