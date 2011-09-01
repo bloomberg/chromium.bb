@@ -41,27 +41,6 @@ source tools/llvm/common-tools.sh
 SetScriptPath "${NACL_ROOT}/tools/llvm/utman.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/hg-log"
 
-# Use upstream merging repository
-readonly UTMAN_UPSTREAM=true
-if ${UTMAN_UPSTREAM}; then
-  UTMAN_USE_MQ=false
-fi
-
-# Set to false to go back to compiling with the old pnacl-sfi branch
-readonly UTMAN_USE_MQ=${UTMAN_USE_MQ:-true}
-readonly UTMAN_RESET_MQ=${UTMAN_RESET_MQ:-true}
-
-# Ignore this variable. Its for helping jasonwkim merge
-# So a unique identifier for the branch in the MQ is composed of
-# (a) LLVM svn rev  (looks like svnXXXXXX)
-# (b) NaCl rev (looks like naclYYYY)
-# (c) Any other unique human readable mnemonic that one cares to use to \
-#     identify the branch.
-# PQ_REV_NAME_MOD is used to take care of cases (b) and (c)
-
-readonly PQ_REV_NAME_MOD=${PQ_REV_NAME_MOD:-"unused"}
-
-
 # NOTE: gcc and llvm have to be synchronized
 #       we have chosen toolchains which both are based on gcc-4.2.1
 
@@ -137,21 +116,14 @@ readonly TC_BUILD="${TC_ROOT}/hg-build-${LIBMODE}"
 
 # The location of sources (absolute)
 
-if ${UTMAN_UPSTREAM}; then
-  readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
-  readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
-  readonly TC_SRC_LLVM_GCC="${TC_SRC_UPSTREAM}/llvm-gcc"
-else
-  readonly TC_SRC_LLVM="${TC_SRC}/llvm/llvm-trunk"
-  readonly TC_SRC_LLVM_GCC="${TC_SRC}/llvm-gcc/llvm-gcc-4.2"
-fi
+readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
+readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
+readonly TC_SRC_LLVM_GCC="${TC_SRC_UPSTREAM}/llvm-gcc"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/libstdc++-v3"
 readonly TC_SRC_GOOGLE_PERFTOOLS="${TC_SRC}/google-perftools"
-readonly TC_SRC_LLVM_MQ_PATCHES="${TC_SRC}/llvm-mq-patches"
-readonly TC_SRC_LLVM_GCC_MQ_PATCHES="${TC_SRC}/llvm-gcc-mq-patches"
 
 
 # Unfortunately, binutils/configure generates this untracked file
@@ -239,53 +211,18 @@ else
 fi
 
 # Current milestones in each repo
-# hg-update-pnacl-sfi uses these
-if ${UTMAN_UPSTREAM}; then
-  readonly UPSTREAM_REV=12c5551e8e38
-else
-  readonly LLVM_REV=9ca0d1b53734
-  readonly LLVM_GCC_REV=e093fe8c5603
-fi
-# hg-update-non-llvm uses these
+readonly UPSTREAM_REV=12c5551e8e38
 readonly NEWLIB_REV=57d709868c78
 readonly BINUTILS_REV=2f1d9c8ef12d
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 
-# Update these revs when you want to experiment with rebasing to a newer
-# version of llvm and llvm-gcc
-# Mercurial Queues Repos for Merges
-# todo(jasonwkim): figure out why hg tag can not be pushed!
-if ${UTMAN_USE_MQ}; then
-  readonly LLVM_MQ_REV=${LLVM_MQ_REV:-"a0a52a3f1392"}
-  readonly LLVM_GCC_MQ_REV=${LLVM_GCC_MQ_REV:-"27b8475488ca"}
-
-  # Vendor Revs of llvm and llvm-gcc to which the qeues apply
-  # svn128002
-  readonly LLVM_QPARENT_REV=${LLVM_QPARENT_REV:-"1dd4ed44a6f8"}
-  # svn126872
-  readonly LLVM_GCC_QPARENT_REV=${LLVM_GCC_QPARENT_REV:-"3cde3ed75a27"}
-fi
-
-
 # Repositories
-if ${UTMAN_UPSTREAM}; then
-  readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
-else
-  readonly REPO_LLVM_GCC="nacl-llvm-branches.llvm-gcc-trunk"
-  readonly REPO_LLVM="nacl-llvm-branches.llvm-trunk"
-fi
-
+readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
 readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
 readonly REPO_GOOGLE_PERFTOOLS="nacl-llvm-branches.google-perftools"
-
-if ${UTMAN_USE_MQ}; then
-  readonly REPO_LLVM_MQ_PATCHES="nacl-llvm-branches.llvm-mq-patches"
-  readonly REPO_LLVM_GCC_MQ_PATCHES="nacl-llvm-branches.llvm-gcc-mq-patches"
-fi
-
 
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
 # bug that brakes the build if we do that.
@@ -373,25 +310,15 @@ STD_ENV_FOR_NEWLIB=(
 hg-info-all() {
   hg-pull-all
 
-  hg-info "${TC_SRC_LLVM}"       ${LLVM_REV}
-  hg-info "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
+  hg-info "${TC_SRC_UPSTREAM}"   ${UPSTREAM_REV}
   hg-info "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
   hg-info "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
   hg-info "${TC_SRC_GOOGLE_PERFTOOLS}" ${GOOGLE_PERFTOOLS_REV}
-  hg-info "${TC_SRC_LLVM_MQ_PATCHES}"  ${LLVM_MQ_REV}
-  hg-info "${TC_SRC_LLVM_GCC_MQ_PATCHES}"  ${LLVM_MQ_REV}
 }
 
-#@ hg-update-llvm-pnacl-sfi      - Update LLVM/LLVM-GCC repos without MQ
-hg-update-llvm-pnacl-sfi() {
-  hg-update-llvm-gcc
-  hg-update-llvm
-}
-
-#@ hg-update-non-llvm  - Update all repos to the latest stable rev,
-# other than LLVM and LLVM-GCC (they are handled separately via MQ)
-hg-update-non-llvm() {
+hg-update-all() {
+  hg-update-upstream
   hg-update-newlib
   hg-update-binutils
   hg-update-compiler-rt
@@ -399,25 +326,6 @@ hg-update-non-llvm() {
 }
 
 hg-assert-safe-to-update() {
-  local name="$1"
-  local dir="$2"
-  local rev="$3"
-
-  if ! hg-on-branch "${dir}" pnacl-sfi ; then
-    Banner "hg/${name} is not on branch pnacl-sfi"
-    exit -1
-  fi
-  hg-assert-safe-to-update-inner "$name" "$dir" "$rev"
-}
-
-hg-assert-safe-to-update-nosfi() {
-  local name="$1"
-  local dir="$2"
-  local rev="$3"
-  hg-assert-safe-to-update-inner "$name" "$dir" "$rev"
-}
-
-hg-assert-safe-to-update-inner() {
   local name="$1"
   local dir="$2"
   local rev="$3"
@@ -476,6 +384,7 @@ hg-update-common() {
   hg-bot-sanity "${name}" "${dir}"
 
   # Make sure it is safe to update
+  hg-assert-branch "${dir}" pnacl-sfi
   hg-assert-safe-to-update "${name}" "${dir}" "${rev}"
 
   if hg-at-revision "${dir}" "${rev}" ; then
@@ -485,39 +394,6 @@ hg-update-common() {
     hg-pull "${dir}"
     hg-update "${dir}" ${rev}
   fi
-}
-
-hg-update-nosfi() {
-  local name="$1"
-  local rev="$2"
-  local dir="$3"
-
-  # If this is a buildbot, do sanity checks here.
-  hg-bot-sanity "${name}" "${dir}"
-
-  # Make sure it is safe to update
-  hg-assert-safe-to-update-nosfi "${name}" "${dir}" "${rev}"
-
-  if hg-at-revision "${dir}" "${rev}" ; then
-    StepBanner "HG-UPDATE" "Repo ${name} already at ${rev}"
-  else
-    StepBanner "HG-UPDATE" "Updating ${name} to ${rev}"
-    hg-pull "${dir}"
-    hg-update "${dir}" ${rev}
-  fi
-}
-
-
-#@ hg-update-llvm-gcc    - Update LLVM-GCC to the stable revision
-hg-update-llvm-gcc() {
-  hg-check-if-using-old-repo "${TC_SRC_LLVM_GCC}"
-  hg-update-common "llvm-gcc" ${LLVM_GCC_REV} "${TC_SRC_LLVM_GCC}"
-}
-
-#@ hg-update-llvm        - Update LLVM to the stable revision
-hg-update-llvm() {
-  hg-check-if-using-old-repo "${TC_SRC_LLVM}"
-  hg-update-common "llvm" ${LLVM_REV} "${TC_SRC_LLVM}"
 }
 
 hg-update-upstream() {
@@ -554,34 +430,6 @@ hg-update-google-perftools() {
     "${TC_SRC_GOOGLE_PERFTOOLS}"
 }
 
-# Next two repos do not have a pnacl-sfi branch
-hg-update-llvm-mq-patches() {
-  hg-update-nosfi "llvm-mq-patches" ${LLVM_MQ_REV} \
-   "${TC_SRC_LLVM_MQ_PATCHES}"
-}
-
-hg-update-llvm-gcc-mq-patches() {
-  hg-update-nosfi "llvm-gcc-mq-patches" ${LLVM_GCC_MQ_REV} \
-   "${TC_SRC_LLVM_GCC_MQ_PATCHES}"
-}
-
-hg-check-if-using-old-repo() {
-  local repodir="$1"
-  if ${UTMAN_BUILDBOT}; then
-    if test -d "${repodir}/../.hg" ; then
-      local repodirparent=$(dirname "${repodir}")
-      StepBanner "Bot is still using the old repo structure ${repodir}"
-      rm -rf "${repodirparent}";
-    fi
-  else
-    if test -d "${repodir}/../.hg" ; then
-      StepBanner "You are is still using the old repo structure ${repodir}"
-      StepBanner "Perhaps you might want to do mv hg hg-old ?"
-      exit 1
-    fi
-  fi
-}
-
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
 #@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
@@ -593,18 +441,6 @@ hg-pull-all() {
   hg-pull-binutils
   hg-pull-compiler-rt
   hg-pull-google-perftools
-  hg-pull-llvm-mq-patches
-  hg-pull-llvm-gcc-mq-patches
-}
-
-hg-pull-llvm-gcc() {
-  hg-check-if-using-old-repo "${TC_SRC_LLVM_GCC}"
-  hg-pull "${TC_SRC_LLVM_GCC}"
-}
-
-hg-pull-llvm() {
-  hg-check-if-using-old-repo "${TC_SRC_LLVM}"
-  hg-pull "${TC_SRC_LLVM}"
 }
 
 hg-pull-newlib() {
@@ -623,42 +459,15 @@ hg-pull-google-perftools() {
   hg-pull "${TC_SRC_GOOGLE_PERFTOOLS}"
 }
 
-hg-pull-llvm-gcc-mq-patches() {
-  hg-pull "${TC_SRC_LLVM_GCC_MQ_PATCHES}"
-}
-
-hg-pull-llvm-mq-patches() {
-  hg-pull "${TC_SRC_LLVM_MQ_PATCHES}"
-}
-
 #@ hg-checkout-all       - check out mercurial repos needed to build toolchain
 #@                          (skips repos which are already checked out)
 hg-checkout-all() {
   StepBanner "HG-CHECKOUT-ALL"
-  if ${UTMAN_UPSTREAM}; then
-    hg-checkout-upstream
-  else
-    hg-checkout-llvm-gcc
-    hg-checkout-llvm
-  fi
+  hg-checkout-upstream
   hg-checkout-binutils
   hg-checkout-newlib
   hg-checkout-compiler-rt
   hg-checkout-google-perftools
-  if ${UTMAN_USE_MQ}; then
-    hg-checkout-llvm-mq-patches
-    hg-checkout-llvm-gcc-mq-patches
-  fi
-}
-
-hg-checkout-llvm-gcc() {
-  hg-check-if-using-old-repo "${TC_SRC_LLVM_GCC}"
-  hg-checkout "${REPO_LLVM_GCC}" "${TC_SRC_LLVM_GCC}" ${LLVM_GCC_REV}
-}
-
-hg-checkout-llvm() {
-  hg-check-if-using-old-repo  "${TC_SRC_LLVM}"
-  hg-checkout ${REPO_LLVM} "${TC_SRC_LLVM}" ${LLVM_REV}
 }
 
 hg-checkout-upstream() {
@@ -681,16 +490,6 @@ hg-checkout-compiler-rt() {
 hg-checkout-google-perftools() {
   hg-checkout ${REPO_GOOGLE_PERFTOOLS} "${TC_SRC_GOOGLE_PERFTOOLS}" \
     ${GOOGLE_PERFTOOLS_REV}
-}
-
-hg-checkout-llvm-mq-patches() {
-  hg-checkout ${REPO_LLVM_MQ_PATCHES} "${TC_SRC_LLVM_MQ_PATCHES}" \
-    ${LLVM_MQ_REV}
-}
-
-hg-checkout-llvm-gcc-mq-patches() {
-  hg-checkout ${REPO_LLVM_GCC_MQ_PATCHES} "${TC_SRC_LLVM_GCC_MQ_PATCHES}" \
-    ${LLVM_GCC_MQ_REV}
 }
 
 #@ hg-clean              - Remove all repos. (WARNING: local changes are lost)
@@ -787,18 +586,8 @@ everything() {
 
   hg-checkout-all
 
-  if ${UTMAN_USE_MQ}; then
-    StepBanner "Updating hg sources via MQ=${UTMAN_USE_MQ}";
-    setup-hg-mq
-  elif ${UTMAN_UPSTREAM}; then
-    StepBanner "Updating upstreaming repository"
-    hg-update-upstream
-  else
-    StepBanner "Updating all hg sources"
-    hg-update-llvm-pnacl-sfi
-  fi
-
-  hg-update-non-llvm
+  StepBanner "Updating upstreaming repository"
+  hg-update-all
   everything-post-hg
 }
 
@@ -3340,87 +3129,6 @@ verify-triple-build() {
 ######################################################################
 ######################################################################
 #
-# Hg MQ Magic
-#
-######################################################################
-######################################################################
-readonly GOOD_HG_VERSION="1.8.";
-check-hg-vers() {
-  local vers=$(hg --version | grep version |
-      sed -e 's/.*version \([0-9A-Za-z._-]*\).*/\1/g');
-  if ! echo "${vers}" | grep -q "${GOOD_HG_VERSION}"; then
-     StepBanner "You are using hg version ${vers}, but you need at least " \
-         "${GOOD_HG_VERSION}. Expect things to be strange."
-  else
-     StepBanner "You are using hg version ${vers}";
-  fi;
-}
-
-#@ setup-hg-mq - resets llvm and llvm-gcc repos to use MQ instead
-setup-hg-mq() {
-  check-hg-vers
-
-  if ${UTMAN_RESET_MQ}; then
-    StepBanner "Updating LLVM and LLVM-gcc to appropriate vendor branch"
-
-    if [ -e "${TC_SRC_LLVM}/.hg/patches" ]; then
-      StepBanner "Popping off existing patches in LLVM"
-      spushd "${TC_SRC_LLVM}";
-      hg qpop -a ;
-      spopd;
-    fi;
-
-    if [ -e "${TC_SRC_LLVM_GCC}/.hg/patches" ]; then
-      StepBanner "Popping off existing patches in LLVM-gcc"
-      spushd "${TC_SRC_LLVM_GCC}";
-      hg qpop -a ;
-      spopd;
-    fi;
-
-    hg-checkout ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_QPARENT_REV}
-    hg-checkout ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_QPARENT_REV}
-    hg-checkout-llvm-mq-patches
-    hg-checkout-llvm-gcc-mq-patches
-    hg-update-nosfi "llvm" ${LLVM_QPARENT_REV}    "${TC_SRC_LLVM}"
-    hg-update-nosfi "llvm-gcc" ${LLVM_GCC_QPARENT_REV} "${TC_SRC_LLVM_GCC}"
-    hg-update-llvm-mq-patches
-    hg-update-llvm-gcc-mq-patches
-    StepBanner "Forcing symlink to appropriate queue "
-    # rm first otherwise the symlink can wind up in the patch queue repo
-    rm -f "${TC_SRC_LLVM}/.hg/patches"
-    rm -f "${TC_SRC_LLVM_GCC}/.hg/patches"
-    ln -sf "${TC_SRC_LLVM_MQ_PATCHES}" "${TC_SRC_LLVM}/.hg/patches"
-    ln -sf "${TC_SRC_LLVM_GCC_MQ_PATCHES}" "${TC_SRC_LLVM_GCC}/.hg/patches"
-
-    StepBanner "Pushing the patch queues onto the vendor branches"
-    spushd "${TC_SRC_LLVM}";
-    hg qpush -a;
-    spopd;
-    spushd "${TC_SRC_LLVM_GCC}";
-    hg qpush -a;
-    spopd;
-
-    StepBanner "Patch Queues have been applied against vendor"
-    StepBanner "Cleaning all build directories"
-    clean
-    StepBanner "You may now execute utman.sh everything-post-hg"
-  else
-    StepBanner "Skipping the reset of the MQ repos"
-  fi
-}
-
-track-pnacl-sfi() {
-  ## readonly PQHELPER=PQHelper.pl
-  ##   which $PQHELPER || echo "Need to access PQHELPER.pl"
-  ## todo: write the routine that will automatically pull in
-  ## new commits to pnacl-sfi and push them in as patches for MQ
-  ## for llvm and llvm-gcc
-  echo "nothing here yet"
-}
-
-######################################################################
-######################################################################
-#
 # UTILITIES
 #
 ######################################################################
@@ -3433,9 +3141,7 @@ show-config() {
   echo "UTMAN_BUILDBOT:    ${UTMAN_BUILDBOT}"
   echo "UTMAN_CONCURRENCY: ${UTMAN_CONCURRENCY}"
   echo "UTMAN_DEBUG:       ${UTMAN_DEBUG}"
-  echo "UTMAN_USE_MQ:      ${UTMAN_USE_MQ}"
-  echo "UTMAN_RESET_MQ:    ${UTMAN_RESET_MQ}"
-  echo "PQ_REV_NAME_MOD:   ${PQ_REV_NAME_MOD}"
+  echo "LIBMODE:           ${LIBMODE}"
   Banner "Your Environment:"
   env | grep UTMAN
 }
