@@ -89,7 +89,7 @@ class InfobarTest(pyauto.PyUITest):
     """Verify geoLocation infobar."""
     url = self.GetFileURLForDataPath(  # triggers geolocation
         'geolocation', 'geolocation_on_load.html')
-    match_text='file:/// wants to track your physical location'
+    match_text='file:/// wants to track your physical location.'
     self.NavigateToURL(url)
     self.assertTrue(self.WaitForInfobarCount(1))
     self._VerifyGeolocationInfobar(windex=0, tab_index=0, match_text=match_text)
@@ -101,7 +101,7 @@ class InfobarTest(pyauto.PyUITest):
     """Verify GeoLocation inforbar in multiple tabs."""
     url = self.GetFileURLForDataPath(  # triggers geolocation
         'geolocation', 'geolocation_on_load.html')
-    match_text='file:/// wants to track your physical location'
+    match_text='file:/// wants to track your physical location.'
     for tab_index in range(1, 2):
       self.AppendTab(pyauto.GURL(url))
       self.assertTrue(
