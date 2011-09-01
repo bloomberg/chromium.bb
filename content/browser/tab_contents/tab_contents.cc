@@ -65,8 +65,7 @@
 // RenderViewHost dedicated to the new SiteInstance.  This works as follows:
 //
 // - Navigate determines whether the destination is cross-site, and if so,
-//   it creates a pending_render_view_host_ and moves into the PENDING
-//   RendererState.
+//   it creates a pending_render_view_host_.
 // - The pending RVH is "suspended," so that no navigation messages are sent to
 //   its renderer until the onbeforeunload JavaScript handler has a chance to
 //   run in the current RVH.
@@ -74,17 +73,17 @@
 //   that it has a pending cross-site request.  ResourceDispatcherHost will
 //   check for this when the response arrives.
 // - The current RVH runs its onbeforeunload handler.  If it returns false, we
-//   cancel all the pending logic and go back to NORMAL.  Otherwise we allow
-//   the pending RVH to send the navigation request to its renderer.
-// - ResourceDispatcherHost receives a ResourceRequest on the IO thread.  It
-//   checks CrossSiteRequestManager to see that the RVH responsible has a
-//   pending cross-site request, and then installs a CrossSiteEventHandler.
-// - When RDH receives a response, the BufferedEventHandler determines whether
-//   it is a download.  If so, it sends a message to the new renderer causing
-//   it to cancel the request, and the download proceeds in the download
-//   thread.  For now, we stay in a PENDING state (with a pending RVH) until
-//   the next DidNavigate event for this TabContents.  This isn't ideal, but it
-//   doesn't affect any functionality.
+//   cancel all the pending logic.  Otherwise we allow the pending RVH to send
+//   the navigation request to its renderer.
+// - ResourceDispatcherHost receives a ResourceRequest on the IO thread for the
+//   main resource load on the pending RVH. It checks CrossSiteRequestManager
+//   to see that it is a cross-site request, and installs a
+//   CrossSiteResourceHandler.
+// - When RDH receives a response, the BufferedResourceHandler determines
+//   whether it is a download.  If so, it sends a message to the new renderer
+//   causing it to cancel the request, and the download proceeds. For now, the
+//   pending RVH remains until the next DidNavigate event for this TabContents.
+//   This isn't ideal, but it doesn't affect any functionality.
 // - After RDH receives a response and determines that it is safe and not a
 //   download, it pauses the response to first run the old page's onunload
 //   handler.  It does this by asynchronously calling the OnCrossSiteResponse
@@ -95,7 +94,7 @@
 //   to the pending RVH.
 // - The pending renderer sends a FrameNavigate message that invokes the
 //   DidNavigate method.  This replaces the current RVH with the
-//   pending RVH and goes back to the NORMAL RendererState.
+//   pending RVH.
 // - The previous renderer is kept swapped out in RenderViewHostManager in case
 //   the user goes back.  The process only stays live if another tab is using
 //   it, but if so, the existing frame relationships will be maintained.
