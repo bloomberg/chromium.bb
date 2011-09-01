@@ -385,7 +385,7 @@ class ManifestVersionedSyncStage(BuilderStage):
     self.InitializeManifestManager()
     next_manifest = self.GetNextManifest()
     if not next_manifest:
-      print 'Manifest Revision: Nothing to build!'
+      print 'Found no work to do.'
       if ManifestVersionedSyncStage.manifest_manager.DidLastBuildSucceed():
         sys.exit(0)
       else:
@@ -465,8 +465,19 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
     internal = cbuildbot_config._IsInternalBuild(self._build_config['git_url'])
     if self._build_config['master']:
-      CommitQueueSyncStage.pool = validation_pool.ValidationPool.AcquirePool(
-        self._tracking_branch, internal, self._build_root)
+      try:
+        pool = validation_pool.ValidationPool.AcquirePool(
+            self._tracking_branch, internal, self._build_root)
+        # We only have work to do if there are changes to try.
+        if pool.changes:
+          CommitQueueSyncStage.pool = pool
+        else:
+          return None
+
+      except validation_pool.TreeIsClosedException as e:
+        cros_lib.Warning(str(e))
+        return None
+
       return self.manifest_manager.CreateNewCandidate(
           force_version=self._options.force_version, patches=self.pool.changes)
     else:
@@ -480,7 +491,9 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
   def _PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
     super(LKGMCandidateSyncStage, self)._PerformStage()
-    self.pool.ApplyPoolIntoRepo(self._build_root)
+    if not self.pool.ApplyPoolIntoRepo(self._build_root):
+      print 'No patches applied cleanly.  Found no work to do.'
+      sys.exit(0)
 
 
 class LKGMSyncStage(ManifestVersionedSyncStage):
