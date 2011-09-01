@@ -85,8 +85,7 @@ class RepoRepository(object):
   """
   DEFAULT_MANIFEST = 'default'
   # Use our own repo, in case android.kernel.org (the default location) is down.
-  _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL,
-              '--no-repo-verify']
+  _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
 
   def __init__(self, repo_url, directory, branch=None):
     self.repo_url = repo_url

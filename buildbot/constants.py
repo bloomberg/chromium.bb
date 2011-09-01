@@ -9,7 +9,7 @@ import os
 SOURCE_ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
 CROSUTILS_LIB_DIR = os.path.join(SOURCE_ROOT, 'src/scripts/lib')
 
-REPO_URL = 'http://git.chromium.org/external/tools/repo.git'
+REPO_URL = 'http://git.chromium.org/external/repo.git'
 
 GERRIT_PORT = '29418'
 GERRIT_INT_PORT = '29419'
