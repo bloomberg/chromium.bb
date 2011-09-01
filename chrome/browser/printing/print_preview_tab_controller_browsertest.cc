@@ -33,8 +33,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  scoped_refptr<printing::PrintPreviewTabController>
+     tab_controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
@@ -85,8 +85,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  scoped_refptr<printing::PrintPreviewTabController>
+     tab_controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
@@ -136,8 +136,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* tab_controller =
-      printing::PrintPreviewTabController::GetInstance();
+  scoped_refptr<printing::PrintPreviewTabController>
+     tab_controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.

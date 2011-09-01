@@ -37,8 +37,8 @@ TEST_F(PrintPreviewUITest, PrintPreviewData) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
+  scoped_refptr<printing::PrintPreviewTabController>
+      controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(controller);
 
   TabContentsWrapper* preview_tab =
@@ -48,8 +48,8 @@ TEST_F(PrintPreviewUITest, PrintPreviewData) {
   EXPECT_EQ(2, browser()->tab_count());
 
   PrintPreviewUI* preview_ui =
-      static_cast<PrintPreviewUI*>(preview_tab->web_ui());
-  ASSERT_TRUE(preview_ui);
+      reinterpret_cast<PrintPreviewUI*>(preview_tab->web_ui());
+  ASSERT_TRUE(preview_ui != NULL);
 
   scoped_refptr<RefCountedBytes> data;
   preview_ui->GetPrintPreviewDataForIndex(
@@ -97,8 +97,8 @@ TEST_F(PrintPreviewUITest, PrintPreviewDraftPages) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
+  scoped_refptr<printing::PrintPreviewTabController>
+      controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(controller);
 
   TabContentsWrapper* preview_tab =
@@ -108,8 +108,8 @@ TEST_F(PrintPreviewUITest, PrintPreviewDraftPages) {
   EXPECT_EQ(2, browser()->tab_count());
 
   PrintPreviewUI* preview_ui =
-      static_cast<PrintPreviewUI*>(preview_tab->web_ui());
-  ASSERT_TRUE(preview_ui);
+      reinterpret_cast<PrintPreviewUI*>(preview_tab->web_ui());
+  ASSERT_TRUE(preview_ui != NULL);
 
   scoped_refptr<RefCountedBytes> data;
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX, &data);
@@ -164,8 +164,8 @@ TEST_F(PrintPreviewUITest, GetCurrentPrintPreviewStatus) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
+  scoped_refptr<printing::PrintPreviewTabController>
+      controller(new printing::PrintPreviewTabController());
   ASSERT_TRUE(controller);
 
   TabContentsWrapper* preview_tab =
@@ -175,8 +175,8 @@ TEST_F(PrintPreviewUITest, GetCurrentPrintPreviewStatus) {
   EXPECT_EQ(2, browser()->tab_count());
 
   PrintPreviewUI* preview_ui =
-      static_cast<PrintPreviewUI*>(preview_tab->web_ui());
-  ASSERT_TRUE(preview_ui);
+      reinterpret_cast<PrintPreviewUI*>(preview_tab->web_ui());
+  ASSERT_TRUE(preview_ui != NULL);
 
   // Test with invalid |preview_ui_addr|.
   bool cancel = false;
