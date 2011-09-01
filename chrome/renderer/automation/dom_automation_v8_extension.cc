@@ -6,8 +6,9 @@
 
 #include "chrome/renderer/extensions/extension_base.h"
 #include "grit/renderer_resources.h"
+#include "v8/include/v8.h"
 
-const char* DomAutomationV8Extension::kName = "chrome/domautomation";
+const char kName[] = "chrome/domautomation";
 
 v8::Extension* DomAutomationV8Extension::Get() {
   static v8::Extension* extension =
