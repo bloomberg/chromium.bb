@@ -3097,7 +3097,6 @@
         'browser/sync/engine/syncproto_unittest.cc',
         'browser/sync/engine/verify_updates_command_unittest.cc',
         'browser/sync/internal_api/syncapi_mock.h',
-        'browser/sync/internal_api/syncapi_server_connection_manager_unittest.cc',
         'browser/sync/internal_api/syncapi_unittest.cc',
         'browser/sync/js/js_arg_list_unittest.cc',
         'browser/sync/js/js_event_details_unittest.cc',

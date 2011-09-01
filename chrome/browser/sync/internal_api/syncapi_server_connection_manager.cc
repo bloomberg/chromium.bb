@@ -8,36 +8,30 @@
 #include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/common/net/http_return.h"
-#include "net/base/net_errors.h"
 
 using browser_sync::HttpResponse;
 
 namespace sync_api {
 
-SyncAPIBridgedConnection::SyncAPIBridgedConnection(
+SyncAPIBridgedPost::SyncAPIBridgedPost(
     browser_sync::ServerConnectionManager* scm,
     HttpPostProviderFactory* factory)
-    : Connection(scm), factory_(factory) {
-  post_provider_ = factory_->Create();
+    : Post(scm), factory_(factory) {
 }
 
-SyncAPIBridgedConnection::~SyncAPIBridgedConnection() {
-  DCHECK(post_provider_);
-  factory_->Destroy(post_provider_);
-  post_provider_ = NULL;
-}
+SyncAPIBridgedPost::~SyncAPIBridgedPost() {}
 
-bool SyncAPIBridgedConnection::Init(const char* path,
-                                    const std::string& auth_token,
-                                    const std::string& payload,
-                                    HttpResponse* response) {
+bool SyncAPIBridgedPost::Init(const char* path,
+                              const std::string& auth_token,
+                              const std::string& payload,
+                              HttpResponse* response) {
   std::string sync_server;
   int sync_server_port = 0;
   bool use_ssl = false;
   GetServerParams(&sync_server, &sync_server_port, &use_ssl);
   std::string connection_url = MakeConnectionURL(sync_server, path, use_ssl);
 
-  HttpPostProviderInterface* http = post_provider_;
+  HttpPostProviderInterface* http = factory_->Create();
   http->SetUserAgent(scm_->user_agent().c_str());
   http->SetURL(connection_url.c_str(), sync_server_port);
 
@@ -60,8 +54,8 @@ bool SyncAPIBridgedConnection::Init(const char* path,
   int response_code = 0;
   if (!http->MakeSynchronousPost(&os_error_code, &response_code)) {
     VLOG(1) << "Http POST failed, error returns: " << os_error_code;
-    response->server_status = os_error_code == net::ERR_ABORTED ?
-        HttpResponse::CONNECTION_UNAVAILABLE : HttpResponse::IO_ERROR;
+    response->server_status = HttpResponse::IO_ERROR;
+    factory_->Destroy(http);
     return false;
   }
 
@@ -83,12 +77,10 @@ bool SyncAPIBridgedConnection::Init(const char* path,
 
   // Write the content into our buffer.
   buffer_.assign(http->GetResponseContent(), http->GetResponseContentLength());
-  return true;
-}
 
-void SyncAPIBridgedConnection::Abort() {
-  DCHECK(post_provider_);
-  post_provider_->Abort();
+  // We're done with the HttpPostProvider.
+  factory_->Destroy(http);
+  return true;
 }
 
 SyncAPIServerConnectionManager::SyncAPIServerConnectionManager(
@@ -104,9 +96,9 @@ SyncAPIServerConnectionManager::SyncAPIServerConnectionManager(
 
 SyncAPIServerConnectionManager::~SyncAPIServerConnectionManager() {}
 
-browser_sync::ServerConnectionManager::Connection*
-SyncAPIServerConnectionManager::MakeConnection() {
-  return new SyncAPIBridgedConnection(this, post_provider_factory_.get());
+browser_sync::ServerConnectionManager::Post*
+SyncAPIServerConnectionManager::MakePost() {
+  return new SyncAPIBridgedPost(this, post_provider_factory_.get());
 }
 
 }  // namespace sync_api
