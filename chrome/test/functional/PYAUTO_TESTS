@@ -147,6 +147,8 @@
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
+      # crbug.com/95031
+      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/85598
       '-ntp.NTPTest.testGetAppsWhenInstallApp',
       '-ntp.NTPTest.testLaunchAppFullScreen',
