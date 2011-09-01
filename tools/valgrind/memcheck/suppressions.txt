@@ -5393,13 +5393,6 @@
    fun:_ZN8remoting34ClientSessionTest_UnpressKeys_Test8TestBodyEv
 }
 {
-   bug_95061
-   Memcheck:Addr4
-   fun:_ZNKSs6lengthEv
-   fun:_ZN12browser_sync23ServerConnectionManager16PostBufferToPathEPKNS0_16PostBufferParamsERKSsS5_PNS_25ScopedServerStatusWatcherE
-   fun:_ZN8sync_api49SyncAPIServerConnectionManagerTest_AbortPost_Test8TestBodyEv
-}
-{
    bug_95106_a
    Memcheck:Leak
    fun:_Znw*

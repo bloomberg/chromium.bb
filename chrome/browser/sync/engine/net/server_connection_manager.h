@@ -145,7 +145,7 @@ class ServerConnectionManager : public base::NonThreadSafe {
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response
   struct PostBufferParams {
-    const std::string& buffer_in;
+    std::string buffer_in;
     std::string* buffer_out;
     HttpResponse* response;
     RequestTimingInfo* timing_info;
