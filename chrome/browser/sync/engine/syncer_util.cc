@@ -332,23 +332,32 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   // conflict, else the syncer gets stuck. As such, we return
   // CONFLICT_ENCRYPTION, which is treated as a non-blocking conflict. See the
   // description in syncer_types.h.
-  if (!entry->Get(SERVER_IS_DIR)) {
-    if (specifics.has_encrypted() &&
-        !cryptographer->CanDecrypt(specifics.encrypted())) {
-      // We can't decrypt this node yet.
-      VLOG(1) << "Received an undecryptable "
-              << syncable::ModelTypeToString(entry->GetServerModelType())
-              << " update, returning encryption_conflict.";
+  if (specifics.has_encrypted() &&
+      !cryptographer->CanDecrypt(specifics.encrypted())) {
+    // We can't decrypt this node yet.
+    VLOG(1) << "Received an undecryptable "
+            << syncable::ModelTypeToString(entry->GetServerModelType())
+            << " update, returning encryption_conflict.";
+    return CONFLICT_ENCRYPTION;
+  } else if (specifics.HasExtension(sync_pb::password) &&
+             entry->Get(UNIQUE_SERVER_TAG).empty()) {
+    // Passwords use their own legacy encryption scheme.
+    const sync_pb::PasswordSpecifics& password =
+        specifics.GetExtension(sync_pb::password);
+    if (!cryptographer->CanDecrypt(password.encrypted())) {
+      VLOG(1) << "Received an undecryptable password update, returning "
+              << "encryption_conflict.";
       return CONFLICT_ENCRYPTION;
-    } else if (specifics.HasExtension(sync_pb::password)) {
-      // Passwords use their own legacy encryption scheme.
-      const sync_pb::PasswordSpecifics& password =
-          specifics.GetExtension(sync_pb::password);
-      if (!cryptographer->CanDecrypt(password.encrypted())) {
-        VLOG(1) << "Received an undecryptable password update, returning "
-                << "encryption_conflict.";
-        return CONFLICT_ENCRYPTION;
-      }
+    }
+  } else {
+    if (specifics.has_encrypted()) {
+      VLOG(2) << "Received a decryptable "
+              << syncable::ModelTypeToString(entry->GetServerModelType())
+              << " update, applying normally.";
+    } else {
+      VLOG(2) << "Received an unencrypted "
+              << syncable::ModelTypeToString(entry->GetServerModelType())
+              << " update, applying normally.";
     }
   }
 
