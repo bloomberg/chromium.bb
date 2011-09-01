@@ -498,7 +498,8 @@ const wchar_t* ShellUtil::kFileAssociations[] = {L".htm", L".html", L".shtml",
 const wchar_t* ShellUtil::kBrowserProtocolAssociations[] = {L"ftp", L"http",
     L"https", NULL};
 const wchar_t* ShellUtil::kPotentialProtocolAssociations[] = {L"ftp", L"http",
-    L"https", L"mailto", L"webcal", NULL};
+    L"https", L"irc", L"mailto", L"mms", L"news", L"nntp", L"sms", L"smsto",
+    L"tel", L"urn", L"webcal", NULL};
 const wchar_t* ShellUtil::kRegUrlProtocol = L"URL Protocol";
 
 bool ShellUtil::AdminNeededForRegistryCleanup(BrowserDistribution* dist,
