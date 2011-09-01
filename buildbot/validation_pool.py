@@ -161,7 +161,7 @@ class ValidationPool(object):
       self.HandleApplicationFailure(non_applied_changes)
       self.changes = list(set(self.changes) - set(non_applied_changes))
 
-    return len(non_applied_changes) != len(self.changes)
+    return len(self.changes) > 0
 
   def SubmitPool(self):
     """Commits changes to Gerrit from Pool.
