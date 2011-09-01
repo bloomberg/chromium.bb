@@ -23,7 +23,7 @@ namespace printing {
 
 // This class uses Cairo graphics library to generate PDF stream and stores
 // rendering results in a string buffer.
-class PdfMetafileCairo : public Metafile {
+class PRINTING_EXPORT PdfMetafileCairo : public Metafile {
  public:
   PdfMetafileCairo();
   virtual ~PdfMetafileCairo();

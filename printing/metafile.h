@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "printing/printing_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_WIN)
@@ -37,7 +38,7 @@ namespace printing {
 
 // This class creates a graphics context that renders into a data stream
 // (usually PDF or EMF).
-class Metafile {
+class PRINTING_EXPORT Metafile {
  public:
   virtual ~Metafile() {}
 

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "printing/printing_export.h"
 #include "ui/gfx/size.h"
 
 class FilePath;
@@ -20,7 +21,7 @@ class Metafile;
 
 // Lightweight raw-bitmap management. The image, once initialized, is immutable.
 // The main purpose is testing image contents.
-class Image {
+class PRINTING_EXPORT Image {
  public:
   // Creates the image from the given file on disk.  Uses extension to
   // defer file type. PNG and EMF (on Windows) currently supported.

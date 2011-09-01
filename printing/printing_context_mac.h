@@ -19,7 +19,7 @@ class NSPrintInfo;
 
 namespace printing {
 
-class PrintingContextMac : public PrintingContext {
+class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
  public:
   explicit PrintingContextMac(const std::string& app_locale);
   virtual ~PrintingContextMac();

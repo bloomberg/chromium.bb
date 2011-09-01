@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "printing/printing_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -18,7 +19,7 @@ class PrintSettings;
 
 // Initializes the header footer strings in the PrintSettings object from the
 // provided |job_settings|.
-class PrintSettingsInitializer {
+class PRINTING_EXPORT PrintSettingsInitializer {
  public:
   static void InitHeaderFooterStrings(
       const base::DictionaryValue& job_settings,

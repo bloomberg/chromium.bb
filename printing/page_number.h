@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ class PrintSettings;
 
 // Represents a page series following the array of page ranges defined in a
 // PrintSettings.
-class PageNumber {
+class PRINTING_EXPORT PageNumber {
  public:
   // Initializes the page to the first page in the settings's range or 0.
   PageNumber(const PrintSettings& settings, int document_page_count);

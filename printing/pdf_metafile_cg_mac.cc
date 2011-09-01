@@ -52,7 +52,7 @@ PdfMetafileCg::PdfMetafileCg()
 }
 
 PdfMetafileCg::~PdfMetafileCg() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (pdf_doc_ && thread_pdf_docs.Get()) {
     // Transfer ownership to the pool.
     CFSetAddValue(thread_pdf_docs.Get(), pdf_doc_);

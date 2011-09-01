@@ -17,7 +17,7 @@
 
 namespace printing {
 
-class PrintingContextWin : public PrintingContext {
+class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
  public:
   explicit PrintingContextWin(const std::string& app_locale);
   ~PrintingContextWin();
@@ -40,7 +40,7 @@ class PrintingContextWin : public PrintingContext {
   virtual void ReleaseContext();
   virtual gfx::NativeDrawingContext context() const;
 
-#if defined(UNIT_TEST)
+#if defined(UNIT_TEST) || defined(PRINTING_IMPLEMENTATION)
   // Sets a fake PrintDlgEx function pointer in tests.
   void SetPrintDialog(HRESULT (__stdcall *print_dialog_func)(LPPRINTDLGEX)) {
     print_dialog_func_ = print_dialog_func;

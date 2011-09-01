@@ -8,6 +8,7 @@
       'target_name': 'appcache',
       'type': 'static_library',
       'dependencies': [
+        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/sql/sql.gyp:sql',
       ],

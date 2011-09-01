@@ -5,6 +5,7 @@
 #ifndef PRINTING_METAFILE_SKIA_WRAPPER_H_
 #define PRINTING_METAFILE_SKIA_WRAPPER_H_
 
+#include "printing/printing_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkCanvas;
@@ -17,7 +18,7 @@ class Metafile;
 // on an SkCanvas.  The ownership of the metafile is not affected and it
 // is the caller's responsibility to ensure that the metafile remains valid
 // as long as the canvas.
-class MetafileSkiaWrapper : public SkRefCnt {
+class PRINTING_EXPORT MetafileSkiaWrapper : public SkRefCnt {
  public:
   static void SetMetafileOnCanvas(SkCanvas* canvas, Metafile* metafile);
 

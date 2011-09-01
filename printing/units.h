@@ -1,9 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef PRINTING_UNITS_H_
 #define PRINTING_UNITS_H_
+
+#include "printing/printing_export.h"
 
 namespace printing {
 
@@ -19,29 +21,30 @@ const int kPointsPerInch = 72;
 const int kPixelsPerInch = 96;
 
 // Converts from one unit system to another using integer arithmetics.
-int ConvertUnit(int value, int old_unit, int new_unit);
+PRINTING_EXPORT int ConvertUnit(int value, int old_unit, int new_unit);
 
 // Converts from one unit system to another using doubles.
-double ConvertUnitDouble(double value, double old_unit, double new_unit);
+PRINTING_EXPORT double ConvertUnitDouble(double value, double old_unit,
+                                         double new_unit);
 
 // Converts from 0.001 inch unit to 0.00001 meter.
-int ConvertMilliInchToHundredThousanthMeter(int milli_inch);
+PRINTING_EXPORT int ConvertMilliInchToHundredThousanthMeter(int milli_inch);
 
 // Converts from 0.00001 meter unit to 0.001 inch.
-int ConvertHundredThousanthMeterToMilliInch(int cmm);
+PRINTING_EXPORT int ConvertHundredThousanthMeterToMilliInch(int cmm);
 
 // Converts from 1 pixel to 1 point using integers.
-int ConvertPixelsToPoint(int pixels);
+PRINTING_EXPORT int ConvertPixelsToPoint(int pixels);
 
 // Converts from 1 pixel to 1 point using doubles.
-double ConvertPixelsToPointDouble(double pixels);
+PRINTING_EXPORT double ConvertPixelsToPointDouble(double pixels);
 
 // Converts from 1 point to 1 pixel using doubles.
 double ConvertPointsToPixelDouble(double points);
 
 // Splits the horizontal width equally into segments with an interstice
 // between each segment. Returns the width of a segment.
-double GetHeaderFooterSegmentWidth(double page_width);
+PRINTING_EXPORT double GetHeaderFooterSegmentWidth(double page_width);
 
 }  // namespace printing
 

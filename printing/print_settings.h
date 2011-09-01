@@ -16,7 +16,7 @@
 namespace printing {
 
 // OS-independent print settings.
-class PrintSettings {
+class PRINTING_EXPORT PrintSettings {
  public:
   PrintSettings();
   ~PrintSettings();

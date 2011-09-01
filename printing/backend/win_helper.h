@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include <xpsprint.h>
 
 #include "base/string16.h"
+#include "printing/printing_export.h"
 
 // These are helper functions for dealing with Windows Printing.
 namespace printing {
@@ -21,7 +22,7 @@ namespace printing {
 // this would mean having to add that to every binary that links with
 // printing.lib (which is a LOT of binaries). So choosing the GetProcAddress
 // route instead).
-class XPSModule {
+class PRINTING_EXPORT XPSModule {
  public:
   // All the other methods can ONLY be called after a successful call to Init.
   // Init can be called many times and by multiple threads.
@@ -60,7 +61,7 @@ class XPSModule {
 };
 
 // See comments in cc file explaining why we need this.
-class ScopedXPSInitializer {
+class PRINTING_EXPORT ScopedXPSInitializer {
  public:
   ScopedXPSInitializer();
   ~ScopedXPSInitializer();
@@ -74,7 +75,7 @@ class ScopedXPSInitializer {
 // Wrapper class to wrap the XPS Print APIs (these are different from the PTxxx
 // which deal with the XML Print Schema). This is needed because these
 // APIs are only available on Windows 7 and higher.
-class XPSPrintModule {
+class PRINTING_EXPORT XPSPrintModule {
  public:
   // All the other methods can ONLY be called after a successful call to Init.
   // Init can be called many times and by multiple threads.

@@ -35,7 +35,8 @@ class PrintingContext;
 // will have write access. Sensible functions are protected by a lock.
 // Warning: Once a page is loaded, it cannot be replaced. Pages may be discarded
 // under low memory conditions.
-class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
+class PRINTING_EXPORT PrintedDocument
+    : public base::RefCountedThreadSafe<PrintedDocument> {
  public:
   // The cookie shall be unique and has a specific relationship with its
   // originating source and settings.

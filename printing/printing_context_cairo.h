@@ -18,7 +18,7 @@ namespace printing {
 class Metafile;
 class PrintDialogGtkInterface;
 
-class PrintingContextCairo : public PrintingContext {
+class PRINTING_EXPORT PrintingContextCairo : public PrintingContext {
  public:
   explicit PrintingContextCairo(const std::string& app_locale);
   virtual ~PrintingContextCairo();

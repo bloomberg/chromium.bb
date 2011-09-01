@@ -20,7 +20,7 @@ namespace printing {
 struct PdfMetafileSkiaData;
 
 // This class uses Skia graphics library to generate a PDF document.
-class PdfMetafileSkia : public Metafile {
+class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
  public:
   PdfMetafileSkia();
   virtual ~PdfMetafileSkia();

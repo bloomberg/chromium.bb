@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'printing',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -18,7 +18,10 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
-        '../ui/ui.gyp:ui',  # Only required for Font support.
+        '../ui/ui.gyp:ui',
+      ],
+      'defines': [
+        'PRINTING_IMPLEMENTATION',
       ],
       'include_dirs': [
         '..',
@@ -166,6 +169,7 @@
         'printing',
         '../testing/gtest.gyp:gtest',
         '../base/base.gyp:test_support_base',
+        '../ui/ui.gyp:ui',
       ],
       'sources': [
         'emf_win_unittest.cc',
