@@ -6,7 +6,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -21,13 +20,12 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   void VerifyThemeInfoBarAndUndoInstall() {
     TabContentsWrapper* tab = browser()->GetSelectedTabContentsWrapper();
     ASSERT_TRUE(tab);
-    InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-    ASSERT_EQ(1U, infobar_helper->infobar_count());
-    ConfirmInfoBarDelegate* delegate = infobar_helper->
-        GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+    ASSERT_EQ(1U, tab->infobar_count());
+    ConfirmInfoBarDelegate* delegate =
+        tab->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
-    ASSERT_EQ(0U, infobar_helper->infobar_count());
+    ASSERT_EQ(0U, tab->infobar_count());
   }
 
   const Extension* GetTheme() const {

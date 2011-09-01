@@ -5,7 +5,6 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -167,5 +166,5 @@ void AlternateNavURLFetcher::ShowInfobarIfPossible() {
   infobar_contents_ = controller_->tab_contents();
   StoreActiveEntryUniqueID(infobar_contents_);
   TabContentsWrapper::GetCurrentWrapperForContents(infobar_contents_)->
-      infobar_tab_helper()->AddInfoBar(this);
+      AddInfoBar(this);
 }

@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
@@ -321,17 +320,15 @@ void PluginObserver::OnCrashedPlugin(const FilePath& plugin_path) {
   }
   gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
-  tab_contents_->infobar_tab_helper()->AddInfoBar(
-      new SimpleAlertInfoBarDelegate(
-          tab_contents(),
-          icon,
-          l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
-          true));
+  tab_contents_->AddInfoBar(new SimpleAlertInfoBarDelegate(tab_contents(),
+      icon,
+      l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
+      true));
 }
 
 void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,
                                              const GURL& update_url) {
-  tab_contents_->infobar_tab_helper()->AddInfoBar(update_url.is_empty() ?
+  tab_contents_->AddInfoBar(update_url.is_empty() ?
       static_cast<InfoBarDelegate*>(new BlockedPluginInfoBarDelegate(
           tab_contents(), name)) :
       new OutdatedPluginInfoBarDelegate(tab_contents(), name, update_url));

@@ -6,7 +6,6 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/browser_thread.h"
@@ -77,7 +76,7 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     infobar_ = new DownloadRequestInfoBarDelegate(tab, this);
     TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
-    wrapper->infobar_tab_helper()->AddInfoBar(infobar_);
+    wrapper->AddInfoBar(infobar_);
   }
 }
 

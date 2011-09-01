@@ -9,7 +9,6 @@
 
 #include "chrome/browser/tab_contents/infobar_container.h"
 
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/infobar.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -52,14 +51,11 @@ void InfoBarContainer::ChangeTabContents(TabContentsWrapper* contents) {
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
                    tc_source);
 
-    for (size_t i = 0;
-         i < tab_contents_->infobar_tab_helper()->infobar_count();
-         ++i) {
+    for (size_t i = 0; i < tab_contents_->infobar_count(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
       // OnInfoBarAnimated() for each infobar.
       AddInfoBar(
-          tab_contents_->infobar_tab_helper()->GetInfoBarDelegateAt(i)->
-              CreateInfoBar(tab_contents_),
+          tab_contents_->GetInfoBarDelegateAt(i)->CreateInfoBar(tab_contents_),
           i, false, NO_CALLBACK);
     }
   }

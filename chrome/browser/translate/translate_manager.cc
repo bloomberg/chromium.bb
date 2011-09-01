@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/language_state.h"
@@ -513,10 +512,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   }
 
   // Prompts the user if he/she wants the page translated.
-  wrapper->infobar_tab_helper()->AddInfoBar(
-      TranslateInfoBarDelegate::CreateDelegate(
-        TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab, language_code,
-        target_lang));
+  wrapper->AddInfoBar(TranslateInfoBarDelegate::CreateDelegate(
+      TranslateInfoBarDelegate::BEFORE_TRANSLATE, tab, language_code,
+      target_lang));
 }
 
 void TranslateManager::InitiateTranslationPosted(
@@ -765,9 +763,9 @@ void TranslateManager::ShowInfoBar(TabContents* tab,
     return;
   if (old_infobar) {
     // There already is a translate infobar, simply replace it.
-    wrapper->infobar_tab_helper()->ReplaceInfoBar(old_infobar, infobar);
+    wrapper->ReplaceInfoBar(old_infobar, infobar);
   } else {
-    wrapper->infobar_tab_helper()->AddInfoBar(infobar);
+    wrapper->AddInfoBar(infobar);
   }
 }
 
@@ -803,11 +801,10 @@ TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   if (!wrapper)
     return NULL;
-  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
 
-  for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
+  for (size_t i = 0; i < wrapper->infobar_count(); ++i) {
     TranslateInfoBarDelegate* delegate =
-        infobar_helper->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
+        wrapper->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
     if (delegate)
       return delegate;
   }

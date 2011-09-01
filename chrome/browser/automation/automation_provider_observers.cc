@@ -33,7 +33,6 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
@@ -1373,7 +1372,7 @@ void InfoBarCountObserver::Observe(int type,
 }
 
 void InfoBarCountObserver::CheckCount() {
-  if (tab_contents_->infobar_tab_helper()->infobar_count() != target_count_)
+  if (tab_contents_->infobar_count() != target_count_)
     return;
 
   if (automation_) {
@@ -2289,11 +2288,10 @@ AutofillFormSubmittedObserver::~AutofillFormSubmittedObserver() {
   pdm_->RemoveObserver(this);
 
   if (tab_contents_) {
-    InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
     InfoBarDelegate* infobar = NULL;
-    if (infobar_helper->infobar_count() > 0 &&
-        (infobar = infobar_helper->GetInfoBarDelegateAt(0))) {
-      infobar_helper->RemoveInfoBar(infobar);
+    if (tab_contents_->infobar_count() > 0 &&
+        (infobar = tab_contents_->GetInfoBarDelegateAt(0))) {
+      tab_contents_->RemoveInfoBar(infobar);
     }
   }
 }
@@ -2319,14 +2317,20 @@ void AutofillFormSubmittedObserver::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED);
-
   // Accept in the infobar.
   tab_contents_ = Source<TabContentsWrapper>(source).ptr();
   InfoBarDelegate* infobar = NULL;
-  infobar = tab_contents_->infobar_tab_helper()->GetInfoBarDelegateAt(0);
-
-  ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
-  if (!confirm_infobar) {
+  if (!(infobar = tab_contents_->GetInfoBarDelegateAt(0))) {
+    if (automation_) {
+      AutomationJSONReply(
+          automation_, reply_message_.release()).SendError(
+              "Could not identify the infobar delegate.");
+    }
+    delete this;
+    return;
+  }
+  ConfirmInfoBarDelegate* confirm_infobar;
+  if (!(confirm_infobar = infobar->AsConfirmInfoBarDelegate())) {
     if (automation_) {
       AutomationJSONReply(
           automation_, reply_message_.release()).SendError(
@@ -2335,8 +2339,7 @@ void AutofillFormSubmittedObserver::Observe(
     delete this;
     return;
   }
-
-  if (!confirm_infobar->Accept()) {
+  if (!(confirm_infobar->Accept())) {
     if (automation_) {
       AutomationJSONReply(
           automation_, reply_message_.release()).SendError(

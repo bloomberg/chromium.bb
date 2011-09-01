@@ -6,7 +6,6 @@
 
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
@@ -116,9 +115,8 @@ void PasswordManagerDelegateImpl::FillPasswordForm(
 
 void PasswordManagerDelegateImpl::AddSavePasswordInfoBar(
     PasswordFormManager* form_to_save) {
-  tab_contents_->infobar_tab_helper()->AddInfoBar(
-      new SavePasswordInfoBarDelegate(
-          tab_contents_->tab_contents(), form_to_save));
+  tab_contents_->AddInfoBar(new SavePasswordInfoBarDelegate(
+      tab_contents_->tab_contents(), form_to_save));
 }
 
 Profile* PasswordManagerDelegateImpl::GetProfileForPasswordManager() {

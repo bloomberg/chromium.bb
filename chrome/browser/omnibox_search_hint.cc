@@ -12,7 +12,6 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -202,7 +201,7 @@ void OmniboxSearchHint::Observe(int type,
 }
 
 void OmniboxSearchHint::ShowInfoBar() {
-  tab_->infobar_tab_helper()->AddInfoBar(new HintInfoBar(this));
+  tab_->AddInfoBar(new HintInfoBar(this));
 }
 
 void OmniboxSearchHint::ShowEnteringQuery() {

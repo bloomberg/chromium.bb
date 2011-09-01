@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "base/logging.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/infobar_container.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "ui/base/animation/slide_animation.h"
@@ -105,7 +104,7 @@ void InfoBar::RemoveSelf() {
   // |owner_| can be NULL here, e.g. because the user clicks the close button
   // when the infobar is already closing.
   if (delegate_ && owner_)
-    owner_->infobar_tab_helper()->RemoveInfoBar(delegate_);
+    owner_->RemoveInfoBar(delegate_);
 }
 
 void InfoBar::SetBarTargetHeight(int height) {

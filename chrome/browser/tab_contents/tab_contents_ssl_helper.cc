@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl_client_certificate_selector.h"
@@ -151,10 +150,9 @@ TabContentsSSLHelper::SSLAddCertData::~SSLAddCertData() {
 void TabContentsSSLHelper::SSLAddCertData::ShowInfoBar(
     InfoBarDelegate* delegate) {
   if (infobar_delegate_)
-    tab_contents_->infobar_tab_helper()->ReplaceInfoBar(infobar_delegate_,
-                                                        delegate);
+    tab_contents_->ReplaceInfoBar(infobar_delegate_, delegate);
   else
-    tab_contents_->infobar_tab_helper()->AddInfoBar(delegate);
+    tab_contents_->AddInfoBar(delegate);
   infobar_delegate_ = delegate;
 }
 

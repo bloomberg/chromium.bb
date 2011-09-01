@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -259,10 +258,9 @@ void NotifyNotDefaultBrowserTask::Run() {
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
   TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
-  if (!tab || tab->infobar_tab_helper()->infobar_count() > 0)
+  if (!tab || tab->infobar_count() > 0)
     return;
-  tab->infobar_tab_helper()->AddInfoBar(
-      new DefaultBrowserInfoBarDelegate(tab->tab_contents()));
+  tab->AddInfoBar(new DefaultBrowserInfoBarDelegate(tab->tab_contents()));
 }
 
 
@@ -1106,7 +1104,7 @@ void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     // The last session didn't exit cleanly. Show an infobar to the user
     // so that they can restore if they want. The delegate deletes itself when
     // it is closed.
-    tab->infobar_tab_helper()->AddInfoBar(
+    tab->AddInfoBar(
         new SessionCrashedInfoBarDelegate(profile_, tab->tab_contents()));
   }
 }
@@ -1132,13 +1130,10 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
   }
 
   if (bad_flag) {
-    tab->infobar_tab_helper()->AddInfoBar(
-        new SimpleAlertInfoBarDelegate(
-            tab->tab_contents(), NULL,
-            l10n_util::GetStringFUTF16(
-                IDS_BAD_FLAGS_WARNING_MESSAGE,
-                UTF8ToUTF16(std::string("--") + bad_flag)),
-            false));
+    tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab->tab_contents(), NULL,
+        l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
+                                   UTF8ToUTF16(std::string("--") + bad_flag)),
+        false));
   }
 }
 
@@ -1202,10 +1197,9 @@ void BrowserInit::LaunchWithProfile::
       "http://dev.chromium.org/dnscertprovenancechecking";
   string16 message = l10n_util::GetStringUTF16(
       IDS_DNS_CERT_PROVENANCE_CHECKING_WARNING_MESSAGE);
-  tab->infobar_tab_helper()->AddInfoBar(
-      new LearnMoreInfoBar(tab->tab_contents(),
-                           message,
-                           GURL(kLearnMoreURL)));
+  tab->AddInfoBar(new LearnMoreInfoBar(tab->tab_contents(),
+                                       message,
+                                       GURL(kLearnMoreURL)));
 }
 
 void BrowserInit::LaunchWithProfile::AddObsoleteSystemInfoBarIfNecessary(
@@ -1226,10 +1220,9 @@ void BrowserInit::LaunchWithProfile::AddObsoleteSystemInfoBarIfNecessary(
     // Link to an article in the help center on minimum system requirements.
     const char* kLearnMoreURL =
         "http://www.google.com/support/chrome/bin/answer.py?answer=95411";
-    tab->infobar_tab_helper()->AddInfoBar(
-        new LearnMoreInfoBar(tab->tab_contents(),
-                             message,
-                             GURL(kLearnMoreURL)));
+    tab->AddInfoBar(new LearnMoreInfoBar(tab->tab_contents(),
+                                         message,
+                                         GURL(kLearnMoreURL)));
   }
 #endif
 }

@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -374,11 +373,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // Reload the extension using the "crashed extension" infobar while the task
   // manager is still visible. Make sure we don't crash and the extension
   // gets reloaded and noticed in the task manager.
-  InfoBarTabHelper* infobar_helper =
-      browser()->GetSelectedTabContentsWrapper()->infobar_tab_helper();
-  ASSERT_EQ(1U, infobar_helper->infobar_count());
-  ConfirmInfoBarDelegate* delegate = infobar_helper->
-      GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+  TabContentsWrapper* current_tab = browser()->GetSelectedTabContentsWrapper();
+  ASSERT_EQ(1U, current_tab->infobar_count());
+  ConfirmInfoBarDelegate* delegate =
+      current_tab->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate);
   delegate->Accept();
   TaskManagerBrowserTestUtil::WaitForResourceChange(3);

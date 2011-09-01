@@ -5,7 +5,6 @@
 #include "chrome/browser/chrome_plugin_message_filter.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_download_helper.h"
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/plugin_observer.h"
@@ -107,10 +106,9 @@ void ChromePluginMessageFilter::HandleMissingPluginStatus(
       host->delegate()->GetAsTabContents());
   if (!tcw)
     return;
-  InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
 
   if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
-    infobar_helper->AddInfoBar(
+    tcw->AddInfoBar(
         new PluginInstallerInfoBarDelegate(
             host->delegate()->GetAsTabContents(), window));
     return;
@@ -118,10 +116,10 @@ void ChromePluginMessageFilter::HandleMissingPluginStatus(
 
   DCHECK_EQ(webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD,
             status);
-  for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
-    InfoBarDelegate* delegate = infobar_helper->GetInfoBarDelegateAt(i);
+  for (size_t i = 0; i < tcw->infobar_count(); ++i) {
+    InfoBarDelegate* delegate = tcw->GetInfoBarDelegateAt(i);
     if (delegate->AsPluginInstallerInfoBarDelegate() != NULL) {
-      infobar_helper->RemoveInfoBar(delegate);
+      tcw->RemoveInfoBar(delegate);
       return;
     }
   }
@@ -130,5 +128,5 @@ void ChromePluginMessageFilter::HandleMissingPluginStatus(
   // Linux: http://crbug.com/10952
   // Mac: http://crbug.com/17392
   NOTIMPLEMENTED();
-#endif  // OS_WIN
+#endif  // OS_WIN}
 }

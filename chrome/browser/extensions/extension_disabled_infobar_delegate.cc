@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -185,8 +184,8 @@ void ShowExtensionDisabledUI(ExtensionService* service, Profile* profile,
   if (!tab_contents)
     return;
 
-  tab_contents->infobar_tab_helper()->AddInfoBar(
-      new ExtensionDisabledInfobarDelegate(tab_contents, service, extension));
+  tab_contents->AddInfoBar(new ExtensionDisabledInfobarDelegate(
+      tab_contents, service, extension));
 }
 
 void ShowExtensionDisabledDialog(ExtensionService* service, Profile* profile,

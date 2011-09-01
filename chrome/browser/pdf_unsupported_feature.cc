@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -156,9 +155,9 @@ void OpenUsingReader(TabContentsWrapper* tab,
 
   if (new_delegate) {
     if (old_delegate) {
-      tab->infobar_tab_helper()->ReplaceInfoBar(old_delegate, new_delegate);
+      tab->ReplaceInfoBar(old_delegate, new_delegate);
     } else {
-      tab->infobar_tab_helper()->AddInfoBar(new_delegate);
+      tab->AddInfoBar(new_delegate);
     }
   }
 }
@@ -387,6 +386,5 @@ void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
     }
   }
 
-  tab->infobar_tab_helper()->AddInfoBar(
-      new PDFUnsupportedFeatureInfoBarDelegate(tab, reader_group));
+  tab->AddInfoBar(new PDFUnsupportedFeatureInfoBarDelegate(tab, reader_group));
 }

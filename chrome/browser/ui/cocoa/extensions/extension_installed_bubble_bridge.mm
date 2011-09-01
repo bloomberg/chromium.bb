@@ -6,7 +6,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -44,7 +43,7 @@ static void ShowGenericExtensionInstalledInfoBar(
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
   InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
       wrapper->tab_contents(), new gfx::Image(new SkBitmap(icon)), msg, true);
-  wrapper->infobar_tab_helper()->AddInfoBar(delegate);
+  wrapper->AddInfoBar(delegate);
 }
 
 namespace browser {

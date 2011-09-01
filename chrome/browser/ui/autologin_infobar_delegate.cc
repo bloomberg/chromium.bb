@@ -10,7 +10,6 @@
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -250,7 +249,7 @@ void AutoLoginInfoBarDelegate::Observe(int type,
                                        const NotificationDetails& details) {
   if (type == content::NOTIFICATION_LOAD_STOP) {
     // The wrapper takes ownership of this delegate.
-    tab_contents_wrapper_->infobar_tab_helper()->AddInfoBar(this);
+    tab_contents_wrapper_->AddInfoBar(this);
     registrar_.RemoveAll();
   } else if (type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
     // The tab contents was destroyed before the naviagation completed, so

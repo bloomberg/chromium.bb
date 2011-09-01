@@ -13,7 +13,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
@@ -466,7 +465,7 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBar(int render_process_id,
             tab_contents, this, render_process_id, render_view_id, i->bridge_id,
             i->requesting_frame,
             profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-        wrapper->infobar_tab_helper()->AddInfoBar(i->infobar_delegate);
+        wrapper->AddInfoBar(i->infobar_delegate);
       }
       break;
     }
@@ -490,7 +489,7 @@ GeolocationInfoBarQueueController::PendingInfoBarRequests::iterator
   // asynchronously.
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  wrapper->infobar_tab_helper()->RemoveInfoBar(i->infobar_delegate);
+  wrapper->RemoveInfoBar(i->infobar_delegate);
   return ++i;
 }
 

@@ -6,8 +6,9 @@
 
 #include "base/utf_string_conversions.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
@@ -19,9 +20,10 @@
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_tab_helper.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/intents/web_intent_data.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager_delegate_impl.h"
@@ -31,11 +33,17 @@
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_view_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/remoting/firewall_traversal_observer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#include "chrome/browser/sync/glue/synced_tab_delegate.h"
+#include "chrome/browser/tab_contents/infobar.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
+#include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -52,8 +60,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_details.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/notification_service.h"
 #include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
@@ -200,6 +212,7 @@ const size_t kPerScriptFontDefaultsLength = arraysize(kPerScriptFontDefaults);
 TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     : TabContentsObserver(contents),
       delegate_(NULL),
+      infobars_enabled_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           synced_tab_delegate_(new TabContentsWrapperSyncedTabDelegate(this))),
       in_destructor_(false),
@@ -220,7 +233,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
-  infobar_tab_helper_.reset(new InfoBarTabHelper(this));
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
@@ -286,8 +298,13 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 TabContentsWrapper::~TabContentsWrapper() {
   in_destructor_ = true;
 
-  // Need to tear down infobars before the TabContents goes away.
-  infobar_tab_helper_.reset();
+  // Destroy all remaining InfoBars.  It's important to not animate here so that
+  // we guarantee that we'll delete all delegates before we do anything else.
+  //
+  // TODO(pkasting): If there is no InfoBarContainer, this leaks all the
+  // InfoBarDelegates.  This will be fixed once we call CloseSoon() directly on
+  // Infobars.
+  RemoveAllInfoBars(false);
 }
 
 PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
@@ -504,6 +521,8 @@ void TabContentsWrapper::RenderViewCreated(RenderViewHost* render_view_host) {
 }
 
 void TabContentsWrapper::RenderViewGone() {
+  RemoveAllInfoBars(true);
+
   // Tell the view that we've crashed so it can prepare the sad tab page.
   // Only do this if we're not in browser shutdown, so that TabContents
   // objects that are not in a browser (e.g., HTML dialogs) and thus are
@@ -525,6 +544,10 @@ bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Snapshot, OnSnapshot)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PDFHasUnsupportedFeature,
                         OnPDFHasUnsupportedFeature)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidBlockDisplayingInsecureContent,
+                        OnDidBlockDisplayingInsecureContent)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidBlockRunningInsecureContent,
+                        OnDidBlockRunningInsecureContent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -541,6 +564,24 @@ void TabContentsWrapper::Observe(int type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
+      DCHECK(&tab_contents_->controller() ==
+             Source<NavigationController>(source).ptr());
+
+      content::LoadCommittedDetails& committed_details =
+          *(Details<content::LoadCommittedDetails>(details).ptr());
+
+      // NOTE: It is not safe to change the following code to count upwards or
+      // use iterators, as the RemoveInfoBar() call synchronously modifies our
+      // delegate list.
+      for (size_t i = infobars_.size(); i > 0; --i) {
+        InfoBarDelegate* delegate = GetInfoBarDelegateAt(i - 1);
+        if (delegate->ShouldExpire(committed_details))
+          RemoveInfoBar(delegate);
+      }
+
+      break;
+    }
     case chrome::NOTIFICATION_GOOGLE_URL_UPDATED:
       UpdateAlternateErrorPageURL(render_view_host());
       break;
@@ -578,6 +619,67 @@ void TabContentsWrapper::Observe(int type,
   }
 }
 
+void TabContentsWrapper::AddInfoBar(InfoBarDelegate* delegate) {
+  if (!infobars_enabled_) {
+    delegate->InfoBarClosed();
+    return;
+  }
+
+  for (size_t i = 0; i < infobars_.size(); ++i) {
+    if (GetInfoBarDelegateAt(i)->EqualsDelegate(delegate)) {
+      delegate->InfoBarClosed();
+      return;
+    }
+  }
+
+  infobars_.push_back(delegate);
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+      Source<TabContentsWrapper>(this), Details<InfoBarAddedDetails>(delegate));
+
+  // Add ourselves as an observer for navigations the first time a delegate is
+  // added. We use this notification to expire InfoBars that need to expire on
+  // page transitions.
+  if (infobars_.size() == 1) {
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+                   Source<NavigationController>(&tab_contents_->controller()));
+  }
+}
+
+void TabContentsWrapper::RemoveInfoBar(InfoBarDelegate* delegate) {
+  RemoveInfoBarInternal(delegate, true);
+}
+
+void TabContentsWrapper::ReplaceInfoBar(InfoBarDelegate* old_delegate,
+                                        InfoBarDelegate* new_delegate) {
+  if (!infobars_enabled_) {
+    AddInfoBar(new_delegate);  // Deletes the delegate.
+    return;
+  }
+
+  size_t i;
+  for (i = 0; i < infobars_.size(); ++i) {
+    if (GetInfoBarDelegateAt(i) == old_delegate)
+      break;
+  }
+  DCHECK_LT(i, infobars_.size());
+
+  infobars_.insert(infobars_.begin() + i, new_delegate);
+
+  old_delegate->clear_owner();
+  InfoBarReplacedDetails replaced_details(old_delegate, new_delegate);
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
+      Source<TabContentsWrapper>(this),
+      Details<InfoBarReplacedDetails>(&replaced_details));
+
+  infobars_.erase(infobars_.begin() + i + 1);
+}
+
+InfoBarDelegate* TabContentsWrapper::GetInfoBarDelegateAt(size_t index) {
+  return infobars_[index];
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Internal helpers
 
@@ -590,6 +692,33 @@ void TabContentsWrapper::OnSnapshot(const SkBitmap& bitmap) {
 
 void TabContentsWrapper::OnPDFHasUnsupportedFeature() {
   PDFHasUnsupportedFeature(this);
+}
+
+void TabContentsWrapper::OnDidBlockDisplayingInsecureContent() {
+  // At most one infobar and do not supersede the stronger running content bar.
+  for (size_t i = 0; i < infobars_.size(); ++i) {
+    if (GetInfoBarDelegateAt(i)->AsInsecureContentInfoBarDelegate())
+      return;
+  }
+  AddInfoBar(new InsecureContentInfoBarDelegate(this,
+      InsecureContentInfoBarDelegate::DISPLAY));
+}
+
+void TabContentsWrapper::OnDidBlockRunningInsecureContent() {
+  // At most one infobar superseding any weaker displaying content bar.
+  for (size_t i = 0; i < infobars_.size(); ++i) {
+    InsecureContentInfoBarDelegate* delegate =
+        GetInfoBarDelegateAt(i)->AsInsecureContentInfoBarDelegate();
+    if (delegate) {
+      if (delegate->type() != InsecureContentInfoBarDelegate::RUN) {
+        ReplaceInfoBar(delegate, new InsecureContentInfoBarDelegate(this,
+            InsecureContentInfoBarDelegate::RUN));
+      }
+      return;
+    }
+  }
+  AddInfoBar(new InsecureContentInfoBarDelegate(this,
+      InsecureContentInfoBarDelegate::RUN));
 }
 
 GURL TabContentsWrapper::GetAlternateErrorPageURL() const {
@@ -640,6 +769,41 @@ void TabContentsWrapper::UpdateSafebrowsingDetectionHost() {
       new ChromeViewMsg_SetClientSidePhishingDetection(routing_id(),
                                                        safe_browsing));
 #endif
+}
+
+void TabContentsWrapper::RemoveInfoBarInternal(InfoBarDelegate* delegate,
+                                               bool animate) {
+  if (!infobars_enabled_) {
+    DCHECK(infobars_.empty());
+    return;
+  }
+
+  size_t i;
+  for (i = 0; i < infobars_.size(); ++i) {
+    if (GetInfoBarDelegateAt(i) == delegate)
+      break;
+  }
+  DCHECK_LT(i, infobars_.size());
+  InfoBarDelegate* infobar = infobars_[i];
+
+  infobar->clear_owner();
+  InfoBarRemovedDetails removed_details(infobar, animate);
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+      Source<TabContentsWrapper>(this),
+      Details<InfoBarRemovedDetails>(&removed_details));
+
+  infobars_.erase(infobars_.begin() + i);
+  // Remove ourselves as an observer if we are tracking no more InfoBars.
+  if (infobars_.empty()) {
+    registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+        Source<NavigationController>(&tab_contents_->controller()));
+  }
+}
+
+void TabContentsWrapper::RemoveAllInfoBars(bool animate) {
+  while (!infobars_.empty())
+    RemoveInfoBarInternal(GetInfoBarDelegateAt(infobar_count() - 1), animate);
 }
 
 void TabContentsWrapper::ExitFullscreenMode() {
