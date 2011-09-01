@@ -39,8 +39,9 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   static MachBroker* GetInstance();
 
   // Performs any necessary setup that cannot happen in the constructor.
-  // Clients MUST call this method before fork()ing any children.
-  void PrepareForFork();
+  // Callers MUST acquire the lock given by GetLock() before calling this
+  // method (and release the lock afterwards).
+  void EnsureRunning();
 
   struct MachInfo {
     MachInfo() : mach_task_(MACH_PORT_NULL) {}
@@ -69,7 +70,8 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   void InvalidatePid(base::ProcessHandle pid);
 
   // The lock that protects this MachBroker object.  Clients MUST acquire and
-  // release this lock around calls to PlaceholderForPid() and FinalizePid().
+  // release this lock around calls to EnsureRunning(), PlaceholderForPid(),
+  // and FinalizePid().
   base::Lock& GetLock();
 
   // Returns the Mach port name to use when sending or receiving messages.

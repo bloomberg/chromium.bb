@@ -128,7 +128,9 @@ MachBroker::MachBroker() : listener_thread_started_(false) {
 
 MachBroker::~MachBroker() {}
 
-void MachBroker::PrepareForFork() {
+void MachBroker::EnsureRunning() {
+  lock_.AssertAcquired();
+
   if (!listener_thread_started_) {
     listener_thread_started_ = true;
 
