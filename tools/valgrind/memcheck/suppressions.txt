@@ -5399,6 +5399,32 @@
    fun:_ZN12browser_sync23ServerConnectionManager16PostBufferToPathEPKNS0_16PostBufferParamsERKSsS5_PNS_25ScopedServerStatusWatcherE
    fun:_ZN8sync_api49SyncAPIServerConnectionManagerTest_AbortPost_Test8TestBodyEv
 }
+{
+   bug_95106_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3WTF20ThreadIdentifierData10initializeEj
+   fun:_ZN3WTF13currentThreadEv
+   fun:_ZN3WTF20initializeMainThreadEv
+   fun:_ZN6WebKit10initializeEPNS_21WebKitPlatformSupportE
+   fun:_ZN12WebKitThread20InternalWebKitThread4InitEv
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
+{
+   bug_95106_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEE3setEPS1_
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEcvPS1_Ev
+   fun:_ZN3WTF14ThreadSpecificINS_13WTFThreadDataEEdeEv
+   fun:_ZN3WTF13wtfThreadDataEv
+   fun:_ZN3WTF19initializeThreadingEv
+   fun:_ZN6WebKit10initializeEPNS_21WebKitPlatformSupportE
+   fun:_ZN12WebKitThread20InternalWebKitThread4InitEv
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
