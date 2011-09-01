@@ -36,6 +36,7 @@ runner = trusted_env.ComponentProgram(
                 'nacl_base',
                 'imc',
                 'container',
+                'nacl_fault_inject',
                 'platform',
                 'platform_qual_lib',
                 'gio',

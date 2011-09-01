@@ -236,32 +236,48 @@ struct timezone {
 # include <inttypes.h>
 
 # if __native_client__
+#  define NACL_PRIdPTR PRId32
+#  define NACL_PRIiPTR PRIi32
+#  define NACL_PRIoPTR PRIo32
+#  define NACL_PRIuPTR PRIu32
 #  define NACL_PRIxPTR PRIx32
 #  define NACL_PRIXPTR PRIX32
-#  define NACL_PRIdPTR PRId32
 # else
+#  define NACL_PRIdPTR PRIdPTR
+#  define NACL_PRIiPTR PRIiPTR
+#  define NACL_PRIoPTR PRIoPTR
+#  define NACL_PRIuPTR PRIuPTR
 #  define NACL_PRIxPTR PRIxPTR
 #  define NACL_PRIXPTR PRIXPTR
-#  define NACL_PRIdPTR PRIdPTR
 # endif
 
 # define NACL_PRId64 PRId64
+# define NACL_PRIi64 PRIi64
+# define NACL_PRIo64 PRIo64
 # define NACL_PRIu64 PRIu64
 # define NACL_PRIx64 PRIx64
 # define NACL_PRIX64 PRIX64
 
+# define NACL_PRId32 PRId32
+# define NACL_PRIi32 PRIi32
+# define NACL_PRIo32 PRIo32
+# define NACL_PRIu32 PRIu32
 # define NACL_PRIx32 PRIx32
 # define NACL_PRIX32 PRIX32
-# define NACL_PRId32 PRId32
-# define NACL_PRIu32 PRIu32
 
 # define NACL_PRId16 PRId16
+# define NACL_PRIi16 PRIi16
+# define NACL_PRIo16 PRIo16
 # define NACL_PRIu16 PRIu16
 # define NACL_PRIx16 PRIx16
+# define NACL_PRIX16 PRIX16
 
 # define NACL_PRId8 PRId8
+# define NACL_PRIi8 PRIi8
+# define NACL_PRIo8 PRIo8
 # define NACL_PRIu8 PRIu8
 # define NACL_PRIx8 PRIx8
+# define NACL_PRIX8 PRIX8
 
 # if NACL_OSX
 /*

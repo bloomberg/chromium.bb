@@ -277,6 +277,7 @@ sel_ldr_libs = ['sel',
                 'nacl_base',
                 'imc',
                 'container',
+                'nacl_fault_inject',
                 'platform',
                 'platform_qual_lib',
                 VALIDATOR_LIB,
@@ -309,6 +310,7 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
                                      'env_cleanser',
                                      'nacl_perf_counter',
                                      'gio_wrapped_desc',
+                                     'nacl_fault_inject',
                                      'platform',
                                      ])
   env.Requires(SEL_LDR_NODE, crt)
@@ -364,6 +366,7 @@ if (not env.CrossToolsBuild() and
                   'nacl_perf_counter',
                   'nacl_base',
                   'imc',
+                  'nacl_fault_inject',
                   'platform',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
@@ -382,7 +385,8 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
       ['format_string_test.c'],
       EXTRA_LIBS=['sel',
                   'env_cleanser',
-                  'nacl_perf_counter'])
+                  'nacl_perf_counter',
+                  ])
   env.Requires(format_string_test_exe, crt)
 
   node = env.CommandTest(
@@ -418,6 +422,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_perf_counter',
                   'nacl_base',
                   'imc',
+                  'nacl_fault_inject',
                   'platform',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
@@ -454,6 +459,7 @@ nacl_sync_cond_test_exe = env.ComponentProgram(
                 'nacl_perf_counter',
                 'nacl_base',
                 'imc',
+                'nacl_fault_inject',
                 'platform',
                 VALIDATOR_LIB,
                 ] + DEBUG_LIBS)
@@ -488,6 +494,7 @@ if (not env.Bit('coverage_enabled') and
                                                      'env_cleanser',
                                                      'nacl_perf_counter',
                                                      'gio_wrapped_desc',
+                                                     'nacl_fault_inject',
                                                      'platform',
                                                      ])
   node = env.CommandTest('nacl_signal_unittest.out',
@@ -505,6 +512,7 @@ if env.Bit('posix'):
                                                'env_cleanser',
                                                'nacl_perf_counter',
                                                'gio_wrapped_desc',
+                                               'nacl_fault_inject',
                                                'platform',
                                                ])
   node = env.CommandTest('nacl_signal_frame_test.out',
@@ -516,7 +524,10 @@ if env.Bit('posix'):
 if env.Bit('windows') and env.Bit('target_x86_64'):
   test_prog = env.ComponentProgram('patch_ntdll_test',
                                    'win/exception_patch/ntdll_test.c',
-                                   EXTRA_LIBS=['sel', 'platform'])
+                                   EXTRA_LIBS=['sel',
+                                               'nacl_fault_inject',
+                                               'platform',
+                                               ])
   node = env.CommandTest(
       'patch_ntdll_test.out',
       command=[test_prog],
@@ -547,6 +558,7 @@ check_test_exe = env.ComponentProgram('nacl_check_test',
                                                   'env_cleanser',
                                                   'nacl_perf_counter',
                                                   'gio_wrapped_desc',
+                                                  'nacl_fault_inject',
                                                   'platform',
                                                   ])
 node = env.CommandTest(
@@ -664,6 +676,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_perf_counter',
                   'nacl_base',
                   'imc',
+                  'nacl_fault_inject',
                   'platform',
                   'nacl_xdr',
                   'container',
@@ -816,6 +829,7 @@ if (not env.CrossToolsBuild() and
                   'nacl_perf_counter',
                   'nacl_base',
                   'imc',
+                  'nacl_fault_inject',
                   'platform',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)

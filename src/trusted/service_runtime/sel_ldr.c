@@ -28,6 +28,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
+#include "native_client/src/trusted/fault_injection/fault_injection.h"
+
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 
 #include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
@@ -964,7 +966,8 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   free(nap->aux_info);
   nap->aux_info = aux;
 
-  suberr = NaClAppLoadFile(load_src, nap);
+  suberr = NACL_FI_VAL("load_module", NaClErrorCode,
+                       NaClAppLoadFile(load_src, nap));
   (*NACL_VTBL(Gio, load_src)->Close)(load_src);
   (*NACL_VTBL(Gio, load_src)->Dtor)(load_src);
 
