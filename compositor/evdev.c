@@ -48,7 +48,6 @@ evdev_process_key(struct evdev_input_device *device,
                         struct input_event *e, int value, int time)
 {
 	switch (e->code) {
-	case BTN_TOUCH:
 	case BTN_TOOL_PEN:
 	case BTN_TOOL_RUBBER:
 	case BTN_TOOL_BRUSH:
@@ -65,6 +64,11 @@ evdev_process_key(struct evdev_input_device *device,
 		}
 		break;
 
+	case BTN_TOUCH:
+		/* Treat BTN_TOUCH from devices that only have BTN_TOUCH as
+		 * BTN_LEFT */
+		e->code = BTN_LEFT;
+		/* Intentional fallthrough! */
 	case BTN_LEFT:
 	case BTN_RIGHT:
 	case BTN_MIDDLE:
