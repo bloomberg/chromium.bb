@@ -87,7 +87,7 @@ class ChromeTests:
     valgrind_test_script = os.path.join(script_dir, "valgrind_test.py")
     self._command_preamble = ["--source_dir=%s" % (self._source_dir)]
 
-  def _DefaultCommand(self, tool, module, exe=None, valgrind_test_args=None):
+  def _DefaultCommand(self, tool, exe=None, valgrind_test_args=None):
     '''Generates the default command array that most tests will use.'''
     if exe and common.IsWindows():
       exe = exe + '.exe'
@@ -195,7 +195,7 @@ class ChromeTests:
 
   def SimpleTest(self, module, name, valgrind_test_args=None, cmd_args=None):
     tool = valgrind_test.CreateTool(self._options.valgrind_tool)
-    cmd = self._DefaultCommand(tool, module, name, valgrind_test_args)
+    cmd = self._DefaultCommand(tool, name, valgrind_test_args)
     self._ReadGtestFilterFile(tool, name, cmd)
     if cmd_args:
       cmd.extend(["--"])
@@ -328,7 +328,7 @@ class ChromeTests:
     # to avoid valgrinding python.
     # Start by building the valgrind_test.py commandline.
     tool = valgrind_test.CreateTool(self._options.valgrind_tool)
-    cmd = self._DefaultCommand(tool, "webkit")
+    cmd = self._DefaultCommand(tool)
     cmd.append("--trace_children")
     cmd.append("--indirect")
     cmd.append("--ignore_exit_code")
