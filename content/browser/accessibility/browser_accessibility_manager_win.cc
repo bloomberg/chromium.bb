@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,33 +57,49 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     BrowserAccessibility* node) {
   LONG event_id = EVENT_MIN;
   switch (type) {
-    case ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
+    case ViewHostMsg_AccEvent::ACTIVE_DESCENDANT_CHANGED:
+      event_id = IA2_EVENT_ACTIVE_DESCENDANT_CHANGED;
+      break;
+    case ViewHostMsg_AccEvent::CHECK_STATE_CHANGED:
       event_id = EVENT_OBJECT_STATECHANGE;
       break;
-    case ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_CHILDREN_CHANGED:
+    case ViewHostMsg_AccEvent::CHILDREN_CHANGED:
       event_id = EVENT_OBJECT_REORDER;
       break;
-    case ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_FOCUS_CHANGED:
+    case ViewHostMsg_AccEvent::FOCUS_CHANGED:
       event_id = EVENT_OBJECT_FOCUS;
       break;
-    case ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_LOAD_COMPLETE:
+    case ViewHostMsg_AccEvent::LOAD_COMPLETE:
       event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
       break;
-    case ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_VALUE_CHANGED:
+    case ViewHostMsg_AccEvent::VALUE_CHANGED:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
-    case ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED:
+    case ViewHostMsg_AccEvent::SELECTED_TEXT_CHANGED:
       event_id = IA2_EVENT_TEXT_CARET_MOVED;
       break;
-    default:
-      NOTREACHED();
+    case ViewHostMsg_AccEvent::LIVE_REGION_CHANGED:
+      event_id = EVENT_OBJECT_REORDER;
       break;
+    case ViewHostMsg_AccEvent::TEXT_INSERTED:
+      event_id = IA2_EVENT_TEXT_INSERTED;
+      break;
+    case ViewHostMsg_AccEvent::TEXT_REMOVED:
+      event_id = IA2_EVENT_TEXT_REMOVED;
+      break;
+    case ViewHostMsg_AccEvent::OBJECT_SHOW:
+      event_id = EVENT_OBJECT_SHOW;
+      break;
+    case ViewHostMsg_AccEvent::OBJECT_HIDE:
+      event_id = EVENT_OBJECT_HIDE;
+      break;
+    case ViewHostMsg_AccEvent::ALERT:
+      event_id = EVENT_SYSTEM_ALERT;
+      break;
+    default:
+      // Not all WebKit accessibility events result in a Windows
+      // accessibility notification.
+      return;
   }
 
   NotifyWinEvent(event_id, GetParentView(), OBJID_CLIENT, node->child_id());

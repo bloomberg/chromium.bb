@@ -47,25 +47,67 @@
 #ifndef CONTENT_COMMON_VIEW_MESSAGES_H_
 #define CONTENT_COMMON_VIEW_MESSAGES_H_
 
-struct ViewHostMsg_AccessibilityNotification_Type {
+struct ViewHostMsg_AccEvent {
   enum Value {
+    // The active descendant of a node has changed.
+    ACTIVE_DESCENDANT_CHANGED,
+
+    // An alert appeared.
+    ALERT,
+
     // The node checked state has changed.
-    NOTIFICATION_TYPE_CHECK_STATE_CHANGED,
+    CHECK_STATE_CHANGED,
 
     // The node tree structure has changed.
-    NOTIFICATION_TYPE_CHILDREN_CHANGED,
+    CHILDREN_CHANGED,
 
     // The node in focus has changed.
-    NOTIFICATION_TYPE_FOCUS_CHANGED,
+    FOCUS_CHANGED,
+
+    // Page layout has completed.
+    LAYOUT_COMPLETE,
+
+    // Content within a part of the page marked as a live region changed.
+    LIVE_REGION_CHANGED,
 
     // The document node has loaded.
-    NOTIFICATION_TYPE_LOAD_COMPLETE,
+    LOAD_COMPLETE,
 
-    // The node value has changed.
-    NOTIFICATION_TYPE_VALUE_CHANGED,
+    // A menu list value changed.
+    MENU_LIST_VALUE_CHANGED,
+
+    // An object was shown.
+    OBJECT_SHOW,
+
+    // An object was hidden.
+    OBJECT_HIDE,
+
+    // The number of rows in a grid or tree control changed.
+    ROW_COUNT_CHANGED,
+
+    // A row in a grid or tree control was collapsed.
+    ROW_COLLAPSED,
+
+    // A row in a grid or tree control was expanded.
+    ROW_EXPANDED,
+
+    // The document was scrolled to an anchor node.
+    SCROLLED_TO_ANCHOR,
+
+    // One or more selected children of this node have changed.
+    SELECTED_CHILDREN_CHANGED,
 
     // The text cursor or selection changed.
-    NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED,
+    SELECTED_TEXT_CHANGED,
+
+    // Text was inserted in a node with text content.
+    TEXT_INSERTED,
+
+    // Text was removed in a node with text content.
+    TEXT_REMOVED,
+
+    // The node value has changed.
+    VALUE_CHANGED,
   };
 };
 
@@ -160,7 +202,7 @@ IPC_ENUM_TRAITS(NavigationGesture)
 IPC_ENUM_TRAITS(PageZoom::Function)
 IPC_ENUM_TRAITS(RendererPreferencesHintingEnum)
 IPC_ENUM_TRAITS(RendererPreferencesSubpixelRenderingEnum)
-IPC_ENUM_TRAITS(ViewHostMsg_AccessibilityNotification_Type::Value)
+IPC_ENUM_TRAITS(ViewHostMsg_AccEvent::Value)
 IPC_ENUM_TRAITS(ViewHostMsg_RunFileChooser_Mode::Value)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
 IPC_ENUM_TRAITS(ViewMsg_StopFinding_Params::Action)
@@ -171,6 +213,8 @@ IPC_ENUM_TRAITS(WebKit::WebTextDirection)
 IPC_ENUM_TRAITS(ui::TextInputType)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
+IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::BoolAttribute)
+IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::FloatAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::IntAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::Role)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::State)
@@ -374,11 +418,14 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebAccessibility)
   IPC_STRUCT_TRAITS_MEMBER(location)
   IPC_STRUCT_TRAITS_MEMBER(string_attributes)
   IPC_STRUCT_TRAITS_MEMBER(int_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(float_attributes)
+  IPC_STRUCT_TRAITS_MEMBER(bool_attributes)
   IPC_STRUCT_TRAITS_MEMBER(children)
   IPC_STRUCT_TRAITS_MEMBER(indirect_child_ids)
   IPC_STRUCT_TRAITS_MEMBER(html_attributes)
   IPC_STRUCT_TRAITS_MEMBER(line_breaks)
   IPC_STRUCT_TRAITS_MEMBER(cell_ids)
+  IPC_STRUCT_TRAITS_MEMBER(unique_cell_ids)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebCookie)
@@ -560,8 +607,7 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_AccessibilityNotification_Params)
   // Type of notification.
-  IPC_STRUCT_MEMBER(ViewHostMsg_AccessibilityNotification_Type::Value,
-                    notification_type)
+  IPC_STRUCT_MEMBER(ViewHostMsg_AccEvent::Value, notification_type)
 
   // The accessibility node tree.
   IPC_STRUCT_MEMBER(webkit_glue::WebAccessibility, acc_obj)

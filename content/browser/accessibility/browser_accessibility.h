@@ -22,6 +22,10 @@ class BrowserAccessibilityWin;
 #endif
 
 using webkit_glue::WebAccessibility;
+typedef std::map<WebAccessibility::BoolAttribute, bool> BoolAttrMap;
+typedef std::map<WebAccessibility::FloatAttribute, float> FloatAttrMap;
+typedef std::map<WebAccessibility::IntAttribute, int> IntAttrMap;
+typedef std::map<WebAccessibility::StringAttribute, string16> StringAttrMap;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -51,6 +55,12 @@ class BrowserAccessibility {
   // during the lifetime of this instance after the members of this base object
   // have been reset with new values from the renderer process.
   virtual void Initialize();
+
+  // Optionally send events triggered simply by the fact that this node
+  // has been created or modified (and has been attached to the tree).
+  // This can include "show" events, "text changed" events in live regions,
+  // or "alert" events.
+  virtual void SendNodeUpdateEvents() {}
 
   // Initialize this object, reading attributes from |src|. Does not
   // recurse into children of |src| and build the whole subtree.
@@ -129,14 +139,20 @@ class BrowserAccessibility {
   // Accessors
   //
 
-  const std::map<WebAccessibility::StringAttribute, string16>&
-  string_attributes() const {
-    return string_attributes_;
+  const BoolAttrMap& bool_attributes() const {
+    return bool_attributes_;
   }
 
-  const std::map<WebAccessibility::IntAttribute, int32>&
-  int_attributes() const {
+  const FloatAttrMap& float_attributes() const {
+    return float_attributes_;
+  }
+
+  const IntAttrMap& int_attributes() const {
     return int_attributes_;
+  }
+
+  const StringAttrMap& string_attributes() const {
+    return string_attributes_;
   }
 
   int32 child_id() const { return child_id_; }
@@ -156,6 +172,9 @@ class BrowserAccessibility {
   const std::vector<int32>& cell_ids() const {
     return cell_ids_;
   }
+  const std::vector<int32>& unique_cell_ids() const {
+    return unique_cell_ids_;
+  }
   gfx::Rect location() const { return location_; }
   BrowserAccessibilityManager* manager() const { return manager_; }
   const string16& name() const { return name_; }
@@ -173,14 +192,32 @@ class BrowserAccessibility {
   BrowserAccessibilityWin* toBrowserAccessibilityWin();
 #endif
 
-  // Retrieve the value of a string attribute from the attribute map and
-  // returns true if found.
-  bool GetStringAttribute(WebAccessibility::StringAttribute attribute,
-                          string16* value);
+  // Retrieve the value of a bool attribute from the bool attribute
+  // map and returns true if found.
+  bool GetBoolAttribute(WebAccessibility::BoolAttribute attr, bool* value)
+      const;
+
+  // Retrieve the value of a float attribute from the float attribute
+  // map and returns true if found.
+  bool GetFloatAttribute(WebAccessibility::FloatAttribute attr, float* value)
+      const;
 
   // Retrieve the value of an integer attribute from the integer attribute
   // map and returns true if found.
-  bool GetIntAttribute(WebAccessibility::IntAttribute attribute, int* value);
+  bool GetIntAttribute(WebAccessibility::IntAttribute attribute, int* value)
+      const;
+
+  // Retrieve the value of a string attribute from the attribute map and
+  // returns true if found.
+  bool GetStringAttribute(WebAccessibility::StringAttribute attribute,
+                          string16* value) const;
+
+  // Retrieve the value of a html attribute from the attribute map and
+  // returns true if found.
+  bool GetHtmlAttribute(const char* attr, string16* value) const;
+
+  // Returns true if this node is an editable text field of any kind.
+  bool IsEditableText() const;
 
  protected:
   BrowserAccessibility();
@@ -210,8 +247,10 @@ class BrowserAccessibility {
   // Accessibility metadata from the renderer
   string16 name_;
   string16 value_;
-  std::map<WebAccessibility::StringAttribute, string16> string_attributes_;
-  std::map<WebAccessibility::IntAttribute, int32> int_attributes_;
+  BoolAttrMap bool_attributes_;
+  IntAttrMap int_attributes_;
+  FloatAttrMap float_attributes_;
+  StringAttrMap string_attributes_;
   std::vector<std::pair<string16, string16> > html_attributes_;
   int32 role_;
   int32 state_;
@@ -220,6 +259,7 @@ class BrowserAccessibility {
   std::vector<int32> indirect_child_ids_;
   std::vector<int32> line_breaks_;
   std::vector<int32> cell_ids_;
+  std::vector<int32> unique_cell_ids_;
 
   // BrowserAccessibility objects are reference-counted on some platforms.
   // When we're done with this object and it's removed from our accessibility

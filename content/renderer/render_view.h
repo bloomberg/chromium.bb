@@ -1162,6 +1162,9 @@ class RenderView : public RenderWidget,
   // Set if we are waiting for a accessibility notification ack.
   bool accessibility_ack_pending_;
 
+  // True if verbose logging of accessibility events is on.
+  bool accessibility_logging_;
+
   // Dispatches all P2P socket used by the renderer.
   content::P2PSocketDispatcher* p2p_socket_dispatcher_;
 

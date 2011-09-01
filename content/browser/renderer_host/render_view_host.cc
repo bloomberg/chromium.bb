@@ -1267,11 +1267,9 @@ void RenderViewHost::OnAccessibilityNotifications(
     for (unsigned i = 0; i < params.size(); i++) {
       const ViewHostMsg_AccessibilityNotification_Params& param = params[i];
 
-      if (param.notification_type ==
-              ViewHostMsg_AccessibilityNotification_Type::
-                  NOTIFICATION_TYPE_LOAD_COMPLETE) {
-        if (save_accessibility_tree_for_testing_)
-          accessibility_tree_ = param.acc_obj;
+      if (param.notification_type == ViewHostMsg_AccEvent::LOAD_COMPLETE &&
+          save_accessibility_tree_for_testing_) {
+        accessibility_tree_ = param.acc_obj;
       }
     }
 

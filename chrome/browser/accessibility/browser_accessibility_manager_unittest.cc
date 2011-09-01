@@ -230,8 +230,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccessibilityNotification_Type::
-      NOTIFICATION_TYPE_CHILDREN_CHANGED;
+  msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
   msg->acc_obj = tree2_root;
   manager->OnAccessibilityNotifications(params);
 
@@ -435,8 +434,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccessibilityNotification_Type::
-      NOTIFICATION_TYPE_CHILDREN_CHANGED;
+  msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
   msg->acc_obj = tree2_container;
   manager->OnAccessibilityNotifications(params);
 
@@ -539,8 +537,7 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccessibilityNotification_Type::
-      NOTIFICATION_TYPE_CHILDREN_CHANGED;
+  msg->notification_type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
   msg->acc_obj = tree2_1;
   manager->OnAccessibilityNotifications(params);
 
@@ -582,8 +579,7 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   std::vector<ViewHostMsg_AccessibilityNotification_Params> params;
   params.push_back(ViewHostMsg_AccessibilityNotification_Params());
   ViewHostMsg_AccessibilityNotification_Params* msg = &params[0];
-  msg->notification_type = ViewHostMsg_AccessibilityNotification_Type::
-      NOTIFICATION_TYPE_LOAD_COMPLETE;
+  msg->notification_type = ViewHostMsg_AccEvent::LOAD_COMPLETE;
   msg->acc_obj = tree1_1;
 
   manager->OnAccessibilityNotifications(params);

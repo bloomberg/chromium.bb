@@ -39,8 +39,10 @@ class BrowserAccessibilityWin
                            &LIBID_IAccessible2Lib>,
       public IAccessibleImage,
       public IAccessibleTable,
+      public IAccessibleTable2,
       public IAccessibleTableCell,
       public IAccessibleText,
+      public IAccessibleValue,
       public IServiceProvider,
       public ISimpleDOMDocument,
       public ISimpleDOMNode,
@@ -52,8 +54,10 @@ class BrowserAccessibilityWin
     COM_INTERFACE_ENTRY(IAccessible2)
     COM_INTERFACE_ENTRY(IAccessibleImage)
     COM_INTERFACE_ENTRY(IAccessibleTable)
+    COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
     COM_INTERFACE_ENTRY(IAccessibleText)
+    COM_INTERFACE_ENTRY(IAccessibleValue)
     COM_INTERFACE_ENTRY(IServiceProvider)
     COM_INTERFACE_ENTRY(ISimpleDOMDocument)
     COM_INTERFACE_ENTRY(ISimpleDOMNode)
@@ -68,6 +72,7 @@ class BrowserAccessibilityWin
   // BrowserAccessibility methods.
   //
   virtual void Initialize();
+  virtual void SendNodeUpdateEvents();
   virtual void NativeAddReference();
   virtual void NativeReleaseReference();
 
@@ -332,6 +337,28 @@ class BrowserAccessibilityWin
   }
 
   //
+  // IAccessibleTable2 methods.
+  //
+  // (Most of these are duplicates of IAccessibleTable methods, only the
+  // unique ones are included here.)
+  //
+
+  STDMETHODIMP get_cellAt(long row,
+                          long column,
+                          IUnknown** cell);
+
+  STDMETHODIMP get_nSelectedCells(long* cell_count);
+
+  STDMETHODIMP get_selectedCells(IUnknown*** cells,
+                                 long* n_selected_cells);
+
+  STDMETHODIMP get_selectedColumns(long** columns,
+                                   long* n_columns);
+
+  STDMETHODIMP get_selectedRows(long** rows,
+                                long* n_rows);
+
+  //
   // IAccessibleTableCell methods.
   //
 
@@ -390,6 +417,14 @@ class BrowserAccessibilityWin
                                    LONG* start_offset, LONG* end_offset,
                                    BSTR* text);
 
+  STDMETHODIMP get_newText(IA2TextSegment* new_text);
+
+  STDMETHODIMP get_oldText(IA2TextSegment* old_text);
+
+  STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
+                                 enum IA2CoordinateType coord_type,
+                                 LONG* offset);
+
   // IAccessibleText methods not implemented.
   STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) {
     return E_NOTIMPL;
@@ -402,11 +437,6 @@ class BrowserAccessibilityWin
                                     enum IA2CoordinateType coord_type,
                                     LONG* x, LONG* y,
                                     LONG* width, LONG* height) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
-                                 enum IA2CoordinateType coord_type,
-                                 LONG* offset) {
     return E_NOTIMPL;
   }
   STDMETHODIMP removeSelection(LONG selection_index) {
@@ -430,12 +460,18 @@ class BrowserAccessibilityWin
                                       LONG x, LONG y) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_newText(IA2TextSegment* new_text) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_oldText(IA2TextSegment* old_text) {
-    return E_NOTIMPL;
-  }
+
+  //
+  // IAccessibleValue methods.
+  //
+
+  STDMETHODIMP get_currentValue(VARIANT* value);
+
+  STDMETHODIMP get_minimumValue(VARIANT* value);
+
+  STDMETHODIMP get_maximumValue(VARIANT* value);
+
+  STDMETHODIMP setCurrentValue(VARIANT new_value);
 
   //
   // ISimpleDOMDocument methods.
@@ -598,6 +634,21 @@ class BrowserAccessibilityWin
   HRESULT GetStringAttributeAsBstr(
       WebAccessibility::StringAttribute attribute, BSTR* value_bstr);
 
+  // If the string attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |ia2_attr|.
+  void StringAttributeToIA2(
+      WebAccessibility::StringAttribute attribute, const char* ia2_attr);
+
+  // If the bool attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |ia2_attr|.
+  void BoolAttributeToIA2(
+      WebAccessibility::BoolAttribute attribute, const char* ia2_attr);
+
+  // If the int attribute |attribute| is present, add its value as an
+  // IAccessible2 attribute with the name |ia2_attr|.
+  void IntAttributeToIA2(
+      WebAccessibility::IntAttribute attribute, const char* ia2_attr);
+
   // Escape a string like it would be escaped for a URL or HTML form.
   string16 Escape(const string16& str);
 
@@ -628,6 +679,21 @@ class BrowserAccessibilityWin
   // IAccessible2 role and state.
   int32 ia2_role_;
   int32 ia2_state_;
+
+  // IAccessible2 attributes.
+  std::vector<string16> ia2_attributes_;
+
+  // True in Initialize when the object is first created, and false
+  // subsequent times.
+  bool first_time_;
+
+  // The previous text, before the last update to this object.
+  string16 previous_text_;
+
+  // The old text to return in IAccessibleText::get_oldText - this is like
+  // previous_text_ except that it's NOT updated when the object
+  // is initialized again but the text doesn't change.
+  string16 old_text_;
 
   // Give BrowserAccessibility::Create access to our constructor.
   friend class BrowserAccessibility;

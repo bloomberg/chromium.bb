@@ -391,14 +391,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check the browser's copy of the renderer accessibility tree.
-  AccessibleChecker list_marker_checker(L"", ROLE_SYSTEM_LISTITEM, L"\x2022");
+  AccessibleChecker list_marker_checker(L"", ROLE_SYSTEM_TEXT, L"\x2022");
   AccessibleChecker static_text_checker(L"li", ROLE_SYSTEM_TEXT, L"");
   AccessibleChecker list_item_checker(L"", ROLE_SYSTEM_LISTITEM, L"");
   list_item_checker.SetExpectedState(
       STATE_SYSTEM_READONLY);
   AccessibleChecker radio_group_checker(L"", ROLE_SYSTEM_GROUPING, L"");
-  radio_group_checker.SetExpectedState(
-      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
+  radio_group_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   list_item_checker.AppendExpectedChild(&list_marker_checker);
   list_item_checker.AppendExpectedChild(&static_text_checker);
@@ -413,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check that the accessibility tree of the browser has been updated.
   radio_group_checker.SetExpectedState(
-      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSED);
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED);
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // Set the active descendant of the radio group
@@ -425,8 +424,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Check that the accessibility tree of the browser has been updated.
   list_item_checker.SetExpectedState(
       STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSED);
-  radio_group_checker.SetExpectedState(
-      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
+  radio_group_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
@@ -440,8 +438,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check the browser's copy of the renderer accessibility tree.
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
-  checkbox_checker.SetExpectedState(
-      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
+  checkbox_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
   AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   body_checker.AppendExpectedChild(&checkbox_checker);
@@ -455,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check that the accessibility tree of the browser has been updated.
   checkbox_checker.SetExpectedState(
-      STATE_SYSTEM_CHECKED | STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
+      STATE_SYSTEM_CHECKED | STATE_SYSTEM_FOCUSABLE);
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 

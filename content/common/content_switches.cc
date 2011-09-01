@@ -159,6 +159,9 @@ const char kEnableAcceleratedDrawing[]      = "enable-accelerated-drawing";
 // Enables WebKit accessibility within the renderer process.
 const char kEnableAccessibility[]           = "enable-accessibility";
 
+// Turns on extremely verbose logging of accessibility events.
+const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
+
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

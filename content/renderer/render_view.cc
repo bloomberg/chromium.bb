@@ -274,34 +274,54 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
 
 static bool WebAccessibilityNotificationToViewHostMsg(
     WebAccessibilityNotification notification,
-    ViewHostMsg_AccessibilityNotification_Type::Value* type) {
+    ViewHostMsg_AccEvent::Value* type) {
   switch (notification) {
+    case WebKit::WebAccessibilityNotificationActiveDescendantChanged:
+      *type = ViewHostMsg_AccEvent::ACTIVE_DESCENDANT_CHANGED;
+      break;
     case WebKit::WebAccessibilityNotificationCheckedStateChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_CHECK_STATE_CHANGED;
+      *type = ViewHostMsg_AccEvent::CHECK_STATE_CHANGED;
       break;
     case WebKit::WebAccessibilityNotificationChildrenChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_CHILDREN_CHANGED;
+      *type = ViewHostMsg_AccEvent::CHILDREN_CHANGED;
       break;
     case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Type::
-           NOTIFICATION_TYPE_FOCUS_CHANGED;
+      *type = ViewHostMsg_AccEvent::FOCUS_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationLayoutComplete:
+      *type = ViewHostMsg_AccEvent::LAYOUT_COMPLETE;
+      break;
+    case WebKit::WebAccessibilityNotificationLiveRegionChanged:
+      *type = ViewHostMsg_AccEvent::LIVE_REGION_CHANGED;
       break;
     case WebKit::WebAccessibilityNotificationLoadComplete:
-      *type = ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_LOAD_COMPLETE;
+      *type = ViewHostMsg_AccEvent::LOAD_COMPLETE;
       break;
-    case WebKit::WebAccessibilityNotificationValueChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_VALUE_CHANGED;
+    case WebKit::WebAccessibilityNotificationMenuListValueChanged:
+      *type = ViewHostMsg_AccEvent::MENU_LIST_VALUE_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationRowCollapsed:
+      *type = ViewHostMsg_AccEvent::ROW_COLLAPSED;
+      break;
+    case WebKit::WebAccessibilityNotificationRowCountChanged:
+      *type = ViewHostMsg_AccEvent::ROW_COUNT_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationRowExpanded:
+      *type = ViewHostMsg_AccEvent::ROW_EXPANDED;
+      break;
+    case WebKit::WebAccessibilityNotificationScrolledToAnchor:
+      *type = ViewHostMsg_AccEvent::SCROLLED_TO_ANCHOR;
+      break;
+    case WebKit::WebAccessibilityNotificationSelectedChildrenChanged:
+      *type = ViewHostMsg_AccEvent::SELECTED_CHILDREN_CHANGED;
       break;
     case WebKit::WebAccessibilityNotificationSelectedTextChanged:
-      *type = ViewHostMsg_AccessibilityNotification_Type::
-          NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED;
+      *type = ViewHostMsg_AccEvent::SELECTED_TEXT_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationValueChanged:
+      *type = ViewHostMsg_AccEvent::VALUE_CHANGED;
       break;
     default:
-      // TODO(ctguil): Support additional webkit notifications.
       return false;
   }
   return true;
@@ -365,6 +385,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       speech_input_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
       accessibility_ack_pending_(false),
+      accessibility_logging_(false),
       p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
       session_storage_namespace_id_(session_storage_namespace_id),
@@ -412,6 +433,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableAccessibility))
     WebAccessibilityCache::enableAccessibility();
+  if (command_line.HasSwitch(switches::kEnableAccessibilityLogging))
+    accessibility_logging_ = true;
 
 #if defined(ENABLE_P2P_APIS)
   p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
@@ -526,7 +549,8 @@ void RenderView::RemoveObserver(RenderViewObserver* observer) {
 bool RenderView::RendererAccessibilityNotification::ShouldIncludeChildren() {
   typedef ViewHostMsg_AccessibilityNotification_Params params;
   if (type == WebKit::WebAccessibilityNotificationChildrenChanged ||
-      type == WebKit::WebAccessibilityNotificationLoadComplete) {
+      type == WebKit::WebAccessibilityNotificationLoadComplete ||
+      type == WebKit::WebAccessibilityNotificationLiveRegionChanged) {
     return true;
   }
   return false;
@@ -1574,6 +1598,13 @@ void RenderView::SendPendingAccessibilityNotifications() {
     param.acc_obj = WebAccessibility(
         obj, accessibility_.get(), notification.ShouldIncludeChildren());
     notifications.push_back(param);
+
+#ifndef NDEBUG
+    if (accessibility_logging_) {
+      LOG(INFO) << "Accessibility update: \n"
+                << param.acc_obj.DebugString(true);
+    }
+#endif
   }
   pending_accessibility_notifications_.clear();
   Send(new ViewHostMsg_AccessibilityNotifications(routing_id_, notifications));
@@ -4083,7 +4114,7 @@ void RenderView::postAccessibilityNotification(
   if (acc_notification.id < 0)
     return;
 
-  ViewHostMsg_AccessibilityNotification_Type::Value temp;
+  ViewHostMsg_AccEvent::Value temp;
   if (!WebAccessibilityNotificationToViewHostMsg(notification, &temp))
     return;
 

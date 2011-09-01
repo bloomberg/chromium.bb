@@ -555,6 +555,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSpeechInput,
     switches::kDisableWebAudio,
     switches::kDisableWebSockets,
+    switches::kEnableAccessibilityLogging,
     switches::kEnableAdaptive,
     switches::kEnableBenchmarking,
     switches::kEnableDCHECK,

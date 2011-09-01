@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_WEBACCESSIBILITY_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/string16.h"
@@ -131,6 +132,7 @@ struct WebAccessibility {
   // for example:
   //   int mask = (1 << STATE_CHECKED) | (1 << STATE_FOCUSED);
   enum State {
+    STATE_BUSY,
     STATE_CHECKED,
     STATE_COLLAPSED,
     STATE_EXPANDED,
@@ -146,12 +148,17 @@ struct WebAccessibility {
     STATE_PRESSED,
     STATE_PROTECTED,
     STATE_READONLY,
+    STATE_REQUIRED,
     STATE_SELECTABLE,
     STATE_SELECTED,
     STATE_TRAVERSED,
-    STATE_BUSY,
-    STATE_UNAVAILABLE
+    STATE_UNAVAILABLE,
+    STATE_VERTICAL,
+    STATE_VISITED,
+    NUM_STATES
   };
+
+  COMPILE_ASSERT(NUM_STATES <= 31, state_enum_not_too_large);
 
   // Additional optional attributes that can be optionally attached to
   // a node.
@@ -163,14 +170,19 @@ struct WebAccessibility {
     ATTR_DOC_DOCTYPE,
 
     // Attributes that could apply to any node.
+    ATTR_ACCESS_KEY,
     ATTR_ACTION,
+    ATTR_CONTAINER_LIVE_RELEVANT,
+    ATTR_CONTAINER_LIVE_STATUS,
     ATTR_DESCRIPTION,
     ATTR_DISPLAY,
     ATTR_HELP,
     ATTR_HTML_TAG,
+    ATTR_LIVE_RELEVANT,
+    ATTR_LIVE_STATUS,
+    ATTR_ROLE,
     ATTR_SHORTCUT,
     ATTR_URL,
-    NUM_STRING_ATTRIBUTES
   };
 
   enum IntAttribute {
@@ -192,7 +204,32 @@ struct WebAccessibility {
     ATTR_TABLE_CELL_ROW_INDEX,
     ATTR_TABLE_CELL_ROW_SPAN,
 
-    NUM_INT_ATTRIBUTES
+    // Tree control attributes.
+    ATTR_HIERARCHICAL_LEVEL,
+  };
+
+  enum FloatAttribute {
+    // Document attributes.
+    ATTR_DOC_LOADING_PROGRESS,
+
+    // Range attributes.
+    ATTR_VALUE_FOR_RANGE,
+    ATTR_MIN_VALUE_FOR_RANGE,
+    ATTR_MAX_VALUE_FOR_RANGE,
+  };
+
+  enum BoolAttribute {
+    // Document attributes.
+    ATTR_DOC_LOADED,
+
+    // True if a checkbox or radio button is in the "mixed" state.
+    ATTR_BUTTON_MIXED,
+
+    // Live region attributes.
+    ATTR_CONTAINER_LIVE_ATOMIC,
+    ATTR_CONTAINER_LIVE_BUSY,
+    ATTR_LIVE_ATOMIC,
+    ATTR_LIVE_BUSY,
   };
 
   // Empty constructor, for serialization.
@@ -206,6 +243,10 @@ struct WebAccessibility {
                    bool include_children);
 
   ~WebAccessibility();
+
+#ifndef NDEBUG
+  std::string DebugString(bool recursive);
+#endif
 
  private:
   // Initialize an already-created struct, same as the constructor above.
@@ -231,11 +272,21 @@ struct WebAccessibility {
   gfx::Rect location;
   std::map<StringAttribute, string16> string_attributes;
   std::map<IntAttribute, int32> int_attributes;
+  std::map<FloatAttribute, float> float_attributes;
+  std::map<BoolAttribute, bool> bool_attributes;
   std::vector<WebAccessibility> children;
   std::vector<int32> indirect_child_ids;
   std::vector<std::pair<string16, string16> > html_attributes;
   std::vector<int32> line_breaks;
-  std::vector<int32> cell_ids;  // For a table, the cell ids in row-major order.
+
+  // For a table, the cell ids in row-major order, with duplicate entries
+  // when there's a rowspan or colspan, and with -1 for missing cells.
+  // There are always exactly rows * columns entries.
+  std::vector<int32> cell_ids;
+
+  // For a table, the unique cell ids in row-major order of their first
+  // occurrence.
+  std::vector<int32> unique_cell_ids;
 };
 
 }  // namespace webkit_glue

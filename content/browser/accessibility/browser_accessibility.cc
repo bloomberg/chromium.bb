@@ -6,8 +6,12 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/common/view_messages.h"
 
+typedef WebAccessibility::BoolAttribute BoolAttribute;
+typedef WebAccessibility::FloatAttribute FloatAttribute;
 typedef WebAccessibility::IntAttribute IntAttribute;
 typedef WebAccessibility::StringAttribute StringAttribute;
 
@@ -55,18 +59,22 @@ void BrowserAccessibility::Initialize(
   child_id_ = child_id;
   index_in_parent_ = index_in_parent;
 
-  renderer_id_ = src.id;
+  // Update all of the rest of the attributes.
   name_ = src.name;
   value_ = src.value;
-  string_attributes_ = src.string_attributes;
-  int_attributes_ = src.int_attributes;
-  html_attributes_ = src.html_attributes;
-  location_ = src.location;
   role_ = src.role;
   state_ = src.state;
+  renderer_id_ = src.id;
+  string_attributes_ = src.string_attributes;
+  int_attributes_ = src.int_attributes;
+  float_attributes_ = src.float_attributes;
+  bool_attributes_ = src.bool_attributes;
+  html_attributes_ = src.html_attributes;
+  location_ = src.location;
   indirect_child_ids_ = src.indirect_child_ids;
   line_breaks_ = src.line_breaks;
   cell_ids_ = src.cell_ids;
+  unique_cell_ids_ = src.unique_cell_ids;
 
   Initialize();
 }
@@ -166,6 +174,14 @@ void BrowserAccessibility::InternalReleaseReference(bool recursive) {
 
   ref_count_--;
   if (ref_count_ == 0) {
+    // Allow the object to fire a TEXT_REMOVED notification.
+    name_.clear();
+    value_.clear();
+    SendNodeUpdateEvents();
+
+    manager_->NotifyAccessibilityEvent(
+        ViewHostMsg_AccEvent::OBJECT_HIDE, this);
+
     instance_active_ = false;
     children_.clear();
     manager_->Remove(child_id_, renderer_id_);
@@ -177,12 +193,21 @@ void BrowserAccessibility::NativeReleaseReference() {
   delete this;
 }
 
-bool BrowserAccessibility::GetStringAttribute(
-    StringAttribute attribute,
-    string16* value) {
-  std::map<StringAttribute, string16>::iterator iter =
-      string_attributes_.find(attribute);
-  if (iter != string_attributes_.end()) {
+bool BrowserAccessibility::GetBoolAttribute(
+    BoolAttribute attribute, bool* value) const {
+  BoolAttrMap::const_iterator iter = bool_attributes_.find(attribute);
+  if (iter != bool_attributes_.end()) {
+    *value = iter->second;
+    return true;
+  }
+
+  return false;
+}
+
+bool BrowserAccessibility::GetFloatAttribute(
+    FloatAttribute attribute, float* value) const {
+  FloatAttrMap::const_iterator iter = float_attributes_.find(attribute);
+  if (iter != float_attributes_.end()) {
     *value = iter->second;
     return true;
   }
@@ -191,13 +216,42 @@ bool BrowserAccessibility::GetStringAttribute(
 }
 
 bool BrowserAccessibility::GetIntAttribute(
-    IntAttribute attribute, int* value) {
-  std::map<IntAttribute, int32>::iterator iter =
-      int_attributes_.find(attribute);
+    IntAttribute attribute, int* value) const {
+  IntAttrMap::const_iterator iter = int_attributes_.find(attribute);
   if (iter != int_attributes_.end()) {
     *value = iter->second;
     return true;
   }
 
   return false;
+}
+
+bool BrowserAccessibility::GetStringAttribute(
+    StringAttribute attribute,
+    string16* value) const {
+  StringAttrMap::const_iterator iter = string_attributes_.find(attribute);
+  if (iter != string_attributes_.end()) {
+    *value = iter->second;
+    return true;
+  }
+
+  return false;
+}
+
+bool BrowserAccessibility::GetHtmlAttribute(
+    const char* html_attr, string16* value) const {
+  for (size_t i = 0; i < html_attributes_.size(); i++) {
+    const string16& attr = html_attributes_[i].first;
+    if (LowerCaseEqualsASCII(attr, html_attr)) {
+      *value = html_attributes_[i].second;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool BrowserAccessibility::IsEditableText() const {
+  return (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
+          role_ == WebAccessibility::ROLE_TEXTAREA);
 }

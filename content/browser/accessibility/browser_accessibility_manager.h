@@ -19,9 +19,9 @@ class BrowserAccessibility;
 class BrowserAccessibilityManagerWin;
 #endif
 
-struct ViewHostMsg_AccessibilityNotification_Params;
-
 using webkit_glue::WebAccessibility;
+
+struct ViewHostMsg_AccessibilityNotification_Params;
 
 // Class that can perform actions on behalf of the BrowserAccessibilityManager.
 class BrowserAccessibilityDelegate {
@@ -63,7 +63,7 @@ class BrowserAccessibilityManager {
 
   virtual ~BrowserAccessibilityManager();
 
-  // Type is a ViewHostMsg_AccessibilityNotification_Params::int.
+  // Type is a ViewHostMsg_AccessibilityNotification_Type::int.
   // We pass it as int so that we don't include the render message declaration
   // header here.
   virtual void NotifyAccessibilityEvent(
@@ -125,17 +125,17 @@ class BrowserAccessibilityManager {
       BrowserAccessibilityFactory* factory);
 
  private:
-  void OnAccessibilityObjectStateChange(
-      const WebAccessibility& acc_obj);
-  void OnAccessibilityObjectChildrenChange(
-      const WebAccessibility& acc_obj);
+  // Type is a ViewHostMsg_AccessibilityNotification_Type::int.
+  // We pass it as int so that we don't include the render message declaration
+  // header here.
+  void OnSimpleAccessibilityNotification(
+      const WebAccessibility& acc_obj,
+      int type,
+      bool include_children);
+
   void OnAccessibilityObjectFocusChange(
       const WebAccessibility& acc_obj);
   void OnAccessibilityObjectLoadComplete(
-      const WebAccessibility& acc_obj);
-  void OnAccessibilityObjectValueChange(
-      const WebAccessibility& acc_obj);
-  void OnAccessibilityObjectTextChange(
       const WebAccessibility& acc_obj);
 
   // Update an accessibility node with an updated WebAccessibility node
@@ -152,7 +152,8 @@ class BrowserAccessibilityManager {
   BrowserAccessibility* CreateAccessibilityTree(
       BrowserAccessibility* parent,
       const WebAccessibility& src,
-      int index_in_parent);
+      int index_in_parent,
+      bool send_show_events);
 
  protected:
   // The next unique id for a BrowserAccessibility instance.

@@ -59,6 +59,7 @@ extern const char kDisableWebSockets[];
 extern const char kEnableAccelerated2dCanvas[];
 extern const char kEnableAcceleratedDrawing[];
 extern const char kEnableAccessibility[];
+extern const char kEnableAccessibilityLogging[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableDeviceMotion[];
 extern const char kEnableFullScreen[];
