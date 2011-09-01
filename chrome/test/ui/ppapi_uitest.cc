@@ -225,7 +225,7 @@ TEST_PPAPI_IN_PROCESS(VarDeprecated)
 TEST_PPAPI_IN_PROCESS(PostMessage)
 
 // Times out: http://crbug.com/93260
-TEST_F(OutOfProcessPPAPITest, FAILS_PostMessage) {
+TEST_F(OutOfProcessPPAPITest, DISABLED_PostMessage) {
   RunTest("PostMessage");
 }
 
