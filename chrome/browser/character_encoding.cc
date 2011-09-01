@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "content/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -30,7 +31,7 @@ typedef struct {
 } CanonicalEncodingData;
 
 // An array of all supported canonical encoding names.
-static CanonicalEncodingData canonical_encoding_names[] = {
+const CanonicalEncodingData kCanonicalEncodingNames[] = {
   { IDC_ENCODING_UTF8, "UTF-8", IDS_ENCODING_UNICODE },
   { IDC_ENCODING_UTF16LE, "UTF-16LE", IDS_ENCODING_UNICODE },
   { IDC_ENCODING_ISO88591, "ISO-8859-1", IDS_ENCODING_WESTERN },
@@ -70,8 +71,7 @@ static CanonicalEncodingData canonical_encoding_names[] = {
   { IDC_ENCODING_ISO885916, "ISO-8859-16", IDS_ENCODING_ROMANIAN },
 };
 
-static const int canonical_encoding_names_length =
-    arraysize(canonical_encoding_names);
+const int kCanonicalEncodingNamesLength = arraysize(kCanonicalEncodingNames);
 
 typedef std::map<int, std::pair<const char*, int> >
     IdToCanonicalEncodingNameMapType;
@@ -82,7 +82,7 @@ typedef struct {
   const char* display_form;
 } CanonicalEncodingDisplayNamePair;
 
-static CanonicalEncodingDisplayNamePair canonical_display_name_overrides[] = {
+const CanonicalEncodingDisplayNamePair kCanonicalDisplayNameOverrides[] = {
   // Only lists the canonical names where we want a different form for display.
   { "macintosh", "Macintosh" },
   { "windows-874", "Windows-874" },
@@ -98,11 +98,10 @@ static CanonicalEncodingDisplayNamePair canonical_display_name_overrides[] = {
   { "windows-1258", "Windows-1258" },
 };
 
-static const int canonical_display_name_overrides_length =
-    arraysize(canonical_display_name_overrides);
+const int kCanonicalDisplayNameOverridesLength =
+    arraysize(kCanonicalDisplayNameOverrides);
 
-typedef std::map<std::string, const char*>
-    CanonicalNameDisplayNameMapType;
+typedef std::map<std::string, const char*> CanonicalNameDisplayNameMapType;
 
 class CanonicalEncodingMap {
  public:
@@ -139,11 +138,11 @@ const IdToCanonicalEncodingNameMapType*
   // thread safe.
   if (!id_to_encoding_name_map_.get()) {
     id_to_encoding_name_map_.reset(new IdToCanonicalEncodingNameMapType);
-    for (int i = 0; i < canonical_encoding_names_length; ++i) {
-      int resource_id = canonical_encoding_names[i].resource_id;
+    for (int i = 0; i < kCanonicalEncodingNamesLength; ++i) {
+      int resource_id = kCanonicalEncodingNames[i].resource_id;
       (*id_to_encoding_name_map_)[resource_id] =
-        std::make_pair(canonical_encoding_names[i].name,
-                       canonical_encoding_names[i].category_string_id);
+        std::make_pair(kCanonicalEncodingNames[i].name,
+                       kCanonicalEncodingNames[i].category_string_id);
     }
   }
   return id_to_encoding_name_map_.get();
@@ -153,9 +152,9 @@ const CanonicalEncodingNameToIdMapType*
     CanonicalEncodingMap::GetCanonicalEncodingNameToIdMapData() {
   if (!encoding_name_to_id_map_.get()) {
     encoding_name_to_id_map_.reset(new CanonicalEncodingNameToIdMapType);
-    for (int i = 0; i < canonical_encoding_names_length; ++i) {
-      (*encoding_name_to_id_map_)[canonical_encoding_names[i].name] =
-          canonical_encoding_names[i].resource_id;
+    for (int i = 0; i < kCanonicalEncodingNamesLength; ++i) {
+      (*encoding_name_to_id_map_)[kCanonicalEncodingNames[i].name] =
+          kCanonicalEncodingNames[i].resource_id;
     }
   }
   return encoding_name_to_id_map_.get();
@@ -166,19 +165,19 @@ const CanonicalNameDisplayNameMapType*
   if (!encoding_name_to_display_name_map_.get()) {
     encoding_name_to_display_name_map_.reset(
         new CanonicalNameDisplayNameMapType);
-    // First store the names in the canonical_encoding_names list.
-    for (int i = 0; i < canonical_encoding_names_length; ++i) {
-      (*encoding_name_to_display_name_map_)[canonical_encoding_names[i].name] =
-          canonical_encoding_names[i].name;
+    // First store the names in the kCanonicalEncodingNames list.
+    for (int i = 0; i < kCanonicalEncodingNamesLength; ++i) {
+      (*encoding_name_to_display_name_map_)[kCanonicalEncodingNames[i].name] =
+          kCanonicalEncodingNames[i].name;
     }
     // Then save in the overrides.
-    for (int i = 0; i < canonical_display_name_overrides_length; ++i) {
+    for (int i = 0; i < kCanonicalDisplayNameOverridesLength; ++i) {
       (*encoding_name_to_display_name_map_)
-          [canonical_display_name_overrides[i].canonical_form] =
-          canonical_display_name_overrides[i].display_form;
+          [kCanonicalDisplayNameOverrides[i].canonical_form] =
+          kCanonicalDisplayNameOverrides[i].display_form;
     }
     DCHECK(static_cast<int>(encoding_name_to_display_name_map_->size()) ==
-           canonical_encoding_names_length)
+           kCanonicalEncodingNamesLength)
         << "Got an override that wasn't in the encoding list";
   }
   return encoding_name_to_display_name_map_.get();
@@ -186,9 +185,13 @@ const CanonicalNameDisplayNameMapType*
 
 // A static map object which contains all resourceid-nonsequenced canonical
 // encoding names.
-static CanonicalEncodingMap canonical_encoding_name_map_singleton;
+CanonicalEncodingMap* CanonicalEncodingMapSingleton() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  static CanonicalEncodingMap* singleton = new CanonicalEncodingMap;
+  return singleton;
+}
 
-const int default_encoding_menus[] = {
+const int kDefaultEncodingMenus[] = {
   IDC_ENCODING_UTF16LE,
   IDC_ENCODING_ISO88591,
   IDC_ENCODING_WINDOWS1252,
@@ -227,7 +230,7 @@ const int default_encoding_menus[] = {
   IDC_ENCODING_ISO885916,
 };
 
-const int default_encoding_menus_length = arraysize(default_encoding_menus);
+const int kDefaultEncodingMenusLength = arraysize(kDefaultEncodingMenus);
 
 // Parse the input |encoding_list| which is a encoding list separated with
 // comma, get available encoding ids and save them to |available_list|.
@@ -256,8 +259,7 @@ string16 GetEncodingDisplayName(std::string encoding_name,
       category_string_id != IDS_ENCODING_THAI &&
       category_string_id != IDS_ENCODING_TURKISH) {
     const CanonicalNameDisplayNameMapType* map =
-        canonical_encoding_name_map_singleton.
-            GetCanonicalNameDisplayNameMapData();
+        CanonicalEncodingMapSingleton()->GetCanonicalNameDisplayNameMapData();
     DCHECK(map);
 
     CanonicalNameDisplayNameMapType::const_iterator found_name =
@@ -272,8 +274,7 @@ string16 GetEncodingDisplayName(std::string encoding_name,
 
 int GetEncodingCategoryStringIdByCommandId(int id) {
   const IdToCanonicalEncodingNameMapType* map =
-      canonical_encoding_name_map_singleton.
-          GetIdToCanonicalEncodingNameMapData();
+      CanonicalEncodingMapSingleton()->GetIdToCanonicalEncodingNameMapData();
   DCHECK(map);
 
   IdToCanonicalEncodingNameMapType::const_iterator found_name = map->find(id);
@@ -302,8 +303,7 @@ CharacterEncoding::EncodingInfo::EncodingInfo(int id)
 int CharacterEncoding::GetCommandIdByCanonicalEncodingName(
     const std::string& encoding_name) {
   const CanonicalEncodingNameToIdMapType* map =
-      canonical_encoding_name_map_singleton.
-          GetCanonicalEncodingNameToIdMapData();
+      CanonicalEncodingMapSingleton()->GetCanonicalEncodingNameToIdMapData();
   DCHECK(map);
 
   CanonicalEncodingNameToIdMapType::const_iterator found_id =
@@ -316,8 +316,7 @@ int CharacterEncoding::GetCommandIdByCanonicalEncodingName(
 // Static.
 std::string CharacterEncoding::GetCanonicalEncodingNameByCommandId(int id) {
   const IdToCanonicalEncodingNameMapType* map =
-      canonical_encoding_name_map_singleton.
-          GetIdToCanonicalEncodingNameMapData();
+      CanonicalEncodingMapSingleton()->GetIdToCanonicalEncodingNameMapData();
   DCHECK(map);
 
   IdToCanonicalEncodingNameMapType::const_iterator found_name = map->find(id);
@@ -330,8 +329,7 @@ std::string CharacterEncoding::GetCanonicalEncodingNameByCommandId(int id) {
 string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(
     int id) {
   const IdToCanonicalEncodingNameMapType* map =
-      canonical_encoding_name_map_singleton.
-          GetIdToCanonicalEncodingNameMapData();
+      CanonicalEncodingMapSingleton()->GetIdToCanonicalEncodingNameMapData();
   DCHECK(map);
 
   IdToCanonicalEncodingNameMapType::const_iterator found_name = map->find(id);
@@ -344,29 +342,29 @@ string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(
 // Static.
 // Return count number of all supported canonical encoding.
 int CharacterEncoding::GetSupportCanonicalEncodingCount() {
-  return canonical_encoding_names_length;
+  return kCanonicalEncodingNamesLength;
 }
 
 // Static.
 std::string CharacterEncoding::GetCanonicalEncodingNameByIndex(int index) {
-  if (index < canonical_encoding_names_length)
-    return canonical_encoding_names[index].name;
+  if (index < kCanonicalEncodingNamesLength)
+    return kCanonicalEncodingNames[index].name;
   return std::string();
 }
 
 // Static.
 string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByIndex(
     int index) {
-  if (index < canonical_encoding_names_length)
-    return GetEncodingDisplayName(canonical_encoding_names[index].name,
-        canonical_encoding_names[index].category_string_id);
+  if (index < kCanonicalEncodingNamesLength)
+    return GetEncodingDisplayName(kCanonicalEncodingNames[index].name,
+        kCanonicalEncodingNames[index].category_string_id);
   return string16();
 }
 
 // Static.
 int CharacterEncoding::GetEncodingCommandIdByIndex(int index) {
-  if (index < canonical_encoding_names_length)
-    return canonical_encoding_names[index].resource_id;
+  if (index < kCanonicalEncodingNamesLength)
+    return kCanonicalEncodingNames[index].resource_id;
   return 0;
 }
 
@@ -375,8 +373,7 @@ std::string CharacterEncoding::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   // If the input alias_name is already canonical encoding name, just return it.
   const CanonicalEncodingNameToIdMapType* map =
-      canonical_encoding_name_map_singleton.
-          GetCanonicalEncodingNameToIdMapData();
+      CanonicalEncodingMapSingleton()->GetCanonicalEncodingNameToIdMapData();
   DCHECK(map);
 
   CanonicalEncodingNameToIdMapType::const_iterator found_id =
@@ -420,9 +417,9 @@ const std::vector<CharacterEncoding::EncodingInfo>*
     const std::string& locale_encodings,
     const std::string& recently_select_encodings) {
   std::vector<int>* const locale_dependent_encoding_list =
-      canonical_encoding_name_map_singleton.locale_dependent_encoding_ids();
+      CanonicalEncodingMapSingleton()->locale_dependent_encoding_ids();
   std::vector<CharacterEncoding::EncodingInfo>* const encoding_list =
-      canonical_encoding_name_map_singleton.current_display_encodings();
+      CanonicalEncodingMapSingleton()->current_display_encodings();
 
   // Initialize locale dependent static encoding list.
   if (locale_dependent_encoding_list->empty() && !locale_encodings.empty())
@@ -483,8 +480,8 @@ const std::vector<CharacterEncoding::EncodingInfo>*
     // Add the rest of encodings that are neither in the static encoding list
     // nor in the list of recently selected encodings.
     // Build the encoding list sorted in the current locale sorting order.
-    for (int i = 0; i < default_encoding_menus_length; ++i) {
-      int id = default_encoding_menus[i];
+    for (int i = 0; i < kDefaultEncodingMenusLength; ++i) {
+      int id = kDefaultEncodingMenus[i];
       // We have inserted this encoding, skip it.
       if (inserted_encoding.find(id) != inserted_encoding.end())
         continue;
@@ -513,7 +510,7 @@ bool CharacterEncoding::UpdateRecentlySelectedEncoding(
   // Check whether the new encoding is in local dependent encodings or original
   // recently selected encodings. If yes, do not add it.
   std::vector<int>* locale_dependent_encoding_list =
-      canonical_encoding_name_map_singleton.locale_dependent_encoding_ids();
+      CanonicalEncodingMapSingleton()->locale_dependent_encoding_ids();
   DCHECK(locale_dependent_encoding_list);
   std::vector<int> selected_encoding_list;
   ParseEncodingListSeparatedWithComma(original_selected_encodings,

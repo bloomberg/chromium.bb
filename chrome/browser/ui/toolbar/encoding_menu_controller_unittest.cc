@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class EncodingMenuControllerTest : public testing::Test {
+ public:
+  EncodingMenuControllerTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+ private:
+  MessageLoop message_loop_;
+  BrowserThread ui_thread_;
 };
 
 TEST_F(EncodingMenuControllerTest, EncodingIDsBelongTest) {
