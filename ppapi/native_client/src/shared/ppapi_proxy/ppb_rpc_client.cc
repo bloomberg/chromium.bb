@@ -1120,6 +1120,61 @@ NaClSrpcError PpbFontRpcClient::PPB_Font_PixelOffsetForCharacter(
   return retval;
 }
 
+NaClSrpcError PpbFullscreenRpcClient::PPB_Fullscreen_IsFullscreen(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t* success)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Fullscreen_IsFullscreen:i:i",
+      instance,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFullscreenRpcClient::PPB_Fullscreen_SetFullscreen(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t fullscreen,
+    int32_t* success)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Fullscreen_SetFullscreen:ii:i",
+      instance,
+      fullscreen,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbFullscreenRpcClient::PPB_Fullscreen_GetScreenSize(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    nacl_abi_size_t* size_bytes, char* size,
+    int32_t* success)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Fullscreen_GetScreenSize:i:Ci",
+      instance,
+      size_bytes, size,
+      success
+  );
+  return retval;
+}
+
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,
@@ -2696,5 +2751,3 @@ NaClSrpcError PpbZoomRpcClient::PPB_Zoom_ZoomLimitsChanged(
   );
   return retval;
 }
-
-

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -20,6 +20,7 @@ struct PPB_FileIO;
 struct PPB_FileRef;
 struct PPB_FileSystem;
 struct PPB_Font_Dev;
+struct PPB_Fullscreen_Dev;
 struct PPB_Graphics2D;
 struct PPB_Graphics3D_Dev;
 struct PPB_ImageData;
@@ -74,6 +75,7 @@ const PPB_WheelInputEvent* PPBWheelInputEvent();
 const PPB_Context3D_Dev* PPBContext3DDev();
 const PPB_CursorControl_Dev* PPBCursorControlDev();
 const PPB_Font_Dev* PPBFontDev();
+const PPB_Fullscreen_Dev* PPBFullscreenDev();
 const PPB_Graphics3D_Dev* PPBGraphics3DDev();
 const PPB_Memory_Dev* PPBMemoryDev();
 const PPB_OpenGLES2_Dev* PPBOpenGLES2Dev();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
@@ -147,6 +148,11 @@ const PPB_Font_Dev* PPBFontDev() {
       GetBrowserInterface(PPB_FONT_DEV_INTERFACE));
 }
 
+const PPB_Fullscreen_Dev* PPBFullscreenDev() {
+  return reinterpret_cast<const PPB_Fullscreen_Dev*>(
+      GetBrowserInterface(PPB_FULLSCREEN_DEV_INTERFACE));
+}
+
 const PPB_Memory_Dev* PPBMemoryDev() {
   return reinterpret_cast<const PPB_Memory_Dev*>(
       GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
@@ -176,4 +182,3 @@ const PPB_Widget_Dev* PPBWidgetDev() {
   return  reinterpret_cast<const PPB_Widget_Dev*>(
       GetBrowserInterface(PPB_WIDGET_DEV_INTERFACE));
 }
-

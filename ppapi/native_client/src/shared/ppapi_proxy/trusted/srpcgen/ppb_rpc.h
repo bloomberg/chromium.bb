@@ -466,6 +466,32 @@ class PpbFontRpcServer {
   void operator=(const PpbFontRpcServer);
 };  // class PpbFontRpcServer
 
+class PpbFullscreenRpcServer {
+ public:
+  static void PPB_Fullscreen_IsFullscreen(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t* success);
+  static void PPB_Fullscreen_SetFullscreen(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t fullscreen,
+      int32_t* success);
+  static void PPB_Fullscreen_GetScreenSize(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      nacl_abi_size_t* size_bytes, char* size,
+      int32_t* success);
+
+ private:
+  PpbFullscreenRpcServer();
+  PpbFullscreenRpcServer(const PpbFullscreenRpcServer&);
+  void operator=(const PpbFullscreenRpcServer);
+};  // class PpbFullscreenRpcServer
+
 class PpbGraphics2DRpcServer {
  public:
   static void PPB_Graphics2D_Create(
@@ -1097,4 +1123,3 @@ class PpbRpcs {
 
 
 #endif  // GEN_PPAPI_PROXY_PPB_RPC_H_
-

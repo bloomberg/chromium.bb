@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,10 @@
 
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
-#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -102,6 +103,7 @@ const PPB_FileRef* PPBFileRefInterface();
 const PPB_FileSystem* PPBFileSystemInterface();
 const PPB_Find_Dev* PPBFindInterface();
 const PPB_Font_Dev* PPBFontInterface();
+const PPB_Fullscreen_Dev* PPBFullscreenInterface();
 const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_Graphics3D_Dev* PPBGraphics3DInterface();
 const PPB_Graphics3DTrusted_Dev* PPBGraphics3DTrustedInterface();

@@ -903,10 +903,10 @@ Plugin::Plugin(PP_Instance pp_instance)
       enable_dev_interface_(false),
       replayDidChangeView(false),
       replayHandleDocumentLoad(false),
-      last_event_bytes_received_(0),
       init_time_(0),
       ready_time_(0),
-      nexe_size_(0) {
+      nexe_size_(0),
+      last_event_bytes_received_(0) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32")\n", static_cast<void*>(this), pp_instance));
   NaClSrpcModuleInit();
@@ -1752,9 +1752,9 @@ void Plugin::ReportLoadAbort() {
 
 void Plugin::UpdateNexeDownloadProgress(
     PP_Instance pp_instance,
-    PP_Resource pp_resource,
-    int64_t bytes_sent,
-    int64_t total_bytes_to_be_sent,
+    PP_Resource /*pp_resource*/,
+    int64_t /*bytes_sent*/,
+    int64_t /*total_bytes_to_be_sent*/,
     int64_t bytes_received,
     int64_t total_bytes_to_be_received)
 {

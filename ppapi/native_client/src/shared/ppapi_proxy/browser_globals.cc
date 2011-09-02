@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -353,6 +353,13 @@ const PPB_Font_Dev* PPBFontInterface() {
   static const PPB_Font_Dev* ppb =
       static_cast<const PPB_Font_Dev*>(
         GetBrowserInterfaceSafe(PPB_FONT_DEV_INTERFACE));
+  return ppb;
+}
+
+const PPB_Fullscreen_Dev* PPBFullscreenInterface() {
+  static const PPB_Fullscreen_Dev* ppb =
+      static_cast<const PPB_Fullscreen_Dev*>(
+        GetBrowserInterfaceSafe(PPB_FULLSCREEN_DEV_INTERFACE));
   return ppb;
 }
 

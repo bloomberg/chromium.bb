@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -17,6 +17,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_system.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_find.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_font.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_fullscreen.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_2d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_graphics_3d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_image_data.h"
@@ -58,6 +59,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_FILESYSTEM_INTERFACE, PluginFileSystem::GetInterface(), true },
   { PPB_FIND_DEV_INTERFACE, PluginFind::GetInterface(), true },
   { PPB_FONT_DEV_INTERFACE, PluginFont::GetInterface(), true },
+  { PPB_FULLSCREEN_DEV_INTERFACE, PluginFullscreen::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
   { PPB_GRAPHICS_3D_DEV_INTERFACE, PluginGraphics3D::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },

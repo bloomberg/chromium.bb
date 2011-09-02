@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Copyright (c) 2011 The Chromium Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -17,6 +17,17 @@
 
 Import('env')
 
+# Register new tests here as we can no longer add them to the DEPS-ed in
+# native_client/SConstruct in the same CL.
+#
+# TODO(polina, bradnelson): take out this temporary work-around for adding new
+# tests when we have a common place to add these
+# (e.g. ppapi/native_client/nacl.scons) included into native_client/SConstruct.
+env_clone = env.Clone()
+# The test is flaky. Disable for now.
+#env_clone.SConscript('../ppapi_browser/ppb_fullscreen/nacl.scons',
+#                     exports=['env'])
+
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
 env.ComponentLibrary('ppapi_test_lib',
@@ -24,4 +35,4 @@ env.ComponentLibrary('ppapi_test_lib',
                       'internal_utils.cc',
                       'testable_callback.cc',
                       'module_instance.cc',
-                      'test_interface.cc']);
+                      'test_interface.cc'])
