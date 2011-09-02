@@ -92,7 +92,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
   EXPECT_TRUE(extension != NULL);
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, FindLink) {
+// Flakily fails on Linux.  http://crbug.com/95280
+#if defined(OS_LINUX)
+#define MAYBE_FindLink FLAKY_FindLink
+#else
+#define MAYBE_FindLink FindLink
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_FindLink) {
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "find_link.html"));
 
