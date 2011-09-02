@@ -2005,7 +2005,7 @@ FileManager.prototype = {
       }
     });
 
-    this.getDescription(this.getLeadEntry(), function(desc) {
+    this.getDescription(leadEntry, function(desc) {
       self.clearDescription_();
 
       if (self.getLeadEntry() != leadEntry) {
@@ -2036,11 +2036,10 @@ FileManager.prototype = {
 
   FileManager.prototype.getLeadEntry = function() {
     var leadIndex = this.currentList_.selectionModel.leadIndex;
-    if (leadIndex > -1) {
-      return this.dataModel_.item(leadIndex);
-    } else {
+    if (leadIndex < 0)
       return null;
-    }
+
+    return this.dataModel_.item(leadIndex);
   };
 
   FileManager.prototype.formatMetadataValue_ = function(obj) {
@@ -2446,8 +2445,10 @@ FileManager.prototype = {
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       // If this is a save-as dialog, copy the selected file into the filename
       // input text box.
-      var leadEntry = this.getLeadEntry();
-      if (leadEntry && leadEntry.isFile)
+
+      if (this.selection &&
+          this.selection.totalCount == 1 &&
+          this.selection.entries[0].isFile)
         this.filenameInput_.value = leadEntry.name;
     }
 
@@ -2547,11 +2548,11 @@ FileManager.prototype = {
       return;
     }
 
-    var entry = this.getLeadEntry();
-    if (!entry) {
+    if (this.selection.totalCount != 1) {
       console.log('Invalid selection');
       return;
     }
+    var entry = this.selection.entries[0];
 
     if (entry.isDirectory) {
       return this.onDirectoryAction(entry);
@@ -3035,12 +3036,11 @@ FileManager.prototype = {
         break;
 
       case 13:  // Enter => Change directory or complete dialog.
-        var leadEntry = this.getLeadEntry();
-        if (leadEntry &&
-            leadEntry.isDirectory &&
+        if (this.selection.totalCount == 1 &&
+            this.selection.entries[0].isDirectory &&
             this.dialogType_ != FileManager.SELECT_FOLDER) {
           event.preventDefault();
-          this.onDirectoryAction(leadEntry);
+          this.onDirectoryAction(this.selection.entries[0]);
         } else if (!this.okButton_.disabled) {
           event.preventDefault();
           this.onOk_();
