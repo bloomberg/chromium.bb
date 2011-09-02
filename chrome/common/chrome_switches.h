@@ -155,6 +155,7 @@ extern const char kEnableSSLCachedInfo[];
 extern const char kEnableSyncOAuth[];
 extern const char kEnableSyncSearchEngines[];
 extern const char kEnableSyncSessions[];
+extern const char kEnableSyncSessionsForOtherClients[];
 extern const char kEnableSyncedBookmarksFolder[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableTcpFastOpen[];

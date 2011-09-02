@@ -7,6 +7,9 @@ include_rules = [
   "-chrome/browser/sync/api",
   "-chrome/browser/sync/glue",
 
+  # Some functionality depends on command-line swithces
+  "+chrome/common/chrome_switches.h",
+
   # unittests need this for mac osx keychain overriding
   "+chrome/browser/password_manager/encryptor.h",
 

@@ -916,6 +916,28 @@ TEST_F(SyncManagerTest, UpdateEnabledTypes) {
   EXPECT_EQ(2, update_enabled_types_call_count_);
 }
 
+TEST_F(SyncManagerTest, DoNotSyncTabsInNigoriNode) {
+  syncable::ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::TYPED_URLS);
+  sync_manager_.MaybeSetSyncTabsInNigoriNode(encrypted_types);
+
+  ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+  ReadNode node(&trans);
+  ASSERT_TRUE(node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
+  EXPECT_FALSE(node.GetNigoriSpecifics().sync_tabs());
+}
+
+TEST_F(SyncManagerTest, SyncTabsInNigoriNode) {
+  syncable::ModelTypeSet encrypted_types;
+  encrypted_types.insert(syncable::SESSIONS);
+  sync_manager_.MaybeSetSyncTabsInNigoriNode(encrypted_types);
+
+  ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
+  ReadNode node(&trans);
+  ASSERT_TRUE(node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
+  EXPECT_TRUE(node.GetNigoriSpecifics().sync_tabs());
+}
+
 TEST_F(SyncManagerTest, ProcessJsMessage) {
   const JsArgList kNoArgs;
 

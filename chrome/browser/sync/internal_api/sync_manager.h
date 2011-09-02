@@ -434,6 +434,10 @@ class SyncManager {
   // Called when the user disables or enables a sync type.
   void UpdateEnabledTypes();
 
+  // Conditionally sets the flag in the Nigori node which instructs other
+  // clients to start syncing tabs.
+  void MaybeSetSyncTabsInNigoriNode(const syncable::ModelTypeSet enabled_types);
+
   // Put the syncer in normal mode ready to perform nudges and polls.
   void StartSyncingNormally();
 

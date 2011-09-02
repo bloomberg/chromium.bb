@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/weak_handle.h"
+#include "chrome/common/chrome_switches.h"
 #include "net/base/network_change_notifier.h"
 
 using std::string;
@@ -256,6 +258,10 @@ class SyncManager::SyncInternal
 
   // Called when the user disables or enables a sync type.
   void UpdateEnabledTypes();
+
+  // Conditionally sets the flag in the Nigori node which instructs other
+  // clients to start syncing tabs.
+  void MaybeSetSyncTabsInNigoriNode(const syncable::ModelTypeSet enabled_types);
 
   // Tell the sync engine to start the syncing process.
   void StartSyncingNormally();
@@ -678,6 +684,11 @@ void SyncManager::UpdateEnabledTypes() {
   data_->UpdateEnabledTypes();
 }
 
+void SyncManager::MaybeSetSyncTabsInNigoriNode(
+    const syncable::ModelTypeSet enabled_types) {
+  data_->MaybeSetSyncTabsInNigoriNode(enabled_types);
+}
+
 bool SyncManager::InitialSyncEndedForAllEnabledTypes() {
   return data_->InitialSyncEndedForAllEnabledTypes();
 }
@@ -965,6 +976,30 @@ void SyncManager::SyncInternal::UpdateEnabledTypes() {
     enabled_types.insert(it->first);
   }
   sync_notifier_->UpdateEnabledTypes(enabled_types);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncSessionsForOtherClients)) {
+    MaybeSetSyncTabsInNigoriNode(enabled_types);
+  }
+}
+
+void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
+    const syncable::ModelTypeSet enabled_types) {
+  // The initialized_ check is to ensure that we don't CHECK in GetUserShare
+  // when this is called on start-up. It's ok to ignore that case, since
+  // presumably this would've run when the user originally enabled sessions.
+  if (initialized_ && enabled_types.count(syncable::SESSIONS) > 0) {
+    WriteTransaction trans(FROM_HERE, GetUserShare());
+    WriteNode node(&trans);
+    if (!node.InitByTagLookup(kNigoriTag)) {
+      NOTREACHED() << "Unable to set 'sync_tabs' bit because Nigori node not "
+                   << "found.";
+      return;
+    }
+
+    sync_pb::NigoriSpecifics specifics(node.GetNigoriSpecifics());
+    specifics.set_sync_tabs(true);
+    node.SetNigoriSpecifics(specifics);
+  }
 }
 
 void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
