@@ -179,7 +179,7 @@ class CustomThreadWatcher : public ThreadWatcher {
     State exit_state = INITIALIZED;
     // Keep the thread that is running the tests waiting until ThreadWatcher
     // object's state changes to the expected_state or until wait_time elapses.
-    for (int i = 0; i < ThreadWatcher::kPingCount; ++i) {
+    for (uint32 i = 0; i < unresponsive_threshold_; ++i) {
         TimeTicks end_time = TimeTicks::Now() + wait_time;
         {
           base::AutoLock auto_lock(custom_lock_);
@@ -208,7 +208,7 @@ class CustomThreadWatcher : public ThreadWatcher {
     // Keep the thread that is running the tests waiting until ThreadWatcher
     // object's check_response_state_ changes to the expected_state or until
     // wait_time elapses.
-    for (int i = 0; i < ThreadWatcher::kPingCount; ++i) {
+    for (uint32 i = 0; i < unresponsive_threshold_; ++i) {
         TimeTicks end_time = TimeTicks::Now() + wait_time;
         {
           base::AutoLock auto_lock(custom_lock_);

@@ -19,9 +19,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-// static
-const int ThreadWatcher::kPingCount = 6;
-
 // ThreadWatcher methods and members.
 ThreadWatcher::ThreadWatcher(const BrowserThread::ID& thread_id,
                              const std::string& thread_name,
@@ -39,7 +36,7 @@ ThreadWatcher::ThreadWatcher(const BrowserThread::ID& thread_id,
       pong_time_(ping_time_),
       ping_sequence_number_(0),
       active_(false),
-      ping_count_(kPingCount),
+      ping_count_(unresponsive_threshold),
       response_time_histogram_(NULL),
       unresponsive_time_histogram_(NULL),
       unresponsive_count_(0),
@@ -103,7 +100,7 @@ void ThreadWatcher::ActivateThreadWatching() {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
   if (active_) return;
   active_ = true;
-  ping_count_ = kPingCount;
+  ping_count_ = unresponsive_threshold_;
   ResetHangCounters();
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -124,11 +121,11 @@ void ThreadWatcher::WakeUp() {
   if (!active_) return;
 
   if (ping_count_ <= 0) {
-    ping_count_ = kPingCount;
+    ping_count_ = unresponsive_threshold_;
     ResetHangCounters();
     PostPingMessage();
   } else {
-    ping_count_ = kPingCount;
+    ping_count_ = unresponsive_threshold_;
   }
 }
 
@@ -317,15 +314,12 @@ const int ThreadWatcherList::kSleepSeconds = 1;
 // static
 const int ThreadWatcherList::kUnresponsiveSeconds = 2;
 // static
-const int ThreadWatcherList::kUnresponsiveCount = 6;
+const int ThreadWatcherList::kUnresponsiveCount = 9;
 // static
 const int ThreadWatcherList::kLiveThreadsThreshold = 1;
 
 // static
 void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
-  ThreadWatcherObserver::SetupNotifications(
-      base::TimeDelta::FromSeconds(kSleepSeconds * ThreadWatcher::kPingCount));
-
   uint32 unresponsive_threshold;
   std::set<std::string> crash_on_hang_thread_names;
   uint32 live_threads_threshold;
@@ -333,6 +327,9 @@ void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
                    &unresponsive_threshold,
                    &crash_on_hang_thread_names,
                    &live_threads_threshold);
+
+  ThreadWatcherObserver::SetupNotifications(
+      base::TimeDelta::FromSeconds(kSleepSeconds * unresponsive_threshold));
 
   WatchDogThread::PostDelayedTask(
       FROM_HERE,
