@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
@@ -34,6 +35,15 @@
 #include "content/common/notification_service.h"
 
 namespace {
+
+// The instance is alive.
+const uint32 kMagicIdAlive = 0xCa11ab1e;
+
+// The destructor is running (and hasn't finished yet).
+const uint32 kMagicIdDestroying = 0xB100D1ED;
+
+  // The instance has been deleted.
+const uint32 kMagicIdDead = 0xDECEA5ED;
 
 // Returns true if the specified transition is one of the types that cause the
 // opener relationships for the tab in which the transition occured to be
@@ -65,7 +75,7 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
       profile_(profile),
       closing_all_(false),
       order_controller_(NULL),
-      magic_id_(0) {
+      magic_id_(kMagicIdAlive) {
   DCHECK(delegate_);
   registrar_.Add(this,
                  content::NOTIFICATION_TAB_CONTENTS_DESTROYED,
@@ -76,15 +86,54 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
   order_controller_ = new TabStripModelOrderController(this);
 }
 
+// TODO(eroman): Remove this when done investigating 93747.
+#if defined(COMPILER_MSVC)
+#pragma optimize("", off)
+#endif
+
 TabStripModel::~TabStripModel() {
-  magic_id_ = 0x1234567;
+  CheckIsAliveAndWell();
+  magic_id_ = kMagicIdDestroying;
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabStripModelDeleted());
   STLDeleteElements(&contents_data_);
   delete order_controller_;
   order_controller_ = NULL;
-  magic_id_ = 0x76543210;
+  magic_id_ = kMagicIdDead;
 }
+
+TabStripModel::Padding::Padding() {
+  for (size_t i = 0; i < arraysize(bytes_); ++i)
+    bytes_[i] = static_cast<char>(89 + i);
+}
+
+void TabStripModel::Padding::CheckValid() const {
+  for (size_t i = 0; i < arraysize(bytes_); ++i)
+    CHECK_EQ(bytes_[i], static_cast<char>(89 + i));
+}
+
+void TabStripModel::CheckIsAliveAndWell() const {
+  // Copy everything that might be of interest onto the stack, to guarantee it
+  // will be available in the minidumps should we crash here.
+  uint32 magic_id = magic_id_;
+  Padding padding1 = padding1_;
+  Padding padding2 = padding2_;
+
+  // Make sure the object is alive.
+  CHECK_EQ(magic_id_, kMagicIdAlive);
+
+  // Make sure our memory hasn't been tampered with.
+  padding1_.CheckValid();
+  padding2_.CheckValid();
+
+  base::debug::Alias(&magic_id);
+  base::debug::Alias(&padding1);
+  base::debug::Alias(&padding2);
+}
+
+#if defined(COMPILER_MSVC)
+#pragma optimize("", on)
+#endif
 
 void TabStripModel::AddObserver(TabStripModelObserver* observer) {
   observers_.AddObserver(observer);
@@ -211,7 +260,7 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
   if (contents_data_.empty())
     return NULL;
 
-  DCHECK(ContainsIndex(index));
+  CHECK(ContainsIndex(index));
 
   TabContentsWrapper* removed_contents = GetContentsAt(index);
   bool was_selected = IsTabSelected(index);
@@ -260,7 +309,7 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
 }
 
 void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
-  DCHECK(ContainsIndex(index));
+  CHECK(ContainsIndex(index));
   TabContentsWrapper* old_contents = GetActiveTabContents();
   TabStripSelectionModel old_model;
   old_model.Copy(selection_model_);
@@ -271,7 +320,7 @@ void TabStripModel::ActivateTabAt(int index, bool user_gesture) {
 void TabStripModel::MoveTabContentsAt(int index,
                                       int to_position,
                                       bool select_after_move) {
-  DCHECK(ContainsIndex(index));
+  CHECK(ContainsIndex(index));
   if (index == to_position)
     return;
 
@@ -341,11 +390,10 @@ int TabStripModel::GetIndexOfTabContents(
 }
 
 int TabStripModel::GetWrapperIndex(const TabContents* contents) const {
+  CheckIsAliveAndWell();
   int index = 0;
   TabContentsDataVector::const_iterator iter = contents_data_.begin();
   for (; iter != contents_data_.end(); ++iter, ++index) {
-    CHECK(*iter) << magic_id_;
-    CHECK((*iter)->contents) << magic_id_;
     if ((*iter)->contents->tab_contents() == contents)
       return index;
   }
@@ -1266,6 +1314,9 @@ void TabStripModel::SelectRelativeTab(bool next) {
 void TabStripModel::MoveTabContentsAtImpl(int index,
                                           int to_position,
                                           bool select_after_move) {
+  CHECK(ContainsIndex(index));
+  CHECK(to_position >=0 || to_position <= count());
+
   TabContentsData* moved_data = contents_data_.at(index);
   contents_data_.erase(contents_data_.begin() + index);
   contents_data_.insert(contents_data_.begin() + to_position, moved_data);
