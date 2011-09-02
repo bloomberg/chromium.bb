@@ -58,7 +58,6 @@ bool FileDownloader::Open(
   file_open_notify_callback_ = callback;
   flags_ = flags;
   buffer_.clear();
-  pp::Module* module = pp::Module::Get();
   pp::URLRequestInfo url_request(instance_);
 
   do {
