@@ -273,12 +273,14 @@ void AppLauncherHandler::Observe(int type,
       const std::string& id = *Details<const std::string>(details).ptr();
       const AppNotification* notification =
           extension_service_->app_notification_manager()->GetLast(id);
+      base::StringValue id_value(id);
       if (notification) {
+        scoped_ptr<DictionaryValue> notification_value(
+            SerializeNotification(*notification));
         web_ui_->CallJavascriptFunction("appNotificationChanged",
-            StringValue(id), *SerializeNotification(*notification));
+            id_value, *notification_value.get());
       } else {
-        web_ui_->CallJavascriptFunction("appNotificationChanged",
-            StringValue(id));
+        web_ui_->CallJavascriptFunction("appNotificationChanged", id_value);
       }
       break;
     }
