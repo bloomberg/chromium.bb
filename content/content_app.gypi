@@ -11,8 +11,12 @@
         '..',
       ],
       'dependencies': [
+        'content_browser',
         'content_common',
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../crypto/crypto.gyp:crypto',
+        '../ui/ui.gyp:ui',
       ],
       'sources': [
         'app/content_main.cc',

@@ -5,8 +5,6 @@
 #include "chrome/app/chrome_main.h"
 
 #include "base/command_line.h"
-#include "base/debug/debugger.h"
-#include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
@@ -17,7 +15,6 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "crypto/nss_util.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/common/chrome_constants.h"
@@ -38,13 +35,9 @@
 #include "content/common/content_client.h"
 #include "content/common/content_counters.h"
 #include "content/common/content_paths.h"
-#include "content/common/main_function_params.h"
-#include "content/common/sandbox_init_wrapper.h"
-#include "content/common/set_process_title.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
@@ -60,13 +53,10 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/os_crash_dumps.h"
-#include "base/mach_ipc_mac.h"
-#include "base/system_monitor/system_monitor.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
-#include "content/browser/mach_broker_mac.h"
 #include "grit/chromium_strings.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -79,7 +69,6 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "chrome/common/nacl_fork_delegate_linux.h"
-#include "content/common/zygote_fork_delegate_linux.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -112,18 +101,8 @@ base::LazyInstance<chrome::ChromeContentPluginClient>
 
 extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
-extern int GpuMain(const MainFunctionParams&);
-extern int PluginMain(const MainFunctionParams&);
-extern int PpapiPluginMain(const MainFunctionParams&);
-extern int PpapiBrokerMain(const MainFunctionParams&);
-extern int WorkerMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
-extern int UtilityMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-extern int ZygoteMain(const MainFunctionParams&,
-                      ZygoteForkDelegate* forkdelegate);
-#endif
 #if defined(_WIN64)
 extern int NaClBrokerMain(const MainFunctionParams&);
 #endif
@@ -232,19 +211,6 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
 }
 #endif  // defined(OS_LINUX)
 
-void SetupCRT(const CommandLine& command_line) {
-#if defined(OS_WIN)
-#if defined(_CRTDBG_MAP_ALLOC)
-  _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
-  _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-#else
-  if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
-    _CrtSetReportMode(_CRT_ASSERT, 0);
-  }
-#endif
-#endif
-}
-
 // Enable the heap profiler if the appropriate command-line switch is
 // present, bailing out of the app we can't.
 void EnableHeapProfiler(const CommandLine& command_line) {
@@ -277,38 +243,6 @@ void InitializeChromeContentClient(const std::string& process_type) {
   }
 }
 
-void CommonSubprocessInit(const std::string& process_type) {
-#if defined(OS_WIN)
-  // HACK: Let Windows know that we have started.  This is needed to suppress
-  // the IDC_APPSTARTING cursor from being displayed for a prolonged period
-  // while a subprocess is starting.
-  PostThreadMessage(GetCurrentThreadId(), WM_NULL, 0, 0);
-  MSG msg;
-  PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
-#endif
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Various things break when you're using a locale where the decimal
-  // separator isn't a period.  See e.g. bugs 22782 and 39964.  For
-  // all processes except the browser process (where we call system
-  // APIs that may rely on the correct locale for formatting numbers
-  // when presenting them to the user), reset the locale for numeric
-  // formatting.
-  // Note that this is not correct for plugin processes -- they can
-  // surface UI -- but it's likely they get this wrong too so why not.
-  setlocale(LC_NUMERIC, "C");
-#endif
-
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
-  // this up for the browser process in a different manner. Zygotes need to call
-  // InitCrashReporter() in RunZygote().
-  if (process_type != switches::kZygoteProcess)
-    InitCrashReporter();
-#endif
-
-  InitializeChromeContentClient(process_type);
-}
-
 // Returns true if this subprocess type needs the ResourceBundle initialized
 // and resources loaded.
 bool SubprocessNeedsResourceBundle(const std::string& process_type) {
@@ -329,18 +263,6 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       process_type == switches::kRendererProcess ||
       process_type == switches::kExtensionProcess ||
       process_type == switches::kUtilityProcess;
-}
-
-// Returns true if this process is a child of the browser process.
-bool SubprocessIsBrowserChild(const std::string& process_type) {
-  if (process_type.empty() ||
-#if defined(OS_MACOSX)
-      process_type == switches::kRelauncherProcess ||
-#endif
-      process_type == switches::kServiceProcess) {
-    return false;
-  }
-  return true;
 }
 
 #if defined(OS_MACOSX)
@@ -365,28 +287,6 @@ void SetMacProcessName(const std::string& process_type) {
   }
 }
 
-// Completes the Mach IPC handshake by sending this process' task port to the
-// parent process.  The parent is listening on the Mach port given by
-// |GetMachPortName()|.  The task port is used by the parent to get CPU/memory
-// stats to display in the task manager.
-void SendTaskPortToParentProcess() {
-  const mach_msg_timeout_t kTimeoutMs = 100;
-  const int32_t kMessageId = 0;
-  std::string mach_port_name = MachBroker::GetMachPortName();
-
-  base::MachSendMessage child_message(kMessageId);
-  if (!child_message.AddDescriptor(mach_task_self())) {
-    LOG(ERROR) << "child AddDescriptor(mach_task_self()) failed.";
-    return;
-  }
-
-  base::MachPortSender child_sender(mach_port_name.c_str());
-  kern_return_t err = child_sender.SendMessage(child_message, kTimeoutMs);
-  if (err != KERN_SUCCESS) {
-    LOG(ERROR) << StringPrintf("child SendMessage() failed: 0x%x %s", err,
-                               mach_error_string(err));
-  }
-}
 #endif  // defined(OS_MACOSX)
 
 void InitializeStatsTable(base::ProcessId browser_pid,
@@ -448,137 +348,14 @@ void HandleHelpSwitches(const CommandLine& command_line) {
 
 #endif  // OS_POSIX
 
-// We dispatch to a process-type-specific FooMain() based on a command-line
-// flag.  This struct is used to build a table of (flag, main function) pairs.
 struct MainFunction {
   const char* name;
   int (*function)(const MainFunctionParams&);
 };
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-// On platforms that use the zygote, we have a special subset of
-// subprocesses that are launched via the zygote.  This function
-// fills in some process-launching bits around ZygoteMain().
-// Returns the exit code of the subprocess.
-int RunZygote(const MainFunctionParams& main_function_params) {
-  static const MainFunction kMainFunctions[] = {
-    { switches::kRendererProcess,    RendererMain },
-    { switches::kExtensionProcess,   RendererMain },
-    { switches::kWorkerProcess,      WorkerMain },
-    { switches::kPpapiPluginProcess, PpapiPluginMain },
-#if !defined(DISABLE_NACL)
-    { switches::kNaClLoaderProcess,  NaClMain },
-#endif
-  };
-
-  // Each Renderer we spawn will re-attempt initialization of the media
-  // libraries, at which point failure will be detected and handled, so
-  // we do not need to cope with initialization failures here.
-  FilePath media_path;
-  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
-    media::InitializeMediaLibrary(media_path);
-
-  // This function call can return multiple times, once per fork().
-#if defined(DISABLE_NACL)
-  if (!ZygoteMain(main_function_params, NULL))
-    return 1;
-#else
-  NaClForkDelegate* nacl_delegate = new NaClForkDelegate();
-  int rval = ZygoteMain(main_function_params, nacl_delegate);
-  if (nacl_delegate)
-    delete nacl_delegate;
-  if (!rval)
-    return 1;
-#endif
-
-  // Zygote::HandleForkRequest may have reallocated the command
-  // line so update it here with the new version.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  // The StatsTable must be initialized in each process; we already
-  // initialized for the browser process, now we need to initialize
-  // within the new processes as well.
-  pid_t browser_pid = base::GetParentProcessId(
-      base::GetParentProcessId(base::GetCurrentProcId()));
-  InitializeStatsTable(browser_pid, command_line);
-
-  MainFunctionParams main_params(command_line,
-                                 main_function_params.sandbox_info_,
-                                 main_function_params.autorelease_pool_);
-  // Get the new process type from the new command line.
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
-  // this up for the browser process in a different manner.
-  InitCrashReporter();
-#endif
-
-  InitializeChromeContentClient(process_type);
-
-  for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
-    if (process_type == kMainFunctions[i].name)
-      return kMainFunctions[i].function(main_params);
-  }
-
-  NOTREACHED() << "Unknown zygote process type: " << process_type;
-  return 1;
-}
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
-// Run the FooMain() for a given process type.
-// If |process_type| is empty, runs BrowserMain().
-// Returns the exit code for this process.
-int RunNamedProcessTypeMain(const std::string& process_type,
-                            const MainFunctionParams& main_function_params) {
-  static const MainFunction kMainFunctions[] = {
-    { "",                            BrowserMain },
-    { switches::kRendererProcess,    RendererMain },
-    // An extension process is just a renderer process. We use a different
-    // command line argument to differentiate crash reports.
-    { switches::kExtensionProcess,   RendererMain },
-    { switches::kPluginProcess,      PluginMain },
-    { switches::kWorkerProcess,      WorkerMain },
-    { switches::kPpapiPluginProcess, PpapiPluginMain },
-    { switches::kPpapiBrokerProcess, PpapiBrokerMain },
-    { switches::kUtilityProcess,     UtilityMain },
-    { switches::kGpuProcess,         GpuMain },
-    { switches::kServiceProcess,     ServiceProcessMain },
-
-#if defined(OS_MACOSX)
-    // TODO(port): Use OOP profile import - http://crbug.com/22142 .
-    { switches::kProfileImportProcess, ProfileImportMain },
-    { switches::kRelauncherProcess,  mac_relauncher::internal::RelauncherMain },
-#endif
-#if !defined(DISABLE_NACL)
-    { switches::kNaClLoaderProcess, NaClMain },
-#if defined(_WIN64)  // The broker process is used only on Win64.
-    { switches::kNaClBrokerProcess, NaClBrokerMain },
-#endif
-#endif  // DISABLE_NACL
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    // Zygote startup is special -- see RunZygote comments above
-    // for why we don't use ZygoteMain directly.
-    { switches::kZygoteProcess, RunZygote },
-#endif
-  };
-
-  for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
-    if (process_type == kMainFunctions[i].name)
-      return kMainFunctions[i].function(main_function_params);
-  }
-
-  NOTREACHED() << "Unknown process type: " << process_type;
-  return 1;
-}
-
 class ChromeMainDelegate : public content::ContentMainDelegate {
  public:
-  virtual bool BasicStartupComplete(
-      int* exit_code,
-      base::mac::ScopedNSAutoreleasePool* autorelease_pool) OVERRIDE {
-    autorelease_pool_ = autorelease_pool;
+  virtual bool BasicStartupComplete(int* exit_code) OVERRIDE {
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesLoader::Get()->SaveChromeMainStats();
 #endif
@@ -623,12 +400,347 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
     return false;
   }
 
-  base::mac::ScopedNSAutoreleasePool* autorelease_pool() {
-    return autorelease_pool_;
+#if defined(OS_MACOSX)
+  void InitMacCrashReporter(const CommandLine& command_line,
+                            const std::string& process_type) {
+
+    // TODO(mark): Right now, InitCrashReporter() needs to be called after
+    // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally,
+    // Breakpad initialization could occur sooner, preferably even before the
+    // framework dylib is even loaded, to catch potential early crashes.
+    InitCrashReporter();
+
+#if defined(NDEBUG)
+    bool is_debug_build = false;
+#else
+    bool is_debug_build = true;
+#endif
+
+    // Details on when we enable Apple's Crash reporter.
+    //
+    // Motivation:
+    //    In debug mode it takes Apple's crash reporter eons to generate a crash
+    // dump.
+    //
+    // What we do:
+    // * We only pass crashes for foreground processes to Apple's Crash
+    //    reporter. At the time of this writing, that means just the Browser
+    //    process.
+    // * If Breakpad is enabled, it will pass browser crashes to Crash Reporter
+    //    itself.
+    // * If Breakpad is disabled, we only turn on Crash Reporter for the
+    //    Browser process in release mode.
+    if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
+      bool disable_apple_crash_reporter = is_debug_build ||
+          base::mac::IsBackgroundOnlyProcess();
+      if (!IsCrashReporterEnabled() && disable_apple_crash_reporter) {
+        base::mac::DisableOSCrashDumps();
+      }
+    }
+
+    // Mac Chrome is packaged with a main app bundle and a helper app bundle.
+    // The main app bundle should only be used for the browser process, so it
+    // should never see a --type switch (switches::kProcessType).  Likewise,
+    // the helper should always have a --type switch.
+    //
+    // This check is done this late so there is already a call to
+    // base::mac::IsBackgroundOnlyProcess(), so there is no change in
+    // startup/initialization order.
+
+    // The helper's Info.plist marks it as a background only app.
+    if (base::mac::IsBackgroundOnlyProcess()) {
+      CHECK(command_line.HasSwitch(switches::kProcessType) &&
+            !process_type.empty())
+          << "Helper application requires --type.";
+
+      // In addition, some helper flavors only work with certain process types.
+      FilePath executable;
+      if (PathService::Get(base::FILE_EXE, &executable) &&
+          executable.value().size() >= 3) {
+        std::string last_three =
+            executable.value().substr(executable.value().size() - 3);
+
+        if (last_three == " EH") {
+          CHECK_EQ(switches::kPluginProcess, process_type)
+              << "Executable-heap process requires --type="
+              << switches::kPluginProcess << ", saw " << process_type;
+        } else if (last_three == " NP") {
+          CHECK_EQ(switches::kNaClLoaderProcess, process_type)
+              << "Non-PIE process requires --type="
+              << switches::kNaClLoaderProcess << ", saw " << process_type;
+        } else {
+          CHECK(process_type != switches::kPluginProcess &&
+                process_type != switches::kNaClLoaderProcess)
+              << "Non-executable-heap PIE process is intolerant of --type="
+              << switches::kPluginProcess << " and "
+              << switches::kNaClLoaderProcess << ", saw " << process_type;
+        }
+      }
+    } else {
+      CHECK(!command_line.HasSwitch(switches::kProcessType) &&
+            process_type.empty())
+          << "Main application forbids --type, saw " << process_type;
+    }
+
+    if (IsCrashReporterEnabled())
+      InitCrashProcessInfo();
+  }
+#endif  // defined(OS_MACOSX)
+
+  virtual void PreSandboxStartup() OVERRIDE {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+
+    // Initialize the content client which that code uses to talk to Chrome.
+    content::SetContentClient(&chrome_content_client_);
+    InitializeChromeContentClient(process_type);
+
+    // Initialize the Chrome path provider.
+    chrome::RegisterPathProvider();
+
+#if defined(OS_MACOSX)
+    // On the Mac, the child executable lives at a predefined location within
+    // the app bundle's versioned directory.
+    PathService::Override(content::CHILD_PROCESS_EXE,
+        chrome::GetVersionedDirectory().
+            Append(chrome::kHelperProcessExecutablePath));
+
+    InitMacCrashReporter(command_line, process_type);
+#endif
+
+    // Notice a user data directory override if any
+    FilePath user_data_dir =
+        command_line.GetSwitchValuePath(switches::kUserDataDir);
+    chrome_main::CheckUserDataDirPolicy(&user_data_dir);
+    if (!user_data_dir.empty())
+      CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
+
+    base::ProcessId browser_pid = base::GetCurrentProcId();
+    if (!process_type.empty() &&
+#if defined(OS_MACOSX)
+        process_type != switches::kRelauncherProcess &&
+#endif
+        process_type != switches::kServiceProcess) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+      std::string channel_name =
+          command_line.GetSwitchValueASCII(switches::kProcessChannelID);
+
+      int browser_pid_int;
+      base::StringToInt(channel_name, &browser_pid_int);
+      browser_pid = static_cast<base::ProcessId>(browser_pid_int);
+      DCHECK_NE(browser_pid_int, 0);
+#elif defined(OS_POSIX)
+      // On linux, we're in the zygote here; so we need the parent process' id.
+      browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
+#endif
+    }
+    InitializeStatsTable(browser_pid, command_line);
+
+    startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>
+        (content::Counters::chrome_main()));
+
+    // Enable the heap profiler as early as possible!
+    EnableHeapProfiler(command_line);
+
+    // Enable Message Loop related state asap.
+    if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
+      MessageLoop::EnableHistogrammer(true);
+
+    // Single-process is an unsupported and not fully tested mode, so
+    // don't enable it for official Chrome builds.
+#if !defined(GOOGLE_CHROME_BUILD)
+    if (command_line.HasSwitch(switches::kSingleProcess)) {
+      RenderProcessHost::set_run_renderer_in_process(true);
+#if defined(OS_MACOSX)
+      // TODO(port-mac): This is from renderer_main_platform_delegate.cc.
+      // shess tried to refactor things appropriately, but it sprawled out
+      // of control because different platforms needed different styles of
+      // initialization.  Try again once we understand the process
+      // architecture needed and where it should live.
+      InitWebCoreSystemInterface();
+#endif
+
+      InitializeChromeContentRendererClient();
+    }
+#endif  // GOOGLE_CHROME_BUILD
+
+    logging::OldFileDeletionState file_state =
+        logging::APPEND_TO_OLD_LOG_FILE;
+    if (process_type.empty()) {
+      file_state = logging::DELETE_OLD_LOG_FILE;
+    }
+    logging::InitChromeLogging(command_line, file_state);
+
+    // Register internal Chrome schemes so they'll be parsed correctly. This
+    // must happen before we process any URLs with the affected schemes, and
+    // must be done in all processes that work with these URLs (i.e. including
+    // renderers).
+    chrome::RegisterChromeSchemes();
+
+#if defined(OS_WIN)
+    // TODO(darin): Kill this once http://crbug.com/52609 is fixed.
+    ResourceBundle::SetResourcesDataDLL(_AtlBaseModule.GetResourceInstance());
+#endif
+
+    if (SubprocessNeedsResourceBundle(process_type)) {
+      // Initialize ResourceBundle which handles files loaded from external
+      // sources.  The language should have been passed in to us from the
+      // browser process as a command line flag.
+      DCHECK(command_line.HasSwitch(switches::kLang) ||
+             process_type == switches::kZygoteProcess);
+
+      // TODO(markusheintz): The command line flag --lang is actually processed
+      // by the CommandLinePrefStore, and made available through the PrefService
+      // via the preference prefs::kApplicationLocale. The browser process uses
+      // the --lang flag to pass the value of the PrefService in here. Maybe
+      // this value could be passed in a different way.
+      const std::string locale =
+          command_line.GetSwitchValueASCII(switches::kLang);
+      const std::string loaded_locale =
+          ResourceBundle::InitSharedInstance(locale);
+      CHECK(!loaded_locale.empty()) << "Locale could not be found for " <<
+          locale;
+
+#if defined(OS_MACOSX)
+      // Update the process name (need resources to get the strings, so
+      // only do this when ResourcesBundle has been initialized).
+      SetMacProcessName(process_type);
+#endif  // defined(OS_MACOSX)
+
+#if defined(USE_LINUX_BREAKPAD)
+      // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain
+      // sets this up for the browser process in a different manner. Zygotes
+      // need to call InitCrashReporter() in RunZygote().
+      if (!process_type.is_empty() && process_type != switches::kZygoteProcess)
+        InitCrashReporter();
+#endif
+    }
+
+#if defined(OS_CHROMEOS)
+    // Read and cache ChromeOS version from file,
+    // to be used from inside the sandbox.
+    int32 major_version, minor_version, bugfix_version;
+    base::SysInfo::OperatingSystemVersionNumbers(
+        &major_version, &minor_version, &bugfix_version);
+#endif
   }
 
+  virtual void SandboxInitialized(const std::string& process_type) OVERRIDE {
+    startup_timer_->Stop();  // End of Startup Time Measurement.
+
+    // Note: If you are adding a new process type below, be sure to adjust the
+    // AdjustLinuxOOMScore function too.
+#if defined(OS_LINUX)
+    AdjustLinuxOOMScore(process_type);
+#endif
+  }
+
+  virtual int RunProcess(
+      const std::string& process_type,
+      const MainFunctionParams& main_function_params) OVERRIDE {
+    static const MainFunction kMainFunctions[] = {
+      { "",                            BrowserMain },
+      // An extension process is just a renderer process. We use a different
+      // command line argument to differentiate crash reports.
+      { switches::kExtensionProcess,   RendererMain },
+      { switches::kServiceProcess,     ServiceProcessMain },
+#if defined(OS_MACOSX)
+      // TODO(port): Use OOP profile import - http://crbug.com/22142 .
+      { switches::kProfileImportProcess, ProfileImportMain },
+      { switches::kRelauncherProcess,
+            mac_relauncher::internal::RelauncherMain },
+#endif
+#if !defined(DISABLE_NACL)
+      { switches::kNaClLoaderProcess, NaClMain },
+#if defined(_WIN64)  // The broker process is used only on Win64.
+      { switches::kNaClBrokerProcess, NaClBrokerMain },
+#endif
+#endif  // DISABLE_NACL
+    };
+
+    for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
+      if (process_type == kMainFunctions[i].name)
+        return kMainFunctions[i].function(main_function_params);
+    }
+
+    NOTREACHED() << "Unknown process type: " << process_type;
+    return 1;
+  }
+
+  virtual void ProcessExiting(const std::string& process_type) OVERRIDE {
+    if (SubprocessNeedsResourceBundle(process_type))
+      ResourceBundle::CleanupSharedInstance();
+
+    logging::CleanupChromeLogging();
+
+#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
+    // TODO(mark): See the TODO(mark) at InitCrashReporter.
+    DestructCrashReporter();
+#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
+  }
+
+#if defined(OS_MACOSX)
+  virtual bool ProcessRegistersWithSystemProcess(
+      const std::string& process_type) OVERRIDE {
+    return process_type == switches::kNaClLoaderProcess ||
+           process_type == switches::kExtensionProcess;
+  }
+
+  virtual bool ShouldSendMachPort(const std::string& process_type) OVERRIDE {
+    return process_type != switches::kRelauncherProcess &&
+           process_type != switches::kServiceProcess;
+  }
+
+  virtual bool DelaySandboxInitialization(
+      const std::string& process_type) OVERRIDE {
+    // Extensions are really renderers.
+    // NaClLoader does this in NaClMainPlatformDelegate::EnableSandbox().
+    // No sandbox needed for relauncher.
+    return process_type == switches::kExtensionProcess ||
+           process_type == switches::kNaClLoaderProcess ||
+           process_type == switches::kRelauncherProcess;
+  }
+#elif defined(OS_POSIX)
+  virtual ZygoteForkDelegate* ZygoteStarting() OVERRIDE {
+    // Each Renderer we spawn will re-attempt initialization of the media
+    // libraries, at which point failure will be detected and handled, so
+    // we do not need to cope with initialization failures here.
+    FilePath media_path;
+    if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
+      media::InitializeMediaLibrary(media_path);
+#if defined(DISABLE_NACL)
+    return NULL;
+#else
+    return new NaClForkDelegate();
+#endif
+  }
+
+  virtual void ZygoteForked() OVERRIDE {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line.GetSwitchValueASCII(switches::kProcessType);
+
+    // The StatsTable must be initialized in each process; we already
+    // initialized for the browser process, now we need to initialize
+    // within the new processes as well.
+    pid_t browser_pid = base::GetParentProcessId(
+        base::GetParentProcessId(base::GetCurrentProcId()));
+    InitializeStatsTable(browser_pid, command_line);
+
+#if defined(USE_LINUX_BREAKPAD)
+    // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
+    // this up for the browser process in a different manner.
+    InitCrashReporter();
+#endif
+
+    InitializeChromeContentClient(process_type);
+  }
+#endif  // OS_MACOSX
+
  private:
-  base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
+  chrome::ChromeContentClient chrome_content_client_;
+  scoped_ptr<base::StatsScope<base::StatsCounterTimer> > startup_timer_;
 };
 
 }  // namespace
@@ -637,326 +749,10 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info) {
   ChromeMainDelegate chrome_main_delegate;
-  content::ContentMain(instance, sandbox_info, &chrome_main_delegate);
+  return content::ContentMain(instance, sandbox_info, &chrome_main_delegate);
 #elif defined(OS_POSIX)
 int ChromeMain(int argc, char** argv) {
   ChromeMainDelegate chrome_main_delegate;
-  content::ContentMain(argc, argv, &chrome_main_delegate);
+  return content::ContentMain(argc, argv, &chrome_main_delegate);
 #endif
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string process_type =
-        command_line.GetSwitchValueASCII(switches::kProcessType);
-
-#if defined(OS_MACOSX)
-  // We need to allocate the IO Ports before the Sandbox is initialized or
-  // the first instance of SystemMonitor is created.
-  // It's important not to allocate the ports for processes which don't register
-  // with the system monitor - see crbug.com/88867.
-  if (process_type.empty() ||
-      process_type == switches::kExtensionProcess ||
-      process_type == switches::kNaClLoaderProcess ||
-      process_type == switches::kPluginProcess ||
-      process_type == switches::kRendererProcess ||
-      process_type == switches::kUtilityProcess ||
-      process_type == switches::kWorkerProcess) {
-    base::SystemMonitor::AllocateSystemIOPorts();
-  }
-#endif
-
-  base::ProcessId browser_pid = base::GetCurrentProcId();
-  if (SubprocessIsBrowserChild(process_type)) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    std::string channel_name =
-        command_line.GetSwitchValueASCII(switches::kProcessChannelID);
-
-    int browser_pid_int;
-    base::StringToInt(channel_name, &browser_pid_int);
-    browser_pid = static_cast<base::ProcessId>(browser_pid_int);
-    DCHECK_NE(browser_pid_int, 0);
-#elif defined(OS_POSIX)
-    // On linux, we're in the zygote here; so we need the parent process' id.
-    browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
-#endif
-
-#if defined(OS_MACOSX)
-    SendTaskPortToParentProcess();
-#endif
-  }
-
-#if defined(OS_POSIX)
-  if (!process_type.empty()) {
-    // When you hit Ctrl-C in a terminal running the browser
-    // process, a SIGINT is delivered to the entire process group.
-    // When debugging the browser process via gdb, gdb catches the
-    // SIGINT for the browser process (and dumps you back to the gdb
-    // console) but doesn't for the child processes, killing them.
-    // The fix is to have child processes ignore SIGINT; they'll die
-    // on their own when the browser process goes away.
-    //
-    // Note that we *can't* rely on BeingDebugged to catch this case because we
-    // are the child process, which is not being debugged.
-    // TODO(evanm): move this to some shared subprocess-init function.
-    if (!base::debug::BeingDebugged())
-      signal(SIGINT, SIG_IGN);
-  }
-#endif
-
-  SetupCRT(command_line);
-
-#if defined(USE_NSS)
-  crypto::EarlySetupForNSSInit();
-#endif
-
-  // Initialize the Chrome path provider.
-  ui::RegisterPathProvider();
-  chrome::RegisterPathProvider();
-  content::RegisterPathProvider();
-
-#if defined(OS_MACOSX)
-  // On the Mac, the child executable lives at a predefined location within
-  // the app bundle's versioned directory.
-  PathService::Override(content::CHILD_PROCESS_EXE,
-      chrome::GetVersionedDirectory().
-          Append(chrome::kHelperProcessExecutablePath));
-#endif
-
-  // Initialize the content client which that code uses to talk to Chrome.
-  chrome::ChromeContentClient chrome_content_client;
-  content::SetContentClient(&chrome_content_client);
-
-  // Notice a user data directory override if any
-  FilePath user_data_dir =
-      command_line.GetSwitchValuePath(switches::kUserDataDir);
-  chrome_main::CheckUserDataDirPolicy(&user_data_dir);
-  if (!user_data_dir.empty())
-    CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
-
-#if defined(OS_MACOSX)
-  // TODO(mark): Right now, InitCrashReporter() needs to be called after
-  // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally, Breakpad
-  // initialization could occur sooner, preferably even before the framework
-  // dylib is even loaded, to catch potential early crashes.
-  InitCrashReporter();
-
-#if defined(NDEBUG)
-  bool is_debug_build = false;
-#else
-  bool is_debug_build = true;
-#endif
-
-  // Details on when we enable Apple's Crash reporter.
-  //
-  // Motivation:
-  //    In debug mode it takes Apple's crash reporter eons to generate a crash
-  // dump.
-  //
-  // What we do:
-  // * We only pass crashes for foreground processes to Apple's Crash reporter.
-  //    At the time of this writing, that means just the Browser process.
-  // * If Breakpad is enabled, it will pass browser crashes to Crash Reporter
-  //    itself.
-  // * If Breakpad is disabled, we only turn on Crash Reporter for the
-  //    Browser process in release mode.
-  if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
-    bool disable_apple_crash_reporter = is_debug_build
-                                        || base::mac::IsBackgroundOnlyProcess();
-    if (!IsCrashReporterEnabled() && disable_apple_crash_reporter) {
-      base::mac::DisableOSCrashDumps();
-    }
-  }
-
-  // Mac Chrome is packaged with a main app bundle and a helper app bundle.
-  // The main app bundle should only be used for the browser process, so it
-  // should never see a --type switch (switches::kProcessType).  Likewise,
-  // the helper should always have a --type switch.
-  //
-  // This check is done this late so there is already a call to
-  // base::mac::IsBackgroundOnlyProcess(), so there is no change in
-  // startup/initialization order.
-
-  // The helper's Info.plist marks it as a background only app.
-  if (base::mac::IsBackgroundOnlyProcess()) {
-    CHECK(command_line.HasSwitch(switches::kProcessType) &&
-          !process_type.empty())
-        << "Helper application requires --type.";
-
-    // In addition, some helper flavors only work with certain process types.
-    FilePath executable;
-    if (PathService::Get(base::FILE_EXE, &executable) &&
-        executable.value().size() >= 3) {
-      std::string last_three =
-          executable.value().substr(executable.value().size() - 3);
-
-      if (last_three == " EH") {
-        CHECK_EQ(switches::kPluginProcess, process_type)
-            << "Executable-heap process requires --type="
-            << switches::kPluginProcess << ", saw " << process_type;
-      } else if (last_three == " NP") {
-        CHECK_EQ(switches::kNaClLoaderProcess, process_type)
-            << "Non-PIE process requires --type="
-            << switches::kNaClLoaderProcess << ", saw " << process_type;
-      } else {
-        CHECK(process_type != switches::kPluginProcess &&
-              process_type != switches::kNaClLoaderProcess)
-            << "Non-executable-heap PIE process is intolerant of --type="
-            << switches::kPluginProcess << " and "
-            << switches::kNaClLoaderProcess << ", saw " << process_type;
-      }
-    }
-  } else {
-    CHECK(!command_line.HasSwitch(switches::kProcessType) &&
-          process_type.empty())
-        << "Main application forbids --type, saw " << process_type;
-  }
-
-  if (IsCrashReporterEnabled())
-    InitCrashProcessInfo();
-#endif  // defined(OS_MACOSX)
-
-  InitializeStatsTable(browser_pid, command_line);
-
-  base::StatsScope<base::StatsCounterTimer>
-      startup_timer(content::Counters::chrome_main());
-
-  // Enable the heap profiler as early as possible!
-  EnableHeapProfiler(command_line);
-
-  // Enable Message Loop related state asap.
-  if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
-    MessageLoop::EnableHistogrammer(true);
-
-  // Single-process is an unsupported and not fully tested mode, so
-  // don't enable it for official Chrome builds.
-#if !defined(GOOGLE_CHROME_BUILD)
-  if (command_line.HasSwitch(switches::kSingleProcess)) {
-    RenderProcessHost::set_run_renderer_in_process(true);
-#if defined(OS_MACOSX)
-    // TODO(port-mac): This is from renderer_main_platform_delegate.cc.
-    // shess tried to refactor things appropriately, but it sprawled out
-    // of control because different platforms needed different styles of
-    // initialization.  Try again once we understand the process
-    // architecture needed and where it should live.
-    InitWebCoreSystemInterface();
-#endif
-
-    InitializeChromeContentRendererClient();
-  }
-#endif  // GOOGLE_CHROME_BUILD
-
-  bool icu_result = icu_util::Initialize();
-  CHECK(icu_result);
-
-  logging::OldFileDeletionState file_state =
-      logging::APPEND_TO_OLD_LOG_FILE;
-  if (process_type.empty()) {
-    file_state = logging::DELETE_OLD_LOG_FILE;
-  }
-  logging::InitChromeLogging(command_line, file_state);
-
-  // Register internal Chrome schemes so they'll be parsed correctly. This must
-  // happen before we process any URLs with the affected schemes, and must be
-  // done in all processes that work with these URLs (i.e. including renderers).
-  chrome::RegisterChromeSchemes();
-
-#if defined(OS_WIN)
-  // TODO(darin): Kill this once http://crbug.com/52609 is fixed.
-  ResourceBundle::SetResourcesDataDLL(_AtlBaseModule.GetResourceInstance());
-#endif
-
-  if (SubprocessNeedsResourceBundle(process_type)) {
-    // Initialize ResourceBundle which handles files loaded from external
-    // sources.  The language should have been passed in to us from the
-    // browser process as a command line flag.
-    DCHECK(command_line.HasSwitch(switches::kLang) ||
-           process_type == switches::kZygoteProcess);
-
-    // TODO(markusheintz): The command line flag --lang is actually processed
-    // by the CommandLinePrefStore, and made available through the PrefService
-    // via the preference prefs::kApplicationLocale. The browser process uses
-    // the --lang flag to pass the value of the PrefService in here. Maybe this
-    // value could be passed in a different way.
-    const std::string locale =
-        command_line.GetSwitchValueASCII(switches::kLang);
-    const std::string loaded_locale =
-        ResourceBundle::InitSharedInstance(locale);
-    CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
-
-#if defined(OS_MACOSX)
-    // Update the process name (need resources to get the strings, so
-    // only do this when ResourcesBundle has been initialized).
-    SetMacProcessName(process_type);
-#endif  // defined(OS_MACOSX)
-  }
-
-  if (!process_type.empty())
-    CommonSubprocessInit(process_type);
-
-#if defined(OS_CHROMEOS)
-  {
-    // Read and cache ChromeOS version from file,
-    // to be used from inside the sandbox.
-    int32 major_version, minor_version, bugfix_version;
-    base::SysInfo::OperatingSystemVersionNumbers(
-        &major_version, &minor_version, &bugfix_version);
-  }
-#endif
-
-  // Initialize the sandbox for this process.
-  SandboxInitWrapper sandbox_wrapper;
-  bool initialize_sandbox = true;
-
-#if defined(OS_WIN)
-  sandbox_wrapper.SetServices(sandbox_info);
-#elif defined(OS_MACOSX)
-  // On OS X the renderer sandbox needs to be initialized later in the startup
-  // sequence in RendererMainPlatformDelegate::EnableSandbox().
-  // Same goes for NaClLoader, in NaClMainPlatformDelegate::EnableSandbox().
-  if (process_type == switches::kRendererProcess ||
-      process_type == switches::kExtensionProcess ||
-      process_type == switches::kNaClLoaderProcess ||
-      process_type == switches::kPpapiPluginProcess ||
-      process_type == switches::kRelauncherProcess) {
-    initialize_sandbox = false;
-  }
-#endif
-
-  if (initialize_sandbox) {
-    bool sandbox_initialized_ok =
-        sandbox_wrapper.InitializeSandbox(command_line, process_type);
-    // Die if the sandbox can't be enabled.
-    CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "
-                                  << process_type;
-  }
-
-  startup_timer.Stop();  // End of Startup Time Measurement.
-
-  MainFunctionParams main_params(command_line, sandbox_wrapper,
-                                 chrome_main_delegate.autorelease_pool());
-
-  // Note: If you are adding a new process type below, be sure to adjust the
-  // AdjustLinuxOOMScore function too.
-#if defined(OS_LINUX)
-  AdjustLinuxOOMScore(process_type);
-#endif
-
-#if defined(OS_POSIX)
-  SetProcessTitleFromCommandLine(argv);
-#endif
-
-  int exit_code = RunNamedProcessTypeMain(process_type, main_params);
-
-  if (SubprocessNeedsResourceBundle(process_type))
-    ResourceBundle::CleanupSharedInstance();
-
-  logging::CleanupChromeLogging();
-
-#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
-  // TODO(mark): See the TODO(mark) at InitCrashReporter.
-  DestructCrashReporter();
-#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
-
-  content::ContentMainEnd();
-
-  return exit_code;
 }

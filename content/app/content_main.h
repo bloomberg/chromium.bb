@@ -37,9 +37,6 @@ int ContentMain(int argc,
                 ContentMainDelegate* delegate);
 #endif
 
-// Temporary function so that we can move code from chrome in stages.
-void ContentMainEnd();
-
 }  // namespace content
 
 #endif  // CONTENT_APP_CONTENT_MAIN_H_
