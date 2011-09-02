@@ -524,7 +524,7 @@ function requestPrintPreview() {
 
   var pageCount = totalPageCount != undefined ? totalPageCount : -1;
   chrome.send('getPreview', [JSON.stringify(getSettingsWithRequestID()),
-                             String(pageCount),
+                             pageCount,
                              previewModifiable]);
 }
 

@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -481,7 +480,7 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
-  DCHECK(args->GetSize() == 3);
+  DCHECK_EQ(3U, args->GetSize());
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
@@ -525,23 +524,19 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   }
 
   bool generate_draft_data = false;
-  if (!settings->GetBoolean(printing::kSettingGenerateDraftData,
-                            &generate_draft_data)) {
-    NOTREACHED();
-  }
+  bool success = settings->GetBoolean(printing::kSettingGenerateDraftData,
+                                      &generate_draft_data);
+  DCHECK(success);
 
   if (!generate_draft_data) {
-    int draft_page_count = -1;
-    bool preview_modifiable = false;
-    std::string draft_page_count_str;
-    if (!args->GetString(1, &draft_page_count_str) ||
-        !base::StringToInt(draft_page_count_str, &draft_page_count)) {
-      NOTREACHED();
-      draft_page_count = -1;
-    }
+    double draft_page_count_double = -1;
+    success = args->GetDouble(1, &draft_page_count_double);
+    DCHECK(success);
+    int draft_page_count = static_cast<int>(draft_page_count_double);
 
-    if (!args->GetBoolean(2, &preview_modifiable))
-      NOTREACHED();
+    bool preview_modifiable = false;
+    success = args->GetBoolean(2, &preview_modifiable);
+    DCHECK(success);
 
     if (draft_page_count != -1 && preview_modifiable &&
         print_preview_ui->GetAvailableDraftPageCount() != draft_page_count) {

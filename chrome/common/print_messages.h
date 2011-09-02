@@ -365,9 +365,9 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PrintHostMsg_CheckForCancel,
                            int /* request id */,
                            bool /* print preview cancelled */)
 
-// Sends back to the browser the complete rendered document for print preview
-// that was requested by a PrintMsg_PrintPreview message. The memory handle in
-// this message is already valid in the browser process.
+// Sends back to the browser the complete rendered document (non-draft mode,
+// used for printing) that was requested by a PrintMsg_PrintPreview message.
+// The memory handle in this message is already valid in the browser process.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_MetafileReadyForPrinting,
                     PrintHostMsg_DidPreviewDocument_Params /* params */)
 
