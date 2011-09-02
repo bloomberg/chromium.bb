@@ -64,12 +64,17 @@ class ChromotingMixIn(object):
     """Logs a user in for Chromoting and accepts permissions for the app.
 
     PyAuto tests start with a clean profile, so Chromoting tests should call
-    this for every run after launching the app.
+    this for every run after launching the app. If email or password is omitted,
+    the user can type it into the browser window manually.
 
     Raises:
       AssertionError if the authentication flow changes or
           the credentials are incorrect.
     """
+    self.assertTrue(
+        self._WaitForJavascriptCondition('window.remoting && remoting.oauth2',
+                                         tab_index, windex),
+        msg='Timed out while waiting for remoting app to finish loading.')
     self._ExecuteJavascript('remoting.oauth2.doAuthRedirect();',
                             tab_index, windex)
     self.assertTrue(
@@ -173,7 +178,7 @@ class ChromotingMixIn(object):
     """
     return self._ExecuteAndWaitForMode(
         'remoting.cancelShare();',
-        'HOST_UNSHARED', tab_index, windex)
+        'HOST_SHARE_FINISHED', tab_index, windex)
 
   def Disconnect(self, tab_index=1, windex=0):
     """Disconnects from the Chromoting session on the client side.
