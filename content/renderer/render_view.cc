@@ -581,7 +581,7 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
   Send(new ViewHostMsg_GetPluginInfo(
       routing_id_, params.url, frame->top()->document().url(),
       params.mimeType.utf8(), &found, &info, &mime_type));
-  if (!found || !webkit::IsPluginEnabled(info))
+  if (!found)
     return NULL;
 
   bool pepper_plugin_was_registered = false;

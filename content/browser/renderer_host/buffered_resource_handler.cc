@@ -12,6 +12,7 @@
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -397,10 +398,15 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
 
   // Finally, check the plugin list.
   bool allow_wildcard = false;
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
   bool stale = false;
-  std::vector<webkit::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      request_->url(), type, allow_wildcard, &stale, &plugins, NULL);
+  webkit::WebPluginInfo plugin;
+  bool found = PluginService::GetInstance()->GetPluginInfo(
+      info->child_id(), info->route_id(), *info->context(),
+      request_->url(), GURL(), type, allow_wildcard,
+      &stale, &plugin, NULL);
+
   if (need_plugin_list) {
     if (stale) {
       *need_plugin_list = true;
@@ -410,11 +416,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
     DCHECK(!stale);
   }
 
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    if (webkit::IsPluginEnabled(plugins[i]))
-      return false;
-  }
-  return true;
+  return !found;
 }
 
 void BufferedResourceHandler::UseAlternateResourceHandler(

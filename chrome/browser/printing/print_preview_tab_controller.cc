@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -21,7 +22,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -55,13 +55,13 @@ void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
     std::vector<WebPluginInfo> plugins = internal_pdf_group->web_plugin_infos();
     DCHECK_EQ(plugins.size(), 1U);
 
-    PluginService::OverriddenPlugin plugin;
-    plugin.render_process_id = preview_tab->render_view_host()->process()->id();
-    plugin.render_view_id = preview_tab->render_view_host()->routing_id();
-    plugin.plugin = plugins[0];
-    plugin.plugin.enabled = WebPluginInfo::USER_ENABLED;
-
-    PluginService::GetInstance()->OverridePluginForTab(plugin);
+    webkit::WebPluginInfo plugin = plugins[0];
+    plugin.enabled = WebPluginInfo::USER_ENABLED;
+    ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
+        preview_tab->render_view_host()->process()->id(),
+        preview_tab->render_view_host()->routing_id(),
+        GURL(),
+        plugin);
   }
 }
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_main.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/debugger/devtools_protocol_handler.h"
@@ -739,7 +740,9 @@ void BrowserProcessImpl::CreateIOThread() {
   // it is predominantly used from the io thread, but must be created
   // on the main thread. The service ctor is inexpensive and does not
   // invoke the io_thread() accessor.
-  PluginService::GetInstance();
+  PluginService* plugin_service = PluginService::GetInstance();
+  plugin_service->set_filter(ChromePluginServiceFilter::GetInstance());
+  plugin_service->StartWatchingPlugins();
 
   // Add the Chrome specific plugins.
   chrome::RegisterInternalDefaultPlugin();

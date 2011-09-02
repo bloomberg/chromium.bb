@@ -27,7 +27,6 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 struct FontDescriptor;
-class HostContentSettingsMap;
 class RenderWidgetHelper;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
@@ -157,6 +156,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
                        std::string* actual_mime_type);
   void OnOpenChannelToPlugin(int routing_id,
                              const GURL& url,
+                             const GURL& policy_url,
                              const std::string& mime_type,
                              IPC::Message* reply_msg);
   void OnOpenChannelToPepperPlugin(const FilePath& path,

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -14,6 +15,7 @@
 #include "base/values.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/content_browser_client.h"
+#include "content/browser/plugin_service_filter.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -31,6 +33,8 @@
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 using ::base::files::FilePathWatcher;
 #endif
+
+using content::PluginServiceFilter;
 
 #if defined(OS_MACOSX)
 static void NotifyPluginsOfActivation() {
@@ -65,7 +69,8 @@ PluginService* PluginService::GetInstance() {
 
 PluginService::PluginService()
     : ui_locale_(
-          content::GetContentClient()->browser()->GetApplicationLocale()) {
+          content::GetContentClient()->browser()->GetApplicationLocale()),
+      filter_(NULL) {
   RegisterPepperPlugins();
 
   // Load any specified on the command line as well.
@@ -77,6 +82,27 @@ PluginService::PluginService()
   if (!path.empty())
     webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(path);
 
+#if defined(OS_MACOSX)
+  // We need to know when the browser comes forward so we can bring modal plugin
+  // windows forward too.
+  registrar_.Add(this, content::NOTIFICATION_APP_ACTIVATED,
+                 NotificationService::AllSources());
+#endif
+}
+
+PluginService::~PluginService() {
+#if defined(OS_WIN)
+  // Release the events since they're owned by RegKey, not WaitableEvent.
+  hkcu_watcher_.StopWatching();
+  hklm_watcher_.StopWatching();
+  if (hkcu_event_.get())
+    hkcu_event_->Release();
+  if (hklm_event_.get())
+    hklm_event_->Release();
+#endif
+}
+
+void PluginService::StartWatchingPlugins() {
   // Start watching for changes in the plugin list. This means watching
   // for changes in the Windows registry keys and on both Windows and POSIX
   // watch for changes in the paths that are expected to contain plugins.
@@ -97,12 +123,7 @@ PluginService::PluginService()
       hklm_watcher_.StartWatching(hklm_event_.get(), this);
     }
   }
-#elif defined(OS_MACOSX)
-  // We need to know when the browser comes forward so we can bring modal plugin
-  // windows forward too.
-  registrar_.Add(this, content::NOTIFICATION_APP_ACTIVATED,
-                 NotificationService::AllSources());
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
 // The FilePathWatcher produces too many false positives on MacOS (access time
 // updates?) which will lead to enforcing updates of the plugins way too often.
 // On ChromeOS the user can't install plugins anyway and on Windows all
@@ -131,23 +152,6 @@ PluginService::PluginService()
             watcher, plugin_dirs[i], file_watcher_delegate_));
     file_watchers_.push_back(watcher);
   }
-#endif
-  registrar_.Add(this, content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-                 NotificationService::AllSources());
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 NotificationService::AllSources());
-}
-
-PluginService::~PluginService() {
-#if defined(OS_WIN)
-  // Release the events since they're owned by RegKey, not WaitableEvent.
-  hkcu_watcher_.StopWatching();
-  hklm_watcher_.StopWatching();
-  if (hkcu_event_.get())
-    hkcu_event_->Release();
-  if (hklm_event_.get())
-    hklm_event_->Release();
 #endif
 }
 
@@ -278,6 +282,7 @@ void PluginService::OpenChannelToNpapiPlugin(
     int render_process_id,
     int render_view_id,
     const GURL& url,
+    const GURL& page_url,
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
   // The PluginList::GetPluginInfo may need to load the plugins.  Don't do it on
@@ -286,7 +291,8 @@ void PluginService::OpenChannelToNpapiPlugin(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &PluginService::GetAllowedPluginForOpenChannelToPlugin,
-          render_process_id, render_view_id, url, mime_type, client));
+          render_process_id, render_view_id, url, page_url, mime_type,
+          client));
 }
 
 void PluginService::OpenChannelToPpapiPlugin(
@@ -314,15 +320,19 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     int render_process_id,
     int render_view_id,
     const GURL& url,
+    const GURL& page_url,
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   webkit::WebPluginInfo info;
+  bool allow_wildcard = true;
   bool found = GetPluginInfo(
-      render_process_id, render_view_id, url, mime_type, &info, NULL);
+      render_process_id, render_view_id, client->GetResourceContext(),
+      url, page_url, mime_type, allow_wildcard,
+      NULL, &info, NULL);
   FilePath plugin_path;
   if (found)
-    plugin_path = FilePath(info.path);
+    plugin_path = info.path;
 
   // Now we jump back to the IO thread to finish opening the channel.
   BrowserThread::PostTask(
@@ -346,34 +356,38 @@ void PluginService::FinishOpenChannelToPlugin(
 
 bool PluginService::GetPluginInfo(int render_process_id,
                                   int render_view_id,
+                                  const content::ResourceContext& context,
                                   const GURL& url,
+                                  const GURL& page_url,
                                   const std::string& mime_type,
+                                  bool allow_wildcard,
+                                  bool* use_stale,
                                   webkit::WebPluginInfo* info,
                                   std::string* actual_mime_type) {
+  webkit::npapi::PluginList* plugin_list =
+      webkit::npapi::PluginList::Singleton();
   // GetPluginInfoArray may need to load the plugins, so we need to be
   // on the FILE thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  {
-    base::AutoLock auto_lock(overridden_plugins_lock_);
-    for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
-      if (overridden_plugins_[i].render_process_id == render_process_id &&
-          overridden_plugins_[i].render_view_id == render_view_id &&
-          (overridden_plugins_[i].url == url ||
-           overridden_plugins_[i].url.is_empty())) {
-        if (actual_mime_type)
-          *actual_mime_type = mime_type;
-        *info = overridden_plugins_[i].plugin;
-        return true;
-      }
-    }
-  }
-  bool allow_wildcard = true;
+  DCHECK(use_stale || BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<webkit::WebPluginInfo> plugins;
   std::vector<std::string> mime_types;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, NULL, &plugins, &mime_types);
+  plugin_list->GetPluginInfoArray(
+      url, mime_type, allow_wildcard, use_stale, &plugins, &mime_types);
+  if (plugins.size() > 1 &&
+      plugins.back().path ==
+          FilePath(webkit::npapi::kDefaultPluginLibraryName)) {
+    // If there is at least one plug-in handling the required MIME type (apart
+    // from the default plug-in), we don't need the default plug-in.
+    plugins.pop_back();
+  }
+
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (webkit::IsPluginEnabled(plugins[i])) {
+    if (!filter_ || filter_->ShouldUsePlugin(render_process_id,
+                                             render_view_id,
+                                             &context,
+                                             url,
+                                             page_url,
+                                             &plugins[i])) {
       *info = plugins[i];
       if (actual_mime_type)
         *actual_mime_type = mime_types[i];
@@ -381,6 +395,31 @@ bool PluginService::GetPluginInfo(int render_process_id,
     }
   }
   return false;
+}
+
+void PluginService::GetPlugins(
+    const content::ResourceContext& context,
+    std::vector<webkit::WebPluginInfo>* plugins) {
+  // GetPlugins may need to load the plugins, so we need to be
+  // on the FILE thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  webkit::npapi::PluginList* plugin_list =
+      webkit::npapi::PluginList::Singleton();
+  std::vector<webkit::WebPluginInfo> all_plugins;
+  plugin_list->GetPlugins(&all_plugins);
+
+  int child_process_id = -1;
+  int routing_id = MSG_ROUTING_NONE;
+  for (size_t i = 0; i < all_plugins.size(); ++i) {
+    if (!filter_ || filter_->ShouldUsePlugin(child_process_id,
+                                             routing_id,
+                                             &context,
+                                             GURL(),
+                                             GURL(),
+                                             &all_plugins[i])) {
+      plugins->push_back(all_plugins[i]);
+    }
+  }
 }
 
 void PluginService::OnWaitableEventSignaled(
@@ -403,40 +442,14 @@ void PluginService::OnWaitableEventSignaled(
 void PluginService::Observe(int type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  switch (type) {
 #if defined(OS_MACOSX)
-    case content::NOTIFICATION_APP_ACTIVATED: {
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                              NewRunnableFunction(&NotifyPluginsOfActivation));
-      break;
-    }
-#endif
-
-    case content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED: {
-      webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-      PurgePluginListCache(false);
-      break;
-    }
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      int render_process_id = Source<RenderProcessHost>(source).ptr()->id();
-
-      base::AutoLock auto_lock(overridden_plugins_lock_);
-      for (size_t i = 0; i < overridden_plugins_.size(); ++i) {
-        if (overridden_plugins_[i].render_process_id == render_process_id) {
-          overridden_plugins_.erase(overridden_plugins_.begin() + i);
-          break;
-        }
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
+  if (type == content::NOTIFICATION_APP_ACTIVATED) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            NewRunnableFunction(&NotifyPluginsOfActivation));
+    return;
   }
-}
-
-void PluginService::OverridePluginForTab(const OverriddenPlugin& plugin) {
-  base::AutoLock auto_lock(overridden_plugins_lock_);
-  overridden_plugins_.push_back(plugin);
+#endif
+  NOTREACHED();
 }
 
 void PluginService::PurgePluginListCache(bool reload_pages) {
@@ -444,32 +457,6 @@ void PluginService::PurgePluginListCache(bool reload_pages) {
        !it.IsAtEnd(); it.Advance()) {
     it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache(reload_pages));
   }
-}
-
-void PluginService::RestrictPluginToUrl(const FilePath& plugin_path,
-                                        const GURL& url) {
-  base::AutoLock auto_lock(restricted_plugin_lock_);
-  if (url.is_empty()) {
-    restricted_plugin_.erase(plugin_path);
-  } else {
-    restricted_plugin_[plugin_path] = url;
-  }
-}
-
-bool PluginService::PluginAllowedForURL(const FilePath& plugin_path,
-                                        const GURL& url) {
-  if (url.is_empty())
-    return true;  // Caller wants all plugins.
-
-  base::AutoLock auto_lock(restricted_plugin_lock_);
-
-  RestrictedPluginMap::iterator it = restricted_plugin_.find(plugin_path);
-  if (it == restricted_plugin_.end())
-    return true;  // This plugin is not restricted, so it's allowed everywhere.
-
-  const GURL& required_url = it->second;
-  return (url.scheme() == required_url.scheme() &&
-          url.host() == required_url.host());
 }
 
 void PluginService::RegisterPepperPlugins() {

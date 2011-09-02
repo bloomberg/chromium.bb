@@ -412,10 +412,6 @@ enum NotificationType {
   // in a Details<ChildProcessInfo>.
   NOTIFICATION_CHILD_INSTANCE_CREATED,
 
-  // Sent by the PluginUpdater when there is a change of plugin
-  // enable/disable status.
-  NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-
   // Download Notifications --------------------------------------------------
 
   // Sent when a page generation to MHTML has finished.

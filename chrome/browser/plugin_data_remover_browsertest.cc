@@ -41,7 +41,8 @@ class PluginDataRemoverTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(PluginDataRemoverTest, RemoveData) {
-  scoped_refptr<PluginDataRemover> plugin_data_remover(new PluginDataRemover());
+  scoped_refptr<PluginDataRemover> plugin_data_remover(
+      new PluginDataRemover(browser()->profile()));
   plugin_data_remover->set_mime_type(kNPAPITestPluginMimeType);
   base::WaitableEventWatcher watcher;
   base::WaitableEvent* event =

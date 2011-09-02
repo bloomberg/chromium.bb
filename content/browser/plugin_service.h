@@ -13,11 +13,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
-#include "base/hash_tables.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
-#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "build/build_config.h"
 #include "content/browser/plugin_process_host.h"
@@ -41,6 +38,11 @@
 struct PepperPluginInfo;
 class PluginDirWatcherDelegate;
 
+namespace content {
+class ResourceContext;
+class PluginServiceFilter;
+}
+
 // This must be created on the main thread but it's only called on the IO/file
 // thread.
 class PluginService
@@ -56,6 +58,9 @@ class PluginService
 
   // Returns the PluginService singleton.
   static PluginService* GetInstance();
+
+  // Starts watching for changes in the list of installed plug-ins.
+  void StartWatchingPlugins();
 
   // Gets the browser's UI locale.
   const std::string& GetUILocale();
@@ -85,6 +90,7 @@ class PluginService
   void OpenChannelToNpapiPlugin(int render_process_id,
                                 int render_view_id,
                                 const GURL& url,
+                                const GURL& page_url,
                                 const std::string& mime_type,
                                 PluginProcessHost::Client* client);
   void OpenChannelToPpapiPlugin(const FilePath& path,
@@ -93,31 +99,31 @@ class PluginService
                                 PpapiBrokerProcessHost::Client* client);
 
   // Gets the plugin in the list of plugins that matches the given url and mime
-  // type.  Must be called on the FILE thread.
+  // type. Must be called on the FILE thread if |use_stale| is NULL.
   bool GetPluginInfo(int render_process_id,
                      int render_view_id,
+                     const content::ResourceContext& context,
                      const GURL& url,
+                     const GURL& page_url,
                      const std::string& mime_type,
+                     bool allow_wildcard,
+                     bool* use_stale,
                      webkit::WebPluginInfo* info,
                      std::string* actual_mime_type);
 
-  // Safe to be called from any thread.
-  void OverridePluginForTab(const OverriddenPlugin& plugin);
-
-  // Restricts the given plugin to the the scheme and host of the given url.
-  // Call with an empty url to reset this.
-  // Can be called on any thread.
-  void RestrictPluginToUrl(const FilePath& plugin_path, const GURL& url);
-
-  // Returns true if the given plugin is allowed to be used by a page with
-  // the given URL.
-  // Can be called on any thread.
-  bool PluginAllowedForURL(const FilePath& plugin_path, const GURL& url);
+  // Returns a list of all plug-ins available to the resource context. Must be
+  // called on the FILE thread.
+  void GetPlugins(const content::ResourceContext& context,
+                  std::vector<webkit::WebPluginInfo>* plugins);
 
   // Tells all the renderer processes to throw away their cache of the plugin
   // list, and optionally also reload all the pages with plugins.
   // NOTE: can only be called on the UI thread.
   static void PurgePluginListCache(bool reload_pages);
+
+  void set_filter(content::PluginServiceFilter* filter) {
+    filter_ = filter;
+  }
 
  private:
   friend struct DefaultSingletonTraits<PluginService>;
@@ -143,6 +149,7 @@ class PluginService
       int render_process_id,
       int render_view_id,
       const GURL& url,
+      const GURL& page_url,
       const std::string& mime_type,
       PluginProcessHost::Client* client);
 
@@ -163,11 +170,6 @@ class PluginService
   // The browser's UI locale.
   const std::string ui_locale_;
 
-  // Map of plugin paths to the origin they are restricted to.
-  base::Lock restricted_plugin_lock_;  // Guards access to restricted_plugin_.
-  typedef base::hash_map<FilePath, GURL> RestrictedPluginMap;
-  RestrictedPluginMap restricted_plugin_;
-
   NotificationRegistrar registrar_;
 
 #if defined(OS_WIN)
@@ -187,8 +189,8 @@ class PluginService
 
   std::vector<PepperPluginInfo> ppapi_plugins_;
 
-  std::vector<OverriddenPlugin> overridden_plugins_;
-  base::Lock overridden_plugins_lock_;
+  // Weak pointer; outlives us.
+  content::PluginServiceFilter* filter_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginService);
 };

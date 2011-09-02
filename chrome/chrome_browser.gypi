@@ -341,6 +341,8 @@
         'browser/chrome_content_browser_client.h',
         'browser/chrome_plugin_message_filter.cc',
         'browser/chrome_plugin_message_filter.h',
+        'browser/chrome_plugin_service_filter.cc',
+        'browser/chrome_plugin_service_filter.h',
         'browser/chrome_quota_permission_context.cc',
         'browser/chrome_quota_permission_context.h',
         'browser/chrome_worker_message_filter.cc',

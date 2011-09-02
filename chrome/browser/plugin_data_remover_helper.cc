@@ -11,6 +11,7 @@
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_service.h"
 
@@ -76,7 +77,7 @@ void PluginDataRemoverHelper::Init(const char* pref_name,
                                    Profile* profile,
                                    NotificationObserver* observer) {
   pref_.Init(pref_name, profile->GetPrefs(), observer);
-  registrar_.Add(this, content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
   internal_ = make_scoped_refptr(new Internal(pref_name, profile));
   internal_->StartUpdate();
@@ -85,7 +86,7 @@ void PluginDataRemoverHelper::Init(const char* pref_name,
 void PluginDataRemoverHelper::Observe(int type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  if (type == content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED) {
+  if (type == chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED) {
     internal_->StartUpdate();
   } else {
     NOTREACHED();

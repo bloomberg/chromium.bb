@@ -10,6 +10,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/version.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/plugin_service.h"
@@ -31,9 +32,10 @@ const uint64 kClearAllData = 0;
 
 }  // namespace
 
-PluginDataRemover::PluginDataRemover()
+PluginDataRemover::PluginDataRemover(Profile* profile)
     : mime_type_(kFlashMimeType),
       is_removing_(false),
+      context_(profile->GetResourceContext()),
       event_(new base::WaitableEvent(true, false)),
       channel_(NULL) {
 }
@@ -55,7 +57,7 @@ base::WaitableEvent* PluginDataRemover::StartRemoving(base::Time begin_time) {
   // called, so we need to keep this object around until then.
   AddRef();
   PluginService::GetInstance()->OpenChannelToNpapiPlugin(
-      0, 0, GURL(), mime_type_, this);
+      0, 0, GURL(), GURL(), mime_type_, this);
 
   BrowserThread::PostDelayedTask(
       BrowserThread::IO,
@@ -85,6 +87,10 @@ int PluginDataRemover::ID() {
 
 bool PluginDataRemover::OffTheRecord() {
   return false;
+}
+
+const content::ResourceContext& PluginDataRemover::GetResourceContext() {
+  return context_;
 }
 
 void PluginDataRemover::SetPluginInfo(

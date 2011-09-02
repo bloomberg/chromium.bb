@@ -9,6 +9,7 @@
 #include "base/version.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
@@ -140,19 +141,19 @@ void OpenUsingReader(TabContentsWrapper* tab,
                      const WebPluginInfo& reader_plugin,
                      InfoBarDelegate* old_delegate,
                      InfoBarDelegate* new_delegate) {
-  PluginService::OverriddenPlugin plugin;
-  plugin.render_process_id = tab->render_view_host()->process()->id();
-  plugin.render_view_id = tab->render_view_host()->routing_id();
-  plugin.url = tab->tab_contents()->GetURL();
-  plugin.plugin = reader_plugin;
+  WebPluginInfo plugin = reader_plugin;
   // The plugin is disabled, so enable it to get around the renderer check.
   // Also give it a new version so that the renderer doesn't show the blocked
   // plugin UI if it's vulnerable, since we already went through the
   // interstitial.
-  plugin.plugin.enabled = WebPluginInfo::USER_ENABLED;
-  plugin.plugin.version = ASCIIToUTF16("11.0.0.0");
+  plugin.enabled = WebPluginInfo::USER_ENABLED;
+  plugin.version = ASCIIToUTF16("11.0.0.0");
 
-  PluginService::GetInstance()->OverridePluginForTab(plugin);
+  ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
+      tab->render_view_host()->process()->id(),
+      tab->render_view_host()->routing_id(),
+      tab->tab_contents()->GetURL(),
+      plugin);
   tab->render_view_host()->Send(new ViewMsg_ReloadFrame(
       tab->render_view_host()->routing_id()));
 
@@ -386,8 +387,7 @@ void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
 
   PluginGroup* reader_group = NULL;
   std::vector<PluginGroup> plugin_groups;
-  PluginList::Singleton()->GetPluginGroups(
-      false, &plugin_groups);
+  PluginList::Singleton()->GetPluginGroups(false, &plugin_groups);
   for (size_t i = 0; i < plugin_groups.size(); ++i) {
     if (plugin_groups[i].GetGroupName() == reader_group_name) {
       reader_group = &plugin_groups[i];

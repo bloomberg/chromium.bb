@@ -294,6 +294,7 @@
         'browser/plugin_process_host_mac.cc',
         'browser/plugin_service.cc',
         'browser/plugin_service.h',
+        'browser/plugin_service_filter.h',
         'browser/quota_permission_context.h',
         'browser/renderer_host/accelerated_surface_container_mac.cc',
         'browser/renderer_host/accelerated_surface_container_mac.h',

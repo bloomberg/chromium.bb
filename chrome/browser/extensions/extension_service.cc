@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
@@ -1502,7 +1503,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
     webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
     plugins_changed = true;
     if (!plugin.is_public) {
-      PluginService::GetInstance()->RestrictPluginToUrl(
+      ChromePluginServiceFilter::GetInstance()->RestrictPluginToUrl(
           plugin.path, extension->url());
     }
   }
@@ -1597,8 +1598,10 @@ void ExtensionService::NotifyExtensionUnloaded(
     webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(
         plugin.path);
     plugins_changed = true;
-    if (!plugin.is_public)
-      PluginService::GetInstance()->RestrictPluginToUrl(plugin.path, GURL());
+    if (!plugin.is_public) {
+      ChromePluginServiceFilter::GetInstance()->RestrictPluginToUrl(
+          plugin.path, GURL());
+    }
   }
 
   bool nacl_modules_changed = false;

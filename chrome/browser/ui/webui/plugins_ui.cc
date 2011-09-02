@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -150,7 +151,7 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 PluginsDOMHandler::PluginsDOMHandler()
     : ALLOW_THIS_IN_INITIALIZER_LIST(get_plugins_factory_(this)) {
   registrar_.Add(this,
-                 content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
+                 chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -248,7 +249,7 @@ void PluginsDOMHandler::HandleGetShowDetails(const ListValue* args) {
 void PluginsDOMHandler::Observe(int type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
+  DCHECK_EQ(chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
   LoadPlugins();
 }
 

@@ -11,6 +11,7 @@
 #include "content/browser/plugin_process_host.h"
 
 class PluginPrefs;
+class Profile;
 class Task;
 
 namespace base {
@@ -22,7 +23,7 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
                           public PluginProcessHost::Client,
                           public IPC::Channel::Listener {
  public:
-  PluginDataRemover();
+  explicit PluginDataRemover(Profile* profile);
 
   // The plug-in whose data should be removed (usually Flash) is specified via
   // its MIME type. This method sets a different MIME type in order to call a
@@ -48,6 +49,7 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   // PluginProcessHost::Client methods.
   virtual int ID();
   virtual bool OffTheRecord();
+  virtual const content::ResourceContext& GetResourceContext();
   virtual void SetPluginInfo(const webkit::WebPluginInfo& info);
   virtual void OnChannelOpened(const IPC::ChannelHandle& handle);
   virtual void OnError();
@@ -78,6 +80,8 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   base::Time remove_start_time_;
   // The point in time from which on we remove data.
   base::Time begin_time_;
+  // The resource context for the profile.
+  const content::ResourceContext& context_;
   scoped_ptr<base::WaitableEvent> event_;
   // We own the channel, but it's used on the IO thread, so it needs to be
   // deleted there. It's NULL until we have opened a connection to the plug-in

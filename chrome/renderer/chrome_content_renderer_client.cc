@@ -298,8 +298,6 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
 
   if (!found)
     return NULL;
-  if (!webkit::IsPluginEnabled(info))
-    return NULL;
 
   *is_default_plugin =
     info.path.value() == webkit::npapi::kDefaultPluginLibraryName;

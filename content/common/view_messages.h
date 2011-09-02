@@ -1613,16 +1613,14 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
     std::vector<webkit::WebPluginInfo> /* plugins */)
 
 // Return information about a plugin for the given URL and MIME
-// type. If there is no matching plugin, |found| is false.  If
-// |enabled| in the WebPluginInfo struct is false, the plug-in is
-// treated as if it was not installed at all.
+// type. If there is no matching plugin, |found| is false.
 // |actual_mime_type| is the actual mime type supported by the
 // plugin found that match the URL given (one for each item in
 // |info|).
 IPC_SYNC_MESSAGE_CONTROL4_3(ViewHostMsg_GetPluginInfo,
                             int /* routing_id */,
                             GURL /* url */,
-                            GURL /* policy_url */,
+                            GURL /* page_url */,
                             std::string /* mime_type */,
                             bool /* found */,
                             webkit::WebPluginInfo /* plugin info */,
@@ -1632,9 +1630,10 @@ IPC_SYNC_MESSAGE_CONTROL4_3(ViewHostMsg_GetPluginInfo,
 // create a plugin.  The browser will create the plugin process if
 // necessary, and will return a handle to the channel on success.
 // On error an empty string is returned.
-IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_OpenChannelToPlugin,
+IPC_SYNC_MESSAGE_CONTROL4_2(ViewHostMsg_OpenChannelToPlugin,
                             int /* routing_id */,
                             GURL /* url */,
+                            GURL /* page_url */,
                             std::string /* mime_type */,
                             IPC::ChannelHandle /* channel_handle */,
                             webkit::WebPluginInfo /* info */)

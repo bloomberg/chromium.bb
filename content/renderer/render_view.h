@@ -88,20 +88,12 @@ namespace content {
 class P2PSocketDispatcher;
 }  // namespace content
 
-namespace chrome {
-class ChromeContentRendererClient;
-}  // namespace chrome
-
 namespace gfx {
 class Point;
 class Rect;
 }  // namespace gfx
 
 namespace webkit {
-
-namespace npapi {
-class PluginGroup;
-}  // namespace npapi
 
 namespace ppapi {
 class PluginInstance;

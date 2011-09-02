@@ -440,7 +440,7 @@ void PluginPrefs::NotifyPluginStatusChanged() {
 void PluginPrefs::OnNotifyPluginStatusChanged() {
   notify_pending_ = false;
   NotificationService::current()->Notify(
-      content::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
+      chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
       Source<PluginPrefs>(this),
       NotificationService::NoDetails());
 }

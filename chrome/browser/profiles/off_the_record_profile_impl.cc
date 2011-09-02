@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "chrome/browser/net/pref_proxy_config_service.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
@@ -117,6 +119,9 @@ class OffTheRecordProfileImpl : public Profile,
     ExtensionIconSource* icon_source = new ExtensionIconSource(real_profile);
     GetChromeURLDataManager()->AddDataSource(icon_source);
 
+    ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
+        PluginPrefs::GetForProfile(this), &GetResourceContext());
+
     BrowserThread::PostTask(
     BrowserThread::IO, FROM_HERE,
     NewRunnableFunction(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
@@ -126,6 +131,9 @@ class OffTheRecordProfileImpl : public Profile,
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_DESTROYED, Source<Profile>(this),
         NotificationService::NoDetails());
+
+    ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
+        &GetResourceContext());
 
     ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 

@@ -519,13 +519,12 @@ void PluginList::GetPluginInfoArray(
 
   std::set<FilePath> visited_plugins;
 
-  // Add in enabled plugins by mime type.
+  // Add in plugins by mime type.
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
     const std::vector<webkit::WebPluginInfo>& plugins =
         plugin_groups_[i]->web_plugins_info();
     for (size_t i = 0; i < plugins.size(); ++i) {
-      if (IsPluginEnabled(plugins[i]) && SupportsType(plugins[i],
-                                             mime_type, allow_wildcard)) {
+      if (SupportsType(plugins[i], mime_type, allow_wildcard)) {
         FilePath path = plugins[i].path;
         if (path.value() != kDefaultPluginLibraryName &&
             visited_plugins.insert(path).second) {
@@ -537,7 +536,7 @@ void PluginList::GetPluginInfoArray(
     }
   }
 
-  // Add in enabled plugins by url.
+  // Add in plugins by url.
   std::string path = url.path();
   std::string::size_type last_dot = path.rfind('.');
   if (last_dot != std::string::npos) {
@@ -547,8 +546,7 @@ void PluginList::GetPluginInfoArray(
       const std::vector<webkit::WebPluginInfo>& plugins =
           plugin_groups_[i]->web_plugins_info();
       for (size_t i = 0; i < plugins.size(); ++i) {
-        if (IsPluginEnabled(plugins[i]) &&
-            SupportsExtension(plugins[i], extension, &actual_mime_type)) {
+        if (SupportsExtension(plugins[i], extension, &actual_mime_type)) {
           FilePath path = plugins[i].path;
           if (path.value() != kDefaultPluginLibraryName &&
               visited_plugins.insert(path).second) {
@@ -556,24 +554,6 @@ void PluginList::GetPluginInfoArray(
             if (actual_mime_types)
               actual_mime_types->push_back(actual_mime_type);
           }
-        }
-      }
-    }
-  }
-
-  // Add in disabled plugins by mime type.
-  for (size_t i = 0; i < plugin_groups_.size(); ++i) {
-    const std::vector<webkit::WebPluginInfo>& plugins =
-        plugin_groups_[i]->web_plugins_info();
-    for (size_t i = 0; i < plugins.size(); ++i) {
-      if (!IsPluginEnabled(plugins[i]) &&
-          SupportsType(plugins[i], mime_type, allow_wildcard)) {
-        FilePath path = plugins[i].path;
-        if (path.value() != kDefaultPluginLibraryName &&
-            visited_plugins.insert(path).second) {
-          info->push_back(plugins[i]);
-          if (actual_mime_types)
-            actual_mime_types->push_back(mime_type);
         }
       }
     }

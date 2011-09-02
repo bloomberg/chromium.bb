@@ -19,6 +19,10 @@
 #include "webkit/plugins/webplugininfo.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace content {
+class ResourceContext;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -41,9 +45,11 @@ class PluginProcessHost : public BrowserChildProcessHost {
  public:
   class Client {
    public:
-    // Returns a opaque unique identifier for the process requesting
+    // Returns an opaque unique identifier for the process requesting
     // the channel.
     virtual int ID() = 0;
+    // Returns the resource context for the renderer requesting the channel.
+    virtual const content::ResourceContext& GetResourceContext() = 0;
     virtual bool OffTheRecord() = 0;
     virtual void SetPluginInfo(const webkit::WebPluginInfo& info) = 0;
     // The client should delete itself when one of these methods is called.

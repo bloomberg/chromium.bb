@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/defaults.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/password_manager/password_store_default.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -438,6 +440,9 @@ void ProfileImpl::DoFinalInit() {
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, app_path);
 
+  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
+      PluginPrefs::GetForProfile(this), &GetResourceContext());
+
   // Creation has been finished.
   if (delegate_)
     delegate_->OnProfileCreated(this, true);
@@ -686,6 +691,9 @@ ProfileImpl::~ProfileImpl() {
   // TODO(stevet): Make ProfileSyncService into a PKS and let the PDM take care
   // of the cleanup below.
   sync_service_.reset();
+
+  ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
+      &GetResourceContext());
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 

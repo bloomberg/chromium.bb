@@ -70,6 +70,7 @@
 #endif
 
 using net::CookieStore;
+using content::PluginServiceFilter;
 
 namespace {
 
@@ -121,27 +122,33 @@ class OpenChannelToNpapiPluginCallback : public RenderMessageCompletionCallback,
                                          public PluginProcessHost::Client {
  public:
   OpenChannelToNpapiPluginCallback(RenderMessageFilter* filter,
+                                   const content::ResourceContext& context,
                                    IPC::Message* reply_msg)
-      : RenderMessageCompletionCallback(filter, reply_msg) {
+      : RenderMessageCompletionCallback(filter, reply_msg),
+        context_(context) {
   }
 
-  virtual int ID() {
+  virtual int ID() OVERRIDE {
     return filter()->render_process_id();
   }
 
-  virtual bool OffTheRecord() {
+  virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
+    return context_;
+  }
+
+  virtual bool OffTheRecord() OVERRIDE {
     return filter()->OffTheRecord();
   }
 
-  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) {
+  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
     info_ = info;
   }
 
-  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) {
+  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) OVERRIDE {
     WriteReplyAndDeleteThis(handle);
   }
 
-  virtual void OnError() {
+  virtual void OnError() OVERRIDE {
     WriteReplyAndDeleteThis(IPC::ChannelHandle());
   }
 
@@ -152,6 +159,7 @@ class OpenChannelToNpapiPluginCallback : public RenderMessageCompletionCallback,
     SendReplyAndDeleteThis();
   }
 
+  const content::ResourceContext& context_;
   webkit::WebPluginInfo info_;
 };
 
@@ -536,38 +544,36 @@ void RenderMessageFilter::OnGetPlugins(
     }
   }
 
-  std::vector<webkit::WebPluginInfo> all_plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(&all_plugins);
-  for (size_t i = 0; i < all_plugins.size(); ++i) {
-    if (webkit::IsPluginEnabled(all_plugins[i]))
-      plugins->push_back(all_plugins[i]);
-  }
+  PluginService::GetInstance()->GetPlugins(resource_context_,
+                                           plugins);
 }
 
 void RenderMessageFilter::OnGetPluginInfo(
     int routing_id,
     const GURL& url,
-    const GURL& policy_url,
+    const GURL& page_url,
     const std::string& mime_type,
     bool* found,
     webkit::WebPluginInfo* info,
     std::string* actual_mime_type) {
+  bool allow_wildcard = true;
   *found = plugin_service_->GetPluginInfo(
-      render_process_id_, routing_id, url, mime_type, info, actual_mime_type);
-
-  if (*found) {
-    if (!plugin_service_->PluginAllowedForURL(info->path, policy_url))
-      info->enabled |= webkit::WebPluginInfo::POLICY_DISABLED;
-  }
+      render_process_id_, routing_id, resource_context_,
+      url, page_url, mime_type, allow_wildcard,
+      NULL, info, actual_mime_type);
 }
 
 void RenderMessageFilter::OnOpenChannelToPlugin(int routing_id,
                                                 const GURL& url,
+                                                const GURL& policy_url,
                                                 const std::string& mime_type,
                                                 IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToNpapiPlugin(
-      render_process_id_, routing_id, url, mime_type,
-      new OpenChannelToNpapiPluginCallback(this, reply_msg));
+      render_process_id_, routing_id,
+      url, policy_url, mime_type,
+      new OpenChannelToNpapiPluginCallback(this,
+                                           resource_context_,
+                                           reply_msg));
 }
 
 void RenderMessageFilter::OnOpenChannelToPepperPlugin(

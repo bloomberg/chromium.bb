@@ -6,9 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/resource_context.h"
 #include "content/common/content_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -22,8 +25,9 @@ const char* kNPAPITestPluginMimeType = "application/vnd.npapi-test";
 class MockPluginProcessHostClient : public PluginProcessHost::Client,
                                     public IPC::Channel::Listener {
  public:
-  MockPluginProcessHostClient()
-      : channel_(NULL),
+  MockPluginProcessHostClient(const content::ResourceContext& context)
+      : context_(context),
+        channel_(NULL),
         set_plugin_info_called_(false) {
   }
 
@@ -33,8 +37,11 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   }
 
   // Client implementation.
-  int ID() { return 42; }
-  bool OffTheRecord() { return false; }
+  virtual int ID() OVERRIDE { return 42; }
+  virtual bool OffTheRecord() OVERRIDE { return false; }
+  virtual const content::ResourceContext& GetResourceContext() OVERRIDE {
+    return context_;
+  }
 
   void OnChannelOpened(const IPC::ChannelHandle& handle) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -63,6 +70,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
   MOCK_METHOD0(OnChannelListenError, void());
 
  private:
+  const content::ResourceContext& context_;
   IPC::Channel* channel_;
   bool set_plugin_info_called_;
   DISALLOW_COPY_AND_ASSIGN(MockPluginProcessHostClient);
@@ -87,8 +95,9 @@ class PluginServiceTest : public InProcessBrowserTest {
 // Try to open a channel to the test plugin. Minimal plugin process spawning
 // test for the PluginService interface.
 IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToPlugin) {
-  MockPluginProcessHostClient mock_client;
+  ::testing::StrictMock<MockPluginProcessHostClient> mock_client(
+      browser()->profile()->GetResourceContext());
   PluginService::GetInstance()->OpenChannelToNpapiPlugin(
-      0, 0, GURL(), kNPAPITestPluginMimeType, &mock_client);
+      0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, &mock_client);
   ui_test_utils::RunMessageLoop();
 }
