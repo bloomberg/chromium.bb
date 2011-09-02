@@ -162,8 +162,8 @@ class GerritPatch(Patch):
            'Please rebase and re-upload your change to re-submit.')
 
     cmd = helper.GetGerritReviewCommand(
-        ['--code-review=-2', '-m', '%s', '%s,%s' % (msg, self.gerrit_number,
-                                                    self.patch_number)])
+        ['--code-review=-2', '-m', msg, '%s,%s' % (self.gerrit_number,
+                                                   self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
   def HandleCouldNotVerify(self, helper, dryrun=False):
@@ -183,8 +183,8 @@ class GerritPatch(Patch):
            'patch with TEST= updated describing why you believe this to be '
            'true.')
     cmd = helper.GetGerritReviewCommand(
-        ['--verified=-1', '-m', '%s', '%s,%s' % (msg, self.gerrit_number,
-                                                 self.patch_number)])
+        ['--verified=-1', '-m', msg, '%s,%s' % (self.gerrit_number,
+                                                self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
   def HandleCouldNotApply(self, helper, dryrun=False):
@@ -200,8 +200,8 @@ class GerritPatch(Patch):
     msg = ('Paladin: Commit Queue failed to apply your change cleanly. '
            'Please re-sync, rebase re-upload your change.')
     cmd = helper.GetGerritReviewCommand(
-        ['--code-review=-2', '-m', '%s', '%s,%s' % (msg, self.gerrit_number,
-                                                    self.patch_number)])
+        ['--code-review=-2', '-m', msg, '%s,%s' % (self.gerrit_number,
+                                                   self.patch_number)])
     GerritPatch._RunCommand(cmd, dryrun)
 
   def Submit(self, helper, dryrun=False):

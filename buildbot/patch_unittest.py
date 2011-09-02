@@ -143,6 +143,33 @@ class GerritPatchTest(mox.MoxTestBase):
     my_patch.Submit(helper, False)
     self.mox.VerifyAll()
 
+  def testGerritHandleApplyError(self):
+    """Tests review string looks correct."""
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    helper = gerrit_helper.GerritHelper(False)
+    self.mox.ReplayAll()
+    my_patch.HandleCouldNotApply(helper, True)
+    self.mox.VerifyAll()
+
+  def testGerritHandleSubmitError(self):
+    """Tests review string looks correct."""
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    helper = gerrit_helper.GerritHelper(False)
+    self.mox.ReplayAll()
+    my_patch.HandleCouldNotSubmit(helper, True)
+    self.mox.VerifyAll()
+
+  def testGerritHandleVerifyError(self):
+    """Tests review string looks correct."""
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    helper = gerrit_helper.GerritHelper(False)
+    self.mox.ReplayAll()
+    my_patch.HandleCouldNotVerify(helper, True)
+    self.mox.VerifyAll()
+
 
 class PrepareLocalPatchesTests(mox.MoxTestBase):
 
