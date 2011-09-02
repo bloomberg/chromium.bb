@@ -19,6 +19,7 @@ extern const char kAppsPromoCounter[];
 extern const char kDefaultAppsInstalled[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];
+extern const char kHomePageChanged[];
 extern const char kSessionExitedCleanly[];
 extern const char kRestoreOnStartup[];
 extern const char kURLsToRestoreOnStartup[];

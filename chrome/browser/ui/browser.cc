@@ -313,6 +313,7 @@ Browser::Browser(Type type, Profile* profile)
   profile_pref_registrar_.Add(prefs::kDevToolsDisabled, this);
   profile_pref_registrar_.Add(prefs::kEditBookmarksEnabled, this);
   profile_pref_registrar_.Add(prefs::kEnableBookmarkBar, this);
+  profile_pref_registrar_.Add(prefs::kHomePage, this);
   profile_pref_registrar_.Add(prefs::kInstantEnabled, this);
   profile_pref_registrar_.Add(prefs::kIncognitoModeAvailability, this);
   profile_pref_registrar_.Add(prefs::kSearchSuggestEnabled, this);
@@ -1468,7 +1469,8 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
 
 void Browser::Home(WindowOpenDisposition disposition) {
   UserMetrics::RecordAction(UserMetricsAction("Home"));
-  OpenURL(GetHomePage(), GURL(), disposition, PageTransition::AUTO_BOOKMARK);
+  OpenURL(GetHomePage(), GURL(), disposition,
+          PageTransition::AUTO_BOOKMARK | PageTransition::HOME_PAGE);
 }
 
 void Browser::OpenCurrentURL() {
@@ -2238,6 +2240,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kHomePage,
                             chrome::kChromeUINewTabURL,
                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHomePageChanged,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage,
                              true,
                              PrefService::SYNCABLE_PREF);
@@ -4033,6 +4038,9 @@ void Browser::Observe(int type,
         UpdateCommandsForBookmarkEditing();
       } else if (pref_name == prefs::kEnableBookmarkBar) {
         UpdateCommandsForBookmarkBar();
+      } else if (pref_name == prefs::kHomePage) {
+        PrefService* pref_service = Source<PrefService>(source).ptr();
+        MarkHomePageAsChanged(pref_service);
       } else if (pref_name == prefs::kAllowFileSelectionDialogs) {
         UpdateSaveAsState(GetContentRestrictionsForSelectedTab());
         UpdateOpenFileState();
@@ -4483,6 +4491,11 @@ void Browser::UpdateCommandsForBookmarkBar() {
       browser_defaults::bookmarks_enabled &&
       !profile_->GetPrefs()->IsManagedPreference(prefs::kEnableBookmarkBar) &&
       show_main_ui);
+}
+
+void Browser::MarkHomePageAsChanged(PrefService* pref_service) {
+  pref_service->SetBoolean(prefs::kHomePageChanged, true);
+  pref_service->ScheduleSavePersistentPrefs();
 }
 
 void Browser::UpdateSaveAsState(int content_restrictions) {

@@ -24,6 +24,9 @@ const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 // This is the URL of the page to load when opening new tabs.
 const char kHomePage[] = "homepage";
 
+// Did the user change the home page after install?
+const char kHomePageChanged[] = "homepage_changed";
+
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.

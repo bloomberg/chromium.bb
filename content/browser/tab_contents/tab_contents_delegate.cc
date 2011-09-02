@@ -34,8 +34,8 @@ void TabContentsDelegate::NavigationStateChanged(const TabContents* source,
                                                  unsigned changed_flags) {
 }
 
-std::string TabContentsDelegate::GetNavigationHeaders(const GURL& url) {
-  return std::string();
+void TabContentsDelegate::AddNavigationHeaders(const GURL& url,
+                                               std::string* headers) {
 }
 
 void TabContentsDelegate::AddNewContents(TabContents* source,
