@@ -273,7 +273,6 @@ extern const char kDefaultZoomLevel[];
 extern const char kPerHostZoomLevels[];
 extern const char kAutofillEnabled[];
 extern const char kAutofillAuxiliaryProfilesEnabled[];
-extern const char kAutofillDialogPlacement[];
 extern const char kAutofillPositiveUploadRate[];
 extern const char kAutofillNegativeUploadRate[];
 extern const char kAutofillPersonalDataManagerFirstRun[];

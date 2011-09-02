@@ -247,11 +247,6 @@ AutofillManager::~AutofillManager() {
 }
 
 // static
-void AutofillManager::RegisterBrowserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kAutofillDialogPlacement);
-}
-
-// static
 void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutofillEnabled,
                              true,

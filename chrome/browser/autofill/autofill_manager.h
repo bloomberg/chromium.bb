@@ -51,9 +51,6 @@ class AutofillManager : public TabContentsObserver,
   explicit AutofillManager(TabContentsWrapper* tab_contents);
   virtual ~AutofillManager();
 
-  // Registers our browser prefs.
-  static void RegisterBrowserPrefs(PrefService* prefs);
-
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefService* prefs);
 

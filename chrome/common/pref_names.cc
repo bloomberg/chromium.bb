@@ -756,9 +756,6 @@ const char kAutofillEnabled[] = "autofill.enabled";
 const char kAutofillAuxiliaryProfilesEnabled[] =
     "autofill.auxiliary_profiles_enabled";
 
-// Position and size of the Autofill dialog.
-const char kAutofillDialogPlacement[] = "autofill.dialog_placement";
-
 // Double that indicates positive (for matched forms) upload rate.
 const char kAutofillPositiveUploadRate[] = "autofill.positive_upload_rate";
 
