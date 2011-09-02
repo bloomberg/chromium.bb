@@ -26,8 +26,9 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/internal_auth.h"
@@ -50,6 +51,23 @@ const uint8 kCRLFCRLF[] = "\r\n\r\n";
 // Not a constant but preprocessor definition for easy concatenation.
 #define kProxyPath "/tcpproxy"
 
+enum WebSocketStatusCode {
+  WS_CLOSE_NORMAL = 1000,
+  WS_CLOSE_GOING_AWAY = 1001,
+  WS_CLOSE_PROTOCOL_ERROR = 1002,
+  WS_CLOSE_UNACCEPTABLE_DATA = 1003,
+
+  WS_CLOSE_DESTINATION_ERROR = 4000,
+  WS_CLOSE_LIMIT_VIOLATION = 4001,
+  WS_CLOSE_RESOLUTION_FAILED = 4002,
+  WS_CLOSE_UNEXPECTED = 4003
+};
+
+enum WebSocketFrameOpcode {
+  WS_OPCODE_TEXT = 1,
+  WS_OPCODE_CLOSE = 8
+};
+
 // Returns true on success.
 bool SetNonBlock(int fd) {
   int flags = fcntl(fd, F_GETFL, 0);
@@ -68,20 +86,42 @@ bool IgnoreSigPipe() {
   return true;
 }
 
-int CountSpaces(const std::string& s) {
-  static const uint8 kSpaceOctet = 0x20;
-  int rv = 0;
-  for (size_t i = 0; i < s.size(); ++i)
-    rv += (s[i] == kSpaceOctet);
+uint64 ReadNetworkInteger(uint8* buf, int num_bytes) {
+  uint64 rv = 0;
+  DCHECK_GE(num_bytes, 0);
+  DCHECK_LE(num_bytes, 8);
+  while (num_bytes--) {
+    rv <<= 8;
+    rv += *buf++;
+  }
   return rv;
 }
 
-std::string FetchLowerCasedASCIISnippet(uint8* begin, uint8* end) {
+void WriteNetworkInteger(int64 n, uint8* buf, int num_bytes) {
+  DCHECK_GE(num_bytes, 0);
+  DCHECK_LE(num_bytes, 8);
+  while (num_bytes--) {
+    buf[num_bytes] = n % (1 << 8);
+    n >>= 8;
+  }
+}
+
+typedef uint8 (*AsciiFilter)(uint8);
+
+uint8 AsciiFilterVerbatim(uint8 c) {
+  return c;
+}
+
+uint8 AsciiFilterLower(uint8 c) {
+  return base::ToLowerASCII(c);
+}
+
+std::string FetchAsciiSnippet(uint8* begin, uint8* end, AsciiFilter filter) {
   std::string rv;
   for (; begin < end; ++begin) {
     if (!isascii(*begin))
       return rv;
-    rv += base::ToLowerASCII(*begin);
+    rv += filter(*begin);
   }
   return rv;
 }
@@ -147,8 +187,8 @@ std::string FetchExtensionIdFromOrigin(const std::string &origin) {
     return std::string();
 }
 
-inline size_t strlen(const uint8* s) {
-  return ::strlen(reinterpret_cast<const char*>(s));
+inline size_t strlen(const void* s) {
+  return ::strlen(static_cast<const char*>(s));
 }
 
 void SendNotification() {
@@ -312,7 +352,7 @@ class Conn {
 
   static Conn* Get(EventKey evkey);
 
-  void Shut();
+  void Shut(int status, const void* reason);
 
   void ConsiderSuicide();
 
@@ -321,12 +361,17 @@ class Conn {
   Status ConsumeFrameHeader(struct evbuffer*);
   Status ProcessFrameData(struct evbuffer*);
 
-  // Returns true on success.
+  // Return true on success.
   bool EmitHandshake(Chan*);
+  bool EmitFrame(
+      Chan*, WebSocketFrameOpcode opcode, const void* buf, size_t size);
 
   // Attempts to establish second connection (to remote TCP service).
   // Returns true on success.
   bool TryConnectDest(const struct sockaddr*, socklen_t);
+
+  // Return security origin associated with this connection.
+  const std::string& GetOrigin();
 
   // Used as libevent callbacks.
   static void OnDestConnectTimeout(int, short, EventKey);
@@ -347,6 +392,9 @@ class Conn {
  private:
   Serv* master_;
   Phase phase_;
+  uint64 frame_bytes_remaining_;
+  uint8 frame_mask_[4];
+  int frame_mask_index_;
 
   // We maintain two channels per Conn:
   // primary channel is websocket connection.
@@ -358,9 +406,6 @@ class Conn {
 
   // Header fields supplied by client at initial websocket handshake.
   std::map<std::string, std::string> header_fields_;
-
-  // Cryptohashed answer for websocket handshake.
-  base::MD5Digest handshake_response_;
 
   // Hostname and port of destination socket.
   // Websocket client supplies them in first data frame (destframe).
@@ -549,7 +594,8 @@ Conn* Serv::GetFreshConn() {
     --it;
     for (int i = conn_pool_.size() - WebSocketProxy::kConnPoolLimit; i-- > 0;) {
       // Shut may invalidate an iterator; hence postdecrement.
-      (*it--)->Shut();
+      (*it--)->Shut(WS_CLOSE_GOING_AWAY,
+                    "Flood of new connections, getting rid of old ones");
     }
     if (conn_pool_.size() > WebSocketProxy::kConnPoolLimit + 12) {
       // Connections overflow.  Zap the oldest not active.
@@ -612,6 +658,8 @@ void Serv::OnShutdownRequest(int fd, short event, void* ctx) {
 Conn::Conn(Serv* master)
     : master_(master),
       phase_(PHASE_WAIT_HANDSHAKE),
+      frame_bytes_remaining_(0),
+      frame_mask_index_(0),
       primchan_(this),
       destchan_(this),
       destresolution_ipv4_failed_(false),
@@ -659,12 +707,17 @@ Conn* Conn::Get(EventKey evkey) {
   return cs;
 }
 
-void Conn::Shut() {
+void Conn::Shut(int status, const void* reason) {
   if (phase_ >= PHASE_SHUT)
     return;
   master_->MarkConnImportance(this, false);
-  static const uint8 closing_handshake[9] = { 0 };
-  primchan_.Write(closing_handshake, sizeof(closing_handshake));
+
+  std::vector<uint8> payload(2 + strlen(reason));
+  WriteNetworkInteger(status, vector_as_array(&payload), 2);
+  memcpy(vector_as_array(&payload) + 2, reason, strlen(reason));
+
+  EmitFrame(
+      &primchan_, WS_OPCODE_CLOSE, vector_as_array(&payload), payload.size());
   primchan_.Shut();
   destchan_.Shut();
   phase_ = PHASE_SHUT;
@@ -697,47 +750,44 @@ Conn::Status Conn::ConsumeHeader(struct evbuffer* evb) {
   uint8* buf_end = buf + buf_size;
   uint8* term_pos = std::search(buf, buf_end, kCRLFCRLF,
                                   kCRLFCRLF + strlen(kCRLFCRLF));
-  uint8 key3[8];  // Notation (key3) matches websocket RFC.
-  if (buf_end - term_pos - strlen(kCRLFCRLF) < sizeof(key3))
-    return STATUS_INCOMPLETE;
   term_pos += strlen(kCRLFCRLF);
-  memcpy(key3, term_pos, sizeof(key3));
-  term_pos += sizeof(key3);
   // First line is "GET /tcpproxy" line, so we skip it.
   uint8* pos = std::search(buf, term_pos, kCRLF, kCRLF + strlen(kCRLF));
   if (pos == term_pos)
     return STATUS_ABORT;
   for (;;) {
     pos += strlen(kCRLF);
-    if (term_pos - pos <
-        static_cast<ptrdiff_t>(sizeof(key3) + strlen(kCRLF))) {
+    if (term_pos - pos < static_cast<ptrdiff_t>(strlen(kCRLF)))
       return STATUS_ABORT;
-    }
-    if (term_pos - pos ==
-        static_cast<ptrdiff_t>(sizeof(key3) + strlen(kCRLF))) {
+    if (term_pos - pos == static_cast<ptrdiff_t>(strlen(kCRLF)))
       break;
-    }
     uint8* npos = std::search(pos, term_pos, kKeyValueDelimiter,
                               kKeyValueDelimiter + strlen(kKeyValueDelimiter));
     if (npos == term_pos)
       return STATUS_ABORT;
-    std::string key = FetchLowerCasedASCIISnippet(pos, npos);
+    std::string key = FetchAsciiSnippet(pos, npos, AsciiFilterLower);
     pos = std::search(npos += strlen(kKeyValueDelimiter), term_pos,
                       kCRLF, kCRLF + strlen(kCRLF));
     if (pos == term_pos)
       return STATUS_ABORT;
-    if (!key.empty())
-      header_fields_[key] = FetchLowerCasedASCIISnippet(npos, pos);
+    if (!key.empty()) {
+      header_fields_[key] = FetchAsciiSnippet(npos, pos,
+          key == "sec-websocket-key" ? AsciiFilterVerbatim : AsciiFilterLower);
+    }
   }
 
   // Values of Upgrade and Connection fields are hardcoded in the protocol.
   if (header_fields_["upgrade"] != "websocket" ||
-      header_fields_["connection"] != "upgrade") {
+      header_fields_["connection"] != "upgrade" ||
+      header_fields_["sec-websocket-key"].size() != 24) {
     return STATUS_ABORT;
   }
-
+  if (header_fields_["sec-websocket-version"] != "8" &&
+      header_fields_["sec-websocket-version"] != "13") {
+    return STATUS_ABORT;
+  }
   // Normalize origin (e.g. leading slash).
-  GURL origin = GURL(header_fields_["origin"]).GetOrigin();
+  GURL origin = GURL(GetOrigin()).GetOrigin();
   if (!origin.is_valid())
     return STATUS_ABORT;
   // Here we check origin.  This check may seem redundant because we verify
@@ -747,32 +797,6 @@ Conn::Status Conn::ConsumeHeader(struct evbuffer* evb) {
   if (!master_->IsOriginAllowed(origin.spec()))
     return STATUS_ABORT;
 
-  static const std::string kSecKey1 = "sec-websocket-key1";
-  static const std::string kSecKey2 = "sec-websocket-key2";
-  uint32 key_number1, key_number2;
-  if (!FetchDecimalDigits(header_fields_[kSecKey1], &key_number1) ||
-      !FetchDecimalDigits(header_fields_[kSecKey2], &key_number2)) {
-    return STATUS_ABORT;
-  }
-
-  // We limit incoming header size so following numbers shall not be too high.
-  int spaces1 = CountSpaces(header_fields_[kSecKey1]);
-  int spaces2 = CountSpaces(header_fields_[kSecKey2]);
-  if (spaces1 == 0 ||
-      spaces2 == 0 ||
-      key_number1 % spaces1 != 0 ||
-      key_number2 % spaces2 != 0) {
-    return STATUS_ABORT;
-  }
-
-  uint8 challenge[4 + 4 + sizeof(key3)];
-  uint32 part1 = htonl(key_number1 / spaces1);
-  uint32 part2 = htonl(key_number2 / spaces2);
-  memcpy(challenge, &part1, 4);
-  memcpy(challenge + 4, &part2, 4);
-  memcpy(challenge + sizeof(challenge) - sizeof(key3), key3, sizeof(key3));
-  MD5Sum(challenge, sizeof(challenge), &handshake_response_);
-
   evbuffer_drain(evb, term_pos - buf);
   return STATUS_OK;
 }
@@ -780,31 +804,16 @@ Conn::Status Conn::ConsumeHeader(struct evbuffer* evb) {
 bool Conn::EmitHandshake(Chan* chan) {
   std::vector<std::string> boilerplate;
   boilerplate.push_back("HTTP/1.1 101 WebSocket Protocol Handshake");
-  boilerplate.push_back("Upgrade: WebSocket");
+  boilerplate.push_back("Upgrade: websocket");
   boilerplate.push_back("Connection: Upgrade");
 
   {
-    // Take care of Location field.
-    char buf[128];
-    int rv = snprintf(buf, sizeof(buf),
-                      "Sec-WebSocket-Location: ws://%s%s",
-                      header_fields_["host"].c_str(),
-                      kProxyPath);
-    if (rv <= 0 || rv + 0u >= sizeof(buf))
-      return false;
-    boilerplate.push_back(buf);
-  }
-  {
-    // Take care of Origin field.
-    if (header_fields_.find("origin") != header_fields_.end()) {
-      char buf[128];
-      int rv = snprintf(buf, sizeof(buf),
-                        "Sec-WebSocket-Origin: %s",
-                        header_fields_["origin"].c_str());
-      if (rv <= 0 || rv + 0u >= sizeof(buf))
-        return false;
-      boilerplate.push_back(buf);
-    }
+    // Take care of Accept field.
+    std::string word = header_fields_["sec-websocket-key"];
+    word += "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    std::string accept_token;
+    base::Base64Encode(base::SHA1HashString(word), &accept_token);
+    boilerplate.push_back("Sec-WebSocket-Accept: " + accept_token);
   }
 
   boilerplate.push_back("");
@@ -814,56 +823,114 @@ bool Conn::EmitHandshake(Chan* chan) {
       return false;
     }
   }
-  return chan->Write(&handshake_response_, sizeof(handshake_response_));
+  return true;
+}
+
+bool Conn::EmitFrame(
+    Chan* chan, WebSocketFrameOpcode opcode, const void* buf, size_t size) {
+  uint8 header[10];
+  int header_size = 2;
+  DCHECK(chan);
+  DCHECK(opcode >= 0 && opcode < 16);
+  header[0] = opcode | 0x80;  // FIN bit set.
+  if (size < 126) {
+    header[1] = size;
+  } else if (size < (1 << 16)) {
+    header[1] = 126;
+    WriteNetworkInteger(size, header + 2, 2);
+    header_size += 2;
+  } else {
+    header[1] = 127;
+    WriteNetworkInteger(size, header + 2, 8);
+    header_size += 8;
+  }
+  return chan->Write(header, header_size) && chan->Write(buf, size);
 }
 
 Conn::Status Conn::ConsumeDestframe(struct evbuffer* evb) {
-  uint8* buf = EVBUFFER_DATA(evb);
-  size_t buf_size = EVBUFFER_LENGTH(evb);
-
-  if (buf_size < 1)
-    return STATUS_INCOMPLETE;
-  if (buf[0] != 0)
-    return STATUS_ABORT;
-  if (buf_size < 1 + 1)
-    return STATUS_INCOMPLETE;
-  uint8* buf_end = buf + buf_size;
-  uint8* term_pos = std::find(buf + 1, buf_end, 0xff);
-  if (term_pos == buf_end) {
-    if (buf_size >= WebSocketProxy::kHeaderLimit) {
-      // So big and still worth nothing.
+  if (frame_bytes_remaining_ == 0) {
+    Conn::Status rv = ConsumeFrameHeader(evb);
+    if (rv != STATUS_OK)
+      return rv;
+    if (frame_bytes_remaining_ == 0 ||
+        frame_bytes_remaining_ >= WebSocketProxy::kHeaderLimit) {
       return STATUS_ABORT;
     }
-    return STATUS_INCOMPLETE;
   }
 
+  uint8* buf = EVBUFFER_DATA(evb);
+  size_t buf_size = EVBUFFER_LENGTH(evb);
+  if (buf_size < frame_bytes_remaining_)
+    return STATUS_INCOMPLETE;
+  for (size_t i = 0; i < buf_size; ++i) {
+    buf[i] ^= frame_mask_[frame_mask_index_];
+    frame_mask_index_ = (frame_mask_index_ + 1) % 4;
+  }
   std::string passport;
-  if (!FetchPassportNamePort(
-      buf + 1, term_pos, &passport, &destname_, &destport_)) {
+  if (!FetchPassportNamePort(buf, buf + frame_bytes_remaining_,
+                             &passport, &destname_, &destport_)) {
     return STATUS_ABORT;
   }
   std::map<std::string, std::string> map;
   map["hostname"] = destname_;
   map["port"] = base::IntToString(destport_);
-  map["extension_id"] = FetchExtensionIdFromOrigin(header_fields_["origin"]);
+  map["extension_id"] = FetchExtensionIdFromOrigin(GetOrigin());
   if (!browser::InternalAuthVerification::VerifyPassport(
       passport, "web_socket_proxy", map)) {
     return STATUS_ABORT;
   }
 
-  evbuffer_drain(evb, term_pos - buf + 1);
+  evbuffer_drain(evb, frame_bytes_remaining_);
+  frame_bytes_remaining_ = 0;
   return STATUS_OK;
 }
 
 Conn::Status Conn::ConsumeFrameHeader(struct evbuffer* evb) {
   uint8* buf = EVBUFFER_DATA(evb);
   size_t buf_size = EVBUFFER_LENGTH(evb);
+  size_t header_size = 2;
 
-  if (buf_size < 1)
+  if (buf_size < header_size)
     return STATUS_INCOMPLETE;
-  if (buf[0] != 0)
+  if (buf[0] & 0x70) {
+    // We are not able to handle non-zero reserved bits.
+    NOTIMPLEMENTED();
     return STATUS_ABORT;
-  evbuffer_drain(evb, 1);
+  }
+  bool fin_flag = buf[0] & 0x80;
+  if (!fin_flag) {
+    NOTIMPLEMENTED();
+    return STATUS_ABORT;
+  }
+  int opcode = buf[0] & 0x0f;
+  switch (opcode) {
+    case 1:  // Text frame.
+      break;
+    default:
+      NOTIMPLEMENTED();
+      return STATUS_ABORT;
+  }
+
+  bool mask_flag = buf[1] & 0x80;
+  if (!mask_flag) {
+    // Client-to-server frames must be masked.
+    return STATUS_ABORT;
+  }
+  frame_bytes_remaining_ = buf[1] & 0x7f;
+  int extra_size = 0;
+  if (frame_bytes_remaining_ == 126)
+    extra_size = 2;
+  else if (frame_bytes_remaining_ == 127)
+    extra_size = 8;
+  if (buf_size < header_size + extra_size + sizeof(frame_mask_))
+    return STATUS_INCOMPLETE;
+  if (extra_size)
+    frame_bytes_remaining_ = ReadNetworkInteger(buf + header_size, extra_size);
+  header_size += extra_size;
+  memcpy(frame_mask_, buf + header_size, sizeof(frame_mask_));
+  header_size += sizeof(frame_mask_);
+  frame_mask_index_ = 0;
+  evbuffer_drain(evb, header_size);
   return STATUS_OK;
 }
 
@@ -871,28 +938,22 @@ Conn::Status Conn::ProcessFrameData(struct evbuffer* evb) {
   uint8* buf = EVBUFFER_DATA(evb);
   size_t buf_size = EVBUFFER_LENGTH(evb);
 
+  DCHECK_GE(frame_bytes_remaining_, 1u);
+  if (frame_bytes_remaining_ < buf_size)
+    buf_size = frame_bytes_remaining_;
+  // base64 is encoded in chunks of 4 bytes.
+  buf_size = buf_size / 4 * 4;
   if (buf_size < 1)
     return STATUS_INCOMPLETE;
-  uint8* buf_end = buf + buf_size;
-  uint8* term_pos = std::find(buf, buf_end, 0xff);
-  bool term_detected = (term_pos != buf_end);
-  if (term_detected)
-    buf_size = term_pos - buf;
   switch (phase_) {
     case PHASE_INSIDE_FRAME_BASE64: {
-      if (term_detected && buf_size % 4) {
-        // base64 is encoded in chunks of 4 bytes.
-        return STATUS_ABORT;
+      for (size_t i = 0; i < buf_size; ++i) {
+        buf[i] ^= frame_mask_[frame_mask_index_];
+        frame_mask_index_ = (frame_mask_index_ + 1) % 4;
       }
-      if (buf_size < 4) {
-        DCHECK(!term_detected);
-        return STATUS_INCOMPLETE;
-      }
-      size_t bytes_to_process_atm = (buf_size / 4) * 4;
       std::string out_bytes;
-      base::Base64Decode(std::string(buf, buf + bytes_to_process_atm),
-                         &out_bytes);
-      evbuffer_drain(evb, bytes_to_process_atm);
+      base::Base64Decode(std::string(buf, buf + buf_size), &out_bytes);
+      evbuffer_drain(evb, buf_size);
       DCHECK(destchan_.bev() != NULL);
       if (!destchan_.Write(out_bytes.c_str(), out_bytes.size()))
         return STATUS_ABORT;
@@ -906,15 +967,11 @@ Conn::Status Conn::ProcessFrameData(struct evbuffer* evb) {
       return STATUS_ABORT;
     }
   }
-  if (term_detected) {
-    evbuffer_drain(evb, 1);
-    return STATUS_OK;
-  }
-  return STATUS_INCOMPLETE;
+  frame_bytes_remaining_ -= buf_size;
+  return frame_bytes_remaining_ ? STATUS_INCOMPLETE : STATUS_OK;
 }
 
-bool Conn::TryConnectDest(const struct sockaddr* addr,
-                          socklen_t addrlen) {
+bool Conn::TryConnectDest(const struct sockaddr* addr, socklen_t addrlen) {
   if (destchan_.sock() >= 0 || destchan_.bev() != NULL)
     return false;
   destchan_.sock() = socket(addr->sa_family, SOCK_STREAM, 0);
@@ -937,6 +994,11 @@ bool Conn::TryConnectDest(const struct sockaddr* addr,
   bufferevent_setwatermark(
       destchan_.bev(), EV_READ, 0, WebSocketProxy::kReadBufferLimit);
   return !bufferevent_enable(destchan_.bev(), EV_READ | EV_WRITE);
+}
+
+const std::string& Conn::GetOrigin() {
+  return header_fields_[header_fields_["sec-websocket-version"] == "8" ?
+      "sec-websocket-origin" : "origin"];
 }
 
 // static
@@ -1026,7 +1088,8 @@ void Conn::OnPrimchanRead(struct bufferevent* bev, EventKey evkey) {
           }
           case STATUS_ABORT:
           default: {
-            cs->Shut();
+            cs->Shut(WS_CLOSE_DESTINATION_ERROR,
+                     "Incorrect destination specification in first frame");
             return;
           }
         }
@@ -1034,13 +1097,19 @@ void Conn::OnPrimchanRead(struct bufferevent* bev, EventKey evkey) {
       case PHASE_WAIT_DESTCONNECT: {
         if (EVBUFFER_LENGTH(EVBUFFER_INPUT(bev)) >=
             WebSocketProxy::kReadBufferLimit) {
-          cs->Shut();
+          cs->Shut(WS_CLOSE_LIMIT_VIOLATION, "Read buffer overflow");
         }
         return;
       }
       case PHASE_OUTSIDE_FRAME: {
         switch (cs->ConsumeFrameHeader(EVBUFFER_INPUT(bev))) {
           case STATUS_OK: {
+            if (cs->frame_bytes_remaining_ % 4) {
+              // We expect base64 encoded data (encoded in 4-bytes chunks).
+              cs->Shut(WS_CLOSE_UNACCEPTABLE_DATA,
+                       "Frame payload size is not multiple of 4");
+              return;
+            }
             cs->phase_ = PHASE_INSIDE_FRAME_BASE64;
             // Process remaining data if any.
             break;
@@ -1055,7 +1124,7 @@ void Conn::OnPrimchanRead(struct bufferevent* bev, EventKey evkey) {
           }
           case STATUS_ABORT:
           default: {
-            cs->Shut();
+            cs->Shut(WS_CLOSE_PROTOCOL_ERROR, "Invalid frame header");
             return;
           }
         }
@@ -1074,7 +1143,7 @@ void Conn::OnPrimchanRead(struct bufferevent* bev, EventKey evkey) {
           }
           case STATUS_ABORT:
           default: {
-            cs->Shut();
+            cs->Shut(WS_CLOSE_UNACCEPTABLE_DATA, "Invalid frame data");
             return;
           }
         }
@@ -1128,7 +1197,7 @@ void Conn::OnPrimchanError(struct bufferevent* bev,
   if (cs->phase_ >= PHASE_SHUT)
     cs->master_->ZapConn(cs);
   else
-    cs->Shut();
+    cs->Shut(WS_CLOSE_NORMAL, "Error reported on websocket channel");
 }
 
 // static
@@ -1159,7 +1228,7 @@ void Conn::OnDestResolutionIPv4(int result, char type,
   }
   cs->destresolution_ipv4_failed_ = true;
   if (cs->destresolution_ipv4_failed_ && cs->destresolution_ipv6_failed_)
-    cs->Shut();
+    cs->Shut(WS_CLOSE_RESOLUTION_FAILED, "DNS resolution failed");
 }
 
 // static
@@ -1190,7 +1259,7 @@ void Conn::OnDestResolutionIPv6(int result, char type,
   }
   cs->destresolution_ipv6_failed_ = true;
   if (cs->destresolution_ipv4_failed_ && cs->destresolution_ipv6_failed_)
-    cs->Shut();
+    cs->Shut(WS_CLOSE_RESOLUTION_FAILED, "DNS resolution failed");
 }
 
 // static
@@ -1200,7 +1269,7 @@ void Conn::OnDestConnectTimeout(int, short, EventKey evkey) {
     return;
   if (cs->phase_ > PHASE_WAIT_DESTCONNECT)
     return;
-  cs->Shut();
+  cs->Shut(WS_CLOSE_RESOLUTION_FAILED, "DNS resolution timeout");
 }
 
 // static
@@ -1227,12 +1296,9 @@ void Conn::OnDestchanRead(struct bufferevent* bev, EventKey evkey) {
           EVBUFFER_LENGTH(EVBUFFER_INPUT(bev))),
       &out_bytes);
   evbuffer_drain(EVBUFFER_INPUT(bev), EVBUFFER_LENGTH(EVBUFFER_INPUT(bev)));
-  static const uint8 frame_header[] = { 0x00 };
-  static const uint8 frame_terminator[] = { 0xff };
-  if (!cs->primchan_.Write(frame_header,  sizeof(frame_header)) ||
-      !cs->primchan_.Write(out_bytes.c_str(), out_bytes.size()) ||
-      !cs->primchan_.Write(frame_terminator, sizeof(frame_terminator))) {
-    cs->Shut();
+  if (!cs->EmitFrame(&cs->primchan_, WS_OPCODE_TEXT,
+                     out_bytes.c_str(), out_bytes.size())) {
+    cs->Shut(WS_CLOSE_UNEXPECTED, "Failed to write websocket frame");
   }
 }
 
@@ -1267,7 +1333,8 @@ void Conn::OnDestchanError(struct bufferevent* bev,
   if (cs->phase_ >= PHASE_SHUT)
     cs->master_->ZapConn(cs);
   else
-    cs->Shut();
+    cs->Shut(WS_CLOSE_DESTINATION_ERROR,
+             "Failure reported on destination channel");
 }
 
 Conn::EventKey Conn::last_evkey_ = 0;
