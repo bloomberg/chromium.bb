@@ -15,17 +15,24 @@ body {
   background: -webkit-gradient(radial, center center, 0, center center, 400,
               from(#fefefe), to(#efefef)) center center no-repeat;
   font-size: 14px;
+  margin: 0;
   overflow: hidden;
-  padding: 10px;
+  padding: 0;
+}
+
+#outer-container {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 40px;  /* Leave space for the header bar */
 }
 
 #oobe {
-  left: 50%;
-  margin-left: -320px;
-  margin-top: -270px;
-  position: absolute;
-  top: 50%;
-  width: 640px;
+  margin-bottom: 140px;  /* Make content higher than absolute vertical center */
 }
 
 #inner-container {
@@ -69,14 +76,16 @@ hr.bottom {
 }
 
 #header {
-  background: url('chrome://theme/IDR_PRODUCT_LOGO_32') left center no-repeat;
+  -webkit-padding-start: 34px;
+  background-image: url('chrome://theme/IDR_PRODUCT_LOGO_32');
+  background-position: left center;
+  background-repeat: no-repeat;
   background-size: 32px;
   color: #666;
   display: -webkit-box;
   font-size: 23px;
   height: 47px;
   line-height: 45px;
-  padding-left: 34px;
   padding-top: 1px;
 }
 
@@ -94,6 +103,7 @@ hr.bottom {
 #header-sections {
   display: inline-block;
   height: 30px;
+  position: relative;
 }
 
 .header-section:before {
@@ -109,12 +119,24 @@ hr.bottom {
   width: 20em;
 }
 
+html[dir=rtl] .header-section {
+  -webkit-transition: right .2s, opacity .2s ease-in-out;
+}
+
 .header-section.right {
   left: 50px;
 }
 
 .header-section.left {
   left: -20px;
+}
+
+html[dir=rtl]  .header-section.right {
+  right: 50px;
+}
+
+html[dir=rtl]  .header-section.left {
+  right: -20px;
 }
 
 .step {
@@ -126,12 +148,24 @@ hr.bottom {
   width: 640px;
 }
 
+html[dir=rtl] .step {
+  -webkit-transition: right .2s, opacity .2s, visibility .2s ease-in-out;
+}
+
 .step.right {
   left: 100px;
 }
 
 .step.left {
   left: -50px;
+}
+
+html[dir=rtl]  .step.right {
+  right: 100px;
+}
+
+html[dir=rtl]  .step.left {
+  right: -50px;
 }
 
 .step.hidden {
@@ -144,17 +178,21 @@ hr.bottom {
   opacity: 0;
 }
 
+#footer {
+  -webkit-box-align: center;
+  display: -webkit-box;
+}
+
 #progress {
-  float: left;
-  padding: 10px;
+  -webkit-box-align: center;
+  display: -webkit-box;
 }
 
 .progdot {
+  -webkit-margin-end: 12px;
   background: black;
   border-radius: 2px;
-  float: left;
   height: 8px;
-  margin-right: 12px;
   opacity: 0.1;
   width: 8px;
 }
@@ -223,10 +261,25 @@ hr.bottom {
   width: 250px;
 }
 
+html[dir=rtl] #user-image-preview {
+  float: left;
+}
+
+#footer {
+  height: 28px;  /* Same as button height */
+}
+
 #footer button {
   display: none;
   font-family: inherit;
   height: 28px;
+}
+
+#button-strip {
+  -webkit-box-align: center;
+  -webkit-box-flex: 1;
+  -webkit-box-pack: end;
+  display: -webkit-box;
 }
 
 #oobe.connect #continue-button,
@@ -236,7 +289,7 @@ hr.bottom {
 #oobe.user-image #ok-button,
 #oobe.oauth-enrollment #oauth-enroll-cancel-button,
 #oobe.oauth-enrollment #oauth-enroll-done-button {
-  display: inline-block;
+  display: block;
 }
 
 #oobe.connect #connect-dot,
@@ -332,10 +385,6 @@ button {
 
 #eulas.one-column #oem-eula {
   display: none;
-}
-
-.button-strip {
-  float: right;
 }
 
 #security-info-popup {
@@ -507,9 +556,9 @@ button {
 }
 
 .oauth-enroll-step-icon > * {
+  -webkit-margin-end: .4em;
   display: inline-block;
   height: 22px;
-  margin-right: .4em;
   position: relative;
   top: -11px;
   width: 22px;
@@ -607,19 +656,10 @@ button {
 }
 
 html[dir=rtl] .header-bar-item,
-html[dir=rtl] #shutdown-button,
-html[dir=rtl] #add-user-button {
+html[dir=rtl] #header,
+html[dir=rtl] #login-header-bar #shutdown-button,
+html[dir=rtl] #login-header-bar #add-user-button {
   background-position: right center;
-}
-
-body.login-display {
-  margin: 0;
-  padding: 0;
-}
-
-body.login-display #oobe {
-  -webkit-margin-start: -550px;
-  width: 1100px;
 }
 
 body.login-display #oobe hr {
@@ -713,9 +753,9 @@ body.login-display #progress {
 }
 
 .dropdown-item-container {
+  -webkitpadding-start: 5px;
   display: -webkit-box;
   height: 24px;
-  padding-left: 5px;
 }
 
 .dropdown-item-container.hover {

@@ -18,9 +18,9 @@
 }
 
 #signin-right {
+  -webkit-margin-end: 80px;
   font-size: 12px;
   height: 100%;
-  margin-right: 80px;
   width: 200px;
 }
 

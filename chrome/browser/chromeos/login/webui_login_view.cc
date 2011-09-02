@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 
+#include "base/i18n/rtl.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -228,10 +229,13 @@ void WebUILoginView::InitStatusArea() {
 
   views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
   gfx::Size size = status_area_->GetPreferredSize();
-  gfx::Rect bounds(width() - size.width() - kStatusAreaCornerPadding,
-                   kStatusAreaCornerPadding,
-                   size.width(),
-                   size.height());
+  gfx::Rect bounds(
+      base::i18n::IsRTL() ?
+          kStatusAreaCornerPadding :
+          width() - size.width() - kStatusAreaCornerPadding,
+      kStatusAreaCornerPadding,
+      size.width(),
+      size.height());
 #if defined(TOUCH_UI)
   // TODO(oshima): Window manager doesn't know about touch event, hence can't
   // activate the window. Use POPUP for now. This will be non issue
