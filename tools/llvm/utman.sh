@@ -3247,6 +3247,7 @@ show-config() {
   echo "UTMAN_CONCURRENCY: ${UTMAN_CONCURRENCY}"
   echo "UTMAN_DEBUG:       ${UTMAN_DEBUG}"
   echo "UTMAN_PRUNE:       ${UTMAN_PRUNE}"
+  echo "UTMAN_VERBOSE:     ${UTMAN_VERBOSE}"
   echo "LIBMODE:           ${LIBMODE}"
   Banner "Your Environment:"
   env | grep UTMAN

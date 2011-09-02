@@ -12,6 +12,9 @@ readonly UTMAN_DEBUG=${UTMAN_DEBUG:-false}
 # True if the scripts are running on the build bots.
 readonly UTMAN_BUILDBOT=${UTMAN_BUILDBOT:-false}
 
+# Dump all build output to stdout
+readonly UTMAN_VERBOSE=${UTMAN_VERBOSE:-false}
+
 # Mercurial Retry settings
 HG_MAX_RETRIES=${HG_MAX_RETRIES:-3}
 if ${UTMAN_BUILDBOT} ; then
@@ -504,9 +507,17 @@ RunWithLog() {
   mkdir -p "${TC_LOG}"
 
   shift 1
-  echo "RUNNING: " "$@" | tee "${log}" #>> "${TC_LOG_ALL}"
-  "$@" 2>&1 | tee "${log}" # >> "${TC_LOG_ALL}"
-  if [ ${PIPESTATUS[0]} -ne 0 ]; then
+  local ret=1
+  if ${UTMAN_VERBOSE}; then
+    echo "RUNNING: " "$@" | tee -a "${log}" "${TC_LOG_ALL}"
+    "$@" 2>&1 | tee -a "${log}" "${TC_LOG_ALL}"
+    ret=${PIPESTATUS[0]}
+  else
+    echo "RUNNING: " "$@" | tee -a "${log}" "${TC_LOG_ALL}" &> /dev/null
+    "$@" 2>&1 | tee -a "${log}" "${TC_LOG_ALL}" &> /dev/null
+    ret=${PIPESTATUS[0]}
+  fi
+  if [ ${ret} -ne 0 ]; then
     echo
     Banner "ERROR"
     echo -n "COMMAND:"
