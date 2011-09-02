@@ -946,7 +946,7 @@ void TopSites::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
 
   timer_start_time_ = base::TimeTicks::Now();
   timer_.Stop();
-  timer_.Start(delta, this, &TopSites::TimerFired);
+  timer_.Start(FROM_HERE, delta, this, &TopSites::TimerFired);
 }
 
 void TopSites::OnHistoryMigrationWrittenToDisk(TopSitesBackend::Handle handle) {

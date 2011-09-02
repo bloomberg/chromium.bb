@@ -170,7 +170,8 @@ void NetworkScreen::StopWaitingForConnection(const string16& network_id) {
 void NetworkScreen::WaitForConnection(const string16& network_id) {
   if (network_id_ != network_id || !connection_timer_.IsRunning()) {
     connection_timer_.Stop();
-    connection_timer_.Start(base::TimeDelta::FromSeconds(kConnectionTimeoutSec),
+    connection_timer_.Start(FROM_HERE,
+                            base::TimeDelta::FromSeconds(kConnectionTimeoutSec),
                             this,
                             &NetworkScreen::OnConnectionTimeout);
   }

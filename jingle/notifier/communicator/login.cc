@@ -117,7 +117,7 @@ void Login::TryReconnect() {
   VLOG(1) << "Reconnecting in "
           << reconnect_interval_.InSeconds() << " seconds";
   reconnect_timer_.Start(
-      reconnect_interval_, this, &Login::DoReconnect);
+      FROM_HERE, reconnect_interval_, this, &Login::DoReconnect);
   delegate_->OnDisconnect();
 }
 

@@ -88,7 +88,8 @@ DownloadFile* DownloadFileManager::GetDownloadFile(int id) {
 void DownloadFileManager::StartUpdateTimer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!update_timer_.IsRunning()) {
-    update_timer_.Start(base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
+    update_timer_.Start(FROM_HERE,
+                        base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
                         this, &DownloadFileManager::UpdateInProgressDownloads);
   }
 }

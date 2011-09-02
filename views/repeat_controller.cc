@@ -25,8 +25,8 @@ RepeatController::~RepeatController() {
 
 void RepeatController::Start() {
   // The first timer is slightly longer than subsequent repeats.
-  timer_.Start(TimeDelta::FromMilliseconds(kInitialRepeatDelay), this,
-               &RepeatController::Run);
+  timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(kInitialRepeatDelay),
+               this, &RepeatController::Run);
 }
 
 void RepeatController::Stop() {
@@ -37,7 +37,7 @@ void RepeatController::Stop() {
 // RepeatController, private:
 
 void RepeatController::Run() {
-  timer_.Start(TimeDelta::FromMilliseconds(kRepeatDelay), this,
+  timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(kRepeatDelay), this,
                &RepeatController::Run);
   callback_->Run();
 }

@@ -146,7 +146,7 @@ void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {
   }
 
   if (!timer_.IsRunning()) {
-    timer_.Start(commit_interval_, this,
+    timer_.Start(FROM_HERE, commit_interval_, this,
                  &ImportantFileWriter::DoScheduledWrite);
   }
 }

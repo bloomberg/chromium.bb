@@ -192,7 +192,7 @@ void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
             << syncable::ModelTypeToString(model_type) << " in "
             << delay.InMilliseconds() << " ms";
     status->registration_timer.Stop();
-    status->registration_timer.Start(
+    status->registration_timer.Start(FROM_HERE,
         delay, status, &RegistrationManager::RegistrationStatus::DoRegister);
     double next_delay_seconds =
         CalculateBackoff(static_cast<double>(status->next_delay.InSeconds()),

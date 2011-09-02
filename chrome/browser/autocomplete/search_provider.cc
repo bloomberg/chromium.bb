@@ -365,7 +365,8 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   // Kick off a timer that will start the URL fetch if it completes before
   // the user types another character.
   int delay = query_suggest_immediately_ ? 0 : kQueryDelayMs;
-  timer_.Start(TimeDelta::FromMilliseconds(delay), this, &SearchProvider::Run);
+  timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(delay), this,
+               &SearchProvider::Run);
 }
 
 bool SearchProvider::IsQuerySuitableForSuggest() const {

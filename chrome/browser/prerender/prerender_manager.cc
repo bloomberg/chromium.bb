@@ -180,7 +180,7 @@ class PrerenderManager::MostVisitedSites : public NotificationObserver {
     if (profile && profile->GetTopSitesWithoutCreating()) {
       Init();
     } else {
-      timer_.Start(base::TimeDelta::FromSeconds(3), this,
+      timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(3), this,
                    &prerender::PrerenderManager::MostVisitedSites::Init);
     }
   }
@@ -795,7 +795,7 @@ void PrerenderManager::StartSchedulingPeriodicCleanups() {
   DCHECK(CalledOnValidThread());
   if (repeating_timer_.IsRunning())
     return;
-  repeating_timer_.Start(
+  repeating_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kPeriodicCleanupIntervalMs),
       this,
       &PrerenderManager::PeriodicCleanup);

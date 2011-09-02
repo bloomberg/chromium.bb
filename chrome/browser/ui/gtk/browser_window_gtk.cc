@@ -792,7 +792,7 @@ void BrowserWindowGtk::UpdateLoadingAnimations(bool should_animate) {
   if (should_animate) {
     if (!loading_animation_timer_.IsRunning()) {
       // Loads are happening, and the timer isn't running, so start it.
-      loading_animation_timer_.Start(
+      loading_animation_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(kLoadingAnimationFrameTimeMs), this,
           &BrowserWindowGtk::LoadingAnimationCallback);
     }
@@ -1419,8 +1419,8 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
   // (In that case Stop() is a no-op.)
   if (!debounce_timer_disabled_) {
     window_configure_debounce_timer_.Stop();
-    window_configure_debounce_timer_.Start(base::TimeDelta::FromMilliseconds(
-        kDebounceTimeoutMilliseconds), this,
+    window_configure_debounce_timer_.Start(FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kDebounceTimeoutMilliseconds), this,
         &BrowserWindowGtk::OnDebouncedBoundsChanged);
   }
 

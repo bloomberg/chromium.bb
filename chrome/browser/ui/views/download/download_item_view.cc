@@ -315,7 +315,7 @@ void DownloadItemView::UpdateDownloadProgress() {
 void DownloadItemView::StartDownloadProgress() {
   if (progress_timer_.IsRunning())
     return;
-  progress_timer_.Start(
+  progress_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(download_util::kProgressRateMs), this,
       &DownloadItemView::UpdateDownloadProgress);
 }

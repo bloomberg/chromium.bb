@@ -66,7 +66,8 @@ MemoryMenuButton::~MemoryMenuButton() {
 void MemoryMenuButton::UpdateTextAndSetNextTimer() {
   UpdateText();
 
-  timer_.Start(base::TimeDelta::FromSeconds(kUpdateIntervalSeconds), this,
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromSeconds(kUpdateIntervalSeconds), this,
                &MemoryMenuButton::UpdateTextAndSetNextTimer);
 }
 

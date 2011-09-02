@@ -37,7 +37,7 @@ void UpgradeDetectorChromeos::UpdateStatusChanged(
 
   // Setup timer to to move along the upgrade advisory system.
   upgrade_notification_timer_.Start(
-      base::TimeDelta::FromMilliseconds(kNotifyCycleTimeMs),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kNotifyCycleTimeMs),
       this, &UpgradeDetectorChromeos::NotifyOnUpgrade);
 }
 

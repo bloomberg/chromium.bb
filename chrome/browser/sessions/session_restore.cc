@@ -222,7 +222,7 @@ void TabLoader::LoadNextTab() {
     force_load_timer_.Stop();
     // Each time we load a tab we also set a timer to force us to start loading
     // the next tab if this one doesn't load quickly enough.
-    force_load_timer_.Start(
+    force_load_timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(force_load_delay_),
         this, &TabLoader::ForceLoadTimerFired);
   }

@@ -470,7 +470,7 @@ class ProcessSingleton::LinuxWatcher
       // Wait for reads.
       MessageLoopForIO::current()->WatchFileDescriptor(
           fd, true, MessageLoopForIO::WATCH_READ, &fd_reader_, this);
-      timer_.Start(base::TimeDelta::FromSeconds(kTimeoutInSeconds),
+      timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutInSeconds),
                    this, &SocketReader::OnTimerExpiry);
     }
 

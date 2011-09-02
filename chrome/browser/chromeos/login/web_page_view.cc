@@ -123,7 +123,8 @@ void WebPageView::Init() {
   connecting_label_->SetVisible(false);
   AddChildView(connecting_label_ );
 
-  start_timer_.Start(TimeDelta::FromMilliseconds(kStartDelayMs),
+  start_timer_.Start(FROM_HERE,
+                     TimeDelta::FromMilliseconds(kStartDelayMs),
                      this,
                      &WebPageView::ShowWaitingControls);
 }
@@ -150,7 +151,8 @@ void WebPageView::ShowPageContent() {
   // TODO(nkostylev): Show throbber as an overlay until page has been rendered.
   start_timer_.Stop();
   if (!stop_timer_.IsRunning()) {
-    stop_timer_.Start(TimeDelta::FromMilliseconds(kStopDelayMs),
+    stop_timer_.Start(FROM_HERE,
+                      TimeDelta::FromMilliseconds(kStopDelayMs),
                       this,
                       &WebPageView::ShowRenderedPage);
   }

@@ -684,7 +684,7 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
     if (omnibox_bounds_.height() > last_omnibox_bounds_.height()) {
       SendBoundsToPage(false);
     } else {
-      update_bounds_timer_.Start(
+      update_bounds_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(kUpdateBoundsDelayMS),
           this, &InstantLoader::ProcessBoundsChange);
     }

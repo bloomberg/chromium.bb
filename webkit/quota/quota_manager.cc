@@ -507,7 +507,8 @@ class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
   virtual void DatabaseTaskCompleted() OVERRIDE {
     manager()->need_initialize_origins_ = need_initialize_origins_;
     manager()->DidInitializeTemporaryGlobalQuota(temporary_storage_quota_);
-    manager()->histogram_timer_.Start(QuotaManager::kReportHistogramInterval,
+    manager()->histogram_timer_.Start(FROM_HERE,
+                                      QuotaManager::kReportHistogramInterval,
                                       manager(),
                                       &QuotaManager::ReportHistogram);
   }

@@ -652,7 +652,7 @@ void BrowserProcessImpl::Observe(int type,
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 void BrowserProcessImpl::StartAutoupdateTimer() {
-  autoupdate_timer_.Start(
+  autoupdate_timer_.Start(FROM_HERE,
       base::TimeDelta::FromHours(kUpdateCheckIntervalHours),
       this,
       &BrowserProcessImpl::OnAutoupdateTimer);

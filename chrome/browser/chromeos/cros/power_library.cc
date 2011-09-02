@@ -172,6 +172,7 @@ class PowerLibraryStubImpl : public PowerLibrary {
         battery_percentage_(20),
         pause_count_(0) {
     timer_.Start(
+        FROM_HERE,
         base::TimeDelta::FromMilliseconds(100),
         this,
         &PowerLibraryStubImpl::Update);

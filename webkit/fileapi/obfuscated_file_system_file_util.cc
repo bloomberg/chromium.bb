@@ -1192,8 +1192,8 @@ void ObfuscatedFileSystemFileUtil::MarkUsed() {
   if (timer_.IsRunning())
     timer_.Reset();
   else
-    timer_.Start(base::TimeDelta::FromSeconds(kFlushDelaySeconds), this,
-      &ObfuscatedFileSystemFileUtil::DropDatabases);
+    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kFlushDelaySeconds),
+                 this, &ObfuscatedFileSystemFileUtil::DropDatabases);
 }
 
 void ObfuscatedFileSystemFileUtil::DropDatabases() {

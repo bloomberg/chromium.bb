@@ -343,7 +343,7 @@ class InternalAuthGenerationService : public base::ThreadChecker {
   void GenerateNewKey() {
     DCHECK(CalledOnValidThread());
     if (!timer_.IsRunning()) {
-      timer_.Start(
+      timer_.Start(FROM_HERE,
           base::TimeDelta::FromMicroseconds(
               kKeyRegenerationSoftTicks * kTickUs),
           this,

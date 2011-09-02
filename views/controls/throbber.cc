@@ -34,7 +34,7 @@ void Throbber::Start() {
 
   start_time_ = Time::Now();
 
-  timer_.Start(frame_time_ - TimeDelta::FromMilliseconds(10),
+  timer_.Start(FROM_HERE, frame_time_ - TimeDelta::FromMilliseconds(10),
                this, &Throbber::Run);
 
   running_ = true;
@@ -110,8 +110,8 @@ void SmoothedThrobber::Start() {
   stop_timer_.Stop();
 
   if (!running_ && !start_timer_.IsRunning()) {
-    start_timer_.Start(TimeDelta::FromMilliseconds(start_delay_ms_), this,
-                       &SmoothedThrobber::StartDelayOver);
+    start_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(start_delay_ms_),
+                       this, &SmoothedThrobber::StartDelayOver);
   }
 }
 
@@ -124,8 +124,8 @@ void SmoothedThrobber::Stop() {
     start_timer_.Stop();
 
   stop_timer_.Stop();
-  stop_timer_.Start(TimeDelta::FromMilliseconds(stop_delay_ms_), this,
-                    &SmoothedThrobber::StopDelayOver);
+  stop_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(stop_delay_ms_),
+                    this, &SmoothedThrobber::StopDelayOver);
 }
 
 void SmoothedThrobber::StopDelayOver() {
