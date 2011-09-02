@@ -281,17 +281,18 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringFUTF16(IDS_UPDATE_NOW, product_name);
     }
     case IDC_SHOW_SYNC_SETUP: {
-      std::string username = browser_->GetProfile()->GetPrefs()->GetString(
-          prefs::kGoogleServicesUsername);
-      string16 short_product_name =
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
-      if (username.empty()) {
-        return l10n_util::GetStringFUTF16(IDS_SHOW_SYNC_SETUP,
-                                          short_product_name);
+      ProfileSyncService* service =
+          browser_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
+      if (service->HasSyncSetupCompleted()) {
+        std::string username = browser_->GetProfile()->GetPrefs()->GetString(
+            prefs::kGoogleServicesUsername);
+        if (!username.empty()) {
+          return l10n_util::GetStringFUTF16(IDS_SHOW_SYNC_SETUP_USERNAME,
+                                            UTF8ToUTF16(username));
+        }
       }
-      return l10n_util::GetStringFUTF16(IDS_SHOW_SYNC_SETUP_USERNAME,
-                                        short_product_name,
-                                        UTF8ToUTF16(username));
+      return l10n_util::GetStringFUTF16(IDS_SHOW_SYNC_SETUP,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
     }
     default:
       NOTREACHED();
@@ -471,7 +472,7 @@ void WrenchMenuModel::Build() {
 #if !defined(OS_CHROMEOS)
   if (browser_->profile()->GetOriginalProfile()->IsSyncAccessible()) {
     const string16 short_product_name =
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
     AddItem(IDC_SHOW_SYNC_SETUP, l10n_util::GetStringFUTF16(
         IDS_SHOW_SYNC_SETUP, short_product_name));
     AddSeparator();

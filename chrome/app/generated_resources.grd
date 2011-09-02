@@ -8723,22 +8723,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP" desc="In title case. The title of the menu item to open the sync setup page. Shown in the Wrench menu.">
-          Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
+          Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Sync...
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP" desc="The title of the menu item to open the sync setup page. Shown in the Wrench menu.">
-          Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
+          Set up <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> sync...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP_USERNAME" desc="In title case. The title of the menu item to open the sync setup page. Shown in the Wrench menu when the user is signed into sync.">
-          Signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> as <ph name="USER_NAME">$2<ex>pat@example.com</ex></ph>
+          Synced to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP_USERNAME" desc="The title of the menu item to open the sync setup page. Shown in the Wrench menu when the user is signed into sync.">
-          Signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> as <ph name="USER_NAME">$2<ex>pat@example.com</ex></ph>
+          Synced to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>
         </message>
       </if>
      <!-- SafeBrowsing -->
