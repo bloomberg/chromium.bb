@@ -80,7 +80,6 @@ class TestRLZTracker : public RLZTracker {
  public:
   using RLZTracker::DelayedInit;
   using RLZTracker::Observe;
-  using RLZTracker::RLZ_PAGETRANSITION_HOME_PAGE;
 
   TestRLZTracker() : pingnow_called_(false), assume_io_thread_(false) {
     set_tracker(this);
@@ -204,7 +203,7 @@ void RlzLibTest::SimulateOmniboxUsage() {
 
 void RlzLibTest::SimulateHomepageUsage() {
   NavigationEntry entry(NULL, 0, GURL(), GURL(), string16(),
-                        TestRLZTracker::RLZ_PAGETRANSITION_HOME_PAGE);
+                        PageTransition::HOME_PAGE);
   tracker_.Observe(content::NOTIFICATION_NAV_ENTRY_PENDING,
                    NotificationService::AllSources(),
                    Details<NavigationEntry>(&entry));

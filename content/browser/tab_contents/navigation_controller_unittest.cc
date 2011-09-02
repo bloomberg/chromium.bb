@@ -1438,7 +1438,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
-      url, GURL(), PageTransition::RELOAD, profile());
+      url, GURL(), PageTransition::RELOAD, std::string(), profile());
   entry->set_page_id(0);
   entry->set_title(ASCIIToUTF16("Title"));
   entry->set_content_state("state");
@@ -1496,7 +1496,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   GURL url("http://foo");
   std::vector<NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
-      url, GURL(), PageTransition::RELOAD, profile());
+      url, GURL(), PageTransition::RELOAD, std::string(), profile());
   entry->set_page_id(0);
   entry->set_title(ASCIIToUTF16("Title"));
   entry->set_content_state("state");

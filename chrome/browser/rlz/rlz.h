@@ -66,11 +66,6 @@ class RLZTracker : public NotificationObserver {
   RLZTracker();
   ~RLZTracker();
 
-  // This is a temporary constant used here until the home page change is
-  // committed, which will happen before 2011-09-01. This constant will be
-  // replaced with PageTransition::HOME_PAGE.
-  static const int RLZ_PAGETRANSITION_HOME_PAGE = 0x02000000;
-
   // Thread function entry point, see ScheduleFinancialPing(). Assumes argument
   // is a pointer to an RLZTracker.
   static void _cdecl PingNow(void* tracker);

@@ -75,9 +75,9 @@ class TabContentsDelegate {
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags);
 
-  // Returns the set of headers to add to the navigation request. Use
+  // Adds the navigation request headers to |headers|. Use
   // net::HttpUtil::AppendHeaderIfMissing to build the set of headers.
-  virtual std::string GetNavigationHeaders(const GURL& url);
+  virtual void AddNavigationHeaders(const GURL& url, std::string* headers);
 
   // Creates a new tab with the already-created TabContents 'new_contents'.
   // The window for the added contents should be reparented correctly when this
