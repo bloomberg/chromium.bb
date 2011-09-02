@@ -699,7 +699,7 @@ TEST_F(ViewTest, Textfield) {
   widget->CloseNow();
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 
 // Tests that the Textfield view respond appropiately to cut/copy/paste.
 TEST_F(ViewTest, TextfieldCutCopyPaste) {
@@ -821,7 +821,7 @@ bool TestView::AcceleratorPressed(const Accelerator& accelerator) {
   return true;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, ActivateAccelerator) {
   // Register a keyboard accelerator before the view is added to a window.
   Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
@@ -887,7 +887,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, HiddenViewWithAccelerator) {
   Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
   TestView* view = new TestView();
@@ -918,7 +918,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 ////////////////////////////////////////////////////////////////////////////////
 // Mouse-wheel message rerouting
 ////////////////////////////////////////////////////////////////////////////////
@@ -2348,7 +2348,7 @@ void TestTexture::SetCanvas(const SkCanvas& canvas,
 
 class TestCompositor : public ui::Compositor {
  public:
-  TestCompositor() {}
+  TestCompositor() : Compositor(gfx::Size(100, 100)) {}
 
   // ui::Compositor:
   virtual ui::Texture* CreateTexture() OVERRIDE {

@@ -97,5 +97,29 @@ int NativeScrollBar::GetPosition() const {
   return native_wrapper_->GetPosition();
 }
 
+
+#if defined(USE_AURA)
+
+// static
+NativeScrollBarWrapper* NativeScrollBarWrapper::CreateWrapper(
+    NativeScrollBar* scroll_bar) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+// static
+int NativeScrollBarWrapper::GetHorizontalScrollBarHeight() {
+  NOTIMPLEMENTED();
+  return 16;
+}
+
+// static
+int NativeScrollBarWrapper::GetVerticalScrollBarWidth() {
+  NOTIMPLEMENTED();
+  return 16;
+}
+
+#endif
+
 }  // namespace views
 

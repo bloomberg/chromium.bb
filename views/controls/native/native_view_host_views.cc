@@ -79,4 +79,12 @@ gfx::NativeViewAccessible NativeViewHostViews::GetNativeViewAccessible() {
   return NULL;
 }
 
+#if defined(USE_AURA)
+// static
+NativeViewHostWrapper* NativeViewHostWrapper::CreateWrapper(
+    NativeViewHost* host) {
+  return new NativeViewHostViews(host);
+}
+#endif
+
 }  // namespace views

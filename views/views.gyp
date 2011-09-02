@@ -296,6 +296,7 @@
         'layout/layout_manager.h',
         'metrics.cc',
         'metrics.h',
+        'metrics_aura.cc',
         'metrics_gtk.cc',
         'metrics_wayland.cc',
         'metrics_win.cc',
@@ -418,6 +419,8 @@
           ],
           'sources!': [
             'controls/native_control.cc',
+            'controls/tabbed_pane/tabbed_pane.cc',
+            'controls/combobox/combobox.cc',
             'widget/aero_tooltip_manager.cc',
             'widget/child_window_message_processor.cc',
             'widget/child_window_message_processor.h',
@@ -507,6 +510,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/ui.gyp:gfx_resources',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_standard',
@@ -540,12 +544,14 @@
         'touchui/touch_selection_controller_impl_unittest.cc',
         'view_unittest.cc',
         'widget/native_widget_test_utils.h',
+        'widget/native_widget_test_utils_aura.cc',
         'widget/native_widget_test_utils_gtk.cc',
         'widget/native_widget_test_utils_win.cc',
         'widget/native_widget_unittest.cc',
         'widget/native_widget_win_unittest.cc',
         'widget/widget_unittest.cc',
 
+        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
       ],
@@ -596,6 +602,15 @@
         ['use_ibus!=1', {
           'sources/': [
             ['exclude', 'ime/character_composer_unittest.cc'],
+          ],
+        }],
+        [ 'use_aura==1', {
+          'sources/': [
+            ['exclude', 'focus/focus_manager_unittest.cc'], # TODO(beng):
+            ['exclude', 'widget/native_widget_win_unittest.cc'],
+            ['exclude', 'controls/combobox/native_combobox_views_unittest.cc'],
+            ['exclude', 'controls/table/table_view_unittest.cc'],
+            ['exclude', 'controls/tabbed_pane/tabbed_pane_unittest.cc'],
           ],
         }],
       ],

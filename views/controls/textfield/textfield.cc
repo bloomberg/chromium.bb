@@ -313,7 +313,9 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   if (key == ui::VKEY_BACK)
     return true;  // We'll handle BackSpace ourselves.
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   // We don't translate accelerators for ALT + NumPad digit on Windows, they are
   // used for entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != ui::VKEY_HOME) &&
@@ -397,7 +399,7 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     //             subclasses NativeControlWin.
     UpdateAllProperties();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     if (!views::Widget::IsPureViews()) {
       // TODO(beng): remove this once NativeTextfieldWin subclasses
       // NativeControlWin. This is currently called to perform post-AddChildView

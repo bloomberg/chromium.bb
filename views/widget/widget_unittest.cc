@@ -341,7 +341,7 @@ struct OwnershipTestState {
 // destroyed.
 class OwnershipTestNativeWidget :
 #if defined(USE_AURA)
-    public NativeWidgetAura,
+    public NativeWidgetAura {
 #elif defined(OS_WIN)
     public NativeWidgetWin {
 #elif defined(TOOLKIT_USES_GTK)
@@ -530,7 +530,9 @@ TEST_F(WidgetOwnershipTest,
   widget->Init(params);
 
   // Now simulate a destroy of the platform native widget from the OS:
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   DestroyWindow(widget->GetNativeView());
 #elif defined(TOOLKIT_USES_GTK)
   gtk_widget_destroy(widget->GetNativeView());

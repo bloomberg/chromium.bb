@@ -1047,4 +1047,12 @@ bool NativeTextfieldViews::ShouldInsertChar(char16 ch, int flags) {
       (flags & ~(ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN)) != ui::EF_ALT_DOWN;
 }
 
+#if defined(USE_AURA)
+// static
+NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
+    Textfield* field) {
+  return new NativeTextfieldViews(field);
+}
+#endif
+
 }  // namespace views

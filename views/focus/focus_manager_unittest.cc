@@ -132,7 +132,9 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
   }
 
   void FocusNativeView(gfx::NativeView native_view) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+    NOTIMPLEMENTED();
+#elif defined(OS_WIN)
     ::SendMessage(native_view, WM_SETFOCUS, NULL, NULL);
 #else
     gint return_val;
@@ -170,7 +172,9 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
 
   // Mocks activating/deactivating the window.
   void SimulateActivateWindow() {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+    NOTIMPLEMENTED();
+#elif defined(OS_WIN)
     ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_ACTIVE, NULL);
 #else
     gboolean result;
@@ -179,7 +183,9 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
 #endif
   }
   void SimulateDeactivateWindow() {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+    NOTIMPLEMENTED();
+#elif defined(OS_WIN)
     ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_INACTIVE, NULL);
 #else
     gboolean result;
@@ -197,7 +203,15 @@ class FocusManagerTest : public ViewsTestBase, public WidgetDelegate {
     GetFocusManager()->AddFocusChangeListener(listener);
   }
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  void PostKeyDown(ui::KeyboardCode key_code) {
+    NOTIMPLEMENTED();
+  }
+
+  void PostKeyUp(ui::KeyboardCode key_code) {
+    NOTIMPLEMENTED();
+  }
+#elif defined(OS_WIN)
   void PostKeyDown(ui::KeyboardCode key_code) {
     ::PostMessage(window_->GetNativeWindow(), WM_KEYDOWN, key_code, 0);
   }
@@ -1559,7 +1573,7 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 // Test that the focus manager is created successfully for the first view
 // window parented to a native dialog.
 TEST_F(FocusManagerTest, CreationForNativeRoot) {
