@@ -34,14 +34,19 @@ void DrawTaskBarDecoration(const Browser* browser, const SkBitmap* bitmap) {
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
+  // During destruction of the browser frame, we might not have a window
+  // so the taksbar button will be removed by windows anyway.
+  BrowserWindow* bw = browser->window();
+  if (!bw)
+    return;
+  gfx::NativeWindow window = bw->GetNativeHandle();
+  if (!window)
+    return;
 
   base::win::ScopedComPtr<ITaskbarList3> taskbar;
   HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result) || FAILED(taskbar->HrInit()))
-    return;
-  gfx::NativeWindow window = browser->window()->GetNativeHandle();
-  if (!window)
     return;
   HICON icon = NULL;
   if (bitmap) {
