@@ -5,10 +5,14 @@
 #ifndef PAPPI_TESTS_TEST_GRAPHICS_3D_H_
 #define PAPPI_TESTS_TEST_GRAPHICS_3D_H_
 
+#include <string>
 #include "ppapi/tests/test_case.h"
 
-struct PPB_Graphics3D_Dev;
 struct PPB_OpenGLES2_Dev;
+
+namespace pp {
+class Graphics3D_Dev;
+}  // namespace pp
 
 class TestGraphics3D : public TestCase {
  public:
@@ -19,8 +23,15 @@ class TestGraphics3D : public TestCase {
   virtual void RunTest();
 
  private:
-  // Used by the tests that access the C API directly.
-  const PPB_Graphics3D_Dev* graphics_3d_;
+  // Various tests.
+  std::string TestFrame();
+
+  // Utils used by various tests.
+  int32_t SwapBuffersSync(pp::Graphics3D_Dev* context);
+  std::string TestPixel(pp::Graphics3D_Dev* context,
+                        int x, int y, const uint8_t expected_color[4]);
+
+  // OpenGL ES2 interface.
   const PPB_OpenGLES2_Dev* opengl_es2_;
 };
 

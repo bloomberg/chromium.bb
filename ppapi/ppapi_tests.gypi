@@ -60,6 +60,9 @@
     {
       'target_name': 'ppapi_tests',
       'type': 'loadable_module',
+      'include_dirs': [
+        'lib/gl/include',
+      ],
       'sources': [
         # Common test files.
         'tests/test_case.cc',
