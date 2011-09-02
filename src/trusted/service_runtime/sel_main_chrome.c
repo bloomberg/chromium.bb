@@ -22,6 +22,7 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -168,7 +169,8 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
         "Native Client's sandbox will be unreliable!\n");
   } else {
     NaClSignalHandlerInit();
-    errcode = NaClRunSelQualificationTests();
+    errcode = NACL_FI_VAL("pq", NaClErrorCode,
+                          NaClRunSelQualificationTests());
     if (LOAD_OK != errcode) {
       nap->module_load_status = errcode;
       fprintf(stderr, "Error while loading in SelMain: %s\n",

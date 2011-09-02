@@ -28,8 +28,9 @@ pm_ns_nexe = env.ComponentProgram(pm_ns_nexe_name,
                                               'imc_syscalls',
                                               ])
 env.Publish(pm_ns_nexe_name, 'run',
-            ['fault_pm_nameservice_test.html',
-             'no_fault_pm_nameservice_test.html'])
+            ['no_fault_pm_nameservice_test.html',
+             'fault_pm_nameservice_test.html',
+             ])
 
 # chrome_browser_tests
 
@@ -40,17 +41,35 @@ env.Publish(pm_ns_nexe_name, 'run',
 # lives, which is a primary requirement for being able to commit
 # changes to the tests and to the code-under-test in atomic units.
 
-for extra_os_env, out_name, run_name, html_file in [
+for extra_os_env, test_args, out_name, run_name, html_file in [
     [[],
+     [],
      'no_fault_pm_nameservice_browser_test.out',
      'run_no_fault_pm_nameservice_chrome_browser_test',
      'no_fault_pm_nameservice_test.html',
      ],
     [['NACL_FAULT_INJECTION=load_module=GF20'],
+     # LOAD_NO_MEMORY
+     [('expected_error','"NaCl module load failed: Insufficient memory to load file"')],
      'fault_pm_nameservice_browser_test.out',
      'run_fault_pm_nameservice_chrome_browser_test',
      'fault_pm_nameservice_test.html',
-     ]]:
+     ],
+    [['NACL_FAULT_INJECTION=pq=GF2'],
+     # LOAD_UNSUPPORTED_OS_PLATFORM
+     [('expected_error', '"NaCl module load failed: Operating system platform is not supported"')],
+     'fault_pq_os_pm_nameservice_browser_test.out',
+     'run_fault_pq_os_pm_nameservice_chrome_browser_test',
+     'fault_pm_nameservice_test.html',
+     ],
+    [['NACL_FAULT_INJECTION=pq=GF3'],
+     # LOAD_DEP_UNSUPPORTED
+     [('expected_error', '"NaCl module load failed: Data Execution Prevention is required but is not supported"')],
+     'fault_pq_dep_pm_nameservice_browser_test.out',
+     'run_fault_pq_dep_pm_nameservice_chrome_browser_test',
+     'fault_pm_nameservice_test.html',
+     ],
+    ]:
 
     node = env.PPAPIBrowserTester(
         out_name,
@@ -58,6 +77,7 @@ for extra_os_env, out_name, run_name, html_file in [
         nmfs=['fault_pm_nameservice.nmf'],
         files=env.ExtractPublishedFiles(pm_ns_nexe_name),
         args=['--debug'],
+        test_args=test_args,
         osenv=['NACLVERBOSITY=0:pp_weak_ref=0:weak_ref=0'] + extra_os_env
         )
 

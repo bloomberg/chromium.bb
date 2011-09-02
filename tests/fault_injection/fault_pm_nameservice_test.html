@@ -19,6 +19,8 @@
     //<![CDATA[
 var tester = new Tester($('body'));
 var gotExpected = false;
+var args = getTestArguments({'expected_error' :
+  'THIS TEST CANNOT RUN STANDALONE -- run using scons instead'});
 var errorListener = function(e) {
   var target_element = e.target;
   if (target_element.id != 'naclModule') {
@@ -26,7 +28,7 @@ var errorListener = function(e) {
     return;
   }
   if (e.type == 'error') {
-    if ($('naclModule').lastError == 'NaCl module load failed: Insufficient memory to load file') {
+    if ($('naclModule').lastError == args.expected_error) {
       gotExpected = true;
     }
   }

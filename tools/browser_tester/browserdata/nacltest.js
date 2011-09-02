@@ -27,7 +27,7 @@ function createNaClEmbed(args) {
 function decodeURIArgs(encoded) {
   var args = {};
   if (encoded.length > 0) {
-    var pairs = encoded.replace('+', ' ').split('&');
+    var pairs = encoded.replace(/\+/g, ' ').split('&');
     for (var p = 0; p < pairs.length; p++) {
       var pair = pairs[p].split('=');
       if (pair.length != 2) {

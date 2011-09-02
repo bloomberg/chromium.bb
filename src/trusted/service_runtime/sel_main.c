@@ -34,6 +34,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
+#include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -501,7 +502,8 @@ int main(int  argc,
   /* We use the signal handler to verify a signal took place. */
   NaClSignalHandlerInit();
   if (!skip_qualification) {
-    NaClErrorCode pq_error = NaClRunSelQualificationTests();
+    NaClErrorCode pq_error = NACL_FI_VAL("pq", NaClErrorCode,
+                                         NaClRunSelQualificationTests());
     if (LOAD_OK != pq_error) {
       errcode = pq_error;
       nap->module_load_status = pq_error;
