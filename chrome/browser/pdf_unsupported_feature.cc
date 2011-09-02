@@ -24,8 +24,10 @@
 #include "content/common/view_messages.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -248,6 +250,7 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate
   virtual void InfoBarDismissed() OVERRIDE;
+  virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
@@ -298,6 +301,11 @@ PDFUnsupportedFeatureInfoBarDelegate::~PDFUnsupportedFeatureInfoBarDelegate() {
 
 void PDFUnsupportedFeatureInfoBarDelegate::InfoBarDismissed() {
   OnNo();
+}
+
+gfx::Image* PDFUnsupportedFeatureInfoBarDelegate::GetIcon() const {
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_INCOMPLETE);
 }
 
 InfoBarDelegate::Type
