@@ -122,3 +122,13 @@ SessionWindow::SessionWindow()
 SessionWindow::~SessionWindow() {
   STLDeleteElements(&tabs);
 }
+
+// SyncedSession --------------------------------------------------------------
+
+SyncedSession::SyncedSession() : session_tag("invalid") {
+}
+
+SyncedSession::~SyncedSession() {
+  STLDeleteElements(&windows);
+}
+

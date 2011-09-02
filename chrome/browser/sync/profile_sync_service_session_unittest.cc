@@ -207,8 +207,6 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   ASSERT_EQ(machine_tag, specifics.session_tag());
   ASSERT_TRUE(specifics.has_header());
   const sync_pb::SessionHeader& header_s = specifics.header();
-  ASSERT_TRUE(header_s.has_device_type());
-  ASSERT_EQ("TestSessionName", header_s.client_name());
   ASSERT_EQ(0, header_s.window_size());
 }
 

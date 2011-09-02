@@ -23,14 +23,14 @@ using sync_datatype_helper::test;
 
 namespace sessions_helper {
 
-bool GetLocalSession(int index, const browser_sync::SyncedSession** session) {
+bool GetLocalSession(int index, const SyncedSession** session) {
   return test()->GetProfile(index)->GetProfileSyncService()->
       GetSessionModelAssociator()->GetLocalSession(session);
 }
 
 bool ModelAssociatorHasTabWithUrl(int index, const GURL& url) {
   ui_test_utils::RunAllPendingInMessageLoop();
-  const browser_sync::SyncedSession* local_session;
+  const SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return false;
   }
@@ -119,7 +119,7 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
 bool GetLocalWindows(int index, SessionWindowVector& local_windows) {
   // The local session provided by GetLocalSession is owned, and has lifetime
   // controlled, by the model associator, so we must make our own copy.
-  const browser_sync::SyncedSession* local_session;
+  const SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return false;
   }
@@ -161,7 +161,7 @@ bool CheckInitialState(int index) {
 }
 
 int GetNumWindows(int index) {
-  const browser_sync::SyncedSession* local_session;
+  const SyncedSession* local_session;
   if (!GetLocalSession(index, &local_session)) {
     return 0;
   }
@@ -204,8 +204,7 @@ void SortSessionWindows(SessionWindowVector& windows) {
             CompareSessionWindows);
 }
 
-bool CompareSyncedSessions(const browser_sync::SyncedSession* lhs,
-                           const browser_sync::SyncedSession* rhs) {
+bool CompareSyncedSessions(const SyncedSession* lhs, const SyncedSession* rhs) {
   if (!lhs ||
       !rhs ||
       lhs->windows.size() < 1 ||

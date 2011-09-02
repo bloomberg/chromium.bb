@@ -15,7 +15,6 @@
 
 using browser_sync::SessionModelAssociator;
 using browser_sync::SyncedSessionTracker;
-
 namespace browser_sync {
 
 typedef testing::Test SessionModelAssociatorTest;
@@ -50,18 +49,6 @@ TEST_F(SessionModelAssociatorTest, IsValidSessionTab) {
   tab.navigations.push_back(nav2);
   // Once there's another navigation, the tab is valid.
   ASSERT_TRUE(SessionModelAssociator::IsValidSessionTab(tab));
-}
-
-TEST_F(SessionModelAssociatorTest, PopulateSessionHeader) {
-  sync_pb::SessionHeader header_s;
-  header_s.set_client_name("Client 1");
-  header_s.set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_WIN);
-
-  SyncedSession session;
-  SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
-      header_s, &session);
-  ASSERT_EQ("Client 1", session.session_name);
-  ASSERT_EQ(SyncedSession::TYPE_WIN, session.device_type);
 }
 
 TEST_F(SessionModelAssociatorTest, PopulateSessionWindow) {
@@ -171,22 +158,5 @@ TEST_F(SessionModelAssociatorTest, SyncedSessionTracker) {
   ASSERT_EQ(0U, tracker.num_synced_sessions());
 }
 
-#if defined(OS_WIN)
-// The test is somewhat silly, and just verifies that we return a computer name.
-TEST(SessionModelAssociatorTest, TestGetComputerName) {
-  std::string computer_name = SessionModelAssociator::GetComputerName();
-  EXPECT_TRUE(!computer_name.empty());
-}
-#endif
-
-#if defined(OS_MACOSX)
-// The test is somewhat silly, and just verifies that we return a hardware
-// model name.
-TEST_F(SessionModelAssociatorTest, GetHardwareModelName) {
-  std::string hardware_model = SessionModelAssociator::GetHardwareModelName();
-  EXPECT_TRUE(!hardware_model.empty());
-}
-#endif
-
-
 }  // namespace browser_sync
+

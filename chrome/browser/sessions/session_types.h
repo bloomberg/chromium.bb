@@ -197,4 +197,15 @@ struct SessionWindow {
   DISALLOW_COPY_AND_ASSIGN(SessionWindow);
 };
 
+// Defines a synced session for use by session sync. A synced session is a
+// list of windows along with a unique session identifer (tag).
+struct SyncedSession {
+  SyncedSession();
+  ~SyncedSession();
+
+  // Unique tag for each session.
+  std::string session_tag;
+  std::vector<SessionWindow*> windows;
+};
+
 #endif  // CHROME_BROWSER_SESSIONS_SESSION_TYPES_H_

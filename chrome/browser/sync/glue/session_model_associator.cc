@@ -9,13 +9,10 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
 #include "base/tracked.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/api/sync_error.h"
-#include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
@@ -29,11 +26,6 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
-#if defined(OS_LINUX)
-#include "base/linux_util.h"
-#elif defined(OS_WIN)
-#include <windows.h>
-#endif
 
 namespace browser_sync {
 
@@ -131,18 +123,6 @@ void SessionModelAssociator::ReassociateWindows(bool reload_tabs) {
   sync_pb::SessionHeader* header_s = specifics.mutable_header();
   SyncedSession* current_session =
       synced_session_tracker_.GetSession(local_tag);
-  header_s->set_client_name(current_session_name_);
-#if defined(OS_LINUX)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_LINUX);
-#elif defined(OS_MACOSX)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_MAC);
-#elif defined(OS_WIN)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_WIN);
-#elif defined(OS_CHROMEOS)
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_CROS);
-#else
-  header_s->set_device_type(sync_pb::SessionHeader_DeviceType_TYPE_OTHER);
-#endif
 
   size_t window_num = 0;
   std::set<SyncedWindowDelegate*> windows =
@@ -447,13 +427,8 @@ bool SessionModelAssociator::AssociateModels(SyncError* error) {
     }
 
     // Make sure we have a machine tag.
-    if (current_machine_tag_.empty()) {
+    if (current_machine_tag_.empty())
       InitializeCurrentMachineTag(&trans);
-      // The session name is retrieved asynchronously so it might not come back
-      // for the writing of the session. However, we write to the session often
-      // enough (on every navigation) that we'll pick it up quickly.
-      InitializeCurrentSessionName();
-    }
     synced_session_tracker_.SetLocalSessionTag(current_machine_tag_);
     if (!UpdateAssociationsFromSyncModel(root, &trans)) {
       error->Reset(FROM_HERE,
@@ -491,8 +466,6 @@ bool SessionModelAssociator::DisassociateModels(SyncError* error) {
   tab_map_.clear();
   tab_pool_.clear();
   local_session_syncid_ = sync_api::kInvalidId;
-  current_machine_tag_ = "";
-  current_session_name_ = "";
 
   // There is no local model stored with which to disassociate, just notify
   // foreign session handlers.
@@ -507,62 +480,17 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
     sync_api::WriteTransaction* trans) {
   DCHECK(CalledOnValidThread());
   syncable::Directory* dir = trans->GetWrappedWriteTrans()->directory();
+
+  // TODO(zea): We need a better way of creating a machine tag. The directory
+  // kernel's cache_guid changes every time syncing is turned on and off. This
+  // will result in session's associated with stale machine tags persisting on
+  // the server since that tag will not be reused. Eventually this should
+  // become some string identifiable to the user. (Home, Work, Laptop, etc.)
+  // See issue at http://crbug.com/59672
   current_machine_tag_ = "session_sync";
   current_machine_tag_.append(dir->cache_guid());
   VLOG(1) << "Creating machine tag: " << current_machine_tag_;
   tab_pool_.set_machine_tag(current_machine_tag_);
-}
-
-void SessionModelAssociator::OnSessionNameInitialized(const std::string name) {
-  DCHECK(CalledOnValidThread());
-  // Only use the default machine name if it hasn't already been set.
-  if (current_session_name_.empty()) {
-    current_session_name_ = name;
-  }
-}
-
-// Task which runs on the file thread because it runs system calls which can
-// block while retrieving sytem information.
-class GetSessionNameTask : public Task {
- public:
-  explicit GetSessionNameTask(
-      const WeakHandle<SessionModelAssociator> associator) :
-    associator_(associator) {}
-
-  virtual void Run() {
-#if defined(OS_LINUX)
-    std::string session_name = base::GetLinuxDistro();
-#elif defined(OS_MACOSX)
-    std::string session_name = SessionModelAssociator::GetHardwareModelName();
-#elif defined(OS_WIN)
-    std::string session_name = SessionModelAssociator::GetComputerName();
-#else
-    std::string session_name;
-#endif
-    if (session_name == "Unknown" || session_name.empty()) {
-      session_name = base::SysInfo::OperatingSystemName();
-    }
-    associator_.Call(FROM_HERE,
-                     &SessionModelAssociator::OnSessionNameInitialized,
-                     session_name);
-  }
-  const WeakHandle<SessionModelAssociator> associator_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetSessionNameTask);
-};
-
-void SessionModelAssociator::InitializeCurrentSessionName() {
-  DCHECK(CalledOnValidThread());
-#if defined(OS_CHROMEOS)
-  OnSessionNameInitialized("Chromebook");
-#else
-  if (setup_for_test_) {
-    OnSessionNameInitialized("TestSessionName");
-  } else {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        new GetSessionNameTask(MakeWeakHandle(AsWeakPtr())));
-  }
-#endif
 }
 
 bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
@@ -594,9 +522,6 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
 
         // This is our previous header node, reuse it.
         local_session_syncid_ = id;
-        if (specifics.header().has_client_name()) {
-          current_session_name_ = specifics.header().client_name();
-        }
       } else {
         if (!specifics.has_tab())
           return false;
@@ -636,7 +561,6 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
         synced_session_tracker_.GetSession(foreign_session_tag);
 
     const sync_pb::SessionHeader& header = specifics.header();
-    PopulateSessionHeaderFromSpecifics(header, foreign_session);
     foreign_session->windows.reserve(header.window_size());
     VLOG(1) << "Associating " << foreign_session_tag << " with " <<
         header.window_size() << " windows.";
@@ -678,36 +602,6 @@ void SessionModelAssociator::DisassociateForeignSession(
     const std::string& foreign_session_tag) {
   DCHECK(CalledOnValidThread());
   synced_session_tracker_.DeleteSession(foreign_session_tag);
-}
-
-// Static
-void SessionModelAssociator::PopulateSessionHeaderFromSpecifics(
-    const sync_pb::SessionHeader& header_specifics,
-    SyncedSession* session_header) {
-  if (header_specifics.has_client_name()) {
-    session_header->session_name = header_specifics.client_name();
-  }
-  if (header_specifics.has_device_type()) {
-    switch (header_specifics.device_type()) {
-      case sync_pb::SessionHeader_DeviceType_TYPE_WIN:
-        session_header->device_type = SyncedSession::TYPE_WIN;
-        break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_MAC:
-        session_header->device_type = SyncedSession::TYPE_MACOSX;
-        break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_LINUX:
-        session_header->device_type = SyncedSession::TYPE_LINUX;
-        break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_CROS:
-        session_header->device_type = SyncedSession::TYPE_CHROMEOS;
-        break;
-      case sync_pb::SessionHeader_DeviceType_TYPE_OTHER:
-        // Intentionally fall-through
-      default:
-        session_header->device_type = SyncedSession::TYPE_OTHER;
-        break;
-    }
-  }
 }
 
 // Static
@@ -1181,19 +1075,5 @@ bool SessionModelAssociator::CryptoReadyIfNecessary() {
   return encrypted_types.count(syncable::SESSIONS) == 0 ||
          sync_service_->IsCryptographerReady(&trans);
 }
-
-#if defined(OS_WIN)
-// Static
-// TODO(nzea): This isn't safe to call on the UI-thread. Move it out to a util
-// or object that lives on the FILE thread.
-std::string SessionModelAssociator::GetComputerName() {
-  char computer_name[MAX_COMPUTERNAME_LENGTH + 1];
-  DWORD size = sizeof(computer_name);
-  if (GetComputerNameA(computer_name, &size)) {
-    return computer_name;
-  }
-  return std::string();
-}
-#endif
 
 }  // namespace browser_sync

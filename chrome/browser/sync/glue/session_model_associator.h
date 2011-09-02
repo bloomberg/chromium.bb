@@ -14,7 +14,6 @@
 #include "base/format_macros.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/weak_handle.h"
 
 class Profile;
 class ProfileSyncService;
@@ -52,7 +50,6 @@ static const char kSessionsTag[] = "google_chrome_sessions";
 // the sync sessions model.
 class SessionModelAssociator
     : public PerDataTypeAssociatorInterface<SyncedTabDelegate, size_t>,
-      public base::SupportsWeakPtr<SessionModelAssociator>,
       public base::NonThreadSafe {
  public:
   // Does not take ownership of sync_service.
@@ -186,23 +183,6 @@ class SessionModelAssociator
   // when a local change is made, or when timeout_milli occurs, whichever is
   // first.
   void BlockUntilLocalChangeForTest(int64 timeout_milli);
-
-  // Callback for when the session name has been computed.
-  void OnSessionNameInitialized(const std::string name);
-
-#if defined(OS_WIN)
-  // Returns the computer name or the empty string an error occurred.
-  static std::string GetComputerName();
-#endif
-
-#if defined(OS_MACOSX)
-  // Returns the Hardware model name, without trailing numbers, if possible.
-  // See http://www.cocoadev.com/index.pl?MacintoshModels for an example list of
-  // models. If an error occurs trying to read the model, this simply returns
-  // "Unknown".
-  static std::string GetHardwareModelName();
-#endif
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, WriteSessionToNode);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest,
@@ -211,11 +191,8 @@ class SessionModelAssociator
                            WriteForeignSessionToNode);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, TabNodePoolEmpty);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty);
-  FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionHeader);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionWindow);
   FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest, PopulateSessionTab);
-  FRIEND_TEST_ALL_PREFIXES(SessionModelAssociatorTest,
-                           InitializeCurrentSessionName);
 
   // Keep all the links to local tab data in one place.
   class TabLinks {
@@ -344,9 +321,6 @@ class SessionModelAssociator
   // Initializes the tag corresponding to this machine.
   void InitializeCurrentMachineTag(sync_api::WriteTransaction* trans);
 
-  // Initializes the user visible name for this session
-  void InitializeCurrentSessionName();
-
   // Updates the server data based upon the current client session.  If no node
   // corresponding to this machine exists in the sync model, one is created.
   void UpdateSyncModelDataFromClient();
@@ -363,12 +337,6 @@ class SessionModelAssociator
                                    const SyncedTabDelegate& tab,
                                    const int64 sync_id,
                                    sync_api::WriteTransaction* trans);
-
-  // Used to populate a session header from the session specifics header
-  // provided.
-  static void PopulateSessionHeaderFromSpecifics(
-    const sync_pb::SessionHeader& header_specifics,
-    SyncedSession* session_header);
 
   // Used to populate a session window from the session specifics window
   // provided. Tracks any foreign session data created through |tracker|.
@@ -427,11 +395,8 @@ class SessionModelAssociator
   // For testing only.
   void QuitLoopForTest();
 
-  // Unique client tag.
+  // Local client name.
   std::string current_machine_tag_;
-
-  // User-visible machine name.
-  std::string current_session_name_;
 
   // Pool of all used/available sync nodes associated with tabs.
   TabNodePool tab_pool_;

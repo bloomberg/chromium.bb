@@ -15,7 +15,6 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sync/glue/synced_session.h"
 
 namespace browser_sync {
 

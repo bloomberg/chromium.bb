@@ -11,13 +11,12 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 
 class GURL;
 
-typedef std::vector<const browser_sync::SyncedSession*> SyncedSessionVector;
+typedef std::vector<const SyncedSession*> SyncedSessionVector;
 typedef std::vector<SessionWindow*> SessionWindowVector;
 
 namespace sessions_helper {
@@ -56,8 +55,7 @@ void SortSessionWindows(SessionWindowVector& windows);
 
 // Compares a foreign session based on the first session window.
 // Returns true based on the comparison of the session windows.
-bool CompareSyncedSessions(const browser_sync::SyncedSession* lhs,
-                           const browser_sync::SyncedSession* rhs);
+bool CompareSyncedSessions(const SyncedSession* lhs, const SyncedSession* rhs);
 
 // Sort a SyncedSession vector using our custom SyncedSession comparator.
 void SortSyncedSessions(SyncedSessionVector* sessions);
@@ -104,7 +102,7 @@ bool ModelAssociatorHasTabWithUrl(int index, const GURL& url);
 
 // Stores a pointer to the local session for a given profile in |session|.
 // Returns true on success, false on failure.
-bool GetLocalSession(int index, const browser_sync::SyncedSession** session);
+bool GetLocalSession(int index, const SyncedSession** session);
 
 }  // namespace sessions_helper
 
