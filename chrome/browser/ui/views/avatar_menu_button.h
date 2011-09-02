@@ -36,12 +36,16 @@ class AvatarMenuButton : public views::MenuButton,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTest(const gfx::Point& point) const OVERRIDE;
 
+  // views::TextButton
+  virtual void SetIcon(const SkBitmap& icon) OVERRIDE;
+
  private:
   // views::ViewMenuDelegate
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   Browser* browser_;
   bool has_menu_;
+  bool set_taskbar_decoration_;
   scoped_ptr<ui::MenuModel> menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuButton);

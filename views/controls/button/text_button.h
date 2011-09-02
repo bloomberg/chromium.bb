@@ -327,9 +327,9 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   }
 
   // Sets the icon.
-  void SetIcon(const SkBitmap& icon);
-  void SetHoverIcon(const SkBitmap& icon);
-  void SetPushedIcon(const SkBitmap& icon);
+  virtual void SetIcon(const SkBitmap& icon);
+  virtual void SetHoverIcon(const SkBitmap& icon);
+  virtual void SetPushedIcon(const SkBitmap& icon);
 
   bool HasIcon() const { return !icon_.empty(); }
 
