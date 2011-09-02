@@ -17,6 +17,7 @@ import sys
 import tarfile
 import urllib2
 
+import download_utils
 import http_download
 
 
@@ -93,8 +94,6 @@ def SyncTgz(url, target, maindir='sdk',
   shutil.rmtree(target, True)
   os.makedirs(target)
   tgz_filename = target + '/.tgz'
-  if save_path:
-    tgz_filename = save_path
 
   if verbose:
     print 'Downloading %s to %s...' % (url, tgz_filename)
@@ -182,7 +181,16 @@ def SyncTgz(url, target, maindir='sdk',
         print m.name
       tgz.extract(m, target)
     tgz.close()
-  if save_path is None:
+  # If the tarball is supposed to be saved, move into place.  Otherwise, delete
+  # it.  Note that the files is moved like this because the CygWin-based
+  # Windows code above expects the tarball to be in a specific hard-coded
+  # location and have a specific name.
+  if save_path:
+    download_utils.RemoveFile(save_path)
+    if not os.path.exists(os.path.dirname(save_path)):
+      os.makedirs(os.path.dirname(save_path))
+    shutil.move(tgz_filename, save_path)
+  else:
     os.remove(tgz_filename)
 
   if verbose:
