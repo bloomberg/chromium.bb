@@ -294,6 +294,11 @@ class CleanUpStage(BuilderStage):
 
     if self._options.clobber or not os.path.exists(
         os.path.join(self._build_root, '.repo')):
+      chroot = os.path.join(self._build_root, 'chroot')
+      if os.path.exists(chroot):
+        cros_lib.RunCommand(['cros_sdk', '--delete', '--chroot=%s' % chroot],
+                            self._build_root,
+                            cwd=self._build_root)
       repository.ClearBuildRoot(self._build_root)
     else:
       commands.PreFlightRinse(self._build_root)
