@@ -80,6 +80,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
 
  private:
   FRIEND_TEST(ExtensionServiceTest, ClearExtensionData);
+  FRIEND_TEST(ExtensionServiceTest, ClearAppData);
   FRIEND_TEST(IndexedDBBrowserTest, ClearLocalState);
   friend class IndexedDBQuotaClientTest;
 

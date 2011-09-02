@@ -865,20 +865,16 @@ bool ExtensionService::UninstallExtension(
   // this function.
   std::string extension_id(extension_id_unsafe);
 
-  const Extension* extension = GetInstalledExtension(extension_id);
+  scoped_refptr<const Extension> extension(GetInstalledExtension(extension_id));
 
   // Callers should not send us nonexistent extensions.
   CHECK(extension);
 
-  // Get hold of information we need after unloading, since the extension
-  // pointer will be invalid then.
-  GURL extension_url(extension->url());
-  Extension::Location location(extension->location());
-
   // Policy change which triggers an uninstall will always set
   // |external_uninstall| to true so this is the only way to uninstall
   // managed extensions.
-  if (!Extension::UserMayDisable(location) && !external_uninstall) {
+  if (!Extension::UserMayDisable(extension->location()) &&
+      !external_uninstall) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         Source<Profile>(profile_),
@@ -917,11 +913,11 @@ bool ExtensionService::UninstallExtension(
   // any of these resources.
   UnloadExtension(extension_id, extension_misc::UNLOAD_REASON_UNINSTALL);
 
-  extension_prefs_->OnExtensionUninstalled(extension_id, location,
+  extension_prefs_->OnExtensionUninstalled(extension_id, extension->location(),
                                            external_uninstall);
 
   // Tell the backend to start deleting installed extensions on the file thread.
-  if (Extension::LOAD != location) {
+  if (Extension::LOAD != extension->location()) {
     if (!BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
             NewRunnableFunction(
@@ -931,7 +927,20 @@ bool ExtensionService::UninstallExtension(
       NOTREACHED();
   }
 
-  ClearExtensionData(extension_url);
+  GURL launch_web_url_origin(extension->launch_web_url());
+  launch_web_url_origin = launch_web_url_origin.GetOrigin();
+  bool is_storage_isolated =
+    (extension->is_storage_isolated() &&
+    extension->HasAPIPermission(ExtensionAPIPermission::kExperimental));
+
+  if (extension->is_hosted_app() &&
+      !profile_->GetExtensionSpecialStoragePolicy()->
+          IsStorageProtected(launch_web_url_origin)) {
+    ClearExtensionData(extension_id, launch_web_url_origin,
+                       is_storage_isolated);
+  }
+  ClearExtensionData(extension_id, extension->url(), is_storage_isolated);
+
   UntrackTerminatedExtension(extension_id);
 
   // Notify interested parties that we've uninstalled this extension.
@@ -949,9 +958,11 @@ bool ExtensionService::UninstallExtension(
   return true;
 }
 
-void ExtensionService::ClearExtensionData(const GURL& extension_url) {
-  scoped_refptr<ExtensionDataDeleter> deleter(
-      new ExtensionDataDeleter(profile_, extension_url));
+void ExtensionService::ClearExtensionData(const std::string& extension_id,
+                                          const GURL& storage_url,
+                                          bool is_storage_isolated) {
+  scoped_refptr<ExtensionDataDeleter> deleter(new ExtensionDataDeleter(
+      profile_, extension_id, storage_url, is_storage_isolated));
   deleter->StartDeleting();
 }
 

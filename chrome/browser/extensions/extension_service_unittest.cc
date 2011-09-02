@@ -464,6 +464,13 @@ void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
                              autoupdate_enabled);
 }
 
+void ExtensionServiceTestBase::InitializeRequestContext() {
+  ASSERT_TRUE(profile_.get());
+  ExtensionTestingProfile* profile =
+      static_cast<ExtensionTestingProfile*>(profile_.get());
+  profile->CreateRequestContext();
+}
+
 // static
 void ExtensionServiceTestBase::SetUpTestCase() {
   ExtensionErrorReporter::Init(false);  // no noisy errors
@@ -1792,6 +1799,7 @@ TEST_F(ExtensionServiceTest, UpdateApps) {
 
 TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
   InitializeEmptyExtensionService();
+  InitializeRequestContext();
   EXPECT_TRUE(service_->extensions()->empty());
 
   int pref_count = 0;
@@ -1843,6 +1851,7 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
 
 TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   InitializeEmptyExtensionService();
+  InitializeRequestContext();
   EXPECT_TRUE(service_->extensions()->empty());
 
   int pref_count = 0;
@@ -2702,7 +2711,7 @@ class ExtensionCookieCallback {
   ScopedRunnableMethodFactory<MessageLoop> message_loop_factory_;
 };
 
-// Verifies extension state is removed upon uninstall
+// Verifies extension state is removed upon uninstall.
 TEST_F(ExtensionServiceTest, ClearExtensionData) {
   InitializeEmptyExtensionService();
   ExtensionCookieCallback callback;
@@ -2773,6 +2782,133 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   // Check that the cookie is gone.
   cookie_monster->GetAllCookiesForURLAsync(
        ext_url,
+       base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
+                  base::Unretained(&callback)));
+  loop_.RunAllPending();
+  EXPECT_EQ(0U, callback.list_.size());
+
+  // The database should have vanished as well.
+  origins.clear();
+  db_tracker->GetAllOriginsInfo(&origins);
+  EXPECT_EQ(0U, origins.size());
+
+  // Check that the LSO file has been removed.
+  EXPECT_FALSE(file_util::PathExists(lso_path));
+
+  // Check if the indexed db has disappeared too.
+  EXPECT_FALSE(file_util::DirectoryExists(idb_path));
+}
+
+// Verifies app state is removed upon uninstall.
+TEST_F(ExtensionServiceTest, ClearAppData) {
+  InitializeEmptyExtensionService();
+  InitializeRequestContext();
+  ExtensionCookieCallback callback;
+
+  int pref_count = 0;
+
+  // Install app1 with unlimited storage.
+  PackAndInstallCrx(data_dir_.AppendASCII("app1"), true);
+  ValidatePrefKeyCount(++pref_count);
+  ASSERT_EQ(1u, service_->extensions()->size());
+  const Extension* extension = service_->extensions()->at(0);
+  const std::string id1 = extension->id();
+  EXPECT_TRUE(extension->HasAPIPermission(
+      ExtensionAPIPermission::kUnlimitedStorage));
+  const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageUnlimited(origin1));
+  string16 origin_id =
+      webkit_database::DatabaseUtil::GetOriginIdentifier(origin1);
+
+  // Install app2 from the same origin with unlimited storage.
+  PackAndInstallCrx(data_dir_.AppendASCII("app2"), true);
+  ValidatePrefKeyCount(++pref_count);
+  ASSERT_EQ(2u, service_->extensions()->size());
+  extension = service_->extensions()->at(1);
+  const std::string id2 = extension->id();
+  EXPECT_TRUE(extension->HasAPIPermission(
+      ExtensionAPIPermission::kUnlimitedStorage));
+  EXPECT_TRUE(extension->web_extent().MatchesURL(
+                  extension->GetFullLaunchURL()));
+  const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
+  EXPECT_EQ(origin1, origin2);
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageUnlimited(origin2));
+
+  // Set a cookie for the extension.
+  net::CookieMonster* cookie_monster =
+      profile_->GetRequestContext()->GetURLRequestContext()->
+      cookie_store()->GetCookieMonster();
+  ASSERT_TRUE(cookie_monster);
+  net::CookieOptions options;
+  cookie_monster->SetCookieWithOptionsAsync(
+       origin1, "dummy=value", options,
+       base::Bind(&ExtensionCookieCallback::SetCookieCallback,
+                  base::Unretained(&callback)));
+  loop_.RunAllPending();
+  EXPECT_TRUE(callback.result_);
+
+  cookie_monster->GetAllCookiesForURLAsync(
+      origin1,
+      base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
+                 base::Unretained(&callback)));
+  loop_.RunAllPending();
+  EXPECT_EQ(1U, callback.list_.size());
+
+  // Open a database.
+  webkit_database::DatabaseTracker* db_tracker = profile_->GetDatabaseTracker();
+  string16 db_name = UTF8ToUTF16("db");
+  string16 description = UTF8ToUTF16("db_description");
+  int64 size;
+  db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
+  db_tracker->DatabaseClosed(origin_id, db_name);
+  std::vector<webkit_database::OriginInfo> origins;
+  db_tracker->GetAllOriginsInfo(&origins);
+  EXPECT_EQ(1U, origins.size());
+  EXPECT_EQ(origin_id, origins[0].GetOrigin());
+
+  // Create local storage. We only simulate this by creating the backing file
+  // since webkit is not initialized.
+  DOMStorageContext* context =
+      profile_->GetWebKitContext()->dom_storage_context();
+  FilePath lso_path = context->GetLocalStorageFilePath(origin_id);
+  EXPECT_TRUE(file_util::CreateDirectory(lso_path.DirName()));
+  EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
+  EXPECT_TRUE(file_util::PathExists(lso_path));
+
+  // Create indexed db. Similarly, it is enough to only simulate this by
+  // creating the directory on the disk.
+  IndexedDBContext* idb_context =
+      profile_->GetWebKitContext()->indexed_db_context();
+  FilePath idb_path = idb_context->GetIndexedDBFilePath(origin_id);
+  EXPECT_TRUE(file_util::CreateDirectory(idb_path));
+  EXPECT_TRUE(file_util::DirectoryExists(idb_path));
+
+  // Uninstall one of them, unlimited storage should still be granted
+  // to the origin.
+  UninstallExtension(id1, false);
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageUnlimited(origin1));
+
+  // Check that the cookie is still there.
+  cookie_monster->GetAllCookiesForURLAsync(
+       origin1,
+       base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
+                  base::Unretained(&callback)));
+  loop_.RunAllPending();
+  EXPECT_EQ(1U, callback.list_.size());
+
+  // Now uninstall the other. Storage should be cleared for the apps.
+  UninstallExtension(id2, false);
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_FALSE(profile_->GetExtensionSpecialStoragePolicy()->
+      IsStorageUnlimited(origin1));
+
+  // Check that the cookie is gone.
+  cookie_monster->GetAllCookiesForURLAsync(
+       origin1,
        base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
                   base::Unretained(&callback)));
   loop_.RunAllPending();
