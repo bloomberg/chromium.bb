@@ -75,6 +75,13 @@ bool DataPack::Load(const FilePath& path) {
     return false;
   }
 
+  // Sanity check the header of the file.
+  if (kHeaderLength > mmap_->length()) {
+    DLOG(ERROR) << "Data pack file corruption: incomplete file header.";
+    mmap_.reset();
+    return false;
+  }
+
   // Parse the header of the file.
   // First uint32: version; second: resource count.
   const uint32* ptr = reinterpret_cast<const uint32*>(mmap_->data());

@@ -37,6 +37,16 @@ TEST(DataPackTest, Load) {
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }
 
+TEST(DataPackTest, LoadFileWithTruncatedHeader) {
+  FilePath data_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
+  data_path = data_path.Append(FILE_PATH_LITERAL(
+      "ui/base/test/data/data_pack_unittest/truncated-header.pak"));
+
+  DataPack pack;
+  ASSERT_FALSE(pack.Load(data_path));
+}
+
 TEST(DataPackTest, Write) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
