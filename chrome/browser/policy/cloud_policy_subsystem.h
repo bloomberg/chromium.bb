@@ -98,7 +98,7 @@ class CloudPolicySubsystem
   // Schedule initialization of the policy backend service.
   void ScheduleServiceInitialization(int64 delay_milliseconds);
 
-  // Only used in testing.
+  // Returns the CloudPolicyCacheBase associated with this CloudPolicySubsystem.
   CloudPolicyCacheBase* GetCloudPolicyCacheBase() const;
 
  private:

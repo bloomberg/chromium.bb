@@ -90,6 +90,10 @@ class BrowserPolicyConnector : public NotificationObserver {
   // Initiates a policy fetch after a successful device registration.
   void FetchDevicePolicy();
 
+  // Initiates a user policy fetch after a successful device registration. This
+  // is only safe to call when a user device token is available.
+  void FetchUserPolicy();
+
   // Schedules initialization of the cloud policy backend services, if the
   // services are already constructed.
   void ScheduleServiceInitialization(int64 delay_milliseconds);
@@ -105,7 +109,6 @@ class BrowserPolicyConnector : public NotificationObserver {
   // OAuth V2 token for authentication.
   void RegisterForUserPolicy(const std::string& oauth_token);
 
-  // Only used in testing.
   const CloudPolicyDataStore* GetDeviceCloudPolicyDataStore() const;
   const CloudPolicyDataStore* GetUserCloudPolicyDataStore() const;
 

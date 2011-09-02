@@ -162,6 +162,15 @@ void BrowserPolicyConnector::FetchDevicePolicy() {
 #endif
 }
 
+void BrowserPolicyConnector::FetchUserPolicy() {
+#if defined(OS_CHROMEOS)
+  if (user_data_store_.get()) {
+    DCHECK(!user_data_store_->device_token().empty());
+    user_data_store_->NotifyDeviceTokenChanged();
+  }
+#endif
+}
+
 void BrowserPolicyConnector::ScheduleServiceInitialization(
     int64 delay_milliseconds) {
   if (user_cloud_policy_subsystem_.get()) {
