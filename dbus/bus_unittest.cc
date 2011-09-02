@@ -4,7 +4,10 @@
 
 #include "dbus/bus.h"
 
+#include "base/bind.h"
+#include "base/message_loop.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread.h"
 #include "dbus/exported_object.h"
 #include "dbus/object_proxy.h"
 
@@ -56,4 +59,33 @@ TEST(BusTest, GetExportedObject) {
                              "/org/chromium/DifferentTestObject");
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
+}
+
+TEST(BusTest, ShutdownAndBlock) {
+  dbus::Bus::Options options;
+  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  ASSERT_FALSE(bus->shutdown_completed());
+
+  // Shut down synchronously.
+  bus->ShutdownAndBlock();
+  EXPECT_TRUE(bus->shutdown_completed());
+}
+
+TEST(BusTest, ShutdownAndBlockWithDBusThread) {
+  // Start the D-Bus thread.
+  base::Thread::Options thread_options;
+  thread_options.message_loop_type = MessageLoop::TYPE_IO;
+  base::Thread dbus_thread("D-Bus thread");
+  dbus_thread.StartWithOptions(thread_options);
+
+  // Create the bus.
+  dbus::Bus::Options options;
+  options.dbus_thread = &dbus_thread;
+  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  ASSERT_FALSE(bus->shutdown_completed());
+
+  // Shut down synchronously.
+  bus->ShutdownOnDBusThreadAndBlock();
+  EXPECT_TRUE(bus->shutdown_completed());
+  dbus_thread.Stop();
 }

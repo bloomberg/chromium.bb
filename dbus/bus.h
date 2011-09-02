@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/tracked_objects.h"
 
@@ -61,9 +62,9 @@ class ObjectProxy;
 //
 // SHUTDOWN
 //
-// The Bus object must be shut down manually by Shutdown() or
-// ShutdownAndBlock(). We require the manual shutdown as we should not
-// issue blocking calls in the destructor.
+// The Bus object must be shut down manually by ShutdownAndBlock() and
+// friends. We require the manual shutdown to make the operation explicit
+// rather than doing it silently in the destructor.
 //
 // EXAMPLE USAGE:
 //
@@ -119,8 +120,8 @@ class ObjectProxy;
 // WHY IS THIS A REF COUNTED OBJECT?
 //
 // Bus is a ref counted object, to ensure that |this| of the object is
-// alive when callbacks referencing |this| are called. However, after
-// Shutdown() is called, |connection_| can be NULL. Hence, callbacks should
+// alive when callbacks referencing |this| are called. However, after the
+// bus is shut down, |connection_| can be NULL. Hence, callbacks should
 // not rely on that |connection_| is alive.
 class Bus : public base::RefCountedThreadSafe<Bus> {
  public:
@@ -162,9 +163,6 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
     // 3) Outlives the bus.
     base::Thread* dbus_thread;  // NULL by default.
   };
-
-  // Called when shutdown is done. Used for Shutdown().
-  typedef base::Callback<void ()> OnShutdownCallback;
 
   // Creates a Bus object. The actual connection will be established when
   // Connect() is called.
@@ -219,11 +217,17 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // BLOCKING CALL.
   virtual void ShutdownAndBlock();
 
-  // Shuts down the bus in the D-Bus thread. |callback| will be called in
-  // the origin thread.
+  // Similar to ShutdownAndBlock(), but this function is used to
+  // synchronously shut down the bus that uses the D-Bus thread. This
+  // function is intended to be used at the very end of the browser
+  // shutdown, where it makes more sense to shut down the bus
+  // synchronously, than trying to make it asynchronous.
   //
-  // Must be called in the origin thread.
-  virtual void Shutdown(OnShutdownCallback callback);
+  // BLOCKING CALL, but must be called in the origin thread.
+  virtual void ShutdownOnDBusThreadAndBlock();
+
+  // Returns true if the shutdown has been completed.
+  bool shutdown_completed() { return shutdown_completed_; }
 
   //
   // The public functions below are not intended to be used in client
@@ -381,8 +385,8 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
  private:
   friend class base::RefCountedThreadSafe<Bus>;
 
-  // Helper function used for Shutdown().
-  void ShutdownInternal(OnShutdownCallback callback);
+  // Helper function used for ShutdownOnDBusThreadAndBlock().
+  void ShutdownOnDBusThreadAndBlockInternal();
 
   // Processes the all incoming data to the connection, if any.
   //
@@ -427,6 +431,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   const BusType bus_type_;
   const ConnectionType connection_type_;
   base::Thread* dbus_thread_;
+  base::WaitableEvent on_shutdown_;
   DBusConnection* connection_;
 
   MessageLoop* origin_loop_;
@@ -455,6 +460,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   ExportedObjectTable exported_object_table_;
 
   bool async_operations_set_up_;
+  bool shutdown_completed_;
 
   // Counters to make sure that OnAddWatch()/OnRemoveWatch() and
   // OnAddTimeout()/OnRemoveTimeou() are balanced.

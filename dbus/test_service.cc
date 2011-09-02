@@ -26,7 +26,6 @@ TestService::Options::~Options() {
 TestService::TestService(const Options& options)
     : base::Thread("TestService"),
       dbus_thread_(options.dbus_thread),
-      on_shutdown_(false /* manual_reset */, false /* initially_signaled */),
       on_all_methods_exported_(false, false),
       num_exported_methods_(0) {
 }
@@ -48,22 +47,22 @@ bool TestService::WaitUntilServiceIsStarted() {
   return on_all_methods_exported_.TimedWait(timeout);
 }
 
-void TestService::Shutdown() {
+void TestService::ShutdownAndBlock() {
   message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&TestService::ShutdownInternal,
+      base::Bind(&TestService::ShutdownAndBlockInternal,
                  base::Unretained(this)));
-}
-
-bool TestService::WaitUntilServiceIsShutdown() {
-  const base::TimeDelta timeout(
-      base::TimeDelta::FromMilliseconds(
-          TestTimeouts::action_max_timeout_ms()));
-  return on_shutdown_.TimedWait(timeout);
 }
 
 bool TestService::HasDBusThread() {
   return bus_->HasDBusThread();
+}
+
+void TestService::ShutdownAndBlockInternal() {
+  if (HasDBusThread())
+    bus_->ShutdownOnDBusThreadAndBlock();
+  else
+    bus_->ShutdownAndBlock();
 }
 
 void TestService::SendTestSignal(const std::string& message) {
@@ -81,11 +80,6 @@ void TestService::SendTestSignalInternal(const std::string& message) {
   exported_object_->SendSignal(&signal);
 }
 
-void TestService::ShutdownInternal() {
-  bus_->Shutdown(base::Bind(&TestService::OnShutdown,
-                            base::Unretained(this)));
-}
-
 void TestService::OnExported(const std::string& interface_name,
                              const std::string& method_name,
                              bool success) {
@@ -100,10 +94,6 @@ void TestService::OnExported(const std::string& interface_name,
   ++num_exported_methods_;
   if (num_exported_methods_ == kNumMethodsToExport)
     on_all_methods_exported_.Signal();
-}
-
-void TestService::OnShutdown() {
-  on_shutdown_.Signal();
 }
 
 void TestService::Run(MessageLoop* message_loop) {

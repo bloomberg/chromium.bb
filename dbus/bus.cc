@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time.h"
 #include "dbus/exported_object.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
@@ -178,11 +179,13 @@ Bus::Bus(const Options& options)
     : bus_type_(options.bus_type),
       connection_type_(options.connection_type),
       dbus_thread_(options.dbus_thread),
+      on_shutdown_(false /* manual_reset */, false /* initially_signaled */),
       connection_(NULL),
       origin_loop_(MessageLoop::current()),
       origin_thread_id_(base::PlatformThread::CurrentId()),
       dbus_thread_id_(base::kInvalidThreadId),
       async_operations_set_up_(false),
+      shutdown_completed_(false),
       num_pending_watches_(0),
       num_pending_timeouts_(0) {
   if (dbus_thread_) {
@@ -299,21 +302,31 @@ void Bus::ShutdownAndBlock() {
   }
 
   // Private connection should be closed.
-  if (connection_ && connection_type_ == PRIVATE) {
-    dbus_connection_close(connection_);
+  if (connection_) {
+    if (connection_type_ == PRIVATE)
+      dbus_connection_close(connection_);
+    // dbus_connection_close() won't unref.
+    dbus_connection_unref(connection_);
   }
-  // dbus_connection_close() won't unref.
-  dbus_connection_unref(connection_);
 
   connection_ = NULL;
+  shutdown_completed_ = true;
 }
 
-void Bus::Shutdown(OnShutdownCallback callback) {
+void Bus::ShutdownOnDBusThreadAndBlock() {
   AssertOnOriginThread();
+  DCHECK(dbus_thread_);
 
-  PostTaskToDBusThread(FROM_HERE, base::Bind(&Bus::ShutdownInternal,
-                                             this,
-                                             callback));
+  PostTaskToDBusThread(FROM_HERE, base::Bind(
+      &Bus::ShutdownOnDBusThreadAndBlockInternal,
+      this));
+
+  // Wait until the shutdown is complete on the D-Bus thread.
+  // The shutdown should not hang, but set timeout just in case.
+  const int kTimeoutSecs = 3;
+  const base::TimeDelta timeout(base::TimeDelta::FromSeconds(kTimeoutSecs));
+  const bool signaled = on_shutdown_.TimedWait(timeout);
+  LOG_IF(ERROR, !signaled) << "Failed to shutdown the bus";
 }
 
 bool Bus::RequestOwnership(const std::string& service_name) {
@@ -535,11 +548,11 @@ void Bus::UnregisterObjectPath(const std::string& object_path) {
   registered_object_paths_.erase(object_path);
 }
 
-void Bus::ShutdownInternal(OnShutdownCallback callback) {
+void Bus::ShutdownOnDBusThreadAndBlockInternal() {
   AssertOnDBusThread();
 
   ShutdownAndBlock();
-  PostTaskToOriginThread(FROM_HERE, callback);
+  on_shutdown_.Signal();
 }
 
 void Bus::ProcessAllIncomingDataIfAny() {

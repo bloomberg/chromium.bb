@@ -49,12 +49,8 @@ class TestService : public base::Thread {
   // Returns true on success.
   bool WaitUntilServiceIsStarted() WARN_UNUSED_RESULT;
 
-  // Shuts down the service.
-  void Shutdown();
-
-  // Waits until the service is shut down.
-  // Returns true on success.
-  bool WaitUntilServiceIsShutdown() WARN_UNUSED_RESULT;
+  // Shuts down the service and blocks until it's done.
+  void ShutdownAndBlock();
 
   // Returns true if the bus has the D-Bus thread.
   bool HasDBusThread();
@@ -66,16 +62,13 @@ class TestService : public base::Thread {
   // Helper function for SendTestSignal().
   void SendTestSignalInternal(const std::string& message);
 
-  // Helper function for Shutdown().
-  void ShutdownInternal();
+  // Helper function for ShutdownAndBlock().
+  void ShutdownAndBlockInternal();
 
   // Called when a method is exported.
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,
                   bool success);
-
-  // Called when the bus is shut down.
-  void OnShutdown();
 
   // base::Thread override.
   virtual void Run(MessageLoop* message_loop);
@@ -95,7 +88,6 @@ class TestService : public base::Thread {
   Response* BrokenMethod(MethodCall* method_call);
 
   base::Thread* dbus_thread_;
-  base::WaitableEvent on_shutdown_;
   base::WaitableEvent on_all_methods_exported_;
   // The number of methods actually exported.
   int num_exported_methods_;

@@ -25,7 +25,7 @@ class MockBus : public Bus {
       const std::string& service_name,
       const std::string& object_path));
   MOCK_METHOD0(ShutdownAndBlock, void());
-  MOCK_METHOD1(Shutdown, void(OnShutdownCallback callback));
+  MOCK_METHOD0(ShutdownOnDBusThreadAndBlock, void());
   MOCK_METHOD0(Connect, bool());
   MOCK_METHOD1(RequestOwnership, bool(const std::string& service_name));
   MOCK_METHOD1(ReleaseOwnership, bool(const std::string& service_name));

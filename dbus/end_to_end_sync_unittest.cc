@@ -37,8 +37,7 @@ class EndToEndSyncTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    test_service_->Shutdown();
-    ASSERT_TRUE(test_service_->WaitUntilServiceIsShutdown());
+    test_service_->ShutdownAndBlock();
     test_service_->Stop();
     client_bus_->ShutdownAndBlock();
   }

@@ -66,15 +66,10 @@ class EndToEndAsyncTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    bus_->Shutdown(base::Bind(&EndToEndAsyncTest::OnShutdown,
-                              base::Unretained(this)));
-    // Wait until the bus is shutdown. OnShutdown() will be called in
-    // message_loop_.
-    message_loop_.Run();
+    bus_->ShutdownOnDBusThreadAndBlock();
 
     // Shut down the service.
-    test_service_->Shutdown();
-    ASSERT_TRUE(test_service_->WaitUntilServiceIsShutdown());
+    test_service_->ShutdownAndBlock();
 
     // Reset to the default.
     base::ThreadRestrictions::SetIOAllowed(true);
@@ -116,11 +111,6 @@ class EndToEndAsyncTest : public testing::Test {
     }
     message_loop_.Quit();
   };
-
-  // Called when the shutdown is complete.
-  void OnShutdown() {
-    message_loop_.Quit();
-  }
 
   // Called when the "Test" signal is received, in the main thread.
   // Copy the string payload to |test_signal_string_|.
