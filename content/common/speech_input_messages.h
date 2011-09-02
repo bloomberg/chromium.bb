@@ -74,3 +74,7 @@ IPC_MESSAGE_ROUTED1(SpeechInputMsg_RecordingComplete,
 IPC_MESSAGE_ROUTED1(SpeechInputMsg_RecognitionComplete,
                     int /* request_id */)
 
+// Toggle speech input on or off on the speech input control for the
+// current focused element. Has no effect if the current element doesn't
+// support speech input.
+IPC_MESSAGE_ROUTED0(SpeechInputMsg_ToggleSpeechInput)

@@ -206,6 +206,9 @@
 #define IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE        42100
 #define IDC_TRANSLATE_TARGET_LANGUAGE_BASE          42400
 
+// Speech input
+#define IDC_TOGGLE_SPEECH_INPUT         42500
+
 // Identifiers for platform-specific items.
 // Placed in a common file to help insure they never collide.
 #define IDC_VIEW_MENU                   44000     // OSX only

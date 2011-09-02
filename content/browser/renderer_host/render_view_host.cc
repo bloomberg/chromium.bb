@@ -38,6 +38,7 @@
 #include "content/common/notification_details.h"
 #include "content/common/notification_service.h"
 #include "content/common/result_codes.h"
+#include "content/common/speech_input_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/url_constants.h"
 #include "content/common/view_messages.h"
@@ -1237,6 +1238,10 @@ void RenderViewHost::DidCancelPopupMenu() {
 }
 #endif
 
+void RenderViewHost::ToggleSpeechInput() {
+  Send(new SpeechInputMsg_ToggleSpeechInput(routing_id()));
+}
+
 void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,
                                int renderer_id,
                                GURL* url) {
@@ -1366,4 +1371,3 @@ void RenderViewHost::OnRunFileChooser(
     const ViewHostMsg_RunFileChooser_Params& params) {
   delegate_->RunFileChooser(this, params);
 }
-

@@ -7,14 +7,23 @@
 #include "base/utf_string_conversions.h"
 #include "content/common/speech_input_messages.h"
 #include "content/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputListener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+using WebKit::WebDocument;
+using WebKit::WebElement;
 using WebKit::WebFrame;
+using WebKit::WebInputElement;
+using WebKit::WebNode;
+using WebKit::WebView;
 
 SpeechInputDispatcher::SpeechInputDispatcher(
     RenderView* render_view,
@@ -32,6 +41,8 @@ bool SpeechInputDispatcher::OnMessageReceived(const IPC::Message& message) {
                         OnSpeechRecordingComplete)
     IPC_MESSAGE_HANDLER(SpeechInputMsg_RecognitionComplete,
                         OnSpeechRecognitionComplete)
+    IPC_MESSAGE_HANDLER(SpeechInputMsg_ToggleSpeechInput,
+                        OnSpeechRecognitionToggleSpeechInput)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -92,4 +103,36 @@ void SpeechInputDispatcher::OnSpeechRecognitionComplete(int request_id) {
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionComplete enter";
   listener_->didCompleteRecognition(request_id);
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionComplete exit";
+}
+
+void SpeechInputDispatcher::OnSpeechRecognitionToggleSpeechInput() {
+  VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionToggleSpeechInput";
+
+  WebView* web_view = render_view()->webview();
+
+  WebFrame* frame = web_view->mainFrame();
+  if (!frame)
+    return;
+
+  WebDocument document = frame->document();
+  if (document.isNull())
+    return;
+
+  WebNode focusedNode = document.focusedNode();
+  if (focusedNode.isNull() || !focusedNode.isElementNode())
+    return;
+
+  WebKit::WebElement element = focusedNode.to<WebKit::WebElement>();
+  if (!element.isTextFormControlElement())
+    return;
+
+  WebKit::WebInputElement inputElement = element.to<WebKit::WebInputElement>();
+  if (!inputElement.isSpeechInputEnabled())
+    return;
+
+  if (inputElement.getSpeechInputState() == WebInputElement::Idle) {
+    inputElement.startSpeechInput();
+  } else {
+    inputElement.stopSpeechInput();
+  }
 }

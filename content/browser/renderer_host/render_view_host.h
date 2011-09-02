@@ -361,6 +361,8 @@ class RenderViewHost : public RenderWidgetHost {
   void DidCancelPopupMenu();
 #endif
 
+  void ToggleSpeechInput();
+
 #if defined(UNIT_TEST)
   // These functions shouldn't be necessary outside of testing.
 

@@ -614,6 +614,7 @@ class Browser : public TabHandlerDelegate,
 #endif
   void OpenPluginsTabAndActivate();
   void ShowSyncSetup();
+  void ToggleSpeechInput();
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
 

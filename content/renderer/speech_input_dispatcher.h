@@ -42,6 +42,7 @@ class SpeechInputDispatcher : public RenderViewObserver,
       int request_id, const speech_input::SpeechInputResultArray& result);
   void OnSpeechRecordingComplete(int request_id);
   void OnSpeechRecognitionComplete(int request_id);
+  void OnSpeechRecognitionToggleSpeechInput();
 
   WebKit::WebSpeechInputListener* listener_;
 

@@ -2736,6 +2736,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_LANGUAGE_OPTIONS:      OpenLanguageOptionsDialog();      break;
 #endif
     case IDC_SHOW_SYNC_SETUP:       ShowSyncSetup();                  break;
+    case IDC_TOGGLE_SPEECH_INPUT:   ToggleSpeechInput();              break;
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -4316,6 +4317,9 @@ void Browser::InitCommandState() {
   // no background pages.
   command_updater_.UpdateCommandEnabled(IDC_VIEW_BACKGROUND_PAGES, true);
 
+  // Toggle speech input
+  command_updater_.UpdateCommandEnabled(IDC_TOGGLE_SPEECH_INPUT, true);
+
   // Initialize other commands whose state changes based on fullscreen mode.
   UpdateCommandsForFullscreenMode(false);
 
@@ -5182,4 +5186,8 @@ void Browser::ShowSyncSetup() {
     ShowOptionsTab(chrome::kSyncSetupSubPage);
   else
     service->ShowLoginDialog();
+}
+
+void Browser::ToggleSpeechInput() {
+  GetSelectedTabContentsWrapper()->render_view_host()->ToggleSpeechInput();
 }
