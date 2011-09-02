@@ -223,7 +223,7 @@ class ExtensionImpl : public ExtensionBase {
       substitutions.push_back(substitute);
     } else if (args[1]->IsArray()) {
       // chrome.i18n.getMessage("message_name", ["more", "params"]);
-      v8::Array* placeholders = static_cast<v8::Array*>(*args[1]);
+      v8::Local<v8::Array> placeholders = v8::Local<v8::Array>::Cast(args[1]);
       uint32_t count = placeholders->Length();
       if (count <= 0 || count > 9)
         return v8::Undefined();
