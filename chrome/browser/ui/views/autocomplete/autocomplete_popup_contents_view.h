@@ -174,11 +174,6 @@ class AutocompletePopupContentsView : public views::View,
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
 
-  // Set to true if we're invoking MoveAbove on the popup. Used in tracking
-  // 92497.
-  // TODO(sky): remove when we figure out 92497.
-  bool in_move_above_;
-
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupContentsView);
 };
 
