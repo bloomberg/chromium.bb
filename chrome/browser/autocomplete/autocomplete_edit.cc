@@ -209,19 +209,22 @@ bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
 void AutocompleteEditModel::OnChanged() {
   const AutocompleteMatch current_match = CurrentMatch();
   string16 suggested_text;
+
+  // Confer with the NetworkActionPredictor to determine what action, if any,
+  // we should take. Get the recommended action here even if we don't need it
+  // so we can get stats for anyone who is opted in to UMA.
+  NetworkActionPredictor::Action recommended_action =
+      network_action_predictor_.RecommendAction(user_text_, current_match);
+  UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action", recommended_action,
+                            NetworkActionPredictor::LAST_PREDICT_ACTION);
   if (!DoInstant(current_match, &suggested_text)) {
-    // Confer with the NetworkActionPredictor to determine what action, if any,
-    // we should take.
-    NetworkActionPredictor::Action action = NetworkActionPredictor::ACTION_NONE;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+    // Ignore the recommended action if the flag is not set.
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kPrerenderFromOmnibox)) {
-      action = network_action_predictor_.RecommendAction(user_text_,
-                                                         current_match);
-      UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action", action,
-                                NetworkActionPredictor::LAST_PREDICT_ACTION);
+      recommended_action = NetworkActionPredictor::ACTION_NONE;
     }
 
-    switch (action) {
+    switch (recommended_action) {
       case NetworkActionPredictor::ACTION_PRERENDER:
         DoPrerender(current_match);
         break;
@@ -231,7 +234,7 @@ void AutocompleteEditModel::OnChanged() {
       case NetworkActionPredictor::ACTION_NONE:
         break;
       default:
-        NOTREACHED() << "Unexpected predict action: " << action;
+        NOTREACHED() << "Unexpected recommended action: " << recommended_action;
         break;
     }
 
