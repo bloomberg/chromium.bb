@@ -10997,7 +10997,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_CAPTCHA_DIALOG_TITLE" desc="Title shown for captcha input dialog">
         Sign in
       </message>
-     <message name="IDS_LOGIN_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
+      <message name="IDS_LOGIN_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
         Type the characters you see in the picture below.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
@@ -13282,6 +13282,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT" desc="Text to display in the password field for user pod when no password has been entered.">
         Enter password
+      </message>
+      <message name="IDS_LOGIN_VERSION_LABEL_FORMAT" desc="Login screen version text format.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> <ph name="PRODUCT_VERSION">$2<ex>15.0.0.0</ex></ph> (Platform <ph name="PLATFORM_VERSION">$3<ex>900.0-11.09.01</ex></ph>)
       </message>
       <message name="IDS_LOGIN_MANAGED_BY_LABEL_FORMAT" desc="Text format for a 'Managed by DOMAIN' label on login screen.">
         Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
