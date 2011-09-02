@@ -313,12 +313,11 @@ void ManifestFetchesBuilder::AddPendingExtension(
   // Use a zero version to ensure that a pending extension will always
   // be updated, and thus installed (assuming all extensions have
   // non-zero versions).
-  scoped_ptr<Version> version(
-      Version::GetVersionFromString("0.0.0.0"));
+  Version version("0.0.0.0");
+  DCHECK(version.IsValid());
 
-  AddExtensionData(
-      info.install_source(), id, *version,
-      Extension::TYPE_UNKNOWN, info.update_url(), "");
+  AddExtensionData(info.install_source(), id, version,
+                   Extension::TYPE_UNKNOWN, info.update_url(), "");
 }
 
 void ManifestFetchesBuilder::ReportStats() const {
