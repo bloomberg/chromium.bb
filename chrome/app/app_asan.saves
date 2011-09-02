@@ -1,0 +1,20 @@
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file lists symbols that should not be stripped from the Mac browser and
+# helper app executables built with AddressSanitizer
+# (http://dev.chromium.org/developers/testing/addresssanitizer).
+
+# The list of Chromium application-specific symbols should be the same as that
+# in chrome/app/app.saves
+# The list of symbols that should be preserved in all the binaries built with
+# AddressSanitizer should correspond to build/asan.saves
+
+# Chromium-specific symbols.
+_main
+_NXArgc
+_NXArgv
+
+# AddressSanitizer-specific symbols.
+___asan_init

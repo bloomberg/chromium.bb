@@ -76,6 +76,12 @@
               'app/client_util.cc',
             ]
           }],
+          ['OS=="mac" and asan==1', {
+            'xcode_settings': {
+              # Override the outer definition of CHROMIUM_STRIP_SAVE_FILE.
+              'CHROMIUM_STRIP_SAVE_FILE': 'app/app_asan.saves',
+            },
+          }],
         ],
       }],
     ],
