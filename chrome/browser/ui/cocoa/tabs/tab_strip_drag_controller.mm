@@ -264,7 +264,8 @@ const NSTimeInterval kTearDuration = 0.333;
 
     // Disable window animation before calling |orderFront:| when detatching
     // to a new window.
-    NSWindowAnimationBehavior savedAnimationBehavior;
+    NSWindowAnimationBehavior savedAnimationBehavior =
+        NSWindowAnimationBehaviorDefault;
     bool didSaveAnimationBehavior = false;
     if ([dragWindow_ respondsToSelector:@selector(animationBehavior)] &&
         [dragWindow_ respondsToSelector:@selector(setAnimationBehavior:)]) {

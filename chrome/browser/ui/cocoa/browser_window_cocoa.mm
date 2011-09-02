@@ -93,7 +93,8 @@ void BrowserWindowCocoa::Show() {
   BrowserList::SetLastActive(browser_);
 
   bool is_session_restore = browser_->is_session_restore();
-  NSWindowAnimationBehavior saved_animation_behavior;
+  NSWindowAnimationBehavior saved_animation_behavior =
+      NSWindowAnimationBehaviorDefault;
   bool did_save_animation_behavior = false;
   // Turn off swishing when restoring windows.
   if (is_session_restore &&
