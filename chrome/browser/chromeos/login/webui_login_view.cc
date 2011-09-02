@@ -243,7 +243,6 @@ void WebUILoginView::InitStatusArea() {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 #endif
   widget_params.bounds = bounds;
-  widget_params.double_buffer = true;
   widget_params.transparent = true;
   widget_params.parent = login_window->GetNativeView();
   status_window_ = new views::Widget;
