@@ -46,7 +46,14 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
   ScopedTempDir app_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, Basic) {
+// Disable on Mac only.  http://crbug.com/95139
+#if defined(OS_MACOSX)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, MAYBE_Basic) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
