@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,6 +53,11 @@
 
 // Protocol for the controller which handles the actual drop data/drop updates.
 @protocol URLDropTargetController
+
+// Determines whether the given drag and drop operation contains content that
+// is supported by the web view. In particular, if the content is a local file
+// URL, this checks if it is of a type that can be shown in the tab contents.
+- (BOOL)isUnsupportedDropData:(id<NSDraggingInfo>)info;
 
 // The given URLs (an |NSArray| of |NSString|s) were dropped in the given view
 // at the given point (in that view's coordinates).

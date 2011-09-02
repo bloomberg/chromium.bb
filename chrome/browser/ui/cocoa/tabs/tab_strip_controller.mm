@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
@@ -1928,6 +1929,11 @@ private:
     [tabStripView_ setDropArrowShown:NO];
     [tabStripView_ setNeedsDisplay:YES];
   }
+}
+
+// (URLDropTargetController protocol)
+- (BOOL)isUnsupportedDropData:(id<NSDraggingInfo>)info {
+  return drag_util::IsUnsupportedDropData(browser_->profile(), info);
 }
 
 - (GTMWindowSheetController*)sheetController {

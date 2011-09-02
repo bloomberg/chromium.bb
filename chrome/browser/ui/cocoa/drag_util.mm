@@ -7,6 +7,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/browser/plugin_service.h"
 #include "content/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
@@ -65,7 +67,7 @@ GURL GetFileURLFromDropData(id<NSDraggingInfo> info) {
   return GURL();
 }
 
-static BOOL IsSupportedFileURL(const GURL& url) {
+static BOOL IsSupportedFileURL(Profile* profile, const GURL& url) {
   FilePath full_path;
   net::FileURLToFilePath(url, &full_path);
 
@@ -81,24 +83,23 @@ static BOOL IsSupportedFileURL(const GURL& url) {
   // Check whether there is a plugin that supports the mime type. (e.g. PDF)
   // TODO(bauerb): This possibly uses stale information, but it's guaranteed not
   // to do disk access.
+  bool allow_wildcard = false;
   bool stale = false;
-  std::vector<webkit::WebPluginInfo> info_array;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      url, mime_type, false, &stale, &info_array, NULL);
-  for (size_t i = 0; i < info_array.size(); ++i) {
-    if (webkit::IsPluginEnabled(info_array[i]))
-      return true;
-  }
-
-  return NO;
+  webkit::WebPluginInfo plugin;
+  return PluginService::GetInstance()->GetPluginInfo(
+      -1,                // process ID
+      MSG_ROUTING_NONE,  // routing ID
+      profile->GetResourceContext(),
+      url, GURL(), mime_type, allow_wildcard,
+      &stale, &plugin, NULL);
 }
 
-BOOL IsUnsupportedDropData(id<NSDraggingInfo> info) {
+BOOL IsUnsupportedDropData(Profile* profile, id<NSDraggingInfo> info) {
   GURL url = GetFileURLFromDropData(info);
   if (!url.is_empty()) {
     // If dragging a file, only allow dropping supported file types (that the
     // web view can display).
-    return !IsSupportedFileURL(url);
+    return !IsSupportedFileURL(profile, url);
   }
   return NO;
 }

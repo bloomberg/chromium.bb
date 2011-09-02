@@ -11,6 +11,8 @@
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
 
+class Profile;
+
 namespace drag_util {
 
 // Populates the |url| and |title| with URL data in |pboard|. There may be more
@@ -30,7 +32,7 @@ GURL GetFileURLFromDropData(id<NSDraggingInfo> info);
 // Determines whether the given drag and drop operation contains content that
 // is supported by the web view. In particular, if the content is a local file
 // URL, this checks if it is of a type that can be shown in the tab contents.
-BOOL IsUnsupportedDropData(id<NSDraggingInfo> info);
+BOOL IsUnsupportedDropData(Profile* profile, id<NSDraggingInfo> info);
 
 }  // namespace drag_util
 

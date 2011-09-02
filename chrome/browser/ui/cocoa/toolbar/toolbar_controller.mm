@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/background_gradient_view.h"
+#include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
@@ -794,6 +795,11 @@ class NotificationBridge : public NotificationObserver {
 // (URLDropTargetController protocol)
 - (void)hideDropURLsIndicatorInView:(NSView*)view {
   // Do nothing.
+}
+
+// (URLDropTargetController protocol)
+- (BOOL)isUnsupportedDropData:(id<NSDraggingInfo>)info {
+  return drag_util::IsUnsupportedDropData(profile_, info);
 }
 
 @end
