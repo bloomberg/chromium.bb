@@ -21,6 +21,7 @@ class TestResource : public TaskManager::Resource {
  public:
   TestResource(const string16& title, pid_t pid) : title_(title), pid_(pid) {}
   virtual string16 GetTitle() const OVERRIDE { return title_; }
+  virtual string16 GetProfileName() const OVERRIDE { return string16(); }
   virtual SkBitmap GetIcon() const OVERRIDE { return SkBitmap(); }
   virtual base::ProcessHandle GetProcess() const OVERRIDE { return pid_; }
   virtual Type GetType() const OVERRIDE { return RENDERER; }
@@ -28,6 +29,7 @@ class TestResource : public TaskManager::Resource {
   virtual void SetSupportNetworkUsage() OVERRIDE { NOTREACHED(); }
   virtual void Refresh() OVERRIDE {}
   string16 title_;
+  string16 profile_name_;
   pid_t pid_;
 };
 

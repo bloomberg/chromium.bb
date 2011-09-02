@@ -31,6 +31,7 @@ const struct ColumnWidth {
 } columnWidths[] = {
   // Note that arraysize includes the trailing \0. That's intended.
   { IDS_TASK_MANAGER_PAGE_COLUMN, 120, 600 },
+  { IDS_TASK_MANAGER_PROFILE_NAME_COLUMN, 60, 200 },
   { IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN,
       arraysize("800 MiB") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_SHARED_MEM_COLUMN,
@@ -220,8 +221,10 @@ class SortHelper {
   scoped_nsobject<NSTableColumn> column([[NSTableColumn alloc]
       initWithIdentifier:[NSNumber numberWithInt:columnId]]);
 
-  NSTextAlignment textAlignment = columnId == IDS_TASK_MANAGER_PAGE_COLUMN ?
-      NSLeftTextAlignment : NSRightTextAlignment;
+  NSTextAlignment textAlignment =
+      (columnId == IDS_TASK_MANAGER_PAGE_COLUMN ||
+       columnId == IDS_TASK_MANAGER_PROFILE_NAME_COLUMN) ?
+          NSLeftTextAlignment : NSRightTextAlignment;
 
   [[column.get() headerCell]
       setStringValue:l10n_util::GetNSStringWithFixup(columnId)];
@@ -285,7 +288,7 @@ class SortHelper {
   // Initially, sort on the tab name.
   [tableView_ setSortDescriptors:
       [NSArray arrayWithObject:[nameColumn sortDescriptorPrototype]]];
-
+  [self addColumnWithId:IDS_TASK_MANAGER_PROFILE_NAME_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_SHARED_MEM_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN visible:NO];
@@ -428,6 +431,9 @@ class SortHelper {
   switch (columnId) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
       return base::SysUTF16ToNSString(model_->GetResourceTitle(row));
+
+    case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:  // Profile Name
+      return base::SysUTF16ToNSString(model_->GetResourceProfileName(row));
 
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:  // Memory
       if (!model_->IsResourceFirstInGroup(row))

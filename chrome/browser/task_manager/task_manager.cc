@@ -122,6 +122,11 @@ string16 TaskManagerModel::GetResourceTitle(int index) const {
   return resources_[index]->GetTitle();
 }
 
+string16 TaskManagerModel::GetResourceProfileName(int index) const {
+  CHECK_LT(index, ResourceCount());
+  return resources_[index]->GetProfileName();
+}
+
 int64 TaskManagerModel::GetNetworkUsage(int index) const {
   CHECK_LT(index, ResourceCount());
   return GetNetworkUsage(resources_[index]);
@@ -360,6 +365,11 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
         compare_status);
     DCHECK(U_SUCCESS(compare_status));
     return compare_result;
+  } else if (col_id == IDS_TASK_MANAGER_PROFILE_NAME_COLUMN) {
+    string16 profile1 = GetResourceProfileName(row1);
+    string16 profile2 = GetResourceProfileName(row2);
+    return profile1.compare(0, profile1.length(), profile2, 0,
+                            profile2.length());
   } else if (col_id == IDS_TASK_MANAGER_NET_COLUMN) {
     return ValueCompare<int64>(GetNetworkUsage(resources_[row1]),
                                GetNetworkUsage(resources_[row2]));

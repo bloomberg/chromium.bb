@@ -60,6 +60,7 @@ class TaskManager {
     };
 
     virtual string16 GetTitle() const = 0;
+    virtual string16 GetProfileName() const = 0;
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
     virtual Type GetType() const = 0;
@@ -240,6 +241,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Methods to return formatted resource information.
   string16 GetResourceTitle(int index) const;
+  string16 GetResourceProfileName(int index) const;
   string16 GetResourceNetworkUsage(int index) const;
   string16 GetResourceCPUUsage(int index) const;
   string16 GetResourcePrivateMemory(int index) const;

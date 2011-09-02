@@ -47,6 +47,10 @@ string16 TaskManagerNotificationResource::GetTitle() const {
   return title_;
 }
 
+string16 TaskManagerNotificationResource::GetProfileName() const {
+  return string16();
+}
+
 SkBitmap TaskManagerNotificationResource::GetIcon() const {
   return *default_icon_;
 }

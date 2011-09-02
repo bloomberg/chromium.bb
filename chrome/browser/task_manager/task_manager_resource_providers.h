@@ -96,6 +96,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   // TaskManager::Resource methods:
   virtual Type GetType() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual TabContentsWrapper* GetTabContents() const OVERRIDE;
   virtual const Extension* GetExtension() const OVERRIDE;
@@ -163,6 +164,7 @@ class TaskManagerBackgroundContentsResource
 
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual bool IsBackground() const OVERRIDE;
 
@@ -231,6 +233,7 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
 
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
@@ -319,6 +322,7 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
 
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
@@ -394,6 +398,7 @@ class TaskManagerNotificationResource : public TaskManager::Resource {
 
   // TaskManager::Resource interface
   virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
@@ -461,6 +466,7 @@ class TaskManagerBrowserProcessResource : public TaskManager::Resource {
 
   // TaskManager::Resource methods:
   virtual string16 GetTitle() const OVERRIDE;
+  virtual string16 GetProfileName() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;

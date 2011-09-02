@@ -33,6 +33,9 @@ class TestResource : public TaskManager::Resource {
   virtual string16 GetTitle() const OVERRIDE {
     return ASCIIToUTF16("test title");
   }
+  virtual string16 GetProfileName() const OVERRIDE {
+    return ASCIIToUTF16("test profile");
+  }
   virtual SkBitmap GetIcon() const { return SkBitmap(); }
   virtual base::ProcessHandle GetProcess() const {
     return base::GetCurrentProcessHandle();
@@ -71,6 +74,7 @@ TEST_F(TaskManagerTest, Resources) {
   ASSERT_EQ(1, model->ResourceCount());
   EXPECT_TRUE(model->IsResourceFirstInGroup(0));
   EXPECT_EQ(ASCIIToUTF16("test title"), model->GetResourceTitle(0));
+  EXPECT_EQ(ASCIIToUTF16("test profile"), model->GetResourceProfileName(0));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT),
             model->GetResourceNetworkUsage(0));
   EXPECT_EQ(ASCIIToUTF16(kZeroCPUUsage), model->GetResourceCPUUsage(0));
@@ -80,6 +84,7 @@ TEST_F(TaskManagerTest, Resources) {
   EXPECT_TRUE(model->IsResourceFirstInGroup(0));
   EXPECT_FALSE(model->IsResourceFirstInGroup(1));
   EXPECT_EQ(ASCIIToUTF16("test title"), model->GetResourceTitle(1));
+  EXPECT_EQ(ASCIIToUTF16("test profile"), model->GetResourceProfileName(1));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT).c_str(),
             model->GetResourceNetworkUsage(1));
   EXPECT_EQ(ASCIIToUTF16(kZeroCPUUsage), model->GetResourceCPUUsage(1));
@@ -89,6 +94,7 @@ TEST_F(TaskManagerTest, Resources) {
   ASSERT_EQ(1, model->ResourceCount());
   EXPECT_TRUE(model->IsResourceFirstInGroup(0));
   EXPECT_EQ(ASCIIToUTF16("test title"), model->GetResourceTitle(0));
+  EXPECT_EQ(ASCIIToUTF16("test profile"), model->GetResourceProfileName(0));
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT),
             model->GetResourceNetworkUsage(0));
   EXPECT_EQ(ASCIIToUTF16(kZeroCPUUsage), model->GetResourceCPUUsage(0));
