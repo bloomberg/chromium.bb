@@ -88,8 +88,11 @@ const wchar_t* const kTroublesomeDlls[] = {
 // The DLLs listed here are known (or under strong suspicion) of causing crashes
 // when they are loaded in the plugin process.
 const wchar_t* const kTroublesomePluginDlls[] = {
-  L"rpmainbrowserrecordplugin.dll",    // RealPlayer.
-  L"ycwebcamerasource.ax"              // Cyberlink Camera helper.
+  L"rpmainbrowserrecordplugin.dll",      // RealPlayer.
+  L"rpchromebrowserrecordhelper.dll",    // RealPlayer.
+  L"rpchrome10browserrecordhelper.dll",  // RealPlayer.
+  L"ycwebcamerasource.ax"                // Cyberlink Camera helper.
+  L"CLRGL.ax"                            // Cyberlink Camera helper.
 };
 
 // Adds the policy rules for the path and path\ with the semantic |access|.
@@ -168,27 +171,31 @@ void BlacklistAddOneDll(const wchar_t* module_name,
                         sandbox::TargetPolicy* policy) {
   HMODULE module = check_in_browser ? ::GetModuleHandleW(module_name) : NULL;
   if (!module) {
-    // The module could have been loaded with a 8.3 short name. We use
-    // the most common case: 'thelongname.dll' becomes 'thelon~1.dll'.
+    // The module could have been loaded with a 8.3 short name. We check
+    // the three most common cases: 'thelongname.dll' becomes
+    // 'thelon~1.dll', 'thelon~2.dll' and 'thelon~3.dll'.
     std::wstring name(module_name);
     size_t period = name.rfind(L'.');
     DCHECK_NE(std::string::npos, period);
     DCHECK_LE(3U, (name.size() - period));
     if (period <= 8)
       return;
-    std::wstring alt_name = name.substr(0, 6) + L"~1";
-    alt_name += name.substr(period, name.size());
-    if (check_in_browser) {
-      module = ::GetModuleHandleW(alt_name.c_str());
-      if (!module)
-        return;
-      // We found it, but because it only has 6 significant letters, we
-      // want to make sure it is the right one.
-      if (!IsExpandedModuleName(module, module_name))
-        return;
+    for (int ix = 0; ix < 3; ++ix) {
+      const wchar_t suffix[] = {'~', ('1' + ix), 0};
+      std::wstring alt_name = name.substr(0, 6) + suffix;
+      alt_name += name.substr(period, name.size());
+      if (check_in_browser) {
+        module = ::GetModuleHandleW(alt_name.c_str());
+        if (!module)
+          return;
+        // We found it, but because it only has 6 significant letters, we
+        // want to make sure it is the right one.
+        if (!IsExpandedModuleName(module, module_name))
+          return;
+      }
+      // Found a match. We add both forms to the policy.
+      policy->AddDllToUnload(alt_name.c_str());
     }
-    // Found a match. We add both forms to the policy.
-    policy->AddDllToUnload(alt_name.c_str());
   }
   policy->AddDllToUnload(module_name);
   VLOG(1) << "dll to unload found: " << module_name;
