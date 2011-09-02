@@ -65,6 +65,7 @@
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/c/private/ppb_flash_tcp_socket.h"
+#include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
@@ -93,6 +94,7 @@
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_net_connector_impl.h"
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
+#include "webkit/plugins/ppapi/ppb_gpu_blacklist_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_layer_compositor_impl.h"
@@ -279,6 +281,8 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Font_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
+  if (strcmp(name, PPB_GPU_BLACKLIST_INTERFACE) == 0)
+    return PPB_GpuBlacklist_Private_Impl::GetInterface();
   if (strcmp(name, PPB_GRAPHICS_2D_INTERFACE_1_0) == 0)
     return ::ppapi::thunk::GetPPB_Graphics2D_Thunk();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE_1_0) == 0)

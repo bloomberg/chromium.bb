@@ -257,6 +257,8 @@
         '../plugins/ppapi/ppb_flash_net_connector_impl.h',
         '../plugins/ppapi/ppb_font_impl.cc',
         '../plugins/ppapi/ppb_font_impl.h',
+        '../plugins/ppapi/ppb_gpu_blacklist_private_impl.cc',
+        '../plugins/ppapi/ppb_gpu_blacklist_private_impl.h',
         '../plugins/ppapi/ppb_graphics_2d_impl.cc',
         '../plugins/ppapi/ppb_graphics_2d_impl.h',
         '../plugins/ppapi/ppb_graphics_3d_impl.cc',

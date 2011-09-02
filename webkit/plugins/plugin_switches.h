@@ -10,6 +10,7 @@
 namespace switches {
 
 extern const char kDebugPluginLoading[];
+extern const char kDisablePepper3dForUntrustedUse[];
 extern const char kEnablePepperTesting[];
 
 #if defined(OS_WIN)

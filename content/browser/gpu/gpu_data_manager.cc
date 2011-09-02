@@ -24,6 +24,7 @@
 #include "content/gpu/gpu_info_collector.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_switches.h"
+#include "webkit/plugins/plugin_switches.h"
 
 namespace {
 
@@ -249,9 +250,12 @@ void GpuDataManager::AppendRendererCommandLine(
   DCHECK(command_line);
 
   uint32 flags = gpu_feature_flags_.flags();
-  if ((flags & GpuFeatureFlags::kGpuFeatureWebgl) &&
-      !command_line->HasSwitch(switches::kDisableExperimentalWebGL))
-    command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
+  if ((flags & GpuFeatureFlags::kGpuFeatureWebgl)) {
+    if (!command_line->HasSwitch(switches::kDisableExperimentalWebGL))
+      command_line->AppendSwitch(switches::kDisableExperimentalWebGL);
+    if (!command_line->HasSwitch(switches::kDisablePepper3dForUntrustedUse))
+      command_line->AppendSwitch(switches::kDisablePepper3dForUntrustedUse);
+  }
   if ((flags & GpuFeatureFlags::kGpuFeatureMultisampling) &&
       !command_line->HasSwitch(switches::kDisableGLMultisampling))
     command_line->AppendSwitch(switches::kDisableGLMultisampling);

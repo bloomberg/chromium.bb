@@ -18,6 +18,7 @@
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
@@ -73,6 +74,13 @@ bool ValidateAndCopyAttribList(nacl_abi_size_t in_attrib_list_count,
   for (nacl_abi_size_t i = 0; i < in_attrib_list_count; ++i)
     out_attrib_list[i] = in_attrib_list[i];
   return true;
+}
+
+bool IsGpuBlacklisted() {
+  static const PPB_GpuBlacklist_Private* interface =
+      static_cast<const PPB_GpuBlacklist_Private*>(
+          ppapi_proxy::GetBrowserInterfaceSafe(PPB_GPU_BLACKLIST_INTERFACE));
+  return interface->IsGpuBlacklisted();
 }
 
 }  // namespace
@@ -183,8 +191,12 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_CreateRaw(
     attrib_list = NULL;
   if (!ValidateAttribList(attrib_list_size, attrib_list))
     return;
-  *resource_id = ppapi_proxy::PPBGraphics3DTrustedInterface()->CreateRaw(
-      instance, share_context, attrib_list);
+  if (IsGpuBlacklisted()) {
+    *resource_id = ppapi_proxy::kInvalidResourceId;
+  } else {
+    *resource_id = ppapi_proxy::PPBGraphics3DTrustedInterface()->CreateRaw(
+        instance, share_context, attrib_list);
+  }
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
