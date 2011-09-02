@@ -26,6 +26,7 @@ BookmarkMenuBridge::BookmarkMenuBridge(Profile* profile,
                                        NSMenu *menu)
     : menu_is_valid_(false),
       root_node_(NULL),
+      off_the_side_node_start_index_(0),
       profile_(profile),
       controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this
                                                               andMenu:menu]) {
@@ -38,6 +39,7 @@ BookmarkMenuBridge::BookmarkMenuBridge(const BookmarkNode* root_node,
                                        NSMenu* menu)
     : menu_is_valid_(false),
       root_node_(root_node),
+      off_the_side_node_start_index_(0),
       profile_(profile),
       controller_([[BookmarkMenuCocoaController alloc] initWithBridge:this
                                                               andMenu:menu]) {
@@ -226,9 +228,16 @@ void BookmarkMenuBridge::AddNodeAsSubmenu(NSMenu* menu,
   AddNodeToMenu(node, other_submenu, add_extra_items);
 }
 
-// TODO(jrg): limit the number of bookmarks in the menubar?
-void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
+void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node,
+                                       NSMenu* menu,
                                        bool add_extra_items) {
+  AddNodeToMenuRecursive(node, menu, add_extra_items, 0);
+}
+
+void BookmarkMenuBridge::AddNodeToMenuRecursive(const BookmarkNode* node,
+                                                NSMenu* menu,
+                                                bool add_extra_items,
+                                                int recursion_depth) {
   int child_count = node->child_count();
   if (!child_count) {
     NSString* empty_string = l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU);
@@ -236,21 +245,26 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
                                                    action:nil
                                             keyEquivalent:@""] autorelease];
     [menu addItem:item];
-  } else for (int i = 0; i < child_count; i++) {
-    const BookmarkNode* child = node->GetChild(i);
-    NSString* title = [BookmarkMenuCocoaController menuTitleForNode:child];
-    NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title
-                                                   action:nil
-                                            keyEquivalent:@""] autorelease];
-    [menu addItem:item];
-    bookmark_nodes_[child] = item;
-    if (child->is_folder()) {
-      [item setImage:folder_image_];
-      NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
-      [menu setSubmenu:submenu forItem:item];
-      AddNodeToMenu(child, submenu, add_extra_items);  // recursive call
-    } else {
-      ConfigureMenuItem(child, item, false);
+  } else {
+    // If this is the first recursive pass, start adding children from the
+    // start index, which defaults to 0.
+    const int start = recursion_depth == 0 ? off_the_side_node_start_index_ : 0;
+    for (int i = start; i < child_count; i++) {
+      const BookmarkNode* child = node->GetChild(i);
+      NSString* title = [BookmarkMenuCocoaController menuTitleForNode:child];
+      NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title
+                                                     action:nil
+                                              keyEquivalent:@""] autorelease];
+      [menu addItem:item];
+      bookmark_nodes_[child] = item;
+      if (child->is_folder()) {
+        [item setImage:folder_image_];
+        NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
+        [menu setSubmenu:submenu forItem:item];
+        AddNodeToMenu(child, submenu, add_extra_items);  // recursive call
+      } else {
+        ConfigureMenuItem(child, item, false);
+      }
     }
   }
 

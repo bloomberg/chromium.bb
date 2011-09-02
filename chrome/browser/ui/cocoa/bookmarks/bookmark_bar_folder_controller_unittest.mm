@@ -135,3 +135,54 @@ TEST_F(BookmarkBarFolderControllerTest, NestedFolder) {
   EXPECT_NSEQ(@"subitem 1", [[subitems objectAtIndex:0] title]);
   EXPECT_NSEQ(@"subitem 2", [[subitems objectAtIndex:1] title]);
 }
+
+TEST_F(BookmarkBarFolderControllerTest, OffTheSide) {
+  // Create the model.
+  BookmarkModel* model = GetModel();
+  const BookmarkNode* root = model->bookmark_bar_node();
+
+  model->AddURL(root, root->child_count(), ASCIIToUTF16("item 1"),
+      GURL("http://example.com"));
+  model->AddURL(root, root->child_count(), ASCIIToUTF16("item 2"),
+      GURL("http://www.google.com/"));
+  model->AddURL(root, root->child_count(), ASCIIToUTF16("item 3"),
+      GURL("http://www.chromium.org/"));
+  model->AddURL(root, root->child_count(), ASCIIToUTF16("item 4"),
+      GURL("http://build.chromium.org/"));
+  model->AddURL(root, root->child_count(), ASCIIToUTF16("item 5"),
+      GURL("http://example2.com"));
+
+  // Create the controller and menu.
+  scoped_nsobject<BookmarkBarFolderController> bbfc(CreateController(root));
+  CloseFolderAfterDelay(bbfc, 0.1);
+  [bbfc openMenu];
+
+  NSArray* items = [GetMenu(bbfc) itemArray];
+  ASSERT_EQ(5u, [items count]);
+
+  EXPECT_NSEQ(@"item 1", [[items objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"item 2", [[items objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"item 3", [[items objectAtIndex:2] title]);
+  EXPECT_NSEQ(@"item 4", [[items objectAtIndex:3] title]);
+  EXPECT_NSEQ(@"item 5", [[items objectAtIndex:4] title]);
+
+  [bbfc setOffTheSideNodeStartIndex:1];
+  CloseFolderAfterDelay(bbfc, 0.1);
+  [bbfc openMenu];
+  items = [GetMenu(bbfc) itemArray];
+  ASSERT_EQ(4u, [items count]);
+  EXPECT_NSEQ(@"item 2", [[items objectAtIndex:0] title]);
+
+  [bbfc setOffTheSideNodeStartIndex:4];
+  CloseFolderAfterDelay(bbfc, 0.1);
+  [bbfc openMenu];
+  items = [GetMenu(bbfc) itemArray];
+  ASSERT_EQ(1u, [items count]);
+  EXPECT_NSEQ(@"item 5", [[items objectAtIndex:0] title]);
+
+  [bbfc setOffTheSideNodeStartIndex:0];
+  CloseFolderAfterDelay(bbfc, 0.1);
+  [bbfc openMenu];
+  items = [GetMenu(bbfc) itemArray];
+  EXPECT_EQ(5u, [items count]);
+}

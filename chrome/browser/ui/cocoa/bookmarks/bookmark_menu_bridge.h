@@ -78,6 +78,13 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   // Rebuilds a bookmark menu that's a submenu of another menu.
   void UpdateSubMenu(NSMenu* bookmark_menu);
 
+  // If this bridge is managing a menu for the "Off the Side" chevron button,
+  // this sets the index in the menu of the first node to display.
+  void set_off_the_side_node_start_index(size_t index) {
+    off_the_side_node_start_index_ = index;
+    InvalidateMenu();
+  }
+
   // I wish I had a "friend @class" construct.
   BookmarkModel* GetBookmarkModel();
   Profile* GetProfile();
@@ -107,7 +114,8 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
   // If |add_extra_items| is true, also adds extra menu items at bottom of
   // menu, such as "Open All Bookmarks".
   // TODO(jrg): add a counter to enforce maximum nodes added
-  void AddNodeToMenu(const BookmarkNode* node, NSMenu* menu,
+  void AddNodeToMenu(const BookmarkNode* node,
+                     NSMenu* menu,
                      bool add_extra_items);
 
   // Helper for adding an item to our bookmark menu. An item which has a
@@ -140,11 +148,21 @@ class BookmarkMenuBridge : public BookmarkModelObserver,
  private:
   friend class BookmarkMenuBridgeTest;
 
+  // Performs the actual work for AddNodeToMenu(), keeping count of the
+  // recursion depth.
+  void AddNodeToMenuRecursive(const BookmarkNode* node,
+                              NSMenu* menu,
+                              bool add_extra_items,
+                              int recursion_depth);
+
   // True iff the menu is up-to-date with the actual BookmarkModel.
   bool menu_is_valid_;
 
   // The root node of the menu.
   const BookmarkNode* root_node_;
+
+  // Index from which to start adding children from the model.
+  size_t off_the_side_node_start_index_;
 
   Profile* profile_;  // Weak.
   scoped_nsobject<BookmarkMenuCocoaController> controller_;

@@ -19,15 +19,11 @@ class BookmarkNode;
  @private
   BOOL empty_;  // is this an "empty" button placeholder button cell?
 
-  // Starting index of bookmarkFolder children that we care to use.
-  int startingChildIndex_;
-
   // Text color for title.
   scoped_nsobject<NSColor> textColor_;
 }
 
 @property(nonatomic, readwrite, assign) const BookmarkNode* bookmarkNode;
-@property(nonatomic, readwrite, assign) int startingChildIndex;
 
 // Create a button cell which draws with a theme.
 + (id)buttonCellForNode:(const BookmarkNode*)node

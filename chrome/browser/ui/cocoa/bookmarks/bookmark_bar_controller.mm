@@ -537,9 +537,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
   showFolderMenus_ = !showFolderMenus_;
 
-  if (sender == offTheSideButton_)
-    [[sender cell] setStartingChildIndex:displayedButtonCount_];
-
   // Toggle presentation of bar folder menus.
   [folderTarget_ openBookmarkFolderFromButton:sender];
 }
@@ -768,9 +765,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Configure the off-the-side button (e.g. specify the node range,
 // check if we should enable or disable it, etc).
 - (void)configureOffTheSideButtonContentsAndVisibility {
-  [[offTheSideButton_ cell] setStartingChildIndex:displayedButtonCount_];
   [[offTheSideButton_ cell]
-   setBookmarkNode:bookmarkModel_->bookmark_bar_node()];
+      setBookmarkNode:bookmarkModel_->bookmark_bar_node()];
   int bookmarkChildren = bookmarkModel_->bookmark_bar_node()->child_count();
   if (bookmarkChildren > displayedButtonCount_) {
     [offTheSideButton_ setHidden:NO];
@@ -2326,6 +2322,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
                                                   bookmarkModel:bookmarkModel_
                                                   barController:self];
   [folderController_ autorelease];
+
+  // If this is for the off-the-side menu, set the display count.
+  if (parentButton == offTheSideButton_)
+    [folderController_ setOffTheSideNodeStartIndex:displayedButtonCount_];
+
   [folderController_ openMenu];
 
   // No longer need to hold the lock; the folderController_ now owns it.

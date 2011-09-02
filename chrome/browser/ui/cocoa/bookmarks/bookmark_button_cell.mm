@@ -23,8 +23,6 @@
 
 @implementation BookmarkButtonCell
 
-@synthesize startingChildIndex = startingChildIndex_;
-
 + (id)buttonCellForNode:(const BookmarkNode*)node
             contextMenu:(NSMenu*)contextMenu
                cellText:(NSString*)cellText

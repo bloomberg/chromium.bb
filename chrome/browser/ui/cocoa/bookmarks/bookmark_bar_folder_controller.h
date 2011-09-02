@@ -49,6 +49,11 @@ class BookmarkModel;
 // Closes the menu.
 - (void)closeMenu;
 
+// For the "Off The Side" chevron menu, this sets the index in the bookmark_bar
+// node at which the folder should start showing menu items. Forwarded to the
+// bridge.
+- (void)setOffTheSideNodeStartIndex:(size_t)index;
+
 @end
 
 @interface BookmarkBarFolderController (ExposedForTesting)

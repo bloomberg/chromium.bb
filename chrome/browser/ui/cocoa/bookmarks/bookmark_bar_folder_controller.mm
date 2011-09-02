@@ -73,6 +73,10 @@
                  inModes:modes];
 }
 
+- (void)setOffTheSideNodeStartIndex:(size_t)index {
+  menuBridge_->set_off_the_side_node_start_index(index);
+}
+
 - (void)bookmarkMenuDidClose:(BookmarkMenuCocoaController*)controller {
   // Inform the bookmark bar that the folder has closed on the next iteration
   // of the event loop. If the menu was closed via a click event on a folder
