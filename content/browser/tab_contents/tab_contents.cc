@@ -140,7 +140,6 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
 
 void MakeNavigateParams(const NavigationEntry& entry,
                         const NavigationController& controller,
-                        TabContentsDelegate* delegate,
                         NavigationController::ReloadType reload_type,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.page_id();
@@ -154,10 +153,6 @@ void MakeNavigateParams(const NavigationEntry& entry,
   params->navigation_type =
       GetNavigationType(controller.browser_context(), entry, reload_type);
   params->request_time = base::Time::Now();
-  params->extra_headers = entry.extra_headers();
-
-  if (delegate)
-    delegate->AddNavigationHeaders(params->url, &params->extra_headers);
 }
 
 }  // namespace
@@ -592,8 +587,11 @@ bool TabContents::NavigateToEntry(
 
   // Navigate in the desired RenderViewHost.
   ViewMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(entry, controller_, delegate_, reload_type,
-                     &navigate_params);
+  MakeNavigateParams(entry, controller_, reload_type, &navigate_params);
+  if (delegate_) {
+    navigate_params.extra_headers =
+        delegate_->GetNavigationHeaders(navigate_params.url);
+  }
   dest_render_view_host->Navigate(navigate_params);
 
   if (entry.page_id() == -1) {

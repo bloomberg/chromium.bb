@@ -44,7 +44,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_browser_process.h"
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
@@ -1881,23 +1880,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
       }
     }
   }
-
-  bool google_search_homepage = false;
-  PrefService* pref_service = profile->GetPrefs();
-  if (pref_service) {
-    std::string homepage = pref_service->GetString(prefs::kHomePage);
-    google_search_homepage =
-        homepage == GoogleURLTracker::kDefaultGoogleHomepage;
-  }
-
+  // TODO(rogerta): For now, always passing false for google_homeapge_default
+  // argument, so that functionality is disabled.  A follow up CL will set it
+  // correctly.
   RLZTracker::InitRlzDelayed(is_first_run, master_prefs.ping_delay,
-                             google_search_default, google_search_homepage);
-
-  // Prime the RLZ cache for the home page access point so that its avaiable
-  // for the startup page if needed (i.e., when the startup page is set to
-  // the home page).
-  RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, NULL);
-
+                             google_search_default, false);
 #endif  // GOOGLE_CHROME_BUILD
 #endif  // OS_WIN
 

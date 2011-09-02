@@ -33,33 +33,31 @@ class MockTabContentsDelegate : public TabContentsDelegate {
   }
 
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags) OVERRIDE {}
+                                      unsigned changed_flags) {}
 
-  virtual void AddNavigationHeaders(
-      const GURL& url, std::string* headers) OVERRIDE {
+  virtual std::string GetNavigationHeaders(const GURL& url) {
+    return "";
   }
 
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE {}
+                              bool user_gesture) {}
 
-  virtual void ActivateContents(TabContents* contents) OVERRIDE {}
+  virtual void ActivateContents(TabContents* contents) {}
 
-  virtual void DeactivateContents(TabContents* contents) OVERRIDE {}
+  virtual void DeactivateContents(TabContents* contents) {}
 
-  virtual void LoadingStateChanged(TabContents* source) OVERRIDE {}
+  virtual void LoadingStateChanged(TabContents* source) {}
 
-  virtual void LoadProgressChanged(double progress) OVERRIDE {}
+  virtual void LoadProgressChanged(double progress) {}
 
-  virtual void CloseContents(TabContents* source) OVERRIDE {}
+  virtual void CloseContents(TabContents* source) {}
 
-  virtual void MoveContents(TabContents* source,
-                            const gfx::Rect& pos) OVERRIDE {
-  }
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
 
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE {}
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 };
 
 TEST(TabContentsDelegateTest, UnregisterInDestructor) {

@@ -108,9 +108,6 @@ class PageTransition {
     // User used the address bar to trigger this navigation.
     FROM_ADDRESS_BAR = 0x02000000,
 
-    // User is navigating to the home page.
-    HOME_PAGE = 0x04000000,
-
     // The beginning of a navigation chain.
     CHAIN_START = 0x10000000,
 

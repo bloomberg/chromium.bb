@@ -318,14 +318,6 @@ class NavigationEntry {
     return ssl_;
   }
 
-  // Extra headers (separated by \n) to send during the request.
-  void set_extra_headers(const std::string& extra_headers) {
-    extra_headers_ = extra_headers;
-  }
-  const std::string& extra_headers() const {
-    return extra_headers_;
-  }
-
   // Page-related helpers ------------------------------------------------------
 
   // Returns the title to be displayed on the tab. This could be the title of
@@ -425,11 +417,8 @@ class NavigationEntry {
   bool has_post_data_;
   RestoreType restore_type_;
 
-  // This member is not persisted with sesssion restore.
-  std::string extra_headers_;
-
   // This is a cached version of the result of GetTitleForDisplay. It prevents
-  // us from having to do URL formatting on the URL every time the title is
+  // us from having to do URL formatting on the URL evey time the title is
   // displayed. When the URL, virtual URL, or title is set, this should be
   // cleared to force a refresh.
   mutable string16 cached_display_title_;

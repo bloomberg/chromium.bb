@@ -176,13 +176,6 @@ class NavigationController {
   void LoadURL(const GURL& url, const GURL& referrer,
                PageTransition::Type type);
 
-  // Loads the specified URL, specifying extra http headers to add to the
-  // request.  Extra headers are separated by \n.
-  void LoadURLWithHeaders(const GURL& url,
-                          const GURL& referrer,
-                          PageTransition::Type type,
-                          const std::string& extra_headers);
-
   // Loads the current page if this NavigationController was restored from
   // history and the current page has not loaded yet.
   void LoadIfNecessary();
@@ -334,13 +327,11 @@ class NavigationController {
   bool IsInitialNavigation();
 
   // Creates navigation entry and translates the virtual url to a real one.
-  // Used when navigating to a new URL using LoadURL.  Extra headers are
-  // separated by \n.
+  // Used when navigating to a new URL using LoadURL.
   static NavigationEntry* CreateNavigationEntry(
       const GURL& url,
       const GURL& referrer,
       PageTransition::Type transition,
-      const std::string& extra_headers,
       content::BrowserContext* browser_context);
 
  private:

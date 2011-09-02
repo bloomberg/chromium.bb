@@ -181,8 +181,7 @@ class InstantLoader::TabContentsDelegateImpl
   // TabContentsDelegate:
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) OVERRIDE;
-  virtual void AddNavigationHeaders(const GURL& url,
-                                    std::string* headers) OVERRIDE;
+  virtual std::string GetNavigationHeaders(const GURL& url) OVERRIDE;
   virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
   virtual void WillShowConstrainedWindow(TabContents* source) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
@@ -413,11 +412,12 @@ void InstantLoader::TabContentsDelegateImpl::NavigationStateChanged(
   }
 }
 
-void InstantLoader::TabContentsDelegateImpl::AddNavigationHeaders(
-    const GURL& url,
-    std::string* headers) {
+std::string InstantLoader::TabContentsDelegateImpl::GetNavigationHeaders(
+    const GURL& url) {
+  std::string header;
   net::HttpUtil::AppendHeaderIfMissing(kPreviewHeader, kPreviewHeaderValue,
-                                       headers);
+                                       &header);
+  return header;
 }
 
 bool InstantLoader::TabContentsDelegateImpl::ShouldFocusConstrainedWindow() {

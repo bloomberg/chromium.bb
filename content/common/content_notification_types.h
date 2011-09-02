@@ -43,8 +43,8 @@ enum NotificationType {
   //
   // This notification is called after the pending entry is created, but
   // before we actually try to navigate. The source will be the
-  // NavigationController that owns the pending entry, and the details
-  // will be a NavigationEntry.
+  // NavigationController that owns the pending entry, and there are no
+  // details.
   NOTIFICATION_NAV_ENTRY_PENDING,
 
   // A new non-pending navigation entry has been created. This will

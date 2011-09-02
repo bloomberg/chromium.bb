@@ -221,7 +221,6 @@ bool NavigationController::IsInitialNavigation() {
 // static
 NavigationEntry* NavigationController::CreateNavigationEntry(
     const GURL& url, const GURL& referrer, PageTransition::Type transition,
-    const std::string& extra_headers,
     content::BrowserContext* browser_context) {
   // Allow the browser URL handler to rewrite the URL. This will, for example,
   // remove "view-source:" from the beginning of the URL to get the URL that
@@ -243,7 +242,6 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
   entry->set_virtual_url(url);
   entry->set_user_typed_url(url);
   entry->set_update_virtual_url_with_url(reverse_on_redirect);
-  entry->set_extra_headers(extra_headers);
   return entry;
 }
 
@@ -275,7 +273,7 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
   NotificationService::current()->Notify(
       content::NOTIFICATION_NAV_ENTRY_PENDING,
       Source<NavigationController>(this),
-      Details<NavigationEntry>(entry));
+      NotificationService::NoDetails());
   NavigateToPendingEntry(NO_RELOAD);
 }
 
@@ -485,21 +483,10 @@ void NavigationController::AddTransientEntry(NavigationEntry* entry) {
 
 void NavigationController::LoadURL(const GURL& url, const GURL& referrer,
                                    PageTransition::Type transition) {
-  LoadURLWithHeaders(url, referrer, transition, std::string());
-}
-
-// TODO(rogerta): Remove this call and put the extra_headers argument directly
-// in LoadURL().
-void NavigationController::LoadURLWithHeaders(
-    const GURL& url,
-    const GURL& referrer,
-    PageTransition::Type transition,
-    const std::string& extra_headers) {
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
   NavigationEntry* entry = CreateNavigationEntry(url, referrer, transition,
-                                                 extra_headers,
                                                  browser_context_);
 
   LoadEntry(entry);

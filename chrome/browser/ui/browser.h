@@ -1042,9 +1042,6 @@ class Browser : public TabHandlerDelegate,
   // Updates commands that affect the bookmark bar.
   void UpdateCommandsForBookmarkBar();
 
-  // Set the preference that indicates that the home page has been changed.
-  void MarkHomePageAsChanged(PrefService* pref_service);
-
   // Update commands whose state depends on whether the window is in fullscreen
   // mode.
   void UpdateCommandsForFullscreenMode(bool is_fullscreen);
