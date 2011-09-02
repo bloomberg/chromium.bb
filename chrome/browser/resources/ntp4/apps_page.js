@@ -200,6 +200,15 @@ cr.define('ntp4', function() {
         imgDiv.addEventListener('click', this.onClick_.bind(this));
         this.imgDiv_ = imgDiv;
         appContents.appendChild(imgDiv);
+        this.appImgContainer_.style.position = 'absolute';
+        this.appImgContainer_.style.bottom = '10px';
+        this.appImgContainer_.style.left = '10px';
+        var stripeDiv = this.ownerDocument.createElement('div');
+        stripeDiv.className = 'color-stripe';
+        imgDiv.appendChild(stripeDiv);
+
+        chrome.send('getAppIconDominantColor',
+            [this.appData_.icon_small, 'ntp4.setAppFaviconDominantColor']);
       } else {
         appImgContainer.addEventListener('click', this.onClick_.bind(this));
         appContents.appendChild(appImgContainer);
@@ -228,6 +237,14 @@ cr.define('ntp4', function() {
         this.createAppsPromoExtras_();
 
       this.addEventListener('mousedown', this.onMousedown_, true);
+    },
+
+    /**
+     * Sets the color of the favicon dominant color bar.
+     * @param {string} color The css-parsable value for the color.
+     */
+    set stripeColor(color) {
+      this.querySelector('.color-stripe').style.backgroundColor = color;
     },
 
     /**
@@ -307,7 +324,7 @@ cr.define('ntp4', function() {
     setBounds: function(size, x, y) {
       var imgSize = size * APP_IMG_SIZE_FRACTION;
       this.appImgContainer_.style.width = this.appImgContainer_.style.height =
-          this.useSmallIcon_ ? '32px' : imgSize + 'px';
+          this.useSmallIcon_ ? '16px' : imgSize + 'px';
       if (this.useSmallIcon_) {
         // 3/4 is the ratio of 96px to 128px (the used height and full height
         // of icons in apps).
@@ -614,11 +631,24 @@ cr.define('ntp4', function() {
     chrome.send('launchApp', [appId, APP_LAUNCH.NTP_APP_RE_ENABLE]);
   };
 
+  /**
+   * Set the dominant color for an app tile.  This is the callback method
+   * from a request made when the tile was created.
+   * @param {number} id The ID of the tile.
+   * @param {string} color The color represented as a CSS string.
+   */
+  function setAppFaviconDominantColor(id, color) {
+    var tile = $(id);
+    if (tile)
+      tile.stripeColor = color;
+  };
+
   return {
     APP_LAUNCH: APP_LAUNCH,
     AppsPage: AppsPage,
     appsPrefChangeCallback: appsPrefChangeCallback,
     launchAppAfterEnable: launchAppAfterEnable,
+    setAppFaviconDominantColor: setAppFaviconDominantColor
   };
 });
 

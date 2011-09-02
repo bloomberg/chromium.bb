@@ -13,11 +13,13 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "content/browser/webui/web_ui.h"
 
+class ExtensionIconColorManager;
 class GURL;
 class Profile;
 
 namespace base {
 class ListValue;
+class StringValue;
 }
 
 class FaviconWebUIHandler : public WebUIMessageHandler {
@@ -29,11 +31,16 @@ class FaviconWebUIHandler : public WebUIMessageHandler {
   virtual void RegisterMessages() OVERRIDE;
 
   void HandleGetFaviconDominantColor(const base::ListValue* args);
+  void HandleGetAppIconDominantColor(const base::ListValue* args);
+
+  // Callback getting signal that an app icon is loaded.
+  void NotifyAppIconReady(const std::string& extension_id);
 
  private:
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(FaviconService::Handle request_handle,
                               history::FaviconData favicon);
+  base::StringValue* GetDominantColor(scoped_refptr<RefCountedMemory> png);
 
   CancelableRequestConsumerTSimple<int> consumer_;
 
@@ -44,6 +51,12 @@ class FaviconWebUIHandler : public WebUIMessageHandler {
   // A mapping of favicon ID to callback names for requests that are
   // in-progress.
   std::map<int, std::string> callbacks_map_;
+
+  // A mapping of extension ID to callback name for app requests in progress.
+  std::map<std::string, std::string> app_callbacks_map_;
+
+  // Manage retrieval of icons from apps.
+  scoped_ptr<ExtensionIconColorManager> app_icon_color_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconWebUIHandler);
 };
