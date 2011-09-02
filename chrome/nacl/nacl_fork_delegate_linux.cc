@@ -46,6 +46,8 @@ void NaClForkDelegate::Init(const bool sandboxed,
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
   fds_to_map.push_back(std::make_pair(sandboxdesc, kNaClSandboxDescriptor));
   ready_ = false;
+  return;  // Disable nacl_helper while fixing some issues.
+
   FilePath helper_exe;
   FilePath helper_bootstrap_exe;
   if (PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe) &&
