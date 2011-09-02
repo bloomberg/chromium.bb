@@ -117,6 +117,8 @@ readonly TC_BUILD="${TC_ROOT}/hg-build-${LIBMODE}"
 # The location of sources (absolute)
 
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
+readonly TC_SRC_CLANG="${TC_SRC}/clang"
+readonly TC_SRC_DRAGONEGG="${TC_SRC}/dragonegg"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_LLVM_GCC="${TC_SRC_UPSTREAM}/llvm-gcc"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
@@ -212,6 +214,11 @@ fi
 
 # Current milestones in each repo
 readonly UPSTREAM_REV=12c5551e8e38
+
+# Most of the time, these should be the same.
+readonly     CLANG_REV=138551
+readonly DRAGONEGG_REV=138551
+
 readonly NEWLIB_REV=57d709868c78
 readonly BINUTILS_REV=2f1d9c8ef12d
 readonly COMPILER_RT_REV=1a3a6ffb31ea
@@ -219,6 +226,8 @@ readonly GOOGLE_PERFTOOLS_REV=ad820959663d
 
 # Repositories
 readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
+readonly REPO_CLANG="http://llvm.org/svn/llvm-project/cfe/trunk"
+readonly REPO_DRAGONEGG="http://llvm.org/svn/llvm-project/dragonegg/trunk"
 readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
@@ -317,8 +326,10 @@ hg-info-all() {
   hg-info "${TC_SRC_GOOGLE_PERFTOOLS}" ${GOOGLE_PERFTOOLS_REV}
 }
 
-hg-update-all() {
+update-all() {
   hg-update-upstream
+  svn-update-clang
+  svn-update-dragonegg
   hg-update-newlib
   hg-update-binutils
   hg-update-compiler-rt
@@ -356,6 +367,36 @@ hg-assert-safe-to-update() {
   exit -1
 }
 
+svn-assert-safe-to-update() {
+  local name="$1"
+  local dir="$2"
+  local rev="$3"
+  local defstr=$(echo "${name}" | tr '[a-z]-' '[A-Z]_')
+
+  if ! svn-has-changes "${dir}"; then
+    return 0
+  fi
+
+  if svn-at-revision "${dir}" "${rev}" ; then
+    return 0
+  fi
+
+  Banner \
+    "                         ERROR                          " \
+    "                                                        " \
+    " hg/${name} needs to be updated to the stable revision  " \
+    " but has local modifications.                           " \
+    "                                                        " \
+    " If your repository is behind stable, update it using:  " \
+    "                                                        " \
+    "        cd hg/${name}; svn update -r ${rev}             " \
+    "        (you may need to resolve conflicts)             " \
+    "                                                        " \
+    " If your repository is ahead of stable, then modify:    " \
+    "   ${defstr}_REV   (in tools/llvm/utman.sh)             " \
+    " to suppress this error message.                        "
+  exit -1
+}
 
 hg-bot-sanity() {
   local name="$1"
@@ -374,6 +415,23 @@ hg-bot-sanity() {
     hg-checkout-${name}
   fi
 }
+
+svn-bot-sanity() {
+  local name="$1"
+  local dir="$2"
+
+  if ! ${UTMAN_BUILDBOT} ; then
+    return 0
+  fi
+
+  if svn-has-changes "${dir}" ; then
+    Banner "WARNING: hg/${name} is in an illegal state." \
+           "         Wiping and trying again."
+    rm -rf "${dir}"
+    svn-checkout-${name}
+  fi
+}
+
 
 hg-update-common() {
   local name="$1"
@@ -396,8 +454,37 @@ hg-update-common() {
   fi
 }
 
+svn-update-common() {
+  local name="$1"
+  local rev="$2"
+  local dir="$3"
+
+  # If this is a buildbot, do sanity checks here.
+  svn-bot-sanity "${name}" "${dir}"
+
+  # Make sure it is safe to update
+  svn-assert-safe-to-update "${name}" "${dir}" "${rev}"
+
+  if svn-at-revision "${dir}" "${rev}" ; then
+    StepBanner "SVN-UPDATE" "Repo ${name} already at ${rev}"
+  else
+    StepBanner "SVN-UPDATE" "Updating ${name} to ${rev}"
+    svn-update "${dir}" ${rev}
+  fi
+}
+
 hg-update-upstream() {
+  llvm-unlink-clang
   hg-update-common "upstream" ${UPSTREAM_REV} "${TC_SRC_UPSTREAM}"
+  llvm-link-clang
+}
+
+svn-update-clang() {
+  svn-update-common "clang" ${CLANG_REV} "${TC_SRC_CLANG}"
+}
+
+svn-update-dragonegg() {
+  svn-update-common "dragonegg" ${DRAGONEGG_REV} "${TC_SRC_DRAGONEGG}"
 }
 
 #@ hg-update-newlib      - Update NEWLIB To the stable revision
@@ -459,11 +546,13 @@ hg-pull-google-perftools() {
   hg-pull "${TC_SRC_GOOGLE_PERFTOOLS}"
 }
 
-#@ hg-checkout-all       - check out mercurial repos needed to build toolchain
+#@ checkout-all          - check out repos needed to build toolchain
 #@                          (skips repos which are already checked out)
-hg-checkout-all() {
-  StepBanner "HG-CHECKOUT-ALL"
+checkout-all() {
+  StepBanner "CHECKOUT-ALL"
   hg-checkout-upstream
+  svn-checkout-clang
+  svn-checkout-dragonegg
   hg-checkout-binutils
   hg-checkout-newlib
   hg-checkout-compiler-rt
@@ -472,6 +561,15 @@ hg-checkout-all() {
 
 hg-checkout-upstream() {
   hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
+  llvm-link-clang
+}
+
+svn-checkout-clang() {
+  svn-checkout "${REPO_CLANG}" "${TC_SRC_CLANG}" ${CLANG_REV}
+}
+
+svn-checkout-dragonegg() {
+  svn-checkout "${REPO_DRAGONEGG}" "${TC_SRC_DRAGONEGG}" ${DRAGONEGG_REV}
 }
 
 hg-checkout-binutils() {
@@ -584,10 +682,10 @@ everything() {
 
   mkdir -p "${PNACL_ROOT}"
 
-  hg-checkout-all
+  checkout-all
 
   StepBanner "Updating upstreaming repository"
-  hg-update-all
+  update-all
   everything-post-hg
 }
 
@@ -910,6 +1008,7 @@ llvm() {
   assert-dir "${srcdir}" "You need to checkout LLVM."
 
   if llvm-needs-configure; then
+    llvm-clean
     llvm-configure
   else
     SkipBanner "LLVM" "configure"
@@ -930,6 +1029,18 @@ llvm-clean() {
   local objdir="${TC_BUILD_LLVM}"
   rm -rf ${objdir}
   mkdir -p ${objdir}
+}
+
+#+ llvm-link-clang       - Add tools/clang symlink into llvm directory
+llvm-link-clang() {
+  ln -sf "../../../clang" "${TC_SRC_LLVM}"/tools/clang
+}
+
+#+ llvm-unlink-clang     - Remove tools/clang symlink from llvm directory
+llvm-unlink-clang() {
+  if [ -d "${TC_SRC_LLVM}" ]; then
+    rm -f "${TC_SRC_LLVM}"/tools/clang
+  fi
 }
 
 # Default case - Optimized configure

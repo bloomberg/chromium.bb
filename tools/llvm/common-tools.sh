@@ -255,14 +255,19 @@ hg-info() {
   spopd
 }
 
+svn-at-revision() {
+  local dir="$1"
+  local rev="$2"
+  local repo_rev=$(svn-get-revision "${dir}")
+  [ "${repo_rev}" == "${rev}" ]
+  return $?
+}
+
 hg-at-revision() {
   local dir="$1"
   local rev="$2"
-
-  spushd "${dir}"
-  local HGREV=($(hg identify | tr -d '+'))
-  spopd
-  [ "${HGREV[0]}" == "${rev}" ]
+  local repo_rev=$(hg-get-revision "${dir}")
+  [ "${repo_rev}" == "${rev}" ]
   return $?
 }
 
@@ -387,14 +392,24 @@ svn-get-revision() {
   echo "${rev}"
 }
 
+#+ hg-get-revision <dir>
+hg-get-revision() {
+  local dir="$1"
+  spushd "${dir}"
+  local HGREV=($(hg identify | tr -d '+'))
+  spopd
+  echo "${HGREV[0]}"
+}
+
 #+ svn-checkout <url> <repodir> - Checkout an SVN repository
 svn-checkout() {
   local url="$1"
   local dir="$2"
+  local rev="$3"
 
   if [ ! -d "${dir}" ]; then
     StepBanner "SVN-CHECKOUT" "Checking out ${url}"
-    RunWithLog "svn-checkout" svn co "${url}" "${dir}"
+    RunWithLog "svn-checkout" svn co "${url}" "${dir}" -r "${rev}"
   else
     SkipBanner "SVN-CHECKOUT" "Using existing SVN repository for ${url}"
   fi
@@ -417,16 +432,21 @@ svn-update() {
   spopd
 }
 
-#+ svn-assert-no-changes <dir> - Assert an svn repo has no local changes
-svn-assert-no-changes() {
-  local dir=$1
+svn-has-changes() {
+  local dir="$1"
   spushd "${dir}"
   local STATUS=$(svn status)
-  local REPONAME=$(basename $(pwd))
   spopd
+  [ "${STATUS}" != "" ]
+  return $?
+}
 
-  if [ "${STATUS}" != "" ]; then
-    Banner "ERROR: Repository ${REPONAME} has local changes"
+#+ svn-assert-no-changes <dir> - Assert an svn repo has no local changes
+svn-assert-no-changes() {
+  local dir="$1"
+  if svn-has-changes "${dir}" ; then
+    local name=$(basename "${dir}")
+    Banner "ERROR: Repository ${name} has local changes"
     exit -1
   fi
 }
