@@ -45,8 +45,8 @@ var initialPreviewRequestID = -1;
 // True when a pending print file request exists.
 var hasPendingPrintDocumentRequest = false;
 
-// True when a pending print ready document request exists.
-var hasPendingPrintReadyDocumentRequest = false;
+// True when the complete metafile for the previewed doc is ready.
+var isPrintReadyMetafileReady = false;
 
 // True when preview tab is hidden.
 var isTabHidden = false;
@@ -428,7 +428,7 @@ function getSelectedPrinterName() {
  * called once the preview loads.
  */
 function requestToPrintDocument() {
-  hasPendingPrintDocumentRequest = hasPendingPrintReadyDocumentRequest;
+  hasPendingPrintDocumentRequest = !isPrintReadyMetafileReady;
   var printToPDF = getSelectedPrinterName() == PRINT_TO_PDF;
 
   if (hasPendingPrintDocumentRequest) {
@@ -516,7 +516,7 @@ function requestPrintPreview() {
 
   printSettings.save();
   layoutSettings.updateState();
-  hasPendingPrintReadyDocumentRequest = true;
+  isPrintReadyMetafileReady = false;
 
   var totalPageCount = pageSettings.totalPageCount;
   if (!previewModifiable && totalPageCount > 0)
@@ -924,6 +924,7 @@ function reloadPreviewPages(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
   hasPendingPreviewRequest = false;
+  isPrintReadyMetafileReady = true;
 
   cr.dispatchSimpleEvent(document, 'updatePrintButton');
   hideLoadingAnimation();
@@ -980,7 +981,7 @@ function updatePrintPreview(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
   hasPendingPreviewRequest = false;
-  hasPendingPrintReadyDocumentRequest = false;
+  isPrintReadyMetafileReady = true;
 
   if (!previewModifiable) {
     // If the preview is not modifiable the plugin has not been created yet.
