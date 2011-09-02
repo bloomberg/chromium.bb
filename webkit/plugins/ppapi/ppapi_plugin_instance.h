@@ -361,6 +361,11 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // an entire document rather than an embed tag.
   bool full_frame_;
 
+  // Indicates if we've ever sent a didChangeView to the plugin. This ensure we
+  // always send an initial notification, even if the position and clip are the
+  // same as the default values.
+  bool sent_did_change_view_;
+
   // Position in the viewport (which moves as the page is scrolled) of this
   // plugin. This will be a 0-sized rectangle if the plugin has not yet been
   // laid out.

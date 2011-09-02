@@ -42,7 +42,10 @@ function setupTests(tester, plugin) {
   });
 
   tester.addAsyncTest('PPP_Instance::DidChangeView', function(test) {
-    addTestListeners(3, test, 'DidChangeView');
+    // The .cc file hardcodes an expected 15x20 size.
+    plugin.width = 15;
+    plugin.height = 20;
+    addTestListener(test, 'DidChangeView');
   });
 
   tester.addAsyncTest('PPP_Instance::DidChangeFocus', function(test) {

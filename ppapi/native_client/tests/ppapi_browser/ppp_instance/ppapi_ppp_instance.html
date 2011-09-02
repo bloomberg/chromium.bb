@@ -17,8 +17,9 @@
              name="nacl_module"
              src="ppapi_ppp_instance.nmf"
              style="background-color:#AAAAAA"
-             width="15" height="20" />
-    <!-- NOTE: PPP_Instance::DidChangeView verifies these exact dimenstions -->
+             width="20" height="20" />
+    <!-- NOTE: The width and height must be different from the values checked
+         in PPP_Instance::DidChangeView so when we set them, they change -->
     </div>
     <br>
     <script type="text/javascript">
