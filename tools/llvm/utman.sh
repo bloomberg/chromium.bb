@@ -214,7 +214,7 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=12c5551e8e38
+readonly UPSTREAM_REV=bf53843a6d61
 
 # Most of the time, these should be the same.
 readonly     CLANG_REV=138551
