@@ -869,6 +869,23 @@
    fun:PORT_ArenaAlloc_Util
 }
 {
+   # PR_GetCurrentThread allocates a PRThread structure and stores it in
+   # thread-specific data.  The PRThread structure is freed by the
+   # PR_DetachThread call in CertVerifierWorker::Run or when the thread
+   # terminates.  Since we do not shut down worker threads, the PRThread
+   # structure created for a worker thread may be leaked at Chrome shutdown
+   # if the worker thread did not make it to the PR_DetachThread call.
+   bug_32624
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PR_GetCurrentThread
+   ...
+   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net18CertVerifierWorker3RunEv
+}
+{
    # Histograms are used on un-joined threads, and can't be deleted atexit.
    Histograms via FactoryGet including Linear Custom Boolean and Basic
    Memcheck:Leak
@@ -1904,23 +1921,6 @@
    fun:_ZNSt6vectorI14CERTValInParamSaIS0_EE20_M_allocate_and_copyIPS0_EES4_jT_S5_
    fun:_ZNSt6vectorI14CERTValInParamSaIS0_EE7reserveEj
    fun:_ZN3net12_GLOBAL__N_114PKIXVerifyCertEP18CERTCertificateStrbPK9SECOidTagiP15CERTValOutParam
-   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-   fun:_ZN3net18CertVerifierWorker3RunEv
-}
-{
-   bug_32624_f
-   Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
-   fun:PR_GetCurrentThread
-   fun:PR_SetError
-   fun:PORT_SetError_Util
-   fun:cert_FindExtensionByOID
-   fun:cert_FindExtension
-   fun:CERT_FindCertExtension
-   fun:cert_VerifySubjectAltName
-   fun:CERT_VerifyCertName
    fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
    fun:_ZN3net18CertVerifierWorker3RunEv
