@@ -146,7 +146,10 @@ ExtensionTtsController::ExtensionTtsController()
 }
 
 ExtensionTtsController::~ExtensionTtsController() {
-  FinishCurrentUtterance();
+  if (current_utterance_) {
+    current_utterance_->Finish();
+    delete current_utterance_;
+  }
   ClearUtteranceQueue();
 }
 
