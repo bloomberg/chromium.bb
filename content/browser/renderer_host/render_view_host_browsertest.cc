@@ -50,9 +50,7 @@ class ExecuteNotificationObserver : public NotificationObserver {
 
 class RenderViewHostTest : public InProcessBrowserTest {
  public:
-  RenderViewHostTest() : last_execute_id_(0) {
-    EnableDOMAutomation();
-  }
+  RenderViewHostTest() : last_execute_id_(0) {}
 
   void ExecuteJavascriptAndGetValue(const char* script,
                                     ExecuteNotificationObserver* out_result) {
@@ -71,17 +69,6 @@ class RenderViewHostTest : public InProcessBrowserTest {
     EXPECT_EQ(execute_id, out_result->id());
     ASSERT_TRUE(out_result->value());
     last_execute_id_ = execute_id;
-  }
-
- protected:
-  bool GetCreatedWindowName(const GURL& url,
-                            const wchar_t* function,
-                            std::string* window_name) {
-    ui_test_utils::NavigateToURL(browser(), url);
-
-    return ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedTabContents()->render_view_host(),
-      L"", function, window_name);
   }
 
  private:
@@ -248,7 +235,7 @@ class RenderViewHostTestTabContentsObserver : public TabContentsObserver {
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
   ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestTabContentsObserver observer(
-    browser()->GetSelectedTabContents());
+      browser()->GetSelectedTabContents());
 
   GURL test_url = test_server()->GetURL("files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -256,26 +243,4 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
   EXPECT_EQ(test_server()->host_port_pair().ToString(),
             observer.observed_socket_address().ToString());
   EXPECT_EQ(1, observer.navigation_count());
-}
-
-// Regression test for http://crbug.com/88129
-IN_PROC_BROWSER_TEST_F(RenderViewHostTest, WindowOpen1) {
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL url(test_server()->GetURL("files/window.open.blank.html"));
-  std::string window_name;
-  ASSERT_TRUE(GetCreatedWindowName(url, L"openWindow1();", &window_name));
-
-  EXPECT_EQ(window_name, "blank") << "Actual Window Name: " << window_name;
-}
-
-// Regression test for http://crbug.com/88129
-IN_PROC_BROWSER_TEST_F(RenderViewHostTest, WindowOpen2) {
-  ASSERT_TRUE(test_server()->Start());
-
-  GURL url(test_server()->GetURL("files/window.open.blank.html"));
-  std::string window_name;
-  ASSERT_TRUE(GetCreatedWindowName(url, L"openWindow2();", &window_name));
-
-  EXPECT_EQ(window_name, "") << "Actual Window Name: " << window_name;
 }

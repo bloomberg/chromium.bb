@@ -422,6 +422,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
   g_view_map.Get().insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
+  if (!frame_name.empty())
+    webview()->mainFrame()->setName(frame_name);
   webview()->settings()->setMinimumTimerInterval(
       is_hidden() ? webkit_glue::kBackgroundTabTimerInterval :
           webkit_glue::kForegroundTabTimerInterval);
