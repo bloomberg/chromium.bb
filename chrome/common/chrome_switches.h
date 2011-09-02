@@ -161,7 +161,6 @@ extern const char kEnableTcpFastOpen[];
 extern const char kEnableTopSites[];
 extern const char kEnableVerticalTabs[];
 extern const char kEnableWatchdog[];
-extern const char kEnableWebIntents[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kEnableWebUITaskManager[];
 extern const char kExperimentalSpellcheckerFeatures[];

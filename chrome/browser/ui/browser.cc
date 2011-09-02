@@ -133,6 +133,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/content_restriction.h"
+#include "content/common/content_switches.h"
 #include "content/common/notification_service.h"
 #include "content/common/page_transition_types.h"
 #include "content/common/page_zoom.h"

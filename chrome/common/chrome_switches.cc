@@ -557,9 +557,6 @@ const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
 
-// Enable Web Intents.
-const char kEnableWebIntents[]              = "enable-web-intents";
-
 // Use WebSocket over SPDY.
 const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 

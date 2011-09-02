@@ -211,6 +211,9 @@ const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
 // the debug log.
 const char kEnableVideoLogging[]            = "enable-video-logging";
 
+// Enable Web Intents.
+const char kEnableWebIntents[]              = "enable-web-intents";
+
 // Enables experimental features for the geolocation API.
 // Current features:
 // - CoreLocation support for Mac OS X 10.6

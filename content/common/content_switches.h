@@ -74,6 +74,7 @@ extern const char kEnableSeccompSandbox[];
 extern const char kEnableStatsTable[];
 extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLogging[];
+extern const char kEnableWebIntents[];
 extern const char kExperimentalLocationFeatures[];
 // TODO(jam): this doesn't belong in content.
 extern const char kExtensionProcess[];
