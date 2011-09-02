@@ -19,32 +19,16 @@
 #include "googleurl/src/gurl.h"
 #include "views/widget/widget.h"
 
-ExtensionDialog::ExtensionDialog(Browser* browser, ExtensionHost* host,
-                                 int width, int height,
+ExtensionDialog::ExtensionDialog(ExtensionHost* host,
                                  ExtensionDialogObserver* observer)
-    : extension_host_(host),
+    : window_(NULL),
+      extension_host_(host),
       observer_(observer) {
   AddRef();  // Balanced in DeleteDelegate();
-  gfx::NativeWindow parent = browser->window()->GetNativeHandle();
-  window_ = browser::CreateViewsWindow(
-      parent, this /* views::WidgetDelegate */);
-
-  // Center the window over the browser.
-  gfx::Point center = browser->window()->GetBounds().CenterPoint();
-  int x = center.x() - width / 2;
-  int y = center.y() - height / 2;
-  window_->SetBounds(gfx::Rect(x, y, width, height));
-
-  host->view()->SetContainer(this /* ExtensionView::Container */);
 
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  Source<Profile>(host->profile()));
-
-  window_->Show();
-  window_->Activate();
-  // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
-  host->render_view_host()->view()->Focus();
 }
 
 ExtensionDialog::~ExtensionDialog() {
@@ -59,16 +43,42 @@ ExtensionDialog* ExtensionDialog::Show(
     int height,
     ExtensionDialogObserver* observer) {
   CHECK(browser);
+  ExtensionHost* host = CreateExtensionHost(url, browser);
+  if (!host)
+    return NULL;
+  host->set_associated_tab_contents(tab_contents);
+
+  ExtensionDialog* dialog = new ExtensionDialog(host, observer);
+  dialog->InitWindow(browser, width, height);
+  // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
+  host->render_view_host()->view()->Focus();
+  return dialog;
+}
+
+// static
+ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
+                                                    Browser* browser) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   DCHECK(manager);
   if (!manager)
     return NULL;
-  ExtensionHost* host = manager->CreateDialogHost(url, browser);
-  if (!host)
-    return NULL;
-  host->set_associated_tab_contents(tab_contents);
-  return new ExtensionDialog(browser, host, width, height, observer);
+  return manager->CreateDialogHost(url, browser);
+}
+
+void ExtensionDialog::InitWindow(Browser* browser, int width, int height) {
+  gfx::NativeWindow parent = browser->window()->GetNativeHandle();
+  window_ = browser::CreateViewsWindow(
+      parent, this /* views::WidgetDelegate */);
+
+  // Center the window over the browser.
+  gfx::Point center = browser->window()->GetBounds().CenterPoint();
+  int x = center.x() - width / 2;
+  int y = center.y() - height / 2;
+  window_->SetBounds(gfx::Rect(x, y, width, height));
+
+  window_->Show();
+  window_->Activate();
 }
 
 void ExtensionDialog::ObserverDestroyed() {
@@ -116,18 +126,6 @@ const views::Widget* ExtensionDialog::GetWidget() const {
 
 views::View* ExtensionDialog::GetContentsView() {
   return extension_host_->view();
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// ExtensionView::Container overrides.
-
-void ExtensionDialog::OnExtensionMouseMove(ExtensionView* view) {
-}
-
-void ExtensionDialog::OnExtensionMouseLeave(ExtensionView* view) {
-}
-
-void ExtensionDialog::OnExtensionPreferredSizeChanged(ExtensionView* view) {
 }
 
 /////////////////////////////////////////////////////////////////////////////

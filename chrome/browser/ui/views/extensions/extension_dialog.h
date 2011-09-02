@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 #include "views/widget/widget_delegate.h"
@@ -28,7 +27,6 @@ class Widget;
 // Dialog is automatically centered in the browser window and has fixed size.
 // For example, used by the Chrome OS file browser.
 class ExtensionDialog : public views::WidgetDelegate,
-                        public ExtensionView::Container,
                         public NotificationObserver,
                         public base::RefCounted<ExtensionDialog> {
  public:
@@ -62,11 +60,6 @@ class ExtensionDialog : public views::WidgetDelegate,
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
-  // ExtensionView::Container overrides.
-  virtual void OnExtensionMouseMove(ExtensionView* view);
-  virtual void OnExtensionMouseLeave(ExtensionView* view);
-  virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
-
   // NotificationObserver overrides.
   virtual void Observe(int type,
                        const NotificationSource& source,
@@ -74,8 +67,12 @@ class ExtensionDialog : public views::WidgetDelegate,
 
  private:
   // Use Show() to create instances.
-  ExtensionDialog(Browser* browser, ExtensionHost* host, int width, int height,
-                  ExtensionDialogObserver* observer);
+  ExtensionDialog(ExtensionHost* host, ExtensionDialogObserver* observer);
+
+  static ExtensionHost* CreateExtensionHost(const GURL& url,
+                                            Browser* browser);
+
+  void InitWindow(Browser* browser, int width, int height);
 
   // Window that holds the extension host view.
   views::Widget* window_;
