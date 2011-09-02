@@ -31,7 +31,7 @@ typedef PdfMetafileCg NativeMetafile;
 typedef PdfMetafileCg PreviewMetafile;
 #endif
 #elif defined(OS_POSIX)
-typedef PdfMetafileCairo NativeMetafile;
+typedef PdfMetafileSkia NativeMetafile;
 typedef PdfMetafileSkia PreviewMetafile;
 #endif
 
