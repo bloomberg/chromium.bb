@@ -8,6 +8,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -81,16 +82,19 @@ class SessionsDOMHandler : public WebUIMessageHandler {
                      ListValue* window_list);
 
   // Appends each entry in |sessions| to |session_list| as a DictonaryValue.
-  void GetSessionList(const std::vector<const SyncedSession*>& sessions,
-                      ListValue* session_list);
+  void GetSessionList(
+      const std::vector<const browser_sync::SyncedSession*>& sessions,
+      ListValue* session_list);
 
   // Traverses all tabs in |sessions| and adds them to |all_tabs|.
-  void GetAllTabs(const std::vector<const SyncedSession*>& sessions,
-                  std::vector<SessionTab*>* all_tabs);
+  void GetAllTabs(
+      const std::vector<const browser_sync::SyncedSession*>& sessions,
+      std::vector<SessionTab*>* all_tabs);
 
   // Creates a "magic" list of tabs from all the sessions.
-  void CreateMagicTabList(const std::vector<const SyncedSession*>& sessions,
-                          ListValue* tab_list);
+  void CreateMagicTabList(
+      const std::vector<const browser_sync::SyncedSession*>& sessions,
+      ListValue* tab_list);
 
   DISALLOW_COPY_AND_ASSIGN(SessionsDOMHandler);
 };
@@ -168,11 +172,11 @@ void SessionsDOMHandler::GetWindowList(
 }
 
 void SessionsDOMHandler::GetSessionList(
-    const std::vector<const SyncedSession*>& sessions,
+    const std::vector<const browser_sync::SyncedSession*>& sessions,
     ListValue* session_list) {
-  for (std::vector<const SyncedSession*>::const_iterator it =
+  for (std::vector<const browser_sync::SyncedSession*>::const_iterator it =
        sessions.begin(); it != sessions.end(); ++it) {
-    const SyncedSession* session = *it;
+    const browser_sync::SyncedSession* session = *it;
     scoped_ptr<DictionaryValue> session_data(new DictionaryValue());
     session_data->SetString("tag", session->session_tag);
     scoped_ptr<ListValue> window_list(new ListValue());
@@ -183,7 +187,7 @@ void SessionsDOMHandler::GetSessionList(
 }
 
 void SessionsDOMHandler::GetAllTabs(
-    const std::vector<const SyncedSession*>& sessions,
+    const std::vector<const browser_sync::SyncedSession*>& sessions,
     std::vector<SessionTab*>* all_tabs) {
   for (size_t i = 0; i < sessions.size(); i++) {
     const std::vector<SessionWindow*>& windows = sessions[i]->windows;
@@ -200,7 +204,7 @@ bool CompareTabsByTimestamp(SessionTab* lhs, SessionTab* rhs) {
 }
 
 void SessionsDOMHandler::CreateMagicTabList(
-    const std::vector<const SyncedSession*>& sessions,
+    const std::vector<const browser_sync::SyncedSession*>& sessions,
     ListValue* tab_list) {
   std::vector<SessionTab*> all_tabs;
   GetAllTabs(sessions, &all_tabs);
@@ -223,7 +227,7 @@ void SessionsDOMHandler::UpdateUI() {
   browser_sync::SessionModelAssociator* associator = GetModelAssociator();
   // Make sure the associator has been created.
   if (associator) {
-    std::vector<const SyncedSession*> sessions;
+    std::vector<const browser_sync::SyncedSession*> sessions;
     if (associator->GetAllForeignSessions(&sessions)) {
       GetSessionList(sessions, &session_list);
       CreateMagicTabList(sessions, &magic_list);
