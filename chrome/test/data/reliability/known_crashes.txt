@@ -204,3 +204,6 @@ PREFIX: chromeurlrequestcontextgetter::geturlrequestcontext___`anonymous namespa
 
 # 93974
 PREFIX: `anonymous namespace'::purecall____purecall___content::resourcecontext::request_context___resourcedispatcherhost::beginrequest___resourcedispatcherhost::onrequestresource
+
+# 95069
+PREFIX: `anonymous namespace'::invalidparameter____purecall___memcpy_s___std::basic_string<char,std::char_traits<char>,std::allocator<char> >::assign___gurl::gurl___`anonymous namespace'::do_malloc___malloc___scoped_refptr<resourcehandler>::operator=___resourcedispatcherhost::beginrequest___resourcehostmsg_requestresource::dispatch<resourcedispatcherhost,resourcedispatcherhost,int,resourcehostmsg_request const &>
