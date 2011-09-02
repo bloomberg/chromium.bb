@@ -901,13 +901,13 @@ void SyncScheduler::AdjustPolling(const SyncSessionJob* old_job) {
 
   // Adjust poll rate.
   poll_timer_.Stop();
-  poll_timer_.Start(poll, this, &SyncScheduler::PollTimerCallback);
+  poll_timer_.Start(FROM_HERE, poll, this, &SyncScheduler::PollTimerCallback);
 }
 
 void SyncScheduler::RestartWaiting() {
   CHECK(wait_interval_.get());
   wait_interval_->timer.Stop();
-  wait_interval_->timer.Start(wait_interval_->length,
+  wait_interval_->timer.Start(FROM_HERE, wait_interval_->length,
                               this, &SyncScheduler::DoCanaryJob);
 }
 
@@ -1077,7 +1077,7 @@ void SyncScheduler::OnSilencedUntil(const base::TimeTicks& silenced_until) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   wait_interval_.reset(new WaitInterval(WaitInterval::THROTTLED,
                                         silenced_until - TimeTicks::Now()));
-  wait_interval_->timer.Start(wait_interval_->length, this,
+  wait_interval_->timer.Start(FROM_HERE, wait_interval_->length, this,
       &SyncScheduler::Unthrottle);
 }
 

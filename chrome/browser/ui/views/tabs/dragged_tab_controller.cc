@@ -667,7 +667,7 @@ void DraggedTabController::ContinueDragging() {
       Attach(target_tabstrip, screen_point);
   }
   if (!target_tabstrip) {
-    bring_to_front_timer_.Start(
+    bring_to_front_timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kBringToFrontDelay), this,
         &DraggedTabController::BringWindowUnderMouseToFront);
   }

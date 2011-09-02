@@ -168,8 +168,9 @@ class MenuController::MenuScrollTask {
     is_scrolling_up_ = new_is_up;
 
     if (!scrolling_timer_.IsRunning()) {
-      scrolling_timer_.Start(TimeDelta::FromMilliseconds(kScrollTimerMS), this,
-                             &MenuScrollTask::Run);
+      scrolling_timer_.Start(FROM_HERE,
+                             TimeDelta::FromMilliseconds(kScrollTimerMS),
+                             this, &MenuScrollTask::Run);
     }
   }
 
@@ -1437,7 +1438,7 @@ void MenuController::BuildMenuItemPath(MenuItemView* item,
 }
 
 void MenuController::StartShowTimer() {
-  show_timer_.Start(TimeDelta::FromMilliseconds(kShowDelay), this,
+  show_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(kShowDelay), this,
                     &MenuController::CommitPendingSelection);
 }
 
@@ -1446,7 +1447,8 @@ void MenuController::StopShowTimer() {
 }
 
 void MenuController::StartCancelAllTimer() {
-  cancel_all_timer_.Start(TimeDelta::FromMilliseconds(kCloseOnExitTime),
+  cancel_all_timer_.Start(FROM_HERE,
+                          TimeDelta::FromMilliseconds(kCloseOnExitTime),
                           this, &MenuController::CancelAll);
 }
 

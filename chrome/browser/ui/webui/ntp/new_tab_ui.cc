@@ -278,7 +278,7 @@ void NewTabUI::PaintTimeout() {
     // Not enough quiet time has elapsed.
     // Some more paints must've occurred since we set the timeout.
     // Wait some more.
-    timer_.Start(base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
                  &NewTabUI::PaintTimeout);
   }
 }
@@ -288,7 +288,7 @@ void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
   last_paint_ = start_;
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
       Source<RenderWidgetHost>(render_view_host));
-  timer_.Start(base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
                &NewTabUI::PaintTimeout);
 
 }

@@ -85,7 +85,7 @@ void AnimationContainer::SetMinTimerInterval(base::TimeDelta delta) {
   // that shouldn't be a problem for uses of Animation/AnimationContainer.
   timer_.Stop();
   min_timer_interval_ = delta;
-  timer_.Start(min_timer_interval_, this, &AnimationContainer::Run);
+  timer_.Start(FROM_HERE, min_timer_interval_, this, &AnimationContainer::Run);
 }
 
 TimeDelta AnimationContainer::GetMinInterval() {

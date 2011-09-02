@@ -148,7 +148,8 @@ void SettingLevelBubble::ShowBubble(double percent, bool enabled) {
     view_->SetEnabled(enabled);
   }
 
-  hide_timer_.Start(base::TimeDelta::FromMilliseconds(kBubbleShowTimeoutMs),
+  hide_timer_.Start(FROM_HERE,
+                    base::TimeDelta::FromMilliseconds(kBubbleShowTimeoutMs),
                     this, &SettingLevelBubble::OnHideTimeout);
 }
 
@@ -232,7 +233,8 @@ void SettingLevelBubble::UpdateTargetPercent(double percent) {
     target_time_ = now + TimeDelta::FromMilliseconds(duration_ms);
 
     if (!is_animating_) {
-      animation_timer_.Start(TimeDelta::FromMilliseconds(kAnimationIntervalMs),
+      animation_timer_.Start(FROM_HERE,
+                             TimeDelta::FromMilliseconds(kAnimationIntervalMs),
                              this,
                              &SettingLevelBubble::OnAnimationTimeout);
       is_animating_ = true;

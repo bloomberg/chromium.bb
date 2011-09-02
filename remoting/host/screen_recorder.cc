@@ -181,7 +181,7 @@ void ScreenRecorder::StartCaptureTimer() {
 
   base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
       static_cast<int>(base::Time::kMillisecondsPerSecond / max_rate_));
-  capture_timer_.Start(interval, this, &ScreenRecorder::DoCapture);
+  capture_timer_.Start(FROM_HERE, interval, this, &ScreenRecorder::DoCapture);
 }
 
 void ScreenRecorder::DoCapture() {

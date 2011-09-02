@@ -311,6 +311,7 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
   // We do not want to show the context menu while dragging.
   HideContextMenu();
   context_menu_timer_.Start(
+      FROM_HERE,
       base::TimeDelta::FromMilliseconds(kContextMenuTimoutMs),
       this,
       &TouchSelectionControllerImpl::ContextMenuTimerFired);
@@ -387,6 +388,7 @@ void TouchSelectionControllerImpl::UpdateContextMenu(const gfx::Point& p1,
   // If there is selection, we restart the context menu timer.
   if (p1 != p2) {
     context_menu_timer_.Start(
+        FROM_HERE,
         base::TimeDelta::FromMilliseconds(kContextMenuTimoutMs),
         this,
         &TouchSelectionControllerImpl::ContextMenuTimerFired);

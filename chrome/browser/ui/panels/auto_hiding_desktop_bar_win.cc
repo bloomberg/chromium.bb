@@ -43,7 +43,7 @@ void AutoHidingDesktopBarWin::UpdateWorkArea(const gfx::Rect& work_area) {
   // called due to the work area change.
   if (taskbar_exists) {
     if (!polling_timer_.IsRunning()) {
-      polling_timer_.Start(
+      polling_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(kCheckTaskbarPollingIntervalMs),
           this,
           &AutoHidingDesktopBarWin::OnPollingTimer);

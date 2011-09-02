@@ -77,7 +77,7 @@ void HeartbeatSender::OnSignallingConnected(SignalStrategy* signal_strategy,
                                     base::Unretained(this)));
 
   DoSendStanza();
-  timer_.Start(base::TimeDelta::FromMilliseconds(interval_ms_), this,
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_), this,
                &HeartbeatSender::DoSendStanza);
 }
 
@@ -143,8 +143,8 @@ void HeartbeatSender::SetInterval(int interval) {
     // Restart the timer with the new interval.
     if (state_ == STARTED) {
       timer_.Stop();
-      timer_.Start(base::TimeDelta::FromMilliseconds(interval_ms_), this,
-                   &HeartbeatSender::DoSendStanza);
+      timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(interval_ms_),
+                   this, &HeartbeatSender::DoSendStanza);
     }
   }
 }

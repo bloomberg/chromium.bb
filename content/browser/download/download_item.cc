@@ -325,7 +325,8 @@ void DownloadItem::StartProgressTimer() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  update_timer_.Start(base::TimeDelta::FromMilliseconds(kUpdateTimeMs), this,
+  update_timer_.Start(FROM_HERE,
+                      base::TimeDelta::FromMilliseconds(kUpdateTimeMs), this,
                       &DownloadItem::UpdateObservers);
 }
 

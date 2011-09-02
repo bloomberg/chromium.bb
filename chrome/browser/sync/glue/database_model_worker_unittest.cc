@@ -38,7 +38,7 @@ class DatabaseModelWorkerTest : public testing::Test {
   void ScheduleWork() {
     scoped_ptr<Callback0::Type> c(NewCallback(this,
         &DatabaseModelWorkerTest::DoWork));
-    timer()->Start(TimeDelta::FromSeconds(10),
+    timer()->Start(FROM_HERE, TimeDelta::FromSeconds(10),
                    this, &DatabaseModelWorkerTest::Timeout);
     worker()->DoWorkAndWaitUntilDone(c.get());
   }

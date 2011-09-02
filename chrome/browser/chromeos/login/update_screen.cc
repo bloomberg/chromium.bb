@@ -156,7 +156,8 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
         actor_->ShowCurtain(false);
         VLOG(1) << "Initiate reboot after update";
         CrosLibrary::Get()->GetUpdateLibrary()->RebootAfterUpdate();
-        reboot_timer_.Start(base::TimeDelta::FromSeconds(reboot_check_delay_),
+        reboot_timer_.Start(FROM_HERE,
+                            base::TimeDelta::FromSeconds(reboot_check_delay_),
                             this,
                             &UpdateScreen::OnWaitForRebootTimeElapsed);
       } else {

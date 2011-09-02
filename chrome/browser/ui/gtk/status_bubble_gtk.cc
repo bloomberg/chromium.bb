@@ -99,7 +99,8 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   int desired_width = parent->allocation.width;
   if (!expanded()) {
     expand_timer_.Stop();
-    expand_timer_.Start(base::TimeDelta::FromMilliseconds(kExpandHoverDelay),
+    expand_timer_.Start(FROM_HERE,
+                        base::TimeDelta::FromMilliseconds(kExpandHoverDelay),
                         this, &StatusBubbleGtk::ExpandURL);
     // When not expanded, we limit the size to one third the browser's
     // width.
@@ -133,7 +134,7 @@ void StatusBubbleGtk::Hide() {
 void StatusBubbleGtk::SetStatusTextTo(const std::string& status_utf8) {
   if (status_utf8.empty()) {
     hide_timer_.Stop();
-    hide_timer_.Start(base::TimeDelta::FromMilliseconds(kHideDelay),
+    hide_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kHideDelay),
                       this, &StatusBubbleGtk::Hide);
   } else {
     gtk_label_set_text(GTK_LABEL(label_.get()), status_utf8.c_str());

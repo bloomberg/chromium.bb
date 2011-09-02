@@ -165,7 +165,8 @@ int InitProxyResolver::DoWait() {
     return OK;
 
   // Otherwise wait the specified amount of time.
-  wait_timer_.Start(wait_delay_, this, &InitProxyResolver::OnWaitTimerFired);
+  wait_timer_.Start(FROM_HERE, wait_delay_, this,
+                    &InitProxyResolver::OnWaitTimerFired);
   net_log_.BeginEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_WAIT, NULL);
   return ERR_IO_PENDING;
 }

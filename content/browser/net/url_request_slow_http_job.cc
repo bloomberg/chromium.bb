@@ -50,7 +50,7 @@ URLRequestSlowHTTPJob::URLRequestSlowHTTPJob(net::URLRequest* request,
     : URLRequestMockHTTPJob(request, file_path) { }
 
 void URLRequestSlowHTTPJob::Start() {
-  delay_timer_.Start(TimeDelta::FromMilliseconds(kDelayMs), this,
+  delay_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(kDelayMs), this,
                      &URLRequestSlowHTTPJob::RealStart);
 }
 

@@ -346,7 +346,8 @@ void ServicesCustomizationDocument::OnURLFetchComplete(
     NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
     if (!network->Connected() && num_retries_ < kMaxFetchRetries) {
       num_retries_++;
-      retry_timer_.Start(base::TimeDelta::FromSeconds(kRetriesDelayInSec),
+      retry_timer_.Start(FROM_HERE,
+                         base::TimeDelta::FromSeconds(kRetriesDelayInSec),
                          this, &ServicesCustomizationDocument::StartFileFetch);
       return;
     }

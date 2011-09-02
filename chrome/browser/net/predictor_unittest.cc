@@ -85,7 +85,7 @@ class PredictorTest : public testing::Test {
 
   void WaitForResolution(Predictor* predictor, const UrlList& hosts) {
     HelperTimer* timer = new HelperTimer();
-    timer->Start(TimeDelta::FromMilliseconds(100),
+    timer->Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
                  new WaitForResolutionHelper(predictor, hosts, timer),
                  &WaitForResolutionHelper::Run);
     MessageLoop::current()->Run();

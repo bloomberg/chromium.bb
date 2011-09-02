@@ -103,7 +103,7 @@ void LayoutTestController::WorkQueue::ProcessWorkSoon() {
 
   if (!queue_.empty()) {
     // We delay processing queued work to avoid recursion problems.
-    timer_.Start(base::TimeDelta(), this, &WorkQueue::ProcessWork);
+    timer_.Start(FROM_HERE, base::TimeDelta(), this, &WorkQueue::ProcessWork);
   } else if (!wait_until_done_) {
     shell_->TestFinished();
   }

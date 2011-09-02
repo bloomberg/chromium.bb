@@ -183,7 +183,7 @@ bool PrintJob::FlushJob(int timeout_ms) {
   // wrong.
   base::OneShotTimer<MessageLoop> quit_task;
   if (timeout_ms) {
-    quit_task.Start(TimeDelta::FromMilliseconds(timeout_ms),
+    quit_task.Start(FROM_HERE, TimeDelta::FromMilliseconds(timeout_ms),
                     MessageLoop::current(), &MessageLoop::Quit);
   }
 

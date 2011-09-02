@@ -159,7 +159,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
   if (keystone_glue::KeystoneEnabled())
 #endif
   {
-    detect_upgrade_timer_.Start(
+    detect_upgrade_timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(GetCheckForUpgradeEveryMs()),
         this, &UpgradeDetectorImpl::CheckForUpgrade);
   }
@@ -195,7 +195,7 @@ void UpgradeDetectorImpl::UpgradeDetected() {
   // and stop the timer.
   int cycle_time = CmdLineInterval().empty() ? kNotifyCycleTimeMs :
                                                kNotifyCycleTimeForTestingMs;
-  upgrade_notification_timer_.Start(
+  upgrade_notification_timer_.Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(cycle_time),
       this, &UpgradeDetectorImpl::NotifyOnUpgrade);
 }

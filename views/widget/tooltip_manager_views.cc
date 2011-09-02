@@ -77,7 +77,8 @@ TooltipManagerViews::TooltipManagerViews(internal::RootView* root_view)
   tooltip_widget_->SetContentsView(&tooltip_label_);
   tooltip_widget_->Activate();
   tooltip_widget_->SetAlwaysOnTop(true);
-  tooltip_timer_.Start(base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
+  tooltip_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kTooltipTimeoutMs),
       this, &TooltipManagerViews::TooltipTimerFired);
   MessageLoopForUI::current()->AddObserver(this);
 }

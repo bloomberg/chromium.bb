@@ -50,7 +50,8 @@ void WebPageScreen::OnNetworkTimeout() {
 
 void WebPageScreen::StartTimeoutTimer() {
   StopTimeoutTimer();
-  timeout_timer_.Start(TimeDelta::FromSeconds(kNetworkTimeoutSec),
+  timeout_timer_.Start(FROM_HERE,
+                       TimeDelta::FromSeconds(kNetworkTimeoutSec),
                        this,
                        &WebPageScreen::OnNetworkTimeout);
 }

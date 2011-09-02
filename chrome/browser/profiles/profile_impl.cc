@@ -312,7 +312,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
 
-  create_session_service_timer_.Start(
+  create_session_service_timer_.Start(FROM_HERE,
       TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS), this,
       &ProfileImpl::EnsureSessionServiceCreated);
 

@@ -478,7 +478,8 @@ void CompactLocationBarViewHost::StartAutoHideTimer() {
     // Restart the timer.
     auto_hide_timer_->Reset();
   } else {
-    auto_hide_timer_->Start(base::TimeDelta::FromSeconds(kHideTimeoutInSeconds),
+    auto_hide_timer_->Start(FROM_HERE,
+                            base::TimeDelta::FromSeconds(kHideTimeoutInSeconds),
                             this, &CompactLocationBarViewHost::HideCallback);
   }
 }

@@ -37,7 +37,7 @@
 
 RenderProcessImpl::RenderProcessImpl()
     : ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
-          base::TimeDelta::FromSeconds(5),
+          FROM_HERE, base::TimeDelta::FromSeconds(5),
           this, &RenderProcessImpl::ClearTransportDIBCache)),
       transport_dib_next_sequence_number_(0) {
   in_process_plugins_ = InProcessPlugins();

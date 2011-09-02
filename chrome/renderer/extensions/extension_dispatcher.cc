@@ -79,7 +79,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
   if (is_extension_process_) {
-    forced_idle_timer_.Start(
+    forced_idle_timer_.Start(FROM_HERE,
         base::TimeDelta::FromSeconds(kMaxExtensionIdleHandlerDelayS),
         RenderThread::current(), &RenderThread::IdleHandler);
   }
@@ -118,7 +118,7 @@ void ExtensionDispatcher::IdleNotification() {
         RenderThread::current()->idle_notification_delay_in_s()),
         kMaxExtensionIdleHandlerDelayS);
     forced_idle_timer_.Stop();
-    forced_idle_timer_.Start(
+    forced_idle_timer_.Start(FROM_HERE,
         base::TimeDelta::FromSeconds(forced_delay_s),
         RenderThread::current(), &RenderThread::IdleHandler);
   }

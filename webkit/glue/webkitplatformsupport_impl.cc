@@ -528,8 +528,8 @@ void WebKitPlatformSupportImpl::setSharedTimerFireInterval(
     interval = 0;
 
   shared_timer_.Stop();
-  shared_timer_.Start(base::TimeDelta::FromMicroseconds(interval), this,
-                      &WebKitPlatformSupportImpl::DoTimeout);
+  shared_timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(interval),
+                      this, &WebKitPlatformSupportImpl::DoTimeout);
 }
 
 void WebKitPlatformSupportImpl::stopSharedTimer() {

@@ -759,7 +759,7 @@ void BrowserView::UpdateLoadingAnimations(bool should_animate) {
     if (!loading_animation_timer_.IsRunning()) {
       // Loads are happening, and the timer isn't running, so start it.
       last_animation_time_ = base::TimeTicks::Now();
-      loading_animation_timer_.Start(
+      loading_animation_timer_.Start(FROM_HERE,
           TimeDelta::FromMilliseconds(kLoadingAnimationFrameTimeMs), this,
           &BrowserView::LoadingAnimationCallback);
     }
