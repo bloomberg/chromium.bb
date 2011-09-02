@@ -72,6 +72,7 @@
       'test_basic',
       'test_pyauto',
       'themes',
+      'youtube',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
