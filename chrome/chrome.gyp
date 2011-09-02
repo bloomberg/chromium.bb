@@ -1738,6 +1738,24 @@
             ],
           },
         ],
+        'conditions': [
+          ['branding=="Chrome"', {
+            'copies': [
+              {
+                # This location is for the Windows and Linux builds. For
+                # Windows, the chrome.release file ensures that these files are
+                # copied into the installer. Note that we have a separate
+                # section in chrome_dll.gyp to copy these files for Mac, as it
+                # needs to be dropped inside the framework.
+                'destination': '<(PRODUCT_DIR)/default_apps',
+                'files': [
+                  'browser/resources/default_apps/gmail.crx',
+                  'browser/resources/default_apps/youtube.crx',
+                ],
+              },
+            ],
+          }],
+        ],
       }],  # targets
     }],  # OS != "mac"
   ],  # 'conditions'
