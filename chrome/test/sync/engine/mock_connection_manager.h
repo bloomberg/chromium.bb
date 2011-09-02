@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -45,13 +46,13 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // Overridden ServerConnectionManager functions.
   virtual bool PostBufferToPath(
-      const PostBufferParams*,
+      PostBufferParams*,
       const std::string& path,
       const std::string& auth_token,
-      browser_sync::ScopedServerStatusWatcher* watcher);
+      browser_sync::ScopedServerStatusWatcher* watcher) OVERRIDE;
 
-  virtual bool IsServerReachable();
-  virtual bool IsUserAuthenticated();
+  virtual bool IsServerReachable() OVERRIDE;
+  virtual bool IsUserAuthenticated() OVERRIDE;
 
   // Control of commit response.
   void SetMidCommitCallback(Callback0::Type* callback);

@@ -26,8 +26,6 @@ namespace sync_pb {
 class ClientToServerMessage;
 }
 
-struct RequestTimingInfo;
-
 namespace browser_sync {
 
 class ClientToServerMessage;
@@ -146,9 +144,8 @@ class ServerConnectionManager : public base::NonThreadSafe {
   // buffer_out - string will be overwritten with response
   struct PostBufferParams {
     std::string buffer_in;
-    std::string* buffer_out;
-    HttpResponse* response;
-    RequestTimingInfo* timing_info;
+    std::string buffer_out;
+    HttpResponse response;
   };
 
   // Abstract class providing network-layer functionality to the
@@ -156,7 +153,7 @@ class ServerConnectionManager : public base::NonThreadSafe {
   // their choice.
   class Post {
    public:
-    explicit Post(ServerConnectionManager* scm) : scm_(scm), timing_info_(0) {
+    explicit Post(ServerConnectionManager* scm) : scm_(scm) {
     }
     virtual ~Post() { }
 
@@ -169,11 +166,6 @@ class ServerConnectionManager : public base::NonThreadSafe {
     bool ReadBufferResponse(std::string* buffer_out, HttpResponse* response,
                             bool require_response);
     bool ReadDownloadResponse(HttpResponse* response, std::string* buffer_out);
-
-    void set_timing_info(RequestTimingInfo* timing_info) {
-      timing_info_ = timing_info;
-    }
-    RequestTimingInfo* timing_info() { return timing_info_; }
 
    protected:
     std::string MakeConnectionURL(const std::string& sync_server,
@@ -194,7 +186,6 @@ class ServerConnectionManager : public base::NonThreadSafe {
    private:
     int ReadResponse(void* buffer, int length);
     int ReadResponse(std::string* buffer, int length);
-    RequestTimingInfo* timing_info_;
   };
 
   ServerConnectionManager(const std::string& server,
@@ -208,7 +199,7 @@ class ServerConnectionManager : public base::NonThreadSafe {
   // set auth token in our headers.
   //
   // Returns true if executed successfully.
-  virtual bool PostBufferWithCachedAuth(const PostBufferParams* params,
+  virtual bool PostBufferWithCachedAuth(PostBufferParams* params,
                                         ScopedServerStatusWatcher* watcher);
 
   // Checks the time on the server. Returns false if the request failed. |time|
@@ -305,7 +296,7 @@ class ServerConnectionManager : public base::NonThreadSafe {
   // NOTE: Tests rely on this protected function being virtual.
   //
   // Internal PostBuffer base function.
-  virtual bool PostBufferToPath(const PostBufferParams*,
+  virtual bool PostBufferToPath(PostBufferParams*,
                                 const std::string& path,
                                 const std::string& auth_token,
                                 ScopedServerStatusWatcher* watcher);

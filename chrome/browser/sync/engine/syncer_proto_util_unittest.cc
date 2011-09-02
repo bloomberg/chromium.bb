@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -189,8 +190,9 @@ class DummyConnectionManager : public browser_sync::ServerConnectionManager {
         access_denied_(false) {}
 
   virtual ~DummyConnectionManager() {}
-  virtual bool PostBufferWithCachedAuth(const PostBufferParams* params,
-                                        ScopedServerStatusWatcher* watcher) {
+  virtual bool PostBufferWithCachedAuth(
+      PostBufferParams* params,
+      ScopedServerStatusWatcher* watcher) OVERRIDE {
     if (send_error_) {
       return false;
     }
@@ -199,7 +201,7 @@ class DummyConnectionManager : public browser_sync::ServerConnectionManager {
     if (access_denied_) {
       response.set_error_code(ClientToServerResponse::ACCESS_DENIED);
     }
-    response.SerializeToString(params->buffer_out);
+    response.SerializeToString(&params->buffer_out);
 
     return true;
   }

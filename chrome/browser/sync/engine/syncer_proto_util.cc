@@ -151,35 +151,31 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
                                             const ClientToServerMessage& msg,
                                             ClientToServerResponse* response) {
 
-  std::string tx, rx;
-  msg.SerializeToString(&tx);
+  ServerConnectionManager::PostBufferParams params;
+  msg.SerializeToString(&params.buffer_in);
 
-  HttpResponse http_response;
-  ServerConnectionManager::PostBufferParams params = {
-    tx, &rx, &http_response
-  };
-
-  ScopedServerStatusWatcher server_status_watcher(scm, &http_response);
+  ScopedServerStatusWatcher server_status_watcher(scm, &params.response);
+  // Fills in params.buffer_out and params.response.
   if (!scm->PostBufferWithCachedAuth(&params, &server_status_watcher)) {
-    LOG(WARNING) << "Error posting from syncer:" << http_response;
+    LOG(WARNING) << "Error posting from syncer:" << params.response;
     return false;
   }
 
-  std::string new_token = http_response.update_client_auth_header;
+  std::string new_token = params.response.update_client_auth_header;
   if (!new_token.empty()) {
     SyncEngineEvent event(SyncEngineEvent::UPDATED_TOKEN);
     event.updated_token = new_token;
     session->context()->NotifyListeners(event);
   }
 
-  if (response->ParseFromString(rx)) {
+  if (response->ParseFromString(params.buffer_out)) {
     // TODO(tim): This is an egregious layering violation (bug 35060).
     switch (response->error_code()) {
       case ClientToServerResponse::ACCESS_DENIED:
       case ClientToServerResponse::AUTH_INVALID:
       case ClientToServerResponse::USER_NOT_ACTIVATED:
         // Fires on ScopedServerStatusWatcher
-        http_response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+        params.response.server_status = HttpResponse::SYNC_AUTH_ERROR;
         return false;
       default:
         return true;

@@ -79,7 +79,7 @@ void MockConnectionManager::SetMidCommitObserver(
     mid_commit_observer_ = observer;
 }
 
-bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
+bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     const string& path,
     const string& auth_token,
     browser_sync::ScopedServerStatusWatcher* watcher) {
@@ -107,12 +107,12 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   }
 
   if (!server_reachable_) {
-    params->response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
+    params->response.server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }
 
   // Default to an ok connection.
-  params->response->server_status = HttpResponse::SERVER_CONNECTION_OK;
+  params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
   response.set_error_code(ClientToServerResponse::SUCCESS);
   const string current_store_birthday = store_birthday();
   response.set_store_birthday(current_store_birthday);
@@ -120,7 +120,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
       current_store_birthday) {
     response.set_error_code(ClientToServerResponse::NOT_MY_BIRTHDAY);
     response.set_error_message("Merry Unbirthday!");
-    response.SerializeToString(params->buffer_out);
+    response.SerializeToString(&params->buffer_out);
     store_birthday_sent_ = true;
     return true;
   }
@@ -156,7 +156,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
       response.set_error_code(ClientToServerResponse::AUTH_INVALID);
   }
 
-  response.SerializeToString(params->buffer_out);
+  response.SerializeToString(&params->buffer_out);
   if (post.message_contents() == ClientToServerMessage::COMMIT &&
       mid_commit_callback_.get()) {
     mid_commit_callback_->Run();

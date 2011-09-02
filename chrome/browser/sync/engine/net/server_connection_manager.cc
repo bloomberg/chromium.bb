@@ -174,40 +174,39 @@ void ServerConnectionManager::NotifyStatusChanged() {
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(
-    const PostBufferParams* params, ScopedServerStatusWatcher* watcher) {
+    PostBufferParams* params, ScopedServerStatusWatcher* watcher) {
   DCHECK(CalledOnValidThread());
   string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
   return PostBufferToPath(params, path, auth_token(), watcher);
 }
 
-bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,
+bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
     const string& path, const string& auth_token,
     ScopedServerStatusWatcher* watcher) {
   DCHECK(CalledOnValidThread());
   DCHECK(watcher != NULL);
 
   if (auth_token.empty()) {
-    params->response->server_status = HttpResponse::SYNC_AUTH_ERROR;
+    params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
     return false;
   }
 
   scoped_ptr<Post> post(MakePost());
-  post->set_timing_info(params->timing_info);
   bool ok = post->Init(path.c_str(), auth_token, params->buffer_in,
-                       params->response);
+                       &params->response);
 
-  if (params->response->server_status == HttpResponse::SYNC_AUTH_ERROR) {
+  if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR) {
     InvalidateAndClearAuthToken();
   }
 
-  if (!ok || RC_REQUEST_OK != params->response->response_code) {
+  if (!ok || RC_REQUEST_OK != params->response.response_code) {
     IncrementErrorCount();
     return false;
   }
 
-  if (post->ReadBufferResponse(params->buffer_out, params->response, true)) {
-    params->response->server_status = HttpResponse::SERVER_CONNECTION_OK;
+  if (post->ReadBufferResponse(&params->buffer_out, &params->response, true)) {
+    params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
     server_reachable_ = true;
     return true;
   }
