@@ -770,24 +770,13 @@ glibc() {
   cp -a "${NNACL_GLIBC_ROOT}/${NACL64_TARGET}/lib/ldscripts/elf64_nacl.x"* \
         "${PNACL_X8664_ROOT}"
 
-  # ld-linux has different sonames across 32/64.
+  # ld-nacl have different sonames across 32/64.
   # Create symlinks to make them look the same.
   # TODO(pdox): Can this be fixed in glibc?
-  for ldso in "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib32/ld-linux.so.*
-  do
-    local ldsobase=$(basename "${ldso}")
-    cp -a "${ldso}" "${PNACL_X8632_ROOT}"
-    ln -sf "${ldsobase}" \
-           "${PNACL_X8632_ROOT}"/${ldsobase/ld-linux/ld-linux-x86-64}
-  done
-
-  for ldso in "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/lib/ld-linux-x86-64.so.*
-  do
-    local ldsobase=$(basename "${ldso}")
-    cp -a "${ldso}" "${PNACL_X8664_ROOT}"
-    ln -sf "${ldsobase}" \
-           "${PNACL_X8664_ROOT}"/${ldsobase/ld-linux-x86-64/ld-linux}
-  done
+  ln -sf "ld-2.9.so" "${PNACL_X8632_ROOT}"/ld-nacl-x86-32.so.1
+  ln -sf "ld-2.9.so" "${PNACL_X8632_ROOT}"/ld-nacl-x86-64.so.1
+  ln -sf "ld-2.9.so" "${PNACL_X8664_ROOT}"/ld-nacl-x86-32.so.1
+  ln -sf "ld-2.9.so" "${PNACL_X8664_ROOT}"/ld-nacl-x86-64.so.1
 
   # Copy the glibc headers
   cp -a "${NNACL_GLIBC_ROOT}"/${NACL64_TARGET}/include \
