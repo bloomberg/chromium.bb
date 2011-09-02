@@ -12,7 +12,8 @@
 
 class TestPostMessage : public TestCase {
  public:
-  explicit TestPostMessage(TestingInstance* instance) : TestCase(instance) {}
+  explicit TestPostMessage(TestingInstance* instance);
+  virtual ~TestPostMessage();
 
  private:
   // TestCase implementation.
@@ -37,6 +38,15 @@ class TestPostMessage : public TestCase {
   // calling removeEventListener for each.
   // Returns true on success, false on failure.
   bool ClearListeners();
+
+  // Wait for pending messages; return the number of messages that were pending
+  // at the time of invocation.
+  int WaitForMessages();
+
+  // Test that we can send a message from Instance::Init. Note the actual
+  // message is sent in TestPostMessage::Init, and this test simply makes sure
+  // we got it.
+  std::string TestSendInInit();
 
   // Test some basic functionality;  make sure we can send data successfully
   // in both directions.
