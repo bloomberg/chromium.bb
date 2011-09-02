@@ -317,6 +317,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     if not _HasValidConsentFile():
       client_id = hashlib.md5('abcdefgh').hexdigest()
       open(consent_file, 'w').write(client_id)
+      # This file must be owned by cronos:cronos!
+      os.chown(consent_file, 1000, 1000);
     assert _HasValidConsentFile(), 'Could not create %s' % consent_file
 
   @staticmethod
