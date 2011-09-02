@@ -417,7 +417,9 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 }
 
 void RootView::OnPaint(gfx::Canvas* canvas) {
+#if !defined(TOUCH_UI)
   canvas->AsCanvasSkia()->drawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+#endif
 }
 
 const ui::Compositor* RootView::GetCompositor() const {
