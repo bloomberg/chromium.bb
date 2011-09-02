@@ -757,7 +757,7 @@ from :3
     try:
       scm.update(options, (), [])
       self.fail()
-    except gclient_scm.gclient_utils.CheckCallError:
+    except gclient_scm.gclient_utils.Error:
       # The exact exception text varies across git versions so it's not worth
       # verifying it. It's fine as long as it throws.
       pass

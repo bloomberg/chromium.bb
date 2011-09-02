@@ -16,7 +16,8 @@ setup_gitsvn
   git config rietveld.server localhost:8080
 
   for ref in refs/remotes/trunk refs/remotes/some_branch; do
-    git checkout -q -B feature_branch $ref
+    git branch -f --set-upstream feature_branch $ref
+    git checkout -q feature_branch
     test_expect_success "Guessing upstream branch for $ref" \
         "$GIT_CL upstream | egrep -q '^$ref$'"
     git checkout -q master

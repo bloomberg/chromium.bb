@@ -9,7 +9,7 @@ details on the presubmit API built into depot_tools.
 """
 
 
-def CommonChecks(input_api, output_api):
+def CommonChecks(input_api, output_api, tests_to_black_list):
   results = []
   import sys
   if not sys.version.startswith('2.5'):
@@ -41,8 +41,8 @@ def CommonChecks(input_api, output_api):
       input_api,
       output_api,
       'tests',
-      whitelist=[r'.*test\.py$']))
-  results.extend(RunGitClTests(input_api, output_api))
+      whitelist=[r'.*tests\.py$'],
+      blacklist=tests_to_black_list))
   return results
 
 
@@ -95,13 +95,20 @@ def RunGitClTests(input_api, output_api):
 
 
 def CheckChangeOnUpload(input_api, output_api):
-  return CommonChecks(input_api, output_api)
+  # Do not run integration tests on upload since they are way too slow.
+  tests_to_black_list = [
+      r'^checkout_test\.py$',
+      r'^gclient_smoketest\.py$',
+      r'^scm_unittest\.py$',
+    ]
+  return CommonChecks(input_api, output_api, tests_to_black_list)
 
 
 def CheckChangeOnCommit(input_api, output_api):
   output = []
-  output.extend(CommonChecks(input_api, output_api))
+  output.extend(CommonChecks(input_api, output_api, []))
   output.extend(input_api.canned_checks.CheckDoNotSubmit(
       input_api,
       output_api))
+  output.extend(RunGitClTests(input_api, output_api))
   return output
