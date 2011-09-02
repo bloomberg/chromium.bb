@@ -135,13 +135,24 @@ bool ParallelAuthenticator::CompleteLogin(Profile* profile,
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(mounter_.get(), &CryptohomeOp::Initiate));
 
-  // For login completion from extension, we just need to resolve the current
-  // auth attempt state, the rest of OAuth related tasks will be done in
-  // parallel.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-          &ParallelAuthenticator::ResolveLoginCompletionStatus));
+  if (!using_oauth_) {
+    // Test automation needs to disable oauth, but that leads to other
+    // services not being able to fetch a token, leading to browser crashes.
+    // So initiate ClientLogin-based post authentication.
+    // TODO(xiyuan): This should not be required.
+    current_online_ = new OnlineAttempt(using_oauth_,
+                                        current_state_.get(),
+                                        this);
+    current_online_->Initiate(profile);
+  } else {
+    // For login completion from extension, we just need to resolve the current
+    // auth attempt state, the rest of OAuth related tasks will be done in
+    // parallel.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+            &ParallelAuthenticator::ResolveLoginCompletionStatus));
+  }
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

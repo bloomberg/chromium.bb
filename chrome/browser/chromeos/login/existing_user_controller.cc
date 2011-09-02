@@ -366,11 +366,6 @@ void ExistingUserController::OnLoginSuccess(
                                     this);
 
 
-  if (login_status_consumer_)
-    login_status_consumer_->OnLoginSuccess(username, password,
-                                           credentials, pending_requests,
-                                           using_oauth);
-
   // Notifiy LoginDisplay to allow it provide visual feedback to user.
   login_display_->OnLoginSuccess(username);
 }
@@ -426,6 +421,11 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
 #endif
   } else {
     LoginUtils::DoBrowserLaunch(profile, host_);
+    // Inform |login_status_consumer_| about successful login after
+    // browser launch.  Set most params to empty since they're not needed.
+    if (login_status_consumer_)
+      login_status_consumer_->OnLoginSuccess(
+          "", "", GaiaAuthConsumer::ClientLoginResult(), false, false);
     host_ = NULL;
   }
   login_display_->OnFadeOut();

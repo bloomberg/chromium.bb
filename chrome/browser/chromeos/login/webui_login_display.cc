@@ -179,6 +179,13 @@ void WebUILoginDisplay::SetWebUIHandler(
   webui_handler_ = webui_handler;
 }
 
+void WebUILoginDisplay::ShowSigninScreenForCreds(
+    const std::string& username,
+    const std::string& password) {
+  DCHECK(webui_handler_);
+  webui_handler_->ShowSigninScreenForCreds(username, password);
+}
+
 // WebUILoginDisplay, private: -------------------------------------------------
 
 // Singleton implementation: ---------------------------------------------------

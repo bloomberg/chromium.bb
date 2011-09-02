@@ -111,7 +111,8 @@ AutomationProvider::AutomationProvider(Profile* profile)
               switches::kAutomationReinitializeOnChannelError)),
       is_connected_(false),
       initial_tab_loads_complete_(false),
-      network_library_initialized_(true) {
+      network_library_initialized_(true),
+      login_webui_ready_(true) {
   TRACE_EVENT_BEGIN_ETW("AutomationProvider::AutomationProvider", 0, "");
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -167,6 +168,12 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
   channel_->AddFilter(automation_resource_message_filter_);
 
 #if defined(OS_CHROMEOS)
+  // Wait for webui login to be ready.
+  // Observer will delete itself.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
+    login_webui_ready_ = false;
+    new LoginWebuiReadyObserver(this);
+  }
   // Wait for the network manager to initialize.
   // The observer will delete itself when done.
   network_library_initialized_ = false;
@@ -202,13 +209,20 @@ void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
 
 void AutomationProvider::OnInitialTabLoadsComplete() {
   initial_tab_loads_complete_ = true;
-  if (is_connected_ && network_library_initialized_)
+  if (is_connected_ && network_library_initialized_ && login_webui_ready_)
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 
 void AutomationProvider::OnNetworkLibraryInit() {
   network_library_initialized_ = true;
-  if (is_connected_ && initial_tab_loads_complete_)
+  if (is_connected_ && initial_tab_loads_complete_ && login_webui_ready_)
+    Send(new AutomationMsg_InitialLoadsComplete());
+}
+
+void AutomationProvider::OnLoginWebuiReady() {
+  login_webui_ready_ = true;
+  if (is_connected_ && initial_tab_loads_complete_ &&
+      network_library_initialized_)
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 
@@ -302,7 +316,8 @@ void AutomationProvider::OnChannelConnected(int pid) {
 
   // Send a hello message with our current automation protocol version.
   channel_->Send(new AutomationMsg_Hello(GetProtocolVersion()));
-  if (initial_tab_loads_complete_ && network_library_initialized_)
+  if (initial_tab_loads_complete_ && network_library_initialized_ &&
+      login_webui_ready_)
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 

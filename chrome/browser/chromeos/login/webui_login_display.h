@@ -80,6 +80,8 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
   virtual void SetWebUIHandler(
       LoginDisplayWebUIHandler* webui_handler) OVERRIDE;
+  virtual void ShowSigninScreenForCreds(const std::string& username,
+                                        const std::string& password) OVERRIDE;
 
   void set_login_window(views::Widget* login_window) {
     login_window_ = login_window;

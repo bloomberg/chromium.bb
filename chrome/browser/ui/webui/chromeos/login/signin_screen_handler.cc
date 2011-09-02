@@ -16,9 +16,11 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/dnsrr_resolver.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -220,6 +222,8 @@ void SigninScreenHandler::RegisterMessages() {
       NewCallback(this, &SigninScreenHandler::HandleLaunchHelpApp));
   web_ui_->RegisterMessageCallback("createAccount",
       NewCallback(this, &SigninScreenHandler::HandleCreateAccount));
+  web_ui_->RegisterMessageCallback("loginWebuiReady",
+      NewCallback(this, &SigninScreenHandler::HandleLoginWebuiReady));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -271,6 +275,13 @@ void SigninScreenHandler::OnDnsCleared() {
 void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_)
     return;
+  ShowSigninScreenForCreds("", "");
+}
+
+void SigninScreenHandler::ShowSigninScreenForCreds(
+    const std::string& username,
+    const std::string& password) {
+  VLOG(2) << "ShowSigninScreenForCreds " << username << " " << password;
 
   DictionaryValue params;
   params.SetString("startUrl", kGaiaExtStartPage);
@@ -288,16 +299,10 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
   // Test automation data:
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
-    if (command_line->HasSwitch(switches::kTestAuthEmail)) {
-      params.SetString("test_email",
-                       command_line->GetSwitchValueASCII(
-                           switches::kTestAuthEmail));
-    }
-    if (command_line->HasSwitch(switches::kTestAuthPassword)) {
-      params.SetString("test_password",
-                       command_line->GetSwitchValueASCII(
-                           switches::kTestAuthPassword));
-    }
+    if (!username.empty())
+      params.SetString("test_email", username);
+    if (!password.empty())
+      params.SetString("test_password", password);
   }
   ShowScreen(kGaiaSigninScreen, &params);
 }
@@ -447,6 +452,13 @@ void SigninScreenHandler::SendUserList(bool animated) {
   base::FundamentalValue animated_value(animated);
   web_ui_->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
                                   users_list, animated_value);
+}
+
+void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
+  NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+      NotificationService::AllSources(),
+      NotificationService::NoDetails());
 }
 
 void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {

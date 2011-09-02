@@ -233,6 +233,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         '--enable-file-cookies',
         '--dom-automation',
         '--skip-oauth-login',
+        # Enables injection of test content script for webui login automation
+        '--auth-ext-path=/usr/share/chromeos-assets/gaia_auth',
       ]
     else:
       return []
@@ -2947,6 +2949,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         u'is_owner': True,
         u'email': u'example@gmail.com',
         u'is_screen_locked': False,
+        u'login_ui_type': 'nativeui', # or 'webui'
         u'is_logged_in': True}
 
     Raises:
@@ -3021,8 +3024,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def Login(self, username, password):
     """Login to chromeos.
 
-    Waits until logged in.
+    Waits until logged in and browser is ready.
     Should be displaying the login screen to work.
+
+    Note that in case of webui auth-extension-based login, gaia auth errors
+    will not be noticed here, because the browser has no knowledge of it.
 
     Returns:
       An error string if an error occured.

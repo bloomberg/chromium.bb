@@ -112,6 +112,9 @@ class AutomationProvider
   // Called when the ChromeOS network library has finished its first update.
   void OnNetworkLibraryInit();
 
+  // Called when the chromeos WebUI login is ready.
+  void OnLoginWebuiReady();
+
   // Get the index of a particular NavigationController object
   // in the given parent window.  This method uses
   // TabStrip::GetIndexForNavigationController to get the index.
@@ -385,6 +388,9 @@ class AutomationProvider
 
   // True iff the Chrome OS network library finished initialization.
   bool network_library_initialized_;
+
+  // True iff ChromeOS webui login ui is ready.
+  bool login_webui_ready_;
 
   // ID of automation channel.
   std::string channel_id_;

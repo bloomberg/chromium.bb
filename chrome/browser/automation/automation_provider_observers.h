@@ -133,6 +133,22 @@ class NetworkManagerInitObserver
 
   DISALLOW_COPY_AND_ASSIGN(NetworkManagerInitObserver);
 };
+
+// Observes when webui login becomes ready on chromeos.
+class LoginWebuiReadyObserver : public NotificationObserver {
+ public:
+  explicit LoginWebuiReadyObserver(AutomationProvider* automation);
+  virtual ~LoginWebuiReadyObserver();
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginWebuiReadyObserver);
+};
 #endif  // defined(OS_CHROMEOS)
 
 // Watches for NewTabUI page loads for performance timing purposes.
@@ -715,8 +731,7 @@ class InfoBarCountObserver : public NotificationObserver {
 };
 
 #if defined(OS_CHROMEOS)
-class LoginObserver : public chromeos::LoginStatusConsumer,
-                      public NotificationObserver {
+class LoginObserver : public chromeos::LoginStatusConsumer {
  public:
   LoginObserver(chromeos::ExistingUserController* controller,
                 AutomationProvider* automation,
@@ -733,13 +748,8 @@ class LoginObserver : public chromeos::LoginStatusConsumer,
       bool pending_requests,
       bool using_oauth);
 
-  virtual void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
-
  private:
   chromeos::ExistingUserController* controller_;
-  NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
 

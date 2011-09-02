@@ -137,6 +137,7 @@ cr.define('login', function() {
         this.loading = true;
       } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
         this.loading = false;
+        chrome.send('loginWebuiReady');
       }
     },
 

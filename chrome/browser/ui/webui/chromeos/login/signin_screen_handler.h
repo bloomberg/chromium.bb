@@ -33,6 +33,9 @@ class LoginDisplayWebUIHandler {
                          const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
+  // Show siginin screen for the given credentials.
+  virtual void ShowSigninScreenForCreds(const std::string& username,
+                                        const std::string& password) = 0;
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
 };
@@ -101,6 +104,8 @@ class SigninScreenHandler : public BaseScreenHandler,
                          const std::string& error_text,
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;
+  virtual void ShowSigninScreenForCreds(const std::string& username,
+                                        const std::string& password) OVERRIDE;
 
   // BrowsingDataRemover::Observer overrides.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
@@ -138,6 +143,9 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Handle 'createAccount' request.
   void HandleCreateAccount(const base::ListValue* args);
+
+  // Handle 'loginWebuiReady' request.
+  void HandleLoginWebuiReady(const base::ListValue* args);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);

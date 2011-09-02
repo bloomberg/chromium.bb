@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/testing_automation_provider.h"
 
+#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
@@ -35,6 +37,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"
 #include "views/widget/widget.h"
@@ -218,6 +221,11 @@ void TestingAutomationProvider::GetLoginInfo(DictionaryValue* args,
   const chromeos::ScreenLocker* screen_locker =
       chromeos::ScreenLocker::default_screen_locker();
 
+  return_value->SetString(
+      "login_ui_type",
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)?
+          "webui": "nativeui");
+
   return_value->SetBoolean("is_owner", user_manager->current_user_is_owner());
   return_value->SetBoolean("is_logged_in", user_manager->user_is_logged_in());
   return_value->SetBoolean("is_screen_locked", screen_locker);
@@ -262,10 +270,20 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
 
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
-  controller->login_display()->SelectPod(0);
+
   // Set up an observer (it will delete itself).
   new LoginObserver(controller, this, reply_message);
-  controller->Login(username, password);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
+    // WebUI login.
+    chromeos::WebUILoginDisplay* webui_login_display =
+        chromeos::WebUILoginDisplay::GetInstance();
+    webui_login_display->ShowSigninScreenForCreds(username, password);
+  } else {
+    // Native UI login.
+    controller->login_display()->SelectPod(0);
+    controller->Login(username, password);
+  }
 }
 
 void TestingAutomationProvider::LockScreen(DictionaryValue* args,

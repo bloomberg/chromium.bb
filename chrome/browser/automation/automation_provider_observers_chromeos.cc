@@ -46,6 +46,24 @@ void NetworkManagerInitObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   }
 }
 
+LoginWebuiReadyObserver::LoginWebuiReadyObserver(
+    AutomationProvider* automation)
+    : automation_(automation->AsWeakPtr()) {
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+                 NotificationService::AllSources());
+}
+
+LoginWebuiReadyObserver::~LoginWebuiReadyObserver() {
+}
+
+void LoginWebuiReadyObserver::Observe(int type,
+                                      const NotificationSource& source,
+                                      const NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY);
+  automation_->OnLoginWebuiReady();
+  delete this;
+}
+
 LoginObserver::LoginObserver(chromeos::ExistingUserController* controller,
                              AutomationProvider* automation,
                              IPC::Message* reply_message)
@@ -53,8 +71,6 @@ LoginObserver::LoginObserver(chromeos::ExistingUserController* controller,
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message) {
   controller_->set_login_status_consumer(this);
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                 NotificationService::AllSources());
 }
 
 LoginObserver::~LoginObserver() {
@@ -76,11 +92,6 @@ void LoginObserver::OnLoginSuccess(
     bool pending_requests,
     bool using_oauth) {
   controller_->set_login_status_consumer(NULL);
-}
-
-void LoginObserver::Observe(int type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
   AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(NULL);
   delete this;
 }
@@ -412,7 +423,7 @@ void PhotoCaptureObserver::OnCapturingStopped(
   take_photo_dialog->Accept();
   const SkBitmap& photo = take_photo_view->GetImage();
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  if(!user_manager) {
+  if (!user_manager) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendError(
                             "No user manager");
@@ -421,7 +432,7 @@ void PhotoCaptureObserver::OnCapturingStopped(
   }
 
   const chromeos::UserManager::User& user = user_manager->logged_in_user();
-  if(user.email().empty()) {
+  if (user.email().empty()) {
     AutomationJSONReply(automation_,
                         reply_message_.release()).SendError(
                             "User email is not set");

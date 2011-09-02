@@ -756,6 +756,9 @@ enum NotificationType {
   // all and the details are AuthenticationNotificationDetails.
   NOTIFICATION_LOGIN_AUTHENTICATION,
 
+  // Sent when webui login screen is ready and gaia iframe has loaded.
+  NOTIFICATION_LOGIN_WEBUI_READY,
+
   // Sent when a panel state changed.
   NOTIFICATION_PANEL_STATE_CHANGED,
 
