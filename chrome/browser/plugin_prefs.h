@@ -46,7 +46,15 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
   // This should be called before the first profile is created.
   static void Initialize();
 
+  // Returns the instance associated with |profile|, creating it if necessary.
   static PluginPrefs* GetForProfile(Profile* profile);
+
+  // Creates a new instance. This method should only be used for testing.
+  PluginPrefs();
+
+  // Associates this instance with |prefs|. This enables or disables
+  // plugin groups as defined by the user's preferences.
+  void SetPrefs(PrefService* prefs);
 
   // Enable or disable a plugin group.
   void EnablePluginGroup(bool enable, const string16& group_name);
@@ -74,12 +82,7 @@ class PluginPrefs : public base::RefCountedThreadSafe<PluginPrefs>,
 
   class Factory;
 
-  PluginPrefs();
   virtual ~PluginPrefs();
-
-  // Associates the PluginPrefs with |profile|. This enables or disables
-  // plugin groups as defined by the user's preferences.
-  void SetProfile(Profile* profile);
 
   // Called on the file thread to get the data necessary to update the saved
   // preferences.

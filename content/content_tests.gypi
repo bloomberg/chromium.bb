@@ -30,6 +30,8 @@
         'browser/mock_content_browser_client.cc',
         'browser/mock_resource_context.cc',
         'browser/mock_resource_context.h',
+        'browser/renderer_host/dummy_resource_handler.cc',
+        'browser/renderer_host/dummy_resource_handler.h',
         'browser/renderer_host/media/mock_media_observer.cc',
         'browser/renderer_host/media/mock_media_observer.h',
         'common/test_url_constants.cc',

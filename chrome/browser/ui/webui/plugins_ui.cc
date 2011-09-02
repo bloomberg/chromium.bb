@@ -330,14 +330,6 @@ RefCountedMemory* PluginsUI::GetFaviconResourceBytes() {
 
 // static
 void PluginsUI::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterListPref(prefs::kPluginsPluginsList,
-                          PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kPluginsEnabledNaCl,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPluginsShowDetails,
                              false,
                              PrefService::UNSYNCABLE_PREF);

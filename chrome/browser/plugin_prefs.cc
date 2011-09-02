@@ -182,8 +182,8 @@ void PluginPrefs::ListValueToStringSet(const ListValue* src,
   }
 }
 
-void PluginPrefs::SetProfile(Profile* profile) {
-  prefs_ = profile->GetPrefs();
+void PluginPrefs::SetPrefs(PrefService* prefs) {
+  prefs_ = prefs;
   bool update_internal_dir = false;
   FilePath last_internal_dir =
       prefs_->GetFilePath(prefs::kPluginsLastInternalDirectory);
@@ -355,7 +355,7 @@ PluginPrefs::Factory::Factory()
 ProfileKeyedService* PluginPrefs::Factory::BuildServiceInstanceFor(
       Profile* profile) const {
   scoped_refptr<PluginPrefs> plugin_prefs(new PluginPrefs());
-  plugin_prefs->SetProfile(profile);
+  plugin_prefs->SetPrefs(profile->GetPrefs());
   return new PluginPrefsWrapper(plugin_prefs);
 }
 
@@ -452,6 +452,14 @@ void PluginPrefs::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterFilePathPref(prefs::kPluginsLastInternalDirectory,
                               internal_dir,
                               PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPluginsEnabledInternalPDF,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPluginsEnabledNaCl,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kPluginsPluginsList,
+                          PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsDisabledPlugins,
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions,

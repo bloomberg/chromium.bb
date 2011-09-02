@@ -10,9 +10,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "content/browser/mock_resource_context.h"
+#include "content/browser/renderer_host/dummy_resource_handler.h"
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_queue.h"
 #include "content/common/notification_service.h"
 #include "net/url_request/url_request.h"
@@ -22,70 +22,13 @@
 
 class Profile;
 
+using content::DummyResourceHandler;
+
 namespace {
 
 const char kMatchingUrl[] = "http://google.com/";
 const char kNotMatchingUrl[] = "http://example.com/";
 const char kTestData[] = "Hello, World!";
-
-// Dummy ResourceHandler required for ResourceDispatcherHostRequestInfo.
-class DummyResourceHandler : public ResourceHandler {
- public:
-  DummyResourceHandler() {
-  }
-
-  virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size) {
-    NOTREACHED();
-    return true;
-  }
-
-
-  virtual bool OnRequestRedirected(int request_id, const GURL& url,
-                                   ResourceResponse* response,
-                                   bool* defer) {
-    NOTREACHED();
-    return true;
-  }
-
-  virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) {
-    NOTREACHED();
-    return true;
-  }
-
-  virtual bool OnWillStart(int request_id,
-                           const GURL& url,
-                           bool* defer) {
-    NOTREACHED();
-    return true;
-  }
-
-  virtual bool OnWillRead(int request_id,
-                          net::IOBuffer** buf,
-                          int* buf_size,
-                          int min_size) {
-    NOTREACHED();
-    return true;
-  }
-
-  virtual bool OnReadCompleted(int request_id, int* bytes_read) {
-    NOTREACHED();
-    return true;
-  }
-
-  virtual bool OnResponseCompleted(int request_id,
-                                   const net::URLRequestStatus& status,
-                                   const std::string& security_info) {
-    NOTREACHED();
-    return true;
-  }
-
-  virtual void OnRequestClosed() {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyResourceHandler);
-};
 
 ResourceDispatcherHostRequestInfo* CreateRequestInfo(int request_id) {
   return new ResourceDispatcherHostRequestInfo(

@@ -5,9 +5,15 @@
 #include <string>
 
 #include "base/message_loop.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
+#include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_pref_service.h"
+#include "content/browser/mock_resource_context.h"
 #include "content/browser/plugin_service.h"
+#include "content/browser/renderer_host/dummy_resource_handler.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -63,12 +69,42 @@ class GViewRequestProtocolFactory
 
 class GViewRequestInterceptorTest : public testing::Test {
  public:
+  GViewRequestInterceptorTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {}
+
   virtual void SetUp() {
+    content::ResourceContext* resource_context =
+        content::MockResourceContext::GetInstance();
+    net::URLRequestContext* request_context =
+        resource_context->request_context();
+    old_factory_ = request_context->job_factory();
     job_factory_.SetProtocolHandler("http", new GViewRequestProtocolFactory);
     job_factory_.AddInterceptor(new GViewRequestInterceptor);
-    request_context_ = new TestURLRequestContext;
-    request_context_->set_job_factory(&job_factory_);
+    request_context->set_job_factory(&job_factory_);
+    PluginPrefs::RegisterPrefs(&prefs_);
+    plugin_prefs_ = new PluginPrefs();
+    plugin_prefs_->SetPrefs(&prefs_);
+    ChromePluginServiceFilter* filter =
+        ChromePluginServiceFilter::GetInstance();
+    filter->RegisterResourceContext(plugin_prefs_, resource_context);
+    PluginService::GetInstance()->set_filter(filter);
+
     ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path_));
+
+    handler_ = new content::DummyResourceHandler();
+  }
+
+  virtual void TearDown() {
+    content::ResourceContext* resource_context =
+        content::MockResourceContext::GetInstance();
+    net::URLRequestContext* request_context =
+        resource_context->request_context();
+    request_context->set_job_factory(old_factory_);
+    ChromePluginServiceFilter* filter =
+        ChromePluginServiceFilter::GetInstance();
+    filter->UnregisterResourceContext(resource_context);
+    PluginService::GetInstance()->set_filter(NULL);
   }
 
   void RegisterPDFPlugin() {
@@ -84,7 +120,7 @@ class GViewRequestInterceptorTest : public testing::Test {
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   }
 
-  void SetPDFPluginLoadedState(bool want_loaded, bool* out_is_enabled) {
+  void SetPDFPluginLoadedState(bool want_loaded) {
     webkit::WebPluginInfo info;
     bool is_loaded =
         webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
@@ -102,20 +138,47 @@ class GViewRequestInterceptorTest : public testing::Test {
           pdf_path_, &info);
     }
     EXPECT_EQ(want_loaded, is_loaded);
-    *out_is_enabled = webkit::IsPluginEnabled(info);
+  }
+
+  void SetupRequest(net::URLRequest* request) {
+    content::ResourceContext* context =
+        content::MockResourceContext::GetInstance();
+    ResourceDispatcherHostRequestInfo* info =
+        new ResourceDispatcherHostRequestInfo(handler_,
+                                              ChildProcessInfo::RENDER_PROCESS,
+                                              -1,          // child_id
+                                              MSG_ROUTING_NONE,
+                                              0,           // origin_pid
+                                              request->identifier(),
+                                              false,       // is_main_frame
+                                              -1,          // frame_id
+                                              ResourceType::MAIN_FRAME,
+                                              PageTransition::LINK,
+                                              0,           // upload_size
+                                              false,       // is_download
+                                              true,        // allow_download
+                                              false,       // has_user_gesture
+                                              context);
+    request->SetUserData(NULL, info);
+    request->set_context(context->request_context());
   }
 
  protected:
   MessageLoopForIO message_loop_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
+  TestingPrefService prefs_;
+  scoped_refptr<PluginPrefs> plugin_prefs_;
   net::URLRequestJobFactory job_factory_;
-  scoped_refptr<TestURLRequestContext> request_context_;
+  const net::URLRequestJobFactory* old_factory_;
+  scoped_refptr<ResourceHandler> handler_;
   TestDelegate test_delegate_;
   FilePath pdf_path_;
 };
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptHtml) {
   net::URLRequest request(GURL("http://foo.com/index.html"), &test_delegate_);
-  request.set_context(request_context_);
+  SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(0, test_delegate_.received_redirect_count());
@@ -124,7 +187,7 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptHtml) {
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
-  request.set_context(request_context_);
+  SetupRequest(&request);
   request.set_load_flags(net::LOAD_IS_DOWNLOAD);
   request.Start();
   MessageLoop::current()->Run();
@@ -133,17 +196,11 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
 }
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
-  bool enabled;
-  SetPDFPluginLoadedState(true, &enabled);
-
-  if (!enabled) {
-    bool pdf_plugin_enabled =
-        webkit::npapi::PluginList::Singleton()->EnablePlugin(pdf_path_);
-    EXPECT_TRUE(pdf_plugin_enabled);
-  }
+  SetPDFPluginLoadedState(true);
+  webkit::npapi::PluginList::Singleton()->EnablePlugin(pdf_path_);
 
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
-  request.set_context(request_context_);
+  SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(0, test_delegate_.received_redirect_count());
@@ -151,17 +208,11 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
 }
 
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
-  bool enabled;
-  SetPDFPluginLoadedState(true, &enabled);
-
-  if (enabled) {
-    bool pdf_plugin_disabled =
-        webkit::npapi::PluginList::Singleton()->DisablePlugin(pdf_path_);
-    EXPECT_TRUE(pdf_plugin_disabled);
-  }
+  SetPDFPluginLoadedState(true);
+  webkit::npapi::PluginList::Singleton()->DisablePlugin(pdf_path_);
 
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
-  request.set_context(request_context_);
+  SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
@@ -171,11 +222,10 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
 }
 
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
-  bool enabled;
-  SetPDFPluginLoadedState(false, &enabled);
+  SetPDFPluginLoadedState(false);
 
   net::URLRequest request(GURL("http://foo.com/file.pdf"), &test_delegate_);
-  request.set_context(request_context_);
+  SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
@@ -185,7 +235,7 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
 
 TEST_F(GViewRequestInterceptorTest, InterceptPowerpoint) {
   net::URLRequest request(GURL("http://foo.com/file.ppt"), &test_delegate_);
-  request.set_context(request_context_);
+  SetupRequest(&request);
   request.Start();
   MessageLoop::current()->Run();
   EXPECT_EQ(1, test_delegate_.received_redirect_count());

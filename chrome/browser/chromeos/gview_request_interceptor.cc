@@ -6,7 +6,10 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -52,6 +55,26 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptRedirect(
   return NULL;
 }
 
+bool GViewRequestInterceptor::ShouldUsePdfPlugin(
+    net::URLRequest* request) const {
+  FilePath pdf_path;
+  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
+  if (!info)
+    return false;
+
+  webkit::WebPluginInfo plugin;
+  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+      pdf_path, &plugin)) {
+    return false;
+  }
+
+  return ChromePluginServiceFilter::GetInstance()->ShouldUsePlugin(
+      info->child_id(), info->route_id(), info->context(),
+      request->url(), GURL(), &plugin);
+}
+
 net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
     net::URLRequest* request) const {
   // Do not intercept this request if it is a download.
@@ -63,15 +86,8 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
   request->GetMimeType(&mime_type);
   // If the local PDF viewing plug-in is installed and enabled, don't
   // redirect PDF files to Google Document Viewer.
-  if (mime_type == kPdfMimeType) {
-    FilePath pdf_path;
-    webkit::WebPluginInfo info;
-    PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-    if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
-            pdf_path, &info) &&
-            webkit::IsPluginEnabled(info))
-      return NULL;
-  }
+  if (mime_type == kPdfMimeType && ShouldUsePdfPlugin(request))
+    return NULL;
   // If supported, build the URL to the Google Document Viewer
   // including the origial document's URL, then create a new job that
   // will redirect the browser to this new URL.
