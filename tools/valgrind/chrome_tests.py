@@ -102,6 +102,8 @@ class ChromeTests:
 
     if self._options.valgrind_tool_flags:
       cmd += self._options.valgrind_tool_flags.split(" ")
+    if self._options.keep_logs:
+      cmd += ["--keep_logs"]
     if valgrind_test_args != None:
       for arg in valgrind_test_args:
         cmd.append(arg)
@@ -466,6 +468,11 @@ def _main(_):
                     help="specify a valgrind tool to run the tests under")
   parser.add_option("", "--tool_flags", dest="valgrind_tool_flags", default="",
                     help="specify custom flags for the selected valgrind tool")
+  parser.add_option("", "--keep_logs", action="store_true", default=False,
+                    help="store memory tool logs in the <tool>.logs directory "
+                         "instead of /tmp.\nThis can be useful for tool "
+                         "developers/maintainers.\nPlease note that the <tool>"
+                         ".logs directory will be clobbered on tool startup.")
   # My machine can do about 120 layout tests/hour in release mode.
   # Let's do 30 minutes worth per run.
   # The CPU is mostly idle, so perhaps we can raise this when
