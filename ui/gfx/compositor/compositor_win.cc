@@ -55,7 +55,6 @@ class ViewTexture : public Texture {
   virtual void SetCanvas(const SkCanvas& canvas,
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
-  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 
@@ -67,7 +66,8 @@ class ViewTexture : public Texture {
   void ConvertBitmapToD3DData(const SkBitmap& bitmap,
                               scoped_array<uint32>* converted_data);
 
-  void CreateVertexBuffer(const gfx::Size& size);
+  // Creates vertex buffer for specified region
+  void CreateVertexBufferForRegion(const gfx::Rect& bounds);
 
   scoped_refptr<CompositorWin> compositor_;
 
@@ -197,8 +197,6 @@ ViewTexture::~ViewTexture() {
 void ViewTexture::SetCanvas(const SkCanvas& canvas,
                             const gfx::Point& origin,
                             const gfx::Size& overall_size) {
-  if (view_size_ != overall_size)
-    CreateVertexBuffer(overall_size);
   view_size_ = overall_size;
 
   scoped_array<uint32> converted_data;
@@ -241,7 +239,8 @@ void ViewTexture::SetCanvas(const SkCanvas& canvas,
   }
 }
 
-void ViewTexture::Draw(const ui::TextureDrawParams& params) {
+void ViewTexture::Draw(const ui::TextureDrawParams& params,
+                       const gfx::Rect& clip_bounds) {
   compositor_->UpdatePerspective(params.transform, view_size_);
 
   // Make texture active.
@@ -258,16 +257,12 @@ void ViewTexture::Draw(const ui::TextureDrawParams& params) {
 
   UINT stride = sizeof(Vertex);
   UINT offset = 0;
+  CreateVertexBufferForRegion(clip_bounds);
   ID3D10Buffer* vertex_buffer = vertex_buffer_.get();
   device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
   device_->IASetIndexBuffer(compositor_->GetTextureIndexBuffer(),
                             DXGI_FORMAT_R32_UINT, 0);
   device_->DrawIndexed(6, 0, 0);
-}
-
-void ViewTexture::Draw(const ui::TextureDrawParams& params,
-                       const gfx::Rect& clip_bounds_in_texture) {
-  NOTIMPLEMENTED();
 }
 
 void ViewTexture::Errored(HRESULT result) {
@@ -296,18 +291,21 @@ void ViewTexture::ConvertBitmapToD3DData(
   }
 }
 
-void ViewTexture::CreateVertexBuffer(const gfx::Size& size) {
+void ViewTexture::CreateVertexBufferForRegion(const gfx::Rect& bounds) {
   vertex_buffer_.Release();
-  const gfx::Size& host_size = compositor_->size();
-  float x = static_cast<float>(host_size.width()) / 2.0f;
-  float y = static_cast<float>(host_size.height()) / 2.0f;
-  float w = static_cast<float>(size.width());
-  float h = static_cast<float>(size.height());
+  float x = bounds.x();
+  float max_x = bounds.right();
+  float y = bounds.y();
+  float max_y = bounds.bottom();
+  float tex_x = x / static_cast<float>(view_size_.width());
+  float max_tex_x = max_x / static_cast<float>(view_size_.width());
+  float tex_y = y / static_cast<float>(view_size_.width());
+  float max_tex_y = max_y / static_cast<float>(view_size_.height());
   Vertex vertices[] = {
-    { D3DXVECTOR3(0.0f,   -h, 0.0f), D3DXVECTOR2(0.0f, 1.0f) },
-    { D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR2(0.0f, 0.0f) },
-    { D3DXVECTOR3(   w, 0.0f, 0.0f), D3DXVECTOR2(1.0f, 0.0f) },
-    { D3DXVECTOR3(   w,   -h, 0.0f), D3DXVECTOR2(1.0f, 1.0f) },
+    { D3DXVECTOR3(    x, -max_y, 0.0f), D3DXVECTOR2(    tex_x, max_tex_y) },
+    { D3DXVECTOR3(    x,     -y, 0.0f), D3DXVECTOR2(    tex_x,     tex_y) },
+    { D3DXVECTOR3(max_x,     -y, 0.0f), D3DXVECTOR2(max_tex_x,     tex_y) },
+    { D3DXVECTOR3(max_x, -max_y, 0.0f), D3DXVECTOR2(max_tex_x, max_tex_y) }
   };
 
   // Create the vertex buffer containing the points.

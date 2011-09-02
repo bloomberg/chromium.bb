@@ -133,9 +133,6 @@ void Layer::Draw() {
   texture_draw_params.blend = parent_ != NULL && !fills_bounds_opaquely_;
   texture_draw_params.compositor_size = compositor_->size();
 
-#if defined(OS_WIN)
-  texture_->Draw(texture_draw_params);
-#else
   hole_rect_ = hole_rect_.Intersect(
       gfx::Rect(0, 0, bounds_.width(), bounds_.height()));
 
@@ -162,7 +159,6 @@ void Layer::Draw() {
       hole_rect_.bottom(),
       bounds_.width(),
       bounds_.height() - hole_rect_.bottom()));
-#endif
 }
 
 void Layer::DrawRegion(const ui::TextureDrawParams& params,

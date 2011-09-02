@@ -2324,8 +2324,6 @@ class TestTexture : public ui::Texture {
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds) OVERRIDE {}
 
-  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE {}
-
  private:
   // Number of live instances.
   static int live_count_;

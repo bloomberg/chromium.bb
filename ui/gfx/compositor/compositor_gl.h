@@ -71,11 +71,6 @@ class COMPOSITOR_EXPORT TextureGL : public Texture {
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) OVERRIDE;
 
-  // Draws the texture.
-  // TODO(pkotwicz) merge these two methods into one, this method currently
-  // doesn't make sense in the context of windows
-  virtual void Draw(const ui::TextureDrawParams& params) OVERRIDE;
-
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds_in_texture) OVERRIDE;
 

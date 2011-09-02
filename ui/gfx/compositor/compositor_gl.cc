@@ -345,10 +345,6 @@ void TextureGL::SetCanvas(const SkCanvas& canvas,
   }
 }
 
-void TextureGL::Draw(const ui::TextureDrawParams& params) {
-  Draw(params, gfx::Rect(0, 0, size_.width(), size_.height()));
-}
-
 void TextureGL::Draw(const ui::TextureDrawParams& params,
                      const gfx::Rect& clip_bounds_in_texture) {
   SharedResources* instance = SharedResources::GetInstance();

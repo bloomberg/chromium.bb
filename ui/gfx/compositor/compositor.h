@@ -52,9 +52,6 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
                          const gfx::Point& origin,
                          const gfx::Size& overall_size) = 0;
 
-  // Draws the texture.
-  virtual void Draw(const ui::TextureDrawParams& params) = 0;
-
   // Draws the portion of the texture contained within clip_bounds
   virtual void Draw(const ui::TextureDrawParams& params,
                     const gfx::Rect& clip_bounds_in_texture) = 0;
