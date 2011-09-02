@@ -301,6 +301,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterIntentHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebIntentDispatch,
                         OnWebIntentDispatch)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1132,6 +1133,15 @@ void TabContents::OnWebIntentDispatch(const IPC::Message& message,
                                       int intent_id) {
   delegate()->WebIntentDispatch(this, message.routing_id(), action, type,
                                 data, intent_id);
+}
+
+void TabContents::OnFindReply(int request_id,
+                              int number_of_matches,
+                              const gfx::Rect& selection_rect,
+                              int active_match_ordinal,
+                              bool final_update) {
+  delegate()->FindReply(this, request_id, number_of_matches, selection_rect,
+                        active_match_ordinal, final_update);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

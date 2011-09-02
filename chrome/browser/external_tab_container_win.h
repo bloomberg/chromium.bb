@@ -176,6 +176,12 @@ class ExternalTabContainer : public TabContentsDelegate,
                                  const string16& type,
                                  const string16& data,
                                  int intent_id);
+  virtual void FindReply(TabContents* tab,
+                         int request_id,
+                         int number_of_matches,
+                         const gfx::Rect& selection_rect,
+                         int active_match_ordinal,
+                         bool final_update);
 
   void RegisterRenderViewHost(RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(RenderViewHost* render_view_host);
@@ -288,9 +294,6 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // whether top level URL requests are to be handled by the automation client.
   bool handle_top_level_requests_;
-
-  // Scoped browser object for this ExternalTabContainer instance.
-  scoped_ptr<Browser> browser_;
 
   // Contains ExternalTabContainers that have not been connected to as yet.
   static base::LazyInstance<PendingTabs> pending_tabs_;

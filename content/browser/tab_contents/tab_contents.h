@@ -577,6 +577,9 @@ class TabContents : public PageNavigator,
                            const string16& type,
                            const string16& data,
                            int intent_id);
+  void OnFindReply(int request_id, int number_of_matches,
+                   const gfx::Rect& selection_rect, int active_match_ordinal,
+                   bool final_update);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

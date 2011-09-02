@@ -316,6 +316,14 @@ void TabContentsDelegate::WebIntentDispatch(TabContents* tab,
                                             int intent_id) {
 }
 
+void TabContentsDelegate::FindReply(TabContents* tab,
+                                    int request_id,
+                                    int number_of_matches,
+                                    const gfx::Rect& selection_rect,
+                                    int active_match_ordinal,
+                                    bool final_update) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
   while (!attached_contents_.empty()) {
     TabContents* tab_contents = *attached_contents_.begin();

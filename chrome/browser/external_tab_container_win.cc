@@ -775,6 +775,16 @@ void ExternalTabContainer::WebIntentDispatch(TabContents* tab,
                                    intent_id);
 }
 
+void ExternalTabContainer::FindReply(TabContents* tab,
+                                     int request_id,
+                                     int number_of_matches,
+                                     const gfx::Rect& selection_rect,
+                                     int active_match_ordinal,
+                                     bool final_update) {
+  Browser::FindReplyHelper(tab, request_id, number_of_matches, selection_rect,
+                           active_match_ordinal, final_update);
+}
+
 bool ExternalTabContainer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExternalTabContainer, message)
@@ -891,9 +901,6 @@ void ExternalTabContainer::OnDestroy() {
   prop_.reset();
   Uninitialize();
   NativeWidgetWin::OnDestroy();
-  if (browser_.get()) {
-    ::DestroyWindow(browser_->window()->GetNativeHandle());
-  }
 }
 
 void ExternalTabContainer::OnFinalMessage(HWND window) {

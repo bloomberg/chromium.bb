@@ -684,6 +684,14 @@ class Browser : public TabHandlerDelegate,
                                       const string16& data,
                                       int intent_id);
 
+  // Helper function to handle find results.
+  static void FindReplyHelper(TabContents* tab,
+                              int request_id,
+                              int number_of_matches,
+                              const gfx::Rect& selection_rect,
+                              int active_match_ordinal,
+                              bool final_update);
+
   // Calls ExecuteCommandWithDisposition with the given disposition.
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition);
 
@@ -959,6 +967,13 @@ class Browser : public TabHandlerDelegate,
                                  const string16& type,
                                  const string16& data,
                                  int intent_id) OVERRIDE;
+
+  virtual void FindReply(TabContents* tab,
+                         int request_id,
+                         int number_of_matches,
+                         const gfx::Rect& selection_rect,
+                         int active_match_ordinal,
+                         bool final_update) OVERRIDE;
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,

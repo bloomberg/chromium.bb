@@ -338,6 +338,16 @@ class TabContentsDelegate {
                                  const string16& data,
                                  int intent_id);
 
+  // Result of string search in the page. This includes the number of matches
+  // found and the selection rect (in screen coordinates) for the string found.
+  // If |final_update| is false, it indicates that more results follow.
+  virtual void FindReply(TabContents* tab,
+                         int request_id,
+                         int number_of_matches,
+                         const gfx::Rect& selection_rect,
+                         int active_match_ordinal,
+                         bool final_update);
+
  protected:
   virtual ~TabContentsDelegate();
 

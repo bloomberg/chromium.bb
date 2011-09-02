@@ -2526,6 +2526,23 @@ void Browser::WebIntentDispatchHelper(TabContents* tab,
   tcw->web_intent_picker_controller()->ShowDialog(action, type);
 }
 
+// static
+void Browser::FindReplyHelper(TabContents* tab,
+                              int request_id,
+                              int number_of_matches,
+                              const gfx::Rect& selection_rect,
+                              int active_match_ordinal,
+                              bool final_update) {
+  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab);
+  if (!tcw || !tcw->find_tab_helper())
+    return;
+
+  tcw->find_tab_helper()->HandleFindReply(request_id, number_of_matches,
+                                          selection_rect, active_match_ordinal,
+                                          final_update);
+}
+
 void Browser::ExecuteCommandWithDisposition(
   int id, WindowOpenDisposition disposition) {
   // No commands are enabled if there is not yet any selected tab.
@@ -3732,12 +3749,12 @@ content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
 
 void Browser::RunFileChooser(TabContents* tab,
                              const ViewHostMsg_RunFileChooser_Params& params) {
-  Browser::RunFileChooserHelper(tab, params);
+  RunFileChooserHelper(tab, params);
 }
 
 void Browser::EnumerateDirectory(TabContents* tab, int request_id,
                                  const FilePath& path) {
-  Browser::EnumerateDirectoryHelper(tab, request_id, path);
+  EnumerateDirectoryHelper(tab, request_id, path);
 }
 
 void Browser::ToggleFullscreenModeForTab(TabContents* tab,
@@ -3753,14 +3770,14 @@ void Browser::ToggleFullscreenModeForTab(TabContents* tab,
 }
 
 void Browser::JSOutOfMemory(TabContents* tab) {
-  Browser::JSOutOfMemoryHelper(tab);
+  JSOutOfMemoryHelper(tab);
 }
 
 void Browser::RegisterProtocolHandler(TabContents* tab,
                                       const std::string& protocol,
                                       const GURL& url,
                                       const string16& title) {
-  Browser::RegisterProtocolHandlerHelper(tab, protocol, url, title);
+  RegisterProtocolHandlerHelper(tab, protocol, url, title);
 }
 
 void Browser::RegisterIntentHandler(TabContents* tab,
@@ -3768,7 +3785,7 @@ void Browser::RegisterIntentHandler(TabContents* tab,
                                     const string16& type,
                                     const string16& href,
                                     const string16& title) {
-  Browser::RegisterIntentHandlerHelper(tab, action, type, href, title);
+  RegisterIntentHandlerHelper(tab, action, type, href, title);
 }
 
 void Browser::WebIntentDispatch(TabContents* tab,
@@ -3777,8 +3794,18 @@ void Browser::WebIntentDispatch(TabContents* tab,
                                 const string16& type,
                                 const string16& data,
                                 int intent_id) {
-  Browser::WebIntentDispatchHelper(tab, routing_id, action, type, data,
-                                   intent_id);
+  WebIntentDispatchHelper(tab, routing_id, action, type, data,
+                          intent_id);
+}
+
+void Browser::FindReply(TabContents* tab,
+                        int request_id,
+                        int number_of_matches,
+                        const gfx::Rect& selection_rect,
+                        int active_match_ordinal,
+                        bool final_update) {
+  FindReplyHelper(tab, request_id, number_of_matches, selection_rect,
+                  active_match_ordinal, final_update);
 }
 
 void Browser::ExitTabbedFullscreenModeIfNecessary() {
