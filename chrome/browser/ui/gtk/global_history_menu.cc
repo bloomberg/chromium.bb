@@ -422,8 +422,8 @@ void GlobalHistoryMenu::OnRecentlyClosedItemActivated(GtkWidget* sender) {
                               item->session_id, false);
   } else {
     DCHECK(item->url.is_valid());
-    browser_->OpenURL(item->url, GURL(), disposition,
-                      PageTransition::AUTO_BOOKMARK);
+    browser_->OpenURL(OpenURLParams(item->url, GURL(), disposition,
+                      PageTransition::AUTO_BOOKMARK));
   }
 }
 

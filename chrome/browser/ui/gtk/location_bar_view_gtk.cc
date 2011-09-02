@@ -1049,7 +1049,8 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
     if (!gtk_util::URLFromPrimarySelection(browser_->profile(), &url))
       return FALSE;
 
-    tab->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+    tab->OpenURL(OpenURLParams(
+        url, GURL(), CURRENT_TAB, PageTransition::TYPED));
     return TRUE;
   }
 

@@ -229,7 +229,8 @@ void PageInfoBubbleGtk::OnHelpLinkClicked(GtkWidget* widget) {
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->OpenURL(OpenURLParams(
+      url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK));
   bubble_->Close();
 }
 

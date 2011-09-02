@@ -135,8 +135,8 @@ void BookmarkMenuController::NavigateToMenuItem(
   const BookmarkNode* node = GetNodeFromMenuItem(menu_item);
   DCHECK(node);
   DCHECK(page_navigator_);
-  page_navigator_->OpenURL(
-      node->url(), GURL(), disposition, PageTransition::AUTO_BOOKMARK);
+  page_navigator_->OpenURL(OpenURLParams(
+      node->url(), GURL(), disposition, PageTransition::AUTO_BOOKMARK));
 }
 
 void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,

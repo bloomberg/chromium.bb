@@ -68,8 +68,8 @@ GtkWidget* MakeMarkupLabel(const char* format, const std::string& str) {
 }
 
 void OnLinkButtonClick(GtkWidget* button, const char* url) {
-  BrowserList::GetLastActive()->
-      OpenURL(GURL(url), GURL(), NEW_WINDOW, PageTransition::LINK);
+  BrowserList::GetLastActive()->OpenURL(OpenURLParams(
+      GURL(url), GURL(), NEW_WINDOW, PageTransition::LINK));
 }
 
 const char* GetChromiumUrl() {

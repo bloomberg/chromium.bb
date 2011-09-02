@@ -261,7 +261,7 @@ void GlobalBookmarkMenu::OnBookmarkItemActivated(GtkWidget* menu_item) {
   const BookmarkNode* node = static_cast<const BookmarkNode*>(
       g_object_get_data(G_OBJECT(menu_item), "bookmark-node"));
 
-  browser_->OpenURL(node->url(), GURL(), NEW_FOREGROUND_TAB,
-                    PageTransition::AUTO_BOOKMARK);
+  browser_->OpenURL(OpenURLParams(node->url(), GURL(), NEW_FOREGROUND_TAB,
+                    PageTransition::AUTO_BOOKMARK));
 }
 
