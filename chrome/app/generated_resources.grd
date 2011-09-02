@@ -3561,6 +3561,10 @@ are declared in build/common.gypi.
         </message>
       </if>
 
+      <!-- Mouse Lock mode -->
+      <message name="IDS_MOUSELOCK_ONENTER_ESCAPE_INSTRUCTIONS" desc="Message displayed on entering mouse lock mode to tell users how to exit using the keyboard to normal mode">
+        The page has hidden the mouse pointer. To restore it, press 'Esc'.
+      </message>
 
       <!-- Task Manager Window -->
       <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
