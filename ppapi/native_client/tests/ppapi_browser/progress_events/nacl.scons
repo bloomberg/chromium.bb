@@ -8,6 +8,8 @@ Import('env')
 # TODO(robertm): those should not be necessary once we go -std=c99
 env.FilterOut(CFLAGS=['-pedantic'])
 env.FilterOut(CCFLAGS=['-pedantic'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
+                     'progress_events')
 
 progress_events_sources = env.ComponentObject('ppapi_progress_events.cc'),
 
@@ -24,7 +26,6 @@ env.ComponentProgram(progress_events_target,
 # Needed by other tests using progress events.
 env.Publish(progress_events_target, 'run', [
     'ppapi_progress_events.html',
-    'ppapi_progress_events.nmf',
     ('${SCONSTRUCT_DIR}/tests/ppapi_browser/progress_events/' +
      'ppapi_progress_events.js'),
     '${SCONSTRUCT_DIR}/tools/browser_tester/browserdata/nacltest.js',
@@ -33,6 +34,7 @@ env.Publish(progress_events_target, 'run', [
 node = env.PPAPIBrowserTester(
     'ppapi_progress_events_browser_test.out',
     url='ppapi_progress_events.html',
+    nmfs=['${TEST_DIR}/ppapi_progress_events.nmf'],
     files=env.ExtractPublishedFiles(progress_events_target))
 
 env.AddNodeToTestSuite(node,

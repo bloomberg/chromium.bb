@@ -17,6 +17,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
+                     'ppapi_test_example/')
 
 nexe = 'ppapi_test_example_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_test_example${PROGSUFFIX}',
@@ -34,11 +36,11 @@ ppapi_test_example_nexe = env.ComponentProgram(
 
 env.Publish(nexe, 'run',
             ['ppapi_test_example.html',
-             'ppapi_test_example.nmf',
              'ppapi_test_example.js'])
 
 node = env.PPAPIBrowserTester('ppapi_test_example_browser_test.out',
                               url='ppapi_test_example.html',
+                              nmfs=['${TEST_DIR}/ppapi_test_example.nmf'],
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,

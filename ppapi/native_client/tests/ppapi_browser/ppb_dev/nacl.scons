@@ -8,6 +8,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
+                     'ppb_dev')
 
 nexe = 'ppapi_ppb_dev_${TARGET_FULLARCH}'
 env.Alias('ppapi_ppb_dev${PROGSUFFIX}',
@@ -25,12 +27,12 @@ env.ComponentProgram(
 
 env.Publish(nexe, 'run',
             [ 'ppapi_ppb_dev.html',
-              'ppapi_ppb_dev.nmf',
               env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
                   'browserdata/nacltest.js') ])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_dev_browser_test.out',
                               url='ppapi_ppb_dev.html',
+                              nmfs=['${TEST_DIR}/ppapi_ppb_dev.nmf'],
                               files=env.ExtractPublishedFiles(nexe),
                               args=['--enable_ppapi_dev=0'])
 

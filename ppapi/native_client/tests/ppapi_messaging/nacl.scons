@@ -13,6 +13,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
+                     'ppapi_messaging/')
 
 nexe = 'ppapi_messaging_%s' % env.get('TARGET_FULLARCH')
 
@@ -31,7 +33,6 @@ ppapi_messaging_nexe = env.ComponentProgram(nexe,
 # Note that the html is required to run this program.
 dest_copy = env.Replicate('$STAGING_DIR',
                           ['ppapi_messaging.html',
-                           'ppapi_messaging.nmf',
                            env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
                                     'browserdata/nacltest.js')]
                           )
@@ -39,6 +40,7 @@ env.Depends(nexe, dest_copy)
 
 node = env.PPAPIBrowserTester('ppapi_messaging_browser_test.out',
                               url='ppapi_messaging.html',
+                              nmfs=['${TEST_DIR}/ppapi_messaging.nmf'],
                               files=[ppapi_messaging_nexe,
                                      env.File('ppapi_messaging.nmf'),
                                      env.File('ppapi_messaging.html')])

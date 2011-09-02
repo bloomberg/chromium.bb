@@ -8,6 +8,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
+                     'ppapi_example_post_message/')
 
 nexe_name = 'ppapi_example_post_message_${TARGET_FULLARCH}'
 obj = env.ComponentObject(
@@ -19,13 +21,13 @@ nexe = env.ComponentProgram(nexe_name, [obj],
 
 # Note that the html is required to run this program.
 env.Publish(nexe_name, 'run',
-            ['ppapi_example_post_message.html',
-             'ppapi_example_post_message.nmf'])
+            ['ppapi_example_post_message.html'])
 
 
 test = env.PPAPIBrowserTester(
     'ppapi_example_post_message_test.out',
     url='ppapi_example_post_message.html',
+    nmfs=['${TEST_DIR}/ppapi_example_post_message.nmf'],
     files=env.ExtractPublishedFiles(nexe_name))
 
 env.AddNodeToTestSuite(test,

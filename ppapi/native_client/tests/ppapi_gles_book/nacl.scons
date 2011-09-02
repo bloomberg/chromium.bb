@@ -8,6 +8,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/' +
+                     'ppapi_gles_book/')
 
 # Underlay $SOURCE_ROOT/gpu in this directory.
 Dir('.').addRepository(Dir('#/../gpu'))
@@ -68,13 +70,12 @@ for demo, sources in gles_book_examples.iteritems():
                     'ppapi_gles2',
                     'm'])
     env.Publish(nexe_name, 'run',
-                ['ppapi_gles_book.html',
-                 nmf_name])
+                ['ppapi_gles_book.html'])
     test = env.PPAPIBrowserTester(
         'ppapi_gles_book_' + demo + '.out',
         url='ppapi_gles_book.html?manifest=' + nmf_name,
+        nmfs=['${TEST_DIR}/' + nmf_name],
         files=[nexe,
-               env.File(nmf_name),
                env.File('ppapi_gles_book.html')],
         browser_flags=['--enable-accelerated-plugins'])
     env.AddNodeToTestSuite(

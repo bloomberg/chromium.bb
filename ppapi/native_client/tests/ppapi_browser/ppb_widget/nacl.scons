@@ -7,6 +7,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
+                     'ppb_widget')
 
 nexe = 'ppapi_ppb_widget_%s' % env.get('TARGET_FULLARCH')
 env.Alias('ppapi_ppb_widget${PROGSUFFIX}',
@@ -24,11 +26,11 @@ ppapi_ppb_widget_nexe = env.ComponentProgram(
 
 env.Publish(nexe, 'run',
             ['ppapi_ppb_widget.html',
-             'ppapi_ppb_widget.nmf',
              'ppapi_ppb_widget.js'])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_widget_browser_test.out',
                               url='ppapi_ppb_widget.html',
+                              nmfs=['${TEST_DIR}/ppapi_ppb_widget.nmf'],
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,

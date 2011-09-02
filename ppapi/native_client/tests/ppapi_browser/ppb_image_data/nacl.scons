@@ -8,6 +8,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
+                     'ppb_image_data')
 
 nexe = 'ppapi_ppb_image_data_${TARGET_FULLARCH}'
 env.Alias('ppapi_ppb_image_data${PROGSUFFIX}',
@@ -25,12 +27,12 @@ env.ComponentProgram(
 
 env.Publish(nexe, 'run',
             [ 'ppapi_ppb_image_data.html',
-              'ppapi_ppb_image_data.nmf',
               env.File('${SCONSTRUCT_DIR}/tools/browser_tester/'
                   'browserdata/nacltest.js') ])
 
 node = env.PPAPIBrowserTester('ppapi_ppb_image_data_browser_test.out',
                               url='ppapi_ppb_image_data.html',
+                              nmfs=['${TEST_DIR}/ppapi_ppb_image_data.nmf'],
                               files=env.ExtractPublishedFiles(nexe))
 
 env.AddNodeToTestSuite(node,

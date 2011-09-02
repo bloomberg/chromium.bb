@@ -13,6 +13,8 @@
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
+env.Replace(TEST_DIR='${SOURCE_ROOT}/ppapi/native_client/tests/ppapi_browser/' +
+                     'extension_mime_handler')
 
 nexe = 'ppapi_extension_mime_handler_%s' % env.get('TARGET_FULLARCH')
 
@@ -27,9 +29,11 @@ env.ComponentProgram(
 
 # Copy the extension into place (as a subdir in the staging dir).
 dest_copy = env.Replicate('$STAGING_DIR/ppapi_extension_mime_handler',
-                          ['ppapi_extension_mime_handler.nmf',
-                           'manifest.json',
+                          ['manifest.json',
                            env.File('$STAGING_DIR/' + nexe + '$PROGSUFFIX')])
+dest_copy.append(env.CopyLibsForExtension(
+    '$STAGING_DIR/ppapi_extension_mime_handler',
+    '$STAGING_DIR/ppapi_extension_mime_handler.nmf'))
 
 env.Depends(env.Alias(nexe), dest_copy)
 
@@ -40,6 +44,7 @@ env.Publish(nexe, 'run',
 
 node = env.PPAPIBrowserTester('ppapi_extension_mime_handler.out',
     url='ppapi_extension_mime_handler.html',
+    nmfs=['${TEST_DIR}/ppapi_extension_mime_handler.nmf'],
     extensions=[env.Dir('$STAGING_DIR/ppapi_extension_mime_handler')],
     files=env.ExtractPublishedFiles(nexe))
 
