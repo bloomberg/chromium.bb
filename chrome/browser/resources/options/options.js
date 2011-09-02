@@ -14,7 +14,6 @@ var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
-var ExtensionSettings = options.ExtensionSettings;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var ImportDataOverlay = options.ImportDataOverlay;
@@ -22,7 +21,6 @@ var IntentsView = options.IntentsView;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var LanguageOptions = options.LanguageOptions;
 var OptionsPage = options.OptionsPage;
-var PackExtensionOverlay = options.PackExtensionOverlay;
 var PasswordManager = options.PasswordManager;
 var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
@@ -167,10 +165,6 @@ function load() {
                               PersonalOptions.getInstance());
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               PersonalOptions.getInstance());
-
-  OptionsPage.register(ExtensionSettings.getInstance());
-  OptionsPage.registerOverlay(PackExtensionOverlay.getInstance(),
-                              ExtensionSettings.getInstance());
 
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());

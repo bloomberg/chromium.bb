@@ -9,10 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/ui/shell_dialogs.h"
-#include "chrome/browser/ui/webui/options/options_ui.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/common/notification_observer.h"
@@ -46,11 +47,31 @@ struct ExtensionPage {
   bool incognito;
 };
 
-// Extension Settings UI handler.
-class ExtensionSettingsHandler : public OptionsPageUIHandler,
-                                 public SelectFileDialog::Listener,
-                                 public ExtensionUninstallDialog::Delegate {
+class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
+  ExtensionsUIHTMLSource();
+
+  // Called when the network layer has requested a resource underneath
+  // the path we registered.
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_incognito,
+                                int request_id);
+  virtual std::string GetMimeType(const std::string&) const;
+
+ private:
+  ~ExtensionsUIHTMLSource() {}
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsUIHTMLSource);
+};
+
+// The handler for JavaScript messages related to the "extensions" view.
+class ExtensionsDOMHandler : public WebUIMessageHandler,
+                             public NotificationObserver,
+                             public PackExtensionJob::Client,
+                             public SelectFileDialog::Listener,
+                             public ExtensionUninstallDialog::Delegate {
+ public:
+
   // Helper class that loads the icons for the extensions in the management UI.
   // We do this with native code instead of just using chrome-extension:// URLs
   // for two reasons:
@@ -61,7 +82,7 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
   //    look disabled.
   class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
    public:
-    explicit IconLoader(ExtensionSettingsHandler* handler);
+    explicit IconLoader(ExtensionsDOMHandler* handler);
 
     // Load |icons|. Will call handler->OnIconsLoaded when complete. IconLoader
     // takes ownership of both arguments.
@@ -82,11 +103,14 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
     void ReportResultOnUIThread(base::DictionaryValue* json);
 
     // The handler we will report back to.
-    ExtensionSettingsHandler* handler_;
+    ExtensionsDOMHandler* handler_;
   };
 
-  ExtensionSettingsHandler();
-  virtual ~ExtensionSettingsHandler();
+  explicit ExtensionsDOMHandler(ExtensionService* extension_service);
+  virtual ~ExtensionsDOMHandler();
+
+  // WebUIMessageHandler implementation.
+  virtual void RegisterMessages();
 
   // Extension Detail JSON Struct for page. (static for ease of testing).
   // Note: service can be NULL in unit tests.
@@ -102,6 +126,17 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
       const UserScript& script,
       const FilePath& extension_path);
 
+  // ExtensionPackJob::Client
+  virtual void OnPackSuccess(const FilePath& crx_file,
+                             const FilePath& key_file);
+
+  virtual void OnPackFailure(const std::string& error);
+
+  // ExtensionUninstallDialog::Delegate:
+  virtual void ExtensionDialogAccepted();
+  virtual void ExtensionDialogCanceled();
+
+ private:
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const base::ListValue* args);
 
@@ -155,31 +190,16 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
 
   // SelectFileDialog::Listener
   virtual void FileSelected(const FilePath& path,
-                            int index, void* params) OVERRIDE;
+                            int index, void* params);
   virtual void MultiFilesSelected(
-      const std::vector<FilePath>& files, void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE {}
+      const std::vector<FilePath>& files, void* params);
+  virtual void FileSelectionCanceled(void* params) {}
 
-  // WebUIMessageHandler implementation.
-  virtual void RegisterMessages() OVERRIDE;
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
-
-  // OptionsUIHandler implementation.
-  virtual void GetLocalizedValues(
-      base::DictionaryValue* localized_strings) OVERRIDE;
-  virtual void Initialize() OVERRIDE;
-
-  // NotificationObserver implementation.
+  // NotificationObserver
   virtual void Observe(int type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+                       const NotificationDetails& details);
 
-  // ExtensionUninstallDialog::Delegate implementation, used for receiving
-  // notification about uninstall confirmation dialog selections.
-  virtual void ExtensionDialogAccepted() OVERRIDE;
-  virtual void ExtensionDialogCanceled() OVERRIDE;
-
- private:
   // Helper that lists the current active html pages for an extension.
   std::vector<ExtensionPage> GetActivePagesForExtension(
       const Extension* extension);
@@ -207,10 +227,13 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
   ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
   // Our model.  Outlives us since it's owned by our containing profile.
-  ExtensionService* extension_service_;
+  ExtensionService* const extension_service_;
 
   // Used to pick the directory when loading an extension.
   scoped_refptr<SelectFileDialog> load_extension_dialog_;
+
+  // Used to package the extension.
+  scoped_refptr<PackExtensionJob> pack_job_;
 
   // Used to load icons asynchronously on the file thread.
   scoped_refptr<IconLoader> icon_loader_;
@@ -220,6 +243,10 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;
+
+  // We monitor changes to the extension system so that we can reload when
+  // necessary.
+  NotificationRegistrar registrar_;
 
   // If true, we will ignore notifications in ::Observe(). This is needed
   // to prevent reloading the page when we were the cause of the
@@ -233,7 +260,19 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
   // it from the active views.
   RenderViewHost* deleting_rvh_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsHandler);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsDOMHandler);
+};
+
+class ExtensionsUI : public ChromeWebUI {
+ public:
+  explicit ExtensionsUI(TabContents* contents);
+
+  static RefCountedMemory* GetFaviconResourceBytes();
+
+  static void RegisterUserPrefs(PrefService* prefs);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsUI);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_EXTENSION_SETTINGS_HANDLER_H_
