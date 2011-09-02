@@ -156,10 +156,10 @@ class GerritPatch(Patch):
       dryrun: If true, do not actually commit anything to Gerrit.
 
     """
-    msg = ('Paladin: Commit Queue failed to submit your change. '
-           'This is most likely due to an owner of your repo overriding the '
-           'Commit Queue and committing a change that conflicts with yours. '
-           'Please rebase and re-upload your change to re-submit.')
+    msg = ('"Paladin: Commit Queue failed to submit your change. '
+            'This is most likely due to an owner of your repo overriding the '
+            'Commit Queue and committing a change that conflicts with yours. '
+            'Please rebase and re-upload your change to re-submit."')
 
     cmd = helper.GetGerritReviewCommand(
         ['--code-review=-2', '-m', msg, '%s,%s' % (self.gerrit_number,
@@ -178,10 +178,10 @@ class GerritPatch(Patch):
       dryrun: If true, do not actually commit anything to Gerrit.
 
     """
-    msg = ('Paladin: Commit Queue failed to verify your change. '
-           'If you believe this happened in error, please upload a new '
-           'patch with TEST= updated describing why you believe this to be '
-           'true.')
+    msg = ('"Paladin: Commit Queue failed to verify your change. '
+            'If you believe this happened in error, please upload a new '
+            'patch with TEST= updated describing why you believe this to be '
+            'true."')
     cmd = helper.GetGerritReviewCommand(
         ['--verified=-1', '-m', msg, '%s,%s' % (self.gerrit_number,
                                                 self.patch_number)])
@@ -197,8 +197,8 @@ class GerritPatch(Patch):
       helper: Instance of gerrit_helper for the gerrit instance.
       dryrun: If true, do not actually commit anything to Gerrit.
     """
-    msg = ('Paladin: Commit Queue failed to apply your change cleanly. '
-           'Please re-sync, rebase re-upload your change.')
+    msg = ('"Paladin: Commit Queue failed to apply your change cleanly. '
+            'Please re-sync, rebase re-upload your change."')
     cmd = helper.GetGerritReviewCommand(
         ['--code-review=-2', '-m', msg, '%s,%s' % (self.gerrit_number,
                                                    self.patch_number)])
