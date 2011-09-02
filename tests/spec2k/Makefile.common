@@ -43,15 +43,16 @@ CFLAGS = $(CFLAGS_EXTRA)
 # Measurement tools
 
 ######################################################################
-# Time command wrapper, and size measurement command
-# Enable by invoking the makefile with:
-#     measureit=1
-# and PERF_LOGGER=<log_script_name>
+# Enable timing and size measurements by invoking the makefile with:
+# measureit=1, PERF_LOGGER=<script_path>, COMPILE_REPEATER=<script_path>
 ######################################################################
 
 ifeq ($(measureit),1)
-# Dumps time taken to translate to a file: $exe.compile_time
-TIME_CMD=/usr/bin/time -f "%U %S %e %C" -o $@.compile_time
+REPETITIONS ?= 1
+# Times how long it took to translate to a file, and repeats N times
+# writing the result to $@.compile_time. Note $@ corresponds to $@ from
+# whichever Make rule that this is embedded into.
+TIME_TRANSLATE=$(COMPILE_REPEATER) $(REPETITIONS) $@
 # Calculate user+sys time for generating executable $(1) for benchmark $(2)
 # Assumes the following format for name of $(1):  $(2)."setup_identifier"
 # examples of "setup_identifier": nacl.opt.x8664, pnacl_translator.x8664, ...
@@ -60,7 +61,8 @@ LOG_TRANSLATE_TIME=(TIME_FILE="$(1).compile_time" && \
 	 FILE_TYPE=$(subst $(2).,,$(1)) && \
 	 $(PERF_LOGGER) LogUserSysTime $$TIME_FILE "compiletime" $(2) $$FILE_TYPE)
 else
-TIME_CMD=
+# Set the various operations to nops
+TIME_TRANSLATE=
 LOG_TRANSLATE_TIME=true
 endif
 
@@ -106,7 +108,7 @@ all: pnacl_bin nacl_bin nosfi_bin
 ######################################################################
 ## NON-SANDBOXING TOOLCHAINS
 ######################################################################
-LOCAL_GCC=$(TIME_CMD) /usr/bin/gcc
+LOCAL_GCC=/usr/bin/gcc
 
 # straight x86-32 gcc
 $(IT).gcc.x8632: $(SRC) $(CPPSRC)
@@ -134,7 +136,7 @@ $(IT).gcc.opt.x8664: $(SRC) $(CPPSRC)
 
 ######################################################################
 ARM_GCC=$(ARM_ROOT)/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
-LOCAL_CROSS_GCC=$(TIME_CMD) $(ARM_GCC)
+LOCAL_CROSS_GCC=$(ARM_GCC)
 
 # straight arm gcc (code sourcery)
 $(IT).gcc.arm: $(SRC) $(CPPSRC)
@@ -151,11 +153,11 @@ $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
 ######################################################################
 ## NACL-GCC TOOLCHAINS
 ######################################################################
-NACL_GCC=$(TIME_CMD) $(NNACL_ROOT)/bin/x86_64-nacl-gcc
-NACL_GCC_NEWLIB32=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
+NACL_GCC=$(NNACL_ROOT)/bin/x86_64-nacl-gcc
+NACL_GCC_NEWLIB32=$(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
 		  -B $(NNACL_NEWLIB_SDK32)/lib \
 		  -I $(NNACL_NEWLIB_SDK32)/include
-NACL_GCC_NEWLIB64=$(TIME_CMD) $(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
+NACL_GCC_NEWLIB64=$(NNACL_NEWLIB_ROOT)/bin/x86_64-nacl-gcc \
 		  -B $(NNACL_NEWLIB_SDK64)/lib \
 		  -I $(NNACL_NEWLIB_SDK64)/include
 
@@ -209,8 +211,8 @@ $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
 # BITCODE - FRONTEND
 
 PNACL_BIN=$(PNACL_ROOT)/bin
-PNACL_TRANSLATOR=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate
-PNACL_TRANSLATOR_SB=$(TIME_CMD) $(PNACL_BIN)/pnacl-translate --pnacl-sb
+PNACL_TRANSLATOR=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate
+PNACL_TRANSLATOR_SB=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate --pnacl-sb
 PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator
 BC_GCC=$(PNACL_BIN)/pnacl-gcc
 BC_GPP=$(PNACL_BIN)/pnacl-g++
@@ -249,7 +251,6 @@ $(IT).opt.stripped.pexe: $(IT).opt.pexe
 
 ######################################################################
 # BITCODE - BACKEND - ARM  (sandboxed and non-sandboxed translators)
-# TODO: sandboxed arm translators are not ready yet
 
 $(IT).pnacl.arm: $(IT).unopt.stripped.pexe
 	$(PNACL_TRANSLATOR) $(PNACL_FLAGS) $^ -o $@ -arch arm

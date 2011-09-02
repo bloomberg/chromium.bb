@@ -41,7 +41,15 @@ SPEC2K_SCRIPT="./run.train.sh"
 # export VERIFY=no
 export VERIFY=${VERIFY:-yes}
 export MAKEOPTS=${MAKEOPTS:-}
+
+# Helper script to process timing / other perf data.
+# Export these paths to Makefile.common, which will be included by other
+# Makefiles in random sub-directories (where pwd will be different).
 export PERF_LOGGER="$(pwd)/emit_perf_log.sh"
+export COMPILE_REPEATER="$(pwd)/compile_repeater.sh"
+# Number of times to repeat a timed step.
+export SPEC_RUN_REPETITIONS=${SPEC_RUN_REPETITIONS:-1}
+export SPEC_COMPILE_REPETITIONS=${SPEC_COMPILE_REPETITIONS:-1}
 
 
 ######################################################################
@@ -554,6 +562,8 @@ BuildBenchmarks() {
 
     make ${MAKEOPTS} measureit=${timeit} \
          PERF_LOGGER="${PERF_LOGGER}" \
+         REPETITIONS="${SPEC_COMPILE_REPETITIONS}" \
+         COMPILE_REPEATER="${COMPILE_REPEATER}" \
          BUILD_PLATFORM=${BUILD_PLATFORM} \
          SCONS_BUILD_PLATFORM=${SCONS_BUILD_PLATFORM} \
          BUILD_ARCH=${BUILD_ARCH} \
@@ -569,7 +579,7 @@ BuildBenchmarks() {
 TimedRunCmd() {
   target=$1
   shift
-  /usr/bin/time -f "%U %S %e %C" -o ${target} "$@"
+  /usr/bin/time -f "%U %S %e %C" --append -o ${target} "$@"
 }
 
 #@
@@ -616,7 +626,13 @@ RunTimedBenchmarks() {
     local target_file=./${benchname}.${SUFFIX}
     local time_file=${target_file}.run_time
     gnu_size  ${target_file}
-    TimedRunCmd ${time_file} ${script} ${target_file}
+    # Clear out the previous times.
+    rm -f "${time_file}"
+    echo "Running benchmark ${SPEC_RUN_REPETITIONS} times"
+    for ((i=0; i<${SPEC_RUN_REPETITIONS}; i++))
+    do
+      TimedRunCmd ${time_file} ${script} ${target_file}
+    done
     # TODO(jvoung): split runtimes by arch as well
     # i.e., pull "arch" out of SUFFIX and add to the "runtime" label.
     "${PERF_LOGGER}" LogUserSysTime "${time_file}" "runtime" \

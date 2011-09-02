@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Copyright 2010 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 set -o nounset
 set -o errexit
@@ -15,8 +15,11 @@ LogUserSysTime() {
   local graph_label=$2
   local bench=$3
   local setup=$4
-  local temptime=`awk '{print $1 + $2}' ${time_file}`
-  LogPerf ${graph_label} ${bench} ${setup} ${temptime} "secs"
+  # Generate a set of times "{x,y,z}". The chromium perf log parser
+  # will know to average this set of times.
+  local time_set="{$(awk '{print $1 + $2}' ${time_file} | \
+                   tr '\n' ',' | sed 's/,$//')}"
+  LogPerf ${graph_label} ${bench} ${setup} "${time_set}" "secs"
 }
 
 #@ LogGzippedSize <file_to_zip> <graph_label> <bench> <compiler_setup>

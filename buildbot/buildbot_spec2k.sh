@@ -38,6 +38,8 @@ clobber() {
   fi
 }
 
+# Build and run a small sample of the tests for trybots.
+# These do not do any timing or size measurements.
 build-and-run-some() {
   local setups="$1"
   local tests="$2"
@@ -57,8 +59,11 @@ build-and-run-some() {
   popd
 }
 
+# Build and run all of the tests and do timing + size measurements.
 build-and-run-all() {
   local setups="$1"
+  local run_repetitions=$2
+  local compile_repetitions=$2
 
   pushd ${SPEC_BASE}
   for setup in ${setups}; do
@@ -66,12 +71,12 @@ build-and-run-all() {
     ./run_all.sh CleanBenchmarks
     ./run_all.sh PopulateFromSpecHarness "${SPEC_HARNESS}"
     MAKEOPTS=-j8 \
+    SPEC_COMPILE_REPETITIONS=${compile_repetitions} \
       ./run_all.sh BuildBenchmarks 1 ${setup} train
 
     echo @@@BUILD_STEP spec2k run [${setup}] [train]@@@
-    # NOTE: we intentionally do not parallelize the build because
-    # we are measuring build times
-    ./run_all.sh RunTimedBenchmarks ${setup} train || \
+    SPEC_RUN_REPETITIONS=${run_repetitions} \
+      ./run_all.sh RunTimedBenchmarks ${setup} train || \
       { RETCODE=$? && echo "@@@STEP_FAILURE@@@"; }
   done
   popd
@@ -110,7 +115,7 @@ pnacl-trybot-x8664() {
 pnacl-arm() {
   clobber
   # arm takes a long time and we do not have sandboxed tests working
-  build-and-run-all "SetupPnaclArmOpt"
+  build-and-run-all "SetupPnaclArmOpt" 1 1
 }
 
 pnacl-x8664() {
@@ -118,7 +123,7 @@ pnacl-x8664() {
   build-and-run-all "SetupPnaclX8664 \
                      SetupPnaclX8664Opt \
                      SetupPnaclTranslatorX8664 \
-                     SetupPnaclTranslatorX8664Opt"
+                     SetupPnaclTranslatorX8664Opt" 3 3
 }
 
 pnacl-x8632() {
@@ -126,19 +131,19 @@ pnacl-x8632() {
   build-and-run-all "SetupPnaclX8632 \
                      SetupPnaclX8632Opt \
                      SetupPnaclTranslatorX8632 \
-                     SetupPnaclTranslatorX8632Opt"
+                     SetupPnaclTranslatorX8632Opt" 3 3
 }
 
 nacl-x8632() {
   clobber
   build-and-run-all "SetupNaclX8632 \
-                     SetupNaclX8632Opt"
+                     SetupNaclX8632Opt" 3 3
 }
 
 nacl-x8664() {
   clobber
   build-and-run-all "SetupNaclX8664 \
-                     SetupNaclX8664Opt"
+                     SetupNaclX8664Opt" 3 3
 
 }
 
