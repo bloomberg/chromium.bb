@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -24,7 +25,6 @@ HungRendererDialog* g_instance = NULL;
 const int kHungRendererDialogWidth = 425;
 const int kHungRendererDialogHeight = 200;
 }
-
 
 namespace browser {
 
@@ -48,6 +48,9 @@ void HideHungRendererDialog(TabContents* contents) {
 }
 
 }  // namespace browser
+
+////////////////////////////////////////////////////////////////////////////////
+// HungRendererDialog methods
 
 HungRendererDialog::HungRendererDialog()
     : contents_(NULL) {
@@ -76,7 +79,7 @@ GURL HungRendererDialog::GetDialogContentURL() const {
 
 void HungRendererDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
-  // Do nothing. There are no handlers.
+  handlers->push_back(new HungRendererDialogHandler(contents_));
 }
 
 void HungRendererDialog::GetDialogSize(gfx::Size* size) const {
@@ -122,3 +125,39 @@ void HungRendererDialog::OnCloseContents(TabContents* source,
 bool HungRendererDialog::ShouldShowDialogTitle() const {
   return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// HungRendererDialogHandler methods
+
+HungRendererDialogHandler::HungRendererDialogHandler(
+    TabContents* contents)
+  : contents_(contents) {
+}
+
+void HungRendererDialogHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback("requestTabContentsList",
+      NewCallback(this,
+          &HungRendererDialogHandler::RequestTabContentsList));
+}
+
+void HungRendererDialogHandler::RequestTabContentsList(
+    const base::ListValue* args) {
+  ListValue tab_contents_list;
+  for (TabContentsIterator it; !it.done(); ++it) {
+    if (it->tab_contents()->GetRenderProcessHost() ==
+        contents_->GetRenderProcessHost()) {
+      string16 title = it->tab_contents()->GetTitle();
+      if (title.empty())
+        title = TabContentsWrapper::GetDefaultTitle();
+      // Add details for |url| and |title|.
+      DictionaryValue* dict = new DictionaryValue();
+      dict->SetString("url", it->tab_contents()->GetURL().spec());
+      dict->SetString("title", title);
+      tab_contents_list.Append(dict);
+    }
+  }
+  // Send list of tab contents details to javascript.
+  web_ui_->CallJavascriptFunction("hungRendererDialog.setTabContentsList",
+                                  tab_contents_list);
+}
+

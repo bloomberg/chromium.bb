@@ -53,18 +53,6 @@ html, body {
   overflow-y: auto;
 }
 
-.icon {
-  display: table-cell;
-  padding: 2px;
-}
-
-.title {
-  display: table-cell;
-  padding-left: 4px;
-  vertical-align: middle;
-  width: 100%;
-}
-
 #buttons-table {
   float: right;
   margin-bottom: 8px;
@@ -76,6 +64,32 @@ html, body {
 #buttons-table > div {
   padding: 3px;
   width: 50%;
+}
+
+#tab-table {
+  -webkit-margin-after: 0;
+  -webkit-margin-before: 0;
+  -webkit-padding-start: 0;
+  height: auto;
+}
+
+#tab-table li {
+  -webkit-padding-start: 19px;
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  display: block;
+  height: 16px;
+  line-height: 16px;
+  margin-bottom: 1px;
+}
+
+html[dir=rtl] #tab-table li {
+  background-position: 100% 50%;
+}
+
+#templates {
+  display: none;
 }
 
 button {

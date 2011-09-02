@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/webui/hung_renderer_dialog_ui.h"
 
-#include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -38,19 +35,6 @@ HungRendererDialogUI::HungRendererDialogUI(TabContents* contents)
 
   Profile* profile = Profile::FromBrowserContext(contents->browser_context());
   profile->GetChromeURLDataManager()->AddDataSource(source);
-
-  for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->tab_contents()->GetRenderProcessHost() ==
-        contents->GetRenderProcessHost()) {
-      string16 title = it->tab_contents()->GetTitle();
-      if (title.empty())
-        title = TabContentsWrapper::GetDefaultTitle();
-
-      SkBitmap favicon = it->favicon_tab_helper()->GetFavicon();
-      // TODO(wyck): There is a tab with title |title| and favicon |favicon|
-      // that needs to be sent to the WebUI dialog.
-    }
-  }
 }
 
 HungRendererDialogUI::~HungRendererDialogUI() {

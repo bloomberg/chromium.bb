@@ -36,10 +36,32 @@ cr.define('hungRendererDialog', function() {
     $('wait').onclick = function() {
       closeWithResult(false);
     }
+
+    chrome.send('requestTabContentsList')
+  }
+
+  /**
+   * Adds elements to the DOM to populate the tab contents list box area of the
+   * dialog. Substitutes the favicon source and title text from the details
+   * using a template mechanism (clones hidden parts of the dialog DOM).
+   * @param {Array.<{title: string, url: string}>} tabDetailsList Array of tab
+   *     contents detail objects containing |url| and |title| for each frozen
+   *     tab.
+   */
+  function setTabContentsList(tabDetailsList) {
+    var numTabs = tabDetailsList.length;
+    for (var i = 0; i < numTabs; i++) {
+      var listItem = document.createElement('li');
+      listItem.style.backgroundImage = url('chrome://favicon/size/32/' +
+                                           tabDetailsList[i].url);
+      listItem.textContent = tabDetailsList[i].title;
+      $('tab-table').appendChild(listItem)
+    }
   }
 
   return {
     initialize: initialize,
+    setTabContentsList: setTabContentsList,
   };
 });
 
