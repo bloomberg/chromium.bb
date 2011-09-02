@@ -278,8 +278,11 @@ PlatformFileError ObfuscatedFileSystemFileUtil::ReadDirectory(
     if (GetFileInfoInternal(db, context, *iter,
                             &file_info, &platform_file_info, &file_path) !=
         base::PLATFORM_FILE_OK) {
-      NOTREACHED();
-      return base::PLATFORM_FILE_ERROR_FAILED;
+      LOG(WARNING) << "Lost a backing file.";
+      // TODO(tzik): We found a file entry in directory database without
+      // backing file here.  Track the inconsistency and remove the database
+      // entry if we can't recover it.
+      continue;
     }
 
     base::FileUtilProxy::Entry entry;

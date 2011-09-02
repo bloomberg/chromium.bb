@@ -1412,3 +1412,38 @@ TEST_F(ObfuscatedFileSystemFileUtilTest, TestInconsistency) {
   EXPECT_EQ(0, file_info.size);
   EXPECT_TRUE(base::ClosePlatformFile(file));
 }
+
+TEST_F(ObfuscatedFileSystemFileUtilTest, TestIncompleteDirectoryReading) {
+  const FilePath kPath[] = {
+    FilePath().AppendASCII("foo"),
+    FilePath().AppendASCII("bar"),
+    FilePath().AppendASCII("baz")
+  };
+  scoped_ptr<FileSystemOperationContext> context;
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kPath); ++i) {
+    bool created = false;
+    context.reset(NewContext(NULL));
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofsfu()->EnsureFileExists(context.get(), kPath[i], &created));
+    EXPECT_TRUE(created);
+  }
+
+  context.reset(NewContext(NULL));
+  std::vector<base::FileUtilProxy::Entry> entries;
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->ReadDirectory(context.get(), FilePath(), &entries));
+  EXPECT_EQ(3u, entries.size());
+
+  context.reset(NewContext(NULL));
+  FilePath local_path;
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->GetLocalFilePath(context.get(), kPath[0], &local_path));
+  EXPECT_TRUE(file_util::Delete(local_path, false));
+
+  context.reset(NewContext(NULL));
+  entries.clear();
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            ofsfu()->ReadDirectory(context.get(), FilePath(), &entries));
+  EXPECT_EQ(ARRAYSIZE_UNSAFE(kPath) - 1, entries.size());
+}
