@@ -167,12 +167,19 @@ class BrowsingDataRemover : public NotificationObserver,
   // NotifyAndDeleteIfDone on the UI thread.
   void CheckQuotaManagedDataDeletionStatus();
 
+  // Callback when Cookies has been deleted. Invokes NotifyAndDeleteIfDone.
+  void OnClearedCookies(int num_deleted);
+
+  // Invoked on the IO thread to delete cookies.
+  void ClearCookiesOnIOThread(net::URLRequestContextGetter* rq_context);
+
   // Calculate the begin time for the deletion range specified by |time_period|.
   base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
   // Returns true if we're all done.
   bool all_done() {
     return registrar_.IsEmpty() && !waiting_for_clear_cache_ &&
+           !waiting_for_clear_cookies_&&
            !waiting_for_clear_history_ &&
            !waiting_for_clear_quota_managed_data_ &&
            !waiting_for_clear_networking_history_ &&
@@ -221,6 +228,7 @@ class BrowsingDataRemover : public NotificationObserver,
   bool waiting_for_clear_history_;
   bool waiting_for_clear_quota_managed_data_;
   bool waiting_for_clear_networking_history_;
+  bool waiting_for_clear_cookies_;
   bool waiting_for_clear_cache_;
   bool waiting_for_clear_lso_data_;
 
