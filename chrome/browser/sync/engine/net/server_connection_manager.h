@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "base/string_util.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/threading/thread_checker.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/common/net/http_return.h"
@@ -139,7 +138,7 @@ class ScopedServerStatusWatcher : public base::NonThreadSafe {
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
 //
-class ServerConnectionManager {
+class ServerConnectionManager : public base::NonThreadSafe {
  public:
   // buffer_in - will be POSTed
   // buffer_out - string will be overwritten with response
@@ -152,20 +151,17 @@ class ServerConnectionManager {
   // Abstract class providing network-layer functionality to the
   // ServerConnectionManager. Subclasses implement this using an HTTP stack of
   // their choice.
-  class Connection {
+  class Post {
    public:
-    explicit Connection(ServerConnectionManager* scm);
-    virtual ~Connection();
+    explicit Post(ServerConnectionManager* scm) : scm_(scm) {
+    }
+    virtual ~Post() { }
 
     // Called to initialize and perform an HTTP POST.
     virtual bool Init(const char* path,
                       const std::string& auth_token,
                       const std::string& payload,
                       HttpResponse* response) = 0;
-
-    // Immediately abandons a pending HTTP POST request and unblocks caller
-    // in Init.
-    virtual void Abort() = 0;
 
     bool ReadBufferResponse(std::string* buffer_out, HttpResponse* response,
                             bool require_response);
@@ -226,7 +222,7 @@ class ServerConnectionManager {
   inline std::string user_agent() const { return user_agent_; }
 
   inline HttpResponse::ServerConnectionCode server_status() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(CalledOnValidThread());
     return server_status_;
   }
 
@@ -249,25 +245,19 @@ class ServerConnectionManager {
 
   std::string GetServerHost() const;
 
-  // Factory method to create an Connection object we can use for
-  // communication with the server.
-  virtual Connection* MakeConnection();
-
-  // Aborts any active HTTP POST request.
-  // We expect this to get called on a different thread than the valid
-  // ThreadChecker thread, as we want to kill any pending http traffic without
-  // having to wait for the request to complete.
-  void TerminateAllIO();
+  // Factory method to create a Post object we can use for communication with
+  // the server.
+  virtual Post* MakePost();
 
   void set_client_id(const std::string& client_id) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(CalledOnValidThread());
     DCHECK(client_id_.empty());
     client_id_.assign(client_id);
   }
 
   // Returns true if the auth token is succesfully set and false otherwise.
   bool set_auth_token(const std::string& auth_token) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(CalledOnValidThread());
     if (previously_invalidated_token != auth_token) {
       auth_token_.assign(auth_token);
       previously_invalidated_token = std::string();
@@ -277,7 +267,7 @@ class ServerConnectionManager {
   }
 
   void InvalidateAndClearAuthToken() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(CalledOnValidThread());
     // Copy over the token to previous invalid token.
     if (!auth_token_.empty()) {
       previously_invalidated_token.assign(auth_token_);
@@ -286,7 +276,7 @@ class ServerConnectionManager {
   }
 
   const std::string auth_token() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(CalledOnValidThread());
     return auth_token_;
   }
 
@@ -310,15 +300,6 @@ class ServerConnectionManager {
                                 const std::string& path,
                                 const std::string& auth_token,
                                 ScopedServerStatusWatcher* watcher);
-
-  // Helper to check terminated flags and build a Connection object, installing
-  // it as the |active_connection_|.  If this ServerConnectionManager has been
-  // terminated, this will return NULL.
-  Connection* MakeActiveConnection();
-
-  // Called by Connection objects as they are destroyed to allow the
-  // ServerConnectionManager to cleanup active connections.
-  void OnConnectionDestroyed(Connection* connection);
 
   // The sync_server_ is the server that requests will be made to.
   std::string sync_server_;
@@ -352,21 +333,8 @@ class ServerConnectionManager {
   HttpResponse::ServerConnectionCode server_status_;
   bool server_reachable_;
 
-  base::ThreadChecker thread_checker_;
-
-  // Protects all variables below to allow bailing out of active connections.
-  base::Lock terminate_connection_lock_;
-
-  // If true, we've been told to terminate IO and expect to be destroyed
-  // shortly.  No future network requests will be made.
-  bool terminated_;
-
-  // A non-owning pointer to any active http connection, so that we can abort
-  // it if necessary.
-  Connection* active_connection_;
-
  private:
-  friend class Connection;
+  friend class Post;
   friend class ScopedServerStatusWatcher;
 
   void NotifyStatusChanged();
