@@ -27,7 +27,7 @@ ClearBrowserDataHandler::~ClearBrowserDataHandler() {
 
 void ClearBrowserDataHandler::Initialize() {
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
-                                      g_browser_process->local_state(),
+                                      Profile::FromWebUI(web_ui_)->GetPrefs(),
                                       NULL);
 }
 

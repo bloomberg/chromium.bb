@@ -22,7 +22,8 @@ PrefMemberBase::~PrefMemberBase() {
 }
 
 
-void PrefMemberBase::Init(const char* pref_name, PrefService* prefs,
+void PrefMemberBase::Init(const char* pref_name,
+                          PrefService* prefs,
                           NotificationObserver* observer) {
   DCHECK(pref_name);
   DCHECK(prefs);
@@ -30,7 +31,8 @@ void PrefMemberBase::Init(const char* pref_name, PrefService* prefs,
   observer_ = observer;
   prefs_ = prefs;
   pref_name_ = pref_name;
-  DCHECK(!pref_name_.empty());
+  // Check that the preference is registered.
+  DCHECK(prefs_->FindPreference(pref_name_.c_str()));
 
   // Add ourselves as a pref observer so we can keep our local value in sync.
   prefs_->AddPrefObserver(pref_name, this);
