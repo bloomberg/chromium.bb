@@ -207,8 +207,7 @@ cr.define('ntp4', function() {
         stripeDiv.className = 'color-stripe';
         imgDiv.appendChild(stripeDiv);
 
-        chrome.send('getAppIconDominantColor',
-            [this.appData_.icon_small, 'ntp4.setAppFaviconDominantColor']);
+        chrome.send('getAppIconDominantColor', [this.id]);
       } else {
         appImgContainer.addEventListener('click', this.onClick_.bind(this));
         appContents.appendChild(appImgContainer);
@@ -709,25 +708,12 @@ cr.define('ntp4', function() {
     $(id).setupNotification_(notification);
   };
 
-  /**
-   * Set the dominant color for an app tile.  This is the callback method
-   * from a request made when the tile was created.
-   * @param {number} id The ID of the tile.
-   * @param {string} color The color represented as a CSS string.
-   */
-  function setAppFaviconDominantColor(id, color) {
-    var tile = $(id);
-    if (tile)
-      tile.stripeColor = color;
-  };
-
   return {
     APP_LAUNCH: APP_LAUNCH,
     appNotificationChanged: appNotificationChanged,
     AppsPage: AppsPage,
     appsPrefChangeCallback: appsPrefChangeCallback,
     launchAppAfterEnable: launchAppAfterEnable,
-    setAppFaviconDominantColor: setAppFaviconDominantColor
   };
 });
 

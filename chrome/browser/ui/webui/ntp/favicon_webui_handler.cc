@@ -40,7 +40,8 @@ class ExtensionIconColorManager : public ExtensionIconManager {
 };
 
 FaviconWebUIHandler::FaviconWebUIHandler()
-    : app_icon_color_manager_(new ExtensionIconColorManager(this)) {
+    : id_(0),
+      app_icon_color_manager_(new ExtensionIconColorManager(this)) {
 }
 
 FaviconWebUIHandler::~FaviconWebUIHandler() {
@@ -61,12 +62,9 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
       "path is " << path;
   path = path.substr(arraysize("chrome://favicon/size/16/") - 1);
 
-  double id;
-  CHECK(args->GetDouble(1, &id));
-
-  std::string callback_name;
-  CHECK(args->GetString(2, &callback_name));
-  callbacks_map_[static_cast<int>(id)] = callback_name;
+  std::string dom_id;
+  CHECK(args->GetString(1, &dom_id));
+  dom_id_map_[id_] = dom_id;
 
   FaviconService* favicon_service =
       Profile::FromWebUI(web_ui_)->GetFaviconService(Profile::EXPLICIT_ACCESS);
@@ -78,7 +76,7 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
       history::FAVICON,
       &consumer_,
       NewCallback(this, &FaviconWebUIHandler::OnFaviconDataAvailable));
-  consumer_.SetClientData(favicon_service, handle, static_cast<int>(id));
+  consumer_.SetClientData(favicon_service, handle, id_++);
 }
 
 void FaviconWebUIHandler::OnFaviconDataAvailable(
@@ -87,21 +85,22 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
   FaviconService* favicon_service =
       Profile::FromWebUI(web_ui_)->GetFaviconService(Profile::EXPLICIT_ACCESS);
   int id = consumer_.GetClientData(favicon_service, request_handle);
-  base::FundamentalValue id_value(id);
   scoped_ptr<StringValue> color_value;
 
   if (favicon.is_valid()) {
     // TODO(estade): cache the response
-    color_value.reset(GetDominantColor(favicon.image_data));
+    color_value.reset(GetDominantColorCssString(favicon.image_data));
   } else {
     color_value.reset(new StringValue("#919191"));
   }
 
-  web_ui_->CallJavascriptFunction(callbacks_map_[id], id_value, *color_value);
-  callbacks_map_.erase(id);
+  web_ui_->CallJavascriptFunction("ntp4.setStripeColor",
+                                  StringValue(dom_id_map_[id]),
+                                  *color_value);
+  dom_id_map_.erase(id);
 }
 
-StringValue* FaviconWebUIHandler::GetDominantColor(
+StringValue* FaviconWebUIHandler::GetDominantColorCssString(
     scoped_refptr<RefCountedMemory> png) {
   color_utils::GridSampler sampler;
   SkColor color = color_utils::CalculateKMeanColorOfPNG(png, 100, 665, sampler);
@@ -114,22 +113,8 @@ StringValue* FaviconWebUIHandler::GetDominantColor(
 
 void FaviconWebUIHandler::HandleGetAppIconDominantColor(
     const ListValue* args) {
-  std::string path;
-  CHECK(args->GetString(0, &path));
-  GURL gurl(path);
-  DCHECK(StartsWithASCII(path, chrome::kChromeUIExtensionIconURL, false)) <<
-      "path is " << path;
-
-  std::string callback_name;
-  CHECK(args->GetString(1, &callback_name));
-
-  // See ExtensionIconSource::ParseData
-  std::string path_lower = StringToLowerASCII(gurl.path());
-  std::vector<std::string> path_parts;
-  base::SplitString(path_lower, '/', &path_parts);
-  CHECK(path_parts.size() > 1);
-  std::string extension_id = path_parts.at(1);
-  app_callbacks_map_[extension_id] = callback_name;
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
 
   ExtensionService* extension_service =
       Profile::FromWebUI(web_ui_)->GetExtensionService();
@@ -148,9 +133,7 @@ void FaviconWebUIHandler::NotifyAppIconReady(const std::string& extension_id) {
   CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &bits));
   scoped_refptr<RefCountedStaticMemory> bits_mem(
       new RefCountedStaticMemory(&bits.front(), bits.size()));
-  scoped_ptr<StringValue> color_value(GetDominantColor(bits_mem));
-  StringValue extension_id_value(extension_id);
+  scoped_ptr<StringValue> color_value(GetDominantColorCssString(bits_mem));
   web_ui_->CallJavascriptFunction(
-      app_callbacks_map_[extension_id], extension_id_value, *color_value);
-  app_callbacks_map_.erase(extension_id);
+      "ntp4.setStripeColor", StringValue(extension_id), *color_value);
 }

@@ -793,6 +793,19 @@ cr.define('ntp4', function() {
     bookmarksPage.bookmarkNodeRemoved(id, removeInfo);
   };
 
+  /**
+   * Set the dominant color for a node. This will be called in response to
+   * getFaviconDominantColor. The node represented by |id| better have a setter
+   * for stripeColor.
+   * @param {string} id The ID of a node.
+   * @param {string} color The color represented as a CSS string.
+   */
+  function setStripeColor(id, color) {
+    var node = $(id);
+    if (node)
+      node.stripeColor = color;
+  };
+
   // Return an object with all the exports
   return {
     appAdded: appAdded,
@@ -818,6 +831,7 @@ cr.define('ntp4', function() {
     setBookmarksData: setBookmarksData,
     setMostVisitedPages: setMostVisitedPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
+    setStripeColor: setStripeColor,
     showNotification: showNotification,
     themeChanged: themeChanged,
     updateOfflineEnabledApps: updateOfflineEnabledApps

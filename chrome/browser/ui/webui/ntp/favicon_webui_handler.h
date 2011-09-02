@@ -30,7 +30,12 @@ class FaviconWebUIHandler : public WebUIMessageHandler {
   // WebUIMessageHandler
   virtual void RegisterMessages() OVERRIDE;
 
+  // Called from the JS to get the dominant color of a favicon. The first
+  // argument is a favicon URL, the second is the ID of the DOM node that is
+  // asking for it.
   void HandleGetFaviconDominantColor(const base::ListValue* args);
+
+  // As above, but for an app tile. The sole argument is the extension ID.
   void HandleGetAppIconDominantColor(const base::ListValue* args);
 
   // Callback getting signal that an app icon is loaded.
@@ -40,20 +45,21 @@ class FaviconWebUIHandler : public WebUIMessageHandler {
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(FaviconService::Handle request_handle,
                               history::FaviconData favicon);
-  base::StringValue* GetDominantColor(scoped_refptr<RefCountedMemory> png);
+  base::StringValue* GetDominantColorCssString(
+      scoped_refptr<RefCountedMemory> png);
 
   CancelableRequestConsumerTSimple<int> consumer_;
+
+  // Map from request ID to DOM ID so we can make the appropriate callback when
+  // the favicon request comes back. This map exists because
+  // CancelableRequestConsumerTSimple only takes POD keys.
+  std::map<int, std::string> dom_id_map_;
+  // A counter to track ID numbers as we use them.
+  int id_;
 
   // Raw PNG representation of the favicon to show when the favicon
   // database doesn't have a favicon for a webpage.
   scoped_refptr<RefCountedMemory> default_favicon_;
-
-  // A mapping of favicon ID to callback names for requests that are
-  // in-progress.
-  std::map<int, std::string> callbacks_map_;
-
-  // A mapping of extension ID to callback name for app requests in progress.
-  std::map<std::string, std::string> app_callbacks_map_;
 
   // Manage retrieval of icons from apps.
   scoped_ptr<ExtensionIconColorManager> app_icon_color_manager_;

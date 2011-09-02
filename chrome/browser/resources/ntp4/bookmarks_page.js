@@ -60,8 +60,7 @@ cr.define('ntp4', function() {
       var faviconUrl;
       if (this.data.url) {
         faviconUrl = 'chrome://favicon/size/16/' + this.data.url;
-        chrome.send('getFaviconDominantColor',
-                    [faviconUrl, id, 'ntp4.setBookmarksFaviconDominantColor']);
+        chrome.send('getFaviconDominantColor', [faviconUrl, this.id]);
       } else {
         faviconUrl = 'chrome://theme/IDR_BOOKMARK_BAR_FOLDER';
         // TODO(csilv): Should we vary this color by platform?
@@ -447,11 +446,11 @@ cr.define('ntp4', function() {
   /**
    * Set the dominant color for a bookmark tile.  This is the callback method
    * from a request made when the tile was created.
-   * @param {number} id The numeric ID of the bookmark tile.
+   * @param {string} id The ID of the bookmark tile.
    * @param {string} color The color represented as a CSS string.
    */
   function setBookmarksFaviconDominantColor(id, color) {
-    var tile = $('bookmark_tile_' + id);
+    var tile = $(id);
     if (tile)
       tile.stripeColor = color;
   };
@@ -459,7 +458,6 @@ cr.define('ntp4', function() {
   return {
     BookmarksPage: BookmarksPage,
     initBookmarkChevron: initBookmarkChevron,
-    setBookmarksFaviconDominantColor: setBookmarksFaviconDominantColor
   };
 });
 

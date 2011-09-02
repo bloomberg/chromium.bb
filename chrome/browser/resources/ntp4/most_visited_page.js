@@ -94,12 +94,10 @@ cr.define('ntp4', function() {
           'chrome://favicon/size/16/' + data.url;
       faviconDiv.style.backgroundImage = url(faviconUrl);
       faviconDiv.dir = data.direction;
-      if (data.faviconDominantColor) {
-        this.setStripeColor(data.faviconDominantColor);
-      } else {
-        chrome.send('getFaviconDominantColor',
-            [faviconUrl, id, 'ntp4.setMostVisitedFaviconDominantColor']);
-      }
+      if (data.faviconDominantColor)
+        this.stripeColor = data.faviconDominantColor;
+      else
+        chrome.send('getFaviconDominantColor', [faviconUrl, this.id]);
 
       var title = this.querySelector('.title');
       title.textContent = data.title;
@@ -118,7 +116,7 @@ cr.define('ntp4', function() {
      * Sets the color of the favicon dominant color bar.
      * @param {string} color The css-parsable value for the color.
      */
-    setStripeColor: function(color) {
+    set stripeColor(color) {
       this.querySelector('.color-stripe').style.backgroundColor = color;
     },
 
@@ -414,15 +412,8 @@ cr.define('ntp4', function() {
     return oldData;
   };
 
-  function setMostVisitedFaviconDominantColor(id, color) {
-    var tile = $('most-visited-tile-' + id);
-    if (tile)
-      tile.setStripeColor(color);
-  };
-
   return {
     MostVisitedPage: MostVisitedPage,
     refreshData: refreshData,
-    setMostVisitedFaviconDominantColor: setMostVisitedFaviconDominantColor,
   };
 });
