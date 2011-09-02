@@ -43,7 +43,6 @@ class GpuScheduler : public CommandBufferEngine {
  public:
   // If a group is not passed in one will be created.
   static GpuScheduler* Create(CommandBuffer* command_buffer,
-                              SurfaceManager* surface_manager,
                               gles2::ContextGroup* group);
 
   // This constructor is for unit tests.

@@ -20,12 +20,10 @@ using ::base::SharedMemory;
 namespace gpu {
 
 GpuScheduler* GpuScheduler::Create(CommandBuffer* command_buffer,
-                                   SurfaceManager* surface_manager,
                                    gles2::ContextGroup* group) {
   DCHECK(command_buffer);
 
-  gles2::GLES2Decoder* decoder =
-      gles2::GLES2Decoder::Create(surface_manager, group);
+  gles2::GLES2Decoder* decoder = gles2::GLES2Decoder::Create(group);
 
   GpuScheduler* scheduler = new GpuScheduler(command_buffer,
                                              decoder,

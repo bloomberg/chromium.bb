@@ -436,7 +436,6 @@ bool GLInProcessContext::Initialize(bool onscreen,
   bool bind_generates_resource = false;
   gpu_scheduler_ = GpuScheduler::Create(
       command_buffer_.get(),
-      NULL,
       context_group ?
           context_group->gpu_scheduler_->decoder()->GetContextGroup() :
               new ::gpu::gles2::ContextGroup(bind_generates_resource));

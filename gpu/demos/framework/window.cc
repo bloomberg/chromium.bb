@@ -60,9 +60,7 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   }
 
   GpuScheduler* gpu_scheduler(
-      GpuScheduler::Create(command_buffer.get(),
-                           NULL,
-                           NULL));
+      GpuScheduler::Create(command_buffer.get(), NULL));
   if (!gpu_scheduler->Initialize(hwnd, gfx::Size(), false,
                                  gpu::gles2::DisallowedExtensions(),
                                  NULL, std::vector<int32>(),

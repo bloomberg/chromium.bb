@@ -296,15 +296,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
-// Create a surface for offscreen rendering.
-IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateOffscreenSurface,
-                            gfx::Size, /* size */
-                            int /* route_id */)
-
-// Destroy a surface by routing id.
-IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroySurface,
-                     int /* route_id */)
-
 // Create a TransportTexture corresponding to |host_id|.
 IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateTransportTexture,
                      int32, /* context_route_id */

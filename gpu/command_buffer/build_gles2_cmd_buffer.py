@@ -217,12 +217,12 @@ GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint heigh
 GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* extension);
 GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
-GL_APICALL void         GL_APIENTRY glSetSurfaceCHROMIUM (GLint surface_id);
 GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 GL_APICALL void         GL_APIENTRY glPlaceholder447CHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glPlaceholder451CHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glPlaceholder452CHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glPlaceholder453CHROMIUM (void);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -428,7 +428,7 @@ _CMD_ID_TABLE = {
   'RequestExtensionCHROMIUM':                                  450,
   'Placeholder451CHROMIUM':                                    451,
   'Placeholder452CHROMIUM':                                    452,
-  'SetSurfaceCHROMIUM':                                        453,
+  'Placeholder453CHROMIUM':                                    453,
   'GetMultipleIntegervCHROMIUM':                               454,
   'GetProgramInfoCHROMIUM':                                    455,
 }
@@ -1547,12 +1547,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoReleaseShaderCompiler',
     'unit_test': False,
   },
-  'SetSurfaceCHROMIUM': {
-    'decoder_func': 'DoSetSurfaceCHROMIUM',
-    'extension': True,
-    'chromium': True,
-    'unit_test': False,
-  },
   'ShaderBinary': {'type': 'Custom'},
   'ShaderSource': {
     'type': 'Manual',
@@ -1761,6 +1755,9 @@ _FUNCTION_INFO = {
     'type': 'UnknownCommand',
   },
   'Placeholder452CHROMIUM': {
+    'type': 'UnknownCommand',
+  },
+  'Placeholder453CHROMIUM': {
     'type': 'UnknownCommand',
   },
 }

@@ -566,9 +566,6 @@ void GLES2RequestExtensionCHROMIUM(const char* extension) {
 void GLES2RateLimitOffscreenContextCHROMIUM() {
   gles2::GetGLContext()->RateLimitOffscreenContextCHROMIUM();
 }
-void GLES2SetSurfaceCHROMIUM(GLint surface_id) {
-  gles2::GetGLContext()->SetSurfaceCHROMIUM(surface_id);
-}
 void GLES2GetMultipleIntegervCHROMIUM(
     const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size) {
   gles2::GetGLContext()->GetMultipleIntegervCHROMIUM(

@@ -144,7 +144,6 @@ void GpuCommandBufferStub::OnInitialize(
   // Initialize the CommandBufferService and GpuScheduler.
   if (command_buffer_->Initialize(&shared_memory, size)) {
     scheduler_.reset(gpu::GpuScheduler::Create(command_buffer_.get(),
-                                               channel_,
                                                context_group_.get()));
 #if defined(TOUCH_UI)
     if (software_) {

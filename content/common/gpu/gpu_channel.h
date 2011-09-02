@@ -16,9 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/surface_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
-#include "content/common/gpu/gpu_surface_stub.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/gfx/gl/gl_share_group.h"
@@ -43,7 +41,6 @@ class GLSurface;
 // process. On the renderer side there's a corresponding GpuChannelHost.
 class GpuChannel : public IPC::Channel::Listener,
                    public IPC::Message::Sender,
-                   public gpu::SurfaceManager,
                    public base::RefCountedThreadSafe<GpuChannel> {
  public:
   // Takes ownership of the renderer process handle.
@@ -112,9 +109,6 @@ class GpuChannel : public IPC::Channel::Listener,
   // Destroy channel and all contained contexts.
   void DestroySoon();
 
-  // Look up a GLSurface by ID. In this case the ID is the IPC routing ID.
-  virtual gfx::GLSurface* LookupSurface(int surface_id);
-
   // Get the TransportTexture by ID.
   TransportTexture* GetTransportTexture(int32 route_id);
 
@@ -143,10 +137,6 @@ class GpuChannel : public IPC::Channel::Listener,
       const GPUCreateCommandBufferConfig& init_params,
       IPC::Message* reply_message);
   void OnDestroyCommandBuffer(int32 route_id, IPC::Message* reply_message);
-
-  void OnCreateOffscreenSurface(const gfx::Size& size,
-                                IPC::Message* reply_message);
-  void OnDestroySurface(int route_id);
 
   void OnCreateTransportTexture(int32 context_route_id, int32 host_id);
 
@@ -180,9 +170,6 @@ class GpuChannel : public IPC::Channel::Listener,
 #if defined(ENABLE_GPU)
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
-
-  typedef IDMap<GpuSurfaceStub, IDMapOwnPointer> SurfaceMap;
-  SurfaceMap surfaces_;
 #endif  // defined (ENABLE_GPU)
 
   // A collection of transport textures created.

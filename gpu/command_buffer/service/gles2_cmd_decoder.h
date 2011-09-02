@@ -42,8 +42,7 @@ class GLES2Decoder : public CommonDecoder {
   typedef error::Error Error;
 
   // Creates a decoder.
-  static GLES2Decoder* Create(SurfaceManager* surface_manager,
-                              ContextGroup* group);
+  static GLES2Decoder* Create(ContextGroup* group);
 
   virtual ~GLES2Decoder();
 

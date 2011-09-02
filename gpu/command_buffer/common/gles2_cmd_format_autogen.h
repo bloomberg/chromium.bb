@@ -8873,40 +8873,6 @@ COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, header) == 0,
 COMPILE_ASSERT(offsetof(RequestExtensionCHROMIUM, bucket_id) == 4,
                OffsetOf_RequestExtensionCHROMIUM_bucket_id_not_4);
 
-struct SetSurfaceCHROMIUM {
-  typedef SetSurfaceCHROMIUM ValueType;
-  static const CommandId kCmdId = kSetSurfaceCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(GLint _surface_id) {
-    SetHeader();
-    surface_id = _surface_id;
-  }
-
-  void* Set(void* cmd, GLint _surface_id) {
-    static_cast<ValueType*>(cmd)->Init(_surface_id);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  int32 surface_id;
-};
-
-COMPILE_ASSERT(sizeof(SetSurfaceCHROMIUM) == 8,
-               Sizeof_SetSurfaceCHROMIUM_is_not_8);
-COMPILE_ASSERT(offsetof(SetSurfaceCHROMIUM, header) == 0,
-               OffsetOf_SetSurfaceCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(SetSurfaceCHROMIUM, surface_id) == 4,
-               OffsetOf_SetSurfaceCHROMIUM_surface_id_not_4);
-
 struct GetMultipleIntegervCHROMIUM {
   typedef GetMultipleIntegervCHROMIUM ValueType;
   static const CommandId kCmdId = kGetMultipleIntegervCHROMIUM;
@@ -9108,6 +9074,36 @@ COMPILE_ASSERT(sizeof(Placeholder452CHROMIUM) == 4,
                Sizeof_Placeholder452CHROMIUM_is_not_4);
 COMPILE_ASSERT(offsetof(Placeholder452CHROMIUM, header) == 0,
                OffsetOf_Placeholder452CHROMIUM_header_not_0);
+
+struct Placeholder453CHROMIUM {
+  typedef Placeholder453CHROMIUM ValueType;
+  static const CommandId kCmdId = kPlaceholder453CHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(Placeholder453CHROMIUM) == 4,
+               Sizeof_Placeholder453CHROMIUM_is_not_4);
+COMPILE_ASSERT(offsetof(Placeholder453CHROMIUM, header) == 0,
+               OffsetOf_Placeholder453CHROMIUM_header_not_0);
 
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

@@ -1711,8 +1711,9 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 
 // TODO(gman): RequestExtensionCHROMIUM
 
-// TODO(gman): SetSurfaceCHROMIUM
 // TODO(gman): GetMultipleIntegervCHROMIUM
+
+// TODO(gman): GetProgramInfoCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

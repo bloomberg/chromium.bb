@@ -1262,11 +1262,6 @@ void RequestExtensionCHROMIUM(const char* extension);
 
 void RateLimitOffscreenContextCHROMIUM();
 
-void SetSurfaceCHROMIUM(GLint surface_id) {
-  GPU_CLIENT_LOG("[" << this << "] glSetSurfaceCHROMIUM(" << surface_id << ")");
-  helper_->SetSurfaceCHROMIUM(surface_id);
-}
-
 void GetMultipleIntegervCHROMIUM(
     const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 

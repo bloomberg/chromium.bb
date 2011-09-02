@@ -401,8 +401,6 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_GetRequestableExtensionsCHROMIUM_kCmdId_mismatch);
   COMPILE_ASSERT(RequestExtensionCHROMIUM::kCmdId == 450,
                  GLES2_RequestExtensionCHROMIUM_kCmdId_mismatch);
-  COMPILE_ASSERT(SetSurfaceCHROMIUM::kCmdId == 453,
-                 GLES2_SetSurfaceCHROMIUM_kCmdId_mismatch);
   COMPILE_ASSERT(GetMultipleIntegervCHROMIUM::kCmdId == 454,
                  GLES2_GetMultipleIntegervCHROMIUM_kCmdId_mismatch);
   COMPILE_ASSERT(GetProgramInfoCHROMIUM::kCmdId == 455,

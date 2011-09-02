@@ -16,7 +16,6 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
-#include "gpu/command_buffer/service/surface_manager_mock.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gl/gl_context_stub.h"
@@ -276,7 +275,6 @@ class GLES2DecoderTestBase : public testing::Test {
   scoped_refptr<gfx::GLSurfaceStub> surface_;
   scoped_refptr<gfx::GLContextStub> context_;
   scoped_ptr<GLES2Decoder> decoder_;
-  scoped_ptr<MockSurfaceManager> surface_manager_;
 
   GLuint client_buffer_id_;
   GLuint client_framebuffer_id_;

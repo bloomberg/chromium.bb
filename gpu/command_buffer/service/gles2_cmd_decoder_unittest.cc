@@ -2894,45 +2894,6 @@ TEST_F(GLES2DecoderWithShaderTest, VertexAttribPointer) {
   }
 }
 
-TEST_F(GLES2DecoderTest, SetSurfaceCHROMIUMChangesSurfaceForExistentSurface) {
-  const int kSurfaceId = 1;
-  scoped_refptr<gfx::GLSurfaceStub> surface(new gfx::GLSurfaceStub);
-
-  EXPECT_CALL(*surface_manager_.get(), LookupSurface(kSurfaceId))
-      .WillOnce(Return(surface.get()))
-      .RetiresOnSaturation();
-
-  SetSurfaceCHROMIUM cmd;
-  cmd.Init(kSurfaceId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-
-  EXPECT_EQ(surface.get(), decoder_->GetGLSurface());
-}
-
-TEST_F(GLES2DecoderTest,
-    SetSurfaceCHROMIUMDoesNotChangeSurfaceWhenSurfaceDoesNotExist) {
-  const int kExistentSurfaceId = 1;
-  const int kNonexistentSurfaceId = 2;
-  scoped_refptr<gfx::GLSurfaceStub> surface(new gfx::GLSurfaceStub);
-
-  EXPECT_CALL(*surface_manager_.get(), LookupSurface(kExistentSurfaceId))
-      .WillOnce(Return(surface.get()))
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*surface_manager_.get(), LookupSurface(kNonexistentSurfaceId))
-      .WillOnce(Return(static_cast<gfx::GLSurface*>(NULL)))
-      .RetiresOnSaturation();
-
-  SetSurfaceCHROMIUM cmd;
-  cmd.Init(kExistentSurfaceId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-
-  cmd.Init(kNonexistentSurfaceId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-
-  EXPECT_EQ(surface.get(), decoder_->GetGLSurface());
-}
-
 // Test that with an RGB backbuffer if we set the color mask to 1,1,1,1 it is
 // set to 1,1,1,0 at Draw time but is 1,1,1,1 at query time.
 TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMask) {

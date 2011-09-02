@@ -126,8 +126,6 @@
         'common/gpu/gpu_info.h',
         'common/gpu/gpu_messages.h',
         'common/gpu/gpu_process_launch_causes.h',
-        'common/gpu/gpu_surface_stub.cc',
-        'common/gpu/gpu_surface_stub.h',
         'common/gpu/gpu_watchdog.h',
         'common/gpu/media/gpu_video_decode_accelerator.cc',
         'common/gpu/media/gpu_video_decode_accelerator.h',

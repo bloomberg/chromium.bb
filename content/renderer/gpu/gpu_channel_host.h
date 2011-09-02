@@ -101,12 +101,6 @@ class GpuChannelHost : public IPC::Message::Sender,
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
 
-  // Create a surface in the GPU process. Returns null on failure.
-  GpuSurfaceProxy* CreateOffscreenSurface(const gfx::Size& size);
-
-  // Destroy a surface in the GPU process.
-  void DestroySurface(GpuSurfaceProxy* surface);
-
   TransportTextureService* transport_texture_service() {
     return transport_texture_service_.get();
   }

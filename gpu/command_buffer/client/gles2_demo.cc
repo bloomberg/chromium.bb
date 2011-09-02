@@ -66,7 +66,6 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
 
   gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(true));
   GpuScheduler* gpu_scheduler = GpuScheduler::Create(command_buffer.get(),
-                                                     NULL,
                                                      group.get());
   if (!gpu_scheduler->Initialize(reinterpret_cast<HWND>(hwnd),
                                  gfx::Size(),

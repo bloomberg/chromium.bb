@@ -3495,19 +3495,6 @@ TEST(GLES2FormatTest, RequestExtensionCHROMIUM) {
   EXPECT_EQ(static_cast<uint32>(11), cmd.bucket_id);
 }
 
-TEST(GLES2FormatTest, SetSurfaceCHROMIUM) {
-  SetSurfaceCHROMIUM cmd = { { 0 } };
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLint>(11));
-  EXPECT_EQ(static_cast<uint32>(SetSurfaceCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<char*>(next_cmd),
-            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
-  EXPECT_EQ(static_cast<GLint>(11), cmd.surface_id);
-}
-
 TEST(GLES2FormatTest, GetMultipleIntegervCHROMIUM) {
   GetMultipleIntegervCHROMIUM cmd = { { 0 } };
   void* next_cmd = cmd.Set(
@@ -3573,6 +3560,17 @@ TEST(GLES2FormatTest, Placeholder452CHROMIUM) {
   void* next_cmd = cmd.Set(
       &cmd);
   EXPECT_EQ(static_cast<uint32>(Placeholder452CHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+}
+
+TEST(GLES2FormatTest, Placeholder453CHROMIUM) {
+  Placeholder453CHROMIUM cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd);
+  EXPECT_EQ(static_cast<uint32>(Placeholder453CHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),

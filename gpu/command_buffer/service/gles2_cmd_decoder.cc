@@ -34,7 +34,6 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
-#include "gpu/command_buffer/service/surface_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -448,7 +447,7 @@ GLES2Decoder::~GLES2Decoder() {
 class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                          public GLES2Decoder {
  public:
-  GLES2DecoderImpl(SurfaceManager* surface_manager, ContextGroup* group);
+  explicit GLES2DecoderImpl(ContextGroup* group);
 
   // Overridden from AsyncAPIInterface.
   virtual Error DoCommand(unsigned int command,
@@ -1038,8 +1037,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glValidateProgram.
   void DoValidateProgram(GLuint program_client_id);
 
-  void DoSetSurfaceCHROMIUM(GLint surface_id);
-
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
@@ -1167,9 +1164,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLES2_COMMAND_LIST(GLES2_CMD_OP)
 
   #undef GLES2_CMD_OP
-
-  // Maps surface IDs to GLSurface.
-  gpu::SurfaceManager* surface_manager_;
 
   // The GL context this decoder renders to on behalf of the client.
   scoped_refptr<gfx::GLSurface> surface_;
@@ -1636,15 +1630,12 @@ GLenum FrameBuffer::CheckStatus() {
   return glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
 }
 
-GLES2Decoder* GLES2Decoder::Create(SurfaceManager* surface_manager,
-                                   ContextGroup* group) {
-  return new GLES2DecoderImpl(surface_manager, group);
+GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
+  return new GLES2DecoderImpl(group);
 }
 
-GLES2DecoderImpl::GLES2DecoderImpl(SurfaceManager* surface_manager,
-                                   ContextGroup* group)
+GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(),
-      surface_manager_(surface_manager),
       group_(group),
       error_bits_(0),
       pack_alignment_(4),
@@ -2556,14 +2547,6 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
     resize_callback_->Run(gfx::Size(width, height));
 
   return error::kNoError;
-}
-
-void GLES2DecoderImpl::DoSetSurfaceCHROMIUM(GLint surface_id) {
-  gfx::GLSurface* surface = surface_manager_->LookupSurface(surface_id);
-  if (!surface)
-    return;
-
-  surface_ = surface;
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {

@@ -110,9 +110,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   std::vector<int32> attribs;
   gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(true));
   scoped_ptr<GpuScheduler> gpu_scheduler(
-      GpuScheduler::Create(command_buffer_.get(),
-                           NULL,
-                           group.get()));
+      GpuScheduler::Create(command_buffer_.get(), group.get()));
   if (!gpu_scheduler->Initialize(
       win, gfx::Size(), false, gpu::gles2::DisallowedExtensions(), NULL,
       attribs, NULL))

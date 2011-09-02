@@ -8,7 +8,6 @@
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
-#include "content/renderer/gpu/gpu_surface_proxy.h"
 #include "content/renderer/gpu/transport_texture_service.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread.h"
@@ -295,31 +294,6 @@ void GpuChannelHost::DestroyCommandBuffer(CommandBufferProxy* command_buffer) {
     proxies_.erase(route_id);
   RemoveRoute(route_id);
   delete command_buffer;
-#endif
-}
-
-GpuSurfaceProxy* GpuChannelHost::CreateOffscreenSurface(
-    const gfx::Size& size) {
-#if defined(ENABLE_GPU)
-  AutoLock lock(context_lock_);
-  int route_id;
-  if (!Send(new GpuChannelMsg_CreateOffscreenSurface(size, &route_id)))
-    return NULL;
-
-  scoped_ptr<GpuSurfaceProxy> surface(new GpuSurfaceProxy(this, route_id));
-  AddRoute(route_id, surface->AsWeakPtr());
-
-  return surface.release();
-#endif
-}
-
-void GpuChannelHost::DestroySurface(GpuSurfaceProxy* surface) {
-#if defined(ENABLE_GPU)
-  AutoLock lock(context_lock_);
-  Send(new GpuChannelMsg_DestroySurface(surface->route_id()));
-
-  RemoveRoute(surface->route_id());
-  delete surface;
 #endif
 }
 
