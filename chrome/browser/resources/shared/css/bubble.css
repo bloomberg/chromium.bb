@@ -20,7 +20,7 @@
   line-height: 150%;
   padding: 8px 11px 12px;
   position: relative;
-  text-align: left;
+  right: 1px;
   top: 1px;
   width: 298px;
   z-index: 3;
@@ -64,10 +64,11 @@
    * it would overlap/darken the content shadow. */
   border-right: none;
   border-top: none;
+  bottom: -9px;
   height: 15px;
   left: 22px;
   position: absolute;
-  bottom: -9px;
+  right: 22px;
   width: 15px;
   z-index: 2;
   -webkit-transform: rotate(45deg);

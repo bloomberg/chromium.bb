@@ -15,7 +15,6 @@ html {
 body {
   background-size: auto 100%;
   margin: 0;
-  text-align: center;
   /* Don't highlight links when they're tapped.  Safari has bugs here that
      show up as flicker when dragging in some situations */
   -webkit-tap-highlight-color: transparent;

@@ -67,7 +67,8 @@ cr.define('cr.ui', function() {
       var node = this.anchorNode_;
       var clientRect = node.getBoundingClientRect();
 
-      this.style.left = (clientRect.left + clientRect.right) / 2 + 'px';
+      this.style.left = this.style.right =
+          (clientRect.left + clientRect.right) / 2 + 'px';
       this.style.top = (clientRect.top - this.clientHeight) + 'px';
     },
 
