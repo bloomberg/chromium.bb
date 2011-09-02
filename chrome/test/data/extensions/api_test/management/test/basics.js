@@ -51,12 +51,13 @@ var tests = [
       checkItemInList(items, "description", true, false,
                 { "description": "a short description" });
       checkItemInList(items, "enabled_app", true, true,
-                {"appLaunchUrl": "http://www.google.com/"});
+                { "appLaunchUrl": "http://www.google.com/",
+                  "offlineEnabled": true });
       checkItemInList(items, "disabled_app", false, true);
       checkItemInList(items, "enabled_extension", true, false,
                      { "homepageUrl": "http://example.com/" });
       checkItemInList(items, "disabled_extension", false, false,
-                {"optionsUrl": "chrome-extension://<ID>/pages/options.html"});
+                { "optionsUrl": "chrome-extension://<ID>/pages/options.html" });
 
       // Check that we got the icons correctly
       var extension = getItemNamed(items, "enabled_extension");

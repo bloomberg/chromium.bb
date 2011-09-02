@@ -41,6 +41,7 @@ const char kIconsKey[] = "icons";
 const char kIdKey[] = "id";
 const char kIsAppKey[] = "isApp";
 const char kNameKey[] = "name";
+const char kOfflineEnabledKey[] = "offlineEnabled";
 const char kOptionsUrlKey[] = "optionsUrl";
 const char kPermissionsKey[] = "permissions";
 const char kMayDisableKey[] = "mayDisable";
@@ -69,12 +70,13 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   info->SetBoolean(kEnabledKey, enabled);
   info->SetBoolean(kMayDisableKey,
                    Extension::UserMayDisable(extension.location()));
+  info->SetBoolean(kOfflineEnabledKey, extension.offline_enabled());
   info->SetString(kVersionKey, extension.VersionString());
   info->SetString(kDescriptionKey, extension.description());
   info->SetString(kOptionsUrlKey,
-                    extension.options_url().possibly_invalid_spec());
+                  extension.options_url().possibly_invalid_spec());
   info->SetString(kHomepageURLKey,
-                    extension.GetHomepageURL().possibly_invalid_spec());
+                  extension.GetHomepageURL().possibly_invalid_spec());
   if (extension.is_app())
     info->SetString(kAppLaunchUrlKey,
                     extension.GetFullLaunchURL().possibly_invalid_spec());

@@ -6337,6 +6337,10 @@
             "type": "string",
             "optional": true
           },
+          "offlineEnabled": {
+            "description": "Whether the extension or app declares that it supports offline.",
+            "type": "boolean"
+          },
           "optionsUrl": {
             "description": "The url for the item's options page, if it has one.",
             "type": "string"

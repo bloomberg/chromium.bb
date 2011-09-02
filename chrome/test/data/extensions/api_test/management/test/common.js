@@ -25,14 +25,15 @@ function getItemNamed(list, name) {
 // |enabled|, and |isApp|, and checks against any additional name/value
 // properties from |additional_properties|.
 function checkItem(item, name, enabled, isApp, additional_properties) {
-  assertTrue(item != null);
+  assertTrue(item !== null);
   assertEq(name, item.name);
   assertEq(isApp, item.isApp);
   assertEq(enabled, item.enabled);
 
   for (var propname in additional_properties) {
     var value = additional_properties[propname];
-    value = value.replace("<ID>", item.id);
+    if (typeof value === 'string')
+      value = value.replace("<ID>", item.id);
     assertTrue(propname in item);
     assertEq(value, item[propname]);
   }
