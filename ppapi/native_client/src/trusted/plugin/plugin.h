@@ -1,8 +1,6 @@
-/*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // The portable representation of an instance and root scriptable object.
 // The PPAPI version of the plugin instantiates a subclass of this class.
@@ -501,12 +499,22 @@ class Plugin : public pp::InstancePrivate {
   nacl::scoped_ptr<pp::WidgetClient_Dev> widget_client_adapter_;
   nacl::scoped_ptr<pp::Zoom_Dev> zoom_adapter_;
 
-  // used for NexeFileDidOpenContinuation
+  // Used for NexeFileDidOpenContinuation
   int64_t load_start_;
 
   int64_t init_time_;
   int64_t ready_time_;
   size_t nexe_size_;
+
+  static void UpdateNexeDownloadProgress(
+      PP_Instance pp_instance,
+      PP_Resource pp_resource,
+      int64_t bytes_sent,
+      int64_t total_bytes_to_be_sent,
+      int64_t bytes_received,
+      int64_t total_bytes_to_be_received);
+
+  int64_t last_event_bytes_received_;
 };
 
 }  // namespace plugin

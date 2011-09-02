@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
+#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/url_loader.h"
@@ -40,6 +41,7 @@ class FileDownloader {
       : instance_(NULL),
         file_open_notify_callback_(pp::BlockUntilComplete()),
         file_io_trusted_interface_(NULL),
+        url_loader_trusted_interface_(NULL),
         open_time_(-1) {}
   ~FileDownloader() {}
 
@@ -51,9 +53,12 @@ class FileDownloader {
   // Returns true when callback is scheduled to be called on success or failure.
   // Returns false if callback is NULL, Initialize() has not been called or if
   // the PPB_FileIO_Trusted interface is not available.
+  // If |progress_callback| is not NULL, it will be invoked for every progress
+  // update received by the loader.
   bool Open(const nacl::string& url,
             DownloadFlags flags,
-            const pp::CompletionCallback& callback);
+            const pp::CompletionCallback& callback,
+            PP_URLLoaderTrusted_StatusCallback progress_callback);
 
   // If downloading and opening succeeded, this returns a valid read-only
   // POSIX file descriptor.  On failure, the return value is an invalid
@@ -105,6 +110,7 @@ class FileDownloader {
   pp::CompletionCallback file_open_notify_callback_;
   pp::FileIO file_reader_;
   const PPB_FileIOTrusted* file_io_trusted_interface_;
+  const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
   pp::URLLoader url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
   int64_t open_time_;

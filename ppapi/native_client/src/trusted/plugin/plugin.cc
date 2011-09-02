@@ -1,8 +1,6 @@
-/*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifdef _MSC_VER
 // Do not warn about use of std::copy with raw pointers.
@@ -905,6 +903,7 @@ Plugin::Plugin(PP_Instance pp_instance)
       enable_dev_interface_(false),
       replayDidChangeView(false),
       replayHandleDocumentLoad(false),
+      last_event_bytes_received_(0),
       init_time_(0),
       ready_time_(0),
       nexe_size_(0) {
@@ -1509,7 +1508,10 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
           callback_factory_.NewRequiredCallback(&Plugin::NexeFileDidOpen);
       // Will always call the callback on success or failure.
       CHECK(
-          nexe_downloader_.Open(program_url, DOWNLOAD_TO_FILE, open_callback));
+          nexe_downloader_.Open(program_url,
+                                DOWNLOAD_TO_FILE,
+                                open_callback,
+                                &UpdateNexeDownloadProgress));
       return;
     }
   }
@@ -1552,14 +1554,16 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_BUFFER,
-                                open_callback));
+                                open_callback,
+                                NULL));
   } else {
     pp::CompletionCallback open_callback =
         callback_factory_.NewRequiredCallback(&Plugin::NaClManifestFileDidOpen);
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_FILE,
-                                open_callback));
+                                open_callback,
+                                NULL));
   }
 }
 
@@ -1660,7 +1664,7 @@ bool Plugin::StreamAsFile(const nacl::string& url,
     return false;
   }
   // If true, will always call the callback on success or failure.
-  return downloader->Open(url, DOWNLOAD_TO_FILE, open_callback);
+  return downloader->Open(url, DOWNLOAD_TO_FILE, open_callback, NULL);
 }
 
 #ifndef HACK_FOR_MACOS_HANG_REMOVED
@@ -1746,6 +1750,28 @@ void Plugin::ReportLoadAbort() {
   HistogramEnumerateLoadStatus(ERROR_LOAD_ABORTED);
 }
 
+void Plugin::UpdateNexeDownloadProgress(
+    PP_Instance pp_instance,
+    PP_Resource pp_resource,
+    int64_t bytes_sent,
+    int64_t total_bytes_to_be_sent,
+    int64_t bytes_received,
+    int64_t total_bytes_to_be_received)
+{
+  Instance* instance = pp::Module::Get()->InstanceForPPInstance(pp_instance);
+  if (instance != NULL) {
+    Plugin* plugin = static_cast<Plugin*>(instance);
+    int64_t progress = bytes_received - plugin->last_event_bytes_received_;
+    const int64_t kProgressThreshold = 1 << 17;  // 128K bytes per event
+    if (progress > kProgressThreshold) {
+      plugin->EnqueueProgressEvent("progress",
+                                   LENGTH_IS_COMPUTABLE,
+                                   bytes_received,
+                                   total_bytes_to_be_received);
+      plugin->last_event_bytes_received_ = bytes_received;
+    }
+  }
+}
 
 void Plugin::EnqueueProgressEvent(const char* event_type,
                                   LengthComputable length_computable,

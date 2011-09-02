@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "native_client/src/trusted/plugin/utility.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
-#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/url_request_info.h"
@@ -36,12 +35,16 @@ void FileDownloader::Initialize(Plugin* instance) {
   callback_factory_.Initialize(this);
   file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
+  url_loader_trusted_interface_ = static_cast<const PPB_URLLoaderTrusted*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
 }
 
 
-bool FileDownloader::Open(const nacl::string& url,
-                          DownloadFlags flags,
-                          const pp::CompletionCallback& callback) {
+bool FileDownloader::Open(
+    const nacl::string& url,
+    DownloadFlags flags,
+    const pp::CompletionCallback& callback,
+    PP_URLLoaderTrusted_StatusCallback progress_callback) {
   PLUGIN_PRINTF(("FileDownloader::Open (url=%s)\n", url.c_str()));
   if (callback.pp_completion_callback().func == NULL ||
       instance_ == NULL ||
@@ -90,12 +93,16 @@ bool FileDownloader::Open(const nacl::string& url,
       }
     }
 
-    if (grant_universal_access) {
-      const PPB_URLLoaderTrusted* url_loaded_trusted =
-          static_cast<const PPB_URLLoaderTrusted*>(
-          module->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
-      if (url_loaded_trusted != NULL)
-        url_loaded_trusted->GrantUniversalAccess(url_loader_.pp_resource());
+    if (url_loader_trusted_interface_ != NULL) {
+      if (grant_universal_access) {
+        url_loader_trusted_interface_->GrantUniversalAccess(
+            url_loader_.pp_resource());
+      }
+      if (progress_callback != NULL) {
+        url_request.SetRecordDownloadProgress(true);
+        url_loader_trusted_interface_->RegisterStatusCallback(
+            url_loader_.pp_resource(), progress_callback);
+      }
     }
 
     // Prepare the url request.
