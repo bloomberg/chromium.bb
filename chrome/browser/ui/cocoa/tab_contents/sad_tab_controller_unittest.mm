@@ -5,6 +5,7 @@
 #include "base/debug/debugger.h"
 #include "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 #include "chrome/test/base/testing_profile.h"
@@ -13,12 +14,12 @@
 
 @interface SadTabView (ExposedForTesting)
 // Implementation is below.
-- (NSButton*)linkButton;
+- (HyperlinkTextView*)helpTextView;
 @end
 
 @implementation SadTabView (ExposedForTesting)
-- (NSButton*)linkButton {
-  return linkButton_;
+- (HyperlinkTextView*)helpTextView {
+  return help_.get();
 }
 @end
 
@@ -62,9 +63,9 @@ class SadTabControllerTest : public RenderViewHostTestHarness {
     return controller;
   }
 
-  NSButton* GetLinkButton(SadTabController* controller) {
+  HyperlinkTextView* GetHelpTextView(SadTabController* controller) {
     SadTabView* view = static_cast<SadTabView*>([controller view]);
-    return ([view linkButton]);
+    return ([view helpTextView]);
   }
 
   static bool link_clicked_;
@@ -77,24 +78,24 @@ bool SadTabControllerTest::link_clicked_;
 TEST_F(SadTabControllerTest, WithTabContents) {
   scoped_nsobject<SadTabController> controller(CreateController());
   EXPECT_TRUE(controller);
-  NSButton* link = GetLinkButton(controller);
-  EXPECT_TRUE(link);
+  HyperlinkTextView* help = GetHelpTextView(controller);
+  EXPECT_TRUE(help);
 }
 
 TEST_F(SadTabControllerTest, WithoutTabContents) {
   DeleteContents();
   scoped_nsobject<SadTabController> controller(CreateController());
   EXPECT_TRUE(controller);
-  NSButton* link = GetLinkButton(controller);
-  EXPECT_FALSE(link);
+  HyperlinkTextView* help = GetHelpTextView(controller);
+  EXPECT_FALSE(help);
 }
 
 TEST_F(SadTabControllerTest, ClickOnLink) {
   scoped_nsobject<SadTabController> controller(CreateController());
-  NSButton* link = GetLinkButton(controller);
-  EXPECT_TRUE(link);
+  HyperlinkTextView* help = GetHelpTextView(controller);
+  EXPECT_TRUE(help);
   EXPECT_FALSE(link_clicked_);
-  [link performClick:link];
+  [help clickedOnLink:nil atIndex:0];
   EXPECT_TRUE(link_clicked_);
 }
 

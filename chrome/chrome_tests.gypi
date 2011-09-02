@@ -1790,6 +1790,7 @@
         'browser/ui/cocoa/html_dialog_window_controller_unittest.mm',
         'browser/ui/cocoa/hung_renderer_controller_unittest.mm',
         'browser/ui/cocoa/hyperlink_button_cell_unittest.mm',
+        'browser/ui/cocoa/hyperlink_text_view_unittest.mm',
         'browser/ui/cocoa/image_button_cell_unittest.mm',
         'browser/ui/cocoa/image_utils_unittest.mm',
         'browser/ui/cocoa/info_bubble_view_unittest.mm',

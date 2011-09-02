@@ -7415,6 +7415,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAD_TAB_MESSAGE" desc="The message displayed on the sad tab page.">
         Something went wrong while displaying this webpage. To continue, reload or go to another page.
       </message>
+      <message name="IDS_SAD_TAB_HELP_MESSAGE" desc="The help message displayed on the sad tab page, with IDS_SAD_TAB_HELP_LINK embedded as a link to help.">
+        If you're seeing this frequently, try <ph name="HELP_LINK">$1<ex>these suggestions</ex></ph>.
+      </message>
+      <message name="IDS_SAD_TAB_HELP_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article.">
+        these suggestions
+      </message>
 
       <!-- Killed Tab Strings -->
       <!-- TODO(gspencer): These are temporary values until real

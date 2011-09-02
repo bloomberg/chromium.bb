@@ -2520,6 +2520,8 @@
         'browser/ui/cocoa/hung_renderer_controller.mm',
         'browser/ui/cocoa/hyperlink_button_cell.h',
         'browser/ui/cocoa/hyperlink_button_cell.mm',
+        'browser/ui/cocoa/hyperlink_text_view.h',
+        'browser/ui/cocoa/hyperlink_text_view.mm',
         'browser/ui/cocoa/image_button_cell.h',
         'browser/ui/cocoa/image_button_cell.mm',
         'browser/ui/cocoa/image_utils.h',

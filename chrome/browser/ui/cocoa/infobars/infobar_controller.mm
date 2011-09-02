@@ -10,15 +10,16 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
+#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -27,60 +28,7 @@ namespace {
 // Durations set to match the default SlideAnimation duration.
 const float kAnimateOpenDuration = 0.12;
 const float kAnimateCloseDuration = 0.12;
-
-// The baseline shift for text in the NSTextView.
-const float kTextBaselineShift = -1.0;
 }
-
-// This simple subclass of |NSTextView| just doesn't show the (text) cursor
-// (|NSTextView| displays the cursor with full keyboard accessibility enabled).
-@interface InfoBarTextView : NSTextView
-- (void)fixupCursor;
-@end
-
-@implementation InfoBarTextView
-
-// Never draw the insertion point (otherwise, it shows up without any user
-// action if full keyboard accessibility is enabled).
-- (BOOL)shouldDrawInsertionPoint {
-  return NO;
-}
-
-- (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange
-                              granularity:(NSSelectionGranularity)granularity {
-  // Do not allow selections.
-  return NSMakeRange(0, 0);
-}
-
-// Convince NSTextView to not show an I-Beam cursor when the cursor is over the
-// text view but not over actual text.
-//
-// http://www.mail-archive.com/cocoa-dev@lists.apple.com/msg10791.html
-// "NSTextView sets the cursor over itself dynamically, based on considerations
-// including the text under the cursor. It does so in -mouseEntered:,
-// -mouseMoved:, and -cursorUpdate:, so those would be points to consider
-// overriding."
-- (void)mouseMoved:(NSEvent*)e {
-  [super mouseMoved:e];
-  [self fixupCursor];
-}
-
-- (void)mouseEntered:(NSEvent*)e {
-  [super mouseEntered:e];
-  [self fixupCursor];
-}
-
-- (void)cursorUpdate:(NSEvent*)e {
-  [super cursorUpdate:e];
-  [self fixupCursor];
-}
-
-- (void)fixupCursor {
-  if ([[NSCursor currentCursor] isEqual:[NSCursor IBeamCursor]])
-    [[NSCursor arrowCursor] set];
-}
-
-@end
 
 @interface InfoBarController (PrivateMethods)
 // Sets |label_| based on |labelPlaceholder_|, sets |labelPlaceholder_| to nil.
@@ -94,12 +42,6 @@ const float kTextBaselineShift = -1.0;
 // notifying the InfoBarDelegate that the infobar was closed and removing the
 // infobar from its container, if necessary.
 - (void)cleanUpAfterAnimation:(BOOL)finished;
-
-// Sets the info bar message to the specified |message|, with a hypertext
-// style link. |link| will be inserted into message at |linkOffset|.
-- (void)setLabelToMessage:(NSString*)message
-                 withLink:(NSString*)link
-                 atOffset:(NSUInteger)linkOffset;
 
 // Returns the point, in gradient view coordinates, at which the apex of the
 // infobar tip should be drawn.
@@ -229,22 +171,6 @@ const float kTextBaselineShift = -1.0;
   // Default implementation does nothing.
 }
 
-- (void)setLabelToMessage:(NSString*)message {
-  NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
-  NSFont* font = [NSFont labelFontOfSize:
-      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
-  [attributes setObject:font
-                 forKey:NSFontAttributeName];
-  [attributes setObject:[NSCursor arrowCursor]
-                 forKey:NSCursorAttributeName];
-  [attributes setObject:[NSNumber numberWithFloat:kTextBaselineShift]
-                 forKey:NSBaselineOffsetAttributeName];
-  scoped_nsobject<NSAttributedString> attributedString(
-      [[NSAttributedString alloc] initWithString:message
-                                      attributes:attributes]);
-  [[label_.get() textStorage] setAttributedString:attributedString];
-}
-
 - (void)removeButtons {
   // Extend the label all the way across.
   NSRect labelFrame = [label_.get() frame];
@@ -263,17 +189,13 @@ const float kTextBaselineShift = -1.0;
   // The former doesn't show links in a nice way, but the latter can't be added
   // in IB without a containing scroll view, so create the NSTextView
   // programmatically.
-  label_.reset([[InfoBarTextView alloc]
+  label_.reset([[HyperlinkTextView alloc]
       initWithFrame:[labelPlaceholder_ frame]]);
   [label_.get() setAutoresizingMask:[labelPlaceholder_ autoresizingMask]];
   [[labelPlaceholder_ superview]
       replaceSubview:labelPlaceholder_ with:label_.get()];
   labelPlaceholder_ = nil;  // Now released.
   [label_.get() setDelegate:self];
-  [label_.get() setEditable:NO];
-  [label_.get() setDrawsBackground:NO];
-  [label_.get() setHorizontallyResizable:NO];
-  [label_.get() setVerticallyResizable:NO];
 }
 
 - (void)removeSelf {
@@ -314,62 +236,6 @@ const float kTextBaselineShift = -1.0;
   [self cleanUpAfterAnimation:YES];
 }
 
-// TODO(joth): This method factors out some common functionality between the
-// various derived infobar classes, however the class hierarchy itself could
-// use refactoring to reduce this duplication. http://crbug.com/38924
-- (void)setLabelToMessage:(NSString*)message
-                 withLink:(NSString*)link
-                 atOffset:(NSUInteger)linkOffset {
-  if (linkOffset == std::wstring::npos) {
-    // linkOffset == std::wstring::npos means the link should be right-aligned,
-    // which is not supported on Mac (http://crbug.com/47728).
-    NOTIMPLEMENTED();
-    linkOffset = [message length];
-  }
-  // Create an attributes dictionary for the entire message.  We have
-  // to explicitly set the control's font.  We also override the cursor to give
-  // us the normal cursor rather than the text insertion cursor.
-  NSMutableDictionary* linkAttributes = [NSMutableDictionary dictionary];
-  [linkAttributes setObject:[NSCursor arrowCursor]
-                     forKey:NSCursorAttributeName];
-  NSFont* font = [NSFont labelFontOfSize:
-      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
-  [linkAttributes setObject:font
-                     forKey:NSFontAttributeName];
-
-  // Create the attributed string for the main message text.
-  scoped_nsobject<NSMutableAttributedString> infoText(
-      [[NSMutableAttributedString alloc] initWithString:message]);
-  [infoText.get() addAttributes:linkAttributes
-                    range:NSMakeRange(0, [infoText.get() length])];
-  // Add additional attributes to style the link text appropriately as
-  // well as linkify it.
-  [linkAttributes setObject:[NSColor blueColor]
-                     forKey:NSForegroundColorAttributeName];
-  [linkAttributes setObject:[NSNumber numberWithBool:YES]
-                     forKey:NSUnderlineStyleAttributeName];
-  [linkAttributes setObject:[NSCursor pointingHandCursor]
-                     forKey:NSCursorAttributeName];
-  [linkAttributes setObject:[NSNumber numberWithInt:NSSingleUnderlineStyle]
-                     forKey:NSUnderlineStyleAttributeName];
-  [linkAttributes setObject:[NSString string]  // dummy value
-                     forKey:NSLinkAttributeName];
-
-  // Insert the link text into the string at the appropriate offset.
-  scoped_nsobject<NSAttributedString> attributedString(
-      [[NSAttributedString alloc] initWithString:link
-                                      attributes:linkAttributes]);
-  [infoText.get() insertAttributedString:attributedString.get()
-                                 atIndex:linkOffset];
-  // The entire text needs a baseline shift.
-  [infoText addAttribute:NSBaselineOffsetAttributeName
-                   value:[NSNumber numberWithDouble:kTextBaselineShift]
-                   range:NSMakeRange(0, [infoText length])];
-
-  // Update the label view with the new text.
-  [[label_.get() textStorage] setAttributedString:infoText];
-}
-
 - (NSPoint)pointForTipApex {
   BrowserWindowController* windowController =
       [containerController_ browserWindowController];
@@ -406,9 +272,16 @@ const float kTextBaselineShift = -1.0;
   DCHECK(delegate);
   size_t offset = std::wstring::npos;
   string16 message = delegate->GetMessageTextWithOffset(&offset);
-  [self setLabelToMessage:base::SysUTF16ToNSString(message)
-                 withLink:base::SysUTF16ToNSString(delegate->GetLinkText())
-                 atOffset:offset];
+  string16 link = delegate->GetLinkText();
+  NSFont* font = [NSFont labelFontOfSize:
+                  [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+  HyperlinkTextView* view = (HyperlinkTextView*)label_.get();
+  [view setMessageAndLink:base::SysUTF16ToNSString(message)
+                 withLink:base::SysUTF16ToNSString(link)
+                 atOffset:offset
+                     font:font
+             messageColor:[NSColor blackColor]
+                linkColor:[NSColor blueColor]];
 }
 
 // Called when someone clicks on the link in the infobar.  This method
@@ -525,20 +398,19 @@ const float kTextBaselineShift = -1.0;
   // Set the text and link.
   NSString* message = base::SysUTF16ToNSString(delegate->GetMessageText());
   string16 link = delegate->GetLinkText();
-  if (link.empty()) {
-    // Simple case: no link, so just set the message directly.
-    [self setLabelToMessage:message];
-  } else {
-    // Inserting the link unintentionally causes the text to have a slightly
-    // different result to the simple case above: text is truncated on word
-    // boundaries (if needed) rather than elided with ellipses.
-
+  if (!link.empty()) {
     // Add spacing between the label and the link.
     message = [message stringByAppendingString:@"   "];
-    [self setLabelToMessage:message
-                   withLink:base::SysUTF16ToNSString(link)
-                   atOffset:[message length]];
   }
+  NSFont* font = [NSFont labelFontOfSize:
+      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+  HyperlinkTextView* view = (HyperlinkTextView*)label_.get();
+  [view setMessageAndLink:message
+                 withLink:base::SysUTF16ToNSString(link)
+                 atOffset:[message length]
+                     font:font
+             messageColor:[NSColor blackColor]
+                linkColor:[NSColor blueColor]];
 }
 
 // Called when someone clicks on the link in the infobar.  This method

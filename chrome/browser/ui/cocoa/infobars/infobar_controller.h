@@ -77,9 +77,6 @@ class TabContentsWrapper;
 // infobar closes.
 - (void)infobarWillClose;
 
-// Sets the info bar message to the specified |message|.
-- (void)setLabelToMessage:(NSString*)message;
-
 // Removes the OK and Cancel buttons and resizes the textfield to use the
 // space.
 - (void)removeButtons;

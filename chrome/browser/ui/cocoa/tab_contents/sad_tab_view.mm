@@ -1,13 +1,20 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
 
 #include "base/logging.h"
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
+#import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
+#include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
+#include "chrome/common/url_constants.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
@@ -39,11 +46,8 @@ static const CGFloat kTabHorzMargin = 13;
   NSFont* messageFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
   [message_ setFont:messageFont];
 
-  // If necessary, set font and color for link.
-  if (linkButton_) {
-    [linkButton_ setFont:messageFont];
-    [linkCell_ setTextColor:[NSColor whiteColor]];
-  }
+  DCHECK(controller_);
+  [self initializeHelpText];
 
   // Initialize background color.
   NSColor* backgroundColor = [[NSColor colorWithCalibratedRed:(35.0f/255.0f)
@@ -106,23 +110,63 @@ static const CGFloat kTabHorzMargin = 13;
       titleY - kTitleMessageSpacing - NSHeight(messageFrame);
   [message_ setFrame:messageFrame];
 
-  if (linkButton_) {
+  // Set new frame for help text and link.
+  if (help_) {
     if (callSizeToFit)
-      [linkButton_ sizeToFit];
+      [help_.get() sizeToFit];
+    CGFloat helpHeight = [help_.get() frame].size.height;
+    [help_.get() setFrameSize:NSMakeSize(maxWidth, helpHeight)];
     // Set new frame origin for link.
-    NSRect linkFrame = [linkButton_ frame];
-    CGFloat linkX = (maxWidth - NSWidth(linkFrame)) / 2;
-    CGFloat linkY =
-        NSMinY(messageFrame) - kMessageLinkSpacing - NSHeight(linkFrame);
-    [linkButton_ setFrameOrigin:NSMakePoint(linkX, linkY)];
+    NSRect helpFrame = [help_.get() frame];
+    CGFloat helpX = (maxWidth - NSWidth(helpFrame)) / 2;
+    CGFloat helpY =
+        NSMinY(messageFrame) - kMessageLinkSpacing - NSHeight(helpFrame);
+    [help_.get() setFrameOrigin:NSMakePoint(helpX, helpY)];
   }
 }
 
-- (void)removeLinkButton {
-  if (linkButton_) {
-    [linkButton_ removeFromSuperview];
-    linkButton_ = nil;
+- (void)removeHelpText {
+  if (help_.get()) {
+    [help_.get() removeFromSuperview];
+    help_.reset(nil);
   }
+}
+
+- (void)initializeHelpText {
+  // Replace the help placeholder NSTextField with the real help NSTextView.
+  // The former doesn't show links in a nice way, but the latter can't be added
+  // in IB without a containing scroll view, so create the NSTextView
+  // programmatically. Taken from -[InfoBarController initializeLabel].
+  help_.reset(
+      [[HyperlinkTextView alloc] initWithFrame:[helpPlaceholder_ frame]]);
+  [help_.get() setAutoresizingMask:[helpPlaceholder_ autoresizingMask]];
+  [[helpPlaceholder_ superview]
+      replaceSubview:helpPlaceholder_ with:help_.get()];
+  helpPlaceholder_ = nil;  // Now released.
+  [help_.get() setDelegate:self];
+  [help_.get() setAlignment:NSCenterTextAlignment];
+
+  // Get the help text and link.
+  size_t linkOffset = 0;
+  NSString* helpMessage(base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+      IDS_SAD_TAB_HELP_MESSAGE, string16(), &linkOffset)));
+  NSString* helpLink = l10n_util::GetNSString(IDS_SAD_TAB_HELP_LINK);
+  NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+  [help_.get() setMessageAndLink:helpMessage
+                        withLink:helpLink
+                        atOffset:linkOffset
+                            font:font
+                    messageColor:[NSColor whiteColor]
+                       linkColor:[NSColor whiteColor]];
+}
+
+// Called when someone clicks on the embedded link.
+- (BOOL) textView:(NSTextView*)textView
+    clickedOnLink:(id)link
+          atIndex:(NSUInteger)charIndex {
+  if (controller_)
+    [controller_ openLearnMoreAboutCrashLink:nil];
+  return YES;
 }
 
 @end

@@ -12,36 +12,21 @@
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/size.h"
-#include "ui/gfx/skia_util.h"
+#include "views/controls/image_view.h"
+#include "views/controls/label.h"
 #include "views/controls/link.h"
+#include "views/layout/grid_layout.h"
 
-static const int kSadTabOffset = -64;
-static const int kIconTitleSpacing = 20;
-static const int kTitleMessageSpacing = 15;
-static const int kMessageBottomMargin = 20;
+static const int kPadding = 20;
 static const float kMessageSize = 0.65f;
-static const SkColor kTitleColor = SK_ColorWHITE;
-static const SkColor kMessageColor = SK_ColorWHITE;
-static const SkColor kLinkColor = SK_ColorWHITE;
-static const SkColor kCrashBackgroundColor = SkColorSetRGB(35, 48, 64);
-static const SkColor kCrashBackgroundEndColor = SkColorSetRGB(35, 48, 64);
-// TODO(gspencer): update these colors when the UI team has picked
-// official versions.  See http://crosbug.com/10711.
-static const SkColor kKillBackgroundColor = SkColorSetRGB(57, 48, 88);
-static const SkColor kKillBackgroundEndColor = SkColorSetRGB(57, 48, 88);
-static const int kMessageFlags = gfx::Canvas::MULTI_LINE |
-    gfx::Canvas::NO_ELLIPSIS | gfx::Canvas::TEXT_ALIGN_CENTER;
+static const SkColor kTextColor = SK_ColorWHITE;
+static const SkColor kCrashColor = SkColorSetRGB(35, 48, 64);
+static const SkColor kKillColor = SkColorSetRGB(57, 48, 88);
 
 // Font size correction.
 #if defined(CROS_FONTS_USING_BCI)
@@ -54,138 +39,26 @@ static const int kMessageFontSizeDelta = 1;
 
 SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
     : tab_contents_(tab_contents),
-      learn_more_link_(NULL),
-      feedback_link_(NULL),
       kind_(kind),
-      painted_(false) {
+      painted_(false),
+      message_(NULL),
+      help_link_(NULL),
+      feedback_link_(NULL) {
   DCHECK(tab_contents);
 
   // Sometimes the user will never see this tab, so keep track of the total
   // number of creation events to compare to display events.
-  UMA_HISTOGRAM_COUNTS("SadTab.Created", kind);
+  UMA_HISTOGRAM_COUNTS("SadTab.Created", kind_);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  title_font_ = new gfx::Font(
-      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kTitleFontSizeDelta,
-                                                      gfx::Font::BOLD));
-  message_font_ = new gfx::Font(
-      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kMessageFontSizeDelta));
-  sad_tab_bitmap_ = rb.GetBitmapNamed(
-      kind == CRASHED ? IDR_SAD_TAB : IDR_KILLED_TAB);
-
-  title_ = l10n_util::GetStringUTF16(
-      kind == CRASHED ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE);
-  title_width_ = title_font_->GetStringWidth(title_);
-  message_ = l10n_util::GetStringUTF16(
-      kind == CRASHED ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE);
-
-  if (tab_contents != NULL) {
-    learn_more_link_ =
-        new views::Link(UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
-    learn_more_link_->SetFont(*message_font_);
-    learn_more_link_->SetNormalColor(kLinkColor);
-    learn_more_link_->set_listener(this);
-    AddChildView(learn_more_link_);
-
-    if (kind == KILLED) {
-      feedback_link_ = new views::Link(
-          UTF16ToWide(l10n_util::GetStringUTF16(IDS_KILLED_TAB_FEEDBACK_LINK)));
-      feedback_link_->SetFont(*message_font_);
-      feedback_link_->SetNormalColor(kLinkColor);
-      feedback_link_->set_listener(this);
-      AddChildView(feedback_link_);
-    }
-  }
+  // Set the background color.
+  set_background(views::Background::CreateSolidBackground(
+      (kind_ == CRASHED) ? kCrashColor : kKillColor));
 }
 
 SadTabView::~SadTabView() {}
 
-void SadTabView::OnPaint(gfx::Canvas* canvas) {
-  if (!painted_) {
-    // User actually saw the error, keep track for user experience stats.
-    UMA_HISTOGRAM_COUNTS("SadTab.Displayed", kind_);
-    painted_ = true;
-  }
-  SkPaint paint;
-  SkSafeUnref(paint.setShader(
-      gfx::CreateGradientShader(
-          0,
-          height(),
-          kind_ == CRASHED ? kCrashBackgroundColor : kKillBackgroundColor,
-          kind_ == CRASHED ?
-            kCrashBackgroundEndColor : kKillBackgroundEndColor)));
-  paint.setStyle(SkPaint::kFill_Style);
-  canvas->AsCanvasSkia()->drawRectCoords(
-      0, 0, SkIntToScalar(width()), SkIntToScalar(height()), paint);
-
-  canvas->DrawBitmapInt(*sad_tab_bitmap_, icon_bounds_.x(), icon_bounds_.y());
-
-  canvas->DrawStringInt(title_, *title_font_, kTitleColor,
-                        title_bounds_.x(), title_bounds_.y(),
-                        title_bounds_.width(), title_bounds_.height(),
-                        gfx::Canvas::TEXT_ALIGN_CENTER);
-
-  canvas->DrawStringInt(message_, *message_font_,
-                        kMessageColor, message_bounds_.x(), message_bounds_.y(),
-                        message_bounds_.width(), message_bounds_.height(),
-                        kMessageFlags);
-
-  if (learn_more_link_ != NULL) {
-    learn_more_link_->SetBounds(
-        learn_more_bounds_.x(), learn_more_bounds_.y(),
-        learn_more_bounds_.width(), learn_more_bounds_.height());
-  }
-  if (feedback_link_ != NULL) {
-    feedback_link_->SetBounds(
-        feedback_bounds_.x(), feedback_bounds_.y(),
-        feedback_bounds_.width(), feedback_bounds_.height());
-  }
-}
-
-void SadTabView::Layout() {
-  int icon_width = sad_tab_bitmap_->width();
-  int icon_height = sad_tab_bitmap_->height();
-  int icon_x = (width() - icon_width) / 2;
-  int icon_y = ((height() - icon_height) / 2) + kSadTabOffset;
-  icon_bounds_.SetRect(icon_x, icon_y, icon_width, icon_height);
-
-  int title_x = (width() - title_width_) / 2;
-  int title_y = icon_bounds_.bottom() + kIconTitleSpacing;
-  int title_height = title_font_->GetHeight();
-  title_bounds_.SetRect(title_x, title_y, title_width_, title_height);
-
-  int message_width = static_cast<int>(width() * kMessageSize);
-  int message_height = 0;
-  gfx::CanvasSkia::SizeStringInt(message_,
-                                 *message_font_, &message_width,
-                                 &message_height, kMessageFlags);
-  int message_x = (width() - message_width) / 2;
-  int message_y = title_bounds_.bottom() + kTitleMessageSpacing;
-  message_bounds_.SetRect(message_x, message_y, message_width, message_height);
-  int bottom = message_bounds_.bottom();
-
-  if (learn_more_link_ != NULL) {
-    gfx::Size sz = learn_more_link_->GetPreferredSize();
-    gfx::Insets insets = learn_more_link_->GetInsets();
-    learn_more_bounds_.SetRect((width() - sz.width()) / 2,
-                               bottom + kTitleMessageSpacing - insets.top(),
-                               sz.width(),
-                               sz.height());
-    bottom = learn_more_bounds_.bottom();
-  }
-
-  if (feedback_link_ != NULL) {
-    gfx::Size sz = feedback_link_->GetPreferredSize();
-    gfx::Insets insets = feedback_link_->GetInsets();
-    feedback_bounds_.SetRect((width() - sz.width()) / 2,
-                             bottom + kTitleMessageSpacing - insets.top(),
-                             sz.width(),
-                             sz.height());
-  }
-}
-
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
-  if (tab_contents_ != NULL && source == learn_more_link_) {
+  if (tab_contents_ != NULL && source == help_link_) {
     GURL help_url =
         google_util::AppendGoogleLocaleParam(GURL(kind_ == CRASHED ?
                                                   chrome::kCrashReasonURL :
@@ -197,4 +70,108 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
         userfeedback::ChromeOsData_ChromeOsCategory_CRASH);
   }
+}
+
+void SadTabView::Layout() {
+  // Specify the maximum message width explicitly.
+  message_->SizeToFit(static_cast<int>(width() * kMessageSize));
+  View::Layout();
+}
+
+void SadTabView::ViewHierarchyChanged(bool is_add,
+                                      views::View* parent,
+                                      views::View* child) {
+  if (child != this || !is_add)
+    return;
+
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  SetLayoutManager(layout);
+
+  const int column_set_id = 0;
+  views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
+  columns->AddPaddingColumn(1, kPadding);
+  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                     0, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(1, kPadding);
+
+  views::ImageView* image = new views::ImageView();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  image->SetImage(
+      rb.GetBitmapNamed((kind_ == CRASHED) ? IDR_SAD_TAB : IDR_KILLED_TAB));
+  layout->StartRowWithPadding(0, column_set_id, 1, kPadding);
+  layout->AddView(image);
+
+  views::Label* title = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      (kind_ == CRASHED) ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE)));
+  const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
+  title->SetFont(base_font.DeriveFont(kTitleFontSizeDelta, gfx::Font::BOLD));
+  title->SetColor(kTextColor);
+  layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
+  layout->AddView(title);
+
+  message_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      (kind_ == CRASHED) ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE)));
+  message_->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
+  message_->SetColor(kTextColor);
+  message_->SetMultiLine(true);
+  layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
+  layout->AddView(message_);
+
+  if (tab_contents_) {
+    std::wstring help_link(UTF16ToWide(l10n_util::GetStringUTF16(
+        (kind_ == CRASHED) ? IDS_SAD_TAB_HELP_LINK : IDS_LEARN_MORE)));
+    help_link_ = new views::Link(help_link);
+    help_link_->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
+    help_link_->SetNormalColor(kTextColor);
+    help_link_->set_listener(this);
+
+    if (kind_ == CRASHED) {
+      size_t offset = 0;
+      string16 help_text(l10n_util::GetStringFUTF16(IDS_SAD_TAB_HELP_MESSAGE,
+                                                    string16(), &offset));
+      views::Label* help_prefix =
+          new views::Label(UTF16ToWide(help_text.substr(0, offset)));
+      help_prefix->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
+      help_prefix->SetColor(kTextColor);
+      views::Label* help_suffix =
+          new views::Label(UTF16ToWide(help_text.substr(offset)));
+      help_suffix->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
+      help_suffix->SetColor(kTextColor);
+
+      const int help_column_set_id = 1;
+      views::ColumnSet* help_columns = layout->AddColumnSet(help_column_set_id);
+      help_columns->AddPaddingColumn(1, kPadding);
+      // Center three middle columns for the help's [prefix][link][suffix].
+      for (size_t column = 0; column < 3; column++)
+        help_columns->AddColumn(views::GridLayout::CENTER,
+            views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+      help_columns->AddPaddingColumn(1, kPadding);
+
+      layout->StartRowWithPadding(0, help_column_set_id, 0, kPadding);
+      layout->AddView(help_prefix);
+      layout->AddView(help_link_);
+      layout->AddView(help_suffix);
+    } else {
+      layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
+      layout->AddView(help_link_);
+
+      feedback_link_ = new views::Link(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_KILLED_TAB_FEEDBACK_LINK)));
+      feedback_link_->SetFont(base_font.DeriveFont(kMessageFontSizeDelta));
+      feedback_link_->SetNormalColor(kTextColor);
+      feedback_link_->set_listener(this);
+      layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
+      layout->AddView(feedback_link_);
+    }
+  }
+  layout->AddPaddingRow(1, kPadding);
+}
+
+void SadTabView::OnPaint(gfx::Canvas* canvas) {
+  if (!painted_) {
+    // User actually saw the error, keep track for user experience stats.
+    UMA_HISTOGRAM_COUNTS("SadTab.Displayed", kind_);
+    painted_ = true;
+  }
+  View::OnPaint(canvas);
 }

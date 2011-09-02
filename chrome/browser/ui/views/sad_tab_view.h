@@ -7,16 +7,19 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/string16.h"
-#include "ui/gfx/rect.h"
+#include "base/memory/scoped_ptr.h"
 #include "views/controls/link_listener.h"
 #include "views/view.h"
 
-class SkBitmap;
 class TabContents;
 
 namespace gfx {
 class Font;
+}
+
+namespace views {
+class ImageView;
+class Label;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,35 +44,25 @@ class SadTabView : public views::View,
   virtual ~SadTabView();
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+ protected:
+  // Overridden from views::View:
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
  private:
-  // Assorted resources for display.
-  SkBitmap* sad_tab_bitmap_;
-  gfx::Font* title_font_;
-  gfx::Font* message_font_;
-  string16 title_;
-  string16 message_;
-  int title_width_;
-
   TabContents* tab_contents_;
-  views::Link* learn_more_link_;
-  views::Link* feedback_link_;
-
-  // Regions within the display for different components, populated by
-  // Layout().
-  gfx::Rect icon_bounds_;
-  gfx::Rect title_bounds_;
-  gfx::Rect message_bounds_;
-  gfx::Rect learn_more_bounds_;
-  gfx::Rect feedback_bounds_;
-
   Kind kind_;
   bool painted_;
+  views::Label* message_;
+  views::Link* help_link_;
+  views::Link* feedback_link_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabView);
 };
