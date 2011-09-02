@@ -8,6 +8,7 @@
 
 namespace gfx {
 class Canvas;
+class Point;
 }
 
 namespace aura {
@@ -17,6 +18,10 @@ class MouseEvent;
 // Delegate interface for aura::Window.
 class WindowDelegate {
  public:
+  // Returns the non-client component (see hit_test.h) containing |point|, in
+  // window coordinates.
+  virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
+
   virtual bool OnMouseEvent(MouseEvent* event) = 0;
 
   // Asks the delegate to paint window contents into the supplied canvas.

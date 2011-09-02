@@ -363,6 +363,10 @@ void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::WindowDelegate implementation:
 
+int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
+  return delegate_->GetNonClientComponent(point);
+}
+
 bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   return delegate_->OnMouseEvent(MouseEvent(event));
 }
@@ -393,8 +397,6 @@ bool Widget::ConvertRect(const Widget* source,
                          gfx::Rect* rect) {
   return false;
 }
-
-
 
 namespace internal {
 

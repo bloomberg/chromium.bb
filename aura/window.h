@@ -25,6 +25,7 @@ namespace aura {
 class Desktop;
 class MouseEvent;
 class WindowDelegate;
+class WindowManager;
 
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
@@ -73,6 +74,10 @@ class Window : public ui::LayerDelegate {
   void SetParent(Window* parent);
   Window* parent() { return parent_; }
 
+  // Move the specified child of this Window to the front of the z-order.
+  // TODO(beng): this is (obviously) feeble.
+  void MoveChildToFront(Window* child);
+
   // Draw the window and its children.
   void DrawTree();
 
@@ -87,7 +92,7 @@ class Window : public ui::LayerDelegate {
                                    gfx::Point* point);
 
   // Handles a mouse event. Returns true if handled.
-  bool OnMouseEvent(const MouseEvent& event);
+  bool OnMouseEvent(MouseEvent* event);
 
   WindowDelegate* delegate() { return delegate_; }
 
@@ -134,6 +139,8 @@ class Window : public ui::LayerDelegate {
   Windows children_;
 
   int id_;
+
+  scoped_ptr<WindowManager> window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

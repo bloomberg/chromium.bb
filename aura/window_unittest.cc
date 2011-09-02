@@ -23,6 +23,9 @@ class TestWindowDelegate : public WindowDelegate {
   virtual ~TestWindowDelegate() {}
 
   // Overridden from WindowDelegate:
+  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
+    return HTCLIENT;
+  }
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE { return false; }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->AsCanvasSkia()->drawColor(color_, SkXfermode::kSrc_Mode);

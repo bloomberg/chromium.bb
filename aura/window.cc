@@ -7,7 +7,9 @@
 #include <algorithm>
 
 #include "aura/desktop.h"
+#include "aura/event.h"
 #include "aura/window_delegate.h"
+#include "aura/window_manager.h"
 #include "base/logging.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -46,8 +48,13 @@ void Window::SetVisibility(Visibility visibility) {
 void Window::SetBounds(const gfx::Rect& bounds, int anim_ms) {
   // TODO: support anim_ms
   // TODO: funnel this through the Desktop.
+  bool was_move = bounds_.size() == bounds.size();
   bounds_ = bounds;
   layer_->SetBounds(bounds);
+  if (was_move)
+    SchedulePaintInRect(gfx::Rect());
+  else
+    SchedulePaint();
 }
 
 void Window::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -67,6 +74,18 @@ void Window::SetParent(Window* parent) {
     parent->AddChild(this);
   else
     Desktop::GetInstance()->window()->AddChild(this);
+}
+
+void Window::MoveChildToFront(Window* child) {
+  DCHECK_EQ(child->parent(), this);
+  const Windows::iterator i(std::find(children_.begin(), children_.end(),
+                                      child));
+  DCHECK(i != children_.end());
+  children_.erase(i);
+
+  // TODO(beng): this obviously has to handle different window types.
+  children_.insert(children_.begin() + children_.size(), child);
+  SchedulePaintInRect(gfx::Rect());
 }
 
 void Window::DrawTree() {
@@ -98,8 +117,10 @@ void Window::ConvertPointToWindow(Window* source,
   ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
 }
 
-bool Window::OnMouseEvent(const MouseEvent& event) {
-  return true;
+bool Window::OnMouseEvent(MouseEvent* event) {
+  if (!window_manager_.get())
+    window_manager_.reset(new WindowManager(this));
+  return window_manager_->OnMouseEvent(event) || delegate_->OnMouseEvent(event);
 }
 
 bool Window::HitTest(const gfx::Point& point) {
