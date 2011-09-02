@@ -109,6 +109,38 @@ class BrowsingDataTest(pyauto.PyUITest):
     self.assertFalse(history)
     self.assertEqual(1, len(downloads))
 
+  def testClearAutofillData(self):
+    """Verify that clearing autofill form data works."""
+
+    # Add new profiles
+    profiles = [{'NAME_FIRST': ['Bill',],
+                 'NAME_LAST': ['Ding',],
+                 'ADDRESS_HOME_CITY': ['Mountain View',],
+                 'ADDRESS_HOME_STATE': ['CA',],
+                 'ADDRESS_HOME_ZIP': ['94043',],}]
+    credit_cards = [{'CREDIT_CARD_NAME': 'Bill Ding',
+                     'CREDIT_CARD_NUMBER': '4111111111111111',
+                     'CREDIT_CARD_EXP_MONTH': '01',
+                     'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2012'}]
+
+    self.FillAutofillProfile(profiles=profiles, credit_cards=credit_cards)
+
+    # Verify that the added profiles exist.
+    profile = self.GetAutofillProfile()
+    self.assertEqual(profiles, profile['profiles'])
+    self.assertEqual(credit_cards, profile['credit_cards'])
+
+    # Clear the browser's autofill form data.
+    self.ClearBrowsingData(['FORM_DATA'], 'EVERYTHING')
+
+    def _ProfileCount(type):
+      profile = self.GetAutofillProfile()
+      return len(profile[type])
+
+    # Verify that all profiles have been cleared.
+    self.assertTrue(self.WaitUntil(lambda: 0 == _ProfileCount('profiles')))
+    self.assertTrue(self.WaitUntil(lambda: 0 == _ProfileCount('credit_cards')))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
