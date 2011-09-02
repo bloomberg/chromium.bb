@@ -33,6 +33,7 @@
 #include "content/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
 #include "grit/generated_resources.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -448,25 +449,28 @@ void Network::SetIntegerProperty(const char* prop, int i, int* dest) {
 
 void Network::SetPreferred(bool preferred) {
   if (preferred) {
-    SetIntegerProperty(kPriorityProperty, kPriorityPreferred, &priority_);
+    SetIntegerProperty(
+        flimflam::kPriorityProperty, kPriorityPreferred, &priority_);
   } else {
-    ClearProperty(kPriorityProperty);
+    ClearProperty(flimflam::kPriorityProperty);
     priority_ = kPriorityNotSet;
   }
 }
 
 void Network::SetAutoConnect(bool auto_connect) {
-  SetBooleanProperty(kAutoConnectProperty, auto_connect, &auto_connect_);
+  SetBooleanProperty(
+      flimflam::kAutoConnectProperty, auto_connect, &auto_connect_);
 }
 
 void Network::SetSaveCredentials(bool save_credentials) {
-  SetBooleanProperty(kSaveCredentialsProperty, save_credentials,
-                     &save_credentials_);
+  SetBooleanProperty(
+      flimflam::kSaveCredentialsProperty, save_credentials, &save_credentials_);
 }
 
 void Network::SetProfilePath(const std::string& profile_path) {
   VLOG(1) << "Setting profile for: " << name_ << " to: " << profile_path;
-  SetOrClearStringProperty(kProfileProperty, profile_path, &profile_path_);
+  SetOrClearStringProperty(
+      flimflam::kProfileProperty, profile_path, &profile_path_);
 }
 
 std::string Network::GetStateString() const {
@@ -542,7 +546,8 @@ std::string Network::GetErrorString() const {
 }
 
 void Network::SetProxyConfig(const std::string& proxy_config) {
-  SetStringProperty(kProxyConfigProperty, proxy_config, &proxy_config_);
+  SetStringProperty(
+      flimflam::kProxyConfigProperty, proxy_config, &proxy_config_);
 }
 
 void Network::InitIPAddress() {
@@ -665,31 +670,33 @@ std::string VirtualNetwork::GetProviderTypeString() const {
 }
 
 void VirtualNetwork::SetCACertNSS(const std::string& ca_cert_nss) {
-  SetStringProperty(kL2tpIpsecCaCertNssProperty, ca_cert_nss, &ca_cert_nss_);
+  SetStringProperty(
+      flimflam::kL2tpIpsecCaCertNssProperty, ca_cert_nss, &ca_cert_nss_);
 }
 
 void VirtualNetwork::SetPSKPassphrase(const std::string& psk_passphrase) {
-  SetStringProperty(kL2tpIpsecPskProperty, psk_passphrase,
-                           &psk_passphrase_);
+  SetStringProperty(
+      flimflam::kL2tpIpsecPskProperty, psk_passphrase, &psk_passphrase_);
 }
 
 void VirtualNetwork::SetClientCertID(const std::string& cert_id) {
-  SetStringProperty(kL2tpIpsecClientCertIdProperty, cert_id, &client_cert_id_);
+  SetStringProperty(
+      flimflam::kL2tpIpsecClientCertIdProperty, cert_id, &client_cert_id_);
 }
 
 void VirtualNetwork::SetUsername(const std::string& username) {
-  SetStringProperty(kL2tpIpsecUserProperty, username, &username_);
+  SetStringProperty(flimflam::kL2tpIpsecUserProperty, username, &username_);
 }
 
 void VirtualNetwork::SetUserPassphrase(const std::string& user_passphrase) {
-  SetStringProperty(kL2tpIpsecPasswordProperty, user_passphrase,
-                    &user_passphrase_);
+  SetStringProperty(
+      flimflam::kL2tpIpsecPasswordProperty, user_passphrase, &user_passphrase_);
 }
 
 void VirtualNetwork::SetCertificateSlotAndPin(
     const std::string& slot, const std::string& pin) {
-  SetOrClearStringProperty(kL2tpIpsecClientCertSlotProp, slot, NULL);
-  SetOrClearStringProperty(kL2tpIpsecPinProperty, pin, NULL);
+  SetOrClearStringProperty(flimflam::kL2tpIpsecClientCertSlotProp, slot, NULL);
+  SetOrClearStringProperty(flimflam::kL2tpIpsecPinProperty, pin, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -921,20 +928,24 @@ CellularApn::CellularApn(
 CellularApn::~CellularApn() {}
 
 void CellularApn::Set(const DictionaryValue& dict) {
-  if (!dict.GetStringWithoutPathExpansion(kApnProperty, &apn))
+  if (!dict.GetStringWithoutPathExpansion(flimflam::kApnProperty, &apn))
     apn.clear();
-  if (!dict.GetStringWithoutPathExpansion(kApnNetworkIdProperty, &network_id))
+  if (!dict.GetStringWithoutPathExpansion(flimflam::kApnNetworkIdProperty,
+                                          &network_id))
     network_id.clear();
-  if (!dict.GetStringWithoutPathExpansion(kApnUsernameProperty, &username))
+  if (!dict.GetStringWithoutPathExpansion(flimflam::kApnUsernameProperty,
+                                          &username))
     username.clear();
-  if (!dict.GetStringWithoutPathExpansion(kApnPasswordProperty, &password))
+  if (!dict.GetStringWithoutPathExpansion(flimflam::kApnPasswordProperty,
+                                          &password))
     password.clear();
-  if (!dict.GetStringWithoutPathExpansion(kApnNameProperty, &name))
+  if (!dict.GetStringWithoutPathExpansion(flimflam::kApnNameProperty, &name))
     name.clear();
-  if (!dict.GetStringWithoutPathExpansion(kApnLocalizedNameProperty,
+  if (!dict.GetStringWithoutPathExpansion(flimflam::kApnLocalizedNameProperty,
                                           &localized_name))
     localized_name.clear();
-  if (!dict.GetStringWithoutPathExpansion(kApnLanguageProperty, &language))
+  if (!dict.GetStringWithoutPathExpansion(flimflam::kApnLanguageProperty,
+                                          &language))
     language.clear();
 }
 
@@ -971,13 +982,13 @@ void CellularNetwork::SetApn(const CellularApn& apn) {
     DictionaryValue value;
     // Only use the fields that are needed for establishing
     // connections, and ignore the rest.
-    value.SetString(kApnProperty, apn.apn);
-    value.SetString(kApnNetworkIdProperty, apn.network_id);
-    value.SetString(kApnUsernameProperty, apn.username);
-    value.SetString(kApnPasswordProperty, apn.password);
-    SetValueProperty(kCellularApnProperty, &value);
+    value.SetString(flimflam::kApnProperty, apn.apn);
+    value.SetString(flimflam::kApnNetworkIdProperty, apn.network_id);
+    value.SetString(flimflam::kApnUsernameProperty, apn.username);
+    value.SetString(flimflam::kApnPasswordProperty, apn.password);
+    SetValueProperty(flimflam::kCellularApnProperty, &value);
   } else {
-    ClearProperty(kCellularApnProperty);
+    ClearProperty(flimflam::kCellularApnProperty);
   }
 }
 
@@ -1151,7 +1162,7 @@ void WifiNetwork::SetPassphrase(const std::string& passphrase) {
   }
   // Send the change to flimflam. If the format is valid, it will propagate to
   // passphrase_ with a service update.
-  SetOrClearStringProperty(kPassphraseProperty, passphrase, NULL);
+  SetOrClearStringProperty(flimflam::kPassphraseProperty, passphrase, NULL);
 }
 
 // See src/third_party/flimflam/doc/service-api.txt for properties that
@@ -1166,26 +1177,30 @@ void WifiNetwork::EraseCredentials() {
 }
 
 void WifiNetwork::SetIdentity(const std::string& identity) {
-  SetStringProperty(kIdentityProperty, identity, &identity_);
+  SetStringProperty(flimflam::kIdentityProperty, identity, &identity_);
 }
 
 void WifiNetwork::SetEAPMethod(EAPMethod method) {
   eap_method_ = method;
   switch (method) {
     case EAP_METHOD_PEAP:
-      SetStringProperty(kEapMethodProperty, kEapMethodPeap, NULL);
+      SetStringProperty(
+          flimflam::kEapMethodProperty, flimflam::kEapMethodPEAP, NULL);
       break;
     case EAP_METHOD_TLS:
-      SetStringProperty(kEapMethodProperty, kEapMethodTls, NULL);
+      SetStringProperty(
+          flimflam::kEapMethodProperty, flimflam::kEapMethodTLS, NULL);
       break;
     case EAP_METHOD_TTLS:
-      SetStringProperty(kEapMethodProperty, kEapMethodTtls, NULL);
+      SetStringProperty(
+          flimflam::kEapMethodProperty, flimflam::kEapMethodTTLS, NULL);
       break;
     case EAP_METHOD_LEAP:
-      SetStringProperty(kEapMethodProperty, kEapMethodLeap, NULL);
+      SetStringProperty(
+          flimflam::kEapMethodProperty, flimflam::kEapMethodLEAP, NULL);
       break;
     default:
-      ClearProperty(kEapMethodProperty);
+      ClearProperty(flimflam::kEapMethodProperty);
       break;
   }
 }
@@ -1195,28 +1210,31 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
   bool is_peap = (eap_method_ == EAP_METHOD_PEAP);
   switch (auth) {
     case EAP_PHASE_2_AUTH_AUTO:
-      ClearProperty(kEapPhase2AuthProperty);
+      ClearProperty(flimflam::kEapPhase2AuthProperty);
       break;
     case EAP_PHASE_2_AUTH_MD5:
-      SetStringProperty(kEapPhase2AuthProperty,
-                        is_peap ? kEapPhase2AuthPeapMd5
-                                : kEapPhase2AuthTtlsMd5,
+      SetStringProperty(flimflam::kEapPhase2AuthProperty,
+                        is_peap ? flimflam::kEapPhase2AuthPEAPMD5
+                                : flimflam::kEapPhase2AuthTTLSMD5,
                         NULL);
       break;
     case EAP_PHASE_2_AUTH_MSCHAPV2:
-      SetStringProperty(kEapPhase2AuthProperty,
-                        is_peap ? kEapPhase2AuthPeapMschap2
-                                : kEapPhase2AuthTtlsMschapV2,
+      SetStringProperty(flimflam::kEapPhase2AuthProperty,
+                        is_peap ? flimflam::kEapPhase2AuthPEAPMSCHAPV2
+                                : flimflam::kEapPhase2AuthTTLSMSCHAPV2,
                         NULL);
       break;
     case EAP_PHASE_2_AUTH_MSCHAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTtlsMschap, NULL);
+      SetStringProperty(flimflam::kEapPhase2AuthProperty,
+                        flimflam::kEapPhase2AuthTTLSMSCHAP, NULL);
       break;
     case EAP_PHASE_2_AUTH_PAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTtlsPap, NULL);
+      SetStringProperty(flimflam::kEapPhase2AuthProperty,
+                        flimflam::kEapPhase2AuthTTLSPAP, NULL);
       break;
     case EAP_PHASE_2_AUTH_CHAP:
-      SetStringProperty(kEapPhase2AuthProperty, kEapPhase2AuthTtlsChap, NULL);
+      SetStringProperty(flimflam::kEapPhase2AuthProperty,
+                        flimflam::kEapPhase2AuthTTLSCHAP, NULL);
       break;
   }
 }
@@ -1224,35 +1242,37 @@ void WifiNetwork::SetEAPPhase2Auth(EAPPhase2Auth auth) {
 void WifiNetwork::SetEAPServerCaCertNssNickname(
     const std::string& nss_nickname) {
   VLOG(1) << "SetEAPServerCaCertNssNickname " << nss_nickname;
-  SetOrClearStringProperty(kEapCaCertNssProperty, nss_nickname,
-                           &eap_server_ca_cert_nss_nickname_);
+  SetOrClearStringProperty(flimflam::kEapCaCertNssProperty,
+                           nss_nickname, &eap_server_ca_cert_nss_nickname_);
 }
 
 void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {
   VLOG(1) << "SetEAPClientCertPkcs11Id " << pkcs11_id;
-  SetOrClearStringProperty(kEapCertIdProperty, pkcs11_id,
-                           &eap_client_cert_pkcs11_id_);
+  SetOrClearStringProperty(
+      flimflam::kEapCertIdProperty, pkcs11_id, &eap_client_cert_pkcs11_id_);
   // flimflam requires both CertID and KeyID for TLS connections, despite
   // the fact that by convention they are the same ID.
-  SetOrClearStringProperty(kEapKeyIdProperty, pkcs11_id, NULL);
+  SetOrClearStringProperty(flimflam::kEapKeyIdProperty, pkcs11_id, NULL);
 }
 
 void WifiNetwork::SetEAPUseSystemCAs(bool use_system_cas) {
-  SetBooleanProperty(kEapUseSystemCasProperty, use_system_cas,
+  SetBooleanProperty(flimflam::kEapUseSystemCasProperty, use_system_cas,
                      &eap_use_system_cas_);
 }
 
 void WifiNetwork::SetEAPIdentity(const std::string& identity) {
-  SetOrClearStringProperty(kEapIdentityProperty, identity, &eap_identity_);
+  SetOrClearStringProperty(
+      flimflam::kEapIdentityProperty, identity, &eap_identity_);
 }
 
 void WifiNetwork::SetEAPAnonymousIdentity(const std::string& identity) {
-  SetOrClearStringProperty(kEapAnonymousIdentityProperty, identity,
+  SetOrClearStringProperty(flimflam::kEapAnonymousIdentityProperty, identity,
                            &eap_anonymous_identity_);
 }
 
 void WifiNetwork::SetEAPPassphrase(const std::string& passphrase) {
-  SetOrClearStringProperty(kEapPasswordProperty, passphrase, &eap_passphrase_);
+  SetOrClearStringProperty(
+      flimflam::kEapPasswordProperty, passphrase, &eap_passphrase_);
 }
 
 std::string WifiNetwork::GetEncryptionString() const {
@@ -1314,7 +1334,7 @@ bool WifiNetwork::RequiresUserProfile() const {
 }
 
 void WifiNetwork::SetCertificatePin(const std::string& pin) {
-  SetOrClearStringProperty(kEapPinProperty, pin, NULL);
+  SetOrClearStringProperty(flimflam::kEapPinProperty, pin, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3398,7 +3418,7 @@ void NetworkLibraryImplCros::NetworkConnectCallback(
                  << service_path
                  << " Error: " << error << " Message: " << error_message;
     if (error_message &&
-        strcmp(error_message, kErrorPassphraseRequiredMsg) == 0) {
+        strcmp(error_message, flimflam::kErrorPassphraseRequiredMsg) == 0) {
       status = CONNECT_BAD_PASSPHRASE;
     } else {
       status = CONNECT_FAILED;
@@ -3562,11 +3582,11 @@ void NetworkLibraryImplCros::PinOperationCallback(
     networklib->FlipSimPinRequiredStateIfNeeded();
   } else {
     if (error_message &&
-        (strcmp(error_message, kErrorIncorrectPinMsg) == 0 ||
-         strcmp(error_message, kErrorPinRequiredMsg) == 0)) {
+        (strcmp(error_message, flimflam::kErrorIncorrectPinMsg) == 0 ||
+         strcmp(error_message, flimflam::kErrorPinRequiredMsg) == 0)) {
       pin_error = PIN_ERROR_INCORRECT_CODE;
     } else if (error_message &&
-               strcmp(error_message, kErrorPinBlockedMsg) == 0) {
+               strcmp(error_message, flimflam::kErrorPinBlockedMsg) == 0) {
       pin_error = PIN_ERROR_BLOCKED;
     } else {
       pin_error = PIN_ERROR_UNKNOWN;
@@ -3619,9 +3639,9 @@ void NetworkLibraryImplCros::SetCellularDataRoamingAllowed(bool new_value) {
     return;
   }
   scoped_ptr<GValue> gvalue(ConvertBoolToGValue(new_value));
-  chromeos::SetNetworkDevicePropertyGValue(cellular->device_path().c_str(),
-                                           kCellularAllowRoamingProperty,
-                                           gvalue.get());
+  chromeos::SetNetworkDevicePropertyGValue(
+      cellular->device_path().c_str(),
+      flimflam::kCellularAllowRoamingProperty, gvalue.get());
 }
 
 bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
@@ -3642,7 +3662,7 @@ bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
 void NetworkLibraryImplCros::RequestNetworkScan() {
   if (wifi_enabled()) {
     wifi_scanning_ = true;  // Cleared when updates are received.
-    chromeos::RequestNetworkScan(kTypeWifi);
+    chromeos::RequestNetworkScan(flimflam::kTypeWifi);
   }
   if (cellular_network())
     cellular_network()->RefreshDataPlansIfNeeded();
@@ -3782,7 +3802,7 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
       if (ipconfig.address != ipconfig_static->address) {
         scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.address));
         chromeos::SetNetworkIPConfigPropertyGValue(
-            ipconfig_static->path, kAddressProperty, gvalue.get());
+            ipconfig_static->path, flimflam::kAddressProperty, gvalue.get());
       }
       if (ipconfig.netmask != ipconfig_static->netmask) {
         int prefixlen = ipconfig.GetPrefixLength();
@@ -3792,18 +3812,20 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
         } else {
           scoped_ptr<GValue> gvalue(ConvertIntToGValue(prefixlen));
           chromeos::SetNetworkIPConfigPropertyGValue(
-              ipconfig_static->path, kPrefixlenProperty, gvalue.get());
+              ipconfig_static->path,
+              flimflam::kPrefixlenProperty, gvalue.get());
         }
       }
       if (ipconfig.gateway != ipconfig_static->gateway) {
         scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.gateway));
         chromeos::SetNetworkIPConfigPropertyGValue(
-            ipconfig_static->path, kGatewayProperty, gvalue.get());
+            ipconfig_static->path, flimflam::kGatewayProperty, gvalue.get());
       }
       if (ipconfig.name_servers != ipconfig_static->name_servers) {
         scoped_ptr<GValue> gvalue(ConvertStringToGValue(ipconfig.name_servers));
         chromeos::SetNetworkIPConfigPropertyGValue(
-            ipconfig_static->path, kNameServersProperty, gvalue.get());
+            ipconfig_static->path,
+            flimflam::kNameServersProperty, gvalue.get());
       }
       // Remove dhcp ip config if there is one.
       if (ipconfig_dhcp)
@@ -3946,7 +3968,7 @@ void NetworkLibraryImplCros::ParseNetworkManager(const DictionaryValue& dict) {
     NetworkManagerStatusChanged(key.c_str(), value);
   }
   // If there is no Profiles entry, request remembered networks here.
-  if (!dict.HasKey(kProfilesProperty))
+  if (!dict.HasKey(flimflam::kProfilesProperty))
     RequestRememberedNetworksUpdate();
 }
 
@@ -4231,7 +4253,7 @@ void NetworkLibraryImplCros::ProfileUpdate(
   VLOG(1) << "Received ProfileUpdate for: " << profile_path;
   scoped_ptr<DictionaryValue> dict(ConvertGHashTable(ghash));
   ListValue* entries(NULL);
-  dict->GetList(kEntriesProperty, &entries);
+  dict->GetList(flimflam::kEntriesProperty, &entries);
   DCHECK(entries);
   networklib->UpdateRememberedServiceList(profile_path, entries);
 }
