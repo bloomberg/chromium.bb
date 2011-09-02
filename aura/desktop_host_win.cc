@@ -63,6 +63,14 @@ void DesktopHostWin::OnClose() {
   MessageLoopForUI::current()->Quit();
 }
 
+LRESULT DesktopHostWin::OnKeyEvent(UINT message,
+                                   WPARAM w_param,
+                                   LPARAM l_param) {
+  MSG msg = { hwnd(), message, w_param, l_param };
+  SetMsgHandled(desktop_->OnKeyEvent(KeyEvent(msg)));
+  return 0;
+}
+
 LRESULT DesktopHostWin::OnMouseRange(UINT message,
                                      WPARAM w_param,
                                      LPARAM l_param) {
@@ -80,6 +88,14 @@ void DesktopHostWin::OnPaint(HDC dc) {
   if (desktop_)
     desktop_->Draw();
   ValidateRect(hwnd(), NULL);
+}
+
+void DesktopHostWin::OnSize(UINT param, const CSize& size) {
+  if (desktop_) {
+    gfx::Rect bounds(desktop_->window()->bounds().origin(),
+                     gfx::Size(size.cx, size.cy));
+    desktop_->window()->SetBounds(bounds, 0);
+  }
 }
 
 }  // namespace aura

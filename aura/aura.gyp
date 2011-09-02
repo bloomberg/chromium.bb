@@ -29,6 +29,8 @@
         'event.cc',
         'event.h',
         'event_win.cc',
+        'focus_manager.cc',
+        'focus_manager.h',
         'hit_test.h',
         'root_window.cc',
         'root_window.h',

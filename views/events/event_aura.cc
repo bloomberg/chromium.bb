@@ -67,7 +67,7 @@ LocatedEvent::LocatedEvent(NativeEvent2 native_event_2,
 
 KeyEvent::KeyEvent(NativeEvent native_event)
     : Event(native_event, native_event->type(), GetKeyStateFlags()),
-      key_code_(ui::VKEY_UNKNOWN /* TODO: obtain */),
+      key_code_(static_cast<aura::KeyEvent*>(native_event)->key_code()),
       character_(0),
       unmodified_character_(0) {
 }

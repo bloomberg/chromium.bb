@@ -48,7 +48,9 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 // NativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
+  window_->set_user_data(this);
   window_->Init();
+  delegate_->OnNativeWidgetCreated();
   window_->SetBounds(params.bounds, 0);
   window_->SetParent(params.parent);
   // TODO(beng): do this some other way.
@@ -363,6 +365,18 @@ void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::WindowDelegate implementation:
 
+void NativeWidgetAura::OnFocus() {
+  delegate_->OnNativeFocus(window_);
+}
+
+void NativeWidgetAura::OnBlur() {
+  delegate_->OnNativeBlur(NULL);
+}
+
+bool NativeWidgetAura::OnKeyEvent(aura::KeyEvent* event) {
+  return delegate_->OnKeyEvent(KeyEvent(event));
+}
+
 int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
   return delegate_->GetNonClientComponent(point);
 }
@@ -412,21 +426,26 @@ NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
     gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
-  return NULL;
+  return reinterpret_cast<NativeWidgetAura*>(native_view->user_data());
 }
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
     gfx::NativeWindow native_window) {
-  NOTIMPLEMENTED();
-  return NULL;
+  return reinterpret_cast<NativeWidgetAura*>(native_window->user_data());
 }
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
-  NOTIMPLEMENTED();
+  aura::Window* toplevel = native_view;
+  aura::Window* parent = native_view->parent();
+  while (parent) {
+    if (parent->IsTopLevelWindowContainer())
+      return GetNativeWidgetForNativeView(toplevel);
+    toplevel = parent;
+    parent = parent->parent();
+  }
   return NULL;
 }
 

@@ -11,6 +11,8 @@
 namespace aura {
 namespace internal {
 
+class FocusManager;
+
 // A Window subclass that handles event targeting for certain types of
 // MouseEvent.
 class RootWindow : public Window {
@@ -21,8 +23,16 @@ class RootWindow : public Window {
   // Handles a mouse event. Returns true if handled.
   bool HandleMouseEvent(const MouseEvent& event);
 
+  // Handles a key event. Returns true if handled.
+  bool HandleKeyEvent(const KeyEvent& event);
+
+  // Overridden from Window:
+  virtual bool IsTopLevelWindowContainer() const OVERRIDE;
+  virtual FocusManager* GetFocusManager() OVERRIDE;
+
  private:
   Window* mouse_pressed_handler_;
+  scoped_ptr<FocusManager> focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

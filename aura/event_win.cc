@@ -196,4 +196,11 @@ MouseEvent::MouseEvent(NativeEvent native_event)
   }
 }
 
+KeyEvent::KeyEvent(NativeEvent native_event)
+    : Event(native_event,
+            EventTypeFromNative(native_event),
+            GetKeyStateFlags()),
+      key_code_(ui::KeyboardCodeForWindowsKeyCode(native_event.wParam)) {
+}
+
 }  // namespace aura

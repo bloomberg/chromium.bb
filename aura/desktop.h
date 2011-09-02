@@ -45,6 +45,9 @@ class Desktop {
   // Handles a mouse event. Returns true if handled.
   bool OnMouseEvent(const MouseEvent& event);
 
+  // Handles a key event. Returns true if handled.
+  bool OnKeyEvent(const KeyEvent& event);
+
   // Compositor we're drawing to.
   ui::Compositor* compositor() { return compositor_.get(); }
 

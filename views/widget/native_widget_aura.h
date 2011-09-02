@@ -109,6 +109,9 @@ class NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
   // Overridden from aura::WindowDelegate:
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
+  virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

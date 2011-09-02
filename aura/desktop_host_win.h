@@ -33,13 +33,22 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)
 
+    // Key events.
+    MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
+    MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
+
     MSG_WM_CLOSE(OnClose)
     MSG_WM_PAINT(OnPaint)
+    MSG_WM_SIZE(OnSize)
   END_MSG_MAP()
 
   void OnClose();
+  LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   void OnPaint(HDC dc);
+  void OnSize(UINT param, const CSize& size);
 
   Desktop* desktop_;
 

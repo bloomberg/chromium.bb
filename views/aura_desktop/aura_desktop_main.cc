@@ -27,6 +27,12 @@ class DemoWindowDelegate : public aura::WindowDelegate {
  public:
   explicit DemoWindowDelegate(SkColor color) : color_(color) {}
 
+  // Overridden from aura::WindowDelegate:
+  virtual void OnFocus() OVERRIDE {}
+  virtual void OnBlur() OVERRIDE {}
+  virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE {
+    return false;
+  }
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return HTCLIENT;
   }

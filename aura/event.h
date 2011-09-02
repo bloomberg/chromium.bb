@@ -62,6 +62,9 @@ class LocatedEvent : public Event {
   // converted from |source| coordinate system to |target| coordinate system.
   LocatedEvent(const LocatedEvent& model, Window* source, Window* target);
 
+  // Used for synthetic events in testing.
+  LocatedEvent(ui::EventType type, const gfx::Point& location, int flags);
+
   gfx::Point location_;
 
  private:
@@ -77,10 +80,27 @@ class MouseEvent : public LocatedEvent {
   // converted from |source| coordinate system to |target| coordinate system.
   MouseEvent(const MouseEvent& model, Window* source, Window* target);
 
+  // Used for synthetic events in testing.
+  MouseEvent(ui::EventType type, const gfx::Point& location, int flags);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
+class KeyEvent : public Event {
+ public:
+  explicit KeyEvent(NativeEvent native_event);
+
+  // Used for synthetic events in testing.
+  KeyEvent(ui::EventType type,
+           ui::KeyboardCode key_code,
+           int flags);
+
+  ui::KeyboardCode key_code() const { return key_code_; }
+
+ private:
+  ui::KeyboardCode key_code_;
+};
 
 }  // namespace aura
 

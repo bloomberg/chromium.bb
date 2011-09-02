@@ -13,11 +13,18 @@ class Point;
 
 namespace aura {
 
+class KeyEvent;
 class MouseEvent;
 
 // Delegate interface for aura::Window.
 class WindowDelegate {
  public:
+  // Sent to the Window's delegate when the Window gains or loses focus.
+  virtual void OnFocus() = 0;
+  virtual void OnBlur() = 0;
+
+  virtual bool OnKeyEvent(KeyEvent* event) = 0;
+
   // Returns the non-client component (see hit_test.h) containing |point|, in
   // window coordinates.
   virtual int GetNonClientComponent(const gfx::Point& point) const = 0;

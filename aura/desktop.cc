@@ -52,6 +52,10 @@ bool Desktop::OnMouseEvent(const MouseEvent& event) {
   return window_->HandleMouseEvent(event);
 }
 
+bool Desktop::OnKeyEvent(const KeyEvent& event) {
+  return window_->HandleKeyEvent(event);
+}
+
 // static
 Desktop* Desktop::GetInstance() {
   if (!instance_) {

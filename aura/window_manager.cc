@@ -5,6 +5,7 @@
 #include "aura/window_manager.h"
 
 #include "aura/event.h"
+#include "aura/focus_manager.h"
 #include "aura/window.h"
 #include "aura/window_delegate.h"
 
@@ -25,6 +26,9 @@ WindowManager::~WindowManager() {
 bool WindowManager::OnMouseEvent(MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
+      // TODO(beng): some windows (e.g. disabled ones, tooltips, etc) may not be
+      //             focusable.
+      owner_->GetFocusManager()->SetFocusedWindow(owner_);
       window_component_ =
           owner_->delegate()->GetNonClientComponent(event->location());
       MoveWindowToFront();

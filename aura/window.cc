@@ -21,7 +21,8 @@ Window::Window(WindowDelegate* delegate)
     : delegate_(delegate),
       visibility_(VISIBILITY_HIDDEN),
       parent_(NULL),
-      id_(-1) {
+      id_(-1),
+      user_data_(NULL) {
 }
 
 Window::~Window() {
@@ -76,6 +77,10 @@ void Window::SetParent(Window* parent) {
     Desktop::GetInstance()->window()->AddChild(this);
 }
 
+bool Window::IsTopLevelWindowContainer() const {
+  return false;
+}
+
 void Window::MoveChildToFront(Window* child) {
   DCHECK_EQ(child->parent(), this);
   const Windows::iterator i(std::find(children_.begin(), children_.end(),
@@ -123,6 +128,10 @@ bool Window::OnMouseEvent(MouseEvent* event) {
   return window_manager_->OnMouseEvent(event) || delegate_->OnMouseEvent(event);
 }
 
+bool Window::OnKeyEvent(KeyEvent* event) {
+  return delegate_->OnKeyEvent(event);
+}
+
 bool Window::HitTest(const gfx::Point& point) {
   gfx::Rect local_bounds(gfx::Point(), bounds().size());
   // TODO(beng): hittest masks.
@@ -141,6 +150,10 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& point) {
       return child->GetEventHandlerForPoint(point_in_child_coords);
   }
   return this;
+}
+
+internal::FocusManager* Window::GetFocusManager() {
+  return parent_ ? parent_->GetFocusManager() : NULL;
 }
 
 void Window::Draw() {

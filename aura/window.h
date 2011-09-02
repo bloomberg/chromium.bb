@@ -23,9 +23,14 @@ class Layer;
 namespace aura {
 
 class Desktop;
+class KeyEvent;
 class MouseEvent;
 class WindowDelegate;
 class WindowManager;
+
+namespace internal {
+class FocusManager;
+}
 
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
@@ -74,6 +79,9 @@ class Window : public ui::LayerDelegate {
   void SetParent(Window* parent);
   Window* parent() { return parent_; }
 
+  // Returns true if this Window is the container for toplevel windows.
+  virtual bool IsTopLevelWindowContainer() const;
+
   // Move the specified child of this Window to the front of the z-order.
   // TODO(beng): this is (obviously) feeble.
   void MoveChildToFront(Window* child);
@@ -94,6 +102,9 @@ class Window : public ui::LayerDelegate {
   // Handles a mouse event. Returns true if handled.
   bool OnMouseEvent(MouseEvent* event);
 
+  // Handles a key event. Returns true if handled.
+  bool OnKeyEvent(KeyEvent* event);
+
   WindowDelegate* delegate() { return delegate_; }
 
   // Returns true if the mouse pointer at the specified |point| can trigger an
@@ -106,6 +117,14 @@ class Window : public ui::LayerDelegate {
   // Returns the Window that most closely encloses |point| for the purposes of
   // event targeting.
   Window* GetEventHandlerForPoint(const gfx::Point& point);
+
+  // Returns the FocusManager for the Window, which may be attached to a parent
+  // Window. Can return NULL if the Window has no FocusManager.
+  virtual internal::FocusManager* GetFocusManager();
+
+  // The Window does not own this object.
+  void set_user_data(void* user_data) { user_data_ = user_data; }
+  void* user_data() const { return user_data_; }
 
  private:
   typedef std::vector<Window*> Windows;
@@ -141,6 +160,8 @@ class Window : public ui::LayerDelegate {
   int id_;
 
   scoped_ptr<WindowManager> window_manager_;
+
+  void* user_data_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

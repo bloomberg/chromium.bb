@@ -38,8 +38,28 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model,
     Window::ConvertPointToWindow(source, target, &location_);
 }
 
+LocatedEvent::LocatedEvent(ui::EventType type,
+                           const gfx::Point& location,
+                           int flags)
+    : Event(type, flags),
+      location_(location) {
+}
+
 MouseEvent::MouseEvent(const MouseEvent& model, Window* source, Window* target)
     : LocatedEvent(model, source, target) {
+}
+
+MouseEvent::MouseEvent(ui::EventType type,
+                       const gfx::Point& location,
+                       int flags)
+    : LocatedEvent(type, location, flags) {
+}
+
+KeyEvent::KeyEvent(ui::EventType type,
+                   ui::KeyboardCode key_code,
+                   int flags)
+    : Event(type, flags),
+      key_code_(key_code) {
 }
 
 }  // namespace aura

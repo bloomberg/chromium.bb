@@ -6,13 +6,17 @@
 
 #include "base/logging.h"
 #include "aura/event.h"
+#include "aura/focus_manager.h"
 #include "aura/window_delegate.h"
 #include "ui/base/events.h"
 
 namespace aura {
 namespace internal {
 
-RootWindow::RootWindow() : Window(NULL), mouse_pressed_handler_(NULL) {
+RootWindow::RootWindow()
+    : Window(NULL),
+      mouse_pressed_handler_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(focus_manager_(new FocusManager(this))) {
 }
 
 RootWindow::~RootWindow() {
@@ -31,6 +35,23 @@ bool RootWindow::HandleMouseEvent(const MouseEvent& event) {
     return target->OnMouseEvent(&translated_event);
   }
   return false;
+}
+
+bool RootWindow::HandleKeyEvent(const KeyEvent& event) {
+  Window* focused_window = GetFocusManager()->focused_window();
+  if (focused_window) {
+    KeyEvent translated_event(event);
+    return GetFocusManager()->focused_window()->OnKeyEvent(&translated_event);
+  }
+  return false;
+}
+
+bool RootWindow::IsTopLevelWindowContainer() const {
+  return true;
+}
+
+FocusManager* RootWindow::GetFocusManager() {
+  return focus_manager_.get();
 }
 
 }  // namespace internal
