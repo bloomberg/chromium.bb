@@ -337,9 +337,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("appsettings",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS));
   localized_strings.SetString("appuninstall",
-      l10n_util::GetStringFUTF16(
-          IDS_NEW_TAB_APP_UNINSTALL,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_UNINSTALL));
   localized_strings.SetString("appoptions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
   localized_strings.SetString("appcreateshortcut",
@@ -362,6 +360,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
   localized_strings.SetString("syncLinkText",
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
+  localized_strings.SetString("trashLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_NEW_TAB_TRASH_LABEL,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
   localized_strings.SetString("bookmarksManagerLinkTitle",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_MANAGER_LINK_TITLE));
 #if defined(OS_CHROMEOS)
