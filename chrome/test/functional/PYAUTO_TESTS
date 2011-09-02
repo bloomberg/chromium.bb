@@ -102,6 +102,8 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
+      # crbug.com/95140
+      '-translate.TranslateTest.testGoBackAndForwardToTranslatePage',
       # crbug.com/86523
       '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
       '-cookies.CookiesTest.testAllowCookiesUsingExceptions',
@@ -131,6 +133,8 @@
       # crbug.com/81271
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       '-autofill.AutofillTest.testProfilesNotMergedWhenNoMinAddressData',
+      # crbug.com/95141
+      '-enterprise.EnterpriseTest.testDisable3DAPI',
       # crbug.com/94683
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # Some download test fails on win official builder, only thru buildbot
@@ -214,6 +218,8 @@
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
+      # crbug.com/95142
+      '-process_count.ProcessCountTest.testProcessCountExtensionProcess',
       # WebDriver requires python 2.6, which mac pyauto does not use yet.
       # crbug.com/49379
       '-pyauto_webdriver',
