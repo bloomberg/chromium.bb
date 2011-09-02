@@ -23,6 +23,18 @@ class ChromeosBrowserTest(pyauto.PyUITest):
     self.assertEqual('chrome://newtab/', url,
                      msg='Unexpected URL: %s' % url)
 
+  def testFullScreen(self):
+    """Verify that a browser window can enter and exit full screen mode."""
+    self.ApplyAccelerator(pyauto.IDC_FULLSCREEN)
+    self.assertTrue(self.WaitUntil(lambda:
+                    self.GetBrowserInfo()['windows'][0]['fullscreen']),
+                    msg='Full Screen is not displayed.')
+
+    self.ApplyAccelerator(pyauto.IDC_FULLSCREEN)
+    self.assertTrue(self.WaitUntil(lambda: not
+                    self.GetBrowserInfo()['windows'][0]['fullscreen']),
+                    msg='Normal screen is not displayed.')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
