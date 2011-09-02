@@ -266,9 +266,8 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
                 changes[i].action);
       history::URLRow old_url;
       if (!history_backend_->GetURL(url, &old_url)) {
-        error_handler()->OnUnrecoverableError(FROM_HERE,
-            "TypedUrl db lookup failed.");
-        return;
+        LOG(ERROR) << "Could not fetch history row for " << url;
+        continue;
       }
 
       history::VisitVector visits;
