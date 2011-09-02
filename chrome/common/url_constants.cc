@@ -281,7 +281,7 @@ const char kBlockedPluginLearnMoreURL[] =
     "https://www.google.com/support/chrome/bin/answer.py?answer=1247383";
 
 const char kSpeechInputAboutURL[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=1331723";
+    "https://www.google.com/support/chrome/bin/answer.py?answer=1407892";
 
 const char kLearnMoreRegisterProtocolHandlerURL[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=1382847";
