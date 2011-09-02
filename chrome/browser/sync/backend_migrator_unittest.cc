@@ -12,8 +12,8 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/test/engine/test_user_share.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/sync/engine/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

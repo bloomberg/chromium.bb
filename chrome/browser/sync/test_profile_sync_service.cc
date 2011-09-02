@@ -14,8 +14,8 @@
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/test/sync/test_http_bridge_factory.h"
 
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::sessions::ErrorCounters;

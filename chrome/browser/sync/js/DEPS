@@ -1,6 +1,5 @@
 include_rules = [
   "-chrome",
-  "+chrome/test/sync",
 
   "+chrome/browser/sync/js",
 
@@ -8,6 +7,7 @@ include_rules = [
   "+chrome/browser/sync/sessions/session_state.h",
   "+chrome/browser/sync/syncable/model_type.h",
   "+chrome/browser/sync/syncable/transaction_observer.h",
+  "+chrome/browser/sync/test",
 
   # TODO(akalin): this should be in base.
   "+chrome/browser/sync/weak_handle.h",

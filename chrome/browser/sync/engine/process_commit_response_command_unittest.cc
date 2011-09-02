@@ -14,8 +14,8 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/test/sync/engine/syncer_command_test.h"
-#include "chrome/test/sync/engine/test_id_factory.h"
+#include "chrome/browser/sync/test/engine/syncer_command_test.h"
+#include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

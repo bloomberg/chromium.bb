@@ -8,7 +8,7 @@
 
 #include "chrome/browser/sync/engine/syncer_end_command.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/test/sync/engine/syncer_command_test.h"
+#include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

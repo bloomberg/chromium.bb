@@ -36,10 +36,10 @@
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/test/engine/test_id_factory.h"
+#include "chrome/browser/sync/test/engine/test_syncable_utils.h"
+#include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "chrome/test/base/values_test_util.h"
-#include "chrome/test/sync/engine/test_id_factory.h"
-#include "chrome/test/sync/engine/test_syncable_utils.h"
-#include "chrome/test/sync/null_directory_change_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 

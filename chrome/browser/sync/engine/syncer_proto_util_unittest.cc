@@ -12,8 +12,8 @@
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/test/sync/engine/mock_connection_manager.h"
-#include "chrome/test/sync/engine/test_directory_setter_upper.h"
+#include "chrome/browser/sync/test/engine/mock_connection_manager.h"
+#include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

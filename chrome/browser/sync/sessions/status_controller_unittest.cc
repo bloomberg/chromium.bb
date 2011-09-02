@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/test/sync/engine/test_id_factory.h"
+#include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

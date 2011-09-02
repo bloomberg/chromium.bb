@@ -8,8 +8,8 @@
 #include "chrome/browser/sync/engine/sync_scheduler.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/sessions/test_util.h"
-#include "chrome/test/sync/engine/mock_connection_manager.h"
-#include "chrome/test/sync/engine/test_directory_setter_upper.h"
+#include "chrome/browser/sync/test/engine/mock_connection_manager.h"
+#include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

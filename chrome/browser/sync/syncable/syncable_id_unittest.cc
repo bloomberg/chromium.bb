@@ -8,8 +8,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/test/base/values_test_util.h"
-#include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::vector;

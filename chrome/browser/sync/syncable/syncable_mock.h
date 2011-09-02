@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/test/sync/null_directory_change_delegate.h"
+#include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

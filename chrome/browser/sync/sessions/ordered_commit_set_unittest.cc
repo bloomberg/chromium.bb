@@ -4,7 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
-#include "chrome/test/sync/engine/test_id_factory.h"
+#include "chrome/browser/sync/test/engine/test_id_factory.h"
 
 using std::vector;
 

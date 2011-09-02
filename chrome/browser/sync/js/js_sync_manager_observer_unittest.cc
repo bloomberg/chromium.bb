@@ -19,8 +19,8 @@
 #include "chrome/browser/sync/js/js_test_util.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/test/engine/test_user_share.h"
 #include "chrome/browser/sync/weak_handle.h"
-#include "chrome/test/sync/engine/test_user_share.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

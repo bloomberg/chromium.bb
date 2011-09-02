@@ -8,8 +8,8 @@
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/test/sync/engine/proto_extension_validator.h"
-#include "chrome/test/sync/engine/syncer_command_test.h"
+#include "chrome/browser/sync/test/engine/proto_extension_validator.h"
+#include "chrome/browser/sync/test/engine/syncer_command_test.h"
 
 namespace browser_sync {
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/engine/build_commit_command.h"
-#include "chrome/test/sync/engine/syncer_command_test.h"
+#include "chrome/browser/sync/test/engine/syncer_command_test.h"
 
 namespace browser_sync {
 

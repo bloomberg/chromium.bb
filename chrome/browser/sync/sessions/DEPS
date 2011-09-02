@@ -1,12 +1,12 @@
 include_rules = [
   "-chrome",
   "+chrome/test/base",
-  "+chrome/test/sync",
 
   "+chrome/browser/sync/engine",
   "+chrome/browser/sync/protocol",
   "+chrome/browser/sync/sessions",
   "+chrome/browser/sync/syncable",
+  "+chrome/browser/sync/test",
   "+chrome/browser/sync/util",
 
   "-chrome/browser/sync/internal_api",

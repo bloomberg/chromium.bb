@@ -1,7 +1,6 @@
 include_rules = [
   "-chrome",
   "+chrome/test/base",
-  "+chrome/test/sync",
 
   "+chrome/browser/sync/engine",
   "+chrome/browser/sync/js",
@@ -9,6 +8,7 @@ include_rules = [
   "+chrome/browser/sync/protocol",
   "+chrome/browser/sync/sessions",
   "+chrome/browser/sync/syncable",
+  "+chrome/browser/sync/test",
   "+chrome/browser/sync/util",
 
   # TODO(rlarocque) 19878: Move remaining syncapi-related headers to
