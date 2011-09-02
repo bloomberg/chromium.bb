@@ -159,6 +159,7 @@ class WebUI : public IPC::Channel::Listener {
       const std::vector<const base::Value*>& arg_list);
 
  protected:
+  // Takes ownership of |handler|, which will be destroyed when the WebUI is.
   void AddMessageHandler(WebUIMessageHandler* handler);
 
   // Execute a string of raw Javascript on the page.  Overridable for

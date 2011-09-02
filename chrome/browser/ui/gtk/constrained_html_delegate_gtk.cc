@@ -26,27 +26,29 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
   virtual ~ConstrainedHtmlDelegateGtk();
 
   // ConstrainedWindowGtkDelegate ----------------------------------------------
-  virtual GtkWidget* GetWidgetRoot() {
+  virtual GtkWidget* GetWidgetRoot() OVERRIDE {
     return tab_contents_container_.widget();
   }
-  virtual GtkWidget* GetFocusWidget() {
+  virtual GtkWidget* GetFocusWidget() OVERRIDE {
     return tab_.tab_contents()->GetContentNativeView();
   }
-  virtual void DeleteDelegate() {
-    html_delegate_->OnDialogClosed("");
+  virtual void DeleteDelegate() OVERRIDE {
+    if (!closed_via_webui_)
+      html_delegate_->OnDialogClosed("");
     delete this;
   }
 
   // ConstrainedHtmlDelegate ---------------------------------------------
-  virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate();
-  virtual void OnDialogClose();
-  virtual bool GetBackgroundColor(GdkColor* color) {
+  virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
+  virtual void OnDialogCloseFromWebUI() OVERRIDE;
+  virtual bool GetBackgroundColor(GdkColor* color) OVERRIDE {
     *color = ui::kGdkWhite;
     return true;
   }
 
   // HtmlDialogTabContentsDelegate ---------------------------------------------
-  void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
+      OVERRIDE {}
 
   void set_window(ConstrainedWindow* window) {
     window_ = window;
@@ -60,6 +62,10 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
   // The constrained window that owns |this|. It's saved here because it needs
   // to be closed in response to the WebUI OnDialogClose callback.
   ConstrainedWindow* window_;
+
+  // Was the dialog closed from WebUI (in which case |html_delegate_|'s
+  // OnDialogClosed() method has already been called)?
+  bool closed_via_webui_;
 };
 
 ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
@@ -69,7 +75,8 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
       tab_(new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL)),
       tab_contents_container_(NULL),
       html_delegate_(delegate),
-      window_(NULL) {
+      window_(NULL),
+      closed_via_webui_(false) {
   tab_.tab_contents()->set_delegate(this);
 
   // Set |this| as a property on the tab contents so that the ConstrainedHtmlUI
@@ -98,7 +105,8 @@ HtmlDialogUIDelegate*
   return html_delegate_;
 }
 
-void ConstrainedHtmlDelegateGtk::OnDialogClose() {
+void ConstrainedHtmlDelegateGtk::OnDialogCloseFromWebUI() {
+  closed_via_webui_ = true;
   window_->CloseConstrainedWindow();
 }
 

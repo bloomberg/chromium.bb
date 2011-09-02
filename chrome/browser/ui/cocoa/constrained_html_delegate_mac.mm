@@ -25,21 +25,23 @@ class ConstrainedHtmlDelegateMac :
   ~ConstrainedHtmlDelegateMac() {}
 
   // ConstrainedWindowMacDelegateCustomSheet -----------------------------------
-  virtual void DeleteDelegate() {
+  virtual void DeleteDelegate() OVERRIDE {
     // From ConstrainedWindowMacDelegate: "you MUST close the sheet belonging to
     // your delegate in this method."
     if (is_sheet_open())
       [NSApp endSheet:sheet()];
-    html_delegate_->OnDialogClosed("");
+    if (!closed_via_webui_)
+      html_delegate_->OnDialogClosed("");
     delete this;
   }
 
   // ConstrainedHtmlDelegate ---------------------------------------------------
-  virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate();
-  virtual void OnDialogClose();
+  virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
+  virtual void OnDialogCloseFromWebUI() OVERRIDE;
 
   // HtmlDialogTabContentsDelegate ---------------------------------------------
-  void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE {}
 
   void set_window(ConstrainedWindow* window) {
     constrained_window_ = window;
@@ -52,6 +54,10 @@ class ConstrainedHtmlDelegateMac :
   // The constrained window that owns |this|. Saved here because it needs to be
   // closed in response to the WebUI OnDialogClose callback.
   ConstrainedWindow* constrained_window_;
+
+  // Was the dialog closed from WebUI (in which case |html_delegate_|'s
+  // OnDialogClosed() method has already been called)?
+  bool closed_via_webui_;
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedHtmlDelegateMac);
 };
@@ -75,7 +81,8 @@ ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
   : HtmlDialogTabContentsDelegate(profile),
     tab_contents_(profile, NULL, MSG_ROUTING_NONE, NULL, NULL),
     html_delegate_(delegate),
-    constrained_window_(NULL) {
+    constrained_window_(NULL),
+    closed_via_webui_(false) {
   tab_contents_.set_delegate(this);
 
   // Set |this| as a property on the tab contents so that the ConstrainedHtmlUI
@@ -114,7 +121,8 @@ HtmlDialogUIDelegate* ConstrainedHtmlDelegateMac::GetHtmlDialogUIDelegate() {
   return html_delegate_;
 }
 
-void ConstrainedHtmlDelegateMac::OnDialogClose() {
+void ConstrainedHtmlDelegateMac::OnDialogCloseFromWebUI() {
+  closed_via_webui_ = true;
   DCHECK(constrained_window_);
   if (constrained_window_)
     constrained_window_->CloseConstrainedWindow();
@@ -128,7 +136,7 @@ ConstrainedWindow* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
   // Deleted when ConstrainedHtmlDelegateMac::DeleteDelegate() runs.
   ConstrainedHtmlDelegateMac* constrained_delegate =
       new ConstrainedHtmlDelegateMac(profile, delegate);
-  // Deleted when ConstrainedHtmlDelegateMac::OnDialogClose() runs.
+  // Deleted when ConstrainedHtmlDelegateMac::OnDialogCloseFromWebUI() runs.
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowMac(overshadowed, constrained_delegate);
   constrained_delegate->set_window(constrained_window);

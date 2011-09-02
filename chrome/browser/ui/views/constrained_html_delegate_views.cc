@@ -26,15 +26,16 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
 
   // ConstrainedHtmlUIDelegate interface.
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE;
-  virtual void OnDialogClose() OVERRIDE;
+  virtual void OnDialogCloseFromWebUI() OVERRIDE;
 
   // views::WidgetDelegate interface.
   virtual bool CanResize() const OVERRIDE { return true; }
-  virtual views::View* GetContentsView() {
+  virtual views::View* GetContentsView() OVERRIDE {
     return this;
   }
   virtual void WindowClosing() OVERRIDE {
-    html_delegate_->OnDialogClosed("");
+    if (!closed_via_webui_)
+      html_delegate_->OnDialogClosed("");
   }
   virtual views::Widget* GetWidget() OVERRIDE {
     return View::GetWidget();
@@ -77,6 +78,10 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
 
   // The constrained window that owns |this|.  Saved so we can close it later.
   ConstrainedWindow* window_;
+
+  // Was the dialog closed from WebUI (in which case |html_delegate_|'s
+  // OnDialogClosed() method has already been called)?
+  bool closed_via_webui_;
 };
 
 ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
@@ -85,7 +90,8 @@ ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
     : HtmlDialogTabContentsDelegate(profile),
       html_tab_contents_(profile, NULL, MSG_ROUTING_NONE, NULL, NULL),
       html_delegate_(delegate),
-      window_(NULL) {
+      window_(NULL),
+      closed_via_webui_(false) {
   CHECK(delegate);
   html_tab_contents_.set_delegate(this);
 
@@ -104,7 +110,8 @@ HtmlDialogUIDelegate* ConstrainedHtmlDelegateViews::GetHtmlDialogUIDelegate() {
   return html_delegate_;
 }
 
-void ConstrainedHtmlDelegateViews::OnDialogClose() {
+void ConstrainedHtmlDelegateViews::OnDialogCloseFromWebUI() {
+  closed_via_webui_ = true;
   window_->CloseConstrainedWindow();
 }
 

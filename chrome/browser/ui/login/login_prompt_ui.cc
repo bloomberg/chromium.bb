@@ -29,7 +29,7 @@ class LoginHandlerSource : public ChromeURLDataManager::DataSource {
 
   virtual void StartDataRequest(const std::string& path,
                                 bool is_off_the_record,
-                                int request_id) {
+                                int request_id) OVERRIDE {
     DictionaryValue dict;
     dict.SetString("username",
                    l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_USERNAME_FIELD));
@@ -49,7 +49,7 @@ class LoginHandlerSource : public ChromeURLDataManager::DataSource {
     SendResponse(request_id, base::RefCountedString::TakeString(&response));
   }
 
-  virtual std::string GetMimeType(const std::string& path) const {
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
     return "text/html";
   }
 
@@ -71,10 +71,8 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
                                  public WebUIMessageHandler {
  public:
   LoginHandlerHtmlDelegate(LoginHandlerHtml *login_handler,
-                           TabContents *tab_contents,
                            const string16 explanation)
       : login_handler_(login_handler),
-        tab_contents_(tab_contents),
         explanation_(UTF16ToUTF8(explanation)),
         closed_(false),
         has_autofill_(false),
@@ -140,7 +138,6 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
   }
 
   LoginHandlerHtml *login_handler_;
-  TabContents *tab_contents_;
   std::string explanation_;
   bool closed_;
 
@@ -164,14 +161,14 @@ class LoginHandlerHtml : public LoginHandler {
 
   // LoginModelObserver method:
   virtual void OnAutofillDataAvailable(const std::wstring& username,
-                                       const std::wstring& password) {
+                                       const std::wstring& password) OVERRIDE {
     if (delegate_)
       delegate_->ShowAutofillData(username, password);
   }
 
   // LoginHandler method:
-  virtual void BuildViewForPasswordManager(PasswordManager* manager,
-                                           const string16& explanation);
+  virtual void BuildViewForPasswordManager(
+      PasswordManager* manager, const string16& explanation) OVERRIDE;
 
   friend class LoginHandlerHtmlDelegate;
 
@@ -191,8 +188,7 @@ class LoginHandlerHtml : public LoginHandler {
 };
 
 void LoginHandlerHtmlDelegate::OnDialogClosed(const std::string& json_retval) {
-  if (closed_)
-    return;
+  DCHECK(!closed_);
   closed_ = true;
 
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json_retval, false));
@@ -213,6 +209,9 @@ void LoginHandlerHtmlDelegate::OnDialogClosed(const std::string& json_retval) {
   }
 
   login_handler_->FreeAndRelease();
+
+  // We don't need to delete |this| here: the WebUI object will delete us since
+  // we've registered ourselves as a WebUIMessageHandler.
 }
 
 void LoginHandlerHtmlDelegate::ShowAutofillData(const std::wstring& username,
@@ -236,13 +235,11 @@ void LoginHandlerHtml::BuildViewForPasswordManager(
     PasswordManager* manager, const string16& explanation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  LOG(INFO) << "BuildViewForPasswordManager";
-
   TabContents* tab_contents = GetTabContentsForLogin();
   Profile* profile =
       Profile::FromBrowserContext(tab_contents->browser_context());
   LoginHandlerSource::RegisterDataSource(profile);
-  delegate_ = new LoginHandlerHtmlDelegate(this, tab_contents, explanation);
+  delegate_ = new LoginHandlerHtmlDelegate(this, explanation);
   ConstrainedWindow* dialog = ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
       profile, delegate_, tab_contents);
 

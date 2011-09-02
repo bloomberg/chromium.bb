@@ -21,8 +21,9 @@ class ConstrainedHtmlUIDelegate {
  public:
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() = 0;
 
-  // Called when the dialog should close.
-  virtual void OnDialogClose() = 0;
+  // Called when the dialog is being closed in response to a "DialogClose"
+  // message from WebUI.
+  virtual void OnDialogCloseFromWebUI() = 0;
 };
 
 // ConstrainedHtmlUI is a facility to show HTML WebUI content
@@ -57,7 +58,7 @@ class ConstrainedHtmlUI : public ChromeWebUI {
   ConstrainedHtmlUIDelegate* GetConstrainedDelegate();
 
   // JS Message Handler
-  void OnDialogClose(const base::ListValue* args);
+  void OnDialogCloseMessage(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedHtmlUI);
 };

@@ -40,10 +40,10 @@ void ConstrainedHtmlUI::RenderViewCreated(
 
   // Add a "DialogClose" callback which matches HTMLDialogUI behavior.
   RegisterMessageCallback("DialogClose",
-      NewCallback(this, &ConstrainedHtmlUI::OnDialogClose));
+      NewCallback(this, &ConstrainedHtmlUI::OnDialogCloseMessage));
 }
 
-void ConstrainedHtmlUI::OnDialogClose(const ListValue* args) {
+void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
   ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
@@ -52,7 +52,7 @@ void ConstrainedHtmlUI::OnDialogClose(const ListValue* args) {
   if (!args->GetString(0, &json_retval))
     NOTREACHED() << "Could not read JSON argument";
   delegate->GetHtmlDialogUIDelegate()->OnDialogClosed(json_retval);
-  delegate->OnDialogClose();
+  delegate->OnDialogCloseFromWebUI();
 }
 
 ConstrainedHtmlUIDelegate*

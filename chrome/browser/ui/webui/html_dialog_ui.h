@@ -50,7 +50,9 @@ class HtmlDialogUIDelegate {
   virtual std::string GetDialogArgs() const = 0;
 
   // A callback to notify the delegate that the dialog closed.
-  // IMPORTANT:  Deletes 'this'.
+  // IMPORTANT: Implementations should delete |this| here (unless they've
+  // arranged for the delegate to be deleted in some other way, e.g. by
+  // registering it as a message handler in the WebUI object).
   virtual void OnDialogClosed(const std::string& json_retval) = 0;
 
   // A callback to notify the delegate that the contents have gone
