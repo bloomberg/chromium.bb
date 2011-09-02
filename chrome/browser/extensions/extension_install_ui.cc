@@ -177,12 +177,10 @@ string16 ExtensionInstallUI::Prompt::GetUserCount() const {
 }
 
 size_t ExtensionInstallUI::Prompt::GetPermissionCount() const {
-  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
   return permissions_.size();
 }
 
 string16 ExtensionInstallUI::Prompt::GetPermission(int index) const {
-  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
   return l10n_util::GetStringFUTF16(
       IDS_EXTENSION_PERMISSION_LINE, permissions_[index]);
 }
