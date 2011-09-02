@@ -76,7 +76,8 @@ class HashError(Exception):
 
 
 def SyncTgz(url, target, maindir='sdk',
-            username=None, password=None, verbose=True, hash=None):
+            username=None, password=None, verbose=True, hash=None,
+            save_path=None):
   """Download a file from a remote server.
 
   Args:
@@ -86,9 +87,14 @@ def SyncTgz(url, target, maindir='sdk',
     password: Optional password for download (ignored if no username).
     verbose: Flag indicating if status shut be printed.
     hash: sha1 of expected download (don't check if hash is None).
+    save_path: Optional place to save the downloaded tarball.  If this is None,
+        then the tarball is downloaded to a temporary file which is deleted.
   """
   shutil.rmtree(target, True)
+  os.makedirs(target)
   tgz_filename = target + '/.tgz'
+  if save_path:
+    tgz_filename = save_path
 
   if verbose:
     print 'Downloading %s to %s...' % (url, tgz_filename)
@@ -176,7 +182,8 @@ def SyncTgz(url, target, maindir='sdk',
         print m.name
       tgz.extract(m, target)
     tgz.close()
-  os.remove(tgz_filename)
+  if save_path is None:
+    os.remove(tgz_filename)
 
   if verbose:
     print 'Update complete.'

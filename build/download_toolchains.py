@@ -41,7 +41,7 @@ def ShowUpdatedDEPS(base_url, version, nacl_newlib_only):
     sys.stdout.flush()
 
 
-def SyncFlavor(flavor, url, dst, hash):
+def SyncFlavor(flavor, url, dst, hash, save_downloads_dir=None):
   """Sync a flavor of the nacl toolchain
 
   Arguments:
@@ -49,24 +49,31 @@ def SyncFlavor(flavor, url, dst, hash):
     url: url to download the toolchain flavor from.
     dst: destination directory for the toolchain.
     hash: expected hash of the toolchain.
+    save_downloads_dir: (optional) save the downloaded toolchains here.
   """
+  save_archive = None
+  if save_downloads_dir:
+    save_archive = os.path.join(save_downloads_dir, os.path.basename(url))
+
   parent_dir = os.path.dirname(os.path.dirname(__file__))
   # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
   if 'arm' in flavor or 'pnacl' in flavor:
     # TODO(cbiffle): we really shouldn't do this until the unpack succeeds!
     # See: http://code.google.com/p/nativeclient/issues/detail?id=834
     download_utils.RemoveDir(dst)
-    sync_tgz.SyncTgz(url, dst, verbose=False, hash=hash)
+    sync_tgz.SyncTgz(url, dst, verbose=False, hash=hash,
+                     save_path=save_archive)
   elif 'newlib' in flavor:
     dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
-    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash)
+    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash,
+                     save_path=save_archive)
     subdir = os.path.join(dst_tmp, 'sdk', 'nacl-sdk')
     download_utils.MoveDirCleanly(subdir, dst)
     download_utils.RemoveDir(dst_tmp)
   else:
     dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
     sync_tgz.SyncTgz(url, dst_tmp, maindir='toolchain', verbose=False,
-                     hash=hash)
+                     hash=hash, save_path=save_archive)
     subdir = os.path.join(dst_tmp, 'toolchain', flavor)
     download_utils.MoveDirCleanly(subdir, dst)
     download_utils.RemoveDir(dst_tmp)
@@ -104,6 +111,10 @@ def Main(args):
       '--nacl-newlib-only', dest='nacl_newlib_only',
       action='store_true', default=False,
       help='download only the non-pnacl newlib toolchain')
+  parser.add_option(
+      '--save-downloads-dir', dest='save_downloads_dir',
+      default=None,
+      help='(optional) preserve the toolchain archives to this dir')
 
   options, args = parser.parse_args(args)
   if args:
@@ -145,7 +156,8 @@ def Main(args):
       hash_value = None
 
     try:
-      SyncFlavor(flavor, url, dst, hash_value)
+      SyncFlavor(flavor, url, dst, hash_value,
+                 save_downloads_dir=options.save_downloads_dir)
     except sync_tgz.HashError, e:
       print str(e)
       print '-' * 70
