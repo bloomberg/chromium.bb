@@ -44,15 +44,10 @@ void NaClForkDelegate::Init(const bool sandboxed,
   base::file_handle_mapping_vector fds_to_map;
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
   fds_to_map.push_back(std::make_pair(sandboxdesc, kNaClSandboxDescriptor));
-  // TODO(bradchen): To make this the default for release builds,
-  // remove command line switch.
   ready_ = false;
-  const bool use_helper = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNaClLinuxHelper);
   FilePath helper_exe;
   FilePath helper_bootstrap_exe;
-  if (use_helper &&
-      PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe) &&
+  if (PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe) &&
       PathService::Get(chrome::FILE_NACL_HELPER_BOOTSTRAP,
                        &helper_bootstrap_exe)) {
     CommandLine::StringVector argv = CommandLine::ForCurrentProcess()->argv();

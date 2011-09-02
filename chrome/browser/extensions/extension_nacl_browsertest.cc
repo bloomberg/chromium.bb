@@ -93,12 +93,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 };
 
 // Test that the NaCl plugin isn't blocked for Webstore extensions.
-// DISABLED http://crbug.com/92964
-#if defined(OS_LINUX) && ARCH_CPU_32_BITS
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_WebStoreExtension) {
-#else
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, WebStoreExtension) {
-#endif
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_FROM_WEBSTORE);
@@ -116,12 +111,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, NonWebStoreExtension) {
 }
 
 // Test that the NaCl plugin isn't blocked for component extensions.
-// DISABLED http://crbug.com/92964
-#if defined(OS_LINUX) && ARCH_CPU_32_BITS
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_ComponentExtension) {
-#else
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, ComponentExtension) {
-#endif
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_COMPONENT);
@@ -131,12 +121,7 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, ComponentExtension) {
 }
 
 // Test that the NaCl plugin isn't blocked for unpacked extensions.
-// DISABLED http://crbug.com/92964
-#if defined(OS_LINUX) && ARCH_CPU_32_BITS
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_UnpackedExtension) {
-#else
 IN_PROC_BROWSER_TEST_F(NaClExtensionTest, UnpackedExtension) {
-#endif
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_UNPACKED);
@@ -146,4 +131,3 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, UnpackedExtension) {
 }
 
 }  // namespace
-

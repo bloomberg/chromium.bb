@@ -96,10 +96,6 @@ extern const char kLowLatencyAudio[];
 // TODO(jam): this doesn't belong in content.
 extern const char kNaClBrokerProcess[];
 extern const char kNaClLoaderProcess[];
-// TODO(bradchen): remove kNaClLinuxHelper switch.
-// This switch enables the experimental lightweight nacl_helper for Linux.
-// It will be going away soon, when the helper is enabled permanently.
-extern const char kNaClLinuxHelper[];
 extern const char kNoDisplayingInsecureContent[];
 extern const char kNoJsRandomness[];
 extern const char kNoReferrers[];

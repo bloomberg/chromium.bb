@@ -287,10 +287,6 @@ const char kLowLatencyAudio[]               = "enable-low-latency-audio";
 // (used for launching NaCl loader processes on 64-bit Windows).
 const char kNaClBrokerProcess[]             = "nacl-broker";
 
-// Enables experimental lightweight Native Client launcher for Linux
-// Value is the path to the helper binary.
-const char kNaClLinuxHelper[]               = "nacl-linux-helper";
-
 // Causes the process to run as a NativeClient loader.
 const char kNaClLoaderProcess[]             = "nacl-loader";
 

@@ -113,7 +113,6 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     switches::kRegisterPepperPlugins,
     switches::kDisableSeccompSandbox,
     switches::kEnableSeccompSandbox,
-    switches::kNaClLinuxHelper,
   };
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));
