@@ -5,6 +5,7 @@
 #include "content/test/test_browser_context.h"
 
 #include "base/file_path.h"
+#include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/mock_resource_context.h"
 
 TestBrowserContext::TestBrowserContext() {
@@ -73,7 +74,12 @@ bool TestBrowserContext::DidLastSessionExitCleanly() {
 }
 
 WebKitContext* TestBrowserContext::GetWebKitContext() {
-  return NULL;
+  if (webkit_context_ == NULL) {
+    webkit_context_ = new WebKitContext(
+          IsOffTheRecord(), GetPath(),
+          NULL, false, NULL, NULL);
+  }
+  return webkit_context_;
 }
 
 ChromeBlobStorageContext* TestBrowserContext::GetBlobStorageContext() {

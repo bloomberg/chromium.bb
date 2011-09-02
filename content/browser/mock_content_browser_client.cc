@@ -42,7 +42,7 @@ void MockContentBrowserClient::WorkerProcessHostCreated(
 
 WebUIFactory* MockContentBrowserClient::GetWebUIFactory() {
   // Return an empty factory so callsites don't have to check for NULL.
-  return EmptyWebUIFactory::Get();
+  return EmptyWebUIFactory::GetInstance();
 }
 
 GURL MockContentBrowserClient::GetEffectiveURL(

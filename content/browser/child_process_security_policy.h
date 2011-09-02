@@ -172,7 +172,7 @@ class ChildProcessSecurityPolicy {
                                          const FilePath& file,
                                          int permissions);
 
-    // You must acquire this lock before reading or writing any members of this
+  // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.
   base::Lock lock_;
 

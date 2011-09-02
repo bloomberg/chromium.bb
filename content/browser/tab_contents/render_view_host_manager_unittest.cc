@@ -81,9 +81,10 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // The second one is the opposite, creating a cross-site transition and
   // requiring a beforeunload ack.
   contents2.controller().LoadURL(kDestUrl, GURL(), PageTransition::LINK);
+  EXPECT_TRUE(contents2.cross_navigation_pending());
   TestRenderViewHost* dest_rvh2 = static_cast<TestRenderViewHost*>(
       contents2.render_manager()->pending_render_view_host());
-  EXPECT_TRUE(contents2.cross_navigation_pending());
+  ASSERT_TRUE(dest_rvh2);
   ntp_rvh2->SendShouldCloseACK(true);
   dest_rvh2->SendNavigate(101, kDestUrl);
   ntp_rvh2->OnSwapOutACK();
@@ -240,7 +241,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
   // A new RenderViewHost should be created.
   EXPECT_TRUE(manager.pending_render_view_host());
-  EXPECT_TRUE(host == manager.pending_render_view_host());
+  ASSERT_EQ(host, manager.pending_render_view_host());
 
   notifications.Reset();
 

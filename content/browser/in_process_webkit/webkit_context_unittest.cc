@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/in_process_webkit/dom_storage_context.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
+#include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockDOMStorageContext : public DOMStorageContext {
@@ -30,18 +29,16 @@ class MockDOMStorageContext : public DOMStorageContext {
 };
 
 TEST(WebKitContextTest, Basic) {
-  TestingProfile profile;
+  TestBrowserContext browser_context;
   scoped_refptr<WebKitContext> context1(new WebKitContext(
-          profile.IsOffTheRecord(), profile.GetPath(),
-          profile.GetSpecialStoragePolicy(),
-          false, NULL, NULL));
-  EXPECT_TRUE(profile.GetPath() == context1->data_path());
-  EXPECT_TRUE(profile.IsOffTheRecord() == context1->is_incognito());
+          browser_context.IsOffTheRecord(), browser_context.GetPath(),
+          NULL, false, NULL, NULL));
+  EXPECT_TRUE(browser_context.GetPath() == context1->data_path());
+  EXPECT_TRUE(browser_context.IsOffTheRecord() == context1->is_incognito());
 
   scoped_refptr<WebKitContext> context2(new WebKitContext(
-          profile.IsOffTheRecord(), profile.GetPath(),
-          profile.GetSpecialStoragePolicy(),
-          false, NULL, NULL));
+          browser_context.IsOffTheRecord(), browser_context.GetPath(),
+          NULL, false, NULL, NULL));
   EXPECT_TRUE(context1->data_path() == context2->data_path());
   EXPECT_TRUE(context1->is_incognito() == context2->is_incognito());
 }
@@ -54,13 +51,12 @@ TEST(WebKitContextTest, PurgeMemory) {
 
   {
     // Create the contexts.
-    TestingProfile profile;
+    TestBrowserContext browser_context;
     scoped_refptr<WebKitContext> context(new WebKitContext(
-            profile.IsOffTheRecord(), profile.GetPath(),
-            profile.GetSpecialStoragePolicy(),
-            false, NULL, NULL));
+            browser_context.IsOffTheRecord(), browser_context.GetPath(),
+            NULL, false, NULL, NULL));
     MockDOMStorageContext* mock_context = new MockDOMStorageContext(
-        context.get(), profile.GetSpecialStoragePolicy());
+        context.get(), NULL);
     context->set_dom_storage_context(mock_context);  // Takes ownership.
 
     // Ensure PurgeMemory() calls our mock object on the right thread.

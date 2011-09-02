@@ -5,10 +5,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -64,14 +63,16 @@ class MockTabContentsDelegate : public TabContentsDelegate {
 
 TEST(TabContentsDelegateTest, UnregisterInDestructor) {
   MessageLoop loop(MessageLoop::TYPE_UI);
-  scoped_ptr<MockTabContentsDelegate> delegate(new MockTabContentsDelegate());
-  scoped_ptr<Profile> profile(new TestingProfile());
+  TestBrowserContext browser_context;
+
   scoped_ptr<TabContents> contents_a(
-      new TabContents(profile.get(), NULL, 0, NULL, NULL));
+      new TabContents(&browser_context, NULL, 0, NULL, NULL));
   scoped_ptr<TabContents> contents_b(
-      new TabContents(profile.get(), NULL, 0, NULL, NULL));
+      new TabContents(&browser_context, NULL, 0, NULL, NULL));
   EXPECT_TRUE(contents_a->delegate() == NULL);
   EXPECT_TRUE(contents_b->delegate() == NULL);
+
+  scoped_ptr<MockTabContentsDelegate> delegate(new MockTabContentsDelegate());
 
   // Setting a delegate should work correctly.
   contents_a->set_delegate(delegate.get());

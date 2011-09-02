@@ -7,7 +7,10 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/browser_context.h"
+
+class WebKitContext;
 
 class TestBrowserContext : public content::BrowserContext {
  public:
@@ -34,6 +37,9 @@ class TestBrowserContext : public content::BrowserContext {
   virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
 
  private:
+  // WebKitContext, lazily initialized by GetWebKitContext().
+  scoped_refptr<WebKitContext> webkit_context_;
+
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };
 
