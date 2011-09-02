@@ -612,7 +612,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain
       // sets this up for the browser process in a different manner. Zygotes
       // need to call InitCrashReporter() in RunZygote().
-      if (!process_type.is_empty() && process_type != switches::kZygoteProcess)
+      if (!process_type.empty() && process_type != switches::kZygoteProcess)
         InitCrashReporter();
 #endif
     }
