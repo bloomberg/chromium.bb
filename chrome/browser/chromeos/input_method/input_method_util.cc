@@ -168,6 +168,18 @@ const struct EnglishToResouceId {
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VIQR_INPUT_METHOD },
   { "m17n:vi:vni",
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD },
+
+  { "m17n:bn:itrans",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
+  { "m17n:gu:itrans",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
+  { "m17n:ml:itrans",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
+  { "m17n:mr:itrans",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
+  { "m17n:ta:itrans",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
+
   { "mozc-chewing",
     IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD },
   { "pinyin", IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD },
@@ -369,12 +381,6 @@ const ExtraLanguage kExtraLanguages[] = {
   { "id",           "xkb:us::eng" },  // For Indonesian, use US keyboard layout.
   // The code "fil" comes from app/l10_util.cc.
   { "fil",          "xkb:us::eng" },  // For Filipino, use US keyboard layout.
-  // Indic Languages
-  { "bn",           "xkb:us::eng" },  // For Bengali, use US keyboard layout.
-  { "gu",           "xkb:us::eng" },  // For Gujarati, use US keyboard layout.
-  { "ml",           "xkb:us::eng" },  // For Malayalam, use US keyboard layout.
-  { "mr",           "xkb:us::eng" },  // For Marathi, use US keyboard layout.
-  { "ta",           "xkb:us::eng" },  // For Tamil, use US keyboard layout.
   // For Netherlands, use US international keyboard layout.
   { "nl",           "xkb:us:intl:eng" },
   // The code "es-419" comes from app/l10_util.cc.

@@ -95,27 +95,70 @@ pinyin-dv	us(dvorak)	zh-CN	!defined(TOUCH_UI)
 mozc-chewing	us	zh_TW
 m17n:zh:cangjie	us	zh
 m17n:zh:quick	us	zh
-# TODO(suzhe): Add CantonHK and Stroke5 if (it's really) necessary.
 
 # Vietnamese
 m17n:vi:tcvn	us	vi
 m17n:vi:telex	us	vi
 m17n:vi:viqr	us	vi
 m17n:vi:vni	us	vi
-# Note: Since ibus-m17n does not support "get-surrounding-text" feature yet,
+# Note: Since Chrome does not support "get surrounding text" feature yet,
 # Vietnames input methods, except 4 input methods above, in m17n-db should
 # not work fine. The 4 input methods in m17n-db (>= 1.6.0) don't require the
 # feature.
 
-# Other languages
+# Korean
 mozc-hangul	kr(kr104)	ko
+xkb:kr:kr104:kor	kr(kr104)	kor
 
-# ibus-m17n input methods.
+# Arabic
 m17n:ar:kbd	us	ar
+# TODO(yusukes,jshin): Check if we can use ibux-xkb-layouts for Arabic, Hindi,
+# etc.
+
+# Hindi
 m17n:hi:itrans	us	hi
-# Note: the m17n-contrib package has some more Hindi definitions.
+# Note: the m17n-contrib package has some more Hindi IMEs.
+
+# Farsi (Persian)
 m17n:fa:isiri	us	fa
-# TODO(yusukes,jshin): Check if we can use ibux-xkb-layouts for these languages.
+
+# Bengali
+m17n:bn:itrans	us	bn
+# TODO(yusukes): Support the following IMEs in m17n-db (unijoy) and
+#   m17n-db-contrib (inscript, probhat).
+# m17n:bn:unijoy	us	bn
+# m17n:bn:inscript	us	bn
+# m17n:bn:probhat	us	bn
+
+# Gujarati
+m17n:gu:itrans	us	gu
+# TODO(yusukes): Support the following IMEs in m17n-db-contrib.
+# m17n:gu:phonetic	us	gu
+# m17n:gu:inscript	us	gu
+
+# Malayalam
+m17n:ml:itrans	us	ml
+# TODO(yusukes): Support the following IMEs in m17n-db-contrib.
+# m17n:ml:inscript	us	ml
+# m17n:ml:mozhi	us	ml
+
+# Marathi
+# Note: m17n:mr:itrans is in m17n-db-contrib.
+m17n:mr:itrans	us	mr
+# TODO(yusukes): Support the following IMEs in m17n-db-contrib.
+# m17n:mr:phonetic	us	mr
+# m17n:mr:inscript	us	mr
+
+# Tamil
+m17n:ta:itrans	us	ta
+# TODO(yusukes): Support the following IMEs in m17n-db-contrib.
+# m17n:ta:phonetic	us	ta
+# m17n:ta:inscript	us	ta
+# m17n:ta:tamil99	us	ta
+# m17n:ta:typewriter	us	ta
+
+# TODO(yusukes): Support Kannada and Telugu once Lohit font is upgraded.
+# TODO(yusukes): Support Swahili and Amharic.
 
 # ibux-xkb-layouts input methods (keyboard layouts).
 xkb:br::por	br	por	!defined(TOUCH_UI)
@@ -129,7 +172,6 @@ xkb:es:cat:cat	es(cat)	cat	!defined(TOUCH_UI)
 xkb:dk::dan	dk	dan	!defined(TOUCH_UI)
 xkb:gr::gre	gr	gre	!defined(TOUCH_UI)
 xkb:il::heb	il	heb	!defined(TOUCH_UI)
-xkb:kr:kr104:kor	kr(kr104)	kor
 xkb:latam::spa	latam	spa	!defined(TOUCH_UI)
 xkb:lt::lit	lt	lit	!defined(TOUCH_UI)
 xkb:lv:apostrophe:lav	lv(apostrophe)	lav	!defined(TOUCH_UI)
