@@ -9,7 +9,6 @@
 #include "base/file_descriptor_posix.h"
 #include "base/process.h"
 #include "base/sync_socket.h"
-#include "base/time.h"
 #include "media/audio/audio_output_controller.h"
 
 namespace base {
@@ -41,7 +40,6 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
 
  private:
   base::SharedMemory* shared_memory_;
-  base::Time previous_call_time_;
 
   // A pair of SyncSocket for transmitting audio data.
   scoped_ptr<base::SyncSocket> socket_;
