@@ -269,9 +269,9 @@ class FilePatchDiff(FilePatchBase):
       if not last_line.startswith('---'):
         self._fail('Unexpected git diff: --- not following +++.')
       # TODO(maruel): new == self.filename.
-      if new != self.mangle(match.group(1)) and '/dev/null' != match.group(1):
-        # TODO(maruel): Can +++ be /dev/null? If so, assert self.is_delete ==
-        # True.
+      if '/dev/null' == match.group(1):
+        self.is_delete = True
+      elif new != self.mangle(match.group(1)):
         self._fail('Unexpected git diff: %s != %s.' % (new, match.group(1)))
       if lines:
         self._fail('Crap after +++')
@@ -323,10 +323,9 @@ class FilePatchDiff(FilePatchBase):
     if match:
       if not last_line.startswith('---'):
         self._fail('Unexpected diff: --- not following +++.')
-      if (self.mangle(match.group(1)) != self.filename and
-          match.group(1) != '/dev/null'):
-        # TODO(maruel): Can +++ be /dev/null? If so, assert self.is_delete ==
-        # True.
+      if match.group(1) == '/dev/null':
+        self.is_delete = True
+      elif self.mangle(match.group(1)) != self.filename:
         self._fail('Unexpected diff: %s.' % match.group(1))
       if lines:
         self._fail('Crap after +++')
