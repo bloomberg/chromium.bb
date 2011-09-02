@@ -153,6 +153,7 @@ void PrintWebViewHelper::RenderPage(
 
     SkRefPtr<skia::VectorCanvas> canvas = new skia::VectorCanvas(device);
     canvas->unref();  // SkRefPtr and new both took a reference.
+    WebKit::WebCanvas* canvas_ptr = canvas.get();
     printing::MetafileSkiaWrapper::SetMetafileOnCanvas(canvas.get(), metafile);
     printing::MetafileSkiaWrapper::SetDraftMode(canvas.get(),
                                                 is_print_ready_metafile_sent_);
