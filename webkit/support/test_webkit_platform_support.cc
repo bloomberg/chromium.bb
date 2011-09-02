@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/support/test_webkit_client.h"
+#include "webkit/support/test_webkit_platform_support.h"
 
 #include "base/file_util.h"
 #include "base/metrics/stats_counters.h"
@@ -39,7 +39,7 @@
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/support/simple_database_system.h"
@@ -65,7 +65,7 @@
 
 using WebKit::WebScriptController;
 
-TestWebKitClient::TestWebKitClient(bool unit_test_mode)
+TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode)
       : unit_test_mode_(unit_test_mode) {
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
@@ -143,99 +143,101 @@ TestWebKitClient::TestWebKitClient(bool unit_test_mode)
   WebScriptController::registerExtension(extensions_v8::GCExtension::Get());
 }
 
-TestWebKitClient::~TestWebKitClient() {
+TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {
   if (RunningOnValgrind())
     WebKit::WebCache::clear();
   WebKit::shutdown();
 }
 
-WebKit::WebMimeRegistry* TestWebKitClient::mimeRegistry() {
+WebKit::WebMimeRegistry* TestWebKitPlatformSupport::mimeRegistry() {
   return &mime_registry_;
 }
 
-WebKit::WebClipboard* TestWebKitClient::clipboard() {
+WebKit::WebClipboard* TestWebKitPlatformSupport::clipboard() {
   // Mock out clipboard calls so that tests don't mess
   // with each other's copies/pastes when running in parallel.
   return &mock_clipboard_;
 }
 
-WebKit::WebFileUtilities* TestWebKitClient::fileUtilities() {
+WebKit::WebFileUtilities* TestWebKitPlatformSupport::fileUtilities() {
   return &file_utilities_;
 }
 
-WebKit::WebSandboxSupport* TestWebKitClient::sandboxSupport() {
+WebKit::WebSandboxSupport* TestWebKitPlatformSupport::sandboxSupport() {
   return NULL;
 }
 
-WebKit::WebCookieJar* TestWebKitClient::cookieJar() {
+WebKit::WebCookieJar* TestWebKitPlatformSupport::cookieJar() {
   return &cookie_jar_;
 }
 
-WebKit::WebBlobRegistry* TestWebKitClient::blobRegistry() {
+WebKit::WebBlobRegistry* TestWebKitPlatformSupport::blobRegistry() {
   return blob_registry_.get();
 }
 
-WebKit::WebFileSystem* TestWebKitClient::fileSystem() {
+WebKit::WebFileSystem* TestWebKitPlatformSupport::fileSystem() {
   return &file_system_;
 }
 
-bool TestWebKitClient::sandboxEnabled() {
+bool TestWebKitPlatformSupport::sandboxEnabled() {
   return true;
 }
 
-WebKit::WebKitClient::FileHandle TestWebKitClient::databaseOpenFile(
+WebKit::WebKitPlatformSupport::FileHandle
+TestWebKitPlatformSupport::databaseOpenFile(
     const WebKit::WebString& vfs_file_name, int desired_flags) {
   return SimpleDatabaseSystem::GetInstance()->OpenFile(
       vfs_file_name, desired_flags);
 }
 
-int TestWebKitClient::databaseDeleteFile(const WebKit::WebString& vfs_file_name,
-                                         bool sync_dir) {
+int TestWebKitPlatformSupport::databaseDeleteFile(
+    const WebKit::WebString& vfs_file_name, bool sync_dir) {
   return SimpleDatabaseSystem::GetInstance()->DeleteFile(
       vfs_file_name, sync_dir);
 }
 
-long TestWebKitClient::databaseGetFileAttributes(
+long TestWebKitPlatformSupport::databaseGetFileAttributes(
     const WebKit::WebString& vfs_file_name) {
   return SimpleDatabaseSystem::GetInstance()->GetFileAttributes(
       vfs_file_name);
 }
 
-long long TestWebKitClient::databaseGetFileSize(
+long long TestWebKitPlatformSupport::databaseGetFileSize(
     const WebKit::WebString& vfs_file_name) {
   return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
 }
 
-long long TestWebKitClient::databaseGetSpaceAvailableForOrigin(
+long long TestWebKitPlatformSupport::databaseGetSpaceAvailableForOrigin(
     const WebKit::WebString& origin_identifier) {
   return SimpleDatabaseSystem::GetInstance()->GetSpaceAvailable(
       origin_identifier);
 }
 
-unsigned long long TestWebKitClient::visitedLinkHash(const char* canonicalURL,
-                                                     size_t length) {
+unsigned long long TestWebKitPlatformSupport::visitedLinkHash(
+    const char* canonicalURL, size_t length) {
   return 0;
 }
 
-bool TestWebKitClient::isLinkVisited(unsigned long long linkHash) {
+bool TestWebKitPlatformSupport::isLinkVisited(unsigned long long linkHash) {
   return false;
 }
 
-WebKit::WebMessagePortChannel* TestWebKitClient::createMessagePortChannel() {
+WebKit::WebMessagePortChannel*
+TestWebKitPlatformSupport::createMessagePortChannel() {
   return NULL;
 }
 
-void TestWebKitClient::prefetchHostName(const WebKit::WebString&) {
+void TestWebKitPlatformSupport::prefetchHostName(const WebKit::WebString&) {
 }
 
-WebKit::WebURLLoader* TestWebKitClient::createURLLoader() {
+WebKit::WebURLLoader* TestWebKitPlatformSupport::createURLLoader() {
   if (!unit_test_mode_)
-    return webkit_glue::WebKitClientImpl::createURLLoader();
+    return webkit_glue::WebKitPlatformSupportImpl::createURLLoader();
   return url_loader_factory_.CreateURLLoader(
-      webkit_glue::WebKitClientImpl::createURLLoader());
+      webkit_glue::WebKitPlatformSupportImpl::createURLLoader());
 }
 
-WebKit::WebData TestWebKitClient::loadResource(const char* name) {
+WebKit::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
   if (!strcmp(name, "deleteButton")) {
     // Create a red 30x30 square.
     const char red_square[] =
@@ -252,10 +254,10 @@ WebKit::WebData TestWebKitClient::loadResource(const char* name) {
         "\x82";
     return WebKit::WebData(red_square, arraysize(red_square));
   }
-  return webkit_glue::WebKitClientImpl::loadResource(name);
+  return webkit_glue::WebKitPlatformSupportImpl::loadResource(name);
 }
 
-WebKit::WebString TestWebKitClient::queryLocalizedString(
+WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
     WebKit::WebLocalizedString::Name name) {
   // Returns messages same as WebKit's in DRT.
   // We use different strings for form validation messages.
@@ -283,20 +285,20 @@ WebKit::WebString TestWebKitClient::queryLocalizedString(
     case WebKit::WebLocalizedString::ValidationStepMismatch:
       return ASCIIToUTF16("step mismatch");
     default:
-      return WebKitClientImpl::queryLocalizedString(name);
+      return WebKitPlatformSupportImpl::queryLocalizedString(name);
   }
 }
 
-WebKit::WebString TestWebKitClient::queryLocalizedString(
+WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
     WebKit::WebLocalizedString::Name name, const WebKit::WebString& value) {
   if (name == WebKit::WebLocalizedString::ValidationRangeUnderflow)
     return ASCIIToUTF16("range underflow");
   if (name == WebKit::WebLocalizedString::ValidationRangeOverflow)
     return ASCIIToUTF16("range overflow");
-  return WebKitClientImpl::queryLocalizedString(name, value);
+  return WebKitPlatformSupportImpl::queryLocalizedString(name, value);
 }
 
-WebKit::WebString TestWebKitClient::queryLocalizedString(
+WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
     WebKit::WebLocalizedString::Name name,
     const WebKit::WebString& value1,
     const WebKit::WebString& value2) {
@@ -304,30 +306,32 @@ WebKit::WebString TestWebKitClient::queryLocalizedString(
     return ASCIIToUTF16("too long");
   if (name == WebKit::WebLocalizedString::ValidationStepMismatch)
     return ASCIIToUTF16("step mismatch");
-  return WebKitClientImpl::queryLocalizedString(name, value1, value2);
+  return WebKitPlatformSupportImpl::queryLocalizedString(name, value1, value2);
 }
 
-WebKit::WebString TestWebKitClient::defaultLocale() {
+WebKit::WebString TestWebKitPlatformSupport::defaultLocale() {
   return ASCIIToUTF16("en-US");
 }
 
-WebKit::WebStorageNamespace* TestWebKitClient::createLocalStorageNamespace(
+WebKit::WebStorageNamespace*
+TestWebKitPlatformSupport::createLocalStorageNamespace(
     const WebKit::WebString& path, unsigned quota) {
   return WebKit::WebStorageNamespace::createLocalStorageNamespace(path, quota);
 }
 
-void TestWebKitClient::dispatchStorageEvent(const WebKit::WebString& key,
+void TestWebKitPlatformSupport::dispatchStorageEvent(
+    const WebKit::WebString& key,
     const WebKit::WebString& old_value, const WebKit::WebString& new_value,
     const WebKit::WebString& origin, const WebKit::WebURL& url,
     bool is_local_storage) {
   // The event is dispatched by the proxy.
 }
 
-WebKit::WebIDBFactory* TestWebKitClient::idbFactory() {
+WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
   return WebKit::WebIDBFactory::create();
 }
 
-void TestWebKitClient::createIDBKeysFromSerializedValuesAndKeyPath(
+void TestWebKitPlatformSupport::createIDBKeysFromSerializedValuesAndKeyPath(
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
       const WebKit::WebString& keyPath,
       WebKit::WebVector<WebKit::WebIDBKey>& keys_out) {
@@ -340,7 +344,8 @@ void TestWebKitClient::createIDBKeysFromSerializedValuesAndKeyPath(
 }
 
 WebKit::WebSerializedScriptValue
-TestWebKitClient::injectIDBKeyIntoSerializedValue(const WebKit::WebIDBKey& key,
+TestWebKitPlatformSupport::injectIDBKeyIntoSerializedValue(
+    const WebKit::WebIDBKey& key,
     const WebKit::WebSerializedScriptValue& value,
     const WebKit::WebString& keyPath) {
   return WebKit::WebIDBKey::injectIDBKeyIntoSerializedValue(
@@ -348,20 +353,23 @@ TestWebKitClient::injectIDBKeyIntoSerializedValue(const WebKit::WebIDBKey& key,
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-void TestWebKitClient::SetThemeEngine(WebKit::WebThemeEngine* engine) {
-  active_theme_engine_ = engine ? engine : WebKitClientImpl::themeEngine();
+void TestWebKitPlatformSupport::SetThemeEngine(WebKit::WebThemeEngine* engine) {
+  active_theme_engine_ = engine ?
+      engine : WebKitPlatformSupportImpl::themeEngine();
 }
 
-WebKit::WebThemeEngine* TestWebKitClient::themeEngine() {
+WebKit::WebThemeEngine* TestWebKitPlatformSupport::themeEngine() {
   return active_theme_engine_;
 }
 #endif
 
-WebKit::WebSharedWorkerRepository* TestWebKitClient::sharedWorkerRepository() {
+WebKit::WebSharedWorkerRepository*
+TestWebKitPlatformSupport::sharedWorkerRepository() {
   return NULL;
 }
 
-WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
+WebKit::WebGraphicsContext3D*
+TestWebKitPlatformSupport::createGraphicsContext3D() {
   switch (webkit_support::GetGraphicsContext3DImplementation()) {
     case webkit_support::IN_PROCESS:
       return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
@@ -373,11 +381,11 @@ WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
   }
 }
 
-double TestWebKitClient::audioHardwareSampleRate() {
+double TestWebKitPlatformSupport::audioHardwareSampleRate() {
   return 44100.0;
 }
 
-WebKit::WebAudioDevice* TestWebKitClient::createAudioDevice(
+WebKit::WebAudioDevice* TestWebKitPlatformSupport::createAudioDevice(
     size_t bufferSize, unsigned numberOfChannels, double sampleRate,
     WebKit::WebAudioDevice::RenderCallback*) {
   return new WebAudioDeviceMock(sampleRate);

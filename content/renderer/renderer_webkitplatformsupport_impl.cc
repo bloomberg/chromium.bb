@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/renderer_webkitclient_impl.h"
+#include "content/renderer/renderer_webkitplatformsupport_impl.h"
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -76,7 +76,7 @@ using WebKit::WebFrame;
 using WebKit::WebIDBFactory;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyPath;
-using WebKit::WebKitClient;
+using WebKit::WebKitPlatformSupport;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebStorageArea;
 using WebKit::WebStorageEventDispatcher;
@@ -87,7 +87,7 @@ using WebKit::WebVector;
 
 //------------------------------------------------------------------------------
 
-class RendererWebKitClientImpl::MimeRegistry
+class RendererWebKitPlatformSupportImpl::MimeRegistry
     : public webkit_glue::SimpleWebMimeRegistryImpl {
  public:
   virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString&);
@@ -96,7 +96,7 @@ class RendererWebKitClientImpl::MimeRegistry
       const WebKit::WebString&);
 };
 
-class RendererWebKitClientImpl::FileUtilities
+class RendererWebKitPlatformSupportImpl::FileUtilities
     : public webkit_glue::WebFileUtilitiesImpl {
  public:
   virtual void revealFolderInOS(const WebKit::WebString& path);
@@ -107,7 +107,7 @@ class RendererWebKitClientImpl::FileUtilities
                                       int mode);
 };
 
-class RendererWebKitClientImpl::SandboxSupport
+class RendererWebKitPlatformSupportImpl::SandboxSupport
     : public WebKit::WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
@@ -137,28 +137,29 @@ class RendererWebKitClientImpl::SandboxSupport
 
 //------------------------------------------------------------------------------
 
-RendererWebKitClientImpl::RendererWebKitClientImpl()
+RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     : clipboard_(new webkit_glue::WebClipboardImpl),
-      mime_registry_(new RendererWebKitClientImpl::MimeRegistry),
-      sandbox_support_(new RendererWebKitClientImpl::SandboxSupport),
+      mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
+      sandbox_support_(new RendererWebKitPlatformSupportImpl::SandboxSupport),
       sudden_termination_disables_(0),
       shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
 }
 
-RendererWebKitClientImpl::~RendererWebKitClientImpl() {
+RendererWebKitPlatformSupportImpl::~RendererWebKitPlatformSupportImpl() {
 }
 
 //------------------------------------------------------------------------------
 
-WebKit::WebClipboard* RendererWebKitClientImpl::clipboard() {
+WebKit::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
   return clipboard_.get();
 }
 
-WebKit::WebMimeRegistry* RendererWebKitClientImpl::mimeRegistry() {
+WebKit::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
   return mime_registry_.get();
 }
 
-WebKit::WebFileUtilities* RendererWebKitClientImpl::fileUtilities() {
+WebKit::WebFileUtilities*
+RendererWebKitPlatformSupportImpl::fileUtilities() {
   if (!file_utilities_.get()) {
     file_utilities_.reset(new FileUtilities);
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
@@ -166,27 +167,27 @@ WebKit::WebFileUtilities* RendererWebKitClientImpl::fileUtilities() {
   return file_utilities_.get();
 }
 
-WebKit::WebSandboxSupport* RendererWebKitClientImpl::sandboxSupport() {
+WebKit::WebSandboxSupport* RendererWebKitPlatformSupportImpl::sandboxSupport() {
   return sandbox_support_.get();
 }
 
-WebKit::WebCookieJar* RendererWebKitClientImpl::cookieJar() {
+WebKit::WebCookieJar* RendererWebKitPlatformSupportImpl::cookieJar() {
   NOTREACHED() << "Use WebFrameClient::cookieJar() instead!";
   return NULL;
 }
 
-bool RendererWebKitClientImpl::sandboxEnabled() {
-  // As explained in WebKitClient.h, this function is used to decide whether to
-  // allow file system operations to come out of WebKit or not.  Even if the
-  // sandbox is disabled, there's no reason why the code should act any
-  // differently...unless we're in single process mode.  In which case, we have
-  // no other choice.  WebKitClient.h discourages using this switch unless
-  // absolutely necessary, so hopefully we won't end up with too many code paths
-  // being different in single-process mode.
+bool RendererWebKitPlatformSupportImpl::sandboxEnabled() {
+  // As explained in WebKitPlatformSupport.h, this function is used to decide
+  // whether to allow file system operations to come out of WebKit or not.
+  // Even if the sandbox is disabled, there's no reason why the code should
+  // act any differently...unless we're in single process mode.  In which
+  // case, we have no other choice.  WebKitPlatformSupport.h discourages using
+  // this switch unless absolutely necessary, so hopefully we won't end up
+  // with too many code paths being different in single-process mode.
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 }
 
-bool RendererWebKitClientImpl::SendSyncMessageFromAnyThread(
+bool RendererWebKitPlatformSupportImpl::SendSyncMessageFromAnyThread(
     IPC::SyncMessage* msg) {
   RenderThread* render_thread = RenderThread::current();
   if (render_thread)
@@ -197,23 +198,25 @@ bool RendererWebKitClientImpl::SendSyncMessageFromAnyThread(
   return sync_msg_filter->Send(msg);
 }
 
-unsigned long long RendererWebKitClientImpl::visitedLinkHash(
+unsigned long long RendererWebKitPlatformSupportImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
   return content::GetContentClient()->renderer()->VisitedLinkHash(
       canonical_url, length);
 }
 
-bool RendererWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
+bool RendererWebKitPlatformSupportImpl::isLinkVisited(
+    unsigned long long link_hash) {
   return content::GetContentClient()->renderer()->IsLinkVisited(link_hash);
 }
 
 WebKit::WebMessagePortChannel*
-RendererWebKitClientImpl::createMessagePortChannel() {
+RendererWebKitPlatformSupportImpl::createMessagePortChannel() {
   return new WebMessagePortChannelImpl();
 }
 
-void RendererWebKitClientImpl::prefetchHostName(const WebString& hostname) {
+void RendererWebKitPlatformSupportImpl::prefetchHostName(
+    const WebString& hostname) {
   if (hostname.isEmpty())
     return;
 
@@ -223,7 +226,8 @@ void RendererWebKitClientImpl::prefetchHostName(const WebString& hostname) {
       hostname_utf8.data(), hostname_utf8.length());
 }
 
-bool RendererWebKitClientImpl::CheckPreparsedJsCachingEnabled() const {
+bool
+RendererWebKitPlatformSupportImpl::CheckPreparsedJsCachingEnabled() const {
   static bool checked = false;
   static bool result = false;
   if (!checked) {
@@ -234,7 +238,7 @@ bool RendererWebKitClientImpl::CheckPreparsedJsCachingEnabled() const {
   return result;
 }
 
-void RendererWebKitClientImpl::cacheMetadata(
+void RendererWebKitPlatformSupportImpl::cacheMetadata(
     const WebKit::WebURL& url,
     double response_time,
     const char* data,
@@ -250,12 +254,12 @@ void RendererWebKitClientImpl::cacheMetadata(
       url, response_time, copy));
 }
 
-WebString RendererWebKitClientImpl::defaultLocale() {
+WebString RendererWebKitPlatformSupportImpl::defaultLocale() {
   // TODO(darin): Eliminate this webkit_glue call.
   return ASCIIToUTF16(webkit_glue::GetWebKitLocale());
 }
 
-void RendererWebKitClientImpl::suddenTerminationChanged(bool enabled) {
+void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
   if (enabled) {
     // We should not get more enables than disables, but we want it to be a
     // non-fatal error if it does happen.
@@ -275,14 +279,15 @@ void RendererWebKitClientImpl::suddenTerminationChanged(bool enabled) {
     thread->Send(new ViewHostMsg_SuddenTerminationChanged(enabled));
 }
 
-WebStorageNamespace* RendererWebKitClientImpl::createLocalStorageNamespace(
+WebStorageNamespace*
+RendererWebKitPlatformSupportImpl::createLocalStorageNamespace(
     const WebString& path, unsigned quota) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createLocalStorageNamespace(path, quota);
   return new RendererWebStorageNamespaceImpl(DOM_STORAGE_LOCAL);
 }
 
-void RendererWebKitClientImpl::dispatchStorageEvent(
+void RendererWebKitPlatformSupportImpl::dispatchStorageEvent(
     const WebString& key, const WebString& old_value,
     const WebString& new_value, const WebString& origin,
     const WebKit::WebURL& url, bool is_local_storage) {
@@ -296,7 +301,7 @@ void RendererWebKitClientImpl::dispatchStorageEvent(
 
 //------------------------------------------------------------------------------
 
-WebIDBFactory* RendererWebKitClientImpl::idbFactory() {
+WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
   if (!web_idb_factory_.get()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
       web_idb_factory_.reset(WebIDBFactory::create());
@@ -306,7 +311,7 @@ WebIDBFactory* RendererWebKitClientImpl::idbFactory() {
   return web_idb_factory_.get();
 }
 
-void RendererWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
+void RendererWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebVector<WebSerializedScriptValue>& values,
     const WebString& keyPath,
     WebVector<WebIDBKey>& keys_out) {
@@ -320,7 +325,8 @@ void RendererWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
 }
 
 WebSerializedScriptValue
-RendererWebKitClientImpl::injectIDBKeyIntoSerializedValue(const WebIDBKey& key,
+RendererWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
+    const WebIDBKey& key,
     const WebSerializedScriptValue& value,
     const WebString& keyPath) {
   DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
@@ -330,7 +336,7 @@ RendererWebKitClientImpl::injectIDBKeyIntoSerializedValue(const WebIDBKey& key,
 
 //------------------------------------------------------------------------------
 
-WebFileSystem* RendererWebKitClientImpl::fileSystem() {
+WebFileSystem* RendererWebKitPlatformSupportImpl::fileSystem() {
   if (!web_file_system_.get())
     web_file_system_.reset(new WebFileSystemImpl());
   return web_file_system_.get();
@@ -338,7 +344,8 @@ WebFileSystem* RendererWebKitClientImpl::fileSystem() {
 
 //------------------------------------------------------------------------------
 
-WebString RendererWebKitClientImpl::MimeRegistry::mimeTypeForExtension(
+WebString
+RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(
     const WebString& file_extension) {
   if (IsPluginProcess())
     return SimpleWebMimeRegistryImpl::mimeTypeForExtension(file_extension);
@@ -353,7 +360,7 @@ WebString RendererWebKitClientImpl::MimeRegistry::mimeTypeForExtension(
 
 }
 
-WebString RendererWebKitClientImpl::MimeRegistry::mimeTypeFromFile(
+WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
     const WebString& file_path) {
   if (IsPluginProcess())
     return SimpleWebMimeRegistryImpl::mimeTypeFromFile(file_path);
@@ -368,7 +375,8 @@ WebString RendererWebKitClientImpl::MimeRegistry::mimeTypeFromFile(
 
 }
 
-WebString RendererWebKitClientImpl::MimeRegistry::preferredExtensionForMIMEType(
+WebString
+RendererWebKitPlatformSupportImpl::MimeRegistry::preferredExtensionForMIMEType(
     const WebString& mime_type) {
   if (IsPluginProcess())
     return SimpleWebMimeRegistryImpl::preferredExtensionForMIMEType(mime_type);
@@ -384,8 +392,8 @@ WebString RendererWebKitClientImpl::MimeRegistry::preferredExtensionForMIMEType(
 
 //------------------------------------------------------------------------------
 
-bool RendererWebKitClientImpl::FileUtilities::getFileSize(const WebString& path,
-                                                       long long& result) {
+bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileSize(
+    const WebString& path, long long& result) {
   if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileSize(
           webkit_glue::WebStringToFilePath(path),
           reinterpret_cast<int64*>(&result)))) {
@@ -396,14 +404,14 @@ bool RendererWebKitClientImpl::FileUtilities::getFileSize(const WebString& path,
   return false;
 }
 
-void RendererWebKitClientImpl::FileUtilities::revealFolderInOS(
+void RendererWebKitPlatformSupportImpl::FileUtilities::revealFolderInOS(
     const WebString& path) {
   FilePath file_path(webkit_glue::WebStringToFilePath(path));
   file_util::AbsolutePath(&file_path);
   RenderThread::current()->Send(new ViewHostMsg_RevealFolderInOS(file_path));
 }
 
-bool RendererWebKitClientImpl::FileUtilities::getFileModificationTime(
+bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(
     const WebString& path,
     double& result) {
   base::Time time;
@@ -417,7 +425,7 @@ bool RendererWebKitClientImpl::FileUtilities::getFileModificationTime(
   return false;
 }
 
-base::PlatformFile RendererWebKitClientImpl::FileUtilities::openFile(
+base::PlatformFile RendererWebKitPlatformSupportImpl::FileUtilities::openFile(
     const WebString& path,
     int mode) {
   IPC::PlatformFileForTransit handle = IPC::InvalidPlatformFileForTransit();
@@ -430,7 +438,8 @@ base::PlatformFile RendererWebKitClientImpl::FileUtilities::openFile(
 
 #if defined(OS_WIN)
 
-bool RendererWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
+bool RendererWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
+    HFONT font) {
   LOGFONT logfont;
   GetObject(font, sizeof(LOGFONT), &logfont);
   return RenderThread::current()->Send(new ViewHostMsg_PreCacheFont(logfont));
@@ -438,7 +447,7 @@ bool RendererWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
 
 #elif defined(OS_MACOSX)
 
-bool RendererWebKitClientImpl::SandboxSupport::loadFont(
+bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
     NSFont* srcFont, ATSFontContainerRef* container, uint32* fontID) {
   DCHECK(srcFont);
   DCHECK(container);
@@ -474,7 +483,8 @@ bool RendererWebKitClientImpl::SandboxSupport::loadFont(
 
 #elif defined(OS_POSIX)
 
-WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
+WebString
+RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
     const WebKit::WebUChar* characters,
     size_t num_characters,
     const char* preferred_locale) {
@@ -494,7 +504,8 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
   return WebString::fromUTF8(family_name);
 }
 
-void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
+void
+RendererWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
     const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
   child_process_sandbox_support::getRenderStyleForStrike(family, sizeAndStyle,
                                                          out);
@@ -504,33 +515,34 @@ void RendererWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
 
 //------------------------------------------------------------------------------
 
-WebKitClient::FileHandle RendererWebKitClientImpl::databaseOpenFile(
+WebKitPlatformSupport::FileHandle
+RendererWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
   return DatabaseUtil::DatabaseOpenFile(vfs_file_name, desired_flags);
 }
 
-int RendererWebKitClientImpl::databaseDeleteFile(
+int RendererWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebString& vfs_file_name, bool sync_dir) {
   return DatabaseUtil::DatabaseDeleteFile(vfs_file_name, sync_dir);
 }
 
-long RendererWebKitClientImpl::databaseGetFileAttributes(
+long RendererWebKitPlatformSupportImpl::databaseGetFileAttributes(
     const WebString& vfs_file_name) {
   return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name);
 }
 
-long long RendererWebKitClientImpl::databaseGetFileSize(
+long long RendererWebKitPlatformSupportImpl::databaseGetFileSize(
     const WebString& vfs_file_name) {
   return DatabaseUtil::DatabaseGetFileSize(vfs_file_name);
 }
 
-long long RendererWebKitClientImpl::databaseGetSpaceAvailableForOrigin(
+long long RendererWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
   return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier);
 }
 
 WebKit::WebSharedWorkerRepository*
-RendererWebKitClientImpl::sharedWorkerRepository() {
+RendererWebKitPlatformSupportImpl::sharedWorkerRepository() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSharedWorkers)) {
     return shared_worker_repository_.get();
@@ -540,7 +552,7 @@ RendererWebKitClientImpl::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D*
-RendererWebKitClientImpl::createGraphicsContext3D() {
+RendererWebKitPlatformSupportImpl::createGraphicsContext3D() {
   // The WebGraphicsContext3DInProcessImpl code path is used for
   // layout tests (though not through this code) as well as for
   // debugging and bringing up new ports.
@@ -555,12 +567,12 @@ RendererWebKitClientImpl::createGraphicsContext3D() {
   }
 }
 
-double RendererWebKitClientImpl::audioHardwareSampleRate() {
+double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {
   return AudioDevice::GetAudioHardwareSampleRate();
 }
 
 WebAudioDevice*
-RendererWebKitClientImpl::createAudioDevice(
+RendererWebKitPlatformSupportImpl::createAudioDevice(
     size_t buffer_size,
     unsigned channels,
     double sample_rate,
@@ -573,7 +585,8 @@ RendererWebKitClientImpl::createAudioDevice(
 
 //------------------------------------------------------------------------------
 
-WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
+WebKit::WebString
+RendererWebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
     const WebKit::WebString& challenge,
     const WebKit::WebURL& url) {
@@ -588,7 +601,7 @@ WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
 
 //------------------------------------------------------------------------------
 
-WebBlobRegistry* RendererWebKitClientImpl::blobRegistry() {
+WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
   // RenderThread::current can be NULL when running some tests.
   if (!blob_registry_.get() && RenderThread::current())
     blob_registry_.reset(new WebBlobRegistryImpl(RenderThread::current()));

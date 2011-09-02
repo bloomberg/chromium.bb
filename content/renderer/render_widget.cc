@@ -17,7 +17,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread.h"
-#include "content/renderer/renderer_webkitclient_impl.h"
+#include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"

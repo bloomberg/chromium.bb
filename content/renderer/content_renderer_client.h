@@ -102,7 +102,7 @@ class ContentRendererClient {
       int world_id,
       v8::Handle<v8::Context> context) = 0;
 
-  // See WebKit::WebKitClient.
+  // See WebKit::WebKitPlatformSupport.
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length) = 0;
   virtual bool IsLinkVisited(unsigned long long link_hash) = 0;

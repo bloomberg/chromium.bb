@@ -5,7 +5,7 @@
 #include "webkit/support/test_webplugin_page_delegate.h"
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 
 namespace webkit_support {
 
@@ -20,7 +20,7 @@ TestWebPluginPageDelegate::CreatePluginDelegate(
 }
 
 WebKit::WebCookieJar* TestWebPluginPageDelegate::GetCookieJar() {
-  return WebKit::webKitClient()->cookieJar();
+  return WebKit::webKitPlatformSupport()->cookieJar();
 }
 
 }  // namespace webkit_support

@@ -5,7 +5,7 @@
 #include "content/ppapi_plugin/ppapi_webkit_thread.h"
 
 #include "base/logging.h"
-#include "content/ppapi_plugin/ppapi_webkitclient_impl.h"
+#include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 
 PpapiWebKitThread::PpapiWebKitThread() {
@@ -33,12 +33,12 @@ PpapiWebKitThread::InternalWebKitThread::~InternalWebKitThread() {
 }
 
 void PpapiWebKitThread::InternalWebKitThread::Init() {
-  DCHECK(!webkit_client_.get());
-  webkit_client_.reset(new PpapiWebKitClientImpl);
-  WebKit::initialize(webkit_client_.get());
+  DCHECK(!webkit_platform_support_.get());
+  webkit_platform_support_.reset(new PpapiWebKitPlatformSupportImpl);
+  WebKit::initialize(webkit_platform_support_.get());
 }
 
 void PpapiWebKitThread::InternalWebKitThread::CleanUp() {
-  DCHECK(webkit_client_.get());
+  DCHECK(webkit_platform_support_.get());
   WebKit::shutdown();
 }

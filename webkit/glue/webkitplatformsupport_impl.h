@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CLIENT_IMPL_H_
-#define WEBKIT_CLIENT_IMPL_H_
+#ifndef WEBKIT_PLATFORM_SUPPORT_IMPL_H_
+#define WEBKIT_PLATFORM_SUPPORT_IMPL_H_
 
 #include "base/platform_file.h"
 #include "base/timer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 #if defined(OS_WIN)
 #include "webkit/glue/webthemeengine_impl_win.h"
 #elif defined(OS_MACOSX)
@@ -21,12 +21,12 @@ class MessageLoop;
 
 namespace webkit_glue {
 
-class WebKitClientImpl : public WebKit::WebKitClient {
+class WebKitPlatformSupportImpl : public WebKit::WebKitPlatformSupport {
  public:
-  WebKitClientImpl();
-  virtual ~WebKitClientImpl();
+  WebKitPlatformSupportImpl();
+  virtual ~WebKitPlatformSupportImpl();
 
-  // WebKitClient methods (partial implementation):
+  // WebKitPlatformSupport methods (partial implementation):
   virtual WebKit::WebThemeEngine* themeEngine();
 
   virtual base::PlatformFile databaseOpenFile(
@@ -89,7 +89,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   }
 
   MessageLoop* main_loop_;
-  base::OneShotTimer<WebKitClientImpl> shared_timer_;
+  base::OneShotTimer<WebKitPlatformSupportImpl> shared_timer_;
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;
   int shared_timer_suspended_;  // counter
@@ -98,4 +98,4 @@ class WebKitClientImpl : public WebKit::WebKitClient {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_CLIENT_IMPL_H_
+#endif  // WEBKIT_PLATFORM_SUPPORT_IMPL_H_

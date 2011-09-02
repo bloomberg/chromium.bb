@@ -33,7 +33,7 @@
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebFontInfo.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
 using WebKit::WebCString;
 using WebKit::WebFontInfo;
@@ -645,19 +645,19 @@ class SandboxIPCProcess  {
   const int browser_socket_;
   FontConfigDirect* const font_config_;
   std::vector<std::string> sandbox_cmd_;
-  scoped_ptr<webkit_glue::WebKitClientImpl> webkit_client_;
+  scoped_ptr<webkit_glue::WebKitPlatformSupportImpl> webkit_platform_support_;
 };
 
 SandboxIPCProcess::~SandboxIPCProcess() {
-  if (webkit_client_.get())
+  if (webkit_platform_support_.get())
     WebKit::shutdown();
 }
 
 void SandboxIPCProcess::EnsureWebKitInitialized() {
-  if (webkit_client_.get())
+  if (webkit_platform_support_.get())
     return;
-  webkit_client_.reset(new webkit_glue::WebKitClientImpl);
-  WebKit::initialize(webkit_client_.get());
+  webkit_platform_support_.reset(new webkit_glue::WebKitPlatformSupportImpl);
+  WebKit::initialize(webkit_platform_support_.get());
 }
 
 // -----------------------------------------------------------------------------

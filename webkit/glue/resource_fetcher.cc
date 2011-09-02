@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
@@ -52,7 +52,7 @@ void ResourceFetcher::Start(WebFrame* frame) {
   request.setTargetType(target_type_);
   frame->dispatchWillSendRequest(request);
 
-  loader_.reset(WebKit::webKitClient()->createURLLoader());
+  loader_.reset(WebKit::webKitPlatformSupport()->createURLLoader());
   loader_->loadAsynchronously(request, this);
 }
 

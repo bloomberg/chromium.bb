@@ -14,7 +14,7 @@
 #include "content/common/worker_messages.h"
 #include "content/worker/webworker_stub.h"
 #include "content/worker/websharedworker_stub.h"
-#include "content/worker/worker_webkitclient_impl.h"
+#include "content/worker/worker_webkitplatformsupport_impl.h"
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
@@ -30,8 +30,8 @@ static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls(
 
 WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
-  webkit_client_.reset(new WorkerWebKitClientImpl);
-  WebKit::initialize(webkit_client_.get());
+  webkit_platform_support_.reset(new WorkerWebKitPlatformSupportImpl);
+  WebKit::initialize(webkit_platform_support_.get());
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
 

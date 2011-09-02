@@ -583,9 +583,9 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
       << UTF16ToUTF8(credit_card.GetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }
 
-// These values must match the values in WebKitClientImpl in webkit/glue. We
-// send these strings to WK, which then asks WebKitClientImpl to load the image
-// data.
+// These values must match the values in WebKitPlatformSupportImpl in
+// webkit/glue. We send these strings to WebKit, which then asks
+// WebKitPlatformSupportImpl to load the image data.
 const char* const kAmericanExpressCard = "americanExpressCC";
 const char* const kDinersCard = "dinersCC";
 const char* const kDiscoverCard = "discoverCC";

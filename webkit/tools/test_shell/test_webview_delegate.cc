@@ -36,7 +36,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClientMock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
@@ -951,14 +951,14 @@ void TestWebViewDelegate::openFileSystem(
     WebFrame* frame, WebFileSystem::Type type, long long size, bool create,
     WebFileSystemCallbacks* callbacks) {
   SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
-      WebKit::webKitClient()->fileSystem());
+      WebKit::webKitPlatformSupport()->fileSystem());
   fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
 }
 
 // WebPluginPageDelegate -----------------------------------------------------
 
 WebCookieJar* TestWebViewDelegate::GetCookieJar() {
-  return WebKit::webKitClient()->cookieJar();
+  return WebKit::webKitPlatformSupport()->cookieJar();
 }
 
 // Public methods ------------------------------------------------------------

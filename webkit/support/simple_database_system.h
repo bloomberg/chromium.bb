@@ -39,7 +39,7 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   virtual void databaseClosed(const WebKit::WebDatabase& database);
 
   // SQLite VFS related methods, these are called on webcore's
-  // background database threads via the WebKitClient impl.
+  // background database threads via the WebKitPlatformSupport impl.
   base::PlatformFile OpenFile(const string16& vfs_file_name, int desired_flags);
   int DeleteFile(const string16& vfs_file_name, bool sync_dir);
   uint32 GetFileAttributes(const string16& vfs_file_name);

@@ -33,7 +33,7 @@ class RendererHistogram;
 class RendererHistogramSnapshots;
 class RenderProcessObserver;
 class RendererNetPredictor;
-class RendererWebKitClientImpl;
+class RendererWebKitPlatformSupportImpl;
 class SkBitmap;
 class VideoCaptureImplManager;
 class WebDatabaseObserverImpl;
@@ -258,7 +258,7 @@ class RenderThread : public RenderThreadBase,
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> indexed_db_dispatcher_;
-  scoped_ptr<RendererWebKitClientImpl> webkit_client_;
+  scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
 
   // Used on the renderer and IPC threads.

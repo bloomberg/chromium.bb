@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
 #if defined(OS_LINUX)
 #include <malloc.h>
@@ -206,33 +206,33 @@ static int ToMessageID(WebLocalizedString::Name name) {
   return -1;
 }
 
-WebKitClientImpl::WebKitClientImpl()
+WebKitPlatformSupportImpl::WebKitPlatformSupportImpl()
     : main_loop_(MessageLoop::current()),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_suspended_(0) {
 }
 
-WebKitClientImpl::~WebKitClientImpl() {
+WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
 }
 
-WebThemeEngine* WebKitClientImpl::themeEngine() {
+WebThemeEngine* WebKitPlatformSupportImpl::themeEngine() {
   return &theme_engine_;
 }
 
-WebURLLoader* WebKitClientImpl::createURLLoader() {
+WebURLLoader* WebKitPlatformSupportImpl::createURLLoader() {
   return new WebURLLoaderImpl();
 }
 
-WebSocketStreamHandle* WebKitClientImpl::createSocketStreamHandle() {
+WebSocketStreamHandle* WebKitPlatformSupportImpl::createSocketStreamHandle() {
   return new WebSocketStreamHandleImpl();
 }
 
-WebString WebKitClientImpl::userAgent(const WebURL& url) {
+WebString WebKitPlatformSupportImpl::userAgent(const WebURL& url) {
   return WebString::fromUTF8(webkit_glue::GetUserAgent(url));
 }
 
-void WebKitClientImpl::getPluginList(bool refresh,
+void WebKitPlatformSupportImpl::getPluginList(bool refresh,
                                      WebPluginListBuilder* builder) {
   std::vector<webkit::WebPluginInfo> plugins;
   GetPlugins(refresh, &plugins);
@@ -258,15 +258,15 @@ void WebKitClientImpl::getPluginList(bool refresh,
   }
 }
 
-void WebKitClientImpl::decrementStatsCounter(const char* name) {
+void WebKitPlatformSupportImpl::decrementStatsCounter(const char* name) {
   base::StatsCounter(name).Decrement();
 }
 
-void WebKitClientImpl::incrementStatsCounter(const char* name) {
+void WebKitPlatformSupportImpl::incrementStatsCounter(const char* name) {
   base::StatsCounter(name).Increment();
 }
 
-void WebKitClientImpl::histogramCustomCounts(
+void WebKitPlatformSupportImpl::histogramCustomCounts(
     const char* name, int sample, int min, int max, int bucket_count) {
   // Copied from histogram macro, but without the static variable caching
   // the histogram because name is dynamic.
@@ -277,7 +277,7 @@ void WebKitClientImpl::histogramCustomCounts(
   counter->Add(sample);
 }
 
-void WebKitClientImpl::histogramEnumeration(
+void WebKitPlatformSupportImpl::histogramEnumeration(
     const char* name, int sample, int boundary_value) {
   // Copied from histogram macro, but without the static variable caching
   // the histogram because name is dynamic.
@@ -288,13 +288,13 @@ void WebKitClientImpl::histogramEnumeration(
   counter->Add(sample);
 }
 
-void WebKitClientImpl::traceEventBegin(const char* name, void* id,
-                                       const char* extra) {
+void WebKitPlatformSupportImpl::traceEventBegin(const char* name, void* id,
+                                                const char* extra) {
   TRACE_EVENT_BEGIN_ETW(name, id, extra);
 }
 
-void WebKitClientImpl::traceEventEnd(const char* name, void* id,
-                                     const char* extra) {
+void WebKitPlatformSupportImpl::traceEventEnd(const char* name, void* id,
+                                              const char* extra) {
   TRACE_EVENT_END_ETW(name, id, extra);
 }
 
@@ -419,7 +419,7 @@ const DataResource kDataResources[] = {
 
 }  // namespace
 
-WebData WebKitClientImpl::loadResource(const char* name) {
+WebData WebKitPlatformSupportImpl::loadResource(const char* name) {
   // Some clients will call into this method with an empty |name| when they have
   // optional resources.  For example, the PopupMenuChromium code can have icons
   // for some Autofill items but not for others.
@@ -441,7 +441,7 @@ WebData WebKitClientImpl::loadResource(const char* name) {
   return WebData();
 }
 
-bool WebKitClientImpl::loadAudioResource(
+bool WebKitPlatformSupportImpl::loadAudioResource(
     WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size, double sample_rate) {
   return DecodeAudioFileData(destination_bus,
@@ -450,7 +450,7 @@ bool WebKitClientImpl::loadAudioResource(
                              sample_rate);
 }
 
-WebString WebKitClientImpl::queryLocalizedString(
+WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name) {
   int message_id = ToMessageID(name);
   if (message_id < 0)
@@ -458,12 +458,12 @@ WebString WebKitClientImpl::queryLocalizedString(
   return GetLocalizedString(message_id);
 }
 
-WebString WebKitClientImpl::queryLocalizedString(
+WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name, int numeric_value) {
   return queryLocalizedString(name, base::IntToString16(numeric_value));
 }
 
-WebString WebKitClientImpl::queryLocalizedString(
+WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name, const WebString& value) {
   int message_id = ToMessageID(name);
   if (message_id < 0)
@@ -471,7 +471,7 @@ WebString WebKitClientImpl::queryLocalizedString(
   return ReplaceStringPlaceholders(GetLocalizedString(message_id), value, NULL);
 }
 
-WebString WebKitClientImpl::queryLocalizedString(
+WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name,
     const WebString& value1,
     const WebString& value2) {
@@ -486,25 +486,26 @@ WebString WebKitClientImpl::queryLocalizedString(
       GetLocalizedString(message_id), values, NULL);
 }
 
-double WebKitClientImpl::currentTime() {
+double WebKitPlatformSupportImpl::currentTime() {
   return base::Time::Now().ToDoubleT();
 }
 
-double WebKitClientImpl::monotonicallyIncreasingTime() {
+double WebKitPlatformSupportImpl::monotonicallyIncreasingTime() {
   return base::TimeTicks::Now().ToInternalValue() /
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
-void WebKitClientImpl::cryptographicallyRandomValues(
+void WebKitPlatformSupportImpl::cryptographicallyRandomValues(
     unsigned char* buffer, size_t length) {
   base::RandBytes(buffer, length);
 }
 
-void WebKitClientImpl::setSharedTimerFiredFunction(void (*func)()) {
+void WebKitPlatformSupportImpl::setSharedTimerFiredFunction(void (*func)()) {
   shared_timer_func_ = func;
 }
 
-void WebKitClientImpl::setSharedTimerFireInterval(double interval_seconds) {
+void WebKitPlatformSupportImpl::setSharedTimerFireInterval(
+    double interval_seconds) {
   shared_timer_fire_time_ = interval_seconds + monotonicallyIncreasingTime();
   if (shared_timer_suspended_)
     return;
@@ -528,47 +529,48 @@ void WebKitClientImpl::setSharedTimerFireInterval(double interval_seconds) {
 
   shared_timer_.Stop();
   shared_timer_.Start(base::TimeDelta::FromMicroseconds(interval), this,
-                      &WebKitClientImpl::DoTimeout);
+                      &WebKitPlatformSupportImpl::DoTimeout);
 }
 
-void WebKitClientImpl::stopSharedTimer() {
+void WebKitPlatformSupportImpl::stopSharedTimer() {
   shared_timer_.Stop();
 }
 
-void WebKitClientImpl::callOnMainThread(void (*func)(void*), void* context) {
+void WebKitPlatformSupportImpl::callOnMainThread(
+    void (*func)(void*), void* context) {
   main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func, context));
 }
 
-WebKit::WebThread* WebKitClientImpl::createThread(const char* name) {
+WebKit::WebThread* WebKitPlatformSupportImpl::createThread(const char* name) {
   return new WebThreadImpl(name);
 }
 
-base::PlatformFile WebKitClientImpl::databaseOpenFile(
+base::PlatformFile WebKitPlatformSupportImpl::databaseOpenFile(
     const WebKit::WebString& vfs_file_name, int desired_flags) {
   return base::kInvalidPlatformFileValue;
 }
 
-int WebKitClientImpl::databaseDeleteFile(
+int WebKitPlatformSupportImpl::databaseDeleteFile(
     const WebKit::WebString& vfs_file_name, bool sync_dir) {
   return -1;
 }
 
-long WebKitClientImpl::databaseGetFileAttributes(
+long WebKitPlatformSupportImpl::databaseGetFileAttributes(
     const WebKit::WebString& vfs_file_name) {
   return 0;
 }
 
-long long WebKitClientImpl::databaseGetFileSize(
+long long WebKitPlatformSupportImpl::databaseGetFileSize(
     const WebKit::WebString& vfs_file_name) {
   return 0;
 }
 
-long long WebKitClientImpl::databaseGetSpaceAvailableForOrigin(
+long long WebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebKit::WebString& origin_identifier) {
   return 0;
 }
 
-WebKit::WebString WebKitClientImpl::signedPublicKeyAndChallengeString(
+WebKit::WebString WebKitPlatformSupportImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
     const WebKit::WebString& challenge,
     const WebKit::WebURL& url) {
@@ -635,19 +637,19 @@ static size_t getMemoryUsageMB(bool bypass_cache) {
   return current_mem_usage;
 }
 
-size_t WebKitClientImpl::memoryUsageMB() {
+size_t WebKitPlatformSupportImpl::memoryUsageMB() {
   return getMemoryUsageMB(false);
 }
 
-size_t WebKitClientImpl::actualMemoryUsageMB() {
+size_t WebKitPlatformSupportImpl::actualMemoryUsageMB() {
   return getMemoryUsageMB(true);
 }
 
-void WebKitClientImpl::SuspendSharedTimer() {
+void WebKitPlatformSupportImpl::SuspendSharedTimer() {
   ++shared_timer_suspended_;
 }
 
-void WebKitClientImpl::ResumeSharedTimer() {
+void WebKitPlatformSupportImpl::ResumeSharedTimer() {
   // The shared timer may have fired or been adjusted while we were suspended.
   if (--shared_timer_suspended_ == 0 && !shared_timer_.IsRunning()) {
     setSharedTimerFireInterval(

@@ -11,7 +11,7 @@
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread.h"
 
-class BrowserWebKitClientImpl;
+class BrowserWebKitPlatformSupportImpl;
 
 // This creates a WebKit main thread on instantiation (if not in
 // --single-process mode) on construction and kills it on deletion.
@@ -34,8 +34,8 @@ class WebKitThread {
     virtual void CleanUp();
 
    private:
-    // The WebKitClient implementation.  Only access on WebKit thread.
-    scoped_ptr<BrowserWebKitClientImpl> webkit_client_;
+    // The WebKitPlatformSupport implementation.  Only access on WebKit thread.
+    scoped_ptr<BrowserWebKitPlatformSupportImpl> webkit_platform_support_;
   };
 
   // Pointer to the actual WebKitThread.

@@ -129,7 +129,8 @@ bool TestShellWebKitInit::sandboxEnabled() {
   return true;
 }
 
-WebKit::WebKitClient::FileHandle TestShellWebKitInit::databaseOpenFile(
+WebKit::WebKitPlatformSupport::FileHandle
+TestShellWebKitInit::databaseOpenFile(
     const WebKit::WebString& vfs_file_name, int desired_flags) {
   return SimpleDatabaseSystem::GetInstance()->OpenFile(
       vfs_file_name, desired_flags);
@@ -193,7 +194,7 @@ WebKit::WebData TestShellWebKitInit::loadResource(const char* name) {
         "\x82";
     return WebKit::WebData(red_square, arraysize(red_square));
   }
-  return webkit_glue::WebKitClientImpl::loadResource(name);
+  return webkit_glue::WebKitPlatformSupportImpl::loadResource(name);
 }
 
 WebKit::WebString TestShellWebKitInit::queryLocalizedString(
@@ -222,7 +223,7 @@ WebKit::WebString TestShellWebKitInit::queryLocalizedString(
     case WebKit::WebLocalizedString::ValidationStepMismatch:
       return ASCIIToUTF16("step mismatch");
     default:
-      return WebKitClientImpl::queryLocalizedString(name);
+      return WebKitPlatformSupportImpl::queryLocalizedString(name);
   }
 }
 
@@ -232,7 +233,7 @@ WebKit::WebString TestShellWebKitInit::queryLocalizedString(
     return ASCIIToUTF16("range underflow");
   if (name == WebKit::WebLocalizedString::ValidationRangeOverflow)
     return ASCIIToUTF16("range overflow");
-  return WebKitClientImpl::queryLocalizedString(name, value);
+  return WebKitPlatformSupportImpl::queryLocalizedString(name, value);
 }
 
 WebKit::WebString TestShellWebKitInit::queryLocalizedString(
@@ -243,7 +244,7 @@ WebKit::WebString TestShellWebKitInit::queryLocalizedString(
     return ASCIIToUTF16("too long");
   if (name == WebKit::WebLocalizedString::ValidationStepMismatch)
     return ASCIIToUTF16("step mismatch");
-  return WebKitClientImpl::queryLocalizedString(name, value1, value2);
+  return WebKitPlatformSupportImpl::queryLocalizedString(name, value1, value2);
 }
 
 WebKit::WebString TestShellWebKitInit::defaultLocale() {

@@ -18,7 +18,7 @@
 #include "content/common/native_web_keyboard_event.h"
 #include "content/common/sandbox_init_wrapper.h"
 #include "content/renderer/render_view.h"
-#include "content/renderer/renderer_webkitclient_impl.h"
+#include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -34,9 +34,10 @@ class RendererMainPlatformDelegate;
 
 class RenderViewTest : public testing::Test {
  public:
-  // A special WebKitClientImpl class for getting rid off the dependency to the
-  // sandbox, which is not available in RenderViewTest.
-  class RendererWebKitClientImplNoSandbox : public RendererWebKitClientImpl {
+  // A special WebKitPlatformSupportImpl class for getting rid off the
+  // dependency to the sandbox, which is not available in RenderViewTest.
+  class RendererWebKitPlatformSupportImplNoSandbox :
+      public RendererWebKitPlatformSupportImpl {
    public:
     virtual WebKit::WebSandboxSupport* sandboxSupport() {
       return NULL;
@@ -98,7 +99,7 @@ class RenderViewTest : public testing::Test {
   MockRenderThread render_thread_;
   scoped_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<RenderView> view_;
-  RendererWebKitClientImplNoSandbox webkitclient_;
+  RendererWebKitPlatformSupportImplNoSandbox webkit_platform_support_;
   scoped_ptr<MockKeyboard> mock_keyboard_;
 
   // Used to setup the process so renderers can run.

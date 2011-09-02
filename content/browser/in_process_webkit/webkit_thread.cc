@@ -5,7 +5,7 @@
 #include "content/browser/in_process_webkit/webkit_thread.h"
 
 #include "base/command_line.h"
-#include "content/browser/in_process_webkit/browser_webkitclient_impl.h"
+#include "content/browser/in_process_webkit/browser_webkitplatformsupport_impl.h"
 #include "content/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -45,9 +45,9 @@ WebKitThread::InternalWebKitThread::~InternalWebKitThread() {
 }
 
 void WebKitThread::InternalWebKitThread::Init() {
-  DCHECK(!webkit_client_.get());
-  webkit_client_.reset(new BrowserWebKitClientImpl);
-  WebKit::initialize(webkit_client_.get());
+  DCHECK(!webkit_platform_support_.get());
+  webkit_platform_support_.reset(new BrowserWebKitPlatformSupportImpl);
+  WebKit::initialize(webkit_platform_support_.get());
   webkit_glue::EnableWebCoreLogChannels(
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWebCoreLogChannels));
@@ -61,6 +61,6 @@ void WebKitThread::InternalWebKitThread::Init() {
 }
 
 void WebKitThread::InternalWebKitThread::CleanUp() {
-  DCHECK(webkit_client_.get());
+  DCHECK(webkit_platform_support_.get());
   WebKit::shutdown();
 }

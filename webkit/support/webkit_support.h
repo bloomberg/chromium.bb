@@ -12,7 +12,6 @@
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class WebURLLoaderMockFactory;
@@ -22,6 +21,7 @@ class WebApplicationCacheHostClient;
 class WebCString;
 class WebFileSystemCallbacks;
 class WebFrame;
+class WebKitPlatformSupport;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebPlugin;
@@ -55,10 +55,10 @@ void SetUpTestEnvironment();
 void SetUpTestEnvironmentForUnitTests();
 void TearDownTestEnvironment();
 
-// Returns a pointer to a WebKitClient implementation for DumpRenderTree.
-// Needs to call SetUpTestEnvironment() before this.
+// Returns a pointer to a WebKitPlatformSupport implementation for
+// DumpRenderTree.  Needs to call SetUpTestEnvironment() before this.
 // This returns a pointer to a static instance.  Don't delete it.
-WebKit::WebKitClient* GetWebKitClient();
+WebKit::WebKitPlatformSupport* GetWebKitPlatformSupport();
 
 // This is used by WebFrameClient::createPlugin().
 WebKit::WebPlugin* CreateWebPlugin(WebKit::WebFrame* frame,

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_TEST_WEBKIT_CLIENT_H_
-#define WEBKIT_SUPPORT_TEST_WEBKIT_CLIENT_H_
+#ifndef WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
+#define WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
 
 #include "webkit/glue/webfileutilities_impl.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
@@ -21,11 +21,12 @@ namespace WebKit {
   class WebAudioDevice;
 }
 
-// An implementation of WebKitClient for tests.
-class TestWebKitClient : public webkit_glue::WebKitClientImpl {
+// An implementation of WebKitPlatformSupport for tests.
+class TestWebKitPlatformSupport :
+    public webkit_glue::WebKitPlatformSupportImpl {
  public:
-  explicit TestWebKitClient(bool unit_test_mode);
-  virtual ~TestWebKitClient();
+  explicit TestWebKitPlatformSupport(bool unit_test_mode);
+  virtual ~TestWebKitPlatformSupport();
 
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebClipboard* clipboard();
@@ -36,7 +37,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebFileSystem* fileSystem();
 
   virtual bool sandboxEnabled();
-  virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
+  virtual WebKit::WebKitPlatformSupport::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
@@ -118,7 +119,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(TestWebKitClient);
+  DISALLOW_COPY_AND_ASSIGN(TestWebKitPlatformSupport);
 };
 
-#endif  // WEBKIT_SUPPORT_TEST_WEBKIT_CLIENT_H_
+#endif  // WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_

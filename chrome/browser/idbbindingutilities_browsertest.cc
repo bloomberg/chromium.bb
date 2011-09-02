@@ -17,7 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/web_io_operators.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
 using WebKit::WebSerializedScriptValue;
 
@@ -37,8 +37,8 @@ class ScopedShutdownWebKit {
 
 // Sanity test, check the function call directly outside the sandbox.
 TEST(IDBKeyPathWithoutSandbox, Value) {
-  webkit_glue::WebKitClientImpl webkit_client;
-  WebKit::initialize(&webkit_client);
+  webkit_glue::WebKitPlatformSupportImpl webkit_platform_support;
+  WebKit::initialize(&webkit_platform_support);
   ScopedShutdownWebKit shutdown_webkit;
 
   char16 data[] = {0x0353,0x6f66,0x536f,0x7a03,0x6f6f,0x017b};

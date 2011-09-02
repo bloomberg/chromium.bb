@@ -47,7 +47,7 @@
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
@@ -56,7 +56,7 @@
 #include "webkit/support/platform_support.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
-#include "webkit/support/test_webkit_client.h"
+#include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
@@ -123,31 +123,34 @@ class TestEnvironment {
       InitLogging(false);
     }
     main_message_loop_.reset(new MessageLoopForUI);
-    // TestWebKitClient must be instantiated after the MessageLoopForUI.
-    webkit_client_.reset(new TestWebKitClient(unit_test_mode));
+    // TestWebKitPlatformSupport must be instantiated after MessageLoopForUI.
+    webkit_platform_support_.reset(
+      new TestWebKitPlatformSupport(unit_test_mode));
   }
 
   ~TestEnvironment() {
     SimpleResourceLoaderBridge::Shutdown();
   }
 
-  TestWebKitClient* webkit_client() const { return webkit_client_.get(); }
+  TestWebKitPlatformSupport* webkit_platform_support() const {
+    return webkit_platform_support_.get();
+  }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void set_theme_engine(WebKit::WebThemeEngine* engine) {
-    DCHECK(webkit_client_ != 0);
-    webkit_client_->SetThemeEngine(engine);
+    DCHECK(webkit_platform_support_ != 0);
+    webkit_platform_support_->SetThemeEngine(engine);
   }
 
   WebKit::WebThemeEngine* theme_engine() const {
-    return webkit_client_->themeEngine();
+    return webkit_platform_support_->themeEngine();
   }
 #endif
 
  private:
   scoped_ptr<base::AtExitManager> at_exit_manager_;
   scoped_ptr<MessageLoopForUI> main_message_loop_;
-  scoped_ptr<TestWebKitClient> webkit_client_;
+  scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
 };
 
 class WebPluginImplWithPageDelegate
@@ -277,9 +280,9 @@ void TearDownTestEnvironment() {
   logging::CloseLogFile();
 }
 
-WebKit::WebKitClient* GetWebKitClient() {
+WebKit::WebKitPlatformSupport* GetWebKitPlatformSupport() {
   DCHECK(test_environment);
-  return test_environment->webkit_client();
+  return test_environment->webkit_platform_support();
 }
 
 WebPlugin* CreateWebPlugin(WebFrame* frame,
@@ -357,20 +360,22 @@ GraphicsContext3DImplementation GetGraphicsContext3DImplementation() {
 void RegisterMockedURL(const WebKit::WebURL& url,
                      const WebKit::WebURLResponse& response,
                      const WebKit::WebString& file_path) {
-  test_environment->webkit_client()->url_loader_factory()->
+  test_environment->webkit_platform_support()->url_loader_factory()->
       RegisterURL(url, response, file_path);
 }
 
 void UnregisterMockedURL(const WebKit::WebURL& url) {
-  test_environment->webkit_client()->url_loader_factory()->UnregisterURL(url);
+  test_environment->webkit_platform_support()->url_loader_factory()->
+    UnregisterURL(url);
 }
 
 void UnregisterAllMockedURLs() {
-  test_environment->webkit_client()->url_loader_factory()->UnregisterAllURLs();
+  test_environment->webkit_platform_support()->url_loader_factory()->
+    UnregisterAllURLs();
 }
 
 void ServeAsynchronousMockedRequests() {
-  test_environment->webkit_client()->url_loader_factory()->
+  test_environment->webkit_platform_support()->url_loader_factory()->
       ServeAsynchronousRequests();
 }
 
@@ -611,7 +616,7 @@ WebURL GetDevToolsPathAsURL() {
 void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
     long long size, bool create, WebFileSystemCallbacks* callbacks) {
   SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
-      test_environment->webkit_client()->fileSystem());
+      test_environment->webkit_platform_support()->fileSystem());
   fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
 }
 

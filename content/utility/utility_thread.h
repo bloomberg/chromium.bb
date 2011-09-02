@@ -18,7 +18,7 @@ class IndexedDBKey;
 class SerializedScriptValue;
 
 namespace webkit_glue {
-class WebKitClientImpl;
+class WebKitPlatformSupportImpl;
 }
 
 // This class represents the background thread where the utility task runs.
@@ -53,7 +53,7 @@ class UtilityThread : public ChildThread {
   // True when we're running in batch mode.
   bool batch_mode_;
 
-  scoped_ptr<webkit_glue::WebKitClientImpl> webkit_client_;
+  scoped_ptr<webkit_glue::WebKitPlatformSupportImpl> webkit_platform_support_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThread);
 };

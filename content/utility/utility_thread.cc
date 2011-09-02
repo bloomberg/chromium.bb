@@ -14,7 +14,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
 namespace {
 
@@ -30,8 +30,8 @@ void ConvertVector(const SRC& src, DEST* dest) {
 UtilityThread::UtilityThread()
     : batch_mode_(false) {
   ChildProcess::current()->AddRefProcess();
-  webkit_client_.reset(new webkit_glue::WebKitClientImpl);
-  WebKit::initialize(webkit_client_.get());
+  webkit_platform_support_.reset(new webkit_glue::WebKitPlatformSupportImpl);
+  WebKit::initialize(webkit_platform_support_.get());
   content::GetContentClient()->utility()->UtilityThreadStarted();
 }
 

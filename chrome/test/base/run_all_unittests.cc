@@ -4,14 +4,14 @@
 
 #include "chrome/test/base/chrome_test_suite.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 
 namespace {
 
 // A stubbed out webkit client impl.
-class UnitTestWebKitClient : public WebKit::WebKitClient {
+class UnitTestWebKitPlatformSupport : public WebKit::WebKitPlatformSupport {
  public:
-  UnitTestWebKitClient() {
+  UnitTestWebKitPlatformSupport() {
   }
 
   virtual void cryptographicallyRandomValues(
@@ -33,7 +33,7 @@ class UnitTestTestSuite : public ChromeTestSuite {
 
  protected:
   virtual void Initialize() {
-    WebKit::initialize(&webkitclient_);
+    WebKit::initialize(&webkit_platform_support_);
     ChromeTestSuite::Initialize();
   }
   virtual void Shutdown() {
@@ -41,7 +41,7 @@ class UnitTestTestSuite : public ChromeTestSuite {
     WebKit::shutdown();
   }
 
-  UnitTestWebKitClient webkitclient_;
+  UnitTestWebKitPlatformSupport webkit_platform_support_;
 };
 
 }  // namespace

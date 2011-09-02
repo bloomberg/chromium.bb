@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 
-class PpapiWebKitClientImpl;
+class PpapiWebKitPlatformSupportImpl;
 
 // This creates a WebKit main thread on instantiation on construction and kills
 // it on deletion. See also content/browser/in_process_webkit for the
@@ -37,8 +37,8 @@ class PpapiWebKitThread {
     virtual void CleanUp();
 
    private:
-    // The WebKitClient implementation.  Only access on WebKit thread.
-    scoped_ptr<PpapiWebKitClientImpl> webkit_client_;
+    // The WebKitPlatformSupport implementation.  Only access on WebKit thread.
+    scoped_ptr<PpapiWebKitPlatformSupportImpl> webkit_platform_support_;
   };
 
   // Pointer to the actual WebKitThread.

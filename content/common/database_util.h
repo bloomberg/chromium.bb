@@ -6,13 +6,13 @@
 #define CONTENT_COMMON_DATABASE_UTIL_H_
 #pragma once
 
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
-// A class of utility functions used by RendererWebKitClientImpl and
-// WorkerWebKitClientImpl to handle database file accesses.
+// A class of utility functions used by RendererWebKitPlatformSupportImpl and
+// WorkerWebKitPlatformSupportImpl to handle database file accesses.
 class DatabaseUtil {
  public:
-  static WebKit::WebKitClient::FileHandle DatabaseOpenFile(
+  static WebKit::WebKitPlatformSupport::FileHandle DatabaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   static int DatabaseDeleteFile(
       const WebKit::WebString& vfs_file_name, bool sync_dir);

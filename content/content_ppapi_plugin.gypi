@@ -22,8 +22,8 @@
         'ppapi_plugin/ppapi_thread.h',
         'ppapi_plugin/ppapi_webkit_thread.cc',
         'ppapi_plugin/ppapi_webkit_thread.h',
-        'ppapi_plugin/ppapi_webkitclient_impl.cc',
-        'ppapi_plugin/ppapi_webkitclient_impl.h',
+        'ppapi_plugin/ppapi_webkitplatformsupport_impl.cc',
+        'ppapi_plugin/ppapi_webkitplatformsupport_impl.h',
       ],
       'include_dirs': [
         '..',

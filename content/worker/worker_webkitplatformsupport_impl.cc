@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/worker/worker_webkitclient_impl.h"
+#include "content/worker/worker_webkitplatformsupport_impl.h"
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -25,7 +25,7 @@ using WebKit::WebBlobRegistry;
 using WebKit::WebClipboard;
 using WebKit::WebFileSystem;
 using WebKit::WebFileUtilities;
-using WebKit::WebKitClient;
+using WebKit::WebKitPlatformSupport;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMimeRegistry;
 using WebKit::WebSandboxSupport;
@@ -35,8 +35,8 @@ using WebKit::WebString;
 using WebKit::WebURL;
 
 // TODO(kinuko): Probably this could be consolidated into
-// RendererWebKitClientImpl::FileUtilities.
-class WorkerWebKitClientImpl::FileUtilities
+// RendererWebKitPlatformSupportImpl::FileUtilities.
+class WorkerWebKitPlatformSupportImpl::FileUtilities
     : public webkit_glue::WebFileUtilitiesImpl {
  public:
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
@@ -54,8 +54,8 @@ static bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) {
   return sync_msg_filter->Send(msg);
 }
 
-bool WorkerWebKitClientImpl::FileUtilities::getFileSize(const WebString& path,
-                                                        long long& result) {
+bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileSize(
+    const WebString& path, long long& result) {
   if (SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileSize(
           webkit_glue::WebStringToFilePath(path),
           reinterpret_cast<int64*>(&result)))) {
@@ -66,7 +66,7 @@ bool WorkerWebKitClientImpl::FileUtilities::getFileSize(const WebString& path,
   return false;
 }
 
-bool WorkerWebKitClientImpl::FileUtilities::getFileModificationTime(
+bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(
     const WebString& path,
     double& result) {
   base::Time time;
@@ -82,28 +82,28 @@ bool WorkerWebKitClientImpl::FileUtilities::getFileModificationTime(
 
 //------------------------------------------------------------------------------
 
-WorkerWebKitClientImpl::WorkerWebKitClientImpl() {
+WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl() {
 }
 
-WorkerWebKitClientImpl::~WorkerWebKitClientImpl() {
+WorkerWebKitPlatformSupportImpl::~WorkerWebKitPlatformSupportImpl() {
 }
 
-WebClipboard* WorkerWebKitClientImpl::clipboard() {
+WebClipboard* WorkerWebKitPlatformSupportImpl::clipboard() {
   NOTREACHED();
   return NULL;
 }
 
-WebMimeRegistry* WorkerWebKitClientImpl::mimeRegistry() {
+WebMimeRegistry* WorkerWebKitPlatformSupportImpl::mimeRegistry() {
   return this;
 }
 
-WebFileSystem* WorkerWebKitClientImpl::fileSystem() {
+WebFileSystem* WorkerWebKitPlatformSupportImpl::fileSystem() {
   if (!web_file_system_.get())
     web_file_system_.reset(new WebFileSystemImpl());
   return web_file_system_.get();
 }
 
-WebFileUtilities* WorkerWebKitClientImpl::fileUtilities() {
+WebFileUtilities* WorkerWebKitPlatformSupportImpl::fileUtilities() {
   if (!file_utilities_.get()) {
     file_utilities_.reset(new FileUtilities);
     file_utilities_->set_sandbox_enabled(sandboxEnabled());
@@ -111,127 +111,137 @@ WebFileUtilities* WorkerWebKitClientImpl::fileUtilities() {
   return file_utilities_.get();
 }
 
-WebSandboxSupport* WorkerWebKitClientImpl::sandboxSupport() {
+WebSandboxSupport* WorkerWebKitPlatformSupportImpl::sandboxSupport() {
   NOTREACHED();
   return NULL;
 }
 
-bool WorkerWebKitClientImpl::sandboxEnabled() {
+bool WorkerWebKitPlatformSupportImpl::sandboxEnabled() {
   // Always return true because WebKit should always act as though the Sandbox
-  // is enabled for workers.  See the comment in WebKitClient for more info.
+  // is enabled for workers.  See the comment in WebKitPlatformSupport for
+  // more info.
   return true;
 }
 
-unsigned long long WorkerWebKitClientImpl::visitedLinkHash(
+unsigned long long WorkerWebKitPlatformSupportImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
   NOTREACHED();
   return 0;
 }
 
-bool WorkerWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
+bool WorkerWebKitPlatformSupportImpl::isLinkVisited(
+    unsigned long long link_hash) {
   NOTREACHED();
   return false;
 }
 
 WebMessagePortChannel*
-WorkerWebKitClientImpl::createMessagePortChannel() {
+WorkerWebKitPlatformSupportImpl::createMessagePortChannel() {
   return new WebMessagePortChannelImpl();
 }
 
-void WorkerWebKitClientImpl::setCookies(const WebURL& url,
-                                        const WebURL& first_party_for_cookies,
-                                        const WebString& value) {
+void WorkerWebKitPlatformSupportImpl::setCookies(
+    const WebURL& url,
+    const WebURL& first_party_for_cookies,
+    const WebString& value) {
   NOTREACHED();
 }
 
-WebString WorkerWebKitClientImpl::cookies(
+WebString WorkerWebKitPlatformSupportImpl::cookies(
     const WebURL& url, const WebURL& first_party_for_cookies) {
   // WebSocketHandshake may access cookies in worker process.
   return WebString();
 }
 
-void WorkerWebKitClientImpl::prefetchHostName(const WebString&) {
+void WorkerWebKitPlatformSupportImpl::prefetchHostName(const WebString&) {
   NOTREACHED();
 }
 
-WebString WorkerWebKitClientImpl::defaultLocale() {
+WebString WorkerWebKitPlatformSupportImpl::defaultLocale() {
   NOTREACHED();
   return WebString();
 }
 
-WebStorageNamespace* WorkerWebKitClientImpl::createLocalStorageNamespace(
+WebStorageNamespace*
+WorkerWebKitPlatformSupportImpl::createLocalStorageNamespace(
     const WebString& path, unsigned quota) {
   NOTREACHED();
   return 0;
 }
 
-void WorkerWebKitClientImpl::dispatchStorageEvent(
+void WorkerWebKitPlatformSupportImpl::dispatchStorageEvent(
     const WebString& key, const WebString& old_value,
     const WebString& new_value, const WebString& origin,
     const WebKit::WebURL& url, bool is_local_storage) {
   NOTREACHED();
 }
 
-WebSharedWorkerRepository* WorkerWebKitClientImpl::sharedWorkerRepository() {
+WebSharedWorkerRepository*
+WorkerWebKitPlatformSupportImpl::sharedWorkerRepository() {
     return 0;
 }
 
-WebKitClient::FileHandle WorkerWebKitClientImpl::databaseOpenFile(
+WebKitPlatformSupport::FileHandle
+WorkerWebKitPlatformSupportImpl::databaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
   return DatabaseUtil::DatabaseOpenFile(vfs_file_name, desired_flags);
 }
 
-int WorkerWebKitClientImpl::databaseDeleteFile(
+int WorkerWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebString& vfs_file_name, bool sync_dir) {
   return DatabaseUtil::DatabaseDeleteFile(vfs_file_name, sync_dir);
 }
 
-long WorkerWebKitClientImpl::databaseGetFileAttributes(
+long WorkerWebKitPlatformSupportImpl::databaseGetFileAttributes(
     const WebString& vfs_file_name) {
   return DatabaseUtil::DatabaseGetFileAttributes(vfs_file_name);
 }
 
-long long WorkerWebKitClientImpl::databaseGetFileSize(
+long long WorkerWebKitPlatformSupportImpl::databaseGetFileSize(
     const WebString& vfs_file_name) {
   return DatabaseUtil::DatabaseGetFileSize(vfs_file_name);
 }
 
-long long WorkerWebKitClientImpl::databaseGetSpaceAvailableForOrigin(
+long long WorkerWebKitPlatformSupportImpl::databaseGetSpaceAvailableForOrigin(
     const WebString& origin_identifier) {
   return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier);
 }
 
-WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsMIMEType(
+WebMimeRegistry::SupportsType
+WorkerWebKitPlatformSupportImpl::supportsMIMEType(
     const WebString&) {
   return WebMimeRegistry::IsSupported;
 }
 
-WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsImageMIMEType(
+WebMimeRegistry::SupportsType
+WorkerWebKitPlatformSupportImpl::supportsImageMIMEType(
     const WebString&) {
   NOTREACHED();
   return WebMimeRegistry::IsSupported;
 }
 
 WebMimeRegistry::SupportsType
-WorkerWebKitClientImpl::supportsJavaScriptMIMEType(const WebString&) {
+WorkerWebKitPlatformSupportImpl::supportsJavaScriptMIMEType(const WebString&) {
   NOTREACHED();
   return WebMimeRegistry::IsSupported;
 }
 
-WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsMediaMIMEType(
+WebMimeRegistry::SupportsType
+WorkerWebKitPlatformSupportImpl::supportsMediaMIMEType(
     const WebString&, const WebString&) {
   NOTREACHED();
   return WebMimeRegistry::IsSupported;
 }
 
-WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsNonImageMIMEType(
+WebMimeRegistry::SupportsType
+WorkerWebKitPlatformSupportImpl::supportsNonImageMIMEType(
     const WebString&) {
   NOTREACHED();
   return WebMimeRegistry::IsSupported;
 }
 
-WebString WorkerWebKitClientImpl::mimeTypeForExtension(
+WebString WorkerWebKitPlatformSupportImpl::mimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
   SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromExtension(
@@ -239,7 +249,7 @@ WebString WorkerWebKitClientImpl::mimeTypeForExtension(
   return ASCIIToUTF16(mime_type);
 }
 
-WebString WorkerWebKitClientImpl::wellKnownMimeTypeForExtension(
+WebString WorkerWebKitPlatformSupportImpl::wellKnownMimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
   net::GetWellKnownMimeTypeFromExtension(
@@ -247,7 +257,7 @@ WebString WorkerWebKitClientImpl::wellKnownMimeTypeForExtension(
   return ASCIIToUTF16(mime_type);
 }
 
-WebString WorkerWebKitClientImpl::mimeTypeFromFile(
+WebString WorkerWebKitPlatformSupportImpl::mimeTypeFromFile(
     const WebString& file_path) {
   std::string mime_type;
   SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromFile(
@@ -256,7 +266,7 @@ WebString WorkerWebKitClientImpl::mimeTypeFromFile(
   return ASCIIToUTF16(mime_type);
 }
 
-WebString WorkerWebKitClientImpl::preferredExtensionForMIMEType(
+WebString WorkerWebKitPlatformSupportImpl::preferredExtensionForMIMEType(
     const WebString& mime_type) {
   FilePath::StringType file_extension;
   SendSyncMessageFromAnyThread(
@@ -265,7 +275,7 @@ WebString WorkerWebKitClientImpl::preferredExtensionForMIMEType(
   return webkit_glue::FilePathStringToWebString(file_extension);
 }
 
-WebBlobRegistry* WorkerWebKitClientImpl::blobRegistry() {
+WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
   if (!blob_registry_.get())
     blob_registry_.reset(new WebBlobRegistryImpl(WorkerThread::current()));
   return blob_registry_.get();

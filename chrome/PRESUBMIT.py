@@ -35,7 +35,7 @@ EXCLUDE = (
   # Too much math on one line?
   r'bloom_filter\.cc$',
   # Bogus ifdef tricks
-  r'renderer_webkitclient_impl\.cc$',
+  r'renderer_webkitplatformsupport_impl\.cc$',
   # Lines > 100 chars
   r'gcapi\.cc$',
 )

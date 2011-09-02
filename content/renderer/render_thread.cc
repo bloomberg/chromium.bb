@@ -47,7 +47,7 @@
 #include "content/renderer/render_view.h"
 #include "content/renderer/render_view_visitor.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
-#include "content/renderer/renderer_webkitclient_impl.h"
+#include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/net_errors.h"
@@ -238,7 +238,7 @@ RenderThread::~RenderThread() {
   if (file_thread_.get())
     file_thread_->Stop();
 
-  if (webkit_client_.get())
+  if (webkit_platform_support_.get())
     WebKit::shutdown();
 
   lazy_tls.Pointer()->Set(NULL);
@@ -308,7 +308,7 @@ bool RenderThread::Send(IPC::Message* msg) {
 
   if (pumping_events) {
     if (suspend_webkit_shared_timer)
-      webkit_client_->SuspendSharedTimer();
+      webkit_platform_support_->SuspendSharedTimer();
 
     if (notify_webkit_of_modal_loop)
       WebView::willEnterModalLoop();
@@ -334,7 +334,7 @@ bool RenderThread::Send(IPC::Message* msg) {
       WebView::didExitModalLoop();
 
     if (suspend_webkit_shared_timer)
-      webkit_client_->ResumeSharedTimer();
+      webkit_platform_support_->ResumeSharedTimer();
   }
 
   return rv;
@@ -415,15 +415,15 @@ void RenderThread::OnDOMStorageEvent(
 }
 
 void RenderThread::EnsureWebKitInitialized() {
-  if (webkit_client_.get())
+  if (webkit_platform_support_.get())
     return;
 
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
   v8::V8::SetCreateHistogramFunction(CreateHistogram);
   v8::V8::SetAddHistogramSampleFunction(AddHistogramSample);
 
-  webkit_client_.reset(new RendererWebKitClientImpl);
-  WebKit::initialize(webkit_client_.get());
+  webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
+  WebKit::initialize(webkit_platform_support_.get());
 
   WebScriptController::enableV8SingleThreadMode();
 

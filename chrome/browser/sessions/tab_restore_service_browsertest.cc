@@ -49,7 +49,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
     RenderViewHostTestHarness::SetUp();
     time_factory_ = new TabRestoreTimeFactory();
     service_.reset(new TabRestoreService(profile(), time_factory_));
-    WebKit::initialize(&webkitclient_);
+    WebKit::initialize(&webkit_platform_support_);
   }
 
   virtual void TearDown() {
@@ -119,7 +119,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   GURL url3_;
   scoped_ptr<TabRestoreService> service_;
   TabRestoreTimeFactory* time_factory_;
-  RenderViewTest::RendererWebKitClientImplNoSandbox webkitclient_;
+  RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox webkit_platform_support_;
 };
 
 TEST_F(TabRestoreServiceTest, Basic) {

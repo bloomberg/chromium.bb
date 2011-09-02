@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/ppapi_plugin/ppapi_webkitclient_impl.h"
+#include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"
 
 #include <map>
 
@@ -26,7 +26,7 @@ using WebKit::WebSandboxSupport;
 using WebKit::WebString;
 using WebKit::WebUChar;
 
-class PpapiWebKitClientImpl::SandboxSupport : public WebSandboxSupport {
+class PpapiWebKitPlatformSupportImpl::SandboxSupport : public WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
 
@@ -55,26 +55,30 @@ class PpapiWebKitClientImpl::SandboxSupport : public WebSandboxSupport {
 
 #if defined(OS_WIN)
 
-bool PpapiWebKitClientImpl::SandboxSupport::ensureFontLoaded(HFONT font) {
+bool PpapiWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
+    HFONT font) {
   // TODO(brettw) this should do the something similar to what
-  // RendererWebKitClientImpl does and request that the browser load the font.
+  // RendererWebKitPlatformSupportImpl does and request that the browser load
+  // the font.
   NOTIMPLEMENTED();
   return false;
 }
 
 #elif defined(OS_MACOSX)
 
-bool PpapiWebKitClientImpl::SandboxSupport::loadFont(NSFont* srcFont,
+bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(NSFont* srcFont,
     ATSFontContainerRef* out, uint32_t* fontID) {
   // TODO(brettw) this should do the something similar to what
-  // RendererWebKitClientImpl does and request that the browser load the font.
+  // RendererWebKitPlatformSupportImpl does and request that the browser load
+  // the font.
   NOTIMPLEMENTED();
   return false;
 }
 
 #elif defined(OS_POSIX)
 
-WebString PpapiWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
+WebString
+PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
     const WebUChar* characters,
     size_t num_characters,
     const char* preferred_locale) {
@@ -94,7 +98,7 @@ WebString PpapiWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
   return WebString::fromUTF8(family_name);
 }
 
-void PpapiWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
+void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
     const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
   child_process_sandbox_support::getRenderStyleForStrike(family, sizeAndStyle,
                                                          out);
@@ -102,111 +106,111 @@ void PpapiWebKitClientImpl::SandboxSupport::getRenderStyleForStrike(
 
 #endif
 
-PpapiWebKitClientImpl::PpapiWebKitClientImpl()
-    : sandbox_support_(new PpapiWebKitClientImpl::SandboxSupport()) {
+PpapiWebKitPlatformSupportImpl::PpapiWebKitPlatformSupportImpl()
+    : sandbox_support_(new PpapiWebKitPlatformSupportImpl::SandboxSupport()) {
 }
 
-PpapiWebKitClientImpl::~PpapiWebKitClientImpl() {
+PpapiWebKitPlatformSupportImpl::~PpapiWebKitPlatformSupportImpl() {
 }
 
-WebKit::WebClipboard* PpapiWebKitClientImpl::clipboard() {
+WebKit::WebClipboard* PpapiWebKitPlatformSupportImpl::clipboard() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebMimeRegistry* PpapiWebKitClientImpl::mimeRegistry() {
+WebKit::WebMimeRegistry* PpapiWebKitPlatformSupportImpl::mimeRegistry() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebFileUtilities* PpapiWebKitClientImpl::fileUtilities() {
+WebKit::WebFileUtilities* PpapiWebKitPlatformSupportImpl::fileUtilities() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebSandboxSupport* PpapiWebKitClientImpl::sandboxSupport() {
+WebKit::WebSandboxSupport* PpapiWebKitPlatformSupportImpl::sandboxSupport() {
   return sandbox_support_.get();
 }
 
-bool PpapiWebKitClientImpl::sandboxEnabled() {
+bool PpapiWebKitPlatformSupportImpl::sandboxEnabled() {
   return true;  // Assume PPAPI is always sandboxed.
 }
 
-unsigned long long PpapiWebKitClientImpl::visitedLinkHash(
+unsigned long long PpapiWebKitPlatformSupportImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
   NOTREACHED();
   return 0;
 }
 
-bool PpapiWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
+bool PpapiWebKitPlatformSupportImpl::isLinkVisited(unsigned long long link_hash) {
   NOTREACHED();
   return false;
 }
 
 WebKit::WebMessagePortChannel*
-PpapiWebKitClientImpl::createMessagePortChannel() {
+PpapiWebKitPlatformSupportImpl::createMessagePortChannel() {
   NOTREACHED();
   return NULL;
 }
 
-void PpapiWebKitClientImpl::setCookies(
+void PpapiWebKitPlatformSupportImpl::setCookies(
     const WebKit::WebURL& url,
     const WebKit::WebURL& first_party_for_cookies,
     const WebKit::WebString& value) {
   NOTREACHED();
 }
 
-WebKit::WebString PpapiWebKitClientImpl::cookies(
+WebKit::WebString PpapiWebKitPlatformSupportImpl::cookies(
     const WebKit::WebURL& url,
     const WebKit::WebURL& first_party_for_cookies) {
   NOTREACHED();
   return WebKit::WebString();
 }
 
-void PpapiWebKitClientImpl::prefetchHostName(const WebKit::WebString&) {
+void PpapiWebKitPlatformSupportImpl::prefetchHostName(const WebKit::WebString&) {
   NOTREACHED();
 }
 
-WebKit::WebString PpapiWebKitClientImpl::defaultLocale() {
+WebKit::WebString PpapiWebKitPlatformSupportImpl::defaultLocale() {
   NOTREACHED();
   return WebKit::WebString();
 }
 
-WebKit::WebThemeEngine* PpapiWebKitClientImpl::themeEngine() {
+WebKit::WebThemeEngine* PpapiWebKitPlatformSupportImpl::themeEngine() {
   NOTREACHED();
   return NULL;
 }
 
-WebKit::WebURLLoader* PpapiWebKitClientImpl::createURLLoader() {
+WebKit::WebURLLoader* PpapiWebKitPlatformSupportImpl::createURLLoader() {
   NOTREACHED();
   return NULL;
 }
 
 WebKit::WebSocketStreamHandle*
-    PpapiWebKitClientImpl::createSocketStreamHandle() {
+    PpapiWebKitPlatformSupportImpl::createSocketStreamHandle() {
   NOTREACHED();
   return NULL;
 }
 
-void PpapiWebKitClientImpl::getPluginList(bool refresh,
+void PpapiWebKitPlatformSupportImpl::getPluginList(bool refresh,
     WebKit::WebPluginListBuilder* builder) {
   NOTREACHED();
 }
 
-WebKit::WebData PpapiWebKitClientImpl::loadResource(const char* name) {
+WebKit::WebData PpapiWebKitPlatformSupportImpl::loadResource(const char* name) {
   NOTREACHED();
   return WebKit::WebData();
 }
 
 WebKit::WebStorageNamespace*
-PpapiWebKitClientImpl::createLocalStorageNamespace(
+PpapiWebKitPlatformSupportImpl::createLocalStorageNamespace(
     const WebKit::WebString& path, unsigned quota) {
   NOTREACHED();
   return 0;
 }
 
-void PpapiWebKitClientImpl::dispatchStorageEvent(
+void PpapiWebKitPlatformSupportImpl::dispatchStorageEvent(
     const WebKit::WebString& key, const WebKit::WebString& old_value,
     const WebKit::WebString& new_value, const WebKit::WebString& origin,
     const WebKit::WebURL& url, bool is_local_storage) {
@@ -214,18 +218,18 @@ void PpapiWebKitClientImpl::dispatchStorageEvent(
 }
 
 WebKit::WebSharedWorkerRepository*
-PpapiWebKitClientImpl::sharedWorkerRepository() {
+PpapiWebKitPlatformSupportImpl::sharedWorkerRepository() {
   NOTREACHED();
   return NULL;
 }
 
-int PpapiWebKitClientImpl::databaseDeleteFile(
+int PpapiWebKitPlatformSupportImpl::databaseDeleteFile(
     const WebKit::WebString& vfs_file_name, bool sync_dir) {
   NOTREACHED();
   return 0;
 }
 
-void PpapiWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
+void PpapiWebKitPlatformSupportImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
     const WebKit::WebString& keyPath,
     WebKit::WebVector<WebKit::WebIDBKey>& keys) {
@@ -233,7 +237,7 @@ void PpapiWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
 }
 
 WebKit::WebSerializedScriptValue
-PpapiWebKitClientImpl::injectIDBKeyIntoSerializedValue(
+PpapiWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
     const WebKit::WebIDBKey& key,
     const WebKit::WebSerializedScriptValue& value,
     const WebKit::WebString& keyPath) {

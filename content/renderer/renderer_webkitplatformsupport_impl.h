@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
-#define CONTENT_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
+#ifndef CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_
+#define CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
 class WebSharedWorkerRepositoryImpl;
 class WebFileSystemImpl;
@@ -21,12 +21,13 @@ namespace webkit_glue {
 class WebClipboardImpl;
 }
 
-class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
+class RendererWebKitPlatformSupportImpl :
+    public webkit_glue::WebKitPlatformSupportImpl {
  public:
-  RendererWebKitClientImpl();
-  virtual ~RendererWebKitClientImpl();
+  RendererWebKitPlatformSupportImpl();
+  virtual ~RendererWebKitPlatformSupportImpl();
 
-  // WebKitClient methods:
+  // WebKitPlatformSupport methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebFileUtilities* fileUtilities();
@@ -49,7 +50,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& new_value, const WebKit::WebString& origin,
       const WebKit::WebURL& url, bool is_local_storage);
 
-  virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
+  virtual WebKit::WebKitPlatformSupport::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
@@ -117,4 +118,4 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 };
 
-#endif  // CONTENT_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
+#endif  // CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_

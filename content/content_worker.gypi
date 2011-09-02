@@ -29,8 +29,8 @@
         'worker/worker_thread.h',
         'worker/worker_webapplicationcachehost_impl.cc',
         'worker/worker_webapplicationcachehost_impl.h',
-        'worker/worker_webkitclient_impl.cc',
-        'worker/worker_webkitclient_impl.h',
+        'worker/worker_webkitplatformsupport_impl.cc',
+        'worker/worker_webkitplatformsupport_impl.h',
       ],
       'include_dirs': [
         '..',

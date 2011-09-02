@@ -15,7 +15,7 @@ class AppCacheDispatcher;
 class DBMessageFilter;
 class WebDatabaseObserverImpl;
 class WebWorkerStubBase;
-class WorkerWebKitClientImpl;
+class WorkerWebKitPlatformSupportImpl;
 struct WorkerProcessMsg_CreateWorker_Params;
 
 class WorkerThread : public ChildThread {
@@ -40,7 +40,7 @@ class WorkerThread : public ChildThread {
 
   void OnCreateWorker(const WorkerProcessMsg_CreateWorker_Params& params);
 
-  scoped_ptr<WorkerWebKitClientImpl> webkit_client_;
+  scoped_ptr<WorkerWebKitPlatformSupportImpl> webkit_platform_support_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
   scoped_refptr<DBMessageFilter> db_message_filter_;

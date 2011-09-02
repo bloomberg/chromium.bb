@@ -1,21 +1,23 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PPAPI_PLUGIN_PPAPI_WEBKITCLIENT_IMPL_H_
-#define CONTENT_PPAPI_PLUGIN_PPAPI_WEBKITCLIENT_IMPL_H_
+#ifndef CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITPLATFORMSUPPORT_IMPL_H_
+#define CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITPLATFORMSUPPORT_IMPL_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webfileutilities_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
-class PpapiWebKitClientImpl : public webkit_glue::WebKitClientImpl {
+class IndexedDBKeyUtilityClient;
+
+class BrowserWebKitPlatformSupportImpl :
+    public webkit_glue::WebKitPlatformSupportImpl {
  public:
-  PpapiWebKitClientImpl();
-  virtual ~PpapiWebKitClientImpl();
+  BrowserWebKitPlatformSupportImpl();
+  virtual ~BrowserWebKitPlatformSupportImpl();
 
-  // WebKitClient methods:
+  // WebKitPlatformSupport methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebFileUtilities* fileUtilities();
@@ -57,10 +59,7 @@ class PpapiWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& keyPath);
 
  private:
-  class SandboxSupport;
-  scoped_ptr<SandboxSupport> sandbox_support_;
-
-  DISALLOW_COPY_AND_ASSIGN(PpapiWebKitClientImpl);
+  webkit_glue::WebFileUtilitiesImpl file_utilities_;
 };
 
-#endif  // CONTENT_PPAPI_PLUGIN_PPAPI_WEBKITCLIENT_IMPL_H_
+#endif  // CONTENT_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITPLATFORMSUPPORT_IMPL_H_

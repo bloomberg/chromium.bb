@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
-#define CONTENT_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
+#ifndef CONTENT_WORKER_WORKER_WEBKITPLATFORMSUPPORT_IMPL_H_
+#define CONTENT_WORKER_WORKER_WEBKITPLATFORMSUPPORT_IMPL_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMimeRegistry.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
 class WebFileSystemImpl;
 
@@ -16,13 +16,14 @@ namespace WebKit {
 class WebFileUtilities;
 }
 
-class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
-                               public WebKit::WebMimeRegistry {
+class WorkerWebKitPlatformSupportImpl :
+    public webkit_glue::WebKitPlatformSupportImpl,
+    public WebKit::WebMimeRegistry {
  public:
-  WorkerWebKitClientImpl();
-  virtual ~WorkerWebKitClientImpl();
+  WorkerWebKitPlatformSupportImpl();
+  virtual ~WorkerWebKitPlatformSupportImpl();
 
-  // WebKitClient methods:
+  // WebKitPlatformSupport methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebFileSystem* fileSystem();
@@ -49,7 +50,7 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
       const WebKit::WebURL& url, bool is_local_storage);
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
 
-  virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
+  virtual WebKit::WebKitPlatformSupport::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
@@ -90,4 +91,4 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
   scoped_ptr<WebFileSystemImpl> web_file_system_;
 };
 
-#endif  // CONTENT_WORKER_WORKER_WEBKITCLIENT_IMPL_H_
+#endif  // CONTENT_WORKER_WORKER_WEBKITPLATFORMSUPPORT_IMPL_H_

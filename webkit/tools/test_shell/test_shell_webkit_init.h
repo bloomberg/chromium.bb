@@ -14,7 +14,7 @@
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webkitclient_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
@@ -29,7 +29,7 @@
 #include "webkit/tools/test_shell/test_shell_webthemeengine.h"
 #endif
 
-class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
+class TestShellWebKitInit : public webkit_glue::WebKitPlatformSupportImpl {
  public:
   explicit TestShellWebKitInit(bool layout_test_mode);
   virtual ~TestShellWebKitInit();
@@ -42,7 +42,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebBlobRegistry* blobRegistry();
   virtual WebKit::WebFileSystem* fileSystem();
   virtual bool sandboxEnabled();
-  virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
+  virtual WebKit::WebKitPlatformSupport::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags);
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
@@ -92,7 +92,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
 #if defined(OS_WIN)
   void SetThemeEngine(WebKit::WebThemeEngine* engine) {
-    active_theme_engine_ = engine ? engine : WebKitClientImpl::themeEngine();
+    active_theme_engine_ = engine ?
+        engine : WebKitPlatformSupportImpl::themeEngine();
   }
 
   virtual WebKit::WebThemeEngine *themeEngine() {
