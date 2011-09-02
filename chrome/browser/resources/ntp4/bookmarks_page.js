@@ -24,6 +24,14 @@ cr.define('ntp4', function() {
   var MAX_BOOKMARK_TILES = 18;
 
   /**
+   * The root node ID. We use this to determine removable items (direct children
+   * aren't removable).
+   * @type {number}
+   * @const
+   */
+  var ROOT_NODE_ID = "0";
+
+  /**
    * Creates a new bookmark object.
    * @param {Object} data The url and title.
    * @constructor
@@ -68,6 +76,9 @@ cr.define('ntp4', function() {
       }
       faviconDiv.style.backgroundImage = url(faviconUrl);
 
+      if (this.canBeRemoved())
+        this.classList.add('removable');
+
       this.addEventListener('click', this.handleClick_.bind(this));
     },
 
@@ -111,11 +122,25 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Delete a bookmark from the data model.
+     * Delete this bookmark from the data model.
      * @private
      */
     handleDelete_: function() {
-      // TODO(csilv): add support for deleting bookmarks
+      chrome.send('removeBookmark', [this.data.id]);
+      this.parentNode.tilePage.removeTile(this.tile, true);
+    },
+
+    /** @inheritDoc */
+    removeFromChrome: function() {
+      this.handleDelete_();
+    },
+
+    /**
+     * All bookmarks except for children of the root node.
+     * @return {boolean} Whether or not the item can be removed.
+     */
+    canBeRemoved: function() {
+      return this.data.parentId !== ROOT_NODE_ID;
     },
   };
 

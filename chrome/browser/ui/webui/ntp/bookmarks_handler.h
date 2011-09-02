@@ -47,8 +47,9 @@ class BookmarksHandler : public WebUIMessageHandler,
   virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE;
 
-  // Callback for the "getBookmarksData" message.
+  // Callback for various chrome.send() messages.
   void HandleGetBookmarksData(const base::ListValue* args);
+  void HandleRemoveBookmark(const base::ListValue* args);
 
   // Register NTP preferences.
   static void RegisterUserPrefs(PrefService* prefs);
@@ -59,6 +60,9 @@ class BookmarksHandler : public WebUIMessageHandler,
 
   // True if the DOM layer is ready.
   bool dom_ready_;
+
+  // Used as a flag to ignore changes from the current page's actions.
+  bool ignore_change_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
 };

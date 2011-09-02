@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/ntp/bookmarks_handler.h"
 
+#include "base/auto_reset.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -24,7 +25,8 @@
 
 namespace keys = extension_bookmarks_module_constants;
 
-BookmarksHandler::BookmarksHandler() : dom_ready_(false) {
+BookmarksHandler::BookmarksHandler() : dom_ready_(false),
+                                       ignore_change_notifications_(false) {
 }
 
 BookmarksHandler::~BookmarksHandler() {
@@ -43,6 +45,8 @@ WebUIMessageHandler* BookmarksHandler::Attach(WebUI* web_ui) {
 void BookmarksHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("getBookmarksData",
       NewCallback(this, &BookmarksHandler::HandleGetBookmarksData));
+  web_ui_->RegisterMessageCallback("removeBookmark",
+      NewCallback(this, &BookmarksHandler::HandleRemoveBookmark));
 }
 
 void BookmarksHandler::Loaded(BookmarkModel* model, bool ids_reassigned) {
@@ -86,7 +90,8 @@ void BookmarksHandler::BookmarkNodeAdded(BookmarkModel* model,
 
 void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
     const BookmarkNode* parent, int index, const BookmarkNode* node) {
-  if (!dom_ready_) return;
+  if (!dom_ready_ || ignore_change_notifications_) return;
+
   StringValue id(base::Int64ToString(node->id()));
   DictionaryValue remove_info;
   remove_info.SetString(keys::kParentIdKey,
@@ -192,6 +197,22 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
   bookmarksData.Set("items", items);
   bookmarksData.Set("navigationItems", navigation_items);
   web_ui_->CallJavascriptFunction("ntp4.setBookmarksData", bookmarksData);
+}
+
+void BookmarksHandler::HandleRemoveBookmark(const ListValue* args) {
+  std::string id_string;
+  CHECK(args->GetString(0, &id_string));
+  int64 id;
+  CHECK(base::StringToInt64(id_string, &id));
+
+  BookmarkModel* model = Profile::FromWebUI(web_ui_)->GetBookmarkModel();
+  CHECK(model);
+
+  const BookmarkNode* node = model->GetNodeByID(id);
+  CHECK(node);
+
+  AutoReset<bool> ignore_next_change(&ignore_change_notifications_, true);
+  model->Remove(node->parent(), node->parent()->GetIndexOf(node));
 }
 
 // static
