@@ -219,6 +219,14 @@ cr.define('ntp4', function() {
       appSpan.addEventListener('click', this.onClick_.bind(this));
       appContents.appendChild(appSpan);
       this.appendChild(appContents);
+
+      var notification = this.appData_.notification;
+      var hasNotification = typeof notification != 'undefined' &&
+                            typeof notification['title'] != 'undefined' &&
+                            typeof notification['body'] != 'undefined';
+      if (hasNotification)
+        this.setupNotification_(notification);
+
       this.appContents_ = appContents;
 
       this.addEventListener('keydown', cr.ui.contextMenuHandler);
@@ -268,6 +276,37 @@ cr.define('ntp4', function() {
       if (!this.appData_.enabled ||
           (!this.appData_.offline_enabled && !navigator.onLine)) {
         this.appImg_.src += '?grayscale=true';
+      }
+    },
+
+    // Shows a notification text below the app icon and stuffs the attributes
+    // necessary to show the bubble when the user clicks on the notification
+    // text.
+    setupNotification_: function(notification) {
+      // Remove the old notification from this node (if any).
+      for (var i = 0; i < this.childNodes.length; i++) {
+        if (this.childNodes[i].classList.contains('app-notification')) {
+          this.removeChild(this.childNodes[i]);
+          break;
+        }
+      }
+
+      if (notification) {
+        // Add a new notification to this node.
+        var appNotification = this.ownerDocument.createElement('span');
+        appNotification.className = 'app-notification';
+        appNotification.textContent = notification['title'];
+        appNotification.addEventListener('click',
+                                         this.onNotificationClick_.bind(this));
+        appNotification.notificationTitle = notification['title'];
+        appNotification.notificationMessage = notification['body'];
+        if (typeof notification['linkUrl'] != 'undefined' &&
+            typeof notification['linkText'] != 'undefined') {
+          appNotification.notificationLink = notification['linkUrl'];
+          appNotification.notificationLinkText = notification['linkText'];
+        }
+        this.appNotification_ = appNotification;
+        this.appendChild(appNotification);
       }
     },
 
@@ -348,7 +387,7 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Invoked when an app is clicked
+     * Invoked when an app is clicked.
      * @param {Event} e The click event.
      * @private
      */
@@ -362,16 +401,51 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Invoked when an app notification is clicked. This will show the
+     * notification bubble, containing the details of the notification.
+     * @param {Event} e The click event.
+     * @private
+     */
+    onNotificationClick_: function(e) {
+      var title = this.appNotification_.notificationTitle;
+      var message = this.appNotification_.notificationMessage;
+      var link = this.appNotification_.notificationLink;
+      var linkMessage = this.appNotification_.notificationLinkText;
+
+      if (!title || !message)
+        return;
+
+      var container = this.ownerDocument.createElement('div');
+      var titleItem = this.ownerDocument.createElement('strong');
+      titleItem.textContent = title;
+      container.appendChild(titleItem);
+      var messageDiv = this.ownerDocument.createElement('div');
+      messageDiv.textContent = message;
+      container.appendChild(messageDiv);
+      if (link && linkMessage) {
+        var anchor = this.ownerDocument.createElement('a');
+        anchor.href = link;
+        anchor.textContent = linkMessage;
+        container.appendChild(anchor);
+      }
+
+      var infoBubble = new cr.ui.Bubble;
+      infoBubble.anchorNode = e.target;
+      infoBubble.content = container;
+      infoBubble.show();
+    },
+
+    /**
      * Handler for mousedown on the App. Adds a class that allows us to
-     * not display as :active for right clicks (specifically, don't pulse
-     * on right click).
+     * not display as :active for right clicks and clicks on app notifications
+     * (specifically, don't pulse on these occasions).
      * @param {Event} e The mousedown event.
      */
     onMousedown_: function(e) {
-      if (e.button == 2)
-        this.classList.add('right-mouse-down');
+      if (e.button == 2 || e.target.classList.contains('app-notification'))
+        this.classList.add('suppress-active');
       else
-        this.classList.remove('right-mouse-down');
+        this.classList.remove('suppress-active');
     },
 
     /**
@@ -631,6 +705,10 @@ cr.define('ntp4', function() {
     chrome.send('launchApp', [appId, APP_LAUNCH.NTP_APP_RE_ENABLE]);
   };
 
+  function appNotificationChanged(id, notification) {
+    $(id).setupNotification_(notification);
+  };
+
   /**
    * Set the dominant color for an app tile.  This is the callback method
    * from a request made when the tile was created.
@@ -645,6 +723,7 @@ cr.define('ntp4', function() {
 
   return {
     APP_LAUNCH: APP_LAUNCH,
+    appNotificationChanged: appNotificationChanged,
     AppsPage: AppsPage,
     appsPrefChangeCallback: appsPrefChangeCallback,
     launchAppAfterEnable: launchAppAfterEnable,
@@ -654,5 +733,6 @@ cr.define('ntp4', function() {
 
 // TODO(estade): update the content handlers to use ntp namespace instead of
 // making these global.
+var appNotificationChanged = ntp4.appNotificationChanged;
 var appsPrefChangeCallback = ntp4.appsPrefChangeCallback;
 var launchAppAfterEnable = ntp4.launchAppAfterEnable;

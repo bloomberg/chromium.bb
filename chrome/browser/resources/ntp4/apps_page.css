@@ -9,7 +9,7 @@
   -webkit-transition: -webkit-transform 0.1s;
 }
 
-.app:active:not(.right-mouse-down),
+.app:active:not(.suppress-active),
 .dragging .app,
 .drag-representation .app {
   /* Don't animate the initial scaling.  */
@@ -17,9 +17,9 @@
   -webkit-transform: scale(1.1);
 }
 
-/* Active gets applied right before .right-mouse-down, so to avoid flicker
+/* Active gets applied right before .suppress-active, so to avoid flicker
  * we need to make the scale go back to normal without an animation. */
-.app.right-mouse-down {
+.app.suppress-active {
   -webkit-transition-duration: 0;
 }
 
@@ -75,6 +75,20 @@
 
 .app-context-menu {
   z-index: 1000;
+}
+
+/* Notifications */
+
+.app-notification {
+  color: #999999;  
+  display: block;
+  font-size: 11px;
+  white-space: nowrap;
+  -webkit-transition: color .15s linear;
+}
+
+.app-notification:hover {
+  text-decoration: underline;
 }
 
 /* Promo */

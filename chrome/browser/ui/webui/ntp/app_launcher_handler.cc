@@ -273,11 +273,13 @@ void AppLauncherHandler::Observe(int type,
       const std::string& id = *Details<const std::string>(details).ptr();
       const AppNotification* notification =
           extension_service_->app_notification_manager()->GetLast(id);
-      ListValue args;
-      args.Append(new StringValue(id));
-      if (notification)
-        args.Append(SerializeNotification(*notification));
-      web_ui_->CallJavascriptFunction("appNotificationChanged", args);
+      if (notification) {
+        web_ui_->CallJavascriptFunction("appNotificationChanged",
+            StringValue(id), *SerializeNotification(*notification));
+      } else {
+        web_ui_->CallJavascriptFunction("appNotificationChanged",
+            StringValue(id));
+      }
       break;
     }
     case chrome::NOTIFICATION_APP_INSTALLED_TO_NTP: {
