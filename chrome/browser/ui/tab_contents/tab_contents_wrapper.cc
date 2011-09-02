@@ -109,9 +109,10 @@ void RegisterFontFamilyMap(PrefService* prefs, const char* map_name) {
   }
 }
 
-struct PrefResource {
+struct PerScriptFontDefault {
   const char* pref_name;
   int resource_id;
+  const char* native_locale;
 };
 
 // Per-script font pref defaults.  The prefs that have defaults vary by
@@ -119,68 +120,76 @@ struct PrefResource {
 // families.
 // TODO(falken): add proper defaults when possible for all
 // platforms/scripts/generic families.
-const PrefResource kPerScriptFontDefaults[] = {
+const PerScriptFontDefault kPerScriptFontDefaults[] = {
 #if defined(OS_CHROMEOS)
-  { prefs::kWebKitStandardFontFamilyArabic, IDS_STANDARD_FONT_FAMILY_ARABIC },
-  { prefs::kWebKitSerifFontFamilyArabic, IDS_SERIF_FONT_FAMILY_ARABIC },
+  { prefs::kWebKitStandardFontFamilyArabic, IDS_STANDARD_FONT_FAMILY_ARABIC,
+    "ar" },
+  { prefs::kWebKitSerifFontFamilyArabic, IDS_SERIF_FONT_FAMILY_ARABIC, "ar" },
   { prefs::kWebKitSansSerifFontFamilyArabic,
-    IDS_SANS_SERIF_FONT_FAMILY_ARABIC },
+    IDS_SANS_SERIF_FONT_FAMILY_ARABIC, "ar" },
   { prefs::kWebKitStandardFontFamilyJapanese,
-    IDS_STANDARD_FONT_FAMILY_JAPANESE },
-  { prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE },
-  { prefs::kWebKitSerifFontFamilyJapanese, IDS_SERIF_FONT_FAMILY_JAPANESE },
+    IDS_STANDARD_FONT_FAMILY_JAPANESE, "ja" },
+  { prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE,
+    "ja" },
+  { prefs::kWebKitSerifFontFamilyJapanese, IDS_SERIF_FONT_FAMILY_JAPANESE,
+    "ja" },
   { prefs::kWebKitSansSerifFontFamilyJapanese,
-    IDS_SANS_SERIF_FONT_FAMILY_JAPANESE },
-  { prefs::kWebKitStandardFontFamilyKorean, IDS_STANDARD_FONT_FAMILY_KOREAN },
-  { prefs::kWebKitFixedFontFamilyKorean, IDS_FIXED_FONT_FAMILY_KOREAN },
-  { prefs::kWebKitSerifFontFamilyKorean, IDS_SERIF_FONT_FAMILY_KOREAN },
+    IDS_SANS_SERIF_FONT_FAMILY_JAPANESE, "ja" },
+  { prefs::kWebKitStandardFontFamilyKorean, IDS_STANDARD_FONT_FAMILY_KOREAN,
+    "ko" },
+  { prefs::kWebKitFixedFontFamilyKorean, IDS_FIXED_FONT_FAMILY_KOREAN, "ko" },
+  { prefs::kWebKitSerifFontFamilyKorean, IDS_SERIF_FONT_FAMILY_KOREAN, "ko" },
   { prefs::kWebKitSansSerifFontFamilyKorean,
-    IDS_SANS_SERIF_FONT_FAMILY_KOREAN },
+    IDS_SANS_SERIF_FONT_FAMILY_KOREAN, "ko" },
   { prefs::kWebKitStandardFontFamilySimplifiedHan,
-    IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN },
+    IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
   { prefs::kWebKitFixedFontFamilySimplifiedHan,
-    IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN },
+    IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
   { prefs::kWebKitSerifFontFamilySimplifiedHan,
-    IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN },
+    IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
   { prefs::kWebKitSansSerifFontFamilySimplifiedHan,
-    IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN },
+    IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
   { prefs::kWebKitStandardFontFamilyTraditionalHan,
-    IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN },
+    IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
   { prefs::kWebKitFixedFontFamilyTraditionalHan,
-    IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN },
+    IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
   { prefs::kWebKitSerifFontFamilyTraditionalHan,
-    IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN },
+    IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
   { prefs::kWebKitSansSerifFontFamilyTraditionalHan,
-    IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN }
+    IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" }
 #elif defined(OS_WIN)
   { prefs::kWebKitStandardFontFamilyJapanese,
-    IDS_STANDARD_FONT_FAMILY_JAPANESE },
-  { prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE },
-  { prefs::kWebKitSerifFontFamilyJapanese, IDS_SERIF_FONT_FAMILY_JAPANESE },
+    IDS_STANDARD_FONT_FAMILY_JAPANESE, "ja" },
+  { prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE,
+    "ja" },
+  { prefs::kWebKitSerifFontFamilyJapanese, IDS_SERIF_FONT_FAMILY_JAPANESE,
+    "ja" },
   { prefs::kWebKitSansSerifFontFamilyJapanese,
-    IDS_SANS_SERIF_FONT_FAMILY_JAPANESE },
-  { prefs::kWebKitStandardFontFamilyKorean, IDS_STANDARD_FONT_FAMILY_KOREAN },
-  { prefs::kWebKitFixedFontFamilyKorean, IDS_FIXED_FONT_FAMILY_KOREAN },
-  { prefs::kWebKitSerifFontFamilyKorean, IDS_SERIF_FONT_FAMILY_KOREAN },
+    IDS_SANS_SERIF_FONT_FAMILY_JAPANESE, "ja" },
+  { prefs::kWebKitStandardFontFamilyKorean, IDS_STANDARD_FONT_FAMILY_KOREAN,
+    "ko" },
+  { prefs::kWebKitFixedFontFamilyKorean, IDS_FIXED_FONT_FAMILY_KOREAN, "ko" },
+  { prefs::kWebKitSerifFontFamilyKorean, IDS_SERIF_FONT_FAMILY_KOREAN, "ko" },
   { prefs::kWebKitSansSerifFontFamilyKorean,
-    IDS_SANS_SERIF_FONT_FAMILY_KOREAN },
-  { prefs::kWebKitCursiveFontFamilyKorean, IDS_CURSIVE_FONT_FAMILY_KOREAN },
+    IDS_SANS_SERIF_FONT_FAMILY_KOREAN, "ko" },
+  { prefs::kWebKitCursiveFontFamilyKorean, IDS_CURSIVE_FONT_FAMILY_KOREAN,
+    "ko" },
   { prefs::kWebKitStandardFontFamilySimplifiedHan,
-    IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN },
+    IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
   { prefs::kWebKitFixedFontFamilySimplifiedHan,
-    IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN },
+    IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
   { prefs::kWebKitSerifFontFamilySimplifiedHan,
-    IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN },
+    IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
   { prefs::kWebKitSansSerifFontFamilySimplifiedHan,
-    IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN },
+    IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
   { prefs::kWebKitStandardFontFamilyTraditionalHan,
-    IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN },
+    IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
   { prefs::kWebKitFixedFontFamilyTraditionalHan,
-    IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN },
+    IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
   { prefs::kWebKitSerifFontFamilyTraditionalHan,
-    IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN },
+    IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
   { prefs::kWebKitSansSerifFontFamilyTraditionalHan,
-    IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN }
+    IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" }
 #endif
 };
 
@@ -376,10 +385,18 @@ void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   // As explained by its definition, kPerScriptFontDefaultsLength is only
   // defined for platforms where it would be non-zero.
+  std::string locale = g_browser_process->GetApplicationLocale();
   for (size_t i = 0; i < kPerScriptFontDefaultsLength; ++i) {
-    prefs->RegisterLocalizedStringPref(kPerScriptFontDefaults[i].pref_name,
-                                       kPerScriptFontDefaults[i].resource_id,
-                                       PrefService::UNSYNCABLE_PREF);
+    const PerScriptFontDefault& pref = kPerScriptFontDefaults[i];
+    // Suppress default per-script font when the script matches the browser's
+    // locale.  Otherwise, the default would override the user's preferences
+    // when viewing pages in their native language.  This can be removed when
+    // per-script fonts are added to Preferences UI.
+    if (!StartsWithASCII(locale, pref.native_locale, false)) {
+      prefs->RegisterLocalizedStringPref(pref.pref_name,
+                                         pref.resource_id,
+                                         PrefService::UNSYNCABLE_PREF);
+    }
   }
 #endif
 
