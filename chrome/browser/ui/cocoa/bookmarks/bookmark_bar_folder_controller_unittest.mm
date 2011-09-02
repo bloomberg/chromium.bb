@@ -24,45 +24,27 @@
 
 namespace {
 const int kLotsOfNodesCount = 150;
-const NSUInteger kBottomItemCount = 4;
 };
 
 class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
-   BookmarkModel* GetModel() {
-     return helper_.profile()->GetBookmarkModel();
-   }
+  BookmarkModel* GetModel() {
+    return helper_.profile()->GetBookmarkModel();
+  }
 
-   BookmarkBarFolderController* CreateController(const BookmarkNode* node) {
-     // The button will be owned by the controller.
-     scoped_nsobject<BookmarkButton> button(
-         [[BookmarkButton alloc] initWithFrame:NSMakeRect(0, 0, 500, 500)]);
-     scoped_nsobject<BookmarkButtonCell> cell(
-         [[BookmarkButtonCell alloc] initTextCell:@"foo"]);
-     [button setCell:cell];
-     [cell setBookmarkNode:node];
+  BookmarkBarFolderController* CreateController(const BookmarkNode* node) {
+    // The button will be owned by the controller.
+    scoped_nsobject<BookmarkButton> button(
+        [[BookmarkButton alloc] initWithFrame:NSMakeRect(0, 0, 500, 500)]);
+    scoped_nsobject<BookmarkButtonCell> cell(
+        [[BookmarkButtonCell alloc] initTextCell:@"foo"]);
+    [button setCell:cell];
+    [cell setBookmarkNode:node];
 
-     BookmarkModel* model = GetModel();
-     return [[BookmarkBarFolderController alloc] initWithParentButton:button
-                                                        bookmarkModel:model
-                                                        barController:nil];
-   }
-
-  void VerifyBottomItems(NSArray* items) {
-    const NSUInteger count = [items count];
-    ASSERT_GE(count, 4U);
-
-    NSMenuItem* item = [items objectAtIndex:count - 1];
-    EXPECT_EQ(@selector(openAllBookmarksIncognitoWindow:), [item action]);
-
-    item = [items objectAtIndex:count - 2];
-    EXPECT_EQ(@selector(openAllBookmarksNewWindow:), [item action]);
-
-    item = [items objectAtIndex:count - 3];
-    EXPECT_EQ(@selector(openAllBookmarks:), [item action]);
-
-    item = [items objectAtIndex:count - 4];
-    EXPECT_TRUE([item isSeparatorItem]);
+    BookmarkModel* model = GetModel();
+    return [[BookmarkBarFolderController alloc] initWithParentButton:button
+                                                       bookmarkModel:model
+                                                       barController:nil];
   }
 
   NSMenu* GetMenu(BookmarkBarFolderController* controller) {
@@ -99,13 +81,11 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleFolder) {
   [bbfc openMenu];
 
   NSArray* items = [GetMenu(bbfc) itemArray];
-  ASSERT_EQ(3 + kBottomItemCount, [items count]);
+  ASSERT_EQ(3u, [items count]);
 
   EXPECT_NSEQ(@"item 1", [[items objectAtIndex:0] title]);
   EXPECT_NSEQ(@"item 2", [[items objectAtIndex:1] title]);
   EXPECT_NSEQ(@"item 3", [[items objectAtIndex:2] title]);
-
-  VerifyBottomItems(items);
 }
 
 TEST_F(BookmarkBarFolderControllerTest, NestedFolder) {
@@ -142,18 +122,16 @@ TEST_F(BookmarkBarFolderControllerTest, NestedFolder) {
   [bbfc openMenu];
 
   NSArray* items = [GetMenu(bbfc) itemArray];
-  ASSERT_EQ(5 + kBottomItemCount, [items count]);
+  ASSERT_EQ(5u, [items count]);
 
   EXPECT_NSEQ(@"item 1", [[items objectAtIndex:0] title]);
   EXPECT_NSEQ(@"item 2", [[items objectAtIndex:1] title]);
   EXPECT_NSEQ(@"item 3", [[items objectAtIndex:2] title]);
   EXPECT_NSEQ(@"subfolder", [[items objectAtIndex:3] title]);
   EXPECT_NSEQ(@"item 4", [[items objectAtIndex:4] title]);
-  VerifyBottomItems(items);
 
   NSArray* subitems = [[[items objectAtIndex:3] submenu] itemArray];
-  ASSERT_EQ(2 + kBottomItemCount, [subitems count]);
+  ASSERT_EQ(2u, [subitems count]);
   EXPECT_NSEQ(@"subitem 1", [[subitems objectAtIndex:0] title]);
   EXPECT_NSEQ(@"subitem 2", [[subitems objectAtIndex:1] title]);
-  VerifyBottomItems(subitems);
 }

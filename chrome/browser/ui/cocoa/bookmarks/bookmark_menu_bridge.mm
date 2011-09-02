@@ -105,7 +105,7 @@ void BookmarkMenuBridge::UpdateMenuInternal(NSMenu* bookmark_menu,
                        !is_submenu);
     }
   } else {
-    AddNodeToMenu(root_node_, bookmark_menu, true);
+    AddNodeToMenu(root_node_, bookmark_menu, false);
   }
 
   menu_is_valid_ = true;
