@@ -904,6 +904,9 @@ function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId,
   pageSettings.updateState(pageCount);
   previewModifiable = isModifiable;
   document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
+  if (!previewModifiable && pageSettings.requestPrintPreviewIfNeeded())
+    return;
+
   cr.dispatchSimpleEvent(document, 'updateSummary');
 }
 

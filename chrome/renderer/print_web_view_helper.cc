@@ -702,19 +702,32 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   if (CheckForCancel())
     return false;
 
-  int page_number;
-  while ((page_number = print_preview_context_.GetNextPageNumber()) >= 0) {
+  while (!print_preview_context_.IsFinalPageRendered()) {
+    int page_number = print_preview_context_.GetNextPageNumber();
+    DCHECK(page_number >= 0);
     if (!RenderPreviewPage(page_number))
       return false;
+
     if (CheckForCancel())
       return false;
+
+    // We must call PrepareFrameAndViewForPrint::FinishPrinting() (by way of
+    // print_preview_context_.AllPagesRendered()) before calling
+    // FinalizePrintReadyDocument() when printing a PDF because the plugin
+    // code does not generate output until we call FinishPrinting().  We do not
+    // generate draft pages for PDFs, so IsFinalPageRendered() and
+    // IsLastPageOfPrintReadyMetafile() will be true in the same iteration of
+    // the loop.
+    if (print_preview_context_.IsFinalPageRendered())
+      print_preview_context_.AllPagesRendered();
+
     if (print_preview_context_.IsLastPageOfPrintReadyMetafile()) {
-      // Finished generating preview. Finalize the document.
+      DCHECK(print_preview_context_.IsModifiable() ||
+             print_preview_context_.IsFinalPageRendered());
       if (!FinalizePrintReadyDocument())
         return false;
     }
   }
-  print_preview_context_.AllPagesRendered();
   print_preview_context_.Finished();
   return true;
 }
@@ -1379,11 +1392,11 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   if (selected_page_count == 0) {
     print_ready_metafile_page_count_ = total_page_count_;
     // Render all pages.
-    for (int i = 0; i < total_page_count_; i++)
+    for (int i = 0; i < total_page_count_; ++i)
       pages_to_render_.push_back(i);
   } else if (generate_draft_pages_) {
     int pages_index = 0;
-    for (int i = 0; i < total_page_count_; i++) {
+    for (int i = 0; i < total_page_count_; ++i) {
       if (pages_index < selected_page_count && i == pages[pages_index]) {
         pages_index++;
         continue;
@@ -1446,7 +1459,7 @@ void PrintWebViewHelper::PrintPreviewContext::Failed() {
 
 int PrintWebViewHelper::PrintPreviewContext::GetNextPageNumber() {
   DCHECK_EQ(RENDERING, state_);
-  if ((size_t)(current_page_index_) == pages_to_render_.size())
+  if (IsFinalPageRendered())
     return -1;
   return pages_to_render_[current_page_index_++];
 }
@@ -1468,6 +1481,10 @@ bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
 bool PrintWebViewHelper::PrintPreviewContext::IsLastPageOfPrintReadyMetafile()
     const {
   return current_page_index_ == print_ready_metafile_page_count_;
+}
+
+bool  PrintWebViewHelper::PrintPreviewContext::IsFinalPageRendered() const {
+  return static_cast<size_t>(current_page_index_) == pages_to_render_.size();
 }
 
 void PrintWebViewHelper::PrintPreviewContext::set_generate_draft_pages(

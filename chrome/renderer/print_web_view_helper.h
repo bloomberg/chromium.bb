@@ -364,6 +364,7 @@ class PrintWebViewHelper : public RenderViewObserver,
     bool IsReadyToRender() const;
     bool IsModifiable() const;
     bool IsLastPageOfPrintReadyMetafile() const;
+    bool IsFinalPageRendered() const;
 
     // Setters
     void set_generate_draft_pages(bool generate_draft_pages);
