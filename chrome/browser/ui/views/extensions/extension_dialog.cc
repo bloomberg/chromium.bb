@@ -54,6 +54,7 @@ ExtensionDialog::~ExtensionDialog() {
 ExtensionDialog* ExtensionDialog::Show(
     const GURL& url,
     Browser* browser,
+    TabContents* tab_contents,
     int width,
     int height,
     ExtensionDialogObserver* observer) {
@@ -64,7 +65,9 @@ ExtensionDialog* ExtensionDialog::Show(
   if (!manager)
     return NULL;
   ExtensionHost* host = manager->CreateDialogHost(url, browser);
-  DCHECK(host);
+  if (!host)
+    return NULL;
+  host->set_associated_tab_contents(tab_contents);
   return new ExtensionDialog(browser, host, width, height, observer);
 }
 

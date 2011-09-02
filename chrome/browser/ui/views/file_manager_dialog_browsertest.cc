@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/shell_dialogs.h"  // SelectFileDialog
 #include "chrome/common/chrome_paths.h"
@@ -294,5 +295,64 @@ IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, SelectFileAndSave) {
   ASSERT_TRUE(listener_->file_selected());
   ASSERT_FALSE(listener_->canceled());
   ASSERT_EQ(test_file, listener_->path());
+  ASSERT_EQ(this, listener_->params());
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerDialogTest, OpenSingletonTabAndCancel) {
+  // Add tmp mount point even though this test won't use it directly.
+  // We need this to make sure that at least one top-level directory exists
+  // in the file browser.
+  FilePath tmp_dir("/tmp");
+  AddMountPoint(tmp_dir);
+
+  // Spawn a dialog to open a file.  The dialog will signal that it is ready
+  // via chrome.test.sendMessage() in the extension JavaScript.
+  ExtensionTestMessageListener init_listener("worker-initialized",
+                                             false /* will_reply */);
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
+  dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
+                      string16() /* title */,
+                      FilePath() /* default_path */,
+                      NULL /* file_types */,
+                       0 /* file_type_index */,
+                      FILE_PATH_LITERAL("") /* default_extension */,
+                      NULL /* source_contents */,
+                      owning_window,
+                      this /* params */);
+  LOG(INFO) << "Waiting for JavaScript ready message.";
+  ASSERT_TRUE(init_listener.WaitUntilSatisfied());
+
+  // Dialog should be running now.
+  ASSERT_TRUE(dialog_->IsRunning(owning_window));
+
+  // Open a singleton tab in background.
+  browser::NavigateParams p(browser(), GURL("www.google.com"),
+                            PageTransition::LINK);
+  p.window_action = browser::NavigateParams::SHOW_WINDOW;
+  p.disposition = SINGLETON_TAB;
+  browser::Navigate(&p);
+
+  // Inject JavaScript to click the cancel button and wait for notification
+  // that the window has closed.
+  ui_test_utils::WindowedNotificationObserver host_destroyed(
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      NotificationService::AllSources());
+  RenderViewHost* host = dialog_->GetRenderViewHost();
+  string16 main_frame;
+  string16 script = ASCIIToUTF16(
+      "console.log(\'Test JavaScript injected.\');"
+      "document.querySelector(\'.cancel\').click();");
+  // The file selection handler closes the dialog and does not return control
+  // to JavaScript, so do not wait for return values.
+  host->ExecuteJavascriptInWebFrame(main_frame, script);
+  LOG(INFO) << "Waiting for window close notification.";
+  host_destroyed.Wait();
+
+  // Dialog no longer believes it is running.
+  ASSERT_FALSE(dialog_->IsRunning(owning_window));
+
+  // Listener should have been informed of the cancellation.
+  ASSERT_FALSE(listener_->file_selected());
+  ASSERT_TRUE(listener_->canceled());
   ASSERT_EQ(this, listener_->params());
 }

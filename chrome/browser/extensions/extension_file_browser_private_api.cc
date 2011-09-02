@@ -907,23 +907,21 @@ FileBrowserFunction::~FileBrowserFunction() {
 }
 
 int32 FileBrowserFunction::GetTabId() const {
-  int32 tab_id = 0;
   if (!dispatcher()) {
-    NOTREACHED();
-    return tab_id;
+    LOG(WARNING) << "No dispatcher";
+    return 0;
   }
-
-  // TODO(jamescook):  This is going to fail when we switch to tab-modal
-  // dialogs.  Figure out a way to find which SelectFileDialog::Listener
-  // to call from inside these extension FileBrowserFunctions.
-  Browser* browser =
-      const_cast<FileBrowserFunction*>(this)->GetCurrentBrowser();
-  if (browser) {
-    TabContents* contents = browser->GetSelectedTabContents();
-    if (contents)
-      tab_id = ExtensionTabUtil::GetTabId(contents);
+  if (!dispatcher()->delegate()) {
+    LOG(WARNING) << "No delegate";
+    return 0;
   }
-  return tab_id;
+  TabContents* tab_contents =
+      dispatcher()->delegate()->GetAssociatedTabContents();
+  if (!tab_contents) {
+    LOG(WARNING) << "No associated tab contents";
+    return 0;
+  }
+  return ExtensionTabUtil::GetTabId(tab_contents);
 }
 
 // GetFileSystemRootPathOnFileThread can only be called from the file thread,

@@ -17,6 +17,7 @@ class ExtensionDialogObserver;
 class ExtensionHost;
 class GURL;
 class Profile;
+class TabContents;
 
 namespace views {
 class View;
@@ -35,8 +36,10 @@ class ExtensionDialog : public views::WidgetDelegate,
 
   // Create and show a dialog with |url| centered over the browser window.
   // |browser| is the browser to which the pop-up will be attached.
+  // |tab_contents| is the tab that spawned the dialog.
   // |width| and |height| are the size of the dialog in pixels.
   static ExtensionDialog* Show(const GURL& url, Browser* browser,
+                               TabContents* tab_contents,
                                int width,
                                int height,
                                ExtensionDialogObserver* observer);
