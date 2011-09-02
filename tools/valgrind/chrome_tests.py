@@ -24,39 +24,9 @@ class TestNotFound(Exception): pass
 
 class MultipleGTestFiltersSpecified(Exception): pass
 
-def Dir2IsNewer(dir1, dir2):
-  if dir2 == None or not os.path.isdir(dir2):
-    return False
-  if dir1 == None or not os.path.isdir(dir1):
-    return True
-  return (os.stat(dir2)[stat.ST_MTIME] - os.stat(dir1)[stat.ST_MTIME]) > 0
+class BuildDirNotFound(Exception): pass
 
-def FindNewestDir(dirs):
-  newest_dir = None
-  for dir in dirs:
-    if Dir2IsNewer(newest_dir, dir):
-      newest_dir = dir
-  return newest_dir
-
-def File2IsNewer(file1, file2):
-  if file2 == None or not os.path.isfile(file2):
-    return False
-  if file1 == None or not os.path.isfile(file1):
-    return True
-  return (os.stat(file2)[stat.ST_MTIME] - os.stat(file1)[stat.ST_MTIME]) > 0
-
-def FindDirContainingNewestFile(dirs, file):
-  newest_dir = None
-  newest_file = None
-  for dir in dirs:
-    the_file = os.path.join(dir, file)
-    if File2IsNewer(newest_file, the_file):
-      newest_dir = dir
-      newest_file = the_file
-  if newest_dir == None:
-    logging.error("cannot find file %s anywhere, have you built it?" % file)
-    sys.exit(-1)
-  return newest_dir
+class BuildDirAmbiguous(Exception): pass
 
 class ChromeTests:
   def __init__(self, options, args, test):
@@ -87,21 +57,31 @@ class ChromeTests:
     valgrind_test_script = os.path.join(script_dir, "valgrind_test.py")
     self._command_preamble = ["--source_dir=%s" % (self._source_dir)]
 
-  def _DefaultCommand(self, tool, exe=None, valgrind_test_args=None):
-    '''Generates the default command array that most tests will use.'''
-    if exe and common.IsWindows():
-      exe = exe + '.exe'
-
     if not self._options.build_dir:
       dirs = [
         os.path.join(self._source_dir, "xcodebuild", "Debug"),
         os.path.join(self._source_dir, "out", "Debug"),
         os.path.join(self._source_dir, "build", "Debug"),
       ]
-      if exe:
-        self._options.build_dir = FindDirContainingNewestFile(dirs, exe)
+      build_dir = [d for d in dirs if os.path.isdir(d)]
+      if len(build_dir) > 1:
+        raise BuildDirAmbiguous("Found more than one suitable build dir:\n"
+                                "%s\nPlease specify just one "
+                                "using --build_dir" % ", ".join(build_dir))
+      elif build_dir:
+        self._options.build_dir = build_dir[0]
       else:
-        self._options.build_dir = FindNewestDir(dirs)
+        self._options.build_dir = None
+
+  def _EnsureBuildDirFound(self):
+    if not self._options.build_dir:
+      raise BuildDirNotFound("Oops, couldn't find a build dir, please "
+                             "specify it manually using --build_dir")
+
+  def _DefaultCommand(self, tool, exe=None, valgrind_test_args=None):
+    '''Generates the default command array that most tests will use.'''
+    if exe and common.IsWindows():
+      exe += '.exe'
 
     cmd = list(self._command_preamble)
 
@@ -126,6 +106,7 @@ class ChromeTests:
       for arg in valgrind_test_args:
         cmd.append(arg)
     if exe:
+      self._EnsureBuildDirFound()
       cmd.append(os.path.join(self._options.build_dir, exe))
       # Valgrind runs tests slowly, so slow tests hurt more; show elapased time
       # so we can find the slowpokes.
@@ -193,6 +174,19 @@ class ChromeTests:
     if gtest_filter:
       cmd.append("--gtest_filter=%s" % gtest_filter)
 
+  def SetupLdPath(self, requires_build_dir):
+    if requires_build_dir:
+      self._EnsureBuildDirFound()
+    elif not self._options.build_dir:
+      return
+
+    # Append build_dir to LD_LIBRARY_PATH so external libraries can be loaded.
+    if (os.getenv("LD_LIBRARY_PATH")):
+      os.putenv("LD_LIBRARY_PATH", "%s:%s" % (os.getenv("LD_LIBRARY_PATH"),
+                                              self._options.build_dir))
+    else:
+      os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
+
   def SimpleTest(self, module, name, valgrind_test_args=None, cmd_args=None):
     tool = valgrind_test.CreateTool(self._options.valgrind_tool)
     cmd = self._DefaultCommand(tool, name, valgrind_test_args)
@@ -201,14 +195,14 @@ class ChromeTests:
       cmd.extend(["--"])
       cmd.extend(cmd_args)
 
-    # Sets LD_LIBRARY_PATH to the build folder so external libraries can be
-    # loaded.
-    if (os.getenv("LD_LIBRARY_PATH")):
-      os.putenv("LD_LIBRARY_PATH", "%s:%s" % (os.getenv("LD_LIBRARY_PATH"),
-                                              self._options.build_dir))
-    else:
-      os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
+    self.SetupLdPath(True)
     return tool.Run(cmd, module)
+
+  def RunCmdLine(self):
+    tool = valgrind_test.CreateTool(self._options.valgrind_tool)
+    cmd = self._DefaultCommand(tool, None, self._args)
+    self.SetupLdPath(False)
+    return tool.Run(cmd, None)
 
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
@@ -419,6 +413,7 @@ class ChromeTests:
   # The known list of tests.
   # Recognise the original abbreviations as well as full executable names.
   _test_list = {
+    "cmdline" : RunCmdLine,
     "automated_ui" : TestAutomatedUI,
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
