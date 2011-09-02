@@ -502,8 +502,8 @@ void SafeBrowsingProtocolManager::ForceScheduleNextUpdate(
   DCHECK_GE(next_update_msec, 0);
   // Unschedule any current timer.
   update_timer_.Stop();
-  update_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(next_update_msec),
-                      this, &SafeBrowsingProtocolManager::GetNextUpdate);
+  update_timer_.Start(TimeDelta::FromMilliseconds(next_update_msec), this,
+                      &SafeBrowsingProtocolManager::GetNextUpdate);
 }
 
 // According to section 5 of the SafeBrowsing protocol specification, we must
@@ -620,8 +620,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   request_->Start();
 
   // Begin the update request timeout.
-  update_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(kSbMaxUpdateWaitSec),
-                      this,
+  update_timer_.Start(TimeDelta::FromSeconds(kSbMaxUpdateWaitSec), this,
                       &SafeBrowsingProtocolManager::UpdateResponseTimeout);
 }
 

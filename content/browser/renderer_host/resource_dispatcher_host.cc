@@ -1575,7 +1575,7 @@ void ResourceDispatcherHost::InsertIntoResourceQueue(
 
   // Make sure we have the load state monitor running
   if (!update_load_states_timer_.IsRunning()) {
-    update_load_states_timer_.Start(FROM_HERE,
+    update_load_states_timer_.Start(
         TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
         this, &ResourceDispatcherHost::UpdateLoadStates);
   }

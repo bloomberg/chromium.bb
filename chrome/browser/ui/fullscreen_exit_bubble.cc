@@ -26,12 +26,11 @@ FullscreenExitBubble::~FullscreenExitBubble() {
 
 void FullscreenExitBubble::StartWatchingMouse() {
   // Start the initial delay timer and begin watching the mouse.
-  initial_delay_.Start(FROM_HERE,
-                       base::TimeDelta::FromMilliseconds(kInitialDelayMs), this,
+  initial_delay_.Start(base::TimeDelta::FromMilliseconds(kInitialDelayMs), this,
                        &FullscreenExitBubble::CheckMousePosition);
   gfx::Point cursor_pos = GetCursorScreenPoint();
   last_mouse_pos_ = cursor_pos;
-  mouse_position_checker_.Start(FROM_HERE,
+  mouse_position_checker_.Start(
       base::TimeDelta::FromMilliseconds(1000 / kPositionCheckHz), this,
       &FullscreenExitBubble::CheckMousePosition);
 }
@@ -63,8 +62,7 @@ void FullscreenExitBubble::CheckMousePosition() {
   if (cursor_pos != last_mouse_pos_) {
     // The mouse moved; reset the idle timer.
     idle_timeout_.Stop();  // If the timer isn't running, this is a no-op.
-    idle_timeout_.Start(FROM_HERE,
-                        base::TimeDelta::FromMilliseconds(kIdleTimeMs), this,
+    idle_timeout_.Start(base::TimeDelta::FromMilliseconds(kIdleTimeMs), this,
                         &FullscreenExitBubble::CheckMousePosition);
   }
   last_mouse_pos_ = cursor_pos;

@@ -675,8 +675,7 @@ class LockerInputEventObserver : public MessageLoopForUI::Observer {
   explicit LockerInputEventObserver(ScreenLocker* screen_locker)
       : screen_locker_(screen_locker),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            timer_(FROM_HERE,
-                   base::TimeDelta::FromSeconds(kScreenSaverIdleTimeout), this,
+            timer_(base::TimeDelta::FromSeconds(kScreenSaverIdleTimeout), this,
                    &LockerInputEventObserver::StartScreenSaver)) {
   }
 

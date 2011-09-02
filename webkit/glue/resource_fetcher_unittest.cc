@@ -70,8 +70,7 @@ class FetcherDelegate {
   }
 
   void StartTimer() {
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(kMaxWaitTimeMs),
+    timer_.Start(base::TimeDelta::FromMilliseconds(kMaxWaitTimeMs),
                  this,
                  &FetcherDelegate::TimerFired);
   }

@@ -30,8 +30,7 @@ void DelayedWorkScheduler::PostDelayedWork(
     const base::Closure& callback,
     int64 delay) {
   callback_ = callback;
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(delay),
+  timer_.Start(base::TimeDelta::FromMilliseconds(delay),
                this,
                &DelayedWorkScheduler::DoDelayedWork);
 }

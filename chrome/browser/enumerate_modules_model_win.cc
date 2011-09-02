@@ -904,7 +904,7 @@ EnumerateModulesModel::EnumerateModulesModel()
       suspected_bad_modules_detected_(0) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   if (cmd_line.HasSwitch(switches::kConflictingModulesCheck)) {
-    check_modules_timer_.Start(FROM_HERE,
+    check_modules_timer_.Start(
         base::TimeDelta::FromMilliseconds(kModuleCheckDelayMs),
         this, &EnumerateModulesModel::ScanNow);
   }

@@ -94,8 +94,7 @@ int Messenger::Write(IOBuffer* buf, int buf_len, CompletionCallback* callback) {
 
   int len = send_buffer_.write(buf->data(), buf_len);
   if (!send_timer_.IsRunning())
-    send_timer_.Start(FROM_HERE, base::TimeDelta(),
-                      this, &Messenger::OnSendTimer);
+    send_timer_.Start(base::TimeDelta(), this, &Messenger::OnSendTimer);
   if (len)
     return len;
 
@@ -184,7 +183,7 @@ void Messenger::OnSendMessageComplete(int result) {
     LOG(ERROR) << "RttTimeout is " << rtt_.rtt_timeout();
     base::TimeDelta delay =
         base::TimeDelta::FromMicroseconds(rtt_.rtt_timeout());
-    send_timeout_timer_.Start(FROM_HERE, delay, this, &Messenger::OnTimeout);
+    send_timeout_timer_.Start(delay, this, &Messenger::OnTimeout);
   }
 }
 
@@ -215,9 +214,9 @@ void Messenger::OnSendTimer() {
 
   // Set the next send timer.
   LOG(ERROR) << "SendRate is: " << rtt_.send_rate() << "us";
-  send_timer_.Start(FROM_HERE,
-                    base::TimeDelta::FromMicroseconds(rtt_.send_rate()),
-                    this, &Messenger::OnSendTimer);
+  send_timer_.Start(base::TimeDelta::FromMicroseconds(rtt_.send_rate()),
+                    this,
+                    &Messenger::OnSendTimer);
 
   // Create a block from the send_buffer.
   if (!sent_list_.is_full()) {

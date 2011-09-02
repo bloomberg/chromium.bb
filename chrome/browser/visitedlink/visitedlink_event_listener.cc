@@ -134,7 +134,7 @@ void VisitedLinkEventListener::Add(VisitedLinkMaster::Fingerprint fingerprint) {
   pending_visited_links_.push_back(fingerprint);
 
   if (!coalesce_timer_.IsRunning()) {
-    coalesce_timer_.Start(FROM_HERE,
+    coalesce_timer_.Start(
         TimeDelta::FromMilliseconds(kCommitIntervalMs), this,
         &VisitedLinkEventListener::CommitVisitedLinks);
   }

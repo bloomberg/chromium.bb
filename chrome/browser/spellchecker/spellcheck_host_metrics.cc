@@ -14,7 +14,7 @@ SpellCheckHostMetrics::SpellCheckHostMetrics()
       replaced_word_count_(0),
       start_time_(base::Time::Now()) {
   const uint64 kHistogramTimerDurationInMinutes = 30;
-  recording_timer_.Start(FROM_HERE,
+  recording_timer_.Start(
       base::TimeDelta::FromMinutes(kHistogramTimerDurationInMinutes),
       this, &SpellCheckHostMetrics::OnHistogramTimerExpired);
   RecordWordCounts();

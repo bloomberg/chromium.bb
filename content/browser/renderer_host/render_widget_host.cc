@@ -482,7 +482,7 @@ void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {
   // fire sooner.
   time_when_considered_hung_ = Time::Now() + delay;
   hung_renderer_timer_.Stop();
-  hung_renderer_timer_.Start(FROM_HERE, delay, this,
+  hung_renderer_timer_.Start(delay, this,
       &RenderWidgetHost::CheckRendererIsUnresponsive);
 }
 

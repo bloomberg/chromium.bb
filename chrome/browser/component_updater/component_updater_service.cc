@@ -336,7 +336,7 @@ ComponentUpdateService::Status CrxUpdateService::Start() {
     Source<ComponentUpdateService>(this),
     NotificationService::NoDetails());
 
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(config_->InitialDelay()),
+  timer_.Start(base::TimeDelta::FromSeconds(config_->InitialDelay()),
                this, &CrxUpdateService::ProcessPendingItems);
   return kOk;
 }
@@ -374,7 +374,7 @@ void CrxUpdateService::ScheduleNextRun(bool step_delay) {
       return;
   }
 
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(delay),
+  timer_.Start(base::TimeDelta::FromSeconds(delay),
                this, &CrxUpdateService::ProcessPendingItems);
 }
 

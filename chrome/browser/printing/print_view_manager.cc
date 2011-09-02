@@ -481,8 +481,7 @@ bool PrintViewManager::RunInnerMessageLoop() {
   // memory-bound.
   static const int kPrinterSettingsTimeout = 60000;
   base::OneShotTimer<MessageLoop> quit_timer;
-  quit_timer.Start(FROM_HERE,
-                   TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
+  quit_timer.Start(TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
                    MessageLoop::current(), &MessageLoop::Quit);
 
   inside_inner_message_loop_ = true;

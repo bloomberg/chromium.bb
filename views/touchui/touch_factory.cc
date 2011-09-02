@@ -351,8 +351,7 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
   // The cursor is going to be shown. Reset the timer for hiding it.
   if (show && start_timer) {
     cursor_timer_.Stop();
-    cursor_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kCursorIdleSeconds),
+    cursor_timer_.Start(base::TimeDelta::FromSeconds(kCursorIdleSeconds),
         this, &TouchFactory::HideCursorForInactivity);
   } else {
     cursor_timer_.Stop();

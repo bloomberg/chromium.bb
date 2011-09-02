@@ -282,8 +282,7 @@ bool SafeBrowsingResourceHandler::CheckUrl(const GURL& url) {
   url_check_start_time_ = base::TimeTicks::Now();
 
   // Start a timer to abort the check if it takes too long.
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(kCheckUrlTimeoutMs),
+  timer_.Start(base::TimeDelta::FromMilliseconds(kCheckUrlTimeoutMs),
                this, &SafeBrowsingResourceHandler::OnCheckUrlTimeout);
 
   return false;

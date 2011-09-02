@@ -98,8 +98,7 @@ void StreamSwitchManager::Play() {
   playing_ = true;
 
   if (video_ids_.size() > 1) {
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(kSwitchTimerPeriod),
+    timer_.Start(base::TimeDelta::FromMilliseconds(kSwitchTimerPeriod),
                  this, &StreamSwitchManager::OnSwitchTimer);
   }
 }

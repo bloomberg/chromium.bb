@@ -424,7 +424,7 @@ void DownloadItemGtk::UpdateDownloadProgress() {
 void DownloadItemGtk::StartDownloadProgress() {
   if (progress_timer_.IsRunning())
     return;
-  progress_timer_.Start(FROM_HERE,
+  progress_timer_.Start(
       base::TimeDelta::FromMilliseconds(download_util::kProgressRateMs), this,
       &DownloadItemGtk::UpdateDownloadProgress);
 }

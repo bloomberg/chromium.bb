@@ -482,7 +482,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
 
 void ProfileSyncService::ClearServerData() {
   clear_server_data_state_ = CLEAR_CLEARING;
-  clear_server_data_timer_.Start(FROM_HERE,
+  clear_server_data_timer_.Start(
       base::TimeDelta::FromSeconds(kSyncClearDataTimeoutInSeconds), this,
       &ProfileSyncService::OnClearServerDataTimeout);
   backend_->RequestClearServerData();

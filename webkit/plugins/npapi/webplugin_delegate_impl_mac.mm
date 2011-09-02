@@ -122,8 +122,7 @@ class CarbonIdleEventSource {
     // Adds |delegate| to this visibility group.
     void RegisterDelegate(WebPluginDelegateImpl* delegate) {
       if (delegates_.empty()) {
-        timer_.Start(FROM_HERE,
-                     base::TimeDelta::FromMilliseconds(timer_period_),
+        timer_.Start(base::TimeDelta::FromMilliseconds(timer_period_),
                      this, &VisibilityGroup::SendIdleEvents);
       }
       delegates_.insert(delegate);
@@ -1024,7 +1023,7 @@ void WebPluginDelegateImpl::PluginVisibilityChanged() {
   if (instance()->drawing_model() == NPDrawingModelCoreAnimation) {
     bool plugin_visible = container_is_visible_ && !clip_rect_.IsEmpty();
     if (plugin_visible && !redraw_timer_->IsRunning() && windowed_handle()) {
-      redraw_timer_->Start(FROM_HERE,
+      redraw_timer_->Start(
           base::TimeDelta::FromMilliseconds(kCoreAnimationRedrawPeriodMs),
           this, &WebPluginDelegateImpl::DrawLayerInSurface);
     } else if (!plugin_visible) {

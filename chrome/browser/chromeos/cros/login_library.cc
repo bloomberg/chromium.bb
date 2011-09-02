@@ -89,7 +89,7 @@ class LoginLibraryImpl : public LoginLibrary {
         // just kills us so settings may be lost. See http://crosbug.com/13102
         local_state_->CommitPendingWrite();
         timer_.Start(
-            FROM_HERE, base::TimeDelta::FromSeconds(3), this,
+            base::TimeDelta::FromSeconds(3), this,
             &JobRestartRequest::RestartJob);
         // Post task on file thread thus it occurs last on task queue, so it
         // would be executed after committing pending write on file thread.

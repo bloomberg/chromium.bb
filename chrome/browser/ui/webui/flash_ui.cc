@@ -133,7 +133,7 @@ FlashDOMHandler::FlashDOMHandler()
 
   // And lastly, we fire off a timer to make sure we never get stuck at the
   // "Loading..." message.
-  timeout_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeout),
+  timeout_.Start(base::TimeDelta::FromMilliseconds(kTimeout),
                  this, &FlashDOMHandler::OnTimeout);
 }
 

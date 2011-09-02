@@ -321,7 +321,7 @@ class RequestProxy : public net::URLRequest::Delegate,
 
     if (request_->has_upload() &&
         params->load_flags & net::LOAD_ENABLE_UPLOAD_PROGRESS) {
-      upload_progress_timer_.Start(FROM_HERE,
+      upload_progress_timer_.Start(
           base::TimeDelta::FromMilliseconds(kUpdateUploadProgressIntervalMsec),
           this, &RequestProxy::MaybeUpdateUploadProgress);
     }

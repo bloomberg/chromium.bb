@@ -245,7 +245,7 @@ void DraggedTabControllerGtk::ContinueDragging() {
   }
 
   if (!target_tabstrip) {
-    bring_to_front_timer_.Start(FROM_HERE,
+    bring_to_front_timer_.Start(
         base::TimeDelta::FromMilliseconds(kBringToFrontDelay), this,
         &DraggedTabControllerGtk::BringWindowUnderMouseToFront);
   }

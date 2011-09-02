@@ -502,7 +502,6 @@ void WizardController::SetCurrentScreenSmooth(WizardScreen* new_current,
 
   if (use_smoothing) {
     smooth_show_timer_.Start(
-        FROM_HERE,
         base::TimeDelta::FromMilliseconds(kShowDelayMs),
         this,
         &WizardController::ShowCurrentScreen);

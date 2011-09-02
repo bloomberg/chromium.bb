@@ -164,7 +164,7 @@ void NotificationUIManager::CheckUserState() {
     ShowNotifications();
   } else if (!user_state_check_timer_.IsRunning()) {
     // Start a timer to detect the moment at which the user becomes active.
-    user_state_check_timer_.Start(FROM_HERE,
+    user_state_check_timer_.Start(
         base::TimeDelta::FromSeconds(kUserStatePollingIntervalSeconds), this,
         &NotificationUIManager::CheckUserState);
   }

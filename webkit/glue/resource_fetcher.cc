@@ -127,7 +127,7 @@ ResourceFetcherWithTimeout::ResourceFetcherWithTimeout(
     const GURL& url, WebFrame* frame, WebURLRequest::TargetType target_type,
     int timeout_secs, Callback* callback)
     : ResourceFetcher(url, frame, target_type, callback) {
-  timeout_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(timeout_secs), this,
+  timeout_timer_.Start(TimeDelta::FromSeconds(timeout_secs), this,
                        &ResourceFetcherWithTimeout::TimeoutFired);
 }
 

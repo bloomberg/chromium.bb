@@ -896,7 +896,7 @@ void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
 }
 
 void SyncBackendHost::Core::StartSavingChanges() {
-  save_changes_timer_.Start(FROM_HERE,
+  save_changes_timer_.Start(
       base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),
       this, &Core::SaveChanges);
 }

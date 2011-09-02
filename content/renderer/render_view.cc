@@ -1788,8 +1788,8 @@ void RenderView::StartNavStateSyncTimerIfNecessary() {
     nav_state_sync_timer_.Stop();
   }
 
-  nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
-                              &RenderView::SyncNavigationState);
+  nav_state_sync_timer_.Start(
+      TimeDelta::FromSeconds(delay), this, &RenderView::SyncNavigationState);
 }
 
 void RenderView::setMouseOverURL(const WebURL& url) {
@@ -2842,8 +2842,7 @@ void RenderView::didUpdateLayout(WebFrame* frame) {
 
   if (check_preferred_size_timer_.IsRunning())
     return;
-  check_preferred_size_timer_.Start(FROM_HERE,
-                                    TimeDelta::FromMilliseconds(0), this,
+  check_preferred_size_timer_.Start(TimeDelta::FromMilliseconds(0), this,
                                     &RenderView::CheckPreferredSize);
 }
 

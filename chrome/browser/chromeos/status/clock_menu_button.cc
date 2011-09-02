@@ -80,7 +80,7 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
   // called just a teeny bit early, then it will skip the next minute.
   seconds_left += kTimerSlopSeconds;
 
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(seconds_left), this,
+  timer_.Start(base::TimeDelta::FromSeconds(seconds_left), this,
                &ClockMenuButton::UpdateTextAndSetNextTimer);
 }
 

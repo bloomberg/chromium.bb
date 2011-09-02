@@ -48,8 +48,7 @@ OomPriorityManager::~OomPriorityManager() {
 
 void OomPriorityManager::StartTimer() {
   if (!timer_.IsRunning()) {
-    timer_.Start(FROM_HERE,
-                 TimeDelta::FromSeconds(ADJUSTMENT_INTERVAL_SECONDS),
+    timer_.Start(TimeDelta::FromSeconds(ADJUSTMENT_INTERVAL_SECONDS),
                  this,
                  &OomPriorityManager::AdjustOomPriorities);
   }

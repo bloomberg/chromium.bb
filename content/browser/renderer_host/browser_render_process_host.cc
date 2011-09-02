@@ -185,7 +185,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(
           visible_widgets_(0),
           backgrounded_(true),
           ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
-                FROM_HERE, base::TimeDelta::FromSeconds(5),
+                base::TimeDelta::FromSeconds(5),
                 this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
           accessibility_enabled_(false),
           is_initialized_(false) {

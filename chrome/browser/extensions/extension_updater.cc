@@ -942,7 +942,7 @@ void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
   prefs_->SetInt64(kNextExtensionsUpdateCheck, next.ToInternalValue());
   prefs_->ScheduleSavePersistentPrefs();
 
-  timer_.Start(FROM_HERE, actual_delay, this, &ExtensionUpdater::TimerFired);
+  timer_.Start(actual_delay, this, &ExtensionUpdater::TimerFired);
 }
 
 void ExtensionUpdater::TimerFired() {

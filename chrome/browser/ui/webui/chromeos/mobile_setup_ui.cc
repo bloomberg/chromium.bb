@@ -1127,7 +1127,6 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
       // limbo by the network library.
       if (!reconnect_timer_.IsRunning()) {
         reconnect_timer_.Start(
-            FROM_HERE,
             base::TimeDelta::FromMilliseconds(kReconnectTimerDelayMS),
             this, &MobileSetupHandler::ReconnectTimerFired);
       }

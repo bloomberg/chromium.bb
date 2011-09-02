@@ -430,8 +430,8 @@ void QuotaDatabase::Commit() {
 void QuotaDatabase::ScheduleCommit() {
   if (timer_.IsRunning())
     return;
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kCommitIntervalMs),
-               this, &QuotaDatabase::Commit);
+  timer_.Start(base::TimeDelta::FromMilliseconds(kCommitIntervalMs), this,
+               &QuotaDatabase::Commit);
 }
 
 bool QuotaDatabase::FindOriginUsedCount(

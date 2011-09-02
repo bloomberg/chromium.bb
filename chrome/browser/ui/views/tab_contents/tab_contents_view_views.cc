@@ -385,8 +385,8 @@ void TabContentsViewViews::OnNativeTabContentsViewMouseMove(bool motion) {
 
 void TabContentsViewViews::OnNativeTabContentsViewDraggingEnded() {
   if (close_tab_after_drag_ends_) {
-    close_tab_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(0),
-                           this, &TabContentsViewViews::CloseTab);
+    close_tab_timer_.Start(base::TimeDelta::FromMilliseconds(0), this,
+                           &TabContentsViewViews::CloseTab);
   }
   tab_contents_->SystemDragEnded();
 }

@@ -59,7 +59,7 @@ bool WebSocketProxyPrivateGetPassportForTCPFunction::RunImpl() {
 
   if (delay_response) {
     const int kTimeout = 3;
-    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeout),
+    timer_.Start(base::TimeDelta::FromSeconds(kTimeout),
         this, &WebSocketProxyPrivateGetPassportForTCPFunction::Finalize);
   } else {
     Finalize();

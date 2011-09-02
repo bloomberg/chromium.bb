@@ -60,7 +60,7 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
     // Go ahead and change to reload after a bit, which allows repeated reloads
     // without moving the mouse.
     if (!stop_to_reload_timer_.IsRunning()) {
-      stop_to_reload_timer_.Start(FROM_HERE, stop_to_reload_timer_delay_, this,
+      stop_to_reload_timer_.Start(stop_to_reload_timer_delay_, this,
                                   &ReloadButton::OnStopToReloadTimer);
     }
   }
@@ -106,7 +106,7 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
     // here as the browser will do that when it actually starts loading (which
     // may happen synchronously, thus the need to do this before telling the
     // browser to execute the reload command).
-    double_click_timer_.Start(FROM_HERE, double_click_timer_delay_, this,
+    double_click_timer_.Start(double_click_timer_delay_, this,
                               &ReloadButton::OnDoubleClickTimer);
 
     if (browser_)
