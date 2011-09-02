@@ -119,7 +119,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
 
     if extra_env:
       for (key, value) in extra_env.items():
-        cmd.insert(2, '%s=%s' % (key, value))
+        cmd.insert(1, '%s=%s' % (key, value))
 
   elif extra_env:
     if env is not None:
