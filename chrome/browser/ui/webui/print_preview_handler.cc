@@ -865,11 +865,13 @@ void PrintPreviewHandler::ClosePrintPreviewTab() {
   if (!preview_tab_browser)
     return;
   TabStripModel* tabstrip = preview_tab_browser->tabstrip_model();
+  int index = tabstrip->GetIndexOfTabContents(tab);
+  if (index == TabStripModel::kNoTab)
+    return;
 
   // Keep print preview tab out of the recently closed tab list, because
   // re-opening that page will just display a non-functional print preview page.
-  tabstrip->CloseTabContentsAt(tabstrip->GetIndexOfController(
-      &preview_tab()->controller()), TabStripModel::CLOSE_NONE);
+  tabstrip->CloseTabContentsAt(index, TabStripModel::CLOSE_NONE);
 }
 
 void PrintPreviewHandler::OnPrintDialogShown() {
