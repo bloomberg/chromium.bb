@@ -31,6 +31,7 @@ set_variable EVENT i(6666)
 #   PP_InputEvent_MouseButton mouse_button;
 #   int32_t mouse_click_count;
 #   PP_Point mouse_position;
+#   PP_Point mouse_movement;
 #
 #   PP_FloatPoint wheel_delta;
 #   PP_FloatPoint wheel_ticks;
@@ -50,17 +51,18 @@ set_variable TIME_7 8:0x3ff6000000000000
 
 # pair of ints
 set_variable COORDS 4:264,4:100
+set_variable MOVES  4:0,4:0
 
-set_variable EV_MOUSE_DOWN  R(56,4:0,4:64,${TIME_1},4:0,4:1,${COORDS},8:0,8:0,4:0,4:0)
-set_variable EV_MOUSE_UP    R(56,4:1,4:64,${TIME_2},4:0,4:0,${COORDS},8:0,8:0,4:0,4:0)
+set_variable EV_MOUSE_DOWN  R(64,4:0,4:64,${TIME_1},4:0,4:1,${COORDS},${MOVES},8:0,8:0,4:0,4:0)
+set_variable EV_MOUSE_UP    R(64,4:1,4:64,${TIME_2},4:0,4:0,${COORDS},${MOVES},8:0,8:0,4:0,4:0)
 
-set_variable EV_MOUSE_MOVE  R(56,4:2,4:0,${TIME_3},4:0,4:0,${COORDS},8:0,8:0,4:0,4:0)
+set_variable EV_MOUSE_MOVE  R(64,4:2,4:0,${TIME_3},4:0,4:0,${COORDS},${MOVES},8:0,8:0,4:0,4:0)
 
-set_variable EV_MOUSE_ENTER R(56,4:3,4:0,${TIME_4},4:0,4:0,${COORDS},8:0,8:0,4:0,4:0)
-set_variable EV_MOUSE_LEAVE R(56,4:4,4:0,${TIME_5},4:0,4:0,${COORDS},8:0,8:0,4:0,4:0)
+set_variable EV_MOUSE_ENTER R(64,4:3,4:0,${TIME_4},4:0,4:0,${COORDS},${MOVES},8:0,8:0,4:0,4:0)
+set_variable EV_MOUSE_LEAVE R(64,4:4,4:0,${TIME_5},4:0,4:0,${COORDS},${MOVES},8:0,8:0,4:0,4:0)
 
-set_variable EV_KEY_DOWN    R(56,4:7,4:0,${TIME_6},4:0,4:0,8:0,8:0,8:0,4:0,4:0x54)
-set_variable EV_KEY_UP      R(56,4:8,4:0,${TIME_7},4:0,4:0,8:0,8:0,8:0,4:0,4:0x54)
+set_variable EV_KEY_DOWN    R(64,4:7,4:0,${TIME_6},4:0,4:0,8:0,8:0,8:0,8:0,4:0,4:0x54)
+set_variable EV_KEY_UP      R(64,4:8,4:0,${TIME_7},4:0,4:0,8:0,8:0,8:0,8:0,4:0,4:0x54)
 
 set_variable JS_STR 4:5
 set_variable JS_UND 4:0
@@ -84,7 +86,7 @@ replay 1 PPB_GetInterface:s:i  s("PPB_InputEvent;1.0") * i(1)
 rpc PPP_Instance_DidCreate ${INSTANCE} i(1) ${TAGS} ${VALUES} * i(0)
 
 replay 1 PPB_GetInterface:s:i  s("PPB_Var;1.0") * i(1)
-replay 1 PPB_GetInterface:s:i  s("PPB_MouseInputEvent;1.0") * i(1)
+replay 1 PPB_GetInterface:s:i  s("PPB_MouseInputEvent;1.1") * i(1)
 replay 1 PPB_GetInterface:s:i  s("PPB_KeyboardInputEvent;1.0") * i(1)
 # These occur once each for each event sent to the nexe
 replay 7 PPB_Core_AddRefResource:i: ${EVENT} *
