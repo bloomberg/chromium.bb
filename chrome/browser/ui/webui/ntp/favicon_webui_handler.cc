@@ -94,9 +94,8 @@ void FaviconWebUIHandler::OnFaviconDataAvailable(
     color_value.reset(new StringValue("#919191"));
   }
 
-  web_ui_->CallJavascriptFunction("ntp4.setStripeColor",
-                                  StringValue(dom_id_map_[id]),
-                                  *color_value);
+  StringValue dom_id(dom_id_map_[id]);
+  web_ui_->CallJavascriptFunction("ntp4.setStripeColor", dom_id, *color_value);
   dom_id_map_.erase(id);
 }
 
@@ -134,6 +133,7 @@ void FaviconWebUIHandler::NotifyAppIconReady(const std::string& extension_id) {
   scoped_refptr<RefCountedStaticMemory> bits_mem(
       new RefCountedStaticMemory(&bits.front(), bits.size()));
   scoped_ptr<StringValue> color_value(GetDominantColorCssString(bits_mem));
+  StringValue id(extension_id);
   web_ui_->CallJavascriptFunction(
-      "ntp4.setStripeColor", StringValue(extension_id), *color_value);
+      "ntp4.setStripeColor", id, *color_value);
 }
