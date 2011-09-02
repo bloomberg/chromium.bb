@@ -108,7 +108,9 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
       new MockExtensionInstallUIDelegate);
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
-  prompt.permissions.push_back(UTF8ToUTF16("warning 1"));
+  std::vector<string16> permissions;
+  permissions.push_back(UTF8ToUTF16("warning 1"));
+  prompt.SetPermissions(permissions);
 
   scoped_nsobject<ExtensionInstallDialogController>
     controller([[ExtensionInstallDialogController alloc]
@@ -140,7 +142,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
 
   EXPECT_TRUE([controller warningsField] != nil);
   EXPECT_NSEQ([[controller warningsField] stringValue],
-              base::SysUTF16ToNSString(prompt.permissions[0]));
+              base::SysUTF16ToNSString(prompt.GetPermission(0)));
 
   EXPECT_TRUE([controller warningsBox] != nil);
 
@@ -164,7 +166,9 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalOK) {
       new MockExtensionInstallUIDelegate);
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
-  prompt.permissions.push_back(UTF8ToUTF16("warning 1"));
+  std::vector<string16> permissions;
+  permissions.push_back(UTF8ToUTF16("warning 1"));
+  prompt.SetPermissions(permissions);
 
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
@@ -192,12 +196,14 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
 
   ExtensionInstallUI::Prompt one_warning_prompt(
       ExtensionInstallUI::INSTALL_PROMPT);
-  one_warning_prompt.permissions.push_back(UTF8ToUTF16("warning 1"));
+  std::vector<string16> permissions;
+  permissions.push_back(UTF8ToUTF16("warning 1"));
+  one_warning_prompt.SetPermissions(permissions);
 
   ExtensionInstallUI::Prompt two_warnings_prompt(
       ExtensionInstallUI::INSTALL_PROMPT);
-  two_warnings_prompt.permissions.push_back(UTF8ToUTF16("warning 1"));
-  two_warnings_prompt.permissions.push_back(UTF8ToUTF16("warning 2"));
+  permissions.push_back(UTF8ToUTF16("warning 2"));
+  two_warnings_prompt.SetPermissions(permissions);
 
   scoped_nsobject<ExtensionInstallDialogController>
   controller1([[ExtensionInstallDialogController alloc]

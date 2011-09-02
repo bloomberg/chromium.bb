@@ -37,34 +37,60 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   };
 
   // Extra information needed to display an installation or uninstallation
-  // prompt.
-  struct Prompt {
+  // prompt. Gets populated with raw data and exposes getters for formatted
+  // strings so that the GTK/views/Cocoa install dialogs don't have to repeat
+  // that logic.
+  class Prompt {
+   public:
     explicit Prompt(PromptType type);
     ~Prompt();
 
-    PromptType type;
+    void SetPermissions(std::vector<string16> permissions);
+    void SetInlineInstallWebstoreData(std::string localized_user_count,
+                                      double average_rating,
+                                      int rating_count);
+
+    PromptType type() const { return type_; }
+
+    // Getters for UI element labels.
+    string16 GetDialogTitle() const;
+    string16 GetHeading(std::string extension_name) const;
+    string16 GetAcceptButtonLabel() const;
+    bool HasAbortButtonLabel() const;
+    string16 GetAbortButtonLabel() const;
+    string16 GetPermissionsHeader() const;
+
+    // Getters for webstore metadata. Only populated when the type is
+    // INLINE_INSTALL_PROMPT.
+
+    // The star display logic replicates the one used by the webstore (from
+    // components.ratingutils.setFractionalYellowStars). Callers pass in an
+    // "appender", which will be called back with the resource ID that they
+    // need to load/append.
+    typedef void*(*StarAppender)(int, void*);
+    void AppendRatingStars(StarAppender appender, void* data) const;
+    string16 GetRatingCount() const;
+    string16 GetUserCount() const;
+    size_t GetPermissionCount() const;
+    string16 GetPermission(int index) const;
+
+   private:
+    PromptType type_;
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
-    std::vector<string16> permissions;
+    std::vector<string16> permissions_;
 
     // These fields are populated only when the prompt type is
     // INLINE_INSTALL_PROMPT
     // Already formatted to be locale-specific.
-    std::string localized_user_count;
+    std::string localized_user_count_;
     // Range is kMinExtensionRating to kMaxExtensionRating
-    double average_rating;
-    int rating_count;
+    double average_rating_;
+    int rating_count_;
   };
 
   static const int kMinExtensionRating = 0;
   static const int kMaxExtensionRating = 5;
-
-  // A mapping from PromptType to message ID for various dialog content.
-  static const int kTitleIds[NUM_PROMPT_TYPES];
-  static const int kHeadingIds[NUM_PROMPT_TYPES];
-  static const int kButtonIds[NUM_PROMPT_TYPES];
-  static const int kWarningIds[NUM_PROMPT_TYPES];
-  static const int kAbortButtonIds[NUM_PROMPT_TYPES];
 
   class Delegate {
    public:

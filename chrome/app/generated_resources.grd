@@ -3705,6 +3705,9 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
         Confirm Installation
       </message>
+      <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">
+        Add to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
+      </message>
       <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app uninstallation prompt window">
         Confirm Uninstallation
       </message>
@@ -4107,6 +4110,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_EXTENSION_PROMPT_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt">
         Install
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_INLINE_INSTALL_BUTTON" desc="Text for the inline install button on the extension install prompt">
+        Add
       </message>
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Uninstall

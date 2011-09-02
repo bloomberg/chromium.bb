@@ -426,7 +426,7 @@ std::string GetWebstoreItemDetailURLPrefix() {
 }
 
 GURL GetWebstoreItemJsonDataURL(const std::string& extension_id) {
-  return GURL(GetWebstoreItemDetailURLPrefix() + extension_id + "?output=json");
+  return GURL(GetWebstoreLaunchURL() + "/inlineinstall/detail/" + extension_id);
 }
 
 const char* kGalleryUpdateHttpUrl =

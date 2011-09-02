@@ -39,36 +39,31 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-// static
-const int ExtensionInstallUI::kTitleIds[NUM_PROMPT_TYPES] = {
+static const int kTitleIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_TITLE,
-  IDS_EXTENSION_INSTALL_PROMPT_TITLE,
+  IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE,
   IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
   IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE
 };
-// static
-const int ExtensionInstallUI::kHeadingIds[NUM_PROMPT_TYPES] = {
+static const int kHeadingIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
   IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING,
   IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING
 };
-// static
-const int ExtensionInstallUI::kButtonIds[NUM_PROMPT_TYPES] = {
+static const int kAcceptButtonIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
-  IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
+  IDS_EXTENSION_PROMPT_INLINE_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
   IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON
 };
-// static
-const int ExtensionInstallUI::kAbortButtonIds[NUM_PROMPT_TYPES] = {
+static const int kAbortButtonIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   0,
   0,
   0,
   IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON
 };
-// static
-const int ExtensionInstallUI::kWarningIds[NUM_PROMPT_TYPES] = {
+static const int kPermissionsHeaderIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO,
@@ -82,10 +77,114 @@ const int kIconSize = 69;
 
 }  // namespace
 
-ExtensionInstallUI::Prompt::Prompt(PromptType type) : type(type) {
+ExtensionInstallUI::Prompt::Prompt(PromptType type) : type_(type) {
 }
 
 ExtensionInstallUI::Prompt::~Prompt() {
+}
+
+void ExtensionInstallUI::Prompt::SetPermissions(
+    std::vector<string16> permissions) {
+  permissions_ = permissions;
+}
+
+void ExtensionInstallUI::Prompt::SetInlineInstallWebstoreData(
+    std::string localized_user_count,
+    double average_rating,
+    int rating_count) {
+  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  localized_user_count_ = localized_user_count;
+  average_rating_ = average_rating;
+  rating_count_ = rating_count;
+}
+
+string16 ExtensionInstallUI::Prompt::GetDialogTitle() const {
+  if (type_ == INLINE_INSTALL_PROMPT) {
+    return l10n_util::GetStringFUTF16(
+      kTitleIds[type_], l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  } else {
+    return l10n_util::GetStringUTF16(kTitleIds[type_]);
+  }
+}
+
+string16 ExtensionInstallUI::Prompt::GetHeading(std::string extension_name)
+    const {
+  if (type_ == INLINE_INSTALL_PROMPT) {
+    return UTF8ToUTF16(extension_name);
+  } else {
+    return l10n_util::GetStringFUTF16(
+        kHeadingIds[type_], UTF8ToUTF16(extension_name));
+  }
+}
+
+string16 ExtensionInstallUI::Prompt::GetAcceptButtonLabel() const {
+  return l10n_util::GetStringUTF16(kAcceptButtonIds[type_]);
+}
+
+bool ExtensionInstallUI::Prompt::HasAbortButtonLabel() const {
+  return kAbortButtonIds[type_] > 0;
+}
+
+string16 ExtensionInstallUI::Prompt::GetAbortButtonLabel() const {
+  CHECK(HasAbortButtonLabel());
+  return l10n_util::GetStringUTF16(kAbortButtonIds[type_]);
+}
+
+string16 ExtensionInstallUI::Prompt::GetPermissionsHeader() const {
+  return l10n_util::GetStringUTF16(kPermissionsHeaderIds[type_]);
+}
+
+void ExtensionInstallUI::Prompt::AppendRatingStars(
+    StarAppender appender, void* data) const {
+  CHECK(appender);
+  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  int rating_integer = floor(average_rating_);
+  double rating_fractional = average_rating_ - rating_integer;
+
+  if (rating_fractional > 0.66) {
+    rating_integer++;
+  }
+
+  if (rating_fractional < 0.33 || rating_fractional > 0.66) {
+    rating_fractional = 0;
+  }
+
+  int i;
+  for (i = 0; i < rating_integer; i++) {
+    appender(IDR_EXTENSIONS_RATING_STAR_ON, data);
+  }
+  if (rating_fractional) {
+    appender(IDR_EXTENSIONS_RATING_STAR_HALF_LEFT, data);
+    i++;
+  }
+  for (; i < kMaxExtensionRating; i++) {
+    appender(IDR_EXTENSIONS_RATING_STAR_OFF, data);
+  }
+}
+
+string16 ExtensionInstallUI::Prompt::GetRatingCount() const {
+  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  return l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_RATING_COUNT,
+        UTF8ToUTF16(base::IntToString(rating_count_)));
+}
+
+string16 ExtensionInstallUI::Prompt::GetUserCount() const {
+  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  return l10n_util::GetStringFUTF16(
+      IDS_EXTENSION_USER_COUNT,
+      UTF8ToUTF16(localized_user_count_));
+}
+
+size_t ExtensionInstallUI::Prompt::GetPermissionCount() const {
+  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  return permissions_.size();
+}
+
+string16 ExtensionInstallUI::Prompt::GetPermission(int index) const {
+  CHECK_EQ(INLINE_INSTALL_PROMPT, type_);
+  return l10n_util::GetStringFUTF16(
+      IDS_EXTENSION_PERMISSION_LINE, permissions_[index]);
 }
 
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
@@ -227,7 +326,7 @@ void ExtensionInstallUI::OnImageLoaded(
           NotificationService::NoDetails());
 
       Prompt prompt(prompt_type_);
-      prompt.permissions = permissions_->GetWarningMessages();
+      prompt.SetPermissions(permissions_->GetWarningMessages());
       ShowExtensionInstallDialog(
           profile_, delegate_, extension_, &icon_, prompt);
       break;

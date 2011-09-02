@@ -4,7 +4,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,33 +41,6 @@ GtkWidget* AddResourceIcon(int resource_id, GtkWidget* container) {
   g_object_unref(icon_pixbuf);
   gtk_box_pack_start(GTK_BOX(container), icon_widget, FALSE, FALSE, 0);
   return icon_widget;
-}
-
-// Adds star icons corresponding to a rating. Replicates the CWS stars display
-// logic (from components.ratingutils.setFractionalYellowStars).
-void AddRatingStars(double average_rating, GtkWidget* container) {
-  int rating_integer = floor(average_rating);
-  double rating_fractional = average_rating - rating_integer;
-
-  if (rating_fractional > 0.66) {
-    rating_integer++;
-  }
-
-  if (rating_fractional < 0.33 || rating_fractional > 0.66) {
-    rating_fractional = 0;
-  }
-
-  int i = 0;
-  while (i++ < rating_integer) {
-    AddResourceIcon(IDR_EXTENSIONS_RATING_STAR_ON, container);
-  }
-  if (rating_fractional) {
-    AddResourceIcon(IDR_EXTENSIONS_RATING_STAR_HALF_LEFT, container);
-    i++;
-  }
-  while (i++ < ExtensionInstallUI::kMaxExtensionRating) {
-    AddResourceIcon(IDR_EXTENSIONS_RATING_STAR_OFF, container);
-  }
 }
 
 // Displays the dialog when constructed, deletes itself when dialog is
@@ -101,25 +72,24 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     const ExtensionInstallUI::Prompt& prompt)
     : delegate_(delegate),
       extension_(extension) {
-  ExtensionInstallUI::PromptType type = prompt.type;
-  const std::vector<string16>& permissions = prompt.permissions;
-  bool show_permissions = !permissions.empty();
-  bool is_inline_install = type == ExtensionInstallUI::INLINE_INSTALL_PROMPT;
+  bool show_permissions = prompt.GetPermissionCount() > 0;
+  bool is_inline_install =
+      prompt.type() == ExtensionInstallUI::INLINE_INSTALL_PROMPT;
 
   // Build the dialog.
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(ExtensionInstallUI::kTitleIds[type]).c_str(),
+      UTF16ToUTF8(prompt.GetDialogTitle()).c_str(),
       parent,
       GTK_DIALOG_MODAL,
       NULL);
-  int cancel = ExtensionInstallUI::kAbortButtonIds[type];
   GtkWidget* close_button = gtk_dialog_add_button(
       GTK_DIALOG(dialog_),
-      cancel > 0 ? l10n_util::GetStringUTF8(cancel).c_str(): GTK_STOCK_CANCEL,
+      prompt.HasAbortButtonLabel() ?
+          UTF16ToUTF8(prompt.GetAbortButtonLabel()).c_str() : GTK_STOCK_CANCEL,
       GTK_RESPONSE_CLOSE);
   gtk_dialog_add_button(
       GTK_DIALOG(dialog_),
-      l10n_util::GetStringUTF8(ExtensionInstallUI::kButtonIds[type]).c_str(),
+      UTF16ToUTF8(prompt.GetAcceptButtonLabel()).c_str(),
       GTK_RESPONSE_ACCEPT);
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog_), FALSE);
 
@@ -142,17 +112,16 @@ ExtensionInstallDialog::ExtensionInstallDialog(
                      TRUE, TRUE, 0);
 
   GtkWidget* heading_vbox = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(left_column_area), heading_vbox, FALSE, FALSE, 0);
-
-  // Heading (name-only for inline installs)
-  std::string heading_text = is_inline_install ? extension_->name() :
-      l10n_util::GetStringFUTF8(ExtensionInstallUI::kHeadingIds[type],
-                                UTF8ToUTF16(extension_->name()));
-  GtkWidget* heading_label = gtk_util::CreateBoldLabel(heading_text);
-  gtk_label_set_line_wrap(GTK_LABEL(heading_label), true);
-  gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);
   // If we are not going to show anything else, vertically center the title.
   bool center_heading = !show_permissions && !is_inline_install;
+  gtk_box_pack_start(GTK_BOX(left_column_area), heading_vbox, center_heading,
+                     center_heading, 0);
+
+  // Heading
+  GtkWidget* heading_label = gtk_util::CreateBoldLabel(
+      UTF16ToUTF8(prompt.GetHeading(extension_->name())).c_str());
+  gtk_label_set_line_wrap(GTK_LABEL(heading_label), true);
+  gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(heading_vbox), heading_label, center_heading,
                      center_heading, 0);
 
@@ -160,18 +129,19 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     // Average rating (as stars) and number of ratings
     GtkWidget* stars_hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(heading_vbox), stars_hbox, FALSE, FALSE, 0);
-    AddRatingStars(prompt.average_rating, stars_hbox);
-    GtkWidget* rating_label = gtk_label_new(l10n_util::GetStringFUTF8(
-        IDS_EXTENSION_RATING_COUNT,
-        UTF8ToUTF16(base::IntToString(prompt.rating_count))).c_str());
+    prompt.AppendRatingStars(
+        reinterpret_cast<ExtensionInstallUI::Prompt::StarAppender>(
+            AddResourceIcon),
+        stars_hbox);
+    GtkWidget* rating_label = gtk_label_new(UTF16ToUTF8(
+        prompt.GetRatingCount()).c_str());
     gtk_util::ForceFontSizePixels(rating_label, kRatingTextSize);
     gtk_box_pack_start(GTK_BOX(stars_hbox), rating_label,
                        FALSE, FALSE, 3);
 
     // User count
-    GtkWidget* users_label = gtk_label_new(l10n_util::GetStringFUTF8(
-        IDS_EXTENSION_USER_COUNT,
-        UTF8ToUTF16(prompt.localized_user_count)).c_str());
+    GtkWidget* users_label = gtk_label_new(UTF16ToUTF8(
+        prompt.GetUserCount()).c_str());
     gtk_util::SetLabelWidth(users_label, kLeftColumnMinWidth);
     gtk_util::SetLabelColor(users_label, &ui::kGdkGray);
     gtk_util::ForceFontSizePixels(rating_label, kRatingTextSize);
@@ -219,17 +189,15 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       permissions_container = left_column_area;
     }
 
-    GtkWidget* warning_label = gtk_util::CreateBoldLabel(
-        l10n_util::GetStringUTF8(
-            ExtensionInstallUI::kWarningIds[type]).c_str());
-    gtk_util::SetLabelWidth(warning_label, kLeftColumnMinWidth);
-    gtk_box_pack_start(GTK_BOX(permissions_container), warning_label, FALSE,
-                       FALSE, is_inline_install ? 0 : ui::kControlSpacing);
+    GtkWidget* permissions_header = gtk_util::CreateBoldLabel(
+        UTF16ToUTF8(prompt.GetPermissionsHeader()).c_str());
+    gtk_util::SetLabelWidth(permissions_header, kLeftColumnMinWidth);
+    gtk_box_pack_start(GTK_BOX(permissions_container), permissions_header,
+                       FALSE, FALSE, 0);
 
-    for (std::vector<string16>::const_iterator iter = permissions.begin();
-         iter != permissions.end(); ++iter) {
-      GtkWidget* permission_label = gtk_label_new(l10n_util::GetStringFUTF8(
-          IDS_EXTENSION_PERMISSION_LINE, *iter).c_str());
+    for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
+      GtkWidget* permission_label = gtk_label_new(UTF16ToUTF8(
+          prompt.GetPermission(i)).c_str());
       gtk_util::SetLabelWidth(permission_label, kLeftColumnMinWidth);
       gtk_box_pack_start(GTK_BOX(permissions_container), permission_label,
                          FALSE, FALSE, kPermissionsPadding);

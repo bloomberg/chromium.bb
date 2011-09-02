@@ -67,8 +67,8 @@ void ShowExtensionInstallDialogForManifest(
   }
 
   ExtensionInstallUI::Prompt filled_out_prompt = prompt;
-  filled_out_prompt.permissions =
-      (*dummy_extension)->GetPermissionMessageStrings();
+  filled_out_prompt.SetPermissions(
+      (*dummy_extension)->GetPermissionMessageStrings());
 
   ShowExtensionInstallDialog(profile,
                              delegate,

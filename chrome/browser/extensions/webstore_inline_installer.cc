@@ -252,9 +252,9 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
       tab_contents_->browser_context());
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INLINE_INSTALL_PROMPT);
-  prompt.localized_user_count = localized_user_count_;
-  prompt.average_rating = average_rating_;
-  prompt.rating_count = rating_count_;
+  prompt.SetInlineInstallWebstoreData(localized_user_count_,
+                                      average_rating_,
+                                      rating_count_);
 
   ShowExtensionInstallDialogForManifest(profile,
                                         this,

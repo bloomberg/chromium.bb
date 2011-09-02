@@ -67,7 +67,7 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 
   // We use a different XIB in the case of no permission warnings, that is a
   // little bit more nicely laid out.
-  if (prompt.permissions.empty()) {
+  if (prompt.GetPermissionCount() == 0) {
     nibpath = [base::mac::MainAppBundle()
                pathForResource:@"ExtensionInstallPromptNoWarnings"
                         ofType:@"nib"];
@@ -83,27 +83,26 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
     icon_ = *icon;
     delegate_ = delegate;
 
-    title_.reset(
-        [l10n_util::GetNSStringF(ExtensionInstallUI::kHeadingIds[prompt.type],
-                                 UTF8ToUTF16(extension->name())) retain]);
-    subtitle_.reset(
-         [l10n_util::GetNSString(ExtensionInstallUI::kWarningIds[prompt.type])
-          retain]);
-    button_.reset([l10n_util::GetNSString(
-                      ExtensionInstallUI::kButtonIds[prompt.type]) retain]);
-    int cancel_id = ExtensionInstallUI::kAbortButtonIds[prompt.type];
-    cancel_button_.reset([l10n_util::GetNSString(
-        cancel_id > 0 ? cancel_id : IDS_CANCEL) retain]);
+    title_.reset([base::SysUTF16ToNSString(
+        prompt.GetHeading(extension->name())) retain]);
+    subtitle_.reset([base::SysUTF16ToNSString(
+        prompt.GetPermissionsHeader()) retain]);
+    button_.reset([base::SysUTF16ToNSString(
+        prompt.GetAcceptButtonLabel()) retain]);
+    NSString* cancel_button_label = prompt.HasAbortButtonLabel() ?
+        base::SysUTF16ToNSString(prompt.GetAbortButtonLabel()) :
+        l10n_util::GetNSString(IDS_CANCEL);
+    cancel_button_.reset([cancel_button_label retain]);
 
     // We display the permission warnings as a simple text string, separated by
     // newlines.
-    if (!prompt.permissions.empty()) {
+    if (prompt.GetPermissionCount()) {
       string16 joined_warnings;
-      for (size_t i = 0; i < prompt.permissions.size(); ++i) {
+      for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
         if (i > 0)
           joined_warnings += UTF8ToUTF16("\n\n");
 
-        joined_warnings += prompt.permissions[i];
+        joined_warnings += prompt.GetPermission(i);
       }
 
       warnings_.reset(
