@@ -14,7 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.cc"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
