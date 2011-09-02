@@ -575,7 +575,8 @@ void GlassBrowserFrameView::UpdateAvatarInfo() {
       frame_->GetRootView()->Layout();
     }
   } else if (avatar_button_.get()) {
-    RemoveChildView(avatar_button_.release());
+    RemoveChildView(avatar_button_.get());
+    avatar_button_.reset();
     frame_->GetRootView()->Layout();
   }
 
