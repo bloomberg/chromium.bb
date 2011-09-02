@@ -60,8 +60,7 @@ class BaseTool(object):
     # Defines Chromium-specific flags.
     self._parser = optparse.OptionParser("usage: %prog [options] <program to "
                                          "test>")
-    # TODO(timurrrr): investigate ui_tests failures and un-comment
-    #self._parser.disable_interspersed_args()
+    self._parser.disable_interspersed_args()
     self._parser.add_option("-t", "--timeout",
                       dest="timeout", metavar="TIMEOUT", default=10000,
                       help="timeout in seconds for the run (default 10000)")

@@ -122,7 +122,7 @@ class ChromeTests:
     logging.info("running test %s" % (self._test))
     return self._test_list[self._test](self)
 
-  def _ReadGtestFilterFile(self, tool, name, cmd):
+  def _AppendGtestFilter(self, tool, name, cmd):
     '''Read a file which is a list of tests to filter out with --gtest_filter
     and append the command-line option to cmd.
     '''
@@ -192,9 +192,8 @@ class ChromeTests:
   def SimpleTest(self, module, name, valgrind_test_args=None, cmd_args=None):
     tool = valgrind_test.CreateTool(self._options.valgrind_tool)
     cmd = self._DefaultCommand(tool, name, valgrind_test_args)
-    self._ReadGtestFilterFile(tool, name, cmd)
+    self._AppendGtestFilter(tool, name, cmd)
     if cmd_args:
-      cmd.extend(["--"])
       cmd.extend(cmd_args)
 
     self.SetupLdPath(True)
@@ -360,7 +359,7 @@ class ChromeTests:
         script_cmd.append("--test-list=%s" % self._args[0])
       else:
         script_cmd.extend(self._args)
-    self._ReadGtestFilterFile(tool, "layout", script_cmd)
+    self._AppendGtestFilter(tool, "layout", script_cmd)
     # Now run script_cmd with the wrapper in cmd
     cmd.extend(["--"])
     cmd.extend(script_cmd)
