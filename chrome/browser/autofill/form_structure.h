@@ -30,6 +30,10 @@ enum UploadRequired {
 
 class AutofillMetrics;
 
+namespace base {
+class TimeTicks;
+}
+
 namespace buzz {
 class XmlElement;
 }
@@ -106,8 +110,13 @@ class FormStructure {
 
   // Logs quality metrics for |this|, which should be a user-submitted form.
   // This method should only be called after the possible field types have been
-  // set for each field.
-  void LogQualityMetrics(const AutofillMetrics& metric_logger) const;
+  // set for each field.  |interaction_time| should be a timestamp corresponding
+  // to the user's first interaction with the form.  |submission_time| should be
+  // a timestamp corresponding to the form's submission.
+  void LogQualityMetrics(const AutofillMetrics& metric_logger,
+                         const base::TimeTicks& load_time,
+                         const base::TimeTicks& interaction_time,
+                         const base::TimeTicks& submission_time) const;
 
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);

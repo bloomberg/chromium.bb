@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_type.h"
@@ -646,7 +647,10 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
 }
 
 void FormStructure::LogQualityMetrics(
-    const AutofillMetrics& metric_logger) const {
+    const AutofillMetrics& metric_logger,
+    const base::TimeTicks& load_time,
+    const base::TimeTicks& interaction_time,
+    const base::TimeTicks& submission_time) const {
   std::string experiment_id = server_experiment_id();
   metric_logger.LogServerExperimentIdForUpload(experiment_id);
 
@@ -778,15 +782,46 @@ void FormStructure::LogQualityMetrics(
   if (num_detected_field_types < kRequiredFillableFields) {
     metric_logger.LogUserHappinessMetric(
         AutofillMetrics::SUBMITTED_NON_FILLABLE_FORM);
-  } else if (did_autofill_all_possible_fields) {
-    metric_logger.LogUserHappinessMetric(
-        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_ALL);
-  } else if (did_autofill_some_possible_fields) {
-    metric_logger.LogUserHappinessMetric(
-        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME);
   } else {
-    metric_logger.LogUserHappinessMetric(
-        AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE);
+    if (did_autofill_all_possible_fields) {
+      metric_logger.LogUserHappinessMetric(
+          AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_ALL);
+    } else if (did_autofill_some_possible_fields) {
+      metric_logger.LogUserHappinessMetric(
+          AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME);
+    } else {
+      metric_logger.LogUserHappinessMetric(
+          AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_NONE);
+    }
+
+    // Unlike the other times, the |submission_time| should always be available.
+    DCHECK(!submission_time.is_null());
+
+    // The |load_time| might be unset, in the case that the form was dynamically
+    // added to the DOM.
+    if (!load_time.is_null()) {
+      // Submission should always chronologically follow form load.
+      DCHECK(submission_time > load_time);
+      base::TimeDelta elapsed = submission_time - load_time;
+      if (did_autofill_some_possible_fields)
+        metric_logger.LogFormFillDurationFromLoadWithAutofill(elapsed);
+      else
+        metric_logger.LogFormFillDurationFromLoadWithoutAutofill(elapsed);
+    }
+
+    // The |interaction_time| might be unset, in the case that the user
+    // submitted a blank form.
+    if (!interaction_time.is_null()) {
+      // Submission should always chronologically follow interaction.
+      DCHECK(submission_time > interaction_time);
+      base::TimeDelta elapsed = submission_time - interaction_time;
+      if (did_autofill_some_possible_fields) {
+        metric_logger.LogFormFillDurationFromInteractionWithAutofill(elapsed);
+      } else {
+        metric_logger.LogFormFillDurationFromInteractionWithoutAutofill(
+            elapsed);
+      }
+    }
   }
 }
 

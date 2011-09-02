@@ -105,6 +105,7 @@ class DictionaryValue;
 class ListValue;
 class Time;
 class TimeDelta;
+class TimeTicks;
 struct FileDescriptor;
 }
 
@@ -327,6 +328,14 @@ struct IPC_EXPORT ParamTraits<base::Time> {
 template <>
 struct IPC_EXPORT ParamTraits<base::TimeDelta> {
   typedef base::TimeDelta param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct IPC_EXPORT ParamTraits<base::TimeTicks> {
+  typedef base::TimeTicks param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

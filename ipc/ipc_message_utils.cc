@@ -269,7 +269,7 @@ void ParamTraits<base::Time>::Log(const param_type& p, std::string* l) {
 }
 
 void ParamTraits<base::TimeDelta> ::Write(Message* m, const param_type& p) {
-  ParamTraits<int64> ::Write(m, p.InMicroseconds());
+  ParamTraits<int64> ::Write(m, p.ToInternalValue());
 }
 
 bool ParamTraits<base::TimeDelta> ::Read(const Message* m,
@@ -278,13 +278,32 @@ bool ParamTraits<base::TimeDelta> ::Read(const Message* m,
   int64 value;
   bool ret = ParamTraits<int64> ::Read(m, iter, &value);
   if (ret)
-    *r = base::TimeDelta::FromMicroseconds(value);
+    *r = base::TimeDelta::FromInternalValue(value);
 
   return ret;
 }
 
 void ParamTraits<base::TimeDelta> ::Log(const param_type& p, std::string* l) {
-  ParamTraits<int64> ::Log(p.InMicroseconds(), l);
+  ParamTraits<int64> ::Log(p.ToInternalValue(), l);
+}
+
+void ParamTraits<base::TimeTicks> ::Write(Message* m, const param_type& p) {
+  ParamTraits<int64> ::Write(m, p.ToInternalValue());
+}
+
+bool ParamTraits<base::TimeTicks> ::Read(const Message* m,
+                                         void** iter,
+                                         param_type* r) {
+  int64 value;
+  bool ret = ParamTraits<int64> ::Read(m, iter, &value);
+  if (ret)
+    *r = base::TimeTicks::FromInternalValue(value);
+
+  return ret;
+}
+
+void ParamTraits<base::TimeTicks> ::Log(const param_type& p, std::string* l) {
+  ParamTraits<int64> ::Log(p.ToInternalValue(), l);
 }
 
 void ParamTraits<DictionaryValue>::Write(Message* m, const param_type& p) {

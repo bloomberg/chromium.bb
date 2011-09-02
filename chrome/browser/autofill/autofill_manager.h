@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
@@ -113,10 +114,13 @@ class AutofillManager : public TabContentsObserver,
   void UnpackGUIDs(int id, GUIDPair* cc_guid, GUIDPair* profile_guid);
 
  private:
-  void OnFormSubmitted(const webkit_glue::FormData& form);
-  void OnFormsSeen(const std::vector<webkit_glue::FormData>& forms);
+  void OnFormSubmitted(const webkit_glue::FormData& form,
+                       const base::TimeTicks& timestamp);
+  void OnFormsSeen(const std::vector<webkit_glue::FormData>& forms,
+                   const base::TimeTicks& timestamp);
   void OnTextFieldDidChange(const webkit_glue::FormData& form,
-                            const webkit_glue::FormField& field);
+                            const webkit_glue::FormField& field,
+                            const base::TimeTicks& timestamp);
   void OnQueryFormFieldAutofill(int query_id,
                                 const webkit_glue::FormData& form,
                                 const webkit_glue::FormField& field);
@@ -126,7 +130,7 @@ class AutofillManager : public TabContentsObserver,
                               int unique_id);
   void OnShowAutofillDialog();
   void OnDidPreviewAutofillFormData();
-  void OnDidFillAutofillFormData();
+  void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnDidShowAutofillSuggestions(bool is_new_popup);
 
   // Fills |host| with the RenderViewHost for this tab.
@@ -199,6 +203,12 @@ class AutofillManager : public TabContentsObserver,
   // |submitted_form|.
   void DeterminePossibleFieldTypesForUpload(FormStructure* submitted_form);
 
+  // If |initial_interaction_timestamp_| is unset or is set to a later time than
+  // |interaction_timestamp|, updates the cached timestamp.  The latter check is
+  // needed because IPC messages can arrive out of order.
+  void UpdateInitialInteractionTimestamp(
+      const base::TimeTicks& interaction_timestamp);
+
   // The owning TabContentsWrapper.
   TabContentsWrapper* tab_contents_wrapper_;
 
@@ -233,6 +243,11 @@ class AutofillManager : public TabContentsObserver,
   bool user_did_autofill_;
   // Has the user edited a field that was previously autofilled?
   bool user_did_edit_autofilled_field_;
+  // When the page finished loading.
+  base::TimeTicks forms_loaded_timestamp_;
+  // When the user first interacted with a potentially fillable form on this
+  // page.
+  base::TimeTicks initial_interaction_timestamp_;
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
@@ -277,6 +292,7 @@ class AutofillManager : public TabContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            UserHappinessFormLoadAndSubmission);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, UserHappinessFormInteraction);
+  FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, FormFillDuration);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };

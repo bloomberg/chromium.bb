@@ -5,6 +5,7 @@
 #include "chrome/renderer/autofill/autofill_agent.h"
 
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_constants.h"
@@ -79,8 +80,10 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
   std::vector<webkit_glue::FormData> forms;
   form_manager_.ExtractForms(frame, &forms);
 
-  if (!forms.empty())
-    Send(new AutofillHostMsg_FormsSeen(routing_id(), forms));
+  if (!forms.empty()) {
+    Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
+                                       base::TimeTicks::Now()));
+  }
 }
 
 void AutofillAgent::FrameDetached(WebFrame* frame) {
@@ -100,7 +103,8 @@ void AutofillAgent::WillSubmitForm(WebFrame* frame,
           static_cast<FormManager::ExtractMask>(
               FormManager::EXTRACT_VALUE | FormManager::EXTRACT_OPTION_TEXT),
           &form_data)) {
-    Send(new AutofillHostMsg_FormSubmitted(routing_id(), form_data));
+    Send(new AutofillHostMsg_FormSubmitted(routing_id(), form_data,
+                                           base::TimeTicks::Now()));
   }
 }
 
@@ -201,8 +205,10 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
 
   webkit_glue::FormData form;
   webkit_glue::FormField field;
-  if (FindFormAndFieldForNode(element, &form, &field))
-    Send(new AutofillHostMsg_TextFieldDidChange(routing_id(), form, field));
+  if (FindFormAndFieldForNode(element, &form, &field)) {
+    Send(new AutofillHostMsg_TextFieldDidChange(routing_id(), form, field,
+                                                base::TimeTicks::Now()));
+  }
 }
 
 void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
@@ -311,7 +317,8 @@ void AutofillAgent::OnFormDataFilled(int query_id,
   switch (autofill_action_) {
     case AUTOFILL_FILL:
       form_manager_.FillForm(form, autofill_query_element_);
-      Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id()));
+      Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(),
+                                                       base::TimeTicks::Now()));
       break;
     case AUTOFILL_PREVIEW:
       form_manager_.PreviewForm(form, autofill_query_element_);

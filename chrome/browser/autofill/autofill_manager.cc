@@ -52,6 +52,7 @@
 #include "webkit/glue/form_data_predictions.h"
 #include "webkit/glue/form_field.h"
 
+using base::TimeTicks;
 using switches::kEnableAutofillFeedback;
 using webkit_glue::FormData;
 using webkit_glue::FormDataPredictions;
@@ -303,7 +304,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AutofillManager::OnFormSubmitted(const FormData& form) {
+void AutofillManager::OnFormSubmitted(const FormData& form,
+                                      const TimeTicks& timestamp) {
   // Let AutoComplete know as well.
   tab_contents_wrapper_->autocomplete_history_manager()->OnFormSubmitted(form);
 
@@ -336,7 +338,10 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
   if (!personal_data_->profiles().empty() ||
       !personal_data_->credit_cards().empty()) {
     DeterminePossibleFieldTypesForUpload(&submitted_form);
-    submitted_form.LogQualityMetrics(*metric_logger_);
+    submitted_form.LogQualityMetrics(*metric_logger_,
+                                     forms_loaded_timestamp_,
+                                     initial_interaction_timestamp_,
+                                     timestamp);
 
     if (submitted_form.ShouldBeCrowdsourced())
       UploadFormData(submitted_form);
@@ -348,7 +353,8 @@ void AutofillManager::OnFormSubmitted(const FormData& form) {
   ImportFormData(submitted_form);
 }
 
-void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms) {
+void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
+                                  const TimeTicks& timestamp) {
   bool enabled = IsAutofillEnabled();
   if (!has_logged_autofill_enabled_) {
     metric_logger_->LogIsAutofillEnabledAtPageLoad(enabled);
@@ -358,11 +364,13 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms) {
   if (!enabled)
     return;
 
+  forms_loaded_timestamp_ = timestamp;
   ParseForms(forms);
 }
 
 void AutofillManager::OnTextFieldDidChange(const FormData& form,
-                                           const FormField& field) {
+                                           const FormField& field,
+                                           const TimeTicks& timestamp) {
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
   if (!FindCachedFormAndField(form, field, &form_structure, &autofill_field))
@@ -384,6 +392,8 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
           AutofillMetrics::USER_DID_EDIT_AUTOFILLED_FIELD_ONCE);
     }
   }
+
+  UpdateInitialInteractionTimestamp(timestamp);
 }
 
 void AutofillManager::OnQueryFormFieldAutofill(
@@ -633,7 +643,7 @@ void AutofillManager::OnDidPreviewAutofillFormData() {
 }
 
 
-void AutofillManager::OnDidFillAutofillFormData() {
+void AutofillManager::OnDidFillAutofillFormData(const TimeTicks& timestamp) {
   NotificationService::current()->Notify(
       chrome::NOTIFICATION_AUTOFILL_DID_FILL_FORM_DATA,
       Source<RenderViewHost>(tab_contents()->render_view_host()),
@@ -645,6 +655,8 @@ void AutofillManager::OnDidFillAutofillFormData() {
     metric_logger_->LogUserHappinessMetric(
         AutofillMetrics::USER_DID_AUTOFILL_ONCE);
   }
+
+  UpdateInitialInteractionTimestamp(timestamp);
 }
 
 void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
@@ -775,6 +787,8 @@ void AutofillManager::Reset() {
   user_did_type_ = false;
   user_did_autofill_ = false;
   user_did_edit_autofilled_field_ = false;
+  forms_loaded_timestamp_ = TimeTicks();
+  initial_interaction_timestamp_ = TimeTicks();
 }
 
 AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
@@ -1150,4 +1164,12 @@ void AutofillManager::UnpackGUIDs(int id,
 
   *cc_guid = IDToGUID(cc_id);
   *profile_guid = IDToGUID(profile_id);
+}
+
+void AutofillManager::UpdateInitialInteractionTimestamp(
+    const TimeTicks& interaction_timestamp) {
+  if (initial_interaction_timestamp_.is_null() ||
+      interaction_timestamp < initial_interaction_timestamp_) {
+    initial_interaction_timestamp_ = interaction_timestamp;
+  }
 }

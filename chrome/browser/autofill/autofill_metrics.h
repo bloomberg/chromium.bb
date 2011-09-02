@@ -12,6 +12,10 @@
 #include "base/basictypes.h"
 #include "chrome/browser/autofill/field_types.h"
 
+namespace base {
+class TimeDelta;
+}
+
 class AutofillMetrics {
  public:
   enum InfoBarMetric {
@@ -116,10 +120,6 @@ class AutofillMetrics {
     NUM_USER_HAPPINESS_METRICS
   };
 
-  // TODO(isherman): Add histograms to measure time elapsed between form load
-  // form submission, comparing autofilled and non-autofilled forms.  So that we
-  // are measuring apples to apples, restrict just to fillable forms.
-
   AutofillMetrics();
   virtual ~AutofillMetrics();
 
@@ -144,6 +144,28 @@ class AutofillMetrics {
 
   virtual void LogUserHappinessMetric(UserHappinessMetric metric) const;
 
+  // This should be called when a form that has been Autofilled is submitted.
+  // |duration| should be the time elapsed between form load and submission.
+  virtual void LogFormFillDurationFromLoadWithAutofill(
+      const base::TimeDelta& duration) const;
+
+  // This should be called when a fillable form that has not been Autofilled is
+  // submitted.  |duration| should be the time elapsed between form load and
+  // submission.
+  virtual void LogFormFillDurationFromLoadWithoutAutofill(
+      const base::TimeDelta& duration) const;
+
+  // This should be called when a form that has been Autofilled is submitted.
+  // |duration| should be the time elapsed between the initial form interaction
+  // and submission.
+  virtual void LogFormFillDurationFromInteractionWithAutofill(
+      const base::TimeDelta& duration) const;
+
+  // This should be called when a fillable form that has not been Autofilled is
+  // submitted.  |duration| should be the time elapsed between the initial form
+  // interaction and submission.
+  virtual void LogFormFillDurationFromInteractionWithoutAutofill(
+      const base::TimeDelta& duration) const;
 
   // This should be called each time a page containing forms is loaded.
   virtual void LogIsAutofillEnabledAtPageLoad(bool enabled) const;

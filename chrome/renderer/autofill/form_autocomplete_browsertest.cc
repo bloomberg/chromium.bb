@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/time.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/test/base/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +36,8 @@ TEST_F(FormAutocompleteTest, NormalFormSubmit) {
       AutofillHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
 
-  Tuple1<FormData> forms;
+  // The tuple also includes a timestamp, which is ignored.
+  Tuple2<FormData, base::TimeTicks> forms;
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(2U, forms.a.fields.size());
 
@@ -83,7 +85,8 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
       AutofillHostMsg_FormSubmitted::ID);
   ASSERT_TRUE(message != NULL);
 
-  Tuple1<FormData> forms;
+  // The tuple also includes a timestamp, which is ignored.
+  Tuple2<FormData, base::TimeTicks> forms;
   AutofillHostMsg_FormSubmitted::Read(message, &forms);
   ASSERT_EQ(1U, forms.a.fields.size());
 

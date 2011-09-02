@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
@@ -512,11 +513,11 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
   }
 
   void FormsSeen(const std::vector<webkit_glue::FormData>& forms) {
-    autofill_manager_->OnFormsSeen(forms);
+    autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
   }
 
   void FormSubmitted(const FormData& form) {
-    autofill_manager_->OnFormSubmitted(form);
+    autofill_manager_->OnFormSubmitted(form, base::TimeTicks::Now());
   }
 
   void FillAutofillFormData(int query_id,
