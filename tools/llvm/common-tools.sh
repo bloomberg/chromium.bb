@@ -504,8 +504,8 @@ RunWithLog() {
   mkdir -p "${TC_LOG}"
 
   shift 1
-  echo "RUNNING: " "$@" | tee "${log}" >> "${TC_LOG_ALL}"
-  "$@" 2>&1 | tee "${log}" >> "${TC_LOG_ALL}"
+  echo "RUNNING: " "$@" | tee "${log}" #>> "${TC_LOG_ALL}"
+  "$@" 2>&1 | tee "${log}" # >> "${TC_LOG_ALL}"
   if [ ${PIPESTATUS[0]} -ne 0 ]; then
     echo
     Banner "ERROR"
