@@ -35,29 +35,29 @@
 
 namespace {
 
-const char* kPDFPluginName = "Chrome PDF Viewer";
-const char* kPDFPluginMimeType = "application/pdf";
-const char* kPDFPluginExtension = "pdf";
-const char* kPDFPluginDescription = "Portable Document Format";
-const char* kPDFPluginPrintPreviewMimeType
-    = "application/x-google-chrome-print-preview-pdf";
+const char kPDFPluginName[] = "Chrome PDF Viewer";
+const char kPDFPluginMimeType[] = "application/pdf";
+const char kPDFPluginExtension[] = "pdf";
+const char kPDFPluginDescription[] = "Portable Document Format";
+const char kPDFPluginPrintPreviewMimeType
+   [] = "application/x-google-chrome-print-preview-pdf";
 
-const char* kNaClPluginName = "Native Client";
-const char* kNaClPluginMimeType = "application/x-nacl";
-const char* kNaClPluginExtension = "nexe";
-const char* kNaClPluginDescription = "Native Client Executable";
+const char kNaClPluginName[] = "Native Client";
+const char kNaClPluginMimeType[] = "application/x-nacl";
+const char kNaClPluginExtension[] = "nexe";
+const char kNaClPluginDescription[] = "Native Client Executable";
 
-const char* kNaClOldPluginName = "Chrome NaCl";
+const char kNaClOldPluginName[] = "Chrome NaCl";
 
 #if defined(ENABLE_REMOTING)
-const char* kRemotingViewerPluginName = "Remoting Viewer";
+const char kRemotingViewerPluginName[] = "Remoting Viewer";
 const FilePath::CharType kRemotingViewerPluginPath[] =
     FILE_PATH_LITERAL("internal-remoting-viewer");
 // Use a consistent MIME-type regardless of branding.
-const char* kRemotingViewerPluginMimeType =
+const char kRemotingViewerPluginMimeType[] =
     "application/vnd.chromium.remoting-viewer";
 // TODO(wez): Remove the old MIME-type once client code no longer needs it.
-const char* kRemotingViewerPluginOldMimeType =
+const char kRemotingViewerPluginOldMimeType[] =
     "pepper-application/x-chromoting";
 #endif
 
@@ -261,9 +261,10 @@ ChangeWindowMessageFilterFunction g_ChangeWindowMessageFilter;
 
 namespace chrome {
 
-const char* ChromeContentClient::kPDFPluginName = ::kPDFPluginName;
-const char* ChromeContentClient::kNaClPluginName = ::kNaClPluginName;
-const char* ChromeContentClient::kNaClOldPluginName = ::kNaClOldPluginName;
+const char* const ChromeContentClient::kPDFPluginName = ::kPDFPluginName;
+const char* const ChromeContentClient::kNaClPluginName = ::kNaClPluginName;
+const char* const ChromeContentClient::kNaClOldPluginName =
+    ::kNaClOldPluginName;
 
 void ChromeContentClient::SetActiveURL(const GURL& url) {
   child_process_logging::SetActiveURL(url);
