@@ -8,34 +8,40 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 
 namespace sync_api {
 
 class HttpPostProviderFactory;
+class HttpPostProviderInterface;
 
 // This provides HTTP Post functionality through the interface provided
 // to the sync API by the application hosting the syncer backend.
-class SyncAPIBridgedPost
-    : public browser_sync::ServerConnectionManager::Post {
+class SyncAPIBridgedConnection
+    : public browser_sync::ServerConnectionManager::Connection {
  public:
-  SyncAPIBridgedPost(browser_sync::ServerConnectionManager* scm,
-                     HttpPostProviderFactory* factory);
+  SyncAPIBridgedConnection(browser_sync::ServerConnectionManager* scm,
+                           HttpPostProviderFactory* factory);
 
-  virtual ~SyncAPIBridgedPost();
+  virtual ~SyncAPIBridgedConnection();
 
   virtual bool Init(const char* path,
                     const std::string& auth_token,
                     const std::string& payload,
-                    browser_sync::HttpResponse* response);
+                    browser_sync::HttpResponse* response) OVERRIDE;
+
+  virtual void Abort() OVERRIDE;
 
  private:
   // Pointer to the factory we use for creating HttpPostProviders. We do not
   // own |factory_|.
   HttpPostProviderFactory* factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncAPIBridgedPost);
+  HttpPostProviderInterface* post_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncAPIBridgedConnection);
 };
 
 // A ServerConnectionManager subclass used by the syncapi layer. We use a
@@ -52,10 +58,13 @@ class SyncAPIServerConnectionManager
                                  HttpPostProviderFactory* factory);
   virtual ~SyncAPIServerConnectionManager();
 
- protected:
-  virtual Post* MakePost();
+  // ServerConnectionManager overrides.
+  virtual Connection* MakeConnection() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, EarlyAbortPost);
+  FRIEND_TEST_ALL_PREFIXES(SyncAPIServerConnectionManagerTest, AbortPost);
+
   // A factory creating concrete HttpPostProviders for use whenever we need to
   // issue a POST to sync servers.
   scoped_ptr<HttpPostProviderFactory> post_provider_factory_;
