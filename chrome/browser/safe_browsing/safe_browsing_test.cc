@@ -303,6 +303,11 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     // requests. We need to fix the server.
     command_line->AppendSwitch(switches::kSbDisableDownloadProtection);
 
+    // TODO(gcasto): Generate new testing data that includes the
+    // client-side phishing whitelist.
+    command_line->AppendSwitch(
+        switches::kDisableSanitizedClientSidePhishingDetection);
+
     // In this test, we fetch SafeBrowsing data and Mac key from the same
     // server. Although in real production, they are served from different
     // servers.
