@@ -142,7 +142,7 @@ class GerritPatch(Patch):
     if dryrun:
       cros_lib.Info('Would have run: ' + ' '.join(cmd))
     else:
-      cros_lib.RunCommand(cmd)
+      cros_lib.RunCommand(cmd, error_ok=True)
 
   def HandleCouldNotSubmit(self, helper, dryrun=False):
     """Handler that is called when the Commit Queue can't submit a change.
