@@ -137,7 +137,7 @@ class GerritPatchTest(mox.MoxTestBase):
     helper = gerrit_helper.GerritHelper(False)
     cros_lib.RunCommand(
         'ssh -p 29418 gerrit.chromium.org gerrit review '
-        '--submit Iee5c89d929f1850d7d4e1a4ff5f21adda800025f,2'.split())
+        '--submit 1112,2'.split())
 
     self.mox.ReplayAll()
     my_patch.Submit(helper, False)
