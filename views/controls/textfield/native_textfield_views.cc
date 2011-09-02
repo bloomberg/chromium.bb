@@ -311,8 +311,10 @@ void NativeTextfieldViews::ShowContextMenuForView(View* source,
 void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
                                                 const gfx::Point& press_pt,
                                                 OSExchangeData* data) {
+#if !defined(TOUCH_UI)
   DCHECK_NE(ui::DragDropTypes::DRAG_NONE,
             GetDragOperationsForView(sender, press_pt));
+#endif
   data->SetString(GetSelectedText());
 }
 
