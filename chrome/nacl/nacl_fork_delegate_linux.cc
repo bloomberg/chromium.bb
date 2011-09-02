@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "content/common/zygote_fork_delegate_linux.h"
 #include "chrome/common/chrome_paths.h"
@@ -49,7 +50,8 @@ void NaClForkDelegate::Init(const bool sandboxed,
   FilePath helper_bootstrap_exe;
   if (PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe) &&
       PathService::Get(chrome::FILE_NACL_HELPER_BOOTSTRAP,
-                       &helper_bootstrap_exe)) {
+                       &helper_bootstrap_exe) &&
+      !RunningOnValgrind()) {
     CommandLine::StringVector argv = CommandLine::ForCurrentProcess()->argv();
     argv[0] = helper_bootstrap_exe.value();
     argv[1] = helper_exe.value();
