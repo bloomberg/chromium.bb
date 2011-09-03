@@ -119,6 +119,11 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
   return *g_shared_instance_;
 }
 
+/* static */
+bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
+  return !GetLocaleFilePath(locale).empty();
+}
+
 #if !defined(OS_MACOSX)
 /* static */
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {

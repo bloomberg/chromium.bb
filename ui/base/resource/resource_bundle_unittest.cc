@@ -35,4 +35,10 @@ TEST(ResourceBundle, LoadDataResourceBytes) {
   EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(kUnfoundResourceId));
 }
 
+TEST(ResourceBundle, LocaleDataPakExists) {
+  // Check that ResourceBundle::LocaleDataPakExists returns the correct results.
+  EXPECT_TRUE(ResourceBundle::LocaleDataPakExists("en-US"));
+  EXPECT_FALSE(ResourceBundle::LocaleDataPakExists("not_a_real_locale"));
+}
+
 }  // namespace ui

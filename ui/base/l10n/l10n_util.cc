@@ -36,9 +36,6 @@
 
 namespace {
 
-static const FilePath::CharType kLocaleFileExtension[] =
-    FILE_PATH_LITERAL(".pak");
-
 static const char* const kAcceptLanguageList[] = {
   "af",     // Afrikaans
   "am",     // Amharic
@@ -228,8 +225,7 @@ bool IsLocalePartiallyPopulated(const std::string& locale_name) {
 }
 
 #if !defined(OS_MACOSX)
-bool IsLocaleAvailable(const std::string& locale,
-                       const FilePath& locale_path) {
+bool IsLocaleAvailable(const std::string& locale) {
   // If locale has any illegal characters in it, we don't want to try to
   // load it because it may be pointing outside the locale data file directory.
   if (!file_util::IsFilenameLegal(ASCIIToUTF16(locale)))
@@ -243,16 +239,12 @@ bool IsLocaleAvailable(const std::string& locale,
   if (!l10n_util::IsLocaleSupportedByOS(locale))
     return false;
 
-  FilePath test_path = locale_path;
-  test_path =
-    test_path.AppendASCII(locale).ReplaceExtension(kLocaleFileExtension);
-  return file_util::PathExists(test_path);
+  return ResourceBundle::LocaleDataPakExists(locale);
 }
 
 bool CheckAndResolveLocale(const std::string& locale,
-                           const FilePath& locale_path,
                            std::string* resolved_locale) {
-  if (IsLocaleAvailable(locale, locale_path)) {
+  if (IsLocaleAvailable(locale)) {
     *resolved_locale = locale;
     return true;
   }
@@ -287,7 +279,7 @@ bool CheckAndResolveLocale(const std::string& locale,
         tmp_locale.append("-CN");
       }
     }
-    if (IsLocaleAvailable(tmp_locale, locale_path)) {
+    if (IsLocaleAvailable(tmp_locale)) {
       resolved_locale->swap(tmp_locale);
       return true;
     }
@@ -308,7 +300,7 @@ bool CheckAndResolveLocale(const std::string& locale,
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(alias_map); ++i) {
     if (LowerCaseEqualsASCII(locale, alias_map[i].source)) {
       std::string tmp_locale(alias_map[i].dest);
-      if (IsLocaleAvailable(tmp_locale, locale_path)) {
+      if (IsLocaleAvailable(tmp_locale)) {
         resolved_locale->swap(tmp_locale);
         return true;
       }
@@ -367,8 +359,6 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
 
 #else
 
-  FilePath locale_path;
-  PathService::Get(ui::DIR_LOCALES, &locale_path);
   std::string resolved_locale;
   std::vector<std::string> candidates;
 
@@ -421,7 +411,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
 
   std::vector<std::string>::const_iterator i = candidates.begin();
   for (; i != candidates.end(); ++i) {
-    if (CheckAndResolveLocale(*i, locale_path, &resolved_locale)) {
+    if (CheckAndResolveLocale(*i, &resolved_locale)) {
       base::i18n::SetICUDefaultLocale(resolved_locale);
       return resolved_locale;
     }
@@ -429,7 +419,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
 
   // Fallback on en-US.
   const std::string fallback_locale("en-US");
-  if (IsLocaleAvailable(fallback_locale, locale_path)) {
+  if (IsLocaleAvailable(fallback_locale)) {
     base::i18n::SetICUDefaultLocale(fallback_locale);
     return fallback_locale;
   }

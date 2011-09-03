@@ -107,6 +107,9 @@ class UI_EXPORT ResourceBundle {
   // Return the global resource loader instance.
   static ResourceBundle& GetSharedInstance();
 
+  // Check if the .pak for the given locale exists.
+  static bool LocaleDataPakExists(const std::string& locale);
+
   // Gets the bitmap with the specified resource_id from the current module
   // data. Returns a pointer to a shared instance of the SkBitmap. This shared
   // bitmap is owned by the resource bundle and should not be freed.
