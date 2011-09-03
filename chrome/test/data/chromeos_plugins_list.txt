@@ -1,16 +1,49 @@
-# List of ChromeOS Chrome plugins to verify plugins' version and state.
-# To add new plugin, add new plugin with following version in the list,
-# {u'name':'<Plugin Name>', u'enabled':<True/False>, u'version':u'<VERSION>'}
-# Used by: chrome/test/functional/plugins_check.py
-# Note: By default the script will use the key named 'name' as the unique
-#       identifier.  If you want to override you can use the unique_key key
-[
- {u'unique_key':'path', u'name':u'Shockwave Flash', u'path':'/opt/google/chrome/pepper/libpepflashplayer.so', u'enabled':1, u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
- {u'unique_key':'path', u'name':u'Shockwave Flash', u'path':'/opt/google/chrome/plugins/libgcflashplayer.so', u'enabled':1, u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
- {u'name':'Remoting Viewer', u'enabled':1, u'version':u'', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
- {u'name':'Chrome PDF Viewer', u'enabled':1, u'version':u'', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
- {u'name':'Netflix', u'enabled':1, u'version':u'1.2.2', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
- {u'name':'Google Talk Plugin', u'enabled':1, u'version':u'', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
- {u'name':'O3D Plugin', u'enabled':1, u'version':u'', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
- {u'name':'Default Plug-in', u'enabled':1, u'version':u'1', u'boards':['x86-mario', 'x86-alex', 'x86-zgb']},
+[ {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': u'Shockwave Flash',
+    u'path': '/opt/google/chrome/pepper/libpepflashplayer.so',
+    u'unique_key': 'path'
+  }, {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': u'Shockwave Flash',
+    u'path': '/opt/google/chrome/plugins/libgcflashplayer.so',
+    u'unique_key': 'path'
+  }, {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': 'Remoting Viewer',
+    u'version': u''
+  }, {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': 'Chrome PDF Viewer',
+    u'version': u''
+  }, {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': 'Netflix',
+    u'version': u'1.2.2'
+  }, {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': 'Google Talk Plugin',
+    u'version': u''
+  }, {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': 'O3D Plugin',
+    u'version': u''
+  }, {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': 'Native Client',
+    u'version': u''
+  }, {
+    u'boards': ['x86-mario', 'x86-alex', 'x86-zgb'],
+    u'enabled': 1,
+    u'name': 'Default Plug-in',
+    u'version': u'1'
+  },
 ]
