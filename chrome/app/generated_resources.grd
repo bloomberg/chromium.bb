@@ -8745,12 +8745,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP_USERNAME" desc="In title case. The title of the menu item to open the sync setup page. Shown in the Wrench menu when the user is signed into sync.">
-          Synced to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>
+          Synced as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_SYNC_SETUP_USERNAME" desc="The title of the menu item to open the sync setup page. Shown in the Wrench menu when the user is signed into sync.">
-          Synced to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>
+          Synced as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>
         </message>
       </if>
      <!-- SafeBrowsing -->
@@ -9606,10 +9606,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The sync server is busy, please try again later.
       </message>
       <message name="IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
-        Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Last synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
+        Synced as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Last synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
       </message>
       <message name="IDS_SYNC_ACCOUNT_SYNCING_TO_USER" desc="The message that appears in the options dialog indicating that account is syncing to a user with the given email address.">
-        Last synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Manage sync data on <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;.</ph>
+        Last synced as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Manage sync data on <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;.</ph>
       </message>
       <message name="IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED" desc="The sync setup is underway and the user has not yet entered credentials.">
         Account sign-in details are not yet entered.
@@ -9752,7 +9752,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Setup in progress...
       </message>
       <message name="IDS_SYNC_NTP_SYNCED_TO" desc="The message to display in the New Tab Page sync section when the user is in sync.">
-        Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
+        Synced as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
       </message>
 
       <!-- Customize Sync dialog -->
