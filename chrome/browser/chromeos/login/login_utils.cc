@@ -648,7 +648,7 @@ void LoginUtilsImpl::StartSync(
     // Set the CrOS user by getting this constructor run with the
     // user's email on first retrieval.
     user_profile->GetProfileSyncService(username_)->SetPassphrase(
-        password_, false, true);
+        password_, false);
     username_ = "";
     password_ = "";
 
