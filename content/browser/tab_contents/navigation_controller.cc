@@ -903,8 +903,7 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
   FinishRestore(source.last_committed_entry_index_, false);
 }
 
-void NavigationController::CopyStateFromAndPrune(NavigationController* source,
-                                                 bool remove_first_entry) {
+void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
   // The SiteInstance and page_id of the last committed entry needs to be
   // remembered at this point, in case there is only one committed entry
   // and it is pruned.
@@ -919,33 +918,6 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source,
          (pending_entry_ && (pending_entry_index_ == -1 ||
                              pending_entry_index_ == entry_count() - 1)) ||
          (!pending_entry_ && last_committed_entry_index_ == entry_count() - 1));
-
-  if (remove_first_entry && entry_count()) {
-    // If there is only one committed entry and |remove_first_entry| is true,
-    // it needs to be pruned. This is accomplished by specifying a larger
-    // |minimum_page_id| than the committed entry's page_id in the
-    // ViewMsg_SetHistoryLengthAndPrune message. However, any pages which are
-    // committed between now and when the RenderView handles the message will
-    // need to be retained. Both constraints can be met by incrementing the
-    // |minimum_page_id| by 1.
-    DCHECK(minimum_page_id >= 0);
-    if (entry_count() == 1)
-      ++minimum_page_id;
-    // Save then restore the pending entry (RemoveEntryAtIndexInternal chucks
-    // the pending entry).
-    NavigationEntry* pending_entry = pending_entry_;
-    pending_entry_ = NULL;
-    int pending_entry_index = pending_entry_index_;
-    RemoveEntryAtIndexInternal(0);
-    // Restore the pending entry.
-    if (pending_entry_index != -1) {
-      pending_entry_index_ = pending_entry_index - 1;
-      if (pending_entry_index_ != -1)
-        pending_entry_ = entries_[pending_entry_index_].get();
-    } else if (pending_entry) {
-      pending_entry_ = pending_entry;
-    }
-  }
 
   // Remove all the entries leaving the active entry.
   PruneAllButActive();

@@ -570,8 +570,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
 
   // Merge the browsing history.
   new_tab_contents->controller().CopyStateFromAndPrune(
-      &old_tab_contents->controller(),
-      false);
+      &old_tab_contents->controller());
   old_tab_contents->delegate()->SwapTabContents(old_tab_contents,
                                                 new_tab_contents);
   prerender_contents->CommitHistory(new_tab_contents);

@@ -280,11 +280,7 @@ class NavigationController {
   // this:   E F *G*   (last must be active or pending)
   // result: A B *G*
   // This ignores the transient index of the source and honors that of 'this'.
-  //
-  // If |remove_first_entry| is true, the first NavigationEntry is removed
-  // from this before merging.
-  void CopyStateFromAndPrune(NavigationController* source,
-                             bool remove_first_entry);
+  void CopyStateFromAndPrune(NavigationController* source);
 
   // Removes all the entries except the active entry. If there is a new pending
   // navigation it is preserved.

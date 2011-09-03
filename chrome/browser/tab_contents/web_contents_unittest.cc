@@ -1714,7 +1714,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneSourceInterstitial) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       other_controller.GetEntryAtIndex(0)->site_instance(), 1,
       other_controller.GetEntryAtIndex(0)->page_id());
-  other_controller.CopyStateFromAndPrune(&controller(), false);
+  other_controller.CopyStateFromAndPrune(&controller());
 
   // The merged controller should only have two entries: url1 and url2.
   ASSERT_EQ(2, other_controller.entry_count());
@@ -1757,7 +1757,7 @@ TEST_F(TabContentsTest, CopyStateFromAndPruneTargetInterstitial) {
   other_contents->ExpectSetHistoryLengthAndPrune(
       other_controller.GetEntryAtIndex(0)->site_instance(), 1,
       other_controller.GetEntryAtIndex(0)->page_id());
-  other_controller.CopyStateFromAndPrune(&controller(), false);
+  other_controller.CopyStateFromAndPrune(&controller());
 
   // The merged controller should only have two entries: url1 and url2.
   ASSERT_EQ(2, other_controller.entry_count());

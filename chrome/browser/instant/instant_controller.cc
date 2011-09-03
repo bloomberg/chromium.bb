@@ -305,18 +305,8 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
   }
   DCHECK(loader_manager_.get());
   DCHECK(loader_manager_->current_loader());
-  bool showing_instant =
-      loader_manager_->current_loader()->is_showing_instant();
   TabContentsWrapper* tab = ReleasePreviewContents(type);
-  // If the loader was showing an instant page then it's navigation stack is
-  // something like: search-engine-home-page (eg google.com) search-term1
-  // search-term2 .... Each search-term navigation corresponds to the page
-  // deciding enough time has passed to commit a navigation. We don't want the
-  // searche-engine-home-page navigation in this case so we pass true to
-  // CopyStateFromAndPrune to have the search-engine-home-page navigation
-  // removed.
-  tab->controller().CopyStateFromAndPrune(
-      &tab_contents_->controller(), showing_instant);
+  tab->controller().CopyStateFromAndPrune(&tab_contents_->controller());
   delegate_->CommitInstant(tab);
   CompleteRelease(tab);
 }

@@ -754,6 +754,10 @@ IN_PROC_BROWSER_TEST_F(InstantTest, FLAKY_OnSubmitEvent) {
   TabContents* contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(contents);
 
+  // We should have two entries. One corresponding to the page the user was
+  // first on, and one for the search page.
+  ASSERT_EQ(2, contents->controller().entry_count());
+
   // Check that the value is reflected and onsubmit is called.
   EXPECT_EQ("true 1 0 1 1 d false defghi true 3 3",
             GetSearchStateAsString(preview_, true));
