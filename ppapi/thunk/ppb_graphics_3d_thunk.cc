@@ -17,6 +17,13 @@ namespace {
 
 typedef EnterResource<PPB_Graphics3D_API> EnterGraphics3D;
 
+int32_t GetAttribMaxValue(PP_Resource instance,
+                          int32_t attribute,
+                          int32_t* value) {
+  // TODO(alokp): Implement me.
+  return PP_ERROR_FAILED;
+}
+
 PP_Resource Create(PP_Instance instance,
                    PP_Resource share_context,
                    const int32_t* attrib_list) {
@@ -46,6 +53,14 @@ int32_t SetAttribs(PP_Resource graphics_3d, int32_t* attrib_list) {
   return enter.object()->SetAttribs(attrib_list);
 }
 
+int32_t GetError(PP_Resource graphics_3d) {
+  EnterGraphics3D enter(graphics_3d, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+
+  return enter.object()->GetError();
+}
+
 int32_t ResizeBuffers(PP_Resource graphics_3d, int32_t width, int32_t height) {
   EnterGraphics3D enter(graphics_3d, true);
   if (enter.failed())
@@ -62,10 +77,12 @@ int32_t SwapBuffers(PP_Resource graphics_3d, PP_CompletionCallback callback) {
 }
 
 const PPB_Graphics3D_Dev g_ppb_graphics_3d_thunk = {
+  &GetAttribMaxValue,
   &Create,
   &IsGraphics3D,
   &GetAttribs,
   &SetAttribs,
+  &GetError,
   &ResizeBuffers,
   &SwapBuffers
 };

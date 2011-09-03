@@ -28,10 +28,32 @@
 // // Shutdown.
 // core->ReleaseResource(context);
 
-#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_8 "PPB_Graphics3D(Dev);0.8"
-#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_8
+#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_9 "PPB_Graphics3D(Dev);0.9"
+#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_9
 
 struct PPB_Graphics3D_Dev {
+  // Retrieves the maximum supported value for the given attribute.
+  //
+  // This function may be used to check if a particular attribute value is
+  // supported before attempting to create a context.
+  // Attributes that can be queried for include:
+  // - PP_GRAPHICS3DATTRIB_ALPHA_SIZE
+  // - PP_GRAPHICS3DATTRIB_BLUE_SIZE
+  // - PP_GRAPHICS3DATTRIB_GREEN_SIZE
+  // - PP_GRAPHICS3DATTRIB_RED_SIZE
+  // - PP_GRAPHICS3DATTRIB_DEPTH_SIZE
+  // - PP_GRAPHICS3DATTRIB_STENCIL_SIZE
+  // - PP_GRAPHICS3DATTRIB_SAMPLES
+  // - PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS
+  // - PP_GRAPHICS3DATTRIB_WIDTH
+  // - PP_GRAPHICS3DATTRIB_HEIGHT
+  //
+  // On failure the following error codes may be returned:
+  // - PP_ERROR_BADRESOURCE if instance is invalid.
+  // - PP_ERROR_BADARGUMENT if attribute is invalid or value is NULL
+  int32_t (*GetAttribMaxValue)(PP_Resource instance,
+                               int32_t attribute, int32_t* value);
+
   // Creates and initializes a rendering context and returns a handle to it.
   // The returned context is off-screen to start with. It must be attached to
   // a plugin instance using PPB_Instance::BindGraphics to draw on the web page.
@@ -81,15 +103,15 @@ struct PPB_Graphics3D_Dev {
   // PP_FALSE if it is an invalid resource or is a resource of another type.
   PP_Bool (*IsGraphics3D)(PP_Resource resource);
 
-  // Retrieves the values for each attribute in attrib_list. The list
+  // Retrieves the value for each attribute in attrib_list. The list
   // has the same structure as described for PPB_Graphics3D_Dev::Create.
   // It is both input and output structure for this function.
   //
   // All attributes specified in PPB_Graphics3D_Dev::Create can be queried for.
   // On failure the following error codes may be returned:
   // - PP_ERROR_BADRESOURCE if context is invalid.
-  // - PP_GRAPHICS3DERROR_BAD_ATTRIBUTE if any attribute in the attrib_list
-  //   is not a valid attribute
+  // - PP_ERROR_BADARGUMENT if attrib_list is NULL or any attribute in the
+  //   attrib_list is not a valid attribute.
   //
   // Example usage: To get the values for rgb bits in the color buffer,
   // this function must be called as following:
@@ -108,7 +130,30 @@ struct PPB_Graphics3D_Dev {
   //
   // Attributes that can be specified are:
   // - PP_GRAPHICS3DATTRIB_SWAP_BEHAVIOR
+  //
+  // On failure the following error codes may be returned:
+  // - PP_ERROR_BADRESOURCE if context is invalid.
+  // - PP_ERROR_BADARGUMENT if attrib_list is NULL or any attribute in the
+  //   attrib_list is not a valid attribute.
   int32_t (*SetAttribs)(PP_Resource context, int32_t* attrib_list);
+
+  // The recoverable error conditions that have no side effect are
+  // detected and returned immediately by all functions in this interface.
+  // In addition the implementation may get into a fatal state while
+  // processing a command. In this case the application must detroy the
+  // context and reinitialize client API state and objects to continue
+  // rendering.
+  //
+  // Note that the same error code is also returned in the SwapBuffers callback.
+  // It is recommended to handle error in the SwapBuffers callback because
+  // GetError is synchronous. This function may be useful in rare cases where
+  // drawing a frame is expensive and you want to verify the result of
+  // ResizeBuffers before attemptimg to draw a frame.
+  //
+  // The following error codes may be returned:
+  // - PP_ERROR_NOMEMORY
+  // - PP_ERROR_CONTEXT_LOST
+  int32_t (*GetError)(PP_Resource context);
 
   // Resizes the backing surface for context.
   //
@@ -129,24 +174,29 @@ struct PPB_Graphics3D_Dev {
   // undefined if the value of the PP_GRAPHICS3DATTRIB_SWAP_BEHAVIOR attribute
   // of context is not PP_GRAPHICS3DATTRIB_BUFFER_PRESERVED.
   //
-  // SwapBuffers performs an implicit flush operation on context.
-  //
-  // This functions can run in two modes:
-  // - In synchronous mode, you specify NULL for the callback and the callback
-  //   data. This function will block the calling thread until the image has
-  //   been painted to the screen. It is not legal to block the main thread of
-  //   the plugin, you can use synchronous mode only from background threads.
-  // - In asynchronous mode, you specify a callback function and the argument
-  //   for that callback function. The callback function will be executed on
-  //   the calling thread when the image has been painted to the screen. While
-  //   you are waiting for a Flush callback, additional calls to Flush will
-  //   fail.
+  // SwapBuffers runs in asynchronous mode. Specify a callback function and the
+  // argument for that callback function. The callback function will be executed
+  // on the calling thread after the color buffer has been composited with
+  // rest of the html page. While you are waiting for a SwapBuffers callback,
+  // additional calls to SwapBuffers will fail.
   //
   // Because the callback is executed (or thread unblocked) only when the
   // plugin's current state is actually on the screen, this function provides a
   // way to rate limit animations. By waiting until the image is on the screen
   // before painting the next frame, you can ensure you're not generating
   // updates faster than the screen can be updated.
+  //
+  // SwapBuffers performs an implicit flush operation on context.
+  // If the context gets into an unrecoverable error condition while
+  // processing a command, the error code will be returned as the argument
+  // for the callback. The callback may return the following error codes:
+  // - PP_ERROR_NOMEMORY
+  // - PP_ERROR_CONTEXT_LOST
+  // Note that the same error code may also be obtained by calling GetError.
+  //
+  // On failure SwapBuffers may return the following error codes:
+  // - PP_ERROR_BADRESOURCE if context is invalid.
+  // - PP_ERROR_BADARGUMENT if callback is invalid.
   int32_t (*SwapBuffers)(PP_Resource context,
                          struct PP_CompletionCallback callback);
 };

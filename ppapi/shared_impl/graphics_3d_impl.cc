@@ -33,6 +33,11 @@ int32_t Graphics3DImpl::SetAttribs(int32_t* attrib_list) {
   return PP_ERROR_FAILED;
 }
 
+int32_t Graphics3DImpl::GetError() {
+  // TODO(alokp): Implement me.
+  return PP_ERROR_FAILED;
+}
+
 int32_t Graphics3DImpl::ResizeBuffers(int32_t width, int32_t height) {
   if ((width < 0) || (height < 0))
     return PP_ERROR_BADARGUMENT;

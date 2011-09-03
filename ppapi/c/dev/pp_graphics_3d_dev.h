@@ -8,11 +8,6 @@
 
 #include "ppapi/c/pp_stdint.h"
 
-enum PP_Graphics3DError_Dev {
-  PP_GRAPHICS3DERROR_BAD_ATTRIBUTE = 0x3004,
-  PP_GRAPHICS3DERROR_CONTEXT_LOST = 0x300E
-};
-
 enum PP_Graphics3DAttrib_Dev {
   // Bits of Alpha in the color buffer.
   PP_GRAPHICS3DATTRIB_ALPHA_SIZE = 0x3021,
@@ -32,8 +27,6 @@ enum PP_Graphics3DAttrib_Dev {
   PP_GRAPHICS3DATTRIB_SAMPLE_BUFFERS = 0x3032,
   // Attrib list terminator.
   PP_GRAPHICS3DATTRIB_NONE = 0x3038,
-
-  // Surface-specific attributes.
   // Height of surface in pixels.
   PP_GRAPHICS3DATTRIB_HEIGHT = 0x3056,
   // Width of surface in pixels.

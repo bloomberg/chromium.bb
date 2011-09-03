@@ -41,6 +41,13 @@ int32_t GetNumAttribs(const int32_t* attrib_list) {
   return num;
 }
 
+int32_t GetAttribMaxValue(PP_Resource instance,
+                          int32_t attribute,
+                          int32_t* value) {
+  // TODO(nfullagar): Implement me.
+  return PP_ERROR_FAILED;
+}
+
 PP_Resource Create(PP_Instance instance,
                    PP_Resource share_context,
                    const int32_t* attrib_list) {
@@ -103,6 +110,11 @@ int32_t SetAttribs(PP_Resource graphics3d_id,
     return PP_ERROR_BADARGUMENT;
   }
   return pp_error;
+}
+
+int32_t GetError(PP_Resource graphics_3d) {
+  // TODO(nfullagar): Implement me.
+  return PP_ERROR_FAILED;
 }
 
 int32_t ResizeBuffers(PP_Resource graphics3d_id,
@@ -225,10 +237,12 @@ int32_t PluginGraphics3D::SwapBuffers(PP_Resource graphics3d_id,
 // static
 const PPB_Graphics3D_Dev* PluginGraphics3D::GetInterface() {
   static const PPB_Graphics3D_Dev intf = {
+    &GetAttribMaxValue,
     &Create,
     &IsGraphics3D,
     &GetAttribs,
     &SetAttribs,
+    &GetError,
     &ResizeBuffers,
     &SwapBuffs,
   };
