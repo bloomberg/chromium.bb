@@ -40,20 +40,20 @@ const int kValidSchemeMasks[] = {
 COMPILE_ASSERT(arraysize(kValidSchemes) == arraysize(kValidSchemeMasks),
                must_keep_these_arrays_in_sync);
 
-const char* kParseSuccess = "Success.";
-const char* kParseErrorMissingSchemeSeparator = "Missing scheme separator.";
-const char* kParseErrorInvalidScheme = "Invalid scheme.";
-const char* kParseErrorWrongSchemeType = "Wrong scheme type.";
-const char* kParseErrorEmptyHost = "Host can not be empty.";
-const char* kParseErrorInvalidHostWildcard = "Invalid host wildcard.";
-const char* kParseErrorEmptyPath = "Empty path.";
-const char* kParseErrorHasColon =
+const char kParseSuccess[] = "Success.";
+const char kParseErrorMissingSchemeSeparator[] = "Missing scheme separator.";
+const char kParseErrorInvalidScheme[] = "Invalid scheme.";
+const char kParseErrorWrongSchemeType[] = "Wrong scheme type.";
+const char kParseErrorEmptyHost[] = "Host can not be empty.";
+const char kParseErrorInvalidHostWildcard[] = "Invalid host wildcard.";
+const char kParseErrorEmptyPath[] = "Empty path.";
+const char kParseErrorHasColon[] =
     "Ports are not supported in URL patterns. ':' may not be used in a host.";
-const char* kParseErrorInvalidPort =
+const char kParseErrorInvalidPort[] =
     "Invalid port.";
 
 // Message explaining each URLPattern::ParseResult.
-const char* kParseResultMessages[] = {
+const char* const kParseResultMessages[] = {
   kParseSuccess,
   kParseErrorMissingSchemeSeparator,
   kParseErrorInvalidScheme,

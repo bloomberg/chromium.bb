@@ -32,15 +32,15 @@ const char kCommandKey[] = "command";
 
 }  // namespace
 
-const std::string DebuggerRemoteServiceCommand::kAttach = "attach";
-const std::string DebuggerRemoteServiceCommand::kDetach = "detach";
-const std::string DebuggerRemoteServiceCommand::kDebuggerCommand =
+const char* const DebuggerRemoteServiceCommand::kAttach = "attach";
+const char* const DebuggerRemoteServiceCommand::kDetach = "detach";
+const char* const DebuggerRemoteServiceCommand::kDebuggerCommand =
     "debugger_command";
-const std::string DebuggerRemoteServiceCommand::kEvaluateJavascript =
+const char* const DebuggerRemoteServiceCommand::kEvaluateJavascript =
     "evaluate_javascript";
-const std::string DebuggerRemoteServiceCommand::kFrameNavigate =
+const char* const DebuggerRemoteServiceCommand::kFrameNavigate =
     "navigated";
-const std::string DebuggerRemoteServiceCommand::kTabClosed =
+const char* const DebuggerRemoteServiceCommand::kTabClosed =
     "closed";
 
 const std::string DebuggerRemoteService::kToolName = "V8Debugger";
@@ -156,7 +156,7 @@ void DebuggerRemoteService::DebuggerOutput(int32 tab_uid,
                                            const std::string& message) {
   std::string content = StringPrintf(
       "{\"command\":\"%s\",\"result\":%s,\"data\":%s}",
-      DebuggerRemoteServiceCommand::kDebuggerCommand.c_str(),
+      DebuggerRemoteServiceCommand::kDebuggerCommand,
       base::IntToString(RESULT_OK).c_str(),
       message.c_str());
   scoped_ptr<DevToolsRemoteMessage> response_message(

@@ -26,12 +26,12 @@ class Value;
 // Contains constants for DebuggerRemoteService tool protocol commands
 // (V8-related only).
 struct DebuggerRemoteServiceCommand {
-  static const std::string kAttach;
-  static const std::string kDetach;
-  static const std::string kDebuggerCommand;
-  static const std::string kEvaluateJavascript;
-  static const std::string kFrameNavigate;  // navigation event
-  static const std::string kTabClosed;  // tab closing event
+  static const char* const kAttach;
+  static const char* const kDetach;
+  static const char* const kDebuggerCommand;
+  static const char* const kEvaluateJavascript;
+  static const char* const kFrameNavigate;  // navigation event
+  static const char* const kTabClosed;  // tab closing event
 };
 
 // Handles V8 debugger-related messages from the remote debugger (like
