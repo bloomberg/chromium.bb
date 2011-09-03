@@ -12,5 +12,6 @@ for i in binutils gcc gdb glibc linux-headers-for-nacl newlib; do
       cd "SRC/$i"
       patch -p1 < ../../"toolchain-try.$i.patch"
     fi
+    rm -f ../../"toolchain-try.$i.patch"
   )
 done

@@ -164,7 +164,6 @@ nptl/tst-attr3
 nptl/tst-basic6
 nptl/tst-cancel24
 nptl/tst-cleanupx3
-nptl/tst-clock1
 nptl/tst-cond16
 nptl/tst-cond17
 nptl/tst-cond18
