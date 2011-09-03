@@ -1082,9 +1082,9 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
   DCHECK(alive_);
   std::vector<int> result;
 
-  // This will only get set if one of possible_updates specifies
+  // This will only be valid if one of possible_updates specifies
   // browser_min_version.
-  scoped_ptr<Version> browser_version;
+  Version browser_version;
   PendingExtensionManager* pending_extension_manager =
       service_->pending_extension_manager();
 
@@ -1102,13 +1102,11 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
       if (!GetExistingVersion(update->extension_id, &version))
         continue;
 
-      scoped_ptr<Version> existing_version(
-          Version::GetVersionFromString(version));
-      scoped_ptr<Version> update_version(
-          Version::GetVersionFromString(update->version));
+      Version existing_version(version);
+      Version update_version(update->version);
 
-      if (!update_version.get() ||
-          update_version->CompareTo(*(existing_version.get())) <= 0) {
+      if (!update_version.IsValid() ||
+          update_version.CompareTo(existing_version) <= 0) {
         continue;
       }
     }
@@ -1116,17 +1114,14 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
     // If the update specifies a browser minimum version, do we qualify?
     if (update->browser_min_version.length() > 0) {
       // First determine the browser version if we haven't already.
-      if (!browser_version.get()) {
+      if (!browser_version.IsValid()) {
         chrome::VersionInfo version_info;
-        if (version_info.is_valid()) {
-          browser_version.reset(Version::GetVersionFromString(
-                                    version_info.Version()));
-        }
+        if (version_info.is_valid())
+          browser_version = Version(version_info.Version());
       }
-      scoped_ptr<Version> browser_min_version(
-          Version::GetVersionFromString(update->browser_min_version));
-      if (browser_version.get() && browser_min_version.get() &&
-          browser_min_version->CompareTo(*browser_version.get()) > 0) {
+      Version browser_min_version(update->browser_min_version);
+      if (browser_version.IsValid() && browser_min_version.IsValid() &&
+          browser_min_version.CompareTo(browser_version) > 0) {
         // TODO(asargent) - We may want this to show up in the extensions UI
         // eventually. (http://crbug.com/12547).
         LOG(WARNING) << "Updated version of extension " << update->extension_id
