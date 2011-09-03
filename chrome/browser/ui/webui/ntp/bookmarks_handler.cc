@@ -61,12 +61,14 @@ void BookmarksHandler::BookmarkModelBeingDeleted(BookmarkModel* model) {
 }
 
 void BookmarksHandler::BookmarkNodeMoved(BookmarkModel* model,
-    const BookmarkNode* old_parent, int old_index,
-    const BookmarkNode* new_parent, int new_index) {
+                                         const BookmarkNode* old_parent,
+                                         int old_index,
+                                         const BookmarkNode* new_parent,
+                                         int new_index) {
   if (!dom_ready_) return;
   const BookmarkNode* node = new_parent->GetChild(new_index);
-  StringValue id(base::Int64ToString(node->id()));
-  DictionaryValue move_info;
+  base::StringValue id(base::Int64ToString(node->id()));
+  base::DictionaryValue move_info;
   move_info.SetString(keys::kParentIdKey,
                       base::Int64ToString(new_parent->id()));
   move_info.SetInteger(keys::kIndexKey, new_index);
@@ -78,24 +80,26 @@ void BookmarksHandler::BookmarkNodeMoved(BookmarkModel* model,
 }
 
 void BookmarksHandler::BookmarkNodeAdded(BookmarkModel* model,
-    const BookmarkNode* parent, int index) {
+                                         const BookmarkNode* parent,
+                                         int index) {
   if (!dom_ready_) return;
   const BookmarkNode* node = parent->GetChild(index);
-  StringValue id(base::Int64ToString(node->id()));
-  scoped_ptr<DictionaryValue> node_info(
+  base::StringValue id(base::Int64ToString(node->id()));
+  scoped_ptr<base::DictionaryValue> node_info(
       extension_bookmark_helpers::GetNodeDictionary(node, false, false));
 
   web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeAdded", id, *node_info);
 }
 
 void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
-    const BookmarkNode* parent, int index, const BookmarkNode* node) {
+                                           const BookmarkNode* parent,
+                                           int index,
+                                           const BookmarkNode* node) {
   if (!dom_ready_ || ignore_change_notifications_) return;
 
-  StringValue id(base::Int64ToString(node->id()));
-  DictionaryValue remove_info;
-  remove_info.SetString(keys::kParentIdKey,
-                        base::Int64ToString(parent->id()));
+  base::StringValue id(base::Int64ToString(node->id()));
+  base::DictionaryValue remove_info;
+  remove_info.SetString(keys::kParentIdKey, base::Int64ToString(parent->id()));
   remove_info.SetInteger(keys::kIndexKey, index);
 
   web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeRemoved", id, remove_info);
@@ -104,8 +108,8 @@ void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
 void BookmarksHandler::BookmarkNodeChanged(BookmarkModel* model,
                                            const BookmarkNode* node) {
   if (!dom_ready_) return;
-  StringValue id(base::Int64ToString(node->id()));
-  DictionaryValue change_info;
+  base::StringValue id(base::Int64ToString(node->id()));
+  base::DictionaryValue change_info;
   change_info.SetString(keys::kTitleKey, node->GetTitle());
   if (node->is_url())
     change_info.SetString(keys::kUrlKey, node->url().spec());
@@ -123,15 +127,14 @@ void BookmarksHandler::BookmarkNodeFaviconChanged(BookmarkModel* model,
 void BookmarksHandler::BookmarkNodeChildrenReordered(BookmarkModel* model,
                                                      const BookmarkNode* node) {
   if (!dom_ready_) return;
-  StringValue id(base::Int64ToString(node->id()));
-  int childCount = node->child_count();
-  ListValue* children = new ListValue();
-  for (int i = 0; i < childCount; ++i) {
+  base::StringValue id(base::Int64ToString(node->id()));
+  base::ListValue* children = new base::ListValue;
+  for (int i = 0; i < node->child_count(); ++i) {
     const BookmarkNode* child = node->GetChild(i);
     Value* child_id = new StringValue(base::Int64ToString(child->id()));
     children->Append(child_id);
   }
-  DictionaryValue reorder_info;
+  base::DictionaryValue reorder_info;
   reorder_info.Set(keys::kChildIdsKey, children);
 
   web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeChildrenReordered", id,
@@ -177,16 +180,15 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
   if (model->is_root_node(node))
     node = model->bookmark_bar_node();
 
-  base::ListValue* items = new base::ListValue();
-  int child_count = node->child_count();
-  for (int i = 0; i < child_count; ++i) {
+  base::ListValue* items = new base::ListValue;
+  for (int i = 0; i < node->child_count(); ++i) {
     const BookmarkNode* child = node->GetChild(i);
     extension_bookmark_helpers::AddNode(child, items, false);
   }
   if (node == model->bookmark_bar_node() && model->other_node()->child_count())
     extension_bookmark_helpers::AddNode(model->other_node(), items, false);
 
-  base::ListValue* navigation_items = new base::ListValue();
+  base::ListValue* navigation_items = new base::ListValue;
   while (node) {
     if (node != model->bookmark_bar_node())
       extension_bookmark_helpers::AddNode(node, navigation_items, false);
