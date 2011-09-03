@@ -478,6 +478,12 @@ class PpbGraphics2DRpcClient {
 
 class PpbGraphics3DRpcClient {
  public:
+  static NaClSrpcError PPB_Graphics3D_GetAttribMaxValue(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      int32_t attribute,
+      int32_t* value,
+      int32_t* pp_error);
   static NaClSrpcError PPB_Graphics3D_Create(
       NaClSrpcChannel* channel,
       PP_Instance instance,
@@ -494,6 +500,10 @@ class PpbGraphics3DRpcClient {
       NaClSrpcChannel* channel,
       PP_Resource context,
       nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_Graphics3D_GetError(
+      NaClSrpcChannel* channel,
+      PP_Resource context,
       int32_t* pp_error);
   static NaClSrpcError PPB_Graphics3D_SwapBuffers(
       NaClSrpcChannel* channel,
@@ -976,3 +986,4 @@ class PpbZoomRpcClient {
 
 
 #endif  // GEN_PPAPI_PROXY_PPB_RPC_H_
+

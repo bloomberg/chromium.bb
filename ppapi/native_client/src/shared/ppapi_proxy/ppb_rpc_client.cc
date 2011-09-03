@@ -1310,6 +1310,27 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Flush(
   return retval;
 }
 
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_GetAttribMaxValue(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    int32_t attribute,
+    int32_t* value,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3D_GetAttribMaxValue:ii:ii",
+      instance,
+      attribute,
+      value,
+      pp_error
+  );
+  return retval;
+}
+
 NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_Create(
     NaClSrpcChannel* channel,
     PP_Instance instance,
@@ -1366,6 +1387,23 @@ NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_SetAttribs(
       "PPB_Graphics3D_SetAttribs:iI:i",
       context,
       attrib_list_bytes, attrib_list,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbGraphics3DRpcClient::PPB_Graphics3D_GetError(
+    NaClSrpcChannel* channel,
+    PP_Resource context,
+    int32_t* pp_error)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics3D_GetError:i:i",
+      context,
       pp_error
   );
   return retval;
@@ -2751,3 +2789,5 @@ NaClSrpcError PpbZoomRpcClient::PPB_Zoom_ZoomLimitsChanged(
   );
   return retval;
 }
+
+

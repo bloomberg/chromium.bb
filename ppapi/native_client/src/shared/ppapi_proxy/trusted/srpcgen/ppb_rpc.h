@@ -546,6 +546,13 @@ class PpbGraphics2DRpcServer {
 
 class PpbGraphics3DRpcServer {
  public:
+  static void PPB_Graphics3D_GetAttribMaxValue(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      int32_t attribute,
+      int32_t* value,
+      int32_t* pp_error);
   static void PPB_Graphics3D_Create(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
@@ -565,6 +572,11 @@ class PpbGraphics3DRpcServer {
       NaClSrpcClosure* done,
       PP_Resource context,
       nacl_abi_size_t attrib_list_bytes, int32_t* attrib_list,
+      int32_t* pp_error);
+  static void PPB_Graphics3D_GetError(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource context,
       int32_t* pp_error);
   static void PPB_Graphics3D_SwapBuffers(
       NaClSrpcRpc* rpc,
@@ -1123,3 +1135,4 @@ class PpbRpcs {
 
 
 #endif  // GEN_PPAPI_PROXY_PPB_RPC_H_
+

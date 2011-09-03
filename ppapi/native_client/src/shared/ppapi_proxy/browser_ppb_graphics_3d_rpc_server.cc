@@ -88,6 +88,24 @@ bool IsGpuBlacklisted() {
 //@{
 /// The following methods are SRPC dispatchers for ppapi/c/ppb_graphics_3d.h.
 
+void PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribMaxValue(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    PP_Instance instance_id,
+    int32_t attrib,
+    int32_t* attrib_value,
+    int32_t* pp_error) {
+  DebugPrintf(
+      "PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribMaxValue(...)\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  *pp_error = ppapi_proxy::PPBGraphics3DInterface()->GetAttribMaxValue(
+      instance_id, attrib, attrib_value);
+  DebugPrintf("    PPB_Graphics3D_GetAttribMaxValue: pp_error=%"NACL_PRId32"\n",
+              *pp_error);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 void PpbGraphics3DRpcServer::PPB_Graphics3D_Create(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
@@ -104,6 +122,8 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_Create(
     return;
   *graphics3d_id = ppapi_proxy::PPBGraphics3DInterface()->Create(
       instance, share_context, attrib_list);
+  DebugPrintf("    PPB_Graphics3D_Create: resource=%"NACL_PRId32"\n",
+              *graphics3d_id);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -114,7 +134,7 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribs(
     nacl_abi_size_t in_attrib_list_count, int32_t* in_attrib_list,
     nacl_abi_size_t* out_attrib_list_count, int32_t* out_attrib_list,
     int32_t* pp_error) {
-  DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttrib(...)\n");
+  DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribs(...)\n");
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (in_attrib_list_count == 0)
@@ -126,6 +146,8 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribs(
     return;
   *pp_error = ppapi_proxy::PPBGraphics3DInterface()->GetAttribs(
       graphics3d_id, out_attrib_list);
+  DebugPrintf("    PPB_Graphics3D_GetAttrib: pp_error=%"NACL_PRId32"\n",
+              *pp_error);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -135,7 +157,7 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_SetAttribs(
     PP_Resource graphics3d_id,
     nacl_abi_size_t attrib_list_count, int32_t* attrib_list,
     int32_t* pp_error) {
-  DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_SetAttrib(...)\n");
+  DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_SetAttribs(...)\n");
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (attrib_list_count == 0)
@@ -144,6 +166,22 @@ void PpbGraphics3DRpcServer::PPB_Graphics3D_SetAttribs(
     return;
   *pp_error = ppapi_proxy::PPBGraphics3DInterface()->SetAttribs(
       graphics3d_id, attrib_list);
+  DebugPrintf("    PPB_Graphics3D_SetAttrib: pp_error=%"NACL_PRId32"\n",
+              *pp_error);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
+void PpbGraphics3DRpcServer::PPB_Graphics3D_GetError(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    PP_Resource graphics3d_id,
+    int32_t* pp_error) {
+  DebugPrintf("PpbGraphics3DRpcServer::PPB_Graphics3D_GetError(...)\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  *pp_error = ppapi_proxy::PPBGraphics3DInterface()->GetError(graphics3d_id);
+  DebugPrintf("    PPB_Graphics3D_GetError: pp_error=%"NACL_PRId32"\n",
+              *pp_error);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -197,6 +235,8 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_CreateRaw(
     *resource_id = ppapi_proxy::PPBGraphics3DTrustedInterface()->CreateRaw(
         instance, share_context, attrib_list);
   }
+  DebugPrintf("    PPB_Graphics3DTrusted_CreateRaw: resource=%"NACL_PRId32"\n",
+              *resource_id);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

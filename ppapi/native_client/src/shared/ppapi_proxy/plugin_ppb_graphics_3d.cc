@@ -41,11 +41,23 @@ int32_t GetNumAttribs(const int32_t* attrib_list) {
   return num;
 }
 
-int32_t GetAttribMaxValue(PP_Resource instance,
-                          int32_t attribute,
-                          int32_t* value) {
-  // TODO(nfullagar): Implement me.
-  return PP_ERROR_FAILED;
+int32_t GetAttribMaxValue(PP_Instance instance,
+                          int32_t attrib,
+                          int32_t* attrib_value) {
+  DebugPrintf("PPB_Graphics3D::GetAttribMaxValue: instance=%"NACL_PRIu32"\n",
+              instance);
+  int32_t pp_error;
+  NaClSrpcError retval =
+      PpbGraphics3DRpcClient::PPB_Graphics3D_GetAttribMaxValue(
+          GetMainSrpcChannel(),
+          instance,
+          attrib,
+          attrib_value,
+          &pp_error);
+  if (retval != NACL_SRPC_RESULT_OK) {
+    return PP_ERROR_BADARGUMENT;
+  }
+  return pp_error;
 }
 
 PP_Resource Create(PP_Instance instance,
@@ -112,9 +124,21 @@ int32_t SetAttribs(PP_Resource graphics3d_id,
   return pp_error;
 }
 
-int32_t GetError(PP_Resource graphics_3d) {
-  // TODO(nfullagar): Implement me.
-  return PP_ERROR_FAILED;
+int32_t GetError(PP_Resource graphics3d_id) {
+  DebugPrintf("PPB_Graphics3D::GetError: graphics3d_id=%"NACL_PRIu32"\n",
+              graphics3d_id);
+  int32_t pp_error;
+  NaClSrpcError retval =
+      PpbGraphics3DRpcClient::PPB_Graphics3D_GetError(
+          GetMainSrpcChannel(),
+          graphics3d_id,
+          &pp_error);
+  if (retval != NACL_SRPC_RESULT_OK) {
+    DebugPrintf("PPB_Graphics3D::GetError: retval != NACL_SRPC_RESULT_OK\n");
+    return PP_ERROR_BADARGUMENT;
+  }
+  DebugPrintf("PPB_Graphics3D::GetError: pp_error=%"NACL_PRIu32"\n", pp_error);
+  return pp_error;
 }
 
 int32_t ResizeBuffers(PP_Resource graphics3d_id,

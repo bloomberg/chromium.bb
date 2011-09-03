@@ -13,6 +13,15 @@
 {
  'name': 'PpbGraphics3DRpc',
  'rpcs': [
+          # For PPB_Graphics3D.GetAttribMaxValue(...)
+          {'name': 'PPB_Graphics3D_GetAttribMaxValue',
+           'inputs': [['instance', 'PP_Instance'],
+                      ['attribute', 'int32_t']
+                     ],
+           'outputs': [['value', 'int32_t'],
+                       ['pp_error', 'int32_t']
+                      ],
+          },
           # For PPB_Graphics3D.Create(...)
           {'name': 'PPB_Graphics3D_Create',
            'inputs': [['instance', 'PP_Instance'],
@@ -30,15 +39,22 @@
            'outputs': [['output_attrib_list', 'int32_t[]'],
                        ['pp_error', 'int32_t']
                       ],
-           },
-           # For PPB_Graphics3D.SetAttribs(...)
-           {'name': 'PPB_Graphics3D_SetAttribs',
-            'inputs': [['context', 'PP_Resource'],
-                       ['attrib_list', 'int32_t[]']
+          },
+          # For PPB_Graphics3D.SetAttribs(...)
+          {'name': 'PPB_Graphics3D_SetAttribs',
+           'inputs': [['context', 'PP_Resource'],
+                      ['attrib_list', 'int32_t[]']
+                     ],
+           'outputs': [['pp_error', 'int32_t']
                       ],
-            'outputs': [['pp_error', 'int32_t']
-                       ],
-           },
+          },
+          # For PPB_Graphics3D.GetError(...)
+          {'name': 'PPB_Graphics3D_GetError',
+           'inputs': [['context', 'PP_Resource']
+                     ],
+           'outputs': [['pp_error', 'int32_t']
+                      ],
+          },
           # For PPB_Graphics3D.SwapBuffers(...)
           {'name': 'PPB_Graphics3D_SwapBuffers',
            'inputs': [['context', 'PP_Resource'],

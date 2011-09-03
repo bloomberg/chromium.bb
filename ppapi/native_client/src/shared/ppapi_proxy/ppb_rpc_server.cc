@@ -1056,6 +1056,22 @@ static void PPB_Graphics2D_FlushDispatcher(
   );
 }
 
+static void PPB_Graphics3D_GetAttribMaxValueDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3D_GetAttribMaxValue(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival),
+      &(outputs[1]->u.ival)
+  );
+}
+
 static void PPB_Graphics3D_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1099,6 +1115,20 @@ static void PPB_Graphics3D_SetAttribsDispatcher(
       done,
       inputs[0]->u.ival,
       inputs[1]->u.count, inputs[1]->arrays.iarr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Graphics3D_GetErrorDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics3DRpcServer::PPB_Graphics3D_GetError(
+      rpc,
+      done,
+      inputs[0]->u.ival,
       &(outputs[0]->u.ival)
   );
 }
@@ -2288,9 +2318,11 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Graphics2D_Scroll:iCC:", PPB_Graphics2D_ScrollDispatcher },
   { "PPB_Graphics2D_ReplaceContents:ii:", PPB_Graphics2D_ReplaceContentsDispatcher },
   { "PPB_Graphics2D_Flush:ii:i", PPB_Graphics2D_FlushDispatcher },
+  { "PPB_Graphics3D_GetAttribMaxValue:ii:ii", PPB_Graphics3D_GetAttribMaxValueDispatcher },
   { "PPB_Graphics3D_Create:iiI:i", PPB_Graphics3D_CreateDispatcher },
   { "PPB_Graphics3D_GetAttribs:iI:Ii", PPB_Graphics3D_GetAttribsDispatcher },
   { "PPB_Graphics3D_SetAttribs:iI:i", PPB_Graphics3D_SetAttribsDispatcher },
+  { "PPB_Graphics3D_GetError:i:i", PPB_Graphics3D_GetErrorDispatcher },
   { "PPB_Graphics3D_SwapBuffers:ii:i", PPB_Graphics3D_SwapBuffersDispatcher },
   { "PPB_Graphics3DTrusted_CreateRaw:iiI:i", PPB_Graphics3DTrusted_CreateRawDispatcher },
   { "PPB_Graphics3DTrusted_InitCommandBuffer:ii:i", PPB_Graphics3DTrusted_InitCommandBufferDispatcher },
@@ -2366,3 +2398,4 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Zoom_ZoomLimitsChanged:idd:", PPB_Zoom_ZoomLimitsChangedDispatcher },
   { NULL, NULL }
 };
+
