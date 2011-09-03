@@ -106,7 +106,7 @@ void SizeMap::Init() {
   int alignment = kAlignment;
   CHECK_CONDITION(kAlignment <= 16);
   int last_lg = -1;
-  for (size_t size = kAlignment; size <= kMaxSize; size += alignment) {
+  for (size_t size = kMinClassSize; size <= kMaxSize; size += alignment) {
     int lg = LgFloor(size);
     if (lg > last_lg) {
       // Increase alignment every so often to reduce number of size classes.
