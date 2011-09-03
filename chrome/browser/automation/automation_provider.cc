@@ -100,6 +100,10 @@
 #include "chrome/browser/external_tab_container_win.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif  // defined(OS_CHROMEOS)
+
 using WebKit::WebFindOptions;
 using base::Time;
 
@@ -170,10 +174,12 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
 #if defined(OS_CHROMEOS)
   // Wait for webui login to be ready.
   // Observer will delete itself.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWebUILogin) &&
+      !chromeos::UserManager::Get()->user_is_logged_in()) {
     login_webui_ready_ = false;
     new LoginWebuiReadyObserver(this);
   }
+
   // Wait for the network manager to initialize.
   // The observer will delete itself when done.
   network_library_initialized_ = false;
