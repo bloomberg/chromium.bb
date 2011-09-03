@@ -649,6 +649,7 @@ SyncError TemplateURLService::ProcessSyncChanges(
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
   SyncChangeList new_changes;
+  SyncError error;
   for (SyncChangeList::const_iterator iter = change_list.begin();
       iter != change_list.end(); ++iter) {
     DCHECK_EQ(syncable::SEARCH_ENGINES, iter->sync_data().GetDataType());
@@ -669,14 +670,14 @@ SyncError TemplateURLService::ProcessSyncChanges(
     } else if (iter->change_type() == SyncChange::ACTION_ADD &&
                !existing_turl) {
       if (existing_keyword_turl)
-        ResolveSyncKeywordConflict(turl.get(), new_changes);
+        ResolveSyncKeywordConflict(turl.get(), &new_changes);
       // Force the local ID to 0 so we can add it.
       turl->set_id(0);
       Add(turl.release());
     } else if (iter->change_type() == SyncChange::ACTION_UPDATE &&
                existing_turl) {
       if (existing_keyword_turl)
-        ResolveSyncKeywordConflict(turl.get(), new_changes);
+        ResolveSyncKeywordConflict(turl.get(), &new_changes);
       ResetTemplateURL(existing_turl, turl->short_name(), turl->keyword(),
           turl->url() ? turl->url()->url() : std::string());
     } else {
@@ -685,23 +686,27 @@ SyncError TemplateURLService::ProcessSyncChanges(
       //  . Trying to DELETE or UPDATE a non-existent search engine.
       //  . Trying to ADD a search engine that already exists.
       NOTREACHED() << "Unexpected sync change state.";
-      SyncError error(FROM_HERE, "ProcessSyncChanges failed on ChangeType " +
+      error = SyncError(FROM_HERE, "ProcessSyncChanges failed on ChangeType " +
           SyncChange::ChangeTypeToString(iter->change_type()),
           syncable::SEARCH_ENGINES);
-      return error;
     }
   }
 
-  SyncError sync_error =
-      sync_processor_->ProcessSyncChanges(from_here, new_changes);
+  // If something went wrong, we want to prematurely exit to avoid pushing
+  // inconsistent data to Sync. We return the last error we received.
+  if (error.IsSet())
+    return error;
 
-  return sync_error;
+  error = sync_processor_->ProcessSyncChanges(from_here, new_changes);
+
+  return error;
 }
 
 SyncError TemplateURLService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
     SyncChangeProcessor* sync_processor) {
+  DCHECK(loaded());
   DCHECK_EQ(type, syncable::SEARCH_ENGINES);
   DCHECK(!sync_processor_);
   sync_processor_ = sync_processor;
@@ -729,15 +734,17 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
       // from Sync, we need to update locally or to the cloud. Note that if the
       // timestamps are equal, we touch neither.
       if (sync_turl->last_modified() > local_turl->last_modified()) {
-        // TODO(stevet): For now we just reset the local TemplateURL with the
-        // more important Sync data fields. We may want to transfer over
-        // additional fields.
-        ResetTemplateURL(
-            local_turl,
-            sync_turl->short_name(),
-            sync_turl->keyword(),
-            sync_turl->url() ? sync_turl->url()->url() : std::string());
+        // We've received an update from Sync. We should replace all existing
+        // values with the ones from sync except the local TemplateURLID. Note
+        // that this means that the TemplateURL may have to be reparsed. This
+        // also makes the local data's last_modified timestamp equal to Sync's,
+        // avoiding an Update on the next MergeData call.
+        sync_turl->set_id(local_turl->id());
+        UpdateNoNotify(local_turl, *sync_turl);
+        NotifyObservers();
       } else if (sync_turl->last_modified() < local_turl->last_modified()) {
+        // Otherwise, we know we have newer data, so update Sync with our
+        // data fields.
         new_changes.push_back(SyncChange(SyncChange::ACTION_UPDATE,
             local_data_map[local_turl->sync_guid()]));
       }
@@ -754,14 +761,14 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
         std::string old_guid = dupe_turl->sync_guid();
         MergeSyncAndLocalURLDuplicates(sync_turl.release(),
                                        modifiable_dupe_turl,
-                                       new_changes);
+                                       &new_changes);
         local_data_map.erase(old_guid);
       } else {
         // Keyword conflict is possible in this case. Resolve it first before
         // adding the new TemplateURL. Note that we don't remove the local TURL
         // from local_data_map in this case as it may still need to be pushed to
         // the cloud.
-        ResolveSyncKeywordConflict(sync_turl.get(), new_changes);
+        ResolveSyncKeywordConflict(sync_turl.get(), &new_changes);
         // Force the local ID to 0 so we can add it.
         sync_turl->set_id(0);
         Add(sync_turl.release());
@@ -1668,25 +1675,25 @@ string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl) const {
 
 bool TemplateURLService::ResolveSyncKeywordConflict(
     TemplateURL* sync_turl,
-    SyncChangeList& change_list) {
+    SyncChangeList* change_list) {
   DCHECK(sync_turl);
+  DCHECK(change_list);
 
   const TemplateURL* existing_turl =
       GetTemplateURLForKeyword(sync_turl->keyword());
   if (!existing_turl)
     return false;
 
-  string16 new_keyword;
   if (existing_turl->last_modified() > sync_turl->last_modified())  {
-    new_keyword = UniquifyKeyword(*sync_turl);
+    string16 new_keyword = UniquifyKeyword(*sync_turl);
     DCHECK(!GetTemplateURLForKeyword(new_keyword));
     sync_turl->set_keyword(new_keyword);
     // If we update the cloud TURL, we need to push an update back to sync
     // informing it that something has changed.
     SyncData sync_data = CreateSyncDataFromTemplateURL(*sync_turl);
-    change_list.push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
+    change_list->push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
   } else {
-    new_keyword = UniquifyKeyword(*existing_turl);
+    string16 new_keyword = UniquifyKeyword(*existing_turl);
     ResetTemplateURL(existing_turl, existing_turl->short_name(), new_keyword,
         existing_turl->url() ? existing_turl->url()->url() : std::string());
   }
@@ -1710,9 +1717,10 @@ const TemplateURL* TemplateURLService::FindDuplicateOfSyncTemplateURL(
 void TemplateURLService::MergeSyncAndLocalURLDuplicates(
     TemplateURL* sync_turl,
     TemplateURL* local_turl,
-    SyncChangeList& change_list) {
+    SyncChangeList* change_list) {
   DCHECK(sync_turl);
   DCHECK(local_turl);
+  DCHECK(change_list);
 
   scoped_ptr<TemplateURL> scoped_sync_turl(sync_turl);
 
@@ -1732,6 +1740,6 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
     // having the same GUID.
     ResetTemplateURLGUID(local_turl, sync_turl->sync_guid());
     SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
-    change_list.push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
+    change_list->push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
   }
 }

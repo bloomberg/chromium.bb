@@ -129,8 +129,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // retains ownership of it.
   const TemplateURL* GetTemplateURLForKeyword(const string16& keyword) const;
 
-  // Looks up |sync_guid| and returns the element it maps to.  Returns NULL if
-  // the guid was not found.
+  // Returns that TemplateURL with the specified GUID, or NULL if not found.
   // The caller should not try to delete the returned pointer; the data store
   // retains ownership of it.
   const TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid) const;
@@ -472,8 +471,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // it is unique to the Service.
   string16 UniquifyKeyword(const TemplateURL& turl) const;
 
-  // Given a TemplateURL from Sync, resolves any keyword conflicts by checking
-  // the local keywords and uniquifying either the cloud keyword or a
+  // Given a TemplateURL from Sync (cloud), resolves any keyword conflicts by
+  // checking the local keywords and uniquifying either the cloud keyword or a
   // conflicting local keyword (whichever is older). If the cloud TURL is
   // changed, then an appropriate SyncChange is appended to |change_list|. If
   // a local TURL is changed, the service is updated with the new keyword. If
@@ -481,7 +480,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // last_modified dates, |sync_turl| wins. Returns true iff there was a
   // conflict.
   bool ResolveSyncKeywordConflict(TemplateURL* sync_turl,
-                                  SyncChangeList& change_list);
+                                  SyncChangeList* change_list);
 
   // Returns a TemplateURL from the service that has the same keyword and search
   // URL as |sync_turl|, if it exists.
@@ -497,7 +496,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // if it is newer, so the caller must release it if need be.
   void MergeSyncAndLocalURLDuplicates(TemplateURL* sync_url,
                                       TemplateURL* local_url,
-                                      SyncChangeList& change_list);
+                                      SyncChangeList* change_list);
 
   NotificationRegistrar registrar_;
 

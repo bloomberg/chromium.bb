@@ -323,7 +323,7 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   SyncChangeList changes;
 
   // No conflict, no TURLs changed, no changes.
-  EXPECT_FALSE(model()->ResolveSyncKeywordConflict(sync_turl.get(), changes));
+  EXPECT_FALSE(model()->ResolveSyncKeywordConflict(sync_turl.get(), &changes));
   EXPECT_EQ(original_turl_keyword, original_turl->keyword());
   EXPECT_EQ(sync_keyword, sync_turl->keyword());
   EXPECT_EQ(0U, changes.size());
@@ -332,7 +332,7 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   // Conflict, sync keyword is uniquified, and a SyncChange is added.
   sync_turl->set_keyword(original_turl->keyword());
   sync_turl->set_last_modified(Time::FromTimeT(8999));
-  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(), changes));
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(), &changes));
   EXPECT_NE(sync_keyword, sync_turl->keyword());
   EXPECT_EQ(original_turl_keyword, original_turl->keyword());
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(sync_turl->keyword()));
@@ -344,7 +344,7 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   sync_turl->set_keyword(original_turl->keyword());
   sync_keyword = sync_turl->keyword();
   sync_turl->set_last_modified(Time::FromTimeT(9001));
-  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(), changes));
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(), &changes));
   EXPECT_EQ(sync_keyword, sync_turl->keyword());
   EXPECT_NE(original_turl_keyword, original_turl->keyword());
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(sync_turl->keyword()));
@@ -358,7 +358,7 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   // modified above.
   original_turl->set_last_modified(Time::FromTimeT(9000));
   sync_turl->set_last_modified(Time::FromTimeT(9000));
-  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(), changes));
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(), &changes));
   EXPECT_EQ(sync_keyword, sync_turl->keyword());
   EXPECT_NE(original_turl_keyword, original_turl->keyword());
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(sync_turl->keyword()));
@@ -403,7 +403,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeSyncAndLocalURLDuplicates) {
 
   // The sync TemplateURL is newer. It should replace the original TemplateURL.
   // Note that MergeSyncAndLocalURLDuplicates takes ownership of sync_turl.
-  model()->MergeSyncAndLocalURLDuplicates(sync_turl, original_turl, changes);
+  model()->MergeSyncAndLocalURLDuplicates(sync_turl, original_turl, &changes);
   const TemplateURL* result =
       model()->GetTemplateURLForKeyword(UTF8ToUTF16("key1"));
   ASSERT_TRUE(result);
@@ -414,7 +414,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeSyncAndLocalURLDuplicates) {
   // SyncChange should be added to the list.
   TemplateURL* sync_turl2 =
       CreateTestTemplateURL("key1", "http://key1.com", std::string(), 8999);
-  model()->MergeSyncAndLocalURLDuplicates(sync_turl2, sync_turl, changes);
+  model()->MergeSyncAndLocalURLDuplicates(sync_turl2, sync_turl, &changes);
   result = model()->GetTemplateURLForKeyword(UTF8ToUTF16("key1"));
   ASSERT_TRUE(result);
   EXPECT_EQ(9001, result->last_modified().ToTimeT());
@@ -978,4 +978,50 @@ TEST_F(TemplateURLServiceSyncTest, SyncErrorOnLaterSync) {
   processor()->set_erroneous(true);
   error = model()->ProcessSyncChanges(FROM_HERE, changes);
   EXPECT_TRUE(error.IsSet());
+}
+
+TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
+  // Ensure that a second merge with the same data as the first does not
+  // actually update the local data.
+  SyncDataList initial_data;
+  initial_data.push_back(CreateInitialSyncData().at(0));
+  TemplateURL* turl = TemplateURLService::CreateTemplateURLFromSyncData(
+      initial_data.at(0));
+  ASSERT_TRUE(turl);
+  turl->set_last_modified(Time::FromTimeT(10));  // earlier
+  model()->Add(turl);
+
+  SyncError error = model()->MergeDataAndStartSyncing(
+      syncable::SEARCH_ENGINES,
+      initial_data,
+      processor());
+  ASSERT_FALSE(error.IsSet());
+
+  // We should have updated the original TemplateURL with Sync's version.
+  // Keep a copy of it so we can compare it after we re-merge.
+  ASSERT_TRUE(model()->GetTemplateURLForGUID("key1"));
+  TemplateURL updated_turl(*model()->GetTemplateURLForGUID("key1"));
+  EXPECT_EQ(Time::FromTimeT(90), updated_turl.last_modified());
+
+  // Modify a single field of the initial data. This should not be updated in
+  // the second merge, as the last_modified timestamp remains the same.
+  scoped_ptr<TemplateURL> temp_turl(
+      TemplateURLService::CreateTemplateURLFromSyncData(initial_data.at(0)));
+  temp_turl->set_short_name(UTF8ToUTF16("SomethingDifferent"));
+  initial_data.clear();
+  initial_data.push_back(
+      TemplateURLService::CreateSyncDataFromTemplateURL(*temp_turl));
+
+  // Remerge the data again. This simulates shutting down and syncing again
+  // at a different time, but the cloud data has not changed.
+  model()->StopSyncing(syncable::SEARCH_ENGINES);
+  error = model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
+                                            initial_data,
+                                            processor());
+  ASSERT_FALSE(error.IsSet());
+
+  // Check that the TemplateURL was not modified.
+  const TemplateURL* reupdated_turl = model()->GetTemplateURLForGUID("key1");
+  ASSERT_TRUE(reupdated_turl);
+  AssertEquals(updated_turl, *reupdated_turl);
 }
