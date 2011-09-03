@@ -213,6 +213,16 @@ hooks = [
     'action':
          [
     'python',
+    'src/tools/clang/scripts/update.py',
+    '--mac-only'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
     'src/build/gyp_chromium'
 ],
     'pattern':
