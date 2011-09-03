@@ -209,6 +209,10 @@ void PhishingTermFeatureExtractor::HandleWord(
   // part of any term. This avoids the SHA256, lowercasing, and UTF conversion,
   // all of which are relatively expensive.
   if (negative_word_cache_.Get(word) != negative_word_cache_.end()) {
+    // We know we're no longer in a possible n-gram, so clear the previous word
+    // state.
+    state_->previous_words.clear();
+    state_->previous_word_sizes.clear();
     return;
   }
 
