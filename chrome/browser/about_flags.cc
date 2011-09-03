@@ -333,8 +333,9 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME,
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION,
     // Can't expose the switch unless the code is compiled in.
+    // On by default for the Mac (different implementation in WebKit).
 #if defined(ENABLE_SMOOTH_SCROLLING)
-    kOsAll,
+    kOsWin | kOsLinux | kOsCrOS,
 #else
     0,
 #endif
