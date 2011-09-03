@@ -237,7 +237,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       MessageLoop::current()->Run();
       FlushLastDBTask();
 
-      service_->SetPassphrase("foo", false, true);
+      service_->SetPassphrase("foo", false);
       MessageLoop::current()->Run();
     }
   }

@@ -40,9 +40,8 @@ void RemoveLogin(PasswordStore* store, const webkit_glue::PasswordForm& form);
 void RemoveLogins(PasswordStore* store);
 
 // Sets the cryptographer's passphrase for the profile at index |index| to
-// |passphrase|. |is_creation| is true if a new passphrase is being set up
-// and false otherwise.
-void SetPassphrase(int index, const std::string& passphrase, bool is_creation);
+// |passphrase|.
+void SetPassphrase(int index, const std::string& passphrase);
 
 // Gets the password store of the profile with index |index|.
 PasswordStore* GetPasswordStore(int index);

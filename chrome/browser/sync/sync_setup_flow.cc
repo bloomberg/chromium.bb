@@ -34,17 +34,6 @@ void DisablePasswordSync(ProfileSyncService* service) {
   service->OnUserChoseDatatypes(false, types);
 }
 
-// Fills |args| for the enter passphrase screen.
-void GetArgsForEnterPassphrase(bool tried_creating_explicit_passphrase,
-                               bool tried_setting_explicit_passphrase,
-                               DictionaryValue* args) {
-  args->SetBoolean("show_passphrase", true);
-  args->SetBoolean("passphrase_creation_rejected",
-                   tried_creating_explicit_passphrase);
-  args->SetBoolean("passphrase_setting_rejected",
-                   tried_setting_explicit_passphrase);
-}
-
 // Returns the next step for the non-fatal error case.
 SyncSetupWizard::State GetStepForNonFatalError(ProfileSyncService* service) {
   // TODO(sync): Update this error handling to allow different platforms to
@@ -89,19 +78,7 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
                                   SyncSetupWizard::State end) {
   if (start == SyncSetupWizard::NONFATAL_ERROR)
     start = GetStepForNonFatalError(service);
-
-  DictionaryValue args;
-  if (start == SyncSetupWizard::GAIA_LOGIN)
-    SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
-  else if (start == SyncSetupWizard::CONFIGURE)
-    SyncSetupFlow::GetArgsForConfigure(service, &args);
-  else if (start == SyncSetupWizard::ENTER_PASSPHRASE)
-    GetArgsForEnterPassphrase(false, false, &args);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, false, &json_args);
-
-  return new SyncSetupFlow(start, end, json_args, container, service);
+  return new SyncSetupFlow(start, end, container, service);
 }
 
 // static
@@ -126,7 +103,6 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
   args->SetString("captchaUrl", error.captcha().image_url.spec());
 }
 
-// static
 void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
                                         DictionaryValue* args) {
   // The SYNC_EVERYTHING case will set this to true.
@@ -187,6 +163,18 @@ void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
 
   // Load the parameters for the encryption tab.
   args->SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
+
+  // Determine if we need a passphrase or not, and if so, prompt the user.
+  if (service->IsPassphraseRequiredForDecryption() &&
+      (service->IsUsingSecondaryPassphrase() || cached_passphrase_.empty())) {
+    // We need a passphrase, and either it's an explicit passphrase, or we
+    // don't have a cached gaia passphrase, so we have to prompt the user.
+    args->SetBoolean("show_passphrase", true);
+  }
+  args->SetBoolean("passphrase_creation_rejected",
+                   tried_creating_explicit_passphrase_);
+  args->SetBoolean("passphrase_setting_rejected",
+                   tried_setting_explicit_passphrase_);
 }
 
 bool SyncSetupFlow::AttachSyncSetupHandler(SyncSetupFlowHandler* handler) {
@@ -268,6 +256,7 @@ void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
                                         const std::string& password,
                                         const std::string& captcha,
                                         const std::string& access_code) {
+  cached_passphrase_ = password;
   service_->OnUserSubmittedAuth(username, password, captcha, access_code);
 }
 
@@ -287,7 +276,17 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
     // Caller passed a gaia passphrase. This is illegal if we are currently
     // using a secondary passphrase.
     DCHECK(!service_->IsUsingSecondaryPassphrase());
-    service_->SetPassphrase(configuration.gaia_passphrase, false, false);
+    service_->SetPassphrase(configuration.gaia_passphrase, false);
+  } else if (!service_->IsUsingSecondaryPassphrase() &&
+             !cached_passphrase_.empty()) {
+    // Service needs a GAIA passphrase and we have one cached, so try it.
+    service_->SetPassphrase(cached_passphrase_, false);
+    cached_passphrase_.clear();
+  } else {
+    // No gaia passphrase cached or set, so make sure the ProfileSyncService
+    // wasn't expecting one.
+    DCHECK(!service_->IsPassphraseRequiredForDecryption() ||
+           service_->IsUsingSecondaryPassphrase());
   }
 
   // It's possible the user has to provide a secondary passphrase even when
@@ -300,13 +299,11 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // TODO(zea): eventually use the above gaia_passphrase instead of the
   // secondary passphrase in this case.
   if (configuration.use_secondary_passphrase) {
-    if (!service_->IsUsingSecondaryPassphrase()) {
-      service_->SetPassphrase(configuration.secondary_passphrase, true, true);
-      tried_creating_explicit_passphrase_ = true;
-    } else {
-      service_->SetPassphrase(configuration.secondary_passphrase, true, false);
+    service_->SetPassphrase(configuration.secondary_passphrase, true);
+    if (service_->IsUsingSecondaryPassphrase())
       tried_setting_explicit_passphrase_ = true;
-    }
+    else
+      tried_creating_explicit_passphrase_ = true;
   }
 
   service_->OnUserChoseDatatypes(configuration.sync_everything,
@@ -315,7 +312,7 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
 
 void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
-  service_->SetPassphrase(passphrase, true, false);
+  service_->SetPassphrase(passphrase, true);
   tried_setting_explicit_passphrase_ = true;
 }
 
@@ -331,11 +328,9 @@ void SyncSetupFlow::OnPassphraseCancel() {
 // Use static Run method to get an instance.
 SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
                              SyncSetupWizard::State end_state,
-                             const std::string& args,
                              SyncSetupFlowContainer* container,
                              ProfileSyncService* service)
     : container_(container),
-      dialog_start_args_(args),
       current_state_(start_state),
       end_state_(end_state),
       login_start_time_(base::TimeTicks::Now()),
@@ -426,9 +421,9 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     case SyncSetupWizard::ENTER_PASSPHRASE: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForConfigure(service_, &args);
-      GetArgsForEnterPassphrase(tried_creating_explicit_passphrase_,
-                                tried_setting_explicit_passphrase_,
-                                &args);
+      GetArgsForConfigure(service_, &args);
+      // TODO(atwilson): Remove ShowPassphraseEntry in favor of using
+      // ShowConfigure() - http://crbug.com/90786.
       flow_handler_->ShowPassphraseEntry(args);
       break;
     }

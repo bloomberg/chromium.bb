@@ -138,11 +138,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, SetPassphrase) {
 #endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  SetPassphrase(0, kValidPassphrase, true);
+  SetPassphrase(0, kValidPassphrase);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  SetPassphrase(1, kValidPassphrase, false);
+  SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Set passphrase."));
 }
@@ -157,11 +157,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
 #endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  SetPassphrase(0, kValidPassphrase, true);
+  SetPassphrase(0, kValidPassphrase);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  SetPassphrase(1, kValidPassphrase, false);
+  SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
 
   PasswordForm form = CreateTestPasswordForm(0);
@@ -281,12 +281,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
-  SetPassphrase(0, kValidPassphrase, true);
+  SetPassphrase(0, kValidPassphrase);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion("Initial sync."));
 
   ASSERT_FALSE(GetClient(1)->SetupSync());
-  SetPassphrase(1, kValidPassphrase, false);
+  SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Initial sync."));
 
@@ -309,15 +309,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
 #endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  SetPassphrase(0, kValidPassphrase, true);
+  SetPassphrase(0, kValidPassphrase);
   ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  SetPassphrase(1, kValidPassphrase, false);
+  SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Set passphrase."));
 
-  SetPassphrase(1, kValidPassphrase, false);
+  SetPassphrase(1, kValidPassphrase);
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(GetClient(1)->AwaitSyncCycleCompletion("Set passphrase again."));
 }

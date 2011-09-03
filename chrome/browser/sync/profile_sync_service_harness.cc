@@ -197,6 +197,9 @@ bool ProfileSyncServiceHarness::SetupSync(
     return false;
   }
 
+  // Set our implicit passphrase.
+  service_->SetPassphrase(password_, false);
+
   // Wait for initial sync cycle to be completed.
   DCHECK_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
   if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,

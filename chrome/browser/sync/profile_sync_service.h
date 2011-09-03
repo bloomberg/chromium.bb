@@ -439,14 +439,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // is known.
   // |is_explicit| is true if the call is in response to the user explicitly
   // setting a passphrase as opposed to implicitly (from the users' perspective)
-  // using their Google Account password.  An implicit SetPassphrase will *not*
+  // using their Google Account password.  An implicit SetPassphrase will
   // *not* override an explicit passphrase set previously.
-  // |is_creation| is true if the call is in response to the user setting
-  // up a new passphrase, and false if it's being set in response to a prompt
-  // for an existing passphrase.
   virtual void SetPassphrase(const std::string& passphrase,
-                             bool is_explicit,
-                             bool is_creation);
+                             bool is_explicit);
 
   // Sets the set of datatypes that are waiting for encryption
   // (pending_types_for_encryption_).
@@ -634,16 +630,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // yet have a backend to send it to.  This happens during initialization as
   // we don't StartUp until we have a valid token, which happens after valid
   // credentials were provided.
-  struct CachedPassphrase {
-    std::string value;
-    bool is_explicit;
-    bool is_creation;
-    CachedPassphrase() : is_explicit(false), is_creation(false) {}
+  struct CachedPassphrases {
+    std::string explicit_passphrase;
+    std::string gaia_passphrase;
   };
-  CachedPassphrase cached_passphrase_;
-
-  // TODO(lipalani): Bug 82221 unify this with the CachedPassphrase struct.
-  std::string gaia_password_;
+  CachedPassphrases cached_passphrases_;
 
   // Keep track of where we are in a server clear operation
   ClearServerDataState clear_server_data_state_;
@@ -660,6 +651,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // (OnEncryptionComplete) or the user cancels.
   syncable::ModelTypeSet pending_types_for_encryption_;
   bool set_backend_encrypted_types_;
+
+  // If true, we want to automatically start sync signin whenever we have
+  // credentials (user doesn't need to go through the startup flow). This is
+  // typically enabled on platforms (like ChromeOS) that have their own
+  // distinct signin flow.
+  bool auto_start_enabled_;
 
   scoped_ptr<browser_sync::BackendMigrator> migrator_;
 

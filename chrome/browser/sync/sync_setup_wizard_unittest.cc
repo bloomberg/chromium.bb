@@ -88,8 +88,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   }
 
   virtual void SetPassphrase(const std::string& passphrase,
-                             bool is_explicit,
-                             bool is_creation) {
+                             bool is_explicit) {
     passphrase_ = passphrase;
   }
 
@@ -235,10 +234,6 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
 
 TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   SKIP_TEST_ON_MACOSX();
-  DictionaryValue dialog_args;
-  SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  std::string json_start_args;
-  base::JSONWriter::Write(&dialog_args, false, &json_start_args);
   ListValue credentials;
   std::string auth = "{\"user\":\"";
   auth += std::string(kTestUser) + "\",\"pass\":\"";
@@ -255,7 +250,6 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
   EXPECT_EQ(SyncSetupWizard::DONE, flow_->end_state_);
-  EXPECT_EQ(json_start_args, flow_->dialog_start_args_);
 
   // Simulate the user submitting credentials.
   handler_.HandleSubmitAuth(&credentials);
@@ -273,7 +267,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, flow_->current_state_);
-  dialog_args.Clear();
+  DictionaryValue dialog_args;
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
   EXPECT_EQ(4U, dialog_args.size());
   std::string actual_user;

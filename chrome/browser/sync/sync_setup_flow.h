@@ -58,9 +58,7 @@ class SyncSetupFlow {
       DictionaryValue* args);
 
   // Fills |args| for the configure screen (Choose Data Types/Encryption)
-  static void GetArgsForConfigure(
-      ProfileSyncService* service,
-      DictionaryValue* args);
+  void GetArgsForConfigure(ProfileSyncService* service, DictionaryValue* args);
 
   // Attaches the |handler| to this flow. Returns true if successful and false
   // if a handler has already been attached.
@@ -110,7 +108,6 @@ class SyncSetupFlow {
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,
                 SyncSetupWizard::State end_state,
-                const std::string& args,
                 SyncSetupFlowContainer* container,
                 ProfileSyncService* service);
 
@@ -122,7 +119,6 @@ class SyncSetupFlow {
   void ActivateState(SyncSetupWizard::State state);
 
   SyncSetupFlowContainer* container_;  // Our container.  Don't own this.
-  std::string dialog_start_args_;  // The args to pass to the initial page.
 
   SyncSetupWizard::State current_state_;
   SyncSetupWizard::State end_state_;  // The goal.
@@ -140,6 +136,10 @@ class SyncSetupFlow {
   // can appropriately reflect this in the UI.
   bool tried_creating_explicit_passphrase_;
   bool tried_setting_explicit_passphrase_;
+
+  // We track the passphrase the user entered so we can set it when configuring
+  // the ProfileSyncService.
+  std::string cached_passphrase_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupFlow);
 };

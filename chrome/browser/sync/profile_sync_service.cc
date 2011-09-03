@@ -95,7 +95,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       scoped_runnable_method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
       clear_server_data_state_(CLEAR_NOT_STARTED),
-      set_backend_encrypted_types_(false) {
+      set_backend_encrypted_types_(false),
+      auto_start_enabled_(false) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds
@@ -108,6 +109,11 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     sync_service_url_ = GURL(kSyncServerUrl);
   }
+
+  // TODO(atwilson): Set auto_start_enabled_ for other platforms that want this
+  // functionality.
+  if (!cros_user_.empty())
+    auto_start_enabled_ = true;
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -168,9 +174,10 @@ void ProfileSyncService::Initialize() {
   }
 
   if (!HasSyncSetupCompleted()) {
-    // Under ChromeOS, just autostart it anyway if creds are here and start
-    // is not being suppressed by preferences.
-    if (!cros_user_.empty() &&
+    // If autostart is enabled, but we haven't completed sync setup, try to
+    // start sync anyway (it's possible we crashed/shutdown after logging in
+    // but before the backend finished initializing the last time).
+    if (auto_start_enabled_ &&
         !profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart) &&
         AreCredentialsAvailable()) {
       StartUp();
@@ -193,9 +200,6 @@ void ProfileSyncService::RegisterAuthNotifications() {
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
                  Source<TokenService>(profile_->GetTokenService()));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-                 Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                  Source<Profile>(profile_));
@@ -471,8 +475,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   expect_sync_configuration_aborted_ = false;
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
-  cached_passphrase_ = CachedPassphrase();
-  gaia_password_.clear();
+  cached_passphrases_ = CachedPassphrases();
   pending_types_for_encryption_.clear();
   set_backend_encrypted_types_ = false;
   passphrase_required_reason_ = sync_api::REASON_PASSPHRASE_NOT_REQUIRED;
@@ -645,8 +648,12 @@ void ProfileSyncService::OnBackendInitialized(
   }
   NotifyObservers();
 
-  if (!cros_user_.empty()) {
+  if (auto_start_enabled_ && !SetupInProgress()) {
+    // Backend is initialized but we're not in sync setup, so this must be an
+    // autostart - mark our sync setup as completed.
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
+      // TODO(sync): This call to ShowConfigure() should go away in favor
+      // of the code below that calls wizard_.Step() - http://crbug.com/95269.
       ShowConfigure(true);
       return;
     } else {
@@ -810,16 +817,6 @@ void ProfileSyncService::OnPassphraseRequired(
           << sync_api::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
-  // Store any passphrases we have into temps and clear out the originals so
-  // we don't hold on to the passphrases any longer than we have to. We
-  // then use the passphrases if they're present (after OnPassphraseAccepted).
-  std::string gaia_password = gaia_password_;
-  std::string cached_passphrase = cached_passphrase_.value;
-  bool is_explicit = cached_passphrase_.is_explicit;
-  bool is_creation = cached_passphrase_.is_creation;
-  gaia_password_ = std::string();
-  cached_passphrase_ = CachedPassphrase();
-
   // We will skip the passphrase prompt and suppress the warning if the
   // passphrase is needed for decryption but the user is not syncing an
   // encrypted data type on this machine. Otherwise we look for one.
@@ -830,19 +827,26 @@ void ProfileSyncService::OnPassphraseRequired(
   }
 
   // First try supplying gaia password as the passphrase.
-  if (!gaia_password.empty()) {
+  // TODO(atwilson): This logic seems odd here - we know what kind of passphrase
+  // is required (explicit/gaia) so we should not bother setting the wrong kind
+  // of passphrase - http://crbug.com/95269.
+  if (!cached_passphrases_.gaia_passphrase.empty()) {
+    std::string gaia_passphrase = cached_passphrases_.gaia_passphrase;
+    cached_passphrases_.gaia_passphrase.clear();
     VLOG(1) << "Attempting gaia passphrase.";
-    // SetPassphrase will set gaia_password_ if the syncer isn't ready.
-    SetPassphrase(gaia_password, false, true);
+    // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
+    SetPassphrase(gaia_passphrase, false);
     return;
   }
 
   // If the above failed then try the custom passphrase the user might have
   // entered in setup.
-  if (!cached_passphrase.empty()) {
-    VLOG(1) << "Attempting cached passphrase.";
-    // SetPassphrase will set cached_passphrase_ if the syncer isn't ready.
-    SetPassphrase(cached_passphrase, is_explicit, is_creation);
+  if (!cached_passphrases_.explicit_passphrase.empty()) {
+    std::string explicit_passphrase = cached_passphrases_.explicit_passphrase;
+    cached_passphrases_.explicit_passphrase.clear();
+    VLOG(1) << "Attempting explicit passphrase.";
+    // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
+    SetPassphrase(explicit_passphrase, true);
     return;
   }
 
@@ -859,8 +863,7 @@ void ProfileSyncService::OnPassphraseRequired(
 void ProfileSyncService::OnPassphraseAccepted() {
   VLOG(1) << "Received OnPassphraseAccepted.";
   // Don't hold on to a passphrase in raw form longer than needed.
-  gaia_password_ = std::string();
-  cached_passphrase_ = CachedPassphrase();
+  cached_passphrases_ = CachedPassphrases();
 
   // Make sure the data types that depend on the passphrase are started at
   // this time.
@@ -1337,19 +1340,15 @@ void ProfileSyncService::DeactivateDataType(syncable::ModelType type) {
 }
 
 void ProfileSyncService::SetPassphrase(const std::string& passphrase,
-                                       bool is_explicit,
-                                       bool is_creation) {
+                                       bool is_explicit) {
   if (ShouldPushChanges() || IsPassphraseRequired()) {
-    VLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit")
-            << " passphrase" << (is_creation ? " for creation" : "");
+    VLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit");
     backend_->SetPassphrase(passphrase, is_explicit);
   } else {
     if (is_explicit) {
-      cached_passphrase_.value = passphrase;
-      cached_passphrase_.is_explicit = is_explicit;
-      cached_passphrase_.is_creation = is_creation;
+      cached_passphrases_.explicit_passphrase = passphrase;
     } else {
-      gaia_password_ = passphrase;
+      cached_passphrases_.gaia_passphrase = passphrase;
     }
   }
 }
@@ -1418,7 +1417,7 @@ void ProfileSyncService::Observe(int type,
           syncable::ModelTypeSetToString(result->failed_types) +
           ": " + DataTypeManager::ConfigureStatusToString(status);
         OnUnrecoverableError(result->location, message);
-        cached_passphrase_ = CachedPassphrase();
+        cached_passphrases_ = CachedPassphrases();
         return;
       }
 
@@ -1454,23 +1453,6 @@ void ProfileSyncService::Observe(int type,
         } else if (HasSyncSetupCompleted() && AreCredentialsAvailable()) {
           StartUp();
         }
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
-      const GoogleServiceSigninSuccessDetails* successful =
-          (Details<const GoogleServiceSigninSuccessDetails>(details).ptr());
-      // We pass 'false' to SetPassphrase to denote that this is an implicit
-      // request and shouldn't override an explicit one.  Thus, we either
-      // update the implicit passphrase (idempotent if the passphrase didn't
-      // actually change), or the user has an explicit passphrase set so this
-      // becomes a no-op.
-      if (browser_sync::IsUsingOAuth()) {
-        // TODO(rickcam): Bug 92323: Fetch password through special Gaia request
-        DCHECK(successful->password.empty());
-        LOG(WARNING) << "Not initializing sync passphrase.";
-      } else {
-        SetPassphrase(successful->password, false, true);
       }
       break;
     }
@@ -1593,4 +1575,3 @@ syncable::ModelTypeBitSet ProfileSyncService::GetUnacknowledgedTypes() const {
   }
   return unacknowledged;
 }
-
