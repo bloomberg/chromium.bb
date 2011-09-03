@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"  // For PreRead experiment.
+#include "base/sha1.h"  // For PreRead experiment.
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -86,6 +87,7 @@ bool EnvQueryStr(const wchar_t* key_name, std::wstring* value) {
 }
 
 #if defined(OS_WIN)
+#if defined(GOOGLE_CHROME_BUILD)
 // These constants are used by the PreRead experiment.
 const wchar_t kPreReadRegistryValue[] = L"PreReadExperimentGroup";
 const int kPreReadExpiryYear = 2012;
@@ -112,7 +114,6 @@ bool PreReadShouldRun() {
   if (build_time > expiration_time)
     return false;
 
-#if defined(GOOGLE_CHROME_BUILD)
   // The experiment should only run on canary and dev.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring channel;
@@ -120,11 +121,7 @@ bool PreReadShouldRun() {
     return false;
   return channel == GoogleChromeSxSDistribution::ChannelName() ||
       channel == L"dev";
-#else
-  // If we're running Chromium, we have no concept of channel so we
-  // run the experiment.
   return true;
-#endif
 }
 
 // Checks to see if the experiment is running. If so, either tosses a coin
@@ -133,42 +130,42 @@ bool PreReadShouldRun() {
 // pre_read has been written, false otherwise. |pre_read| is only written to
 // when this function returns true. |key| must be open with read-write access,
 // and be valid.
-bool GetPreReadExperimentGroup(base::win::RegKey* key,
-                               DWORD* pre_read) {
-  DCHECK(key != NULL);
+bool GetPreReadExperimentGroup(DWORD* pre_read) {
   DCHECK(pre_read != NULL);
 
-  if (!PreReadShouldRun()) {
-    // The experiment is no longer running. Remove the registry key
-    // storing the coin toss.
-    key->DeleteValue(kPreReadRegistryValue);
+  // Experiment expired, or running on wrong channel?
+  if (!PreReadShouldRun())
     return false;
-  }
 
-  // Coin already tossed?
-  DWORD coin_toss = 0;
-  if (key->ReadValueDW(kPreReadRegistryValue, &coin_toss) == ERROR_SUCCESS) {
-    *pre_read = coin_toss;
-    return true;
-  }
+  // Get the MetricsId of the installation. This is only set if the user has
+  // opted in to reporting. Doing things this way ensures that we only enable
+  // the experiment if its results are actually going to be reported.
+  std::wstring metrics_id;
+  if (!GoogleUpdateSettings::GetMetricsId(&metrics_id) || metrics_id.empty())
+    return false;
 
-  // Coin not tossed? Toss it, and save the value to the registry.
-  coin_toss = base::RandInt(0, 1);
-  DCHECK(coin_toss == 0 || coin_toss == 1);
-  if (key->WriteValue(kPreReadRegistryValue, coin_toss) == ERROR_SUCCESS) {
-    *pre_read = coin_toss;
-    return true;
-  }
+  // We use the same technique as FieldTrial::HashClientId.
+  unsigned char sha1_hash[base::SHA1_LENGTH];
+  base::SHA1HashBytes(
+      reinterpret_cast<const unsigned char*>(metrics_id.c_str()),
+      metrics_id.size() * sizeof(metrics_id[0]),
+      sha1_hash);
+  COMPILE_ASSERT(sizeof(uint64) < sizeof(sha1_hash), need_more_data);
+  uint64* bits = reinterpret_cast<uint64*>(&sha1_hash[0]);
+  double rand_unit = base::BitsToOpenEndedUnitInterval(*bits);
+  DWORD coin_toss = rand_unit > 0.5 ? 1 : 0;
 
-  return false;
+  *pre_read = coin_toss;
+
+  return true;
 }
+#endif  // if defined(GOOGLE_CHROME_BUILD)
 #endif  // if defined(OS_WIN)
 
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
 // value not being null to determine if this path contains a valid dll.
-HMODULE LoadChromeWithDirectory(const std::wstring& reg_key,  // For PreRead.
-                                std::wstring* dir) {
+HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
 #ifdef _WIN64
@@ -220,31 +217,28 @@ HMODULE LoadChromeWithDirectory(const std::wstring& reg_key,  // For PreRead.
       key.Close();
     }
 
+#if defined(OS_WIN)
+#if defined(GOOGLE_CHROME_BUILD)
     // The PreRead experiment is unable to use the standard FieldTrial
     // mechanism as pre-reading happens in chrome.exe prior to loading
     // chrome.dll. As such, we use a custom approach. If the experiment is
     // running (not expired, and we're running a version of chrome from an
-    // appropriate channel) then we look to the registry for the experiment
-    // group. If it is not found, we toss a coin and persist the result in the
-    // registry. The coin-toss value is communicated to chrome.dll via an
-    // environment variable, which indicates to chrome.dll that the experiment
-    // is running, causing it to report sub-histogram results. If the experiment
-    // is expired or not running, the registry key is removed.
+    // appropriate channel) then we look to the registry for the BreakPad/UMA
+    // metricsid. We use this to seed a coin-toss, which is then communicated
+    // to chrome.dll via an environment variable, which indicates to chrome.dll
+    // that the experiment is running, causing it to report sub-histogram
+    // results.
 
-    base::win::RegKey exp_key(
-        HKEY_CURRENT_USER, reg_key.c_str(),
-        KEY_CREATE_SUB_KEY | KEY_QUERY_VALUE | KEY_SET_VALUE);
-
-    if (exp_key.Valid()) {
-      // If the experiment is running, indicate it to chrome.dll via an
-      // environment variable.
-      if (GetPreReadExperimentGroup(&exp_key, &pre_read)) {
-        scoped_ptr<base::Environment> env(base::Environment::Create());
-        env->SetVar(chrome::kPreReadEnvironmentVariable,
-                    pre_read ? "1" : "0");
-      }
-      exp_key.Close();
+    // If the experiment is running, indicate it to chrome.dll via an
+    // environment variable.
+    if (GetPreReadExperimentGroup(&pre_read)) {
+      DCHECK(pre_read == 0 || pre_read == 1);
+      scoped_ptr<base::Environment> env(base::Environment::Create());
+      env->SetVar(chrome::kPreReadEnvironmentVariable,
+                  pre_read ? "1" : "0");
     }
+#endif  // if defined(GOOGLE_CHROME_BUILD)
+#endif  // if defined(OS_WIN)
 
     if (pre_read) {
       TRACE_EVENT_BEGIN_ETW("PreReadImage", 0, "");
@@ -291,7 +285,7 @@ MainDllLoader::~MainDllLoader() {
 HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
   std::wstring dir(GetExecutablePath());
   *out_file = dir;
-  HMODULE dll = LoadChromeWithDirectory(GetRegistryPath(), out_file);
+  HMODULE dll = LoadChromeWithDirectory(out_file);
   if (dll)
     return dll;
 
@@ -330,7 +324,7 @@ HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
     *out_file = dir;
     *out_version = version_string;
     out_file->append(*out_version).append(L"\\");
-    dll = LoadChromeWithDirectory(GetRegistryPath(), out_file);
+    dll = LoadChromeWithDirectory(out_file);
     if (!dll) {
       LOG(ERROR) << "Failed to load Chrome DLL from " << out_file;
     }

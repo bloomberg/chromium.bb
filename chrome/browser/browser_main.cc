@@ -2193,7 +2193,8 @@ void RecordPreReadExperimentTime(const char* name, base::TimeDelta time) {
   AddPreReadHistogramTime(name, time);
 
 #if defined(OS_WIN)
-  // The pre-read experiment is Windows specific.
+#if defined(GOOGLE_CHROME_BUILD)
+  // The pre-read experiment is Windows and Google Chrome specific.
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   // Only record the sub-histogram result if the experiment is running
@@ -2206,5 +2207,6 @@ void RecordPreReadExperimentTime(const char* name, base::TimeDelta time) {
     uma_name += pre_read == "1" ? "Enabled" : "Disabled";
     AddPreReadHistogramTime(uma_name.c_str(), time);
   }
+#endif
 #endif
 }
