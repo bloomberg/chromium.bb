@@ -18,22 +18,7 @@ namespace prerender {
 namespace {
 
 const int kMinHoverThresholdsMs[] = {
-  50,
-  75,
-  100,
-  150,
-  200,
-  250,
-  300,
-  400,
-  500,
-  750,
-  1000,
-  1500,
-  2000,
-  3000,
-  4000,
-  5000
+  250
 };
 
 // Overview of hover-related histograms:
