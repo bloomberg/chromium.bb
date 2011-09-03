@@ -250,7 +250,8 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
 }
 
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
-    OwnershipService::Status status) {
+    OwnershipService::Status status,
+    bool current_user_is_owner) {
   if (status == OwnershipService::OWNERSHIP_NONE) {
     host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName,
                        GURL());
