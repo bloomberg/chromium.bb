@@ -107,7 +107,14 @@ TEST_F(MediaTest, MAYBE_VideoBearWav) {
   PlayVideo("bear.wav");
 }
 
-TEST_F(UILayoutTest, MediaUILayoutTest) {
+#if defined(OS_MACOSX)
+// http://crbug.com/95274 - MediaUILayoutTest is flaky on Mac.
+#define MAYBE_MediaUILayoutTest FLAKY_MediaUILayoutTest
+#else
+#define MAYBE_MediaUILayoutTest MediaUILayoutTest
+#endif
+
+TEST_F(UILayoutTest, MAYBE_MediaUILayoutTest) {
   static const char* kResources[] = {
     "content",
     "media-file.js",
