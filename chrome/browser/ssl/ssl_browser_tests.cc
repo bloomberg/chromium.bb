@@ -476,7 +476,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   ASSERT_TRUE(tab2->tab_contents()->interstitial_page());
 }
 
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
+// Disabled due to crash in downloads code that this triggers.
+// http://crbug.com/95331
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestBadHTTPSDownload) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
   GURL url_non_dangerous = test_server()->GetURL("");
