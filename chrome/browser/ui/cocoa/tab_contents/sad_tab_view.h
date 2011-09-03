@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_VIEW_H_
 #pragma once
 
+#include "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/base_view.h"
 
@@ -15,7 +16,7 @@
 @class HyperlinkTextView;
 
 // A view that displays the "sad tab" (aka crash page).
-@interface SadTabView : BaseView {
+@interface SadTabView : BaseView<NSTextViewDelegate> {
  @private
   IBOutlet NSImageView* image_;
   IBOutlet NSTextField* title_;
