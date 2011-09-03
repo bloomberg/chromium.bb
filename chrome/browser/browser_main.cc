@@ -874,6 +874,10 @@ void BrowserMainParts::EarlyInitialization() {
   PostEarlyInitialization();
 }
 
+void BrowserMainParts::SetupHistogramSynchronizer() {
+  histogram_synchronizer_ = new HistogramSynchronizer();
+}
+
 // This will be called after the command-line has been mutated by about:flags
 MetricsService* BrowserMainParts::SetupMetricsAndFieldTrials(
     const CommandLine& parsed_command_line,
@@ -1563,8 +1567,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
   // scope. Even though NewRunnableMethod does AddRef and Release, the object
   // will not be deleted after the Task is executed.
-  scoped_refptr<HistogramSynchronizer> histogram_synchronizer(
-      new HistogramSynchronizer());
+  parts->SetupHistogramSynchronizer();
 
   // Now the command line has been mutated based on about:flags, we can
   // set up metrics and initialize field trials.

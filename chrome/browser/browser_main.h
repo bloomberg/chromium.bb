@@ -14,6 +14,7 @@
 
 class BrowserThread;
 class CommandLine;
+class HistogramSynchronizer;
 class FieldTrialSynchronizer;
 class HighResolutionTimerManager;
 struct MainFunctionParams;
@@ -88,6 +89,10 @@ class BrowserMainParts {
   // Parts to be called by |BrowserMain()|.
   void EarlyInitialization();
   void MainMessageLoopStart();
+
+  // Constructs HistogramSynchronizer which gets released early (before
+  // main_message_loop_).
+  void SetupHistogramSynchronizer();
 
   // Constructs metrics service and does related initialization, including
   // creation of field trials. Call only after labs have been converted to
@@ -181,6 +186,11 @@ class BrowserMainParts {
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<BrowserThread> main_thread_;
+
+  // Members initialized after / released before main_message_loop_ ------------
+
+  // Initialized in SetupHistogramSynchronizer.
+  scoped_refptr<HistogramSynchronizer> histogram_synchronizer_;
 
   // Initialized in SetupMetricsAndFieldTrials.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
