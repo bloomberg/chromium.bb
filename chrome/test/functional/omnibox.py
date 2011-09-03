@@ -327,6 +327,36 @@ class OmniboxTest(pyauto.PyUITest):
     self.NavigateToURL(url, 2, 0)
     self._CheckBookmarkResultForVariousInputs(url, title, windex=2)
 
+  def testAutoCompleteForNonAsciiSearch(self):
+    """Verify that able to search and autocomplete with non-ASCII incomplete
+    search keyword."""
+    search_string = u'\u767e'
+    verify_string = u'\u767e\u5ea6\u4e00\u4e0b'
+    matches = test_utils.GetOmniboxMatchesFor(self, search_string)
+    self.assertTrue(verify_string in matches[-1]['contents'])
+
+  def _InstallAndVerifySamplePackagedApp(self):
+    """Installs a sample packaged app and verifies the install is successful.
+
+    Returns:
+      The string ID of the installed app.
+    """
+    app_crx_file = os.path.abspath(os.path.join(self.DataDir(),
+                                   'pyauto_private', 'apps', 'countdown.crx'))
+    installed_app_id = self.InstallApp(app_crx_file)
+    self.assertTrue(installed_app_id, msg='App install failed.')
+
+  def testAppSearch(self):
+    """Verify that we can search for installed apps"""
+    self._InstallAndVerifySamplePackagedApp()
+    self.SetOmniboxText('countdown')
+    self.WaitUntilOmniboxQueryDone()
+    self.assertTrue('countdown' in self.GetOmniboxInfo().Text())
+    self.OmniboxAcceptInput()
+    app_url = 'chrome-extension:' \
+              '//aeabikdlfbfeihglecobdkdflahfgcpd/launchLocalPath.html'
+    self.assertEqual(app_url, self.GetActiveTabURL().spec())
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
