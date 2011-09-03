@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_model_observer.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/page_info_bubble_controller.h"
@@ -110,8 +109,6 @@ class PageInfoBubbleControllerTest : public CocoaTest {
     EXPECT_EQ(controller_, [button target]);
     EXPECT_TRUE([button stringValue]);
   }
-
-  BrowserTestHelper helper_;
 
   PageInfoBubbleController* controller_;  // Weak, owns self.
   FakeModel* model_;  // Weak, owned by controller.

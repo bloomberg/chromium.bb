@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
 
 class InfoBubbleWindowTest : public CocoaTest {
- private:
-  BrowserTestHelper browser_helper_;
 };
 
 TEST_F(InfoBubbleWindowTest, Basics) {

@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #include "chrome/test/base/testing_browser_process.h"

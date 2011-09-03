@@ -7,7 +7,6 @@
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #import "chrome/browser/ui/cocoa/about_window_controller.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -45,7 +44,6 @@ class AboutWindowControllerTest : public CocoaTest {
     CocoaTest::TearDown();
   }
 
-  BrowserTestHelper browser_helper_;
   AboutWindowController* about_window_controller_;
 };
 

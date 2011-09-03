@@ -7,7 +7,7 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/ui/cocoa/browser_test_helper.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/notifications/balloon_controller.h"
 #include "chrome/test/base/testing_profile.h"
