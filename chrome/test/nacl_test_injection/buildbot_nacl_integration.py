@@ -39,6 +39,18 @@ def Main(args):
     # updated. http://code.google.com/p/chromium/issues/detail?id=94352
     tests_to_disable.append('run_ppapi_ppb_url_request_info_browser_test')
 
+    # TODO(ncbray) why did these tests flake?
+    # http://code.google.com/p/nativeclient/issues/detail?id=2230
+    tests_to_disable.extend([
+        'run_pm_manifest_file_chrome_browser_test',
+        'run_srpc_basic_chrome_browser_test',
+        'run_srpc_hw_data_chrome_browser_test',
+        'run_srpc_hw_chrome_browser_test',
+        'run_srpc_manifest_file_chrome_browser_test',
+        'run_srpc_nameservice_chrome_browser_test',
+        'run_srpc_nrd_xfer_chrome_browser_test',
+        ])
+
   if sys.platform == 'darwin':
     # The following test is failing on Mac OS X 10.5.  This may be
     # because of a kernel bug that we might need to work around.
