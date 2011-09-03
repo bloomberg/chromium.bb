@@ -579,6 +579,7 @@ void NTPResourceCache::CreateNewTabCSS() {
       SkColorSetA(color_section_header_rule, 0)));  // $20
   subst.push_back(SkColorToRGBAString(color_text_light));  // $21
   subst.push_back(SkColorToRGBComponents(color_section_border));  // $22
+  subst.push_back(SkColorToRGBComponents(color_text));  // $23
 
   // Get our template.
   int ntp_css_resource_id = NewTabUI::NTP4Enabled() ?

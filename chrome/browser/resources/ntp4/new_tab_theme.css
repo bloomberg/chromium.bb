@@ -1,3 +1,8 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 html,
 #most-visited-settings {
   background-attachment: fixed;
@@ -13,21 +18,22 @@ body {
   overflow: auto;
 }
 
-#attribution {
-  color: $9; /* COLOR_NTP_LINK */
-}
-
-#tip-line {
-  color: $8; /* COLOR_NTP_TEXT */
-}
-
-.link-color {
+#attribution, .link-color {
   color: $9; /* COLOR_NTP_LINK */
 }
 
 .app span,
 .link span {
   color: $8; /* COLOR_NTP_TEXT */
+}
+
+.page-switcher {
+  color: rgba($23, 0.5); /* COLOR_NTP_TEXT */
+}
+
+.page-switcher:hover,
+.page-switcher.drag-target {
+  background-color: rgba($23, 0.06); /* COLOR_NTP_TEXT */
 }
 
 .tile-page-scrollbar {

@@ -211,7 +211,6 @@ html[dir='rtl'] #attribution {
   margin: 0;
   max-width: 150px;
   min-width: 90px;
-  opacity: 0.3;
   top: 0;
   z-index: 5;
   -webkit-transition: width 150ms, right 150ms, background-color 150ms;
