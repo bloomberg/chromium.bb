@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_H_
 #pragma once
 
+#include <stddef.h>
 #include <vector>
 
 class GURL;
