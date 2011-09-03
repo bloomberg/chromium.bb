@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -473,6 +474,48 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
 
   // We should have an interstitial page showing.
   ASSERT_TRUE(tab2->tab_contents()->interstitial_page());
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(https_server_expired_.Start());
+  GURL url_non_dangerous = test_server()->GetURL("");
+  GURL url_dangerous = https_server_expired_.GetURL(
+      "files/downloads/dangerous/dangerous.exe");
+
+  // Visit a non-dangerous page.
+  ui_test_utils::NavigateToURL(browser(), url_non_dangerous);
+
+  // Now, start a transition to dangerous download.
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP, NotificationService::AllSources());
+    browser::NavigateParams navigate_params(browser(), url_dangerous,
+                                            PageTransition::TYPED);
+    browser::Navigate(&navigate_params);
+    observer.Wait();
+  }
+
+  // Proceed through the SSL interstitial. This doesn't use
+  // |ProceedThroughInterstitial| since no page load will commit.
+  TabContents* tab = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(tab != NULL);
+  ASSERT_TRUE(tab->interstitial_page() != NULL);
+  {
+    ui_test_utils::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_DOWNLOAD_INITIATED,
+        NotificationService::AllSources());
+    tab->interstitial_page()->Proceed();
+    observer.Wait();
+  }
+
+  // There should still be an interstitial at this point. Press the
+  // back button on the browser. Note that this doesn't wait for a
+  // NAV_ENTRY_COMMITTED notification because going back with an
+  // active interstitial simply hides the interstitial.
+  ASSERT_TRUE(tab->interstitial_page() != NULL);
+  EXPECT_TRUE(browser()->CanGoBack());
+  browser()->GoBack(CURRENT_TAB);
 }
 
 //
