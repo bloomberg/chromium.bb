@@ -2,7 +2,7 @@
 
 ## repo default configuration
 ##
-REPO_URL='git://android.git.kernel.org/tools/repo.git'
+REPO_URL='http://git.chromium.org/external/repo.git'
 REPO_REV='stable'
 
 # Copyright (C) 2008 Google Inc.
