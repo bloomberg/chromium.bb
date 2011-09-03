@@ -1083,6 +1083,9 @@ are declared in build/common.gypi.
         <message name="IDS_SHOW_BOOKMARK_BAR" desc="The toggle to show the bookmark bar">
           &amp;Show bookmarks bar
         </message>
+        <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In sentence case: The app menu label to import bookmarks and settings.">
+          Import bookmarks and settings...
+        </message>
         <message name="IDS_PROFILING_ENABLED" desc="The toggle to turn profiling on / off">
           &amp;Profiling enabled
         </message>
@@ -1132,6 +1135,9 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_SHOW_BOOKMARK_BAR" desc="In Title Case: The toggle to show the bookmark bar">
           &amp;Show Bookmarks Bar
+        </message>
+        <message name="IDS_IMPORT_SETTINGS_MENU_LABEL" desc="In Title Case: The app menu label to import bookmarks and settings.">
+          Import Bookmarks and Settings...
         </message>
         <message name="IDS_PROFILING_ENABLED" desc="In Title Case: The toggle to turn profiling on / off">
           &amp;Profiling Enabled
@@ -8433,7 +8439,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Bookmarks
       </message>
       <message name="IDS_NEW_TAB_BOOKMARKS_MANAGER_LINK_TITLE" desc="The title of the link to invoke the bookmarks manager from the New Tab Page.">
-        More...
+        Show all
       </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK"
          desc="The link that restores previously removed thumbnails">
@@ -8545,8 +8551,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Settings
       </message>
       <message name="IDS_NEW_TAB_APP_UNINSTALL"
-               desc="Text for the button that allows uninstalling an app.">
-        Uninstall
+               desc="Text for the trash can that appears when the user drags apps.">
+        Remove from <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
       <message name="IDS_NEW_TAB_APP_OPTIONS"
                desc="Text for the button that takes the user to the options of an app.">
@@ -8555,10 +8561,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                desc="Text for the button that creates an app shortcut.">
         Create shortcut
-      </message>
-      <message name="IDS_NEW_TAB_TRASH_LABEL"
-               desc="Text for the trash can that appears when the user drags apps.">
-        Remove from <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>.
       </message>
       <message name="IDS_NEW_TAB_WEBSTORE_PAGE_TITLE"
          desc="Title for the hard coded thumbnail that represents the webstore page. This is used on the NTP when there aren't enough thumbnails to show.">
@@ -9756,26 +9758,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Customize Sync dialog -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="The title of the Customize page of the sync setup dialog.">
-          Customize sync preferences
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="In title case: the title of the Customize page of the sync setup dialog.">
-          Customize Sync Preferences
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
-          Confirm sync preferences
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="In title case: The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
-          Confirm Sync Preferences
-        </message>
-      </if>
+      <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="In title case: the title of the Customize page of the sync setup dialog.">
+        Customize Sync Preferences
+      </message>
+      <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="In title case: The title of the 'Confirm Sync Preferences' page of the customize sync dialog.">
+        Confirm Sync Preferences
+      </message>
       <message name="IDS_SYNC_SYNC_EVERYTHING" desc="The text of the OK button of the 'Confirm Sync Preferences' page of the customize sync dialog.">
         OK, sync everything
       </message>
@@ -9927,16 +9915,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and preferences) between your computers.
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
-          Sign in with your Google Account
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SETUP_TITLE" desc="In title case: The title of the Sync Setup overlay.">
-          Sign In With Your Google Account
-        </message>
-      </if>
+      <message name="IDS_SYNC_SETUP_TITLE" desc="In title case: The title of the Sync Setup overlay.">
+        Sign In With Your Google Account
+      </message>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
         Sign in with your
       </message>

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,21 +76,21 @@ TEST_F(WrenchMenuModelTest, Basics) {
   model.execute_count_ = 0;
   model.enable_count_ = 0;
 
-  // Choose something from the tools submenu and make sure it makes it back to
-  // the delegate as well. Use the first submenu as the tools one.
-  int toolsModelIndex = -1;
+  // Choose something from the bookmark submenu and make sure it makes it back
+  // to the delegate as well.
+  int bookmarksModelIndex = -1;
   for (int i = 0; i < itemCount; ++i) {
     if (model.GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
-      toolsModelIndex = i;
+      bookmarksModelIndex = i;
       break;
     }
   }
-  EXPECT_GT(toolsModelIndex, -1);
-  ui::MenuModel* toolsModel = model.GetSubmenuModelAt(toolsModelIndex);
-  EXPECT_TRUE(toolsModel);
-  EXPECT_GT(toolsModel->GetItemCount(), 2);
-  toolsModel->ActivatedAt(2);
-  EXPECT_TRUE(toolsModel->IsEnabledAt(2));
+  EXPECT_GT(bookmarksModelIndex, -1);
+  ui::MenuModel* bookmarksModel = model.GetSubmenuModelAt(bookmarksModelIndex);
+  EXPECT_TRUE(bookmarksModel);
+  EXPECT_GT(bookmarksModel->GetItemCount(), 1);
+  bookmarksModel->ActivatedAt(1);
+  EXPECT_TRUE(bookmarksModel->IsEnabledAt(1));
   EXPECT_EQ(model.execute_count_, 1);
   EXPECT_EQ(model.enable_count_, 1);
 }
