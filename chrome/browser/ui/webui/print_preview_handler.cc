@@ -769,8 +769,7 @@ void PrintPreviewHandler::SendDefaultPrinter(
 
 void PrintPreviewHandler::SetupPrinterList(const ListValue& printers) {
   SendCloudPrintEnabled();
-  web_ui_->CallJavascriptFunction("setPrinters", printers,
-                                  *(Value::CreateBooleanValue(true)));
+  web_ui_->CallJavascriptFunction("setPrinters", printers);
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
