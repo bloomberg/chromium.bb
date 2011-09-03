@@ -2169,8 +2169,7 @@ void Browser::OpenSearchEngineOptionsDialog() {
 #if defined(FILE_MANAGER_EXTENSION)
 void Browser::OpenFileManager() {
   UserMetrics::RecordAction(UserMetricsAction("OpenFileManager"));
-  ShowSingletonTabRespectRef(GURL(
-      std::string(chrome::kChromeUIFileManagerURL) + "#/"));
+  ShowSingletonTabRespectRef(GURL(chrome::kChromeUIFileManagerURL));
 }
 #endif
 
