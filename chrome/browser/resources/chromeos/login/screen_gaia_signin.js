@@ -34,10 +34,18 @@ cr.define('login', function() {
 
     /** @inheritDoc */
     decorate: function() {
-      $('createAccount').onclick = function() {
+      $('createAccount').innerHTML = localStrings.getStringF(
+          'createAccount',
+          '<a id="createAccountLink" class="signin-link" href="#">',
+          '</a>');
+      $('guestSignin').innerHTML = localStrings.getStringF(
+          'guestSignin',
+          '<a id="guestSigninLink" class="signin-link" href="#">',
+          '</a>');
+      $('createAccountLink').onclick = function() {
         chrome.send('createAccount');
       };
-      $('guestSignin').onclick = function() {
+      $('guestSigninLink').onclick = function() {
         chrome.send('launchIncognito');
       };
     },

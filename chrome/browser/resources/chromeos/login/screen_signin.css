@@ -24,11 +24,14 @@
   width: 200px;
 }
 
+.signin-text {
+  color: #666;
+  margin-top: 20px;
+}
+
 .signin-link {
   color: #254f9b;
-  display: block;
   cursor: pointer;
-  margin-top: 20px;
   text-decoration: none;
 }
 

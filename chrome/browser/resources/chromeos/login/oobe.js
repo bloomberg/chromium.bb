@@ -136,7 +136,8 @@ cr.define('cr.ui', function() {
       // Adjust inner container height based on new step's height.
       $('inner-container').style.height = newStep.offsetHeight + 'px';
 
-      if (this.currentStep_ != nextStepIndex) {
+      if (this.currentStep_ != nextStepIndex &&
+          !oldStep.classList.contains('hidden')) {
         oldStep.addEventListener('webkitTransitionEnd', function f(e) {
           oldStep.removeEventListener('webkitTransitionEnd', f);
           oldStep.classList.add('hidden');
@@ -492,6 +493,14 @@ cr.define('cr.ui', function() {
     } else if (currentScreenId == SCREEN_GAIA_SIGNIN) {
       // Use anchorPos since we won't be able to get the input fields of Gaia.
       anchorPos = Oobe.getOffset(Oobe.getInstance().currentScreen);
+
+      // Ideally, we should just use
+      //   anchorPos = Oobe.getOffset($('signin-frame'));
+      // to get a good anchor point. However, this always gives (0,0) on
+      // the device.
+      // TODO(xiyuan): Figure out why the above fails and get rid of this.
+      if ($('createAccount').hidden && $('guestSignin').hidden)
+        anchorPos.left += 150;  // (640 - 340) / 2
 
       // TODO(xiyuan): Find a reliable way to align with Gaia UI.
       anchorPos.left += 60;

@@ -10972,6 +10972,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_GO_INCOGNITO_BUTTON">
         Browse as Guest
       </message>
+      <message name="IDS_CREATE_ACCOUNT_HTML" desc="Text shown on side of Google sign-in UI.">
+        If you don't have a Google Account you can <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create a Google Account<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> now.
+      </message>
+      <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_HTML" desc="Text shown on side of Google sign-in UI.">
+        You may also skip sign in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Browse as Guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
+      </message>
       <message name="IDS_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/locker screen">
         Shut down
       </message>

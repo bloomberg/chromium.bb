@@ -161,9 +161,9 @@ void SigninScreenHandler::GetLocalizedStrings(
   localized_strings->SetString("offlineMessageBody",
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_MESSAGE));
   localized_strings->SetString("createAccount",
-      l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON));
+      l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_HTML));
   localized_strings->SetString("guestSignin",
-      l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
+      l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_HTML));
   localized_strings->SetString("removeUser",
       l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
 
@@ -286,6 +286,7 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
   DictionaryValue params;
   params.SetString("startUrl", kGaiaExtStartPage);
   params.SetString("email", email_);
+  email_.clear();
 
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   if (!app_locale.empty())
@@ -295,7 +296,7 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
       UserCrosSettingsProvider::cached_allow_new_user());
   params.SetBoolean("guestSignin",
       UserCrosSettingsProvider::cached_allow_guest());
-  email_.clear();
+
   // Test automation data:
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
