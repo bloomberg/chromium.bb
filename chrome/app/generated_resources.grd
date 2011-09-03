@@ -1081,7 +1081,7 @@ are declared in build/common.gypi.
           &amp;History
         </message>
         <message name="IDS_SHOW_BOOKMARK_BAR" desc="The toggle to show the bookmark bar">
-          &amp;Always show bookmarks bar
+          &amp;Show bookmarks bar
         </message>
         <message name="IDS_PROFILING_ENABLED" desc="The toggle to turn profiling on / off">
           &amp;Profiling enabled
@@ -1131,7 +1131,7 @@ are declared in build/common.gypi.
           &amp;History
         </message>
         <message name="IDS_SHOW_BOOKMARK_BAR" desc="In Title Case: The toggle to show the bookmark bar">
-          &amp;Always Show Bookmarks Bar
+          &amp;Show Bookmarks Bar
         </message>
         <message name="IDS_PROFILING_ENABLED" desc="In Title Case: The toggle to turn profiling on / off">
           &amp;Profiling Enabled
