@@ -970,7 +970,7 @@ TEST_F(BookmarkModelTestWithProfile2, RemoveNotification) {
 
   // Add a URL.
   GURL url("http://www.google.com");
-  bb_model_->SetURLStarred(url, string16(), true);
+  bookmark_utils::AddIfNotBookmarked(bb_model_, url, string16());
 
   profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(
       url, NULL, 1, GURL(), PageTransition::TYPED,

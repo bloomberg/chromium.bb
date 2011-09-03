@@ -12,6 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -560,8 +561,8 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
 
   for (int i = 0; i < 2; i++) {
-    model->SetURLStarred(GURL("http://www.foo.com"), ASCIIToUTF16("small"),
-                         true);
+    bookmark_utils::AddIfNotBookmarked(
+        model, GURL("http://www.foo.com"), ASCIIToUTF16("small"));
     EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
   }
 
@@ -628,9 +629,9 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
 
   // Test two bookmarks.
   GURL gurl("http://www.foo.com");
-  model->SetURLStarred(gurl, ASCIIToUTF16("small"), true);
-  model->SetURLStarred(GURL("http://www.cnn.com"), ASCIIToUTF16("bigger title"),
-                       true);
+  bookmark_utils::AddIfNotBookmarked(model, gurl, ASCIIToUTF16("small"));
+  bookmark_utils::AddIfNotBookmarked(
+      model, GURL("http://www.cnn.com"), ASCIIToUTF16("bigger title"));
   menu = [bar_ menuForFolderNode:model->bookmark_bar_node()];
   EXPECT_EQ([menu numberOfItems], 2);
   NSMenuItem *item = [menu itemWithTitle:@"bigger title"];
@@ -721,24 +722,23 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   // TODO(viettrungluu): make the test independent of window/view size, font
   // metrics, button size and spacing, and everything else.
   string16 title1(ASCIIToUTF16("x"));
-  model->SetURLStarred(gurl1, title1, true);
+  bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
   EXPECT_EQ(1U, [[bar_ buttons] count]);
   EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl2("http://legion-of-doom.gov");
   string16 title2(ASCIIToUTF16("y"));
-  model->SetURLStarred(gurl2, title2, true);
+  bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
   EXPECT_EQ(2U, [[bar_ buttons] count]);
   EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
 
   for (int i = 0; i < 3; i++) {
-    // is_starred=false --> remove the bookmark
-    model->SetURLStarred(gurl2, title2, false);
+    bookmark_utils::RemoveAllBookmarks(model, gurl2);
     EXPECT_EQ(1U, [[bar_ buttons] count]);
     EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
     // and bring it back
-    model->SetURLStarred(gurl2, title2, true);
+    bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
     EXPECT_EQ(2U, [[bar_ buttons] count]);
     EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
   }
@@ -819,11 +819,11 @@ TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   GURL gurl1("http://www.google.com");
   string16 title1(ASCIIToUTF16("x"));
-  model->SetURLStarred(gurl1, title1, true);
+  bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
 
   GURL gurl2("http://www.google.com/blah");
   string16 title2(ASCIIToUTF16("y"));
-  model->SetURLStarred(gurl2, title2, true);
+  bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
 
   EXPECT_EQ(2U, [[bar_ buttons] count]);
   CGFloat width_1 = [[[bar_ buttons] objectAtIndex:0] frame].size.width;
@@ -902,7 +902,7 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   GURL gurl1("http://www.google.com/");
   string16 title1(ASCIIToUTF16("x"));
-  model->SetURLStarred(gurl1, title1, true);
+  bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
 
   EXPECT_EQ(1U, [[bar_ buttons] count]);
   NSButton* first = [[bar_ buttons] objectAtIndex:0];
@@ -994,11 +994,11 @@ TEST_F(BookmarkBarControllerTest, TestButtonOrBar) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   GURL gurl1("http://www.google.com");
   string16 title1(ASCIIToUTF16("x"));
-  model->SetURLStarred(gurl1, title1, true);
+  bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
 
   GURL gurl2("http://www.google.com/gurl_power");
   string16 title2(ASCIIToUTF16("gurl power"));
-  model->SetURLStarred(gurl2, title2, true);
+  bookmark_utils::AddIfNotBookmarked(model, gurl2, title2);
 
   NSButton* first = [[bar_ buttons] objectAtIndex:0];
   NSButton* second = [[bar_ buttons] objectAtIndex:1];
@@ -1057,9 +1057,8 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   string16 titles[] = { ASCIIToUTF16("a"),
                         ASCIIToUTF16("b"),
                         ASCIIToUTF16("c") };
-  for (unsigned i = 0; i < arraysize(titles); i++) {
-    model->SetURLStarred(gurls[i], titles[i], true);
-  }
+  for (unsigned i = 0; i < arraysize(titles); i++)
+    bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
 
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
   EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:0] title]);
@@ -1129,9 +1128,9 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
   string16 titles[] = { ASCIIToUTF16("a"),
                         ASCIIToUTF16("b"),
                         ASCIIToUTF16("c") };
-  for (unsigned i = 0; i < arraysize(titles); i++) {
-    model->SetURLStarred(gurls[i], titles[i], true);
-  }
+  for (unsigned i = 0; i < arraysize(titles); i++)
+    bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
+
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
   EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:0] title]);
 
@@ -1152,7 +1151,8 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
 // buttons have the same colored text.  Repeat more than once.
 TEST_F(BookmarkBarControllerTest, TestThemedButton) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  model->SetURLStarred(GURL("http://www.foo.com"), ASCIIToUTF16("small"), true);
+  bookmark_utils::AddIfNotBookmarked(
+      model, GURL("http://www.foo.com"), ASCIIToUTF16("small"));
   BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
   EXPECT_TRUE(button);
 
@@ -1184,7 +1184,7 @@ TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
                         ASCIIToUTF16("b"),
                         ASCIIToUTF16("c") };
   for (size_t i = 0; i < arraysize(titles); i++)
-    model->SetURLStarred(gurls[i], titles[i], true);
+    bookmark_utils::AddIfNotBookmarked(model, gurls[i], titles[i]);
 
   // Get and retain the buttons so we can examine them after dealloc.
   scoped_nsobject<NSArray> buttons([[bar_ buttons] retain]);

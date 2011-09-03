@@ -15,6 +15,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
@@ -562,7 +563,7 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   // ASSERT_TRUE(HasThumbnail(url_row.id()));
 
   // Unstar the URL and delete again.
-  bookmark_model_.SetURLStarred(url, string16(), false);
+  bookmark_utils::RemoveAllBookmarks(&bookmark_model_, url);
   expirer_.DeleteURL(url);
 
   // Now it should be completely deleted.

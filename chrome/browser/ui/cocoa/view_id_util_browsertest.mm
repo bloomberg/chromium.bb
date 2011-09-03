@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,8 +63,8 @@ class ViewIDTest : public InProcessBrowserTest {
       if (!bookmark_model->IsLoaded())
         ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
 
-      bookmark_model->SetURLStarred(GURL(chrome::kAboutBlankURL),
-                                    UTF8ToUTF16("about"), true);
+      bookmark_utils::AddIfNotBookmarked(
+          bookmark_model, GURL(chrome::kAboutBlankURL), ASCIIToUTF16("about"));
     }
 
     for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {

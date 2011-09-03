@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
@@ -386,8 +387,8 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   URLID row2_id = backend_->db_->GetRowForURL(row2.url(), NULL);
 
   // Star the two URLs.
-  bookmark_model_.SetURLStarred(row1.url(), string16(), true);
-  bookmark_model_.SetURLStarred(row2.url(), string16(), true);
+  bookmark_utils::AddIfNotBookmarked(&bookmark_model_, row1.url(), string16());
+  bookmark_utils::AddIfNotBookmarked(&bookmark_model_, row2.url(), string16());
 
   // Delete url 2. Because url 2 is starred this won't delete the URL, only
   // the visits.
@@ -406,7 +407,8 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
                                                          NULL));
 
   // Unstar row2.
-  bookmark_model_.SetURLStarred(row2.url(), string16(), false);
+  bookmark_utils::RemoveAllBookmarks(&bookmark_model_, row2.url());
+
   // Tell the backend it was unstarred. We have to explicitly do this as
   // BookmarkModel isn't wired up to the backend during testing.
   std::set<GURL> unstarred_urls;
@@ -422,7 +424,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
                                                          NULL));
 
   // Unstar row 1.
-  bookmark_model_.SetURLStarred(row1.url(), string16(), false);
+  bookmark_utils::RemoveAllBookmarks(&bookmark_model_, row1.url());
   // Tell the backend it was unstarred. We have to explicitly do this as
   // BookmarkModel isn't wired up to the backend during testing.
   unstarred_urls.clear();

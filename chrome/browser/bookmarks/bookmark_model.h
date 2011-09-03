@@ -295,13 +295,6 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // BookmarkNodeChildrenReordered method.
   void SortChildren(const BookmarkNode* parent);
 
-  // This is the convenience that makes sure the url is starred or not starred.
-  // If is_starred is false, all bookmarks for URL are removed. If is_starred is
-  // true and there are no bookmarks for url, a bookmark is created.
-  void SetURLStarred(const GURL& url,
-                     const string16& title,
-                     bool is_starred);
-
   // Sets the date when the folder was modified.
   void SetDateFolderModified(const BookmarkNode* node, const base::Time time);
 

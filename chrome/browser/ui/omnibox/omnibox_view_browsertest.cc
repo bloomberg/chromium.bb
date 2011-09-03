@@ -15,6 +15,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -320,7 +321,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
                                         history::SOURCE_BROWSED);
     history_service->SetPageContents(url, UTF8ToUTF16(entry.body));
     if (entry.starred)
-      bookmark_model->SetURLStarred(url, string16(), true);
+      bookmark_utils::AddIfNotBookmarked(bookmark_model, url, string16());
   }
 
   void SetupHistory() {

@@ -476,30 +476,6 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
                     BookmarkNodeChildrenReordered(this, parent));
 }
 
-void BookmarkModel::SetURLStarred(const GURL& url,
-                                  const string16& title,
-                                  bool is_starred) {
-  std::vector<const BookmarkNode*> bookmarks;
-  GetNodesByURL(url, &bookmarks);
-  bool bookmarks_exist = !bookmarks.empty();
-  if (is_starred == bookmarks_exist)
-    return;  // Nothing to do, state already matches.
-
-  if (is_starred) {
-    // Create a bookmark.
-    const BookmarkNode* parent = GetParentForNewNodes();
-    AddURL(parent, parent->child_count(), title, url);
-  } else {
-    // Remove all the bookmarks.
-    for (size_t i = 0; i < bookmarks.size(); ++i) {
-      const BookmarkNode* node = bookmarks[i];
-      int index = node->parent()->GetIndexOf(node);
-      if (index > -1)
-        Remove(node->parent(), index);
-    }
-  }
-}
-
 void BookmarkModel::SetDateFolderModified(const BookmarkNode* parent,
                                           const Time time) {
   DCHECK(parent);

@@ -221,9 +221,16 @@ bool NodeHasURLs(const BookmarkNode* node);
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window);
 
-// Delete the list of nodes.
-void DeleteBookmarkFolders(BookmarkModel* model,
-                           const std::vector<int64>& ids);
+// Deletes the bookmark folders for the given list of |ids|.
+void DeleteBookmarkFolders(BookmarkModel* model, const std::vector<int64>& ids);
+
+// If there are no bookmarks for url, a bookmark is created.
+void AddIfNotBookmarked(BookmarkModel* model,
+                        const GURL& url,
+                        const string16& title);
+
+// Removes all bookmarks for the given |url|.
+void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);
 
 // Number of bookmarks we'll open before prompting the user to see if they
 // really want to open all.

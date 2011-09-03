@@ -7,6 +7,7 @@
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -275,7 +276,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 
 - (IBAction)remove:(id)sender {
   [self stopPulsingBookmarkButton];
-  model_->SetURLStarred(node_->url(), node_->GetTitle(), false);
+  bookmark_utils::RemoveAllBookmarks(model_, node_->url());
   UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
   node_ = NULL;  // no longer valid
   [self ok:sender];

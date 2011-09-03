@@ -1759,7 +1759,7 @@ void Browser::BookmarkCurrentPage() {
     // so that bookmarks have an icon for the page.
     tab->favicon_tab_helper()->SaveFavicon();
   }
-  model->SetURLStarred(url, title, true);
+  bookmark_utils::AddIfNotBookmarked(model, url, title);
   // Make sure the model actually added a bookmark before showing the star. A
   // bookmark isn't created if the url is invalid.
   if (window_->IsActive() && model->IsBookmarked(url)) {

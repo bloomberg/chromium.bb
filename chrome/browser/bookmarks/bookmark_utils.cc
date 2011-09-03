@@ -752,4 +752,29 @@ void DeleteBookmarkFolders(BookmarkModel* model,
   }
 }
 
+void AddIfNotBookmarked(BookmarkModel* model,
+                        const GURL& url,
+                        const string16& title) {
+  std::vector<const BookmarkNode*> bookmarks;
+  model->GetNodesByURL(url, &bookmarks);
+  if (!bookmarks.empty())
+    return;  // Nothing to do, a bookmark with that url already exists.
+
+  const BookmarkNode* parent = model->GetParentForNewNodes();
+  model->AddURL(parent, parent->child_count(), title, url);
+}
+
+void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
+  std::vector<const BookmarkNode*> bookmarks;
+  model->GetNodesByURL(url, &bookmarks);
+
+  // Remove all the bookmarks.
+  for (size_t i = 0; i < bookmarks.size(); ++i) {
+    const BookmarkNode* node = bookmarks[i];
+    int index = node->parent()->GetIndexOf(node);
+    if (index > -1)
+      model->Remove(node->parent(), index);
+  }
+}
+
 }  // namespace bookmark_utils
