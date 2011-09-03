@@ -29,6 +29,9 @@
 namespace {
 
 void StopWorker(int document_cookie) {
+  if (document_cookie <= 0)
+    return;
+
   printing::PrintJobManager* print_job_manager =
       g_browser_process->print_job_manager();
   scoped_refptr<printing::PrinterQuery> printer_query;
@@ -80,6 +83,26 @@ TabContentsWrapper* PrintPreviewMessageHandler::GetPrintPreviewTab() {
 
 TabContentsWrapper* PrintPreviewMessageHandler::tab_contents_wrapper() {
   return TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
+}
+
+PrintPreviewUI* PrintPreviewMessageHandler::OnFailure(int document_cookie) {
+  // Always need to stop the worker.
+  StopWorker(document_cookie);
+
+  // Inform the print preview tab of the failure.
+  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
+  // User might have closed it already.
+  if (!print_preview_tab || !print_preview_tab->web_ui())
+    return NULL;
+
+  if (g_browser_process->background_printing_manager()->
+          HasPrintPreviewTab(print_preview_tab)) {
+    // Preview tab was hidden to serve the print request.
+    delete print_preview_tab;
+    return NULL;
+  }
+
+  return static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview() {
@@ -173,24 +196,10 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
 }
 
 void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
-  // Always need to stop the worker.
-  StopWorker(document_cookie);
-
-  // Inform the print preview tab of the failure.
-  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  // User might have closed it already.
-  if (!print_preview_tab || !print_preview_tab->web_ui())
+  PrintPreviewUI* print_preview_ui = OnFailure(document_cookie);
+  if (!print_preview_ui)
     return;
-
-  if (g_browser_process->background_printing_manager()->
-          HasPrintPreviewTab(print_preview_tab)) {
-    // Preview tab was hidden to serve the print request.
-    delete print_preview_tab;
-  } else {
-    PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-    print_preview_ui->OnPrintPreviewFailed();
-  }
+  print_preview_ui->OnPrintPreviewFailed();
 }
 
 void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
@@ -210,23 +219,10 @@ void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
 }
 
 void PrintPreviewMessageHandler::OnInvalidPrinterSettings(int document_cookie) {
-  // Always need to stop the worker.
-  if (document_cookie) {
-    StopWorker(document_cookie);
-  }
-
-  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_ui())
+  PrintPreviewUI* print_preview_ui = OnFailure(document_cookie);
+  if (!print_preview_ui)
     return;
-
-  if (g_browser_process->background_printing_manager()->
-          HasPrintPreviewTab(print_preview_tab)) {
-    delete print_preview_tab;
-  } else {
-    PrintPreviewUI* print_preview_ui =
-        static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-    print_preview_ui->OnInvalidPrinterSettings();
-  }
+  print_preview_ui->OnInvalidPrinterSettings();
 }
 
 bool PrintPreviewMessageHandler::OnMessageReceived(

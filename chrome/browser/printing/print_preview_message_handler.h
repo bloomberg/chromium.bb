@@ -8,6 +8,7 @@
 
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
+class PrintPreviewUI;
 class TabContentsWrapper;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
@@ -32,8 +33,13 @@ class PrintPreviewMessageHandler : public TabContentsObserver {
  private:
   // Gets the print preview tab associated with the TabContents being observed.
   TabContentsWrapper* GetPrintPreviewTab();
+
   // Helper function to return the TabContentsWrapper for tab_contents().
   TabContentsWrapper* tab_contents_wrapper();
+
+  // Common code between failure handlers. Returns a PrintPreviewUI* if there
+  // exists a PrintPreviewUI to send messages to.
+  PrintPreviewUI* OnFailure(int document_cookie);
 
   // Message handlers.
   void OnRequestPrintPreview();

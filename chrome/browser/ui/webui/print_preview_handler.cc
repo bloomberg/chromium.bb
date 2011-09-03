@@ -568,15 +568,12 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     return;
 
   // Storing last used color setting.
-  settings->GetBoolean("color", &last_used_color_setting_);
+  settings->GetBoolean(printing::kSettingColor, &last_used_color_setting_);
 
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
 
   settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
-
-  TabContentsWrapper* preview_tab_wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
 
   bool print_to_cloud = settings->HasKey(printing::kSettingCloudPrintId);
   if (print_to_cloud) {
@@ -590,7 +587,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
 
     // Pre-populating select file dialog with print job title.
     string16 print_job_title_utf16 =
-        preview_tab_wrapper->print_view_manager()->RenderSourceName();
+        preview_tab_wrapper()->print_view_manager()->RenderSourceName();
 
 #if defined(OS_WIN)
     FilePath::StringType print_job_title(print_job_title_utf16);
@@ -795,13 +792,11 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
   CHECK(data.get());
   DCHECK_GT(data->size(), 0U);
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
   string16 print_job_title_utf16 =
-      wrapper->print_view_manager()->RenderSourceName();
+      preview_tab_wrapper()->print_view_manager()->RenderSourceName();
   std::string print_job_title = UTF16ToUTF8(print_job_title_utf16);
   std::string printer_id;
-  settings.GetString("cloudPrintID", &printer_id);
+  settings.GetString(printing::kSettingCloudPrintId, &printer_id);
 // BASE64 encode the job data.
   std::string raw_data(reinterpret_cast<const char*>(data->front()),
                        data->size());
@@ -957,11 +952,9 @@ void PrintPreviewHandler::FileSelectionCanceled(void* params) {
 }
 
 void PrintPreviewHandler::HidePreviewTab() {
-  TabContentsWrapper* preview_tab_wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(preview_tab());
-  if (GetBackgroundPrintingManager()->HasPrintPreviewTab(preview_tab_wrapper))
+  if (GetBackgroundPrintingManager()->HasPrintPreviewTab(preview_tab_wrapper()))
     return;
-  GetBackgroundPrintingManager()->OwnPrintPreviewTab(preview_tab_wrapper);
+  GetBackgroundPrintingManager()->OwnPrintPreviewTab(preview_tab_wrapper());
 }
 
 void PrintPreviewHandler::ClearInitiatorTabDetails() {
@@ -973,7 +966,7 @@ void PrintPreviewHandler::ClearInitiatorTabDetails() {
   // associated with the preview tab to allow the initiator tab to create
   // another preview tab.
   printing::PrintPreviewTabController* tab_controller =
-     printing::PrintPreviewTabController::GetInstance();
+      printing::PrintPreviewTabController::GetInstance();
   if (tab_controller)
     tab_controller->EraseInitiatorTabInfo(preview_tab_wrapper());
 }
