@@ -29,7 +29,7 @@ const int PhishingTermFeatureExtractor::kMaxTimePerChunkMs = 20;
 // Experimenting shows that we get a reasonable gain in performance by
 // increasing this up to around 10, but there's not much benefit in
 // increasing it past that.
-const int PhishingTermFeatureExtractor::kClockCheckGranularity = 10;
+const int PhishingTermFeatureExtractor::kClockCheckGranularity = 5;
 
 // This should be longer than we expect feature extraction to take on any
 // actual phishing page.
