@@ -101,21 +101,6 @@ PendingRequestMap& GetPendingRequestMap() {
   return g_singleton_data.Get().pending_requests;
 }
 
-RenderView* GetRenderViewForCurrentContext() {
-  WebFrame* webframe = WebFrame::frameForCurrentContext();
-  DCHECK(webframe) << "RetrieveCurrentFrame called when not in a V8 context.";
-  if (!webframe)
-    return NULL;
-
-  WebView* webview = webframe->view();
-  if (!webview)
-    return NULL;  // can happen during closing
-
-  RenderView* renderview = RenderView::FromWebView(webview);
-  DCHECK(renderview) << "Encountered a WebView without a WebViewDelegate";
-  return renderview;
-}
-
 v8::Handle<v8::Value> CallFunctionInContext(v8::Handle<v8::Context> context,
     const std::string& function_name, int argc,
     v8::Handle<v8::Value>* argv) {

@@ -51,15 +51,19 @@ class ExtensionBase : public v8::Extension {
     return result;
   }
 
+  // Gets the render view for the current v8 context.
+  static RenderView* GetCurrentRenderView();
+
   // Note: do not call this function before or during the chromeHidden.onLoad
   // event dispatch. The URL might not have been committed yet and might not
   // be an extension URL.
-  const ::Extension* GetExtensionForCurrentContext() const;
+  const ::Extension* GetExtensionForCurrentRenderView() const;
 
   // Checks that the current context contains an extension that has permission
   // to execute the specified function. If it does not, a v8 exception is thrown
   // and the method returns false. Otherwise returns true.
-  bool CheckPermissionForCurrentContext(const std::string& function_name) const;
+  bool CheckPermissionForCurrentRenderView(
+      const std::string& function_name) const;
 
   // Returns a hidden variable for use by the bindings that is unreachable
   // by the page.

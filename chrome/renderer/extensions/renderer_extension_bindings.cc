@@ -92,7 +92,7 @@ class ExtensionImpl : public ExtensionBase {
       const v8::Arguments& args) {
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
-    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+    RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -112,7 +112,7 @@ class ExtensionImpl : public ExtensionBase {
 
   // Sends a message along the given channel.
   static v8::Handle<v8::Value> PostMessage(const v8::Arguments& args) {
-    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+    RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -191,7 +191,7 @@ class ExtensionImpl : public ExtensionBase {
     if (!l10n_messages) {
       // Get the current RenderView so that we can send a routed IPC message
       // from the correct source.
-      RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+      RenderView* renderview = GetCurrentRenderView();
       if (!renderview)
         return v8::Undefined();
 

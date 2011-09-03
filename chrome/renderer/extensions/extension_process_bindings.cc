@@ -224,7 +224,7 @@ class ExtensionImpl : public ExtensionBase {
 
     ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
     const ::Extension* extension =
-        v8_extension->GetExtensionForCurrentContext();
+        v8_extension->GetExtensionForCurrentRenderView();
     if (!extension)
       return v8::Undefined();
 
@@ -278,7 +278,7 @@ class ExtensionImpl : public ExtensionBase {
 
     ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
     const ::Extension* extension =
-        v8_extension->GetExtensionForCurrentContext();
+        v8_extension->GetExtensionForCurrentRenderView();
     if (!extension)
       return v8::Undefined();
     if (allowed_ids.end() == std::find(
@@ -339,7 +339,7 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> OpenChannelToTab(const v8::Arguments& args) {
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
-    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+    RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -402,7 +402,7 @@ class ExtensionImpl : public ExtensionBase {
 
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
-    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+    RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
 
@@ -414,7 +414,7 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
     }
 
-    if (!v8_extension->CheckPermissionForCurrentContext(name))
+    if (!v8_extension->CheckPermissionForCurrentRenderView(name))
       return v8::Undefined();
 
     GURL source_url;
@@ -539,7 +539,7 @@ class ExtensionImpl : public ExtensionBase {
   }
 
   static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {
-    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+    RenderView* renderview = GetCurrentRenderView();
     if (!renderview)
       return v8::Undefined();
     return v8::Integer::New(renderview->routing_id());

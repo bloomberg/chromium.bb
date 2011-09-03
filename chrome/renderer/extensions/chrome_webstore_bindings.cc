@@ -65,16 +65,20 @@ class ChromeWebstoreExtensionWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> Install(const v8::Arguments& args) {
     WebFrame* frame = WebFrame::frameForCurrentContext();
-    RenderView* render_view = bindings_utils::GetRenderViewForCurrentContext();
-    if (frame && render_view) {
-      std::string webstore_item_id;
-      std::string error;
-      if (GetWebstoreItemIdFromFrame(frame, &webstore_item_id, &error)) {
-        ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-        helper->InlineWebstoreInstall(webstore_item_id);
-      } else {
-        v8::ThrowException(v8::String::New(error.c_str()));
-      }
+    if (!frame || !frame->view())
+      return v8::Undefined();
+
+    RenderView* render_view = RenderView::FromWebView(frame->view());
+    if (!render_view)
+      return v8::Undefined();
+
+    std::string webstore_item_id;
+    std::string error;
+    if (GetWebstoreItemIdFromFrame(frame, &webstore_item_id, &error)) {
+      ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+      helper->InlineWebstoreInstall(webstore_item_id);
+    } else {
+      v8::ThrowException(v8::String::New(error.c_str()));
     }
 
     return v8::Undefined();

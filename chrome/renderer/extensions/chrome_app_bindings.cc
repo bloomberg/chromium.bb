@@ -120,14 +120,17 @@ class ChromeAppExtensionWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> Install(const v8::Arguments& args) {
     WebFrame* frame = WebFrame::frameForCurrentContext();
-    RenderView* render_view = bindings_utils::GetRenderViewForCurrentContext();
-    if (frame && render_view) {
-      string16 error;
+    if (!frame || !frame->view())
+      return v8::Undefined();
 
-      ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-      if (!helper->InstallWebApplicationUsingDefinitionFile(frame, &error))
-        v8::ThrowException(v8::String::New(UTF16ToUTF8(error).c_str()));
-    }
+    RenderView* render_view = RenderView::FromWebView(frame->view());
+    if (!render_view)
+      return v8::Undefined();
+
+    string16 error;
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    if (!helper->InstallWebApplicationUsingDefinitionFile(frame, &error))
+      v8::ThrowException(v8::String::New(UTF16ToUTF8(error).c_str()));
 
     return v8::Undefined();
   }

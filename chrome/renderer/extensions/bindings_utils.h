@@ -75,10 +75,6 @@ typedef std::map<int, linked_ptr<PendingRequest> > PendingRequestMap;
 // Returns a mutable reference to the PendingRequestMap.
 PendingRequestMap& GetPendingRequestMap();
 
-// Returns the current RenderView, based on which V8 context is current.  It is
-// an error to call this when not in a V8 context.
-RenderView* GetRenderViewForCurrentContext();
-
 // Call the named javascript function with the given arguments in a context.
 // The function name should be reachable from the chromeHidden object, and can
 // be a sub-property like "Port.dispatchOnMessage". Returns the result of

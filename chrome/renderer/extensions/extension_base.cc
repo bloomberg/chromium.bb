@@ -42,8 +42,24 @@ const char* ExtensionBase::GetStringResource(int resource_id) {
   return it->second.c_str();
 }
 
-const Extension* ExtensionBase::GetExtensionForCurrentContext() const {
-  RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+// static
+RenderView* ExtensionBase::GetCurrentRenderView() {
+  WebFrame* webframe = WebFrame::frameForCurrentContext();
+  DCHECK(webframe) << "RetrieveCurrentFrame called when not in a V8 context.";
+  if (!webframe)
+    return NULL;
+
+  WebView* webview = webframe->view();
+  if (!webview)
+    return NULL;  // can happen during closing
+
+  RenderView* renderview = RenderView::FromWebView(webview);
+  DCHECK(renderview) << "Encountered a WebView without a WebViewDelegate";
+  return renderview;
+}
+
+const Extension* ExtensionBase::GetExtensionForCurrentRenderView() const {
+  RenderView* renderview = GetCurrentRenderView();
   if (!renderview)
     return NULL;  // this can happen as a tab is closing.
 
@@ -55,9 +71,9 @@ const Extension* ExtensionBase::GetExtensionForCurrentContext() const {
   return extensions->GetByURL(url);
 }
 
-bool ExtensionBase::CheckPermissionForCurrentContext(
+bool ExtensionBase::CheckPermissionForCurrentRenderView(
     const std::string& function_name) const {
-  const ::Extension* extension = GetExtensionForCurrentContext();
+  const ::Extension* extension = GetExtensionForCurrentRenderView();
   if (extension &&
       extension_dispatcher_->IsExtensionActive(extension->id()) &&
       extension->HasAPIPermission(function_name))

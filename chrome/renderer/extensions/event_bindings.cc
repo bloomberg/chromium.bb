@@ -111,7 +111,7 @@ class ExtensionImpl : public ExtensionBase {
       std::string event_name(*v8::String::AsciiValue(args[0]));
 
       ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
-      if (!v8_extension->CheckPermissionForCurrentContext(event_name))
+      if (!v8_extension->CheckPermissionForCurrentRenderView(event_name))
         return v8::Undefined();
 
       if (++listener_counts[event_name] == 1) {
