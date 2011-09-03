@@ -42,10 +42,16 @@
 #include <stdint.h>                     // for uint32_t, uint64_t
 #endif
 #include <sys/types.h>                  // for ssize_t
-#include "common.h"            // for SizeMap, kMaxSize, etc
-#include "free_list.h"  // for FL_Pop, FL_PopRange, etc
-#include "internal_logging.h"  // for ASSERT, etc
+#include "common.h"
+#include "linked_list.h"
 #include "maybe_threads.h"
+#include "page_heap_allocator.h"
+#include "sampler.h"
+#include "static_vars.h"
+
+#include "common.h"            // for SizeMap, kMaxSize, etc
+#include "internal_logging.h"  // for ASSERT, etc
+#include "linked_list.h"       // for SLL_Pop, SLL_PopRange, etc
 #include "page_heap_allocator.h"  // for PageHeapAllocator
 #include "sampler.h"           // for Sampler
 #include "static_vars.h"       // for Static
@@ -192,7 +198,7 @@ class ThreadCache {
     void clear_lowwatermark() { lowater_ = length_; }
 
     void Push(void* ptr) {
-      FL_Push(&list_, ptr);
+      SLL_Push(&list_, ptr);
       length_++;
     }
 
@@ -200,16 +206,16 @@ class ThreadCache {
       ASSERT(list_ != NULL);
       length_--;
       if (length_ < lowater_) lowater_ = length_;
-      return FL_Pop(&list_);
+      return SLL_Pop(&list_);
     }
 
     void PushRange(int N, void *start, void *end) {
-      FL_PushRange(&list_, start, end);
+      SLL_PushRange(&list_, start, end);
       length_ += N;
     }
 
     void PopRange(int N, void **start, void **end) {
-      FL_PopRange(&list_, N, start, end);
+      SLL_PopRange(&list_, N, start, end);
       ASSERT(length_ >= N);
       length_ -= N;
       if (length_ < lowater_) lowater_ = length_;

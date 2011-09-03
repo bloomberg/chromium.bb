@@ -31,6 +31,7 @@
 // Author: Sanjay Ghemawat <opensource@google.com>
 //
 // Common definitions for tcmalloc code.
+
 #ifndef TCMALLOC_COMMON_H_
 #define TCMALLOC_COMMON_H_
 
@@ -39,7 +40,6 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>                     // for uintptr_t, uint64_t
 #endif
-#include "free_list.h"  // for SIZE_CLASS macros
 #include "internal_logging.h"  // for ASSERT, etc
 
 // Type that can hold a page number
@@ -61,30 +61,19 @@ typedef uintptr_t Length;
 // central lists.  Also, larger pages are less likely to get freed.
 // These two factors cause a bounded increase in memory use.
 
-static const size_t kAlignment  = 8;
-
-// Constants dependant on tcmalloc configuration and archetecture.
-// We need to guarantee the smallest class size is big enough to hold the
-// pointers that form the free list.
-static const size_t kNumFreeListPointers = 
-  (tcmalloc::kSupportsDoublyLinkedList ? 2 : 1);
-static const size_t kLinkSize = kNumFreeListPointers * sizeof(void *);
-static const size_t kMinClassSize = 
-  (kLinkSize > kAlignment ? kLinkSize : kAlignment);
-static const size_t kSkippedClasses = (kAlignment < kMinClassSize ? 1 : 0);
-
 #if defined(TCMALLOC_LARGE_PAGES)
 static const size_t kPageShift  = 15;
-static const size_t kNumClasses = 95 - kSkippedClasses;
+static const size_t kNumClasses = 95;
 static const size_t kMaxThreadCacheSize = 4 << 20;
 #else
 static const size_t kPageShift  = 12;
-static const size_t kNumClasses = 61 - kSkippedClasses;
+static const size_t kNumClasses = 61;
 static const size_t kMaxThreadCacheSize = 2 << 20;
 #endif
 
 static const size_t kPageSize   = 1 << kPageShift;
 static const size_t kMaxSize    = 8u * kPageSize;
+static const size_t kAlignment  = 8;
 // For all span-lengths < kMaxPages we keep an exact-size list.
 static const size_t kMaxPages = 1 << (20 - kPageShift);
 

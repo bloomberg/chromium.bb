@@ -32,8 +32,9 @@
 
 #include "config.h"
 #include "central_freelist.h"
-#include "free_list.h"         // for FL_Next, FL_Push, etc
+
 #include "internal_logging.h"  // for ASSERT, MESSAGE
+#include "linked_list.h"       // for SLL_Next, SLL_Push, etc
 #include "page_heap.h"         // for PageHeap
 #include "static_vars.h"       // for Static
 
@@ -57,7 +58,7 @@ void CentralFreeList::Init(size_t cl) {
 
 void CentralFreeList::ReleaseListToSpans(void* start) {
   while (start) {
-    void *next = FL_Next(start);
+    void *next = SLL_Next(start);
     ReleaseToSpans(start);
     start = next;
   }
@@ -93,7 +94,7 @@ void CentralFreeList::ReleaseToSpans(void* object) {
   if (false) {
     // Check that object does not occur in list
     int got = 0;
-    for (void* p = span->objects; p != NULL; p = FL_Next(p)){
+    for (void* p = span->objects; p != NULL; p = *((void**) p)) {
       ASSERT(p != object);
       got++;
     }
@@ -118,7 +119,8 @@ void CentralFreeList::ReleaseToSpans(void* object) {
     }
     lock_.Lock();
   } else {
-    FL_Push(&(span->objects), object);
+    *(reinterpret_cast<void**>(object)) = span->objects;
+    span->objects = object;
   }
 }
 
@@ -237,12 +239,13 @@ int CentralFreeList::RemoveRange(void **start, void **end, int N) {
   // TODO: Prefetch multiple TCEntries?
   tail = FetchFromSpansSafe();
   if (tail != NULL) {
-    FL_Push(&head, tail);
+    SLL_SetNext(tail, NULL);
+    head = tail;
     result = 1;
     while (result < N) {
       void *t = FetchFromSpans();
       if (!t) break;
-      FL_Push(&head, t);
+      SLL_Push(&head, t);
       result++;
     }
   }
@@ -268,7 +271,8 @@ void* CentralFreeList::FetchFromSpans() {
 
   ASSERT(span->objects != NULL);
   span->refcount++;
-  void *result = FL_Pop(&(span->objects));
+  void* result = span->objects;
+  span->objects = *(reinterpret_cast<void**>(result));
   if (span->objects == NULL) {
     // Move to empty list
     tcmalloc::DLL_Remove(span);
@@ -306,18 +310,19 @@ void CentralFreeList::Populate() {
 
   // Split the block into pieces and add to the free-list
   // TODO: coloring of objects to avoid cache conflicts?
-  void* list = NULL;
+  void** tail = &span->objects;
   char* ptr = reinterpret_cast<char*>(span->start << kPageShift);
   char* limit = ptr + (npages << kPageShift);
   const size_t size = Static::sizemap()->ByteSizeForClass(size_class_);
   int num = 0;
   while (ptr + size <= limit) {
-    FL_Push(&list, ptr);
+    *tail = ptr;
+    tail = reinterpret_cast<void**>(ptr);
     ptr += size;
     num++;
   }
   ASSERT(ptr <= limit);
-  span->objects = list;
+  *tail = NULL;
   span->refcount = 0; // No sub-object in use yet
 
   // Add span to list of non-empty spans
