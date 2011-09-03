@@ -6,11 +6,15 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,6 +116,12 @@ void NetInternalsTest::SetUpOnMainThread() {
   // Navigate to chrome://net-internals.
   ui_test_utils::NavigateToURL(browser(),
                                GURL(chrome::kChromeUINetInternalsURL));
+  // Increase the memory allowed in a prerendered page above normal settings,
+  // as debug builds use more memory and often go over the usual limit.
+  Profile* profile = browser()->GetSelectedTabContentsWrapper()->profile();
+  prerender::PrerenderManager* prerender_manager =
+      profile->GetPrerenderManager();
+  prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
