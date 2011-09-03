@@ -1501,24 +1501,6 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
     SetMouseCapture();
   }
 
-  /*
-  TODO(beng): This fixes some situations where the windows-classic appearance
-              non-client area is rendered over our custom frame, however it
-              causes mouse-releases to the non-client area to be eaten, so it
-              can't be enabled.
-  if (message == WM_NCLBUTTONDOWN) {
-    // NativeWidgetWin::OnNCLButtonDown set the message as un-handled. This
-    // normally means NativeWidgetWin::ProcessWindowMessage will pass it to
-    // DefWindowProc. Sadly, DefWindowProc for WM_NCLBUTTONDOWN does weird
-    // non-client painting, so we need to call it directly here inside a
-    // scoped update lock.
-    ScopedRedrawLock lock(this);
-    NativeWidgetWin::OnMouseRange(message, w_param, l_param);
-    DefWindowProc(GetNativeView(), WM_NCLBUTTONDOWN, w_param, l_param);
-    SetMsgHandled(TRUE);
-  }
-  */
-
   MSG msg = { hwnd(), message, w_param, l_param, 0,
               { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
   MouseEvent event(msg);
@@ -1544,7 +1526,21 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
             delegate_->OnMouseEvent(MouseWheelEvent(msg))) ? 0 : 1;
   }
 
-  SetMsgHandled(delegate_->OnMouseEvent(event));
+  bool handled = delegate_->OnMouseEvent(event);
+
+  if (!handled && message == WM_NCLBUTTONDOWN) {
+    // TODO(msw): Eliminate undesired painting, or re-evaluate this workaround.
+    // DefWindowProc for WM_NCLBUTTONDOWN does weird non-client painting, so we
+    // need to call it directly here inside a ScopedRedrawLock. This may cause
+    // other negative side-effects (ex/ stifling non-client mouse releases).
+    ScopedRedrawLock lock(this);
+    DefWindowProc(GetNativeView(), message, w_param, l_param);
+    // Update the saved window style, which may change (maximized to restored).
+    saved_window_style_ = GetWindowLong(GWL_STYLE);
+    handled = true;
+  }
+
+  SetMsgHandled(handled);
   return 0;
 }
 
