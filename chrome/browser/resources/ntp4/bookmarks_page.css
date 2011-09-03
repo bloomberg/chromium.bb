@@ -120,11 +120,6 @@ html[dir=rtl] .bookmark .close-button {
   white-space: nowrap;
 }
 
-/* Add padding to tile page content to adjust for title wrapper. */
-.bookmarks-page .tile-page-content {
-  /* padding-bottom: 48px; */
-}
-
 #bookmarks-title-wrapper .title-crumb {
   cursor: pointer;
   margin: 0 25px;

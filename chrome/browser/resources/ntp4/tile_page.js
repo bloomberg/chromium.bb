@@ -706,7 +706,7 @@ cr.define('ntp4', function() {
       var usedHeight = layout.rowHeight * numRows;
       // 100 matches the top padding of tile-page.
       var newMargin = document.documentElement.clientHeight / 3 -
-          usedHeight / 2 - 100;
+          usedHeight / 2 - 100 - this.content_.offsetTop;
       newMargin = Math.max(newMargin, 0);
 
       // |newMargin| is the final margin we actually want to show. However,
@@ -821,10 +821,10 @@ cr.define('ntp4', function() {
 
       var content = this.content_;
 
-      // Adjust height to account for possible header-bar.
-      var adjustedClientHeight = content.clientHeight - content.offsetTop;
+      // Adjust scroll-height to account for possible header-bar.
+      var adjustedScrollHeight = content.scrollHeight - content.offsetTop;
 
-      if (content.scrollHeight == adjustedClientHeight) {
+      if (adjustedScrollHeight <= content.clientHeight) {
         this.scrollbar_.hidden = true;
         return;
       } else {
@@ -832,8 +832,8 @@ cr.define('ntp4', function() {
       }
 
       var thumbTop = content.offsetTop +
-          content.scrollTop / content.scrollHeight * adjustedClientHeight;
-      var thumbHeight = adjustedClientHeight / content.scrollHeight *
+          content.scrollTop / adjustedScrollHeight * content.clientHeight;
+      var thumbHeight = content.clientHeight / adjustedScrollHeight *
           this.clientHeight;
 
       this.scrollbar_.style.top = thumbTop + 'px';

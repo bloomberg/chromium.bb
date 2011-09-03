@@ -4,9 +4,11 @@
  */
 
 .tile-page {
+  display: -webkit-box;
   height: 100%;
   position: relative;
   width: 100%;
+  -webkit-box-orient: vertical;
 }
 
 .tile-page-scrollbar {
@@ -20,7 +22,6 @@
 }
 
 .tile-page-content {
-  height: 100%;
   overflow-y: scroll;
   padding-top: 100px;
   position: relative;
@@ -37,6 +38,7 @@
   /* Scrollbar width(13px) + balance right padding.  */
   padding-left: 93px;
   padding-right: 80px;
+  -webkit-box-flex: 1;
   /* Don't apply clip mask to padding. */
   -webkit-mask-clip: content-box;
 }
