@@ -31,10 +31,17 @@ static bool CheckVisitOrdering(const history::VisitVector& visits) {
   int64 previous_visit_time = 0;
   for (history::VisitVector::const_iterator visit = visits.begin();
        visit != visits.end(); ++visit) {
-    if (visit != visits.begin() &&
-        previous_visit_time >= visit->visit_time.ToInternalValue()) {
-      return false;
+    if (visit != visits.begin()) {
+      // We allow duplicate visits here - they shouldn't really be allowed, but
+      // they still seem to show up sometimes and we haven't figured out the
+      // source, so we just log an error instead of failing an assertion.
+      // (http://crbug.com/91473).
+      if (previous_visit_time == visit->visit_time.ToInternalValue())
+        LOG(ERROR) << "Duplicate visit time encountered";
+      else if (previous_visit_time > visit->visit_time.ToInternalValue())
+        return false;
     }
+
     previous_visit_time = visit->visit_time.ToInternalValue();
   }
   return true;
@@ -235,7 +242,13 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
             typed_url, &new_url);
 
         for (int c = 0; c < typed_url.visits_size(); ++c) {
-          DCHECK(c == 0 || typed_url.visits(c) > typed_url.visits(c - 1));
+          // Allow duplicate visits - they aren't technically legal, but they
+          // still show up in the data sometimes and we can't figure out the
+          // source (http://crbug.com/91473).
+          DLOG_IF(ERROR, (c > 0 &&
+                          typed_url.visits(c) == typed_url.visits(c - 1)))
+              << "Duplicate visit for url: " << typed_url.url();
+          DCHECK(c == 0 || typed_url.visits(c) >= typed_url.visits(c - 1));
           DCHECK_LE(typed_url.visit_transitions(c) & PageTransition::CORE_MASK,
                     PageTransition::LAST_CORE);
           visits.push_back(history::VisitInfo(
