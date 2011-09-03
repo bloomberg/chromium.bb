@@ -22,6 +22,7 @@ P2PHostAddressRequest::P2PHostAddressRequest(P2PSocketDispatcher* dispatcher)
 
 P2PHostAddressRequest::~P2PHostAddressRequest() {
   DCHECK(state_ == STATE_CREATED || state_ == STATE_FINISHED);
+  DCHECK(!registered_);
 }
 
 void P2PHostAddressRequest::Request(const std::string& host_name,
@@ -64,10 +65,13 @@ void P2PHostAddressRequest::DoUnregister() {
 
 void P2PHostAddressRequest::OnResponse(const net::IPAddressNumber& address) {
   DCHECK(ipc_message_loop_->BelongsToCurrentThread());
-  delegate_message_loop_->PostTask(FROM_HERE, base::Bind(
-      &P2PHostAddressRequest::DeliverResponse, this, address));
+  DCHECK(registered_);
+
   dispatcher_->UnregisterHostAddressRequest(request_id_);
   registered_ = false;
+
+  delegate_message_loop_->PostTask(FROM_HERE, base::Bind(
+      &P2PHostAddressRequest::DeliverResponse, this, address));
 }
 
 void P2PHostAddressRequest::DeliverResponse(
