@@ -5,9 +5,11 @@
 #include "content/browser/download/base_file.h"
 
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
+#include "base/test/test_file_util.h"
 #include "content/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 #include "net/base/mock_file_stream.h"
@@ -19,13 +21,17 @@ namespace {
 const char kTestData1[] = "Let's write some data to the file!\n";
 const char kTestData2[] = "Writing more data.\n";
 const char kTestData3[] = "Final line.";
-
-}  // namespace
+const char kTestData4[] = "supercalifragilisticexpialidocious";
+const int kTestDataLength1 = arraysize(kTestData1) - 1;
+const int kTestDataLength2 = arraysize(kTestData2) - 1;
+const int kTestDataLength3 = arraysize(kTestData3) - 1;
+const int kTestDataLength4 = arraysize(kTestData4) - 1;
 
 class BaseFileTest : public testing::Test {
  public:
   BaseFileTest()
       : expect_file_survives_(false),
+        expect_in_progress_(true),
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
@@ -79,13 +85,51 @@ class BaseFileTest : public testing::Test {
     mock_file_stream_->set_forced_error(error);
   }
 
-  bool AppendDataToFile(const std::string& data) {
-    EXPECT_TRUE(base_file_->in_progress());
-    bool appended = base_file_->AppendDataToFile(data.data(), data.size());
-    expected_data_ += data;
-    EXPECT_EQ(static_cast<int64>(expected_data_.size()),
-              base_file_->bytes_so_far());
+  int AppendDataToFile(const std::string& data) {
+    EXPECT_EQ(expect_in_progress_, base_file_->in_progress());
+    int appended = base_file_->AppendDataToFile(data.data(), data.size());
+    if (appended == net::OK)
+      EXPECT_TRUE(expect_in_progress_)
+          << " appended = " << appended;
+    if (base_file_->in_progress()) {
+      expected_data_ += data;
+      EXPECT_EQ(static_cast<int64>(expected_data_.size()),
+                base_file_->bytes_so_far());
+    }
     return appended;
+  }
+
+  void set_expected_data(const std::string& data) { expected_data_ = data; }
+
+  // Helper functions.
+  // Create a file.  Returns the complete file path.
+  static FilePath CreateTestFile() {
+    FilePath file_name;
+    linked_ptr<net::FileStream> dummy_file_stream;
+    BaseFile file(FilePath(), GURL(), GURL(), 0, dummy_file_stream);
+
+    EXPECT_EQ(net::OK, file.Initialize(false));
+    file_name = file.full_path();
+    EXPECT_NE(FilePath::StringType(), file_name.value());
+
+    EXPECT_EQ(net::OK, file.AppendDataToFile(kTestData4, kTestDataLength4));
+
+    // Keep the file from getting deleted when existing_file_name is deleted.
+    file.Detach();
+
+    return file_name;
+  }
+
+  // Create a file with the specified file name.
+  static void CreateFileWithName(const FilePath& file_name) {
+    EXPECT_NE(FilePath::StringType(), file_name.value());
+    linked_ptr<net::FileStream> dummy_file_stream;
+    BaseFile duplicate_file(file_name, GURL(), GURL(), 0, dummy_file_stream);
+    EXPECT_EQ(net::OK, duplicate_file.Initialize(false));
+    // Write something into it.
+    duplicate_file.AppendDataToFile(kTestData4, kTestDataLength4);
+    // Detach the file so it isn't deleted on destruction of |duplicate_file|.
+    duplicate_file.Detach();
   }
 
  protected:
@@ -100,6 +144,9 @@ class BaseFileTest : public testing::Test {
 
   // Expect the file to survive deletion of the BaseFile instance.
   bool expect_file_survives_;
+
+  // Expect the file to be in progress.
+  bool expect_in_progress_;
 
  private:
   // Keep track of what data should be saved to the disk file.
@@ -119,7 +166,7 @@ TEST_F(BaseFileTest, CreateDestroy) {
 
 // Cancel the download explicitly.
 TEST_F(BaseFileTest, Cancel) {
-  ASSERT_TRUE(base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
   EXPECT_TRUE(file_util::PathExists(base_file_->full_path()));
   base_file_->Cancel();
   EXPECT_FALSE(file_util::PathExists(base_file_->full_path()));
@@ -129,8 +176,8 @@ TEST_F(BaseFileTest, Cancel) {
 // Write data to the file and detach it, so it doesn't get deleted
 // automatically when base_file_ is destructed.
 TEST_F(BaseFileTest, WriteAndDetach) {
-  ASSERT_TRUE(base_file_->Initialize(false));
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   base_file_->Finish();
   base_file_->Detach();
   expect_file_survives_ = true;
@@ -138,8 +185,8 @@ TEST_F(BaseFileTest, WriteAndDetach) {
 
 // Write data to the file and detach it, and calculate its sha256 hash.
 TEST_F(BaseFileTest, WriteWithHashAndDetach) {
-  ASSERT_TRUE(base_file_->Initialize(true));
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, base_file_->Initialize(true));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   base_file_->Finish();
 
   std::string hash;
@@ -153,16 +200,16 @@ TEST_F(BaseFileTest, WriteWithHashAndDetach) {
 
 // Rename the file after writing to it, then detach.
 TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
-  ASSERT_TRUE(base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
 
   FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
   FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
 
-  EXPECT_TRUE(base_file_->Rename(new_path));
+  EXPECT_EQ(net::OK, base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
 
@@ -173,17 +220,17 @@ TEST_F(BaseFileTest, WriteThenRenameAndDetach) {
 
 // Write data to the file once.
 TEST_F(BaseFileTest, SingleWrite) {
-  ASSERT_TRUE(base_file_->Initialize(false));
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   base_file_->Finish();
 }
 
 // Write data to the file multiple times.
 TEST_F(BaseFileTest, MultipleWrites) {
-  ASSERT_TRUE(base_file_->Initialize(false));
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
-  ASSERT_TRUE(AppendDataToFile(kTestData2));
-  ASSERT_TRUE(AppendDataToFile(kTestData3));
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData3));
   std::string hash;
   EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
   base_file_->Finish();
@@ -191,8 +238,8 @@ TEST_F(BaseFileTest, MultipleWrites) {
 
 // Write data to the file once and calculate its sha256 hash.
 TEST_F(BaseFileTest, SingleWriteWithHash) {
-  ASSERT_TRUE(base_file_->Initialize(true));
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, base_file_->Initialize(true));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   base_file_->Finish();
 
   std::string hash;
@@ -205,10 +252,10 @@ TEST_F(BaseFileTest, SingleWriteWithHash) {
 TEST_F(BaseFileTest, MultipleWritesWithHash) {
   std::string hash;
 
-  ASSERT_TRUE(base_file_->Initialize(true));
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
-  ASSERT_TRUE(AppendDataToFile(kTestData2));
-  ASSERT_TRUE(AppendDataToFile(kTestData3));
+  ASSERT_EQ(net::OK, base_file_->Initialize(true));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData3));
   // no hash before Finish() is called either.
   EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
   base_file_->Finish();
@@ -220,16 +267,16 @@ TEST_F(BaseFileTest, MultipleWritesWithHash) {
 
 // Rename the file after all writes to it.
 TEST_F(BaseFileTest, WriteThenRename) {
-  ASSERT_TRUE(base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
 
   FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
   FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
 
-  EXPECT_TRUE(base_file_->Rename(new_path));
+  EXPECT_EQ(net::OK, base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
 
@@ -238,21 +285,21 @@ TEST_F(BaseFileTest, WriteThenRename) {
 
 // Rename the file while the download is still in progress.
 TEST_F(BaseFileTest, RenameWhileInProgress) {
-  ASSERT_TRUE(base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
 
   FilePath initial_path(base_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
   FilePath new_path(temp_dir_.path().AppendASCII("NewFile"));
   EXPECT_FALSE(file_util::PathExists(new_path));
 
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
 
   EXPECT_TRUE(base_file_->in_progress());
-  EXPECT_TRUE(base_file_->Rename(new_path));
+  EXPECT_EQ(net::OK, base_file_->Rename(new_path));
   EXPECT_FALSE(file_util::PathExists(initial_path));
   EXPECT_TRUE(file_util::PathExists(new_path));
 
-  ASSERT_TRUE(AppendDataToFile(kTestData2));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
 
   base_file_->Finish();
 }
@@ -262,12 +309,87 @@ TEST_F(BaseFileTest, MultipleWritesWithError) {
   ASSERT_TRUE(OpenMockFileStream());
   base_file_.reset(new BaseFile(mock_file_stream_->get_path(),
                                 GURL(), GURL(), 0, mock_file_stream_));
-  ASSERT_TRUE(base_file_->Initialize(false));
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
-  ASSERT_TRUE(AppendDataToFile(kTestData2));
-  ForceError(net::ERR_FAILED);
-  ASSERT_FALSE(AppendDataToFile(kTestData3));
+  EXPECT_EQ(net::OK, base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
+  ForceError(net::ERR_ACCESS_DENIED);
+  ASSERT_NE(net::OK, AppendDataToFile(kTestData3));
   std::string hash;
   EXPECT_FALSE(base_file_->GetSha256Hash(&hash));
   base_file_->Finish();
 }
+
+// Try to write to uninitialized file.
+TEST_F(BaseFileTest, UninitializedFile) {
+  expect_in_progress_ = false;
+  EXPECT_EQ(net::ERR_INVALID_HANDLE, AppendDataToFile(kTestData1));
+}
+
+// Create two |BaseFile|s with the same file, and attempt to write to both.
+// Overwrite base_file_ with another file with the same name and
+// non-zero contents, and make sure the last file to close 'wins'.
+TEST_F(BaseFileTest, DuplicateBaseFile) {
+  EXPECT_EQ(net::OK, base_file_->Initialize(false));
+
+  // Create another |BaseFile| referring to the file that |base_file_| owns.
+  CreateFileWithName(base_file_->full_path());
+
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
+  base_file_->Finish();
+}
+
+// Create a file and append to it.
+TEST_F(BaseFileTest, AppendToBaseFile) {
+  // Create a new file.
+  FilePath existing_file_name = CreateTestFile();
+
+  set_expected_data(kTestData4);
+
+  // Use the file we've just created.
+  base_file_.reset(
+      new BaseFile(existing_file_name, GURL(), GURL(), kTestDataLength4,
+                   file_stream_));
+
+  EXPECT_EQ(net::OK, base_file_->Initialize(false));
+
+  const FilePath file_name = base_file_->full_path();
+  EXPECT_NE(FilePath::StringType(), file_name.value());
+
+  // Write into the file.
+  EXPECT_EQ(net::OK, AppendDataToFile(kTestData1));
+
+  base_file_->Finish();
+  base_file_->Detach();
+  expect_file_survives_ = true;
+}
+
+// Create a read-only file and attempt to write to it.
+TEST_F(BaseFileTest, ReadonlyBaseFile) {
+  // Create a new file.
+  FilePath readonly_file_name = CreateTestFile();
+
+  // Make it read-only.
+  EXPECT_TRUE(file_util::MakeFileUnwritable(readonly_file_name));
+
+  // Try to overwrite it.
+  base_file_.reset(
+      new BaseFile(readonly_file_name, GURL(), GURL(), 0, file_stream_));
+
+  expect_in_progress_ = false;
+
+  int init_error = base_file_->Initialize(false);
+  DVLOG(1) << " init_error = " << init_error;
+  EXPECT_NE(net::OK, init_error);
+
+  const FilePath file_name = base_file_->full_path();
+  EXPECT_NE(FilePath::StringType(), file_name.value());
+
+  // Write into the file.
+  EXPECT_NE(net::OK, AppendDataToFile(kTestData1));
+
+  base_file_->Finish();
+  base_file_->Detach();
+  expect_file_survives_ = true;
+}
+
+}  // namespace

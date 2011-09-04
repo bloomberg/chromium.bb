@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/power_save_blocker.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 
 namespace crypto {
 class SecureHash;
@@ -33,14 +34,17 @@ class BaseFile {
   virtual ~BaseFile();
 
   // If calculate_hash is true, sha256 hash will be calculated.
-  bool Initialize(bool calculate_hash);
+  // Returns net::OK on success, or a network error code on failure.
+  net::Error Initialize(bool calculate_hash);
 
-  // Write a new chunk of data to the file. Returns true on success (all bytes
-  // written to the file).
-  bool AppendDataToFile(const char* data, size_t data_len);
+  // Write a new chunk of data to the file.
+  // Returns net::OK on success (all bytes written to the file),
+  // or a network error code on failure.
+  net::Error AppendDataToFile(const char* data, size_t data_len);
 
-  // Rename the download file. Returns true on success.
-  virtual bool Rename(const FilePath& full_path);
+  // Rename the download file.
+  // Returns net::OK on success, or a network error code on failure.
+  virtual net::Error Rename(const FilePath& full_path);
 
   // Detach the file so it is not deleted on destruction.
   virtual void Detach();
@@ -66,7 +70,8 @@ class BaseFile {
 
  protected:
   virtual void CreateFileStream();  // For testing.
-  bool Open();
+  // Returns net::OK on success, or a network error code on failure.
+  net::Error Open();
   void Close();
 
   // Full path to the file including the file name.

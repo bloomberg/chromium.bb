@@ -351,6 +351,7 @@ void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
 void DownloadManager::OnResponseCompleted(int32 download_id,
                                           int64 size,
                                           const std::string& hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(20) << __FUNCTION__ << "()" << " download_id = " << download_id
            << " size = " << size;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -520,7 +521,7 @@ void DownloadManager::DownloadCancelledInternal(DownloadItem* download) {
 
 void DownloadManager::OnDownloadError(int32 download_id,
                                       int64 size,
-                                      int error) {
+                                      net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download = GetActiveDownload(download_id);

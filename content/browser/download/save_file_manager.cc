@@ -240,12 +240,13 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFile* save_file = LookupSaveFile(save_id);
   if (save_file) {
-    bool write_success = save_file->AppendDataToFile(data->data(), data_len);
+    net::Error write_success =
+        save_file->AppendDataToFile(data->data(), data_len);
     BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &SaveFileManager::OnUpdateSaveProgress, save_file->save_id(),
-            save_file->bytes_so_far(), write_success));
+            save_file->bytes_so_far(), write_success == net::OK));
   }
 }
 

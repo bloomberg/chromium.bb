@@ -49,6 +49,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer.h"
 #include "content/browser/download/download_request_handle.h"
+#include "net/base/net_errors.h"
 #include "ui/gfx/native_widget_types.h"
 
 struct DownloadBuffer;
@@ -89,7 +90,7 @@ class DownloadFileManager
   // was not performed securely.
   void OnResponseCompleted(int id,
                            DownloadBuffer* buffer,
-                           int net_error,
+                           net::Error net_error,
                            const std::string& security_info);
 
   // Handlers for notifications sent from the UI thread and run on the
@@ -148,8 +149,8 @@ class DownloadFileManager
 
   // Called only from RenameInProgressDownloadFile and
   // RenameCompletingDownloadFile on the FILE thread.
-  // |rename_error| indicates what network error caused the cancel.
-  void CancelDownloadOnRename(int id, int rename_error);
+  // |rename_error| indicates what error caused the cancel.
+  void CancelDownloadOnRename(int id, net::Error rename_error);
 
   // Erases the download file with the given the download |id| and removes
   // it from the maps.

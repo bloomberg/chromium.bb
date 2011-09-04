@@ -167,7 +167,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       referrer_charset_(info.referrer_charset),
       total_bytes_(info.total_bytes),
       received_bytes_(0),
-      last_os_error_(0),
+      last_error_(net::OK),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(info.start_time),
@@ -198,7 +198,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
       referrer_url_(GURL()),
       total_bytes_(0),
       received_bytes_(0),
-      last_os_error_(0),
+      last_error_(net::OK),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(base::Time::Now()),
@@ -453,17 +453,17 @@ void DownloadItem::UpdateTarget() {
     state_info_.target_name = full_path_.BaseName();
 }
 
-void DownloadItem::Interrupted(int64 size, int os_error) {
+void DownloadItem::Interrupted(int64 size, net::Error net_error) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!IsInProgress())
     return;
 
-  last_os_error_ = os_error;
+  last_error_ = net_error;
   UpdateSize(size);
   StopProgressTimer();
-  download_stats::RecordDownloadInterrupted(os_error,
+  download_stats::RecordDownloadInterrupted(net_error,
                                             received_bytes_,
                                             total_bytes_);
   TransitionTo(INTERRUPTED);

@@ -46,6 +46,7 @@
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater_delegate.h"
+#include "net/base/net_errors.h"
 
 class DownloadFileManager;
 class DownloadManagerDelegate;
@@ -128,7 +129,7 @@ class DownloadManager
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that are currently downloaded.
   // |error| is a download error code.  Indicates what caused the interruption.
-  void OnDownloadError(int32 download_id, int64 size, int error);
+  void OnDownloadError(int32 download_id, int64 size, net::Error error);
 
   // Called from DownloadItem to handle the DownloadManager portion of a
   // Cancel; should not be called from other locations.

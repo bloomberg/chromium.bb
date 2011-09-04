@@ -28,6 +28,7 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_state_info.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 
 class DownloadFileManager;
 class DownloadManager;
@@ -183,7 +184,7 @@ class DownloadItem {
   // Download operation had an error.
   // |size| is the amount of data received at interruption.
   // |error| is the network error code that the operation received.
-  void Interrupted(int64 size, int error);
+  void Interrupted(int64 size, net::Error error);
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking
@@ -415,7 +416,7 @@ class DownloadItem {
   int64 received_bytes_;
 
   // Last error.
-  int last_os_error_;
+  net::Error last_error_;
 
   // Start time for calculating remaining time
   base::TimeTicks start_tick_;

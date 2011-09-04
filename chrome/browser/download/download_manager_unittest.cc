@@ -106,7 +106,7 @@ class DownloadManagerTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  void OnDownloadError(int32 download_id, int64 size, int os_error) {
+  void OnDownloadError(int32 download_id, int64 size, net::Error os_error) {
     download_manager_->OnDownloadError(download_id, size, os_error);
   }
 
@@ -276,16 +276,16 @@ class MockDownloadFile : public DownloadFile {
   MockDownloadFile(DownloadCreateInfo* info, DownloadManager* manager)
       : DownloadFile(info, manager), renamed_count_(0) { }
   virtual ~MockDownloadFile() { Destructed(); }
-  MOCK_METHOD1(Rename, bool(const FilePath&));
+  MOCK_METHOD1(Rename, net::Error(const FilePath&));
   MOCK_METHOD0(Destructed, void());
 
-  bool TestMultipleRename(
+  net::Error TestMultipleRename(
       int expected_count, const FilePath& expected,
       const FilePath& path) {
     ++renamed_count_;
     EXPECT_EQ(expected_count, renamed_count_);
     EXPECT_EQ(expected.value(), path.value());
-    return true;
+    return net::OK;
   }
 
  private:
@@ -428,7 +428,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     EXPECT_CALL(*download_file, Destructed()).Times(1);
 
     if (kDownloadRenameCases[i].expected_rename_count == 1) {
-      EXPECT_CALL(*download_file, Rename(new_path)).WillOnce(Return(true));
+      EXPECT_CALL(*download_file, Rename(new_path)).WillOnce(Return(net::OK));
     } else {
       ASSERT_EQ(2, kDownloadRenameCases[i].expected_rename_count);
       FilePath crdownload(download_util::GetCrDownloadPath(new_path));
@@ -492,7 +492,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   ::testing::Mock::AllowLeak(download_file);
   EXPECT_CALL(*download_file, Destructed()).Times(1);
 
-  EXPECT_CALL(*download_file, Rename(cr_path)).WillOnce(Return(true));
+  EXPECT_CALL(*download_file, Rename(cr_path)).WillOnce(Return(net::OK));
 
   download_manager_->CreateDownloadItem(info.get());
 
@@ -511,7 +511,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_TRUE(GetActiveDownloadItem(0) != NULL);
 
   int64 error_size = 3;
-  OnDownloadError(0, error_size, -6);
+  OnDownloadError(0, error_size, net::ERR_FILE_NOT_FOUND);
   message_loop_.RunAllPending();
 
   EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);
@@ -658,7 +658,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   ::testing::Mock::AllowLeak(download_file);
   EXPECT_CALL(*download_file, Destructed()).Times(1);
 
-  EXPECT_CALL(*download_file, Rename(cr_path)).WillOnce(Return(true));
+  EXPECT_CALL(*download_file, Rename(cr_path)).WillOnce(Return(net::OK));
 
   download_manager_->CreateDownloadItem(info.get());
 

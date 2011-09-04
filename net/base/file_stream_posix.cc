@@ -47,21 +47,8 @@ COMPILE_ASSERT(FROM_BEGIN   == SEEK_SET &&
 
 namespace {
 
-// Map from errno to net error codes.
-int64 MapErrorCode(int err) {
-  switch (err) {
-    case ENOENT:
-      return ERR_FILE_NOT_FOUND;
-    case EACCES:
-      return ERR_ACCESS_DENIED;
-    default:
-      LOG(WARNING) << "Unknown error " << err << " mapped to net::ERR_FAILED";
-      return ERR_FAILED;
-  }
-}
-
 // ReadFile() is a simple wrapper around read() that handles EINTR signals and
-// calls MapErrorCode() to map errno to net error codes.
+// calls MapSystemError() to map errno to net error codes.
 int ReadFile(base::PlatformFile file, char* buf, int buf_len) {
   base::ThreadRestrictions::AssertIOAllowed();
   // read(..., 0) returns 0 to indicate end-of-file.
@@ -69,7 +56,7 @@ int ReadFile(base::PlatformFile file, char* buf, int buf_len) {
   // Loop in the case of getting interrupted by a signal.
   ssize_t res = HANDLE_EINTR(read(file, buf, static_cast<size_t>(buf_len)));
   if (res == static_cast<ssize_t>(-1))
-    return MapErrorCode(errno);
+    return MapSystemError(errno);
   return static_cast<int>(res);
 }
 
@@ -81,13 +68,13 @@ void ReadFileTask(base::PlatformFile file,
 }
 
 // WriteFile() is a simple wrapper around write() that handles EINTR signals and
-// calls MapErrorCode() to map errno to net error codes.  It tries to write to
+// calls MapSystemError() to map errno to net error codes.  It tries to write to
 // completion.
 int WriteFile(base::PlatformFile file, const char* buf, int buf_len) {
   base::ThreadRestrictions::AssertIOAllowed();
   ssize_t res = HANDLE_EINTR(write(file, buf, buf_len));
   if (res == -1)
-    return MapErrorCode(errno);
+    return MapSystemError(errno);
   return res;
 }
 
@@ -99,13 +86,13 @@ void WriteFileTask(base::PlatformFile file,
 }
 
 // FlushFile() is a simple wrapper around fsync() that handles EINTR signals and
-// calls MapErrorCode() to map errno to net error codes.  It tries to flush to
+// calls MapSystemError() to map errno to net error codes.  It tries to flush to
 // completion.
 int FlushFile(base::PlatformFile file) {
   base::ThreadRestrictions::AssertIOAllowed();
   ssize_t res = HANDLE_EINTR(fsync(file));
   if (res == -1)
-    return MapErrorCode(errno);
+    return MapSystemError(errno);
   return res;
 }
 
@@ -315,7 +302,7 @@ int FileStream::Open(const FilePath& path, int open_flags) {
   open_flags_ = open_flags;
   file_ = base::CreatePlatformFile(path, open_flags_, NULL, NULL);
   if (file_ == base::kInvalidPlatformFileValue) {
-    return MapErrorCode(errno);
+    return MapSystemError(errno);
   }
 
   if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
@@ -341,7 +328,7 @@ int64 FileStream::Seek(Whence whence, int64 offset) {
   off_t res = lseek(file_, static_cast<off_t>(offset),
                     static_cast<int>(whence));
   if (res == static_cast<off_t>(-1))
-    return MapErrorCode(errno);
+    return MapSystemError(errno);
 
   return res;
 }
@@ -358,7 +345,7 @@ int64 FileStream::Available() {
 
   struct stat info;
   if (fstat(file_, &info) != 0)
-    return MapErrorCode(errno);
+    return MapSystemError(errno);
 
   int64 size = static_cast<int64>(info.st_size);
   DCHECK_GT(size, cur_pos);
@@ -442,7 +429,7 @@ int64 FileStream::Truncate(int64 bytes) {
 
   // And truncate the file.
   int result = ftruncate(file_, bytes);
-  return result == 0 ? seek_position : MapErrorCode(errno);
+  return result == 0 ? seek_position : MapSystemError(errno);
 }
 
 int FileStream::Flush() {

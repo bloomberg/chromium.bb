@@ -60,7 +60,7 @@ void DownloadFileManager::CreateDownloadFile(DownloadCreateInfo* info,
 
   scoped_ptr<DownloadFile>
       download_file(new DownloadFile(info, download_manager));
-  if (!download_file->Initialize(get_hash)) {
+  if (net::OK != download_file->Initialize(get_hash)) {
     info->request_handle.CancelRequest();
     return;
   }
@@ -159,9 +159,9 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
     net::IOBuffer* data = contents[i].first;
     const int data_len = contents[i].second;
     if (!had_error && download_file) {
-      bool write_succeeded =
+      net::Error write_result =
           download_file->AppendDataToFile(data->data(), data_len);
-      if (!write_succeeded) {
+      if (write_result != net::OK) {
         // Write failed: interrupt the download.
         DownloadManager* download_manager = download_file->GetDownloadManager();
         had_error = true;
@@ -182,7 +182,7 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
                   &DownloadManager::OnDownloadError,
                   id,
                   bytes_downloaded,
-                  net::ERR_FAILED));
+                  write_result));
         }
       }
     }
@@ -193,7 +193,7 @@ void DownloadFileManager::UpdateDownload(int id, DownloadBuffer* buffer) {
 void DownloadFileManager::OnResponseCompleted(
     int id,
     DownloadBuffer* buffer,
-    int net_error,
+    net::Error net_error,
     const std::string& security_info) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << id
            << " net_error = " << net_error
@@ -324,10 +324,11 @@ void DownloadFileManager::RenameInProgressDownloadFile(
   VLOG(20) << __FUNCTION__ << "()"
            << " download_file = " << download_file->DebugString();
 
-  if (!download_file->Rename(full_path)) {
+  net::Error rename_error = download_file->Rename(full_path);
+  if (net::OK != rename_error) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
-    CancelDownloadOnRename(id, net::ERR_FAILED);
+    CancelDownloadOnRename(id, rename_error);
   }
 }
 
@@ -372,10 +373,11 @@ void DownloadFileManager::RenameCompletingDownloadFile(
   }
 
   // Rename the file, overwriting if necessary.
-  if (!download_file->Rename(new_path)) {
+  net::Error rename_error = download_file->Rename(full_path);
+  if (net::OK != rename_error) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
-    CancelDownloadOnRename(id, net::ERR_FAILED);
+    CancelDownloadOnRename(id, rename_error);
     return;
   }
 
@@ -394,7 +396,8 @@ void DownloadFileManager::RenameCompletingDownloadFile(
 
 // Called only from RenameInProgressDownloadFile and
 // RenameCompletingDownloadFile on the FILE thread.
-void DownloadFileManager::CancelDownloadOnRename(int id, int rename_error) {
+void DownloadFileManager::CancelDownloadOnRename(int id,
+                                                 net::Error rename_error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DownloadFile* download_file = GetDownloadFile(id);

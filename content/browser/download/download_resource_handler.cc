@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/common/resource_response.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_context.h"
 
@@ -174,8 +175,8 @@ bool DownloadResourceHandler::OnResponseCompleted(
            << " request_id = " << request_id
            << " status.status() = " << status.status()
            << " status.os_error() = " << status.os_error();
-  int error_code = (status.status() == net::URLRequestStatus::FAILED) ?
-      status.os_error() : 0;
+  net::Error error_code = (status.status() == net::URLRequestStatus::FAILED) ?
+      static_cast<net::Error>(status.os_error()) : net::OK;
   // We transfer ownership to |DownloadFileManager| to delete |buffer_|,
   // so that any functions queued up on the FILE thread are executed
   // before deletion.

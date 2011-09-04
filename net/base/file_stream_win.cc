@@ -33,21 +33,6 @@ static void IncrementOffset(OVERLAPPED* overlapped, DWORD count) {
   SetOffset(overlapped, offset);
 }
 
-static int MapErrorCode(DWORD err) {
-  switch (err) {
-    case ERROR_FILE_NOT_FOUND:
-    case ERROR_PATH_NOT_FOUND:
-      return ERR_FILE_NOT_FOUND;
-    case ERROR_ACCESS_DENIED:
-      return ERR_ACCESS_DENIED;
-    case ERROR_SUCCESS:
-      return OK;
-    default:
-      LOG(WARNING) << "Unknown error " << err << " mapped to net::ERR_FAILED";
-      return ERR_FAILED;
-  }
-}
-
 // FileStream::AsyncContext ----------------------------------------------
 
 class FileStream::AsyncContext : public MessageLoopForIO::IOHandler {
@@ -106,7 +91,7 @@ void FileStream::AsyncContext::OnIOCompleted(
 
   int result = static_cast<int>(bytes_read);
   if (error && error != ERROR_HANDLE_EOF)
-    result = MapErrorCode(error);
+    result = MapSystemError(error);
 
   if (bytes_read)
     IncrementOffset(&context->overlapped, bytes_read);
@@ -164,7 +149,7 @@ int FileStream::Open(const FilePath& path, int open_flags) {
   if (file_ == INVALID_HANDLE_VALUE) {
     DWORD error = GetLastError();
     LOG(WARNING) << "Failed to open file: " << error;
-    return MapErrorCode(error);
+    return MapSystemError(error);
   }
 
   if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
@@ -191,7 +176,7 @@ int64 FileStream::Seek(Whence whence, int64 offset) {
   if (!SetFilePointerEx(file_, distance, &result, move_method)) {
     DWORD error = GetLastError();
     LOG(WARNING) << "SetFilePointerEx failed: " << error;
-    return MapErrorCode(error);
+    return MapSystemError(error);
   }
   if (async_context_.get())
     SetOffset(async_context_->overlapped(), result);
@@ -212,7 +197,7 @@ int64 FileStream::Available() {
   if (!GetFileSizeEx(file_, &file_size)) {
     DWORD error = GetLastError();
     LOG(WARNING) << "GetFileSizeEx failed: " << error;
-    return MapErrorCode(error);
+    return MapSystemError(error);
   }
 
   return file_size.QuadPart - cur_pos;
@@ -246,7 +231,7 @@ int FileStream::Read(
       rv = 0;  // Report EOF by returning 0 bytes read.
     } else {
       LOG(WARNING) << "ReadFile failed: " << error;
-      rv = MapErrorCode(error);
+      rv = MapSystemError(error);
     }
   } else if (overlapped) {
     async_context_->IOCompletionIsPending(callback);
@@ -303,7 +288,7 @@ int FileStream::Write(
       rv = ERR_IO_PENDING;
     } else {
       LOG(WARNING) << "WriteFile failed: " << error;
-      rv = MapErrorCode(error);
+      rv = MapSystemError(error);
     }
   } else if (overlapped) {
     async_context_->IOCompletionIsPending(callback);
@@ -327,7 +312,7 @@ int FileStream::Flush() {
 
   int rv;
   DWORD error = GetLastError();
-  rv = MapErrorCode(error);
+  rv = MapSystemError(error);
   return rv;
 }
 
@@ -350,7 +335,7 @@ int64 FileStream::Truncate(int64 bytes) {
   if (!result) {
     DWORD error = GetLastError();
     LOG(WARNING) << "SetEndOfFile failed: " << error;
-    return MapErrorCode(error);
+    return MapSystemError(error);
   }
 
   // Success.

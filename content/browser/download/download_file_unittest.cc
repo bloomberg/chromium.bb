@@ -15,6 +15,7 @@
 #include "content/browser/download/mock_download_manager.h"
 #include "content/browser/download/mock_download_manager_delegate.h"
 #include "net/base/file_stream.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DownloadFileTest : public testing::Test {
@@ -131,7 +132,7 @@ const int DownloadFileTest::kDummyRequestId = 67;
 // has, and after it's closed.
 TEST_F(DownloadFileTest, RenameFileFinal) {
   CreateDownloadFile(&download_file_, 0);
-  ASSERT_TRUE(download_file_->Initialize(true));
+  ASSERT_EQ(net::OK, download_file_->Initialize(true));
   FilePath initial_path(download_file_->full_path());
   EXPECT_TRUE(file_util::PathExists(initial_path));
   FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
@@ -140,7 +141,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   FilePath path_4(initial_path.InsertBeforeExtensionASCII("_4"));
 
   // Rename the file before downloading any data.
-  EXPECT_TRUE(download_file_->Rename(path_1));
+  EXPECT_EQ(net::OK, download_file_->Rename(path_1));
   FilePath renamed_path = download_file_->full_path();
   EXPECT_EQ(path_1, renamed_path);
 
@@ -153,7 +154,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   AppendDataToFile(&download_file_, kTestData2);
 
   // Rename the file after downloading some data.
-  EXPECT_TRUE(download_file_->Rename(path_2));
+  EXPECT_EQ(net::OK, download_file_->Rename(path_2));
   renamed_path = download_file_->full_path();
   EXPECT_EQ(path_2, renamed_path);
 
@@ -164,7 +165,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   AppendDataToFile(&download_file_, kTestData3);
 
   // Rename the file after downloading all the data.
-  EXPECT_TRUE(download_file_->Rename(path_3));
+  EXPECT_EQ(net::OK, download_file_->Rename(path_3));
   renamed_path = download_file_->full_path();
   EXPECT_EQ(path_3, renamed_path);
 
@@ -179,7 +180,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
   download_file_->Finish();
 
   // Rename the file after downloading all the data and closing the file.
-  EXPECT_TRUE(download_file_->Rename(path_4));
+  EXPECT_EQ(net::OK, download_file_->Rename(path_4));
   renamed_path = download_file_->full_path();
   EXPECT_EQ(path_4, renamed_path);
 

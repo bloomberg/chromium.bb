@@ -8,6 +8,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "crypto/secure_hash.h"
 #include "net/base/file_stream.h"
@@ -16,10 +17,171 @@
 #include "content/browser/content_browser_client.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
+#include <shellapi.h>
+
 #include "content/browser/safe_util_win.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/file_metadata_mac.h"
 #endif
+
+namespace {
+
+#define LOG_ERROR(o, e)  LogError(__FILE__, __LINE__, __FUNCTION__, o, e)
+
+// Logs the value and passes error on through, converting to a |net::Error|.
+// Returns |ERR_UNEXPECTED| if the value is not in the enum.
+net::Error LogError(const char* file, int line, const char* func,
+                    const char* operation, int error) {
+  const char* err_string = "";
+  net::Error net_error = net::OK;
+
+#define NET_ERROR(label, value)  \
+  case net::ERR_##label: \
+    err_string = #label; \
+    net_error = net::ERR_##label; \
+    break;
+
+  switch (error) {
+    case net::OK:
+      return net::OK;
+
+#include "net/base/net_error_list.h"
+
+    default:
+      err_string = "Unexpected enum value";
+      net_error = net::ERR_UNEXPECTED;
+      break;
+  }
+
+#undef NET_ERROR
+
+  DVLOG(1) << " " << func << "(): " << operation
+           << "() returned error " << error << " (" << err_string << ")";
+
+  return net_error;
+}
+
+#if defined(OS_WIN)
+
+#define SHFILE_TO_NET_ERROR(symbol, value, mapping, description) \
+  case value: return net::ERR_##mapping;
+
+// Maps the result of a call to |SHFileOperation()| onto a |net::Error|.
+//
+// These return codes are *old* (as in, DOS era), and specific to
+// |SHFileOperation()|.
+// They do not appear in any windows header.
+//
+// See http://msdn.microsoft.com/en-us/library/bb762164(VS.85).aspx.
+net::Error MapShFileOperationCodes(int code) {
+  // Check these pre-Win32 error codes first, then check for matches
+  // in Winerror.h.
+
+  switch (code) {
+    // Error Code, Value, Platform Error Mapping, Meaning
+    SHFILE_TO_NET_ERROR(DE_SAMEFILE, 0x71, FILE_EXISTS,
+        "The source and destination files are the same file.")
+    SHFILE_TO_NET_ERROR(DE_OPCANCELLED, 0x75, ABORTED,
+        "The operation was canceled by the user, or silently canceled if "
+        "the appropriate flags were supplied to SHFileOperation.")
+    SHFILE_TO_NET_ERROR(DE_ACCESSDENIEDSRC, 0x78, ACCESS_DENIED,
+        "Security settings denied access to the source.")
+    SHFILE_TO_NET_ERROR(DE_PATHTOODEEP, 0x79, FILE_PATH_TOO_LONG,
+        "The source or destination path exceeded or would exceed MAX_PATH.")
+    SHFILE_TO_NET_ERROR(DE_INVALIDFILES, 0x7C, FILE_NOT_FOUND,
+        "The path in the source or destination or both was invalid.")
+    SHFILE_TO_NET_ERROR(DE_FLDDESTISFILE, 0x7E, FILE_EXISTS,
+        "The destination path is an existing file.")
+    SHFILE_TO_NET_ERROR(DE_FILEDESTISFLD, 0x80, FILE_EXISTS,
+        "The destination path is an existing folder.")
+    SHFILE_TO_NET_ERROR(DE_FILENAMETOOLONG, 0x81, FILE_PATH_TOO_LONG,
+        "The name of the file exceeds MAX_PATH.")
+    SHFILE_TO_NET_ERROR(DE_DEST_IS_CDROM, 0x82, ACCESS_DENIED,
+        "The destination is a read-only CD-ROM, possibly unformatted.")
+    SHFILE_TO_NET_ERROR(DE_DEST_IS_DVD, 0x83, ACCESS_DENIED,
+        "The destination is a read-only DVD, possibly unformatted.")
+    SHFILE_TO_NET_ERROR(DE_DEST_IS_CDRECORD, 0x84, ACCESS_DENIED,
+        "The destination is a writable CD-ROM, possibly unformatted.")
+    SHFILE_TO_NET_ERROR(DE_FILE_TOO_LARGE, 0x85, FILE_TOO_BIG,
+        "The file involved in the operation is too large for the destination "
+        "media or file system.")
+    SHFILE_TO_NET_ERROR(DE_SRC_IS_CDROM, 0x86, ACCESS_DENIED,
+        "The source is a read-only CD-ROM, possibly unformatted.")
+    SHFILE_TO_NET_ERROR(DE_SRC_IS_DVD, 0x87, ACCESS_DENIED,
+        "The source is a read-only DVD, possibly unformatted.")
+    SHFILE_TO_NET_ERROR(DE_SRC_IS_CDRECORD, 0x88, ACCESS_DENIED,
+        "The source is a writable CD-ROM, possibly unformatted.")
+    SHFILE_TO_NET_ERROR(DE_ERROR_MAX, 0xB7, FILE_PATH_TOO_LONG,
+        "MAX_PATH was exceeded during the operation.")
+    SHFILE_TO_NET_ERROR(XE_ERRORONDEST, 0x10000, UNEXPECTED,
+        "An unspecified error occurred on the destination.")
+
+    // These are not expected to occur for in our usage.
+    SHFILE_TO_NET_ERROR(DE_MANYSRC1DEST, 0x72, FAILED,
+        "Multiple file paths were specified in the source buffer, "
+        "but only one destination file path.")
+    SHFILE_TO_NET_ERROR(DE_DIFFDIR, 0x73, FAILED,
+        "Rename operation was specified but the destination path is "
+        "a different directory. Use the move operation instead.")
+    SHFILE_TO_NET_ERROR(DE_ROOTDIR, 0x74, FAILED,
+        "The source is a root directory, which cannot be moved or renamed.")
+    SHFILE_TO_NET_ERROR(DE_DESTSUBTREE, 0x76, FAILED,
+        "The destination is a subtree of the source.")
+    SHFILE_TO_NET_ERROR(DE_MANYDEST, 0x7A, FAILED,
+        "The operation involved multiple destination paths, "
+        "which can fail in the case of a move operation.")
+    SHFILE_TO_NET_ERROR(DE_DESTSAMETREE, 0x7D, FAILED,
+        "The source and destination have the same parent folder.")
+    SHFILE_TO_NET_ERROR(DE_UNKNOWN_ERROR, 0x402, FAILED,
+        "An unknown error occurred. "
+        "This is typically due to an invalid path in the source or destination."
+        " This error does not occur on Windows Vista and later.")
+    SHFILE_TO_NET_ERROR(DE_ROOTDIR | ERRORONDEST, 0x10074, FAILED,
+        "Destination is a root directory and cannot be renamed.")
+    default:
+      break;
+  }
+
+  // If not one of the above codes, it should be a standard Windows error code.
+  return static_cast<net::Error>(net::MapSystemError(code));
+}
+
+#undef SHFILE_TO_NET_ERROR
+
+// Renames a file using the SHFileOperation API to ensure that the target file
+// gets the correct default security descriptor in the new path.
+// Returns a network error, or net::OK for success.
+net::Error RenameFileAndResetSecurityDescriptor(
+    const FilePath& source_file_path,
+    const FilePath& target_file_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // The parameters to SHFileOperation must be terminated with 2 NULL chars.
+  std::wstring source = source_file_path.value();
+  std::wstring target = target_file_path.value();
+
+  source.append(1, L'\0');
+  target.append(1, L'\0');
+
+  SHFILEOPSTRUCT move_info = {0};
+  move_info.wFunc = FO_MOVE;
+  move_info.pFrom = source.c_str();
+  move_info.pTo = target.c_str();
+  move_info.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI |
+                     FOF_NOCONFIRMMKDIR | FOF_NOCOPYSECURITYATTRIBS;
+
+  int result = SHFileOperation(&move_info);
+
+  if (result == 0)
+    return net::OK;
+
+  return MapShFileOperationCodes(result);
+}
+
+#endif
+
+}  // namespace
 
 BaseFile::BaseFile(const FilePath& full_path,
                    const GURL& source_url,
@@ -46,7 +208,7 @@ BaseFile::~BaseFile() {
     Cancel();  // Will delete the file.
 }
 
-bool BaseFile::Initialize(bool calculate_hash) {
+net::Error BaseFile::Initialize(bool calculate_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
@@ -61,7 +223,7 @@ bool BaseFile::Initialize(bool calculate_hash) {
         content::GetContentClient()->browser()->GetDefaultDownloadDirectory();
     if (!file_util::CreateTemporaryFileInDir(download_dir, &temp_file) &&
         !file_util::CreateTemporaryFile(&temp_file)) {
-      return false;
+      return LOG_ERROR("unable to create", net::ERR_FILE_NOT_FOUND);
     }
     full_path_ = temp_file;
   }
@@ -69,31 +231,34 @@ bool BaseFile::Initialize(bool calculate_hash) {
   return Open();
 }
 
-bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {
+net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
   if (!file_stream_.get())
-    return false;
+    return LOG_ERROR("get", net::ERR_INVALID_HANDLE);
 
   // TODO(phajdan.jr): get rid of this check.
   if (data_len == 0)
-    return true;
+    return net::OK;
 
   bytes_so_far_ += data_len;
 
-  // TODO(phajdan.jr): handle errors on file writes. http://crbug.com/58355
-  size_t written = file_stream_->Write(data, data_len, NULL);
-  if (written != data_len)
-    return false;
+  int written = file_stream_->Write(data, data_len, NULL);
+  if (static_cast<size_t>(written) != data_len) {
+    // Report errors on file writes.
+    if (written < 0)
+      return LOG_ERROR("Write", written);
+    return LOG_ERROR("Write", net::ERR_FAILED);
+  }
 
   if (calculate_hash_)
     secure_hash_->Update(data, data_len);
 
-  return true;
+  return net::OK;
 }
 
-bool BaseFile::Rename(const FilePath& new_path) {
+net::Error BaseFile::Rename(const FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Save the information whether the download is in progress because
@@ -107,7 +272,7 @@ bool BaseFile::Rename(const FilePath& new_path) {
     if (!saved_in_progress)
       Close();
 
-    return true;
+    return net::OK;
   }
 
   Close();
@@ -118,8 +283,12 @@ bool BaseFile::Rename(const FilePath& new_path) {
   // We cannot rename because rename will keep the same security descriptor
   // on the destination file. We want to recreate the security descriptor
   // with the security that makes sense in the new path.
-  if (!file_util::RenameFileAndResetSecurityDescriptor(full_path_, new_path))
-    return false;
+  // |RenameFileAndResetSecurityDescriptor| returns a windows-specific
+  // error, whch we must translate into a net::Error.
+  net::Error rename_err =
+      RenameFileAndResetSecurityDescriptor(full_path_, new_path);
+  if (rename_err != net::OK)
+    return LOG_ERROR("RenameFileAndResetSecurityDescriptor", rename_err);
 #elif defined(OS_POSIX)
   {
     // Similarly, on Unix, we're moving a temp file created with permissions
@@ -128,17 +297,24 @@ bool BaseFile::Rename(const FilePath& new_path) {
     struct stat st;
     // First check the file existence and create an empty file if it doesn't
     // exist.
-    if (!file_util::PathExists(new_path))
-      file_util::WriteFile(new_path, "", 0);
-    bool stat_succeeded = (stat(new_path.value().c_str(), &st) == 0);
+    if (!file_util::PathExists(new_path)) {
+      int write_error = file_util::WriteFile(new_path, "", 0);
+      if (write_error < 0)
+        return LOG_ERROR("WriteFile", net::MapSystemError(errno));
+    }
+    int stat_error = stat(new_path.value().c_str(), &st);
+    bool stat_succeeded = (stat_error == 0);
+    if (!stat_succeeded)
+      return LOG_ERROR("stat", net::MapSystemError(errno));
 
     // TODO(estade): Move() falls back to copying and deleting when a simple
     // rename fails. Copying sucks for large downloads. crbug.com/8737
     if (!file_util::Move(full_path_, new_path))
-      return false;
+      return LOG_ERROR("Move", net::MapSystemError(errno));
 
-    if (stat_succeeded)
-      chmod(new_path.value().c_str(), st.st_mode);
+    int chmod_error = chmod(new_path.value().c_str(), st.st_mode);
+    if (chmod_error < 0)
+      return LOG_ERROR("chmod", net::MapSystemError(errno));
   }
 #endif
 
@@ -146,12 +322,9 @@ bool BaseFile::Rename(const FilePath& new_path) {
 
   // We don't need to re-open the file if we're done (finished or canceled).
   if (!saved_in_progress)
-    return true;
+    return net::OK;
 
-  if (!Open())
-    return false;
-
-  return true;
+  return Open();
 }
 
 void BaseFile::Detach() {
@@ -207,7 +380,7 @@ void BaseFile::CreateFileStream() {
   file_stream_.reset(new net::FileStream);
 }
 
-bool BaseFile::Open() {
+net::Error BaseFile::Open() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
   DCHECK(!full_path_.empty());
@@ -215,25 +388,27 @@ bool BaseFile::Open() {
   // Create a new file stream if it is not provided.
   if (!file_stream_.get()) {
     CreateFileStream();
-    if (file_stream_->Open(full_path_,
-                           base::PLATFORM_FILE_OPEN_ALWAYS |
-                               base::PLATFORM_FILE_WRITE) != net::OK) {
+    int open_result = file_stream_->Open(
+        full_path_,
+        base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE);
+    if (open_result != net::OK) {
       file_stream_.reset();
-      return false;
+      return LOG_ERROR("Open", open_result);
     }
 
     // We may be re-opening the file after rename. Always make sure we're
     // writing at the end of the file.
-    if (file_stream_->Seek(net::FROM_END, 0) < 0) {
+    int64 seek_result = file_stream_->Seek(net::FROM_END, 0);
+    if (seek_result < 0) {
       file_stream_.reset();
-      return false;
+      return LOG_ERROR("Seek", seek_result);
     }
   }
 
 #if defined(OS_WIN)
   AnnotateWithSourceInformation();
 #endif
-  return true;
+  return net::OK;
 }
 
 void BaseFile::Close() {
