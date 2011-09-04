@@ -1715,6 +1715,8 @@
         'browser/policy/policy_path_parser_win.cc',
         'browser/policy/policy_status_info.cc',
         'browser/policy/policy_status_info.h',
+        'browser/policy/url_blacklist_manager.cc',
+        'browser/policy/url_blacklist_manager.h',
         'browser/policy/user_policy_cache.cc',
         'browser/policy/user_policy_cache.h',
         'browser/policy/user_policy_disk_cache.cc',

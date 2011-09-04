@@ -461,6 +461,7 @@ void IOThread::Init() {
       extension_event_router_forwarder_,
       NULL,
       NULL,
+      NULL,
       &system_enable_referrers_));
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));

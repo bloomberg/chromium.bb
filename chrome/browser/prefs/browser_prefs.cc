@@ -36,6 +36,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
+#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -181,6 +182,9 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   FirewallTraversalObserver::RegisterUserPrefs(user_prefs);
 #if defined(OS_MACOSX)
   PresentationModePrefs::RegisterUserPrefs(user_prefs);
+#endif
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::URLBlacklistManager::RegisterPrefs(user_prefs);
 #endif
 }
 

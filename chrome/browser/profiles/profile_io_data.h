@@ -46,6 +46,10 @@ class SSLConfigService;
 class TransportSecurityState;
 }  // namespace net
 
+namespace policy {
+class URLBlacklistManager;
+}  // namespace policy
+
 namespace prerender {
 class PrerenderManager;
 };  // namespace prerender
@@ -152,6 +156,9 @@ class ProfileIOData {
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.
     scoped_ptr<net::ProxyConfigService> proxy_config_service;
+    // Initialized on the UI thread because it needs to reference the
+    // Profile's PrefService.
+    scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager;
     // The profile this struct was populated from. It's passed as a void* to
     // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
@@ -257,6 +264,9 @@ class ProfileIOData {
   mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember clear_local_state_on_exit_;
   mutable BooleanPrefMember safe_browsing_enabled_;
+
+  // Pointed to by NetworkDelegate.
+  mutable scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
 
   // Pointed to by URLRequestContext.
   mutable scoped_ptr<ChromeURLDataManagerBackend>

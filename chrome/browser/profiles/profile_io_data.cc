@@ -28,6 +28,7 @@
 #include "chrome/browser/net/pref_proxy_config_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -243,6 +244,11 @@ void ProfileIOData::InitializeProfileParams(Profile* profile) {
       base::Bind(&GetPrerenderManagerOnUI, profile_getter);
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  params->url_blacklist_manager.reset(
+      new policy::URLBlacklistManager(pref_service));
+#endif
+
   params->proxy_config_service.reset(
       ProxyServiceFactory::CreateProxyConfigService(
           profile->GetProxyConfigTracker()));
@@ -404,6 +410,7 @@ void ProfileIOData::LazyInitialize() const {
   network_delegate_.reset(new ChromeNetworkDelegate(
         io_thread_globals->extension_event_router_forwarder.get(),
         profile_params_->extension_info_map,
+        profile_params_->url_blacklist_manager.get(),
         profile_params_->profile,
         &enable_referrers_));
 
@@ -473,6 +480,7 @@ void ProfileIOData::LazyInitialize() const {
   notification_service_ = profile_params_->notification_service;
   extension_info_map_ = profile_params_->extension_info_map;
   prerender_manager_getter_ = profile_params_->prerender_manager_getter;
+  url_blacklist_manager_.swap(profile_params_->url_blacklist_manager);
 
   resource_context_.set_host_resolver(io_thread_globals->host_resolver.get());
   resource_context_.set_request_context(main_request_context_);
@@ -509,6 +517,8 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_referrers_.Destroy();
   clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
+  if (url_blacklist_manager_.get())
+    url_blacklist_manager_->ShutdownOnUIThread();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(

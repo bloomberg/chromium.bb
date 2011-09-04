@@ -1566,6 +1566,7 @@
         'browser/policy/testing_cloud_policy_subsystem.h',
         'browser/policy/testing_policy_url_fetcher_factory.cc',
         'browser/policy/testing_policy_url_fetcher_factory.h',
+        'browser/policy/url_blacklist_manager_unittest.cc',
         'browser/policy/user_policy_cache_unittest.cc',
         'browser/preferences_mock_mac.cc',
         'browser/preferences_mock_mac.h',

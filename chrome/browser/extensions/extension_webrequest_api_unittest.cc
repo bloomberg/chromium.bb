@@ -84,7 +84,7 @@ class ExtensionWebRequestTest : public testing::Test {
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, &profile_, &enable_referrers_));
+        event_router_.get(), NULL, NULL, &profile_, &enable_referrers_));
     context_ = new TestURLRequestContext();
     context_->set_network_delegate(network_delegate_.get());
   }
@@ -329,7 +329,7 @@ class ExtensionWebRequestHeaderModificationTest :
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, &profile_, &enable_referrers_));
+        event_router_.get(), NULL, NULL, &profile_, &enable_referrers_));
     context_ = new TestURLRequestContext();
     context_->set_network_delegate(network_delegate_.get());
   }

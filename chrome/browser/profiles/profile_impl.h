@@ -22,6 +22,7 @@ class ChromeDownloadManagerDelegate;
 class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class ExtensionSettings;
+class NetPrefObserver;
 class PrefService;
 class SpellCheckProfile;
 
@@ -32,8 +33,6 @@ class LocaleChangeGuard;
 class Preferences;
 }
 #endif
-
-class NetPrefObserver;
 
 // The default profile implementation.
 class ProfileImpl : public Profile,
