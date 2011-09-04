@@ -26,14 +26,12 @@
 #include "chrome/browser/ui/webui/options/handler_options_handler.h"
 #include "chrome/browser/ui/webui/options/cookies_view_handler.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
-#include "chrome/browser/ui/webui/options/extension_settings_handler.h"
 #include "chrome/browser/ui/webui/options/font_settings_handler.h"
 #include "chrome/browser/ui/webui/options/import_data_handler.h"
 #include "chrome/browser/ui/webui/options/intents_settings_handler.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
 #include "chrome/browser/ui/webui/options/manage_profile_handler.h"
 #include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
-#include "chrome/browser/ui/webui/options/pack_extension_handler.h"
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 #include "chrome/browser/ui/webui/options/personal_options_handler.h"
 #include "chrome/browser/ui/webui/options/search_engine_manager_handler.h"
@@ -212,7 +210,6 @@ OptionsUI::OptionsUI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
-  AddOptionsPageUIHandler(localized_strings, new ExtensionSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new IntentsSettingsHandler());
 #if defined(OS_CHROMEOS)
@@ -222,7 +219,6 @@ OptionsUI::OptionsUI(TabContents* contents)
   AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
 #endif
   AddOptionsPageUIHandler(localized_strings, new ManageProfileHandler());
-  AddOptionsPageUIHandler(localized_strings, new PackExtensionHandler());
   AddOptionsPageUIHandler(localized_strings, new PasswordManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
