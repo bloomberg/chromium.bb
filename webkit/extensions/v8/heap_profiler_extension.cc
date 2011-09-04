@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/extensions/v8/heap_profiler_extension.h"
 
 #include "base/basictypes.h"
+#include "v8/include/v8.h"
 
 #if defined(USE_TCMALLOC) && !defined(OS_WIN)
 #include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
