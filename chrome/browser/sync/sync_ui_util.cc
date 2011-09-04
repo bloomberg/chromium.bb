@@ -85,6 +85,33 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
       service->GetLastSyncedTimeString());
 }
 
+void GetStatusForActionableError(
+    const browser_sync::SyncProtocolError& error,
+    string16* status_label) {
+  DCHECK(status_label);
+  switch (error.action) {
+    case browser_sync::STOP_AND_RESTART_SYNC:
+       status_label->assign(
+           l10n_util::GetStringUTF16(IDS_SYNC_STOP_AND_RESTART_SYNC));
+      break;
+    case browser_sync::UPGRADE_CLIENT:
+       status_label->assign(
+           l10n_util::GetStringFUTF16(IDS_SYNC_UPGRADE_CLIENT,
+               l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      break;
+    case browser_sync::ENABLE_SYNC_ON_ACCOUNT:
+       status_label->assign(
+           l10n_util::GetStringUTF16(IDS_SYNC_ENABLE_SYNC_ON_ACCOUNT));
+    break;
+    case browser_sync::CLEAR_USER_DATA_AND_RESYNC:
+       status_label->assign(
+           l10n_util::GetStringUTF16(IDS_SYNC_CLEAR_USER_DATA));
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 // TODO(akalin): Write unit tests for these three functions below.
 
 // status_label and link_label must either be both NULL or both non-NULL.
@@ -103,22 +130,40 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
     const AuthError& auth_error = service->GetAuthError();
 
-    // Either show auth error information with a link to re-login, auth in prog,
-    // or note that everything is OK with the last synced time.
-    if (status.authenticated && !service->IsPassphraseRequired()) {
-      // Everything is peachy.
-      if (status_label) {
-        status_label->assign(GetSyncedStateStatusLabel(service));
-      }
-      DCHECK_EQ(auth_error.state(), AuthError::NONE);
-    } else if (service->UIShouldDepictAuthInProgress()) {
+    // The order or priority is going to be: 1. Auth errors. 2. Protocol errors.
+    // 3. Passphrase errors.
+
+    // For auth errors first check if an auth is in progress.
+    if (service->UIShouldDepictAuthInProgress()) {
       if (status_label) {
         status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
       }
-      result_type = PRE_SYNCED;
-    } else if (service->IsPassphraseRequired()) {
+      return PRE_SYNCED;
+    }
+
+    // No auth in progress check for an auth error.
+    if (auth_error.state() != AuthError::NONE) {
+      if (status_label && link_label) {
+        GetStatusLabelsForAuthError(auth_error, service,
+                                    status_label, link_label);
+      }
+      return SYNC_ERROR;
+    }
+
+    // We dont have an auth error. Check for protocol error.
+    if (ShouldShowActionOnUI(status.sync_protocol_error)) {
+      if (status_label) {
+        GetStatusForActionableError(status.sync_protocol_error,
+            status_label);
+      }
+      return SYNC_ERROR;
+    }
+
+    // Now finally passphrase error.
+    if (service->IsPassphraseRequired()) {
       if (service->IsPassphraseRequiredForDecryption()) {
+        // TODO(lipalani) : Ask tim if this is still needed.
         // NOT first machine.
         // Show a link ("needs attention"), but still indicate the
         // current synced status.  Return SYNC_PROMO so that
@@ -128,20 +173,16 @@ MessageType GetStatusInfo(ProfileSyncService* service,
           link_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_PASSWORD_SYNC_ATTENTION));
         }
-        result_type = SYNC_PROMO;
+        return SYNC_PROMO;
       } else {
         // First machine.  Don't show promotion, just show everything
         // normal.
         if (status_label)
           status_label->assign(GetSyncedStateStatusLabel(service));
+        return SYNCED;
       }
-    } else if (auth_error.state() != AuthError::NONE) {
-      if (status_label && link_label) {
-        GetStatusLabelsForAuthError(auth_error, service,
-                                    status_label, link_label);
-      }
-      result_type = SYNC_ERROR;
     }
+    return SYNCED;
   } else {
     // Either show auth error information with a link to re-login, auth in prog,
     // or provide a link to continue with setup.
@@ -173,7 +214,13 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       }
     } else if (service->unrecoverable_error_detected()) {
       result_type = SYNC_ERROR;
-      if (status_label) {
+      ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
+      if (ShouldShowActionOnUI(status.sync_protocol_error)) {
+        if (status_label) {
+          GetStatusForActionableError(status.sync_protocol_error,
+              status_label);
+        }
+      } else if (status_label) {
         status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_SETUP_ERROR));
       }
     }

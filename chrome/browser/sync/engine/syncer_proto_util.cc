@@ -103,16 +103,6 @@ bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
 
   std::string local_birthday = dir->store_birthday();
 
-  // TODO(lipalani) : Remove this check here. When the new implementation
-  // becomes the default this check should go away. This is handled by the
-  // switch case in the new implementation.
-  if (response->error_code() == ClientToServerResponse::CLEAR_PENDING ||
-      response->error_code() == ClientToServerResponse::NOT_MY_BIRTHDAY) {
-    // Birthday verification failures result in stopping sync and deleting
-    // local sync data.
-    return false;
-  }
-
   if (local_birthday.empty()) {
     if (!response->has_store_birthday()) {
       LOG(WARNING) << "Expected a birthday on first sync.";
@@ -270,8 +260,19 @@ browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
   sync_protocol_error.url = error.url();
   sync_protocol_error.action = ConvertClientActionPBToLocalClientAction(
       error.action());
-
   return sync_protocol_error;
+}
+
+// TODO(lipalani) : Rename these function names as per the CR for issue 7740067.
+browser_sync::SyncProtocolError ConvertLegacyErrorCodeToNewError(
+    const sync_pb::ClientToServerResponse::ErrorType& error_type) {
+  browser_sync::SyncProtocolError error;
+  error.error_type = ConvertSyncProtocolErrorTypePBToLocalType(error_type);
+  if (error_type == ClientToServerResponse::CLEAR_PENDING ||
+      error_type == ClientToServerResponse::NOT_MY_BIRTHDAY) {
+      error.action = browser_sync::DISABLE_SYNC_ON_CLIENT;
+  }  // There is no other action we can compute for legacy server.
+  return error;
 }
 
 }  // namespace
@@ -297,85 +298,52 @@ bool SyncerProtoUtil::PostClientToServerMessage(
                              msg, response))
     return false;
 
-  if (response->has_error()) {
-    // We are talking to a server that is capable of sending the |error| tag.
-    browser_sync::SyncProtocolError sync_protocol_error =
-        ConvertErrorPBToLocalType(response->error());
+  browser_sync::SyncProtocolError sync_protocol_error;
 
-    // Birthday mismatch overrides any error that is sent by the server.
-    if (!VerifyResponseBirthday(dir, response)) {
-      sync_protocol_error.error_type = browser_sync::NOT_MY_BIRTHDAY;
-       sync_protocol_error.action =
-           browser_sync::DISABLE_SYNC_ON_CLIENT;
-    }
-
-    // Now set the error into the status so the layers above us could read it.
-    sessions::StatusController* status = session->status_controller();
-    status->set_sync_protocol_error(sync_protocol_error);
-
-    // Inform the delegate of the error we got.
-    session->delegate()->OnSyncProtocolError(session->TakeSnapshot());
-
-    // Now do any special handling for the error type and decide on the return
-    // value.
-    switch (sync_protocol_error.error_type) {
-      case browser_sync::UNKNOWN_ERROR:
-        LOG(WARNING) << "Sync protocol out-of-date. The server is using a more "
-                     << "recent version.";
-        return false;
-      case browser_sync::SYNC_SUCCESS:
-        LogResponseProfilingData(*response);
-        return true;
-      case browser_sync::THROTTLED:
-        LOG(WARNING) << "Client silenced by server.";
-        session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
-            GetThrottleDelay(*response));
-        return false;
-      case browser_sync::TRANSIENT_ERROR:
-        return false;
-      case browser_sync::MIGRATION_DONE:
-        HandleMigrationDoneResponse(response, session);
-        return false;
-      default:
-        NOTREACHED();
-        return false;
-    }
-  }
-
-  // TODO(lipalani): Plug this legacy implementation to the new error framework.
-  // New implementation code would have returned before by now. This is waiting
-  // on the frontend code being implemented. Otherwise ripping this would break
-  // sync.
+  // Birthday mismatch overrides any error that is sent by the server.
   if (!VerifyResponseBirthday(dir, response)) {
-    session->status_controller()->set_syncer_stuck(true);
-    session->delegate()->OnShouldStopSyncingPermanently();
-    return false;
+    sync_protocol_error.error_type = browser_sync::NOT_MY_BIRTHDAY;
+     sync_protocol_error.action =
+         browser_sync::DISABLE_SYNC_ON_CLIENT;
+  } else if (response->has_error()) {
+    // This is a new server. Just get the error from the protocol.
+    sync_protocol_error = ConvertErrorPBToLocalType(response->error());
+  } else {
+    // Legacy server implementation. Compute the error based on |error_code|.
+    sync_protocol_error = ConvertLegacyErrorCodeToNewError(
+        response->error_code());
   }
 
-  switch (response->error_code()) {
-    case ClientToServerResponse::UNKNOWN:
+  // Now set the error into the status so the layers above us could read it.
+  sessions::StatusController* status = session->status_controller();
+  status->set_sync_protocol_error(sync_protocol_error);
+
+  // Inform the delegate of the error we got.
+  session->delegate()->OnSyncProtocolError(session->TakeSnapshot());
+
+  // Now do any special handling for the error type and decide on the return
+  // value.
+  switch (sync_protocol_error.error_type) {
+    case browser_sync::UNKNOWN_ERROR:
       LOG(WARNING) << "Sync protocol out-of-date. The server is using a more "
                    << "recent version.";
       return false;
-    case ClientToServerResponse::SUCCESS:
+    case browser_sync::SYNC_SUCCESS:
       LogResponseProfilingData(*response);
       return true;
-    case ClientToServerResponse::THROTTLED:
+    case browser_sync::THROTTLED:
       LOG(WARNING) << "Client silenced by server.";
       session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
           GetThrottleDelay(*response));
       return false;
-    case ClientToServerResponse::TRANSIENT_ERROR:
+    case browser_sync::TRANSIENT_ERROR:
       return false;
-    case ClientToServerResponse::MIGRATION_DONE:
+    case browser_sync::MIGRATION_DONE:
       HandleMigrationDoneResponse(response, session);
       return false;
-    case ClientToServerResponse::USER_NOT_ACTIVATED:
-    case ClientToServerResponse::AUTH_INVALID:
-    case ClientToServerResponse::ACCESS_DENIED:
-      // WARNING: PostAndProcessHeaders contains a hack for this case.
-      LOG(WARNING) << "SyncerProtoUtil: Authentication expired.";
-      // TODO(sync): Was this meant to be a fall-through?
+    case browser_sync::CLEAR_PENDING:
+    case browser_sync::NOT_MY_BIRTHDAY:
+      return false;
     default:
       NOTREACHED();
       return false;

@@ -1692,6 +1692,16 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
                       OnUpdatedToken(event.updated_token));
     return;
   }
+
+  if (event.what_happened == SyncEngineEvent::ACTIONABLE_ERROR) {
+    ObserverList<SyncManager::Observer> temp_obs_list;
+    CopyObservers(&temp_obs_list);
+    FOR_EACH_OBSERVER(SyncManager::Observer, temp_obs_list,
+                      OnActionableError(
+                          event.snapshot->errors.sync_protocol_error));
+    return;
+  }
+
 }
 
 void SyncManager::SyncInternal::SetJsEventHandler(

@@ -69,6 +69,8 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
 
   status.updates_available += snapshot->num_server_changes_remaining;
 
+  status.sync_protocol_error = snapshot->errors.sync_protocol_error;
+
   // Accumulate update count only once per session to avoid double-counting.
   // TODO(ncarter): Make this realtime by having the syncer_status
   // counter preserve its value across sessions.  http://crbug.com/26339
@@ -128,6 +130,10 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
     case SyncEngineEvent::CLEAR_SERVER_DATA_FAILED:
     case SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED:
        break;
+    case SyncEngineEvent::ACTIONABLE_ERROR:
+      status_ = CreateBlankStatus();
+      status_.sync_protocol_error = event.snapshot->errors.sync_protocol_error;
+      break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
       break;

@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/weak_handle.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -96,6 +97,10 @@ class SyncFrontend {
 
   // Inform the Frontend that new datatypes are available for registration.
   virtual void OnDataTypesChanged(const syncable::ModelTypeSet& to_add) = 0;
+
+  // Called when the sync cycle returns there is an user actionable error.
+  virtual void OnActionableError(
+      const browser_sync::SyncProtocolError& error) = 0;
 
  protected:
   // Don't delete through SyncFrontend interface.
@@ -275,7 +280,9 @@ class SyncBackendHost {
     virtual void OnClearServerDataFailed() OVERRIDE;
     virtual void OnClearServerDataSucceeded() OVERRIDE;
     virtual void OnEncryptionComplete(
-        const syncable::ModelTypeSet& encrypted_types) OVERRIDE;
+        const syncable::ModelTypeSet& encrypted_types);
+    virtual void OnActionableError(
+        const browser_sync::SyncProtocolError& sync_error);
 
     struct DoInitializeOptions {
       DoInitializeOptions(
@@ -383,6 +390,10 @@ class SyncBackendHost {
     void HandleInitializationCompletedOnFrontendLoop(
         const WeakHandle<JsBackend>& js_backend,
         bool success);
+
+    // Let the front end handle the actionable error event.
+    void HandleActionableErrorEventOnFrontendLoop(
+        const browser_sync::SyncProtocolError& sync_error);
 
    private:
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;

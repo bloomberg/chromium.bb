@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/browser/sync/internal_api",
   "+chrome/browser/sync/sessions/session_state.h",
   "+chrome/browser/sync/syncable/model_type.h",
+  "+chrome/browser/sync/protocol/sync_protocol_error.h",
   "+chrome/browser/sync/syncable/transaction_observer.h",
   "+chrome/browser/sync/test",
 

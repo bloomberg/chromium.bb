@@ -758,6 +758,14 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
     host_->frontend_->OnSyncCycleCompleted();
 }
 
+void SyncBackendHost::Core::HandleActionableErrorEventOnFrontendLoop(
+    const browser_sync::SyncProtocolError& sync_error) {
+  DCHECK_EQ(MessageLoop::current(), host_->frontend_loop_);
+  if (!host_ || !host_->frontend_)
+    return;
+  host_->frontend_->OnActionableError(sync_error);
+}
+
 void SyncBackendHost::Core::OnInitializationComplete(
     const WeakHandle<JsBackend>& js_backend) {
   if (!host_ || !host_->frontend_)
@@ -864,6 +872,16 @@ void SyncBackendHost::Core::OnEncryptionComplete(
       FROM_HERE,
       NewRunnableMethod(this, &Core::NotifyEncryptionComplete,
                         encrypted_types));
+}
+
+void SyncBackendHost::Core::OnActionableError(
+    const browser_sync::SyncProtocolError& sync_error) {
+  if (!host_ || !host_->frontend_)
+    return;
+  host_->frontend_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &Core::HandleActionableErrorEventOnFrontendLoop,
+                        sync_error));
 }
 
 void SyncBackendHost::Core::HandleStopSyncingPermanentlyOnFrontendLoop() {

@@ -362,14 +362,16 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
-      return true;  // The server can abort whenever it wants.
+      return current_state_ != SyncSetupWizard::ABORT;
     case SyncSetupWizard::SETTING_UP:
       return current_state_ == SyncSetupWizard::SYNC_EVERYTHING ||
              current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
     case SyncSetupWizard::NONFATAL_ERROR:  // Intentionally fall through.
     case SyncSetupWizard::FATAL_ERROR:
-      return true;  // You can always hit the panic button.
+      return current_state_ != SyncSetupWizard::ABORT;
+    case SyncSetupWizard::ABORT:
+      return true;
     case SyncSetupWizard::DONE:
       return current_state_ == SyncSetupWizard::SETTING_UP ||
              current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
@@ -449,6 +451,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
       break;
     }
     case SyncSetupWizard::DONE:
+    case SyncSetupWizard::ABORT:
       flow_handler_->ShowSetupDone(
           UTF16ToWide(service_->GetAuthenticatedUsername()));
       break;

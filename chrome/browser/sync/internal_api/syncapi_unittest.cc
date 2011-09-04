@@ -708,6 +708,8 @@ class SyncManagerObserverMock : public SyncManager::Observer {
   MOCK_METHOD0(OnClearServerDataFailed, void());  // NOLINT
   MOCK_METHOD0(OnClearServerDataSucceeded, void());  // NOLINT
   MOCK_METHOD1(OnEncryptionComplete, void(const ModelTypeSet&));  // NOLINT
+  MOCK_METHOD1(OnActionableError,
+                 void(const browser_sync::SyncProtocolError&));  // NOLINT
 };
 
 class SyncNotifierMock : public sync_notifier::SyncNotifier {

@@ -38,7 +38,6 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
     FAIL() << "Should not get silenced.";
   }
   virtual bool IsSyncingCurrentlySilenced() OVERRIDE {
-    ADD_FAILURE() << "No requests for silenced state should be made.";
     return false;
   }
   virtual void OnReceivedLongPollIntervalUpdate(
@@ -58,7 +57,7 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   }
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& session) OVERRIDE {
-    FAIL() << "Shouldn't be called.";
+    return;
   }
 
   // ModelSafeWorkerRegistrar implementation.

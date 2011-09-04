@@ -17,6 +17,8 @@
 
 namespace browser_sync {
 
+using browser_sync::SyncProtocolError;
+
 JsSyncManagerObserver::JsSyncManagerObserver() {}
 
 JsSyncManagerObserver::~JsSyncManagerObserver() {}
@@ -123,6 +125,17 @@ void JsSyncManagerObserver::OnMigrationNeededForTypes(
   DictionaryValue details;
   details.Set("types", syncable::ModelTypeSetToValue(types));
   HandleJsEvent(FROM_HERE, "onMigrationNeededForTypes",
+                JsEventDetails(&details));
+}
+
+void JsSyncManagerObserver::OnActionableError(
+    const SyncProtocolError& sync_error) {
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
+  DictionaryValue details;
+  details.Set("syncError",  sync_error.ToValue());
+  HandleJsEvent(FROM_HERE, "onActionableError",
                 JsEventDetails(&details));
 }
 

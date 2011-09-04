@@ -65,6 +65,7 @@ using browser_sync::JsEventDetails;
 using browser_sync::JsEventHandler;
 using browser_sync::SyncBackendHost;
 using browser_sync::WeakHandle;
+using browser_sync::SyncProtocolError;
 using sync_api::SyncCredentials;
 
 typedef GoogleServiceAuthError AuthError;
@@ -76,6 +77,13 @@ const char* ProfileSyncService::kDevServerUrl =
     "https://clients4.google.com/chrome-sync/dev";
 
 static const int kSyncClearDataTimeoutInSeconds = 60;  // 1 minute.
+
+
+bool ShouldShowActionOnUI(
+    const browser_sync::SyncProtocolError& error) {
+  return (error.action != browser_sync::UNKNOWN_ACTION &&
+          error.action != browser_sync::DISABLE_SYNC_ON_CLIENT);
+}
 
 ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        Profile* profile,
@@ -145,6 +153,7 @@ void ProfileSyncService::Initialize() {
   unrecoverable_error_detected_ = false;
   unrecoverable_error_message_.clear();
   unrecoverable_error_location_.reset();
+  last_actionable_error_ = SyncProtocolError();
 
   // Watch the preference that indicates sync is managed so we can take
   // appropriate action.
@@ -924,6 +933,35 @@ void ProfileSyncService::OnMigrationNeededForTypes(
   migrator_->MigrateTypes(types);
 }
 
+void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
+  last_actionable_error_ = error;
+  DCHECK_NE(last_actionable_error_.action,
+            browser_sync::UNKNOWN_ACTION);
+  switch (error.action) {
+    case browser_sync::UPGRADE_CLIENT:
+    case browser_sync::CLEAR_USER_DATA_AND_RESYNC:
+    case browser_sync::ENABLE_SYNC_ON_ACCOUNT:
+    case browser_sync::STOP_AND_RESTART_SYNC:
+      // TODO(lipalani) : if setup in progress we want to display these
+      // actions in the popup. The current experience might not be optimal for
+      // the user. We just dismiss the dialog.
+      if (SetupInProgress()) {
+        wizard_.Step(SyncSetupWizard::ABORT);
+        OnStopSyncingPermanently();
+        expect_sync_configuration_aborted_ = true;
+      }
+      // Trigger an unrecoverable error to stop syncing.
+      OnUnrecoverableError(FROM_HERE, last_actionable_error_.error_description);
+      break;
+    case browser_sync::DISABLE_SYNC_ON_CLIENT:
+      OnStopSyncingPermanently();
+      break;
+    default:
+      NOTREACHED();
+  }
+  NotifyObservers();
+}
+
 void ProfileSyncService::ShowLoginDialog() {
   if (WizardIsVisible()) {
     wizard_.Focus();
@@ -939,7 +977,7 @@ void ProfileSyncService::ShowLoginDialog() {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  ShowSyncSetup(SyncSetupWizard::GetLoginState());
+  ShowSyncSetupWithWizard(SyncSetupWizard::GetLoginState());
 
   NotifyObservers();
 }
@@ -952,8 +990,10 @@ void ProfileSyncService::ShowErrorUI() {
 
   if (last_auth_error_.state() != AuthError::NONE)
     ShowLoginDialog();
+  else if (ShouldShowActionOnUI(last_actionable_error_))
+    ShowSyncSetup(chrome::kPersonalOptionsSubPage);
   else
-    ShowSyncSetup(SyncSetupWizard::NONFATAL_ERROR);
+    ShowSyncSetupWithWizard(SyncSetupWizard::NONFATAL_ERROR);
 }
 
 void ProfileSyncService::ShowConfigure(bool sync_everything) {
@@ -963,21 +1003,26 @@ void ProfileSyncService::ShowConfigure(bool sync_everything) {
   }
 
   if (sync_everything)
-    ShowSyncSetup(SyncSetupWizard::SYNC_EVERYTHING);
+    ShowSyncSetupWithWizard(SyncSetupWizard::SYNC_EVERYTHING);
   else
-    ShowSyncSetup(SyncSetupWizard::CONFIGURE);
+    ShowSyncSetupWithWizard(SyncSetupWizard::CONFIGURE);
 }
 
-void ProfileSyncService::ShowSyncSetup(SyncSetupWizard::State state) {
-  wizard_.Step(state);
+void ProfileSyncService::ShowSyncSetup(const std::string& sub_page) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile());
   if (!browser) {
     browser = Browser::Create(profile());
-    browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
+    browser->ShowOptionsTab(sub_page);
     browser->window()->Show();
   } else {
-    browser->ShowOptionsTab(chrome::kSyncSetupSubPage);
+    browser->ShowOptionsTab(sub_page);
   }
+}
+
+
+void ProfileSyncService::ShowSyncSetupWithWizard(SyncSetupWizard::State state) {
+  wizard_.Step(state);
+  ShowSyncSetup(chrome::kSyncSetupSubPage);
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
@@ -993,6 +1038,7 @@ SyncBackendHost::Status ProfileSyncService::QueryDetailedSyncStatus() {
   } else {
     SyncBackendHost::Status status;
     status.summary = SyncBackendHost::Status::OFFLINE_UNUSABLE;
+    status.sync_protocol_error = last_actionable_error_;
     return status;
   }
 }

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/weak_handle.h"
 
 namespace tracked_objects {
@@ -50,6 +51,8 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
   virtual void OnClearServerDataSucceeded();
   virtual void OnClearServerDataFailed();
   virtual void OnMigrationNeededForTypes(const syncable::ModelTypeSet& types);
+  virtual void OnActionableError(
+      const browser_sync::SyncProtocolError& sync_protocol_error);
 
  private:
   void HandleJsEvent(const tracked_objects::Location& from_here,

@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/weak_handle.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -166,6 +167,8 @@ class SyncManager {
 
     // The max number of consecutive errors from any component.
     int max_consecutive_errors;
+
+    browser_sync::SyncProtocolError sync_protocol_error;
 
     int unsynced_count;
 
@@ -378,6 +381,10 @@ class SyncManager {
     // Called after we finish encrypting all appropriate datatypes.
     virtual void OnEncryptionComplete(
         const syncable::ModelTypeSet& encrypted_types) = 0;
+
+    virtual void OnActionableError(
+        const browser_sync::SyncProtocolError& sync_protocol_error)
+            = 0;
 
    protected:
     virtual ~Observer();

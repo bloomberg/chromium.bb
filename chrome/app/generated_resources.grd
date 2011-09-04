@@ -9640,6 +9640,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_PASSWORD_SYNC_ATTENTION" desc="Message indicating password sync needs attention.">
         Please update your sync passphrase.
       </message>
+      <message name="IDS_SYNC_UPGRADE_CLIENT" desc="Message indicating client needs to be upgraded to the latest version.">
+        Sync Error:  <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> is out of date and needs to be updated.
+      </message>
+      <message name="IDS_SYNC_CLEAR_USER_DATA" desc="Message indicating user needs to clear user data and setup sync.">
+        Sync Error: Please reset Sync via the Google Dashboard.
+      </message>
+      <message name="IDS_SYNC_STOP_AND_RESTART_SYNC" desc="Message indicating user needs to stop and restart sync.">
+        Sync Error: Please stop and restart Sync.
+      </message>
+      <message name="IDS_SYNC_ENABLE_SYNC_ON_ACCOUNT" desc="Message indicating user needs to ask the administrator to enable sync.">
+        Sync Error: Please contact administrator to enable sync.
+      </message>
 
       <message name="IDS_SYNC_PLEASE_SIGN_IN" desc="An title for a sign in dialog.">
         Please sign in

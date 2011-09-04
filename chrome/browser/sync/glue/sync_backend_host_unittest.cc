@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
@@ -42,6 +43,8 @@ class MockSyncFrontend : public SyncFrontend {
   MOCK_METHOD1(OnEncryptionComplete, void(const syncable::ModelTypeSet&));
   MOCK_METHOD1(OnMigrationNeededForTypes, void(const syncable::ModelTypeSet&));
   MOCK_METHOD1(OnDataTypesChanged, void(const syncable::ModelTypeSet&));
+  MOCK_METHOD1(OnActionableError,
+      void(const browser_sync::SyncProtocolError& sync_error));
 };
 
 }  // namespace

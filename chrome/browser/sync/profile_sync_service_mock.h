@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -61,6 +62,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                browser_sync::SyncBackendHost::Status());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, string16());
   MOCK_CONST_METHOD0(unrecoverable_error_detected, bool());
+  MOCK_METHOD1(OnActionableError, void(
+      const browser_sync::SyncProtocolError&));
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_

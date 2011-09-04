@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_test_util.h"
+#include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/test/engine/test_user_share.h"
@@ -121,6 +122,22 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
   js_sync_manager_observer_.OnSyncCycleCompleted(&snapshot);
   PumpLoop();
 }
+
+TEST_F(JsSyncManagerObserverTest, OnActionableError) {
+  browser_sync::SyncProtocolError sync_error;
+  sync_error.action = browser_sync::CLEAR_USER_DATA_AND_RESYNC;
+  sync_error.error_type = browser_sync::TRANSIENT_ERROR;
+  DictionaryValue expected_details;
+  expected_details.Set("syncError", sync_error.ToValue());
+
+  EXPECT_CALL(mock_js_event_handler_,
+              HandleJsEvent("onActionableError",
+                           HasDetailsAsDictionary(expected_details)));
+
+  js_sync_manager_observer_.OnActionableError(sync_error);
+  PumpLoop();
+}
+
 
 TEST_F(JsSyncManagerObserverTest, OnAuthError) {
   GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);

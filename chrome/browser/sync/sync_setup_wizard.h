@@ -49,7 +49,9 @@ class SyncSetupWizard {
     // Loading screen with throbber.
     SETTING_UP,
     // A catch-all done case for any setup process.
-    DONE
+    DONE,
+    // Exit the wizard.
+    ABORT,
   };
 
   explicit SyncSetupWizard(ProfileSyncService* service);

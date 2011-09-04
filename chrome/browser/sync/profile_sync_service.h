@@ -209,6 +209,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const syncable::ModelTypeSet& types) OVERRIDE;
   virtual void OnDataTypesChanged(
       const syncable::ModelTypeSet& to_add) OVERRIDE;
+  virtual void OnActionableError(
+      const browser_sync::SyncProtocolError& error) OVERRIDE;
 
   void OnClearServerDataTimeout();
 
@@ -266,7 +268,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // types to sync.
   void ShowConfigure(bool sync_everything);
 
-  void ShowSyncSetup(SyncSetupWizard::State state);
+  void ShowSyncSetup(const std::string& sub_page);
+  void ShowSyncSetupWithWizard(SyncSetupWizard::State state);
 
   // Pretty-printed strings for a given StatusSummary.
   static std::string BuildSyncStatusSummaryText(
@@ -660,7 +663,15 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   scoped_ptr<browser_sync::BackendMigrator> migrator_;
 
+  // This is the last |SyncProtocolError| we received from the server that had
+  // an action set on it.
+  browser_sync::SyncProtocolError last_actionable_error_;
+
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };
+
+bool ShouldShowActionOnUI(
+    const browser_sync::SyncProtocolError& error);
+
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_
