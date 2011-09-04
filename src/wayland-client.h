@@ -47,6 +47,18 @@ void *wl_proxy_get_user_data(struct wl_proxy *proxy);
 void *wl_display_bind(struct wl_display *display,
 		      uint32_t name, const struct wl_interface *interface);
 
+static inline void
+wl_display_set_user_data(struct wl_display *display, void *user_data)
+{
+	wl_proxy_set_user_data((struct wl_proxy *) display, user_data);
+}
+
+static inline void *
+wl_display_get_user_data(struct wl_display *display)
+{
+	return wl_proxy_get_user_data((struct wl_proxy *) display);
+}
+
 struct wl_callback *wl_display_sync(struct wl_display *display);
 
 #include "wayland-client-protocol.h"
