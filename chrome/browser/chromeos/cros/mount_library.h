@@ -81,6 +81,7 @@ class MountLibrary {
          const std::string& device_label,
          const std::string& drive_label,
          const std::string& parent_path,
+         const std::string& system_path_prefix,
          DeviceType device_type,
          uint64 total_size,
          bool is_parent,
@@ -103,6 +104,10 @@ class MountLibrary {
     const std::string& drive_label() const { return drive_label_; }
     // Parents device path. If device has no parent, then empty string.
     const std::string& parent_path() const { return parent_path_; }
+    // Path of the system device this device's block is a part of.
+    const std::string& system_path_prefix() const {
+      return system_path_prefix_;
+    }
     // Device type.
     DeviceType device_type() const { return device_type_; }
     // Total size of the device.
@@ -127,6 +132,7 @@ class MountLibrary {
     std::string device_label_;
     std::string drive_label_;
     std::string parent_path_;
+    std::string system_path_prefix_;
     DeviceType device_type_;
     uint64 total_size_;
     bool is_parent_;

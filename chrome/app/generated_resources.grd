@@ -12548,10 +12548,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Scanning content...
       </message>
       <message name="IDS_DEVICE_UNSUPPORTED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
-       Sorry, <ph name="DEVICE_LABEL">$1<ex>SD card</ex></ph> is not supported on your Chromebook at this time.
+       Sorry, the device <ph name="DEVICE_LABEL">$1<ex>My SD card</ex></ph> is not supported at this time.
       </message>
       <message name="IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
-       Sorry, the external storage device is not supported on your Chromebook at this time.
+       Sorry, your external storage device is not supported at this time.
+      </message>
+      <message name="IDS_DEVICE_UNKNOWN_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+       Sorry, the device <ph name="DEVICE_LABEL">$1<ex>My SD card</ex></ph> could not be recognized.
+      </message>
+      <message name="IDS_DEVICE_UNKNOWN_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+       Sorry, your external storage device could not be recognized.
+      </message>
+      <message name="IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+       Sorry, at least one partition on the device <ph name="DEVICE_LABEL">$1<ex>MySDcard</ex></ph> could not be mounted.
+      </message>
+      <message name="IDS_MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
+       Sorry, at least one partition on your external storage device could not be mounted.
       </message>
 
       <!-- Formatting device notifications -->

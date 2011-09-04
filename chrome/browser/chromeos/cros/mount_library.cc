@@ -63,18 +63,19 @@ MountType MountLibrary::MountTypeFromString(
 }
 
 MountLibrary::Disk::Disk(const std::string& device_path,
-     const std::string& mount_path,
-     const std::string& system_path,
-     const std::string& file_path,
-     const std::string& device_label,
-     const std::string& drive_label,
-     const std::string& parent_path,
-     DeviceType device_type,
-     uint64 total_size,
-     bool is_parent,
-     bool is_read_only,
-     bool has_media,
-     bool on_boot_device)
+    const std::string& mount_path,
+    const std::string& system_path,
+    const std::string& file_path,
+    const std::string& device_label,
+    const std::string& drive_label,
+    const std::string& parent_path,
+    const std::string& system_path_prefix,
+    DeviceType device_type,
+    uint64 total_size,
+    bool is_parent,
+    bool is_read_only,
+    bool has_media,
+    bool on_boot_device)
     : device_path_(device_path),
       mount_path_(mount_path),
       system_path_(system_path),
@@ -82,6 +83,7 @@ MountLibrary::Disk::Disk(const std::string& device_path,
       device_label_(device_label),
       drive_label_(drive_label),
       parent_path_(parent_path),
+      system_path_prefix_(system_path_prefix),
       device_type_(device_type),
       total_size_(total_size),
       is_parent_(is_parent),
@@ -609,6 +611,7 @@ class MountLibraryImpl : public MountLibrary {
                                 devicelabel,
                                 drivelabel,
                                 parentpath,
+                                FindSystemPathPrefix(systempath),
                                 disk->device_type(),
                                 disk->size(),
                                 disk->is_drive(),
@@ -688,10 +691,12 @@ class MountLibraryImpl : public MountLibrary {
       }
       case DEVICE_ADDED: {
         type = MOUNT_DEVICE_ADDED;
+        system_path_prefixes_.insert(device_path);
         break;
       }
       case DEVICE_REMOVED: {
         type = MOUNT_DEVICE_REMOVED;
+        system_path_prefixes_.erase(device_path);
         break;
       }
       case DEVICE_SCANNED: {
@@ -765,6 +770,18 @@ class MountLibraryImpl : public MountLibrary {
     return NULL;
   }
 
+  const std::string& FindSystemPathPrefix(const std::string& system_path) {
+    if (system_path.empty())
+      return EmptyString();
+    for (SystemPathPrefixSet::const_iterator it = system_path_prefixes_.begin();
+         it != system_path_prefixes_.end();
+         ++it) {
+      if (system_path.find(*it, 0) == 0)
+        return *it;
+    }
+    return EmptyString();
+  }
+
   // Mount event change observers.
   ObserverList<Observer> observers_;
 
@@ -778,6 +795,9 @@ class MountLibraryImpl : public MountLibrary {
   MountLibrary::DiskMap disks_;
 
   MountLibrary::MountPointMap mount_points_;
+
+  typedef std::set<std::string> SystemPathPrefixSet;
+  SystemPathPrefixSet system_path_prefixes_;
 
   // Set of devices that are supposed to be formated, but are currently waiting
   // to be unmounted. When device is in this map, the formatting process HAVEN'T

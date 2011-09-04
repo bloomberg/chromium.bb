@@ -411,6 +411,8 @@
         'browser/chromeos/enterprise_extension_observer.h',
         'browser/chromeos/extensions/file_browser_event_router.cc',
         'browser/chromeos/extensions/file_browser_event_router.h',
+        'browser/chromeos/extensions/file_browser_notifications.cc',
+        'browser/chromeos/extensions/file_browser_notifications.h',
         'browser/chromeos/extensions/input_method_event_router.cc',
         'browser/chromeos/extensions/input_method_event_router.h',
         'browser/chromeos/extensions/media_player_event_router.cc',

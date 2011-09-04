@@ -17,21 +17,13 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
 
+class FileBrowserNotifications;
 class Profile;
-
-namespace chromeos {
-class SystemNotification;
-}
 
 // Used to monitor disk mount changes and signal when new mounted usb device is
 // found.
 class ExtensionFileBrowserEventRouter
     : public chromeos::MountLibrary::Observer {
-
-  friend void HideFileBrowserNotificationExternally(
-      const std::string& category, const std::string& system_path,
-      ExtensionFileBrowserEventRouter* that);
-
  public:
   explicit ExtensionFileBrowserEventRouter(Profile* profile);
   virtual ~ExtensionFileBrowserEventRouter();
@@ -56,9 +48,6 @@ class ExtensionFileBrowserEventRouter
       const chromeos::MountLibrary::MountPointInfo& mount_info) OVERRIDE;
 
  private:
-  typedef std::map<std::string, linked_ptr<chromeos::SystemNotification> >
-      NotificationMap;
-  typedef std::map<std::string, std::string> MountPointMap;
   typedef struct FileWatcherExtensions {
     FileWatcherExtensions(const FilePath& path,
                           const std::string& extension_id) {
@@ -100,10 +89,6 @@ class ExtensionFileBrowserEventRouter
   void OnFormattingStarted(const std::string& device_path, bool success);
   void OnFormattingFinished(const std::string& device_path, bool success);
 
-  // Finds first notifications corresponding to the same device. Ensures that
-  // we don't pop up multiple notifications for the same device.
-  NotificationMap::iterator FindNotificationForId(const std::string& path);
-
   // Process file watch notifications.
   void HandleFileWatchNotification(const FilePath& path,
                                    bool got_error);
@@ -127,19 +112,9 @@ class ExtensionFileBrowserEventRouter
                       const std::string& device_path,
                       bool small);
 
-  // Show/hide desktop notifications.
-  void ShowFileBrowserNotification(const std::string& category,
-                                   const std::string& system_path,
-                                   int icon_resource_id,
-                                   const string16& title,
-                                   const string16& message);
-  void HideFileBrowserNotification(const std::string& category,
-                                   const std::string& system_path);
-
   scoped_refptr<FileWatcherDelegate> delegate_;
-  MountPointMap mounted_devices_;
-  NotificationMap notifications_;
   WatcherMap file_watchers_;
+  FileBrowserNotifications* notifications_;
   Profile* profile_;
   base::Lock lock_;
 
