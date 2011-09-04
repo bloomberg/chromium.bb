@@ -237,6 +237,7 @@ function updateControlsWithSelectedPrinterCapabilities() {
         'disableColorOption': true,
         'setColorAsDefault': true,
         'setDuplexAsDefault': false,
+        'printerColorModelForColor': colorSettings.COLOR,
         'disableCopiesOption': true});
   } else {
     // This message will call back to 'updateWithPrinterCapabilities'
@@ -344,7 +345,7 @@ function getSettings() {
        'copies': copiesSettings.numberOfCopies,
        'collate': copiesSettings.isCollated(),
        'landscape': layoutSettings.isLandscape(),
-       'color': colorSettings.isColor(),
+       'color': colorSettings.colorMode,
        'printToPDF': printToPDF,
        'isFirstRequest' : false,
        'headerFooterEnabled': headerFooterSettings.hasHeaderFooter(),
@@ -1024,7 +1025,7 @@ function createPDFPlugin(srcDataIndex) {
     pdfViewer.goToPage('0');
     pdfViewer.resetPrintPreviewUrl(srcURL);
     pdfViewer.reload();
-    pdfViewer.grayscale(!colorSettings.isColor());
+    pdfViewer.grayscale(colorSettings.colorMode == colorSettings.GRAY);
     return;
   }
 

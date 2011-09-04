@@ -14,6 +14,10 @@ cr.define('print_preview', function() {
     this.colorOption_ = $('color-option');
     this.colorRadioButton_ = $('color');
     this.bwRadioButton_ = $('bw');
+    this.GRAY = 1;
+    this.COLOR = 2;
+    this.CMYK = 3;  // cmyk - Cyan, magenta, yellow, black
+    this.printerColorModelForColor_ = this.COLOR;
   }
 
   cr.addSingletonGetter(ColorSettings);
@@ -36,11 +40,13 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Checks whether |this.colorRadioButton_| is checked.
-     * @return {boolean} true if |this.colorRadioButton_| is checked.
+     * Returns the color mode for print preview.
+     * @return {Number} Returns the printer color space
      */
-    isColor: function() {
-      return this.colorRadioButton_.checked;
+    get colorMode() {
+      if (this.bwRadioButton_.checked)
+        return this.GRAY;
+      return this.printerColorModelForColor_;
     },
 
     /**
@@ -71,6 +77,8 @@ cr.define('print_preview', function() {
       this.colorOption_.setAttribute('aria-hidden', disableColorOption);
 
       var setColorAsDefault = e.printerCapabilities.setColorAsDefault;
+      this.printerColorModelForColor_ =
+          e.printerCapabilities.printerColorModelForColor;
       this.colorRadioButton_.checked = setColorAsDefault;
       this.bwRadioButton_.checked = !setColorAsDefault;
       setColor(this.colorRadioButton_.checked);

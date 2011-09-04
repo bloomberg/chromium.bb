@@ -40,7 +40,7 @@ const char kPrintPreviewHTML[] =
 void CreatePrintSettingsDictionary(DictionaryValue* dict) {
   dict->SetBoolean(printing::kSettingLandscape, false);
   dict->SetBoolean(printing::kSettingCollate, false);
-  dict->SetBoolean(printing::kSettingColor, false);
+  dict->SetInteger(printing::kSettingColor, printing::GRAY);
   dict->SetBoolean(printing::kSettingPrintToPDF, true);
   dict->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
   dict->SetInteger(printing::kSettingCopies, 1);

@@ -241,7 +241,7 @@ void MockRenderThread::OnUpdatePrintSettings(
   std::string dummy_string;
   if (!job_settings.GetBoolean(printing::kSettingLandscape, NULL) ||
       !job_settings.GetBoolean(printing::kSettingCollate, NULL) ||
-      !job_settings.GetBoolean(printing::kSettingColor, NULL) ||
+      !job_settings.GetInteger(printing::kSettingColor, NULL) ||
       !job_settings.GetBoolean(printing::kSettingPrintToPDF, NULL) ||
       !job_settings.GetBoolean(printing::kIsFirstRequest, NULL) ||
       !job_settings.GetString(printing::kSettingDeviceName, &dummy_string) ||

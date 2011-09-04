@@ -17,6 +17,7 @@
 
 static const CFStringRef kColorModel = CFSTR("ColorModel");
 static const CFStringRef kGrayColor = CFSTR("Gray");
+static const CFStringRef kCMYK = CFSTR("CMYK");
 
 namespace printing {
 
@@ -107,7 +108,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
 
   bool collate;
-  bool color;
+  int color;
   bool landscape;
   bool print_to_pdf;
   int copies;
@@ -116,7 +117,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
 
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetBoolean(kSettingCollate, &collate) ||
-      !job_settings.GetBoolean(kSettingColor, &color) ||
+      !job_settings.GetInteger(kSettingColor, &color) ||
       !job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
@@ -141,7 +142,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
       return OnError();
     }
 
-    if (!SetOutputIsColor(color))
+    if (!SetOutputColor(color))
       return OnError();
   }
 
@@ -245,10 +246,14 @@ bool PrintingContextMac::SetDuplexModeInPrintSettings(DuplexMode mode) {
   return PMSetDuplex(pmPrintSettings, duplexSetting) == noErr;
 }
 
-bool PrintingContextMac::SetOutputIsColor(bool color) {
+bool PrintingContextMac::SetOutputColor(int color_mode) {
   PMPrintSettings pmPrintSettings =
       static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
-  CFStringRef output_color = color ? NULL : kGrayColor;
+  CFStringRef output_color = NULL;
+  if (color_mode == printing::GRAY)
+    output_color = kGrayColor;
+  else if (color_mode == printing::CMYK)
+    output_color = kCMYK;
 
   return PMPrintSettingsSetValue(pmPrintSettings,
                                  kColorModel,

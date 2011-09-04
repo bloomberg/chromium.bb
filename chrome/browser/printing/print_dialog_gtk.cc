@@ -29,6 +29,7 @@ using printing::PrintSettings;
 namespace {
 
 // CUPS ColorModel attribute and values.
+const char kCMYK[] = "CMYK";
 const char kCUPSColorModel[] = "cups-ColorModel";
 const char kColor[] = "Color";
 const char kGrayscale[] = "Grayscale";
@@ -157,7 +158,7 @@ void PrintDialogGtk::UseDefaultSettings() {
 bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
                                     const printing::PageRanges& ranges) {
   bool collate;
-  bool color;
+  int color;
   bool landscape;
   bool print_to_pdf;
   int copies;
@@ -166,7 +167,7 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
 
   if (!settings.GetBoolean(printing::kSettingLandscape, &landscape) ||
       !settings.GetBoolean(printing::kSettingCollate, &collate) ||
-      !settings.GetBoolean(printing::kSettingColor, &color) ||
+      !settings.GetInteger(printing::kSettingColor, &color) ||
       !settings.GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf) ||
       !settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode) ||
       !settings.GetInteger(printing::kSettingCopies, &copies) ||
@@ -184,8 +185,21 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& settings,
     }
     gtk_print_settings_set_n_copies(gtk_settings_, copies);
     gtk_print_settings_set_collate(gtk_settings_, collate);
-    gtk_print_settings_set(gtk_settings_, kCUPSColorModel,
-                           color ? kColor : kGrayscale);
+
+    const char* color_mode;
+    switch (color) {
+      case printing::COLOR:
+        color_mode = kColor;
+        break;
+      case printing::CMYK:
+        color_mode = kCMYK;
+        break;
+      default:
+        color_mode = kGrayscale;
+        break;
+    }
+    gtk_print_settings_set(gtk_settings_, kCUPSColorModel, color_mode);
+
     const char* cups_duplex_mode;
     switch (duplex_mode) {
       case printing::LONG_EDGE:

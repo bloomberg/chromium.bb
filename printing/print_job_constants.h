@@ -67,6 +67,13 @@ enum VerticalHeaderFooterPosition {
   BOTTOM
 };
 
+// Print job color mode values.
+enum ColorMode {
+  GRAY = 1,
+  COLOR,
+  CMYK,
+};
+
 }  // namespace printing
 
 #endif  // PRINTING_PRINT_JOB_CONSTANTS_H_

@@ -308,7 +308,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   DCHECK(!in_print_job_);
 
   bool collate;
-  bool color;
+  int color;
   bool landscape;
   bool print_to_pdf;
   int copies;
@@ -317,7 +317,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
 
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetBoolean(kSettingCollate, &collate) ||
-      !job_settings.GetBoolean(kSettingColor, &color) ||
+      !job_settings.GetInteger(kSettingColor, &color) ||
       !job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf) ||
       !job_settings.GetInteger(kSettingDuplexMode, &duplex_mode) ||
       !job_settings.GetInteger(kSettingCopies, &copies) ||
@@ -365,7 +365,11 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     return OnError();
   }
 
-  dev_mode->dmColor = color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+  if (color == printing::GRAY)
+    dev_mode->dmColor = DMCOLOR_MONOCHROME;
+  else
+    dev_mode->dmColor = DMCOLOR_COLOR;
+
   dev_mode->dmCopies = std::max(copies, 1);
   if (dev_mode->dmCopies > 1)  // do not change collate unless multiple copies
     dev_mode->dmCollate = collate ? DMCOLLATE_TRUE : DMCOLLATE_FALSE;

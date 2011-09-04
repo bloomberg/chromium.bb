@@ -58,9 +58,13 @@ namespace {
 const char kDisableColorOption[] = "disableColorOption";
 const char kSetColorAsDefault[] = "setColorAsDefault";
 const char kSetDuplexAsDefault[] = "setDuplexAsDefault";
+const char kPrinterColorModelForColor[] = "printerColorModelForColor";
 
 #if defined(USE_CUPS)
 const char kColorDevice[] = "ColorDevice";
+const char kColorModel[] = "ColorModel";
+const char kColorModelForColor[] = "Color";
+const char kCMYK[] = "CMYK";
 const char kDuplex[] = "Duplex";
 const char kDuplexNone[] = "None";
 #elif defined(OS_WIN)
@@ -163,9 +167,11 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
   if (settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode))
     ReportPrintSettingHistogram(duplex_mode ? DUPLEX : SIMPLEX);
 
-  bool is_color;
-  if (settings.GetBoolean(printing::kSettingColor, &is_color))
-    ReportPrintSettingHistogram(is_color ? COLOR : BLACK_AND_WHITE);
+  int color_mode;
+  if (settings.GetInteger(printing::kSettingColor, &color_mode)) {
+    ReportPrintSettingHistogram(color_mode == printing::GRAY ? BLACK_AND_WHITE :
+                                                               COLOR);
+  }
 }
 
 printing::BackgroundPrintingManager* GetBackgroundPrintingManager() {
@@ -274,6 +280,7 @@ class PrintSystemTaskProxy
     printing::PrinterCapsAndDefaults printer_info;
     bool supports_color = true;
     bool set_duplex_as_default = false;
+    int printer_color_space = printing::GRAY;
     if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
                                                    &printer_info)) {
       return;
@@ -309,6 +316,17 @@ class PrintSystemTaskProxy
       if (ch != NULL && strcmp(ch->choice, kDuplexNone) != 0)
         set_duplex_as_default = true;
 
+      if (supports_color) {
+        // Identify the color space (COLOR/CMYK) for this printer.
+        ppd_option_t* color_model = ppdFindOption(ppd, kColorModel);
+        if (color_model != NULL) {
+          if (ppdFindChoice(color_model, kColorModelForColor))
+            printer_color_space = printing::COLOR;
+          else if (ppdFindChoice(color_model, kCMYK))
+            printer_color_space = printing::CMYK;
+        }
+      }
+
       ppdClose(ppd);
     }
     file_util::Delete(ppd_file_path, false);
@@ -319,6 +337,9 @@ class PrintSystemTaskProxy
     // http://msdn.microsoft.com/en-us/windows/hardware/gg463431.
     supports_color = (printer_info.printer_capabilities.find(kPskColor) !=
                       std::string::npos);
+    if (supports_color)
+      printer_color_space = printing::COLOR;
+
     set_duplex_as_default =
         (printer_info.printer_defaults.find(kPskDuplexFeature) !=
             std::string::npos) &&
@@ -337,6 +358,7 @@ class PrintSystemTaskProxy
                                 PrintPreviewHandler::last_used_color_setting_);
     }
     settings_info.SetBoolean(kSetDuplexAsDefault, set_duplex_as_default);
+    settings_info.SetInteger(kPrinterColorModelForColor, printer_color_space);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
@@ -568,7 +590,10 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     return;
 
   // Storing last used color setting.
-  settings->GetBoolean(printing::kSettingColor, &last_used_color_setting_);
+  int color_mode;
+  if (!settings->GetInteger(printing::kSettingColor, &color_mode))
+    color_mode = printing::GRAY;
+  last_used_color_setting_ = (color_mode != printing::GRAY);
 
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);

@@ -75,7 +75,7 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
 
   // Sets output color mode in PMPrintSettings.
   // Returns true if color mode is set.
-  bool SetOutputIsColor(bool color);
+  bool SetOutputColor(int color_mode);
 
   // The native print info object.
   scoped_nsobject<NSPrintInfo> print_info_;
