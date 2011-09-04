@@ -61,6 +61,8 @@
 <include src="content_settings_ui.js"></include>
 <include src="cookies_list.js"></include>
 <include src="cookies_view.js"></include>
+<include src="extension_list.js"></include>
+<include src="extension_settings.js"></include>
 <include src="font_settings.js"></include>
 <if expr="pp_ifdef('enable_register_protocol_handler')">
   <include src="handler_options.js"></script>
@@ -76,6 +78,7 @@
 <include src="language_list.js"></include>
 <include src="language_options.js"></include>
 <include src="manage_profile_overlay.js"></include>
+<include src="pack_extension_overlay.js"></include>
 <include src="password_manager.js"></include>
 <include src="password_manager_list.js"></include>
 <include src="personal_options.js"></include>

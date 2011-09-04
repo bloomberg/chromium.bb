@@ -1,0 +1,261 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+/* TODO(finnur): Move these into a central location, either options_page.css or
+                 somewhere in the shared directory */
+.hbox {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+.vbox {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.stretch {
+  padding-right: 10px;
+  -webkit-box-flex: 1;
+}
+
+.extension-list-item {
+  padding-bottom: 7px;
+  padding-top: 7px;
+  width: 100%;
+  -webkit-user-select: auto;
+}
+
+/* Get rid of display: table, which causes width issues. */
+.displaytable {
+  display: block;
+}  
+/* Get rid of display: table row, which causes width issues. */
+.displaytable > section {
+  display: block;
+}
+/* Get rid of display: table cell, which causes width issues. */
+.displaytable > section > * {
+  display: block;
+}
+
+.extension-settings-content {
+  border-bottom : 0px solid #eee;
+  margin-top: 3px;
+}
+
+.big-list {
+  overflow-y: hidden;
+}
+
+/* Get rid of the light-blue background on list item hover. */
+.big-list:not([disabled]) > :hover {
+  background-color: white;
+  border-color: #CDCDCD;
+}
+
+.butter-bar {
+  background: #FFF299;
+  padding: 2px 5px;
+  border-radius: 3px;
+  white-space: normal;
+}
+
+.search-suppress {
+  display: none;
+  height: 0;
+}
+
+.extension-list-item-collaped {
+  height: auto;
+  margin-bottom: 16px;
+  -webkit-transition: padding 300ms, overflow 300ms, opacity 700ms;
+}
+
+.extension-list-item-expanded {
+  height: auto;
+  margin-bottom: 16px;
+  overflow: visible;
+  -webkit-transition: padding 300ms, overflow 300ms, opacity 700ms;
+}
+
+.extension-settings {
+  overflow-x: hidden;
+}
+
+.extension-icon {
+  height: 48px;
+  padding-left: 15px;
+  padding-right: 15px;
+  vertical-align: text-top;
+  width: 48px;
+  -webkit-user-select: none;
+}
+
+.extension-title {
+  font-size: 16px;
+  font-weight: 500;
+  padding-right: 20px;
+}
+
+.extension-version {
+  font-size: 13px;
+  font-weight: 400;
+}
+  
+.extension-description {
+  font-size: 13px;
+  white-space: normal;
+  padding-right: 5px;
+}
+
+.extension-checkbox-span {
+  margin-left: 7px;
+}
+
+.extension-checkbox-label {
+  margin-right: 10px;
+}
+
+.extension-delete {
+  margin-left: 5px;
+}
+
+.extension-details-hidden {
+  opacity: 0;
+  max-height: 0;
+  -webkit-transition: max-height 400ms, opacity 200ms;
+}
+
+.extension-details-visible {
+  opacity: 1;
+  max-height: 100px;
+  -webkit-transition: max-height 200ms, opacity 300ms;
+}
+
+.extension-links-view {
+  padding-left: 15px;
+}
+
+.extension-links-trailing {
+  padding-right: 7px;
+}
+
+.extension-zippy-container {
+  cursor: pointer;
+  width: 20px;
+  -webkit-user-select: none;
+}
+
+.informative-text {
+  color: gray;
+}
+
+.extension-zippy-default {
+  background-image: url('zippy.png');
+  background-repeat: no-repeat;
+  background-position: center top;
+  position: absolute;
+  left: 12px;
+  top: 25px;
+  width: 6px;
+  height: 16px;
+  opacity: .25;
+}
+
+.extension-zippy-collapsed {
+  -webkit-transition: -webkit-transform .1s;
+  -webkit-transform: rotate(0deg);
+}
+
+.extension-zippy-collapsed:hover {
+  -webkit-transition: -webkit-transform .1s, opacity .1s;
+  opacity: .5;
+  -webkit-transform: rotate(5deg);
+}
+
+.extension-zippy-expanded {
+  -webkit-transition: -webkit-transform .1s;
+  -webkit-transform: rotate(90deg);
+}
+
+.extension-zippy-expanded:hover {
+  -webkit-transition: -webkit-transform .1s;
+  -webkit-transform: rotate(85deg);
+}
+
+.extension-enabling {
+  position: relative;
+  top: 3px;
+}
+
+.extension-enabling-label {
+  padding-left: 3px;
+  padding-right: 9px;
+  color: black;
+}
+
+.extension-enabling-label-bold {
+  font-weight: bold;
+}
+
+.extension-inspect-table {
+  padding: 0;
+  border-spacing: 0;
+}
+
+.extension-inspect-left-column {
+  vertical-align: text-top;
+}
+
+/* Dev */
+
+.dev-open {
+  border-bottom: 1px solid rgb(205, 205, 205);
+  height: 32px;
+  padding-bottom: 7px;
+  padding-left: 4px;
+  padding-right: 3px;
+  padding-top: 4px;
+  -webkit-transition: padding 300ms, height 300ms, opacity 700ms;
+}
+.dev-closed {
+  height: 0;
+  opacity: 0;
+  padding-left: 4px;
+  padding-right: 3px;
+  -webkit-transition: padding 300ms, height 700ms, opacity 200ms;
+}
+
+.dev-button-visible {
+  display: inherit;
+  opacity: 1;
+  -webkit-transition: opacity 200ms;
+}
+
+.dev-button-hidden {
+  display: none;
+}
+
+#suggest-gallery {
+  padding-left: 10px;
+}
+
+#dev-toggle {
+  display: block;
+  float: right;
+  margin-top: -28px;
+  margin-right: 8px;
+}
+
+#get-more-extensions-container {
+  display: -webkit-box;
+}
+
+#get-more-extensions {
+  padding-left: 10px;
+  padding-top: 5px;
+  font-size: 15px;
+}
