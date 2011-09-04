@@ -33,7 +33,25 @@ static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 
 std::string GetChromeVersionString() {
   chrome::VersionInfo version_info;
-  return version_info.is_valid() ? version_info.Version() : "0";
+  std::string rt =  version_info.is_valid() ? version_info.Version() : "0";
+  switch (version_info.GetChannel()) {
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      rt += " stable";
+      break;
+    case chrome::VersionInfo::CHANNEL_BETA:
+      rt += " beta";
+      break;
+    case chrome::VersionInfo::CHANNEL_DEV:
+      rt += " dev";
+      break;
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      rt += " canary";
+      break;
+    default:
+      rt += " unknown";
+      break;
+  }
+  return rt;
 }
 
 }  // namespace anonymous

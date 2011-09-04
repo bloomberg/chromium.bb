@@ -11,7 +11,8 @@
 //   ]
 // }
 //
-// Each entry contains the following fields:
+// Each entry contains the following fields (fields are optional unless
+// specifically described as mandatory below):
 // 1. "id" is an integer.  0 is reserved.  This field is mandatory.
 // 2. "os" contains "type" and an optional "version". "type" could be "macosx",
 //    "linux", "win", "chromeos", or "any".  "any" is the same as not specifying
@@ -23,18 +24,22 @@
 // 6. "driver_version" is a VERSION structure (defined below).
 // 7. "driver_date" is a VERSION structure (defined below).
 //    The version is interpreted as "year.month.day".
-// 8. "gl_renderer" is a STRING structure (defined below).
-// 9: "Exceptions" is a list of entries.
-// 10. "blacklist" is a list of gpu feature strings, valid values include
+// 8. "gl_vendor" is a STRING structure (defined below).
+// 9. "gl_renderer" is a STRING structure (defined below).
+// 10: "exceptions" is a list of entries.
+// 11. "blacklist" is a list of gpu feature strings, valid values include
 //     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
 //     "multisampling", and "all".
 //     This field is mandatory.
-// 11. "description" has the description of the entry.
-// 12. "webkit_bugs" is an array of associated webkit bug numbers.
-// 13. "cr_bugs" is an array of associated webkit bug numbers.
-// 14. "browser_version" is a VERSION structure (defined below).  If this
+// 12. "description" has the description of the entry.
+// 13. "webkit_bugs" is an array of associated webkit bug numbers.
+// 14. "cr_bugs" is an array of associated webkit bug numbers.
+// 15. "browser_version" is a VERSION structure (defined below).  If this
 //     condition is not satisfied, the entry will be ignored.  If it is not
 //     present, then the entry applies to all versions of the browser.
+// 16. "browser_channels" is a list of browser channel strings, valid values
+//     include "stable", "beta", "dev", and "canary". If the browser_channels
+//     list is not present, the entry matches all channels.
 //
 // VERSION includes "op" "number", and "number2".  "op" can be any of the
 // following values: "=", "<", "<=", ">", ">=", "any", "between".  "number2" is
