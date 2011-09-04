@@ -138,16 +138,6 @@ TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask1) {
 }
 
 TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask2) {
-  // Update posts a BuildBlacklistTask to the FILE thread.
-  blacklist_manager_->UpdateNotMocked();
-  // Shutdown comes before the task is executed.
-  blacklist_manager_->ShutdownOnUIThread();
-  blacklist_manager_.reset();
-  // Run the task after shutdown and deletion.
-  loop_.RunAllPending();
-}
-
-TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask3) {
   EXPECT_CALL(*blacklist_manager_, SetBlacklist(_)).Times(0);
   // Update posts a BuildBlacklistTask to the FILE thread.
   blacklist_manager_->UpdateNotMocked();
@@ -160,7 +150,7 @@ TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask3) {
   loop_.RunAllPending();
 }
 
-TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask4) {
+TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask3) {
   EXPECT_CALL(*blacklist_manager_, SetBlacklist(_)).Times(0);
 
   // This posts a task to the FILE thread.
@@ -173,7 +163,7 @@ TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask4) {
   Mock::VerifyAndClearExpectations(blacklist_manager_.get());
 }
 
-TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask5) {
+TEST_F(URLBlacklistManagerTest, ShutdownWithPendingTask4) {
   EXPECT_CALL(*blacklist_manager_, SetBlacklist(_)).Times(0);
 
   // This posts a task to the FILE thread.
