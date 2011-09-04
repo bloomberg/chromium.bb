@@ -68,7 +68,7 @@ void NativeWidgetAura::UpdateFrameAfterFrameChange() {
 }
 
 bool NativeWidgetAura::ShouldUseNativeFrame() const {
-  NOTIMPLEMENTED();
+  // There is only one frame type for aura.
   return false;
 }
 

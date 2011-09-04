@@ -14,11 +14,12 @@
 #include "views/widget/widget_delegate.h"
 #include "views/view.h"
 
-typedef union _GdkEvent GdkEvent;
+#if defined(USE_X11)
 typedef union _XEvent XEvent;
 namespace ui {
 union WaylandEvent;
 }
+#endif
 
 namespace views {
 
@@ -44,10 +45,13 @@ class TooltipManagerViews : public TooltipManager,
 #if defined(USE_WAYLAND)
   virtual base::MessagePumpObserver::EventStatus WillProcessEvent(
       ui::WaylandEvent* event) OVERRIDE;
-#else
+#elif defined(USE_X11)
   // MessageLoopForUI::Observer
   virtual base::MessagePumpObserver::EventStatus WillProcessXEvent(
       XEvent* xevent) OVERRIDE;
+#elif defined(OS_WIN)
+  virtual void WillProcessMessage(const MSG& msg) OVERRIDE;
+  virtual void DidProcessMessage(const MSG& msg) OVERRIDE;
 #endif
 
  private:
@@ -69,6 +73,9 @@ class TooltipManagerViews : public TooltipManager,
 
   // Creates a widget of type TYPE_TOOLTIP
   Widget* CreateTooltip();
+
+  // Invoked when the mose moves.
+  void OnMouseMoved(int x, int y);
 
   scoped_ptr<Widget> tooltip_widget_;
   internal::RootView* root_view_;
