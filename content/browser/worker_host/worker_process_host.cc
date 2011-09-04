@@ -253,12 +253,13 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       NewCallbackWithReturnValue(
           WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   AddFilter(worker_message_filter_);
-  AddFilter(new AppCacheDispatcherHost(resource_context_, id()));
+  AddFilter(new AppCacheDispatcherHost(
+      resource_context_->appcache_service(), id()));
   AddFilter(new FileSystemDispatcherHost(
       request_context, resource_context_->file_system_context()));
   AddFilter(new FileUtilitiesMessageFilter(id()));
-  AddFilter(
-      new BlobMessageFilter(id(), resource_context_->blob_storage_context()));
+  AddFilter(new BlobMessageFilter(
+      id(), resource_context_->blob_storage_context()));
   AddFilter(new MimeRegistryMessageFilter());
   AddFilter(new DatabaseMessageFilter(
       resource_context_->database_tracker()));

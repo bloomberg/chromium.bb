@@ -21,10 +21,6 @@ namespace base {
 class Time;
 }
 
-namespace content {
-class ResourceContext;
-}
-
 namespace fileapi {
 class FileSystemContext;
 class FileSystemOperation;
@@ -32,16 +28,19 @@ class FileSystemOperation;
 
 namespace net {
 class URLRequestContext;
+class URLRequestContextGetter;
 }  // namespace net
 
 class FileSystemDispatcherHost : public BrowserMessageFilter {
  public:
-  // Used by the renderer.
-  explicit FileSystemDispatcherHost(
-      const content::ResourceContext* resource_context);
-  // Used by the worker, since it has the context handy already.
-  FileSystemDispatcherHost(net::URLRequestContext* request_context,
-                           fileapi::FileSystemContext* file_system_context);
+  // Used by the renderer process host on the UI thread.
+  FileSystemDispatcherHost(
+      net::URLRequestContextGetter* request_context_getter,
+      fileapi::FileSystemContext* file_system_context);
+  // Used by the worker process host on the IO thread.
+  FileSystemDispatcherHost(
+      net::URLRequestContext* request_context,
+      fileapi::FileSystemContext* file_system_context);
   virtual ~FileSystemDispatcherHost();
 
   // BrowserMessageFilter implementation.
@@ -99,9 +98,9 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   typedef IDMap<fileapi::FileSystemOperation> OperationsMap;
   OperationsMap operations_;
 
-  // This holds the ResourceContext until Init() can be called from the
+  // The getter holds the context until Init() can be called from the
   // IO thread, which will extract the net::URLRequestContext from it.
-  const content::ResourceContext* resource_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   net::URLRequestContext* request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);

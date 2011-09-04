@@ -22,10 +22,6 @@ bool TestBrowserContext::IsOffTheRecord() {
   return false;
 }
 
-webkit_database::DatabaseTracker* TestBrowserContext::GetDatabaseTracker() {
-  return NULL;
-}
-
 SSLHostState* TestBrowserContext::GetSSLHostState() {
   return NULL;
 }
@@ -36,10 +32,6 @@ DownloadManager* TestBrowserContext::GetDownloadManager() {
 
 bool TestBrowserContext::HasCreatedDownloadManager() const {
   return false;
-}
-
-quota::QuotaManager* TestBrowserContext::GetQuotaManager() {
-  return NULL;
 }
 
 net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
@@ -73,6 +65,10 @@ bool TestBrowserContext::DidLastSessionExitCleanly() {
   return true;
 }
 
+quota::QuotaManager* TestBrowserContext::GetQuotaManager() {
+  return NULL;
+}
+
 WebKitContext* TestBrowserContext::GetWebKitContext() {
   if (webkit_context_ == NULL) {
     webkit_context_ = new WebKitContext(
@@ -82,6 +78,18 @@ WebKitContext* TestBrowserContext::GetWebKitContext() {
   return webkit_context_;
 }
 
+webkit_database::DatabaseTracker* TestBrowserContext::GetDatabaseTracker() {
+  return NULL;
+}
+
 ChromeBlobStorageContext* TestBrowserContext::GetBlobStorageContext() {
+  return NULL;
+}
+
+ChromeAppCacheService* TestBrowserContext::GetAppCacheService() {
+  return NULL;
+}
+
+fileapi::FileSystemContext* TestBrowserContext::GetFileSystemContext() {
   return NULL;
 }

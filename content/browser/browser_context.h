@@ -8,6 +8,10 @@
 
 #include "base/hash_tables.h"
 
+namespace fileapi {
+class FileSystemContext;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -20,6 +24,7 @@ namespace webkit_database {
 class DatabaseTracker;
 }
 
+class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class DownloadManager;
 class FilePath;
@@ -33,7 +38,7 @@ namespace content {
 class ResourceContext;
 
 // This class holds the context needed for a browsing session.
-
+// It lives on the UI thread.
 class BrowserContext {
  public:
   // Returns the path of the directory where this context's data is stored.
@@ -43,9 +48,6 @@ class BrowserContext {
   // This doesn't belong here; http://crbug.com/89628
   virtual bool IsOffTheRecord() = 0;
 
-  // Returns a pointer to the DatabaseTracker instance for this context.
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
-
   // Retrieves a pointer to the SSLHostState associated with this context.
   // The SSLHostState is lazily created the first time that this method is
   // called.
@@ -54,8 +56,6 @@ class BrowserContext {
   // Returns the DownloadManager associated with this context.
   virtual DownloadManager* GetDownloadManager() = 0;
   virtual bool HasCreatedDownloadManager() const = 0;
-
-  virtual quota::QuotaManager* GetQuotaManager() = 0;
 
   // Returns the request context information associated with this context.  Call
   // this only on the UI thread, since it can send notifications that should
@@ -88,12 +88,14 @@ class BrowserContext {
   // This doesn't belong here; http://crbug.com/90737
   virtual bool DidLastSessionExitCleanly() = 0;
 
-  // Returns the WebKitContext assigned to this context.
+  // The following getters return references to various storage related
+  // contexts associated with this browser context.
+  virtual quota::QuotaManager* GetQuotaManager() = 0;
   virtual WebKitContext* GetWebKitContext() = 0;
-
-  // Returns a pointer to the ChromeBlobStorageContext instance for this
-  // context.
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual ChromeBlobStorageContext* GetBlobStorageContext() = 0;
+  virtual ChromeAppCacheService* GetAppCacheService() = 0;
+  virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
 };
 
 }  // namespace content

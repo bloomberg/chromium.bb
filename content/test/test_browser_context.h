@@ -19,11 +19,9 @@ class TestBrowserContext : public content::BrowserContext {
 
   virtual FilePath GetPath() OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual SSLHostState* GetSSLHostState() OVERRIDE;
   virtual DownloadManager* GetDownloadManager() OVERRIDE;
   virtual bool HasCreatedDownloadManager() const OVERRIDE;
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
       int renderer_child_id) OVERRIDE;
@@ -33,8 +31,12 @@ class TestBrowserContext : public content::BrowserContext {
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext()
       OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
+  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual WebKitContext* GetWebKitContext() OVERRIDE;
+  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual ChromeBlobStorageContext* GetBlobStorageContext() OVERRIDE;
+  virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
+  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
 
  private:
   // WebKitContext, lazily initialized by GetWebKitContext().

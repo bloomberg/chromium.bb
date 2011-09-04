@@ -368,7 +368,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new AudioRendererHost(&browser_context()->GetResourceContext()));
   channel_->AddFilter(new VideoCaptureHost());
   channel_->AddFilter(
-      new AppCacheDispatcherHost(&browser_context()->GetResourceContext(),
+      new AppCacheDispatcherHost(browser_context()->GetAppCacheService(),
                                  id()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(
@@ -385,7 +385,8 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new PepperMessageFilter(&browser_context()->GetResourceContext()));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
   channel_->AddFilter(
-      new FileSystemDispatcherHost(&browser_context()->GetResourceContext()));
+      new FileSystemDispatcherHost(browser_context()->GetRequestContext(),
+                                   browser_context()->GetFileSystemContext()));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(
       new BlobMessageFilter(id(), browser_context()->GetBlobStorageContext()));

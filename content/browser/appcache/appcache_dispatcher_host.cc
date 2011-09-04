@@ -6,28 +6,21 @@
 
 #include "base/callback.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/resource_context.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/appcache_messages.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
-    const content::ResourceContext* resource_context,
+    ChromeAppCacheService* appcache_service,
     int process_id)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(frontend_proxy_(this)),
-      resource_context_(resource_context),
+    : appcache_service_(appcache_service),
+      ALLOW_THIS_IN_INITIALIZER_LIST(frontend_proxy_(this)),
       process_id_(process_id) {
-  DCHECK(resource_context_);
 }
 
 AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
 
 void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
-
-  // Get the AppCacheService (it can only be accessed from IO thread).
-  appcache_service_ = resource_context_->appcache_service();
-  resource_context_ = NULL;
-
   if (appcache_service_.get()) {
     backend_impl_.Initialize(
         appcache_service_.get(), &frontend_proxy_, process_id_);
