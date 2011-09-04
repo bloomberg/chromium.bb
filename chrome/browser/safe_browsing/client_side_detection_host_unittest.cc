@@ -106,6 +106,10 @@ class MockSafeBrowsingService : public SafeBrowsingService {
     client->OnBlockingPageComplete(false);
   }
 
+  bool CanReportStats() const {
+    return true;  // tests for UMA users.
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingService);
 };

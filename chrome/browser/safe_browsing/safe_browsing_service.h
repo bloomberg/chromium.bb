@@ -171,7 +171,7 @@ class SafeBrowsingService
 
   // Called on UI thread to decide if safe browsing related stats
   // could be reported.
-  bool CanReportStats() const;
+  virtual bool CanReportStats() const;
 
   // Called on UI thread to decide if the download file's sha256 hash
   // should be calculated for safebrowsing.

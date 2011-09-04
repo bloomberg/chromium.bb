@@ -83,11 +83,15 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       return;
     }
 
-    // Don't run the phishing classifier if the URL came from a private
-    // network, since we don't want to ping back in this case.  We also need
-    // to check whether the connection was proxied -- if so, we won't have the
-    // correct remote IP address, and will skip phishing classification.
-    if (params_.was_fetched_via_proxy) {
+    // For UMA users we don't run the phishing classifier if the
+    // connection was proxied because we won't have the correct remote
+    // IP address (we don't want UMA users to classify URLs from a private
+    // IP).  For non-UMA users the verdict request will be sanitized
+    // which means it's OK to classify URLs behind proxies.
+    // TODO(noelutz): classify these URLs for UMA users but sanitize
+    // the verdict request.
+    if (params_.was_fetched_via_proxy &&
+        (!sb_service_ || sb_service_->CanReportStats())) {
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
               << " because it was fetched via a proxy.";
       UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PreClassificationCheckFail",
@@ -95,6 +99,11 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
                                 NO_CLASSIFY_MAX);
       return;
     }
+
+    // We could classify URLs hosted on a private IP for non-UMA users
+    // since we're sanitizing the request but the probability that
+    // something is phishing on a private network is low enough that
+    // we don't bother.
     if (csd_service_->IsPrivateIPAddress(params_.socket_address.host())) {
       VLOG(1) << "Skipping phishing classification for URL: " << params_.url
               << " because of hosting on private IP: "
