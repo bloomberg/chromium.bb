@@ -34,8 +34,6 @@ void DrawTaskBarDecoration(const Browser* browser, const SkBitmap* bitmap) {
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
-  // During destruction of the browser frame, we might not have a window
-  // so the taksbar button will be removed by windows anyway.
   BrowserWindow* bw = browser->window();
   if (!bw)
     return;
@@ -75,6 +73,10 @@ AvatarMenuButton::AvatarMenuButton(Browser* browser, bool has_menu)
 }
 
 AvatarMenuButton::~AvatarMenuButton() {
+  // During destruction of the browser frame, we might not have a window
+  // so the taskbar button will be removed by windows anyway.
+  if (browser_->IsAttemptingToCloseBrowser())
+    return;
   DrawTaskBarDecoration(browser_, NULL);
 }
 
