@@ -429,7 +429,8 @@ int64 FileStream::Truncate(int64 bytes) {
 
   // And truncate the file.
   int result = ftruncate(file_, bytes);
-  return result == 0 ? seek_position : MapSystemError(errno);
+  return result == 0 ? seek_position :
+                       static_cast<int64>(MapSystemError(errno));
 }
 
 int FileStream::Flush() {
