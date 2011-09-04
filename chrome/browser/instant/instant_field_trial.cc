@@ -31,10 +31,10 @@ void InstantFieldTrial::Activate() {
     return;
   trial->UseOneTimeRandomization();
 
-  g_control_group_id_1 = trial->AppendGroup("InstantControl1", 495);
-  g_control_group_id_2 = trial->AppendGroup("InstantControl2", 495);
-  g_experiment_group_id_1 = trial->AppendGroup("InstantExperiment1", 5);
-  g_experiment_group_id_2 = trial->AppendGroup("InstantExperiment2", 5);
+  g_control_group_id_1 = trial->AppendGroup("InstantControl1", 450);  // 45%
+  g_control_group_id_2 = trial->AppendGroup("InstantControl2", 450);  // 45%
+  g_experiment_group_id_1 = trial->AppendGroup("InstantExperiment1", 50);  // 5%
+  g_experiment_group_id_2 = trial->AppendGroup("InstantExperiment2", 50);  // 5%
 }
 
 // static
