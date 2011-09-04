@@ -7,7 +7,7 @@ vars = {
   "webkit_revision": "94469",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "6627",
+  "nacl_revision": "6631",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   # TODO(brettw) We should use the "From" syntax to avoid hardcoding the
