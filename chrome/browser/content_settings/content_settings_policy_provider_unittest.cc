@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -128,18 +129,6 @@ TEST_F(PolicyDefaultProviderTest, ObserveManagedSettingsChange) {
   provider.ShutdownOnUIThread();
 }
 
-TEST_F(PolicyDefaultProviderTest, AutoSelectCertificate) {
-  TestingProfile profile;
-  TestingPrefService* prefs = profile.GetTestingPrefService();
-  PolicyDefaultProvider provider(prefs);
-
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            provider.ProvideDefaultSetting(
-                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE));
-
-  provider.ShutdownOnUIThread();
-}
-
 class PolicyProviderTest : public testing::Test {
  public:
   PolicyProviderTest()
@@ -255,8 +244,8 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   PolicyProvider provider(prefs, NULL);
   GURL google_url("https://mail.google.com");
   // Tests the default setting for auto selecting certificates
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            provider.GetContentSetting(
+  EXPECT_EQ(NULL,
+            provider.GetContentSettingValue(
                 google_url,
                 google_url,
                 CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
@@ -264,24 +253,33 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
 
   // Set the content settings pattern list for origins to auto select
   // certificates.
+  std::string pattern_str("\"pattern\":\"[*.]google.com\"");
+  std::string filter_str("\"filter\":{\"ISSUER\":{\"CN\":\"issuer name\"}}");
   ListValue* value = new ListValue();
-  value->Append(Value::CreateStringValue("[*.]google.com"));
+  value->Append(Value::CreateStringValue(
+      "{" + pattern_str + "," + filter_str + "}"));
   prefs->SetManagedPref(prefs::kManagedAutoSelectCertificateForUrls,
                         value);
   GURL youtube_url("https://www.youtube.com");
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            provider.GetContentSetting(
+  EXPECT_EQ(NULL,
+            provider.GetContentSettingValue(
                 youtube_url,
                 youtube_url,
                 CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
                 std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            provider.GetContentSetting(
-                google_url,
-                google_url,
-                CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-                std::string()));
+  scoped_ptr<Value> cert_filter(provider.GetContentSettingValue(
+      google_url,
+      google_url,
+      CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+      std::string()));
 
+  ASSERT_EQ(Value::TYPE_DICTIONARY, cert_filter->GetType());
+  DictionaryValue* dict_value =
+      static_cast<DictionaryValue*>(cert_filter.get());
+  std::string actual_common_name;
+  ASSERT_TRUE(dict_value->GetString("ISSUER.CN", &actual_common_name));
+  EXPECT_EQ("issuer name", actual_common_name);
   provider.ShutdownOnUIThread();
 }
+
 }  // namespace content_settings

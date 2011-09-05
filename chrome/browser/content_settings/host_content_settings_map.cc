@@ -70,6 +70,13 @@ const char* kProviderNames[] = {
   "preference"
 };
 
+bool ContentTypeHasCompoundValue(ContentSettingsType type) {
+  // Values for content type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE are
+  // of type dictionary/map. Compound types like dictionaries can't be mapped to
+  // the type |ContentSetting|.
+  return type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE;
+}
+
 }  // namespace
 
 HostContentSettingsMap::HostContentSettingsMap(
@@ -161,6 +168,7 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
     ContentSettingsType content_type) const {
+  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
   for (ConstDefaultProviderIterator provider =
            default_content_settings_providers_.begin();
@@ -179,8 +187,10 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
 
 ContentSettings HostContentSettingsMap::GetDefaultContentSettings() const {
   ContentSettings output(CONTENT_SETTING_DEFAULT);
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-    output.settings[i] = GetDefaultContentSetting(ContentSettingsType(i));
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    if (!ContentTypeHasCompoundValue(ContentSettingsType(i)))
+        output.settings[i] = GetDefaultContentSetting(ContentSettingsType(i));
+  }
   return output;
 }
 
@@ -232,6 +242,36 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
       primary_url, secondary_url, content_type, resource_identifier);
 }
 
+Value* HostContentSettingsMap::GetContentSettingValue(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) const {
+  // Check if the scheme of the requesting url is whitelisted.
+  if (ShouldAllowAllContent(secondary_url, content_type))
+    return Value::CreateIntegerValue(CONTENT_SETTING_ALLOW);
+
+  // First check if there are specific settings for the |primary_url| and
+  // |secondary_url|. The list of |content_settings_providers_| is ordered
+  // according to their priority.
+  for (ConstProviderIterator provider = content_settings_providers_.begin();
+       provider != content_settings_providers_.end();
+       ++provider) {
+    Value* value = (*provider)->GetContentSettingValue(
+        primary_url, secondary_url, content_type, resource_identifier);
+    if (value)
+      return value;
+  }
+
+  // If no specific settings were found for the |primary_url|, |secondary_url|
+  // pair, then the default value for the given |content_type| should be
+  // returned. For CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE the default is
+  // 'no filter available'. That's why we return |NULL| for this content type.
+  if (content_type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
+    return NULL;
+  return Value::CreateIntegerValue(GetDefaultContentSetting(content_type));
+}
+
 ContentSetting HostContentSettingsMap::GetContentSettingInternal(
       const GURL& primary_url,
       const GURL& secondary_url,
@@ -273,12 +313,15 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
       primary_url, secondary_url);
 
   // If we require a resource identifier, set the content settings to default,
-  // otherwise make the defaults explicit.
+  // otherwise make the defaults explicit. Values for content type
+  // CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE can't be mapped to the type
+  // |ContentSetting|. So we ignore them here.
   for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
     // A managed default content setting has the highest priority and hence
     // will overwrite any previously set value.
     if (output.settings[j] == CONTENT_SETTING_DEFAULT &&
-        j != CONTENT_SETTINGS_TYPE_PLUGINS) {
+        j != CONTENT_SETTINGS_TYPE_PLUGINS &&
+        !ContentTypeHasCompoundValue(ContentSettingsType(j))) {
       output.settings[j] = GetDefaultContentSetting(ContentSettingsType(j));
     }
   }
@@ -290,11 +333,13 @@ ContentSettings HostContentSettingsMap::GetNonDefaultContentSettings(
     const GURL& secondary_url) const {
   ContentSettings output(CONTENT_SETTING_DEFAULT);
   for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
-    output.settings[j] = GetNonDefaultContentSetting(
-        primary_url,
-        secondary_url,
-        ContentSettingsType(j),
-        "");
+    if (!ContentTypeHasCompoundValue(ContentSettingsType(j))) {
+      output.settings[j] = GetNonDefaultContentSetting(
+          primary_url,
+          secondary_url,
+          ContentSettingsType(j),
+          "");
+    }
   }
   return output;
 }
@@ -342,6 +387,7 @@ void HostContentSettingsMap::GetSettingsForOneType(
 void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
+  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
   DCHECK(IsSettingAllowedForType(setting, content_type));
   for (DefaultProviderIterator provider =
            default_content_settings_providers_.begin();
@@ -356,6 +402,7 @@ void HostContentSettingsMap::SetContentSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     ContentSetting setting) {
+  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
   DCHECK(IsSettingAllowedForType(setting, content_type));
   DCHECK_NE(content_settings::RequiresResourceIdentifier(content_type),
             resource_identifier.empty());

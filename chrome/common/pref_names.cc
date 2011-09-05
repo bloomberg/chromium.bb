@@ -1532,8 +1532,6 @@ const char kManagedDefaultGeolocationSetting[] =
     "profile.managed_default_content_settings.geolocation";
 const char kManagedDefaultNotificationsSetting[] =
     "profile.managed_default_content_settings.notifications";
-const char kManagedDefaultAutoSelectCertificateSetting[] =
-    "profile.managed_default_content_settings.auto_select_certificate";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.

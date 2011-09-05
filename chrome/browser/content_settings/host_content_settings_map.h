@@ -17,6 +17,7 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_observer.h"
@@ -69,11 +70,24 @@ class HostContentSettingsMap
 
   // Returns a single ContentSetting which applies to the given URLs. Note that
   // certain internal schemes are whitelisted. For ContentSettingsTypes that
-  // require an resource identifier to be specified, the |resource_identifier|
+  // require a resource identifier to be specified, the |resource_identifier|
   // must be non-empty.
   //
   // This may be called on any thread.
   ContentSetting GetContentSetting(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier) const;
+
+  // Returns a content setting |Value| which applies to the given URLs. Note
+  // that certain internal schemes are whitelisted. For ContentSettingsTypes
+  // that require a resource identifier to be specified, the
+  // |resource_identifier| must be non-empty. Ownership of the returned |Value|
+  // is transfered to the caller.
+  //
+  // This may be called on any thread.
+  Value* GetContentSettingValue(
       const GURL& primary_url,
       const GURL& secondary_url,
       ContentSettingsType content_type,

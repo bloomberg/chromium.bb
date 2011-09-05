@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -32,8 +33,8 @@ const char* kPrefToManageType[CONTENT_SETTINGS_NUM_TYPES] = {
   prefs::kManagedDefaultPopupsSetting,
   prefs::kManagedDefaultGeolocationSetting,
   prefs::kManagedDefaultNotificationsSetting,
-  NULL,
-  prefs::kManagedDefaultAutoSelectCertificateSetting,
+  NULL,  // No policy for default value of content type intents
+  NULL,  // No policy for default value of content type auto-select-certificate
 };
 
 struct PrefsForManagedContentSettingsMapEntry {
@@ -45,10 +46,6 @@ struct PrefsForManagedContentSettingsMapEntry {
 const PrefsForManagedContentSettingsMapEntry
     kPrefsForManagedContentSettingsMap[] = {
   {
-    prefs::kManagedAutoSelectCertificateForUrls,
-    CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-    CONTENT_SETTING_ALLOW
-  }, {
     prefs::kManagedCookiesAllowedForUrls,
     CONTENT_SETTINGS_TYPE_COOKIES,
     CONTENT_SETTING_ALLOW
@@ -121,8 +118,6 @@ PolicyDefaultProvider::PolicyDefaultProvider(PrefService* prefs)
   pref_change_registrar_.Add(prefs::kManagedDefaultPopupsSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultGeolocationSetting, this);
   pref_change_registrar_.Add(prefs::kManagedDefaultNotificationsSetting, this);
-  pref_change_registrar_.Add(
-      prefs::kManagedDefaultAutoSelectCertificateSetting, this);
 }
 
 PolicyDefaultProvider::~PolicyDefaultProvider() {
@@ -173,9 +168,6 @@ void PolicyDefaultProvider::Observe(int type,
       UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION);
     } else if (*name == prefs::kManagedDefaultNotificationsSetting) {
       UpdateManagedDefaultSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
-    } else if (*name == prefs::kManagedDefaultAutoSelectCertificateSetting) {
-      UpdateManagedDefaultSetting(
-          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
     } else {
       NOTREACHED() << "Unexpected preference observed";
       return;
@@ -246,9 +238,6 @@ void PolicyDefaultProvider::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kManagedDefaultNotificationsSetting,
                              CONTENT_SETTING_DEFAULT,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kManagedDefaultAutoSelectCertificateSetting,
-                             CONTENT_SETTING_ASK,
                              PrefService::UNSYNCABLE_PREF);
 }
 
@@ -341,6 +330,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
 
       ContentSettingsType content_type =
           kPrefsForManagedContentSettingsMap[i].content_type;
+      DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
       // If only one pattern was defined auto expand it to a pattern pair.
       ContentSettingsPattern secondary_pattern =
           !pattern_pair.second.IsValid() ? ContentSettingsPattern::Wildcard()
@@ -356,12 +346,90 @@ void PolicyProvider::GetContentSettingsFromPreferences(
   }
 }
 
+void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
+    OriginIdentifierValueMap* value_map) {
+  const char* pref_name = prefs::kManagedAutoSelectCertificateForUrls;
+
+  if (!prefs_->HasPrefPath(pref_name)) {
+    VLOG(2) << "Skipping unset preference: " << pref_name;
+    return;
+  }
+
+  const PrefService::Preference* pref = prefs_->FindPreference(pref_name);
+  DCHECK(pref);
+  DCHECK(pref->IsManaged());
+
+  const ListValue* pattern_filter_str_list = NULL;
+  if (!pref->GetValue()->GetAsList(&pattern_filter_str_list)) {
+    NOTREACHED();
+    return;
+  }
+
+  // Parse the list of pattern filter strings. A pattern filter string has
+  // the following JSON format:
+  //
+  // {
+  //   "pattern": <content settings pattern string>,
+  //   "filter" : <certificate filter in JSON format>
+  // }
+  //
+  // e.g.
+  // {
+  //   "pattern": "[*.]example.com",
+  //   "filter": {
+  //      "ISSUER": {
+  //        "CN": "some name"
+  //      }
+  // }
+  for (size_t j = 0; j < pattern_filter_str_list->GetSize(); ++j) {
+    std::string pattern_filter_json;
+    pattern_filter_str_list->GetString(j, &pattern_filter_json);
+
+    scoped_ptr<Value> value(base::JSONReader::Read(pattern_filter_json, true));
+    if (!value.get()) {
+      VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
+              << " Invalid JSON format: " << pattern_filter_json;
+      continue;
+    }
+
+    scoped_ptr<DictionaryValue> pattern_filter_pair(
+        static_cast<DictionaryValue*>(value.release()));
+    std::string pattern_str;
+    bool pattern_read = pattern_filter_pair->GetString("pattern", &pattern_str);
+    Value* cert_filter_ptr = NULL;
+    bool filter_read = pattern_filter_pair->Remove("filter", &cert_filter_ptr);
+    scoped_ptr<Value> cert_filter(cert_filter_ptr);
+    if (!pattern_read || !filter_read) {
+      VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"
+              << " Missing pattern or filtern.";
+      continue;
+    }
+
+    ContentSettingsPattern pattern =
+        ContentSettingsPattern::FromString(pattern_str);
+    // Ignore invalid patterns.
+    if (!pattern.IsValid()) {
+      VLOG(1) << "Ignoring invalid certificate auto select setting:"
+              << " Invalid content settings pattern: " << pattern;
+      continue;
+    }
+
+    DCHECK(cert_filter->IsType(Value::TYPE_DICTIONARY));
+    value_map->SetValue(pattern,
+                        ContentSettingsPattern::Wildcard(),
+                        CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+                        std::string(),
+                        cert_filter.release());
+  }
+}
+
 void PolicyProvider::ReadManagedContentSettings(bool overwrite) {
   {
     base::AutoLock auto_lock(lock_);
     if (overwrite)
       value_map_.clear();
     GetContentSettingsFromPreferences(&value_map_);
+    GetAutoSelectCertificateSettingsFromPreferences(&value_map_);
   }
 }
 
@@ -380,6 +448,7 @@ ContentSetting PolicyProvider::GetContentSetting(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
+  DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
   // Resource identifier are not supported by policies as long as the feature is
   // behind a flag. So resource identifiers are simply ignored.
   scoped_ptr<Value> value(GetContentSettingValue(primary_url,

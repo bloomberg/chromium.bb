@@ -117,6 +117,9 @@ class PolicyProvider : public ObservableProvider,
 
   void GetContentSettingsFromPreferences(OriginIdentifierValueMap* rules);
 
+  void GetAutoSelectCertificateSettingsFromPreferences(
+      OriginIdentifierValueMap* value_map);
+
   void ReadManagedContentSettingsTypes(ContentSettingsType content_type);
 
   OriginIdentifierValueMap value_map_;

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/content_settings.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -196,20 +196,19 @@ void TabContentsSSLHelper::SelectClientCertificate(
 
   HostContentSettingsMap* map =
       tab_contents_->profile()->GetHostContentSettingsMap();
-  ContentSetting setting = map->GetContentSetting(
+  scoped_ptr<Value> cert_filter(map->GetContentSettingValue(
       requesting_url,
       requesting_url,
       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-      std::string());
-  DCHECK_NE(setting, CONTENT_SETTING_DEFAULT);
+      std::string()));
 
   // TODO(markusheintz): Implement filter for matching specific certificate
   // criteria.
-  bool cert_matches_filter = true;
-
-  if (setting == CONTENT_SETTING_ALLOW &&
-      cert_request_info->client_certs.size() == 1 &&
-      cert_matches_filter) {
+  // A non NULL |cert_filter| is equvivalent to "allow certificate-auto-submit".
+  // If NULL is returned then the dialog to select a client certificate is
+  // displayed.
+  if (cert_filter.get() &&
+      cert_request_info->client_certs.size() == 1) {
     net::X509Certificate* cert = cert_request_info->client_certs[0].get();
     handler->CertificateSelected(cert);
   } else {

@@ -157,8 +157,6 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
       CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE] =
-      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -607,8 +605,6 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
       CONTENT_SETTING_ASK;
   desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
       CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE] =
-      CONTENT_SETTING_ASK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
@@ -801,8 +797,6 @@ TEST_F(HostContentSettingsMapTest, NonDefaultSettings) {
        ContentSettingsPattern::FromString("[*.]example.com");
 
   ContentSettings desired_settings(CONTENT_SETTING_DEFAULT);
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE] =
-      CONTENT_SETTING_ASK;
   ContentSettings settings =
     host_content_settings_map->GetNonDefaultContentSettings(host, host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
