@@ -14,12 +14,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
 class GpuChannelHost;
-class MessageLoop;
 class CommandBufferProxy;
 class GURL;
 class Task;
@@ -32,7 +32,8 @@ class GLES2Implementation;
 }
 }
 
-class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
+class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext>,
+                          public base::NonThreadSafe {
  public:
   // These are the same error codes as used by EGL.
   enum Error {
@@ -199,10 +200,6 @@ class RendererGLContext : public base::SupportsWeakPtr<RendererGLContext> {
   gpu::gles2::GLES2Implementation* gles2_implementation_;
   Error last_error_;
   int frame_number_;
-#ifndef NDEBUG
-  // Used to assert that this object is used on a single thread.
-  MessageLoop* message_loop_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(RendererGLContext);
 };

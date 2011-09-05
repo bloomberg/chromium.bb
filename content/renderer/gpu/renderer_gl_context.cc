@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/command_buffer_proxy.h"
@@ -200,7 +199,7 @@ void RendererGLContext::SetContextLostCallback(
 
 bool RendererGLContext::MakeCurrent(RendererGLContext* context) {
   if (context) {
-    DCHECK(MessageLoop::current() == context->message_loop_);
+    DCHECK(context->CalledOnValidThread());
     gles2::SetGLContext(context->gles2_implementation_);
 
     // Don't request latest error status from service. Just use the locally
@@ -281,11 +280,7 @@ RendererGLContext::RendererGLContext(GpuChannelHost* channel)
       transfer_buffer_id_(-1),
       gles2_implementation_(NULL),
       last_error_(SUCCESS),
-      frame_number_(0)
-#ifndef NDEBUG
-      , message_loop_(MessageLoop::current())
-#endif
-{
+      frame_number_(0) {
   DCHECK(channel);
 }
 
@@ -296,7 +291,7 @@ bool RendererGLContext::Initialize(bool onscreen,
                                    const char* allowed_extensions,
                                    const int32* attrib_list,
                                    const GURL& active_url) {
-  DCHECK(MessageLoop::current() == message_loop_);
+  DCHECK(CalledOnValidThread());
   DCHECK(size.width() >= 0 && size.height() >= 0);
   TRACE_EVENT2("gpu", "RendererGLContext::Initialize",
                    "on_screen", onscreen, "num_pixels", size.GetArea());
@@ -420,7 +415,7 @@ bool RendererGLContext::Initialize(bool onscreen,
 
 void RendererGLContext::Destroy() {
   TRACE_EVENT0("gpu", "RendererGLContext::Destroy");
-  DCHECK(MessageLoop::current() == message_loop_);
+  DCHECK(CalledOnValidThread());
   SetParent(NULL);
 
   if (gles2_implementation_) {
