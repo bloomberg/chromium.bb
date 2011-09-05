@@ -32,6 +32,7 @@
 #include "chrome/common/spellcheck_messages.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/browser_thread.h"
+#include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/plugin_process_host.h"
@@ -1598,6 +1599,14 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     totalScrollDelta_ = NSZeroSize;
     gotUnhandledWheelEvent_ = false;
   }
+
+  RenderWidgetHost* rwh = renderWidgetHostView_->render_widget_host_;
+  if (!rwh || !rwh->IsRenderView())
+    return NO;
+  bool isDevtoolsRwhv = DevToolsClientHost::FindOwnerClientHost(
+      static_cast<RenderViewHost*>(rwh)) != NULL;
+  if (isDevtoolsRwhv)
+    return NO;
 
   if (gotUnhandledWheelEvent_ &&
       [NSEvent isSwipeTrackingFromScrollEventsEnabled] &&
