@@ -60,8 +60,8 @@ class BackForwardMenuModel : public ui::MenuModel {
   virtual bool IsEnabledAt(int index) const;
   virtual MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index);
-  virtual void ActivatedAt(int index);
-  virtual void ActivatedAtWithDisposition(int index, int disposition);
+  virtual void ActivatedAt(int index) OVERRIDE;
+  virtual void ActivatedAt(int index, int event_flags) OVERRIDE;
   virtual void MenuWillShow();
 
   // Is the item at |index| a separator?

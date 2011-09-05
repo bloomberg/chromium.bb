@@ -46,6 +46,11 @@ bool SimpleMenuModel::Delegate::GetIconForCommandId(
 void SimpleMenuModel::Delegate::CommandIdHighlighted(int command_id) {
 }
 
+void SimpleMenuModel::Delegate::ExecuteCommand(
+    int command_id, int event_flags) {
+  ExecuteCommand(command_id);
+}
+
 void SimpleMenuModel::Delegate::MenuWillShow(SimpleMenuModel* /*source*/) {
 }
 
@@ -288,6 +293,11 @@ void SimpleMenuModel::HighlightChangedTo(int index) {
 void SimpleMenuModel::ActivatedAt(int index) {
   if (delegate_)
     delegate_->ExecuteCommand(GetCommandIdAt(index));
+}
+
+void SimpleMenuModel::ActivatedAt(int index, int event_flags) {
+  if (delegate_)
+    delegate_->ExecuteCommand(GetCommandIdAt(index), event_flags);
 }
 
 MenuModel* SimpleMenuModel::GetSubmenuModelAt(int index) const {

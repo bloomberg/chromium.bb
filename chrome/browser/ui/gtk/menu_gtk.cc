@@ -707,14 +707,11 @@ void MenuGtk::ExecuteCommand(ui::MenuModel* model, int id) {
     delegate_->CommandWillBeExecuted();
 
   GdkEvent* event = gtk_get_current_event();
-  if (event && event->type == GDK_BUTTON_RELEASE) {
-    WindowOpenDisposition disposition =
-      event_utils::DispositionFromGdkState(event->button.state);
+  int event_flags = 0;
 
-    model->ActivatedAtWithDisposition(id, disposition);
-  } else {
-    model->ActivatedAt(id);
-  }
+  if (event && event->type == GDK_BUTTON_RELEASE)
+    event_flags = event_utils::EventFlagsFromGdkState(event->button.state);
+  model->ActivatedAt(id, event_flags);
 
   if (event)
     gdk_event_free(event);

@@ -105,7 +105,7 @@ class MenuModelBase : public ui::MenuModel {
     set_last_activation(index);
   }
 
-  virtual void ActivatedAtWithDisposition(int index, int disposition) OVERRIDE {
+  virtual void ActivatedAt(int index, int event_flags) OVERRIDE {
     ActivatedAt(index);
   }
 
@@ -138,7 +138,7 @@ class MenuModelBase : public ui::MenuModel {
     return items_[index];
   }
 
-  // Access index argument to ActivatedAt() or ActivatedAtWithDisposition().
+  // Access index argument to ActivatedAt().
   int last_activation() const { return last_activation_; }
   void set_last_activation(int last_activation) {
     last_activation_ = last_activation;

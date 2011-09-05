@@ -67,10 +67,7 @@ void MenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
   ui::MenuModel* model = menu_model_;
   int index = 0;
   if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index)) {
-    const int disposition =
-        ViewsDelegate::views_delegate->GetDispositionForEvent(
-            mouse_event_flags);
-    model->ActivatedAtWithDisposition(index, disposition);
+    model->ActivatedAt(index, mouse_event_flags);
     return;
   }
 

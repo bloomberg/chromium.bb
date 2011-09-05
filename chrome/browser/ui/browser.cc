@@ -2743,6 +2743,11 @@ void Browser::ExecuteCommandWithDisposition(
   }
 }
 
+void Browser::ExecuteCommand(int id, int event_flags) {
+  ExecuteCommandWithDisposition(
+      id, browser::DispositionFromEventFlags(event_flags));
+}
+
 bool Browser::ExecuteCommandIfEnabled(int id) {
   if (command_updater_.SupportsCommand(id) &&
       command_updater_.IsCommandEnabled(id)) {

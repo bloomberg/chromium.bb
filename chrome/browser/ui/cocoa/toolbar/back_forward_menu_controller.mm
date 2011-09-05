@@ -94,9 +94,8 @@ using gfx::SkBitmapToNSImage;
 - (void)executeMenuItem:(id)sender {
   DCHECK([sender isKindOfClass:[NSMenuItem class]]);
   int menuID = [sender tag];
-  model_->ActivatedAtWithDisposition(
-      menuID,
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]));
+  int event_flags = event_utils::EventFlagsFromNSEvent([NSApp currentEvent]);
+  model_->ActivatedAt(menuID, event_flags);
 }
 
 @end  // @implementation BackForwardMenuController

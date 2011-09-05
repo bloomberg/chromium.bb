@@ -1035,8 +1035,7 @@ class MockMenuModel : public ui::MenuModel {
   MOCK_CONST_METHOD1(GetSubmenuModelAt, MenuModel*(int index));
   MOCK_METHOD1(HighlightChangedTo, void(int index));
   MOCK_METHOD1(ActivatedAt, void(int index));
-  MOCK_METHOD2(ActivatedAtWithDisposition, void(int index,
-      int disposition));
+  MOCK_METHOD2(ActivatedAt, void(int index, int disposition));
   MOCK_METHOD0(MenuWillShow, void());
   MOCK_METHOD0(MenuClosed, void());
   MOCK_METHOD1(SetMenuModelDelegate, void(ui::MenuModelDelegate* delegate));

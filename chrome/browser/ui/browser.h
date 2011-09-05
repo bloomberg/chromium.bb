@@ -19,6 +19,7 @@
 #include "base/task.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/instant/instant_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -695,6 +696,9 @@ class Browser : public TabHandlerDelegate,
 
   // Calls ExecuteCommandWithDisposition with the given disposition.
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition);
+
+  // Calls ExecuteCommandWithDisposition with the given event flags.
+  void ExecuteCommand(int id, int event_flags);
 
   // Executes a command if it's enabled.
   // Returns true if the command is executed.

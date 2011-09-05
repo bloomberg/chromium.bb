@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "base/string_number_conversions.h"
+#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -155,11 +156,10 @@ void BackForwardMenuModel::HighlightChangedTo(int index) {
 }
 
 void BackForwardMenuModel::ActivatedAt(int index) {
-  ActivatedAtWithDisposition(index, CURRENT_TAB);
+  ActivatedAt(index, 0);
 }
 
-void BackForwardMenuModel::ActivatedAtWithDisposition(
-      int index, int disposition) {
+void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
   DCHECK(!IsSeparator(index));
 
   // Execute the command for the last item: "Show Full History".
@@ -181,10 +181,10 @@ void BackForwardMenuModel::ActivatedAtWithDisposition(
   }
 
   int controller_index = MenuIndexToNavEntryIndex(index);
-  if (!browser_->NavigateToIndexWithDisposition(
-          controller_index, static_cast<WindowOpenDisposition>(disposition))) {
+  WindowOpenDisposition disposition =
+      browser::DispositionFromEventFlags(event_flags);
+  if (!browser_->NavigateToIndexWithDisposition(controller_index, disposition))
     NOTREACHED();
-  }
 }
 
 void BackForwardMenuModel::MenuWillShow() {
