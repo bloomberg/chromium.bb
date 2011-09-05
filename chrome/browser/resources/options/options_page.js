@@ -295,8 +295,11 @@ cr.define('options', function() {
    */
   OptionsPage.closeTopSubPage_ = function() {
     var topPage = this.getTopmostVisiblePage();
-    if (topPage && !topPage.isOverlay && topPage.parentPage)
+    if (topPage && !topPage.isOverlay && topPage.parentPage) {
+      if (topPage.willHidePage)
+        topPage.willHidePage();
       topPage.visible = false;
+    }
 
     this.updateHistoryState_();
   };
@@ -308,6 +311,8 @@ cr.define('options', function() {
   OptionsPage.closeSubPagesToLevel = function(level) {
     var topPage = this.getTopmostVisiblePage();
     while (topPage && topPage.nestingLevel > level) {
+      if (topPage.willHidePage)
+        topPage.willHidePage();
       topPage.visible = false;
       topPage = topPage.parentPage;
     }
