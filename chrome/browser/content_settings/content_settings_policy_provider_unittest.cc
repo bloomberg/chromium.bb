@@ -155,7 +155,7 @@ class PolicyProviderTest : public testing::Test {
   BrowserThread ui_thread_;
 };
 
-TEST_F(PolicyProviderTest, Default) {
+TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   TestingProfile profile;
   TestingPrefService* prefs = profile.GetTestingPrefService();
 
@@ -174,10 +174,22 @@ TEST_F(PolicyProviderTest, Default) {
   EXPECT_EQ(CONTENT_SETTING_DEFAULT,
             provider.GetContentSetting(
                 youtube_url, youtube_url, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+  EXPECT_EQ(NULL,
+            provider.GetContentSettingValue(
+                youtube_url, youtube_url, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             provider.GetContentSetting(
                 google_url, google_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  scoped_ptr<Value> value_ptr(provider.GetContentSettingValue(
+                google_url, google_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  int int_value = -1;
+  value_ptr->GetAsInteger(&int_value);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
 
+  // The PolicyProvider does not allow setting content settings as they are
+  // enforced via policies and not set by the user or extension. So a call to
+  // SetContentSetting does nothing.
   provider.SetContentSetting(
       yt_url_pattern,
       yt_url_pattern,

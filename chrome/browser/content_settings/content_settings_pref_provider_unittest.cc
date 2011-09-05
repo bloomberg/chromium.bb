@@ -304,6 +304,45 @@ TEST_F(PrefProviderTest, Incognito) {
   pref_content_settings_provider_incognito.ShutdownOnUIThread();
 }
 
+TEST_F(PrefProviderTest, GetContentSettingsValue) {
+  TestingProfile testing_profile;
+  PrefProvider provider(testing_profile.GetPrefs(), false);
+
+  GURL primary_url("http://example.com/");
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromString("[*.]example.com");
+
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT, provider.GetContentSetting(
+      primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+
+  EXPECT_EQ(NULL, provider.GetContentSettingValue(
+      primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+
+  provider.SetContentSetting(primary_pattern,
+                             primary_pattern,
+                             CONTENT_SETTINGS_TYPE_IMAGES,
+                             "",
+                             CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            provider.GetContentSetting(
+                primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  scoped_ptr<Value> value_ptr(provider.GetContentSettingValue(
+                primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  int int_value = -1;
+  value_ptr->GetAsInteger(&int_value);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
+
+  provider.SetContentSetting(primary_pattern,
+                             primary_pattern,
+                             CONTENT_SETTINGS_TYPE_IMAGES,
+                             "",
+                             CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(NULL, provider.GetContentSettingValue(
+      primary_url, primary_url, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+
+  provider.ShutdownOnUIThread();
+}
+
 TEST_F(PrefProviderTest, Patterns) {
   TestingProfile testing_profile;
   PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),

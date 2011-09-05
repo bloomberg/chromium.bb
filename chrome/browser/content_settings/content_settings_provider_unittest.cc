@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_mock_provider.h"
 #include "googleurl/src/gurl.h"
 
@@ -40,9 +41,19 @@ TEST(ContentSettingsProviderTest, Mock) {
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK, mock_provider.GetContentSetting(
       url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin"));
+  scoped_ptr<Value> value_ptr(mock_provider.GetContentSettingValue(
+                url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin"));
+  int int_value = -1;
+  value_ptr->GetAsInteger(&int_value);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
+
   EXPECT_EQ(CONTENT_SETTING_DEFAULT, mock_provider.GetContentSetting(
       url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "flash_plugin"));
+  EXPECT_EQ(NULL, mock_provider.GetContentSettingValue(
+      url, url, CONTENT_SETTINGS_TYPE_PLUGINS, "flash_plugin"));
   EXPECT_EQ(CONTENT_SETTING_DEFAULT, mock_provider.GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+  EXPECT_EQ(NULL, mock_provider.GetContentSettingValue(
       url, url, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
 
   mock_provider.SetContentSetting(

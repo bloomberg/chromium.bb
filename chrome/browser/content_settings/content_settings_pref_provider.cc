@@ -443,6 +443,19 @@ ContentSetting PrefProvider::GetContentSetting(
     const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
+  scoped_ptr<Value> value(GetContentSettingValue(primary_url,
+                                                 secondary_url,
+                                                 content_type,
+                                                 resource_identifier));
+  return value.get() ? ValueToContentSetting(value.get())
+                     : CONTENT_SETTING_DEFAULT;
+}
+
+Value* PrefProvider::GetContentSettingValue(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier) const {
   // For a |PrefProvider| used in a |HostContentSettingsMap| of a non incognito
   // profile, this will always return NULL.
   // TODO(markusheintz): I don't like this. I'd like to have an
@@ -455,17 +468,14 @@ ContentSetting PrefProvider::GetContentSetting(
       content_type,
       resource_identifier);
   if (incognito_value)
-    return ValueToContentSetting(incognito_value);
+    return incognito_value->DeepCopy();
 
   Value* value = value_map_.GetValue(
       primary_url,
       secondary_url,
       content_type,
       resource_identifier);
-  if (value)
-    return ValueToContentSetting(value);
-
-  return CONTENT_SETTING_DEFAULT;
+  return value ? value->DeepCopy() : NULL;
 }
 
 void PrefProvider::GetAllContentSettingsRules(

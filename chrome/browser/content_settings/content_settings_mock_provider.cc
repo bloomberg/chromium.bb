@@ -65,16 +65,31 @@ MockProvider::MockProvider(ContentSettingsPattern requesting_url_pattern,
 MockProvider::~MockProvider() {}
 
 ContentSetting MockProvider::GetContentSetting(
-    const GURL& requesting_url,
-    const GURL& embedding_url,
+    const GURL& primary_url,
+    const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
-  if (requesting_url_pattern_.Matches(requesting_url) &&
+  if (requesting_url_pattern_.Matches(primary_url) &&
       content_type_ == content_type &&
       resource_identifier_ == resource_identifier) {
     return setting_;
   }
   return CONTENT_SETTING_DEFAULT;
+}
+
+Value* MockProvider::GetContentSettingValue(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier) const {
+  ContentSetting setting = GetContentSetting(
+      primary_url,
+      secondary_url,
+      content_type,
+      resource_identifier);
+  if (setting == CONTENT_SETTING_DEFAULT)
+    return NULL;
+  return Value::CreateIntegerValue(setting);
 }
 
 void MockProvider::SetContentSetting(

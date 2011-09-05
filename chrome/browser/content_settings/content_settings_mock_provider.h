@@ -55,8 +55,14 @@ class MockProvider : public ProviderInterface {
 
   // ProviderInterface implementation
   virtual ContentSetting GetContentSetting(
-      const GURL& requesting_url,
-      const GURL& embedding_url,
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier) const;
+
+  virtual Value* GetContentSettingValue(
+      const GURL& primary_url,
+      const GURL& secondary_url,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const;
 

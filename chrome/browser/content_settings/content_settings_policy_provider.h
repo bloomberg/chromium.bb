@@ -92,6 +92,12 @@ class PolicyProvider : public ObservableProvider,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const;
 
+  virtual Value* GetContentSettingValue(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier) const;
+
   virtual void GetAllContentSettingsRules(
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,

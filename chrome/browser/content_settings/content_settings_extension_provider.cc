@@ -22,20 +22,39 @@ ExtensionProvider::~ExtensionProvider() {
 }
 
 ContentSetting ExtensionProvider::GetContentSetting(
-    const GURL& embedded_url,
-    const GURL& top_level_url,
+    const GURL& primary_url,
+    const GURL& secondary_url,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier) const {
   // TODO(markusheintz): Instead of getting the effective setting every time
   // effective patterns could be cached in here.
   DCHECK(extensions_settings_);
   return extensions_settings_->GetEffectiveContentSetting(
-      embedded_url,
-      top_level_url,
+      primary_url,
+      secondary_url,
       content_type,
       resource_identifier,
       incognito_);
 }
+
+Value* ExtensionProvider::GetContentSettingValue(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier) const {
+  // TODO(markusheintz): Change the ExtensionSettingsStore to use the
+  // OriginIdentifierValueMap to allow arbitray |Value|s to be stored instead of
+  // |ContentSetting|s.
+  ContentSetting setting = GetContentSetting(
+      primary_url,
+      secondary_url,
+      content_type,
+      resource_identifier);
+  if (setting == CONTENT_SETTING_DEFAULT)
+    return NULL;
+  return Value::CreateIntegerValue(setting);
+}
+
 
 void ExtensionProvider::GetAllContentSettingsRules(
     ContentSettingsType content_type,

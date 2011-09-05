@@ -382,15 +382,30 @@ ContentSetting PolicyProvider::GetContentSetting(
     const ResourceIdentifier& resource_identifier) const {
   // Resource identifier are not supported by policies as long as the feature is
   // behind a flag. So resource identifiers are simply ignored.
+  scoped_ptr<Value> value(GetContentSettingValue(primary_url,
+                                                 secondary_url,
+                                                 content_type,
+                                                 resource_identifier));
+  ContentSetting setting =
+      value.get() ? ValueToContentSetting(value.get())
+                  : CONTENT_SETTING_DEFAULT;
+  if (setting == CONTENT_SETTING_DEFAULT && default_provider_)
+    setting = default_provider_->ProvideDefaultSetting(content_type);
+  return setting;
+}
+
+Value* PolicyProvider::GetContentSettingValue(
+    const GURL& primary_url,
+    const GURL& secondary_url,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier) const {
+  // Resource identifier are not supported by policies as long as the feature is
+  // behind a flag. So resource identifiers are simply ignored.
   Value* value = value_map_.GetValue(primary_url,
                                      secondary_url,
                                      content_type,
                                      resource_identifier);
-  ContentSetting setting =
-      value == NULL ? CONTENT_SETTING_DEFAULT : ValueToContentSetting(value);
-  if (setting == CONTENT_SETTING_DEFAULT && default_provider_)
-    setting = default_provider_->ProvideDefaultSetting(content_type);
-  return setting;
+  return value ? value->DeepCopy() : NULL;
 }
 
 void PolicyProvider::GetAllContentSettingsRules(

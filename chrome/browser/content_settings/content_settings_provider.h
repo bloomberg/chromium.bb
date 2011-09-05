@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/common/content_settings.h"
 
@@ -74,6 +75,21 @@ class ProviderInterface {
       const GURL& secondary_url,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) const = 0;
+
+  // Returns the content setting |Value| for the given |content_type| which
+  // applies to the given |primary_url|, |secondary_url| pair. The ownership of
+  // the returned |Value| pointer is transfered to the caller. If no content
+  // settings value is available for the given parameters then NULL is returned.
+  // For ContentSettingsTypes that require a resource identifier to be
+  // specified, the |resource_identifier| must be non-empty.
+  //
+  // This may be called on any thread.
+  virtual Value* GetContentSettingValue(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier) const = 0;
+
 
   // Sets the content setting for a particular |primary_pattern|,
   // |secondary_pattern|, |content_type| tuple. For ContentSettingsTypes that
