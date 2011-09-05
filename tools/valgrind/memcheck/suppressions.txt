@@ -5418,6 +5418,25 @@
    fun:_ZN4base6Thread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
+{
+   bug_95448
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsPN4base5ValueEEEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE14_M_create_nodeERKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN4base5ValueEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
+   fun:_ZNSt3mapISsPN4base5ValueESt4lessISsESaISt4pairIKSsS2_EEE6insertESt17_Rb_tree_iteratorIS7_ERKS7_
+   fun:_ZNSt3mapISsPN4base5ValueESt4lessISsESaISt4pairIKSsS2_EEEixERS6_
+   fun:_ZN4base15DictionaryValue23SetWithoutPathExpansionERKSsPNS_5ValueE
+   fun:_ZN4base15DictionaryValue3SetERKSsPNS_5ValueE
+   fun:_ZN4base15DictionaryValue9SetStringERKSsRKSbItNS_20string16_char_traitsESaItEE
+   fun:_ZN11PluginPrefs23CreatePluginFileSummaryERKN6webkit13WebPluginInfoE
+   fun:_ZN11PluginPrefs19OnUpdatePreferencesESt6vectorIN6webkit13WebPluginInfoESaIS2_EES0_INS1_5npapi11PluginGroupESaIS6_EE
+   fun:_Z16DispatchToMethodI11PluginPrefsMS0_FvSt6vectorIN6webkit13WebPluginInfoESaIS3_EES1_INS2_5npapi11PluginGroupESaIS7_EEES5_S9_EvPT_T0_RK6Tuple2IT1_T2_E
+}
+
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
