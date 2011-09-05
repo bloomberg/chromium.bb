@@ -16,7 +16,6 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "third_party/mozc/session/commands.pb.h"
 
 namespace chromeos {
 namespace input_method {
@@ -83,9 +82,6 @@ struct InputMethodLookupTable {
 
   // Annotation strings in UTF-8 (ex. "Hankaku Katakana").
   std::vector<std::string> annotations;
-
-  // Mozc candidates.
-  mozc::commands::Candidates mozc_candidates;
 };
 
 // IBusUiController is used to interact with the IBus daemon.

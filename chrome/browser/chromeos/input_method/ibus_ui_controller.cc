@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/mozc/session/commands.pb.h"
 
 namespace chromeos {
 namespace input_method {
@@ -501,29 +500,6 @@ class IBusUiControllerImpl : public IBusUiController {
     } else if (orientation == IBUS_ORIENTATION_HORIZONTAL) {
       lookup_table.orientation = InputMethodLookupTable::kHorizontal;
     }
-
-
-#ifdef OS_CHROMEOS
-    // The function ibus_serializable_get_attachment had been changed
-    // to use GVariant by the commit
-    // https://github.com/ibus/ibus/commit/ac9dfac13cef34288440a2ecdf067cd827fb2f8f
-    GVariant* variant = ibus_serializable_get_attachment(
-        IBUS_SERIALIZABLE(table), "mozc.candidates");
-    if (variant != NULL) {
-      gconstpointer ptr = g_variant_get_data(variant);
-      if (ptr != NULL) {
-        gsize size = g_variant_get_size(variant);
-        GByteArray* bytearray = g_byte_array_sized_new(size);
-        g_byte_array_append(
-            bytearray, reinterpret_cast<const guint8*>(ptr), size);
-        if (!lookup_table.mozc_candidates.ParseFromArray(
-               bytearray->data, bytearray->len)) {
-          lookup_table.mozc_candidates.Clear();
-        }
-        g_byte_array_unref(bytearray);
-      }
-    }
-#endif
 
     // Copy candidates and annotations to |lookup_table|.
     for (int i = 0; ; i++) {

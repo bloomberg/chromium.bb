@@ -14,11 +14,8 @@
 #include "base/observer_list.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
@@ -46,10 +43,6 @@ const SkColor kFooterBottomColor = SkColorSetRGB(0xee, 0xee, 0xee);
 const SkColor kShortcutColor = SkColorSetRGB(0x61, 0x61, 0x61);
 const SkColor kDisabledShortcutColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
 const SkColor kAnnotationColor = SkColorSetRGB(0x88, 0x88, 0x88);
-const SkColor kSelectedInfolistRowBackgroundColor =
-    SkColorSetRGB(0xee, 0xee, 0xee);
-const SkColor kSelectedInfolistRowFrameColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
-const SkColor kInfolistTitleBackgroundColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 
 // We'll use a bigger font size, so Chinese characters are more readable
 // in the candidate window.
@@ -70,11 +63,6 @@ const int kMaxCandidateLabelWidth = 500;
 // The minimum width of preedit area. We use this value to prevent the
 // candidate window from being too narrow when candidate lists are not shown.
 const int kMinPreeditAreaWidth = 134;
-
-// The milliseconds of the delay to show the infolist window.
-const int kInfolistShowDelayMilliSeconds = 500;
-// The milliseconds of the delay to hide the infolist window.
-const int kInfolistHideDelayMilliSeconds = 500;
 
 // VerticalCandidateLabel is used for rendering candidate text in
 // the vertical candidate window.
@@ -604,9 +592,6 @@ class CandidateView : public views::View {
   // Sets annotation text to the given text.
   void SetAnnotationText(const std::wstring& text);
 
-  // Sets infolist icon.
-  void SetInfolistIcon(bool enable);
-
   // Selects the candidate row. Changes the appearance to make it look
   // like a selected candidate.
   void Select();
@@ -644,97 +629,7 @@ class CandidateView : public views::View {
   views::Label* candidate_label_;
   // The annotation label renders annotations.
   views::Label* annotation_label_;
-
-  // The infolist icon.
-  views::Label* infolist_label_;
-  bool infolist_icon_enabled_;
 };
-
-class InfolistView;
-
-// InfolistWindowView is the main container of the infolist window UI.
-class InfolistWindowView : public views::View {
- public:
-
-  InfolistWindowView(
-      views::Widget* parent_frame, views::Widget* candidate_window_frame);
-  virtual ~InfolistWindowView();
-  void Init();
-  void Show();
-  void DelayShow(unsigned int milliseconds);
-  void Hide();
-  void DelayHide(unsigned int milliseconds);
-  void UpdateCandidates(const InputMethodLookupTable& lookup_table);
-
-  void ResizeAndMoveParentFrame();
-
- protected:
-  // Override View::VisibilityChanged()
-  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
-
-  // Override View::OnBoundsChanged()
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-
- private:
-  // Called by show_hide_timer_
-  void OnShowHideTimer();
-
-  // The lookup table (candidates).
-  InputMethodLookupTable lookup_table_;
-
-  // The parent frame.
-  views::Widget* parent_frame_;
-
-  // The candidate window frame.
-  views::Widget* candidate_window_frame_;
-
-  // The infolist area is where the meanings and the usages of the words are
-  // rendered.
-  views::View* infolist_area_;
-  // The infolist views are used for rendering the meanings and the usages of
-  // the words.
-  std::vector<InfolistView*> infolist_views_;
-
-  bool visible_;
-
-  base::OneShotTimer<InfolistWindowView> show_hide_timer_;
-};
-
-// InfolistRow renderes a row of a infolist.
-class InfolistView : public views::View {
- public:
-  explicit InfolistView(InfolistWindowView* parent_infolist_window);
-  virtual ~InfolistView() {}
-
-  void Init();
-
-  // Sets title text to the given text.
-  void SetTitleText(const std::wstring& text);
-
-  // Sets description text to the given text.
-  void SetDescriptionText(const std::wstring& text);
-
-  // Selects the infolist row. Changes the appearance to make it look
-  // like a selected candidate.
-  void Select();
-
-  // Unselects the infolist row. Changes the appearance to make it look
-  // like an unselected candidate.
-  void Unselect();
-
- private:
-  // The parent candidate window that contains this view.
-  InfolistWindowView* parent_infolist_window_;
-
-  // Views created in the class will be part of tree of |this|, so these
-  // child views will be deleted when |this| is deleted.
-
-  // The title label.
-  views::Label* title_label_;
-  // The description label.
-  views::Label* description_label_;
-};
-
 
 // The implementation of CandidateWindowController.
 // CandidateWindowController controls the CandidateWindow.
@@ -777,13 +672,6 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer,
   // This is the outer frame of the candidate window view. The frame will
   // own |candidate_window_|.
   scoped_ptr<views::Widget> frame_;
-
-  // The infolist window view.
-  InfolistWindowView* infolist_window_;
-
-  // This is the outer frame of the infolist window view. The frame will
-  // own |infolist_window_|.
-  scoped_ptr<views::Widget> infolist_frame_;
 };
 
 CandidateView::CandidateView(
@@ -795,9 +683,7 @@ CandidateView::CandidateView(
       parent_candidate_window_(parent_candidate_window),
       shortcut_label_(NULL),
       candidate_label_(NULL),
-      annotation_label_(NULL),
-      infolist_label_(NULL),
-      infolist_icon_enabled_(false) {
+      annotation_label_(NULL) {
 }
 
 void CandidateView::Init(int shortcut_column_width,
@@ -838,18 +724,7 @@ void CandidateView::Init(int shortcut_column_width,
   // Set annotation column type and width.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         0, column_type, annotation_column_width, 0);
-
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    infolist_label_= new views::Label;
-    infolist_label_->SetFont(
-        infolist_label_->font().DeriveFont(kFontSizeDelta));
-    column_set->AddPaddingColumn(0, 1);
-    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                          0, views::GridLayout::FIXED, 4, 0);
-    column_set->AddPaddingColumn(0, 2);
-  } else {
-    column_set->AddPaddingColumn(0, padding_column_width);
-  }
+  column_set->AddPaddingColumn(0, padding_column_width);
 
   // Add the shortcut label, the candidate label, and annotation label.
   layout->StartRow(0, 0);
@@ -858,10 +733,6 @@ void CandidateView::Init(int shortcut_column_width,
   layout->AddView(wrapped_shortcut_label);
   layout->AddView(candidate_label_);
   layout->AddView(annotation_label_);
-  if (orientation_ == InputMethodLookupTable::kVertical) {
-    layout->AddView(WrapWithPadding(infolist_label_,
-        gfx::Insets(2, 0, 2, 0)));
-  }
 }
 
 void CandidateView::SetCandidateText(const std::wstring& text) {
@@ -874,22 +745,6 @@ void CandidateView::SetShortcutText(const std::wstring& text) {
 
 void CandidateView::SetAnnotationText(const std::wstring& text) {
   annotation_label_->SetText(text);
-}
-
-void CandidateView::SetInfolistIcon(bool enable) {
-  if (!infolist_label_) {
-    return;
-  }
-  if (enable) {
-    infolist_label_->set_background(
-        views::Background::CreateSolidBackground(kSelectedRowFrameColor));
-  } else {
-    infolist_label_->set_background(NULL);
-  }
-  if (infolist_icon_enabled_ != enable) {
-    SchedulePaint();
-  }
-  infolist_icon_enabled_ = enable;
 }
 
 void CandidateView::Select() {
@@ -1131,21 +986,11 @@ void CandidateWindowView::UpdateCandidates(
         candidate_view->SetAnnotationText(
             UTF8ToWide(new_lookup_table.annotations[candidate_index]));
         candidate_view->SetRowEnabled(true);
-
-        if ((new_lookup_table.mozc_candidates.candidate_size() >
-                 static_cast<int>(i)) &&
-            (new_lookup_table.mozc_candidates.
-                 candidate(i).has_information_id())) {
-          candidate_view->SetInfolistIcon(true);
-        } else {
-          candidate_view->SetInfolistIcon(false);
-        }
       } else {
         // Disable the empty row.
         candidate_view->SetCandidateText(L"");
         candidate_view->SetAnnotationText(L"");
         candidate_view->SetRowEnabled(false);
-        candidate_view->SetInfolistIcon(false);
       }
     }
   }
@@ -1378,262 +1223,6 @@ void CandidateWindowView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   ResizeAndMoveParentFrame();
 }
 
-
-InfolistView::InfolistView(
-    InfolistWindowView* parent_infolist_window)
-    : parent_infolist_window_(parent_infolist_window),
-      title_label_(NULL),
-      description_label_(NULL) {
-}
-
-void InfolistView::Init() {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);  // |this| owns |layout|.
-  title_label_ = new views::Label;
-  title_label_->SetFont(
-      title_label_->font().DeriveFont(kFontSizeDelta + 2));
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  views::View* wrapped_title_label =
-      WrapWithPadding(title_label_, gfx::Insets(4, 7, 2, 4));
-
-  description_label_ = new views::Label;
-  description_label_->SetFont(
-      description_label_->font().DeriveFont(kFontSizeDelta - 2));
-  description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  description_label_->SetMultiLine(true);
-  views::View* wrapped_description_label =
-      WrapWithPadding(description_label_, gfx::Insets(2, 17, 4, 4));
-
-  // Initialize the column set with three columns.
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                         0, views::GridLayout::FIXED, 200, 0);
-
-  layout->StartRow(0, 0);
-  layout->AddView(wrapped_title_label);
-  layout->StartRow(0, 0);
-  layout->AddView(wrapped_description_label);
-}
-
-
-void InfolistView::SetTitleText(const std::wstring& text) {
-  title_label_->SetText(text);
-}
-
-void InfolistView::SetDescriptionText(const std::wstring& text) {
-  description_label_->SetText(text);
-}
-
-void InfolistView::Select() {
-  set_background(
-      views::Background::CreateSolidBackground(
-          kSelectedInfolistRowBackgroundColor));
-  set_border(
-      views::Border::CreateSolidBorder(1, kSelectedInfolistRowFrameColor));
-  // Need to call SchedulePaint() for background and border color changes.
-  SchedulePaint();
-}
-
-void InfolistView::Unselect() {
-  set_background(NULL);
-  set_border(NULL);
-  SchedulePaint();  // See comments at Select().
-}
-
-InfolistWindowView::InfolistWindowView(
-    views::Widget* parent_frame, views::Widget* candidate_window_frame)
-    : parent_frame_(parent_frame),
-      candidate_window_frame_(candidate_window_frame),
-      infolist_area_(NULL),
-      visible_(false) {
-}
-
-InfolistWindowView::~InfolistWindowView() {
-  if (infolist_area_ != NULL) {
-    infolist_area_->RemoveAllChildViews(false);
-  }
-
-  for (size_t i = 0; i < infolist_views_.size(); ++i) {
-    delete infolist_views_[i];
-  }
-}
-
-void InfolistWindowView::Init() {
-  // Set the background and the border of the view.
-  set_background(
-      views::Background::CreateSolidBackground(kDefaultBackgroundColor));
-  set_border(views::Border::CreateSolidBorder(1, kFrameColor));
-  infolist_area_ = new views::View;
-
-  // Set the window layout of the view
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);  // |this| owns |layout|.
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0, views::GridLayout::USE_PREF, 0, 0);
-  layout->SetInsets(1, 1, 1, 1);
-
-  // Add the infolist area
-  layout->StartRow(0, 0);
-  views::Label* caption_label = NULL;
-  caption_label = new views::Label;
-  caption_label->SetFont(caption_label->font().DeriveFont(kFontSizeDelta - 2));
-  caption_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  caption_label->SetText(
-      UTF16ToWide(
-          l10n_util::GetStringUTF16(IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE)));
-  views::View* wrapped_caption_label =
-      WrapWithPadding(caption_label, gfx::Insets(2, 2, 2, 2));
-  wrapped_caption_label->set_background(
-      views::Background::CreateSolidBackground(kInfolistTitleBackgroundColor));
-  layout->AddView(wrapped_caption_label);
-
-  layout->StartRow(0, 0);
-  layout->AddView(infolist_area_);  // |infolist_area_| is owned by |this|.
-}
-
-void InfolistWindowView::Hide() {
-  visible_ = false;
-  show_hide_timer_.Stop();
-  parent_frame_->Hide();
-}
-
-void InfolistWindowView::DelayHide(unsigned int milliseconds) {
-  visible_ = false;
-  show_hide_timer_.Stop();
-  show_hide_timer_.Start(base::TimeDelta::FromMilliseconds(milliseconds),
-                         this,
-                         &InfolistWindowView::OnShowHideTimer);
-}
-
-void InfolistWindowView::Show() {
-  visible_ = true;
-  show_hide_timer_.Stop();
-  ResizeAndMoveParentFrame();
-  parent_frame_->Show();
-}
-
-void InfolistWindowView::DelayShow(unsigned int milliseconds) {
-  visible_ = true;
-  show_hide_timer_.Stop();
-  show_hide_timer_.Start(base::TimeDelta::FromMilliseconds(milliseconds),
-                         this,
-                         &InfolistWindowView::OnShowHideTimer);
-}
-
-void InfolistWindowView::OnShowHideTimer() {
-  if (visible_) {
-    Show();
-  } else {
-    Hide();
-  }
-}
-
-void InfolistWindowView::UpdateCandidates(
-    const InputMethodLookupTable& new_lookup_table) {
-  lookup_table_ = new_lookup_table;
-  if (!lookup_table_.mozc_candidates.has_usages()) {
-    return;
-  }
-  const mozc::commands::InformationList& usages =
-      lookup_table_.mozc_candidates.usages();
-  if (usages.information_size() <= 0) {
-    return;
-  }
-  for (int i = infolist_views_.size(); i < usages.information_size(); ++i) {
-    InfolistView* infolist_row = new InfolistView(this);
-    infolist_row->Init();
-    infolist_views_.push_back(infolist_row);
-  }
-  infolist_area_->RemoveAllChildViews(false);
-
-  views::GridLayout* layout = new views::GridLayout(infolist_area_);
-  // |infolist_area_| owns |layout|.
-  infolist_area_->SetLayoutManager(layout);
-
-  // Initialize the column set.
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        0, views::GridLayout::USE_PREF, 0, 0);
-  layout->SetInsets(0, 0, 0, 0);
-
-  for (int i = 0; i < usages.information_size(); ++i) {
-    InfolistView* infolist_row = new InfolistView(this);
-    infolist_row->Init();
-    infolist_row->SetTitleText(
-      UTF8ToWide(usages.information(i).title()));
-    infolist_row->SetDescriptionText(
-      UTF8ToWide(usages.information(i).description()));
-    if (usages.has_focused_index() &&
-        (static_cast<int>(usages.focused_index()) == i)) {
-      infolist_row->Select();
-    } else {
-      infolist_row->Unselect();
-    }
-    infolist_views_.push_back(infolist_row);
-    layout->StartRow(0, 0);
-    layout->AddView(infolist_row);
-  }
-
-  layout->Layout(infolist_area_);
-}
-
-void InfolistWindowView::ResizeAndMoveParentFrame() {
-  int x, y;
-  gfx::Rect old_bounds = parent_frame_->GetClientAreaScreenBounds();
-  gfx::Rect screen_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(
-      parent_frame_->GetNativeView());
-  // The size.
-  gfx::Rect frame_bounds = old_bounds;
-  frame_bounds.set_size(GetPreferredSize());
-
-  gfx::Rect candidatewindow_bounds;
-  if (candidate_window_frame_ != NULL) {
-    candidatewindow_bounds =
-        candidate_window_frame_->GetClientAreaScreenBounds();
-  }
-
-  if (screen_bounds.height() == 0 || screen_bounds.width() == 0) {
-    x = candidatewindow_bounds.right();
-    y = candidatewindow_bounds.y();
-  }
-  if (candidatewindow_bounds.right() + frame_bounds.width() >
-      screen_bounds.right()) {
-    x = candidatewindow_bounds.x() - frame_bounds.width();
-  } else {
-    x = candidatewindow_bounds.right();
-  }
-  if (candidatewindow_bounds.y() + frame_bounds.height() >
-      screen_bounds.bottom()) {
-    y = screen_bounds.bottom() - frame_bounds.height();
-  } else {
-    y = candidatewindow_bounds.y();
-  }
-
-  frame_bounds.set_x(x);
-  frame_bounds.set_y(y);
-
-  // Move the window per the cursor location.
-  // SetBounds() is not cheap. Only call this when it is really changed.
-  if (frame_bounds != old_bounds)
-    parent_frame_->SetBounds(frame_bounds);
-}
-
-void InfolistWindowView::VisibilityChanged(View* starting_from,
-                                           bool is_visible) {
-  if (is_visible) {
-    // If the visibility of candidate window is changed,
-    // we should move the frame to the right position.
-    ResizeAndMoveParentFrame();
-  }
-}
-void InfolistWindowView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  View::OnBoundsChanged(previous_bounds);
-  ResizeAndMoveParentFrame();
-}
-
-
 bool CandidateWindowController::Impl::Init() {
   // Create the candidate window view.
   CreateView();
@@ -1658,22 +1247,11 @@ void CandidateWindowController::Impl::CreateView() {
   candidate_window_->AddObserver(this);
 
   frame_->SetContentsView(candidate_window_);
-
-
-  // Create the infolist window.
-  infolist_frame_.reset(new views::Widget);
-  infolist_frame_->Init(
-      views::Widget::InitParams(views::Widget::InitParams::TYPE_POPUP));
-  infolist_window_ = new InfolistWindowView(
-      infolist_frame_.get(), frame_.get());
-  infolist_window_->Init();
-  infolist_frame_->SetContentsView(infolist_window_);
 }
 
 CandidateWindowController::Impl::Impl()
     : ibus_ui_controller_(IBusUiController::Create()),
-      candidate_window_(NULL),
-      infolist_window_(NULL) {
+      frame_(NULL) {
 }
 
 CandidateWindowController::Impl::~Impl() {
@@ -1688,7 +1266,6 @@ void CandidateWindowController::Impl::OnHideAuxiliaryText() {
 
 void CandidateWindowController::Impl::OnHideLookupTable() {
   candidate_window_->HideLookupTable();
-  infolist_window_->Hide();
 }
 
 void CandidateWindowController::Impl::OnHidePreeditText() {
@@ -1716,7 +1293,6 @@ void CandidateWindowController::Impl::OnSetCursorLocation(
       gfx::Rect(x, y, width, height));
   // Move the window per the cursor location.
   candidate_window_->ResizeAndMoveParentFrame();
-  infolist_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
@@ -1736,34 +1312,11 @@ void CandidateWindowController::Impl::OnUpdateLookupTable(
   // If it's not visible, hide the lookup table and return.
   if (!lookup_table.visible) {
     candidate_window_->HideLookupTable();
-    infolist_window_->Hide();
     return;
   }
 
   candidate_window_->UpdateCandidates(lookup_table);
   candidate_window_->ShowLookupTable();
-
-  const mozc::commands::Candidates& candidates = lookup_table.mozc_candidates;
-
-  if (lookup_table.mozc_candidates.has_usages() &&
-      lookup_table.mozc_candidates.usages().information_size() > 0) {
-    infolist_window_->UpdateCandidates(lookup_table);
-    infolist_window_->ResizeAndMoveParentFrame();
-    if (candidates.has_focused_index() && candidates.candidate_size() > 0) {
-      const int focused_row =
-        candidates.focused_index() - candidates.candidate(0).index();
-      if (candidates.candidate_size() >= focused_row &&
-          candidates.candidate(focused_row).has_information_id()) {
-        infolist_window_->DelayShow(kInfolistShowDelayMilliSeconds);
-      } else {
-        infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);
-      }
-    } else {
-      infolist_window_->DelayHide(kInfolistHideDelayMilliSeconds);
-    }
-  } else {
-    infolist_window_->Hide();
-  }
 }
 
 void CandidateWindowController::Impl::OnUpdatePreeditText(
@@ -1786,7 +1339,6 @@ void CandidateWindowController::Impl::OnCandidateCommitted(int index,
 void CandidateWindowController::Impl::OnConnectionChange(bool connected) {
   if (!connected) {
     candidate_window_->HideAll();
-    infolist_window_->Hide();
   }
 }
 
