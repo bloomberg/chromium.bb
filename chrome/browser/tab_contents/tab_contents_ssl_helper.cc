@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -40,6 +41,17 @@ gfx::Image* GetCertIcon() {
       IDR_INFOBAR_SAVE_PASSWORD);
 }
 
+bool CertMatchesFilter(const net::X509Certificate& cert,
+                       const base::DictionaryValue& filter) {
+  // TODO(markusheintz): This is the minimal required filter implementation.
+  // Implement a better matcher.
+  std::string common_name;
+  if (filter.GetString("ISSUER.CN", &common_name) &&
+      (cert.issuer().common_name == common_name)) {
+    return true;
+  }
+  return false;
+}
 
 // SSLCertAddedInfoBarDelegate ------------------------------------------------
 
@@ -196,21 +208,33 @@ void TabContentsSSLHelper::SelectClientCertificate(
 
   HostContentSettingsMap* map =
       tab_contents_->profile()->GetHostContentSettingsMap();
-  scoped_ptr<Value> cert_filter(map->GetContentSettingValue(
+  scoped_ptr<Value> filter(map->GetContentSettingValue(
       requesting_url,
       requesting_url,
       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
       std::string()));
 
-  // TODO(markusheintz): Implement filter for matching specific certificate
-  // criteria.
-  // A non NULL |cert_filter| is equvivalent to "allow certificate-auto-submit".
-  // If NULL is returned then the dialog to select a client certificate is
-  // displayed.
-  if (cert_filter.get() &&
-      cert_request_info->client_certs.size() == 1) {
-    net::X509Certificate* cert = cert_request_info->client_certs[0].get();
-    handler->CertificateSelected(cert);
+  scoped_refptr<net::X509Certificate> selected_cert;
+  if (filter.get()) {
+    // Try to automatically select a client certificate.
+    DCHECK(filter->IsType(Value::TYPE_DICTIONARY));
+    DictionaryValue* filter_dict = static_cast<DictionaryValue*>(filter.get());
+
+    // Get all client certificates that match the criterias in |filter_dict|.
+    const std::vector<scoped_refptr<net::X509Certificate> >& all_client_certs =
+        cert_request_info->client_certs;
+    std::vector<scoped_refptr<net::X509Certificate> > matching_client_certs;
+    for (size_t i = 0; i < all_client_certs.size(); ++i) {
+      if (CertMatchesFilter(*all_client_certs[i], *filter_dict))
+        matching_client_certs.push_back(all_client_certs[i]);
+    }
+
+    if (matching_client_certs.size() == 1)
+      selected_cert = matching_client_certs[0];
+  }
+
+  if (selected_cert) {
+    handler->CertificateSelected(selected_cert);
   } else {
     ShowClientCertificateRequestDialog(handler);
   }
