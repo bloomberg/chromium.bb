@@ -573,9 +573,6 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
 
 // static
 bool ProfileManager::IsMultipleProfilesEnabled() {
-#if defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)
-  return true;
-#endif
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles);
 }
 
