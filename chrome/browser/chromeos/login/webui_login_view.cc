@@ -33,6 +33,27 @@ const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
 const char kAccelNameAccessibility[] = "accessibility";
 const char kAccelNameEnrollment[] = "enrollment";
 
+// A View class which places its first child at the right most position.
+class RightAlignedView : public views::View {
+ public:
+  virtual void Layout() OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+};
+
+void RightAlignedView::Layout() {
+  if (has_children()) {
+    views::View* child = child_at(0);
+    gfx::Size preferred_size = child->GetPreferredSize();
+    child->SetBounds(width() - preferred_size.width(),
+                     0, preferred_size.width(), preferred_size.height());
+  }
+}
+
+void RightAlignedView::ChildPreferredSizeChanged(View* child) {
+  Layout();
+}
+
+
 }  // namespace
 
 namespace chromeos {
@@ -228,14 +249,19 @@ void WebUILoginView::InitStatusArea() {
   status_area_->SetVisible(status_area_visibility_on_init_);
 
   views::Widget* login_window = WebUILoginDisplay::GetLoginWindow();
-  gfx::Size size = status_area_->GetPreferredSize();
-  gfx::Rect bounds(
-      base::i18n::IsRTL() ?
-          kStatusAreaCornerPadding :
-          width() - size.width() - kStatusAreaCornerPadding,
-      kStatusAreaCornerPadding,
-      size.width(),
-      size.height());
+  // Width of |status_window| is meant to be large enough.
+  // The current value of status_area_->GetPreferredSize().width()
+  // will be too small when button status is changed.
+  // (e.g. when CapsLock indicator appears)
+  gfx::Size widget_size(width()/2,
+                        status_area_->GetPreferredSize().height());
+  const int widget_x = base::i18n::IsRTL() ?
+      kStatusAreaCornerPadding :
+      width() - widget_size.width() - kStatusAreaCornerPadding;
+  gfx::Rect widget_bounds(widget_x, kStatusAreaCornerPadding,
+                          widget_size.width(), widget_size.height());
+  // TODO(nkostylev): Make status area in the same window as |webui_login_|
+  // once RenderWidgetHostViewViews is ready.
 #if defined(TOUCH_UI)
   // TODO(oshima): Window manager doesn't know about touch event, hence can't
   // activate the window. Use POPUP for now. This will be non issue
@@ -246,7 +272,7 @@ void WebUILoginView::InitStatusArea() {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 #endif
-  widget_params.bounds = bounds;
+  widget_params.bounds = widget_bounds;
   widget_params.transparent = true;
   widget_params.parent = login_window->GetNativeView();
   status_window_ = new views::Widget;
@@ -255,7 +281,9 @@ void WebUILoginView::InitStatusArea() {
       status_window_->GetNativeView(),
       chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
       NULL);
-  status_window_->SetContentsView(status_area_);
+  views::View* contents_view = new RightAlignedView;
+  contents_view->AddChildView(status_area_);
+  status_window_->SetContentsView(contents_view);
   status_window_->Show();
 }
 
