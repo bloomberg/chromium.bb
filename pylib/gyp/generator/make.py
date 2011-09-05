@@ -772,22 +772,21 @@ class XcodeSettings(object):
 
     self._Appendf(cflags, 'GCC_OPTIMIZATION_LEVEL', '-O%s')
 
-    dbg_format = self._Settings().get('DEBUG_INFORMATION_FORMAT', 'dwarf')
-    if dbg_format == 'none':
-      pass
-    elif dbg_format == 'dwarf':
-      cflags.append('-gdwarf-2')
-    elif dbg_format == 'stabs':
-      raise NotImplementedError('stabs debug format is not supported yet.')
-    elif dbg_format == 'dwarf-with-dsym':
-      # TODO(thakis): this is needed for mac_breakpad chromium builds, but not
-      # for regular chromium builds.
-      # -gdwarf-2 as well, but needs to invoke dsymutil after linking too:
-      #   dsymutil build/Default/TestAppGyp.app/Contents/MacOS/TestAppGyp \
-      #       -o build/Default/TestAppGyp.app.dSYM
-      raise NotImplementedError('dsym debug format is not supported yet.')
-    else:
-      raise NotImplementedError('Unknown debug format %s' % dbg_format)
+    if self._Test('GCC_GENERATE_DEBUGGING_SYMBOLS', 'YES', default='YES'):
+      dbg_format = self._Settings().get('DEBUG_INFORMATION_FORMAT', 'dwarf')
+      if dbg_format == 'dwarf':
+        cflags.append('-gdwarf-2')
+      elif dbg_format == 'stabs':
+        raise NotImplementedError('stabs debug format is not supported yet.')
+      elif dbg_format == 'dwarf-with-dsym':
+        # TODO(thakis): this is needed for mac_breakpad chromium builds, but not
+        # for regular chromium builds.
+        # -gdwarf-2 as well, but needs to invoke dsymutil after linking too:
+        #   dsymutil build/Default/TestAppGyp.app/Contents/MacOS/TestAppGyp \
+        #       -o build/Default/TestAppGyp.app.dSYM
+        raise NotImplementedError('dsym debug format is not supported yet.')
+      else:
+        raise NotImplementedError('Unknown debug format %s' % dbg_format)
 
     if self._Test('GCC_SYMBOLS_PRIVATE_EXTERN', 'YES', default='NO'):
       cflags.append('-fvisibility=hidden')
@@ -804,6 +803,9 @@ class XcodeSettings(object):
     self._WarnUnimplemented('ARCHS')
     self._WarnUnimplemented('COPY_PHASE_STRIP')
     self._WarnUnimplemented('DEPLOYMENT_POSTPROCESSING')
+    self._WarnUnimplemented('GCC_DEBUGGING_SYMBOLS')
+    self._WarnUnimplemented('GCC_ENABLE_OBJC_EXCEPTIONS')
+    self._WarnUnimplemented('GCC_ENABLE_OBJC_GC')
     self._WarnUnimplemented('INFOPLIST_PREPROCESS')
     self._WarnUnimplemented('INFOPLIST_PREPROCESSOR_DEFINITIONS')
     self._WarnUnimplemented('STRIPFLAGS')
