@@ -149,7 +149,7 @@ void URLBlacklist::Allow(const std::string& filter) {
 }
 
 bool URLBlacklist::IsURLBlocked(const GURL& url) const {
-  SchemeFlag flag;
+  SchemeFlag flag = SCHEME_ALL;
   if (!SchemeToFlag(url.scheme(), &flag)) {
     // Not a scheme that can be filtered.
     return false;
