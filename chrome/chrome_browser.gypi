@@ -3869,6 +3869,7 @@
           'dependencies': [
             '../third_party/libevent/libevent.gyp:libevent',
             'browser/chromeos/input_method/input_method.gyp:gencode',
+            'browser/chromeos/input_method/input_method.gyp:mozc_commands_proto',
           ],
           'sources!': [
             'browser/background_mode_manager_linux.cc',
