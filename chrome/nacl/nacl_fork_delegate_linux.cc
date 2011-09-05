@@ -46,22 +46,19 @@ void NaClForkDelegate::Init(const bool sandboxed,
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
   fds_to_map.push_back(std::make_pair(sandboxdesc, kNaClSandboxDescriptor));
   ready_ = false;
-  return;  // Disable nacl_helper while fixing some issues.
-
   FilePath helper_exe;
   FilePath helper_bootstrap_exe;
   if (PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe) &&
       PathService::Get(chrome::FILE_NACL_HELPER_BOOTSTRAP,
                        &helper_bootstrap_exe) &&
       !RunningOnValgrind()) {
-    CommandLine::StringVector argv = CommandLine::ForCurrentProcess()->argv();
-    argv[0] = helper_bootstrap_exe.value();
-    argv[1] = helper_exe.value();
-    argv[2] = kNaClHelperAtZero;
+    CommandLine cmd_line(helper_bootstrap_exe);
+    cmd_line.AppendArgPath(helper_exe);
+    cmd_line.AppendArgNative(kNaClHelperAtZero);
     base::LaunchOptions options;
     options.fds_to_remap = &fds_to_map;
     options.clone_flags = CLONE_FS | SIGCHLD;
-    ready_ = base::LaunchProcess(argv, options, NULL);
+    ready_ = base::LaunchProcess(cmd_line.argv(), options, NULL);
     // parent and error cases are handled below
   }
   if (HANDLE_EINTR(close(fds[1])) != 0)
