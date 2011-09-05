@@ -214,11 +214,11 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=bf53843a6d61
+readonly UPSTREAM_REV=c98f5e2f94f5
 
 # Most of the time, these should be the same.
-readonly     CLANG_REV=138551
-readonly DRAGONEGG_REV=138551
+readonly     CLANG_REV=139099
+readonly DRAGONEGG_REV=139099
 
 readonly NEWLIB_REV=57d709868c78
 readonly BINUTILS_REV=2f1d9c8ef12d
@@ -1032,6 +1032,7 @@ llvm-clean() {
 
 #+ llvm-link-clang       - Add tools/clang symlink into llvm directory
 llvm-link-clang() {
+  rm -f "${TC_SRC_LLVM}"/tools/clang
   ln -sf "../../../clang" "${TC_SRC_LLVM}"/tools/clang
 }
 
