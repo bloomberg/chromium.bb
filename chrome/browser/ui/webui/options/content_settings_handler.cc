@@ -169,11 +169,13 @@ DictionaryValue* GetGeolocationExceptionForPage(
 // passed to the caller.
 DictionaryValue* GetNotificationExceptionForPage(
     const ContentSettingsPattern& pattern,
-    ContentSetting setting) {
+    ContentSetting setting,
+    const std::string& provider_name) {
   DictionaryValue* exception = new DictionaryValue();
   exception->SetString(kDisplayPattern, pattern.ToString());
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kOrigin, pattern.ToString());
+  exception->SetString(kSource, provider_name);
   return exception;
 }
 
@@ -519,7 +521,7 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
        ++i) {
     const HostContentSettingsMap::PatternSettingSourceTuple& tuple(*i);
     exceptions.Append(
-        GetNotificationExceptionForPage(tuple.a, tuple.c));
+        GetNotificationExceptionForPage(tuple.a, tuple.c, tuple.d));
   }
 
   StringValue type_string(
