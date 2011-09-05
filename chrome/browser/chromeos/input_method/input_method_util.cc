@@ -141,6 +141,8 @@ const struct EnglishToResouceId {
   // For ibus-mozc-chewing.
   { "English",
     IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_ENGLISH_MODE },
+  { "_Chinese",
+    IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_CHINESE_MODE },
   { "Full-width English",
     IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_FULL_WIDTH_ENGLISH_MODE },
 
