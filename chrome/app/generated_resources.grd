@@ -9156,7 +9156,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         External Storage
       </message>
       <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING" desc="Warning displayed to user when viewing downloads folder.">
-	<ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Caution:<ph name="END_BOLD">&lt;/strong&gt;</ph>  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
+	<ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Caution:<ph name="END_BOLD">&lt;/strong&gt;</ph>  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK">&lt;a href="javascript://"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_FILE_BROWSER_NAME_COLUMN_LABEL" desc="Name column label.">
         Name

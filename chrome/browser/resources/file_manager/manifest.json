@@ -15,7 +15,8 @@
     "mediaPlayerPrivate",
     "unlimitedStorage",
     "chrome://extension-icon/",
-    "chrome://resources/"
+    "chrome://resources/",
+    "tabs"
   ],
   "app": {
     "launch": {

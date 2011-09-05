@@ -185,6 +185,11 @@ FileManager.prototype = {
   const DOWNLOADS_DIRECTORY = '/Downloads';
 
   /**
+   * Height of the downloads folder warning, in px.
+   */
+  const DOWNLOADS_WARNING_HEIGHT = '57px';
+
+  /**
    * Location of the FAQ about the downloads directory.
    */
   const DOWNLOADS_FAQ_URL = 'http://www.google.com/support/chromeos/bin/' +
@@ -545,6 +550,13 @@ FileManager.prototype = {
     this.newFolderButton_ = this.dialogDom_.querySelector('.new-folder');
     this.copyButton_ = this.dialogDom_.querySelector('.clipboard-copy');
     this.pasteButton_ = this.dialogDom_.querySelector('.clipboard-paste');
+
+    this.downloadsWarning_ =
+        this.dialogDom_.querySelector('.downloads-warning');
+    var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
+    this.downloadsWarning_.lastElementChild.innerHTML = html;
+    var link = this.downloadsWarning_.querySelector('a');
+    link.addEventListener('click', this.onDownloadsWarningClick_.bind(this));
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
@@ -1784,6 +1796,13 @@ FileManager.prototype = {
     return chrome.extension.getURL('').split('/')[2];
   };
 
+  FileManager.prototype.onDownloadsWarningClick_ = function(event) {
+    chrome.tabs.create({url: DOWNLOADS_FAQ_URL});
+    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
+      this.onCancel_();
+    }
+  };
+
   FileManager.prototype.onTaskButtonClicked_ = function(event) {
     chrome.fileBrowserPrivate.executeTask(event.srcElement.task.taskId,
                                           this.selection.urls);
@@ -2353,6 +2372,16 @@ FileManager.prototype = {
   };
 
   /**
+   * Returns true if the local disk is low on available space.
+   *
+   * TODO(rginda): This is hardcoded to return false now, needs to be hooked
+   * up for real after tbarzac's change to report disk space lands.
+   */
+  FileManager.prototype.isLocalDiskSpaceLow = function() {
+    return false;
+  };
+
+  /**
    * Queue up a file copy operation based on the current clipboard.
    */
   FileManager.prototype.pasteFromClipboard = function(successCallback,
@@ -2584,6 +2613,21 @@ FileManager.prototype = {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
+    if (this.currentDirEntry_.fullPath.substr(0, DOWNLOADS_DIRECTORY.length) ==
+        DOWNLOADS_DIRECTORY &&
+        this.isLocalDiskSpaceLow()) {
+      if (this.downloadsWarning_.style.height != DOWNLOADS_WARNING_HEIGHT) {
+        // Current path starts with DOWNLOADS_DIRECTORY, show the warning.
+        this.downloadsWarning_.style.height = DOWNLOADS_WARNING_HEIGHT;
+        this.requestResize_(100);
+      }
+    } else {
+      if (this.downloadsWarning_.style.height != '0') {
+        this.downloadsWarning_.style.height = '0';
+        this.requestResize_(100);
+      }
+    }
+
     this.updateCommands_();
     this.updateOkButton_();
 
