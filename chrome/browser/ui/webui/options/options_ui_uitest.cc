@@ -149,14 +149,15 @@ TEST_F(OptionsUITest, NavBarCheck) {
   ASSERT_EQ(true, navbar_exist);
 
   // Check section headers in navbar.
-  // For ChromeOS, there should be 1 + 6:
-  //   search, basics, personal, systerm, internet, under the hood and users
-  // For other platforms, there should 1 + 3:
-  //   search, basics, personal and under the hood.
+  // For ChromeOS, there should be 1 + 7:
+  //   Search, Basics, Personal, System, Internet, Under the Hood,
+  //   Users and Extensions.
+  // For other platforms, there should 1 + 4:
+  //   Search, Basics, Personal, Under the Hood and Extensions.
 #if defined(OS_CHROMEOS)
-  const int kExpectedSections = 1 + 6;
+  const int kExpectedSections = 1 + 7;
 #else
-  const int kExpectedSections = 1 + 3;
+  const int kExpectedSections = 1 + 4;
 #endif
   int num_of_sections = 0;
   ASSERT_TRUE(tab->ExecuteAndExtractInt(L"",
