@@ -4,44 +4,21 @@
 
 #include "chrome/browser/extensions/apps_promo.h"
 
-#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/shown_sections_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/common/url_constants.h"
-#include "content/common/notification_service.h"
-#include "net/base/load_flags.h"
-#include "net/url_request/url_request_status.h"
 
 const int AppsPromo::kDefaultAppsCounterMax = 10;
 
 namespace {
 
 // The default logo for the promo.
-const char kDefaultLogo[] = "chrome://theme/IDR_WEBSTORE_ICON";
-
-// The default promo data (this is only used for testing with
-// --force-apps-promo-visible).
-const char kDefaultHeader[] = "Browse thousands of apps and games for Chrome";
-const char kDefaultButton[] = "Visit the Chrome Web Store";
-const char kDefaultExpire[] = "No thanks";
-const char kDefaultLink[] = "https://chrome.google.com/webstore";
-
-// Http success status code.
-const int kHttpSuccess = 200;
-
-// The match pattern for valid logo URLs.
-const char kValidLogoPattern[] = "https://*.google.com/*.png";
-
-// The prefix for 'data' URL images.
-const char kPNGDataURLPrefix[] = "data:image/png;base64,";
+const char kDefaultPromoLogo[] = "chrome://theme/IDR_WEBSTORE_ICON";
 
 // Returns the string pref at |path|, using |fallback| as the default (if there
 // is no pref value present). |fallback| is used for debugging in concert with
@@ -58,24 +35,6 @@ std::string GetStringPref(const char* path, const std::string& fallback) {
 
 } // namespace
 
-AppsPromo::PromoData::PromoData() {}
-AppsPromo::PromoData::PromoData(const std::string& id,
-                                const std::string& header,
-                                const std::string& button,
-                                const GURL& link,
-                                const std::string& expire,
-                                const GURL& logo,
-                                const int user_group)
-    : id(id),
-      header(header),
-      button(button),
-      link(link),
-      expire(expire),
-      logo(logo),
-      user_group(user_group) {}
-
-AppsPromo::PromoData::~PromoData() {}
-
 // static
 void AppsPromo::RegisterPrefs(PrefService* local_state) {
   std::string empty;
@@ -85,7 +44,6 @@ void AppsPromo::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterStringPref(prefs::kNTPWebStorePromoButton, empty);
   local_state->RegisterStringPref(prefs::kNTPWebStorePromoLink, empty);
   local_state->RegisterStringPref(prefs::kNTPWebStorePromoLogo, empty);
-  local_state->RegisterStringPref(prefs::kNTPWebStorePromoLogoSource, empty);
   local_state->RegisterStringPref(prefs::kNTPWebStorePromoExpire, empty);
   local_state->RegisterIntegerPref(prefs::kNTPWebStorePromoUserGroup, 0);
 }
@@ -104,8 +62,21 @@ void AppsPromo::RegisterUserPrefs(PrefService* prefs) {
                             std::string(),
                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kNTPHideWebStorePromo,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
+                            false,
+                            PrefService::UNSYNCABLE_PREF);
+}
+
+// static
+void AppsPromo::ClearPromo() {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->ClearPref(prefs::kNTPWebStoreEnabled);
+  local_state->ClearPref(prefs::kNTPWebStorePromoId);
+  local_state->ClearPref(prefs::kNTPWebStorePromoHeader);
+  local_state->ClearPref(prefs::kNTPWebStorePromoButton);
+  local_state->ClearPref(prefs::kNTPWebStorePromoLink);
+  local_state->ClearPref(prefs::kNTPWebStorePromoLogo);
+  local_state->ClearPref(prefs::kNTPWebStorePromoExpire);
+  local_state->ClearPref(prefs::kNTPWebStorePromoUserGroup);
 }
 
 // static
@@ -129,68 +100,68 @@ bool AppsPromo::IsWebStoreSupportedForLocale() {
 }
 
 // static
+std::string AppsPromo::GetPromoButtonText() {
+  return GetStringPref(prefs::kNTPWebStorePromoButton, "Click here now");
+}
+
+// static
+std::string AppsPromo::GetPromoId() {
+  return GetStringPref(prefs::kNTPWebStorePromoId, "");
+}
+
+// static
+std::string AppsPromo::GetPromoHeaderText() {
+  return GetStringPref(prefs::kNTPWebStorePromoHeader, "Get great apps!");
+}
+
+// static
+GURL AppsPromo::GetPromoLink() {
+  return GURL(GetStringPref(prefs::kNTPWebStorePromoLink,
+                            "https://chrome.google.com/webstore"));
+}
+
+// static
+GURL AppsPromo::GetPromoLogo() {
+  PrefService* local_state = g_browser_process->local_state();
+  GURL logo_url(local_state->GetString(prefs::kNTPWebStorePromoLogo));
+  if (logo_url.is_valid() && logo_url.SchemeIs("data"))
+    return logo_url;
+  return GURL(kDefaultPromoLogo);
+}
+
+// static
+std::string AppsPromo::GetPromoExpireText() {
+  return GetStringPref(prefs::kNTPWebStorePromoExpire, "No thanks.");
+}
+
+// static
+int AppsPromo::GetPromoUserGroup() {
+  PrefService* local_state = g_browser_process->local_state();
+  return local_state->GetInteger(prefs::kNTPWebStorePromoUserGroup);
+}
+
+// static
+void AppsPromo::SetPromo(const std::string& id,
+                         const std::string& header_text,
+                         const std::string& button_text,
+                         const GURL& link,
+                         const std::string& expire_text,
+                         const GURL& logo,
+                         const int user_group) {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kNTPWebStorePromoId, id);
+  local_state->SetString(prefs::kNTPWebStorePromoButton, button_text);
+  local_state->SetString(prefs::kNTPWebStorePromoHeader, header_text);
+  local_state->SetString(prefs::kNTPWebStorePromoLink, link.spec());
+  local_state->SetString(prefs::kNTPWebStorePromoLogo, logo.spec());
+  local_state->SetString(prefs::kNTPWebStorePromoExpire, expire_text);
+  local_state->SetInteger(prefs::kNTPWebStorePromoUserGroup, user_group);
+}
+
+// static
 void AppsPromo::SetWebStoreSupportedForLocale(bool supported) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(prefs::kNTPWebStoreEnabled, supported);
-}
-
-// static
-void AppsPromo::ClearPromo() {
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->ClearPref(prefs::kNTPWebStoreEnabled);
-  local_state->ClearPref(prefs::kNTPWebStorePromoId);
-  local_state->ClearPref(prefs::kNTPWebStorePromoHeader);
-  local_state->ClearPref(prefs::kNTPWebStorePromoButton);
-  local_state->ClearPref(prefs::kNTPWebStorePromoLink);
-  local_state->ClearPref(prefs::kNTPWebStorePromoLogo);
-  local_state->ClearPref(prefs::kNTPWebStorePromoLogoSource);
-  local_state->ClearPref(prefs::kNTPWebStorePromoExpire);
-  local_state->ClearPref(prefs::kNTPWebStorePromoUserGroup);
-}
-
-// static
-AppsPromo::PromoData AppsPromo::GetPromo() {
-  PromoData data;
-  PrefService* local_state = g_browser_process->local_state();
-
-  data.id = GetStringPref(prefs::kNTPWebStorePromoId, "");
-  data.link = GURL(GetStringPref(prefs::kNTPWebStorePromoLink, kDefaultLink));
-  data.user_group = local_state->GetInteger(prefs::kNTPWebStorePromoUserGroup);
-  data.header = GetStringPref(prefs::kNTPWebStorePromoHeader, kDefaultHeader);
-  data.button = GetStringPref(prefs::kNTPWebStorePromoButton, kDefaultButton);
-  data.expire = GetStringPref(prefs::kNTPWebStorePromoExpire, kDefaultExpire);
-
-  GURL logo_url(local_state->GetString(prefs::kNTPWebStorePromoLogo));
-  if (logo_url.is_valid() && logo_url.SchemeIs(chrome::kDataScheme))
-    data.logo = logo_url;
-  else
-    data.logo = GURL(kDefaultLogo);
-
-  return data;
-}
-
-// static
-void AppsPromo::SetPromo(AppsPromo::PromoData data) {
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetString(prefs::kNTPWebStorePromoId, data.id);
-  local_state->SetString(prefs::kNTPWebStorePromoButton, data.button);
-  local_state->SetString(prefs::kNTPWebStorePromoHeader, data.header);
-  local_state->SetString(prefs::kNTPWebStorePromoLink, data.link.spec());
-  local_state->SetString(prefs::kNTPWebStorePromoLogo, data.logo.spec());
-  local_state->SetString(prefs::kNTPWebStorePromoExpire, data.expire);
-  local_state->SetInteger(prefs::kNTPWebStorePromoUserGroup, data.user_group);
-}
-
-// static
-GURL AppsPromo::GetSourcePromoLogoURL() {
-  return GURL(GetStringPref(prefs::kNTPWebStorePromoLogoSource, ""));
-}
-
-// static
-void AppsPromo::SetSourcePromoLogoURL(GURL logo_source) {
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetString(prefs::kNTPWebStorePromoLogoSource,
-                         logo_source.spec());
 }
 
 AppsPromo::AppsPromo(PrefService* prefs)
@@ -275,14 +246,15 @@ void AppsPromo::ExpireDefaultApps() {
 }
 
 void AppsPromo::MaximizeAppsIfNecessary() {
-  PromoData promo = GetPromo();
+  std::string promo_id = GetPromoId();
+  int maximize_setting = GetPromoUserGroup();
 
   // Maximize the apps section of the NTP if this is the first time viewing the
   // specific promo and the current user group is targetted.
-  if (GetLastPromoId() != promo.id) {
-    if ((promo.user_group & GetCurrentUserGroup()) != 0)
+  if (GetLastPromoId() != promo_id) {
+    if ((maximize_setting & GetCurrentUserGroup()) != 0)
       ShownSectionsHandler::SetShownSection(prefs_, APPS);
-    SetLastPromoId(promo.id);
+    SetLastPromoId(promo_id);
   }
 }
 
@@ -324,77 +296,4 @@ AppsPromo::UserGroup AppsPromo::GetCurrentUserGroup() const {
       = prefs_->FindPreference(prefs::kNTPWebStorePromoLastId);
   CHECK(last_promo_id);
   return last_promo_id->IsDefaultValue() ? USERS_NEW : USERS_EXISTING;
-}
-
-AppsPromoLogoFetcher::AppsPromoLogoFetcher(
-    Profile* profile,
-    AppsPromo::PromoData promo_data)
-    : profile_(profile),
-      promo_data_(promo_data) {
-  if (SupportsLogoURL()) {
-    if (HaveCachedLogo()) {
-      promo_data_.logo = AppsPromo::GetPromo().logo;
-      SavePromo();
-    } else {
-      FetchLogo();
-    }
-  } else {
-    // We only care about the source URL when this fetches the logo.
-    AppsPromo::SetSourcePromoLogoURL(GURL());
-    SavePromo();
-  }
-}
-
-AppsPromoLogoFetcher::~AppsPromoLogoFetcher() {}
-
-void AppsPromoLogoFetcher::OnURLFetchComplete(const URLFetcher* source) {
-  std::string data;
-  std::string base64_data;
-
-  CHECK(source == url_fetcher_.get());
-  CHECK(source->GetResponseAsString(&data));
-
-  if (source->status().is_success() &&
-      source->response_code() == kHttpSuccess &&
-      base::Base64Encode(data, &base64_data)) {
-    AppsPromo::SetSourcePromoLogoURL(promo_data_.logo);
-    promo_data_.logo = GURL(kPNGDataURLPrefix + base64_data);
-  } else {
-    // The logo wasn't downloaded correctly or we failed to encode it in
-    // base64. Reset the source URL so we fetch it again next time. AppsPromo
-    // will revert to the default logo.
-    AppsPromo::SetSourcePromoLogoURL(GURL());
-  }
-
-  SavePromo();
-}
-
-void AppsPromoLogoFetcher::FetchLogo() {
-  CHECK(promo_data_.logo.scheme() == chrome::kHttpsScheme);
-
-  url_fetcher_.reset(URLFetcher::Create(
-      0, promo_data_.logo, URLFetcher::GET, this));
-  url_fetcher_->set_request_context(
-      g_browser_process->system_request_context());
-  url_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
-                               net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->Start();
-}
-
-bool AppsPromoLogoFetcher::HaveCachedLogo() {
-  return promo_data_.logo == AppsPromo::GetSourcePromoLogoURL();
-}
-
-void AppsPromoLogoFetcher::SavePromo() {
-  AppsPromo::SetPromo(promo_data_);
-
-  NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_STORE_PROMO_LOADED,
-      Source<Profile>(profile_),
-      NotificationService::NoDetails());
-}
-
-bool AppsPromoLogoFetcher::SupportsLogoURL() {
-  URLPattern allowed_urls(URLPattern::SCHEME_HTTPS, kValidLogoPattern);
-  return allowed_urls.MatchesURL(promo_data_.logo);
 }

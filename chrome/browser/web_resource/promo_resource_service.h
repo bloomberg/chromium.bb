@@ -11,8 +11,6 @@
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
 
-class AppsPromoLogoFetcher;
-class PrefService;
 class Profile;
 
 namespace PromoResourceServiceUtil {
@@ -22,6 +20,8 @@ namespace PromoResourceServiceUtil {
 bool CanShowPromo(Profile* profile);
 
 }  // namespace PromoResourceServiceUtil
+
+class PrefService;
 
 // A PromoResourceService fetches data from a web resource server to be used to
 // dynamically change the appearance of the New Tab Page. For example, it has
@@ -52,13 +52,6 @@ class PromoResourceService
   FRIEND_TEST_ALL_PREFIXES(PromoResourceServiceTest, UnpackWebStoreSignal);
   FRIEND_TEST_ALL_PREFIXES(
       PromoResourceServiceTest, UnpackPartialWebStoreSignal);
-  FRIEND_TEST_ALL_PREFIXES(
-      PromoResourceServiceTest, UnpackWebStoreSignalHttpsLogo);
-  FRIEND_TEST_ALL_PREFIXES(
-      PromoResourceServiceTest, UnpackWebStoreSignalHttpsLogoError);
-  FRIEND_TEST_ALL_PREFIXES(
-      PromoResourceServiceTest, UnpackWebStoreSignalHttpLogo);
-
 
   // Identifies types of Chrome builds for promo targeting.
   enum BuildType {
@@ -175,7 +168,7 @@ class PromoResourceService
   //     "answers": [
   //       {
   //         "answer_id": "1143011",
-  //         "name": "webstore_promo:15:1:https://www.google.com/logo.png",
+  //         "name": "webstore_promo:15:",
   //         "question": "Browse thousands of apps and games for Chrome.",
   //         "inproduct_target": "Visit the Chrome Web Store",
   //         "inproduct": "https://chrome.google.com/webstore?hl=en",
@@ -191,13 +184,11 @@ class PromoResourceService
   //   inproduct_target: the promo button text
   //   inproduct: the promo button link
   //   tooltip: the text for the "hide this" link on the promo
-  //   name: starts with "webstore_promo" to identify the signal. The second
+  //   name: starts with "webstore_promo" to identify the signal. the second
   //         part contains the release channels targeted (bitwise or of
-  //         BuildTypes). The third part specifies what users should maximize
-  //         the apps section of the NTP when first loading the promo (bitwise
-  //         or of AppsPromo::UserGroup). The forth part is optional and
-  //         specifies the URL of the logo image. If left out, the default
-  //         webstore logo will be used. The logo can be an HTTPS or DATA URL.
+  //         BuildTypes). The third part is optional and specifies the URL of
+  //         the logo image. In the example above, the URL is empty so the
+  //         default webstore logo will be used.
   //   answer_id: the promo's id
   void UnpackWebStoreSignal(const base::DictionaryValue& parsed_json);
 
@@ -210,9 +201,6 @@ class PromoResourceService
 
   // Overrides the current Chrome release channel for testing purposes.
   chrome::VersionInfo::Channel channel_;
-
-  // A helper that downloads the promo logo.
-  scoped_ptr<AppsPromoLogoFetcher> apps_promo_logo_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PromoResourceService);
 };

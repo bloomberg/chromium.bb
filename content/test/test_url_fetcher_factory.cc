@@ -125,41 +125,15 @@ class FakeURLFetcher : public URLFetcher {
       url_(url),
       response_data_(response_data),
       success_(success),
-      status_(success ? net::URLRequestStatus::SUCCESS :
-                        net::URLRequestStatus::FAILED, 0),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   }
 
   // Start the request.  This will call the given delegate asynchronously
   // with the pre-baked response as parameter.
-  virtual void Start() OVERRIDE {
+  virtual void Start() {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         method_factory_.NewRunnableMethod(&FakeURLFetcher::RunDelegate));
-  }
-
-  // These methods are overriden so we can use the version of
-  // OnURLFetchComplete that only has a single URLFetcher argument.
-  virtual const net::ResponseCookies& cookies() const OVERRIDE {
-    return cookies_;
-  }
-
-  virtual const std::string& GetResponseStringRef() const OVERRIDE {
-    return response_data_;
-  }
-
-  virtual bool GetResponseAsString(
-      std::string* out_response_string) const OVERRIDE {
-    *out_response_string = response_data_;
-    return true;
-  }
-
-  virtual int response_code() const OVERRIDE {
-    return success_ ? 200 : 500;
-  }
-
-  virtual const net::URLRequestStatus& status() const OVERRIDE {
-    return status_;
   }
 
  private:
@@ -169,7 +143,11 @@ class FakeURLFetcher : public URLFetcher {
   // This is the method which actually calls the delegate that is passed in the
   // constructor.
   void RunDelegate() {
-    delegate()->OnURLFetchComplete(this);
+    net::URLRequestStatus status;
+    status.set_status(success_ ? net::URLRequestStatus::SUCCESS :
+                                 net::URLRequestStatus::FAILED);
+    delegate()->OnURLFetchComplete(this, url_, status, success_ ? 200 : 500,
+                                   net::ResponseCookies(), response_data_);
   }
 
   // Pre-baked response data and flag which indicates whether the request should
@@ -177,8 +155,6 @@ class FakeURLFetcher : public URLFetcher {
   GURL url_;
   std::string response_data_;
   bool success_;
-  net::URLRequestStatus status_;
-  net::ResponseCookies cookies_;
 
   // Method factory used to run the delegate.
   ScopedRunnableMethodFactory<FakeURLFetcher> method_factory_;

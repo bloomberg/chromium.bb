@@ -11,10 +11,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/common/url_fetcher.h"
 
 class PrefService;
-class Profile;
 
 // This encapsulates business logic for:
 // - Whether to show the apps promo in the launcher
@@ -34,33 +32,13 @@ class AppsPromo {
     USERS_EXISTING = 1 << 1,
   };
 
-  // Holds all the data that specifies a promo for the apps section of the NTP.
-  struct PromoData {
-    PromoData();
-    PromoData(const std::string& id,
-              const std::string& header,
-              const std::string& button,
-              const GURL& link,
-              const std::string& expire,
-              const GURL& logo,
-              int user_group);
-    ~PromoData();
-
-    // See PromoResourceService::UnpackWebStoreSignal for descriptions of these
-    // fields.
-    std::string id;
-    std::string header;
-    std::string button;
-    GURL link;
-    std::string expire;
-    GURL logo;
-    int user_group;
-  };
-
   // Register our preferences. Parts of the promo content are stored in Local
   // State since they're independent of the user profile.
   static void RegisterPrefs(PrefService* local_state);
   static void RegisterUserPrefs(PrefService* prefs);
+
+  // Removes the current promo data.
+  static void ClearPromo();
 
   // Returns true if a promo is available for the current locale.
   static bool IsPromoSupportedForLocale();
@@ -68,20 +46,41 @@ class AppsPromo {
   // Returns true if the web store is active for the existing locale.
   static bool IsWebStoreSupportedForLocale();
 
+  // Gets the ID of the current promo.
+  static std::string GetPromoId();
+
+  // Gets the text for the promo button.
+  static std::string GetPromoButtonText();
+
+  // Gets the text for the promo header.
+  static std::string GetPromoHeaderText();
+
+  // Gets the promo link.
+  static GURL GetPromoLink();
+
+  // Gets the URL of the promo logo image.
+  static GURL GetPromoLogo();
+
+  // Gets the text for the promo "hide this" link.
+  static std::string GetPromoExpireText();
+
+  // Gets the user groups for which we should maximize the promo and apps
+  // section. The return value is a bitwise OR of UserGroup enums.
+  static int GetPromoUserGroup();
+
+  // Called to set the current promo data. The default web store logo will be
+  // used if |logo| is empty or not valid.
+  static void SetPromo(const std::string& id,
+                       const std::string& header_text,
+                       const std::string& button_text,
+                       const GURL& link,
+                       const std::string& expire_text,
+                       const GURL& logo,
+                       const int user_group);
+
   // Sets whether the web store and apps section is supported for the current
   // locale.
   static void SetWebStoreSupportedForLocale(bool supported);
-
-  // Accesses the current promo data. The default logo will be used if
-  // |promo_data.logo| is empty or not a valid 'data' URL.
-  static void ClearPromo();
-  static PromoData GetPromo();
-  static void SetPromo(PromoData promo_data);
-
-  // Gets the original URL of the logo. This should only be set when the logo
-  // was served over HTTPS.
-  static GURL GetSourcePromoLogoURL();
-  static void SetSourcePromoLogoURL(GURL original_url);
 
   explicit AppsPromo(PrefService* prefs);
   ~AppsPromo();
@@ -144,35 +143,6 @@ class AppsPromo {
   ExtensionIdSet old_default_app_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsPromo);
-};
-
-// Fetches logos over HTTPS, making sure we don't send cookies and that we
-// cache the image until its source URL changes.
-class AppsPromoLogoFetcher : public URLFetcher::Delegate {
- public:
-  AppsPromoLogoFetcher(Profile* profile,
-                       AppsPromo::PromoData promo_data);
-  virtual ~AppsPromoLogoFetcher();
-
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
-
- private:
-  // Fetches the logo and stores the result as a data URL.
-  void FetchLogo();
-
-  // Checks if the logo was downloaded previously.
-  bool HaveCachedLogo();
-
-  // Sets the apps promo based on the current data and then issues the
-  // WEB_STORE_PROMO_LOADED notification so open NTPs can inject the promo.
-  void SavePromo();
-
-  // Checks if the promo logo matches https://*.google.com/*.png.
-  bool SupportsLogoURL();
-
-  Profile* profile_;
-  AppsPromo::PromoData promo_data_;
-  scoped_ptr<URLFetcher> url_fetcher_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APPS_PROMO_H_

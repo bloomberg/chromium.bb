@@ -1314,9 +1314,6 @@ const char kNTPWebStorePromoLink[] = "ntp.webstorepromo.link";
 // The image URL for the NTP web store promo logo.
 const char kNTPWebStorePromoLogo[] = "ntp.webstorepromo.logo";
 
-// The original URL for the NTP web store promo logo.
-const char kNTPWebStorePromoLogoSource[] = "ntp.webstorepromo.logo_source";
-
 // The "hide this" link text for the NTP web store promo.
 const char kNTPWebStorePromoExpire[] = "ntp.webstorepromo.expire";
 

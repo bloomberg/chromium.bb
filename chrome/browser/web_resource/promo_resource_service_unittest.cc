@@ -15,7 +15,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PromoResourceServiceTest : public testing::Test {
@@ -29,7 +28,6 @@ class PromoResourceServiceTest : public testing::Test {
   TestingProfile profile_;
   ScopedTestingLocalState local_state_;
   scoped_refptr<PromoResourceService> web_resource_service_;
-  MessageLoop loop_;
 };
 
 // Verifies that custom dates read from a web resource server are written to
@@ -133,6 +131,9 @@ TEST_F(PromoResourceServiceTest, UnpackPromoSignal) {
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
       base::JSONReader::Read(json, false)));
 
+  // Initialize a message loop for this to run on.
+  MessageLoop loop;
+
   // Check that prefs are set correctly.
   web_resource_service_->UnpackPromoSignal(*(test_json.get()));
   PrefService* prefs = profile_.GetPrefs();
@@ -186,24 +187,22 @@ TEST_F(PromoResourceServiceTest, UnpackWebStoreSignal) {
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
       base::JSONReader::Read(json, false)));
 
-  // Set the source logo URL to verify that it gets cleared.
-  AppsPromo::SetSourcePromoLogoURL(GURL("https://www.google.com/test.png"));
+  // Initialize a message loop for this to run on.
+  MessageLoop loop;
 
   // Check that prefs are set correctly.
   web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
+  PrefService* prefs = profile_.GetPrefs();
+  ASSERT_TRUE(prefs != NULL);
 
-  AppsPromo::PromoData actual_data = AppsPromo::GetPromo();
-  EXPECT_EQ("341252", actual_data.id);
-  EXPECT_EQ("The header!", actual_data.header);
-  EXPECT_EQ("The button label!", actual_data.button);
-  EXPECT_EQ(GURL("http://link.com"), actual_data.link);
-  EXPECT_EQ("No thanks, hide this.", actual_data.expire);
-  EXPECT_EQ(AppsPromo::USERS_NEW, actual_data.user_group);
-
-  // When we don't download a logo, we revert to the default and clear the
-  // source pref.
-  EXPECT_EQ(GURL("chrome://theme/IDR_WEBSTORE_ICON"), actual_data.logo);
-  EXPECT_EQ(GURL(""), AppsPromo::GetSourcePromoLogoURL());
+  EXPECT_EQ("341252", AppsPromo::GetPromoId());
+  EXPECT_EQ("The header!", AppsPromo::GetPromoHeaderText());
+  EXPECT_EQ("The button label!", AppsPromo::GetPromoButtonText());
+  EXPECT_EQ(GURL("http://link.com"), AppsPromo::GetPromoLink());
+  EXPECT_EQ("No thanks, hide this.", AppsPromo::GetPromoExpireText());
+  EXPECT_EQ(AppsPromo::USERS_NEW, AppsPromo::GetPromoUserGroup());
+  EXPECT_EQ(GURL("chrome://theme/IDR_WEBSTORE_ICON"),
+            AppsPromo::GetPromoLogo());
 }
 
 // Tests that the "web store active" flag is set even when the web store promo
@@ -222,172 +221,13 @@ TEST_F(PromoResourceServiceTest, UnpackPartialWebStoreSignal) {
   scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
       base::JSONReader::Read(json, false)));
 
+  // Initialize a message loop for this to run on.
+  MessageLoop loop;
+
   // Check that prefs are set correctly.
   web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
   EXPECT_FALSE(AppsPromo::IsPromoSupportedForLocale());
   EXPECT_TRUE(AppsPromo::IsWebStoreSupportedForLocale());
-}
-
-// Tests that we can successfully unpack web store signals with HTTPS
-// logos.
-TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpsLogo) {
-  web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
-
-  std::string logo_url = "https://www.google.com/image/test.png";
-  std::string png_data = "!$#%,./nvl;iadh9oh82";
-  std::string png_base64 = "data:image/png;base64,ISQjJSwuL252bDtpYWRoOW9oODI=";
-
-  FakeURLFetcherFactory factory;
-  factory.SetFakeResponse(logo_url, png_data, true);
-
-  std::string json =
-      "{ "
-      "  \"topic\": {"
-      "    \"answers\": ["
-      "       {"
-      "        \"answer_id\": \"340252\","
-      "        \"name\": \"webstore_promo:15:1:" + logo_url + "\","
-      "        \"question\": \"Header!\","
-      "        \"inproduct_target\": \"The button label!\","
-      "        \"inproduct\": \"http://link.com\","
-      "        \"tooltip\": \"No thanks, hide this.\""
-      "       }"
-      "    ]"
-      "  }"
-      "}";
-
-  scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
-
-  // Update the promo multiple times to verify the logo is cached correctly.
-  for (size_t i = 0; i < 2; ++i) {
-    web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
-
-    // We should only need to run the message loop the first time since the
-    // image is then cached.
-    if (i == 0)
-      loop_.RunAllPending();
-
-    // Reset this scoped_ptr to prevent a DCHECK.
-    web_resource_service_->apps_promo_logo_fetcher_.reset();
-
-    AppsPromo::PromoData actual_data = AppsPromo::GetPromo();
-    EXPECT_EQ("340252", actual_data.id);
-    EXPECT_EQ("Header!", actual_data.header);
-    EXPECT_EQ("The button label!", actual_data.button);
-    EXPECT_EQ(GURL("http://link.com"), actual_data.link);
-    EXPECT_EQ("No thanks, hide this.", actual_data.expire);
-    EXPECT_EQ(AppsPromo::USERS_NEW, actual_data.user_group);
-
-    // The logo should now be a base64 DATA URL.
-    EXPECT_EQ(GURL(png_base64), actual_data.logo);
-
-    // And the source pref should hold the source HTTPS URL.
-    EXPECT_EQ(GURL(logo_url), AppsPromo::GetSourcePromoLogoURL());
-  }
-}
-
-// Tests that we revert to the default logo when the fetch fails.
-TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpsLogoError) {
-  web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
-
-  std::string logo_url = "https://www.google.com/image/test.png";
-  std::string png_data = "!$#%,./nvl;iadh9oh82";
-  std::string png_base64 = "ISQjJSwuL252bDtpYWRoOW9oODI=";
-
-  FakeURLFetcherFactory factory;
-
-  // Have URLFetcher return a 500 error.
-  factory.SetFakeResponse(logo_url, png_data, false);
-
-  std::string json =
-      "{ "
-      "  \"topic\": {"
-      "    \"answers\": ["
-      "       {"
-      "        \"answer_id\": \"340252\","
-      "        \"name\": \"webstore_promo:15:1:" + logo_url + "\","
-      "        \"question\": \"Header!\","
-      "        \"inproduct_target\": \"The button label!\","
-      "        \"inproduct\": \"http://link.com\","
-      "        \"tooltip\": \"No thanks, hide this.\""
-      "       }"
-      "    ]"
-      "  }"
-      "}";
-
-  scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
-
-  web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
-
-  loop_.RunAllPending();
-
-  // Reset this scoped_ptr to prevent a DCHECK.
-  web_resource_service_->apps_promo_logo_fetcher_.reset();
-
-  AppsPromo::PromoData actual_data = AppsPromo::GetPromo();
-  EXPECT_EQ("340252", actual_data.id);
-  EXPECT_EQ("Header!", actual_data.header);
-  EXPECT_EQ("The button label!", actual_data.button);
-  EXPECT_EQ(GURL("http://link.com"), actual_data.link);
-  EXPECT_EQ("No thanks, hide this.", actual_data.expire);
-  EXPECT_EQ(AppsPromo::USERS_NEW, actual_data.user_group);
-
-  // Logos are the default values.
-  EXPECT_EQ(GURL("chrome://theme/IDR_WEBSTORE_ICON"), actual_data.logo);
-  EXPECT_EQ(GURL(""), AppsPromo::GetSourcePromoLogoURL());
-}
-
-// Tests that we don't download images over HTTP.
-TEST_F(PromoResourceServiceTest, UnpackWebStoreSignalHttpLogo) {
-  web_resource_service_->set_channel(chrome::VersionInfo::CHANNEL_DEV);
-
-  // Use an HTTP URL.
-  std::string logo_url = "http://www.google.com/image/test.png";
-  std::string png_data = "!$#%,./nvl;iadh9oh82";
-  std::string png_base64 = "ISQjJSwuL252bDtpYWRoOW9oODI=";
-
-  FakeURLFetcherFactory factory;
-  factory.SetFakeResponse(logo_url, png_data, true);
-
-  std::string json =
-      "{ "
-      "  \"topic\": {"
-      "    \"answers\": ["
-      "       {"
-      "        \"answer_id\": \"340252\","
-      "        \"name\": \"webstore_promo:15:1:" + logo_url + "\","
-      "        \"question\": \"Header!\","
-      "        \"inproduct_target\": \"The button label!\","
-      "        \"inproduct\": \"http://link.com\","
-      "        \"tooltip\": \"No thanks, hide this.\""
-      "       }"
-      "    ]"
-      "  }"
-      "}";
-
-  scoped_ptr<DictionaryValue> test_json(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json, false)));
-
-  web_resource_service_->UnpackWebStoreSignal(*(test_json.get()));
-
-  loop_.RunAllPending();
-
-  // Reset this scoped_ptr to prevent a DCHECK.
-  web_resource_service_->apps_promo_logo_fetcher_.reset();
-
-  AppsPromo::PromoData actual_data = AppsPromo::GetPromo();
-  EXPECT_EQ("340252", actual_data.id);
-  EXPECT_EQ("Header!", actual_data.header);
-  EXPECT_EQ("The button label!", actual_data.button);
-  EXPECT_EQ(GURL("http://link.com"), actual_data.link);
-  EXPECT_EQ("No thanks, hide this.", actual_data.expire);
-  EXPECT_EQ(AppsPromo::USERS_NEW, actual_data.user_group);
-
-  // Logos should be the default values because HTTP URLs are not valid.
-  EXPECT_EQ(GURL("chrome://theme/IDR_WEBSTORE_ICON"), actual_data.logo);
-  EXPECT_EQ(GURL(""), AppsPromo::GetSourcePromoLogoURL());
 }
 
 TEST_F(PromoResourceServiceTest, IsBuildTargeted) {
