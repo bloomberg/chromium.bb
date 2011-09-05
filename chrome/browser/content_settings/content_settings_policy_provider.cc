@@ -309,7 +309,7 @@ PolicyProvider::~PolicyProvider() {
 }
 
 void PolicyProvider::GetContentSettingsFromPreferences(
-    ContentSettingsRules* rules) {
+    OriginIdentifierValueMap* value_map) {
   for (size_t i = 0; i < arraysize(kPrefsForManagedContentSettingsMap); ++i) {
     const char* pref_name = kPrefsForManagedContentSettingsMap[i].pref_name;
     // Skip unset policies.
@@ -345,32 +345,23 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       ContentSettingsPattern secondary_pattern =
           !pattern_pair.second.IsValid() ? ContentSettingsPattern::Wildcard()
                                          : pattern_pair.second;
-      rules->push_back(MakeTuple(
+      value_map->SetValue(
           pattern_pair.first,
           secondary_pattern,
           content_type,
           ResourceIdentifier(NO_RESOURCE_IDENTIFIER),
-          kPrefsForManagedContentSettingsMap[i].setting));
+          static_cast<Value*>(Value::CreateIntegerValue(
+              kPrefsForManagedContentSettingsMap[i].setting)));
     }
   }
 }
 
 void PolicyProvider::ReadManagedContentSettings(bool overwrite) {
-  ContentSettingsRules rules;
-  GetContentSettingsFromPreferences(&rules);
   {
     base::AutoLock auto_lock(lock_);
     if (overwrite)
       value_map_.clear();
-    for (ContentSettingsRules::iterator rule = rules.begin();
-         rule != rules.end();
-         ++rule) {
-      value_map_.SetValue(rule->a,
-                          rule->b,
-                          rule->c,
-                          rule->d,
-                          Value::CreateIntegerValue(rule->e));
-    }
+    GetContentSettingsFromPreferences(&value_map_);
   }
 }
 

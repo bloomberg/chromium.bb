@@ -107,18 +107,9 @@ class PolicyProvider : public ObservableProvider,
                        const NotificationSource& source,
                        const NotificationDetails& details);
  private:
-  typedef Tuple5<
-      ContentSettingsPattern,
-      ContentSettingsPattern,
-      ContentSettingsType,
-      ResourceIdentifier,
-      ContentSetting> ContentSettingsRule;
-
-  typedef std::vector<ContentSettingsRule> ContentSettingsRules;
-
   void ReadManagedContentSettings(bool overwrite);
 
-  void GetContentSettingsFromPreferences(ContentSettingsRules* rules);
+  void GetContentSettingsFromPreferences(OriginIdentifierValueMap* rules);
 
   void ReadManagedContentSettingsTypes(ContentSettingsType content_type);
 
