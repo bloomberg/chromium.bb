@@ -57,6 +57,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "base/threading/thread.h"
+#include "base/threading/watchdog.h"
 #include "base/time.h"
 #include "content/browser/browser_thread.h"
 #include "content/common/notification_observer.h"
@@ -468,6 +469,26 @@ class WatchDogThread : public base::Thread {
   static WatchDogThread* watchdog_thread_;  // The singleton of this class.
 
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
+};
+
+// This is a wrapper class for watching the jank during shutdown.
+class ShutdownWatcherHelper {
+ public:
+  // Create an empty holder for |shutdown_watchdog_|.
+  ShutdownWatcherHelper();
+
+  // Destructor disarm's shutdown_watchdog_ so that alarm doesn't go off.
+  ~ShutdownWatcherHelper();
+
+  // Constructs ShutdownWatchDogThread which spawns a thread and starts timer.
+  // |duration| specifies how long it will wait before it calls alarm.
+  void Arm(const base::TimeDelta& duration);
+
+ private:
+  // shutdown_watchdog_ watches the jank during shutdown.
+  base::Watchdog* shutdown_watchdog_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownWatcherHelper);
 };
 
 // DISABLE_RUNNABLE_METHOD_REFCOUNT is a convenience macro for disabling

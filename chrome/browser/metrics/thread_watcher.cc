@@ -678,3 +678,47 @@ void WatchDogThread::CleanUp() {
   base::AutoLock lock(lock_);
   watchdog_thread_ = NULL;
 }
+
+namespace {
+
+// ShutdownWatchDogThread methods and members.
+//
+// Class for watching the jank during shutdown.
+class ShutdownWatchDogThread : public base::Watchdog {
+ public:
+  // Constructor specifies how long the ShutdownWatchDogThread will wait before
+  // alarming.
+  explicit ShutdownWatchDogThread(const base::TimeDelta& duration)
+      : base::Watchdog(duration, "Shutdown watchdog thread", true) {
+  }
+
+  // Alarm is called if the time expires after an Arm() without someone calling
+  // Disarm(). We crash the browser if this method is called.
+  virtual void Alarm() {
+    CHECK(false);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownWatchDogThread);
+};
+}  // namespace
+
+// ShutdownWatcherHelper methods and members.
+//
+// ShutdownWatcherHelper is a wrapper class for watching the jank during
+// shutdown.
+ShutdownWatcherHelper::ShutdownWatcherHelper() : shutdown_watchdog_(NULL) {
+}
+
+ShutdownWatcherHelper::~ShutdownWatcherHelper() {
+  if (shutdown_watchdog_) {
+    shutdown_watchdog_->Disarm();
+    delete shutdown_watchdog_;
+    shutdown_watchdog_ = NULL;
+  }
+}
+
+void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
+  DCHECK(!shutdown_watchdog_);
+  shutdown_watchdog_ = new ShutdownWatchDogThread(duration);
+  shutdown_watchdog_->Arm();
+}

@@ -1302,6 +1302,11 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
+  // Create ShutdownWatcherHelper object for watching jank during shutdown.
+  // Please keep |shutdown_watcher| as the first object constructed, and hence
+  // it is destroyed last.
+  ShutdownWatcherHelper shutdown_watcher;
+
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
 
   // Override the default ContentBrowserClient to let Chrome participate in
@@ -2103,6 +2108,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
       RunUIMessageLoop(browser_process.get());
     }
   }
+
+  // Start watching for jank during shutdown. It gets disarmed when
+  // |shutdown_watcher| object is destructed.
+  shutdown_watcher.Arm(base::TimeDelta::FromSeconds(25));
 
 #if defined(OS_WIN)
   // If it's the first run, log the search engine chosen.  We wait until
