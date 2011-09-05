@@ -21,7 +21,7 @@ class MessageLoopRelay
             base::MessageLoopProxy::current()),
         error_code_(base::PLATFORM_FILE_OK),
         context_(context),
-        file_system_file_util_(NULL) {
+        file_util_(NULL) {
   }
 
   bool Start(scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
@@ -53,9 +53,9 @@ class MessageLoopRelay
     return &context_;
   }
 
-  fileapi::FileSystemFileUtil* file_system_file_util() const {
+  fileapi::FileSystemFileUtil* file_util() const {
     // TODO(ericu): Support calls that have two different FSFU subclasses.
-    return context_.src_file_system_file_util();
+    return context_.src_file_util();
   }
 
  private:
@@ -69,7 +69,7 @@ class MessageLoopRelay
   scoped_refptr<base::MessageLoopProxy> origin_message_loop_proxy_;
   base::PlatformFileError error_code_;
   fileapi::FileSystemOperationContext context_;
-  fileapi::FileSystemFileUtil* file_system_file_util_;
+  fileapi::FileSystemFileUtil* file_util_;
 };
 
 class RelayCreateOrOpen : public MessageLoopRelay {
@@ -98,9 +98,8 @@ class RelayCreateOrOpen : public MessageLoopRelay {
   }
 
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->CreateOrOpen(
-            context(), file_path_, file_flags_, &file_handle_, &created_));
+    set_error_code(file_util()->CreateOrOpen(
+        context(), file_path_, file_flags_, &file_handle_, &created_));
   }
 
   virtual void RunCallback() {
@@ -152,8 +151,7 @@ class RelayClose : public RelayWithStatusCallback {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->Close(context(), file_handle_));
+    set_error_code(file_util()->Close(context(), file_handle_));
   }
 
  private:
@@ -177,9 +175,8 @@ class RelayEnsureFileExists : public MessageLoopRelay {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->EnsureFileExists(
-            context(), file_path_, &created_));
+    set_error_code(file_util()->EnsureFileExists(
+        context(), file_path_, &created_));
   }
 
   virtual void RunCallback() {
@@ -209,9 +206,8 @@ class RelayGetLocalPath : public MessageLoopRelay {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->GetLocalFilePath(
-            context(), virtual_path_, &local_path_));
+    set_error_code(file_util()->GetLocalFilePath(
+        context(), virtual_path_, &local_path_));
   }
 
   virtual void RunCallback() {
@@ -239,9 +235,8 @@ class RelayGetFileInfo : public MessageLoopRelay {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->GetFileInfo(
-            context(), file_path_, &file_info_, &platform_path_));
+    set_error_code(file_util()->GetFileInfo(
+        context(), file_path_, &file_info_, &platform_path_));
   }
 
   virtual void RunCallback() {
@@ -270,9 +265,8 @@ class RelayReadDirectory : public MessageLoopRelay {
  protected:
   virtual void RunWork() {
     // TODO(kkanetkar): Implement directory read in multiple chunks.
-    set_error_code(
-        file_system_file_util()->ReadDirectory(
-            context(), file_path_, &entries_));
+    set_error_code(file_util()->ReadDirectory(
+        context(), file_path_, &entries_));
   }
 
   virtual void RunCallback() {
@@ -302,9 +296,8 @@ class RelayCreateDirectory : public RelayWithStatusCallback {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->CreateDirectory(
-            context(), file_path_, exclusive_, recursive_));
+    set_error_code(file_util()->CreateDirectory(
+        context(), file_path_, exclusive_, recursive_));
   }
 
  private:
@@ -326,9 +319,8 @@ class RelayCopy : public RelayWithStatusCallback {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->Copy(
-            context(), src_file_path_, dest_file_path_));
+    set_error_code(file_util()->Copy(
+        context(), src_file_path_, dest_file_path_));
   }
 
  private:
@@ -349,9 +341,8 @@ class RelayMove : public RelayWithStatusCallback {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->Move(
-            context(), src_file_path_, dest_file_path_));
+    set_error_code(file_util()->Move(
+        context(), src_file_path_, dest_file_path_));
   }
 
  private:
@@ -372,9 +363,7 @@ class RelayDelete : public RelayWithStatusCallback {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->Delete(
-            context(), file_path_, recursive_));
+    set_error_code(file_util()->Delete(context(), file_path_, recursive_));
   }
 
  private:
@@ -397,9 +386,8 @@ class RelayTouchFilePath : public RelayWithStatusCallback {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->Touch(
-            context(), file_path_, last_access_time_, last_modified_time_));
+    set_error_code(file_util()->Touch(
+        context(), file_path_, last_access_time_, last_modified_time_));
   }
 
  private:
@@ -421,8 +409,7 @@ class RelayTruncate : public RelayWithStatusCallback {
 
  protected:
   virtual void RunWork() {
-    set_error_code(
-        file_system_file_util()->Truncate(context(), file_path_, length_));
+    set_error_code(file_util()->Truncate(context(), file_path_, length_));
   }
 
  private:

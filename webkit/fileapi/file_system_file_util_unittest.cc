@@ -11,7 +11,8 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_test_helper.h"
-#include "webkit/fileapi/obfuscated_file_system_file_util.h"
+#include "webkit/fileapi/native_file_util.h"
+#include "webkit/fileapi/obfuscated_file_util.h"
 
 using namespace fileapi;
 
@@ -48,7 +49,7 @@ const CopyMoveTestCaseRecord kCopyMoveTestCases[] = {
 
 // This is not yet a full unit test for FileSystemFileUtil.  TODO(ericu): Adapt
 // the other subclasses' unit tests, as mentioned in the comments in
-// ObfuscatedFileSystemFileUtil's unit test.
+// ObfuscatedFileUtil's unit test.
 // Currently this is just a test of cross-filesystem copy and move, which
 // actually exercises subclasses of FileSystemFileUtil as well as the class
 // itself.  We currently only test copies between obfuscated filesystems.
@@ -77,9 +78,8 @@ class FileSystemFileUtilTest : public testing::Test {
       bool copy) {
     ScopedTempDir base_dir;
     ASSERT_TRUE(base_dir.CreateUniqueTempDir());
-    scoped_refptr<ObfuscatedFileSystemFileUtil> file_util(
-        new ObfuscatedFileSystemFileUtil(base_dir.path(),
-                                         new FileSystemFileUtil()));
+    scoped_refptr<ObfuscatedFileUtil> file_util(
+        new ObfuscatedFileUtil(base_dir.path(), new NativeFileUtil()));
     FileSystemTestOriginHelper src_helper(src_origin, src_type);
     src_helper.SetUp(base_dir.path(),
                      false,  // incognito
@@ -115,8 +115,8 @@ class FileSystemFileUtilTest : public testing::Test {
     FileSystemContext* file_system_context = dest_helper.file_system_context();
     scoped_ptr<FileSystemOperationContext> copy_context(
         new FileSystemOperationContext(file_system_context, NULL));
-    copy_context->set_src_file_system_file_util(file_util);
-    copy_context->set_dest_file_system_file_util(file_util);
+    copy_context->set_src_file_util(file_util);
+    copy_context->set_dest_file_util(file_util);
     copy_context->set_src_origin_url(src_helper.origin());
     copy_context->set_dest_origin_url(dest_helper.origin());
     copy_context->set_src_type(src_helper.type());

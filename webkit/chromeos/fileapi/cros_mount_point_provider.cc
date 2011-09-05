@@ -17,9 +17,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
-#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/native_file_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace chromeos {
@@ -42,8 +42,8 @@ CrosMountPointProvider::CrosMountPointProvider(
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy)
     : special_storage_policy_(special_storage_policy),
       file_access_permissions_(new FileAccessPermissions()),
-      local_file_util_(new fileapi::LocalFileSystemFileUtil(
-          new fileapi::FileSystemFileUtil())) {
+      local_file_util_(
+          new fileapi::LocalFileUtil(new fileapi::NativeFileUtil())) {
   for (size_t i = 0; i < arraysize(fixed_exposed_paths); i++) {
     mount_point_map_.insert(std::pair<std::string, FilePath>(
         std::string(fixed_exposed_paths[i].web_root_path),
@@ -178,7 +178,7 @@ std::vector<FilePath> CrosMountPointProvider::GetRootDirectories() const {
   return root_dirs;
 }
 
-fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileSystemFileUtil() {
+fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil() {
   return local_file_util_.get();
 }
 

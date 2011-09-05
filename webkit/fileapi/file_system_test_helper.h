@@ -43,9 +43,9 @@ class FileSystemTestOriginHelper {
   // If you want to use more than one FileSystemTestOriginHelper in a single
   // base directory, they have to share a context, so that they don't have
   // multiple databases fighting over the lock to the origin directory [deep
-  // down inside ObfuscatedFileSystemFileUtil].
+  // down inside ObfuscatedFileUtil].
   void SetUp(FileSystemContext* file_system_context,
-      FileSystemFileUtil* file_util);
+             FileSystemFileUtil* file_util);
   void SetUp(const FilePath& base_dir,
              bool incognito_mode,
              bool unlimited_quota,

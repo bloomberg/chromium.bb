@@ -25,28 +25,24 @@ class QuotaFileUtil : public FileSystemFileUtil {
   explicit QuotaFileUtil(FileSystemFileUtil* underlying_file_util);
   virtual ~QuotaFileUtil();
 
-  // Creates a QuotaFileUtil instance with an underlying FileSystemFileUtil
+  // Creates a QuotaFileUtil instance with an underlying NativeFileUtil
   // instance.
   static QuotaFileUtil* CreateDefault();
-
-  virtual base::PlatformFileError CopyOrMoveFile(
-      FileSystemOperationContext* fs_context,
-      const FilePath& src_file_path,
-      const FilePath& dest_file_path,
-      bool copy) OVERRIDE;
-
-  virtual base::PlatformFileError DeleteFile(
-      FileSystemOperationContext* fs_context,
-      const FilePath& file_path) OVERRIDE;
 
   virtual base::PlatformFileError Truncate(
       FileSystemOperationContext* fs_context,
       const FilePath& path,
       int64 length) OVERRIDE;
+  virtual base::PlatformFileError CopyOrMoveFile(
+      FileSystemOperationContext* fs_context,
+      const FilePath& src_file_path,
+      const FilePath& dest_file_path,
+      bool copy) OVERRIDE;
+  virtual base::PlatformFileError DeleteFile(
+      FileSystemOperationContext* fs_context,
+      const FilePath& file_path) OVERRIDE;
 
  private:
-  scoped_ptr<FileSystemFileUtil> underlying_file_util_;
-
   DISALLOW_COPY_AND_ASSIGN(QuotaFileUtil);
 };
 

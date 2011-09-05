@@ -10,6 +10,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/fileapi/native_file_util.h"
 #include "webkit/quota/quota_manager.h"
 
 using quota::QuotaManagerProxy;
@@ -68,7 +69,7 @@ void NotifyUpdate(FileSystemOperationContext* operation_context,
 }  // namespace (anonymous)
 
 QuotaFileUtil::QuotaFileUtil(FileSystemFileUtil* underlying_file_util)
-    : underlying_file_util_(underlying_file_util) {
+    : FileSystemFileUtil(underlying_file_util) {
 }
 
 QuotaFileUtil::~QuotaFileUtil() {
@@ -76,7 +77,35 @@ QuotaFileUtil::~QuotaFileUtil() {
 
 // static
 QuotaFileUtil* QuotaFileUtil::CreateDefault() {
-  return new QuotaFileUtil(new FileSystemFileUtil());
+  return new QuotaFileUtil(new NativeFileUtil());
+}
+
+base::PlatformFileError QuotaFileUtil::Truncate(
+    FileSystemOperationContext* fs_context,
+    const FilePath& path,
+    int64 length) {
+  int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
+
+  int64 growth = 0;
+  base::PlatformFileInfo file_info;
+  if (!file_util::GetFileInfo(path, &file_info))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  growth = length - file_info.size;
+  if (allowed_bytes_growth != kNoLimit &&
+      growth > 0 && growth > allowed_bytes_growth)
+    return base::PLATFORM_FILE_ERROR_NO_SPACE;
+
+  base::PlatformFileError error = underlying_file_util()->Truncate(
+      fs_context, path, length);
+
+  if (error == base::PLATFORM_FILE_OK)
+    NotifyUpdate(fs_context,
+                 fs_context->src_origin_url(),
+                 fs_context->src_type(),
+                 growth);
+
+  return error;
 }
 
 base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
@@ -102,7 +131,7 @@ base::PlatformFileError QuotaFileUtil::CopyOrMoveFile(
     growth = -dest_file_info.size;
   }
 
-  base::PlatformFileError error = underlying_file_util_->CopyOrMoveFile(
+  base::PlatformFileError error = underlying_file_util()->CopyOrMoveFile(
       fs_context, src_file_path, dest_file_path, copy);
 
   if (error == base::PLATFORM_FILE_OK) {
@@ -128,36 +157,8 @@ base::PlatformFileError QuotaFileUtil::DeleteFile(
     file_info.size = 0;
   growth = -file_info.size;
 
-  base::PlatformFileError error = underlying_file_util_->DeleteFile(
+  base::PlatformFileError error = underlying_file_util()->DeleteFile(
       fs_context, file_path);
-
-  if (error == base::PLATFORM_FILE_OK)
-    NotifyUpdate(fs_context,
-                 fs_context->src_origin_url(),
-                 fs_context->src_type(),
-                 growth);
-
-  return error;
-}
-
-base::PlatformFileError QuotaFileUtil::Truncate(
-    FileSystemOperationContext* fs_context,
-    const FilePath& path,
-    int64 length) {
-  int64 allowed_bytes_growth = fs_context->allowed_bytes_growth();
-
-  int64 growth = 0;
-  base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(path, &file_info))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-
-  growth = length - file_info.size;
-  if (allowed_bytes_growth != kNoLimit &&
-      growth > 0 && growth > allowed_bytes_growth)
-    return base::PLATFORM_FILE_ERROR_NO_SPACE;
-
-  base::PlatformFileError error = underlying_file_util_->Truncate(
-      fs_context, path, length);
 
   if (error == base::PLATFORM_FILE_OK)
     NotifyUpdate(fs_context,

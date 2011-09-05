@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_OBFUSCATED_FILE_SYSTEM_FILE_UTIL_H_
-#define WEBKIT_FILEAPI_OBFUSCATED_FILE_SYSTEM_FILE_UTIL_H_
+#ifndef WEBKIT_FILEAPI_OBFUSCATED_FILE_UTIL_H_
+#define WEBKIT_FILEAPI_OBFUSCATED_FILE_UTIL_H_
 
 #include <map>
 #include <string>
@@ -45,17 +45,29 @@ class FileSystemOperationContext;
 //
 // TODO(ericu): We don't ever update directory mtimes; which operations should
 // do that?
-class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
-    public base::RefCountedThreadSafe<ObfuscatedFileSystemFileUtil> {
+class ObfuscatedFileUtil : public FileSystemFileUtil,
+    public base::RefCountedThreadSafe<ObfuscatedFileUtil> {
  public:
+  // Origin enumerator interface.
+  // An instance of this interface is assumed to be called on the file thread.
+  class AbstractOriginEnumerator {
+   public:
+    virtual ~AbstractOriginEnumerator() {}
+
+    // Returns the next origin.  Returns empty if there are no more origins.
+    virtual GURL Next() = 0;
+
+    // Returns the current origin's information.
+    virtual bool HasFileSystemType(FileSystemType type) const = 0;
+  };
+
   // |underlying_file_util| is owned by the instance.  It will be deleted by
   // the owner instance.  For example, it can be instanciated as follows:
-  // FileSystemFileUtil* file_system_file_util =
-  //     new ObfuscatedFileSystemFileUtil(new FileSystemFileUtil());
-  ObfuscatedFileSystemFileUtil(
-      const FilePath& file_system_directory,
-      FileSystemFileUtil* underlying_file_util);
-  virtual ~ObfuscatedFileSystemFileUtil();
+  // FileSystemFileUtil* file_util =
+  //     new ObfuscatedFileUtil(new NativeFileUtil());
+  ObfuscatedFileUtil(const FilePath& file_system_directory,
+                     FileSystemFileUtil* underlying_file_util);
+  virtual ~ObfuscatedFileUtil();
 
   virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
@@ -68,10 +80,11 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
       FileSystemOperationContext* context,
       const FilePath& file_path, bool* created) OVERRIDE;
 
-  virtual base::PlatformFileError GetLocalFilePath(
+  virtual base::PlatformFileError CreateDirectory(
       FileSystemOperationContext* context,
-      const FilePath& virtual_file,
-      FilePath* local_path) OVERRIDE;
+      const FilePath& file_path,
+      bool exclusive,
+      bool recursive) OVERRIDE;
 
   virtual base::PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
@@ -84,30 +97,14 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
       const FilePath& file_path,
       std::vector<base::FileUtilProxy::Entry>* entries) OVERRIDE;
 
-  virtual base::PlatformFileError CreateDirectory(
+  virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FilePath& file_path,
-      bool exclusive,
-      bool recursive) OVERRIDE;
+      const FilePath& root_path) OVERRIDE;
 
-  virtual base::PlatformFileError CopyOrMoveFile(
+  virtual base::PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
-      const FilePath& src_file_path,
-      const FilePath& dest_file_path,
-      bool copy) OVERRIDE;
-
-  virtual PlatformFileError CopyInForeignFile(
-        FileSystemOperationContext* context,
-        const FilePath& src_file_path,
-        const FilePath& dest_file_path) OVERRIDE;
-
-  virtual base::PlatformFileError DeleteFile(
-      FileSystemOperationContext* context,
-      const FilePath& file_path) OVERRIDE;
-
-  virtual base::PlatformFileError DeleteSingleDirectory(
-      FileSystemOperationContext* context,
-      const FilePath& file_path) OVERRIDE;
+      const FilePath& virtual_file,
+      FilePath* local_path) OVERRIDE;
 
   virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
@@ -129,6 +126,25 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
       const FilePath& file_path) OVERRIDE;
 
   virtual bool IsDirectoryEmpty(
+      FileSystemOperationContext* context,
+      const FilePath& file_path) OVERRIDE;
+
+  virtual base::PlatformFileError CopyOrMoveFile(
+      FileSystemOperationContext* context,
+      const FilePath& src_file_path,
+      const FilePath& dest_file_path,
+      bool copy) OVERRIDE;
+
+  virtual PlatformFileError CopyInForeignFile(
+        FileSystemOperationContext* context,
+        const FilePath& src_file_path,
+        const FilePath& dest_file_path) OVERRIDE;
+
+  virtual base::PlatformFileError DeleteFile(
+      FileSystemOperationContext* context,
+      const FilePath& file_path) OVERRIDE;
+
+  virtual base::PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
       const FilePath& file_path) OVERRIDE;
 
@@ -160,27 +176,10 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   // SandboxMountPointProvider would be better?
   static FilePath::StringType GetDirectoryNameForType(FileSystemType type);
 
-  // Origin enumerator interface.
-  // An instance of this interface is assumed to be called on the file thread.
-  class AbstractOriginEnumerator {
-   public:
-    virtual ~AbstractOriginEnumerator() {}
-
-    // Returns the next origin.  Returns empty if there are no more origins.
-    virtual GURL Next() = 0;
-
-    // Returns the current origin's information.
-    virtual bool HasFileSystemType(FileSystemType type) const = 0;
-  };
-
   // This method and all methods of its returned class must be called only on
   // the FILE thread.  The caller is responsible for deleting the returned
   // object.
   AbstractOriginEnumerator* CreateOriginEnumerator();
-
-  virtual AbstractFileEnumerator* CreateFileEnumerator(
-      FileSystemOperationContext* context,
-      const FilePath& root_path) OVERRIDE;
 
   // Deletes a directory database from the database list in the ObfuscatedFSFU
   // and destroys the database on the disk.
@@ -221,6 +220,7 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
       const GURL& origin_url, FileSystemType type,
       const FilePath& source_path, FileInfo* file_info,
       int file_flags, base::PlatformFile* handle);
+
   // Given the filesystem's root URL and a virtual path, produces a real, full
   // local path to the underlying data file.  This does a database lookup, and
   // verifies that the file exists.
@@ -228,23 +228,28 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
       const GURL& origin_url,
       FileSystemType type,
       const FilePath& virtual_path);
+
   // This converts from a relative path [as is stored in the FileInfo.data_path
   // field] to an absolute local path that can be given to the operating system.
   // It does no checks as to whether the file actually exists; it's pure path
   // manipulation.
   FilePath DataPathToLocalPath(
       const GURL& origin, FileSystemType type, const FilePath& data_path);
+
   // This does the reverse of DataPathToLocalPath.
   FilePath LocalPathToDataPath(
       const GURL& origin, FileSystemType type, const FilePath& local_path);
+
   // This returns NULL if |create| flag is false and a filesystem does not
   // exist for the given |origin_url| and |type|.
   // For read operations |create| should be false.
   FileSystemDirectoryDatabase* GetDirectoryDatabase(
       const GURL& origin_url, FileSystemType type, bool create);
+
   // Gets the topmost directory specific to this origin.  This will
   // contain both the filesystem type subdirectories.
   FilePath GetDirectoryForOrigin(const GURL& origin, bool create);
+
   void MarkUsed();
   void DropDatabases();
   bool InitOriginDatabase(bool create);
@@ -253,12 +258,11 @@ class ObfuscatedFileSystemFileUtil : public FileSystemFileUtil,
   DirectoryMap directories_;
   scoped_ptr<FileSystemOriginDatabase> origin_database_;
   FilePath file_system_directory_;
-  base::OneShotTimer<ObfuscatedFileSystemFileUtil> timer_;
-  scoped_ptr<FileSystemFileUtil> underlying_file_util_;
+  base::OneShotTimer<ObfuscatedFileUtil> timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileSystemFileUtil);
+  DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtil);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_OBFUSCATED_FILE_SYSTEM_FILE_UTIL_H_
+#endif  // WEBKIT_FILEAPI_OBFUSCATED_FILE_UTIL_H_

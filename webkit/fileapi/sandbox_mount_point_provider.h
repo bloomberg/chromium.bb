@@ -25,7 +25,7 @@ class QuotaManagerProxy;
 
 namespace fileapi {
 
-class ObfuscatedFileSystemFileUtil;
+class ObfuscatedFileUtil;
 
 // An interface to construct or crack sandboxed filesystem paths.
 // Currently each sandboxed filesystem path looks like (soon will be changed):
@@ -108,7 +108,7 @@ class SandboxMountPointProvider
       FileSystemType type,
       bool create) const;
 
-  virtual FileSystemFileUtil* GetFileSystemFileUtil();
+  virtual FileSystemFileUtil* GetFileUtil();
 
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.
@@ -171,7 +171,7 @@ class SandboxMountPointProvider
 
   const FilePath profile_path_;
 
-  scoped_refptr<ObfuscatedFileSystemFileUtil> sandbox_file_util_;
+  scoped_refptr<ObfuscatedFileUtil> sandbox_file_util_;
 
   // Acccessed only on the file thread.
   std::set<GURL> visited_origins_;

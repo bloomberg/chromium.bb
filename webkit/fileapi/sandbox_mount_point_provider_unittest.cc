@@ -164,7 +164,7 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
   }
 
   FileSystemFileUtil* file_util() {
-    return sandbox_provider()->GetFileSystemFileUtil();
+    return sandbox_provider()->GetFileUtil();
   }
 
   void OnGetRootPath(bool success, const FilePath& unused,

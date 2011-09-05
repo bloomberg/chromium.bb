@@ -52,7 +52,7 @@ class FileSystemMountPointProvider {
   // permissions.
   virtual std::vector<FilePath> GetRootDirectories() const = 0;
 
-  virtual FileSystemFileUtil* GetFileSystemFileUtil() = 0;
+  virtual FileSystemFileUtil* GetFileUtil() = 0;
 };
 
 // An interface to control external file system access permissions.

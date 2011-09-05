@@ -9,14 +9,12 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 using fileapi::FileSystemCallbackDispatcher;
 using fileapi::FileSystemContext;
-using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
 using fileapi::WebFileWriterBase;
 using WebKit::WebFileWriterClient;

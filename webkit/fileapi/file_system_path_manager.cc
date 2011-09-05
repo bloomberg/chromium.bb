@@ -160,15 +160,15 @@ bool FileSystemPathManager::IsAccessAllowed(
   return true;
 }
 
-FileSystemFileUtil* FileSystemPathManager::GetFileSystemFileUtil(
+FileSystemFileUtil* FileSystemPathManager::GetFileUtil(
     FileSystemType type) const {
   switch (type) {
     case kFileSystemTypeTemporary:
     case kFileSystemTypePersistent:
-      return sandbox_provider_->GetFileSystemFileUtil();
+      return sandbox_provider_->GetFileUtil();
     case kFileSystemTypeExternal:
       if (external_provider_.get()) {
-        return external_provider_->GetFileSystemFileUtil();
+        return external_provider_->GetFileUtil();
       } else {
         NOTREACHED();
         return NULL;

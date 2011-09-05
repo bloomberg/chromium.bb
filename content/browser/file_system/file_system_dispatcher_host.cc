@@ -294,8 +294,7 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
   FilePath virtual_path;
   if (!CrackFileSystemURL(path, &origin_url, &type, &virtual_path))
     return;
-  FileSystemFileUtil* file_util =
-      context_->path_manager()->GetFileSystemFileUtil(type);
+  FileSystemFileUtil* file_util = context_->path_manager()->GetFileUtil(type);
   if (!file_util)
     return;
   FileSystemOperationContext operation_context(context_, file_util);

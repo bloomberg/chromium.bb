@@ -78,7 +78,7 @@ class FileSystemPathManager {
   bool IsAccessAllowed(const GURL& origin, FileSystemType type,
                        const FilePath& virtual_path);
 
-  FileSystemFileUtil* GetFileSystemFileUtil(FileSystemType type) const;
+  FileSystemFileUtil* GetFileUtil(FileSystemType type) const;
 
   SandboxMountPointProvider* sandbox_provider() const {
     return sandbox_provider_.get();

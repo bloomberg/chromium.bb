@@ -18,16 +18,16 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/local_file_util.h"
+#include "webkit/fileapi/native_file_util.h"
 
 namespace fileapi {
 
-// TODO(dmikurube): Cover all public methods in LocalFileSystemFileUtil.
-class LocalFileSystemFileUtilTest : public testing::Test {
+// TODO(dmikurube): Cover all public methods in LocalFileUtil.
+class LocalFileUtilTest : public testing::Test {
  public:
-  LocalFileSystemFileUtilTest()
-      : local_file_util_(
-            new LocalFileSystemFileUtil(new FileSystemFileUtil())),
+  LocalFileUtilTest()
+      : local_file_util_(new LocalFileUtil(new NativeFileUtil())),
         callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
 
@@ -46,7 +46,7 @@ class LocalFileSystemFileUtilTest : public testing::Test {
     return context;
   }
 
-  LocalFileSystemFileUtil* FileUtil() {
+  LocalFileUtil* FileUtil() {
     return local_file_util_.get();
   }
 
@@ -94,16 +94,16 @@ class LocalFileSystemFileUtilTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<LocalFileSystemFileUtil> local_file_util_;
+  scoped_ptr<LocalFileUtil> local_file_util_;
   ScopedTempDir data_dir_;
   FileSystemTestOriginHelper test_helper_;
 
-  base::ScopedCallbackFactory<LocalFileSystemFileUtilTest> callback_factory_;
+  base::ScopedCallbackFactory<LocalFileUtilTest> callback_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalFileSystemFileUtilTest);
+  DISALLOW_COPY_AND_ASSIGN(LocalFileUtilTest);
 };
 
-TEST_F(LocalFileSystemFileUtilTest, CreateAndClose) {
+TEST_F(LocalFileUtilTest, CreateAndClose) {
   const char *file_name = "test_file";
   base::PlatformFile file_handle;
   bool created;
@@ -119,7 +119,7 @@ TEST_F(LocalFileSystemFileUtilTest, CreateAndClose) {
       FileUtil()->Close(context.get(), file_handle));
 }
 
-TEST_F(LocalFileSystemFileUtilTest, EnsureFileExists) {
+TEST_F(LocalFileUtilTest, EnsureFileExists) {
   const char *file_name = "foobar";
   bool created;
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(file_name, &created));
@@ -132,7 +132,7 @@ TEST_F(LocalFileSystemFileUtilTest, EnsureFileExists) {
   EXPECT_FALSE(created);
 }
 
-TEST_F(LocalFileSystemFileUtilTest, Truncate) {
+TEST_F(LocalFileUtilTest, Truncate) {
   const char *file_name = "truncated";
   bool created;
   ASSERT_EQ(base::PLATFORM_FILE_OK, EnsureFileExists(file_name, &created));
@@ -148,7 +148,7 @@ TEST_F(LocalFileSystemFileUtilTest, Truncate) {
   EXPECT_EQ(1020, GetSize(file_name));
 }
 
-TEST_F(LocalFileSystemFileUtilTest, CopyFile) {
+TEST_F(LocalFileUtilTest, CopyFile) {
   const char *from_file = "fromfile";
   const char *to_file1 = "tofile1";
   const char *to_file2 = "tofile2";
@@ -180,7 +180,7 @@ TEST_F(LocalFileSystemFileUtilTest, CopyFile) {
   EXPECT_EQ(1020, GetSize(to_file2));
 }
 
-TEST_F(LocalFileSystemFileUtilTest, CopyDirectory) {
+TEST_F(LocalFileUtilTest, CopyDirectory) {
   const char *from_dir = "fromdir";
   const char *from_file = "fromdir/fromfile";
   const char *to_dir = "todir";
@@ -215,7 +215,7 @@ TEST_F(LocalFileSystemFileUtilTest, CopyDirectory) {
   EXPECT_EQ(1020, GetSize(to_file));
 }
 
-TEST_F(LocalFileSystemFileUtilTest, MoveFile) {
+TEST_F(LocalFileUtilTest, MoveFile) {
   const char *from_file = "fromfile";
   const char *to_file = "tofile";
   bool created;
@@ -239,7 +239,7 @@ TEST_F(LocalFileSystemFileUtilTest, MoveFile) {
   EXPECT_EQ(1020, GetSize(to_file));
 }
 
-TEST_F(LocalFileSystemFileUtilTest, MoveDirectory) {
+TEST_F(LocalFileUtilTest, MoveDirectory) {
   const char *from_dir = "fromdir";
   const char *from_file = "fromdir/fromfile";
   const char *to_dir = "todir";

@@ -1,4 +1,4 @@
-  // Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/local_file_util.h"
 #include "webkit/quota/special_storage_policy.h"
 
 namespace fileapi {
@@ -47,7 +47,7 @@ class CrosMountPointProvider
       bool create);
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual std::vector<FilePath> GetRootDirectories() const OVERRIDE;
-  virtual fileapi::FileSystemFileUtil* GetFileSystemFileUtil() OVERRIDE;
+  virtual fileapi::FileSystemFileUtil* GetFileUtil() OVERRIDE;
 
   // fileapi::ExternalFileSystemMountPointProvider overrides.
   virtual void GrantFullAccessToExtension(
@@ -73,7 +73,7 @@ class CrosMountPointProvider
   MountPointMap mount_point_map_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<FileAccessPermissions> file_access_permissions_;
-  scoped_ptr<fileapi::LocalFileSystemFileUtil> local_file_util_;
+  scoped_ptr<fileapi::LocalFileUtil> local_file_util_;
   DISALLOW_COPY_AND_ASSIGN(CrosMountPointProvider);
 };
 

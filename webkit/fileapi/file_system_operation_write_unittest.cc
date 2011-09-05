@@ -28,7 +28,7 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -67,8 +67,7 @@ class MockQuotaManager : public QuotaManager {
 class FileSystemOperationWriteTest : public testing::Test {
  public:
   FileSystemOperationWriteTest()
-      : local_file_util_(
-            new LocalFileSystemFileUtil(QuotaFileUtil::CreateDefault())),
+      : local_file_util_(new LocalFileUtil(QuotaFileUtil::CreateDefault())),
         loop_(MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
         bytes_written_(0),
@@ -100,7 +99,7 @@ class FileSystemOperationWriteTest : public testing::Test {
     return test_helper_.GetURLForPath(path);
   }
 
-  scoped_ptr<LocalFileSystemFileUtil> local_file_util_;
+  scoped_ptr<LocalFileUtil> local_file_util_;
   scoped_refptr<MockQuotaManager> quota_manager_;
   FileSystemTestOriginHelper test_helper_;
 

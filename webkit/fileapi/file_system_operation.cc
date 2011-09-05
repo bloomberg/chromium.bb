@@ -17,7 +17,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
 #include "webkit/quota/quota_types.h"
 
@@ -60,11 +60,10 @@ FileSystemOperation::FileSystemOperation(
     FileSystemCallbackDispatcher* dispatcher,
     scoped_refptr<base::MessageLoopProxy> proxy,
     FileSystemContext* file_system_context,
-    FileSystemFileUtil* file_system_file_util)
+    FileSystemFileUtil* file_util)
     : proxy_(proxy),
       dispatcher_(dispatcher),
-      file_system_operation_context_(
-          file_system_context, file_system_file_util),
+      file_system_operation_context_(file_system_context, file_util),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(dispatcher);
 #ifndef NDEBUG
@@ -109,18 +108,16 @@ void FileSystemOperation::CreateFile(const GURL& path,
 #endif
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
-  if (!VerifyFileSystemPathForWrite(
-      path, true /* create */, &origin_url, &type, &src_virtual_path_,
-      &file_system_file_util)) {
+  FileSystemFileUtil* file_util;
+  if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
+      &type, &src_virtual_path_, &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   exclusive_ = exclusive;
 
   GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
@@ -161,19 +158,17 @@ void FileSystemOperation::CreateDirectory(const GURL& path,
 #endif
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
 
-  if (!VerifyFileSystemPathForWrite(
-      path, true /* create */, &origin_url, &type, &src_virtual_path_,
-      &file_system_file_util)) {
+  if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
+      &type, &src_virtual_path_, &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   exclusive_ = exclusive;
   recursive_ = recursive;
 
@@ -217,14 +212,13 @@ void FileSystemOperation::Copy(const GURL& src_path,
   GURL dest_origin_url;
   FileSystemType src_type;
   FileSystemType dest_type;
-  FileSystemFileUtil* src_file_system_file_util;
-  FileSystemFileUtil* dest_file_system_file_util;
+  FileSystemFileUtil* src_file_util;
+  FileSystemFileUtil* dest_file_util;
 
   if (!VerifyFileSystemPathForRead(src_path, &src_origin_url, &src_type,
-        &src_virtual_path_, &src_file_system_file_util) ||
+        &src_virtual_path_, &src_file_util) ||
       !VerifyFileSystemPathForWrite(dest_path, true /* create */,
-          &dest_origin_url, &dest_type, &dest_virtual_path_,
-          &dest_file_system_file_util)) {
+          &dest_origin_url, &dest_type, &dest_virtual_path_, &dest_file_util)) {
     delete this;
     return;
   }
@@ -232,12 +226,10 @@ void FileSystemOperation::Copy(const GURL& src_path,
   file_system_operation_context_.set_dest_origin_url(dest_origin_url);
   file_system_operation_context_.set_src_type(src_type);
   file_system_operation_context_.set_dest_type(dest_type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        src_file_system_file_util);
-  if (!file_system_operation_context_.dest_file_system_file_util())
-    file_system_operation_context_.set_dest_file_system_file_util(
-        dest_file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(src_file_util);
+  if (!file_system_operation_context_.dest_file_util())
+    file_system_operation_context_.set_dest_file_util(dest_file_util);
 
   GetUsageAndQuotaThenCallback(dest_origin_url, callback_factory_.NewCallback(
       &FileSystemOperation::DelayedCopyForQuota));
@@ -278,14 +270,13 @@ void FileSystemOperation::Move(const GURL& src_path,
   GURL dest_origin_url;
   FileSystemType src_type;
   FileSystemType dest_type;
-  FileSystemFileUtil* src_file_system_file_util;
-  FileSystemFileUtil* dest_file_system_file_util;
+  FileSystemFileUtil* src_file_util;
+  FileSystemFileUtil* dest_file_util;
 
   if (!VerifyFileSystemPathForWrite(src_path, false, &src_origin_url, &src_type,
-        &src_virtual_path_, &src_file_system_file_util) ||
+          &src_virtual_path_, &src_file_util) ||
       !VerifyFileSystemPathForWrite(dest_path, true /* create */,
-          &dest_origin_url, &dest_type, &dest_virtual_path_,
-          &dest_file_system_file_util)) {
+          &dest_origin_url, &dest_type, &dest_virtual_path_, &dest_file_util)) {
     delete this;
     return;
   }
@@ -293,12 +284,10 @@ void FileSystemOperation::Move(const GURL& src_path,
   file_system_operation_context_.set_dest_origin_url(dest_origin_url);
   file_system_operation_context_.set_src_type(src_type);
   file_system_operation_context_.set_dest_type(dest_type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        src_file_system_file_util);
-  if (!file_system_operation_context_.dest_file_system_file_util())
-    file_system_operation_context_.set_dest_file_system_file_util(
-        dest_file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(src_file_util);
+  if (!file_system_operation_context_.dest_file_util())
+    file_system_operation_context_.set_dest_file_util(dest_file_util);
 
   GetUsageAndQuotaThenCallback(dest_origin_url, callback_factory_.NewCallback(
       &FileSystemOperation::DelayedMoveForQuota));
@@ -338,17 +327,16 @@ void FileSystemOperation::DirectoryExists(const GURL& path) {
   FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path,
-      &file_system_file_util)) {
+      &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::GetFileInfo(
       file_system_operation_context_,
       proxy_, virtual_path, callback_factory_.NewCallback(
@@ -364,17 +352,16 @@ void FileSystemOperation::FileExists(const GURL& path) {
   FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path,
-      &file_system_file_util)) {
+      &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::GetFileInfo(
       file_system_operation_context_,
       proxy_, virtual_path, callback_factory_.NewCallback(
@@ -390,17 +377,16 @@ void FileSystemOperation::GetMetadata(const GURL& path) {
   FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path,
-      &file_system_file_util)) {
+      &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::GetFileInfo(
       file_system_operation_context_,
       proxy_, virtual_path, callback_factory_.NewCallback(
@@ -416,17 +402,16 @@ void FileSystemOperation::ReadDirectory(const GURL& path) {
   FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (!VerifyFileSystemPathForRead(path, &origin_url, &type, &virtual_path,
-      &file_system_file_util)) {
+      &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::ReadDirectory(
       file_system_operation_context_,
       proxy_, virtual_path, callback_factory_.NewCallback(
@@ -442,17 +427,16 @@ void FileSystemOperation::Remove(const GURL& path, bool recursive) {
   FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (!VerifyFileSystemPathForWrite(path, false /* create */, &origin_url,
-      &type, &virtual_path, &file_system_file_util)) {
+      &type, &virtual_path, &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::Delete(
       file_system_operation_context_,
       proxy_, virtual_path, recursive, callback_factory_.NewCallback(
@@ -470,17 +454,16 @@ void FileSystemOperation::Write(
 #endif
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
-      &type, &src_virtual_path_, &file_system_file_util)) {
+      &type, &src_virtual_path_, &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(this, offset, proxy_));
   blob_request_.reset(
@@ -524,17 +507,16 @@ void FileSystemOperation::Truncate(const GURL& path, int64 length) {
 #endif
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (!VerifyFileSystemPathForWrite(path, false /* create */, &origin_url,
-      &type, &src_virtual_path_, &file_system_file_util)) {
+      &type, &src_virtual_path_, &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   length_ = length;
 
   GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
@@ -576,17 +558,16 @@ void FileSystemOperation::TouchFile(const GURL& path,
   FilePath virtual_path;
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
-      &type, &virtual_path, &file_system_file_util)) {
+      &type, &virtual_path, &file_util)) {
     delete this;
     return;
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   FileSystemFileUtilProxy::Touch(
       file_system_operation_context_,
       proxy_, virtual_path, last_access_time, last_modified_time,
@@ -604,7 +585,7 @@ void FileSystemOperation::OpenFile(const GURL& path,
   peer_handle_ = peer_handle;
   GURL origin_url;
   FileSystemType type;
-  FileSystemFileUtil* file_system_file_util;
+  FileSystemFileUtil* file_util;
   if (file_flags & (
       (base::PLATFORM_FILE_ENUMERATE | base::PLATFORM_FILE_TEMPORARY |
        base::PLATFORM_FILE_HIDDEN))) {
@@ -618,22 +599,21 @@ void FileSystemOperation::OpenFile(const GURL& path,
        base::PLATFORM_FILE_DELETE_ON_CLOSE |
        base::PLATFORM_FILE_WRITE_ATTRIBUTES)) {
     if (!VerifyFileSystemPathForWrite(path, true /* create */, &origin_url,
-        &type, &src_virtual_path_, &file_system_file_util)) {
+        &type, &src_virtual_path_, &file_util)) {
       delete this;
       return;
     }
   } else {
     if (!VerifyFileSystemPathForRead(path, &origin_url, &type,
-        &src_virtual_path_, &file_system_file_util)) {
+        &src_virtual_path_, &file_util)) {
       delete this;
       return;
     }
   }
   file_system_operation_context_.set_src_origin_url(origin_url);
   file_system_operation_context_.set_src_type(type);
-  if (!file_system_operation_context_.src_file_system_file_util())
-    file_system_operation_context_.set_src_file_system_file_util(
-        file_system_file_util);
+  if (!file_system_operation_context_.src_file_util())
+    file_system_operation_context_.set_src_file_util(file_util);
   file_flags_ = file_flags;
 
   GetUsageAndQuotaThenCallback(origin_url, callback_factory_.NewCallback(
@@ -868,7 +848,7 @@ void FileSystemOperation::OnFileOpenedForWrite(
 
 bool FileSystemOperation::VerifyFileSystemPathForRead(
     const GURL& path, GURL* origin_url, FileSystemType* type,
-    FilePath* virtual_path, FileSystemFileUtil** file_system_file_util) {
+    FilePath* virtual_path, FileSystemFileUtil** file_util) {
 
   // If we have no context, we just allow any operations, for testing.
   // TODO(ericu): Revisit this hack for security.
@@ -887,7 +867,7 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
 #endif
     *type = file_system_operation_context_.src_type();
     *origin_url = file_system_operation_context_.src_origin_url();
-    *file_system_file_util = NULL;
+    *file_util = NULL;
     return true;
   }
 
@@ -902,10 +882,9 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
-  DCHECK(file_system_file_util);
-  *file_system_file_util =
-      file_system_context()->path_manager()->GetFileSystemFileUtil(*type);
-  DCHECK(*file_system_file_util);
+  DCHECK(file_util);
+  *file_util = file_system_context()->path_manager()->GetFileUtil(*type);
+  DCHECK(*file_util);
 
   // We notify this read access whether the read access succeeds or not.
   // This must be ok since this is used to let the QM's eviction logic know
@@ -924,7 +903,7 @@ bool FileSystemOperation::VerifyFileSystemPathForRead(
 
 bool FileSystemOperation::VerifyFileSystemPathForWrite(
     const GURL& path, bool create, GURL* origin_url, FileSystemType* type,
-    FilePath* virtual_path, FileSystemFileUtil** file_system_file_util) {
+    FilePath* virtual_path, FileSystemFileUtil** file_util) {
 
   // If we have no context, we just allow any operations, for testing.
   // TODO(ericu): Revisit this hack for security.
@@ -943,7 +922,7 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
 #endif
     *type = file_system_operation_context_.dest_type();
     *origin_url = file_system_operation_context_.dest_origin_url();
-    *file_system_file_util = NULL;
+    *file_util = NULL;
     return true;
   }
 
@@ -967,10 +946,9 @@ bool FileSystemOperation::VerifyFileSystemPathForWrite(
     dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
     return false;
   }
-  DCHECK(file_system_file_util);
-  *file_system_file_util =
-      file_system_context()->path_manager()->GetFileSystemFileUtil(*type);
-  DCHECK(*file_system_file_util);
+  DCHECK(file_util);
+  *file_util = file_system_context()->path_manager()->GetFileUtil(*type);
+  DCHECK(*file_util);
 
   return true;
 }

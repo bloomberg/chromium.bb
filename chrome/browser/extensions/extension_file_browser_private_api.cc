@@ -40,13 +40,13 @@
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/file_system_file_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #ifdef OS_CHROMEOS

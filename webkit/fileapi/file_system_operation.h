@@ -49,12 +49,12 @@ class FileSystemQuotaUtil;
 class FileSystemOperation {
  public:
   // |dispatcher| will be owned by this class.
-  // |file_system_file_util| is optional; if supplied, it will not be deleted by
+  // |file_util| is optional; if supplied, it will not be deleted by
   // the class.  It's expecting a pointer to a singleton.
   FileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
                       scoped_refptr<base::MessageLoopProxy> proxy,
                       FileSystemContext* file_system_context,
-                      FileSystemFileUtil* file_system_file_util);
+                      FileSystemFileUtil* file_util);
   virtual ~FileSystemOperation();
 
   void OpenFileSystem(const GURL& origin_url,
@@ -184,7 +184,7 @@ class FileSystemOperation {
                                    GURL* root_url,
                                    FileSystemType* type,
                                    FilePath* virtual_path,
-                                   FileSystemFileUtil** file_system_file_util);
+                                   FileSystemFileUtil** file_util);
 
   // Checks the validity of a given |path| for writing, cracks the path into
   // root URL and virtual path components, and returns the correct
@@ -206,7 +206,7 @@ class FileSystemOperation {
                                     GURL* root_url,
                                     FileSystemType* type,
                                     FilePath* virtual_path,
-                                    FileSystemFileUtil** file_system_file_util);
+                                    FileSystemFileUtil** file_util);
 
 #ifndef NDEBUG
   enum OperationType {

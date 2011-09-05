@@ -20,8 +20,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
-#include "webkit/fileapi/obfuscated_file_system_file_util.h"
+#include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/quota_manager.h"
@@ -96,7 +95,7 @@ class ObfuscatedOriginEnumerator
     : public fileapi::SandboxMountPointProvider::OriginEnumerator {
  public:
   explicit ObfuscatedOriginEnumerator(
-      fileapi::ObfuscatedFileSystemFileUtil* file_util) {
+      fileapi::ObfuscatedFileUtil* file_util) {
     enum_.reset(file_util->CreateOriginEnumerator());
   }
   virtual ~ObfuscatedOriginEnumerator() {}
@@ -110,8 +109,7 @@ class ObfuscatedOriginEnumerator
   }
 
  private:
-  scoped_ptr<fileapi::ObfuscatedFileSystemFileUtil::AbstractOriginEnumerator>
-      enum_;
+  scoped_ptr<fileapi::ObfuscatedFileUtil::AbstractOriginEnumerator> enum_;
 };
 
 class OldSandboxOriginEnumerator
@@ -172,7 +170,7 @@ FilePath OldGetBaseDirectoryForOriginAndType(
 }
 
 bool MigrateOneOldFileSystem(
-    fileapi::ObfuscatedFileSystemFileUtil* file_util,
+    fileapi::ObfuscatedFileUtil* file_util,
     const FilePath& old_base_path, const GURL& origin,
     fileapi::FileSystemType type) {
   FilePath base_path = OldGetBaseDirectoryForOriginAndType(
@@ -201,7 +199,7 @@ bool MigrateOneOldFileSystem(
 }
 
 void MigrateAllOldFileSystems(
-    fileapi::ObfuscatedFileSystemFileUtil* file_util,
+    fileapi::ObfuscatedFileUtil* file_util,
     const FilePath& old_base_path) {
   scoped_ptr<OldSandboxOriginEnumerator> old_origins(
       new OldSandboxOriginEnumerator(old_base_path));
@@ -250,7 +248,7 @@ void MigrateAllOldFileSystems(
 // to look up the filesystem's root, so we can take care of most of them by
 // putting a check there.
 void MigrateIfNeeded(
-    fileapi::ObfuscatedFileSystemFileUtil* file_util,
+    fileapi::ObfuscatedFileUtil* file_util,
     const FilePath& old_base_path) {
   if (file_util::DirectoryExists(old_base_path))
     MigrateAllOldFileSystems(file_util, old_base_path);
@@ -279,7 +277,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       file_message_loop_(file_message_loop),
       profile_path_(profile_path),
       sandbox_file_util_(
-          new ObfuscatedFileSystemFileUtil(
+          new ObfuscatedFileUtil(
               profile_path.Append(kNewFileSystemDirectory),
               QuotaFileUtil::CreateDefault())) {
 }
@@ -306,7 +304,7 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
       scoped_refptr<base::MessageLoopProxy> file_message_loop,
       const GURL& origin_url,
       FileSystemType type,
-      ObfuscatedFileSystemFileUtil* file_util,
+      ObfuscatedFileUtil* file_util,
       const FilePath& old_base_path,
       FileSystemPathManager::GetRootPathCallback* callback)
       : file_message_loop_(file_message_loop),
@@ -360,7 +358,7 @@ class SandboxMountPointProvider::GetFileSystemRootPathTask
   scoped_refptr<base::MessageLoopProxy> origin_message_loop_proxy_;
   GURL origin_url_;
   FileSystemType type_;
-  scoped_refptr<ObfuscatedFileSystemFileUtil> file_util_;
+  scoped_refptr<ObfuscatedFileUtil> file_util_;
   FilePath old_base_path_;
   scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback_;
 };
@@ -550,7 +548,7 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
     base::PlatformFileInfo file_info;
     FilePath platform_file_path;
     usage += enumerator->Size();
-    usage += ObfuscatedFileSystemFileUtil::ComputeFilePathCost(file_path_each);
+    usage += ObfuscatedFileUtil::ComputeFilePathCost(file_path_each);
   }
   // This clears the dirty flag too.
   FileSystemUsageCache::UpdateUsage(usage_file_path, usage);
@@ -616,7 +614,7 @@ void SandboxMountPointProvider::InvalidateUsageCache(
   FileSystemUsageCache::IncrementDirty(usage_file_path);
 }
 
-FileSystemFileUtil* SandboxMountPointProvider::GetFileSystemFileUtil() {
+FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil() {
   return sandbox_file_util_.get();
 }
 

@@ -19,7 +19,7 @@
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/local_file_system_file_util.h"
+#include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/quota_file_util.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -155,8 +155,7 @@ class FileSystemOperationTest : public testing::Test {
  public:
   FileSystemOperationTest()
       : status_(kFileOperationStatusNotSet),
-        local_file_util_(
-            new LocalFileSystemFileUtil(QuotaFileUtil::CreateDefault())) {
+        local_file_util_(new LocalFileUtil(QuotaFileUtil::CreateDefault())) {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
   }
 
@@ -250,7 +249,7 @@ class FileSystemOperationTest : public testing::Test {
   std::vector<base::FileUtilProxy::Entry> entries_;
 
  private:
-  scoped_ptr<LocalFileSystemFileUtil> local_file_util_;
+  scoped_ptr<LocalFileUtil> local_file_util_;
   scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationTest);

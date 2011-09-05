@@ -17,34 +17,33 @@ class FileSystemContext;
 
 class FileSystemOperationContext {
  public:
-  // The |file_system_file_util| parameter is so that unit tests can force their
-  // own preferred class in for both src and dest FSFU; in general these will
-  // get set later by the FileSystemOperation.
-  FileSystemOperationContext(
-      FileSystemContext* context,
-      FileSystemFileUtil* file_system_file_util);
+  // The |file_util| parameter is so that unit tests can force their own
+  // preferred class in for both src and dest FSFU; in general these will get
+  // set later by the FileSystemOperation.
+  FileSystemOperationContext(FileSystemContext* context,
+                             FileSystemFileUtil* file_util);
   ~FileSystemOperationContext();
 
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
 
-  void set_src_file_system_file_util(FileSystemFileUtil* util) {
-    DCHECK(!src_file_system_file_util_);
-    src_file_system_file_util_ = util;
+  void set_src_file_util(FileSystemFileUtil* util) {
+    DCHECK(!src_file_util_);
+    src_file_util_ = util;
   }
 
-  FileSystemFileUtil* src_file_system_file_util() const {
-    return src_file_system_file_util_;
+  FileSystemFileUtil* src_file_util() const {
+    return src_file_util_;
   }
 
-  void set_dest_file_system_file_util(FileSystemFileUtil* util) {
-    DCHECK(!dest_file_system_file_util_);
-    dest_file_system_file_util_ = util;
+  void set_dest_file_util(FileSystemFileUtil* util) {
+    DCHECK(!dest_file_util_);
+    dest_file_util_ = util;
   }
 
-  FileSystemFileUtil* dest_file_system_file_util() const {
-    return dest_file_system_file_util_;
+  FileSystemFileUtil* dest_file_util() const {
+    return dest_file_util_;
   }
 
   void set_src_origin_url(const GURL& url) {
@@ -89,11 +88,10 @@ class FileSystemOperationContext {
 
  private:
   scoped_refptr<FileSystemContext> file_system_context_;
-  // These *_file_system_file_util_ are not "owned" by
-  // FileSystemOperationContext.  They are supposed to be pointers to objects
-  // that will outlive us.
-  FileSystemFileUtil* src_file_system_file_util_;
-  FileSystemFileUtil* dest_file_system_file_util_;
+  // These *_file_util_ are not "owned" by FileSystemOperationContext.  They
+  // are supposed to be pointers to objects that will outlive us.
+  FileSystemFileUtil* src_file_util_;
+  FileSystemFileUtil* dest_file_util_;
 
   GURL src_origin_url_;  // Also used for any single-path operation.
   GURL dest_origin_url_;

@@ -38,8 +38,7 @@ void FileSystemTestOriginHelper::SetUp(
 }
 
 void FileSystemTestOriginHelper::SetUp(
-    FileSystemContext* file_system_context,
-    FileSystemFileUtil* file_util) {
+    FileSystemContext* file_system_context, FileSystemFileUtil* file_util) {
   DCHECK(file_system_context->path_manager());
   DCHECK(file_system_context->path_manager()->sandbox_provider());
 
@@ -47,7 +46,7 @@ void FileSystemTestOriginHelper::SetUp(
   file_system_context_ = file_system_context;
   if (!file_util_)
     file_util_ = file_system_context->path_manager()->sandbox_provider()->
-        GetFileSystemFileUtil();
+        GetFileUtil();
   DCHECK(file_util_);
 
   // Prepare the origin's root directory.
