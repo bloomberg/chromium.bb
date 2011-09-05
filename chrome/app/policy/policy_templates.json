@@ -94,7 +94,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 103
+#   For your editing convenience: highest ID currently used: 105
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1779,6 +1779,45 @@
       'caption': '''Prevent app promotions from appearing on the new tab page''',
       'desc': '''When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.''',
     },
+    {
+      'name': 'URLBlacklist',
+      'type': 'list',
+      'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'http://server:8080/path', '.exact.hostname.com', '*'],
+      'id': 104,
+      'caption': '''Block access to a list of URLs''',
+      'desc': '''Blocks access to the listed URLs.
+
+      This policy prevents the user from loading web pages from blacklisted URLs.
+
+      A URL has the format 'scheme://host:port/path'.
+      The optional scheme can be http, https or ftp. Only this scheme will be blocked; if none is specified, all schemes are blocked.
+      The host can be a hostname or an IP address. Subdomains of a hostname will also be blocked. To prevent blocking subdomains, include a '.' before the hostname. The special hostname '*' will block all domains.
+      The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
+      If the optional path is specified, only paths with that prefix will be blocked.
+
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 100 entries; subsequent entries will be ignored.''',
+    },
+    {
+      'name': 'URLWhitelist',
+      'type': 'list',
+      'supported_on': ['chrome.*:15-', 'chrome_os:0.15-'],
+      'features': {'dynamic_refresh': 1},
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'http://server:8080/path', '.exact.hostname.com'],
+      'id': 105,
+      'caption': '''Allows access to a list of URLs''',
+      'desc': '''Allows access to the listed URLs, as exceptions to the URL blacklist.
+
+      See the description of the URL blacklist policy for the format of entries of this list.
+
+      This policy can be used to open exceptions to restrictive blacklists. For example, '*' can be blacklisted to block all requests, and this policy can be used to allow access to a limited list of URLs. It can be used to open exceptions to certain schemes, subdomains of other domains, ports, or specific paths.
+
+      The most specific filter will determine if a URL is blocked or allowed. The whitelist takes precedence over the blacklist.
+
+      This policy is limited to 100 entries; subsequent entries will be ignored.''',
+    },
+
   ],
   'messages': {
     # Messages that are not associated to any policies.

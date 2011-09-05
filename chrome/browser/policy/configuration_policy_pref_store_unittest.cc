@@ -88,7 +88,11 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyDisabledSchemes,
                     prefs::kDisabledSchemes),
         TypeAndName(kPolicyAutoSelectCertificateForUrls,
-                    prefs::kManagedAutoSelectCertificateForUrls)));
+                    prefs::kManagedAutoSelectCertificateForUrls),
+        TypeAndName(kPolicyURLBlacklist,
+                    prefs::kUrlBlacklist),
+        TypeAndName(kPolicyURLWhitelist,
+                    prefs::kUrlWhitelist)));
 
 // Test cases for string-valued policy settings.
 class ConfigurationPolicyPrefStoreStringTest

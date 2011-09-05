@@ -314,6 +314,10 @@ const ConfigurationPolicyPrefKeeper::PolicyToPreferenceMapEntry
     prefs::kMaxConnectionsPerProxy },
   { Value::TYPE_BOOLEAN, kPolicyHideWebStorePromo,
     prefs::kNTPHideWebStorePromo },
+  { Value::TYPE_LIST, kPolicyURLBlacklist,
+    prefs::kUrlBlacklist },
+  { Value::TYPE_LIST, kPolicyURLWhitelist,
+    prefs::kUrlWhitelist },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -1199,6 +1203,10 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kMaxConnectionsPerProxy },
     { kPolicyHideWebStorePromo, Value::TYPE_BOOLEAN,
       key::kHideWebStorePromo },
+    { kPolicyURLBlacklist, Value::TYPE_LIST,
+      key::kURLBlacklist },
+    { kPolicyURLWhitelist, Value::TYPE_LIST,
+      key::kURLWhitelist },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

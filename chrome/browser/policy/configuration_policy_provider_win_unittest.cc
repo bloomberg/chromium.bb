@@ -508,4 +508,17 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyMaxConnectionsPerProxy,
             key::kMaxConnectionsPerProxy)));
 
+// testing::Values has a limit of 50 test templates, which is reached by the
+// instantiations above. Add tests for new policies here:
+INSTANTIATE_TEST_CASE_P(
+    ConfigurationPolicyProviderWinTestInstance2,
+    ConfigurationPolicyProviderWinTest,
+    testing::Values(
+        PolicyTestParams::ForListPolicy(
+            kPolicyURLBlacklist,
+            key::kURLBlacklist),
+        PolicyTestParams::ForListPolicy(
+            kPolicyURLWhitelist,
+            key::kURLWhitelist)));
+
 }  // namespace policy

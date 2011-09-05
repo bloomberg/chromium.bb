@@ -376,4 +376,17 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyDiskCacheDir,
             key::kDiskCacheDir)));
 
+// testing::Values has a limit of 50 test templates, which is reached by the
+// instantiations above. Add tests for new policies here:
+INSTANTIATE_TEST_CASE_P(
+    ConfigDirPolicyProviderValueTestInstance2,
+    ConfigDirPolicyProviderValueTest,
+    testing::Values(
+        ValueTestParams::ForListPolicy(
+            kPolicyURLBlacklist,
+            key::kURLBlacklist),
+        ValueTestParams::ForListPolicy(
+            kPolicyURLWhitelist,
+            key::kURLWhitelist)));
+
 }  // namespace policy
