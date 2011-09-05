@@ -37,6 +37,7 @@
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
+#include "chrome/browser/tab_contents/spelling_menu_observer.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
@@ -552,6 +553,27 @@ void RenderViewContextMenu::InitMenu() {
 #endif
   }
 
+  if (params_.is_editable) {
+    // Add a menu item that shows suggestions from the Spelling service.
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
+      PrefService* pref = profile_->GetPrefs();
+      bool use_spelling_service =
+          pref && pref->GetBoolean(prefs::kSpellCheckUseSpellingService);
+      if (use_spelling_service) {
+        if (!spelling_menu_observer_.get())
+            spelling_menu_observer_.reset(new SpellingMenuObserver(this));
+
+        if (spelling_menu_observer_.get())
+          observers_.AddObserver(spelling_menu_observer_.get());
+      }
+    }
+  }
+
+  // Ask our observers to add their menu items.
+  FOR_EACH_OBSERVER(RenderViewContextMenuObserver, observers_,
+                    InitMenu(params_));
+
   if (params_.is_editable)
     AppendEditableItems();
   else if (has_selection)
@@ -569,6 +591,27 @@ void RenderViewContextMenu::InitMenu() {
 void RenderViewContextMenu::LookUpInDictionary() {
   // Used only in the Mac port.
   NOTREACHED();
+}
+
+void RenderViewContextMenu::AddMenuItem(int command_id,
+                                        const string16& title) {
+  menu_model_.AddItem(command_id, title);
+}
+
+void RenderViewContextMenu::UpdateMenuItem(int command_id,
+                                           bool enabled,
+                                           const string16& label) {
+  // This function needs platform-specific implementation.
+  NOTIMPLEMENTED();
+}
+
+
+RenderViewHost* RenderViewContextMenu::GetRenderViewHost() const {
+  return source_tab_contents_->render_view_host();
+}
+
+Profile* RenderViewContextMenu::GetProfile() const {
+  return profile_;
 }
 
 bool RenderViewContextMenu::AppendCustomItems() {
@@ -794,7 +837,7 @@ void RenderViewContextMenu::AppendEditableItems() {
   }
 
   // If word is misspelled, give option for "Add to dictionary"
-  if (!params_.misspelled_word.empty()) {
+  if (!spelling_menu_observer_.get() && !params_.misspelled_word.empty()) {
     if (params_.dictionary_suggestions.empty()) {
       menu_model_.AddItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
           l10n_util::GetStringUTF16(
@@ -961,6 +1004,15 @@ ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
+  // If this command is is added by one of our observers, we dispatch it to the
+  // observer.
+  ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
+  RenderViewContextMenuObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->IsCommandIdSupported(id))
+      return observer->IsCommandIdEnabled(id);
+  }
+
   if (id == IDC_PRINT &&
       (source_tab_contents_->content_restrictions() &
           CONTENT_RESTRICTION_PRINT)) {
@@ -1329,6 +1381,15 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 }
 
 void RenderViewContextMenu::ExecuteCommand(int id) {
+  // If this command is is added by one of our observers, we dispatch it to the
+  // observer.
+  ObserverListBase<RenderViewContextMenuObserver>::Iterator it(observers_);
+  RenderViewContextMenuObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->IsCommandIdSupported(id))
+      return observer->ExecuteCommand(id);
+  }
+
   // Check to see if one of the spell check language ids have been clicked.
   if (id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
       id < IDC_SPELLCHECK_LANGUAGES_LAST) {

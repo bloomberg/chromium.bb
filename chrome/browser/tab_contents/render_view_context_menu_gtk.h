@@ -28,6 +28,11 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   // Menu::Delegate implementation ---------------------------------------------
   virtual bool AlwaysShowIconForCmd(int command_id) const;
 
+  // RenderViewContextMenuDelegate implementation ------------------------------
+  virtual void UpdateMenuItem(int command_id,
+                              bool enabled,
+                              const string16& title) OVERRIDE;
+
  protected:
   // RenderViewContextMenu implementation --------------------------------------
   virtual void PlatformInit();

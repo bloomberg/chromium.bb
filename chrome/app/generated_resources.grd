@@ -540,6 +540,12 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="The name of the No Spelling Suggestions display in the content area context menu">
           &amp;No spelling suggestions
         </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
+          Loading spelling suggestion
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_CORRECT" desc="The message shown when the selection text is correct.">
+          No suggestions found
+        </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
           &amp;Spell-checker options
         </message>
@@ -733,6 +739,12 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="In Title Case: The name of the No Spelling Suggestions display in the content area context menu">
           &amp;No Spelling Suggestions
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
+          Loading spelling suggestion
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_CORRECT" desc="The message shown when the selection text is correct.">
+          No suggestions found
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
           &amp;Spell-checker Options
@@ -9001,7 +9013,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
         Use a prediction service to help complete searches and URLs typed in the address bar
       </message>
-
+      <message name="IDS_OPTIONS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
+        Use a web service to help resolve spelling errors
+      </message>
       <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
         Automatically send usage statistics and crash reports to Google
       </message>

@@ -110,3 +110,20 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       return false;
   }
 }
+
+void RenderViewContextMenuViews::UpdateMenuItem(int command_id,
+                                                bool enabled,
+                                                const string16& title) {
+  views::MenuItemView* item = menu_->GetMenuItemByID(command_id);
+  if (!item)
+    return;
+
+  item->SetEnabled(enabled);
+  item->SetTitle(UTF16ToWide(title));
+
+  views::MenuItemView* parent = item->GetParentMenuItem();
+  if (!parent)
+    return;
+
+  parent->ChildrenChanged();
+}

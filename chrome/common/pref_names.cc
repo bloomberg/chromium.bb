@@ -1080,6 +1080,9 @@ const char kPluginMessageResponseTimeout[] =
 // String which represents the dictionary name for our spell-checker.
 const char kSpellCheckDictionary[] = "spellcheck.dictionary";
 
+// String which represents whether we use the spelling service.
+const char kSpellCheckUseSpellingService[] = "spellcheck.use_spelling_service";
+
 // Dictionary of schemes used by the external protocol handler.
 // The value is true if the scheme must be ignored.
 const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";

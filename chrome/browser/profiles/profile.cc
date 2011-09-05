@@ -129,6 +129,13 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterLocalizedStringPref(prefs::kSpellCheckDictionary,
                                      IDS_SPELLCHECK_DICTIONARY,
                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService,
+#if defined(GOOGLE_CHROME_BUILD)
+                             true,
+#else
+                             false,
+#endif
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kEnableSpellCheck,
                              true,
                              PrefService::SYNCABLE_PREF);

@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/string16.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
 namespace views {
@@ -33,11 +34,18 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
 
   void UpdateMenuItemStates();
 
+  // RenderViewContextMenuDelegate implementation.
+  virtual void UpdateMenuItem(int command_id,
+                              bool enabled,
+                              const string16& title) OVERRIDE;
+
  protected:
-  // RenderViewContextMenu implementation --------------------------------------
-  virtual void PlatformInit();
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
+  // RenderViewContextMenu implementation.
+  virtual void PlatformInit() OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+
  private:
   // The context menu itself and its contents.
   scoped_ptr<views::MenuModelAdapter> menu_delegate_;
