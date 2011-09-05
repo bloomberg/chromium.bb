@@ -455,7 +455,8 @@ TEST_F(EnterpriseMetricsTest, PolicyFetchInvalidPolicy) {
 
   em::CachedCloudPolicyResponse response;
   response.mutable_cloud_policy()->set_policy_data("\xff");
-  cache_as_delegate->OnDiskCacheLoaded(response);
+  cache_as_delegate->OnDiskCacheLoaded(UserPolicyDiskCache::LOAD_RESULT_SUCCESS,
+                                       response);
   ExpectSample(kMetricPolicyFetchInvalidPolicy);
   EXPECT_TRUE(CheckSamples());
 }
@@ -476,7 +477,8 @@ TEST_F(EnterpriseMetricsTest, PolicyFetchTimestampInFuture) {
   policy_data.SerializeToString(&data);
   em::CachedCloudPolicyResponse response;
   response.mutable_cloud_policy()->set_policy_data(data);
-  cache_as_delegate->OnDiskCacheLoaded(response);
+  cache_as_delegate->OnDiskCacheLoaded(UserPolicyDiskCache::LOAD_RESULT_SUCCESS,
+                                       response);
   ExpectSample(kMetricPolicyFetchTimestampInFuture);
   EXPECT_TRUE(CheckSamples());
 }
@@ -494,7 +496,8 @@ TEST_F(EnterpriseMetricsTest, PolicyFetchNotModified) {
   policy_data.SerializeToString(&data);
   em::CachedCloudPolicyResponse response;
   response.mutable_cloud_policy()->set_policy_data(data);
-  cache_as_delegate->OnDiskCacheLoaded(response);
+  cache_as_delegate->OnDiskCacheLoaded(UserPolicyDiskCache::LOAD_RESULT_SUCCESS,
+                                       response);
   ExpectSample(kMetricPolicyFetchNotModified);
   EXPECT_TRUE(CheckSamples());
 }

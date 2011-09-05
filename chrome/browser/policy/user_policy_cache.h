@@ -37,13 +37,13 @@ class UserPolicyCache : public CloudPolicyCacheBase,
   virtual void Load() OVERRIDE;
   virtual void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE;
   virtual void SetUnmanaged() OVERRIDE;
-  virtual bool IsReady() OVERRIDE;
 
  private:
   class DiskCache;
 
   // UserPolicyDiskCache::Delegate implementation:
   virtual void OnDiskCacheLoaded(
+      UserPolicyDiskCache::LoadResult result,
       const em::CachedCloudPolicyResponse& cached_response) OVERRIDE;
 
   // CloudPolicyCacheBase implementation:
@@ -73,10 +73,6 @@ class UserPolicyCache : public CloudPolicyCacheBase,
 
   // Used for constructing the weak ptr passed to |disk_cache_|.
   base::WeakPtrFactory<UserPolicyDiskCache::Delegate> weak_ptr_factory_;
-
-  // Starts as false, set to true when the first request for policies from
-  // disk is returned.
-  bool first_load_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicyCache);
 };

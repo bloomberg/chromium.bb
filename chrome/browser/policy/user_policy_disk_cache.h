@@ -25,11 +25,24 @@ namespace policy {
 class UserPolicyDiskCache
     : public base::RefCountedThreadSafe<UserPolicyDiskCache> {
  public:
+  // Indicates the status of a completed load operation.
+  enum LoadResult {
+    // Policy was loaded successfully.
+    LOAD_RESULT_SUCCESS,
+    // Cache file missing.
+    LOAD_RESULT_NOT_FOUND,
+    // Failed to read cache file.
+    LOAD_RESULT_READ_ERROR,
+    // Failed to parse cache file.
+    LOAD_RESULT_PARSE_ERROR,
+  };
+
   // Delegate interface for observing loads operations.
   class Delegate {
    public:
     virtual ~Delegate();
     virtual void OnDiskCacheLoaded(
+        LoadResult result,
         const em::CachedCloudPolicyResponse& policy) = 0;
   };
 
@@ -51,8 +64,13 @@ class UserPolicyDiskCache
   // Tries to load the cache file on the FILE thread.
   void LoadOnFileThread();
 
+  // Forwards the result to the UI thread.
+  void LoadDone(LoadResult result,
+                const em::CachedCloudPolicyResponse& policy);
+
   // Passes back the successfully read policy to the cache on the UI thread.
-  void FinishLoadOnUIThread(const em::CachedCloudPolicyResponse& policy);
+  void ReportResultOnUIThread(LoadResult result,
+                              const em::CachedCloudPolicyResponse& policy);
 
   // Saves a policy blob on the FILE thread.
   void StoreOnFileThread(const em::CachedCloudPolicyResponse& policy);

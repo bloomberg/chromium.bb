@@ -30,8 +30,7 @@ void DecodePolicy(const em::CloudPolicySettings& policy,
                   PolicyMap* mandatory, PolicyMap* recommended);
 
 UserPolicyCache::UserPolicyCache(const FilePath& backing_file_path)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
-      first_load_complete_(false) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   disk_cache_ = new UserPolicyDiskCache(weak_ptr_factory_.GetWeakPtr(),
                                         backing_file_path);
 }
@@ -74,23 +73,24 @@ void UserPolicyCache::SetUnmanaged() {
   disk_cache_->Store(cached_policy);
 }
 
-bool UserPolicyCache::IsReady() {
-  return initialization_complete() || first_load_complete_;
-}
-
 void UserPolicyCache::OnDiskCacheLoaded(
+    UserPolicyDiskCache::LoadResult result,
     const em::CachedCloudPolicyResponse& cached_response) {
-  first_load_complete_ = true;
-  if (initialization_complete())
+  if (IsReady())
     return;
 
-  if (cached_response.unmanaged()) {
-    SetUnmanagedInternal(base::Time::FromTimeT(cached_response.timestamp()));
-  } else if (cached_response.has_cloud_policy()) {
-    base::Time timestamp;
-    if (SetPolicyInternal(cached_response.cloud_policy(), &timestamp, true))
-      set_last_policy_refresh_time(timestamp);
+  if (result == UserPolicyDiskCache::LOAD_RESULT_SUCCESS) {
+    if (cached_response.unmanaged()) {
+      SetUnmanagedInternal(base::Time::FromTimeT(cached_response.timestamp()));
+    } else if (cached_response.has_cloud_policy()) {
+      base::Time timestamp;
+      if (SetPolicyInternal(cached_response.cloud_policy(), &timestamp, true))
+        set_last_policy_refresh_time(timestamp);
+    }
   }
+
+  // Ready to feed policy up the chain!
+  SetReady();
 }
 
 bool UserPolicyCache::DecodePolicyData(const em::PolicyData& policy_data,

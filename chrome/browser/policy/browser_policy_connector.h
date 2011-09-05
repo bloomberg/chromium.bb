@@ -99,11 +99,10 @@ class BrowserPolicyConnector : public NotificationObserver {
   void ScheduleServiceInitialization(int64 delay_milliseconds);
 
   // Initializes the user cloud policy infrastructure.
-  // TODO(sfeuz): Listen to log-out or going-away messages of TokenService and
-  // reset the backend at that point.
-  void InitializeUserPolicy(const std::string& user_name,
-                            const FilePath& policy_dir,
-                            TokenService* token_service);
+  void InitializeUserPolicy(const std::string& user_name);
+
+  // Installs a token service for user policy.
+  void SetUserPolicyTokenService(TokenService* token_service);
 
   // Registers for user policy (if not already registered), using the passed
   // OAuth V2 token for authentication.

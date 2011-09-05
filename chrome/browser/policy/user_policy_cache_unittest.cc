@@ -105,6 +105,7 @@ class UserPolicyCacheTest : public testing::Test {
                  em::PolicyFetchResponse* policy_response,
                  bool expect_changed_policy) {
     scoped_ptr<em::PolicyFetchResponse> policy(policy_response);
+    cache->SetReady();
     cache->AddObserver(&observer);
 
     if (expect_changed_policy)
@@ -115,6 +116,10 @@ class UserPolicyCacheTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(&observer);
 
     cache->RemoveObserver(&observer);
+  }
+
+  void SetReady(UserPolicyCache* cache) {
+    cache->SetReady();
   }
 
   FilePath test_file() {
@@ -353,6 +358,23 @@ TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
   expected.Set(kPolicyHomepageLocation,
                Value::CreateStringValue("http://www.chromium.org"));
   EXPECT_TRUE(expected.Equals(mandatory_policy(cache)));
+}
+
+TEST_F(UserPolicyCacheTest, SetReady) {
+  UserPolicyCache cache(test_file());
+  cache.AddObserver(&observer);
+  scoped_ptr<em::PolicyFetchResponse> policy(
+      CreateHomepagePolicy("http://www.example.com",
+                           base::Time::NowFromSystemTime(),
+                           em::PolicyOptions::MANDATORY));
+  EXPECT_CALL(observer, OnCacheUpdate(_)).Times(0);
+  cache.SetPolicy(*policy);
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Switching the cache to ready should send a notification.
+  EXPECT_CALL(observer, OnCacheUpdate(_)).Times(1);
+  SetReady(&cache);
+  cache.RemoveObserver(&observer);
 }
 
 // Test case for the temporary support for GenericNamedValues in the

@@ -82,7 +82,7 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   // the local policy storage is complete. The creation of the Profile is
   // blocked on this method, so we shouldn't wait for successful network
   // round trips.
-  virtual bool IsReady() = 0;
+  bool IsReady();
 
  protected:
   // Wraps public key version and validity.
@@ -103,6 +103,9 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
 
   void SetUnmanagedInternal(const base::Time& timestamp);
 
+  // Indicates that initialization is now complete. Observers will be notified.
+  void SetReady();
+
   // Decodes |policy_data|, populating |mandatory| and |recommended| with
   // the results.
   virtual bool DecodePolicyData(const em::PolicyData& policy_data,
@@ -117,16 +120,14 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
                             base::Time* timestamp,
                             PublicKeyVersion* public_key_version);
 
+  // Notifies observers if the cache IsReady().
+  void NotifyObservers();
+
   void InformNotifier(CloudPolicySubsystem::PolicySubsystemState state,
                       CloudPolicySubsystem::ErrorDetails error_details);
 
   void set_last_policy_refresh_time(base::Time timestamp) {
     last_policy_refresh_time_ = timestamp;
-  }
-
-  // See comment for |initialization_complete_|.
-  bool initialization_complete() {
-    return initialization_complete_;
   }
 
  private:

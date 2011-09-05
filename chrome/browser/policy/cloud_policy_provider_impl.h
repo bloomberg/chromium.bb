@@ -60,6 +60,9 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
   // Policy level this provider will handle.
   CloudPolicyCacheBase::PolicyLevel level_;
 
+  // Whether all caches are fully initialized.
+  bool initialization_complete_;
+
   // Provider observers that are registered with this provider.
   ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
 

@@ -15,7 +15,8 @@ CloudPolicyProviderImpl::CloudPolicyProviderImpl(
     const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
     CloudPolicyCacheBase::PolicyLevel level)
     : CloudPolicyProvider(policy_list),
-      level_(level) {}
+      level_(level),
+      initialization_complete_(true) {}
 
 CloudPolicyProviderImpl::~CloudPolicyProviderImpl() {
   for (ListType::iterator i = caches_.begin(); i != caches_.end(); ++i)
@@ -32,12 +33,7 @@ bool CloudPolicyProviderImpl::Provide(
 }
 
 bool CloudPolicyProviderImpl::IsInitializationComplete() const {
-  for (ListType::const_iterator i = caches_.begin(); i != caches_.end(); ++i) {
-    if (!(*i)->IsReady()) {
-      return false;
-    }
-  }
-  return true;
+  return initialization_complete_;
 }
 
 void CloudPolicyProviderImpl::AddObserver(
@@ -67,12 +63,14 @@ void CloudPolicyProviderImpl::OnCacheGoingAway(CloudPolicyCacheBase* cache) {
 }
 
 void CloudPolicyProviderImpl::AppendCache(CloudPolicyCacheBase* cache) {
+  initialization_complete_ &= cache->IsReady();
   cache->AddObserver(this);
   caches_.push_back(cache);
   RecombineCachesAndMaybeTriggerUpdate();
 }
 
 void CloudPolicyProviderImpl::PrependCache(CloudPolicyCacheBase* cache) {
+  initialization_complete_ &= cache->IsReady();
   cache->AddObserver(this);
   caches_.insert(caches_.begin(), cache);
   RecombineCachesAndMaybeTriggerUpdate();
@@ -105,6 +103,24 @@ void CloudPolicyProviderImpl::CombineTwoPolicyMaps(const PolicyMap& base,
 }
 
 void CloudPolicyProviderImpl::RecombineCachesAndMaybeTriggerUpdate() {
+  // Re-check whether all caches are ready.
+  bool force_update = false;
+  if (!initialization_complete_) {
+    bool all_caches_ready = true;
+    for (ListType::const_iterator i = caches_.begin();
+         i != caches_.end(); ++i) {
+      if (!(*i)->IsReady()) {
+        all_caches_ready = false;
+        break;
+      }
+    }
+    if (all_caches_ready) {
+      force_update = true;
+      initialization_complete_ = true;
+    }
+  }
+
+  // Reconstruct the merged policy map.
   PolicyMap newly_combined;
   for (ListType::iterator i = caches_.begin(); i != caches_.end(); ++i) {
     if (!(*i)->IsReady())
@@ -113,7 +129,7 @@ void CloudPolicyProviderImpl::RecombineCachesAndMaybeTriggerUpdate() {
     CombineTwoPolicyMaps(newly_combined, *(*i)->policy(level_), &tmp_map);
     newly_combined.Swap(&tmp_map);
   }
-  if (newly_combined.Equals(combined_))
+  if (newly_combined.Equals(combined_) && !force_update)
     return;
 
   // Trigger a notification if there was a change.

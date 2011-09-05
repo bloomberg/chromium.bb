@@ -472,6 +472,10 @@ void LoginUtilsImpl::PrepareProfile(
   has_cookies_ = has_cookies;
   delegate_ = delegate;
 
+  // Initialize user policy before the profile is created so the profile
+  // initialization code sees the policy settings.
+  g_browser_process->browser_policy_connector()->InitializeUserPolicy(username);
+
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
   ProfileManager::CreateDefaultProfileAsync(this);
@@ -497,12 +501,10 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
   policy::BrowserPolicyConnector* browser_policy_connector =
       g_browser_process->browser_policy_connector();
 
-  TokenService* token_service_for_policy = NULL;
-  if (!using_oauth_)
-    token_service_for_policy = user_profile->GetTokenService();
-  browser_policy_connector->InitializeUserPolicy(username_,
-                                                 user_profile->GetPath(),
-                                                 token_service_for_policy);
+  if (!using_oauth_) {
+    browser_policy_connector->SetUserPolicyTokenService(
+        user_profile->GetTokenService());
+  }
 
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);

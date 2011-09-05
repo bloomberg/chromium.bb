@@ -45,6 +45,10 @@ void CloudPolicyCacheBase::Reset() {
                  CloudPolicySubsystem::NO_DETAILS);
 }
 
+bool CloudPolicyCacheBase::IsReady() {
+  return initialization_complete_;
+}
+
 const PolicyMap* CloudPolicyCacheBase::policy(PolicyLevel level) {
   switch (level) {
     case POLICY_LEVEL_MANDATORY:
@@ -68,7 +72,6 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
     base::Time* timestamp,
     bool check_for_timestamp_validity) {
   DCHECK(CalledOnValidThread());
-  bool initialization_was_not_complete = !initialization_complete_;
   is_unmanaged_ = false;
   PolicyMap mandatory_policy;
   PolicyMap recommended_policy;
@@ -101,16 +104,14 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
       !recommended_policy_.Equals(recommended_policy);
   mandatory_policy_.Swap(&mandatory_policy);
   recommended_policy_.Swap(&recommended_policy);
-  initialization_complete_ = true;
 
   if (!new_policy_differs) {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchNotModified,
                               kMetricPolicySize);
+  } else {
+    NotifyObservers();
   }
 
-  if (new_policy_differs || initialization_was_not_complete) {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnCacheUpdate(this));
-  }
   InformNotifier(CloudPolicySubsystem::SUCCESS,
                  CloudPolicySubsystem::NO_DETAILS);
   return true;
@@ -118,13 +119,17 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
 
 void CloudPolicyCacheBase::SetUnmanagedInternal(const base::Time& timestamp) {
   is_unmanaged_ = true;
-  initialization_complete_ = true;
   public_key_version_.valid = false;
   mandatory_policy_.Clear();
   recommended_policy_.Clear();
   last_policy_refresh_time_ = timestamp;
 
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnCacheUpdate(this));
+  NotifyObservers();
+}
+
+void CloudPolicyCacheBase::SetReady() {
+  initialization_complete_ = true;
+  NotifyObservers();
 }
 
 bool CloudPolicyCacheBase::DecodePolicyResponse(
@@ -150,6 +155,11 @@ bool CloudPolicyCacheBase::DecodePolicyResponse(
   }
 
   return DecodePolicyData(policy_data, mandatory, recommended);
+}
+
+void CloudPolicyCacheBase::NotifyObservers() {
+  if (IsReady())
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnCacheUpdate(this));
 }
 
 void CloudPolicyCacheBase::InformNotifier(

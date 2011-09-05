@@ -117,7 +117,6 @@ DevicePolicyCache::DevicePolicyCache(
     : data_store_(data_store),
       install_attributes_(install_attributes),
       signed_settings_helper_(chromeos::SignedSettingsHelper::Get()),
-      starting_up_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
 }
 
@@ -128,7 +127,6 @@ DevicePolicyCache::DevicePolicyCache(
     : data_store_(data_store),
       install_attributes_(install_attributes),
       signed_settings_helper_(signed_settings_helper),
-      starting_up_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
 }
 
@@ -141,7 +139,7 @@ void DevicePolicyCache::Load() {
 }
 
 void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
-  DCHECK(!starting_up_);
+  DCHECK(IsReady());
 
   // Make sure we have an enterprise device.
   std::string registration_user(install_attributes_->GetRegistrationUser());
@@ -190,63 +188,18 @@ void DevicePolicyCache::SetUnmanaged() {
   // This is not supported for DevicePolicyCache.
 }
 
-bool DevicePolicyCache::IsReady() {
-  return initialization_complete() || !starting_up_;
-}
-
 void DevicePolicyCache::OnRetrievePolicyCompleted(
     chromeos::SignedSettings::ReturnCode code,
     const em::PolicyFetchResponse& policy) {
   DCHECK(CalledOnValidThread());
-  if (starting_up_) {
-    starting_up_ = false;
-    // All the code paths should issue a data_store_->SetDeviceToken(..., true)
-    // to signal that the cache has finished loading, so other components
-    // are free to modify token data.
-    if (code == chromeos::SignedSettings::NOT_FOUND ||
-        code == chromeos::SignedSettings::KEY_UNAVAILABLE ||
-        !policy.has_policy_data()) {
-      InformNotifier(CloudPolicySubsystem::UNENROLLED,
-                     CloudPolicySubsystem::NO_DETAILS);
-      data_store_->SetDeviceToken("", true);
-      return;
-    }
-    em::PolicyData policy_data;
-    if (!policy_data.ParseFromString(policy.policy_data())) {
-      LOG(WARNING) << "Failed to parse PolicyData protobuf.";
-      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadFailed,
-                                kMetricPolicySize);
-      InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
-                     CloudPolicySubsystem::POLICY_LOCAL_ERROR);
-      data_store_->SetDeviceToken("", true);
-      return;
-    }
-    if (!policy_data.has_request_token() ||
-        policy_data.request_token().empty()) {
-      SetUnmanagedInternal(base::Time::NowFromSystemTime());
-      InformNotifier(CloudPolicySubsystem::UNMANAGED,
-                     CloudPolicySubsystem::NO_DETAILS);
-      // TODO(jkummerow): Reminder: When we want to feed device-wide settings
-      // made by a local owner into this cache, we need to call
-      // SetPolicyInternal() here.
-      data_store_->SetDeviceToken("", true);
-      return;
-    }
-    if (!policy_data.has_username() || !policy_data.has_device_id()) {
-      UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadFailed,
-                                kMetricPolicySize);
-      InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
-                     CloudPolicySubsystem::POLICY_LOCAL_ERROR);
-      data_store_->SetDeviceToken("", true);
-      return;
-    }
-    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadSucceeded,
-                              kMetricPolicySize);
-    data_store_->set_user_name(policy_data.username());
-    data_store_->set_device_id(policy_data.device_id());
-    data_store_->SetDeviceToken(policy_data.request_token(), true);
-    SetPolicyInternal(policy, NULL, false);
-  } else {  // In other words, starting_up_ == false.
+  if (!IsReady()) {
+    std::string device_token;
+    InstallInitialPolicy(code, policy, &device_token);
+    // We need to call SetDeviceToken unconditionally to indicate the cache has
+    // finished loading.
+    data_store_->SetDeviceToken(device_token, true);
+    SetReady();
+  } else {  // In other words, IsReady() == true
     if (code != chromeos::SignedSettings::SUCCESS) {
       if (code == chromeos::SignedSettings::BAD_SIGNATURE) {
         UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchBadSignature,
@@ -303,6 +256,51 @@ void DevicePolicyCache::PolicyStoreOpCompleted(
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyStoreSucceeded,
                             kMetricPolicySize);
   signed_settings_helper_->StartRetrievePolicyOp(this);
+}
+
+void DevicePolicyCache::InstallInitialPolicy(
+    chromeos::SignedSettings::ReturnCode code,
+    const em::PolicyFetchResponse& policy,
+    std::string* device_token) {
+  if (code == chromeos::SignedSettings::NOT_FOUND ||
+      code == chromeos::SignedSettings::KEY_UNAVAILABLE ||
+      !policy.has_policy_data()) {
+    InformNotifier(CloudPolicySubsystem::UNENROLLED,
+                   CloudPolicySubsystem::NO_DETAILS);
+    return;
+  }
+  em::PolicyData policy_data;
+  if (!policy_data.ParseFromString(policy.policy_data())) {
+    LOG(WARNING) << "Failed to parse PolicyData protobuf.";
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadFailed,
+                              kMetricPolicySize);
+    InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                   CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+    return;
+  }
+  if (!policy_data.has_request_token() ||
+      policy_data.request_token().empty()) {
+    SetUnmanagedInternal(base::Time::NowFromSystemTime());
+    InformNotifier(CloudPolicySubsystem::UNMANAGED,
+                   CloudPolicySubsystem::NO_DETAILS);
+    // TODO(jkummerow): Reminder: When we want to feed device-wide settings
+    // made by a local owner into this cache, we need to call
+    // SetPolicyInternal() here.
+    return;
+  }
+  if (!policy_data.has_username() || !policy_data.has_device_id()) {
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadFailed,
+                              kMetricPolicySize);
+    InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
+                   CloudPolicySubsystem::POLICY_LOCAL_ERROR);
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadSucceeded,
+                            kMetricPolicySize);
+  data_store_->set_user_name(policy_data.username());
+  data_store_->set_device_id(policy_data.device_id());
+  *device_token = policy_data.request_token();
+  SetPolicyInternal(policy, NULL, false);
 }
 
 // static

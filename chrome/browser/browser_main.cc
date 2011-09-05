@@ -1725,6 +1725,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line);
+
+    // Initialize user policy before creating the profile so the profile
+    // initialization code sees policy settings.
+    g_browser_process->browser_policy_connector()->InitializeUserPolicy(
+        username);
   }
 #endif
 
@@ -1742,17 +1747,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Post-profile init ---------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
-  // Handling the user cloud policy initialization for case 2 mentioned above.
-  // We do this after the profile creation since we need the TokenService.
+  // Pass the TokenService pointer to the policy connector so user policy can
+  // grab a token and register with the policy server.
+  // TODO(mnissler): Remove once OAuth is the only authentication mechanism.
   if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
       !parsed_command_line.HasSwitch(switches::kLoginPassword)) {
-    std::string username =
-        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
-    policy::BrowserPolicyConnector* browser_policy_connector =
-        g_browser_process->browser_policy_connector();
-    browser_policy_connector->InitializeUserPolicy(username,
-                                                   profile->GetPath(),
-                                                   profile->GetTokenService());
+    g_browser_process->browser_policy_connector()->SetUserPolicyTokenService(
+        profile->GetTokenService());
   }
 #endif
 

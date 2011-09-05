@@ -58,41 +58,61 @@ UserPolicyDiskCache::~UserPolicyDiskCache() {}
 
 void UserPolicyDiskCache::LoadOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (!file_util::PathExists(backing_file_path_))
+
+  em::CachedCloudPolicyResponse cached_response;
+  if (!file_util::PathExists(backing_file_path_)) {
+    LoadDone(LOAD_RESULT_NOT_FOUND, cached_response);
     return;
+  }
 
   // Read the protobuf from the file.
   std::string data;
   if (!file_util::ReadFileToString(backing_file_path_, &data)) {
     LOG(WARNING) << "Failed to read policy data from "
                  << backing_file_path_.value();
-    SampleUMA(kMetricPolicyLoadFailed);
+    LoadDone(LOAD_RESULT_READ_ERROR, cached_response);
     return;
   }
 
   // Decode it.
-  em::CachedCloudPolicyResponse cached_response;
   if (!cached_response.ParseFromArray(data.c_str(), data.size())) {
     LOG(WARNING) << "Failed to parse policy data read from "
                  << backing_file_path_.value();
-    SampleUMA(kMetricPolicyLoadFailed);
+    LoadDone(LOAD_RESULT_PARSE_ERROR, cached_response);
     return;
   }
 
+  LoadDone(LOAD_RESULT_SUCCESS, cached_response);
+}
+
+void UserPolicyDiskCache::LoadDone(
+    LoadResult result,
+    const em::CachedCloudPolicyResponse& policy) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
-                        &UserPolicyDiskCache::FinishLoadOnUIThread,
-                        cached_response));
+                        &UserPolicyDiskCache::ReportResultOnUIThread,
+                        result, policy));
 }
 
-void UserPolicyDiskCache::FinishLoadOnUIThread(
+void UserPolicyDiskCache::ReportResultOnUIThread(
+    LoadResult result,
     const em::CachedCloudPolicyResponse& policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadSucceeded,
-                            kMetricPolicySize);
+
+  switch (result) {
+    case LOAD_RESULT_NOT_FOUND:
+      break;
+    case LOAD_RESULT_READ_ERROR:
+    case LOAD_RESULT_PARSE_ERROR:
+      SampleUMAOnUIThread(kMetricPolicyLoadFailed);
+      break;
+    case LOAD_RESULT_SUCCESS:
+      SampleUMAOnUIThread(kMetricPolicyLoadSucceeded);
+  }
+
   if (delegate_.get())
-    delegate_->OnDiskCacheLoaded(policy);
+    delegate_->OnDiskCacheLoaded(result, policy);
 }
 
 void UserPolicyDiskCache::StoreOnFileThread(
