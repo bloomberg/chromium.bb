@@ -453,6 +453,17 @@
             '../third_party/adobe/flash/flash_player.gyp:flash_player',
           ],
         }],
+        ['OS=="linux"', {
+          'conditions': [
+	    # For now, do not build nacl_helper on ARM
+            ['target_arch!="arm"', {
+	      'dependencies': [
+                'nacl_helper_bootstrap',
+                'nacl_helper',
+              ],
+            }],
+	  ],
+        }],
         ['OS=="mac"', {
           'dependencies': [
             # On Mac, make sure we've built chrome_dll, which contains all of
