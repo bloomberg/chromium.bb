@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
@@ -712,20 +712,17 @@ void MainMenuModel::InitMenuItems(bool is_browser_mode,
     const NetworkDevice* cellular_device = cros->FindCellularDevice();
     if (cellular_device) {
       // Add "View Account" with top up URL if we know that.
-      ServicesCustomizationDocument* customization =
-          ServicesCustomizationDocument::GetInstance();
-      if (is_browser_mode && customization->IsReady()) {
+      MobileConfig* config = MobileConfig::GetInstance();
+      if (is_browser_mode && config->IsReady()) {
         std::string carrier_id = cros->GetCellularHomeCarrierId();
         // If we don't have top up URL cached.
         if (carrier_id != carrier_id_) {
           // Mark that we've checked this carrier ID.
           carrier_id_ = carrier_id;
           top_up_url_.clear();
-          // Ignoring deal restrictions, use any carrier information available.
-          const ServicesCustomizationDocument::CarrierDeal* deal =
-              customization->GetCarrierDeal(carrier_id, false);
-          if (deal && !deal->top_up_url().empty())
-            top_up_url_ = deal->top_up_url();
+          const MobileConfig::Carrier* carrier = config->GetCarrier(carrier_id);
+          if (carrier && !carrier->top_up_url().empty())
+            top_up_url_ = carrier->top_up_url();
         }
         if (!top_up_url_.empty()) {
           menu_items_.push_back(MenuItem(

@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/views_login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -187,6 +188,9 @@ void BaseLoginDisplayHost::StartSignInScreen() {
 
   // Initiate services customization manifest fetching.
   ServicesCustomizationDocument::GetInstance()->StartFetching();
+
+  // Initiate mobile config load.
+  MobileConfig::GetInstance();
 
   // Initiate device policy fetching.
   g_browser_process->browser_policy_connector()->ScheduleServiceInitialization(

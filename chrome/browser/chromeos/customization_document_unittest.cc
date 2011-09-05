@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/customization_document.h"
 
-#include "base/time.h"
 #include "chrome/browser/chromeos/system/mock_statistics_provider.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -64,43 +64,6 @@ const char kGoodServicesManifest[] =
     "    \"default\" : {"
     "      \"initial_start_page\": \"http://mario/global/promo\","
     "      \"support_page\": \"http://mario/global\","
-    "    },"
-    "  },"
-    "  \"carrier_deals\" : {"
-    "    \"Carrier (country)\" : {"
-    "      \"deal_locale\" : \"en-US\","
-    "      \"top_up_url\" : \"http://www.carrier.com/\","
-    "      \"notification_count\" : 1,\n"
-    "      \"expire_date\" : \"31/12/12 0:00\","
-    "      \"localized_content\" : {"
-    "        \"en-US\" : {"
-    "          \"notification_text\" : \"3G connectivity : Carrier.\","
-    "        },"
-    "        \"default\" : {"
-    "          \"notification_text\" : \"default_text.\","
-    "        },"
-    "      },"
-    "    },"
-    "  },"
-    "}";
-
-const char kOldDealServicesManifest[] =
-    "{"
-    "  \"version\": \"1.0\","
-    "  \"carrier_deals\" : {"
-    "    \"Carrier (country)\" : {"
-    "      \"deal_locale\" : \"en-US\","
-    "      \"top_up_url\" : \"http://www.carrier.com/\","
-    "      \"notification_count\" : 1,"
-    "      \"expire_date\" : \"01/01/01 0:00\","
-    "      \"localized_content\" : {"
-    "        \"en-US\" : {"
-    "          \"notification_text\" : \"en-US text.\","
-    "        },"
-    "        \"default\" : {"
-    "          \"notification_text\" : \"default_text.\","
-    "        },"
-    "      },"
     "    },"
     "  },"
     "}";
@@ -179,7 +142,7 @@ TEST(StartupCustomizationDocumentTest, BadManifest) {
 }
 
 TEST(ServicesCustomizationDocumentTest, Basic) {
-  ServicesCustomizationDocument customization(kGoodServicesManifest, "en-US");
+  ServicesCustomizationDocument customization(kGoodServicesManifest);
   EXPECT_TRUE(customization.IsReady());
 
   EXPECT_EQ("http://mario/promo",
@@ -192,62 +155,11 @@ TEST(ServicesCustomizationDocumentTest, Basic) {
   EXPECT_EQ("http://mario/us", customization.GetSupportPage("en-US"));
   EXPECT_EQ("http://mario/ru", customization.GetSupportPage("ru-RU"));
   EXPECT_EQ("http://mario/global", customization.GetSupportPage("ja"));
-
-  const ServicesCustomizationDocument::CarrierDeal* deal;
-  deal = customization.GetCarrierDeal("Carrier (country)", true);
-  EXPECT_TRUE(deal != NULL);
-  EXPECT_EQ("en-US", deal->deal_locale());
-  EXPECT_EQ("http://www.carrier.com/", deal->top_up_url());
-  EXPECT_EQ(1, deal->notification_count());
-  EXPECT_EQ("3G connectivity : Carrier.",
-            deal->GetLocalizedString("en-US", "notification_text"));
-  EXPECT_EQ("default_text.",
-            deal->GetLocalizedString("en", "notification_text"));
-
-  base::Time reference_time;
-  base::Time::FromString("31/12/12 0:00", &reference_time);
-  EXPECT_EQ(reference_time, deal->expire_date());
-}
-
-TEST(ServicesCustomizationDocumentTest, OldDeal) {
-  ServicesCustomizationDocument customization(kOldDealServicesManifest,
-                                              "en-US");
-  EXPECT_TRUE(customization.IsReady());
-
-  const ServicesCustomizationDocument::CarrierDeal* deal;
-  // TODO(nkostylev): Pass fixed time instead of relying on Time::Now().
-  deal = customization.GetCarrierDeal("Carrier (country)", true);
-  EXPECT_TRUE(deal == NULL);
-}
-
-TEST(ServicesCustomizationDocumentTest, DealOtherLocale) {
-  ServicesCustomizationDocument customization(kGoodServicesManifest,
-                                              "en-GB");
-  EXPECT_TRUE(customization.IsReady());
-
-  const ServicesCustomizationDocument::CarrierDeal* deal;
-  deal = customization.GetCarrierDeal("Carrier (country)", true);
-  EXPECT_TRUE(deal == NULL);
 }
 
 TEST(ServicesCustomizationDocumentTest, BadManifest) {
-  ServicesCustomizationDocument customization(kBadManifest, "en-US");
+  ServicesCustomizationDocument customization(kBadManifest);
   EXPECT_FALSE(customization.IsReady());
-}
-
-TEST(ServicesCustomizationDocumentTest, NoDealRestrictions) {
-  ServicesCustomizationDocument customization_oth_locale(kGoodServicesManifest,
-                                                         "en-GB");
-  EXPECT_TRUE(customization_oth_locale.IsReady());
-  const ServicesCustomizationDocument::CarrierDeal* deal;
-  deal = customization_oth_locale.GetCarrierDeal("Carrier (country)", false);
-  EXPECT_TRUE(deal != NULL);
-
-  ServicesCustomizationDocument customization_old_deal(kOldDealServicesManifest,
-                                                       "en-US");
-  EXPECT_TRUE(customization_old_deal.IsReady());
-  deal = customization_old_deal.GetCarrierDeal("Carrier (country)", false);
-  EXPECT_TRUE(deal != NULL);
 }
 
 }  // namespace chromeos

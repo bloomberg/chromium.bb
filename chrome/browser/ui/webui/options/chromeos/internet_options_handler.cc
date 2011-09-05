@@ -25,8 +25,8 @@
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
-#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
@@ -871,14 +871,13 @@ void InternetOptionsHandler::PopulateCellularDetails(
     dictionary->SetBoolean("simCardLockEnabled",
         device->sim_pin_required() == chromeos::SIM_PIN_REQUIRED);
 
-    chromeos::ServicesCustomizationDocument* customization =
-        chromeos::ServicesCustomizationDocument::GetInstance();
-    if (customization->IsReady()) {
+    chromeos::MobileConfig* config = chromeos::MobileConfig::GetInstance();
+    if (config->IsReady()) {
       std::string carrier_id = cros_->GetCellularHomeCarrierId();
-      const chromeos::ServicesCustomizationDocument::CarrierDeal* deal =
-          customization->GetCarrierDeal(carrier_id, false);
-      if (deal && !deal->top_up_url().empty())
-        dictionary->SetString("carrierUrl", deal->top_up_url());
+      const chromeos::MobileConfig::Carrier* carrier =
+          config->GetCarrier(carrier_id);
+      if (carrier && !carrier->top_up_url().empty())
+        dictionary->SetString("carrierUrl", carrier->top_up_url());
     }
 
     const chromeos::CellularApnList& apn_list = device->provider_apn_list();

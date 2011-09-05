@@ -659,6 +659,8 @@
         'browser/chromeos/low_battery_observer.h',
         'browser/chromeos/media/media_player.cc',
         'browser/chromeos/media/media_player.h',
+        'browser/chromeos/mobile_config.cc',
+        'browser/chromeos/mobile_config.h',
         'browser/chromeos/native_dialog_window.cc',
         'browser/chromeos/native_dialog_window.h',
         'browser/chromeos/net/cros_network_change_notifier_factory.cc',

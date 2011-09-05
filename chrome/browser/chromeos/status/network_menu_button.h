@@ -11,8 +11,8 @@
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
+#include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
@@ -102,10 +102,13 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void OnLinkActivated(size_t index) OVERRIDE;
 
  private:
+  // Returns carrier info.
+  const MobileConfig::Carrier* GetCarrier(NetworkLibrary* cros);
+
   // Returns carrier deal if it's specified and should be shown,
   // otherwise returns NULL.
-  const ServicesCustomizationDocument::CarrierDeal* GetCarrierDeal(
-      NetworkLibrary* cros);
+  const MobileConfig::CarrierDeal* GetCarrierDeal(
+      const MobileConfig::Carrier* carrier);
 
   // Set the network icon based on the status of the |network|
   void SetNetworkIcon();
