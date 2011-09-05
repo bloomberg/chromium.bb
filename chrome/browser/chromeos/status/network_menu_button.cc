@@ -356,11 +356,13 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
       check_for_promo_ && BrowserList::GetLastActive() &&
       cros->cellular_connected() && !cros->ethernet_connected() &&
       !cros->wifi_connected()) {
-    const MobileConfig::Carrier* carrier = GetCarrier(cros);
     std::string deal_text;
     int carrier_deal_promo_pref = -1;
-    if (carrier) {
-      const MobileConfig::CarrierDeal* deal = GetCarrierDeal(carrier);
+    const MobileConfig::CarrierDeal* deal = NULL;
+    const MobileConfig::Carrier* carrier = GetCarrier(cros);
+    if (carrier)
+      deal = GetCarrierDeal(carrier);
+    if (deal) {
       carrier_deal_promo_pref = GetCarrierDealPromoShown();
       const std::string locale = g_browser_process->GetApplicationLocale();
       deal_text = deal->GetLocalizedString(locale, "notification_text");
