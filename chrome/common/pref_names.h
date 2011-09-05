@@ -468,6 +468,7 @@ extern const char kNTPWebStorePromoHeader[];
 extern const char kNTPWebStorePromoButton[];
 extern const char kNTPWebStorePromoLink[];
 extern const char kNTPWebStorePromoLogo[];
+extern const char kNTPWebStorePromoLogoSource[];
 extern const char kNTPWebStorePromoExpire[];
 extern const char kNTPWebStorePromoUserGroup[];
 extern const char kNTPAppPageNames[];
