@@ -13239,6 +13239,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_LAYOUT_KOREA_104" desc="In the language menu button, this shows the input mode.">
         Korean keyboard
       </message>
+      <message name="IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">
+        Information
+      </message>
 
       <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
         Sorry, you don't have permission to sign in. Check with the notebook owner.
