@@ -1099,9 +1099,6 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
   if (!form_structures_.empty())
     metric_logger_->LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
-
-  CheckForPopularForms(form_structures_.get(), tab_contents_wrapper_,
-                       tab_contents());
 }
 
 int AutofillManager::GUIDToID(const GUIDPair& guid) {

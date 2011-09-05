@@ -349,13 +349,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPrerenderFromOmnibox)
   },
   {
-    "enable-autofill-feedback",
-    IDS_FLAGS_ENABLE_ADDITIONAL_AUTOFILL_FEEDBACK_NAME,
-    IDS_FLAGS_ENABLE_ADDITIONAL_AUTOFILL_FEEDBACK_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableAutofillFeedback)
-  },
-  {
     "panels",
     IDS_FLAGS_ENABLE_PANELS_NAME,
     IDS_FLAGS_ENABLE_PANELS_DESCRIPTION,
