@@ -2239,18 +2239,6 @@
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
-   bug_46161
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*DnsReloadTimer7ExpiredEv
-   fun:_ZN3net24DnsReloadTimerHasExpiredEv
-   fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
-   fun:_ZN3net*15ResolveAddrInfoEPNS_16HostResolverProc*
-   fun:_ZN3net16HostResolverImpl3Job8DoLookup*
-   fun:_Z16DispatchToMethodIN3net16HostResolverImpl*
-   fun:_ZN14RunnableMethodIN3net16HostResolverImpl*
-}
-{
    bug_46250
    Memcheck:Leak
    fun:_Znw*
@@ -4802,6 +4790,19 @@
    fun:_ZN3net16HttpStreamParser22DoParseResponseHeadersEi
    fun:_ZN3net16HttpStreamParser20ParseResponseHeadersEv
    fun:_ZN3net16HttpStreamParser21DoReadHeadersCompleteEi
+}
+{
+   bug_89553
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_111DnsReloader11MaybeReloadEv
+   fun:_ZN3net22DnsReloaderMaybeReloadEv
+   fun:_ZN3net22SystemHostResolverProcERKSsNS_13AddressFamilyEiPNS_11AddressListEPi
+   ...
+   fun:_ZN3net*15ResolveAddrInfoEPNS_16HostResolverProc*
+   fun:_ZN3net16HostResolverImpl3Job8DoLookup*
+   fun:_Z16DispatchToMethodIN3net16HostResolverImpl*
+   fun:_ZN14RunnableMethodIN3net16HostResolverImpl*
 }
 {
    bug_89677
