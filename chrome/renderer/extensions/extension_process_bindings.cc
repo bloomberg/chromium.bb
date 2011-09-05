@@ -108,7 +108,7 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
  private:
   // Called on each view found matching the search criteria.  Returns false
   // to terminate the iteration.
-  bool OnMatchedView(const v8::Local<v8::Value>& view_window) {
+  bool OnMatchedView(v8::Local<v8::Value> view_window) {
     views_->Set(v8::Integer::New(index_), view_window);
     index_++;
 
