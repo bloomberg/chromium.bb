@@ -127,8 +127,10 @@ MobileConfig::Carrier::Carrier(DictionaryValue* carrier_dict,
             std::find(deal->locales().begin(),
                       deal->locales().end(),
                       initial_locale);
-        if (iter != deal->locales().end())
-          deals_[deal->deal_id()] = deal.release();
+        if (iter != deal->locales().end()) {
+          const std::string& deal_id = deal->deal_id();
+          deals_[deal_id] = deal.release();
+        }
       }
     }
   }
