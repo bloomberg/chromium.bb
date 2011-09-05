@@ -5,7 +5,11 @@
 #include "chrome/browser/policy/url_blacklist_manager.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
+#include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -54,8 +58,12 @@ void BuildBlacklist(URLBlacklist* blacklist,
   scoped_ptr<StringVector> scoped_block(block);
   scoped_ptr<StringVector> scoped_allow(allow);
 
-  // TODO(joaodasilva): This is a work in progress. http://crbug.com/49612
-  // Builds |blacklist| using the filters in |block| and |allow|.
+  for (StringVector::iterator it = block->begin(); it != block->end(); ++it) {
+    blacklist->Block(*it);
+  }
+  for (StringVector::iterator it = allow->begin(); it != allow->end(); ++it) {
+    blacklist->Allow(*it);
+  }
 }
 
 // A task that owns the URLBlacklist, and passes it to the URLBlacklistManager
@@ -75,6 +83,216 @@ URLBlacklist::URLBlacklist() {
 }
 
 URLBlacklist::~URLBlacklist() {
+  STLDeleteValues(&host_filters_);
+}
+
+void URLBlacklist::AddFilter(const std::string& filter, bool block) {
+  std::string scheme;
+  std::string host;
+  uint16 port;
+  std::string path;
+  SchemeFlag flag;
+  bool match_subdomains = true;
+
+  if (!FilterToComponents(filter, &scheme, &host, &port, &path)) {
+    LOG(WARNING) << "Invalid filter, ignoring: " << filter;
+    return;
+  }
+
+  if (!SchemeToFlag(scheme, &flag)) {
+    LOG(WARNING) << "Unsupported scheme in filter, ignoring filter: " << filter;
+    return;
+  }
+
+  // Special syntax to disable subdomain matching.
+  if (!host.empty() && host[0] == '.') {
+    host.erase(0, 1);
+    match_subdomains = false;
+  }
+
+  // Try to find an existing PathFilter with the same path prefix, port and
+  // match_subdomains value.
+  PathFilterList* list;
+  HostFilterTable::iterator host_filter = host_filters_.find(host);
+  if (host_filter == host_filters_.end()) {
+    list = new PathFilterList;
+    host_filters_[host] = list;
+  } else {
+    list = host_filter->second;
+  }
+  PathFilterList::iterator it;
+  for (it = list->begin(); it != list->end(); ++it) {
+    if (it->port == port && it->match_subdomains == match_subdomains &&
+        it->path_prefix == path)
+      break;
+  }
+  PathFilter* path_filter;
+  if (it == list->end()) {
+    list->push_back(PathFilter(path, port, match_subdomains));
+    path_filter = &list->back();
+  } else {
+    path_filter = &(*it);
+  }
+
+  if (block)
+    path_filter->blocked_schemes |= flag;
+  else
+    path_filter->allowed_schemes |= flag;
+}
+
+void URLBlacklist::Block(const std::string& filter) {
+  AddFilter(filter, true);
+}
+
+void URLBlacklist::Allow(const std::string& filter) {
+  AddFilter(filter, false);
+}
+
+bool URLBlacklist::IsURLBlocked(const GURL& url) const {
+  SchemeFlag flag;
+  if (!SchemeToFlag(url.scheme(), &flag)) {
+    // Not a scheme that can be filtered.
+    return false;
+  }
+
+  std::string host(url.host());
+  int int_port = url.EffectiveIntPort();
+  const uint16 port = int_port > 0 ? int_port : 0;
+  const std::string& path = url.path();
+
+  // The first iteration through the loop will be an exact host match.
+  // Subsequent iterations are subdomain matches, and some filters don't apply
+  // to those.
+  bool is_matching_subdomains = false;
+  const bool host_is_ip = url.HostIsIPAddress();
+  for (;;) {
+    HostFilterTable::const_iterator host_filter = host_filters_.find(host);
+    if (host_filter != host_filters_.end()) {
+      const PathFilterList* list = host_filter->second;
+      size_t longest_length = 0;
+      bool is_blocked = false;
+      bool has_match = false;
+      bool has_exact_host_match = false;
+      for (PathFilterList::const_iterator it = list->begin();
+           it != list->end(); ++it) {
+        // Filters that apply to an exact hostname only take precedence over
+        // filters that can apply to subdomains too.
+        // E.g. ".google.com" filters take priority over "google.com".
+        if (has_exact_host_match && it->match_subdomains)
+          continue;
+
+        // Skip if filter doesn't apply to subdomains, and this is a subdomain.
+        if (is_matching_subdomains && !it->match_subdomains)
+          continue;
+
+        if (it->port != 0 && it->port != port)
+          continue;
+
+        // Skip if the filter doesn't apply to the scheme.
+        if ((it->allowed_schemes & flag) == 0 &&
+            (it->blocked_schemes & flag) == 0)
+          continue;
+
+        // If this match can't be longer than the current match, skip it.
+        // For same size matches, the first rule to match takes precedence.
+        // If this is an exact host match, it can be actually shorter than
+        // a previous, non-exact match.
+        if ((has_match && it->path_prefix.length() <= longest_length) &&
+            (has_exact_host_match || it->match_subdomains)) {
+          continue;
+        }
+
+        // Skip if the filter's |path_prefix| is not a prefix of |path|.
+        if (path.compare(0, it->path_prefix.length(), it->path_prefix) != 0)
+          continue;
+
+        // This is the best match so far.
+        has_match = true;
+        has_exact_host_match = !it->match_subdomains;
+        longest_length = it->path_prefix.length();
+        // If both blocked and allowed bits are set, allowed takes precedence.
+        is_blocked = !(it->allowed_schemes & flag);
+      }
+      // If a match was found, return its decision.
+      if (has_match)
+        return is_blocked;
+    }
+
+    // Quit after trying the empty string (corresponding to host '*').
+    // Also skip subdomain matching for IP addresses.
+    if (host.empty() || host_is_ip)
+      break;
+
+    // No match found for this host. Try a subdomain match, by removing the
+    // leftmost subdomain from the hostname.
+    is_matching_subdomains = true;
+    size_t i = host.find('.');
+    if (i != std::string::npos)
+      ++i;
+    host.erase(0, i);
+  }
+
+  // Default is to allow.
+  return false;
+}
+
+// static
+bool URLBlacklist::SchemeToFlag(const std::string& scheme, SchemeFlag* flag) {
+  if (scheme.empty())
+    *flag = SCHEME_ALL;
+  else if (scheme == "http")
+    *flag = SCHEME_HTTP;
+  else if (scheme == "https")
+    *flag = SCHEME_HTTPS;
+  else if (scheme == "ftp")
+    *flag = SCHEME_FTP;
+  else
+    return false;
+  return true;
+}
+
+// static
+bool URLBlacklist::FilterToComponents(const std::string& filter,
+                                   std::string* scheme,
+                                   std::string* host,
+                                   uint16* port,
+                                   std::string* path) {
+  url_parse::Parsed parsed;
+  URLFixerUpper::SegmentURL(filter, &parsed);
+
+  if (!parsed.host.is_nonempty())
+    return false;
+
+  if (parsed.scheme.is_nonempty())
+    scheme->assign(filter, parsed.scheme.begin, parsed.scheme.len);
+  else
+    scheme->clear();
+
+  host->assign(filter, parsed.host.begin, parsed.host.len);
+  // Special '*' host, matches all hosts.
+  if (*host == "*")
+    host->clear();
+
+  if (parsed.port.is_nonempty()) {
+    int int_port;
+    if (!base::StringToInt(filter.substr(parsed.port.begin, parsed.port.len),
+                           &int_port)) {
+      return false;
+    }
+    if (int_port <= 0 || int_port > kuint16max)
+      return false;
+    *port = int_port;
+  } else {
+    // Match any port.
+    *port = 0;
+  }
+
+  if (parsed.path.is_nonempty())
+    path->assign(filter, parsed.path.begin, parsed.path.len);
+  else
+    path->clear();
+
+  return true;
 }
 
 URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
@@ -170,9 +388,7 @@ void URLBlacklistManager::SetBlacklist(URLBlacklist* blacklist) {
 
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // TODO(joaodasilva): this is a work in progress. http://crbug.com/49612
-  return false;
+  return blacklist_->IsURLBlocked(url);
 }
 
 // static

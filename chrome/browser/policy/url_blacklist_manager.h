@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
@@ -28,13 +29,70 @@ class ListValue;
 
 namespace policy {
 
-// TODO(joaodasilva): this is a work in progress. http://crbug.com/49612
+// Contains a set of filters to block and allow certain URLs, and matches GURLs
+// against this set. The filters are currently kept in memory.
 class URLBlacklist {
  public:
   URLBlacklist();
   virtual ~URLBlacklist();
 
+  // URLs matching |filter| will be blocked.
+  void Block(const std::string& filter);
+
+  // URLs matching |filter| will be allowed. If |filter| is both Blocked and
+  // Allowed, Allow takes precedence.
+  void Allow(const std::string& filter);
+
+  // Returns true if the URL is blocked.
+  bool IsURLBlocked(const GURL& url) const;
+
+  // A constant mapped to a scheme that can be filtered.
+  enum SchemeFlag {
+    SCHEME_HTTP   = 1 << 0,
+    SCHEME_HTTPS  = 1 << 1,
+    SCHEME_FTP    = 1 << 2,
+
+    SCHEME_ALL    = (1 << 3) - 1,
+  };
+
+  // Returns true if |scheme| is a scheme that can be filtered. Returns true
+  // and sets |flag| to SCHEME_ALL if |scheme| is empty.
+  static bool SchemeToFlag(const std::string& scheme, SchemeFlag* flag);
+
+  // Splits a URL filter into its components. A GURL isn't used because these
+  // can be invalid URLs e.g. "google.com".
+  // Returns false if the URL couldn't be parsed.
+  // The optional username and password are ignored.
+  // |port| is 0 if none is explicitly defined.
+  // |path| does not include query parameters.
+  static bool FilterToComponents(const std::string& filter,
+                                 std::string* scheme,
+                                 std::string* host,
+                                 uint16* port,
+                                 std::string* path);
  private:
+  void AddFilter(const std::string& filter, bool block);
+
+  struct PathFilter {
+    explicit PathFilter(const std::string& path, uint16 port, bool match)
+        : path_prefix(path),
+          port(port),
+          blocked_schemes(0),
+          allowed_schemes(0),
+          match_subdomains(match) {}
+
+    std::string path_prefix;
+    uint16 port;
+    uint8 blocked_schemes;
+    uint8 allowed_schemes;
+    bool match_subdomains;
+  };
+
+  typedef std::vector<PathFilter> PathFilterList;
+  typedef base::hash_map<std::string, PathFilterList*> HostFilterTable;
+
+  HostFilterTable host_filters_;
+
   DISALLOW_COPY_AND_ASSIGN(URLBlacklist);
 };
 
