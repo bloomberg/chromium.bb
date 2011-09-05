@@ -1480,6 +1480,12 @@ void MetricsService::LogRendererHang() {
 }
 
 void MetricsService::LogCleanShutdown() {
+  // Redundant hack to write pref ASAP.
+  PrefService* pref = g_browser_process->local_state();
+  pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  pref->SavePersistentPrefs();
+  // End of redundant hack.
+
   RecordBooleanPrefValue(prefs::kStabilityExitedCleanly, true);
 }
 
