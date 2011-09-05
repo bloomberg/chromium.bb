@@ -209,9 +209,13 @@ def Run(url, options):
       else:
         # If Python 2.5 support is dropped, stick server.handle_request() here.
         time.sleep(0.125)
+
     if options.tool:
+      sys.stdout.write('##################### Waiting for the tool to exit\n')
       browser.WaitForProcessDeath()
+      sys.stdout.write('##################### Processing tool logs\n')
       tool_failed = ProcessToolLogs(options, browser.tool_log_dir)
+
   finally:
     browser.Cleanup()
     server.server_close()
