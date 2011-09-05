@@ -21,8 +21,8 @@ namespace webkit_glue {
 class WebClipboardImpl;
 }
 
-class RendererWebKitPlatformSupportImpl :
-    public webkit_glue::WebKitPlatformSupportImpl {
+class RendererWebKitPlatformSupportImpl
+    : public webkit_glue::WebKitPlatformSupportImpl {
  public:
   RendererWebKitPlatformSupportImpl();
   virtual ~RendererWebKitPlatformSupportImpl();

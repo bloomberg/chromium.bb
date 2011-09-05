@@ -16,9 +16,9 @@ namespace WebKit {
 class WebFileUtilities;
 }
 
-class WorkerWebKitPlatformSupportImpl :
-    public webkit_glue::WebKitPlatformSupportImpl,
-    public WebKit::WebMimeRegistry {
+class WorkerWebKitPlatformSupportImpl
+    : public webkit_glue::WebKitPlatformSupportImpl,
+      public WebKit::WebMimeRegistry {
  public:
   WorkerWebKitPlatformSupportImpl();
   virtual ~WorkerWebKitPlatformSupportImpl();

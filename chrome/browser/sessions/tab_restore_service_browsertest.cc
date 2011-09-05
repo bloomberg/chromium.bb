@@ -119,7 +119,8 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   GURL url3_;
   scoped_ptr<TabRestoreService> service_;
   TabRestoreTimeFactory* time_factory_;
-  RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox webkit_platform_support_;
+  RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
+        webkit_platform_support_;
 };
 
 TEST_F(TabRestoreServiceTest, Basic) {

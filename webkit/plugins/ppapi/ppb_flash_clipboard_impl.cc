@@ -69,7 +69,7 @@ PP_Bool IsFormatAvailable(PP_Instance instance_id,
     return PP_FALSE;
 
   WebKit::WebClipboard* web_clipboard =
-    WebKit::webKitPlatformSupport()->clipboard();
+      WebKit::webKitPlatformSupport()->clipboard();
   if (!web_clipboard) {
     NOTREACHED();
     return PP_FALSE;
@@ -87,7 +87,7 @@ PP_Var ReadPlainText(PP_Instance instance_id,
     return PP_MakeNull();
 
   WebKit::WebClipboard* web_clipboard =
-    WebKit::webKitPlatformSupport()->clipboard();
+      WebKit::webKitPlatformSupport()->clipboard();
   if (!web_clipboard) {
     NOTREACHED();
     return PP_MakeNull();
@@ -114,7 +114,7 @@ int32_t WritePlainText(PP_Instance instance_id,
   }
 
   WebKit::WebClipboard* web_clipboard =
-    WebKit::webKitPlatformSupport()->clipboard();
+      WebKit::webKitPlatformSupport()->clipboard();
   if (!web_clipboard) {
     NOTREACHED();
     return PP_ERROR_FAILED;
