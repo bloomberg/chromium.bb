@@ -307,6 +307,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebIntentDispatch,
                         OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1146,6 +1147,10 @@ void TabContents::OnFindReply(int request_id,
                         active_match_ordinal, final_update);
 }
 
+void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
+  delegate()->CrashedPlugin(this, plugin_path);
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void TabContents::SetIsLoading(bool is_loading,
@@ -1606,7 +1611,7 @@ void TabContents::UpdateEncoding(RenderViewHost* render_view_host,
 
 void TabContents::UpdateTargetURL(int32 page_id, const GURL& url) {
   if (delegate())
-    delegate()->UpdateTargetURL(this, url);
+    delegate()->UpdateTargetURL(this, page_id, url);
 }
 
 void TabContents::Close(RenderViewHost* rvh) {

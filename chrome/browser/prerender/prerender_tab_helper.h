@@ -27,23 +27,22 @@ class PrerenderTabHelper : public TabContentsObserver {
   // TabContentsObserver implementation.
   virtual void ProvisionalChangeToMainFrameUrl(const GURL& url,
                                                bool has_opener_set) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      RenderViewHost* render_view_host) OVERRIDE;
 
   // Called when this prerendered TabContents has just been swapped in.
   void PrerenderSwappedIn();
 
+  void UpdateTargetURL(int32 page_id, const GURL& url);
+
  private:
   // The data we store for a hover (time the hover occurred & URL).
   class HoverData;
-
-  // Message handler.
-  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                         bool main_frame,
-                                         bool has_opener_set,
-                                         const GURL& url);
-
-  void OnMsgUpdateTargetURL(int32 page_id, const GURL& url);
 
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager() const;

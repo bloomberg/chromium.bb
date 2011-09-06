@@ -694,6 +694,14 @@ class Browser : public TabHandlerDelegate,
                               int active_match_ordinal,
                               bool final_update);
 
+  // Helper function to handle crashed plugin notifications.
+  static void CrashedPluginHelper(TabContents* tab,
+                                  const FilePath& plugin_path);
+
+  // Helper function to handle url update notifications.
+  static void UpdateTargetURLHelper(TabContents* tab, int32 page_id,
+                                    const GURL& url);
+
   // Calls ExecuteCommandWithDisposition with the given disposition.
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition);
 
@@ -905,7 +913,8 @@ class Browser : public TabHandlerDelegate,
   virtual void DetachContents(TabContents* source) OVERRIDE;
   virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
   virtual bool CanReloadContents(TabContents* source) const;
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE;
+  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
+                               const GURL& url) OVERRIDE;
   virtual void ContentsMouseEvent(
       TabContents* source, const gfx::Point& location, bool motion) OVERRIDE;
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
@@ -979,6 +988,9 @@ class Browser : public TabHandlerDelegate,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
+
+  virtual void CrashedPlugin(TabContents* tab,
+                             const FilePath& plugin_path) OVERRIDE;
 
   // Overridden from TabContentsWrapperDelegate:
   virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,

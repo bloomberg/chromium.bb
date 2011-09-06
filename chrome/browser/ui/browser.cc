@@ -61,6 +61,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -141,6 +142,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources_standard.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
@@ -175,6 +177,8 @@
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/extensions/file_manager_util.h"
 #endif
+
+#include "webkit/plugins/npapi/plugin_list.h"
 
 using base::TimeDelta;
 
@@ -2548,6 +2552,50 @@ void Browser::FindReplyHelper(TabContents* tab,
                                           final_update);
 }
 
+// static
+void Browser::CrashedPluginHelper(TabContents* tab,
+                                  const FilePath& plugin_path) {
+  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab);
+  if (!tcw)
+    return;
+
+  DCHECK(!plugin_path.value().empty());
+
+  string16 plugin_name = plugin_path.LossyDisplayName();
+  webkit::WebPluginInfo plugin_info;
+  if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+          plugin_path, &plugin_info) &&
+      !plugin_info.name.empty()) {
+    plugin_name = plugin_info.name;
+#if defined(OS_MACOSX)
+    // Many plugins on the Mac have .plugin in the actual name, which looks
+    // terrible, so look for that and strip it off if present.
+    const std::string kPluginExtension = ".plugin";
+    if (EndsWith(plugin_name, ASCIIToUTF16(kPluginExtension), true))
+      plugin_name.erase(plugin_name.length() - kPluginExtension.length());
+#endif  // OS_MACOSX
+  }
+  gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_PLUGIN_CRASHED);
+  tcw->infobar_tab_helper()->AddInfoBar(
+      new SimpleAlertInfoBarDelegate(
+          tab,
+          icon,
+          l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
+          true));
+}
+
+// static
+void Browser::UpdateTargetURLHelper(TabContents* tab, int32 page_id,
+                                    const GURL& url) {
+  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
+      tab);
+  if (!tcw || !tcw->prerender_tab_helper())
+    return;
+  tcw->prerender_tab_helper()->UpdateTargetURL(page_id, url);
+}
+
 void Browser::ExecuteCommandWithDisposition(
   int id, WindowOpenDisposition disposition) {
   // No commands are enabled if there is not yet any selected tab.
@@ -3488,7 +3536,10 @@ void Browser::ContentsMouseEvent(
   }
 }
 
-void Browser::UpdateTargetURL(TabContents* source, const GURL& url) {
+void Browser::UpdateTargetURL(TabContents* source, int32 page_id,
+                              const GURL& url) {
+  Browser::UpdateTargetURLHelper(source, page_id, url);
+
   if (!GetStatusBubble())
     return;
 
@@ -3817,6 +3868,10 @@ void Browser::FindReply(TabContents* tab,
                         bool final_update) {
   FindReplyHelper(tab, request_id, number_of_matches, selection_rect,
                   active_match_ordinal, final_update);
+}
+
+void Browser::CrashedPlugin(TabContents* tab, const FilePath& plugin_path) {
+  CrashedPluginHelper(tab, plugin_path);
 }
 
 void Browser::ExitTabbedFullscreenModeIfNecessary() {

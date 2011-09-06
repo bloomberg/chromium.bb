@@ -58,7 +58,8 @@ class MockTabContentsDelegate : public TabContentsDelegate {
                             const gfx::Rect& pos) OVERRIDE {
   }
 
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) OVERRIDE {}
+  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
+                               const GURL& url) {}
 };
 
 TEST(TabContentsDelegateTest, UnregisterInDestructor) {

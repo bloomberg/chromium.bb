@@ -580,6 +580,7 @@ class TabContents : public PageNavigator,
   void OnFindReply(int request_id, int number_of_matches,
                    const gfx::Rect& selection_rect, int active_match_ordinal,
                    bool final_update);
+  void OnCrashedPlugin(const FilePath& plugin_path);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

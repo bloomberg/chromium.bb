@@ -538,7 +538,9 @@ bool ExternalTabContainer::IsPopup(const TabContents* source) const {
 }
 
 void ExternalTabContainer::UpdateTargetURL(TabContents* source,
+                                           int32 page_id,
                                            const GURL& url) {
+  Browser::UpdateTargetURLHelper(source, page_id, url);
   if (automation_) {
     std::wstring url_string = CA2W(url.spec().c_str());
     automation_->Send(
@@ -783,6 +785,11 @@ void ExternalTabContainer::FindReply(TabContents* tab,
                                      bool final_update) {
   Browser::FindReplyHelper(tab, request_id, number_of_matches, selection_rect,
                            active_match_ordinal, final_update);
+}
+
+void ExternalTabContainer::CrashedPlugin(TabContents* tab,
+                                         const FilePath& plugin_path) {
+  Browser::CrashedPluginHelper(tab, plugin_path);
 }
 
 bool ExternalTabContainer::OnMessageReceived(const IPC::Message& message) {

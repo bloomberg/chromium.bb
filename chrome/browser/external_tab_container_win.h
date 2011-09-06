@@ -136,7 +136,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void CloseContents(TabContents* source);
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
   virtual bool IsPopup(const TabContents* source) const;
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
+  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
+                               const GURL& url);
   virtual void ContentsZoomChange(bool zoom_in);
   virtual gfx::NativeWindow GetFrameNativeWindow();
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -182,6 +183,8 @@ class ExternalTabContainer : public TabContentsDelegate,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update);
+  virtual void CrashedPlugin(TabContents* tab,
+                             const FilePath& plugin_path);
 
   void RegisterRenderViewHost(RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(RenderViewHost* render_view_host);
@@ -388,7 +391,8 @@ class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
     NOTREACHED();
   }
 
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {
+  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
+                               const GURL& url) {
     NOTREACHED();
   }
 

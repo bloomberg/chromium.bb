@@ -64,7 +64,7 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
   test_tab_contents_delegate_->ActivateContents(NULL);
   test_tab_contents_delegate_->LoadingStateChanged(NULL);
   test_tab_contents_delegate_->CloseContents(NULL);
-  test_tab_contents_delegate_->UpdateTargetURL(NULL, GURL());
+  test_tab_contents_delegate_->UpdateTargetURL(NULL, 0, GURL());
   test_tab_contents_delegate_->MoveContents(NULL, gfx::Rect());
   EXPECT_EQ(0, browser()->tab_count());
   EXPECT_EQ(1U, BrowserList::size());

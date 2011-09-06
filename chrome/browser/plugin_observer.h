@@ -23,7 +23,6 @@ class PluginObserver : public TabContentsObserver {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
-  void OnCrashedPlugin(const FilePath& plugin_path);
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
 
   TabContentsWrapper* tab_contents_;

@@ -79,6 +79,7 @@ void TabContentsDelegate::WillShowConstrainedWindow(TabContents* source) {
 }
 
 void TabContentsDelegate::UpdateTargetURL(TabContents* source,
+                                          int32 page_id,
                                           const GURL& url) {
 }
 
@@ -322,6 +323,10 @@ void TabContentsDelegate::FindReply(TabContents* tab,
                                     const gfx::Rect& selection_rect,
                                     int active_match_ordinal,
                                     bool final_update) {
+}
+
+void TabContentsDelegate::CrashedPlugin(TabContents* tab,
+                                        const FilePath& plugin_path) {
 }
 
 TabContentsDelegate::~TabContentsDelegate() {

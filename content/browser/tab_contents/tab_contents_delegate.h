@@ -132,7 +132,8 @@ class TabContentsDelegate {
   virtual void WillShowConstrainedWindow(TabContents* source);
 
   // Notification that the target URL has changed.
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
+  virtual void UpdateTargetURL(TabContents* source, int32 page_id,
+                               const GURL& url);
 
   // Notification that there was a mouse event, along with the absolute
   // coordinates of the mouse pointer and whether it was a normal motion event
@@ -347,6 +348,9 @@ class TabContentsDelegate {
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update);
+
+  // Notification that a plugin has crashed.
+  virtual void CrashedPlugin(TabContents* tab, const FilePath& plugin_path);
 
  protected:
   virtual ~TabContentsDelegate();

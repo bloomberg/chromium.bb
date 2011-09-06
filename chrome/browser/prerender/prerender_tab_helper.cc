@@ -192,36 +192,7 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(const GURL& url,
   MaybeUsePrerenderedPage(url, has_opener_set);
 }
 
-bool PrerenderTabHelper::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(PrerenderTabHelper, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
-                        OnDidStartProvisionalLoadForFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnMsgUpdateTargetURL)
-  IPC_END_MESSAGE_MAP()
-  return false;
-}
-
-void PrerenderTabHelper::OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                                           bool is_main_frame,
-                                                           bool has_opener_set,
-                                                           const GURL& url) {
-  if (is_main_frame) {
-    RecordPageviewEvent(PAGEVIEW_EVENT_LOAD_START);
-    if (IsTopSite(url))
-      RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_LOAD_START);
-
-    // Record the beginning of a new PPLT navigation.
-    pplt_load_start_ = base::TimeTicks::Now();
-
-    // Update hover stats.
-    for (int i = 0; i < kNumHoverThresholds; i++)
-      last_hovers_[i].RecordNavigation(url);
-
-    MaybeLogCurrentHover(current_hover_url_ == url);
-  }
-}
-
-void PrerenderTabHelper::OnMsgUpdateTargetURL(int32 page_id, const GURL& url) {
+void PrerenderTabHelper::UpdateTargetURL(int32 page_id, const GURL& url) {
   for (int i = 0; i < kNumHoverThresholds; i++)
     last_hovers_[i].RecordHover(url);
 
@@ -244,6 +215,28 @@ void PrerenderTabHelper::DidStopLoading() {
 
   // Reset the PPLT metric.
   pplt_load_start_ = base::TimeTicks();
+}
+
+void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      RenderViewHost* render_view_host) {
+  if (is_main_frame) {
+    RecordPageviewEvent(PAGEVIEW_EVENT_LOAD_START);
+    if (IsTopSite(validated_url))
+      RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_LOAD_START);
+
+    // Record the beginning of a new PPLT navigation.
+    pplt_load_start_ = base::TimeTicks::Now();
+
+    // Update hover stats.
+    for (int i = 0; i < kNumHoverThresholds; i++)
+      last_hovers_[i].RecordNavigation(validated_url);
+
+    MaybeLogCurrentHover(current_hover_url_ == validated_url);
+  }
 }
 
 PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
