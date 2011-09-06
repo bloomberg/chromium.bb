@@ -727,6 +727,14 @@ ShutdownWatcherHelper::~ShutdownWatcherHelper() {
 
 void ShutdownWatcherHelper::Arm(const base::TimeDelta& duration) {
   DCHECK(!shutdown_watchdog_);
-  shutdown_watchdog_ = new ShutdownWatchDogThread(duration);
+  base::TimeDelta actual_duration = duration;
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE) {
+    actual_duration *= 50;
+  } else if (channel == chrome::VersionInfo::CHANNEL_BETA ||
+             channel == chrome::VersionInfo::CHANNEL_DEV) {
+    actual_duration *= 25;
+  }
+  shutdown_watchdog_ = new ShutdownWatchDogThread(actual_duration);
   shutdown_watchdog_->Arm();
 }
