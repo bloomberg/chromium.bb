@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/non_thread_safe.h"
 #include "content/common/gpu/gpu_info.h"
 #include "content/common/message_router.h"
 #include "content/renderer/gpu/gpu_video_decode_accelerator_host.h"
@@ -132,8 +131,7 @@ class GpuChannelHost : public IPC::Message::Sender,
 
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop.
-  class MessageFilter : public IPC::ChannelProxy::MessageFilter,
-                        public base::NonThreadSafe {
+  class MessageFilter : public IPC::ChannelProxy::MessageFilter {
    public:
     MessageFilter(GpuChannelHost* parent);
     virtual ~MessageFilter();

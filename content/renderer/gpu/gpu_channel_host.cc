@@ -4,6 +4,7 @@
 
 #include "content/renderer/gpu/gpu_channel_host.h"
 
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -41,7 +42,6 @@ void GpuChannelHost::Listener::DispatchError() {
 
 GpuChannelHost::MessageFilter::MessageFilter(GpuChannelHost* parent)
     : parent_(parent) {
-  DetachFromThread();
 }
 
 GpuChannelHost::MessageFilter::~MessageFilter() {
@@ -52,13 +52,13 @@ void GpuChannelHost::MessageFilter::AddRoute(
     int route_id,
     base::WeakPtr<IPC::Channel::Listener> listener,
     scoped_refptr<MessageLoopProxy> loop) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   DCHECK(listeners_.find(route_id) == listeners_.end());
   listeners_[route_id] = new GpuChannelHost::Listener(listener, loop);
 }
 
 void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   ListenerMap::iterator it = listeners_.find(route_id);
   if (it != listeners_.end())
     listeners_.erase(it);
@@ -66,8 +66,7 @@ void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
 
 bool GpuChannelHost::MessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(CalledOnValidThread());
-
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   // Never handle sync message replies or we will deadlock here.
   if (message.is_reply())
     return false;
@@ -90,8 +89,7 @@ bool GpuChannelHost::MessageFilter::OnMessageReceived(
 }
 
 void GpuChannelHost::MessageFilter::OnChannelError() {
-  DCHECK(CalledOnValidThread());
-
+  DCHECK(MessageLoop::current() == ChildProcess::current()->io_message_loop());
   // Inform all the proxies that an error has occurred. This will be reported
   // via OpenGL as a lost context.
   for (ListenerMap::iterator it = listeners_.begin();
