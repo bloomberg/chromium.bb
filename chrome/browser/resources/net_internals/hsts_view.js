@@ -88,7 +88,7 @@ var HSTSView = (function() {
     onHSTSQueryResult: function(result) {
       if (result.error != undefined) {
         this.queryOutputDiv_.innerHTML = '';
-        s = addNode(this.queryOutputDiv_, 'span');
+        var s = addNode(this.queryOutputDiv_, 'span');
         s.textContent = result.error;
         s.style.color = 'red';
         yellowFade(this.queryOutputDiv_);
@@ -103,10 +103,10 @@ var HSTSView = (function() {
 
       this.queryOutputDiv_.innerHTML = '';
 
-      s = addNode(this.queryOutputDiv_, 'span');
+      var s = addNode(this.queryOutputDiv_, 'span');
       s.innerHTML = '<b>Found</b>: mode: ';
 
-      t = addNode(this.queryOutputDiv_, 'tt');
+      var t = addNode(this.queryOutputDiv_, 'tt');
       t.textContent = modeToString(result.mode);
 
       addTextNode(this.queryOutputDiv_, ' include_subdomains:');
