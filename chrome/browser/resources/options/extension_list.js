@@ -166,6 +166,7 @@ cr.define('options', function() {
         var vbox = this.ownerDocument.createElement('div');
         vbox.classList.add('vbox');
         vbox.classList.add('stretch');
+        vbox.classList.add('details-view');
         hbox.appendChild(vbox);
 
         div = this.ownerDocument.createElement('div');

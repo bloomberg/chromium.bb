@@ -4,21 +4,8 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
-/* TODO(finnur): Move these into a central location, either options_page.css or
-                 somewhere in the shared directory */
-.hbox {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-}
-
-.vbox {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-}
-
-.stretch {
+.details-view {
   padding-right: 10px;
-  -webkit-box-flex: 1;
 }
 
 .extension-list-item {

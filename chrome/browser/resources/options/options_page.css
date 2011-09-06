@@ -1,3 +1,17 @@
+.hbox {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+.vbox {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.stretch {
+  -webkit-box-flex: 1;  
+}
+
 .frozen,
 .subpage-sheet-container.frozen {
   position: fixed;
