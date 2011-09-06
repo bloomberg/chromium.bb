@@ -30,7 +30,6 @@ class GeolocationArbitratorDependencyFactory
   typedef base::Time (*GetTimeNow)();
 
   virtual GetTimeNow GetTimeFunction() = 0;
-  virtual net::URLRequestContextGetter* GetContextGetter() = 0;
   virtual AccessTokenStore* NewAccessTokenStore() = 0;
   virtual LocationProviderBase* NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
@@ -50,7 +49,6 @@ class DefaultGeolocationArbitratorDependencyFactory
     : public GeolocationArbitratorDependencyFactory {
  public:
   // GeolocationArbitratorDependencyFactory
-  virtual net::URLRequestContextGetter* GetContextGetter();
   virtual GetTimeNow GetTimeFunction();
   virtual AccessTokenStore* NewAccessTokenStore();
   virtual LocationProviderBase* NewNetworkLocationProvider(

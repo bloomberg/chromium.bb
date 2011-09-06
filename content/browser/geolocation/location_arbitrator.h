@@ -75,8 +75,9 @@ class GeolocationArbitrator : public LocationProviderBase::ListenerInterface {
   // |providers_| or deleted on error (e.g. it fails to start).
   void RegisterProvider(LocationProviderBase* provider);
   void OnAccessTokenStoresLoaded(
-      AccessTokenStore::AccessTokenSet access_token_store);
-  void StartProviders();
+      AccessTokenStore::AccessTokenSet access_token_store,
+      net::URLRequestContextGetter* context_getter);
+  void DoStartProviders();
   // Returns true if |new_position| is an improvement over |old_position|.
   // Set |from_same_provider| to true if both the positions came from the same
   // provider.
@@ -86,7 +87,6 @@ class GeolocationArbitrator : public LocationProviderBase::ListenerInterface {
 
   scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory_;
   scoped_refptr<AccessTokenStore> access_token_store_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
   GetTimeNow get_time_now_;
   GeolocationObserver* observer_;
   ScopedVector<LocationProviderBase> providers_;

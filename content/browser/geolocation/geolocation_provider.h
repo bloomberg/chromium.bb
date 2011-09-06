@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class GeolocationArbitrator;
 template<typename Type>
 struct DefaultSingletonTraits;
 
-// This is the main API to the geolocaiton subsystem. The application
+// This is the main API to the geolocation subsystem. The application
 // will hold a single instance of this class, and can register multiple
 // observers which will be notified of location updates. Underlying location
 // arbitrator will only be enabled whilst there is at least one observer

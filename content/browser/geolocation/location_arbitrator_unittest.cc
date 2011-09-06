@@ -68,9 +68,6 @@ class MockDependencyFactory : public GeolocationArbitratorDependencyFactory {
   virtual GeolocationArbitrator::GetTimeNow GetTimeFunction() {
     return GetTimeNowForTest;
   }
-  virtual net::URLRequestContextGetter* GetContextGetter() {
-    return NULL;
-  }
   virtual AccessTokenStore* NewAccessTokenStore() {
     return access_token_store_.get();
   }
@@ -165,13 +162,15 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   ASSERT_TRUE(access_token_store_);
   ASSERT_TRUE(arbitrator_ != NULL);
 
+  EXPECT_FALSE(cell());
+  EXPECT_FALSE(gps());
+  arbitrator_->StartProviders(GeolocationObserverOptions(false));
+
   EXPECT_TRUE(access_token_store_->access_token_set_.empty());
   EXPECT_TRUE(access_token_store_->request_);
   EXPECT_TRUE(access_token_store_->access_token_set_.empty());
   ASSERT_TRUE(access_token_store_->request_);
 
-  EXPECT_FALSE(cell());
-  EXPECT_FALSE(gps());
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   EXPECT_TRUE(gps());
@@ -199,18 +198,7 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
 }
 
 TEST_F(GeolocationLocationArbitratorTest, SetObserverOptions) {
-  access_token_store_->NotifyDelegateTokensLoaded();
-  ASSERT_TRUE(cell());
-  ASSERT_TRUE(gps());
-  arbitrator_->StartProviders(GeolocationObserverOptions(true));
-  EXPECT_EQ(MockLocationProvider::HIGH_ACCURACY, cell()->state_);
-  EXPECT_EQ(MockLocationProvider::HIGH_ACCURACY, gps()->state_);
   arbitrator_->StartProviders(GeolocationObserverOptions(false));
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
-  EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
-}
-
-TEST_F(GeolocationLocationArbitratorTest, StartProvidersAfterFixArrives) {
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   ASSERT_TRUE(gps());
@@ -225,6 +213,7 @@ TEST_F(GeolocationLocationArbitratorTest, StartProvidersAfterFixArrives) {
 }
 
 TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
+  arbitrator_->StartProviders(GeolocationObserverOptions(false));
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   ASSERT_TRUE(gps());

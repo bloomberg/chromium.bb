@@ -30,7 +30,8 @@ class GeolocationAccessTokenStoreTest
       const string16* token_to_set);
 
   void OnAccessTokenStoresLoaded(
-        AccessTokenStore::AccessTokenSet access_token_set);
+      AccessTokenStore::AccessTokenSet access_token_set,
+      net::URLRequestContextGetter* context_getter);
 
   scoped_refptr<AccessTokenStore> token_store_;
   CancelableRequestConsumer request_consumer_;
@@ -50,7 +51,8 @@ void StartTestStepFromClientThread(
 }
 
 struct TokenLoadClientForTest {
-  void NotReachedCallback(AccessTokenStore::AccessTokenSet /*tokens*/) {
+  void NotReachedCallback(AccessTokenStore::AccessTokenSet /*tokens*/,
+                          net::URLRequestContextGetter* /*context_getter*/) {
     NOTREACHED() << "This request should have been canceled before callback";
   }
 };
@@ -102,10 +104,12 @@ void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
 }
 
 void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
-    AccessTokenStore::AccessTokenSet access_token_set) {
+    AccessTokenStore::AccessTokenSet access_token_set,
+    net::URLRequestContextGetter* context_getter) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId))
       << "Callback from token factory should be from the same thread as the "
          "LoadAccessTokenStores request was made on";
+  DCHECK(context_getter);
   AccessTokenStore::AccessTokenSet::const_iterator item =
       access_token_set.find(ref_url_);
   if (!token_to_expect_) {

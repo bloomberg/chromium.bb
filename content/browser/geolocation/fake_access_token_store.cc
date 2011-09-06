@@ -4,22 +4,33 @@
 
 #include "content/browser/geolocation/fake_access_token_store.h"
 
-FakeAccessTokenStore::FakeAccessTokenStore() {}
+using testing::_;
+using testing::Invoke;
+
+FakeAccessTokenStore::FakeAccessTokenStore() {
+  ON_CALL(*this, DoLoadAccessTokens(_))
+      .WillByDefault(Invoke(this,
+                            &FakeAccessTokenStore::DefaultDoLoadAccessTokens));
+  ON_CALL(*this, SaveAccessToken(_, _))
+      .WillByDefault(Invoke(this,
+                            &FakeAccessTokenStore::DefaultSaveAccessToken));
+}
 
 void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
   CHECK(request_ != NULL);
-  request_->ForwardResult(MakeTuple(access_token_set_));
+  net::URLRequestContextGetter* context_getter = NULL;
+  request_->ForwardResult(MakeTuple(access_token_set_, context_getter));
   request_ = NULL;
 }
 
-void FakeAccessTokenStore::DoLoadAccessTokens(
+void FakeAccessTokenStore::DefaultDoLoadAccessTokens(
     scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
   DCHECK(request_ == NULL)
       << "Fake token store currently only allows one request at a time";
   request_ = request;
 }
 
-void FakeAccessTokenStore::SaveAccessToken(
+void FakeAccessTokenStore::DefaultSaveAccessToken(
     const GURL& server_url, const string16& access_token) {
   DCHECK(server_url.is_valid());
   access_token_set_[server_url] = access_token;

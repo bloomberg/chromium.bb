@@ -25,15 +25,10 @@ GeolocationArbitrator::GeolocationArbitrator(
     GeolocationObserver* observer)
     : dependency_factory_(dependency_factory),
       access_token_store_(dependency_factory->NewAccessTokenStore()),
-      context_getter_(dependency_factory->GetContextGetter()),
       get_time_now_(dependency_factory->GetTimeFunction()),
       observer_(observer),
       position_provider_(NULL) {
-  DCHECK(GURL(kDefaultNetworkProviderUrl).is_valid());
-  access_token_store_->LoadAccessTokens(
-      &request_consumer_,
-      NewCallback(this,
-                  &GeolocationArbitrator::OnAccessTokenStoresLoaded));
+
 }
 
 GeolocationArbitrator::~GeolocationArbitrator() {
@@ -62,13 +57,20 @@ void GeolocationArbitrator::OnPermissionGranted(
 
 void GeolocationArbitrator::StartProviders(
     const GeolocationObserverOptions& options) {
-  // Stash options incase OnAccessTokenStoresLoaded has not yet been called
-  // (in which case |providers_| will be empty).
+  // Stash options as OnAccessTokenStoresLoaded has not yet been called.
   current_provider_options_ = options;
-  StartProviders();
+  if (providers_.empty()) {
+    DCHECK(GURL(kDefaultNetworkProviderUrl).is_valid());
+    access_token_store_->LoadAccessTokens(
+        &request_consumer_,
+        NewCallback(this,
+                    &GeolocationArbitrator::OnAccessTokenStoresLoaded));
+  } else {
+    DoStartProviders();
+  }
 }
 
-void GeolocationArbitrator::StartProviders() {
+void GeolocationArbitrator::DoStartProviders() {
   for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
        i != providers_.end(); ++i) {
     (*i)->StartProvider(current_provider_options_.use_high_accuracy);
@@ -76,17 +78,17 @@ void GeolocationArbitrator::StartProviders() {
 }
 
 void GeolocationArbitrator::StopProviders() {
-  for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
-       i != providers_.end(); ++i) {
-    (*i)->StopProvider();
-  }
+  providers_.reset();
 }
 
 void GeolocationArbitrator::OnAccessTokenStoresLoaded(
-    AccessTokenStore::AccessTokenSet access_token_set) {
-  DCHECK(providers_.empty())
-      << "OnAccessTokenStoresLoaded : has existing location "
-      << "provider. Race condition caused repeat load of tokens?";
+    AccessTokenStore::AccessTokenSet access_token_set,
+    net::URLRequestContextGetter* context_getter) {
+  if (!providers_.empty()) {
+    // A second StartProviders() call may have arrived before the first
+    // completed.
+    return;
+  }
   // If there are no access tokens, boot strap it with the default server URL.
   if (access_token_set.empty())
     access_token_set[GURL(kDefaultNetworkProviderUrl)];
@@ -95,11 +97,11 @@ void GeolocationArbitrator::OnAccessTokenStoresLoaded(
       i != access_token_set.end(); ++i) {
     RegisterProvider(
         dependency_factory_->NewNetworkLocationProvider(
-            access_token_store_.get(), context_getter_.get(),
+            access_token_store_.get(), context_getter,
             i->first, i->second));
   }
   RegisterProvider(dependency_factory_->NewSystemLocationProvider());
-  StartProviders();
+  DoStartProviders();
 }
 
 void GeolocationArbitrator::RegisterProvider(

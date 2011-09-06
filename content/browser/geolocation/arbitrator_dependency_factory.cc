@@ -15,13 +15,6 @@ GeolocationArbitratorDependencyFactory::
 }
 
 // DefaultGeolocationArbitratorDependencyFactory
-net::URLRequestContextGetter*
-DefaultGeolocationArbitratorDependencyFactory::GetContextGetter() {
-  // Deprecated; see http://crbug.com/92363
-  return content::GetContentClient()->browser()->
-      GetDefaultRequestContextDeprecatedCrBug64339();
-}
-
 DefaultGeolocationArbitratorDependencyFactory::GetTimeNow
 DefaultGeolocationArbitratorDependencyFactory::GetTimeFunction() {
   return base::Time::Now;

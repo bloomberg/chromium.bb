@@ -56,7 +56,8 @@ void ChromeAccessTokenStore::LoadDictionaryStoreInUIThread(
       token_dictionary->RemoveWithoutPathExpansion(
           kOldDefaultNetworkProviderUrl, NULL);
   }
-  request->ForwardResultAsync(MakeTuple(access_token_set));
+  request->ForwardResultAsync(MakeTuple(
+      access_token_set, g_browser_process->system_request_context()));
 }
 
 void ChromeAccessTokenStore::DoLoadAccessTokens(
