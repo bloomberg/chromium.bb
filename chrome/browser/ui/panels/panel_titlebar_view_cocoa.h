@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/ui/cocoa/background_gradient_view.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 
 @class CrTrackingArea;
@@ -22,7 +23,7 @@
 // differently based on being key window) so it appears easier to simply overlay
 // the standard titlebar.
 
-@interface PanelTitlebarViewCocoa : NSView {
+@interface PanelTitlebarViewCocoa : BackgroundGradientView {
   IBOutlet PanelWindowControllerCocoa* controller_;
   NSButton* closeButton_;  // Created explicitly, not from NIB. Weak, destroyed
                            // when view is destroyed, as a subview.
@@ -34,6 +35,8 @@
 
   // Attaches this view to the controller_'s window as a titlebar.
 - (void)attach;
+
+- (void)setTitle:(NSString*)newTitle;
 
   // Should be called when size of the titlebar changes.
 - (void)updateCloseButtonLayout;

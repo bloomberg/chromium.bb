@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "content/common/native_web_keyboard_event.h"
 
 @interface MenuWalker : NSObject
@@ -119,6 +120,59 @@
   }
 
   return [event_window redispatchKeyEvent:event];
+}
+
++ (NSString*)scheduleReplaceOldTitle:(NSString*)oldTitle
+                        withNewTitle:(NSString*)newTitle
+                           forWindow:(NSWindow*)window {
+  if (oldTitle)
+    [[NSRunLoop currentRunLoop]
+        cancelPerformSelector:@selector(setTitle:)
+                       target:window
+                     argument:oldTitle];
+
+  [[NSRunLoop currentRunLoop]
+      performSelector:@selector(setTitle:)
+               target:window
+             argument:newTitle
+                order:0
+                modes:[NSArray arrayWithObject:NSDefaultRunLoopMode]];
+  return [newTitle copy];
+}
+
+// Our patterns want to be drawn from the upper left hand corner of the view.
+// Cocoa wants to do it from the lower left of the window.
+//
+// Rephase our pattern to fit this view. Some other views (Tabs, Toolbar etc.)
+// will phase their patterns relative to this so all the views look right.
+//
+// To line up the background pattern with the pattern in the browser window
+// the background pattern for the tabs needs to be moved left by 5 pixels.
+const CGFloat kPatternHorizontalOffset = -5;
+// To match Windows and CrOS, have to offset vertically by 2 pixels.
+// Without tab strip, offset an extra pixel (determined by experimentation).
+const CGFloat kPatternVerticalOffset = 2;
+const CGFloat kPatternVerticalOffsetNoTabStrip = 3;
+
+
++ (NSPoint)themePatternPhaseFor:(NSView*)windowView
+                   withTabStrip:(NSView*)tabStripView {
+  // When we have a tab strip, line up with the top of the tab, otherwise,
+  // line up with the top of the window.
+  if (!tabStripView)
+    return NSMakePoint(kPatternHorizontalOffset,
+                       NSHeight([windowView bounds])
+                       + kPatternVerticalOffsetNoTabStrip);
+
+  NSRect tabStripViewWindowBounds = [tabStripView bounds];
+  tabStripViewWindowBounds =
+      [tabStripView convertRect:tabStripViewWindowBounds
+                         toView:windowView];
+  return NSMakePoint(NSMinX(tabStripViewWindowBounds)
+                         + kPatternHorizontalOffset,
+                     NSMinY(tabStripViewWindowBounds)
+                         + [TabStripController defaultTabHeight]
+                         + kPatternVerticalOffset);
 }
 
 @end

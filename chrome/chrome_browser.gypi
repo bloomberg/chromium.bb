@@ -2698,6 +2698,8 @@
         'browser/ui/cocoa/task_manager_mac.mm',
         'browser/ui/cocoa/theme_install_bubble_view.h',
         'browser/ui/cocoa/theme_install_bubble_view.mm',
+        'browser/ui/cocoa/themed_browser_window.h',
+        'browser/ui/cocoa/themed_browser_window.mm',
         'browser/ui/cocoa/themed_window.h',
         'browser/ui/cocoa/themed_window.mm',
         'browser/ui/cocoa/toolbar/back_forward_menu_controller.h',

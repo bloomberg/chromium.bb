@@ -23,6 +23,20 @@ struct NativeWebKeyboardEvent;
 // NSWindow must be a ChromeEventProcessingWindow.
 + (BOOL)handleKeyboardEvent:(NSEvent*)event
                    inWindow:(NSWindow*)window;
+
+// Schedule a window title change in the next run loop iteration. This works
+// around a Cocoa bug: if a window changes title during the tracking of the
+// Window menu it doesn't display well and the constant re-sorting of the list
+// makes it difficult for the user to pick the desired window.
+// Passing in a non-nil oldTitle will also cancel any pending title changes with
+// a matching window and title. This function returns a NSString* that can be
+// passed in future calls as oldTitle.
++ (NSString*)scheduleReplaceOldTitle:(NSString*)oldTitle
+                        withNewTitle:(NSString*)newTitle
+                           forWindow:(NSWindow*)window;
+
++ (NSPoint)themePatternPhaseFor:(NSView*)windowView
+                   withTabStrip:(NSView*)tabStripView;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_UTILS_H_

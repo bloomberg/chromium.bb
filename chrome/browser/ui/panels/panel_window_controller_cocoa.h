@@ -12,8 +12,10 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/cocoa_protocols.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 
 @class FindBarCocoaController;
 class PanelBrowserWindowCocoa;
@@ -24,10 +26,15 @@ class PanelBrowserWindowCocoa;
  @private
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
   scoped_ptr<PanelBrowserWindowCocoa> windowShim_;
+  scoped_nsobject<NSString> pendingWindowTitle_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
 - (id)initWithBrowserWindow:(PanelBrowserWindowCocoa*)window;
+
+- (ui::ThemeProvider*)themeProvider;
+- (ThemedWindowStyle)themedWindowStyle;
+- (NSPoint)themePatternPhase;
 
 // Returns the TabContents' native view. It renders the content of the web page
 // in the Panel.
@@ -41,6 +48,8 @@ class PanelBrowserWindowCocoa;
 
 // Shows the window for the first time. Only happens once.
 - (void)revealAnimatedWithFrame:(const NSRect&)frame;
+
+- (void)updateTitleBar;
 
 // Adds the FindBar controller's view to this Panel. Must only be
 // called once per PanelWindowControllerCocoa.

@@ -7,9 +7,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "chrome/browser/themes/theme_service.h"
+#import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
+#include "ui/base/theme_provider.h"
 
 const int kRoundedCornerSize = 6;
 const int kCloseButtonLeftPadding = 8;
@@ -45,13 +48,10 @@ const int kCloseButtonLeftPadding = 8;
                            topRightCornerRadius:kRoundedCornerSize
                          bottomLeftCornerRadius:0.0
                         bottomRightCornerRadius:0.0];
-  // TODO(dimich): paint theme image here.
-  [[NSColor colorWithDeviceRed:1 green:1 blue:0 alpha:0.9] setFill];
-  [path fill];
-  [[NSColor colorWithCalibratedWhite:0.4 alpha:1.0] set];
-  NSPoint from = [self bounds].origin;
-  NSPoint to = NSMakePoint(from.x + NSWidth([self bounds]), from.y);
-  [NSBezierPath strokeLineFromPoint:from toPoint:to];
+  [path addClip];
+  NSPoint phase = [[self window] themePatternPhase];
+  [[NSGraphicsContext currentContext] setPatternPhase:phase];
+  [self drawBackgroundWithOpaque:YES];
 }
 
 - (void)attach {
@@ -82,6 +82,10 @@ const int kCloseButtonLeftPadding = 8;
 
   // Set autoresizing behavior: glued to edges on left, top and right.
   [self setAutoresizingMask:(NSViewMinYMargin | NSViewWidthSizable)];
+}
+
+- (void)setTitle:(NSString*)newTitle {
+  // TODO(dcheng): Implement.
 }
 
 - (void)updateCloseButtonLayout {

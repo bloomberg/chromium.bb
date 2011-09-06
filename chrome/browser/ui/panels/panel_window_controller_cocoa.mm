@@ -8,9 +8,14 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -40,6 +45,22 @@ enum {
   if ((self = [super initWithWindowNibPath:nibpath owner:self]))
     windowShim_.reset(window);
   return self;
+}
+
+- (ui::ThemeProvider*)themeProvider {
+  return ThemeServiceFactory::GetForProfile(windowShim_->browser()->profile());
+}
+
+- (ThemedWindowStyle)themedWindowStyle {
+  ThemedWindowStyle style = THEMED_POPUP;
+  if (windowShim_->browser()->profile()->IsOffTheRecord())
+    style |= THEMED_INCOGNITO;
+  return style;
+}
+
+- (NSPoint)themePatternPhase {
+  NSView* windowView = [[[self window] contentView] superview];
+  return [BrowserWindowUtils themePatternPhaseFor:windowView withTabStrip:nil];
 }
 
 - (void)awakeFromNib {
@@ -104,6 +125,16 @@ enum {
 
   // Resume auto-resizing of the TabContents view.
   [self enableTabContentsViewAutosizing];
+}
+
+- (void)updateTitleBar {
+  NSString* newTitle = base::SysUTF16ToNSString(
+      windowShim_->browser()->GetWindowTitleForCurrentTab());
+  pendingWindowTitle_.reset(
+      [BrowserWindowUtils scheduleReplaceOldTitle:pendingWindowTitle_.get()
+                                     withNewTitle:newTitle
+                                        forWindow:[self window]]);
+  [titlebar_view_ setTitle:newTitle];
 }
 
 - (void)addFindBar:(FindBarCocoaController*)findBarCocoaController {

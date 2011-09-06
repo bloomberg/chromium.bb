@@ -45,7 +45,7 @@
 				<string key="NSWindowRect">{{196, 240}, {480, 270}}</string>
 				<int key="NSWTFlags">544736256</int>
 				<string key="NSWindowTitle">Window</string>
-				<string key="NSWindowClass">ChromeEventProcessingWindow</string>
+				<string key="NSWindowClass">ThemedBrowserWindow</string>
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
@@ -346,6 +346,14 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">PanelWindowControllerCocoa</string>
 					<string key="superclassName">NSWindowController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBUserSource</string>
+						<string key="minorKey"/>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ThemedBrowserWindow</string>
+					<string key="superclassName">ChromeEventProcessingWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>

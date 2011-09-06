@@ -126,7 +126,9 @@ gfx::NativeWindow PanelBrowserWindowCocoa::GetNativePanelHandle() {
 }
 
 void PanelBrowserWindowCocoa::UpdatePanelTitleBar() {
-  NOTIMPLEMENTED();
+  if (!is_shown_)
+    return;
+  [controller_ updateTitleBar];
 }
 
 void PanelBrowserWindowCocoa::ShowTaskManagerForPanel() {

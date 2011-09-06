@@ -35,6 +35,7 @@
 #import "chrome/browser/ui/cocoa/browser/avatar_button.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
+#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
@@ -1587,39 +1588,9 @@ enum {
 }
 
 - (NSPoint)themePatternPhase {
-  // Our patterns want to be drawn from the upper left hand corner of the view.
-  // Cocoa wants to do it from the lower left of the window.
-  //
-  // Rephase our pattern to fit this view. Some other views (Tabs, Toolbar etc.)
-  // will phase their patterns relative to this so all the views look right.
-  //
-  // To line up the background pattern with the pattern in the browser window
-  // the background pattern for the tabs needs to be moved left by 5 pixels.
-  const CGFloat kPatternHorizontalOffset = -5;
-  // To match Windows and CrOS, have to offset vertically by 2 pixels.
-  // Without tab strip, offset an extra pixel (determined by experimentation).
-  const CGFloat kPatternVerticalOffset = 2;
-  const CGFloat kPatternVerticalOffsetNoTabStrip = 3;
-
-  // When we have a tab strip, line up with the top of the tab, otherwise,
-  // line up with the top of the window.
   NSView* windowChromeView = [[[self window] contentView] superview];
-  if ([self hasTabStrip]) {
-    NSView* tabStripView = [self tabStripView];
-    NSRect tabStripViewWindowBounds = [tabStripView bounds];
-    tabStripViewWindowBounds =
-        [tabStripView convertRect:tabStripViewWindowBounds
-                           toView:windowChromeView];
-    return NSMakePoint(NSMinX(tabStripViewWindowBounds)
-                           + kPatternHorizontalOffset,
-                       NSMinY(tabStripViewWindowBounds)
-                           + [TabStripController defaultTabHeight]
-                           + kPatternVerticalOffset);
-  } else {
-    return NSMakePoint(kPatternHorizontalOffset,
-                       NSHeight([windowChromeView bounds])
-                       + kPatternVerticalOffsetNoTabStrip);
-  }
+  return [BrowserWindowUtils themePatternPhaseFor:windowChromeView
+                                     withTabStrip:[self tabStripView]];
 }
 
 - (NSPoint)bookmarkBubblePoint {

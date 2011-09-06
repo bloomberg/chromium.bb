@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/browser_test_helper.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
@@ -27,6 +28,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 
 // Main test class.
 class PanelBrowserWindowCocoaTest : public CocoaTest {
@@ -327,5 +329,32 @@ TEST_F(PanelBrowserWindowCocoaTest, KeyEvent) {
       static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
   [BrowserWindowUtils handleKeyboardEvent:event
                       inWindow:[native_window->controller_ window]];
+  ClosePanelAndWait(panel->browser());
+}
+
+// Verify that the theme provider is properly plumbed through.
+TEST_F(PanelBrowserWindowCocoaTest, ThemeProvider) {
+  Panel* panel = CreateTestPanel("Test Panel");
+  ASSERT_TRUE(panel);
+
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  ASSERT_TRUE(native_window);
+  EXPECT_TRUE(NULL != [[native_window->controller_ window] themeProvider]);
+  ClosePanelAndWait(panel->browser());
+}
+
+TEST_F(PanelBrowserWindowCocoaTest, SetTitle) {
+  Panel* panel = CreateTestPanel("Test Panel");
+  ASSERT_TRUE(panel);
+
+  PanelBrowserWindowCocoa* native_window =
+      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  ASSERT_TRUE(native_window);
+  NSString* previousTitle = [[native_window->controller_ window] title];
+  [native_window->controller_ updateTitleBar];
+  chrome::testing::NSRunLoopRunAllPending();
+  EXPECT_NSEQ(@"Untitled", [[native_window->controller_ window] title]);
+  EXPECT_NSNE([[native_window->controller_ window] title], previousTitle);
   ClosePanelAndWait(panel->browser());
 }
