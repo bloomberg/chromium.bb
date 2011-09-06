@@ -68,6 +68,9 @@ cr.define('ntp4', function() {
       var title = this.querySelector('.title');
       title.textContent = this.data.title;
 
+      // Sets the tooltip.
+      this.title = this.data.title;
+
       if (this.data.url) {
         var button = this.querySelector('.button');
         button.href = title.href = this.data.url;

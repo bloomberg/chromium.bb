@@ -64,6 +64,7 @@ cr.define('ntp4', function() {
       this.removeAttribute('tabIndex');
       this.data_ = null;
       this.removeAttribute('id');
+      this.title = '';
     },
 
     /**
@@ -102,6 +103,9 @@ cr.define('ntp4', function() {
       var title = this.querySelector('.title');
       title.textContent = data.title;
       title.dir = data.direction;
+
+      // Sets the tooltip.
+      this.title = data.title;
 
       var thumbnailUrl = data.thumbnailUrl || 'chrome://thumb/' + data.url;
       this.querySelector('.thumbnail').style.backgroundImage =

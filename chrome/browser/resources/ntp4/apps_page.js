@@ -202,6 +202,7 @@ cr.define('ntp4', function() {
         imgDiv.className = 'app-icon-div';
         imgDiv.appendChild(appImgContainer);
         imgDiv.addEventListener('click', this.onClick_.bind(this));
+        imgDiv.title = this.appData_.name;
         this.imgDiv_ = imgDiv;
         appContents.appendChild(imgDiv);
         this.appImgContainer_.style.position = 'absolute';
@@ -214,11 +215,12 @@ cr.define('ntp4', function() {
         chrome.send('getAppIconDominantColor', [this.id]);
       } else {
         appImgContainer.addEventListener('click', this.onClick_.bind(this));
+        appImgContainer.title = this.appData_.name;
         appContents.appendChild(appImgContainer);
       }
 
       var appSpan = this.ownerDocument.createElement('span');
-      appSpan.textContent = this.appData_.name;
+      appSpan.textContent = appSpan.title = this.appData_.name;
       appSpan.addEventListener('click', this.onClick_.bind(this));
       appContents.appendChild(appSpan);
       this.appendChild(appContents);
