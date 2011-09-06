@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -266,17 +266,17 @@ void WINAPI DoTranslateThread(void* arg) {
   // probably is PIC vs non-PIC and micro-arch specification.
   const char* llc_args_x8632[] = { "-march=x86",
                                    "-mcpu=pentium4",
-                                   "-mtriple=i686-none-linux-gnu",
+                                   "-mtriple=i686-none-nacl-gnu",
                                    "-asm-verbose=false",
                                    "-filetype=obj" };
   const char* llc_args_x8664[] = { "-march=x86-64",
                                    "-mcpu=core2",
-                                   "-mtriple=x86_64-none-linux-gnu",
+                                   "-mtriple=x86_64-none-nacl-gnu",
                                    "-asm-verbose=false",
                                    "-filetype=obj" };
   const char* llc_args_arm[] = { "-march=arm",
                                  "-mcpu=cortex-a8",
-                                 "-mtriple=armv7a-none-linux-gnueabi",
+                                 "-mtriple=armv7a-none-nacl-gnueabi",
                                  "-asm-verbose=false",
                                  "-filetype=obj",
                                  "-arm-reserve-r9",
