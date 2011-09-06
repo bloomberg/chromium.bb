@@ -1194,8 +1194,8 @@ pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy)
 
 
 static void
-motion_grab_motion(struct wl_grab *grab,
-		   uint32_t time, int32_t x, int32_t y)
+implicit_grab_motion(struct wl_grab *grab,
+		     uint32_t time, int32_t x, int32_t y)
 {
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) grab->input_device;
@@ -1213,8 +1213,8 @@ motion_grab_motion(struct wl_grab *grab,
 }
 
 static void
-motion_grab_button(struct wl_grab *grab,
-		   uint32_t time, int32_t button, int32_t state)
+implicit_grab_button(struct wl_grab *grab,
+		     uint32_t time, int32_t button, int32_t state)
 {
 	struct wl_resource *resource;
 
@@ -1225,14 +1225,14 @@ motion_grab_button(struct wl_grab *grab,
 }
 
 static void
-motion_grab_end(struct wl_grab *grab, uint32_t time)
+implicit_grab_end(struct wl_grab *grab, uint32_t time)
 {
 }
 
-static const struct wl_grab_interface motion_grab_interface = {
-	motion_grab_motion,
-	motion_grab_button,
-	motion_grab_end
+static const struct wl_grab_interface implicit_grab_interface = {
+	implicit_grab_motion,
+	implicit_grab_button,
+	implicit_grab_end
 };
 
 WL_EXPORT void
@@ -1394,7 +1394,7 @@ notify_button(struct wl_input_device *device,
 		compositor->shell->activate(compositor->shell,
 					    surface, wd, time);
 		wl_input_device_start_grab(device,
-					   &device->motion_grab,
+					   &device->implicit_grab,
 					   button, time);
 	}
 
@@ -1666,7 +1666,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	device->hotspot_y = 16;
 	device->modifier_state = 0;
 
-	device->input_device.motion_grab.interface = &motion_grab_interface;
+	device->input_device.implicit_grab.interface = &implicit_grab_interface;
 
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 
