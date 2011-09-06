@@ -9,7 +9,7 @@
 namespace webkit {
 namespace ppapi {
 
-const PPB_OpenGLES2* PPB_OpenGLES_Impl::GetInterface() {
+const PPB_OpenGLES2_Dev* PPB_OpenGLES_Impl::GetInterface() {
   return ::ppapi::OpenGLES2Impl::GetInterface();
 }
 

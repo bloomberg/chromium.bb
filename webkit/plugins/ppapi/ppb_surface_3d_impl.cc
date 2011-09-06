@@ -7,8 +7,8 @@
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "ppapi/c/ppb_graphics_3d.h"
-#include "ppapi/c/ppp_graphics_3d.h"
+#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppp_graphics_3d_dev.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -180,10 +180,10 @@ void PPB_Surface3D_Impl::SendContextLost() {
   // callback after DidDestroy.
   if (!plugin_instance || !plugin_instance->container())
     return;
-  const PPP_Graphics3D* ppp_graphics_3d =
-      static_cast<const PPP_Graphics3D*>(
+  const PPP_Graphics3D_Dev* ppp_graphics_3d =
+      static_cast<const PPP_Graphics3D_Dev*>(
           plugin_instance->module()->GetPluginInterface(
-              PPP_GRAPHICS_3D_INTERFACE));
+              PPP_GRAPHICS_3D_DEV_INTERFACE));
   if (ppp_graphics_3d)
     ppp_graphics_3d->Graphics3DContextLost(pp_instance());
 }

@@ -245,10 +245,10 @@ void PPB_Graphics3D_Impl::SendContextLost() {
   if (!instance || !instance->container())
     return;
 
-  const PPP_Graphics3D* ppp_graphics_3d =
-      static_cast<const PPP_Graphics3D*>(
+  const PPP_Graphics3D_Dev* ppp_graphics_3d =
+      static_cast<const PPP_Graphics3D_Dev*>(
           instance->module()->GetPluginInterface(
-              PPP_GRAPHICS_3D_INTERFACE));
+              PPP_GRAPHICS_3D_DEV_INTERFACE));
   if (ppp_graphics_3d)
     ppp_graphics_3d->Graphics3DContextLost(pp_instance());
 }

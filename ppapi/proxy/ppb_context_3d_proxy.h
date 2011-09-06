@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "ppapi/c/pp_graphics_3d.h"
+#include "ppapi/c/dev/pp_graphics_3d_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_non_thread_safe_ref_count.h"

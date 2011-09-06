@@ -1,6 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_PPB_GRAPHICS_3D_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_PPB_GRAPHICS_3D_H_
@@ -8,9 +10,9 @@
 #include "base/scoped_ptr.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
-#include "ppapi/c/pp_graphics_3d.h"
-#include "ppapi/c/ppb_graphics_3d.h"
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/dev/pp_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/pp_instance.h"
 
 namespace gpu {
@@ -29,8 +31,8 @@ class PluginGraphics3D : public PluginResource {
   PluginGraphics3D();
   virtual ~PluginGraphics3D();
 
-  static const PPB_Graphics3D* GetInterface();
-  static const PPB_OpenGLES2* GetOpenGLESInterface();
+  static const PPB_Graphics3D_Dev* GetInterface();
+  static const PPB_OpenGLES2_Dev* GetOpenGLESInterface();
 
   virtual bool InitFromBrowserResource(PP_Resource graphics3d_id);
 

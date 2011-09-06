@@ -15,7 +15,7 @@
 namespace pp {
 
 class Context3D_Dev;
-class Graphics3D;
+class Graphics3D_Dev;
 class Instance;
 
 // C++ wrapper for the Pepper Video Decoder interface. For more detailed
@@ -29,7 +29,7 @@ class VideoDecoder_Dev : public Resource {
                    const Context3D_Dev& context,
                    PP_VideoDecoder_Profile profile);
   VideoDecoder_Dev(const Instance* instance,
-                   const Graphics3D& context,
+                   const Graphics3D_Dev& context,
                    PP_VideoDecoder_Profile profile);
 
   explicit VideoDecoder_Dev(PP_Resource resource);

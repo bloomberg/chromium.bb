@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_COMMAND_BUFFER_NACL_H
 
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "ppapi/c/pp_graphics_3d.h"
+#include "ppapi/c/dev/pp_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 
 struct PPB_Core;
 

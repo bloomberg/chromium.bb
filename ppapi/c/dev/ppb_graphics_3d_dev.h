@@ -2,10 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#ifndef PPAPI_C_PPB_GRAPHICS_3D_H_
-#define PPAPI_C_PPB_GRAPHICS_3D_H_
+#ifndef PPAPI_C_DEV_PPB_GRAPHICS_3D_DEV_H_
+#define PPAPI_C_DEV_PPB_GRAPHICS_3D_DEV_H_
 
-#include "ppapi/c/pp_graphics_3d.h"
+#include "ppapi/c/dev/pp_graphics_3d_dev.h"
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
@@ -28,10 +28,10 @@
 // // Shutdown.
 // core->ReleaseResource(context);
 
-#define PPB_GRAPHICS_3D_INTERFACE_1_0 "PPB_Graphics3D;1.0"
-#define PPB_GRAPHICS_3D_INTERFACE PPB_GRAPHICS_3D_INTERFACE_1_0
+#define PPB_GRAPHICS_3D_DEV_INTERFACE_0_9 "PPB_Graphics3D(Dev);0.9"
+#define PPB_GRAPHICS_3D_DEV_INTERFACE PPB_GRAPHICS_3D_DEV_INTERFACE_0_9
 
-struct PPB_Graphics3D {
+struct PPB_Graphics3D_Dev {
   // Retrieves the maximum supported value for the given attribute.
   //
   // This function may be used to check if a particular attribute value is
@@ -201,4 +201,4 @@ struct PPB_Graphics3D {
                          struct PP_CompletionCallback callback);
 };
 
-#endif  /* PPAPI_C_PPB_GRAPHICS_3D_H_ */
+#endif  /* PPAPI_C_DEV_PPB_GRAPHICS_3D_DEV_H_ */

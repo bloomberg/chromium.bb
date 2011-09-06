@@ -100,7 +100,7 @@ PP_Graphics3DTrustedState FlushSyncFast(PP_Resource context,
   return enter.object()->FlushSyncFast(put_offset, last_known_get);
 }
 
-const PPB_Graphics3DTrusted g_ppb_graphics_3d_trusted_thunk = {
+const PPB_Graphics3DTrusted_Dev g_ppb_graphics_3d_trusted_thunk = {
   &CreateRaw,
   &InitCommandBuffer,
   &GetRingBuffer,
@@ -115,7 +115,7 @@ const PPB_Graphics3DTrusted g_ppb_graphics_3d_trusted_thunk = {
 
 }  // namespace
 
-const PPB_Graphics3DTrusted* GetPPB_Graphics3DTrusted_Thunk() {
+const PPB_Graphics3DTrusted_Dev* GetPPB_Graphics3DTrusted_Thunk() {
   return &g_ppb_graphics_3d_trusted_thunk;
 }
 

@@ -5753,10 +5753,10 @@ const size_t GLES2Util::enum_to_string_table_len_ =
       file.Write("typedef %s %s;\n" % (v, k))
     file.Write("#endif  // __gl2_h_\n\n")
 
-    file.Write("#define PPB_OPENGLES2_INTERFACE "
-        "\"PPB_OpenGLES;2.0\"\n")
+    file.Write("#define PPB_OPENGLES2_DEV_INTERFACE "
+        "\"PPB_OpenGLES(Dev);2.0\"\n")
 
-    file.Write("\nstruct PPB_OpenGLES2 {\n")
+    file.Write("\nstruct PPB_OpenGLES2_Dev {\n")
     for func in self.original_functions:
       if not func.IsCoreGLFunction():
         continue
@@ -5818,7 +5818,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
                   func.MakeOriginalArgString("")))
       file.Write("}\n\n")
 
-    file.Write("\nconst struct PPB_OpenGLES2 ppb_opengles2 = {\n")
+    file.Write("\nconst struct PPB_OpenGLES2_Dev ppb_opengles2 = {\n")
     file.Write("  &")
     file.Write(",\n  &".join(
       f.name for f in self.original_functions if f.IsCoreGLFunction()))
@@ -5828,7 +5828,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write("}  // namespace\n")
 
     file.Write("""
-const PPB_OpenGLES2* OpenGLES2Impl::GetInterface() {
+const PPB_OpenGLES2_Dev* OpenGLES2Impl::GetInterface() {
   return &ppb_opengles2;
 }
 
@@ -5904,10 +5904,10 @@ const PPB_OpenGLES2* OpenGLES2Impl::GetInterface() {
 
     file.Write("\n} // namespace\n\n")
 
-    file.Write("const PPB_OpenGLES2* "
+    file.Write("const PPB_OpenGLES2_Dev* "
                "PluginGraphics3D::GetOpenGLESInterface() {\n")
 
-    file.Write("  const static struct PPB_OpenGLES2 ppb_opengles = {\n")
+    file.Write("  const static struct PPB_OpenGLES2_Dev ppb_opengles = {\n")
     file.Write("    &")
     file.Write(",\n    &".join(
       f.name for f in self.original_functions if (f.IsCoreGLFunction() and

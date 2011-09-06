@@ -750,7 +750,7 @@ void Viewport(
 }
 
 
-const struct PPB_OpenGLES2 ppb_opengles2 = {
+const struct PPB_OpenGLES2_Dev ppb_opengles2 = {
   &ActiveTexture,
   &AttachShader,
   &BindAttribLocation,
@@ -897,7 +897,7 @@ const struct PPB_OpenGLES2 ppb_opengles2 = {
 
 }  // namespace
 
-const PPB_OpenGLES2* OpenGLES2Impl::GetInterface() {
+const PPB_OpenGLES2_Dev* OpenGLES2Impl::GetInterface() {
   return &ppb_opengles2;
 }
 

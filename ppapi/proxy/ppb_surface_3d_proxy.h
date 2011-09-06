@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "ppapi/c/dev/pp_graphics_3d_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"

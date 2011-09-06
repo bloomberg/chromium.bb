@@ -21,7 +21,7 @@ struct PP_InputEvent;
 namespace pp {
 
 class Graphics2D;
-class Graphics3D;
+class Graphics3D_Dev;
 class InputEvent;
 class ImageData;
 class Point;
@@ -275,12 +275,12 @@ class Instance {
   /// Refer to <code>BindGraphics(const Graphics2D& graphics)</code> for
   /// further information.
   ///
-  /// @param[in] graphics A <code>Graphics3D</code> to bind.
+  /// @param[in] graphics A <code>Graphics3D_Dev</code> to bind.
   ///
   /// @return true if bind was successful or false if the device was not the
   /// correct type. On success, a reference to the device will be held by the
   /// instance, so the caller can release its reference if it chooses.
-  bool BindGraphics(const Graphics3D& graphics);
+  bool BindGraphics(const Graphics3D_Dev& graphics);
 
   /// Binds the given Surface3D as the current display surface.
   /// Refer to <code>BindGraphics(const Graphics2D& graphics)</code> for

@@ -14,19 +14,19 @@
 #include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
 #include "native_client/tests/ppapi_test_lib/internal_utils.h"
 #include "native_client/tests/ppapi_test_lib/test_interface.h"
+#include "ppapi/c/dev/pp_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/ppb_core.h"
-#include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppb_opengles.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
@@ -40,13 +40,13 @@ const int kHeight = 200;
 
 // Tests the Graphics3D interface is available.
 void TestGraphics3DInterface() {
-  EXPECT(PPBGraphics3D() != NULL);
+  EXPECT(PPBGraphics3DDev() != NULL);
   TEST_PASSED;
 }
 
 // Tests the OpenGLES interface is available.
 void TestOpenGLES2Interface() {
-  EXPECT(PPBOpenGLES2() != NULL);
+  EXPECT(PPBOpenGLES2Dev() != NULL);
   TEST_PASSED;
 }
 
@@ -56,20 +56,20 @@ void TestCreate() {
       PP_GRAPHICS3DATTRIB_WIDTH, kWidth,
       PP_GRAPHICS3DATTRIB_HEIGHT, kHeight,
       PP_GRAPHICS3DATTRIB_NONE};
-  PP_Resource graphics3d_id = PPBGraphics3D()->
+  PP_Resource graphics3d_id = PPBGraphics3DDev()->
       Create(pp_instance(), kInvalidResource, attribs);
   EXPECT(graphics3d_id != kInvalidResource);
   PPBCore()->ReleaseResource(graphics3d_id);
-  PP_Resource invalid_graphics3d_id = PPBGraphics3D()->
+  PP_Resource invalid_graphics3d_id = PPBGraphics3DDev()->
       Create(0, kInvalidResource, attribs);
   EXPECT(invalid_graphics3d_id == kInvalidResource);
   int32_t empty_attribs[] = {
       PP_GRAPHICS3DATTRIB_NONE};
-  PP_Resource graphics3d_empty_attrib_id = PPBGraphics3D()->
+  PP_Resource graphics3d_empty_attrib_id = PPBGraphics3DDev()->
       Create(pp_instance(), kInvalidResource, empty_attribs);
   EXPECT(graphics3d_empty_attrib_id != kInvalidResource);
   PPBCore()->ReleaseResource(graphics3d_empty_attrib_id);
-  PP_Resource graphics3d_null_attrib_id = PPBGraphics3D()->
+  PP_Resource graphics3d_null_attrib_id = PPBGraphics3DDev()->
       Create(pp_instance(), kInvalidResource, NULL);
   EXPECT(graphics3d_null_attrib_id != kInvalidResource);
   PPBCore()->ReleaseResource(graphics3d_null_attrib_id);
@@ -82,10 +82,10 @@ void TestIsGraphics3D() {
       PP_GRAPHICS3DATTRIB_WIDTH, kWidth,
       PP_GRAPHICS3DATTRIB_HEIGHT, kHeight,
       PP_GRAPHICS3DATTRIB_NONE};
-  PP_Resource graphics3d_id = PPBGraphics3D()->
+  PP_Resource graphics3d_id = PPBGraphics3DDev()->
       Create(pp_instance(), kInvalidResource, attribs);
   EXPECT(graphics3d_id != kInvalidResource);
-  EXPECT(PPBGraphics3D()->IsGraphics3D(graphics3d_id) == PP_TRUE);
+  EXPECT(PPBGraphics3DDev()->IsGraphics3D(graphics3d_id) == PP_TRUE);
   PPBCore()->ReleaseResource(graphics3d_id);
   TEST_PASSED;
 }
@@ -118,7 +118,7 @@ void TestSwapCallback(void* user_data, int32_t result) {
   if (info->frame_counter < info->frame_end) {
     PP_CompletionCallback cc =
         PP_MakeCompletionCallback(TestSwapCallback, info);
-    int32_t result = PPBGraphics3D()->SwapBuffers(info->graphics3d_id, cc);
+    int32_t result = PPBGraphics3DDev()->SwapBuffers(info->graphics3d_id, cc);
     CHECK(PP_OK_COMPLETIONPENDING == result);
   } else {
     PPBCore()->ReleaseResource(info->graphics3d_id);
@@ -135,7 +135,7 @@ void TestSwapBuffers() {
       PP_GRAPHICS3DATTRIB_WIDTH, kWidth,
       PP_GRAPHICS3DATTRIB_HEIGHT, kHeight,
       PP_GRAPHICS3DATTRIB_NONE};
-  PP_Resource graphics3d_id = PPBGraphics3D()->
+  PP_Resource graphics3d_id = PPBGraphics3DDev()->
       Create(pp_instance(), kInvalidResource, attribs);
   EXPECT(graphics3d_id != kInvalidResource);
   int32_t success = PPBInstance()->BindGraphics(pp_instance(), graphics3d_id);
@@ -149,86 +149,6 @@ void TestSwapBuffers() {
       TestSwapCallback, render_info);
   PPBCore()->CallOnMainThread(0, cc, PP_OK);
 }
-
-void TestResizeAndSwapCallback(void* user_data, int32_t result) {
-  EXPECT(result == PP_OK);
-  RenderInfo* info = static_cast<RenderInfo *>(user_data);
-  int32_t new_width = kWidth - info->frame_counter * 2;
-  int32_t new_height = kHeight - info->frame_counter * 2;
-  if (new_width < 0) new_width = 0;
-  if (new_height < 0) new_height = 0;
-  int32_t resize_result = PPBGraphics3D()->ResizeBuffers(info->graphics3d_id,
-      new_width, new_height);
-  EXPECT(resize_result == PP_OK);
-  // Set graphics3d_id to the main context, so we can use normal gl style calls
-  // instead of going through the PPAPI PPBOpenGLES2 interface.
-  glSetCurrentContextPPAPI(info->graphics3d_id);
-  // Note: still use original width & height in glViewport; visual inspection
-  // should show a clipped window that shrinks to new_width, new_height size.
-  glViewport(0, 0, new_width, new_height);
-  float green = float(info->frame_counter) / float(info->frame_end);
-  glClearColor(0.0f, green, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
-  info->frame_counter += info->frame_increment;
-  if (info->frame_counter < info->frame_end) {
-    PP_CompletionCallback cc =
-        PP_MakeCompletionCallback(TestResizeAndSwapCallback, info);
-    int32_t result = PPBGraphics3D()->SwapBuffers(info->graphics3d_id, cc);
-    CHECK(PP_OK_COMPLETIONPENDING == result);
-  } else {
-    PPBCore()->ReleaseResource(info->graphics3d_id);
-    delete info;
-    TEST_PASSED;
-  }
-  glSetCurrentContextPPAPI(0);
-}
-
-// Tests PPB_Graphics3D::ResizeBuffers().
-void TestResizeBuffers(int32_t* attribs) {
-  PP_Resource graphics3d_id = PPBGraphics3D()->
-      Create(pp_instance(), kInvalidResource, attribs);
-  EXPECT(graphics3d_id != kInvalidResource);
-  int32_t success = PPBInstance()->BindGraphics(pp_instance(), graphics3d_id);
-  EXPECT(success == PP_TRUE);
-  int32_t result;
-  // Attempt negative width & heights
-  result = PPBGraphics3D()->ResizeBuffers(graphics3d_id, -1000, 0);
-  EXPECT(result == PP_ERROR_BADARGUMENT);
-  result = PPBGraphics3D()->ResizeBuffers(graphics3d_id, 100, -1);
-  EXPECT(result == PP_ERROR_BADARGUMENT);
-  result = PPBGraphics3D()->ResizeBuffers(graphics3d_id, -1, -1);
-  EXPECT(result == PP_ERROR_BADARGUMENT);
-  RenderInfo* render_info = new RenderInfo;
-  render_info->graphics3d_id = graphics3d_id;
-  render_info->frame_counter = 0;
-  render_info->frame_end = 256;
-  render_info->frame_increment = 8;
-  PP_CompletionCallback cc = PP_MakeCompletionCallback(
-      TestResizeAndSwapCallback, render_info);
-  PPBCore()->CallOnMainThread(0, cc, PP_OK);
-}
-
-
-// Tests PPB_Graphics3D::ResizeBuffers() w/o depth buffer attached.
-void TestResizeBuffersWithoutDepthBuffer() {
-  int32_t attribs[] = {
-      PP_GRAPHICS3DATTRIB_WIDTH, kWidth,
-      PP_GRAPHICS3DATTRIB_HEIGHT, kHeight,
-      PP_GRAPHICS3DATTRIB_NONE};
-  TestResizeBuffers(attribs);
-}
-
-
-// Tests PPB_Graphics3D::ResizeBuffers() w/ depth buffer attached.
-void TestResizeBuffersWithDepthBuffer() {
-  int32_t attribs[] = {
-      PP_GRAPHICS3DATTRIB_WIDTH, kWidth,
-      PP_GRAPHICS3DATTRIB_HEIGHT, kHeight,
-      PP_GRAPHICS3DATTRIB_DEPTH_SIZE, 32,
-      PP_GRAPHICS3DATTRIB_NONE};
-  TestResizeBuffers(attribs);
-}
-
 
 // Tests glTerminatePPAPI.
 void Test_glTerminatePPAPI() {
@@ -246,10 +166,6 @@ void SetupTests() {
   RegisterTest("TestIsGraphics3D", TestIsGraphics3D);
   RegisterTest("Test_glInitializePPAPI", Test_glInitializePPAPI);
   RegisterTest("TestSwapBuffers", TestSwapBuffers);
-  RegisterTest("TestResizeBuffersWithoutDepthBuffer",
-      TestResizeBuffersWithoutDepthBuffer);
-  RegisterTest("TestResizeBuffersWithDepthBuffer",
-      TestResizeBuffersWithDepthBuffer);
   RegisterTest("Test_glTerminatePPAPI", Test_glTerminatePPAPI);
 }
 

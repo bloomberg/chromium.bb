@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/ppp_graphics_3d_proxy.h"
 
-#include "ppapi/c/ppp_graphics_3d.h"
+#include "ppapi/c/dev/ppp_graphics_3d_dev.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -16,11 +16,11 @@ namespace {
 
 void ContextLost(PP_Instance instance) {
   HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPGraphics3D_ContextLost(INTERFACE_ID_PPP_GRAPHICS_3D,
+      new PpapiMsg_PPPGraphics3D_ContextLost(INTERFACE_ID_PPP_GRAPHICS_3D_DEV,
                                              instance));
 }
 
-static const PPP_Graphics3D graphics_3d_interface = {
+static const PPP_Graphics3D_Dev graphics_3d_interface = {
   &ContextLost
 };
 
@@ -43,8 +43,8 @@ PPP_Graphics3D_Proxy::~PPP_Graphics3D_Proxy() {
 const InterfaceProxy::Info* PPP_Graphics3D_Proxy::GetInfo() {
   static const Info info = {
     &graphics_3d_interface,
-    PPP_GRAPHICS_3D_INTERFACE,
-    INTERFACE_ID_PPP_GRAPHICS_3D,
+    PPP_GRAPHICS_3D_DEV_INTERFACE,
+    INTERFACE_ID_PPP_GRAPHICS_3D_DEV,
     false,
     &CreateGraphics3DProxy,
   };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -29,8 +29,10 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -65,8 +67,10 @@ void TestGetDevInterfaces() {
   CHECK(GetBrowserInterface(PPB_FULLSCREEN_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(
       PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == NULL);
+  CHECK(GetBrowserInterface(PPB_GRAPHICS_3D_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_LAYER_COMPOSITOR_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE) == NULL);
+  CHECK(GetBrowserInterface(PPB_OPENGLES2_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_SCROLLBAR_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_SURFACE_3D_DEV_INTERFACE) == NULL);
   CHECK(GetBrowserInterface(PPB_TESTING_DEV_INTERFACE) == NULL);

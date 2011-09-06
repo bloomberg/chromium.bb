@@ -9,6 +9,8 @@
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -23,7 +25,6 @@
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_graphics_2d.h"
-#include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
@@ -33,7 +34,6 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/private/ppb_pdf.h"
-#include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 
 struct NaClSrpcRpc;
@@ -105,8 +105,8 @@ const PPB_Find_Dev* PPBFindInterface();
 const PPB_Font_Dev* PPBFontInterface();
 const PPB_Fullscreen_Dev* PPBFullscreenInterface();
 const PPB_Graphics2D* PPBGraphics2DInterface();
-const PPB_Graphics3D* PPBGraphics3DInterface();
-const PPB_Graphics3DTrusted* PPBGraphics3DTrustedInterface();
+const PPB_Graphics3D_Dev* PPBGraphics3DInterface();
+const PPB_Graphics3DTrusted_Dev* PPBGraphics3DTrustedInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_ImageDataTrusted* PPBImageDataTrustedInterface();
 const PPB_InputEvent* PPBInputEventInterface();

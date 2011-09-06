@@ -259,8 +259,8 @@ int32_t PluginGraphics3D::SwapBuffers(PP_Resource graphics3d_id,
 
 
 // static
-const PPB_Graphics3D* PluginGraphics3D::GetInterface() {
-  static const PPB_Graphics3D intf = {
+const PPB_Graphics3D_Dev* PluginGraphics3D::GetInterface() {
+  static const PPB_Graphics3D_Dev intf = {
     &GetAttribMaxValue,
     &Create,
     &IsGraphics3D,

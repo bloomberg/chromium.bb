@@ -9,7 +9,7 @@
 
 #include "base/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "ppapi/c/pp_graphics_3d.h"
+#include "ppapi/c/dev/pp_graphics_3d_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -72,8 +72,8 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                                          PP_Resource share_context,
                                          const int32_t* attrib_list);
 
-  const PPB_Graphics3D* ppb_graphics_3d_target() const {
-    return static_cast<const PPB_Graphics3D*>(target_interface());
+  const PPB_Graphics3D_Dev* ppb_graphics_3d_target() const {
+    return static_cast<const PPB_Graphics3D_Dev*>(target_interface());
   }
 
   // InterfaceProxy implementation.

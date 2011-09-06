@@ -12,14 +12,14 @@
 #include <vector>
 
 #include "ppapi/c/dev/ppb_console_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_opengles.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
+#include "ppapi/cpp/dev/graphics_3d_client_dev.h"
+#include "ppapi/cpp/dev/graphics_3d_dev.h"
 #include "ppapi/cpp/dev/surface_3d_dev.h"
 #include "ppapi/cpp/dev/video_decoder_client_dev.h"
 #include "ppapi/cpp/dev/video_decoder_dev.h"
-#include "ppapi/cpp/graphics_3d.h"
-#include "ppapi/cpp/graphics_3d_client.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
@@ -41,7 +41,7 @@
 namespace {
 
 class GLES2DemoInstance : public pp::Instance,
-                          public pp::Graphics3DClient,
+                          public pp::Graphics3DClient_Dev,
                           public pp::VideoDecoderClient_Dev {
  public:
   GLES2DemoInstance(PP_Instance instance, pp::Module* module);
@@ -51,7 +51,7 @@ class GLES2DemoInstance : public pp::Instance,
   virtual void DidChangeView(const pp::Rect& position,
                              const pp::Rect& clip_ignored);
 
-  // pp::Graphics3DClient implementation.
+  // pp::Graphics3DClient_Dev implementation.
   virtual void Graphics3DContextLost() {
     // TODO(vrk/fischman): Properly reset after a lost graphics context.  In
     // particular need to delete context_ & surface_ and re-create textures.
@@ -159,7 +159,7 @@ class GLES2DemoInstance : public pp::Instance,
   // Unowned pointers.
   const struct PPB_Console_Dev* console_if_;
   const struct PPB_Core* core_if_;
-  const struct PPB_OpenGLES2* gles2_if_;
+  const struct PPB_OpenGLES2_Dev* gles2_if_;
 
   // Owned data.
   pp::Context3D_Dev* context_;
@@ -193,7 +193,7 @@ GLES2DemoInstance::DecoderClient::~DecoderClient() {
 }
 
 GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
-    : pp::Instance(instance), pp::Graphics3DClient(this),
+    : pp::Instance(instance), pp::Graphics3DClient_Dev(this),
       pp::VideoDecoderClient_Dev(this),
       num_frames_rendered_(0),
       first_frame_delivered_ticks_(-1),
@@ -205,8 +205,8 @@ GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
       module->GetBrowserInterface(PPB_CONSOLE_DEV_INTERFACE))));
   assert((core_if_ = static_cast<const struct PPB_Core*>(
       module->GetBrowserInterface(PPB_CORE_INTERFACE))));
-  assert((gles2_if_ = static_cast<const struct PPB_OpenGLES2*>(
-      module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))));
+  assert((gles2_if_ = static_cast<const struct PPB_OpenGLES2_Dev*>(
+      module->GetBrowserInterface(PPB_OPENGLES2_DEV_INTERFACE))));
 }
 
 GLES2DemoInstance::~GLES2DemoInstance() {

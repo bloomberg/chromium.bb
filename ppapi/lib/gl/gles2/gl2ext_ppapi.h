@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb.h"
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +35,7 @@ GL_APICALL void GL_APIENTRY glSetCurrentContextPPAPI(PP_Resource context);
 GL_APICALL PP_Resource GL_APIENTRY glGetCurrentContextPPAPI();
 
 // Returns OpenGL ES 2.0 interface.
-GL_APICALL const struct PPB_OpenGLES2* GL_APIENTRY glGetInterfacePPAPI();
+GL_APICALL const struct PPB_OpenGLES2_Dev* GL_APIENTRY glGetInterfacePPAPI();
 
 #ifdef __cplusplus
 }

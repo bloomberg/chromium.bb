@@ -17,11 +17,11 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
+#include "ppapi/c/dev/ppp_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/function_group_base.h"
 #include "ppapi/shared_impl/instance_impl.h"
@@ -432,7 +432,7 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   const PPP_Printing_Dev* plugin_print_interface_;
 
   // The plugin 3D interface.
-  const PPP_Graphics3D* plugin_graphics_3d_interface_;
+  const PPP_Graphics3D_Dev* plugin_graphics_3d_interface_;
 
   // Contains the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;

@@ -6,7 +6,7 @@
 #define PPAPI_C_DEV_PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_H_
 
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 
 #define PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE_0_1 \
     "PPB_GLESChromiumTextureMapping(Dev);0.1"

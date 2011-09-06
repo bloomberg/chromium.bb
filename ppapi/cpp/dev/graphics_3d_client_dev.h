@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_GRAPHICS_3D_CLIENT_H_
-#define PPAPI_CPP_GRAPHICS_3D_CLIENT_H_
+#ifndef PPAPI_CPP_DEV_GRAPHICS_3D_CLIENT_DEV_H_
+#define PPAPI_CPP_DEV_GRAPHICS_3D_CLIENT_DEV_H_
 
 #include "ppapi/c/pp_stdint.h"
 
@@ -17,10 +17,10 @@ class Widget_Dev;
 // This class provides a C++ interface for callbacks related to 3D. You
 // would normally use multiple inheritance to derive from this class in your
 // instance.
-class Graphics3DClient {
+class Graphics3DClient_Dev {
  public:
-  Graphics3DClient(Instance* instance);
-  virtual ~Graphics3DClient();
+  Graphics3DClient_Dev(Instance* instance);
+  virtual ~Graphics3DClient_Dev();
 
   /**
    * Notification that the context was lost for the 3D devices.
@@ -33,4 +33,4 @@ class Graphics3DClient {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_GRAPHICS_3D_CLIENT_H_
+#endif  // PPAPI_CPP_DEV_GRAPHICS_3D_CLIENT_DEV_H_
