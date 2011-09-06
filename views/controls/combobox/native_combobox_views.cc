@@ -373,4 +373,15 @@ void NativeComboboxViews::ShowDropDownMenu() {
   SetMouseHandler(NULL);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// NativeComboboxWrapper, public:
+
+#if defined(USE_AURA)
+// static
+NativeComboboxWrapper* NativeComboboxWrapper::CreateWrapper(
+    Combobox* combobox) {
+  return new NativeComboboxViews(combobox);
+}
+#endif
+
 }  // namespace views
