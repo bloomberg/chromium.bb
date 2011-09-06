@@ -518,6 +518,7 @@ void ProfileIOData::ShutdownOnUIThread() {
   clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
+  if (url_blacklist_manager_.get())
     url_blacklist_manager_->ShutdownOnUIThread();
 #endif
   BrowserThread::PostTask(
