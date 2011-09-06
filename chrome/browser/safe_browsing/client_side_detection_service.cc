@@ -142,7 +142,7 @@ bool ClientSideDetectionService::IsPrivateIPAddress(
     const std::string& ip_address) const {
   net::IPAddressNumber ip_number;
   if (!net::ParseIPLiteralToNumber(ip_address, &ip_number)) {
-    DLOG(WARNING) << "Unable to parse IP address: " << ip_address;
+    VLOG(2) << "Unable to parse IP address: '" << ip_address << "'";
     // Err on the side of safety and assume this might be private.
     return true;
   }
@@ -161,14 +161,14 @@ bool ClientSideDetectionService::IsBadIpAddress(
     const std::string& ip_address) const {
   net::IPAddressNumber ip_number;
   if (!net::ParseIPLiteralToNumber(ip_address, &ip_number)) {
-    DLOG(WARNING) << "Unable to parse IP address: " << ip_address;
+    VLOG(2) << "Unable to parse IP address: '" << ip_address << "'";
     return false;
   }
   if (ip_number.size() == net::kIPv4AddressSize) {
     ip_number = net::ConvertIPv4NumberToIPv6Number(ip_number);
   }
   if (ip_number.size() != net::kIPv6AddressSize) {
-    DLOG(WARNING) << "Unable to convert IPv4 address to IPv6: " << ip_address;
+    VLOG(2) << "Unable to convert IPv4 address to IPv6: '" << ip_address << "'";
     return false;  // better safe than sorry.
   }
   for (BadSubnetMap::const_iterator it = bad_subnets_.begin();
