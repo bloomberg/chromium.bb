@@ -1027,7 +1027,6 @@ function showNotification(message, actionText, opt_f, opt_delay) {
   function closeNotification() {
     if (notification.classList.contains('promo'))
       chrome.send('closePromo');
-    }
     hideNotification();
   }
 
