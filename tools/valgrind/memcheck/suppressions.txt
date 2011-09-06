@@ -5438,22 +5438,6 @@
    fun:_Z16DispatchToMethodI11PluginPrefsMS0_FvSt6vectorIN6webkit13WebPluginInfoESaIS3_EES1_INS2_5npapi11PluginGroupESaIS7_EEES5_S9_EvPT_T0_RK6Tuple2IT1_T2_E
 }
 {
-   bug_95449
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN31ExtensionFileBrowserEventRouterC1EP7Profile
-   fun:_ZN16ExtensionService16InitEventRoutersEv
-   fun:_ZN16ExtensionService7ObserveEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN14ProfileManager16OnImportFinishedEP7Profile
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:_ZN12_GLOBAL__N_118ChromeMainDelegate10RunProcessERKSsRK18MainFunctionParams
-   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParamsPN7content19ContentMainDelegateE
-   fun:_ZN7content11ContentMainEiPPcPNS_19ContentMainDelegateE
-   fun:ChromeMain
-   fun:main
-}
-{
    bug_95502
    Memcheck:Leak
    fun:_Znw*
