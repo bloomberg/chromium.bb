@@ -5464,6 +5464,34 @@
    fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
 }
 
+{
+   bug_95512
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncChannelC1ERKNS_13ChannelHandleENS_7Channel4ModeEPNS4_8ListenerEPN4base16MessageLoopProxyEbPNS8_13WaitableEventE
+   fun:_ZN16ServiceIPCServer13CreateChannelEv
+   fun:_ZN16ServiceIPCServer4InitEv
+   fun:_ZN14ServiceProcess10InitializeEP16MessageLoopForUIRK11CommandLineP19ServiceProcessState
+   fun:_Z18ServiceProcessMainRK18MainFunctionParams
+   fun:_ZN12_GLOBAL__N_118ChromeMainDelegate10RunProcessERKSsRK18MainFunctionParams
+   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParamsPN7content19ContentMainDelegateE
+   fun:_ZN7content11ContentMainEiPPcPNS_19ContentMainDelegateE
+   fun:ChromeMain
+   fun:main
+}
+
+{
+   bug_95513
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14ServiceProcess10InitializeEP16MessageLoopForUIRK11CommandLineP19ServiceProcessState
+   fun:_Z18ServiceProcessMainRK18MainFunctionParams
+   fun:_ZN12_GLOBAL__N_118ChromeMainDelegate10RunProcessERKSsRK18MainFunctionParams
+   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParamsPN7content19ContentMainDelegateE
+   fun:_ZN7content11ContentMainEiPPcPNS_19ContentMainDelegateE
+   fun:ChromeMain
+   fun:main
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
