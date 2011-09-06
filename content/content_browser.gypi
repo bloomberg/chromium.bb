@@ -602,6 +602,17 @@
             ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
           ],
         }],
+        ['use_aura==1', {
+          'sources/': [
+            ['exclude', '^browser/accessibility/browser_accessibility_manager_win.cc'],
+            ['exclude', '^browser/accessibility/browser_accessibility_manager_win.h'],
+            ['exclude', '^browser/accessibility/browser_accessibility_win.cc'],
+            ['exclude', '^browser/accessibility/browser_accessibility_win.h'],
+            ['exclude', '^browser/renderer_host/render_widget_host_view_win.cc'],
+            ['exclude', '^browser/renderer_host/render_widget_host_view_win.h'],
+            ['exclude', '^browser/renderer_host/render_message_filter_win.cc'],
+          ],
+        }],
       ],
     },
   ],

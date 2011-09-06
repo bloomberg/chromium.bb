@@ -3037,10 +3037,11 @@ webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
 
   bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
   if (in_process_plugin) {
-#if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
+#if defined(OS_WIN) && !defined(USE_AURA)
     return webkit::npapi::WebPluginDelegateImpl::Create(
         file_path, mime_type, gfx::NativeViewFromId(host_window_));
 #else
+    // In-proc plugins aren't supported on non-Windows.
     NOTIMPLEMENTED();
     return NULL;
 #endif

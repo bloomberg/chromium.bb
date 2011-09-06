@@ -42,7 +42,10 @@ NativeWebKeyboardEventViews::NativeWebKeyboardEventViews(
   unmodifiedText[0] = event.GetUnmodifiedCharacter();
   setKeyIdentifierFromWindowsKeyCode();
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   // |os_event| is a MSG struct, so we can copy it directly.
   os_event = event.native_event();
 #elif defined(TOOLKIT_USES_GTK)

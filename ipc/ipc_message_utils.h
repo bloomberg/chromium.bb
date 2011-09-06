@@ -20,6 +20,10 @@
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_sync_message.h"
 
+#if defined(USE_AURA)
+#include "ui/gfx/native_widget_types.h"
+#endif
+
 #if defined(COMPILER_GCC)
 // GCC "helpfully" tries to inline template methods in release mode. Except we
 // want the majority of the template junk being expanded once in the
@@ -659,9 +663,13 @@ struct ParamTraits<HANDLE> {
   }
 };
 
+#if defined(USE_AURA)
+// TODO(beng): Figure out why this is needed, fix that issue and remove
+//             this. Brett and I were unable to figure out why, but he
+//             thought this should be harmless.
 template <>
-struct ParamTraits<HCURSOR> {
-  typedef HCURSOR param_type;
+struct ParamTraits<gfx::PluginWindowHandle> {
+  typedef gfx::PluginWindowHandle param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteUInt32(reinterpret_cast<uint32>(p));
   }
@@ -673,6 +681,7 @@ struct ParamTraits<HCURSOR> {
     l->append(StringPrintf("0x%X", p));
   }
 };
+#endif
 
 template <>
 struct ParamTraits<HACCEL> {
