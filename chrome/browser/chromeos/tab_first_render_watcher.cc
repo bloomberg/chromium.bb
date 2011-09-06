@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/tab_first_render_watcher.h"
 
 #include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/content_notification_types.h"
 #include "content/common/notification_details.h"
 #include "content/common/notification_source.h"
@@ -32,6 +33,7 @@ void TabFirstRenderWatcher::Observe(int type,
       registrar_.Add(this,
           content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
           Source<RenderWidgetHost>(rwh));
+      delegate_->OnRenderHostCreated(Details<RenderViewHost>(details).ptr());
       break;
     }
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:

@@ -144,6 +144,7 @@ cr.define('login', function() {
         chrome.send('completeLogin', [msg.email, msg.password] );
         this.loading = true;
       } else if (msg.method == 'loginUILoaded' && this.isAuthExtMessage_(e)) {
+        $('offline-message').update();
         this.loading = false;
         chrome.send('loginWebuiReady');
       }

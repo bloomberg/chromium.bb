@@ -289,6 +289,10 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
                     bool /* enable_phishing_detection */)
 
+// This message asks frame sniffer start.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_StartFrameSniffer,
+                    string16 /* frame-name */)
+
 // JavaScript related messages -----------------------------------------------
 
 // Notify the JavaScript engine in the render to change its parameters
@@ -532,6 +536,10 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)
 
+// This message indicates the error appeared in the frame.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FrameLoadingError,
+                    int /* error */)
+
 // The following messages are used to set and get cookies for ChromeFrame
 // processes.
 // Used to set a cookie. The cookie is set asynchronously, but will be
@@ -547,4 +555,3 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetCookies,
                            GURL /* url */,
                            GURL /* first_party_for_cookies */,
                            std::string /* cookies */)
-

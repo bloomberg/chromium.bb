@@ -13317,6 +13317,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
         Start a Guest session
       </message>
+      <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal.">
+        Connected to a network, but still can't sign in? You might be on a network that requires a web-based authentication. Start a guest browsing session (if available) and see if a network log-in page appears. Once you're logged in to the network and are able to visit different web pages, exit the guest session and try signing in again.
+      </message>
       <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE" desc="An error message shown when we suggest that user may be behind the captive portal but Guest mode is disabled.">
         Your password cannot be verified on this current network. Please select another network.
       </message>

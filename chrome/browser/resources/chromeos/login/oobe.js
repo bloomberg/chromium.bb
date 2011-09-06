@@ -225,7 +225,6 @@ cr.define('cr.ui', function() {
     prepareForLoginDisplay_ : function() {
       for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
         var screen = $(screenId);
-
         screen.classList.add('faded');
         screen.classList.remove('right');
         screen.classList.remove('left');

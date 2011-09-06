@@ -118,6 +118,7 @@ class ChromeRenderViewObserver : public RenderViewObserver,
   void OnSetAllowDisplayingInsecureContent(bool allow);
   void OnSetAllowRunningInsecureContent(bool allow);
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
+  void OnStartFrameSniffer(const string16& frame_name);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID. If the view's load ID is different than the parameter, this call is

@@ -15,10 +15,11 @@
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/about_handler.h"
-#include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
+#include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "chrome/renderer/external_host_bindings.h"
+#include "chrome/renderer/frame_sniffer.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate_helper.h"
@@ -238,6 +239,9 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
                         OnSetAllowRunningInsecureContent)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
+#if defined(OS_CHROMEOS)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_StartFrameSniffer, OnStartFrameSniffer)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -339,6 +343,10 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
           render_view(), NULL) :
       NULL;
 #endif
+}
+
+void ChromeRenderViewObserver::OnStartFrameSniffer(const string16& frame_name) {
+  new FrameSniffer(render_view(), frame_name);
 }
 
 bool ChromeRenderViewObserver::allowDatabase(

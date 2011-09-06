@@ -160,6 +160,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_TITLE));
   localized_strings->SetString("offlineMessageBody",
       l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_MESSAGE));
+  localized_strings->SetString("captivePortalMessage",
+        l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL));
   localized_strings->SetString("createAccount",
       l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_HTML));
   localized_strings->SetString("guestSignin",

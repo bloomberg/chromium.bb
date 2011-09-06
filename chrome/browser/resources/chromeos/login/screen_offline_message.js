@@ -49,15 +49,20 @@ cr.define('login', function() {
       var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1;
 
       if (isOffline && shouldOverlay) {
+        $('offline-message-text').hidden = false;
+        $('captive-portal-message-text').hidden = true;
+
         offlineMessage.classList.remove('hidden');
         offlineMessage.classList.remove('faded');
 
-        currentScreen.classList.add('faded');
-        currentScreen.addEventListener('webkitTransitionEnd',
-          function f(e) {
-            currentScreen.removeEventListener('webkitTransitionEnd', f);
-            currentScreen.classList.add('hidden');
-          });
+        if (!currentScreen.classList.contains('faded')) {
+          currentScreen.classList.add('faded');
+          currentScreen.addEventListener('webkitTransitionEnd',
+            function f(e) {
+              currentScreen.removeEventListener('webkitTransitionEnd', f);
+              currentScreen.classList.add('hidden');
+            });
+        }
       } else {
         if (!offlineMessage.classList.contains('faded')) {
           offlineMessage.classList.add('faded');
@@ -82,6 +87,38 @@ cr.define('login', function() {
      */
     handleNetworkStateChange_: function() {
       this.update();
+    }
+  };
+
+  /**
+   * Handler for iframe's error notification coming from the outside.
+   * For more info see C++ class 'SnifferObserver' which calls this method.
+   * @param {number} error Error code.
+   */
+  OfflineMessageScreen.onFrameError = function(error) {
+    var currentScreen = Oobe.getInstance().currentScreen;
+    var offlineMessage = $('offline-message');
+    var isOffline = !window.navigator.onLine;
+    var shouldOverlay = MANAGED_SCREENS.indexOf(currentScreen.id) != -1;
+
+    if (!shouldOverlay)
+      return;
+
+    if (!isOffline) {
+      $('offline-message-text').hidden = true;
+      $('captive-portal-message-text').hidden = false;
+    }
+
+    if (!currentScreen.classList.contains('faded')) {
+      offlineMessage.classList.remove('hidden');
+      offlineMessage.classList.remove('faded');
+
+      currentScreen.classList.add('faded');
+      currentScreen.addEventListener('webkitTransitionEnd',
+        function f(e) {
+          currentScreen.removeEventListener('webkitTransitionEnd', f);
+          currentScreen.classList.add('hidden');
+        });
     }
   };
 

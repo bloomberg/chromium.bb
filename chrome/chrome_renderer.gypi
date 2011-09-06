@@ -82,6 +82,8 @@
         'renderer/extensions/user_script_idle_scheduler.h',
         'renderer/extensions/user_script_slave.cc',
         'renderer/extensions/user_script_slave.h',
+        'renderer/frame_sniffer.cc',
+        'renderer/frame_sniffer.h',
         'renderer/loadtimes_extension_bindings.h',
         'renderer/loadtimes_extension_bindings.cc',
         'renderer/net/predictor_queue.cc',

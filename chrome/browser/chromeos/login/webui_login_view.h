@@ -91,6 +91,7 @@ class WebUILoginView : public views::View,
   virtual void OnLocaleChanged() OVERRIDE;
 
   // TabFirstRenderWatcher::Delegate implementation.
+  virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE;
   virtual void OnTabMainFrameLoaded() OVERRIDE;
   virtual void OnTabMainFrameFirstRender() OVERRIDE;
 

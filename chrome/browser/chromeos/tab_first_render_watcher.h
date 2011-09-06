@@ -10,6 +10,7 @@
 #include "content/common/notification_observer.h"
 #include "content/common/notification_registrar.h"
 
+class RenderViewHost;
 class TabContents;
 
 namespace chromeos {
@@ -20,6 +21,7 @@ class TabFirstRenderWatcher : public NotificationObserver {
  public:
   class Delegate {
    public:
+    virtual void OnRenderHostCreated(RenderViewHost* host) = 0;
     virtual void OnTabMainFrameLoaded() = 0;
     virtual void OnTabMainFrameFirstRender() = 0;
   };

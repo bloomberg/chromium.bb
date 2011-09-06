@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 
 #include "base/i18n/rtl.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/accessibility_util.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -15,6 +17,8 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/common/render_messages.h"
+#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -32,6 +36,39 @@ const char kViewClassName[] = "browser/chromeos/login/WebUILoginView";
 // These strings must be kept in sync with handleAccelerator() in oobe.js.
 const char kAccelNameAccessibility[] = "accessibility";
 const char kAccelNameEnrollment[] = "enrollment";
+
+// Observes IPC messages from the FrameSniffer and notifies JS if error
+// appears.
+class SnifferObserver : public RenderViewHostObserver {
+ public:
+  SnifferObserver(RenderViewHost* host, WebUI* webui)
+      : RenderViewHostObserver(host), webui_(webui) {
+    DCHECK(webui_);
+    Send(new ChromeViewMsg_StartFrameSniffer(routing_id(),
+                                             UTF8ToUTF16("gaia-frame")));
+  }
+
+  virtual ~SnifferObserver() {}
+
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(SnifferObserver, message)
+      IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FrameLoadingError, OnError)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+ private:
+  void OnError(int error) {
+    base::FundamentalValue error_value(error);
+    webui_->CallJavascriptFunction("login.OfflineMessageScreen.onFrameError",
+                                   error_value);
+  }
+
+  WebUI* webui_;
+};
 
 // A View class which places its first child at the right most position.
 class RightAlignedView : public views::View {
@@ -52,7 +89,6 @@ void RightAlignedView::Layout() {
 void RightAlignedView::ChildPreferredSizeChanged(View* child) {
   Layout();
 }
-
 
 }  // namespace
 
@@ -224,6 +260,10 @@ void WebUILoginView::OnLocaleChanged() {
   // Proxy settings dialog contains localized strings.
   proxy_settings_dialog_.reset();
   SchedulePaint();
+}
+
+void WebUILoginView::OnRenderHostCreated(RenderViewHost* host) {
+  new SnifferObserver(host, GetWebUI());
 }
 
 void WebUILoginView::OnTabMainFrameLoaded() {
