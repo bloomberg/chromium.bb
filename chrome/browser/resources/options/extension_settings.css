@@ -52,7 +52,7 @@ found in the LICENSE file.
 }
 
 /* Get rid of the light-blue background on list item hover. */
-.big-list:not([disabled]) > :hover {
+#extension-settings-list:not([disabled]) > :hover {
   background-color: white;
   border-color: #CDCDCD;
 }
