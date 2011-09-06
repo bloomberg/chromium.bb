@@ -104,8 +104,7 @@ class MockExtensionInstallUIDelegate : public ExtensionInstallUI::Delegate {
 // Test that we can load the two kinds of prompts correctly, that the outlets
 // are hooked up, and that the dialog calls cancel when cancel is pressed.
 TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
-  scoped_ptr<MockExtensionInstallUIDelegate> delegate(
-      new MockExtensionInstallUIDelegate);
+  MockExtensionInstallUIDelegate delegate;
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
   std::vector<string16> permissions;
@@ -117,7 +116,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
                  initWithParentWindow:test_window()
                               profile:helper_.profile()
                             extension:extension_.get()
-                            delegate:delegate.get()
+                            delegate:&delegate
                                 icon:&icon_
                               prompt:prompt]);
 
@@ -144,8 +143,6 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
   EXPECT_NSEQ([[controller warningsField] stringValue],
               base::SysUTF16ToNSString(prompt.GetPermission(0)));
 
-  EXPECT_TRUE([controller warningsBox] != nil);
-
   EXPECT_TRUE([controller cancelButton] != nil);
   EXPECT_NE(0u, [[[controller cancelButton] stringValue] length]);
   EXPECT_NE('^', [[[controller cancelButton] stringValue] characterAtIndex:0]);
@@ -156,14 +153,13 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
 
   // Test that cancel calls our delegate.
   [controller cancel:nil];
-  EXPECT_EQ(1, delegate->abort_count());
-  EXPECT_EQ(0, delegate->proceed_count());
+  EXPECT_EQ(1, delegate.abort_count());
+  EXPECT_EQ(0, delegate.proceed_count());
 }
 
 
 TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalOK) {
-  scoped_ptr<MockExtensionInstallUIDelegate> delegate(
-      new MockExtensionInstallUIDelegate);
+  MockExtensionInstallUIDelegate delegate;
 
   ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
   std::vector<string16> permissions;
@@ -175,24 +171,22 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalOK) {
                initWithParentWindow:test_window()
                             profile:helper_.profile()
                           extension:extension_.get()
-                           delegate:delegate.get()
+                           delegate:&delegate
                                icon:&icon_
                              prompt:prompt]);
 
   [controller window];  // force nib load
   [controller ok:nil];
 
-  EXPECT_EQ(0, delegate->abort_count());
-  EXPECT_EQ(1, delegate->proceed_count());
+  EXPECT_EQ(0, delegate.abort_count());
+  EXPECT_EQ(1, delegate.proceed_count());
 }
 
 // Test that controls get repositioned when there are two warnings vs one
 // warning.
 TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
-  scoped_ptr<MockExtensionInstallUIDelegate> delegate1(
-      new MockExtensionInstallUIDelegate);
-  scoped_ptr<MockExtensionInstallUIDelegate> delegate2(
-      new MockExtensionInstallUIDelegate);
+  MockExtensionInstallUIDelegate delegate1;
+  MockExtensionInstallUIDelegate delegate2;
 
   ExtensionInstallUI::Prompt one_warning_prompt(
       ExtensionInstallUI::INSTALL_PROMPT);
@@ -210,7 +204,7 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
                 initWithParentWindow:test_window()
                              profile:helper_.profile()
                            extension:extension_.get()
-                            delegate:delegate1.get()
+                            delegate:&delegate1
                                 icon:&icon_
                               prompt:one_warning_prompt]);
 
@@ -221,7 +215,7 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
                 initWithParentWindow:test_window()
                              profile:helper_.profile()
                            extension:extension_.get()
-                            delegate:delegate2.get()
+                            delegate:&delegate2
                                 icon:&icon_
                               prompt:two_warnings_prompt]);
 
@@ -236,12 +230,6 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   ASSERT_LT([[controller1 warningsField] frame].size.height,
             [[controller2 warningsField] frame].size.height);
 
-  ASSERT_LT([[controller1 warningsBox] frame].size.height,
-            [[controller2 warningsBox] frame].size.height);
-
-  ASSERT_EQ([[controller1 warningsBox] frame].origin.y,
-            [[controller2 warningsBox] frame].origin.y);
-
   ASSERT_LT([[controller1 subtitleField] frame].origin.y,
             [[controller2 subtitleField] frame].origin.y);
 
@@ -252,21 +240,18 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
 // Test that we can load the skinny prompt correctly, and that the outlets are
 // are hooked up.
 TEST_F(ExtensionInstallDialogControllerTest, BasicsSkinny) {
-  scoped_ptr<MockExtensionInstallUIDelegate> delegate(
-      new MockExtensionInstallUIDelegate);
+  MockExtensionInstallUIDelegate delegate;
 
   // No warnings should trigger skinny prompt.
   ExtensionInstallUI::Prompt no_warnings_prompt(
       ExtensionInstallUI::INSTALL_PROMPT);
-
-  std::vector<string16> warnings;
 
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
                initWithParentWindow:test_window()
                             profile:helper_.profile()
                           extension:extension_.get()
-                           delegate:delegate.get()
+                           delegate:&delegate
                                icon:&icon_
                              prompt:no_warnings_prompt]);
 
@@ -294,5 +279,63 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsSkinny) {
 
   EXPECT_TRUE([controller subtitleField] == nil);
   EXPECT_TRUE([controller warningsField] == nil);
-  EXPECT_TRUE([controller warningsBox] == nil);
+}
+
+
+// Test that we can load the inline prompt correctly, and that the outlets are
+// are hooked up.
+TEST_F(ExtensionInstallDialogControllerTest, BasicsInline) {
+  MockExtensionInstallUIDelegate delegate;
+
+  // No warnings should trigger skinny prompt.
+  ExtensionInstallUI::Prompt inline_prompt(
+      ExtensionInstallUI::INLINE_INSTALL_PROMPT);
+  inline_prompt.SetInlineInstallWebstoreData("1,000", 3.5, 200);
+
+  scoped_nsobject<ExtensionInstallDialogController>
+  controller([[ExtensionInstallDialogController alloc]
+               initWithParentWindow:test_window()
+                            profile:helper_.profile()
+                          extension:extension_.get()
+                           delegate:&delegate
+                               icon:&icon_
+                             prompt:inline_prompt]);
+
+  [controller window];  // force nib load
+
+  // Test the right nib loaded.
+  EXPECT_NSEQ(@"ExtensionInstallPromptInline", [controller windowNibName]);
+
+  // Check all the controls.
+  EXPECT_TRUE([controller iconView] != nil);
+  EXPECT_TRUE([[controller iconView] image] != nil);
+
+  EXPECT_TRUE([controller titleField] != nil);
+  EXPECT_NE(0u, [[[controller titleField] stringValue] length]);
+
+  EXPECT_TRUE([controller cancelButton] != nil);
+  EXPECT_NE(0u, [[[controller cancelButton] stringValue] length]);
+  EXPECT_NE('^', [[[controller cancelButton] stringValue] characterAtIndex:0]);
+
+  EXPECT_TRUE([controller okButton] != nil);
+  EXPECT_NE(0u, [[[controller okButton] stringValue] length]);
+  EXPECT_NE('^', [[[controller okButton] stringValue] characterAtIndex:0]);
+
+  EXPECT_TRUE([controller ratingStars] != nil);
+  EXPECT_EQ(5u, [[[controller ratingStars] subviews] count]);
+
+  EXPECT_TRUE([controller ratingCountField] != nil);
+  EXPECT_NE(0u, [[[controller ratingCountField] stringValue] length]);
+
+  EXPECT_TRUE([controller userCountField] != nil);
+  EXPECT_NE(0u, [[[controller userCountField] stringValue] length]);
+
+  // Though we have no permissions warnings, these should still be hooked up,
+  // just invisible.
+  EXPECT_TRUE([controller subtitleField] != nil);
+  EXPECT_TRUE([[controller subtitleField] isHidden]);
+  EXPECT_TRUE([controller warningsField] != nil);
+  EXPECT_TRUE([[controller warningsField] isHidden]);
+  EXPECT_TRUE([controller warningsSeparator] != nil);
+  EXPECT_TRUE([[controller warningsSeparator] isHidden]);
 }

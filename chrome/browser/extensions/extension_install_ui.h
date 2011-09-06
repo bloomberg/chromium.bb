@@ -65,9 +65,9 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
     // The star display logic replicates the one used by the webstore (from
     // components.ratingutils.setFractionalYellowStars). Callers pass in an
-    // "appender", which will be called back with the resource ID that they
-    // need to load/append.
-    typedef void*(*StarAppender)(int, void*);
+    // "appender", which will be repeatedly called back with the star images
+    // that they append to the star display area.
+    typedef void(*StarAppender)(const SkBitmap*, void*);
     void AppendRatingStars(StarAppender appender, void* data) const;
     string16 GetRatingCount() const;
     string16 GetUserCount() const;

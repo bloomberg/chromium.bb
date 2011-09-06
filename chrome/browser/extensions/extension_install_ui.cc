@@ -38,6 +38,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 static const int kTitleIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_TITLE,
@@ -149,16 +150,17 @@ void ExtensionInstallUI::Prompt::AppendRatingStars(
     rating_fractional = 0;
   }
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int i;
   for (i = 0; i < rating_integer; i++) {
-    appender(IDR_EXTENSIONS_RATING_STAR_ON, data);
+    appender(rb.GetBitmapNamed(IDR_EXTENSIONS_RATING_STAR_ON), data);
   }
   if (rating_fractional) {
-    appender(IDR_EXTENSIONS_RATING_STAR_HALF_LEFT, data);
+    appender(rb.GetBitmapNamed(IDR_EXTENSIONS_RATING_STAR_HALF_LEFT), data);
     i++;
   }
   for (; i < kMaxExtensionRating; i++) {
-    appender(IDR_EXTENSIONS_RATING_STAR_OFF, data);
+    appender(rb.GetBitmapNamed(IDR_EXTENSIONS_RATING_STAR_OFF), data);
   }
 }
 

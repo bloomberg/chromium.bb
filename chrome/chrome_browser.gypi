@@ -4194,6 +4194,7 @@
                   'app/nibs/DownloadShelf.xib',
                   'app/nibs/EditSearchEngine.xib',
                   'app/nibs/ExtensionInstallPrompt.xib',
+                  'app/nibs/ExtensionInstallPromptInline.xib',
                   'app/nibs/ExtensionInstallPromptNoWarnings.xib',
                   'app/nibs/ExtensionInstalledBubble.xib',
                   'app/nibs/FirstRunBubble.xib',

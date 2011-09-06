@@ -49,9 +49,8 @@ const int kHeadingFontSizeDelta = 1;
 
 const int kRatingFontSizeDelta = -1;
 
-void AddResourceIcon(int resource_id, views::View* parent) {
-  const SkBitmap* skia_image = ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(resource_id);
+void AddResourceIcon(const SkBitmap* skia_image, void* data) {
+  views::View* parent = static_cast<views::View*>(data);
   views::ImageView* image_view = new views::ImageView();
   image_view->SetImage(*skia_image);
   parent->AddChildView(image_view);
@@ -195,10 +194,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     rating->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, 0, 0, 0));
     layout->AddView(rating);
-    prompt.AppendRatingStars(
-        reinterpret_cast<ExtensionInstallUI::Prompt::StarAppender>(
-            AddResourceIcon),
-        rating);
+    prompt.AppendRatingStars(AddResourceIcon, rating);
 
     views::Label* rating_count = new views::Label(
         UTF16ToWide(prompt.GetRatingCount()));

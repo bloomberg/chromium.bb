@@ -32,15 +32,13 @@ const int kPermissionsPadding = 2;
 
 const double kRatingTextSize = 12.1;  // 12.1px = 9pt @ 96dpi
 
-// Loads an image and adds it as an icon control to the given container.
-GtkWidget* AddResourceIcon(int resource_id, GtkWidget* container) {
-  const SkBitmap* icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-    resource_id);
+// Adds a Skia image as an icon control to the given container.
+void AddResourceIcon(const SkBitmap* icon, void* data) {
+  GtkWidget* container = static_cast<GtkWidget*>(data);
   GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
   GtkWidget* icon_widget = gtk_image_new_from_pixbuf(icon_pixbuf);
   g_object_unref(icon_pixbuf);
   gtk_box_pack_start(GTK_BOX(container), icon_widget, FALSE, FALSE, 0);
-  return icon_widget;
 }
 
 // Displays the dialog when constructed, deletes itself when dialog is
@@ -129,10 +127,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     // Average rating (as stars) and number of ratings
     GtkWidget* stars_hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(heading_vbox), stars_hbox, FALSE, FALSE, 0);
-    prompt.AppendRatingStars(
-        reinterpret_cast<ExtensionInstallUI::Prompt::StarAppender>(
-            AddResourceIcon),
-        stars_hbox);
+    prompt.AppendRatingStars(AddResourceIcon, stars_hbox);
     GtkWidget* rating_label = gtk_label_new(UTF16ToUTF8(
         prompt.GetRatingCount()).c_str());
     gtk_util::ForceFontSizePixels(rating_label, kRatingTextSize);
