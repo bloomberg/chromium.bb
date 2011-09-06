@@ -5153,20 +5153,6 @@
    fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
 }
 {
-   bug_91771_a
-   Memcheck:Value4
-   ...
-   fun:_ZN12sync_ui_util25ConstructAboutInformationEP18ProfileSyncServicePN4base15DictionaryValueE
-   fun:_ZN71SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test8TestBodyEv
-}
-{
-   bug_91771_b
-   Memcheck:Cond
-   ...
-   fun:_ZN12sync_ui_util25ConstructAboutInformationEP18ProfileSyncServicePN4base15DictionaryValueE
-   fun:_ZN71SyncUIUtilTest_ConstructAboutInformationWithUnrecoverableErrorTest_Test8TestBodyEv
-}
-{
    bug_92123
    Memcheck:Leak
    fun:_Znw*
