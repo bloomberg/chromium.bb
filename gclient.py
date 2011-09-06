@@ -1271,7 +1271,7 @@ def GenUsage(parser, command):
 def Parser():
   """Returns the default parser."""
   parser = optparse.OptionParser(version='%prog ' + __version__)
-  parser.add_option('-j', '--jobs', default=1, type='int',
+  parser.add_option('-j', '--jobs', default=4, type='int',
                     help='Specify how many SCM commands can run in parallel; '
                           'default=%default')
   parser.add_option('-v', '--verbose', action='count', default=0,
