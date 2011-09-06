@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/renderer/extensions/bindings_utils.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -22,12 +23,6 @@ using WebKit::WebFrame;
 using WebKit::WebView;
 
 namespace {
-
-const char* kChromeHidden = "chromeHidden";
-
-#ifndef NDEBUG
-const char* kValidateCallbacks = "validateCallbacks";
-#endif
 
 typedef std::map<int, std::string> StringMap;
 static base::LazyInstance<StringMap> g_string_map(base::LINKER_INITIALIZED);
@@ -108,29 +103,7 @@ v8::Handle<v8::FunctionTemplate>
 
 v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
     const v8::Arguments& args) {
-  return GetChromeHidden(v8::Context::GetCurrent());
-}
-
-v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
-    const v8::Handle<v8::Context>& context) {
-  v8::Local<v8::Object> global = context->Global();
-  v8::Local<v8::Value> hidden = global->GetHiddenValue(
-      v8::String::New(kChromeHidden));
-
-  if (hidden.IsEmpty() || hidden->IsUndefined()) {
-    hidden = v8::Object::New();
-    global->SetHiddenValue(v8::String::New(kChromeHidden), hidden);
-
-#ifndef NDEBUG
-    // Tell extension_process_bindings.js to validate callbacks and events
-    // against their schema definitions in api/extension_api.json.
-    v8::Local<v8::Object>::Cast(hidden)
-        ->Set(v8::String::New(kValidateCallbacks), v8::True());
-#endif
-  }
-
-  DCHECK(hidden->IsObject());
-  return v8::Local<v8::Object>::Cast(hidden);
+  return bindings_utils::GetChromeHiddenForContext(v8::Context::GetCurrent());
 }
 
 v8::Handle<v8::Value> ExtensionBase::Print(const v8::Arguments& args) {

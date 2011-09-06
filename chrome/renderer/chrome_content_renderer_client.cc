@@ -33,7 +33,8 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
-#include "chrome/renderer/extensions/extension_bindings_context.h"
+#include "chrome/renderer/extensions/bindings_utils.h"
+#include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
@@ -574,7 +575,7 @@ bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   // Extensions and apps always allowed to create unrequested popups. The second
   // check is necessary to include content scripts.
   return extension_dispatcher_->extensions()->GetByURL(creator) ||
-      ExtensionBindingsContext::GetCurrent();
+      bindings_utils::GetInfoForCurrentContext();
 }
 
 bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
@@ -642,24 +643,22 @@ void ChromeContentRendererClient::DidCreateScriptContext(WebFrame* frame) {
   if (frame->mainWorldScriptContext().IsEmpty())
     return;
 
-  ExtensionBindingsContext::HandleV8ContextCreated(
-      frame,
-      frame->mainWorldScriptContext(),
-      extension_dispatcher_.get(),
-      0);  // isolated world id
+  EventBindings::HandleContextCreated(frame,
+                                      frame->mainWorldScriptContext(),
+                                      extension_dispatcher_.get(),
+                                      0);  // isolated world ID
 }
 
 void ChromeContentRendererClient::DidDestroyScriptContext(WebFrame* frame) {
-  ExtensionBindingsContext::HandleV8ContextDestroyed(frame);
+  EventBindings::HandleContextDestroyed(frame);
 }
 
 void ChromeContentRendererClient::DidCreateIsolatedScriptContext(
     WebFrame* frame, int world_id, v8::Handle<v8::Context> context) {
-  ExtensionBindingsContext::HandleV8ContextCreated(
-      frame,
-      context,
-      extension_dispatcher_.get(),
-      world_id);
+  EventBindings::HandleContextCreated(frame,
+                                      context,
+                                      extension_dispatcher_.get(),
+                                      world_id);
 }
 
 unsigned long long ChromeContentRendererClient::VisitedLinkHash(
