@@ -31,7 +31,6 @@ BrowserEncodingTest.TestEncodingAutoDetect
 DOMStorageTest.LocalStorageLayoutTests
 # See http://crbug.com/30367.
 NewTabUITest.NTPHasThumbnails
-NewTabUITest.UpdateUserPrefsVersion
 # http://crbug.com/69040
 ErrorPageTest.Page404
 

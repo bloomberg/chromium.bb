@@ -31,4 +31,3 @@ OptionsUITest.CommandOpensOptionsTab
 # Tests timing out, see http://crbug.com/92717
 NewTabUIProcessPerTabTest.NavBeforeNTPCommits
 NewTabUITest.ChromeHangInNTP
-NewTabUITest.UpdateUserPrefsVersion

@@ -59,6 +59,8 @@ DefaultPluginUITest.DefaultPluginLoadTest
 ErrorPageTest.DNSError_Basic
 # See http://crbug.com/59659
 NewTabUITest.NTPHasLoginName
+# See http://crbug.com/30367
+NewTabUITest.UpdateUserPrefsVersion
 
 # Mac: See http://crbug.com/30661, Linux/CrOS: http://crbug.com/49576.
 LayoutPluginTester.NPObjectReleasedOnDestruction
