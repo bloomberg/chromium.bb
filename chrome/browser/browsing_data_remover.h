@@ -164,8 +164,12 @@ class BrowsingDataRemover : public NotificationObserver,
 
   // Called to check whether all temporary and persistent origin data that
   // should be deleted has been deleted. If everything's good to go, invokes
-  // NotifyAndDeleteIfDone on the UI thread.
+  // OnQuotaManagedDataDeleted on the UI thread.
   void CheckQuotaManagedDataDeletionStatus();
+
+  // Completion handler that runs on the UI thread once persistent data has been
+  // deleted. Updates the waiting flag and invokes NotifyAndDeleteIfDone.
+  void OnQuotaManagedDataDeleted();
 
   // Callback when Cookies has been deleted. Invokes NotifyAndDeleteIfDone.
   void OnClearedCookies(int num_deleted);
@@ -225,6 +229,7 @@ class BrowsingDataRemover : public NotificationObserver,
   base::WaitableEventWatcher watcher_;
 
   // True if we're waiting for various data to be deleted.
+  // These may only be accessed from UI thread in order to avoid races!
   bool waiting_for_clear_history_;
   bool waiting_for_clear_quota_managed_data_;
   bool waiting_for_clear_networking_history_;

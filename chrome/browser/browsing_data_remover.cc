@@ -459,7 +459,6 @@ void BrowsingDataRemover::DoClearCache(int rv) {
 
 void BrowsingDataRemover::ClearQuotaManagedDataOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(waiting_for_clear_quota_managed_data_);
 
   // Ask the QuotaManager for all origins with temporary quota modified within
   // the user-specified timeframe, and deal with the resulting set in
@@ -503,9 +502,7 @@ void BrowsingDataRemover::OnGotQuotaManagedOrigins(
   }
 
   --quota_managed_storage_types_to_delete_count_;
-  if (quota_managed_storage_types_to_delete_count_ == 0 &&
-      quota_managed_origins_to_delete_count_ == 0)
-    CheckQuotaManagedDataDeletionStatus();
+  CheckQuotaManagedDataDeletionStatus();
 }
 
 void BrowsingDataRemover::OnQuotaManagedOriginDeletion(
@@ -518,22 +515,26 @@ void BrowsingDataRemover::OnQuotaManagedOriginDeletion(
   }
 
   --quota_managed_origins_to_delete_count_;
-  if (quota_managed_storage_types_to_delete_count_ == 0 &&
-      quota_managed_origins_to_delete_count_ == 0)
-    CheckQuotaManagedDataDeletionStatus();
+  CheckQuotaManagedDataDeletionStatus();
 }
 
 void BrowsingDataRemover::CheckQuotaManagedDataDeletionStatus() {
-  DCHECK_EQ(quota_managed_origins_to_delete_count_, 0);
-  DCHECK_EQ(quota_managed_storage_types_to_delete_count_, 0);
-  DCHECK(waiting_for_clear_quota_managed_data_);
+  if (quota_managed_storage_types_to_delete_count_ != 0 ||
+      quota_managed_origins_to_delete_count_ != 0) {
+    return;
+  }
 
-  waiting_for_clear_quota_managed_data_ = false;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this,
-          &BrowsingDataRemover::NotifyAndDeleteIfDone));
+          &BrowsingDataRemover::OnQuotaManagedDataDeleted));
+}
+
+void BrowsingDataRemover::OnQuotaManagedDataDeleted() {
+  DCHECK(waiting_for_clear_quota_managed_data_);
+  waiting_for_clear_quota_managed_data_ = false;
+  NotifyAndDeleteIfDone();
 }
 
 void BrowsingDataRemover::OnWaitableEventSignaled(
