@@ -101,8 +101,7 @@ void HeartbeatSender::DoSendStanza() {
   DCHECK_EQ(state_, STARTED);
 
   VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
-  request_->SendIq(IqRequest::MakeIqStanza(
-      buzz::STR_SET, kChromotingBotJid, CreateHeartbeatMessage()));
+  request_->SendIq(buzz::STR_SET, kChromotingBotJid, CreateHeartbeatMessage());
 }
 
 void HeartbeatSender::ProcessResponse(const XmlElement* response) {

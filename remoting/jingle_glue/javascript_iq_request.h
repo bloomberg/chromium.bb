@@ -55,7 +55,8 @@ class JavascriptIqRequest : public IqRequest {
   virtual ~JavascriptIqRequest();
 
   // IqRequest interface.
-  virtual void SendIq(buzz::XmlElement* iq_body) OVERRIDE;
+  virtual void SendIq(const std::string& type, const std::string& addressee,
+                      buzz::XmlElement* iq_body) OVERRIDE;
   virtual void set_callback(const ReplyCallback& callback) OVERRIDE;
 
  private:

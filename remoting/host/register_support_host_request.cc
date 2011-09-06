@@ -63,8 +63,8 @@ void RegisterSupportHostRequest::OnSignallingConnected(
   request_->set_callback(base::Bind(
       &RegisterSupportHostRequest::ProcessResponse, base::Unretained(this)));
 
-  request_->SendIq(IqRequest::MakeIqStanza(
-      buzz::STR_SET, kChromotingBotJid, CreateRegistrationRequest(jid)));
+  request_->SendIq(buzz::STR_SET, kChromotingBotJid,
+                   CreateRegistrationRequest(jid));
 }
 
 void RegisterSupportHostRequest::OnSignallingDisconnected() {
