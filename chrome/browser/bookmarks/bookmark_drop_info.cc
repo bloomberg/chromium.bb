@@ -30,7 +30,7 @@ void BookmarkDropInfo::Update(const views::DropTargetEvent& event) {
   is_control_down_ = event.IsControlDown();
   last_y_ = event.y();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   RECT client_rect;
   GetClientRect(wnd_, &client_rect);
   bool scroll_down = (last_y_ >= client_rect.bottom - views::kAutoscrollSize);
@@ -53,7 +53,7 @@ void BookmarkDropInfo::Update(const views::DropTargetEvent& event) {
 }
 
 void BookmarkDropInfo::Scroll() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   SendMessage(wnd_, WM_VSCROLL, scroll_up_ ? SB_LINEUP : SB_LINEDOWN, NULL);
   Scrolled();
 #else

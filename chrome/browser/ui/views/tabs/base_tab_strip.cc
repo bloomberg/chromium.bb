@@ -89,7 +89,7 @@ class BaseTabStrip::RemoveTabDelegate
       return;
     }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     views::Widget* widget = tabstrip_->GetWidget();
     // This can be null during shutdown. See http://crbug.com/42737.
     if (!widget)

@@ -17,7 +17,7 @@
 #include "ui/base/theme_provider.h"
 #include "views/widget/native_widget.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #endif
 
@@ -106,14 +106,14 @@ views::internal::RootView* BrowserFrame::CreateRootView() {
 }
 
 views::NonClientFrameView* BrowserFrame::CreateNonClientFrameView() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   if (ShouldUseNativeFrame()) {
     browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);
   } else {
 #endif
     browser_frame_view_ =
         browser::CreateBrowserNonClientFrameView(this, browser_view_);
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   }
 #endif
   return browser_frame_view_;

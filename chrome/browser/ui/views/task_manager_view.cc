@@ -611,6 +611,7 @@ bool TaskManagerView::CanMaximize() const {
 }
 
 bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
+#if defined(OS_WIN) && !defined(USE_AURA)
   if (command_id == IDC_ALWAYS_ON_TOP) {
     is_always_on_top_ = !is_always_on_top_;
 
@@ -639,6 +640,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
     }
     return true;
   }
+#endif
   return false;
 }
 
@@ -735,6 +737,7 @@ void TaskManagerView::ActivateFocusedTab() {
 }
 
 void TaskManagerView::AddAlwaysOnTopSystemMenuItem() {
+#if defined(OS_WIN) && !defined(USE_AURA)
   // The Win32 API requires that we own the text.
   always_on_top_menu_text_ =
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ALWAYS_ON_TOP));
@@ -764,6 +767,7 @@ void TaskManagerView::AddAlwaysOnTopSystemMenuItem() {
   menu_info.wID = IDC_ALWAYS_ON_TOP;
   menu_info.dwTypeData = const_cast<wchar_t*>(always_on_top_menu_text_.c_str());
   ::InsertMenuItem(system_menu, index, TRUE, &menu_info);
+#endif
 }
 
 bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {

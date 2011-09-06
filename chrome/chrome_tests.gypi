@@ -743,6 +743,11 @@
             '../views/views.gyp:views',
           ],
         }],
+        ['use_aura==1', {
+          'sources!': [
+            'test/automation/automation_proxy_uitest.cc',
+          ],
+        }],          
         ['OS=="mac"', {
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).

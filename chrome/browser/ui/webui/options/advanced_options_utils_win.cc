@@ -62,6 +62,10 @@ void AdvancedOptionsUtilities::ShowManageSSLCertificates(
   CRYPTUI_CERT_MGR_STRUCT cert_mgr = { 0 };
   cert_mgr.dwSize = sizeof(CRYPTUI_CERT_MGR_STRUCT);
   cert_mgr.hwndParent =
-  tab_contents->view()->GetTopLevelNativeWindow();
+#if defined(USE_AURA)
+      NULL;
+#else
+      tab_contents->view()->GetTopLevelNativeWindow();
+#endif
   ::CryptUIDlgCertMgr(&cert_mgr);
 }

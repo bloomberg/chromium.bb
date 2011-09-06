@@ -11,7 +11,9 @@
 #include "views/accelerator.h"
 #include "views/view.h"
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+#include "views/widget/native_widget_aura.h"
+#elif defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
@@ -27,7 +29,7 @@
 // additional margins.
 
 class BorderContents;
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 class BorderWidgetWin;
 #endif
 class Bubble;
@@ -70,7 +72,9 @@ class BubbleDelegate {
 // WidgetFoo subclass into a separate class that calls into Bubble.
 // That way Bubble has no (or very few) ifdefs.
 class Bubble
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+    : public views::NativeWidgetAura,
+#elif defined(OS_WIN)
     : public views::NativeWidgetWin,
 #elif defined(TOOLKIT_USES_GTK)
     : public views::NativeWidgetGtk,
@@ -125,7 +129,7 @@ class Bubble
     fade_away_on_close_ = fade_away_on_close;
   }
 
-  // Overridden from NativeWidgetWin:
+  // Overridden from NativeWidget:
   virtual void Close();
 
   // Overridden from ui::AnimationDelegate:
@@ -157,7 +161,10 @@ class Bubble
   // Subclasses can return their own BorderContents implementation.
   virtual BorderContents* CreateBorderContents();
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // Overridden from NativeWidgetAura:
+  // TODO(beng): OnActivate();
+#elif defined(OS_WIN)
   // Overridden from NativeWidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
 #elif defined(TOOLKIT_USES_GTK)
@@ -165,7 +172,9 @@ class Bubble
   virtual void OnActiveChanged() OVERRIDE;
 #endif
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+#elif defined(OS_WIN)
   // The window used to render the padding, border and arrow.
   BorderWidgetWin* border_;
 #elif defined(TOOLKIT_USES_GTK)

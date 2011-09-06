@@ -51,12 +51,15 @@ string16 PluginInstallerInfoBarDelegate::GetButtonLabel(
 
 bool PluginInstallerInfoBarDelegate::Accept() {
   // TODO(PORT) for other platforms.
-#ifdef OS_WIN
+#if defined(OS_WIN) && !defined(USE_AURA)
   ::PostMessage(window_,
                 webkit::npapi::default_plugin::kInstallMissingPluginMessage,
                 0,
                 0);
-#endif  // OS_WIN
+#elif defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+#endif
   return true;
 }
 

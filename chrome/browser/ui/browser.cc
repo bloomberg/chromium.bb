@@ -490,7 +490,7 @@ void Browser::InitBrowserWindow() {
 
   window_ = CreateBrowserWindow();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   {
     // TODO: This might hit the disk
     //   http://code.google.com/p/chromium/issues/detail?id=61638

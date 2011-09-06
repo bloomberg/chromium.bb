@@ -367,7 +367,10 @@ void BookmarkBubbleView::ShowEditor() {
       profile_->GetBookmarkModel()->GetMostRecentlyAddedNodeForURL(url_);
 
 #if !defined(WEBUI_DIALOGS)
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  NOTIMPLEMENTED();
+  gfx::NativeView parent = NULL;
+#elif defined(OS_WIN)
   // Parent the editor to our root ancestor (not the root we're in, as that
   // is the info bubble and will close shortly).
   HWND parent = GetAncestor(GetWidget()->GetNativeView(), GA_ROOTOWNER);

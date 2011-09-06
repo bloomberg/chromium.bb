@@ -10,7 +10,9 @@
 #include "ui/gfx/canvas_skia.h"
 #include "views/widget/widget.h"
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+#include "views/widget/native_widget_aura.h"
+#elif defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
@@ -47,7 +49,7 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
   params.bounds = gfx::Rect(PreferredContainerSize());
   container_->Init(params);
   container_->SetContentsView(this);
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   static_cast<views::NativeWidgetWin*>(container_->native_widget())->
       set_can_update_layered_window(false);
 
@@ -80,7 +82,7 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
   }
   int y = screen_point.y() - ScaleValue(mouse_tab_offset_.y());
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // TODO(beng): make this cross-platform
   int show_flags = container_->IsVisible() ? SWP_NOZORDER : SWP_SHOWWINDOW;
   SetWindowPos(container_->GetNativeView(), HWND_TOP, x, y, 0, 0,

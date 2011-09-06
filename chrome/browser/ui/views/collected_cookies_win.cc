@@ -492,6 +492,10 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
                                       setting);
   infobar_->UpdateVisibility(true, setting, origin_node->GetTitle());
   gfx::Rect bounds = GetWidget()->GetClientAreaScreenBounds();
+#if defined(USE_AURA)
+  // TODO(beng): convert the conversion to use views conversion methods.
+  NOTIMPLEMENTED();
+#else
   // NativeWidgetWin::GetBounds returns the bounds relative to the parent
   // window, while NativeWidgetWin::SetBounds wants screen coordinates. Do the
   // translation here until http://crbug.com/52851 is fixed.
@@ -500,6 +504,7 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
   gfx::Size size = GetWidget()->GetRootView()->GetPreferredSize();
   bounds.SetRect(topleft.x, topleft.y, size.width(), size.height());
   GetWidget()->SetBounds(bounds);
+#endif
   status_changed_ = true;
 }
 

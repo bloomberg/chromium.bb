@@ -749,7 +749,7 @@ bool TabProxy::CaptureEntirePageAsPNG(const FilePath& path) {
                                           tab_index, path, &error_msg);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 void TabProxy::Reposition(HWND window, HWND window_insert_after, int left,
                           int top, int width, int height, int flags,
                           HWND parent_window) {

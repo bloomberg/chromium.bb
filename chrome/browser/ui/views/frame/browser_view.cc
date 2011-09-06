@@ -105,7 +105,8 @@
 #include "views/widget/widget.h"
 #include "views/window/dialog_delegate.h"
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+#elif defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/base/message_box_win.h"
@@ -330,7 +331,7 @@ BrowserView::BrowserView(Browser* browser)
       contents_split_(NULL),
       initialized_(false),
       ignore_layout_(true)
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
       , hung_window_detector_(&hung_plugin_action_),
       ticker_(0)
 #endif
@@ -345,7 +346,7 @@ BrowserView::BrowserView(Browser* browser)
 BrowserView::~BrowserView() {
   browser_->tabstrip_model()->RemoveObserver(this);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Remove this observer.
   if (aeropeek_manager_.get())
     browser_->tabstrip_model()->RemoveObserver(aeropeek_manager_.get());
@@ -386,7 +387,10 @@ BrowserView::~BrowserView() {
 // static
 BrowserView* BrowserView::GetBrowserViewForNativeWindow(
     gfx::NativeWindow window) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   if (IsWindow(window)) {
     return reinterpret_cast<BrowserView*>(
         ui::ViewProp::GetValue(window, kBrowserViewKey));
@@ -574,7 +578,7 @@ SkBitmap BrowserView::GetOTRAvatarIcon() {
   return *otr_avatar_;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 void BrowserView::PrepareToRunSystemMenu(HMENU menu) {
   system_menu_->UpdateStates();
 }
@@ -655,7 +659,7 @@ bool BrowserView::IsActive() const {
 }
 
 void BrowserView::FlashFrame() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   FLASHWINFO fwi;
   fwi.cbSize = sizeof(fwi);
   fwi.hwnd = frame_->GetNativeWindow();
@@ -797,7 +801,7 @@ void BrowserView::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)
     return;  // Nothing to do.
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   ProcessFullscreen(fullscreen);
 #else
   // On Linux changing fullscreen is async. Ask the window to change it's
@@ -1014,7 +1018,7 @@ bool BrowserView::IsToolbarVisible() const {
 }
 
 void BrowserView::DisableInactiveFrame() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   frame_->DisableInactiveRendering();
 #endif  // No tricks are needed to get the right behavior on Linux.
 }
@@ -1023,7 +1027,7 @@ void BrowserView::ConfirmSetDefaultSearchProvider(
     TabContents* tab_contents,
     TemplateURL* template_url,
     TemplateURLService* template_url_service) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   DefaultSearchView::Show(tab_contents, template_url, template_url_service);
 #else
   // TODO(levin): Implement for other platforms. Right now this is behind
@@ -1209,7 +1213,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   if (event.type != WebKit::WebInputEvent::RawKeyDown)
     return false;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // As Alt+F4 is the close-app keyboard shortcut, it needs processing
   // immediately.
   if (event.windowsKeyCode == ui::VKEY_F4 &&
@@ -1347,7 +1351,7 @@ void BrowserView::ShowInstant(TabContentsWrapper* preview) {
   contents_->SetPreview(preview_container_, preview->tab_contents());
   preview_container_->ChangeTabContents(preview->tab_contents());
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Removing the fade is instant (on windows). We need to force the preview to
   // draw, otherwise the current page flickers before the new page appears.
   RedrawWindow(preview->tab_contents()->view()->GetContentNativeView(), NULL,
@@ -1614,7 +1618,7 @@ bool BrowserView::ShouldShowWindowIcon() const {
 
 bool BrowserView::ExecuteWindowsCommand(int command_id) {
   // This function handles WM_SYSCOMMAND, WM_APPCOMMAND, and WM_COMMAND.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   if (command_id == IDC_DEBUG_FRAME_TOGGLE)
     GetWidget()->DebugToggleFrameType();
 #endif
@@ -1776,7 +1780,7 @@ bool BrowserView::CanClose() {
 }
 
 int BrowserView::NonClientHitTest(const gfx::Point& point) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // The following code is not in the LayoutManager because it's
   // independent of layout and also depends on the ResizeCorner which
   // is private.
@@ -1839,7 +1843,7 @@ void BrowserView::Layout() {
   // The status bubble position requires that all other layout finish first.
   LayoutStatusBubble();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Send the margins of the "user-perceived content area" of this
   // browser window so AeroPeekManager can render a background-tab image in
   // the area.
@@ -2006,7 +2010,7 @@ void BrowserView::Init() {
 
   status_bubble_.reset(new StatusBubbleViews(contents_));
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   InitSystemMenu();
 
   // Create a custom JumpList and add it to an observer of TabRestoreService
@@ -2079,7 +2083,7 @@ void BrowserView::LoadingAnimationCallback() {
 
 // BrowserView, private --------------------------------------------------------
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 void BrowserView::InitSystemMenu() {
   system_menu_contents_.reset(new views::SystemMenuModel(this));
   // We add the menu items in reverse order so that insertion_index never needs
@@ -2317,7 +2321,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   //     thus are slow and look ugly
   ignore_layout_ = true;
   LocationBarView* location_bar = GetLocationBarView();
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   OmniboxViewWin* omnibox_view =
       static_cast<OmniboxViewWin*>(location_bar->location_entry());
 #endif
@@ -2332,7 +2336,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
     if (focus_manager->GetFocusedView() == location_bar)
       focus_manager->ClearFocus();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     // If we don't hide the edit and force it to not show until we come out of
     // fullscreen, then if the user was on the New Tab Page, the edit contents
     // will appear atop the web contents once we go into fullscreen mode.  This
@@ -2342,13 +2346,13 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
     ShowWindow(omnibox_view->m_hWnd, SW_HIDE);
 #endif
   }
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   static_cast<views::NativeWidgetWin*>(frame_->native_widget())->
       PushForceHidden();
 #endif
 
   // Toggle fullscreen mode.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   frame_->SetFullscreen(fullscreen);
 #endif  // No need to invoke SetFullscreen for linux as this code is executed
         // once we're already fullscreen on linux.
@@ -2363,7 +2367,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
                                                              browser_.get()));
     }
   } else {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     // Show the edit again since we're no longer in fullscreen mode.
     omnibox_view->set_force_hidden(false);
     ShowWindow(omnibox_view->m_hWnd, SW_SHOW);
@@ -2374,7 +2378,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   // it's in its final position.
   ignore_layout_ = false;
   Layout();
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   static_cast<views::NativeWidgetWin*>(frame_->native_widget())->
       PopForceHidden();
 #endif
@@ -2382,7 +2386,10 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 
 
 void BrowserView::LoadAccelerators() {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   HACCEL accelerator_table = AtlLoadAccelerators(IDR_MAINFRAME);
   DCHECK(accelerator_table);
 
@@ -2432,7 +2439,7 @@ void BrowserView::LoadAccelerators() {
 #endif
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 void BrowserView::BuildSystemMenuForBrowserWindow() {
   system_menu_contents_->AddSeparator();
   system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
@@ -2495,7 +2502,7 @@ void BrowserView::AddFrameToggleItems() {
 #endif
 
 int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   switch (app_command_id) {
     // NOTE: The order here matches the APPCOMMAND declaration order in the
     // Windows headers.
@@ -2528,7 +2535,7 @@ int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
 }
 
 void BrowserView::InitHangMonitor() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   PrefService* pref_service = g_browser_process->local_state();
   if (!pref_service)
     return;

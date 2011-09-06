@@ -20,7 +20,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"
 #endif
 
@@ -270,7 +270,7 @@ bool ThemeService::GetDisplayProperty(int id, int* result) const {
 bool ThemeService::ShouldUseNativeFrame() const {
   if (HasCustomImage(IDR_THEME_FRAME))
     return false;
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   return views::NativeWidgetWin::IsAeroGlassEnabled();
 #else
   return false;

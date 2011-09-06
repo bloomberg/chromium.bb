@@ -696,7 +696,7 @@ class BrowserView : public BrowserBubbleHost,
 
   scoped_ptr<FullscreenExitBubbleViews> fullscreen_bubble_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // The additional items we insert into the system menu.
   scoped_ptr<views::SystemMenuModel> system_menu_contents_;
   scoped_ptr<ZoomMenuModel> zoom_menu_contents_;

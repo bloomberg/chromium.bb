@@ -209,7 +209,7 @@ struct AttachExternalTabParams {
   std::string profile_name;
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 
 struct Reposition_Params {
   HWND window;
@@ -287,7 +287,7 @@ struct ParamTraits<PageType> {
   static void Log(const param_type& p, std::string* l);
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 
 // Traits for SetWindowPos_Params structure to pack/unpack.
 template <>

@@ -852,7 +852,7 @@ IPC_MESSAGE_ROUTED2(AutomationMsg_NavigationFailed,
                     int,
                     GURL)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 // This message is an outgoing message from an automation client to Chrome.
 // It is used to reposition a chrome tab window.
 IPC_MESSAGE_CONTROL2(AutomationMsg_TabReposition,

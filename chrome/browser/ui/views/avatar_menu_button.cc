@@ -31,7 +31,7 @@ static inline int Round(double x) {
 // See http://msdn.microsoft.com/en-us/library/dd391696(VS.85).aspx for
 // more information.
 void DrawTaskBarDecoration(const Browser* browser, const SkBitmap* bitmap) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
   BrowserWindow* bw = browser->window();

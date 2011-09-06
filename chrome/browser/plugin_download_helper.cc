@@ -4,7 +4,7 @@
 
 #include "chrome/browser/plugin_download_helper.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include <windows.h>
 
 #include "base/file_util.h"
@@ -80,4 +80,4 @@ void PluginDownloadUrlHelper::OnURLFetchComplete(const URLFetcher* source) {
   delete this;
 }
 
-#endif  // OS_WIN
+#endif  // defined(OS_WIN) && !defined(USE_AURA)

@@ -317,7 +317,7 @@ void InfoBarView::PlatformSpecificHide(bool animate) {
   if (focus_manager)
     focus_manager->RemoveFocusChangeListener(this);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   if (!animate || !focus_tracker_.get())
     return;
 

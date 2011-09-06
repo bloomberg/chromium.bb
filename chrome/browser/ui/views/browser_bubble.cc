@@ -5,9 +5,6 @@
 #include "chrome/browser/ui/views/browser_bubble.h"
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#if defined(OS_WIN)
-#include "chrome/browser/external_tab_container_win.h"
-#endif
 #include "views/widget/widget.h"
 
 namespace {

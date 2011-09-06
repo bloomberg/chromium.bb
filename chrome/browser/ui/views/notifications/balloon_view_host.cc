@@ -64,7 +64,10 @@ void BalloonViewHost::InitRenderWidgetHostView() {
       RenderWidgetHostView::CreateViewForWidget(render_view_host_);
 
   // TODO(johnnyg): http://crbug.com/23954.  Need a cross-platform solution.
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng): (same as touch_ui probably).
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   RenderWidgetHostViewWin* view_win =
       static_cast<RenderWidgetHostViewWin*>(render_widget_host_view_);
 

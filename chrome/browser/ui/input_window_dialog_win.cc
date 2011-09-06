@@ -31,7 +31,7 @@ class Widget;
 // The Windows implementation of the cross platform input dialog interface.
 class WinInputWindowDialog : public InputWindowDialog {
  public:
-  WinInputWindowDialog(HWND parent,
+  WinInputWindowDialog(gfx::NativeWindow parent,
                        const std::wstring& window_title,
                        const std::wstring& label,
                        const std::wstring& contents,
@@ -204,7 +204,7 @@ void ContentView::FocusFirstFocusableControl() {
   text_field_->RequestFocus();
 }
 
-WinInputWindowDialog::WinInputWindowDialog(HWND parent,
+WinInputWindowDialog::WinInputWindowDialog(gfx::NativeWindow parent,
                                            const std::wstring& window_title,
                                            const std::wstring& label,
                                            const std::wstring& contents,
@@ -230,7 +230,7 @@ void WinInputWindowDialog::Close() {
 }
 
 // static
-InputWindowDialog* InputWindowDialog::Create(HWND parent,
+InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
                                              const string16& window_title,
                                              const string16& label,
                                              const string16& contents,

@@ -47,18 +47,24 @@ const int kSpacerLocationbarOverlap = 1;
 
 // An mouse event observer to detect a mouse click on
 // BrowserView's content area and hide the location bar.
-class MouseObserver : public MessageLoopForUI::Observer {
+class MouseObserver
+#if !defined(USE_AURA)
+    : public MessageLoopForUI::Observer
+#endif
+    {
  public:
   MouseObserver(CompactLocationBarViewHost* host, BrowserView* view);
   ~MouseObserver();
 
   // MessageLoopForUI::Observer overrides.
+#if !defined(USE_AURA)
 #if defined(OS_WIN)
   virtual void WillProcessMessage(const MSG& native_event) OVERRIDE;
   virtual void DidProcessMessage(const MSG& native_event) OVERRIDE;
 #elif defined(OS_LINUX)
   virtual void WillProcessEvent(GdkEvent* native_event) OVERRIDE;
   virtual void DidProcessEvent(GdkEvent* native_event) OVERRIDE;
+#endif
 #endif
 
   void Observe(MessageLoopForUI* loop);
@@ -100,6 +106,7 @@ MouseObserver::~MouseObserver() {
   StopObserving(MessageLoopForUI::current());
 }
 
+#if !defined(USE_AURA)
 #if defined(OS_WIN)
 void MouseObserver::WillProcessMessage(const MSG& native_event) {}
 void MouseObserver::DidProcessMessage(const MSG& native_event) {
@@ -118,19 +125,24 @@ void MouseObserver::DidProcessEvent(GdkEvent* native_event) {
     host_->Hide(true);
   }
 }
+#endif
 
 void MouseObserver::Observe(MessageLoopForUI* loop) {
+#if !defined(USE_AURA)
   if (!observing_) {
     loop->AddObserver(this);
     observing_ = true;
   }
+#endif
 }
 
 void MouseObserver::StopObserving(MessageLoopForUI* loop) {
+#if !defined(USE_AURA)
   if (observing_) {
     loop->RemoveObserver(this);
     observing_ = false;
   }
+#endif
 }
 
 bool MouseObserver::IsMouseEvent(const views::NativeEvent& native_event) {
@@ -150,7 +162,11 @@ bool MouseObserver::IsMouseEvent(const views::NativeEvent& native_event) {
 // Then, with a GetTopLevel receiving a NativeWindow, we could do this in a
 // platform independent way.
 bool MouseObserver::IsSameTopLevelWindow(views::NativeEvent native_event) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+  return false;
+#elif defined(OS_WIN)
   return platform_util::GetTopLevel(native_event.hwnd) == top_level_window_;
 #elif defined(OS_LINUX)
   return gdk_window_get_toplevel(

@@ -176,7 +176,12 @@ void LocationBarView::Init() {
   // URL edit field.
   // View container for URL edit field.
   Profile* profile = browser_->profile();
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  OmniboxViewViews* omnibox_view = new OmniboxViewViews(this, model_, profile,
+      browser_->command_updater(), mode_ == POPUP, this);
+  omnibox_view->Init();
+  location_entry_.reset(omnibox_view);
+#elif defined(OS_WIN)
   if (views::Widget::IsPureViews()) {
     OmniboxViewViews* omnibox_view = new OmniboxViewViews(this, model_, profile,
         browser_->command_updater(), mode_ == POPUP, this);

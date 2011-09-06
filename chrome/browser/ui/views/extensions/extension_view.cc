@@ -85,7 +85,10 @@ void ExtensionView::CreateWidgetHostView() {
       RenderWidgetHostView::CreateViewForWidget(render_view_host());
 
   // TODO(mpcomplete): RWHV needs a cross-platform Init function.
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng): should be same as TOUCH_UI
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   // Create the HWND. Note:
   // RenderWidgetHostHWND supports windowed plugins, but if we ever also
   // wanted to support constrained windows with this, we would need an

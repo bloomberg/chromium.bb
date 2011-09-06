@@ -195,7 +195,7 @@ bool FindBarHost::AcceleratorPressed(const views::Accelerator& accelerator) {
 bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
                                       bool* fully_visible) {
   if (!find_bar_controller_ ||
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
       !::IsWindow(host()->GetNativeView())) {
 #else
       false) {

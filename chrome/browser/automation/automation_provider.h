@@ -31,10 +31,10 @@
 #include "content/common/notification_observer.h"
 #include "ipc/ipc_channel.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "ui/gfx/native_widget_types.h"
 #include "views/events/event.h"
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && !defined(USE_AURA)
 
 class PopupMenuWaiter;
 class TabContents;
@@ -149,7 +149,7 @@ class AutomationProvider
   // the handle is simply returned.
   int AddExtension(const Extension* extension);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // Adds the external tab passed in to the tab tracker.
   bool AddExternalTab(ExternalTabContainer* external_tab);
 #endif
@@ -321,7 +321,7 @@ class AutomationProvider
   // Method called by the popup menu tracker when a popup menu is opened.
   void NotifyPopupMenuOpened();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // The functions in this block are for use with external tabs, so they are
   // Windows only.
 
@@ -371,7 +371,7 @@ class AutomationProvider
   void OnSetZoomLevel(int handle, int zoom_level);
 
   ExternalTabContainer* GetExternalTabForHandle(int handle);
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && !defined(USE_AURA)
 
   scoped_ptr<IPC::ChannelProxy> channel_;
   scoped_ptr<NotificationObserver> new_tab_ui_load_observer_;

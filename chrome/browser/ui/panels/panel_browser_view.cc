@@ -119,7 +119,11 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                                  bool active) {
   ::BrowserView::OnWidgetActivationChanged(widget, active);
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+  bool focused = active;
+#elif defined(OS_WIN)
   // The panel window is in focus (actually accepting keystrokes) if it is
   // active and belongs to a foreground application.
   bool focused = active &&

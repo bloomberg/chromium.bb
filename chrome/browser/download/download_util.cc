@@ -71,7 +71,7 @@
 #endif  // defined(TOOLKIT_GTK)
 #endif  // defined(TOOLKIT_USES_GTK)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -391,7 +391,10 @@ void DragDownload(const DownloadItem* download,
                 download->GetFileNameToReportUser().LossyDisplayName());
   }
 
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
 
   // Run the drag and drop loop
@@ -539,7 +542,10 @@ string16 GetProgressStatusText(DownloadItem* download) {
 void UpdateAppIconDownloadProgress(int download_count,
                                    bool progress_known,
                                    float progress) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+#elif defined(OS_WIN)
   // Taskbar progress bar is only supported on Win7.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
@@ -582,7 +588,7 @@ void UpdateAppIconDownloadProgress(int download_count,
 
 int GetUniquePathNumberWithCrDownload(const FilePath& path) {
   return DownloadFile::GetUniquePathNumberWithSuffix(
-      path, FILE_PATH_LITERAL(".crdownload"));  
+      path, FILE_PATH_LITERAL(".crdownload"));
 }
 
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {

@@ -38,7 +38,9 @@
 #include <objidl.h>
 
 #include "base/win/scoped_gdi_object.h"
+#if !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"
+#endif
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
@@ -117,7 +119,11 @@ class OptInButtonBorder : public views::Border {
 };
 
 gfx::NativeView GetRelativeWindowForPopup(gfx::NativeView edit_native_view) {
-#if defined(OS_WIN)
+#if defined(USE_AURA)
+  // TODO(beng):
+  NOTIMPLEMENTED();
+  return NULL;
+#elif defined(OS_WIN)
   // When an IME is attached to the rich-edit control, retrieve its window
   // handle and show this popup window under the IME windows.
   // Otherwise, show this popup window under top-most windows.
@@ -610,7 +616,7 @@ void AutocompletePopupContentsView::MakeContentsPath(
 }
 
 void AutocompletePopupContentsView::UpdateBlurRegion() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // We only support background blurring on Vista with Aero-Glass enabled.
   if (!views::NativeWidgetWin::IsAeroGlassEnabled() || !GetWidget())
     return;

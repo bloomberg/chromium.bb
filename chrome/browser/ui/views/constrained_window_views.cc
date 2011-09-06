@@ -35,7 +35,7 @@
 #include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 #include "views/widget/native_widget_win.h"
 #endif
 
@@ -205,7 +205,7 @@ class ConstrainedWindowFrameView
 
   SkColor GetTitleColor() const {
     return container_->owner()->browser_context()->IsOffTheRecord()
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
             || !views::NativeWidgetWin::IsAeroGlassEnabled()
 #endif
             ? SK_ColorWHITE : SK_ColorBLACK;
@@ -545,17 +545,23 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 }
 
 void ConstrainedWindowFrameView::InitWindowResources() {
+#if !defined(USE_AURA)
   resources_.reset(views::NativeWidgetWin::IsAeroGlassEnabled() ?
-    static_cast<views::WindowResources*>(new VistaWindowResources) :
-    new XPWindowResources);
+      static_cast<views::WindowResources*>(new VistaWindowResources) :
+      new XPWindowResources);
+#endif
 }
 
 // static
 void ConstrainedWindowFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     title_font_ = new gfx::Font(views::NativeWidgetWin::GetWindowTitleFont());
+#elif defined(USE_AURA)
+    // TODO(beng):
+    NOTIMPLEMENTED();
+    title_font_ = NULL;
 #endif
     initialized = true;
   }
