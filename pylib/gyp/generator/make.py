@@ -2454,9 +2454,17 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if value[0] != '$':
       value = '$(abspath %s)' % value
     if key == 'LINK':
-      make_global_settings += '%s = $(FLOCK) %s\n' % (key, value)
+      make_global_settings += '%s ?= $(FLOCK) %s\n' % (key, value)
+    elif key in ['CC', 'CXX']:
+      make_global_settings += (
+          'ifneq (,$(filter $(origin %s), undefined default))\n' % key)
+      # Let gyp-time envvars win over global settings.
+      if key in os.environ:
+        value = os.environ[key]
+      make_global_settings += '  %s = %s\n' % (key, value)
+      make_global_settings += 'endif\n'
     else:
-      make_global_settings += '%s = %s\n' % (key, value)
+      make_global_settings += '%s ?= %s\n' % (key, value)
   header_params['make_global_settings'] = make_global_settings
 
   ensure_directory_exists(makefile_path)
