@@ -34,6 +34,7 @@
         'base/range/range_unittest.cc',
         'base/range/range_mac_unittest.mm',
         'base/range/range_win_unittest.cc',
+        'base/resource/data_pack_literal.cc',
         'base/resource/data_pack_unittest.cc',
         'base/resource/resource_bundle_unittest.cc',
         'base/text/bytes_formatting_unittest.cc',

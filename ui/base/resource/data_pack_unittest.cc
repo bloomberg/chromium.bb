@@ -12,12 +12,19 @@
 
 namespace ui {
 
-TEST(DataPackTest, Load) {
-  FilePath data_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
-  data_path = data_path.Append(
-      FILE_PATH_LITERAL("ui/base/test/data/data_pack_unittest/sample.pak"));
+extern const char kSamplePakContents[];
+extern const size_t kSamplePakSize;
 
+TEST(DataPackTest, Load) {
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+
+  // Dump contents into the pak file.
+  ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
+            static_cast<int>(kSamplePakSize));
+
+  // Load the file through the data pack API.
   DataPack pack;
   ASSERT_TRUE(pack.Load(data_path));
 

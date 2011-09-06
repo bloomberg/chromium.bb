@@ -6,10 +6,15 @@
 
 #include "base/base_paths.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
+
+extern const char kSamplePakContents[];
+extern const size_t kSamplePakSize;
 
 TEST(ResourceBundle, LoadDataResourceBytes) {
   // Verify that we don't crash when trying to load a resource that is not
@@ -19,11 +24,15 @@ TEST(ResourceBundle, LoadDataResourceBytes) {
 
   // On Windows, the default data is compiled into the binary so this does
   // nothing.
-  FilePath data_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
-  data_path = data_path.Append(
-      FILE_PATH_LITERAL("ui/base/test/data/data_pack_unittest/sample.pak"));
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
 
+  // Dump contents into the pak file.
+  ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
+            static_cast<int>(kSamplePakSize));
+
+  // Create a resource bundle from the file.
   resource_bundle.LoadTestResources(data_path);
 
   const int kUnfoundResourceId = 10000;
