@@ -30,9 +30,9 @@ EXTRA_ENV = {
   'LLC'           : '${SANDBOXED ? ${LLC_SB} : ${LLVM_LLC}}',
 
   'TRIPLE'      : '${TRIPLE_%ARCH%}',
-  'TRIPLE_ARM'  : 'armv7a-none-linux-gnueabi',
-  'TRIPLE_X8632': 'i686-none-linux-gnu',
-  'TRIPLE_X8664': 'x86_64-none-linux-gnu',
+  'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabi',
+  'TRIPLE_X8632': 'i686-none-nacl-gnu',
+  'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
 
   'LLC_FLAGS_COMMON': '-asm-verbose=false ' +
                       '${PIC ? -relocation-model=pic} ' +
