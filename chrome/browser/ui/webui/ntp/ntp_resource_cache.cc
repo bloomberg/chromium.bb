@@ -364,6 +364,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
   localized_strings.SetString("bookmarksManagerLinkTitle",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_MANAGER_LINK_TITLE));
+  localized_strings.SetString("bookmarksShowAllLinkTitle",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_SHOW_ALL_LINK_TITLE));
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));

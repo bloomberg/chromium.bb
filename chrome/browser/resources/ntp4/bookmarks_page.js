@@ -230,18 +230,15 @@ cr.define('ntp4', function() {
     initialize: function() {
       this.classList.add('bookmarks-page');
 
-      // insert the bookmark titles header which is unique to bookmark pages.
+      // Insert the bookmark titles header which is unique to bookmark pages.
       this.insertBefore($('bookmarks-title-wrapper'), this.firstChild);
 
-      // insert a container for a link to a Bookmarks Manager page.
-      var link = document.createElement('a');
-      link.className = 'bookmarks-manager-link';
-      link.textContent = localStrings.getString('bookmarksManagerLinkTitle');
-      var container = document.createElement('div');
-      container.className = 'bookmarks-manager-link-container';
-      container.hidden = true;
-      container.appendChild(link);
-      this.querySelector('.tile-page-content').appendChild(container);
+      // Insert the top & bottom links for the Bookmarks Manager page.
+      var pageContent = this.querySelector('.tile-page-content');
+      var topWrapper = $('bookmarks-top-link-wrapper');
+      pageContent.insertBefore(topWrapper, pageContent.firstChild);
+      topWrapper.hidden = false;
+      pageContent.appendChild($('bookmarks-bottom-link-wrapper'));
     },
 
     /**
@@ -278,13 +275,16 @@ cr.define('ntp4', function() {
       for (var i = 0; i < tile_count; i++)
         this.appendTile(new Bookmark(items[i]), false);
 
-      var container = this.querySelector('.bookmarks-manager-link-container');
+      var link = $('bookmarks-top-link-wrapper').querySelector('a');
+      link.href = 'chrome://bookmarks/#' + this.id;
+
+      var wrapper = $('bookmarks-bottom-link-wrapper');
       if (items.length > MAX_BOOKMARK_TILES) {
-        var link = container.querySelector('.bookmarks-manager-link');
+        var link = wrapper.querySelector('a');
         link.href = 'chrome://bookmarks/#' + this.id;
-        container.hidden = false;
+        wrapper.hidden = false;
       } else {
-        container.hidden = true;
+        wrapper.hidden = true;
       }
     },
 
@@ -446,6 +446,11 @@ cr.define('ntp4', function() {
       this.id = data.navigationItems[0].id;
       this.updateBookmarkTiles_(data.items);
       this.updateBookmarkTitles_(data.navigationItems);
+    },
+
+    /** @inheritDoc */
+    get extraBottomPadding() {
+      return 40;
     },
   };
 

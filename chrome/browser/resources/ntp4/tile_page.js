@@ -449,6 +449,15 @@ cr.define('ntp4', function() {
     },
 
     /**
+     * Returns any extra padding to insert to the bottom of a tile page.  By
+     * default there is none, but subclasses can override.
+     * @type {number}
+     */
+    get extraBottomPadding() {
+      return 0;
+    },
+
+    /**
      * Cleans up resources that are no longer needed after this TilePage
      * instance is removed from the DOM.
      */
@@ -486,6 +495,7 @@ cr.define('ntp4', function() {
                                     this.tileElements_[index]);
       }
       this.calculateLayoutValues_();
+      this.heightChanged_();
 
       this.positionTile_(index);
     },
@@ -755,7 +765,8 @@ cr.define('ntp4', function() {
       // a flex box, and the tile grid could be box-flex: 1, but this exposes a
       // bug where repositioning tiles will cause the scroll position to reset.
       this.tileGrid_.style.minHeight = (this.clientHeight -
-          this.tileGrid_.offsetTop) + 'px';
+          this.tileGrid_.offsetTop - this.content_.offsetTop -
+          this.extraBottomPadding) + 'px';
     },
 
     /**
