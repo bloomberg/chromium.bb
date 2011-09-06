@@ -38,13 +38,11 @@ class NPObjectStub : public IPC::Channel::Listener,
                const GURL& page_url);
   virtual ~NPObjectStub();
 
-  // Cause the stub to ignore any further IPC messages, and to tear itself down
-  // the next time control returns to the message loop.
-  // The NPObject will be released only if |release_npobject| is true.
-  // This is used for the window script object stub in the renderer, which is
-  // freed with NPN_DeallocateObject to avoid leaks, and so we must not try to
-  // release it.
-  void DeleteSoon(bool release_npobject);
+  // Schedules tear-down of this stub.  The underlying NPObject reference is
+  // released, and further invokations form the IPC channel will fail once this
+  // call has returned.  Deletion of the stub is deferred to the main loop, in
+  // case it is touched as the stack unwinds.
+  void DeleteSoon();
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);

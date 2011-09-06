@@ -39,7 +39,7 @@ NPObjectStub::~NPObjectStub() {
   CHECK(!npobject_);
 }
 
-void NPObjectStub::DeleteSoon(bool release_npobject) {
+void NPObjectStub::DeleteSoon() {
   if (npobject_) {
     channel_->RemoveMappingForNPObjectStub(route_id_, npobject_);
 
@@ -49,8 +49,7 @@ void NPObjectStub::DeleteSoon(bool release_npobject) {
     NPObject* npobject = npobject_;
     npobject_ = NULL;
 
-    if (release_npobject)
-      WebBindings::releaseObject(npobject);
+    WebBindings::releaseObject(npobject);
 
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
@@ -102,12 +101,12 @@ bool NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NPObjectStub::OnChannelError() {
-  DeleteSoon(true);
+  DeleteSoon();
 }
 
 void NPObjectStub::OnRelease(IPC::Message* reply_msg) {
   Send(reply_msg);
-  DeleteSoon(true);
+  DeleteSoon();
 }
 
 void NPObjectStub::OnHasMethod(const NPIdentifier_Param& name,

@@ -219,12 +219,13 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   }
 
   if (window_script_object_) {
-    // The ScriptController deallocates this object independent of its ref count
-    // to avoid leaks if the plugin forgets to release it.  So mark the object
-    // invalid to avoid accessing it past this point.  Note: only do this after
-    // the DestroyInstance message in case the window object is scripted by the
-    // plugin in NPP_Destroy.
-    window_script_object_->DeleteSoon(false);
+    // Release the window script object, if the plugin didn't already.
+    // If we don't do this then it will linger until the last plugin instance is
+    // destroyed.  In the meantime, though, the frame that it refers to may have
+    // been destroyed by WebKit, at which point WebKit will forcibly deallocate
+    // the window script object.  The window script object stub is unique to the
+    // plugin instance, so this won't affect other instances.
+    window_script_object_->DeleteSoon();
   }
 
   plugin_ = NULL;
