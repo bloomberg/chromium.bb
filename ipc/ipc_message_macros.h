@@ -183,21 +183,21 @@
 #include "ipc/ipc_message_utils_impl.h"
 #endif
 
+// Override this to force message classes to be exported.
+#ifndef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT
+#endif
+
 // Macros for defining structs.  May be subsequently redefined.
 #define IPC_STRUCT_BEGIN(struct_name) \
   struct struct_name; \
   IPC_STRUCT_TRAITS_BEGIN(struct_name) \
   IPC_STRUCT_TRAITS_END() \
-  struct struct_name : IPC::NoParams { \
+  struct IPC_MESSAGE_EXPORT struct_name : IPC::NoParams { \
     struct_name(); \
     ~struct_name();
 #define IPC_STRUCT_MEMBER(type, name) type name;
 #define IPC_STRUCT_END() };
-
-// Override this to force message classes to be exported.
-#ifndef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT
-#endif
 
 // Message macros collect specific numbers of arguments and funnel them into
 // the common message generation macro.  These should never be redefined.
