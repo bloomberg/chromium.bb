@@ -154,4 +154,4 @@ def GetChromeRevision(path=None):
   if path is None:
     path = os.path.join(os.path.split(os.path.split(__file__)[0])[0], 'DEPS')
   scope = EvalDepsFile(path)
-  return scope['vars']['chrome_rev']
+  return scope['vars']['chromebinaries_rev']

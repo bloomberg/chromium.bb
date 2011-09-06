@@ -656,9 +656,6 @@ tests_to_disable = set()
 if ARGUMENTS.get('disable_tests', '') != '':
   tests_to_disable.update(ARGUMENTS['disable_tests'].split(','))
 
-# TODO(mcgrathr): Temporary hack because of cross-repo breakage and DEPS hell.
-tests_to_disable.update(['run_srpcgen_test'])
-
 def ShouldSkipTest(env, node_name):
   # There are no known-to-fail tests any more, but this code is left
   # in so that if/when we port to a new architecture or add a test

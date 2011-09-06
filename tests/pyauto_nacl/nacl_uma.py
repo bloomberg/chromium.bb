@@ -210,18 +210,23 @@ Histogram: NaCl.OSArch recorded 2 samples, average = 1.0 (flags = 0x1)
         1)
 
   def testCrash(self):
+    # Note: This number must match the number of tests in ppapi_crash.html,
+    # which now lives in the native_client/tests/ppapi_browser/crash directory
+    # of the Chromium repository.
+    num_tests = 5
+
     hists = self.getHistsForTest('ppapi_crash.html')
-    self.assertLoadOK(hists, 3)
+    self.assertLoadOK(hists, num_tests)
     self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Normal', 0)
     # The plugin does not detect crashes during nexe module shutdown, so it
     # looks like a normal exit and no crash is logged.
-    self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Crash', 3)
+    self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Crash', num_tests)
 
     # Run it again. NaCl.ModuleUptime.Normal may require a reload to appear.
     hists = self.getHistsForTest('ppapi_crash.html')
-    self.assertLoadOK(hists, 6)
+    self.assertLoadOK(hists, num_tests * 2)
     self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Normal', 0)
-    self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Crash', 6)
+    self.assertHistogramCount(hists, 'NaCl.ModuleUptime.Crash', num_tests * 2)
 
   def testDataURI(self):
     hists = self.getHistsForTest('srpc_hw_data.html')
