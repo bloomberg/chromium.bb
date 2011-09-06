@@ -27,6 +27,7 @@ using testing::DoAll;
 using testing::Invoke;
 using testing::NotNull;
 using testing::Return;
+using testing::SaveArg;
 
 namespace remoting {
 
@@ -50,7 +51,7 @@ class HeartbeatSenderTest : public testing::Test {
 };
 
 // Call Start() followed by Stop(), and makes sure an Iq stanza is
-// being send.
+// being sent.
 TEST_F(HeartbeatSenderTest, DoSendStanza) {
   // |iq_request| is freed by HeartbeatSender.
   MockIqRequest* iq_request = new MockIqRequest();
@@ -66,11 +67,18 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
   EXPECT_CALL(signal_strategy_, CreateIqRequest())
       .WillOnce(Return(iq_request));
 
-  EXPECT_CALL(*iq_request, SendIq(buzz::STR_SET, kChromotingBotJid, NotNull()))
-      .WillOnce(DoAll(DeleteArg<2>(), Return()));
+  XmlElement* sent_iq = NULL;
+  EXPECT_CALL(*iq_request, SendIq(NotNull()))
+      .WillOnce(SaveArg<0>(&sent_iq));
 
   heartbeat_sender->OnSignallingConnected(&signal_strategy_, kTestJid);
   message_loop_.RunAllPending();
+
+  scoped_ptr<XmlElement> stanza(sent_iq);
+  ASSERT_TRUE(stanza != NULL);
+
+  EXPECT_EQ(stanza->Attr(buzz::QName("", "to")), kChromotingBotJid);
+  EXPECT_EQ(stanza->Attr(buzz::QName("", "type")), "set");
 
   heartbeat_sender->OnSignallingDisconnected();
   message_loop_.RunAllPending();

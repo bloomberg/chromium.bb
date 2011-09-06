@@ -25,22 +25,18 @@ class IqRequest {
  public:
   typedef base::Callback<void(const buzz::XmlElement*)> ReplyCallback;
 
+  static buzz::XmlElement* MakeIqStanza(const std::string& type,
+                                        const std::string& addressee,
+                                        buzz::XmlElement* iq_body);
+
   IqRequest() {}
   virtual ~IqRequest() {}
 
-  // Sends stanza of type |type| to |addressee|. |iq_body| contains body of
-  // the stanza. Takes pwnership of |iq_body|.
-  virtual void SendIq(const std::string& type, const std::string& addressee,
-                      buzz::XmlElement* iq_body) = 0;
+  // Sends Iq stanza. Takes ownership of |stanza|.
+  virtual void SendIq(buzz::XmlElement* stanza) = 0;
 
   // Sets callback that is called when reply stanza is received.
   virtual void set_callback(const ReplyCallback& callback) = 0;
-
- protected:
-  static buzz::XmlElement* MakeIqStanza(const std::string& type,
-                                        const std::string& addressee,
-                                        buzz::XmlElement* iq_body,
-                                        const std::string& id);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(IqRequestTest, MakeIqStanza);

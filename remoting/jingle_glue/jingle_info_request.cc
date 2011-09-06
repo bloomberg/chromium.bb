@@ -34,8 +34,9 @@ JingleInfoRequest::~JingleInfoRequest() {
 
 void JingleInfoRequest::Send(const OnJingleInfoCallback& callback) {
   on_jingle_info_cb_ = callback;
-  request_->SendIq(buzz::STR_GET, buzz::STR_EMPTY,
-                   new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true));
+  request_->SendIq(IqRequest::MakeIqStanza(
+      buzz::STR_GET, buzz::STR_EMPTY,
+      new buzz::XmlElement(buzz::QN_JINGLE_INFO_QUERY, true)));
 }
 
 void JingleInfoRequest::OnResponse(const buzz::XmlElement* stanza) {
