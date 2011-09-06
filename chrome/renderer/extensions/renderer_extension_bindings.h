@@ -6,13 +6,15 @@
 #define CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_
 #pragma once
 
-#include "v8/include/v8.h"
-
 #include <string>
 
 class ExtensionRendererContext;
 class GURL;
 class RenderView;
+
+namespace v8 {
+class Extension;
+}
 
 // This class adds extension-related javascript bindings to a renderer.  It is
 // used by both web renderers and extension processes.

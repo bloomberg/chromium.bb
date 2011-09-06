@@ -42,6 +42,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;

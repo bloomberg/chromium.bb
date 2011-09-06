@@ -18,6 +18,7 @@
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/renderer_resources.h"
+#include "v8/include/v8.h"
 
 // Message passing API example (in a content script):
 // var extension =

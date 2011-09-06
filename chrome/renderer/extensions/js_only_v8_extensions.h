@@ -6,7 +6,9 @@
 #define CHROME_RENDERER_EXTENSIONS_JS_ONLY_V8_EXTENSIONS_H_
 #pragma once
 
-#include "v8/include/v8.h"
+namespace v8 {
+class Extension;
+}
 
 // This file contains various V8 Extensions that are JavaScript only, and
 // don't have any C++ native functions.

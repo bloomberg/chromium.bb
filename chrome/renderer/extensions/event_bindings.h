@@ -6,10 +6,12 @@
 #define CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
 #pragma once
 
-#include "v8/include/v8.h"
-
 class ExtensionRendererContext;
 class RenderThreadBase;
+
+namespace v8 {
+class Extension;
+}
 
 // This class deals with the javascript bindings related to Event objects.
 class EventBindings {

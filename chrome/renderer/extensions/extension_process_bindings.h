@@ -12,14 +12,16 @@
 #include <string>
 #include <vector>
 
-#include "v8/include/v8.h"
-
 class ExtensionRendererContext;
 class GURL;
 class URLPattern;
 
 namespace WebKit {
 class WebView;
+}
+
+namespace v8 {
+class Extension;
 }
 
 class ExtensionProcessBindings {

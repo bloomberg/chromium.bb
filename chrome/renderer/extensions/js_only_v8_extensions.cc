@@ -6,6 +6,7 @@
 
 #include "chrome/renderer/extensions/extension_base.h"
 #include "grit/renderer_resources.h"
+#include "v8/include/v8.h"
 
 // JsonSchemaJsV8Extension
 const char* JsonSchemaJsV8Extension::kName = "chrome/jsonschema";
