@@ -367,6 +367,8 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer {
   virtual base::Time GetCurrentTime() const;
 
  private:
+  friend class ExtensionPrefsUninstallExtension;  // Unit test.
+
   // ExtensionContentSettingsStore::Observer methods:
   virtual void OnContentSettingChanged(
       const std::string& extension_id,

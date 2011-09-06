@@ -165,16 +165,16 @@ ExtensionContentSettingsStore::ContentSettingSpecList*
         const std::string& ext_id,
         ExtensionPrefsScope scope) {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
-  DCHECK(i != entries_.end());
-  switch (scope) {
-    case kExtensionPrefsScopeRegular:
-      return &(i->second->settings);
-    case kExtensionPrefsScopeIncognitoPersistent:
-      return &(i->second->incognito_persistent_settings);
-    case kExtensionPrefsScopeIncognitoSessionOnly:
-      return &(i->second->incognito_session_only_settings);
+  if (i != entries_.end()) {
+    switch (scope) {
+      case kExtensionPrefsScopeRegular:
+        return &(i->second->settings);
+      case kExtensionPrefsScopeIncognitoPersistent:
+        return &(i->second->incognito_persistent_settings);
+      case kExtensionPrefsScopeIncognitoSessionOnly:
+        return &(i->second->incognito_session_only_settings);
+    }
   }
-  NOTREACHED();
   return NULL;
 }
 
@@ -183,16 +183,16 @@ const ExtensionContentSettingsStore::ContentSettingSpecList*
         const std::string& ext_id,
         ExtensionPrefsScope scope) const {
   ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
-  DCHECK(i != entries_.end());
-  switch (scope) {
-    case kExtensionPrefsScopeRegular:
-      return &(i->second->settings);
-    case kExtensionPrefsScopeIncognitoPersistent:
-      return &(i->second->incognito_persistent_settings);
-    case kExtensionPrefsScopeIncognitoSessionOnly:
-      return &(i->second->incognito_session_only_settings);
+  if (i != entries_.end()) {
+    switch (scope) {
+      case kExtensionPrefsScopeRegular:
+        return &(i->second->settings);
+      case kExtensionPrefsScopeIncognitoPersistent:
+        return &(i->second->incognito_persistent_settings);
+      case kExtensionPrefsScopeIncognitoSessionOnly:
+        return &(i->second->incognito_session_only_settings);
+    }
   }
-  NOTREACHED();
   return NULL;
 }
 
@@ -339,9 +339,11 @@ ListValue* ExtensionContentSettingsStore::GetSettingsForExtension(
     const std::string& extension_id,
     ExtensionPrefsScope scope) const {
   base::AutoLock lock(lock_);
-  ListValue* settings = new ListValue();
   const ContentSettingSpecList* setting_spec_list =
       GetContentSettingSpecList(extension_id, scope);
+  if (!setting_spec_list)
+    return NULL;
+  ListValue* settings = new ListValue();
   ContentSettingSpecList::const_iterator it;
   for (it = setting_spec_list->begin(); it != setting_spec_list->end(); ++it) {
     DictionaryValue* setting_dict = new DictionaryValue();

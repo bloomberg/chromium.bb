@@ -1100,18 +1100,21 @@ void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
     return;
   }
   ScopedExtensionPrefUpdate update(prefs_, extension_id);
-  update->Set(key, data_value);
+  if (data_value)
+    update->Set(key, data_value);
+  else
+    update->Remove(key, NULL);
 }
 
 void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
+  extension_pref_value_map_->UnregisterExtension(extension_id);
+  content_settings_store_->UnregisterExtension(extension_id);
   DictionaryPrefUpdate update(prefs_, kExtensionsPref);
   DictionaryValue* dict = update.Get();
   if (dict->HasKey(extension_id)) {
     dict->Remove(extension_id, NULL);
     SavePrefs();
   }
-  extension_pref_value_map_->UnregisterExtension(extension_id);
-  content_settings_store_->UnregisterExtension(extension_id);
 }
 
 const DictionaryValue* ExtensionPrefs::GetExtensionPref(

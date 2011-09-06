@@ -932,10 +932,21 @@ class ExtensionPrefsUninstallExtension
   virtual void Initialize() {
     InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
     InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val2"));
+    ExtensionContentSettingsStore* store = prefs()->content_settings_store();
+    ContentSettingsPattern pattern =
+        ContentSettingsPattern::FromString("http://[*.]example.com");
+    store->SetExtensionContentSetting(ext1_->id(),
+                                      pattern, pattern,
+                                      CONTENT_SETTINGS_TYPE_IMAGES,
+                                      std::string(),
+                                      CONTENT_SETTING_BLOCK,
+                                      kExtensionPrefsScopeRegular);
 
     UninstallExtension(ext1_->id());
   }
   virtual void Verify() {
+    EXPECT_EQ(NULL, prefs()->GetExtensionPref(ext1_->id()));
+
     std::string actual;
     actual = prefs()->pref_service()->GetString(kPref1);
     EXPECT_EQ(kDefaultPref1, actual);
