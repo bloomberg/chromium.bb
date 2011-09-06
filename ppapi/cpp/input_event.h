@@ -159,6 +159,10 @@ class MouseInputEvent : public InputEvent {
   ///
   /// @return The change in position of the mouse, relative to the previous
   /// position.
+  ///
+  /// TODO(yzshen): This feature hasn't been supported yet. The returned value
+  /// is always (0, 0) for system-generated mouse events (which are passed
+  /// through the <code>HandleInputEvent</code>).
   Point GetMovement() const;
 };
 
