@@ -80,8 +80,7 @@ You'll need it later if you want to do any of the following:
 </p>
 <ul>
 <li><a href="#update">Update</a> the extension</li>
-<li>Upload the extension using the
-<a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a></li>
+<li><a href="#upload">Upload</a> the extension to the Chrome Web Store</li>
 </ul>
 
 <p>
@@ -134,6 +133,37 @@ the <code>.crx</code> and <code>.pem</code> files:</p>
 
 <img src="images/update-success.gif"
   width="298" height="160" />
+
+
+<h2 id="upload"> Uploading a previously packaged extension to the Chrome Web Store</h2>
+
+<p>
+You can use the Chrome Developer Dashboard
+to upload an extension that you've previously packaged yourself.
+However, unless you take special steps,
+the extension's ID in the Chrome Web Store
+will be different from its ID in the package you created.
+This different ID might be a problem if you've
+distributed your extension package,
+because it allows users to install multiple versions of your extension,
+each with its own local data.
+</p>
+
+<p>
+If you want to keep the extension ID the same,
+follow these steps:
+</p>
+
+<ol>
+  <li> Rename the private key that was generated
+    when you created the <code>.crx</code> file to <code>key.pem</code>. </li>
+  <li> Put <code>key.pem</code> in the top directory
+    of your extension. </li>
+  <li> Compress that directory into a ZIP file. </li>
+  <li> Upload the ZIP file using the
+    <a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>. </li>
+</ol>
+
 
 <h2>Packaging at the command line</h2>
 
