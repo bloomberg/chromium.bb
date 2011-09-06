@@ -808,6 +808,7 @@ void AppLauncherHandler::OnFaviconForApp(FaviconService::Handle handle,
   web_app->is_bookmark_app = install_info->is_bookmark_app;
   web_app->title = install_info->title;
   web_app->app_url = install_info->app_url;
+  web_app->urls.push_back(install_info->app_url);
 
   WebApplicationInfo::IconInfo icon;
   web_app->icons.push_back(icon);

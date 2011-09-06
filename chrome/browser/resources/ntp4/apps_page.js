@@ -623,16 +623,15 @@ cr.define('ntp4', function() {
         node.innerHTML = html;
         title = node.textContent;
       }
+
+      // Make sure title is >=1 and <=45 characters for Chrome app limits.
       if (!title)
         title = url;
+      if (title.length > 45)
+        title = title.substring(0, 45);
+      var data = {url: url, title: title};
 
       // Synthesize an app.
-      var data = {url: url, title: title};
-      // Make sure title is >=1 and <=45 characters for Chrome app limits.
-      if (data.title.length > 45)
-        data.title = data.title.substring(0,45);
-      if (data.title.length == 0)
-        data.title = data.url;
       this.generateAppForLink(data);
     },
 
