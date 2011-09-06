@@ -5147,10 +5147,6 @@
    fun:_ZN19URLRequestChromeJob10StartAsyncEv
 }
 {
-   bug_91491
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
 }
 {
    bug_92123
