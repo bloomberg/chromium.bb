@@ -203,9 +203,9 @@ cr.define('ntp4', function() {
     maxColCount: 6,
 
     // The smallest a tile can be.
-    minTileWidth: 150,
+    minTileWidth: 64,
     // The biggest a tile can be.
-    maxTileWidth: 150,
+    maxTileWidth: 96,
   };
   TilePage.initGridValues(bookmarksPageGridValues);
 
