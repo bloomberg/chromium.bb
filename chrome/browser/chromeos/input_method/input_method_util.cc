@@ -170,7 +170,6 @@ const struct EnglishToResouceId {
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VIQR_INPUT_METHOD },
   { "m17n:vi:vni",
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD },
-
   { "m17n:bn:itrans",
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
   { "m17n:gu:itrans",
@@ -180,6 +179,8 @@ const struct EnglishToResouceId {
   { "m17n:mr:itrans",
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
   { "m17n:ta:itrans",
+    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
+  { "m17n:am:sera",
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD },
 
   { "mozc-chewing",
@@ -383,13 +384,16 @@ const ExtraLanguage kExtraLanguages[] = {
   // Language Code  Input Method ID
   { "en-AU",        "xkb:us::eng" },  // For Austrailia, use US keyboard layout.
   { "id",           "xkb:us::eng" },  // For Indonesian, use US keyboard layout.
-  // The code "fil" comes from app/l10_util.cc.
+  // The code "fil" comes from l10_util.cc.
   { "fil",          "xkb:us::eng" },  // For Filipino, use US keyboard layout.
   // For Netherlands, use US international keyboard layout.
   { "nl",           "xkb:us:intl:eng" },
-  // The code "es-419" comes from app/l10_util.cc.
+  // The code "es-419" comes from l10_util.cc.
   // For Spanish in Latin America, use Latin American keyboard layout.
   { "es-419",       "xkb:latam::spa" },
+
+  // TODO(yusukes): Add {"sw", "xkb:us::eng"} once Swahili is removed from the
+  // blacklist in src/ui/base/l10n/l10n_util_posix.cc.
 };
 const size_t kExtraLanguagesLength = arraysize(kExtraLanguages);
 

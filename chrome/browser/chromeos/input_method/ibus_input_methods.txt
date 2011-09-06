@@ -158,8 +158,10 @@ m17n:ta:itrans	us	ta
 # m17n:ta:tamil99	us	ta
 # m17n:ta:typewriter	us	ta
 
+# Amharic
+m17n:am:sera	us	am
+
 # TODO(yusukes): Support Kannada and Telugu once Lohit font is upgraded.
-# TODO(yusukes): Support Swahili and Amharic.
 
 # ibux-xkb-layouts input methods (keyboard layouts).
 xkb:br::por	br	por	!defined(TOUCH_UI)
