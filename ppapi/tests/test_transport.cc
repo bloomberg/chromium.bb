@@ -195,6 +195,14 @@ std::string TestTransport::TestSetProperty() {
   ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW,
                                      pp::Var(10000000)), PP_ERROR_BADARGUMENT);
 
+  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_NO_DELAY,
+                                     pp::Var(true)), PP_OK);
+
+  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_ACK_DELAY,
+                                     pp::Var(10)), PP_OK);
+  ASSERT_EQ(transport1_->SetProperty(PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW,
+                                     pp::Var(10000)), PP_ERROR_BADARGUMENT);
+
   TestCompletionCallback connect_cb(instance_->pp_instance());
   ASSERT_EQ(transport1_->Connect(connect_cb), PP_OK_COMPLETIONPENDING);
 

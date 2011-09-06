@@ -33,6 +33,8 @@ const char kTcpProtocolName[] = "tcp";
 
 const int kMinBufferSize = 1024;
 const int kMaxBufferSize = 1024 * 1024;
+const int kMinAckDelay = 10;
+const int kMaxAckDelay = 1000;
 
 int MapNetError(int result) {
   if (result > 0)
@@ -170,6 +172,29 @@ int32_t PPB_Transport_Impl::SetProperty(PP_TransportProperty property,
       break;
     }
 
+    case PP_TRANSPORTPROPERTY_TCP_NO_DELAY: {
+      if (!use_tcp_)
+        return PP_ERROR_BADARGUMENT;
+
+      if (value.type != PP_VARTYPE_BOOL)
+        return PP_ERROR_BADARGUMENT;
+      config_.tcp_no_delay = PP_ToBool(value.value.as_bool);
+      break;
+    }
+
+    case PP_TRANSPORTPROPERTY_TCP_ACK_DELAY: {
+      if (!use_tcp_)
+        return PP_ERROR_BADARGUMENT;
+
+      int32_t int_value = value.value.as_int;
+      if (value.type != PP_VARTYPE_INT32 || int_value < kMinAckDelay ||
+          int_value > kMaxAckDelay) {
+        return PP_ERROR_BADARGUMENT;
+      }
+      config_.tcp_ack_delay_ms = int_value;
+      break;
+    }
+
     default:
       return PP_ERROR_BADARGUMENT;
   }
@@ -298,7 +323,6 @@ int32_t PPB_Transport_Impl::Close() {
     return PP_ERROR_FAILED;
 
   p2p_transport_.reset();
-
 
   PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
   if (plugin_module)

@@ -56,7 +56,7 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
   void SetAckDelay(int delay_ms);
 
   // Set whether Nagle's algorithm is enabled.
-  void SetNoDelay(bool nagling);
+  void SetNoDelay(bool no_delay);
 
  private:
   class Core;

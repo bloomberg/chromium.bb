@@ -91,6 +91,15 @@ bool P2PTransportImpl::Init(const std::string& name,
   if (protocol == PROTOCOL_TCP) {
     pseudo_tcp_adapter_.reset(new jingle_glue::PseudoTcpAdapter(
         channel_adapter_.release()));
+
+    if (config.tcp_receive_window > 0)
+      pseudo_tcp_adapter_->SetReceiveBufferSize(config.tcp_receive_window);
+    if (config.tcp_send_window > 0)
+      pseudo_tcp_adapter_->SetReceiveBufferSize(config.tcp_receive_window);
+    pseudo_tcp_adapter_->SetNoDelay(config.tcp_no_delay);
+    if (config.tcp_ack_delay_ms > 0)
+      pseudo_tcp_adapter_->SetAckDelay(config.tcp_ack_delay_ms);
+
     int result = pseudo_tcp_adapter_->Connect(&connect_callback_);
     if (result != net::ERR_IO_PENDING)
       OnTcpConnected(result);

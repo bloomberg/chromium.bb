@@ -32,7 +32,16 @@ typedef enum {
 
   // TCP send window in bytes. Takes effect only for PseudoTCP
   // connections.
-  PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW = 4
+  PP_TRANSPORTPROPERTY_TCP_SEND_WINDOW = 4,
+
+  // Boolean value that disables Neagle's algorithm when set to
+  // true. When Neagle's algorithm is disabled, all outgoing packets
+  // are sent as soon as possible. When set to false (by default) data
+  // may be buffered until there is a sufficient amount to send.
+  PP_TRANSPORTPROPERTY_TCP_NO_DELAY = 5,
+
+  // Delay for ACK packets in milliseconds. By default set to 100ms.
+  PP_TRANSPORTPROPERTY_TCP_ACK_DELAY = 6
 } PP_TransportProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TransportProperty, 4);
 

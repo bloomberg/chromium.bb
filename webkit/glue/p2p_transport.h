@@ -62,6 +62,12 @@ class P2PTransport {
     // TCP window sizes. Default size is used when set to 0.
     int tcp_receive_window;
     int tcp_send_window;
+
+    // Disables Neagle's algorithm when set to true.
+    bool tcp_no_delay;
+
+    // TCP ACK delay.
+    int tcp_ack_delay_ms;
   };
 
   virtual ~P2PTransport() {}
