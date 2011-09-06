@@ -73,6 +73,41 @@ const char kOldDealMobileConfig[] =
      "  },"
     "}";
 
+const char kLocalMobileConfigNoDeals[] =
+    "{"
+    "  \"version\": \"1.0\","
+    "  \"exclude_deals\": true,"
+    "  \"carriers\" : {\n"
+     "  },"
+    "}";
+
+const char kLocalMobileConfig[] =
+    "{"
+    "  \"version\": \"1.0\","
+    "  \"carriers\" : {\n"
+    "    \"carrier (country)\" : {\n"
+    "      \"exclude_deals\": true,"
+    "      \"top_up_url\" : \"http://www.carrier-new-url.com/\",\n"
+    "      \"deals\" : [\n"
+    "        {\n"
+    "          \"deal_id\" : \"1\",\n"
+    "          \"locales\" : [ \"en-GB\", ],\n"
+    "          \"expire_date\" : \"31/12/13 0:0\",\n"
+    "          \"notification_count\" : 2,\n"
+    "          \"localized_content\" : {\n"
+    "            \"en-GB\" : {\n"
+    "              \"notification_text\" : \"3G connectivity : Carrier.\",\n"
+    "            },\n"
+    "            \"default\" : {\n"
+    "              \"notification_text\" : \"default_text from local.\",\n"
+    "            },\n"
+    "          },\n"
+    "        },\n"
+    "      ],\n"
+    "    },"
+     "  },"
+    "}";
+
 }  // anonymous namespace
 
 namespace chromeos {
@@ -130,6 +165,50 @@ TEST(MobileConfigTest, DealOtherLocale) {
 TEST(MobileConfigTest, BadManifest) {
   MobileConfig config(kBadManifest, "en-US");
   EXPECT_FALSE(config.IsReady());
+}
+
+TEST(MobileConfigTest, LocalConfigNoDeals) {
+  MobileConfig config(kGoodMobileConfig, "en-US");
+  EXPECT_TRUE(config.IsReady());
+  config.LoadManifestFromString(kLocalMobileConfigNoDeals);
+  EXPECT_TRUE(config.IsReady());
+  const MobileConfig::Carrier* carrier;
+  carrier = config.GetCarrier("Carrier (country)");
+  EXPECT_TRUE(carrier != NULL);
+  const MobileConfig::CarrierDeal* deal;
+  deal = carrier->GetDefaultDeal();
+  EXPECT_TRUE(deal == NULL);
+  deal = carrier->GetDeal("0");
+  EXPECT_TRUE(deal == NULL);
+}
+
+TEST(MobileConfigTest, LocalConfig) {
+  MobileConfig config(kGoodMobileConfig, "en-GB");
+  EXPECT_TRUE(config.IsReady());
+  config.LoadManifestFromString(kLocalMobileConfig);
+  EXPECT_TRUE(config.IsReady());
+
+  const MobileConfig::Carrier* carrier;
+  carrier = config.GetCarrier("Carrier (country)");
+  EXPECT_TRUE(carrier != NULL);
+  EXPECT_EQ("http://www.carrier-new-url.com/", carrier->top_up_url());
+
+  const MobileConfig::CarrierDeal* deal;
+  deal = carrier->GetDeal("0");
+  EXPECT_TRUE(deal == NULL);
+  deal = carrier->GetDefaultDeal();
+  EXPECT_TRUE(deal != NULL);
+  deal = carrier->GetDeal("1");
+  EXPECT_TRUE(deal != NULL);
+  EXPECT_EQ("en-GB", deal->locales()[0]);
+  EXPECT_EQ(2, deal->notification_count());
+  EXPECT_EQ("3G connectivity : Carrier.",
+            deal->GetLocalizedString("en-GB", "notification_text"));
+  EXPECT_EQ("default_text from local.",
+            deal->GetLocalizedString("en", "notification_text"));
+  base::Time reference_time;
+  base::Time::FromString("31/12/13 0:00", &reference_time);
+  EXPECT_EQ(reference_time, deal->expire_date());
 }
 
 }  // namespace chromeos

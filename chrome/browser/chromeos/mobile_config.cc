@@ -40,9 +40,16 @@ const char kDealExpireDateAttr[] = "expire_date";
 const char kLocalizedContentAttr[] = "localized_content";
 const char kNotificationTextAttr[] = "notification_text";
 
+// Local config properties.
+const char kExcludeDealsAttr[] = "exclude_deals";
+
 // Location of the global carrier config.
 const char kGlobalCarrierConfigPath[] =
     "/usr/share/chromeos-assets/mobile/carrier_config.json";
+
+// Location of the local carrier config.
+const char kLocalCarrierConfigPath[] =
+    "/opt/oem/etc/carrier_config.json";
 
 }  // anonymous namespace
 
@@ -100,7 +107,48 @@ std::string MobileConfig::CarrierDeal::GetLocalizedString(
 
 MobileConfig::Carrier::Carrier(DictionaryValue* carrier_dict,
                                const std::string& initial_locale) {
+  InitFromDictionary(carrier_dict, initial_locale);
+}
+
+MobileConfig::Carrier::~Carrier() {
+  RemoveDeals();
+}
+
+const MobileConfig::CarrierDeal* MobileConfig::Carrier::GetDefaultDeal() const {
+  // TODO(nkostylev): Use carrier "default_deal_id" attribute.
+  CarrierDeals::const_iterator iter = deals_.begin();
+  if (iter != deals_.end())
+    return GetDeal((*iter).first);
+  else
+    return NULL;
+}
+
+const MobileConfig::CarrierDeal* MobileConfig::Carrier::GetDeal(
+    const std::string& deal_id) const {
+  CarrierDeals::const_iterator iter = deals_.find(deal_id);
+  if (iter != deals_.end()) {
+    CarrierDeal* deal = iter->second;
+    // Make sure that deal is still active,
+    // i.e. if deal expire date is defined, check it.
+    if (!deal->expire_date().is_null() &&
+        deal->expire_date() <= base::Time::Now()) {
+      return NULL;
+    }
+    return deal;
+  } else {
+    return NULL;
+  }
+}
+
+void MobileConfig::Carrier::InitFromDictionary(
+    base::DictionaryValue* carrier_dict, const std::string& initial_locale) {
   carrier_dict->GetString(kTopUpURLAttr, &top_up_url_);
+
+  bool exclude_deals = false;
+  if (carrier_dict->GetBoolean(kExcludeDealsAttr, &exclude_deals) &&
+      exclude_deals) {
+    RemoveDeals();
+  }
 
   // Extract list of external IDs for this carrier.
   ListValue* id_list = NULL;
@@ -136,37 +184,86 @@ MobileConfig::Carrier::Carrier(DictionaryValue* carrier_dict,
   }
 }
 
-MobileConfig::Carrier::~Carrier() {
+void MobileConfig::Carrier::RemoveDeals() {
   STLDeleteValues(&deals_);
 }
 
-const MobileConfig::CarrierDeal* MobileConfig::Carrier::GetDefaultDeal() const {
-  // TODO(nkostylev): Use carrier "default_deal_id" attribute.
-  CarrierDeals::const_iterator iter = deals_.begin();
-  if (iter != deals_.end())
-    return GetDeal((*iter).first);
+// MobileConfig implementation, public -----------------------------------------
+
+// static
+MobileConfig* MobileConfig::GetInstance() {
+  return Singleton<MobileConfig,
+      DefaultSingletonTraits<MobileConfig> >::get();
+}
+
+const MobileConfig::Carrier* MobileConfig::GetCarrier(
+    const std::string& carrier_id) const {
+  CarrierIdMap::const_iterator id_iter = carrier_id_map_.find(carrier_id);
+  std::string internal_id;
+  if (id_iter != carrier_id_map_.end())
+    internal_id = id_iter->second;
+  else
+    return NULL;
+  Carriers::const_iterator iter = carriers_.find(internal_id);
+  if (iter != carriers_.end())
+    return iter->second;
   else
     return NULL;
 }
 
-const MobileConfig::CarrierDeal* MobileConfig::Carrier::GetDeal(
-    const std::string& deal_id) const {
-  CarrierDeals::const_iterator iter = deals_.find(deal_id);
-  if (iter != deals_.end()) {
-    CarrierDeal* deal = iter->second;
-    // Make sure that deal is still active,
-    // i.e. if deal expire date is defined, check it.
-    if (!deal->expire_date().is_null() &&
-        deal->expire_date() <= base::Time::Now()) {
-      return NULL;
+// MobileConfig implementation, protected --------------------------------------
+
+bool MobileConfig::LoadManifestFromString(const std::string& manifest) {
+  if (!CustomizationDocument::LoadManifestFromString(manifest))
+    return false;
+
+  // Local config specific attribute.
+  bool exclude_deals = false;
+  if (root_.get() &&
+      root_->GetBoolean(kExcludeDealsAttr, &exclude_deals) &&
+      exclude_deals) {
+    for (Carriers::iterator iter = carriers_.begin();
+         iter != carriers_.end(); ++iter) {
+      iter->second->RemoveDeals();
     }
-    return deal;
-  } else {
-    return NULL;
   }
+
+  // Other parts are optional and are the same among global/local config.
+  DictionaryValue* carriers = NULL;
+  if (root_.get() && root_->GetDictionary(kCarriersAttr, &carriers)) {
+    for (DictionaryValue::key_iterator iter = carriers->begin_keys();
+         iter != carriers->end_keys(); ++iter) {
+      DictionaryValue* carrier_dict = NULL;
+      if (carriers->GetDictionary(*iter, &carrier_dict)) {
+        const std::string& internal_id = *iter;
+        Carriers::iterator iter = carriers_.find(internal_id);
+        if (iter != carriers_.end()) {
+          // Carrier already defined i.e. loading from the local config.
+          // New ID mappings in local config is not supported.
+          iter->second->InitFromDictionary(carrier_dict, initial_locale_);
+        } else {
+          Carrier* carrier = new Carrier(carrier_dict, initial_locale_);
+          if (!carrier->external_ids().empty()) {
+            // Map all external IDs to a single internal one.
+            for (std::vector<std::string>::const_iterator
+                 i = carrier->external_ids().begin();
+                 i != carrier->external_ids().end(); ++i) {
+              carrier_id_map_[*i] = internal_id;
+            }
+          } else {
+            // Trivial case - using same ID for external/internal one.
+            carrier_id_map_[internal_id] = internal_id;
+          }
+          carriers_[internal_id] = carrier;
+        }
+      }
+    }
+  }
+
+  return true;
 }
 
-// MobileConfig implementation. -------------------------------
+// MobileConfig implementation, private ----------------------------------------
 
 MobileConfig::MobileConfig()
     : CustomizationDocument(kAcceptedConfigVersion),
@@ -185,78 +282,59 @@ MobileConfig::~MobileConfig() {
   STLDeleteValues(&carriers_);
 }
 
-// static
-MobileConfig* MobileConfig::GetInstance() {
-  return Singleton<MobileConfig,
-      DefaultSingletonTraits<MobileConfig> >::get();
-}
-
 void MobileConfig::LoadConfig() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
-          &MobileConfig::ReadFileInBackground,
-          FilePath(kGlobalCarrierConfigPath)));
+          &MobileConfig::ReadConfigInBackground,
+          FilePath(kGlobalCarrierConfigPath),
+          FilePath(kLocalCarrierConfigPath)));
 }
 
-void MobileConfig::ReadFileInBackground(const FilePath& file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::string config;
-  if (file_util::ReadFileToString(file, &config)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &MobileConfig::LoadManifestFromString,
-            config));
+void MobileConfig::ProcessConfig(const std::string& global_config,
+                                 const std::string& local_config) {
+  // Global config is mandatory, local config is optional.
+  bool global_initialized = false;
+  bool local_initialized = true;
+  scoped_ptr<base::DictionaryValue> global_config_root;
+
+  if (!global_config.empty()) {
+    global_initialized = LoadManifestFromString(global_config);
+    // Backup global config root as it might be
+    // owerwritten while loading local config.
+    global_config_root.reset(root_.release());
+  }
+  if (!local_config.empty())
+    local_initialized = LoadManifestFromString(local_config);
+
+  // Treat any parser errors as fatal.
+  if (!global_initialized || !local_initialized) {
+    root_.reset(NULL);
+    local_config_root_.reset(NULL);
   } else {
-    VLOG(1) << "Failed to load mobile config from: "
-            << file.value();
+    local_config_root_.reset(root_.release());
+    root_.reset(global_config_root.release());
   }
 }
 
-const MobileConfig::Carrier* MobileConfig::GetCarrier(
-    const std::string& carrier_id) const {
-  CarrierIdMap::const_iterator id_iter = carrier_id_map_.find(carrier_id);
-  std::string internal_id;
-  if (id_iter != carrier_id_map_.end())
-    internal_id = id_iter->second;
-  else
-    return NULL;
-  Carriers::const_iterator iter = carriers_. find(internal_id);
-  if (iter != carriers_.end())
-    return iter->second;
-  else
-    return NULL;
-}
-
-bool MobileConfig::LoadManifestFromString(const std::string& manifest) {
-  if (!CustomizationDocument::LoadManifestFromString(manifest))
-    return false;
-
-  // Other parts are optional.
-  DictionaryValue* carriers = NULL;
-  if (root_.get() && root_->GetDictionary(kCarriersAttr, &carriers)) {
-    for (DictionaryValue::key_iterator iter = carriers->begin_keys();
-         iter != carriers->end_keys(); ++iter) {
-      DictionaryValue* carrier_dict = NULL;
-      if (carriers->GetDictionary(*iter, &carrier_dict)) {
-        const std::string& internal_id = *iter;
-        Carrier* carrier = new Carrier(carrier_dict, initial_locale_);
-        if (!carrier->external_ids().empty()) {
-          // Map all external IDs to a single internal one.
-          for (std::vector<std::string>::const_iterator
-               i = carrier->external_ids().begin();
-               i != carrier->external_ids().end(); ++i) {
-            carrier_id_map_[*i] = internal_id;
-          }
-        } else {
-          // Trivial case - using same ID for external/internal one.
-          carrier_id_map_[internal_id] = internal_id;
-        }
-        carriers_[internal_id] = carrier;
-      }
-    }
+void MobileConfig::ReadConfigInBackground(const FilePath& global_config_file,
+                                          const FilePath& local_config_file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  std::string global_config;
+  std::string local_config;
+  if (!file_util::ReadFileToString(global_config_file, &global_config)) {
+    VLOG(1) << "Failed to load global mobile config from: "
+            << global_config_file.value();
   }
-  return true;
+  if (!file_util::ReadFileToString(local_config_file, &local_config)) {
+    VLOG(1) << "Failed to load local mobile config from: "
+            << local_config_file.value();
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &MobileConfig::ProcessConfig,
+          global_config,
+          local_config));
 }
 
 }  // namespace chromeos

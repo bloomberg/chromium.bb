@@ -27,10 +27,16 @@ namespace chromeos {
 
 // Class that processes mobile (carrier) configuration.
 // Confugration is defined as a JSON file - global and local one.
-// First global configuration is loaded then local one.
-// All global config is inherited unless some carrier properties are overidden
-// or carrier deals are explicitly market as non inherited.
-// TODO(nkostylev): Load local config.
+// First global configuration is loaded then local one if it exists.
+// Notes on global/local configuration:
+// 1. All global config data is inherited unless some carrier properties
+//    are overidden or carrier deals are explicitly marked as excluded.
+// 2. Local config could mark that all carrier deals should be excluded or
+//    only specific carrier deals are excluded.
+// 3. New ID mappings in local config are not supported.
+// 4. If local config exists, at least trivial global config should exist too.
+// 5. If any error occurs while parsing global/local config,
+//    MobileConfig::IsReady() will return false.
 class MobileConfig : public CustomizationDocument  {
  public:
   // Carrier deal.
@@ -65,8 +71,8 @@ class MobileConfig : public CustomizationDocument  {
   // Carrier config.
   class Carrier {
    public:
-    explicit Carrier(base::DictionaryValue* carrier_dict,
-                     const std::string& initial_locale);
+    Carrier(base::DictionaryValue* carrier_dict,
+            const std::string& initial_locale);
     ~Carrier();
 
     const std::vector<std::string>& external_ids() { return external_ids_; }
@@ -78,6 +84,14 @@ class MobileConfig : public CustomizationDocument  {
 
     // Returns carrier deal by ID.
     const CarrierDeal* GetDeal(const std::string& deal_id) const;
+
+    // Initializes carrier from supplied dictionary.
+    // Multiple calls supported (i.e. second call for local config).
+    void InitFromDictionary(base::DictionaryValue* carrier_dict,
+                            const std::string& initial_locale);
+
+    // Removes all carrier deals. Might be executed when local config is loaded.
+    void RemoveDeals();
 
    private:
     // Maps deal id to deal instance.
@@ -99,9 +113,6 @@ class MobileConfig : public CustomizationDocument  {
 
   static MobileConfig* GetInstance();
 
-  // Loads carrier configuration.
-  void LoadConfig();
-
   // Returns carrier by external ID.
   const MobileConfig::Carrier* GetCarrier(const std::string& carrier_id) const;
 
@@ -113,6 +124,8 @@ class MobileConfig : public CustomizationDocument  {
   FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, BadManifest);
   FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, DealOtherLocale);
   FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, OldDeal);
+  FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, LocalConfigNoDeals);
+  FRIEND_TEST_ALL_PREFIXES(MobileConfigTest, LocalConfig);
   friend struct DefaultSingletonTraits<MobileConfig>;
 
   // C-tor for singleton construction.
@@ -124,8 +137,16 @@ class MobileConfig : public CustomizationDocument  {
 
   virtual ~MobileConfig();
 
-  // Executes on FILE thread and reads file to string.
-  void ReadFileInBackground(const FilePath& file);
+  // Loads carrier configuration.
+  void LoadConfig();
+
+  // Processes global/local config.
+  void ProcessConfig(const std::string& global_config,
+                     const std::string& local_config);
+
+  // Executes on FILE thread and reads config files to string.
+  void ReadConfigInBackground(const FilePath& global_config_file,
+                              const FilePath& local_config_file);
 
   // Maps external carrier ID to internal carrier ID.
   CarrierIdMap carrier_id_map_;
@@ -135,6 +156,10 @@ class MobileConfig : public CustomizationDocument  {
 
   // Initial locale value.
   std::string initial_locale_;
+
+  // Root value of the local config (if it exists).
+  // Global config is stored in root_ of the base class.
+  scoped_ptr<base::DictionaryValue> local_config_root_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileConfig);
 };
