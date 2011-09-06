@@ -16,6 +16,9 @@ const char kTestCompleteSuccess[] = "OK";
 }  // namespace npapi_test.
 
 NPAPITesterBase::NPAPITesterBase() {
+  // Some NPAPI tests schedule garbage collection to force object tear-down.
+  launch_arguments_.AppendSwitchASCII(switches::kJavaScriptFlags,
+                                      "--expose_gc");
 }
 
 void NPAPITesterBase::SetUp() {

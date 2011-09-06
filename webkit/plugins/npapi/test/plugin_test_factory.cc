@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "webkit/plugins/npapi/test/plugin_arguments_test.h"
 #include "webkit/plugins/npapi/test/plugin_delete_plugin_in_stream_test.h"
+#include "webkit/plugins/npapi/test/plugin_delete_plugin_in_deallocate_test.h"
 #include "webkit/plugins/npapi/test/plugin_get_javascript_url_test.h"
 #include "webkit/plugins/npapi/test/plugin_get_javascript_url2_test.h"
 #include "webkit/plugins/npapi/test/plugin_geturl_test.h"
@@ -99,6 +100,8 @@ PluginTest* CreatePluginTest(const std::string& test_name,
   } else if (test_name == "setup") {
     // "plugin" is the name for plugin documents.
     new_test = new PluginSetupTest(instance, host_functions);
+  } else if (test_name == "delete_plugin_in_deallocate_test") {
+    new_test = new DeletePluginInDeallocateTest(instance, host_functions);
   }
 
   return new_test;

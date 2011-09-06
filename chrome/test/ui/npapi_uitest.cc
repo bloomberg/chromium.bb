@@ -29,13 +29,14 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "content/browser/net/url_request_mock_http_job.h"
+#include "content/common/content_switches.h"
 
 using npapi_test::kTestCompleteCookie;
 using npapi_test::kTestCompleteSuccess;
 
-static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
-
 namespace {
+
+const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
 
 class NPAPIAutomationEnabledTest : public NPAPIVisiblePluginTester {
  public:
@@ -155,6 +156,17 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
   WaitForFinish("self_delete_plugin_stream", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                TestTimeouts::action_max_timeout_ms());
+}
+
+TEST_F(NPAPIVisiblePluginTester, DeletePluginInDeallocate) {
+  show_window_ = true;
+  const FilePath test_case(
+      FILE_PATH_LITERAL("plugin_delete_in_deallocate.html"));
+  GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
+  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
+  WaitForFinish("delete_plugin_in_deallocate_test", "signaller", url,
                 kTestCompleteCookie, kTestCompleteSuccess,
                 TestTimeouts::action_max_timeout_ms());
 }

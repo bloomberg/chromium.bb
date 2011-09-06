@@ -583,6 +583,8 @@
             '../../plugins/npapi/test/plugin_arguments_test.h',
             '../../plugins/npapi/test/plugin_create_instance_in_paint.cc',
             '../../plugins/npapi/test/plugin_create_instance_in_paint.h',
+            '../../plugins/npapi/test/plugin_delete_plugin_in_deallocate_test.cc',
+            '../../plugins/npapi/test/plugin_delete_plugin_in_deallocate_test.h',
             '../../plugins/npapi/test/plugin_delete_plugin_in_stream_test.cc',
             '../../plugins/npapi/test/plugin_delete_plugin_in_stream_test.h',
             '../../plugins/npapi/test/plugin_get_javascript_url_test.cc',
