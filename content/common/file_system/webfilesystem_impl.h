@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_FILE_SYSTEM_WEBFILESYSTEM_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 
 namespace WebKit {
@@ -19,101 +20,43 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
   WebFileSystemImpl();
   virtual ~WebFileSystemImpl() { }
 
-  // New WebFileSystem overrides.
+  // WebFileSystem implementation.
   virtual void move(
       const WebKit::WebURL& src_path,
       const WebKit::WebURL& dest_path,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void copy(
       const WebKit::WebURL& src_path,
       const WebKit::WebURL& dest_path,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void remove(
       const WebKit::WebURL& path,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void removeRecursively(
       const WebKit::WebURL& path,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void readMetadata(
       const WebKit::WebURL& path,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void createFile(
       const WebKit::WebURL& path,
       bool exclusive,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void createDirectory(
       const WebKit::WebURL& path,
       bool exclusive,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void fileExists(
       const WebKit::WebURL& path,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void directoryExists(
       const WebKit::WebURL& path,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual void readDirectory(
       const WebKit::WebURL& path,
-      WebKit::WebFileSystemCallbacks*);
-
+      WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual WebKit::WebFileWriter* createFileWriter(
-      const WebKit::WebURL& path, WebKit::WebFileWriterClient*);
-
-  // Old WebFileSystem overrides, soon to go away.
-  virtual void move(
-      const WebKit::WebString& src_path,
-      const WebKit::WebString& dest_path,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void copy(
-      const WebKit::WebString& src_path,
-      const WebKit::WebString& dest_path,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void remove(
-      const WebKit::WebString& path,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void removeRecursively(
-      const WebKit::WebString& path,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void readMetadata(
-      const WebKit::WebString& path,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void createFile(
-      const WebKit::WebString& path,
-      bool exclusive,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void createDirectory(
-      const WebKit::WebString& path,
-      bool exclusive,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void fileExists(
-      const WebKit::WebString& path,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void directoryExists(
-      const WebKit::WebString& path,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual void readDirectory(
-      const WebKit::WebString& path,
-      WebKit::WebFileSystemCallbacks*);
-
-  virtual WebKit::WebFileWriter* createFileWriter(
-      const WebKit::WebString& path, WebKit::WebFileWriterClient*);
+      const WebKit::WebURL& path, WebKit::WebFileWriterClient*) OVERRIDE;
 };
 
 #endif  // CONTENT_COMMON_FILE_SYSTEM_WEBFILESYSTEM_IMPL_H_

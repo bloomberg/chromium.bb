@@ -36,27 +36,11 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
     return false;
 
   std::string temp = url.path();
-  // TODO(ericu) remove this code when that ceases to be true, which will be as
-  // soon as the WEBFILESYSTEMCALLBACKS_USE_URL_NOT_STRING macro goes into
-  // WebKit.
-  // On Windows, this will have backslashes for now.
-  // url will look something like:
-  //    filesystem:http://example.com/temporary/\dir\file.txt
-  // temp will look something like:
-  //    http://example.com/temporary/\dir\file.txt
-  // On posix, url will look something like:
-  //    filesystem:http://example.com/temporary/dir/file.txt
-  // temp will look something like:
-  //    http://example.com/temporary/dir/file.txt
-  size_t pos = temp.find('\\');
-  for (; pos != std::string::npos; pos = temp.find('\\', pos + 1)) {
-    temp[pos] = '/';
-  }
   // TODO(ericu): This should probably be done elsewhere after the stackable
   // layers are properly in.  We're supposed to reject any paths that contain
   // '..' segments, but the GURL constructor is helpfully resolving them for us.
   // Make sure there aren't any before we call it.
-  pos = temp.find("..");
+  size_t pos = temp.find("..");
   for (; pos != std::string::npos; pos = temp.find("..", pos + 1)) {
     if ((pos == 0 || temp[pos - 1] == '/') &&
         (pos == temp.length() - 2 || temp[pos + 2] == '/'))

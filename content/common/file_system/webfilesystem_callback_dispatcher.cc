@@ -15,14 +15,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFileInfo;
 using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFileSystemEntry;
 using WebKit::WebString;
-using WebKit::WebURL;
 using WebKit::WebVector;
 
 WebFileSystemCallbackDispatcher::WebFileSystemCallbackDispatcher(
@@ -62,12 +60,7 @@ void WebFileSystemCallbackDispatcher::DidReadDirectory(
 
 void WebFileSystemCallbackDispatcher::DidOpenFileSystem(
     const std::string& name, const GURL& root) {
-// Temporary hack to ease a 4-phase Chromium/WebKit commit.
-#ifdef WEBFILESYSTEMCALLBACKS_USE_URL_NOT_STRING
   callbacks_->didOpenFileSystem(UTF8ToUTF16(name), root);
-#else
-  callbacks_->didOpenFileSystem(UTF8ToUTF16(name), UTF8ToUTF16(root.spec()));
-#endif
 }
 
 void WebFileSystemCallbackDispatcher::DidFail(
