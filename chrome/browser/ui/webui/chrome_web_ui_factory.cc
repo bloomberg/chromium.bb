@@ -196,8 +196,10 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
     return &NewWebUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
+#if defined(ENABLE_CONFIGURATION_POLICY)
   if (url.host() == chrome::kChromeUIPolicyHost)
     return &NewWebUI<PolicyUI>;
+#endif
   if (url.host() == chrome::kChromeUISessionsHost)
     return &NewWebUI<SessionsUI>;
   if (url.host() == chrome::kChromeUISyncInternalsHost)

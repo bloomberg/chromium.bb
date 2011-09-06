@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
-#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
@@ -21,6 +20,10 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/url_blacklist_manager.h"
+#endif
 
 namespace {
 
@@ -72,6 +75,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     net::CompletionCallback* callback,
     GURL* new_url) {
+#if defined(ENABLE_CONFIGURATION_POLICY)
   // TODO(joaodasilva): This prevents extensions from seeing URLs that are
   // blocked. However, an extension might redirect the request to another URL,
   // which is not blocked.
@@ -84,6 +88,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
         net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST, params);
     return net::ERR_NETWORK_ACCESS_DENIED;
   }
+#endif
 
   if (!enable_referrers_->GetValue())
     request->set_referrer(std::string());

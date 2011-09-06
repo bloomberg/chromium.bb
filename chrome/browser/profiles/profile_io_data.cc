@@ -517,8 +517,9 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_referrers_.Destroy();
   clear_local_state_on_exit_.Destroy();
   safe_browsing_enabled_.Destroy();
-  if (url_blacklist_manager_.get())
+#if defined(ENABLE_CONFIGURATION_POLICY)
     url_blacklist_manager_->ShutdownOnUIThread();
+#endif
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
