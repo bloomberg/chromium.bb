@@ -172,6 +172,8 @@
         '../content/common/json_value_serializer.cc',
         '../content/common/json_value_serializer.h',
 
+        'host/plugin/host_log_handler.cc',
+        'host/plugin/host_log_handler.h',
         'host/plugin/host_plugin.cc',
         'host/plugin/host_plugin.def',
         'host/plugin/host_plugin.rc',

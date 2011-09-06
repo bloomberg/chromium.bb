@@ -80,11 +80,10 @@ class HostNPScriptObject : public HostStatusObserver {
       remoting::protocol::ConnectionToClient* client) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;
 
-  // A Log Message Handler that is called after each LOG message has been
-  // processed. This must be of type LogMessageHandlerFunction defined in
-  // base/logging.h.
-  static bool LogToUI(int severity, const char* file, int line,
-                      size_t message_start, const std::string& str);
+  // Post LogDebugInfo to the correct proxy (and thus, on the correct thread).
+  // This should only be called by HostLogHandler. To log to the UI, use the
+  // standard LOG(INFO) and it will be sent to this method.
+  void PostLogDebugInfo(const std::string& message);
 
  private:
   enum State {
@@ -114,6 +113,7 @@ class HostNPScriptObject : public HostStatusObserver {
   void OnStateChanged(State state);
 
   // Call LogDebugInfo handler if there is one.
+  // This must be called on the correct thread.
   void LogDebugInfo(const std::string& message);
 
   // Callbacks invoked during session setup.
@@ -180,6 +180,9 @@ class HostNPScriptObject : public HostStatusObserver {
 
   base::WaitableEvent disconnected_event_;
 
+  // True if we're in the middle of handling a log message.
+  bool am_currently_logging_;
+
   scoped_ptr<policy_hack::NatPolicy> nat_policy_;
 
   // Host the current nat traversal policy setting.
@@ -201,4 +204,4 @@ class HostNPScriptObject : public HostStatusObserver {
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::HostNPScriptObject);
 
-#endif  // REMOTING_HOST_HOST_SCRIPT_OBJECT_H_
+#endif  // REMOTING_HOST_PLUGIN_HOST_SCRIPT_OBJECT_H_

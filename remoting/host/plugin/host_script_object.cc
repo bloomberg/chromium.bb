@@ -11,13 +11,13 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "remoting/base/auth_token_util.h"
-#include "remoting/base/util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/in_memory_host_config.h"
+#include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/plugin/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/support_access_verifier.h"
@@ -72,13 +72,6 @@ const int kMaxLoginAttempts = 5;
 
 }  // namespace
 
-// This flag blocks LOGs to the UI if we're already in the middle of logging
-// to the UI. This prevents a potential infinite loop if we encounter an error
-// while sending the log message to the UI.
-static bool g_logging_to_plugin = false;
-static HostNPScriptObject* g_logging_scriptable_object = NULL;
-static logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
-
 HostNPScriptObject::HostNPScriptObject(
     NPP plugin,
     NPObject* parent,
@@ -92,20 +85,9 @@ HostNPScriptObject::HostNPScriptObject(
       host_context_(plugin_message_loop_proxy_),
       failed_login_attempts_(0),
       disconnected_event_(true, false),
+      am_currently_logging_(false),
       nat_traversal_enabled_(false),
       policy_received_(false) {
-  // Set up log message handler.
-  // Note that this approach doesn't quite support having multiple instances
-  // of Chromoting running. In that case, the most recently opened tab will
-  // grab all the debug log messages, and when any Chromoting tab is closed
-  // the logging handler will go away.
-  // Since having multiple Chromoting tabs is not a primary use case, and this
-  // is just debug logging, we're punting improving debug log support for that
-  // case.
-  if (g_logging_old_handler == NULL)
-    g_logging_old_handler = logging::GetLogMessageHandler();
-  logging::SetLogMessageHandler(&LogToUI);
-  g_logging_scriptable_object = this;
 }
 
 HostNPScriptObject::~HostNPScriptObject() {
@@ -115,9 +97,7 @@ HostNPScriptObject::~HostNPScriptObject() {
   // tasks on the UI thread while we are stopping the host.
   desktop_environment_->Shutdown();
 
-  logging::SetLogMessageHandler(g_logging_old_handler);
-  g_logging_old_handler = NULL;
-  g_logging_scriptable_object = NULL;
+  HostLogHandler::UnregisterLoggingScriptObject(this);
 
   plugin_message_loop_proxy_->Detach();
 
@@ -275,6 +255,7 @@ bool HostNPScriptObject::SetProperty(const std::string& property_name,
   if (property_name == kAttrNameLogDebugInfo) {
     if (NPVARIANT_IS_OBJECT(*value)) {
       log_debug_info_func_ = NPVARIANT_TO_OBJECT(*value);
+      HostLogHandler::RegisterLoggingScriptObject(this);
       return true;
     } else {
       SetException("SetProperty: unexpected type for property " +
@@ -611,40 +592,32 @@ void HostNPScriptObject::OnStateChanged(State state) {
   }
 }
 
-// static
-bool HostNPScriptObject::LogToUI(int severity, const char* file, int line,
-                                 size_t message_start,
-                                 const std::string& str) {
-  // The |g_logging_to_plugin| check is to prevent logging to the scriptable
-  // object if we're already in the middle of logging.
-  // This can occur if we try to log an error while we're in the scriptable
-  // object logging code.
-  if (g_logging_scriptable_object && !g_logging_to_plugin) {
-    g_logging_to_plugin = true;
-    std::string message = remoting::GetTimestampString();
-    message += (str.c_str() + message_start);
-    g_logging_scriptable_object->LogDebugInfo(message);
-    g_logging_to_plugin = false;
+void HostNPScriptObject::PostLogDebugInfo(const std::string& message) {
+  if (plugin_message_loop_proxy_->BelongsToCurrentThread()) {
+    // Make sure we're not currently processing a log message.
+    // We only need to check this if we're on the plugin thread.
+    if (am_currently_logging_)
+      return;
   }
-  if (g_logging_old_handler)
-    return (g_logging_old_handler)(severity, file, line, message_start, str);
-  return false;
+
+  // Always post (even if we're already on the correct thread) so that debug
+  // log messages are shown in the correct order.
+  plugin_message_loop_proxy_->PostTask(
+      FROM_HERE, base::Bind(&HostNPScriptObject::LogDebugInfo,
+                            base::Unretained(this), message));
 }
 
 void HostNPScriptObject::LogDebugInfo(const std::string& message) {
-  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
-    plugin_message_loop_proxy_->PostTask(
-        FROM_HERE, base::Bind(&HostNPScriptObject::LogDebugInfo,
-                              base::Unretained(this), message));
-    return;
-  }
-
   if (log_debug_info_func_.get()) {
+    am_currently_logging_ = true;
     NPVariant log_message;
     STRINGZ_TO_NPVARIANT(message.c_str(), log_message);
     bool is_good = InvokeAndIgnoreResult(log_debug_info_func_.get(),
                                          &log_message, 1);
-    LOG_IF(ERROR, !is_good) << "LogDebugInfo failed";
+    if (!is_good) {
+      LOG(ERROR) << "ERROR - LogDebugInfo failed\n";
+    }
+    am_currently_logging_ = false;
   }
 }
 

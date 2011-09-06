@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/stringize_macros.h"
 #include "remoting/base/plugin_message_loop_proxy.h"
+#include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/plugin/host_script_object.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -43,6 +44,7 @@ uint64_t __cdecl __udivdi3(uint64_t a, uint64_t b) {
 #endif
 
 using remoting::g_npnetscape_funcs;
+using remoting::HostLogHandler;
 using remoting::HostNPScriptObject;
 using remoting::StringFromNPIdentifier;
 
@@ -352,6 +354,12 @@ NPError CreatePlugin(NPMIMEType pluginType,
                      char** argv,
                      NPSavedData* saved) {
   VLOG(2) << "CreatePlugin";
+
+  // Register a global log handler.
+  // The LogMessage registration code is not thread-safe, so we need to perform
+  // this while we're running in a single thread.
+  HostLogHandler::RegisterLogMessageHandler();
+
   HostNPPlugin* plugin = new HostNPPlugin(instance, mode);
   instance->pdata = plugin;
   if (!plugin->Init(argc, argn, argv, saved)) {
@@ -366,6 +374,14 @@ NPError CreatePlugin(NPMIMEType pluginType,
 NPError DestroyPlugin(NPP instance,
                       NPSavedData** save) {
   VLOG(2) << "DestroyPlugin";
+
+  // Normally, we would unregister the global log handler that we registered
+  // in CreatePlugin. However, the LogHandler registration code is not thread-
+  // safe so we could crash if we update (register or unregister) the
+  // LogHandler while it's being read on another thread.
+  // At this point, all our threads should be shutdown, but it's safer to leave
+  // the handler registered until we're completely destroyed.
+
   HostNPPlugin* plugin = PluginFromInstance(instance);
   if (plugin) {
     plugin->Save(save);
