@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/url_blacklist_manager.h"
 
+#include <ostream>
+
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "chrome/common/pref_names.h"
@@ -136,6 +138,13 @@ struct FilterTestParams {
   uint16 port_;
   std::string path_;
 };
+
+// Make Valgrind happy. Without this function, a generic one will print the
+// raw bytes in FilterTestParams, which due to some likely padding will access
+// uninitialized memory.
+void PrintTo(const FilterTestParams& params, std::ostream* os) {
+  *os << params.filter();
+}
 
 class URLBlacklistFilterToComponentsTest
     : public testing::TestWithParam<FilterTestParams> {
