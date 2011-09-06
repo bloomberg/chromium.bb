@@ -10054,6 +10054,30 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Please update your sync passphrase.
       </message>
 
+      <!-- Sync sign in global error message-->
+      <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync sign in error bubble view.">
+        Sync Error
+      </message>
+      <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync sign in error bubble view.">
+        Account sign-in details are out of date. Please update your sync passphrase.
+      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync sign in error bubble view.">
+          Update...
+        </message>
+        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync sign in error wrench menu item.">
+          Update sync passphrase...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="In Title Case: The accept button in the sync sign in error bubble view.">
+          Update...
+        </message>
+        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="In Title Case: The sync sign in error wrench menu item.">
+          Update Sync Passphrase...
+        </message>
+      </if>
+
       <!-- Translate Info Bar -->
       <message name="IDS_TRANSLATE_INFOBAR_OPTIONS" desc="Text to show for the translate infobar options menu button">
         Options
