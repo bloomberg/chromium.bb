@@ -39,7 +39,6 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
         const Geoposition& position,
         bool server_error,
         const string16& access_token,
-        const GatewayData& gateway_data,
         const RadioData& radio_data,
         const WifiData& wifi_data) = 0;
 
@@ -57,7 +56,6 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
   // started. In all cases, any currently pending request will be canceled.
   bool MakeRequest(const std::string& host,
                    const string16& access_token,
-                   const GatewayData& gateway_data,
                    const RadioData& radio_data,
                    const WifiData& wifi_data,
                    const base::Time& timestamp);
@@ -81,7 +79,6 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
 
   // Keep a copy of the data sent in the request, so we can refer back to it
   // when the response arrives.
-  GatewayData gateway_data_;
   RadioData radio_data_;
   WifiData wifi_data_;
   base::Time timestamp_;  // Timestamp of the above data, not of the request.

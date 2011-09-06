@@ -121,8 +121,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
  public:
   virtual void SetUp() {
     access_token_store_ = new FakeAccessTokenStore;
-    gateway_data_provider_ =
-        MockDeviceDataProviderImpl<GatewayData>::CreateInstance();
     radio_data_provider_ =
         MockDeviceDataProviderImpl<RadioData>::CreateInstance();
     wifi_data_provider_ =
@@ -132,7 +130,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
   virtual void TearDown() {
     WifiDataProvider::ResetFactory();
     RadioDataProvider::ResetFactory();
-    GatewayDataProvider::ResetFactory();
   }
 
   LocationProviderBase* CreateProvider(bool set_permission_granted) {
@@ -150,8 +147,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
   GeolocationNetworkProviderTest() : test_server_url_(kTestServerUrl) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
-    GatewayDataProvider::SetFactory(
-        MockDeviceDataProviderImpl<GatewayData>::GetInstance);
     RadioDataProvider::SetFactory(
         MockDeviceDataProviderImpl<RadioData>::GetInstance);
     WifiDataProvider::SetFactory(
@@ -204,19 +199,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
     return wifi_data;
   }
 
-  // Creates gateway data containing the specified number of routers, with
-  // some differentiating charactistics in each.
-  static GatewayData CreateReferenceRouterData(int router_count) {
-    GatewayData data;
-    for (int i = 0; i < router_count; ++i) {
-      RouterData router;
-      router.mac_address =
-          ASCIIToUTF16(base::StringPrintf("%02d-34-56-78-54-32", i));
-      data.router_data.insert(router);
-    }
-    return data;
-  }
-
   static Geoposition CreateReferencePosition(int id) {
     Geoposition pos;
     pos.latitude = id;
@@ -224,34 +206,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
     pos.altitude = 2 * id;
     pos.timestamp = base::Time::Now();
     return pos;
-  }
-
-  static void ParseGatewayRequest(const std::string& request_data,
-                                  GatewayData* gateway_data_out) {
-    scoped_ptr<Value> value(base::JSONReader::Read(request_data, false));
-    EXPECT_TRUE(value != NULL);
-    EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
-    DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.get());
-    std::string attr_value;
-    EXPECT_TRUE(dictionary->GetString("version", &attr_value));
-    EXPECT_EQ(attr_value, "1.1.0");
-    EXPECT_TRUE(dictionary->GetString("host", &attr_value));
-    EXPECT_EQ(attr_value, kTestHost);
-    // Everything else is optional.
-    ListValue* gateways;
-    if (dictionary->GetList("gateways", &gateways)) {
-      int i = 0;
-      for (ListValue::const_iterator it = gateways->begin();
-           it < gateways->end(); ++it, ++i) {
-        EXPECT_EQ(Value::TYPE_DICTIONARY, (*it)->GetType());
-        DictionaryValue* gateway = static_cast<DictionaryValue*>(*it);
-        RouterData data;
-        gateway->GetString("mac_address", &data.mac_address);
-        gateway_data_out->router_data.insert(data);
-      }
-    } else {
-      gateway_data_out->router_data.clear();
-    }
   }
 
   static void CheckRequestIsValid(const std::string& request_url,
@@ -311,8 +265,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
   MessageLoop main_message_loop_;
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   TestURLFetcherFactory url_fetcher_factory_;
-  scoped_refptr<MockDeviceDataProviderImpl<GatewayData> >
-      gateway_data_provider_;
   scoped_refptr<MockDeviceDataProviderImpl<RadioData> > radio_data_provider_;
   scoped_refptr<MockDeviceDataProviderImpl<WifiData> > wifi_data_provider_;
 };
@@ -357,35 +309,28 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
 TEST_F(GeolocationNetworkProviderTest, MultipleStartProvider) {
   scoped_ptr<LocationProviderBase> provider_1(CreateProvider(true));
   scoped_ptr<LocationProviderBase> provider_2(CreateProvider(true));
-  ASSERT_TRUE(gateway_data_provider_);
   ASSERT_TRUE(radio_data_provider_);
   ASSERT_TRUE(wifi_data_provider_);
-  EXPECT_EQ(0, gateway_data_provider_->start_calls_);
   EXPECT_EQ(0, radio_data_provider_->start_calls_);
   EXPECT_EQ(0, wifi_data_provider_->start_calls_);
-  EXPECT_EQ(0, gateway_data_provider_->stop_calls_);
   EXPECT_EQ(0, radio_data_provider_->stop_calls_);
   EXPECT_EQ(0, wifi_data_provider_->stop_calls_);
 
   // Start first provider.
   EXPECT_TRUE(provider_1->StartProvider(false));
-  EXPECT_EQ(1, gateway_data_provider_->start_calls_);
   EXPECT_EQ(1, radio_data_provider_->start_calls_);
   EXPECT_EQ(1, wifi_data_provider_->start_calls_);
   // Start second provider.
   EXPECT_TRUE(provider_2->StartProvider(false));
-  EXPECT_EQ(1, gateway_data_provider_->start_calls_);
   EXPECT_EQ(1, radio_data_provider_->start_calls_);
   EXPECT_EQ(1, wifi_data_provider_->start_calls_);
 
   // Stop first provider.
   provider_1->StopProvider();
-  EXPECT_EQ(0, gateway_data_provider_->stop_calls_);
   EXPECT_EQ(0, radio_data_provider_->stop_calls_);
   EXPECT_EQ(0, wifi_data_provider_->stop_calls_);
   // Stop second provider.
   provider_2->StopProvider();
-  EXPECT_EQ(1, gateway_data_provider_->stop_calls_);
   EXPECT_EQ(1, radio_data_provider_->stop_calls_);
   EXPECT_EQ(1, wifi_data_provider_->stop_calls_);
 }
@@ -581,27 +526,22 @@ TEST_F(GeolocationNetworkProviderTest, NetworkPositionCache) {
   NetworkLocationProvider::PositionCache cache;
 
   const int kCacheSize = NetworkLocationProvider::PositionCache::kMaximumSize;
-  for (int i = 0; i < kCacheSize * 2 + 1; ++i) {
+  for (int i = 1; i < kCacheSize * 2 + 1; ++i) {
     Geoposition pos = CreateReferencePosition(i);
-    bool ret = cache.CachePosition(CreateReferenceRouterData(2),
-                                   CreateReferenceWifiScanData(i), pos);
+    bool ret = cache.CachePosition(CreateReferenceWifiScanData(i), pos);
     EXPECT_TRUE(ret)  << i;
-    const Geoposition* item = cache.FindPosition(
-        CreateReferenceRouterData(2),
-        CreateReferenceWifiScanData(i));
+    const Geoposition* item =
+        cache.FindPosition(CreateReferenceWifiScanData(i));
     ASSERT_TRUE(item) << i;
     EXPECT_EQ(pos.latitude, item->latitude)  << i;
     EXPECT_EQ(pos.longitude, item->longitude)  << i;
-    if (i < kCacheSize) {
+    if (i <= kCacheSize) {
       // Nothing should have spilled yet; check oldest item is still there.
-      EXPECT_TRUE(cache.FindPosition(CreateReferenceRouterData(2),
-                                     CreateReferenceWifiScanData(0)));
+      EXPECT_TRUE(cache.FindPosition(CreateReferenceWifiScanData(1)));
     } else {
       const int evicted = i - kCacheSize;
-      EXPECT_FALSE(cache.FindPosition(CreateReferenceRouterData(2),
-                                      CreateReferenceWifiScanData(evicted)));
-      EXPECT_TRUE(cache.FindPosition(CreateReferenceRouterData(2),
-                                     CreateReferenceWifiScanData(evicted + 1)));
+      EXPECT_FALSE(cache.FindPosition(CreateReferenceWifiScanData(evicted)));
+      EXPECT_TRUE(cache.FindPosition(CreateReferenceWifiScanData(evicted + 1)));
     }
   }
 }

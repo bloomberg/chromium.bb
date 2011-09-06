@@ -23,7 +23,6 @@ class URLFetcherProtectEntry;
 
 class NetworkLocationProvider
     : public LocationProviderBase,
-      public GatewayDataProvider::ListenerInterface,
       public RadioDataProvider::ListenerInterface,
       public WifiDataProvider::ListenerInterface,
       public NetworkLocationRequest::ListenerInterface {
@@ -42,21 +41,18 @@ class NetworkLocationProvider
     // WiFi data. In the case of the cache exceeding kMaximumSize this will
     // evict old entries in FIFO orderer of being added.
     // Returns true on success, false otherwise.
-    bool CachePosition(const GatewayData& gateway_data,
-                       const WifiData& wifi_data,
+    bool CachePosition(const WifiData& wifi_data,
                        const Geoposition& position);
 
     // Searches for a cached position response for the current set of device
     // data. Returns NULL if the position is not in the cache, or the cached
     // position if available. Ownership remains with the cache.
-    const Geoposition* FindPosition(const GatewayData& gateway_data,
-                                    const WifiData& wifi_data);
+    const Geoposition* FindPosition(const WifiData& wifi_data);
 
    private:
     // Makes the key for the map of cached positions, using a set of
     // device data. Returns true if a good key was generated, false otherwise.
-    static bool MakeKey(const GatewayData& gateway_data,
-                        const WifiData& wifi_data,
+    static bool MakeKey(const WifiData& wifi_data,
                         string16* key);
 
     // The cache of positions. This is stored as a map keyed on a string that
@@ -91,7 +87,6 @@ class NetworkLocationProvider
   bool IsStarted() const;
 
   // DeviceDataProvider::ListenerInterface implementation.
-  virtual void DeviceDataUpdateAvailable(GatewayDataProvider* provider);
   virtual void DeviceDataUpdateAvailable(RadioDataProvider* provider);
   virtual void DeviceDataUpdateAvailable(WifiDataProvider* provider);
 
@@ -99,22 +94,18 @@ class NetworkLocationProvider
   virtual void LocationResponseAvailable(const Geoposition& position,
                                          bool server_error,
                                          const string16& access_token,
-                                         const GatewayData& gateway_data,
                                          const RadioData& radio_data,
                                          const WifiData& wifi_data);
 
   scoped_refptr<AccessTokenStore> access_token_store_;
 
   // The device data providers, acquired via global factories.
-  GatewayDataProvider* gateway_data_provider_;
   RadioDataProvider* radio_data_provider_;
   WifiDataProvider* wifi_data_provider_;
 
   // The radio and wifi data, flags to indicate if each data set is complete.
-  GatewayData gateway_data_;
   RadioData radio_data_;
   WifiData wifi_data_;
-  bool is_gateway_data_complete_;
   bool is_radio_data_complete_;
   bool is_wifi_data_complete_;
 

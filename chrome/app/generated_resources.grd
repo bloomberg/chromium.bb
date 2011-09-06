@@ -4481,7 +4481,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Experimental location features
       </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental location features' lab.">
-        Enables experimental extensions to the geolocation feature. Includes using operating system location APIs (where available), and sending additional local network configuration data to the Google location service to provide higher accuracy positioning.
+        Enables experimental extensions to the geolocation feature to use operating system location APIs (where available).
       </message>
       <message name="IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_NAME" desc="Name of the 'Block all third-party cookies' lab.">
         Block all third-party cookies

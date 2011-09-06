@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,25 +81,4 @@ bool WifiData::DiffersSignificantly(const WifiData& other) const {
 
   // Test how many have changed.
   return max_ap_count > num_common + difference_threadhold;
-}
-
-GatewayData::GatewayData() {}
-
-GatewayData::~GatewayData() {}
-
-bool GatewayData::DiffersSignificantly(const GatewayData& other) const {
-  // Any change is significant.
-  if (this->router_data.size() != other.router_data.size())
-    return true;
-  RouterDataSet::const_iterator iter1 = router_data.begin();
-  RouterDataSet::const_iterator iter2 = other.router_data.begin();
-  while (iter1 != router_data.end()) {
-    if (iter1->mac_address != iter2->mac_address) {
-      // There is a difference between the sets of routers.
-      return true;
-    }
-    ++iter1;
-    ++iter2;
-  }
-  return false;
 }

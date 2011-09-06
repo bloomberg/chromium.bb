@@ -92,7 +92,6 @@
         'browser/download/base_file_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',
         'browser/geolocation/device_data_provider_unittest.cc',
-        'browser/geolocation/gateway_data_provider_common_unittest.cc',
         'browser/geolocation/geolocation_provider_unittest.cc',
         'browser/geolocation/gps_location_provider_unittest_linux.cc',
         'browser/geolocation/location_arbitrator_unittest.cc',

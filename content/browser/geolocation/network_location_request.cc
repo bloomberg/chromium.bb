@@ -73,7 +73,6 @@ NetworkLocationRequest::~NetworkLocationRequest() {
 
 bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
                                          const string16& access_token,
-                                         const GatewayData& gateway_data,
                                          const RadioData& radio_data,
                                          const WifiData& wifi_data,
                                          const base::Time& timestamp) {
@@ -81,7 +80,6 @@ bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
     DVLOG(1) << "NetworkLocationRequest : Cancelling pending request";
     url_fetcher_.reset();
   }
-  gateway_data_ = gateway_data;
   radio_data_ = radio_data;
   wifi_data_ = wifi_data;
   timestamp_ = timestamp;
@@ -120,7 +118,7 @@ void NetworkLocationRequest::OnURLFetchComplete(
   DCHECK(listener_);
   DVLOG(1) << "NetworkLocationRequest::Run() : Calling listener with position.";
   listener_->LocationResponseAvailable(position, server_error, access_token,
-                                       gateway_data_, radio_data_, wifi_data_);
+                                       radio_data_, wifi_data_);
 }
 
 // Local functions.
