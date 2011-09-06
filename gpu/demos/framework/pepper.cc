@@ -7,11 +7,11 @@
 #include "gpu/demos/framework/demo.h"
 #include "gpu/demos/framework/demo_factory.h"
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
-#include "ppapi/cpp/dev/graphics_3d_dev.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
 namespace gpu {
@@ -88,7 +88,7 @@ class PluginInstance : public pp::Instance {
         PP_GRAPHICS3DATTRIB_HEIGHT, size_.height(),
         PP_GRAPHICS3DATTRIB_NONE
     };
-    context_ = pp::Graphics3D_Dev(*this, pp::Graphics3D_Dev(), attribs);
+    context_ = pp::Graphics3D(*this, pp::Graphics3D(), attribs);
     if (context_.is_null())
       return;
 
@@ -110,7 +110,7 @@ class PluginInstance : public pp::Instance {
 
   pp::Module* module_;
   Demo* demo_;
-  pp::Graphics3D_Dev context_;
+  pp::Graphics3D context_;
   pp::Size size_;
   bool swap_pending_;
   bool paint_needed_;

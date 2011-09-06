@@ -6,8 +6,8 @@
 #ifndef PPAPI_C_DEV_PPB_SURFACE_3D_DEV_H_
 #define PPAPI_C_DEV_PPB_SURFACE_3D_DEV_H_
 
-#include "ppapi/c/dev/pp_graphics_3d_dev.h"
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"

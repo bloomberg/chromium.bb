@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_C_DEV_PPB_GRAPHICS_3D_TRUSTED_DEV_H_
-#define PPAPI_C_DEV_PPB_GRAPHICS_3D_TRUSTED_DEV_H_
+#ifndef PPAPI_C_TRUSTED_PPB_GRAPHICS_3D_TRUSTED_H_
+#define PPAPI_C_TRUSTED_PPB_GRAPHICS_3D_TRUSTED_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_GRAPHICS_3D_TRUSTED_DEV_INTERFACE_0_1 \
-    "PPB_Graphics3DTrusted(Dev);0.1"
-#define PPB_GRAPHICS_3D_TRUSTED_DEV_INTERFACE \
-    PPB_GRAPHICS_3D_TRUSTED_DEV_INTERFACE_0_1
+#define PPB_GRAPHICS_3D_TRUSTED_INTERFACE_0_1 \
+    "PPB_Graphics3DTrusted;0.1"
+#define PPB_GRAPHICS_3D_TRUSTED_INTERFACE \
+    PPB_GRAPHICS_3D_TRUSTED_INTERFACE_0_1
 
 typedef enum {
   PPB_GRAPHICS3D_TRUSTED_ERROR_OK,
@@ -51,7 +51,7 @@ struct PP_Graphics3DTrustedState {
   uint32_t generation;
 };
 
-struct PPB_Graphics3DTrusted_Dev {
+struct PPB_Graphics3DTrusted {
   // Creates a raw Graphics3D resource. A raw Graphics3D is intended to be used
   // with the trusted interface, through the command buffer (for proxying).
   PP_Resource (*CreateRaw)(PP_Instance instance_id,
@@ -99,5 +99,5 @@ struct PPB_Graphics3DTrusted_Dev {
                                                     int32_t last_known_get);
 };
 
-#endif  // PPAPI_C_DEV_PPB_GRAPHICS_3D_TRUSTED_DEV_H_
+#endif  // PPAPI_C_TRUSTED_PPB_GRAPHICS_3D_TRUSTED_H_
 

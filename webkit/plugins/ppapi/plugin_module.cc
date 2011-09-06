@@ -25,11 +25,8 @@
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
-#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
-#include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_query_policy_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
@@ -52,9 +49,11 @@
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_opengles.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -74,6 +73,7 @@
 #include "ppapi/c/trusted/ppb_broker_trusted.h"
 #include "ppapi/c/trusted/ppb_buffer_trusted.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
+#include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/shared_impl/input_event_impl.h"
@@ -345,9 +345,9 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Zoom_Thunk();
 
 #ifdef ENABLE_GPU
-  if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_GRAPHICS_3D_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Graphics3D_Thunk();
-  if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_GRAPHICS_3D_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Graphics3DTrusted_Thunk();
   if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Context3D_Thunk();
@@ -355,7 +355,7 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Context3DTrusted_Thunk();
   if (strcmp(name, PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_GLESChromiumTextureMapping_Thunk();
-  if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_OPENGLES2_INTERFACE) == 0)
     return PPB_OpenGLES_Impl::GetInterface();
   if (strcmp(name, PPB_SURFACE_3D_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Surface3D_Thunk();

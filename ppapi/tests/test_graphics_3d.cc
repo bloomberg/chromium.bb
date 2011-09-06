@@ -6,9 +6,9 @@
 
 #include <GLES2/gl2.h>
 
-#include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/cpp/dev/graphics_3d_dev.h"
+#include "ppapi/c/ppb_opengles.h"
+#include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -16,8 +16,8 @@
 REGISTER_TEST_CASE(Graphics3D);
 
 bool TestGraphics3D::Init() {
-  opengl_es2_ = reinterpret_cast<const PPB_OpenGLES2_Dev*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_OPENGLES2_DEV_INTERFACE));
+  opengl_es2_ = reinterpret_cast<const PPB_OpenGLES2*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
   return opengl_es2_ && InitTestingInterface();
 }
 
@@ -33,7 +33,7 @@ std::string TestGraphics3D::TestFrame() {
       PP_GRAPHICS3DATTRIB_HEIGHT, height,
       PP_GRAPHICS3DATTRIB_NONE
   };
-  pp::Graphics3D_Dev context(*instance_, pp::Graphics3D_Dev(), attribs);
+  pp::Graphics3D context(*instance_, pp::Graphics3D(), attribs);
   ASSERT_FALSE(context.is_null());
 
   // Clear color buffer to opaque red.
@@ -50,7 +50,7 @@ std::string TestGraphics3D::TestFrame() {
   PASS();
 }
 
-int32_t TestGraphics3D::SwapBuffersSync(pp::Graphics3D_Dev* context) {
+int32_t TestGraphics3D::SwapBuffersSync(pp::Graphics3D* context) {
   TestCompletionCallback callback(instance_->pp_instance(), true);
   int32_t rv = context->SwapBuffers(callback);
   if (rv != PP_OK_COMPLETIONPENDING)
@@ -60,7 +60,7 @@ int32_t TestGraphics3D::SwapBuffersSync(pp::Graphics3D_Dev* context) {
 }
 
 std::string TestGraphics3D::TestPixel(
-    pp::Graphics3D_Dev* context,
+    pp::Graphics3D* context,
     int x, int y, const uint8_t expected_color[4]) {
   GLubyte pixel_color[4];
   opengl_es2_->ReadPixels(context->pp_resource(),

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@
 
 // TODO(alokp): This will need to be thread-safe if we build gles2 as a
 // shared library.
-static const struct PPB_OpenGLES2_Dev* g_gles2_interface = NULL;
+static const struct PPB_OpenGLES2* g_gles2_interface = NULL;
 
 // TODO(alokp): Make sure PP_TLS works on all supported platforms.
 static PP_TLS PP_Resource g_current_context = 0;
@@ -33,7 +33,7 @@ static PP_TLS PP_Resource g_current_context = 0;
 GLboolean GL_APIENTRY glInitializePPAPI(
     PPB_GetInterface get_browser_interface) {
   if (!g_gles2_interface) {
-    g_gles2_interface = get_browser_interface(PPB_OPENGLES2_DEV_INTERFACE);
+    g_gles2_interface = get_browser_interface(PPB_OPENGLES2_INTERFACE);
   }
   return g_gles2_interface ? GL_TRUE : GL_FALSE;
 }
@@ -51,7 +51,7 @@ PP_Resource GL_APIENTRY glGetCurrentContextPPAPI() {
   return g_current_context;
 }
 
-const struct PPB_OpenGLES2_Dev* GL_APIENTRY glGetInterfacePPAPI() {
+const struct PPB_OpenGLES2* GL_APIENTRY glGetInterfacePPAPI() {
   return g_gles2_interface;
 }
 

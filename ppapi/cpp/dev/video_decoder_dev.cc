@@ -8,7 +8,7 @@
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
-#include "ppapi/cpp/dev/graphics_3d_dev.h"
+#include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -33,7 +33,7 @@ VideoDecoder_Dev::VideoDecoder_Dev(const Instance* instance,
 }
 
 VideoDecoder_Dev::VideoDecoder_Dev(const Instance* instance,
-                                   const Graphics3D_Dev& context,
+                                   const Graphics3D& context,
                                    PP_VideoDecoder_Profile profile) {
   if (!has_interface<PPB_VideoDecoder_Dev>())
     return;

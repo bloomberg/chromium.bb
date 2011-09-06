@@ -76,7 +76,7 @@ int32_t SwapBuffers(PP_Resource graphics_3d, PP_CompletionCallback callback) {
   return MayForceCallback(callback, result);
 }
 
-const PPB_Graphics3D_Dev g_ppb_graphics_3d_thunk = {
+const PPB_Graphics3D g_ppb_graphics_3d_thunk = {
   &GetAttribMaxValue,
   &Create,
   &IsGraphics3D,
@@ -89,7 +89,7 @@ const PPB_Graphics3D_Dev g_ppb_graphics_3d_thunk = {
 
 }  // namespace
 
-const PPB_Graphics3D_Dev* GetPPB_Graphics3D_Thunk() {
+const PPB_Graphics3D* GetPPB_Graphics3D_Thunk() {
   return &g_ppb_graphics_3d_thunk;
 }
 
