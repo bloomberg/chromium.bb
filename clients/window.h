@@ -132,6 +132,13 @@ typedef void (*window_button_handler_t)(struct window *window,
 					struct input *input, uint32_t time,
 					int button, int state, void *data);
 
+typedef int (*window_enter_handler_t)(struct window *window,
+				      struct input *input, uint32_t time,
+				      int32_t x, int32_t y, void *data);
+typedef int (*window_leave_handler_t)(struct window *window,
+				      struct input *input, uint32_t time,
+				      void *data);
+
 typedef int (*window_motion_handler_t)(struct window *window,
 				       struct input *input, uint32_t time,
 				       int32_t x, int32_t y,
@@ -230,6 +237,13 @@ window_set_button_handler(struct window *window,
 void
 window_set_motion_handler(struct window *window,
 			  window_motion_handler_t handler);
+
+void
+window_set_enter_handler(struct window *window,
+			 window_enter_handler_t handler);
+void
+window_set_leave_handler(struct window *window,
+			 window_leave_handler_t handler);
 
 void
 window_set_keyboard_focus_handler(struct window *window,

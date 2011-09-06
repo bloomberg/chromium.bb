@@ -112,6 +112,8 @@ struct window {
 	window_button_handler_t button_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
 	window_motion_handler_t motion_handler;
+	window_enter_handler_t enter_handler;
+	window_leave_handler_t leave_handler;
 
 	void *user_data;
 	struct wl_list link;
@@ -1180,6 +1182,15 @@ window_handle_pointer_focus(void *data,
 	struct window *window;
 	int pointer;
 
+	window = input->pointer_focus;
+	if (window && window->surface != surface) {
+		if (window->leave_handler)
+			window->leave_handler(window, input,
+					      time, window->user_data);
+		input->pointer_focus = NULL;
+		input->current_pointer_image = POINTER_UNSET;
+	}
+
 	if (surface) {
 		input->pointer_focus = wl_surface_get_user_data(surface);
 		window = input->pointer_focus;
@@ -1190,16 +1201,13 @@ window_handle_pointer_focus(void *data,
 		input->sy = sy;
 
 		pointer = POINTER_LEFT_PTR;
-		if (window->motion_handler)
-			pointer = (*window->motion_handler)(window,
-							    input, time,
-							    x, y, sx, sy,
-							    window->user_data);
+		if (window->enter_handler)
+			pointer = window->enter_handler(window, input,
+							time, sx, sy,
+							window->user_data);
 
 		set_pointer_image(input, time, pointer);
-	} else {
-		input->pointer_focus = NULL;
-		input->current_pointer_image = POINTER_UNSET;
+
 	}
 }
 
@@ -1460,6 +1468,20 @@ window_set_motion_handler(struct window *window,
 			  window_motion_handler_t handler)
 {
 	window->motion_handler = handler;
+}
+
+void
+window_set_enter_handler(struct window *window,
+			  window_enter_handler_t handler)
+{
+	window->enter_handler = handler;
+}
+
+void
+window_set_leave_handler(struct window *window,
+			  window_leave_handler_t handler)
+{
+	window->leave_handler = handler;
 }
 
 void
