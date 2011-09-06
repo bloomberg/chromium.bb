@@ -51,6 +51,7 @@ xkb:us:intl:eng	us(intl)	eng	!defined(TOUCH_UI)
 xkb:us:altgr-intl:eng	us(altgr-intl)	eng	!defined(TOUCH_UI)
 xkb:us:dvorak:eng	us(dvorak)	eng	!defined(TOUCH_UI)
 xkb:us:colemak:eng	us(colemak)	eng	!defined(TOUCH_UI)
+english-m	us	en-US	!defined(TOUCH_UI)
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 

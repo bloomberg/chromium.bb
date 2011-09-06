@@ -91,6 +91,7 @@ const struct {
   { "xkb:us:dvorak:eng", "DV" },
   { "xkb:us:intl:eng", "INTL" },
   { "xkb:us:colemak:eng", "CO" },
+  { "english-m", "??" },
   { "xkb:de:neo:ger", "NEO" },
   // To distinguish from "xkb:es::spa"
   { "xkb:es:cat:cat", "CAS" },

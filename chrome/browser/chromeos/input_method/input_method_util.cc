@@ -256,6 +256,8 @@ const struct EnglishToResouceId {
   { "xkb:ca:eng:eng", IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH },
   { "xkb:il::heb", IDS_STATUSBAR_LAYOUT_ISRAEL },
   { "xkb:kr:kr104:kor", IDS_STATUSBAR_LAYOUT_KOREA_104 },
+
+  { "english-m", IDS_STATUSBAR_LAYOUT_USA_MYSTERY },
 };
 const size_t kEnglishToResourceIdArraySize =
     arraysize(kEnglishToResourceIdArray);
@@ -656,7 +658,9 @@ void GetFirstLoginInputMethodIds(
   }
   // Add the most popular input method ID, if it's different from the
   // current input method.
-  if (most_popular_id != current_input_method.id()) {
+  if (most_popular_id != current_input_method.id() &&
+      // TODO(yusukes): Remove this hack when we remove the "english-m" IME.
+      most_popular_id != "english-m") {
     out_input_method_ids->push_back(most_popular_id);
   }
 }

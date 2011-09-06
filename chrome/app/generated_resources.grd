@@ -13274,6 +13274,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Information
       </message>
 
+      <message name="IDS_STATUSBAR_LAYOUT_USA_MYSTERY" desc="In the language menu button, this shows the input mode.">
+        US Mystery keyboard
+      </message>
+
       <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
         Sorry, you don't have permission to sign in. Check with the notebook owner.
       </message>
