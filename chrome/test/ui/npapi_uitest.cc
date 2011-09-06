@@ -160,7 +160,14 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
                 TestTimeouts::action_max_timeout_ms());
 }
 
-TEST_F(NPAPIVisiblePluginTester, DeletePluginInDeallocate) {
+// http://crbug.com/95558
+// This test fails frequently on Mac, so it is disabled for now.
+#if defined(OS_MACOSX)
+#define MAYBE_DeletePluginInDeallocate DISABLED_DeletePluginInDeallocate
+#else
+#define MAYBE_DeletePluginInDeallocate DeletePluginInDeallocate
+#endif
+TEST_F(NPAPIVisiblePluginTester, MAYBE_DeletePluginInDeallocate) {
   show_window_ = true;
   const FilePath test_case(
       FILE_PATH_LITERAL("plugin_delete_in_deallocate.html"));
