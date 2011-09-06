@@ -1905,4 +1905,15 @@
    fun:_ZN5media51FFmpegVideoDecodeEngineTest_DecodeFrame_Normal_TestD0Ev
    fun:_ZN7testing4Test11DeleteSelf_Ev
 }
+{
+   bug_95497
+   Memcheck:Leak
+   fun:calloc
+   fun:res_build_start
+   fun:res_9_vinit
+   fun:res_9_ninit
+   fun:_ZN3net21DnsConfigServicePosix15DnsConfigReader6DoReadEv
+   fun:_ZN3net18WatchingFileReader9DoReadJobEv
+   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN3net18WatchingFileReaderEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
+}
 
