@@ -120,6 +120,14 @@ void ThreadWatcher::WakeUp() {
   // needed.
   if (!active_) return;
 
+  // Throw away the previous |unresponsive_count_| and start over again. Just
+  // before going to sleep, |unresponsive_count_| could be very close to
+  // |unresponsive_threshold_| and when user becomes active,
+  // |unresponsive_count_| can go over |unresponsive_threshold_| if there was no
+  // response for ping messages. Reset |unresponsive_count_| to start measuring
+  // the unresponsiveness of the threads when system becomes active.
+  unresponsive_count_ = 0;
+
   if (ping_count_ <= 0) {
     ping_count_ = unresponsive_threshold_;
     ResetHangCounters();
