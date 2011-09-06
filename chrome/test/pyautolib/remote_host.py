@@ -34,8 +34,11 @@ class RemoteHost(object):
 
   def StopSocketServer(self):
     if self._socket:
-      self._socket.shutdown(socket.SHUT_RDWR)
-      self._socket.close()
+      try:
+        self._socket.shutdown(socket.SHUT_RDWR)
+        self._socket.close()
+      except socket.error:
+        pass
       self._socket = None
 
   def Connected(self):
@@ -76,7 +79,7 @@ class RemoteHost(object):
         result = getattr(self, request[0])(*request[1], **request[2])
       else:
         result = getattr(self.target, request[0])(*request[1], **request[2])
-    except BaseException as e:
+    except BaseException, e:
       exception = (e.__class__.__name__, str(e))
 
     # Put output back to the way it was before.
