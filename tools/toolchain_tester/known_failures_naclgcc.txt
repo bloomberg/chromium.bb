@@ -9,18 +9,8 @@ call-trap-1.c
 va-arg-trap-1.c
 # int overflow
 bitfld-5.c
-# profiling (probably cannot work with newlib)
-eeprof-1.c
-# integer overflow
-pr42544.c
-# null pointer
-pr44555.c
-# int overflow
-pr48197.c
 # vector operation
 simd-2.c
-# ???
-vla-dealloc-1.c
 # use signal
 20101011-1.c
 # asm

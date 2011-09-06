@@ -81,7 +81,7 @@ def RunCommand(cmd, always_dump_stdout_stderr):
                        stderr=subprocess.PIPE,
                        stdout=subprocess.PIPE)
   while p.poll() is None:
-    time.sleep(1)
+    time.sleep(0.1)
     now = time.time()
     if now - start > TIMEOUT:
       Print('Error: timeout')

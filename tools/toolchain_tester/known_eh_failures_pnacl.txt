@@ -2,17 +2,20 @@
 catch5.C
 # compile failure, syntax error
 spec5.C
+# bad exit code
+init-temp1.C
+# terminate called after throwing an instance of 'int*'
+spec9.C
+# additional failures at -O3 (x8664 only)
+registers1.C
+# ======================================================================
+# NOTE: the tests below fail on a regular gcc as well
+# ======================================================================
 # terminate called after throwing an instance of 'A'
 cast1.C
 # bad exit code
 cond4.C
 # terminate called without an active exception
 elide2.C
-# bad exit code
-init-temp1.C
 # terminate called after throwing an instance of 'int'
 init-temp2.C
-# terminate called after throwing an instance of 'int*'
-spec9.C
-# additional failures at -O3 (x8664 only)
-registers1.C

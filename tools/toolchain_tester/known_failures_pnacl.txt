@@ -4,79 +4,37 @@
 # ======================================================================
 # failures in phase sel_ldr
 # ======================================================================
-# ??? TODO
+# signed/unsigned mixup
 20080506-1.c
-# ??? TODO
-call-trap-1.c
-# ??? TODO
+# modulo operation with negative numbers
 pr34070-1.c
-# ??? TODO
+# signed/unsigned mixup
 pr34070-2.c
-# ??? TODO
+# select function via ternary operator - looks like a complete miscompile
 pr34768-1.c
-# ??? TODO
+# long long with bitfields
 pr34971.c
-# ??? TODO
+# signed/unsigned mixup
 pr35163.c
-# integer overflow ??? TODO
+# div weirdness
 pr36077.c
-# integer overflow ??? TODO
+# bitfield magic
 pr40404.c
-# complex va_arg ??? TODO
-va-arg-trap-1.c
-# alignment issues TODO
+# alignment issues using __alignof__
 alloca-1.c
 # setjmp/longjmp TODO
 built-in-setjmp.c
-# some profiling stuff - probably not compatible with llvm
-eeprof-1.c
-# long long miscompile
-pr42544.c
-# null pointers - llvm is smart about these
-pr44555.c
-# sizeof integer overflow
-pr48197.c
 # preprocessor push/pop_macro feature
 pushpop_macro.c
 # simd style vectors (broken for x8632)
 simd-2.c
-# ??? TODO
-vla-dealloc-1.c
 # ======================================================================
 # failures in phase translate-x8632
 # ======================================================================
-# ??? TODO
+# llvm does not know that "fabs(x) >= 0"
 20020720-1.c
-# complex va_arg
-920625-1.c
-# complex va_arg
-920908-1.c
-# complex va_arg
-931004-10.c
-# complex va_arg
-931004-12.c
-# complex va_arg
-931004-14.c
-# complex va_arg
-931004-2.c
-# complex va_arg
-931004-4.c
-# complex va_arg
-931004-6.c
-# complex va_arg
-931004-8.c
-# ??? TODO
+# hangs compiler
 pr20621-1.c
-# complex va_arg
-pr38151.c
-# complex va_arg
-stdarg-3.c
-# complex va_arg
-strct-stdarg-1.c
-# complex va_arg
-strct-varg-1.c
-# complex va_arg
-va-arg-22.c
 # undef signal
 fp-cmp-1.c
 # undef signal
@@ -100,46 +58,43 @@ simd-6.c
 # ======================================================================
 # failures in phase compile-bc
 # ======================================================================
-# asm
-20001009-2.c
-# nested function
-20010209-1.c
-# nested function
-20010605-1.c
-# asm
-20020107-1.c
-# complex va_arg
+# complex va_arg - frontend assert
 20020412-1.c
-# nested function
-20030501-1.c
-# nested function
-20040520-1.c
-# asm
-20050203-1.c
-# asm
-20061031-1.c
-# asm
-20061220-1.c
-# ??? TODO
-20070919-1.c
-# asm
-20071211-1.c
-# ??? TODO
-20071220-1.c
-# asm
-20071220-2.c
-# asm
-20080122-1.c
-# nested function
-20090219-1.c
-# nested function
-920612-2.c
-# nested function
-921017-1.c
-# asm
-960312-1.c
-# asm
-990130-1.c
+# compiler hangs
+pr23135.c
+# uses __builtin_return_address (internal compiler error x86-64)
+20010122-1.c
+# uses __builtin_return_address (internal compiler error x86-64)
+20030323-1.c
+# ======================================================================
+# additional failures at -O3
+# ======================================================================
+# uses "&&" extension
+20071210-1.c
+# uses  __builtin_constant_p
+bcp-1.c
+# uses __builtin_constant_p
+builtin-constant.c
+# select function via ? - looks like a complete miscompile
+pr34768-2.c
+# int overflow
+pr45262.c
+# llvm does not know how to evaluate "(x<y) && (x>y)" and "(x==y) && (x!=y)"
+compare-fp-3.c
+# requires -fwrapv
+# pr22493-1.c
+# requires -fwrapv
+# pr33779-2.c
+# ======================================================================
+# wont fixes - misc reasons
+# ======================================================================
+# llvm properly diagnoses the issue and warns that the program will
+# abort when code is reached
+call-trap-1.c
+va-arg-trap-1.c
+# ======================================================================
+# wont fixes - nested functions
+# ======================================================================
 # nested function
 nest-align-1.c
 # nested function
@@ -150,16 +105,23 @@ nestfunc-7.c
 pr22061-3.c
 # nested function
 pr22061-4.c
-# asm
-pr38533.c
-# asm
-pr40022.c
-# asm
-20030222-1.c
-# asm
-990413-2.c
-# integer overflow
-bitfld-5.c
+# nested function
+20010209-1.c
+# nested function
+20010605-1.c
+# nested function
+20090219-1.c
+# nested function
+920612-2.c
+# nested function
+921017-1.c
+# nested function
+20030501-1.c
+# nested function
+20040520-1.c
+# ======================================================================
+# wont fixes - asm
+# ======================================================================
 # asm
 pr41239.c
 # asm
@@ -186,22 +148,70 @@ mempcpy-chk.c
 strcat-chk.c
 # asm
 strncat-chk.c
-# compiler hangs
-pr23135.c
-# internal compiler error
+# asm
+20001009-2.c
+# asm
+20020107-1.c
+# asm
+20050203-1.c
+# asm
+20061031-1.c
+# asm
+20061220-1.c
+# ??? TODO
+20070919-1.c
+# asm
+20071211-1.c
+# asm
+20071220-2.c
+# asm
+20080122-1.c
+# asm
+960312-1.c
+# asm
+990130-1.c
+# asm
+pr38533.c
+# asm
+pr40022.c
+# asm
+20030222-1.c
+# asm
+990413-2.c
+# asm
+20071220-1.c
+# asm
+bitfld-5.c
+# ======================================================================
+# wont fixes - complex va_arg (e.g. structs passed as va_args)
+# ======================================================================
+# complex va_arg
+920625-1.c
+# complex va_arg
+920908-1.c
+# complex va_arg
+931004-10.c
+# complex va_arg
+931004-12.c
+# complex va_arg
+931004-14.c
+# complex va_arg
+931004-2.c
+# complex va_arg
+931004-4.c
+# complex va_arg
+931004-6.c
+# complex va_arg
+931004-8.c
+# complex va_arg
+pr38151.c
+# complex va_arg
+stdarg-3.c
+# complex va_arg
+strct-stdarg-1.c
+# complex va_arg
+strct-varg-1.c
+# complex va_arg
+va-arg-22.c
+# complex va_arg
 pr44575.c
-# uses __builtin_return_address (internal compiler error x86-64)
-20010122-1.c
-# uses __builtin_return_address (internal compiler error x86-64)
-20030323-1.c
-# ======================================================================
-# additional failures at -O3
-# ======================================================================
-20071210-1.c
-bcp-1.c
-builtin-constant.c
-pr22493-1.c
-pr33779-2.c
-pr34768-2.c
-pr45262.c
-compare-fp-3.c

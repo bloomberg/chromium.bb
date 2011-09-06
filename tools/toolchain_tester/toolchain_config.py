@@ -79,6 +79,9 @@ COMMANDS_local_gcc = [
     ('compile',
      '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe -lm -lstdc++',
      ),
+    ('run',
+     '%(tmp)s.exe',
+     ),
     ]
 
 TOOLCHAIN_CONFIGS['local_gcc_x8632_O0'] = ToolchainConfig(
@@ -88,12 +91,26 @@ TOOLCHAIN_CONFIGS['local_gcc_x8632_O0'] = ToolchainConfig(
     CC = LOCAL_GCC,
     CFLAGS = '-O0 -m32 -static ' + GLOBAL_CFLAGS)
 
+TOOLCHAIN_CONFIGS['local_gcc_x8632_O3'] = ToolchainConfig(
+    desc='local gcc [x86-32]',
+    commands=COMMANDS_local_gcc,
+    tools_needed=[LOCAL_GCC],
+    CC = LOCAL_GCC,
+    CFLAGS = '-O3 -m32 -static ' + GLOBAL_CFLAGS)
+
 TOOLCHAIN_CONFIGS['local_gcc_x8664_O0'] = ToolchainConfig(
     desc='local gcc [x86-64]',
     commands=COMMANDS_local_gcc,
     tools_needed=[LOCAL_GCC],
     CC = LOCAL_GCC,
     CFLAGS = '-O0 -m64 -static ' + GLOBAL_CFLAGS)
+
+TOOLCHAIN_CONFIGS['local_gcc_x8664_O3'] = ToolchainConfig(
+    desc='local gcc [x86-64]',
+    commands=COMMANDS_local_gcc,
+    tools_needed=[LOCAL_GCC],
+    CC = LOCAL_GCC,
+    CFLAGS = '-O3 -m64 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # CS ARM
@@ -223,7 +240,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
     IRT = IRT_ARM,
-    CFLAGS = '-O3 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -D__OPTIMIZE__ -fwrapv -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8632]
@@ -251,7 +268,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0  -static ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
@@ -261,7 +278,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O3 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -D__OPTIMIZE__ -fwrapv -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8664]
@@ -285,4 +302,4 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O3'] = ToolchainConfig(
     LD = PNACL_LD + ' -arch x86-64',
     SEL_LDR = SEL_LDR_X64,
     IRT = IRT_X64,
-    CFLAGS = '-O3 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3  -fwrapv -static ' + GLOBAL_CFLAGS)

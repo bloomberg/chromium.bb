@@ -2,6 +2,9 @@
 crossjump1.C
 # pthread related compiletime failures
 omit-frame-pointer.C
+# ======================================================================
+# NOTE: the tests below fail on a regular gcc as well
+# ======================================================================
 # runtime failure
 cast1.C
 # runtime failure
