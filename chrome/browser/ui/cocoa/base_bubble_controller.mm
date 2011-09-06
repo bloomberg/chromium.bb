@@ -157,7 +157,7 @@ class Bridge : public NotificationObserver {
 }
 
 - (void)close {
-  [parentWindow_ removeChildWindow:[self window]];
+  [[[self window] parentWindow] removeChildWindow:[self window]];
   [super close];
 }
 

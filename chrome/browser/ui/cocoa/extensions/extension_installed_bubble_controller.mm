@@ -107,6 +107,13 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
     // Start showing window only after extension has fully loaded.
     extensionObserver_.reset(new ExtensionLoadedNotificationObserver(
         self, browser->profile()));
+
+    // Watch to see if the parent window closes, and if so, close this one.
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(parentWindowWillClose:)
+                   name:NSWindowWillCloseNotification
+                 object:parentWindow_];
   }
   return self;
 }
@@ -117,8 +124,12 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 }
 
 - (void)close {
-  [parentWindow_ removeChildWindow:[self window]];
+  [[[self window] parentWindow] removeChildWindow:[self window]];
   [super close];
+}
+
+- (void)parentWindowWillClose:(NSNotification*)notification {
+  [self close];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
