@@ -364,6 +364,13 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     popup_->SetContentsView(this);
     popup_->MoveAbove(
         GetRelativeWindowForPopup(omnibox_view_->GetNativeView()));
+    if (!popup_.get()) {
+      // For some IMEs GetRelativeWindowForPopup triggers the omnibox to lose
+      // focus, thereby closing (and destroying) the popup.
+      // TODO: this won't be needed once we close the omnibox on input window
+      // showing.
+      return;
+    }
     popup_->Show();
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
