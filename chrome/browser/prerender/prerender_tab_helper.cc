@@ -310,7 +310,7 @@ void PrerenderTabHelper::MaybeLogCurrentHover(bool was_used) {
   current_hover_url_ = GURL();
 }
 
-bool PrerenderTabHelper::IsTopSite(const GURL& url) const {
+bool PrerenderTabHelper::IsTopSite(const GURL& url) {
   PrerenderManager* pm = MaybeGetPrerenderManager();
   return (pm && pm->IsTopSite(url));
 }

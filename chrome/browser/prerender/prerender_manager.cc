@@ -173,19 +173,6 @@ class PrerenderManager::MostVisitedSites : public NotificationObserver {
  public:
   explicit MostVisitedSites(Profile* profile) :
       profile_(profile) {
-    // If TopSites is already loaded, we will want to use it right away.
-    // Otherwise, wait for three seconds to avoid race conditions.
-    // This is a hack to ensure unit tests don't fail.
-    // See http://crbug.com/94654
-    if (profile && profile->GetTopSitesWithoutCreating()) {
-      Init();
-    } else {
-      timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(3), this,
-                   &prerender::PrerenderManager::MostVisitedSites::Init);
-    }
-  }
-
-  void Init() {
     history::TopSites* top_sites = GetTopSites();
     if (top_sites) {
       registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
@@ -234,11 +221,12 @@ class PrerenderManager::MostVisitedSites : public NotificationObserver {
   Profile* profile_;
   NotificationRegistrar registrar_;
   std::set<GURL> urls_;
-  base::OneShotTimer<prerender::PrerenderManager::MostVisitedSites> timer_;
 };
 
-bool PrerenderManager::IsTopSite(const GURL& url) const {
-  return most_visited_.get() && most_visited_->IsTopSite(url);
+bool PrerenderManager::IsTopSite(const GURL& url) {
+  if (!most_visited_.get())
+    most_visited_.reset(new MostVisitedSites(profile_));
+  return most_visited_->IsTopSite(url);
 }
 
 PrerenderManager::PrerenderManager(Profile* profile,

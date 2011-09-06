@@ -204,7 +204,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Adds a condition. This is owned by the PrerenderManager.
   void AddCondition(const PrerenderCondition* condition);
 
-  bool IsTopSite(const GURL& url) const;
+  bool IsTopSite(const GURL& url);
 
  protected:
   // Test that needs needs access to internal functions.
