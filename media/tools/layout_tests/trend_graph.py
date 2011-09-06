@@ -39,12 +39,22 @@ class TrendGraph(object):
     other is for passing rates).
 
     Args:
-        datetime_string: a datetime string (e.g., '2008,1,1,13,45,00)'
+        datetime_string: a datetime string delimited by ','
+          (e.g., '2008,1,1,13,45,00)'. For example, in the case of the year
+          2008, this ranges from '2008,1,1,0,0,00' to '2008,12,31,23,59,99'.
         data_map: a dictionary containing 'whole', 'skip' , 'nonskip',
           'passingrate' as its keys and (number, tile, text) string tuples
           as values for graph annotation.
     """
     joined_str = ''
+    # For a date format in GViz, month is shifted (e.g., '2008,2,1' means
+    # March 1, 2008). So, the input parameter |datetime_string| (before this
+    # conversion) must be shifted in order to show the date properly on GViz.
+    # After the below conversion, for example, in the case of the year 2008,
+    # |datetime_string| ranges from '2008,0,1,0,0,00' to '2008,11,31,23,59,99'.
+    str_list = datetime_string.split(',')
+    str_list[1] = str(int(str_list[1])-1) # month
+    datetime_string = ','.join(str_list)
     for key in ['whole', 'skip', 'nonskip']:
       joined_str += ','.join(data_map[key]) + ','
     new_line_for_numbers = '         [new Date(%s),%s],\n' % (datetime_string,

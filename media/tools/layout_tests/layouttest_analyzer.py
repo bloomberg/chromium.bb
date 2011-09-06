@@ -19,11 +19,12 @@ from test_expectations import TestExpectations
 from trend_graph import TrendGraph
 
 # Predefined result directory.
-RESULT_DIR = 'result'
+DEFAULT_RESULT_DIR = 'result'
 DEFAULT_ANNO_FILE = os.path.join('anno', 'anno.csv')
 DEFAULT_GRAPH_FILE = os.path.join('graph', 'graph.html')
 # Predefined result files for debug.
-CURRENT_RESULT_FILE_FOR_DEBUG = os.path.join(RESULT_DIR, '2011-08-19-21')
+CURRENT_RESULT_FILE_FOR_DEBUG = os.path.join(DEFAULT_RESULT_DIR,
+                                             '2011-08-19-21')
 PREV_TIME_FOR_DEBUG = '2011-08-19-11'
 
 DEFAULT_TEST_GROUP_FILE = os.path.join('testname', 'media.csv')
@@ -73,6 +74,11 @@ def parse_option():
                              help=('Name of test group '
                                    '(default to %default)'),
                              default=DEFAULT_TEST_GROUP_NAME)
+    option_parser.add_option('-d', '--result-directory-location',
+                             dest='result_directory_location',
+                             help=('Name of result directory location '
+                                   '(default to %default)'),
+                             default=DEFAULT_RESULT_DIR)
     return option_parser.parse_args()[0]
 
 
@@ -94,7 +100,7 @@ def main():
     prev_time = PREV_TIME_FOR_DEBUG
     prev_analyzer_result_map = (
         layouttest_analyzer_helpers.AnalyzerResultMap.Load(
-            os.path.join(RESULT_DIR, prev_time)))
+            os.path.join(options.result_directory_location, prev_time)))
 
   # Read bug annotations and generate an annotation map used for the status
   # email.
@@ -113,7 +119,7 @@ def main():
   if not options.debug:
     # Save the current result.
     date = start_time.strftime('%Y-%m-%d-%H')
-    file_path = os.path.join(RESULT_DIR, date)
+    file_path = os.path.join(options.result_directory_location, date)
     analyzer_result_map.Save(file_path)
 
   # Trend graph update (if specified in the command-line argument).
