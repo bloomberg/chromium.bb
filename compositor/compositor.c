@@ -44,7 +44,6 @@
  * advertise that through a service on the session dbus.
  */
 static const char *option_socket_name = NULL;
-static const char *option_background = "background.png";
 static int option_idle_time = 300;
 
 static struct wl_list child_process_list;
@@ -523,30 +522,6 @@ create_pointer_images(struct wlsc_compositor *ec)
 					       pointer_images[i].filename,
 					       SPRITE_USE_CURSOR);
 	}
-}
-
-static struct wlsc_surface *
-background_create(struct wlsc_output *output, const char *filename)
-{
-	struct wlsc_surface *background;
-	struct wlsc_sprite *sprite;
-
-	background = wlsc_surface_create(output->compositor,
-					 output->x, output->y,
-					 output->current->width,
-					 output->current->height);
-	if (background == NULL)
-		return NULL;
-
-	sprite = create_sprite_from_png(output->compositor, filename, 0);
-	if (sprite == NULL) {
-		free(background);
-		return NULL;
-	}
-
-	wlsc_sprite_attach(sprite, &background->surface);
-
-	return background;
 }
 
 static int
@@ -1843,7 +1818,6 @@ wlsc_output_destroy(struct wlsc_output *output)
 {
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
-	destroy_surface(&output->background->surface.resource);
 }
 
 WL_EXPORT void
@@ -1854,11 +1828,6 @@ wlsc_output_move(struct wlsc_output *output, int x, int y)
 
 	output->x = x;
 	output->y = y;
-
-	if (output->background) {
-		output->background->x = x;
-		output->background->y = y;
-	}
 
 	pixman_region32_init(&output->previous_damage);
 	pixman_region32_init_rect(&output->region, x, y, 
@@ -1887,13 +1856,6 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 	output->y = y;
 	output->mm_width = width;
 	output->mm_height = height;
-
-	output->background =
-		background_create(output, option_background);
- 
-	if (output->background != NULL)
-		wl_list_insert(c->surface_list.prev,
-			       &output->background->link);
 
 	output->flags = flags;
 	wlsc_output_move(output, x, y);
@@ -2104,7 +2066,6 @@ int main(int argc, char *argv[])
 	static const struct option longopts[ ] = {
 		{ "backend", 1, NULL, 'B' },
 		{ "backend-options", 1, NULL, 'o' },
-		{ "background", 1, NULL, 'b' },
 		{ "socket", 1, NULL, 'S' },
 		{ "idle-time", 1, NULL, 'i' },
 		{ "shell", 1, NULL, 's' },
@@ -2114,9 +2075,6 @@ int main(int argc, char *argv[])
 
 	while (o = getopt_long(argc, argv, opts, longopts, &o), o > 0) {
 		switch (o) {
-		case 'b':
-			option_background = optarg;
-			break;
 		case 'B':
 			backend = optarg;
 			break;
