@@ -686,3 +686,12 @@
    fun:scoped_ptr::reset
    fun:media::FFmpegVideoDecodeEngineTest::~FFmpegVideoDecodeEngineTest
 }
+{
+   bug_95509
+   ThreadSanitizer:Race
+   fun:base::SyncSocket::Close
+   fun:AudioRendererImpl::OnStop
+   fun:media::AudioRendererBase::Stop
+   fun:media::CompositeFilter::CallFilter
+   fun:media::CompositeFilter::SerialCallback
+}
