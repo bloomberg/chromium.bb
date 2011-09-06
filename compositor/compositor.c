@@ -1590,7 +1590,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 			update_modifier_state(wd, *k, 1);
 		}
 
-		if (es->surface.resource.client)
+		if (es && es->surface.resource.client)
 			wl_input_device_set_keyboard_focus(&wd->input_device,
 							   &es->surface, time);
 	} else {
