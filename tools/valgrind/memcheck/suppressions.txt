@@ -5120,20 +5120,6 @@
    fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
 }
 {
-   bug_91157
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN15DownloadManager24OnPathExistenceAvailableEiRK17DownloadStateInfo
-   fun:_Z16DispatchToMethodI15DownloadManagerMS0_FviRK17DownloadStateInfoEiS1_EvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN14RunnableMethodI15DownloadManagerMS0_FviRK17DownloadStateInfoE6Tuple2IiS1_EE3RunEv
-   fun:_ZN4base6subtle18TaskClosureAdapter3RunEv
-   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMNS_6subtle18TaskClosureAdapterEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-}
-{
    bug_91179
    Memcheck:Addr1
    fun:_ZN8chromeos21ParallelAuthenticator7ResolveEv
