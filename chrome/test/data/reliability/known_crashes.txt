@@ -211,3 +211,5 @@ PREFIX: `anonymous namespace'::invalidparameter____purecall___memcpy_s___std::ba
 # 95289
 PREFIX: net::networkdelegate::notifycompleted___net::urlrequest::docancel___net::urlrequest::~urlrequest___stldeletevalues<std::map<globalrequestid,net::urlrequest *,std::less<globalrequestid>,std::allocator<std::pair<globalrequestid const ,net::urlrequest *> > > >___resourcedispatcherhost::onshutdown
 
+# 95506
+PREFIX: base::debug::breakdebugger___`anonymous namespace'::silentruntimeasserthandler___logging::logmessage::~logmessage___`anonymous namespace'::shutdownwatchdogthread::alarm___base::watchdog::threaddelegate::threadmain
