@@ -12,7 +12,8 @@ simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
 endif
 
 if BUILD_CLIENTS
-clients_programs = gears			\
+clients_programs =				\
+	gears					\
 	flower					\
 	screenshot				\
 	terminal				\
@@ -20,7 +21,8 @@ clients_programs = gears			\
 	dnd					\
 	smoke					\
 	resizor					\
-	eventdemo
+	eventdemo				\
+	desktop-shell
 
 noinst_LIBRARIES = libtoytoolkit.a
 
@@ -68,9 +70,17 @@ resizor_LDADD = $(toolkit_libs)
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)
 
+desktop_shell_SOURCES =				\
+	desktop-shell.c				\
+	desktop-shell-client-protocol.h		\
+	desktop-shell-protocol.c
+desktop_shell_LDADD = $(toolkit_libs)
+
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\
-	screenshooter-protocol.c
+	screenshooter-protocol.c		\
+	desktop-shell-client-protocol.h		\
+	desktop-shell-protocol.c
 
 CLEANFILES = $(BUILT_SOURCES)
 endif

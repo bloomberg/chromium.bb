@@ -135,9 +135,9 @@ typedef void (*window_button_handler_t)(struct window *window,
 typedef int (*window_enter_handler_t)(struct window *window,
 				      struct input *input, uint32_t time,
 				      int32_t x, int32_t y, void *data);
-typedef int (*window_leave_handler_t)(struct window *window,
-				      struct input *input, uint32_t time,
-				      void *data);
+typedef void (*window_leave_handler_t)(struct window *window,
+				       struct input *input, uint32_t time,
+				       void *data);
 
 typedef int (*window_motion_handler_t)(struct window *window,
 				       struct input *input, uint32_t time,
@@ -208,6 +208,9 @@ window_set_buffer_type(struct window *window, enum window_buffer_type type);
 
 void
 window_set_fullscreen(struct window *window, int fullscreen);
+
+void
+window_set_custom(struct window *window);
 
 void
 window_set_user_data(struct window *window, void *data);

@@ -63,7 +63,6 @@ struct display {
 	struct wl_shm *shm;
 	struct wl_output *output;
 	struct rectangle screen_allocation;
-	int authenticated;
 	EGLDisplay dpy;
 	EGLConfig rgb_config;
 	EGLConfig premultiplied_argb_config;
@@ -84,6 +83,13 @@ struct display {
 	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 };
 
+enum {
+	TYPE_FULLSCREEN,
+	TYPE_TOPLEVEL,
+	TYPE_TRANSIENT,
+	TYPE_CUSTOM
+};
+       
 struct window {
 	struct display *display;
 	struct window *parent;
@@ -95,7 +101,7 @@ struct window {
 	int redraw_scheduled;
 	int minimum_width, minimum_height;
 	int margin;
-	int fullscreen;
+	int type;
 	int decoration;
 	int transparent;
 	struct input *grab_device;
@@ -758,14 +764,21 @@ window_attach_surface(struct window *window)
 		return;
 	}
 
-	if (window->fullscreen)
+	switch (window->type) {
+	case TYPE_FULLSCREEN:
 		wl_shell_set_fullscreen(display->shell, window->surface);
-	else if (!window->parent)
+		break;
+	case TYPE_TOPLEVEL:
 		wl_shell_set_toplevel(display->shell, window->surface);
-	else
+		break;
+	case TYPE_TRANSIENT:
 		wl_shell_set_transient(display->shell, window->surface,
 				       window->parent->surface,
 				       window->x, window->y, 0);
+		break;
+	case TYPE_CUSTOM:
+		break;
+	}
 
 	wl_surface_damage(window->surface, 0, 0,
 			  window->allocation.width,
@@ -956,7 +969,7 @@ window_draw(struct window *window)
 {
 	if (window->parent)
 		window_draw_menu(window);
-	else if (window->fullscreen || !window->decoration)
+	else if (!window->decoration)
 		window_create_surface(window);
 	else
 		window_draw_decorations(window);
@@ -1347,7 +1360,7 @@ void
 window_get_child_allocation(struct window *window,
 			    struct rectangle *allocation)
 {
-	if (window->fullscreen || !window->decoration) {
+	if (!window->decoration) {
 		*allocation = window->allocation;
 	} else {
 		allocation->x = window->margin + 10;
@@ -1362,7 +1375,7 @@ window_get_child_allocation(struct window *window,
 void
 window_set_child_size(struct window *window, int32_t width, int32_t height)
 {
-	if (!window->fullscreen && window->decoration) {
+	if (window->decoration) {
 		window->allocation.x = 20 + window->margin;
 		window->allocation.y = 60 + window->margin;
 		window->allocation.width = width + 20 + window->margin * 2;
@@ -1397,21 +1410,30 @@ window_schedule_redraw(struct window *window)
 }
 
 void
+window_set_custom(struct window *window)
+{
+	window->type = TYPE_CUSTOM;
+}
+
+void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
 	int32_t width, height;
 
-	if (window->fullscreen == fullscreen)
+	if (window->type == TYPE_FULLSCREEN)
 		return;
 
-	window->fullscreen = fullscreen;
-	if (window->fullscreen) {
+	if (fullscreen) {
+		window->type = TYPE_FULLSCREEN;
 		window->saved_allocation = window->allocation;
 		width = window->display->screen_allocation.width;
 		height = window->display->screen_allocation.height;
+		window->decoration = 0;
 	} else {
+		window->type = TYPE_TOPLEVEL;
 		width = window->saved_allocation.width - 20 - window->margin * 2;
 		height = window->saved_allocation.height - 60 - window->margin * 2;
+		window->decoration = 1;
 	}
 
 	(*window->resize_handler)(window, width, height, window->user_data);
@@ -1590,6 +1612,7 @@ window_create_transient(struct display *display, struct window *parent,
 	if (!window)
 		return NULL;
 
+	window->type = TYPE_TRANSIENT;
 	window->x = x;
 	window->y = y;
 
