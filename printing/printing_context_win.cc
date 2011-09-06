@@ -197,7 +197,7 @@ PrintingContextWin::~PrintingContextWin() {
   ReleaseContext();
 }
 
-void PrintingContextWin::AskUserForSettings(HWND view,
+void PrintingContextWin::AskUserForSettings(gfx::NativeView view,
                                             int max_pages,
                                             bool has_selection,
                                             PrintSettingsCallback* callback) {

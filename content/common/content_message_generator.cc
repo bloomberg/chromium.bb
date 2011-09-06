@@ -14,6 +14,30 @@
 #include "ipc/struct_destructor_macros.h"
 #include "content/common/content_message_generator.h"
 
+#if defined(USE_AURA)
+#include "ui/gfx/native_widget_types.h"
+
+namespace IPC {
+// TODO(beng): Figure out why this is needed, fix that issue and remove
+//             this. Brett and I were unable to figure out why, but he
+//             thought this should be harmless.
+template <>
+struct ParamTraits<gfx::PluginWindowHandle> {
+  typedef gfx::PluginWindowHandle param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteUInt32(reinterpret_cast<uint32>(p));
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    DCHECK_EQ(sizeof(param_type), sizeof(uint32));
+    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append(StringPrintf("0x%X", p));
+  }
+};
+}  // namespace IPC
+#endif
+
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {
@@ -31,4 +55,3 @@ namespace IPC {
 namespace IPC {
 #include "content/common/content_message_generator.h"
 }  // namespace IPC
-

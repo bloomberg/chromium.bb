@@ -38,25 +38,31 @@
         'plugin_main.h',
       ],
       'conditions': [
-         ['OS=="win"', {
-            'link_settings': {
-              'libraries': ['-lurlmon.lib'],
-            },
-            'sources': [
-              'default_plugin_resources.h',
-              'install_dialog.cc',
-              'install_dialog.h',
-              'plugin_database_handler.cc',
-              'plugin_database_handler.h',
-              'plugin_install_job_monitor.cc',
-              'plugin_install_job_monitor.h',
-            ],
-         }],
-         ['toolkit_uses_gtk == 1', {
-            'dependencies': [
-              '<(DEPTH)/build/linux/system.gyp:gtk',
-            ],
-         }],
+        ['use_aura==1', {
+          'sources/': [
+            ['exclude', '^plugin_impl_win.cc'],
+            ['exclude', '^plugin_impl_win.h'],
+          ],
+        }],
+        ['OS=="win"', {
+          'link_settings': {
+            'libraries': ['-lurlmon.lib'],
+          },
+          'sources': [
+            'default_plugin_resources.h',
+            'install_dialog.cc',
+            'install_dialog.h',
+            'plugin_database_handler.cc',
+            'plugin_database_handler.h',
+            'plugin_install_job_monitor.cc',
+            'plugin_install_job_monitor.h',
+          ],
+        }],
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '<(DEPTH)/build/linux/system.gyp:gtk',
+          ],
+        }],
       ],
     },
     # This can't be part of chrome.gyp:chrome_resources because then there'd

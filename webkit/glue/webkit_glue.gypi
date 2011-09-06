@@ -461,6 +461,11 @@
           'sources/': [['exclude', '_(linux|gtk)(_data)?\\.cc$'],
                        ['exclude', r'/gtk_']],
         }],
+        ['use_aura==1', {
+          'sources/': [
+            ['exclude', '^../plugins/npapi/webplugin_delegate_impl_win.cc'],
+          ],
+        }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']],
           'sources!': [
