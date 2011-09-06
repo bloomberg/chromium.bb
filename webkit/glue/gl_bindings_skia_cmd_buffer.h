@@ -11,8 +11,8 @@ struct GrGLInterface;
 namespace webkit_glue {
 
 // The GPU back-end for skia requires pointers to GL functions. This function
-// binds skia-gpu to the cmd buffers GL.
-GrGLInterface* GetCommandBufferSkiaGLBinding();
+// returns a binding for skia-gpu to the cmd buffers GL.
+GrGLInterface* CreateCommandBufferSkiaGLBinding();
 
 }  // namespace webkit_glue
 

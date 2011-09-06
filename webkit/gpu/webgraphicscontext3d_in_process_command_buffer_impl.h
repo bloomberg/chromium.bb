@@ -430,8 +430,9 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
   virtual WGC3Denum getGraphicsResetStatusARB();
 
+ protected:
 #if WEBKIT_USING_SKIA
-  virtual GrGLInterface* grGLInterface();
+  virtual GrGLInterface* onCreateGrGLInterface();
 #endif
 
  private:

@@ -13,8 +13,8 @@ struct GrGLInterface;
 namespace gfx {
 
 // The GPU back-end for skia requires pointers to GL functions. This function
-// binds skia-gpu to the in-process GL
-GL_EXPORT GrGLInterface* GetInProcessSkiaGLBinding();
+// creates a binding for skia-gpu to the in-process GL
+GL_EXPORT GrGLInterface* CreateInProcessSkiaGLBinding();
 
 }
 

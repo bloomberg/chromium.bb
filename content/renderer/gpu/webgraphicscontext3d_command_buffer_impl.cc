@@ -1058,8 +1058,8 @@ void WebGraphicsContext3DCommandBufferImpl::
 }
 
 #if WEBKIT_USING_SKIA
-GrGLInterface* WebGraphicsContext3DCommandBufferImpl::grGLInterface() {
-  return webkit_glue::GetCommandBufferSkiaGLBinding();
+GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
+  return webkit_glue::CreateCommandBufferSkiaGLBinding();
 }
 #endif
 

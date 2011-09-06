@@ -1552,8 +1552,8 @@ WGC3Denum WebGraphicsContext3DInProcessImpl::getGraphicsResetStatusARB() {
 }
 
 #if WEBKIT_USING_SKIA
-GrGLInterface* WebGraphicsContext3DInProcessImpl::grGLInterface() {
-  return gfx::GetInProcessSkiaGLBinding();
+GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
+  return gfx::CreateInProcessSkiaGLBinding();
 }
 #endif
 

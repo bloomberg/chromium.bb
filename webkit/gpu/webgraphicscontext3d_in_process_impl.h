@@ -412,8 +412,9 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
       WebGraphicsContext3D::
           WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) {}
 
+ protected:
 #if WEBKIT_USING_SKIA
-  virtual GrGLInterface* grGLInterface();
+  virtual GrGLInterface* onCreateGrGLInterface();
 #endif
 
  private:

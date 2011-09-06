@@ -1578,8 +1578,8 @@ WGC3Denum WebGraphicsContext3DInProcessCommandBufferImpl::
 
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
-    grGLInterface() {
-  return webkit_glue::GetCommandBufferSkiaGLBinding();
+    onCreateGrGLInterface() {
+  return webkit_glue::CreateCommandBufferSkiaGLBinding();
 }
 #endif
 
