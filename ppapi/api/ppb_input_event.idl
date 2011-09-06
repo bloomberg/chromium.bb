@@ -8,7 +8,8 @@
  */
 
 label Chrome {
-  M14 = 1.0
+  M13 = 1.0,
+  M14 = 1.1
 };
 
 /**
@@ -375,7 +376,7 @@ interface PPB_InputEvent {
  * The <code>PPB_MouseInputEvent</code> interface contains pointers to several
  * functions related to mouse input events.
  */
-[version=1.0, macro="PPB_MOUSE_INPUT_EVENT_INTERFACE"]
+[macro="PPB_MOUSE_INPUT_EVENT_INTERFACE"]
 interface PPB_MouseInputEvent {
   /**
    * Create() creates a mouse input event with the given parameters. Normally
@@ -413,6 +414,44 @@ interface PPB_MouseInputEvent {
                      [in] int32_t click_count);
 
   /**
+   * Create() creates a mouse input event with the given parameters. Normally
+   * you will get a mouse event passed through the
+   * <code>HandleInputEvent</code> and will not need to create them, but some
+   * applications may want to create their own for internal use. The type must
+   * be one of the mouse event types.
+   *
+   * @param[in] instance The instance for which this event occurred.
+   *
+   * @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+   * input event.
+   *
+   * @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+   * when the event occurred.
+   *
+   * @param[in] modifiers A bit field combination of the
+   * <code>PP_InputEvent_Modifier</code> flags.
+   *
+   * @param[in] mouse_button The button that changed for mouse down or up
+   * events. This value will be <code>PP_EVENT_MOUSEBUTTON_NONE</code> for
+   * mouse move, enter, and leave events.
+   *
+   * @param[in] mouse_position A <code>Point</code> containing the x and y
+   * position of the mouse when the event occurred.
+   *
+   * @param[in] mouse_movement The change in position of the mouse.
+   *
+   * @return A <code>PP_Resource</code> containing the new mouse input event.
+   */
+  [version=1.1]
+  PP_Resource Create([in] PP_Instance instance,
+                     [in] PP_InputEvent_Type type,
+                     [in] PP_TimeTicks time_stamp,
+                     [in] uint32_t modifiers,
+                     [in] PP_InputEvent_MouseButton mouse_button,
+                     [in] PP_Point mouse_position,
+                     [in] int32_t click_count,
+                     [in] PP_Point mouse_movement);
+  /**
    * IsMouseInputEvent() determines if a resource is a mouse event.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to an event.
@@ -436,9 +475,11 @@ interface PPB_MouseInputEvent {
   PP_InputEvent_MouseButton GetButton([in] PP_Resource mouse_event);
 
   /**
-   * GetPosition() returns the pixel location of a mouse input event.
+   * GetPosition() returns the pixel location of a mouse input event. When
+   * the mouse is locked, it returns the last known mouse position just as
+   * mouse lock was entered.
    *
-   * @param[in] mouse_event A <code>PP_Resource</code> corresponding to an
+   * @param[in] mouse_event A <code>PP_Resource</code> corresponding to a
    * mouse event.
    *
    * @return The point associated with the mouse event, relative to the upper-
@@ -451,6 +492,25 @@ interface PPB_MouseInputEvent {
    * TODO(brettw) figure out exactly what this means.
    */
   int32_t GetClickCount([in] PP_Resource mouse_event);
+
+  /**
+   * Returns the change in position of the mouse. When the mouse is locked,
+   * although the mouse position doesn't actually change, this function
+   * still provides movement information, which indicates what the change in
+   * position would be had the mouse not been locked.
+   *
+   * @param[in] mouse_event A <code>PP_Resource</code> corresponding to a
+   * mouse event.
+   *
+   * @return The change in position of the mouse, relative to the previous
+   * position.
+   *
+   * TODO(yzshen): This feature hasn't been supported yet. The returned value is
+   * always (0, 0) for system-generated mouse events (which are passed through
+   * the <code>HandleInputEvent</code>).
+   */
+  [version=1.1]
+  PP_Point GetMovement([in] PP_Resource mouse_event);
 };
 
 

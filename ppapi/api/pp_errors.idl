@@ -83,6 +83,11 @@
    * This value indicates that the user cancelled rather than providing
    * expected input.
    */
-  PP_ERROR_USERCANCEL     = -40
+  PP_ERROR_USERCANCEL     = -40,
+  /**
+   * This value indicates that the graphics context was lost due to a
+   * power management event.
+   */
+  PP_ERROR_CONTEXT_LOST = -50
 };
 
