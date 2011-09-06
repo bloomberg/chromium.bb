@@ -16,8 +16,7 @@ namespace dbus {
 // Echo, SlowEcho, BrokenMethod.
 const int TestService::kNumMethodsToExport = 3;
 
-TestService::Options::Options()
-    : dbus_thread(NULL) {
+TestService::Options::Options() {
 }
 
 TestService::Options::~Options() {
@@ -25,7 +24,7 @@ TestService::Options::~Options() {
 
 TestService::TestService(const Options& options)
     : base::Thread("TestService"),
-      dbus_thread_(options.dbus_thread),
+      dbus_thread_message_loop_proxy_(options.dbus_thread_message_loop_proxy),
       on_all_methods_exported_(false, false),
       num_exported_methods_(0) {
 }
@@ -100,7 +99,7 @@ void TestService::Run(MessageLoop* message_loop) {
   Bus::Options bus_options;
   bus_options.bus_type = Bus::SESSION;
   bus_options.connection_type = Bus::PRIVATE;
-  bus_options.dbus_thread = dbus_thread_;
+  bus_options.dbus_thread_message_loop_proxy = dbus_thread_message_loop_proxy_;
   bus_ = new Bus(bus_options);
 
   exported_object_ = bus_->GetExportedObject(

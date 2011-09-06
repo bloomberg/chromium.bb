@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/tracked_objects.h"
@@ -22,6 +21,7 @@ class MessageLoop;
 
 namespace base {
 class Thread;
+class MessageLoopProxy;
 }
 
 namespace dbus {
@@ -35,15 +35,15 @@ class ObjectProxy;
 // For asynchronous operations such as an asynchronous method call, the
 // bus object will use a message loop to monitor the underlying file
 // descriptor used for D-Bus communication. By default, the bus will use
-// the current thread's MessageLoopForIO. If |dbus_thread| option is
-// specified, the bus will use the D-Bus thread's message loop.
+// the current thread's MessageLoopForIO. If |dbus_thread_message_loop_proxy|
+// option is specified, the bus will use that message loop instead.
 //
 // THREADING
 //
 // In the D-Bus library, we use the two threads:
 //
 // - The origin thread: the thread that created the Bus object.
-// - The D-Bus thread: the thread supplied by |dbus_thread| option.
+// - The D-Bus thread: the thread servicing |dbus_thread_message_loop_proxy|.
 //
 // The origin thread is usually Chrome's UI thread. The D-Bus thread is
 // usually a dedicated thread for the D-Bus library.
@@ -79,9 +79,11 @@ class ObjectProxy;
 //       bus.GetObjectProxy(service_name, object_path);
 //
 //   dbus::MethodCall method_call(interface_name, method_name);
-//   dbus::Response response;
-//   bool success =
-//       object_proxy.CallMethodAndBlock(&method_call, timeout_ms, &response);
+//   scoped_ptr<dbus::Response> response(
+//       object_proxy.CallMethodAndBlock(&method_call, timeout_ms));
+//   if (response.get() != NULL) {  // Success.
+//     ...
+//   }
 //
 // Asynchronous method call:
 //
@@ -154,14 +156,14 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
 
     BusType bus_type;  // SESSION by default.
     ConnectionType connection_type;  // PRIVATE by default.
-    // If the thread is set, the bus object will use the message loop
-    // attached to the thread to process asynchronous operations.
+    // If dbus_thread_message_loop_proxy is set, the bus object will use that
+    // message loop to process asynchronous operations.
     //
-    // The thread should meet the following requirements:
+    // The thread servicing the message loop proxy should meet the following
+    // requirements:
     // 1) Already running.
     // 2) Has a MessageLoopForIO.
-    // 3) Outlives the bus.
-    base::Thread* dbus_thread;  // NULL by default.
+    scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy;
   };
 
   // Creates a Bus object. The actual connection will be established when
@@ -430,13 +432,12 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
                                            void* data);
   const BusType bus_type_;
   const ConnectionType connection_type_;
-  base::Thread* dbus_thread_;
+  scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy_;
   base::WaitableEvent on_shutdown_;
   DBusConnection* connection_;
 
   MessageLoop* origin_loop_;
   base::PlatformThreadId origin_thread_id_;
-  base::PlatformThreadId dbus_thread_id_;
 
   std::set<std::string> owned_service_names_;
   // The following sets are used to check if rules/object_paths/filters

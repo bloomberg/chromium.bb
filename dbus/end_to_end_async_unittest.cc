@@ -37,7 +37,7 @@ class EndToEndAsyncTest : public testing::Test {
 
     // Start the test service, using the D-Bus thread.
     dbus::TestService::Options options;
-    options.dbus_thread = dbus_thread_.get();
+    options.dbus_thread_message_loop_proxy = dbus_thread_->message_loop_proxy();
     test_service_.reset(new dbus::TestService(options));
     ASSERT_TRUE(test_service_->StartService());
     ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
@@ -47,7 +47,8 @@ class EndToEndAsyncTest : public testing::Test {
     dbus::Bus::Options bus_options;
     bus_options.bus_type = dbus::Bus::SESSION;
     bus_options.connection_type = dbus::Bus::PRIVATE;
-    bus_options.dbus_thread = dbus_thread_.get();
+    bus_options.dbus_thread_message_loop_proxy =
+        dbus_thread_->message_loop_proxy();
     bus_ = new dbus::Bus(bus_options);
     object_proxy_ = bus_->GetObjectProxy("org.chromium.TestService",
                                          "/org/chromium/TestObject");

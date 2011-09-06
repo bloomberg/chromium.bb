@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -168,8 +169,7 @@ class Timeout : public base::RefCountedThreadSafe<Timeout> {
 
 Bus::Options::Options()
   : bus_type(SESSION),
-    connection_type(PRIVATE),
-    dbus_thread(NULL) {
+    connection_type(PRIVATE) {
 }
 
 Bus::Options::~Options() {
@@ -178,25 +178,15 @@ Bus::Options::~Options() {
 Bus::Bus(const Options& options)
     : bus_type_(options.bus_type),
       connection_type_(options.connection_type),
-      dbus_thread_(options.dbus_thread),
+      dbus_thread_message_loop_proxy_(options.dbus_thread_message_loop_proxy),
       on_shutdown_(false /* manual_reset */, false /* initially_signaled */),
       connection_(NULL),
       origin_loop_(MessageLoop::current()),
       origin_thread_id_(base::PlatformThread::CurrentId()),
-      dbus_thread_id_(base::kInvalidThreadId),
       async_operations_set_up_(false),
       shutdown_completed_(false),
       num_pending_watches_(0),
       num_pending_timeouts_(0) {
-  if (dbus_thread_) {
-    dbus_thread_id_ = dbus_thread_->thread_id();
-    DCHECK(dbus_thread_->IsRunning())
-        << "The D-Bus thread should be running";
-    DCHECK_EQ(MessageLoop::TYPE_IO,
-              dbus_thread_->message_loop()->type())
-        << "The D-Bus thread should have an MessageLoopForIO attached";
-  }
-
   // This is safe to call multiple times.
   dbus_threads_init_default();
 }
@@ -315,7 +305,7 @@ void Bus::ShutdownAndBlock() {
 
 void Bus::ShutdownOnDBusThreadAndBlock() {
   AssertOnOriginThread();
-  DCHECK(dbus_thread_);
+  DCHECK(dbus_thread_message_loop_proxy_.get());
 
   PostTaskToDBusThread(FROM_HERE, base::Bind(
       &Bus::ShutdownOnDBusThreadAndBlockInternal,
@@ -576,8 +566,8 @@ void Bus::PostTaskToOriginThread(const tracked_objects::Location& from_here,
 
 void Bus::PostTaskToDBusThread(const tracked_objects::Location& from_here,
                                const base::Closure& task) {
-  if (dbus_thread_)
-    dbus_thread_->message_loop()->PostTask(from_here, task);
+  if (dbus_thread_message_loop_proxy_.get())
+    dbus_thread_message_loop_proxy_->PostTask(from_here, task);
   else
     origin_loop_->PostTask(from_here, task);
 }
@@ -586,14 +576,14 @@ void Bus::PostDelayedTaskToDBusThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     int delay_ms) {
-  if (dbus_thread_)
-    dbus_thread_->message_loop()->PostDelayedTask(from_here, task, delay_ms);
+  if (dbus_thread_message_loop_proxy_.get())
+    dbus_thread_message_loop_proxy_->PostDelayedTask(from_here, task, delay_ms);
   else
     origin_loop_->PostDelayedTask(from_here, task, delay_ms);
 }
 
 bool Bus::HasDBusThread() {
-  return dbus_thread_ != NULL;
+  return dbus_thread_message_loop_proxy_.get() != NULL;
 }
 
 void Bus::AssertOnOriginThread() {
@@ -603,8 +593,8 @@ void Bus::AssertOnOriginThread() {
 void Bus::AssertOnDBusThread() {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  if (dbus_thread_) {
-    DCHECK_EQ(dbus_thread_id_, base::PlatformThread::CurrentId());
+  if (dbus_thread_message_loop_proxy_.get()) {
+    DCHECK(dbus_thread_message_loop_proxy_->BelongsToCurrentThread());
   } else {
     AssertOnOriginThread();
   }

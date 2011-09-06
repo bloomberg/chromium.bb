@@ -368,7 +368,7 @@ class MessageReader {
   // worth having a specialized function.
   //
   // |bytes| must be copied if the contents will be referenced after the
-  // |MessageReader is destroyed.
+  // MessageReader is destroyed.
   bool PopArrayOfBytes(uint8** bytes, size_t* length);
 
   // Gets the array of object paths at the current iterator position.

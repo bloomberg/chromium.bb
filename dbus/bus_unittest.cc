@@ -80,7 +80,7 @@ TEST(BusTest, ShutdownAndBlockWithDBusThread) {
 
   // Create the bus.
   dbus::Bus::Options options;
-  options.dbus_thread = &dbus_thread;
+  options.dbus_thread_message_loop_proxy = dbus_thread.message_loop_proxy();
   scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
   ASSERT_FALSE(bus->shutdown_completed());
 

@@ -11,6 +11,10 @@
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace dbus {
 
 class Bus;
@@ -32,7 +36,7 @@ class TestService : public base::Thread {
     ~Options();
 
     // NULL by default (i.e. don't use the D-Bus thread).
-    base::Thread* dbus_thread;
+    scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy;
   };
 
   // The number of methods we'll export.
@@ -87,7 +91,7 @@ class TestService : public base::Thread {
   // Returns NULL, instead of a valid Response.
   Response* BrokenMethod(MethodCall* method_call);
 
-  base::Thread* dbus_thread_;
+  scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy_;
   base::WaitableEvent on_all_methods_exported_;
   // The number of methods actually exported.
   int num_exported_methods_;
