@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/chrome_main.h"
+#include "chrome/app/chrome_main_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -17,8 +17,6 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "policy/policy_constants.h"
-
-namespace chrome_main {
 
 void CheckUserDataDirPolicy(FilePath* user_data_dir) {
   base::mac::ScopedNSAutoreleasePool pool;
@@ -45,5 +43,3 @@ void SetUpBundleOverrides() {
   NSBundle* base_bundle = chrome::OuterAppBundle();
   base::mac::SetBaseBundleID([[base_bundle bundleIdentifier] UTF8String]);
 }
-
-}  // namespace chrome_main

@@ -191,7 +191,6 @@
           'sources': [
             'app/chrome_dll_resource.h',
             'app/chrome_main.cc',
-            'app/chrome_main_posix.cc',
           ],
         }],
         ['OS=="mac"', {

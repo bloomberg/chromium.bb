@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/app/chrome_main.h"
-
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
@@ -46,6 +44,8 @@
 #include <malloc.h>
 #include "base/string_util.h"
 #include "base/win/registry.h"
+#include "chrome/browser/policy/policy_path_parser.h"
+#include "policy/policy_constants.h"
 #include "sandbox/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
 #endif
@@ -54,6 +54,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/os_crash_dumps.h"
 #include "chrome/app/breakpad_mac.h"
+#include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
@@ -147,6 +148,54 @@ bool HasDeprecatedArguments(const std::wstring& command_line) {
   StringToLowerASCII(&command_line_lower);
   std::wstring::size_type pos = command_line_lower.find(kChromeHtml);
   return (pos != std::wstring::npos);
+}
+
+// Checks if the registry key exists in the given hive and expands any
+// variables in the string.
+bool LoadUserDataDirPolicyFromRegistry(HKEY hive,
+                                       const std::wstring& key_name,
+                                       FilePath* user_data_dir) {
+  std::wstring value;
+
+  base::win::RegKey hklm_policy_key(hive, policy::kRegistrySubKey, KEY_READ);
+  if (hklm_policy_key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
+    *user_data_dir = FilePath(policy::path_parser::ExpandPathVariables(value));
+    return true;
+  }
+  return false;
+}
+
+void CheckUserDataDirPolicy(FilePath* user_data_dir) {
+  DCHECK(user_data_dir);
+  // We are running as Chrome Frame if we were invoked with user-data-dir,
+  // chrome-frame, and automation-channel switches.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const bool is_chrome_frame =
+      !user_data_dir->empty() &&
+      command_line->HasSwitch(switches::kChromeFrame) &&
+      command_line->HasSwitch(switches::kAutomationClientChannelID);
+
+  // In the case of Chrome Frame, the last path component of the user-data-dir
+  // provided on the command line must be preserved since it is specific to
+  // CF's host.
+  FilePath cf_host_dir;
+  if (is_chrome_frame)
+    cf_host_dir = user_data_dir->BaseName();
+
+  // Policy from the HKLM hive has precedence over HKCU so if we have one here
+  // we don't have to try to load HKCU.
+  const char* key_name_ascii = (is_chrome_frame ? policy::key::kGCFUserDataDir :
+                                policy::key::kUserDataDir);
+  std::wstring key_name(ASCIIToWide(key_name_ascii));
+  if (LoadUserDataDirPolicyFromRegistry(HKEY_LOCAL_MACHINE, key_name,
+                                        user_data_dir) ||
+      LoadUserDataDirPolicyFromRegistry(HKEY_CURRENT_USER, key_name,
+                                        user_data_dir)) {
+    // A Group Policy value was loaded.  Append the Chrome Frame host directory
+    // if relevant.
+    if (is_chrome_frame)
+      *user_data_dir = user_data_dir->Append(cf_host_dir);
+  }
 }
 
 #endif  // defined(OS_WIN)
@@ -364,7 +413,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #if defined(OS_MACOSX)
     // TODO(shess): Enable zombies for everyone.  http://crbug.com/94551
     DCHECK(ObjcEvilDoers::ZombieEnable(true, 1000));
-    chrome_main::SetUpBundleOverrides();
+    SetUpBundleOverrides();
     chrome::common::mac::EnableCFBundleBlocker();
 #endif
 
@@ -515,7 +564,9 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
     // Notice a user data directory override if any
     FilePath user_data_dir =
         command_line.GetSwitchValuePath(switches::kUserDataDir);
-    chrome_main::CheckUserDataDirPolicy(&user_data_dir);
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    CheckUserDataDirPolicy(&user_data_dir);
+#endif
     if (!user_data_dir.empty())
       CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
 
