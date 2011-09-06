@@ -74,6 +74,7 @@ class EnterpriseEnrollmentScreenActor {
   // Show an authentication error.
   virtual void ShowAuthError(const GoogleServiceAuthError& error) = 0;
   virtual void ShowAccountError() = 0;
+  virtual void ShowSerialNumberError() = 0;
   virtual void ShowFatalAuthError() = 0;
   virtual void ShowFatalEnrollmentError() = 0;
   virtual void ShowNetworkEnrollmentError() = 0;

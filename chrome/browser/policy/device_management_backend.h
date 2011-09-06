@@ -42,8 +42,19 @@ class DeviceManagementBackend : base::NonThreadSafe {
     kErrorServiceManagementTokenInvalid,
     // Service error: Activation pending.
     kErrorServiceActivationPending,
+    // Service error: The serial number is not valid or not known to the server.
+    kErrorServiceInvalidSerialNumber,
+    // Service error: The device id used for registration is already taken.
+    kErrorServiceDeviceIdConflict,
     // Service error: Policy not found. Error code defined by the DM folks.
     kErrorServicePolicyNotFound = 902,
+  };
+
+  // These codes are sent in the |error_code| field of the the
+  // PolicyFetchResponse protobuf.
+  enum PolicyFetchErrorCode {
+    kPolicyFetchSuccess = 200,
+    kPolicyFetchErrorNotFound = 902
   };
 
   class DeviceRegisterResponseDelegate {

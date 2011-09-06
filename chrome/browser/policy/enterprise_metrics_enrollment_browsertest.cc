@@ -137,6 +137,13 @@ IN_PROC_BROWSER_TEST_F(EnterpriseMetricsEnrollmentTest, OnPolicyUnmanaged) {
   CheckSample(policy::kMetricEnrollmentNotSupported);
 }
 
+IN_PROC_BROWSER_TEST_F(EnterpriseMetricsEnrollmentTest, OnInvalidSN) {
+  screen_->OnPolicyStateChanged(
+      policy::CloudPolicySubsystem::UNENROLLED,
+      policy::CloudPolicySubsystem::BAD_SERIAL_NUMBER);
+  CheckSample(policy::kMetricEnrollmentInvalidSerialNumber);
+}
+
 IN_PROC_BROWSER_TEST_F(EnterpriseMetricsEnrollmentTest, EnrollmentOK) {
   screen_->OnPolicyStateChanged(policy::CloudPolicySubsystem::SUCCESS,
                                 policy::CloudPolicySubsystem::NO_DETAILS);

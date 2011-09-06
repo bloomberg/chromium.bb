@@ -90,6 +90,10 @@ void DeviceTokenFetcher::SetUnmanagedState() {
   SetState(STATE_UNMANAGED);
 }
 
+void DeviceTokenFetcher::SetSerialNumberInvalidState() {
+  SetState(STATE_BAD_SERIAL);
+}
+
 void DeviceTokenFetcher::Reset() {
   SetState(STATE_INACTIVE);
 }
@@ -112,18 +116,21 @@ void DeviceTokenFetcher::HandleRegisterResponse(
 void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
   switch (code) {
     case DeviceManagementBackend::kErrorServiceManagementNotSupported:
-      cache_->SetUnmanaged();
-      SetState(STATE_UNMANAGED);
+      SetUnmanagedState();
       break;
     case DeviceManagementBackend::kErrorRequestFailed:
     case DeviceManagementBackend::kErrorTemporaryUnavailable:
     case DeviceManagementBackend::kErrorServiceDeviceNotFound:
+    case DeviceManagementBackend::kErrorServiceDeviceIdConflict:
       SetState(STATE_TEMPORARY_ERROR);
       break;
     case DeviceManagementBackend::kErrorServiceManagementTokenInvalid:
       // Most probably the GAIA auth cookie has expired. We can not do anything
       // until the user logs-in again.
       SetState(STATE_BAD_AUTH);
+      break;
+    case DeviceManagementBackend::kErrorServiceInvalidSerialNumber:
+      SetSerialNumberInvalidState();
       break;
     default:
       SetState(STATE_ERROR);
@@ -164,6 +171,11 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
     case STATE_TOKEN_AVAILABLE:
       notifier_->Inform(CloudPolicySubsystem::SUCCESS,
                         CloudPolicySubsystem::NO_DETAILS,
+                        PolicyNotifier::TOKEN_FETCHER);
+      break;
+    case STATE_BAD_SERIAL:
+      notifier_->Inform(CloudPolicySubsystem::UNENROLLED,
+                        CloudPolicySubsystem::BAD_SERIAL_NUMBER,
                         PolicyNotifier::TOKEN_FETCHER);
       break;
     case STATE_UNMANAGED:
@@ -216,6 +228,7 @@ void DeviceTokenFetcher::DoWork() {
   switch (state_) {
     case STATE_INACTIVE:
     case STATE_TOKEN_AVAILABLE:
+    case STATE_BAD_SERIAL:
       break;
     case STATE_UNMANAGED:
     case STATE_ERROR:

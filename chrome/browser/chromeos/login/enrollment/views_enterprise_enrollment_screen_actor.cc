@@ -69,6 +69,11 @@ void ViewsEnterpriseEnrollmentScreenActor::ShowAccountError() {
   NotifyObservers(false);
 }
 
+void ViewsEnterpriseEnrollmentScreenActor::ShowSerialNumberError() {
+  GetUIActor()->ShowSerialNumberError();
+  NotifyObservers(false);
+}
+
 void ViewsEnterpriseEnrollmentScreenActor::ShowFatalAuthError() {
   GetUIActor()->ShowFatalAuthError();
   NotifyObservers(false);

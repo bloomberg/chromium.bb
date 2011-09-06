@@ -35,6 +35,7 @@ class MockEnterpriseEnrollmentScreenActor
   MOCK_METHOD0(ShowConfirmationScreen, void());
   MOCK_METHOD1(ShowAuthError, void(const GoogleServiceAuthError& error));
   MOCK_METHOD0(ShowAccountError, void());
+  MOCK_METHOD0(ShowSerialNumberError, void());
   MOCK_METHOD0(ShowFatalAuthError, void());
   MOCK_METHOD0(ShowFatalEnrollmentError, void());
   MOCK_METHOD0(ShowNetworkEnrollmentError, void());

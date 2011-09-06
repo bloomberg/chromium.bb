@@ -48,6 +48,10 @@ void PolicyNotifier::RecomputeState() {
       s[POLICY_CACHE] == CloudPolicySubsystem::UNMANAGED) {
     state_ = CloudPolicySubsystem::UNMANAGED;
     error_details_ = CloudPolicySubsystem::NO_DETAILS;
+  } else if (s[TOKEN_FETCHER] == CloudPolicySubsystem::UNENROLLED &&
+             e[TOKEN_FETCHER] == CloudPolicySubsystem::BAD_SERIAL_NUMBER) {
+    state_ = s[TOKEN_FETCHER];
+    error_details_ = e[TOKEN_FETCHER];
   } else if (s[TOKEN_FETCHER] == CloudPolicySubsystem::NETWORK_ERROR) {
     state_ = s[TOKEN_FETCHER];
     error_details_ = e[TOKEN_FETCHER];

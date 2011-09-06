@@ -13504,6 +13504,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR" desc="Error message to show when there is an unrecoverable error while performing enrollment.">
         Oops!  Something went really wrong while enrolling this device.  Please try again or contact your support representative.
       </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_SERIAL_NUMBER_ERROR" desc="Error message to show when the serial number reported by the device cannot be enrolled in the requested domain.">
+        This device cannot be enrolled in the domain this user account belongs to.
+      </message>
 
       <!-- Strings for the new-style OAuth-based enterprise enrollment page -->
       <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">

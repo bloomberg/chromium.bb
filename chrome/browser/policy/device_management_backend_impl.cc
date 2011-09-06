@@ -58,20 +58,22 @@ const char kPostContentType[] = "application/protobuf";
 const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
 const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
 
-// HTTP Error Codes of the DM Server with their concrete meinings in the context
+// HTTP Error Codes of the DM Server with their concrete meanings in the context
 // of the DM Server communication.
 const int kSuccess = 200;
 const int kInvalidArgument = 400;
 const int kInvalidAuthCookieOrDMToken = 401;
 const int kDeviceManagementNotAllowed = 403;
 const int kInvalidURL = 404; // This error is not coming from the GFE.
+const int kInvalidSerialNumber = 405;
+const int kDeviceIdConflict = 409;
 const int kDeviceNotFound = 410;
 const int kPendingApproval = 412;
 const int kInternalServerError = 500;
 const int kServiceUnavailable = 503;
 const int kPolicyNotFound = 902; // This error is not sent as HTTP status code.
 
-// TODO(pastarmovj): Legacy error codes are here for comaptibility only. They
+// TODO(pastarmovj): Legacy error codes are here for compatibility only. They
 // should be removed once the DM Server has been updated.
 const int kPendingApprovalLegacy = 491;
 const int kDeviceNotFoundLegacy = 901;
@@ -256,6 +258,14 @@ void DeviceManagementJobBase::HandleResponse(
       OnError(DeviceManagementBackend::kErrorServicePolicyNotFound);
       break;
     }
+    case kInvalidSerialNumber: {
+      OnError(DeviceManagementBackend::kErrorServiceInvalidSerialNumber);
+      break;
+    }
+    case kDeviceIdConflict: {
+      OnError(DeviceManagementBackend::kErrorServiceDeviceIdConflict);
+      break;
+    }
     default: {
       VLOG(1) << "Unexpected HTTP status in response from DMServer : "
               << response_code << ".";
@@ -327,6 +337,12 @@ class DeviceManagementRegisterJob : public DeviceManagementJobBase {
         break;
       case DeviceManagementBackend::kErrorResponseDecoding:
         sample = kMetricTokenFetchBadResponse;
+        break;
+      case DeviceManagementBackend::kErrorServiceInvalidSerialNumber:
+        sample = kMetricTokenFetchInvalidSerialNumber;
+        break;
+      case DeviceManagementBackend::kErrorServiceDeviceIdConflict:
+        sample = kMetricTokenFetchDeviceIdConflict;
         break;
       default:
         sample = kMetricTokenFetchServerFailed;

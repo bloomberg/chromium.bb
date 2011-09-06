@@ -110,6 +110,11 @@ void EnterpriseEnrollmentScreenHandler::ShowAccountError() {
   NotifyObservers(false);
 }
 
+void EnterpriseEnrollmentScreenHandler::ShowSerialNumberError() {
+  ShowError(IDS_ENTERPRISE_ENROLLMENT_SERIAL_NUMBER_ERROR);
+  NotifyObservers(false);
+}
+
 void EnterpriseEnrollmentScreenHandler::ShowFatalAuthError() {
   ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_AUTH_ERROR);
   NotifyObservers(false);

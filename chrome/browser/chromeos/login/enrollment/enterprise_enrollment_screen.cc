@@ -177,10 +177,16 @@ void EnterpriseEnrollmentScreen::OnIssueAuthTokenFailure(
 void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
     policy::CloudPolicySubsystem::PolicySubsystemState state,
     policy::CloudPolicySubsystem::ErrorDetails error_details) {
+  policy::MetricEnrollment metric = policy::kMetricEnrollmentPolicyFailed;
 
   if (is_showing_) {
     switch (state) {
       case policy::CloudPolicySubsystem::UNENROLLED:
+        if (error_details == policy::CloudPolicySubsystem::BAD_SERIAL_NUMBER) {
+          actor_->ShowSerialNumberError();
+          metric = policy::kMetricEnrollmentInvalidSerialNumber;
+          break;
+        }
         // Still working...
         return;
       case policy::CloudPolicySubsystem::BAD_GAIA_TOKEN:
@@ -188,6 +194,7 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
         actor_->ShowFatalEnrollmentError();
         break;
       case policy::CloudPolicySubsystem::UNMANAGED:
+        metric = policy::kMetricEnrollmentNotSupported;
         actor_->ShowAccountError();
         break;
       case policy::CloudPolicySubsystem::NETWORK_ERROR:
@@ -206,15 +213,9 @@ void EnterpriseEnrollmentScreen::OnPolicyStateChanged(
         return;
     }
     // We have an error.
-    if (state == policy::CloudPolicySubsystem::UNMANAGED) {
-      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                                policy::kMetricEnrollmentNotSupported,
-                                policy::kMetricEnrollmentSize);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
-                                policy::kMetricEnrollmentPolicyFailed,
-                                policy::kMetricEnrollmentSize);
-    }
+    UMA_HISTOGRAM_ENUMERATION(policy::kMetricEnrollment,
+                              metric,
+                              policy::kMetricEnrollmentSize);
     LOG(WARNING) << "Policy subsystem error during enrollment: " << state
                  << " details: " << error_details;
   }

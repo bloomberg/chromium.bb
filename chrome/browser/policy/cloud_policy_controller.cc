@@ -109,8 +109,9 @@ void CloudPolicyController::HandlePolicyResponse(
       LOG(WARNING) << "More than one policy in the response of the device "
                    << "management server, discarding.";
     }
-    if (response.response(0).error_code() !=
-        DeviceManagementBackend::kErrorServicePolicyNotFound) {
+    if (!response.response(0).has_error_code() ||
+        response.response(0).error_code() ==
+            DeviceManagementBackend::kPolicyFetchSuccess) {
       cache_->SetPolicy(response.response(0));
       SetState(STATE_POLICY_VALID);
     } else {
@@ -127,10 +128,17 @@ void CloudPolicyController::HandlePolicyResponse(
 void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
   switch (code) {
     case DeviceManagementBackend::kErrorServiceDeviceNotFound:
+    case DeviceManagementBackend::kErrorServiceDeviceIdConflict:
     case DeviceManagementBackend::kErrorServiceManagementTokenInvalid: {
       LOG(WARNING) << "The device token was either invalid or unknown to the "
                    << "device manager, re-registering device.";
       // Will retry fetching a token but gracefully backing off.
+      SetState(STATE_TOKEN_ERROR);
+      break;
+    }
+    case DeviceManagementBackend::kErrorServiceInvalidSerialNumber: {
+      VLOG(1) << "The device is no longer enlisted for the domain.";
+      token_fetcher_->SetSerialNumberInvalidState();
       SetState(STATE_TOKEN_ERROR);
       break;
     }

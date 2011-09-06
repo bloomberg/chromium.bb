@@ -41,6 +41,11 @@ enum MetricToken {
   // Caching a token to disk failed.
   kMetricTokenStoreFailed,
 
+  // DM server reported that the device-id generated is not unique.
+  kMetricTokenFetchDeviceIdConflict,
+  // DM server reported that the serial number we try to register is invalid.
+  kMetricTokenFetchInvalidSerialNumber,
+
   kMetricTokenSize  // Must be the last.
 };
 
@@ -117,6 +122,9 @@ enum MetricEnrollment {
   kMetricEnrollmentOtherFailed,
   // Enrollment was successful.
   kMetricEnrollmentOK,
+  // Enrollment failed because the serial number we try to register is not
+  // assigned to the domain used.
+  kMetricEnrollmentInvalidSerialNumber,
 
   kMetricEnrollmentSize  // Must be the last.
 };

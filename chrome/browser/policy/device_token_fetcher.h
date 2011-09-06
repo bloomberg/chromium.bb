@@ -48,6 +48,7 @@ class DeviceTokenFetcher
   virtual void FetchToken();
 
   virtual void SetUnmanagedState();
+  virtual void SetSerialNumberInvalidState();
 
   // Cancels any pending work on this fetcher and resets it to inactive state.
   void Reset();
@@ -74,6 +75,8 @@ class DeviceTokenFetcher
     STATE_TOKEN_AVAILABLE,
     // Device unmanaged.
     STATE_UNMANAGED,
+    // The device is not enlisted for the domain.
+    STATE_BAD_SERIAL,
     // Error, retry later.
     STATE_ERROR,
     // Temporary error. Retry sooner.

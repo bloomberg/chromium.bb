@@ -182,6 +182,16 @@ INSTANTIATE_TEST_CASE_P(
             403,
             PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
+            DeviceManagementBackend::kErrorServiceInvalidSerialNumber,
+            net::URLRequestStatus::SUCCESS,
+            405,
+            PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DeviceManagementBackend::kErrorServiceDeviceIdConflict,
+            net::URLRequestStatus::SUCCESS,
+            409,
+            PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
             DeviceManagementBackend::kErrorServiceDeviceNotFound,
             net::URLRequestStatus::SUCCESS,
             410,
