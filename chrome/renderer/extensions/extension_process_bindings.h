@@ -14,7 +14,7 @@
 
 #include "v8/include/v8.h"
 
-class ExtensionDispatcher;
+class ExtensionRendererContext;
 class GURL;
 class URLPattern;
 
@@ -24,7 +24,8 @@ class WebView;
 
 class ExtensionProcessBindings {
  public:
-  static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
+  static v8::Extension* Get(
+      ExtensionRendererContext* extension_renderer_context);
 
   // Handles a response to an API request.
   static void HandleResponse(int request_id, bool success,

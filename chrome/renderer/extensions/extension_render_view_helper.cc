@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_helper.h"
+#include "chrome/renderer/extensions/extension_render_view_helper.h"
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -14,18 +14,18 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/common/json_value_serializer.h"
 #include "content/renderer/render_view.h"
-#include "webkit/glue/image_resource_fetcher.h"
-#include "webkit/glue/resource_fetcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/image_resource_fetcher.h"
+#include "webkit/glue/resource_fetcher.h"
 
 using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
@@ -44,20 +44,21 @@ typedef std::map<WebFrame*, UserScriptIdleScheduler*> SchedulerMap;
 static base::LazyInstance<SchedulerMap> g_schedulers(base::LINKER_INITIALIZED);
 }
 
-ExtensionHelper::ExtensionHelper(RenderView* render_view,
-                                 ExtensionDispatcher* extension_dispatcher)
+ExtensionRenderViewHelper::ExtensionRenderViewHelper(
+    RenderView* render_view,
+    ExtensionRendererContext* extension_renderer_context)
     : RenderViewObserver(render_view),
-      RenderViewObserverTracker<ExtensionHelper>(render_view),
-      extension_dispatcher_(extension_dispatcher),
+      RenderViewObserverTracker<ExtensionRenderViewHelper>(render_view),
+      extension_renderer_context_(extension_renderer_context),
       pending_app_icon_requests_(0),
       view_type_(ViewType::INVALID),
       browser_window_id_(-1) {
 }
 
-ExtensionHelper::~ExtensionHelper() {
+ExtensionRenderViewHelper::~ExtensionRenderViewHelper() {
 }
 
-bool ExtensionHelper::InstallWebApplicationUsingDefinitionFile(
+bool ExtensionRenderViewHelper::InstallWebApplicationUsingDefinitionFile(
     WebFrame* frame, string16* error) {
   // There is an issue of drive-by installs with the below implementation. A web
   // site could force a user to install an app by timing the dialog to come up
@@ -99,16 +100,19 @@ bool ExtensionHelper::InstallWebApplicationUsingDefinitionFile(
   app_definition_fetcher_.reset(new ResourceFetcher(
       pending_app_info_->manifest_url, render_view()->webview()->mainFrame(),
       WebURLRequest::TargetIsSubresource,
-      NewCallback(this, &ExtensionHelper::DidDownloadApplicationDefinition)));
+      NewCallback(
+          this,
+          &ExtensionRenderViewHelper::DidDownloadApplicationDefinition)));
   return true;
 }
 
-void ExtensionHelper::InlineWebstoreInstall(std::string webstore_item_id) {
+void ExtensionRenderViewHelper::InlineWebstoreInstall(
+    std::string webstore_item_id) {
   Send(new ExtensionHostMsg_InlineWebstoreInstall(
       routing_id(), webstore_item_id));
 }
 
-void ExtensionHelper::OnInlineWebstoreInstallResponse(
+void ExtensionRenderViewHelper::OnInlineWebstoreInstallResponse(
     bool success,
     const std::string& error) {
   // TODO(mihaip): dispatch these as events to the the WebFrame that initiated
@@ -120,9 +124,9 @@ void ExtensionHelper::OnInlineWebstoreInstallResponse(
   }
 }
 
-bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
+bool ExtensionRenderViewHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionHelper, message)
+  IPC_BEGIN_MESSAGE_MAP(ExtensionRenderViewHelper, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
@@ -138,8 +142,8 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ExtensionHelper::DidFinishDocumentLoad(WebFrame* frame) {
-  extension_dispatcher_->user_script_slave()->InjectScripts(
+void ExtensionRenderViewHelper::DidFinishDocumentLoad(WebFrame* frame) {
+  extension_renderer_context_->user_script_slave()->InjectScripts(
       frame, UserScript::DOCUMENT_END);
 
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
@@ -147,24 +151,25 @@ void ExtensionHelper::DidFinishDocumentLoad(WebFrame* frame) {
     i->second->DidFinishDocumentLoad();
 }
 
-void ExtensionHelper::DidFinishLoad(WebKit::WebFrame* frame) {
+void ExtensionRenderViewHelper::DidFinishLoad(WebKit::WebFrame* frame) {
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
   if (i != g_schedulers.Get().end())
     i->second->DidFinishLoad();
 }
 
-void ExtensionHelper::DidCreateDocumentElement(WebFrame* frame) {
-  extension_dispatcher_->user_script_slave()->InjectScripts(
+void ExtensionRenderViewHelper::DidCreateDocumentElement(WebFrame* frame) {
+  extension_renderer_context_->user_script_slave()->InjectScripts(
       frame, UserScript::DOCUMENT_START);
 }
 
-void ExtensionHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
+void ExtensionRenderViewHelper::DidStartProvisionalLoad(
+    WebKit::WebFrame* frame) {
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
   if (i != g_schedulers.Get().end())
     i->second->DidStartProvisionalLoad();
 }
 
-void ExtensionHelper::FrameDetached(WebFrame* frame) {
+void ExtensionRenderViewHelper::FrameDetached(WebFrame* frame) {
   // This could be called before DidCreateDataSource, in which case the frame
   // won't be in the map.
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
@@ -175,7 +180,8 @@ void ExtensionHelper::FrameDetached(WebFrame* frame) {
   g_schedulers.Get().erase(i);
 }
 
-void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
+void ExtensionRenderViewHelper::DidCreateDataSource(WebFrame* frame,
+                                                    WebDataSource* ds) {
   // If there are any app-related fetches in progress, they can be cancelled now
   // since we have navigated away from the page that created them.
   if (!frame->parent()) {
@@ -189,10 +195,10 @@ void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     return;
 
   g_schedulers.Get()[frame] = new UserScriptIdleScheduler(
-      frame, extension_dispatcher_);
+      frame, extension_renderer_context_);
 }
 
-void ExtensionHelper::OnExtensionResponse(int request_id,
+void ExtensionRenderViewHelper::OnExtensionResponse(int request_id,
                                           bool success,
                                           const std::string& response,
                                           const std::string& error) {
@@ -200,15 +206,16 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
       request_id, success, response, error);
 }
 
-void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
-                                               const std::string& function_name,
-                                               const ListValue& args,
-                                               const GURL& event_url) {
+void ExtensionRenderViewHelper::OnExtensionMessageInvoke(
+    const std::string& extension_id,
+    const std::string& function_name,
+    const ListValue& args,
+    const GURL& event_url) {
   ExtensionBindingsContext::DispatchChromeHiddenMethod(
       extension_id, function_name, args, render_view(), event_url);
 }
 
-void ExtensionHelper::OnExecuteCode(
+void ExtensionRenderViewHelper::OnExecuteCode(
     const ExtensionMsg_ExecuteCode_Params& params) {
   WebView* webview = render_view()->webview();
   WebFrame* main_frame = webview->mainFrame();
@@ -225,7 +232,7 @@ void ExtensionHelper::OnExecuteCode(
     i->second->ExecuteCode(params);
 }
 
-void ExtensionHelper::OnGetApplicationInfo(int page_id) {
+void ExtensionRenderViewHelper::OnGetApplicationInfo(int page_id) {
   WebApplicationInfo app_info;
   if (page_id == render_view()->page_id()) {
     string16 error;
@@ -248,15 +255,15 @@ void ExtensionHelper::OnGetApplicationInfo(int page_id) {
       routing_id(), page_id, app_info));
 }
 
-void ExtensionHelper::OnNotifyRendererViewType(ViewType::Type type) {
+void ExtensionRenderViewHelper::OnNotifyRendererViewType(ViewType::Type type) {
   view_type_ = type;
 }
 
-void ExtensionHelper::OnUpdateBrowserWindowId(int window_id) {
+void ExtensionRenderViewHelper::OnUpdateBrowserWindowId(int window_id) {
   browser_window_id_ = window_id;
 }
 
-void ExtensionHelper::DidDownloadApplicationDefinition(
+void ExtensionRenderViewHelper::DidDownloadApplicationDefinition(
     const WebKit::WebURLResponse& response,
     const std::string& data) {
   scoped_ptr<WebApplicationInfo> app_info(
@@ -291,15 +298,17 @@ void ExtensionHelper::DidDownloadApplicationDefinition(
               pending_app_info_->icons[i].width,
               WebURLRequest::TargetIsFavicon,
               NewCallback(
-                  this, &ExtensionHelper::DidDownloadApplicationIcon))));
+                  this,
+                  &ExtensionRenderViewHelper::DidDownloadApplicationIcon))));
     }
   } else {
     Send(new ExtensionHostMsg_InstallApplication(routing_id(), *app_info));
   }
 }
 
-void ExtensionHelper::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
-                                            const SkBitmap& image) {
+void ExtensionRenderViewHelper::DidDownloadApplicationIcon(
+    ImageResourceFetcher* fetcher,
+    const SkBitmap& image) {
   pending_app_info_->icons[fetcher->id()].data = image;
 
   // Remove the image fetcher from our pending list. We're in the callback from
@@ -348,7 +357,7 @@ void ExtensionHelper::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
   pending_app_info_.reset(NULL);
 }
 
-void ExtensionHelper::AddErrorToRootConsole(const string16& message) {
+void ExtensionRenderViewHelper::AddErrorToRootConsole(const string16& message) {
   if (render_view()->webview() && render_view()->webview()->mainFrame()) {
     render_view()->webview()->mainFrame()->addMessageToConsole(
         WebConsoleMessage(WebConsoleMessage::LevelError, message));

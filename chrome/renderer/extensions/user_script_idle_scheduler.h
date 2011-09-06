@@ -12,7 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/task.h"
 
-class ExtensionDispatcher;
+class ExtensionRendererContext;
 class RenderView;
 struct ExtensionMsg_ExecuteCode_Params;
 
@@ -34,12 +34,12 @@ class WebFrame;
 // NOTE: this class does not inherit from RenderViewObserver on purpose.  The
 // reason is that this object is per frame, and a frame can move across
 // RenderViews thanks to adoptNode.  So we have each RenderView's
-// ExtensionHelper proxy these calls to the renderer process'
-// ExtensionDispatcher, which contains the mapping from WebFrame to us.
+// ExtensionRenderViewHelper proxy these calls to the renderer process'
+// ExtensionRendererContext, which contains the mapping from WebFrame to us.
 class UserScriptIdleScheduler {
  public:
   UserScriptIdleScheduler(WebKit::WebFrame* frame,
-                          ExtensionDispatcher* extension_dispatcher);
+                          ExtensionRendererContext* extension_renderer_context);
   ~UserScriptIdleScheduler();
 
   void ExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
@@ -72,7 +72,7 @@ class UserScriptIdleScheduler {
   std::queue<linked_ptr<ExtensionMsg_ExecuteCode_Params> >
       pending_code_execution_queue_;
 
-  ExtensionDispatcher* extension_dispatcher_;
+  ExtensionRendererContext* extension_renderer_context_;
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_IDLE_SCHEDULER_H_

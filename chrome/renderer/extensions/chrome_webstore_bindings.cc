@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/renderer/extensions/extension_helper.h"
+#include "chrome/renderer/extensions/extension_render_view_helper.h"
 #include "content/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -74,7 +74,8 @@ class ChromeWebstoreExtensionWrapper : public v8::Extension {
     std::string webstore_item_id;
     std::string error;
     if (GetWebstoreItemIdFromFrame(frame, &webstore_item_id, &error)) {
-      ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+      ExtensionRenderViewHelper* helper =
+          ExtensionRenderViewHelper::Get(render_view);
       helper->InlineWebstoreInstall(webstore_item_id);
     } else {
       v8::ThrowException(v8::String::New(error.c_str()));

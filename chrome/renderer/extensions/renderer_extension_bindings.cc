@@ -14,7 +14,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_base.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "content/renderer/render_thread.h"
 #include "content/renderer/render_view.h"
 #include "grit/renderer_resources.h"
@@ -61,10 +61,10 @@ const char* kExtensionDeps[] = { EventBindings::kName };
 
 class ExtensionImpl : public ExtensionBase {
  public:
-  explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
+  explicit ExtensionImpl(ExtensionRendererContext* context)
       : ExtensionBase(RendererExtensionBindings::kName,
                       GetStringResource(IDR_RENDERER_EXTENSION_BINDINGS_JS),
-                      arraysize(kExtensionDeps), kExtensionDeps, dispatcher) {
+                      arraysize(kExtensionDeps), kExtensionDeps, context) {
   }
   ~ExtensionImpl() {}
 
@@ -247,7 +247,8 @@ class ExtensionImpl : public ExtensionBase {
 const char* RendererExtensionBindings::kName =
     "chrome/RendererExtensionBindings";
 
-v8::Extension* RendererExtensionBindings::Get(ExtensionDispatcher* dispatcher) {
-  static v8::Extension* extension = new ExtensionImpl(dispatcher);
+v8::Extension* RendererExtensionBindings::Get(
+    ExtensionRendererContext* context) {
+  static v8::Extension* extension = new ExtensionImpl(context);
   return extension;
 }

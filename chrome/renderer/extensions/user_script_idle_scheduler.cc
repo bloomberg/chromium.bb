@@ -7,9 +7,9 @@
 #include "base/message_loop.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_groups.h"
-#include "chrome/renderer/extensions/extension_helper.h"
+#include "chrome/renderer/extensions/extension_render_view_helper.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -29,11 +29,11 @@ using WebKit::WebString;
 using WebKit::WebView;
 
 UserScriptIdleScheduler::UserScriptIdleScheduler(
-    WebFrame* frame, ExtensionDispatcher* extension_dispatcher)
+    WebFrame* frame, ExtensionRendererContext* extension_renderer_context)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       frame_(frame),
       has_run_(false),
-      extension_dispatcher_(extension_dispatcher) {
+      extension_renderer_context_(extension_renderer_context) {
 }
 
 UserScriptIdleScheduler::~UserScriptIdleScheduler() {
@@ -82,7 +82,7 @@ void UserScriptIdleScheduler::MaybeRun() {
   // http://code.google.com/p/chromium/issues/detail?id=29644
   has_run_ = true;
 
-  extension_dispatcher_->user_script_slave()->InjectScripts(
+  extension_renderer_context_->user_script_slave()->InjectScripts(
       frame_, UserScript::DOCUMENT_IDLE);
 
   while (!pending_code_execution_queue_.empty()) {
@@ -95,8 +95,8 @@ void UserScriptIdleScheduler::MaybeRun() {
 
 void UserScriptIdleScheduler::ExecuteCodeImpl(
     const ExtensionMsg_ExecuteCode_Params& params) {
-  const Extension* extension = extension_dispatcher_->extensions()->GetByID(
-      params.extension_id);
+  const Extension* extension =
+      extension_renderer_context_->extensions()->GetByID(params.extension_id);
   RenderView* render_view = RenderView::FromWebView(frame_->view());
 
   // Since extension info is sent separately from user script info, they can
@@ -147,7 +147,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
         std::vector<WebScriptSource> sources;
         sources.push_back(source);
         frame->executeScriptInIsolatedWorld(
-            extension_dispatcher_->user_script_slave()->
+            extension_renderer_context_->user_script_slave()->
                 GetIsolatedWorldIdForExtension(extension, frame),
             &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
       }

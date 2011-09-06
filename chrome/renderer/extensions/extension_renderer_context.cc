@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 
 #include "base/command_line.h"
 #include "chrome/common/child_process_logging.h"
@@ -38,7 +38,7 @@ using WebKit::WebFrame;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 
-ExtensionDispatcher::ExtensionDispatcher()
+ExtensionRendererContext::ExtensionRendererContext()
     : is_webkit_initialized_(false) {
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessType);
@@ -53,13 +53,13 @@ ExtensionDispatcher::ExtensionDispatcher()
   user_script_slave_.reset(new UserScriptSlave(&extensions_));
 }
 
-ExtensionDispatcher::~ExtensionDispatcher() {
+ExtensionRendererContext::~ExtensionRendererContext() {
 }
 
-bool ExtensionDispatcher::OnControlMessageReceived(
+bool ExtensionRendererContext::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionDispatcher, message)
+  IPC_BEGIN_MESSAGE_MAP(ExtensionRendererContext, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFunctionNames, OnSetFunctionNames)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnLoaded)
@@ -76,7 +76,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
   return handled;
 }
 
-void ExtensionDispatcher::WebKitInitialized() {
+void ExtensionRendererContext::WebKitInitialized() {
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
   if (is_extension_process_) {
@@ -111,7 +111,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   is_webkit_initialized_ = true;
 }
 
-void ExtensionDispatcher::IdleNotification() {
+void ExtensionRendererContext::IdleNotification() {
   if (is_extension_process_) {
     // Dampen the forced delay as well if the extension stays idle for long
     // periods of time.
@@ -125,14 +125,14 @@ void ExtensionDispatcher::IdleNotification() {
   }
 }
 
-void ExtensionDispatcher::OnSetFunctionNames(
+void ExtensionRendererContext::OnSetFunctionNames(
     const std::vector<std::string>& names) {
   function_names_.clear();
   for (size_t i = 0; i < names.size(); ++i)
     function_names_.insert(names[i]);
 }
 
-void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
+void ExtensionRendererContext::OnMessageInvoke(const std::string& extension_id,
                                           const std::string& function_name,
                                           const ListValue& args,
                                           const GURL& event_url) {
@@ -147,7 +147,8 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
   }
 }
 
-void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {
+void ExtensionRendererContext::OnLoaded(
+    const ExtensionMsg_Loaded_Params& params) {
   scoped_refptr<const Extension> extension(params.ConvertToExtension());
   if (!extension) {
     // This can happen if extension parsing fails for any reason. One reason
@@ -160,7 +161,7 @@ void ExtensionDispatcher::OnLoaded(const ExtensionMsg_Loaded_Params& params) {
   extensions_.Insert(extension);
 }
 
-void ExtensionDispatcher::OnUnloaded(const std::string& id) {
+void ExtensionRendererContext::OnUnloaded(const std::string& id) {
   extensions_.Remove(id);
   // If the extension is later reloaded with a different set of permissions,
   // we'd like it to get a new isolated world ID, so that it can pick up the
@@ -168,24 +169,24 @@ void ExtensionDispatcher::OnUnloaded(const std::string& id) {
   user_script_slave_->RemoveIsolatedWorld(id);
 }
 
-void ExtensionDispatcher::OnSetScriptingWhitelist(
+void ExtensionRendererContext::OnSetScriptingWhitelist(
     const Extension::ScriptingWhitelist& extension_ids) {
   Extension::SetScriptingWhitelist(extension_ids);
 }
 
-bool ExtensionDispatcher::IsApplicationActive(
+bool ExtensionRendererContext::IsApplicationActive(
     const std::string& extension_id) const {
   return active_application_ids_.find(extension_id) !=
       active_application_ids_.end();
 }
 
-bool ExtensionDispatcher::IsExtensionActive(
+bool ExtensionRendererContext::IsExtensionActive(
     const std::string& extension_id) const {
   return active_extension_ids_.find(extension_id) !=
       active_extension_ids_.end();
 }
 
-bool ExtensionDispatcher::AllowScriptExtension(
+bool ExtensionRendererContext::AllowScriptExtension(
     WebFrame* frame,
     const std::string& v8_extension_name,
     int extension_group) {
@@ -219,12 +220,12 @@ bool ExtensionDispatcher::AllowScriptExtension(
 
 }
 
-void ExtensionDispatcher::OnActivateApplication(
+void ExtensionRendererContext::OnActivateApplication(
     const std::string& extension_id) {
   active_application_ids_.insert(extension_id);
 }
 
-void ExtensionDispatcher::OnActivateExtension(
+void ExtensionRendererContext::OnActivateExtension(
     const std::string& extension_id) {
   active_extension_ids_.insert(extension_id);
 
@@ -243,7 +244,8 @@ void ExtensionDispatcher::OnActivateExtension(
     InitOriginPermissions(extension);
 }
 
-void ExtensionDispatcher::InitOriginPermissions(const Extension* extension) {
+void ExtensionRendererContext::InitOriginPermissions(
+    const Extension* extension) {
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
@@ -260,7 +262,7 @@ void ExtensionDispatcher::InitOriginPermissions(const Extension* extension) {
                           extension->GetActivePermissions()->explicit_hosts());
 }
 
-void ExtensionDispatcher::UpdateOriginPermissions(
+void ExtensionRendererContext::UpdateOriginPermissions(
     UpdatedExtensionPermissionsInfo::Reason reason,
     const Extension* extension,
     const URLPatternSet& origins) {
@@ -286,7 +288,7 @@ void ExtensionDispatcher::UpdateOriginPermissions(
   }
 }
 
-void ExtensionDispatcher::OnUpdatePermissions(
+void ExtensionRendererContext::OnUpdatePermissions(
     int reason_id,
     const std::string& extension_id,
     const ExtensionAPIPermissionSet& apis,
@@ -315,14 +317,14 @@ void ExtensionDispatcher::OnUpdatePermissions(
   UpdateOriginPermissions(reason, extension, explicit_hosts);
 }
 
-void ExtensionDispatcher::OnUpdateUserScripts(
+void ExtensionRendererContext::OnUpdateUserScripts(
     base::SharedMemoryHandle scripts) {
   DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
   user_script_slave_->UpdateScripts(scripts);
   UpdateActiveExtensions();
 }
 
-void ExtensionDispatcher::UpdateActiveExtensions() {
+void ExtensionRendererContext::UpdateActiveExtensions() {
   // In single-process mode, the browser process reports the active extensions.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -332,7 +334,7 @@ void ExtensionDispatcher::UpdateActiveExtensions() {
   child_process_logging::SetActiveExtensions(active_extensions);
 }
 
-void ExtensionDispatcher::RegisterExtension(v8::Extension* extension,
+void ExtensionRendererContext::RegisterExtension(v8::Extension* extension,
                                             bool restrict_to_extensions) {
   if (restrict_to_extensions)
     restricted_v8_extensions_.insert(extension->name());

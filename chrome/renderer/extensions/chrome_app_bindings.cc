@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "chrome/renderer/extensions/extension_helper.h"
+#include "chrome/renderer/extensions/extension_render_view_helper.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "content/renderer/render_view.h"
 #include "content/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -59,7 +59,8 @@ static const char* const kAppExtensionName = "v8/ChromeApp";
 
 class ChromeAppExtensionWrapper : public v8::Extension {
  public:
-  explicit ChromeAppExtensionWrapper(ExtensionDispatcher* extension_dispatcher) :
+  explicit ChromeAppExtensionWrapper(
+      ExtensionRendererContext* extension_renderer_context) :
     v8::Extension(kAppExtensionName,
       "var chrome;"
       "if (!chrome)"
@@ -76,11 +77,11 @@ class ChromeAppExtensionWrapper : public v8::Extension {
       "    this.getDetailsForFrame = GetDetailsForFrame;"
       "  };"
       "}") {
-    extension_dispatcher_ = extension_dispatcher;
+    extension_renderer_context_ = extension_renderer_context;
   }
 
   ~ChromeAppExtensionWrapper() {
-    extension_dispatcher_ = NULL;
+    extension_renderer_context_ = NULL;
   }
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -110,10 +111,11 @@ class ChromeAppExtensionWrapper : public v8::Extension {
       return v8::False();
 
     const ::Extension* extension =
-        extension_dispatcher_->extensions()->GetByURL(frame->document().url());
+        extension_renderer_context_->extensions()->GetByURL(
+            frame->document().url());
 
     bool has_web_extent = extension &&
-        extension_dispatcher_->IsApplicationActive(extension->id());
+        extension_renderer_context_->IsApplicationActive(extension->id());
     return v8::Boolean::New(has_web_extent);
   }
 
@@ -127,7 +129,8 @@ class ChromeAppExtensionWrapper : public v8::Extension {
       return v8::Undefined();
 
     string16 error;
-    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    ExtensionRenderViewHelper* helper =
+        ExtensionRenderViewHelper::Get(render_view);
     if (!helper->InstallWebApplicationUsingDefinitionFile(frame, &error))
       v8::ThrowException(v8::String::New(UTF16ToUTF8(error).c_str()));
 
@@ -166,7 +169,8 @@ class ChromeAppExtensionWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> GetDetailsForFrameImpl(const WebFrame* frame) {
     const ::Extension* extension =
-        extension_dispatcher_->extensions()->GetByURL(frame->document().url());
+        extension_renderer_context_->extensions()->GetByURL(
+            frame->document().url());
     if (!extension)
       return v8::Null();
 
@@ -178,14 +182,15 @@ class ChromeAppExtensionWrapper : public v8::Extension {
                                frame->mainWorldScriptContext());
   }
 
-  static ExtensionDispatcher* extension_dispatcher_;
+  static ExtensionRendererContext* extension_renderer_context_;
 };
 
-ExtensionDispatcher* ChromeAppExtensionWrapper::extension_dispatcher_;
+ExtensionRendererContext*
+    ChromeAppExtensionWrapper::extension_renderer_context_;
 
 v8::Extension* ChromeAppExtension::Get(
-    ExtensionDispatcher* extension_dispatcher) {
-  return new ChromeAppExtensionWrapper(extension_dispatcher);
+    ExtensionRendererContext* extension_renderer_context) {
+  return new ChromeAppExtensionWrapper(extension_renderer_context);
 }
 
 }  // namespace extensions_v8

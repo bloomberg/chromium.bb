@@ -16,7 +16,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/extension_base.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/common/url_constants.h"
 #include "content/renderer/render_view.h"
@@ -59,7 +59,7 @@ static bool HasSufficientPermissions(RenderView* render_view,
 void ExtensionBindingsContext::HandleV8ContextCreated(
     WebKit::WebFrame* web_frame,
     const v8::Handle<v8::Context>& v8_context,
-    ExtensionDispatcher* extension_dispatcher,
+    ExtensionRendererContext* extension_renderer_context,
     int isolated_world_id) {
 
   std::string extension_id;
@@ -72,14 +72,14 @@ void ExtensionBindingsContext::HandleV8ContextCreated(
     if (!ds)
       ds = web_frame->dataSource();
     GURL url = ds->request().url();
-    const ExtensionSet* extensions = extension_dispatcher->extensions();
+    const ExtensionSet* extensions = extension_renderer_context->extensions();
     extension_id = extensions->GetIdByURL(url);
 
     if (!extensions->ExtensionBindingsAllowed(url))
       return;
   } else {
     extension_id =
-        extension_dispatcher->user_script_slave()->
+        extension_renderer_context->user_script_slave()->
             GetExtensionIdForIsolatedWorld(isolated_world_id);
   }
 
@@ -92,7 +92,8 @@ void ExtensionBindingsContext::HandleV8ContextCreated(
   v8::HandleScope handle_scope;
   v8::Handle<v8::Value> argv[3];
   argv[0] = v8::String::New(extension_id.c_str());
-  argv[1] = v8::Boolean::New(extension_dispatcher->is_extension_process());
+  argv[1] = v8::Boolean::New(
+      extension_renderer_context->is_extension_process());
   argv[2] = v8::Boolean::New(
       ChromeRenderProcessObserver::is_incognito_process());
   instance->CallChromeHiddenMethod("dispatchOnLoad", arraysize(argv), argv);

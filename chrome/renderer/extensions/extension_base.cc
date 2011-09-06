@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "content/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -69,7 +69,7 @@ const Extension* ExtensionBase::GetExtensionForCurrentRenderView() const {
     return NULL;  // this can happen as a tab is closing.
 
   GURL url = renderview->webview()->mainFrame()->document().url();
-  const ExtensionSet* extensions = extension_dispatcher_->extensions();
+  const ExtensionSet* extensions = extension_renderer_context_->extensions();
   if (!extensions->ExtensionBindingsAllowed(url))
     return NULL;
 
@@ -80,7 +80,7 @@ bool ExtensionBase::CheckPermissionForCurrentRenderView(
     const std::string& function_name) const {
   const ::Extension* extension = GetExtensionForCurrentRenderView();
   if (extension &&
-      extension_dispatcher_->IsExtensionActive(extension->id()) &&
+      extension_renderer_context_->IsExtensionActive(extension->id()) &&
       extension->HasAPIPermission(function_name))
     return true;
 

@@ -10,7 +10,7 @@
 
 #include <string>
 
-class ExtensionDispatcher;
+class ExtensionRendererContext;
 class GURL;
 class RenderView;
 
@@ -22,7 +22,7 @@ class RendererExtensionBindings {
   static const char* kName;
 
   // Creates an instance of the extension.
-  static v8::Extension* Get(ExtensionDispatcher* dispatcher);
+  static v8::Extension* Get(ExtensionRendererContext* context);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_

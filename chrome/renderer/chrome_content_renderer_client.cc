@@ -16,10 +16,10 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -34,9 +34,9 @@
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
-#include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/extension_render_view_helper.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "chrome/renderer/extensions/extension_resource_request_policy.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_extension.h"
@@ -153,7 +153,7 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 
 void ChromeContentRendererClient::RenderThreadStarted() {
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
-  extension_dispatcher_.reset(new ExtensionDispatcher());
+  extension_renderer_context_.reset(new ExtensionRendererContext());
   histogram_snapshots_.reset(new RendererHistogramSnapshots());
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
@@ -165,7 +165,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::current();
 
   thread->AddObserver(chrome_observer_.get());
-  thread->AddObserver(extension_dispatcher_.get());
+  thread->AddObserver(extension_renderer_context_.get());
   thread->AddObserver(histogram_snapshots_.get());
 #if defined(ENABLE_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
@@ -216,7 +216,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
   ContentSettingsObserver* content_settings =
       new ContentSettingsObserver(render_view);
-  new ExtensionHelper(render_view, extension_dispatcher_.get());
+  new ExtensionRenderViewHelper(render_view, extension_renderer_context_.get());
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
   new PrintWebViewHelper(render_view);
   new SearchBox(render_view);
@@ -242,7 +242,8 @@ void ChromeContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
   TranslateHelper* translate = new TranslateHelper(render_view, autofill_agent);
   new ChromeRenderViewObserver(
-      render_view, content_settings, extension_dispatcher_.get(), translate);
+      render_view, content_settings, extension_renderer_context_.get(),
+      translate);
 
   // Used only for testing/automation.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -434,7 +435,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginImpl(
         // that was installed from the Chrome Web Store, or part of a component
         // extension, or part of an unpacked extension.
         const Extension* extension =
-            extension_dispatcher_->extensions()->GetByURL(nexe_url);
+            extension_renderer_context_->extensions()->GetByURL(nexe_url);
         allow_nacl = extension &&
             (extension->from_webstore() ||
             extension->location() == Extension::COMPONENT ||
@@ -534,7 +535,7 @@ std::string ChromeContentRendererClient::GetNavigationErrorHtml(
   int resource_id;
   DictionaryValue error_strings;
   if (failed_url.is_valid() && !failed_url.SchemeIs(chrome::kExtensionScheme))
-    extension = extension_dispatcher_->extensions()->GetByURL(failed_url);
+    extension = extension_renderer_context_->extensions()->GetByURL(failed_url);
   if (extension) {
     LocalizedError::GetAppErrorStrings(error, failed_url, extension,
                                        &error_strings);
@@ -567,13 +568,13 @@ std::string ChromeContentRendererClient::GetNavigationErrorHtml(
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
-  return !extension_dispatcher_->is_extension_process();
+  return !extension_renderer_context_->is_extension_process();
 }
 
 bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
   // Extensions and apps always allowed to create unrequested popups. The second
   // check is necessary to include content scripts.
-  return extension_dispatcher_->extensions()->GetByURL(creator) ||
+  return extension_renderer_context_->extensions()->GetByURL(creator) ||
       ExtensionBindingsContext::GetCurrent();
 }
 
@@ -597,7 +598,7 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
 
   if (is_content_initiated) {
     const Extension* extension =
-        extension_dispatcher_->extensions()->GetByURL(url);
+        extension_renderer_context_->extensions()->GetByURL(url);
     if (extension && extension->is_app()) {
       UMA_HISTOGRAM_ENUMERATION(
           extension_misc::kAppLaunchHistogram,
@@ -619,7 +620,7 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
       !ExtensionResourceRequestPolicy::CanRequestResource(
           url,
           GURL(frame->document().url()),
-          extension_dispatcher_->extensions())) {
+          extension_renderer_context_->extensions())) {
     *new_url = GURL("chrome-extension://invalid/");
     return true;
   }
@@ -645,7 +646,7 @@ void ChromeContentRendererClient::DidCreateScriptContext(WebFrame* frame) {
   ExtensionBindingsContext::HandleV8ContextCreated(
       frame,
       frame->mainWorldScriptContext(),
-      extension_dispatcher_.get(),
+      extension_renderer_context_.get(),
       0);  // isolated world id
 }
 
@@ -658,7 +659,7 @@ void ChromeContentRendererClient::DidCreateIsolatedScriptContext(
   ExtensionBindingsContext::HandleV8ContextCreated(
       frame,
       context,
-      extension_dispatcher_.get(),
+      extension_renderer_context_.get(),
       world_id);
 }
 
@@ -715,16 +716,16 @@ bool ChromeContentRendererClient::HandleSetCookieRequest(
 }
 
 
-void ChromeContentRendererClient::SetExtensionDispatcher(
-    ExtensionDispatcher* extension_dispatcher) {
-  extension_dispatcher_.reset(extension_dispatcher);
+void ChromeContentRendererClient::SetExtensionRendererContext(
+    ExtensionRendererContext* extension_renderer_context) {
+  extension_renderer_context_.reset(extension_renderer_context);
 }
 
 bool ChromeContentRendererClient::CrossesExtensionExtents(
     WebFrame* frame,
     const GURL& new_url,
     bool is_initial_navigation) {
-  const ExtensionSet* extensions = extension_dispatcher_->extensions();
+  const ExtensionSet* extensions = extension_renderer_context_->extensions();
   bool is_extension_url = !!extensions->GetByURL(new_url);
   GURL old_url(frame->top()->document().url());
 
@@ -739,7 +740,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     WebSecurityOrigin opener = frame->opener()->document().securityOrigin();
     if (!is_extension_url &&
         !opener_is_extension_url &&
-        extension_dispatcher_->is_extension_process() &&
+        extension_renderer_context_->is_extension_process() &&
         opener.canRequest(WebURL(new_url)))
       return false;
 
@@ -754,7 +755,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
   // in a normal process, or if it's a process for an extension that has been
   // uninstalled.
   if (old_url == new_url) {
-    if (is_extension_url != extension_dispatcher_->is_extension_process())
+    if (is_extension_url != extension_renderer_context_->is_extension_process())
       return true;
   }
 

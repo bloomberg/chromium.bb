@@ -8,7 +8,7 @@
 
 #include "v8/include/v8.h"
 
-class ExtensionDispatcher;
+class ExtensionRendererContext;
 class RenderThreadBase;
 
 // This class deals with the javascript bindings related to Event objects.
@@ -16,7 +16,7 @@ class EventBindings {
  public:
   static const char* kName;  // The v8::Extension name, for dependencies.
 
-  static v8::Extension* Get(ExtensionDispatcher* dispatcher);
+  static v8::Extension* Get(ExtensionRendererContext* context);
 
   // Allow RenderThread to be mocked out.
   static void SetRenderThread(RenderThreadBase* thread);

@@ -12,7 +12,7 @@
 #include <string>
 
 class Extension;
-class ExtensionDispatcher;
+class ExtensionRendererContext;
 class RenderView;
 
 namespace WebKit {
@@ -29,9 +29,9 @@ class ExtensionBase : public v8::Extension {
                 const char* source,
                 int dep_count,
                 const char** deps,
-                ExtensionDispatcher* extension_dispatcher)
+                ExtensionRendererContext* extension_renderer_context)
       : v8::Extension(name, source, dep_count, deps),
-        extension_dispatcher_(extension_dispatcher) {
+        extension_renderer_context_(extension_renderer_context) {
   }
 
   // Derived classes should call this at the end of their implementation in
@@ -41,7 +41,9 @@ class ExtensionBase : public v8::Extension {
       GetNativeFunction(v8::Handle<v8::String> name);
 
   // TODO(jstritar): Used for testing http://crbug.com/91582. Remove when done.
-  ExtensionDispatcher* extension_dispatcher() { return extension_dispatcher_; }
+  ExtensionRendererContext* extension_renderer_context() {
+    return extension_renderer_context_;
+  }
 
   // Returns a hidden variable for use by the bindings in the specified context
   // that is unreachable by the page for the current context.
@@ -73,7 +75,7 @@ class ExtensionBase : public v8::Extension {
   // Returns the chromeHidden object for the current context.
   static v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args);
 
-  ExtensionDispatcher* extension_dispatcher_;
+  ExtensionRendererContext* extension_renderer_context_;
 
  private:
   // Helper to print from bindings javascript.

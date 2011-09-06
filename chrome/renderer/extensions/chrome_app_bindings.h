@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #define CHROME_RENDERER_EXTENSIONS_CHROME_APP_BINDINGS_H_
 #pragma once
 
-class ExtensionDispatcher;
+class ExtensionRendererContext;
 
 namespace v8 {
 class Extension;
@@ -22,7 +22,8 @@ namespace extensions_v8 {
 
 class ChromeAppExtension {
  public:
-  static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
+  static v8::Extension* Get(
+      ExtensionRendererContext* extension_renderer_context);
 };
 
 }  // namespace extensions_v8

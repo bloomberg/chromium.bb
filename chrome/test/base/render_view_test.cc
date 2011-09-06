@@ -10,8 +10,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/extension_renderer_context.h"
 #include "chrome/renderer/extensions/js_only_v8_extensions.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/mock_render_process.h"
@@ -95,8 +95,9 @@ void RenderViewTest::LoadHTML(const char* html) {
 
 void RenderViewTest::SetUp() {
   content::GetContentClient()->set_renderer(&chrome_content_renderer_client_);
-  extension_dispatcher_ = new ExtensionDispatcher();
-  chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
+  extension_dispatcher_ = new ExtensionRendererContext();
+  chrome_content_renderer_client_.SetExtensionRendererContext(
+      extension_dispatcher_);
   sandbox_init_wrapper_.reset(new SandboxInitWrapper());
   command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_, *sandbox_init_wrapper_,
