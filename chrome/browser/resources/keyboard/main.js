@@ -170,6 +170,7 @@ window.onload = function() {
       case "text":
         currentMode = SHIFT_MODE;
         break;
+      case "email":
       case "password":
       case "search":
       case "url":
