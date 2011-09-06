@@ -77,10 +77,10 @@ bool ValidateAndCopyAttribList(nacl_abi_size_t in_attrib_list_count,
 }
 
 bool IsGpuBlacklisted() {
-  static const PPB_GpuBlacklist_Private* interface =
+  static const PPB_GpuBlacklist_Private* gpu_black_list_interface =
       static_cast<const PPB_GpuBlacklist_Private*>(
           ppapi_proxy::GetBrowserInterfaceSafe(PPB_GPU_BLACKLIST_INTERFACE));
-  return interface->IsGpuBlacklisted();
+  return gpu_black_list_interface->IsGpuBlacklisted();
 }
 
 }  // namespace
