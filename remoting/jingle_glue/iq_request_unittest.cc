@@ -31,7 +31,8 @@ TEST(IqRequestTest, MakeIqStanza) {
   buzz::XmlElement* iq_body =
       new buzz::XmlElement(buzz::QName(kNamespace, kBodyTag));
   scoped_ptr<buzz::XmlElement> stanza(
-      IqRequest::MakeIqStanza(kType, kTo, iq_body, kMessageId));
+      IqRequest::MakeIqStanza(kType, kTo, iq_body));
+  stanza->AddAttr(buzz::QName("", "id"), kMessageId);
 
   EXPECT_EQ(expected_xml_string, stanza->Str());
 }

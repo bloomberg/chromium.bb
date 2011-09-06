@@ -83,12 +83,11 @@ JavascriptIqRequest::~JavascriptIqRequest() {
   registry_->RemoveAllRequests(this);
 }
 
-void JavascriptIqRequest::SendIq(const std::string& type,
-                                 const std::string& addressee,
-                                 buzz::XmlElement* iq_body) {
+void JavascriptIqRequest::SendIq(buzz::XmlElement* stanza) {
   std::string id = signal_strategy_->GetNextId();
+  stanza->AddAttr(buzz::QN_ID, id);
   registry_->RegisterRequest(this, id);
-  signal_strategy_->SendStanza(MakeIqStanza(type, addressee, iq_body, id));
+  signal_strategy_->SendStanza(stanza);
 }
 
 void JavascriptIqRequest::set_callback(const ReplyCallback& callback) {

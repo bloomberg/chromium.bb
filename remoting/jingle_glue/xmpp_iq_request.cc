@@ -25,20 +25,14 @@ XmppIqRequest::~XmppIqRequest() {
   Unregister();
 }
 
-void XmppIqRequest::SendIq(const std::string& type,
-                       const std::string& addressee,
-                       buzz::XmlElement* iq_body) {
+void XmppIqRequest::SendIq(buzz::XmlElement* stanza) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
 
   // Unregister the handler if it is already registered.
   Unregister();
 
-  DCHECK_GT(type.length(), 0U);
-
-  scoped_ptr<buzz::XmlElement> stanza(MakeIqStanza(type, addressee, iq_body,
-                                                   xmpp_client_->NextId()));
-
-  xmpp_client_->engine()->SendIq(stanza.get(), this, &cookie_);
+  stanza->AddAttr(buzz::QN_ID, xmpp_client_->NextId());
+  xmpp_client_->engine()->SendIq(stanza, this, &cookie_);
 }
 
 void XmppIqRequest::set_callback(const ReplyCallback& callback) {

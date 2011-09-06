@@ -12,13 +12,11 @@ namespace remoting {
 // static
 buzz::XmlElement* IqRequest::MakeIqStanza(const std::string& type,
                                           const std::string& addressee,
-                                          buzz::XmlElement* iq_body,
-                                          const std::string& id) {
+                                          buzz::XmlElement* iq_body) {
   buzz::XmlElement* stanza = new buzz::XmlElement(buzz::QN_IQ);
   stanza->AddAttr(buzz::QN_TYPE, type);
   if (!addressee.empty())
     stanza->AddAttr(buzz::QN_TO, addressee);
-  stanza->AddAttr(buzz::QN_ID, id);
   stanza->AddElement(iq_body);
   return stanza;
 }

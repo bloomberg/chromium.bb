@@ -27,9 +27,7 @@ class MockIqRequest : public IqRequest {
   MockIqRequest();
   virtual ~MockIqRequest();
 
-  MOCK_METHOD3(SendIq, void(const std::string& type,
-                            const std::string& addressee,
-                            buzz::XmlElement* iq_body));
+  MOCK_METHOD1(SendIq, void(buzz::XmlElement* stanza));
   MOCK_METHOD1(set_callback, void(const IqRequest::ReplyCallback&));
 
   // Ensure this takes ownership of the pointer, as the real IqRequest object

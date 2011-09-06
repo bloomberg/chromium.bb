@@ -24,8 +24,7 @@ class XmppIqRequest : public IqRequest, public buzz::XmppIqHandler {
   virtual ~XmppIqRequest();
 
   // IqRequest interface.
-  virtual void SendIq(const std::string& type, const std::string& addressee,
-                      buzz::XmlElement* iq_body) OVERRIDE;
+  virtual void SendIq(buzz::XmlElement* stanza) OVERRIDE;
   virtual void set_callback(const ReplyCallback& callback) OVERRIDE;
 
   // buzz::XmppIqHandler interface.

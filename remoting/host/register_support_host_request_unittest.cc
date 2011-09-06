@@ -76,8 +76,8 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
       .WillOnce(Return(iq_request));
 
   XmlElement* sent_iq = NULL;
-  EXPECT_CALL(*iq_request, SendIq(buzz::STR_SET, kChromotingBotJid, NotNull()))
-      .WillOnce(SaveArg<2>(&sent_iq));
+  EXPECT_CALL(*iq_request, SendIq(NotNull()))
+      .WillOnce(SaveArg<0>(&sent_iq));
 
   request->OnSignallingConnected(&signal_strategy_, kTestJid);
   message_loop_.RunAllPending();
@@ -86,11 +86,15 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   scoped_ptr<XmlElement> stanza(sent_iq);
   ASSERT_TRUE(stanza != NULL);
 
+  EXPECT_EQ(stanza->Attr(buzz::QName("", "to")),
+            std::string(kChromotingBotJid));
+  EXPECT_EQ(stanza->Attr(buzz::QName("", "type")), "set");
+
   EXPECT_EQ(QName(kChromotingXmlNamespace, "register-support-host"),
-            stanza->Name());
+            stanza->FirstElement()->Name());
 
   QName signature_tag(kChromotingXmlNamespace, "signature");
-  XmlElement* signature = stanza->FirstNamed(signature_tag);
+  XmlElement* signature = stanza->FirstElement()->FirstNamed(signature_tag);
   ASSERT_TRUE(signature != NULL);
   EXPECT_TRUE(stanza->NextNamed(signature_tag) == NULL);
 
