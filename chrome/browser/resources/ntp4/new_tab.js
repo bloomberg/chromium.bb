@@ -300,7 +300,7 @@ cr.define('ntp4', function() {
           pageName = pageNames[appsPages.length];
 
         var origPageCount = appsPages.length;
-        appendAppsPage(new ntp4.AppsPage(), pageName);
+        appendTilePage(new ntp4.AppsPage(), pageName, bookmarksPage);
         // Confirm that appsPages is a live object, updated when a new page is
         // added (otherwise we'd have an infinite loop)
         assert(appsPages.length == origPageCount + 1, 'expected new page');
@@ -343,7 +343,7 @@ cr.define('ntp4', function() {
 
     if (pageIndex >= appsPages.length) {
       while (pageIndex >= appsPages.length) {
-        appendAppsPage(new ntp4.AppsPage(), '');
+        appendTilePage(new ntp4.AppsPage(), '', bookmarksPage);
       }
       updateSliderCards();
     }
@@ -423,21 +423,19 @@ cr.define('ntp4', function() {
    * the Slider knows about the new elements.
    */
   function updateSliderCards() {
-    var pageNo = cardSlider.currentCard;
-    if (pageNo >= tilePages.length)
-      pageNo = tilePages.length - 1;
-    var pageArray = [];
-    for (var i = 0; i < tilePages.length; i++)
-      pageArray[i] = tilePages[i];
-    cardSlider.setCards(pageArray, pageNo);
-
-    if (shownPage == templateData['most_visited_page_id']) {
-      cardSlider.selectCardByValue(mostVisitedPage);
-    } else if (shownPage == templateData['apps_page_id']) {
-      cardSlider.selectCardByValue(
-          appsPages[Math.min(shownPageIndex, appsPages.length - 1)]);
-    } else if (shownPage == templateData['bookmarks_page_id']) {
-      cardSlider.selectCardByValue(bookmarksPage);
+    var pageNo = Math.min(cardSlider.currentCard, tilePages.length - 1);
+    cardSlider.setCards(Array.prototype.slice.call(tilePages), pageNo);
+    switch (shownPage) {
+      case templateData['apps_page_id']:
+        cardSlider.selectCardByValue(
+            appsPages[Math.min(shownPageIndex, appsPages.length - 1)]);
+        break;
+      case templateData['bookmarks_page_id']:
+        cardSlider.selectCardByValue(bookmarksPage);
+        break;
+      case templateData['most_visited_page_id']:
+        cardSlider.selectCardByValue(mostVisitedPage);
+        break;
     }
   }
 
@@ -446,39 +444,22 @@ cr.define('ntp4', function() {
    *
    * @param {TilePage} page The page element.
    * @param {string} title The title of the tile page.
+   * @param {TilePage} refNode Optional reference node to insert in front of.
+   * When refNode is falsey, |page| will just be appended to the end of the
+   * page list.
    */
-  function appendTilePage(page, title) {
-    pageList.appendChild(page);
+  function appendTilePage(page, title, refNode) {
+    // When refNode is falsey, insertBefore acts just like appendChild.
+    pageList.insertBefore(page, refNode);
 
+    // If we're appending an AppsPage and it's a temporary page, animate it.
+    var animate = page instanceof ntp4.AppsPage &&
+                  page.classList.contains('temporary');
     // Make a deep copy of the dot template to add a new one.
-    var newDot = new ntp4.NavDot(page, title, false, false);
-
-    dotList.appendChild(newDot);
-    page.navigationDot = newDot;
-    if (infoBubble)
-      window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
-
-    eventTracker.add(page, 'pagelayout', onPageLayout);
-  }
-
-  /**
-   * Appends an apps page into the page list.  This is like appendTilePage,
-   * but takes care to insert before the Bookmarks page.
-   * TODO(csilv): Refactor this function with appendTilePage to avoid
-   *              duplication.
-   *
-   * @param {AppsPage} page The page element.
-   * @param {string} title The title of the tile page.
-   */
-  function appendAppsPage(page, title) {
-    pageList.insertBefore(page, bookmarksPage);
-
-    // Make a deep copy of the dot template to add a new one.
-    var animate = page.classList.contains('temporary');
     var newDot = new ntp4.NavDot(page, title, true, animate);
-
-    dotList.insertBefore(newDot, bookmarksPage.navigationDot);
     page.navigationDot = newDot;
+    dotList.insertBefore(newDot, refNode ? refNode.navigationDot : null);
+
     if (infoBubble)
       window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
 
@@ -501,13 +482,16 @@ cr.define('ntp4', function() {
   }
 
   /**
-   * Invoked whenever some app is grabbed
-   * @param {Grabber.Event} e The Grabber Grab event.
+   * Called whenever tiles should be re-arranging themselves out of the way of a
+   * moving or insert tile.
    */
-  function enterRearrangeMode(e) {
+  function enterRearrangeMode() {
     var tempPage = new ntp4.AppsPage();
     tempPage.classList.add('temporary');
-    appendAppsPage(tempPage, '');
+    appendTilePage(tempPage, '', bookmarksPage);
+    var tempIndex = Array.prototype.indexOf.call(tilePages, tempPage);
+    if (cardSlider.currentCard >= tempIndex)
+      cardSlider.currentCard += 1;
     updateSliderCards();
 
     if (ntp4.getCurrentlyDraggingTile().firstChild.canBeRemoved())
@@ -523,6 +507,9 @@ cr.define('ntp4', function() {
     var dot = tempPage.navigationDot;
     if (!tempPage.tileCount && tempPage != cardSlider.currentCardValue) {
       dot.animateRemove();
+      var tempIndex = Array.prototype.indexOf.call(tilePages, tempPage);
+      if (cardSlider.currentCard > tempIndex)
+        cardSlider.currentCard -= 1;
       tempPage.parentNode.removeChild(tempPage);
       updateSliderCards();
     } else {
@@ -766,32 +753,32 @@ cr.define('ntp4', function() {
   }
 
   function bookmarkImportBegan() {
-    bookmarksPage.bookmarkImportBegan();
-  };
+    bookmarksPage.bookmarkImportBegan.apply(bookmarksPage, arguments);
+  }
 
   function bookmarkImportEnded() {
-    bookmarksPage.bookmarkImportEnded();
-  };
+    bookmarksPage.bookmarkImportEnded.apply(bookmarksPage, arguments);
+  }
 
-  function bookmarkNodeAdded(id, bookmark) {
-    bookmarksPage.bookmarkNodeAdded(id, bookmark);
-  };
+  function bookmarkNodeAdded() {
+    bookmarksPage.bookmarkNodeAdded.apply(bookmarksPage, arguments);
+  }
 
-  function bookmarkNodeChanged(id, changeInfo) {
-    bookmarksPage.bookmarkNodeChanged(id, changeInfo);
-  };
+  function bookmarkNodeChanged() {
+    bookmarksPage.bookmarkNodeChanged.apply(bookmarksPage, arguments);
+  }
 
-  function bookmarkNodeChildrenReordered(id, reorderInfo) {
-    bookmarksPage.bookmarkNodeChildrenReordered(id, reorderInfo);
-  };
+  function bookmarkNodeChildrenReordered() {
+    bookmarksPage.bookmarkNodeChildrenReordered.apply(bookmarksPage, arguments);
+  }
 
-  function bookmarkNodeMoved(id, moveInfo) {
-    bookmarksPage.bookmarkNodeMoved(id, moveInfo);
-  };
+  function bookmarkNodeMoved() {
+    bookmarksPage.bookmarkNodeMoved.apply(bookmarksPage, arguments);
+  }
 
-  function bookmarkNodeRemoved(id, removeInfo) {
-    bookmarksPage.bookmarkNodeRemoved(id, removeInfo);
-  };
+  function bookmarkNodeRemoved() {
+    bookmarksPage.bookmarkNodeRemoved.apply(bookmarksPage, arguments);
+  }
 
   /**
    * Set the dominant color for a node. This will be called in response to

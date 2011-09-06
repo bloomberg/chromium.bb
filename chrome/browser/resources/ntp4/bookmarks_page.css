@@ -21,13 +21,13 @@
 }
 
 .bookmark.removable .close-button {
+  display: block;
   opacity: 0;
   position: absolute;
   right: 0;
   top: 0;
   z-index: 5;
   -webkit-transition: opacity 0.15s;
-  display: block;
 }
 
 .bookmark .close-button {

@@ -146,6 +146,8 @@ cr.define('ntp4', function() {
      * @private
      */
     onDragEnd_: function(e) {
+      // The drag clone can still be hidden from the last drag move event.
+      this.dragClone.classList.remove('hidden');
       this.dragClone.classList.add('placing');
 
       setCurrentlyDraggingTile(null);
@@ -509,7 +511,7 @@ cr.define('ntp4', function() {
     removeTile: function(tile, animate) {
       if (animate)
         this.classList.add('animating-tile-page');
-      var index = Array.prototype.indexOf.call(this.tileElements_, tile);
+      var index = tile.index;
       tile.parentNode.removeChild(tile);
       this.calculateLayoutValues_();
       for (var i = index; i < this.tileElements_.length; i++) {
@@ -676,9 +678,7 @@ cr.define('ntp4', function() {
       this.classList.add('animating-tile-page');
       this.heightChanged_();
 
-      for (var i = 0; i < this.tileElements_.length; i++) {
-        this.positionTile_(i);
-      }
+      this.repositionTiles_();
     },
 
     /**
@@ -943,7 +943,7 @@ cr.define('ntp4', function() {
           this.tileGrid_.insertBefore(
               currentlyDraggingTile,
               this.tileElements_[adjustedIndex]);
-          this.tileMoved(currentlyDraggingTile);
+          this.tileMoved(currentlyDraggingTile, this.dragItemIndex_);
         } else {
           var originalPage = currentlyDraggingTile ?
               currentlyDraggingTile.tilePage : null;
@@ -979,15 +979,21 @@ cr.define('ntp4', function() {
      * Makes sure all the tiles are in the right place after a drag is over.
      */
     cleanupDrag: function() {
-      for (var i = 0; i < this.tileElements_.length; i++) {
-        // The current drag tile will be positioned in its dragend handler.
-        if (this.tileElements_[i] == currentlyDraggingTile)
-          continue;
-        this.positionTile_(i);
-      }
-
+      this.repositionTiles_(currentlyDraggingTile);
       // Remove the drag mask.
       this.updateMask_();
+    },
+
+    /**
+     * Reposition all the tiles (possibly ignoring one).
+     * @param {Node} ignoreNode An optional node to ignore.
+     * @private
+     */
+    repositionTiles_: function(ignoreNode) {
+      for (var i = 0; i < this.tileElements_.length; i++) {
+        if (!ignoreNode || ignoreNode !== this.tileElements_[i])
+          this.positionTile_(i);
+      }
     },
 
     /**
@@ -1040,8 +1046,9 @@ cr.define('ntp4', function() {
      * Called when a tile has been moved (via dragging). Override this to make
      * backend updates.
      * @param {Node} draggedTile The tile that was dropped.
+     * @param {number} prevIndex The previous index of the tile.
      */
-    tileMoved: function(draggedTile) {
+    tileMoved: function(draggedTile, prevIndex) {
     },
 
     /**

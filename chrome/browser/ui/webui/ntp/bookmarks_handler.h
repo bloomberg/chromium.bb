@@ -47,8 +47,27 @@ class BookmarksHandler : public WebUIMessageHandler,
   virtual void BookmarkImportBeginning(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkImportEnding(BookmarkModel* model) OVERRIDE;
 
-  // Callback for various chrome.send() messages.
+  // Callback for the "createBookmark" message. This handler could be sent as
+  // many as four arguments. The first argument is a stringified int64 with the
+  // parent ID of the node we're going to create the bookmark in. The additional
+  // 3 optional parameters start with an integer index denoting where the
+  // bookmark is relative to its siblings, a string for the title (which is
+  // otherwise blank), and a string of the url (without this we interpret as a
+  // folder).
+  void HandleCreateBookmark(const base::ListValue* args);
+
+  // Callback for the "getBoomarksData" message.
   void HandleGetBookmarksData(const base::ListValue* args);
+
+  // Callback for the "moveBookmark" message. The arguments passed to this
+  // handler are the bookmark ID (as a string to be converted to int64), parent
+  // ID (as a string to be converted to int64), and index to be inserted into
+  // that level.
+  void HandleMoveBookmark(const base::ListValue* args);
+
+  // Callback for the "removeBookmark" message. The argument passed to this
+  // handler is a stringified int64 bookmark ID of the node we want to delete
+  // (can be either a bookmark or a folder).
   void HandleRemoveBookmark(const base::ListValue* args);
 
   // Register NTP preferences.
@@ -61,8 +80,8 @@ class BookmarksHandler : public WebUIMessageHandler,
   // True if the DOM layer is ready.
   bool dom_ready_;
 
-  // Used as a flag to ignore changes from the current page's actions.
-  bool ignore_change_notifications_;
+  // True when we are handling a chrome.send call.
+  bool from_current_page_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarksHandler);
 };

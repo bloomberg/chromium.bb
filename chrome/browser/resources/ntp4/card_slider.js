@@ -198,6 +198,15 @@ var CardSlider = (function() {
     },
 
     /**
+     * Allows setting the current card index.
+     * @param {number} index A new index to set the current index to.
+     * @return {number} The new index after having been set.
+     */
+    set currentCard(index) {
+      return (this.currentCard_ = index);
+    },
+
+    /**
      * Returns the number of cards.
      * @return {number} number of cards.
      */

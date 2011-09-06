@@ -26,7 +26,7 @@
 namespace keys = extension_bookmarks_module_constants;
 
 BookmarksHandler::BookmarksHandler() : dom_ready_(false),
-                                       ignore_change_notifications_(false) {
+                                       from_current_page_(false) {
 }
 
 BookmarksHandler::~BookmarksHandler() {
@@ -43,8 +43,12 @@ WebUIMessageHandler* BookmarksHandler::Attach(WebUI* web_ui) {
 }
 
 void BookmarksHandler::RegisterMessages() {
+  web_ui_->RegisterMessageCallback("createBookmark",
+      NewCallback(this, &BookmarksHandler::HandleCreateBookmark));
   web_ui_->RegisterMessageCallback("getBookmarksData",
       NewCallback(this, &BookmarksHandler::HandleGetBookmarksData));
+  web_ui_->RegisterMessageCallback("moveBookmark",
+      NewCallback(this, &BookmarksHandler::HandleMoveBookmark));
   web_ui_->RegisterMessageCallback("removeBookmark",
       NewCallback(this, &BookmarksHandler::HandleRemoveBookmark));
 }
@@ -75,8 +79,10 @@ void BookmarksHandler::BookmarkNodeMoved(BookmarkModel* model,
   move_info.SetString(keys::kOldParentIdKey,
                       base::Int64ToString(old_parent->id()));
   move_info.SetInteger(keys::kOldIndexKey, old_index);
+  base::FundamentalValue from_page(from_current_page_);
 
-  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeMoved", id, move_info);
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeMoved", id, move_info,
+                                  from_page);
 }
 
 void BookmarksHandler::BookmarkNodeAdded(BookmarkModel* model,
@@ -87,22 +93,26 @@ void BookmarksHandler::BookmarkNodeAdded(BookmarkModel* model,
   base::StringValue id(base::Int64ToString(node->id()));
   scoped_ptr<base::DictionaryValue> node_info(
       extension_bookmark_helpers::GetNodeDictionary(node, false, false));
+  base::FundamentalValue from_page(from_current_page_);
 
-  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeAdded", id, *node_info);
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeAdded", id, *node_info,
+                                  from_page);
 }
 
 void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
                                            const BookmarkNode* parent,
                                            int index,
                                            const BookmarkNode* node) {
-  if (!dom_ready_ || ignore_change_notifications_) return;
+  if (!dom_ready_) return;
 
   base::StringValue id(base::Int64ToString(node->id()));
   base::DictionaryValue remove_info;
   remove_info.SetString(keys::kParentIdKey, base::Int64ToString(parent->id()));
   remove_info.SetInteger(keys::kIndexKey, index);
+  base::FundamentalValue from_page(from_current_page_);
 
-  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeRemoved", id, remove_info);
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeRemoved", id, remove_info,
+                                  from_page);
 }
 
 void BookmarksHandler::BookmarkNodeChanged(BookmarkModel* model,
@@ -113,8 +123,10 @@ void BookmarksHandler::BookmarkNodeChanged(BookmarkModel* model,
   change_info.SetString(keys::kTitleKey, node->GetTitle());
   if (node->is_url())
     change_info.SetString(keys::kUrlKey, node->url().spec());
+  base::FundamentalValue from_page(from_current_page_);
 
-  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeChanged", id, change_info);
+  web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeChanged", id, change_info,
+                                  from_page);
 }
 
 void BookmarksHandler::BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -136,9 +148,10 @@ void BookmarksHandler::BookmarkNodeChildrenReordered(BookmarkModel* model,
   }
   base::DictionaryValue reorder_info;
   reorder_info.Set(keys::kChildIdsKey, children);
+  base::FundamentalValue from_page(from_current_page_);
 
   web_ui_->CallJavascriptFunction("ntp4.bookmarkNodeChildrenReordered", id,
-                                  reorder_info);
+                                  reorder_info, from_page);
 }
 
 void BookmarksHandler::BookmarkImportBeginning(BookmarkModel* model) {
@@ -149,6 +162,48 @@ void BookmarksHandler::BookmarkImportBeginning(BookmarkModel* model) {
 void BookmarksHandler::BookmarkImportEnding(BookmarkModel* model) {
   if (dom_ready_)
     web_ui_->CallJavascriptFunction("ntp4.bookmarkImportEnded");
+}
+
+void BookmarksHandler::HandleCreateBookmark(const ListValue* args) {
+  if (!model_) return;
+
+  // This is the only required argument - a stringified int64 parent ID.
+  std::string parent_id_string;
+  CHECK(args->GetString(0, &parent_id_string));
+  int64 parent_id;
+  CHECK(base::StringToInt64(parent_id_string, &parent_id));
+
+  const BookmarkNode* parent = model_->GetNodeByID(parent_id);
+  CHECK(parent);
+
+  double index;
+  if (!args->GetDouble(1, &index) ||
+      (index > parent->child_count() || index < 0)) {
+    index = parent->child_count();
+  }
+
+  // If they didn't pass the argument, just use a blank string.
+  string16 title;
+  if (!args->GetString(2, &title))
+    title = string16();
+
+  // We'll be creating either a bookmark or a folder, so set this for both.
+  AutoReset<bool> from_page(&from_current_page_, true);
+
+  // According to the bookmarks API, "If url is NULL or missing, it will be a
+  // folder.". Let's just follow the same behavior.
+  std::string url_string;
+  if (args->GetString(3, &url_string)) {
+    GURL url(url_string);
+    if (!url.is_empty() && url.is_valid()) {
+      // Only valid case for a bookmark as opposed to folder.
+      model_->AddURL(parent, static_cast<int>(index), title, url);
+      return;
+    }
+  }
+
+  // We didn't have all the valid parts for a bookmark, just make a folder.
+  model_->AddFolder(parent, static_cast<int>(index), title);
 }
 
 void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
@@ -202,19 +257,44 @@ void BookmarksHandler::HandleGetBookmarksData(const base::ListValue* args) {
 }
 
 void BookmarksHandler::HandleRemoveBookmark(const ListValue* args) {
+  if (!model_) return;
+
   std::string id_string;
   CHECK(args->GetString(0, &id_string));
   int64 id;
   CHECK(base::StringToInt64(id_string, &id));
 
-  BookmarkModel* model = Profile::FromWebUI(web_ui_)->GetBookmarkModel();
-  CHECK(model);
-
-  const BookmarkNode* node = model->GetNodeByID(id);
+  const BookmarkNode* node = model_->GetNodeByID(id);
   CHECK(node);
 
-  AutoReset<bool> ignore_next_change(&ignore_change_notifications_, true);
-  model->Remove(node->parent(), node->parent()->GetIndexOf(node));
+  AutoReset<bool> from_page(&from_current_page_, true);
+  model_->Remove(node->parent(), node->parent()->GetIndexOf(node));
+}
+
+void BookmarksHandler::HandleMoveBookmark(const ListValue* args) {
+  if (!model_) return;
+
+  std::string id_string;
+  CHECK(args->GetString(0, &id_string));
+  int64 id;
+  CHECK(base::StringToInt64(id_string, &id));
+
+  std::string parent_id_string;
+  CHECK(args->GetString(1, &parent_id_string));
+  int64 parent_id;
+  CHECK(base::StringToInt64(parent_id_string, &parent_id));
+
+  double index;
+  args->GetDouble(2, &index);
+
+  const BookmarkNode* parent = model_->GetNodeByID(parent_id);
+  CHECK(parent);
+
+  const BookmarkNode* node = model_->GetNodeByID(id);
+  CHECK(node);
+
+  AutoReset<bool> from_page(&from_current_page_, true);
+  model_->Move(node, parent, static_cast<int>(index));
 }
 
 // static
