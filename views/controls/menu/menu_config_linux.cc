@@ -16,6 +16,7 @@ MenuConfig* MenuConfig::Create() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 #if defined(TOUCH_UI)
   config->font = rb.GetFont(ResourceBundle::LargeFont);
+  config->show_accelerators = false;
 #else
   config->font = rb.GetFont(ResourceBundle::BaseFont);
 #endif

@@ -88,6 +88,9 @@ struct VIEWS_EXPORT MenuConfig {
   // accelerator.
   int label_to_accelerator_padding;
 
+  // Whether the keyboard accelerators are visible.
+  bool show_accelerators;
+
  private:
   // Creates and configures a new MenuConfig as appropriate for the current
   // platform.

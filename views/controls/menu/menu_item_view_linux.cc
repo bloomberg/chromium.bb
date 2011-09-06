@@ -25,7 +25,7 @@ static const SkColor kSelectedBackgroundColor = SkColorSetRGB(246, 249, 253);
 #endif
 
 #if defined(TOUCH_UI)
-const int kMinTouchHeight = 46;
+const int kMinTouchHeight = 40;
 #endif
 
 gfx::Size MenuItemView::CalculatePreferredSize() {
