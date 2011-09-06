@@ -1663,6 +1663,7 @@ FileManager.prototype = {
       // Tweak images, titles of internal tasks.
       var task_parts = task.taskId.split('|');
       if (task_parts[0] == this.getExtensionId_()) {
+        task.internal = true;
         if (task_parts[1] == 'preview') {
           // TODO(serya): This hack needed until task.iconUrl get working
           //              (see GetFileTasksFileBrowserFunction::RunImpl).
@@ -1804,7 +1805,15 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onTaskButtonClicked_ = function(event) {
-    chrome.fileBrowserPrivate.executeTask(event.srcElement.task.taskId,
+    var task = event.srcElement.task;
+    if (task.internal) {
+      // For internal tasks call the handler directly to avoid being handled
+      // multiple times.
+      var taskId = task.taskId.split('|')[1];
+      this.onFileTaskExecute_(taskId, {entries: this.selection.entries});
+      return;
+    }
+    chrome.fileBrowserPrivate.executeTask(task.taskId,
                                           this.selection.urls);
   };
 
