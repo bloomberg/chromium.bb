@@ -20,60 +20,158 @@ import rietveld
 # pylint: disable=W0212
 
 
+def _api(files):
+  """Mock a rietveld api request."""
+  return rietveld.json.dumps({'files': files})
+
+
+def _file(
+    status, is_binary=False, num_chunks=1, chunk_id=789, property_changes=''):
+  """Mock a file in a rietveld api request."""
+  return {
+      'status': status,
+      'is_binary': is_binary,
+      'num_chunks': num_chunks,
+      'id': chunk_id,
+      'property_changes': property_changes,
+  }
+
+
 class RietveldTest(unittest.TestCase):
+  def setUp(self):
+    self.rietveld = rietveld.Rietveld('url', 'email', 'password')
+    self.rietveld._send = self._rietveld_send
+    self.requests = []
+
+  def tearDown(self):
+    self.assertEquals([], self.requests)
+
+  def _rietveld_send(self, url, *args, **kwargs):
+    self.assertTrue(self.requests, url)
+    request = self.requests.pop(0)
+    self.assertEquals(2, len(request))
+    self.assertEquals(url, request[0])
+    return request[1]
+
   def test_get_patch_empty(self):
-    r = rietveld.Rietveld('url', 'email', 'password')
-    r._send = lambda *args, **kwargs: '{}'
-    patches = r.get_patch(123, 456)
+    self.requests = [('/api/123/456', '{}')]
+    patches = self.rietveld.get_patch(123, 456)
     self.assertTrue(isinstance(patches, patch.PatchSet))
     self.assertEquals([], patches.patches)
 
+  def _check_patch(self,
+      p,
+      filename,
+      diff,
+      is_binary=False,
+      is_delete=False,
+      is_git_diff=False,
+      is_new=False,
+      patchlevel=0,
+      svn_properties=None):
+    svn_properties = svn_properties or []
+    self.assertEquals(p.filename, filename)
+    self.assertEquals(p.is_binary, is_binary)
+    self.assertEquals(p.is_delete, is_delete)
+    if hasattr(p, 'is_git_diff'):
+      self.assertEquals(p.is_git_diff, is_git_diff)
+    self.assertEquals(p.is_new, is_new)
+    if hasattr(p, 'patchlevel'):
+      self.assertEquals(p.patchlevel, patchlevel)
+    if diff:
+      self.assertEquals(p.get(), diff)
+    if hasattr(p, 'svn_properties'):
+      self.assertEquals(p.svn_properties, svn_properties)
+
   def test_get_patch_no_status(self):
-    r = rietveld.Rietveld('url', 'email', 'password')
-    r._send = lambda *args, **kwargs: (
-        '{'
-        '  "files":'
-        '    {'
-        '      "file_a":'
-        '        {'
-        '        }'
-        '    }'
-        '}')
+    self.requests = [('/api/123/456', _api({'file_a': {}}))]
     try:
-      r.get_patch(123, 456)
+      self.rietveld.get_patch(123, 456)
       self.fail()
     except patch.UnsupportedPatchFormat, e:
       self.assertEquals('file_a', e.filename)
 
-  def test_get_patch_two_files(self):
-    output = (
-        '{'
-        '  "files":'
-        '    {'
-        '      "file_a":'
-        '        {'
-        '          "status": "A",'
-        '          "is_binary": false,'
-        '          "num_chunks": 1,'
-        '          "id": 789'
-        '        }'
-        '    }'
-        '}')
-    r = rietveld.Rietveld('url', 'email', 'password')
-    r._send = lambda *args, **kwargs: output
-    patches = r.get_patch(123, 456)
-    self.assertTrue(isinstance(patches, patch.PatchSet))
-    self.assertEquals(1, len(patches.patches))
-    obj = patches.patches[0]
-    self.assertEquals(patch.FilePatchDiff, obj.__class__)
-    self.assertEquals('file_a', obj.filename)
-    self.assertEquals([], obj.svn_properties)
-    self.assertEquals(False, obj.is_git_diff)
-    self.assertEquals(0, obj.patchlevel)
-    # This is because Rietveld._send() always returns the same buffer.
-    self.assertEquals(output, obj.get())
+  def test_get_patch_2_files(self):
+    diff1 = (
+        '--- /dev/null\n'
+        '+++ file_a\n'
+        '@@ -0,0 +1 @@\n'
+        '+bar\n')
+    diff2 = (
+        '--- file_b\n'
+        '+++ file_b\n'
+        '@@ -0,0 +1,1 @@\n'
+        '+bar\n')
+    self.requests = [
+        ('/api/123/456',
+          _api({'file_a': _file('A'), 'file_b': _file('M', chunk_id=790)})),
+        ('/download/issue123_456_789.diff', diff1),
+        ('/download/issue123_456_790.diff', diff2),
+    ]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(2, len(patches.patches))
+    self._check_patch(patches.patches[0], 'file_a', diff1, is_new=True)
+    self._check_patch(patches.patches[1], 'file_b', diff2)
 
-  def testSvnProperties(self):
+  def test_get_patch_add(self):
+    diff = (
+        '--- /dev/null\n'
+        '+++ file_a\n'
+        '@@ -0,0 +1 @@\n'
+        '+bar\n')
+    self.requests = [
+        ('/api/123/456', _api({'file_a': _file('A')})),
+        ('/download/issue123_456_789.diff', diff),
+    ]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(1, len(patches.patches))
+    self._check_patch(patches.patches[0], 'file_a', diff, is_new=True)
+
+  def test_invalid_status(self):
+    self.requests = [
+        ('/api/123/456', _api({'file_a': _file('B')})),
+    ]
+    try:
+      self.rietveld.get_patch(123, 456)
+      self.fail()
+    except patch.UnsupportedPatchFormat, e:
+      self.assertEquals('file_a', e.filename)
+
+  def test_add_plus(self):
+    properties = (
+        '\nAdded: svn:mergeinfo\n'
+        '   Merged /branches/funky/file_b:r69-2775\n')
+    self.requests = [
+        ('/api/123/456',
+          _api({'file_a': _file('A+', property_changes=properties)})),
+    ]
+    try:
+      self.rietveld.get_patch(123, 456)
+      self.fail()
+    except patch.UnsupportedPatchFormat, e:
+      self.assertEquals('file_a', e.filename)
+
+  def test_delete(self):
+    self.requests = [
+        ('/api/123/456', _api({'file_a': _file('D')})),
+    ]
+    patches = self.rietveld.get_patch(123, 456)
+    self.assertEquals(1, len(patches.patches))
+    self._check_patch(patches.patches[0], 'file_a', None, is_delete=True)
+
+  def test_m_plus(self):
+    properties = '\nAdded: svn:eol-style\n   + LF\n'
+    self.requests = [
+        ('/api/123/456',
+          _api({'file_a': _file('M+', property_changes=properties)})),
+    ]
+    try:
+      self.rietveld.get_patch(123, 456)
+      self.fail()
+    except patch.UnsupportedPatchFormat, e:
+      self.assertEquals('file_a', e.filename)
+
+  def test_svn_properties(self):
     # Line too long (N/80)
     # pylint: disable=C0301
 
