@@ -4,7 +4,6 @@
 //
 // TODO(satorux):
 // - Handle "disconnected" signal.
-// - Collect metrics (ex. # of method calls, method call time, etc.)
 
 #include "dbus/bus.h"
 

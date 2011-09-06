@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "dbus/bus.h"
@@ -17,6 +18,9 @@
 namespace dbus {
 
 namespace {
+
+// Used for success ratio histograms. 1 for success, 0 for failure.
+const int kSuccessRatioHistogramMaxValue = 2;
 
 // Gets the absolute method name by concatenating the interface name and
 // the method name. Used for building keys for method_table_ in
@@ -100,11 +104,13 @@ void ExportedObject::SendSignal(Signal* signal) {
   DBusMessage* signal_message = signal->raw_message();
   dbus_message_ref(signal_message);
 
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   // Bind() won't compile if we pass signal_message. See the comment at
   // ObjectProxy::CallMethod() for details.
   bus_->PostTaskToDBusThread(FROM_HERE,
                              base::Bind(&ExportedObject::SendSignalInternal,
                                         this,
+                                        start_time,
                                         static_cast<void*>(signal_message)));
 }
 
@@ -146,12 +152,18 @@ void ExportedObject::OnExported(OnExportedCallback on_exported_callback,
   on_exported_callback.Run(interface_name, method_name, success);
 }
 
-void ExportedObject::SendSignalInternal(void* in_signal_message) {
+void ExportedObject::SendSignalInternal(base::TimeTicks start_time,
+                                        void* in_signal_message) {
   DBusMessage* signal_message =
       static_cast<DBusMessage*>(in_signal_message);
   uint32 serial = 0;
   bus_->Send(signal_message, &serial);
   dbus_message_unref(signal_message);
+  // Record time spent to send the the signal. This is not accurate as the
+  // signal will actually be sent from the next run of the message loop,
+  // but we can at least tell the number of signals sent.
+  UMA_HISTOGRAM_TIMES("DBus.SignalSendTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 bool ExportedObject::Register() {
@@ -195,6 +207,7 @@ DBusHandlerResult ExportedObject::HandleMessage(
 
   if (interface.empty()) {
     // We don't support method calls without interface.
+    LOG(WARNING) << "Interface is missing: " << method_call->ToString();
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
@@ -204,9 +217,11 @@ DBusHandlerResult ExportedObject::HandleMessage(
   MethodTable::const_iterator iter = method_table_.find(absolute_method_name);
   if (iter == method_table_.end()) {
     // Don't know about the method.
+    LOG(WARNING) << "Unknown method: " << method_call->ToString();
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   Response* response = NULL;
   if (bus_->HasDBusThread()) {
     response_from_method_ = NULL;
@@ -237,6 +252,10 @@ DBusHandlerResult ExportedObject::HandleMessage(
     // complete.
     response = iter->second.Run(method_call.get());
   }
+  // Record if the method call is successful, or not. 1 if successful.
+  UMA_HISTOGRAM_ENUMERATION("DBus.ExportedMethodHandleSuccess",
+                            response ? 1 : 0,
+                            kSuccessRatioHistogramMaxValue);
 
   if (!response) {
     // Something bad happened in the method call.
@@ -251,6 +270,9 @@ DBusHandlerResult ExportedObject::HandleMessage(
   // The method call was successful.
   dbus_connection_send(connection, response->raw_message(), NULL);
   delete response;
+  // Record time spent to handle the the method call. Don't include failures.
+  UMA_HISTOGRAM_TIMES("DBus.ExportedMethodHandleTime",
+                      base::TimeTicks::Now() - start_time);
 
   return DBUS_HANDLER_RESULT_HANDLED;
 }

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -15,6 +16,9 @@
 #include "dbus/scoped_dbus_error.h"
 
 namespace {
+
+// Used for success ratio histograms. 1 for success, 0 for failure.
+const int kSuccessRatioHistogramMaxValue = 2;
 
 // Gets the absolute signal name by concatenating the interface name and
 // the signal name. Used for building keys for method_table_ in
@@ -58,14 +62,22 @@ Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
   ScopedDBusError error;
 
   // Send the message synchronously.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   DBusMessage* response_message =
       bus_->SendWithReplyAndBlock(request_message, timeout_ms, error.get());
+  // Record if the method call is successful, or not. 1 if successful.
+  UMA_HISTOGRAM_ENUMERATION("DBus.SyncMethodCallSuccess",
+                            response_message ? 1 : 0,
+                            kSuccessRatioHistogramMaxValue);
 
   if (!response_message) {
     LOG(ERROR) << "Failed to call method: "
                << (error.is_set() ? error.message() : "");
     return NULL;
   }
+  // Record time spent for the method call. Don't include failures.
+  UMA_HISTOGRAM_TIMES("DBus.SyncMethodCallTime",
+                      base::TimeTicks::Now() - start_time);
 
   return Response::FromRawMessage(response_message);
 }
@@ -86,11 +98,13 @@ void ObjectProxy::CallMethod(MethodCall* method_call,
   // Bind() won't compile if we pass request_message as-is since
   // DBusMessage is an opaque struct which Bind() cannot handle.
   // Hence we cast it to void* to workaround the issue.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   base::Closure task = base::Bind(&ObjectProxy::StartAsyncMethodCall,
                                   this,
                                   timeout_ms,
                                   static_cast<void*>(request_message),
-                                  callback);
+                                  callback,
+                                  start_time);
   // Wait for the response in the D-Bus thread.
   bus_->PostTaskToDBusThread(FROM_HERE, task);
 }
@@ -128,9 +142,11 @@ void ObjectProxy::Detach() {
 
 ObjectProxy::OnPendingCallIsCompleteData::OnPendingCallIsCompleteData(
     ObjectProxy* in_object_proxy,
-    ResponseCallback in_response_callback)
+    ResponseCallback in_response_callback,
+    base::TimeTicks in_start_time)
     : object_proxy(in_object_proxy),
-      response_callback(in_response_callback) {
+      response_callback(in_response_callback),
+      start_time(in_start_time) {
 }
 
 ObjectProxy::OnPendingCallIsCompleteData::~OnPendingCallIsCompleteData() {
@@ -138,7 +154,8 @@ ObjectProxy::OnPendingCallIsCompleteData::~OnPendingCallIsCompleteData() {
 
 void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
                                        void* in_request_message,
-                                       ResponseCallback response_callback) {
+                                       ResponseCallback response_callback,
+                                       base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
 
   if (!bus_->Connect() || !bus_->SetUpAsyncOperations()) {
@@ -148,6 +165,7 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
     base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
                                     this,
                                     response_callback,
+                                    start_time,
                                     response);
     bus_->PostTaskToOriginThread(FROM_HERE, task);
     return;
@@ -162,7 +180,7 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
   // Prepare the data we'll be passing to OnPendingCallIsCompleteThunk().
   // The data will be deleted in OnPendingCallIsCompleteThunk().
   OnPendingCallIsCompleteData* data =
-      new OnPendingCallIsCompleteData(this, response_callback);
+      new OnPendingCallIsCompleteData(this, response_callback, start_time);
 
   // This returns false only when unable to allocate memory.
   const bool success = dbus_pending_call_set_notify(
@@ -178,7 +196,8 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
 }
 
 void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
-                                          ResponseCallback response_callback) {
+                                          ResponseCallback response_callback,
+                                          base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
 
   DBusMessage* response_message = dbus_pending_call_steal_reply(pending_call);
@@ -188,16 +207,19 @@ void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
   base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
                                   this,
                                   response_callback,
+                                  start_time,
                                   static_cast<void*>(response_message));
   bus_->PostTaskToOriginThread(FROM_HERE, task);
 }
 
 void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
+                                      base::TimeTicks start_time,
                                       void* in_response_message) {
   bus_->AssertOnOriginThread();
   DBusMessage* response_message =
       static_cast<DBusMessage*>(in_response_message);
 
+  bool response_callback_called = false;
   if (!response_message) {
     // The response is not received.
     response_callback.Run(NULL);
@@ -220,7 +242,15 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
         dbus::Response::FromRawMessage(response_message));
     // The response is successfully received.
     response_callback.Run(response.get());
+    response_callback_called = true;
+    // Record time spent for the method call. Don't include failures.
+    UMA_HISTOGRAM_TIMES("DBus.AsyncMethodCallTime",
+                        base::TimeTicks::Now() - start_time);
   }
+  // Record if the method call is successful, or not. 1 if successful.
+  UMA_HISTOGRAM_ENUMERATION("DBus.AsyncMethodCallSuccess",
+                            response_callback_called,
+                            kSuccessRatioHistogramMaxValue);
 }
 
 void ObjectProxy::OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
@@ -229,7 +259,8 @@ void ObjectProxy::OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
       reinterpret_cast<OnPendingCallIsCompleteData*>(user_data);
   ObjectProxy* self = data->object_proxy;
   self->OnPendingCallIsComplete(pending_call,
-                                data->response_callback);
+                                data->response_callback,
+                                data->start_time);
   delete data;
 }
 
@@ -317,15 +348,16 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   const std::string interface = signal->GetInterface();
   const std::string member = signal->GetMember();
 
-  // Check if we know about the method.
+  // Check if we know about the signal.
   const std::string absolute_signal_name = GetAbsoluteSignalName(
       interface, member);
   MethodTable::const_iterator iter = method_table_.find(absolute_signal_name);
   if (iter == method_table_.end()) {
-    // Don't know about the method.
+    // Don't know about the signal.
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   if (bus_->HasDBusThread()) {
     // Post a task to run the method in the origin thread.
     // Transfer the ownership of |signal| to RunMethod().
@@ -334,24 +366,30 @@ DBusHandlerResult ObjectProxy::HandleMessage(
     bus_->PostTaskToOriginThread(FROM_HERE,
                                  base::Bind(&ObjectProxy::RunMethod,
                                             this,
+                                            start_time,
                                             iter->second,
                                             released_signal));
   } else {
-    // If the D-Bus thread is not used, just call the method directly. We
-    // don't need the complicated logic to wait for the method call to be
-    // complete.
-    iter->second.Run(signal.get());
+    const base::TimeTicks start_time = base::TimeTicks::Now();
+    // If the D-Bus thread is not used, just call the callback on the
+    // current thread. Transfer the ownership of |signal| to RunMethod().
+    Signal* released_signal = signal.release();
+    RunMethod(start_time, iter->second, released_signal);
   }
 
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-void ObjectProxy::RunMethod(SignalCallback signal_callback,
+void ObjectProxy::RunMethod(base::TimeTicks start_time,
+                            SignalCallback signal_callback,
                             Signal* signal) {
   bus_->AssertOnOriginThread();
 
   signal_callback.Run(signal);
   delete signal;
+  // Record time spent for handling the signal.
+  UMA_HISTOGRAM_TIMES("DBus.SignalHandleTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 DBusHandlerResult ObjectProxy::HandleMessageThunk(

@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/time.h"
 
 class MessageLoop;
 
@@ -116,25 +117,30 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   // OnPendingCallIsCompleteThunk().
   struct OnPendingCallIsCompleteData {
     OnPendingCallIsCompleteData(ObjectProxy* in_object_proxy,
-                                ResponseCallback in_response_callback);
+                                ResponseCallback in_response_callback,
+                                base::TimeTicks start_time);
     ~OnPendingCallIsCompleteData();
 
     ObjectProxy* object_proxy;
     ResponseCallback response_callback;
+    base::TimeTicks start_time;
   };
 
   // Starts the async method call. This is a helper function to implement
   // CallMethod().
   void StartAsyncMethodCall(int timeout_ms,
                             void* request_message,
-                            ResponseCallback response_callback);
+                            ResponseCallback response_callback,
+                            base::TimeTicks start_time);
 
   // Called when the pending call is complete.
   void OnPendingCallIsComplete(DBusPendingCall* pending_call,
-                               ResponseCallback response_callback);
+                               ResponseCallback response_callback,
+                               base::TimeTicks start_time);
 
   // Runs the response callback with the given response object.
   void RunResponseCallback(ResponseCallback response_callback,
+                           base::TimeTicks start_time,
                            void* response_message);
 
   // Redirects the function call to OnPendingCallIsComplete().
@@ -160,7 +166,9 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
                                   DBusMessage* raw_message);
 
   // Runs the method. Helper function for HandleMessage().
-  void RunMethod(SignalCallback signal_callback, Signal* signal);
+  void RunMethod(base::TimeTicks start_time,
+                 SignalCallback signal_callback,
+                 Signal* signal);
 
   // Redirects the function call to HandleMessage().
   static DBusHandlerResult HandleMessageThunk(DBusConnection* connection,

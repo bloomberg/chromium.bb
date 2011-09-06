@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "base/time.h"
 
 class MessageLoop;
 
@@ -106,7 +107,8 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
                   bool success);
 
   // Helper function for SendSignal().
-  void SendSignalInternal(void* signal_message);
+  void SendSignalInternal(base::TimeTicks start_time,
+                          void* signal_message);
 
   // Registers this object to the bus.
   // Returns true on success, or the object is already registered.
