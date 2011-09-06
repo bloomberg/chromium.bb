@@ -16,15 +16,15 @@ found in the LICENSE file.
 }
 
 /* Get rid of display: table, which causes width issues. */
-.displaytable {
+#extension-settings .displaytable {
   display: block;
 }  
 /* Get rid of display: table row, which causes width issues. */
-.displaytable > section {
+#extension-settings .displaytable > section {
   display: block;
 }
 /* Get rid of display: table cell, which causes width issues. */
-.displaytable > section > * {
+#extension-settings .displaytable > section > * {
   display: block;
 }
 
