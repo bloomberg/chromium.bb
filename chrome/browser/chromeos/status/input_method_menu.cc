@@ -649,15 +649,23 @@ std::wstring InputMethodMenu::GetTextForMenu(
   // Special case for Dutch, French and German: these languages have multiple
   // keyboard layouts and share the same laout of keyboard (Belgian). We need to
   // show explicitly the language for the layout.
-  // For Arabic and Hindi: they share "Standard Input Method".
+  // For Arabic, Amharic, and Indic languages: they share "Standard Input
+  // Method".
   const std::string language_code
       = input_method::GetLanguageCodeFromDescriptor(input_method);
   std::wstring text;
-  if (language_code == "ar" ||
-      language_code == "hi" ||
-      language_code == "nl" ||
+  // TODO(yusukes): Add Telugu and Kanada.
+  if (language_code == "am" ||
+      language_code == "ar" ||
+      language_code == "bn" ||
+      language_code == "de" ||
       language_code == "fr" ||
-      language_code == "de") {
+      language_code == "gu" ||
+      language_code == "hi" ||
+      language_code == "ml" ||
+      language_code == "mr" ||
+      language_code == "nl" ||
+      language_code == "ta") {
     text = GetLanguageName(language_code) + L" - ";
   }
   text += input_method::GetString(input_method.id(), input_method.id());
