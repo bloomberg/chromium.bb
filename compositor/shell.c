@@ -58,14 +58,6 @@ move_grab_button(struct wl_grab *grab,
 static void
 move_grab_end(struct wl_grab *grab, uint32_t time)
 {
-	struct wlsc_surface *es;
-	struct wl_input_device *device = grab->input_device;
-	int32_t sx, sy;
-
-	es = pick_surface(grab->input_device, &sx, &sy);
-	wl_input_device_set_pointer_focus(device,
-					  &es->surface, time,
-					  device->x, device->y, sx, sy);
 	free(grab);
 }
 
@@ -162,14 +154,6 @@ resize_grab_button(struct wl_grab *grab,
 static void
 resize_grab_end(struct wl_grab *grab, uint32_t time)
 {
-	struct wlsc_surface *es;
-	struct wl_input_device *device = grab->input_device;
-	int32_t sx, sy;
-
-	es = pick_surface(grab->input_device, &sx, &sy);
-	wl_input_device_set_pointer_focus(device,
-					  &es->surface, time,
-					  device->x, device->y, sx, sy);
 	free(grab);
 }
 
@@ -481,20 +465,12 @@ static void
 drag_grab_end(struct wl_grab *grab, uint32_t time)
 {
 	struct wl_drag *drag = container_of(grab, struct wl_drag, grab);
-	struct wlsc_surface *es;
-	struct wl_input_device *device = grab->input_device;
-	int32_t sx, sy;
 
 	if (drag->target)
 		wl_resource_post_event(&drag->drag_offer.resource,
 				       WL_DRAG_OFFER_DROP);
 
 	wl_drag_set_pointer_focus(drag, NULL, time, 0, 0, 0, 0);
-
-	es = pick_surface(grab->input_device, &sx, &sy);
-	wl_input_device_set_pointer_focus(device,
-					  &es->surface, time,
-					  device->x, device->y, sx, sy);
 }
 
 static const struct wl_grab_interface drag_grab_interface = {

@@ -1408,6 +1408,7 @@ notify_button(struct wl_input_device *device,
 	struct wlsc_binding *b;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
+	int32_t sx, sy;
 
 	if (state)
 		wlsc_compositor_idle_inhibit(compositor);
@@ -1434,8 +1435,13 @@ notify_button(struct wl_input_device *device,
 		device->grab->interface->button(device->grab, time,
 						button, state);
 
-	if (!state && device->grab && device->grab_button == button)
+	if (!state && device->grab && device->grab_button == button) {
 		wl_input_device_end_grab(device, time);
+		surface = pick_surface(device, &sx, &sy);
+		wl_input_device_set_pointer_focus(device, &surface->surface,
+						  time, device->x, device->y,
+						  sx, sy);
+	}
 }
 
 static void
