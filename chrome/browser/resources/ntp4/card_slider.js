@@ -298,6 +298,10 @@ var CardSlider = (function() {
         event.initEvent(CardSlider.EventType.CARD_CHANGED, true, true);
         event.cardSlider = this;
         this.container_.dispatchEvent(event);
+
+        // We also dispatch an event on the card itself.
+        cr.dispatchSimpleEvent(this.currentCardValue, 'cardselected',
+                               true, true);
       }
     },
 

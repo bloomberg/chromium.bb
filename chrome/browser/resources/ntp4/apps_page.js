@@ -189,8 +189,12 @@ cr.define('ntp4', function() {
         this.useSmallIcon_ = true;
 
       var appImg = this.ownerDocument.createElement('img');
+      // This is temporary (setIcon_/loadIcon will overwrite it) but is visible
+      // before the page is shown (e.g. if switching from most visited to
+      // bookmarks).
+      appImg.src = 'chrome://theme/IDR_APP_DEFAULT_ICON';
       this.appImg_ = appImg;
-      this.setIcon();
+      this.setIcon_();
       appImgContainer.appendChild(appImg);
 
       if (this.useSmallIcon_) {
@@ -266,16 +270,30 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Set the app's icon image from the appData.
+     * Set the URL of the icon from |appData_|. This won't actually show the
+     * icon until loadIcon() is called (for performance reasons; we don't want
+     * to load icons until we have to).
      * @private
      */
-    setIcon: function() {
-      this.appImg_.src = this.useSmallIcon_ ? this.appData_.icon_small :
-                                              this.appData_.icon_big;
+    setIcon_: function() {
+      var src = this.useSmallIcon_ ? this.appData_.icon_small :
+                                     this.appData_.icon_big;
       if (!this.appData_.enabled ||
           (!this.appData_.offline_enabled && !navigator.onLine)) {
-        this.appImg_.src += '?grayscale=true';
+        src += '?grayscale=true';
       }
+
+      this.appImgSrc_ = src;
+    },
+
+    /**
+     * Shows the icon for the app. That is, it causes chrome to load the app
+     * icon resource.
+     */
+    loadIcon: function() {
+      if (this.appImgSrc_)
+        this.appImg_.src = this.appImgSrc_;
+      this.appImgSrc_ = null;
     },
 
     // Shows a notification text below the app icon and stuffs the attributes
@@ -283,12 +301,8 @@ cr.define('ntp4', function() {
     // text.
     setupNotification_: function(notification) {
       // Remove the old notification from this node (if any).
-      for (var i = 0; i < this.childNodes.length; i++) {
-        if (this.childNodes[i].classList.contains('app-notification')) {
-          this.removeChild(this.childNodes[i]);
-          break;
-        }
-      }
+      if (this.appNotification_)
+        this.appNotification_.parentNode.removeChild(this.appNotification_);
 
       if (notification) {
         // Add a new notification to this node.
@@ -453,7 +467,8 @@ cr.define('ntp4', function() {
      */
     replaceAppData: function(appData) {
       this.appData_ = appData;
-      this.setIcon();
+      this.setIcon_();
+      this.loadIcon();
     },
 
     /**
@@ -548,6 +563,8 @@ cr.define('ntp4', function() {
 
     initialize: function() {
       this.classList.add('apps-page');
+
+      this.addEventListener('cardselected', this.onCardSelected_);
     },
 
     /**
@@ -564,6 +581,22 @@ cr.define('ntp4', function() {
         this.content_.scrollTop = this.content_.scrollHeight;
       }
       this.appendTile(new App(appData), animate);
+    },
+
+    /**
+     * Handler for 'cardselected' event, fired when |this| is selected. The
+     * first time this is called, we load all the app icons.
+     * @private
+     */
+    onCardSelected_: function(e) {
+      if (this.hasBeenSelected_)
+        return;
+      this.hasBeenSelected_ = true;
+
+      var apps = this.querySelectorAll('.app');
+      for (var i = 0; i < apps.length; i++) {
+        apps[i].loadIcon();
+      }
     },
 
     /** @inheritdoc */
@@ -681,7 +714,6 @@ cr.define('ntp4', function() {
     if (store)
       store.setAppsPromoData(data);
   };
-
 
   /**
    * Callback invoked by chrome whenever an app preference changes.
