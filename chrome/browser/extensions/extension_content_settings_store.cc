@@ -314,6 +314,8 @@ void ExtensionContentSettingsStore::GetContentSettingsForContentType(
   base::AutoLock lock(lock_);
   ExtensionEntryMap::const_iterator ext_it;
   for (ext_it = entries_.begin(); ext_it != entries_.end(); ++ext_it) {
+    if (!ext_it->second->enabled)
+      continue;
     if (incognito) {
       AddRules(type, identifier,
                GetContentSettingSpecList(
