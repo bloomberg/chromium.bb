@@ -441,18 +441,24 @@ const char kSecurityNone[] = "none";
 // Flimflam L2TPIPsec property names.
 const char kL2tpIpsecCaCertNssProperty[] = "L2TPIPsec.CACertNSS";
 const char kL2tpIpsecClientCertIdProperty[] = "L2TPIPsec.ClientCertID";
-const char kL2tpIpsecClientCertSlotProp[] = "L2TPIPsec.ClientCertSlot";
+const char kL2tpIpsecClientCertSlotProperty[] = "L2TPIPsec.ClientCertSlot";
 const char kL2tpIpsecPinProperty[] = "L2TPIPsec.PIN";
 const char kL2tpIpsecPskProperty[] = "L2TPIPsec.PSK";
 const char kL2tpIpsecUserProperty[] = "L2TPIPsec.User";
 const char kL2tpIpsecPasswordProperty[] = "L2TPIPsec.Password";
 const char kL2tpIpsecGroupNameProperty[] = "L2TPIPsec.GroupName";
+// deprecated:
+const char kL2tpIpsecClientCertSlotProp[] = "L2TPIPsec.ClientCertSlot";
 
 // Flimflam OpenVPN property names.
 const char kOpenVPNUserProperty[] = "OpenVPN.User";
 const char kOpenVPNPasswordProperty[] = "OpenVPN.Password";
 const char kOpenVPNOTPProperty[] = "OpenVPN.OTP";
-const char kOpenVPNPINProperty[] = "OpenVPN.PIN";
+const char kOpenVPNCaCertProperty[] = "OpenVPN.CACert";
+const char kOpenVPNClientCertIdProperty[] = "OpenVPN.Pkcs11.ID";
+const char kOpenVPNClientCertSlotProperty[] = "OpenVPN.Pkcs11.Slot";
+const char kOpenVPNPinProperty[] = "OpenVPN.Pkcs11.PIN";
+const char kOpenVPNProviderProperty[] = "OpenVPN.Pkcs11.Provider";
 
 // FlimFlam technology family options
 const char kTechnologyFamilyCdma[] = "CDMA";
