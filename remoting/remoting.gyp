@@ -24,8 +24,7 @@
         'plugin_prefix': '',
         'name_suffix': '- Mac',
         'remoting_it2me_os_files': [
-          'resources/mac/chromoting128.png',
-          'resources/mac/chromoting16.png',
+          # Empty for now, may be used in future.
         ],
       }],
       ['os_posix == 1 and OS != "mac"', {
@@ -35,22 +34,19 @@
       ['OS=="linux" and chromeos==1', {
         'name_suffix': '- Chromebook',
         'remoting_it2me_os_files': [
-          'resources/chromeos/chromoting128.png',
-          'resources/chromeos/chromoting16.png',
+          # Empty for now, may be used in future.
         ],
       }],
       ['OS=="linux" and chromeos==0 and target_arch=="x64"', {
         'name_suffix': '- Linux - 64',
         'remoting_it2me_os_files': [
-          'resources/linux/chromoting128.png',
-          'resources/linux/chromoting16.png',
+          # Empty for now, may be used in future.
         ],
       }],
       ['OS=="linux" and chromeos==0 and target_arch!="x64"', {
         'name_suffix': '- Linux',
         'remoting_it2me_os_files': [
-          'resources/linux/chromoting128.png',
-          'resources/linux/chromoting16.png',
+          # Empty for now, may be used in future.
         ],
       }],
       ['OS=="win"', {
@@ -58,8 +54,7 @@
         'plugin_prefix': '',
         'name_suffix': '- Windows',
         'remoting_it2me_os_files': [
-          'resources/win/chromoting128.png',
-          'resources/win/chromoting16.png',
+          # Empty for now, may be used in future.
         ],
       }],
     ],
@@ -84,6 +79,8 @@
       'webapp/me2mom/spinner.gif',
       'webapp/me2mom/toolbar.css',
       'webapp/me2mom/xhr.js',
+      'resources/chromoting128.png',
+      'resources/chromoting16.png',
     ],
     'remoting_it2me_locale_files': [
       'webapp/me2mom/_locales/en/messages.json',
@@ -200,7 +197,7 @@
             'WRAPPER_EXTENSION': '<(plugin_extension)',
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
-          # only be necessary to list framework-Info.plist once, not the
+          # only be necessary to list host_plugin-Info.plist once, not the
           # three times it is listed here.
           'mac_bundle_resources': [
             'host/disconnect_window.xib',
