@@ -225,6 +225,11 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
         gfx::SelectionModel(cursor_pos), false).x();
   }
 
+  // Wrap for visibility in test classes.
+  ui::TextInputType GetTextInputType() {
+    return textfield_view_->GetTextInputType();
+  }
+
   // We need widget to populate wrapper class.
   Widget* widget_;
 
@@ -399,12 +404,61 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
 TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   InitTextfield(Textfield::STYLE_PASSWORD);
 
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
+
   last_contents_.clear();
   textfield_->SetText(ASCIIToUTF16("my password"));
   // Just to make sure the text() and callback returns
   // the actual text instead of "*".
   EXPECT_STR_EQ("my password", textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
+}
+
+TEST_F(NativeTextfieldViewsTest, InputTypeSetsPassword) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  // Defaults to TEXT
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
+
+  // Setting to passwords also sets password state of textfield.
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
+  EXPECT_TRUE(textfield_->IsPassword());
+}
+
+TEST_F(NativeTextfieldViewsTest, PasswordSetsInputType) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  // Defaults to TEXT
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
+
+  textfield_->SetPassword(true);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
+
+  textfield_->SetPassword(false);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
+}
+
+TEST_F(NativeTextfieldViewsTest, TextInputType) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  // Defaults to TEXT
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
+
+  // And can be set.
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_URL, GetTextInputType());
+
+  // Readonly textfields have type NONE
+  textfield_->SetReadOnly(true);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, GetTextInputType());
+
+  textfield_->SetReadOnly(false);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_URL, GetTextInputType());
+
+  // As do disabled textfields
+  textfield_->SetEnabled(false);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, GetTextInputType());
 }
 
 TEST_F(NativeTextfieldViewsTest, OnKeyPressReturnValueTest) {

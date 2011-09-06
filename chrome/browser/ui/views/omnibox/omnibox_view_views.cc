@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
@@ -174,6 +175,7 @@ void OmniboxViewViews::Init() {
   // TODO(oshima): make sure the above happens with views.
   textfield_ = new AutocompleteTextfield(this);
   textfield_->SetController(this);
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
 
 #if defined(TOUCH_UI)
   textfield_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(

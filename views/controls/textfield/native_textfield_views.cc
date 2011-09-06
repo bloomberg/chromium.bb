@@ -700,11 +700,7 @@ void NativeTextfieldViews::InsertChar(char16 ch, int flags) {
 }
 
 ui::TextInputType NativeTextfieldViews::GetTextInputType() {
-  if (textfield_->read_only() || !textfield_->IsEnabled())
-    return ui::TEXT_INPUT_TYPE_NONE;
-  else if (textfield_->IsPassword())
-    return ui::TEXT_INPUT_TYPE_PASSWORD;
-  return ui::TEXT_INPUT_TYPE_TEXT;
+  return textfield_->GetTextInputType();
 }
 
 gfx::Rect NativeTextfieldViews::GetCaretBounds() {

@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/insets.h"
@@ -53,7 +54,8 @@ Textfield::Textfield()
       use_default_background_color_(true),
       initialized_(false),
       horizontal_margins_were_set_(false),
-      vertical_margins_were_set_(false) {
+      vertical_margins_were_set_(false),
+      text_input_type_(ui::TEXT_INPUT_TYPE_TEXT) {
   set_focusable(true);
 }
 
@@ -70,8 +72,11 @@ Textfield::Textfield(StyleFlags style)
       use_default_background_color_(true),
       initialized_(false),
       horizontal_margins_were_set_(false),
-      vertical_margins_were_set_(false) {
+      vertical_margins_were_set_(false),
+      text_input_type_(ui::TEXT_INPUT_TYPE_TEXT) {
   set_focusable(true);
+  if (IsPassword())
+    SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
 Textfield::~Textfield() {
@@ -99,12 +104,29 @@ bool Textfield::IsPassword() const {
 }
 
 void Textfield::SetPassword(bool password) {
-  if (password)
+  if (password) {
     style_ = static_cast<StyleFlags>(style_ | STYLE_PASSWORD);
-  else
+    SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  } else {
     style_ = static_cast<StyleFlags>(style_ & ~STYLE_PASSWORD);
+    SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  }
   if (native_wrapper_)
     native_wrapper_->UpdateIsPassword();
+}
+
+
+ui::TextInputType Textfield::GetTextInputType() const {
+  if (read_only() || !IsEnabled())
+    return ui::TEXT_INPUT_TYPE_NONE;
+  return text_input_type_;
+}
+
+void Textfield::SetTextInputType(ui::TextInputType type) {
+  text_input_type_ = type;
+  bool should_be_password = type == ui::TEXT_INPUT_TYPE_PASSWORD;
+  if (IsPassword() != should_be_password)
+    SetPassword(should_be_password);
 }
 
 void Textfield::SetText(const string16& text) {
