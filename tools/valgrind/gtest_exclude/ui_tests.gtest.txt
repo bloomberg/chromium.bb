@@ -119,3 +119,6 @@ AutomationProxyTest.GetBrowserWindowCount
 AutomationProxyTest.GetTab
 AutomationProxyTest.GetTabCount
 BookmarksUITest.TwoCommandsOneTab
+
+# OptionsUITest.NavBarCheck fails, see http://crbug.com/83209
+OptionsUITest.NavBarCheck

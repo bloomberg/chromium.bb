@@ -273,9 +273,6 @@ LoginPromptTest.TestBasicAuth
 LoginPromptTest.TestDigestAuth
 ResourceDispatcherTest.DoNotSniffHTMLFromTextPlain
 
-# OptionsUITest.NavBarCheck fails, see http://crbug.com/83209
-OptionsUITest.NavBarCheck
-
 # Timing out, see http://crbug.com/83565
 NPAPIAutomationEnabledTest.LoadAllBlockedPlugins
 
