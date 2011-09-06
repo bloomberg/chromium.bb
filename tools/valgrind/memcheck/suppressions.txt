@@ -3943,42 +3943,6 @@
    fun:_ZN6webkit5ppapi13PpapiUnittest5SetUpEv
 }
 {
-   bug_77376_a
-   Memcheck:Leak
-   fun:calloc
-   fun:g_malloc0
-   fun:gtk_file_chooser_default_update_current_folder
-   ...
-   fun:_gtk_file_chooser_set_current_folder_path
-   fun:gtk_file_chooser_set_current_folder
-   fun:_ZN20SelectFileDialogImpl18CreateSaveAsDialogERKSsRK8FilePathP10_GtkWindow
-   fun:_ZN20SelectFileDialogImpl10SelectFileEN16SelectFileDialog4TypeERKSbItN4base20string16_char_traitsESaItEERK8FilePathPKNS0_12FileTypeInfoEiRKSsP10_GtkWindowPv
-   fun:_ZN15DownloadManager24OnPathExistenceAvailableEP18DownloadCreateInfo
-   fun:_Z16DispatchToMethodI15DownloadManagerMS0_FvP18DownloadCreateInfoES2_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodI15DownloadManagerMS0_FvP18DownloadCreateInfoE6Tuple1IS2_EE3RunEv
-}
-{
-   bug_77376_b
-   Memcheck:Leak
-   fun:malloc
-   fun:dbus_malloc
-   ...
-   fun:dbus_g_bus_get
-   fun:tracker_connect
-   fun:_gtk_search_engine_tracker_new
-   fun:_gtk_search_engine_new
-   fun:gtk_file_chooser_default_constructor
-   fun:g_object_newv
-   fun:g_object_new_valist
-   fun:g_object_new
-   fun:_gtk_file_chooser_default_new
-   fun:gtk_file_chooser_widget_constructor
-   fun:g_object_newv
-   fun:g_object_new_valist
-   fun:g_object_new
-   fun:gtk_file_chooser_dialog_constructor
-}
-{
    bug_77990
    Memcheck:Leak
    fun:calloc
@@ -5131,8 +5095,6 @@
    fun:_ZN19URLRequestChromeJob15GetResponseInfoEPN3net16HttpResponseInfoE
    fun:_ZN3net13URLRequestJob21NotifyHeadersCompleteEv
    fun:_ZN19URLRequestChromeJob10StartAsyncEv
-}
-{
 }
 {
    bug_92123
