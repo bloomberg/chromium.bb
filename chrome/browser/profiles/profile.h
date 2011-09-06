@@ -145,10 +145,10 @@ class Profile : public content::BrowserContext {
     friend class AutofillDownloadManager;
     friend class ChromePluginMessageFilter;
     friend class BrowserListTabContentsProvider;
-    friend class LiveSyncTest;
     friend class MetricsService;
     friend class SafeBrowsingServiceTestHelper;
     friend class SdchDictionaryFetcher;
+    friend class SyncTest;
     friend class Toolbar5Importer;
     friend class TranslateManager;
     friend class chrome::ChromeContentBrowserClient;

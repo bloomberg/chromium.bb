@@ -102,8 +102,7 @@
       'filepath': 'sandbox/linux/.*',
     },
     'sync': {
-      'filepath': 'chrome/browser/sync/.*|chrome/browser/views/sync/.*|'\
-        'chrome/test/live_sync/.*',
+      'filepath': 'chrome/browser/sync/.*|chrome/browser/views/sync/.*',
     },
     'layout_tests': {
       'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/.*',
