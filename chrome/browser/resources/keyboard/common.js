@@ -12,6 +12,7 @@ var NUMBER_MODE = 'number';
 var SYMBOL_MODE = 'symbol';
 var MODES = [ KEY_MODE, SHIFT_MODE, NUMBER_MODE, SYMBOL_MODE ];
 var currentMode = SHIFT_MODE;
+var enterShiftModeOnSpace = false;
 var MODE_TRANSITIONS = {};
 
 MODE_TRANSITIONS[KEY_MODE + SHIFT_MODE] = SHIFT_MODE;
@@ -108,9 +109,16 @@ function sendKey(key) {
   if (currentMode == SHIFT_MODE && key != 'Spacebar') {
     transitionMode(SHIFT_MODE);
   }
-  // Enter shift mode after typing a period for a new sentence.
-  if (currentMode != SHIFT_MODE && key == '.') {
-    transitionMode(SHIFT_MODE);
+  // Enter shift mode after typing a closing punctuation and then a space for a
+  // new sentence.
+  if (enterShiftModeOnSpace) {
+    enterShiftModeOnSpace = false;
+    if (currentMode != SHIFT_MODE && key == 'Spacebar') {
+      transitionMode(SHIFT_MODE);
+    }
+  }
+  if (currentMode != SHIFT_MODE && (key == '.' || key == '?' || key == '!')) {
+    enterShiftModeOnSpace = true;
   }
 }
 
