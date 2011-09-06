@@ -62,7 +62,6 @@ bool FileSystemContext::IsStorageUnlimited(const GURL& origin) {
   // is file, or if unlimited quota for this process was explicitly requested,
   // return true.
   return unlimited_quota_ ||
-      (allow_file_access_from_files_ && origin.SchemeIsFile()) ||
       (special_storage_policy_.get() &&
           special_storage_policy_->IsStorageUnlimited(origin));
 }

@@ -49,15 +49,6 @@ TEST(FileSystemContextTest, IsStorageUnlimited) {
     EXPECT_FALSE(context->IsStorageUnlimited(GURL(kTestOrigins[i])));
   }
 
-  // With allow_file_access=true cases.
-  context = NewFileSystemContext(true, false, NULL);
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestOrigins); ++i) {
-    SCOPED_TRACE(testing::Message() << "IsStorageUnlimited /w "
-                 "allow_file_access=true #" << i << " " << kTestOrigins[i]);
-    GURL origin(kTestOrigins[i]);
-    EXPECT_EQ(origin.SchemeIsFile(), context->IsStorageUnlimited(origin));
-  }
-
   // With unlimited_quota=true cases.
   context = NewFileSystemContext(false, true, NULL);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestOrigins); ++i) {
