@@ -153,6 +153,9 @@ struct wlsc_spring {
 };
 
 struct wlsc_shell {
+	void (*activate)(struct wlsc_shell *shell,
+			 struct wlsc_surface *es,
+			 struct wlsc_input_device *device, uint32_t time);
 	void (*lock)(struct wlsc_shell *shell);
 	void (*attach)(struct wlsc_shell *shell, struct wlsc_surface *surface);
 	void (*set_selection_focus)(struct wlsc_shell *shell,

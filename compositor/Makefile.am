@@ -75,7 +75,9 @@ desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)
 desktop_shell_la_CFLAGS = $(GCC_CFLAGS)
 desktop_shell_la_SOURCES =			\
 	shell.c					\
-	switcher.c
+	switcher.c				\
+	desktop-shell-protocol.c		\
+	desktop-shell-server-protocol.h
 endif
 
 if ENABLE_MEEGO_TABLET_SHELL
@@ -96,7 +98,9 @@ BUILT_SOURCES =					\
 	meego-tablet-protocol.c			\
 	meego-tablet-server-protocol.h		\
 	xserver-protocol.c			\
-	xserver-server-protocol.h
+	xserver-server-protocol.h		\
+	desktop-shell-protocol.c		\
+	desktop-shell-server-protocol.h
 
 CLEANFILES = $(BUILT_SOURCES)
 

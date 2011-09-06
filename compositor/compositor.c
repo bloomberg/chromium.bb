@@ -1391,7 +1391,8 @@ notify_button(struct wl_input_device *device,
 		wlsc_compositor_idle_release(compositor);
 
 	if (state && surface && device->grab == NULL) {
-		wlsc_surface_activate(surface, wd, time);
+		compositor->shell->activate(compositor->shell,
+					    surface, wd, time);
 		wl_input_device_start_grab(device,
 					   &device->motion_grab,
 					   button, time);

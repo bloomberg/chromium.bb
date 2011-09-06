@@ -1,0 +1,24 @@
+<protocol name="desktop">
+
+  <interface name="desktop_shell" version="1">
+    <request name="set_background">
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+    <request name="set_panel">
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+    <!-- We'll fold most of wl_shell into this interface and then
+         they'll share the configure event.  -->
+    <event name="configure">
+      <arg name="time" type="uint"/>
+      <arg name="edges" type="uint"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </event>
+
+  </interface>
+
+</protocol>
