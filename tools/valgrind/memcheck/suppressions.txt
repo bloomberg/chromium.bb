@@ -5453,6 +5453,16 @@
    fun:ChromeMain
    fun:main
 }
+{
+   bug_95502
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN24ExtensionSettingsHandler27HandleRequestExtensionsDataEPKN4base9ListValueE
+   fun:_ZN24ExtensionSettingsHandler28MaybeUpdateAfterNotificationEv
+   fun:_ZN24ExtensionSettingsHandler7ObserveEiRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyEiRK18NotificationSourceRK19NotificationDetails
+}
 
 
 #-----------------------------------------------------------------------
