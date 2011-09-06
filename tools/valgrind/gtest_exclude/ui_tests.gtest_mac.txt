@@ -38,7 +38,8 @@ ErrorPageTest.Page404
 # http://crbug.com/32818
 VisibleBrowserTest.WindowOpenClose
 
-# See http://crbug.com/30661 and http://crbug.com/27447.
+# See http://crbug.com/30661 and http://crbug.com/27447 and
+# http://crbug.com/95547.
 LayoutPluginTester.NPObjectReleasedOnDestruction
 LayoutPluginTester.NPObjectSetException
 LayoutPluginTester.SelfDeletePluginGetUrl
@@ -59,6 +60,7 @@ NPAPITesterBase.ScheduleTimer
 NPAPITesterBase.SelfDeletePluginGetUrl
 NPAPITesterBase.SelfDeletePluginInvoke
 NPAPIVisiblePluginTester.ClickToPlay
+NPAPIVisiblePluginTester.DeletePluginInDeallocate
 NPAPIVisiblePluginTester.GetURLRequestFailWrite
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.OpenPopupWindowWithPlugin
