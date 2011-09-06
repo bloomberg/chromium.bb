@@ -128,7 +128,13 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
   EXPECT_TRUE(data.tab->Close(true));
 }
 
-TEST_F(SearchProviderTest, TestIsSearchProviderInstalled) {
+// Flaky on XP debug. http://crbug.com/62777
+#if defined(OS_WIN)
+#define MAYBE_TestIsSearchProviderInstalled FLAKY_TestIsSearchProviderInstalled
+#else
+#define MAYBE_TestIsSearchProviderInstalled TestIsSearchProviderInstalled
+#endif
+TEST_F(SearchProviderTest, MAYBE_TestIsSearchProviderInstalled) {
   ASSERT_TRUE(test_server_started_);
 
   // Use the default search provider, other installed search provider, and
