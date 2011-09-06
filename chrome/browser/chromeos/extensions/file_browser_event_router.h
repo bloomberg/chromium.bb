@@ -114,7 +114,7 @@ class ExtensionFileBrowserEventRouter
 
   scoped_refptr<FileWatcherDelegate> delegate_;
   WatcherMap file_watchers_;
-  FileBrowserNotifications* notifications_;
+  scoped_ptr<FileBrowserNotifications> notifications_;
   Profile* profile_;
   base::Lock lock_;
 
