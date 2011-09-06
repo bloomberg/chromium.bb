@@ -227,7 +227,10 @@ TEST_PPAPI_IN_PROCESS(VarDeprecated)
 #undef PostMessage
 #endif
 TEST_PPAPI_IN_PROCESS(PostMessage)
+#if !defined(OS_WIN)
+// Times out on Windows XP: http://crbug.com/95557
 TEST_PPAPI_OUT_OF_PROCESS(PostMessage)
+#endif
 
 TEST_PPAPI_IN_PROCESS(Memory)
 TEST_PPAPI_OUT_OF_PROCESS(Memory)
