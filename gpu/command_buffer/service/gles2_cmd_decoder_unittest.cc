@@ -2826,7 +2826,7 @@ TEST_F(GLES2DecoderWithShaderTest, VertexAttribPointer) {
       for (GLint size = 0; size < 5; ++size) {
         for (size_t oo = 0; oo < arraysize(offset_mult); ++oo) {
           GLuint offset = num_bytes * offset_mult[oo] + offset_offset[oo];
-          for (size_t ss = 0; ss <= arraysize(stride_mult); ++ss) {
+          for (size_t ss = 0; ss < arraysize(stride_mult); ++ss) {
             GLsizei stride = num_bytes * stride_mult[ss] + stride_offset[ss];
             for (int normalize = 0; normalize < 2; ++normalize) {
               bool index_good = index < static_cast<GLuint>(kNumVertexAttribs);
