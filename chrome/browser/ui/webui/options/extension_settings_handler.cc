@@ -153,8 +153,9 @@ void ExtensionSettingsHandler::IconLoader::ReportResultOnUIThread(
     DictionaryValue* json) {
   if (handler_)
     handler_->OnIconsLoaded(json);
+  else
+    delete json;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
