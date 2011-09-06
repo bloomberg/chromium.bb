@@ -1,3 +1,8 @@
 include_rules = [
+  # TODO(shess): http://crbug.com/95272
+  # This dependency needed by objc_zombie.mm.  Unfortunately, putting
+  # objc_zombie.mm in chrome/app calls into existence unspeakable horrors.
+  "+chrome/app",
+
   "+third_party/mach_override",
 ]

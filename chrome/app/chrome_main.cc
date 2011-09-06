@@ -57,6 +57,7 @@
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
+#include "chrome/common/mac/objc_zombie.h"
 #include "grit/chromium_strings.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -361,6 +362,8 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif
 
 #if defined(OS_MACOSX)
+    // TODO(shess): Enable zombies for everyone.  http://crbug.com/94551
+    DCHECK(ObjcEvilDoers::ZombieEnable(true, 1000));
     chrome_main::SetUpBundleOverrides();
     chrome::common::mac::EnableCFBundleBlocker();
 #endif

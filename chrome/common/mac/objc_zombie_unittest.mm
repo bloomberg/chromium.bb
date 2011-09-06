@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/objc_zombie.h"
+#import "chrome/common/mac/objc_zombie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

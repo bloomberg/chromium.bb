@@ -12,9 +12,9 @@
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser_list.h"
-#import "chrome/browser/ui/cocoa/objc_method_swizzle.h"
-#import "chrome/browser/ui/cocoa/objc_zombie.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#import "chrome/common/mac/objc_method_swizzle.h"
+#import "chrome/common/mac/objc_zombie.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/renderer_host/render_view_host.h"
 
@@ -210,7 +210,7 @@ void SwizzleInit() {
 + (void)initialize {
   // Turn all deallocated Objective-C objects into zombies, keeping
   // the most recent 10,000 of them on the treadmill.
-  ObjcEvilDoers::ZombieEnable(YES, 10000);
+  ObjcEvilDoers::ZombieEnable(true, 10000);
 }
 
 - (id)init {

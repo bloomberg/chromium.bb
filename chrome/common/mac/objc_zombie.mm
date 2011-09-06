@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/objc_zombie.h"
+#import "chrome/common/mac/objc_zombie.h"
 
 #include <dlfcn.h>
 #include <execinfo.h>
@@ -446,21 +446,21 @@ BOOL ZombieInit() {
 
 namespace ObjcEvilDoers {
 
-BOOL ZombieEnable(BOOL zombieAllObjects,
+bool ZombieEnable(bool zombieAllObjects,
                   size_t zombieCount) {
   // Only allow enable/disable on the main thread, just to keep things
   // simple.
   CHECK([NSThread isMainThread]);
 
   if (!ZombieInit())
-    return NO;
+    return false;
 
   g_zombieAllObjects = zombieAllObjects;
 
   // Replace the implementation of -[NSObject dealloc].
   Method m = class_getInstanceMethod([NSObject class], @selector(dealloc));
   if (!m)
-    return NO;
+    return false;
 
   const IMP prevDeallocIMP = method_setImplementation(m, (IMP)ZombieDealloc);
   DCHECK(prevDeallocIMP == g_originalDeallocIMP ||
@@ -491,7 +491,7 @@ BOOL ZombieEnable(BOOL zombieAllObjects,
         g_zombieCount = oldCount;
         g_zombieIndex = oldIndex;
         ZombieDisable();
-        return NO;
+        return false;
       }
     }
 
@@ -521,7 +521,7 @@ BOOL ZombieEnable(BOOL zombieAllObjects,
     free(oldZombies);
   }
 
-  return YES;
+  return true;
 }
 
 void ZombieDisable() {

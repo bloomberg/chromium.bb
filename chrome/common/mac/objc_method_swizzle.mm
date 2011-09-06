@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/objc_method_swizzle.h"
+#import "chrome/common/mac/objc_method_swizzle.h"
 
 #import "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
-#import "chrome/app/breakpad_mac.h"
 
 namespace ObjcEvilDoers {
 
