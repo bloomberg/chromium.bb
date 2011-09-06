@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -59,11 +58,6 @@ class WebGraphicsContext3DCommandBufferImpl
                           WebKit::WebView*,
                           bool renderDirectlyToWebView);
 
-  // Must be called after initialize() and before any of the following methods.
-  // Permanently binds to the first calling thread. Returns false if the
-  // graphics context fails to create. Do not call from more than one thread.
-  // TODO(husky): Document threading restrictions in WebGraphicsContext3D.h,
-  // enforce strictly in all implementations.
   virtual bool makeContextCurrent();
 
   virtual int width();
@@ -443,12 +437,6 @@ class WebGraphicsContext3DCommandBufferImpl
 #endif
 
  private:
-  // Initialize the underlying GL context. May be called multiple times; second
-  // and subsequent calls are ignored. Must be called from the thread that is
-  // going to use this object to issue GL commands (which might not be the main
-  // thread).
-  bool MaybeInitializeGL();
-
   // SwapBuffers callback.
   void OnSwapBuffersComplete();
   virtual void OnContextLost(RendererGLContext::ContextLostReason reason);
@@ -457,11 +445,6 @@ class WebGraphicsContext3DCommandBufferImpl
   RendererGLContext* context_;
   // The GLES2Implementation we use for OpenGL rendering.
   gpu::gles2::GLES2Implementation* gl_;
-
-  // State needed by MaybeInitializeGL.
-  GpuChannelHost* host_;
-  GURL active_url_;
-  int32 render_view_routing_id_;
 
   bool render_directly_to_web_view_;
 #ifndef WTF_USE_THREADED_COMPOSITING
