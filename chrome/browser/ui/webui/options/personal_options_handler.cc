@@ -12,8 +12,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
-#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -194,6 +192,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
   localized_strings->SetString("changePicture",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE));
+  localized_strings->SetString("userEmail",
+      chromeos::UserManager::Get()->logged_in_user().email());
 #endif
 }
 
@@ -206,11 +206,6 @@ void PersonalOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback(
       "themesSetGTK",
       NewCallback(this, &PersonalOptionsHandler::ThemesSetGTK));
-#endif
-#if defined(OS_CHROMEOS)
-  web_ui_->RegisterMessageCallback(
-      "loadAccountPicture",
-      NewCallback(this, &PersonalOptionsHandler::LoadAccountPicture));
 #endif
   web_ui_->RegisterMessageCallback(
       "createProfile",
@@ -227,7 +222,7 @@ void PersonalOptionsHandler::Observe(int type,
     SendProfilesInfo();
 #if defined(OS_CHROMEOS)
   } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
-    LoadAccountPicture(NULL);
+    UpdateAccountPicture();
 #endif
   } else {
     OptionsPageUIHandler::Observe(type, source, details);
@@ -386,25 +381,13 @@ void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
 #endif
 
 #if defined(OS_CHROMEOS)
-void PersonalOptionsHandler::LoadAccountPicture(const ListValue* args) {
-  const chromeos::UserManager::User& user =
-      chromeos::UserManager::Get()->logged_in_user();
-  std::string email = user.email();
+void PersonalOptionsHandler::UpdateAccountPicture() {
+  std::string email = chromeos::UserManager::Get()->logged_in_user().email();
   if (!email.empty()) {
-    // int64 is either long or long long, but we need a certain format
-    // specifier.
-    long long timestamp = base::TimeTicks::Now().ToInternalValue();
-    StringValue image_url(
-        StringPrintf("%s%s?id=%lld",
-                     chrome::kChromeUIUserImageURL,
-                     email.c_str(),
-                     timestamp));
-    web_ui_->CallJavascriptFunction("PersonalOptions.setAccountPicture",
-                                    image_url);
-
-    StringValue email_value(email);
+    web_ui_->CallJavascriptFunction("PersonalOptions.updateAccountPicture");
+    base::StringValue email_value(email);
     web_ui_->CallJavascriptFunction("AccountsOptions.updateAccountPicture",
-                                    email_value, image_url);
+                                    email_value);
   }
 }
 #endif
@@ -437,4 +420,3 @@ void PersonalOptionsHandler::SendProfilesInfo() {
 void PersonalOptionsHandler::CreateProfile(const ListValue* args) {
   ProfileManager::CreateMultiProfileAsync();
 }
-

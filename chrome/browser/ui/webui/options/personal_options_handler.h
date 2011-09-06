@@ -43,7 +43,7 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
 #endif
 
 #if defined(OS_CHROMEOS)
-  void LoadAccountPicture(const ListValue* args);
+  void UpdateAccountPicture();
   NotificationRegistrar registrar_;
 #endif
 

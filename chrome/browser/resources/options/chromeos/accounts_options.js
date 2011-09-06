@@ -147,10 +147,12 @@ cr.define('options', function() {
 
   /**
    * Update account picture.
+   * @param {string} email Email of the user to update.
    */
-  AccountsOptions.updateAccountPicture = function(email, imageUrl) {
+  AccountsOptions.updateAccountPicture = function(email) {
     var userList = $('userList');
-    userList.updateAccountPicture(email, imageUrl);
+    if (userList)
+      userList.updateAccountPicture(email);
   };
 
   // Export

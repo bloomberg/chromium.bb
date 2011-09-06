@@ -19,6 +19,8 @@ cr.define('options', function() {
     OptionsPage.call(this, 'personal',
                      templateData.personalPageTabTitle,
                      'personal-page');
+    if (cr.isChromeOS)
+      this.userEmail_ = localStrings.getString('userEmail');
   }
 
   cr.addSingletonGetter(PersonalOptions);
@@ -112,7 +114,7 @@ cr.define('options', function() {
         $('change-picture-button').onclick = function(event) {
           OptionsPage.navigateToPage('changePicture');
         };
-        chrome.send('loadAccountPicture');
+        this.updateAccountPicture_();
 
         if (cr.commandLine.options['--bwsi']) {
           // Disable the screen lock checkbox and change-picture-button in
@@ -153,10 +155,6 @@ cr.define('options', function() {
     setSyncSetupCompleted_: function(completed) {
       this.syncSetupCompleted = completed;
       $('customize-sync').hidden = !completed;
-    },
-
-    setAccountPicture_: function(image) {
-      $('account-picture').src = image;
     },
 
     setSyncStatus_: function(status) {
@@ -264,6 +262,15 @@ cr.define('options', function() {
     hideSyncSection_: function() {
       $('sync-section').hidden = true;
     },
+
+    /**
+     * (Re)loads IMG element with current user account picture.
+     */
+    updateAccountPicture_: function() {
+      $('account-picture').src =
+          'chrome://userimage/' + this.userEmail_ +
+          '?id=' + (new Date()).getTime();
+    },
   };
 
   /**
@@ -285,22 +292,22 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
-    'setSyncEnabled',
+    'hideSyncSection',
     'setAutoLoginVisible',
-    'setSyncSetupCompleted',
-    'setAccountPicture',
-    'setSyncStatus',
-    'setSyncStatusErrorVisible',
-    'setSyncActionLinkEnabled',
-    'setSyncActionLinkLabel',
+    'setGtkThemeButtonEnabled',
     'setProfilesInfo',
     'setProfilesSectionVisible',
-    'setStartStopButtonVisible',
     'setStartStopButtonEnabled',
     'setStartStopButtonLabel',
-    'setGtkThemeButtonEnabled',
+    'setStartStopButtonVisible',
+    'setSyncActionLinkEnabled',
+    'setSyncActionLinkLabel',
+    'setSyncEnabled',
+    'setSyncSetupCompleted',
+    'setSyncStatus',
+    'setSyncStatusErrorVisible',
     'setThemesResetButtonEnabled',
-    'hideSyncSection',
+    'updateAccountPicture',
   ].forEach(function(name) {
     PersonalOptions[name] = function(value) {
       PersonalOptions.getInstance()[name + '_'](value);

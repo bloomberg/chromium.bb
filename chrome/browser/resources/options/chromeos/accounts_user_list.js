@@ -91,15 +91,14 @@ cr.define('options.accounts', function() {
 
     /**
      * Update given user's account picture.
-     * @param {String} email Email ofthe user to update.
-     * @param {String} imageUrl Updated account picture url.
+     * @param {string} email Email of the user to update.
      */
-    updateAccountPicture: function(email, imageUrl) {
+    updateAccountPicture: function(email) {
       var index = this.findUserByEmail_(email);
       if (index >= 0) {
         var item = this.getListItemByIndex(index);
         if (item)
-          item.setPicture(imageUrl);
+          item.updatePicture();
       }
     },
 
@@ -167,8 +166,7 @@ cr.define('options.accounts', function() {
 
       this.icon_ = this.ownerDocument.createElement('img');
       this.icon_.className = 'user-icon';
-      this.icon_.src = 'chrome://userimage/' + this.user.email +
-                       '?id=' + (new Date()).getTime();
+      this.updatePicture();
 
       var labelEmail = this.ownerDocument.createElement('span');
       labelEmail.className = 'user-email-label';
@@ -200,11 +198,11 @@ cr.define('options.accounts', function() {
     },
 
     /**
-     * Set user picture to givem url.
-     * @param {String} imageUrl Account picture url.
+     * Reloads user picture.
      */
-    setPicture: function(imageUrl) {
-      this.icon_.src = imageUrl;
+    updatePicture: function() {
+      this.icon_.src = 'chrome://userimage/' + this.user.email +
+                       '?id=' + (new Date()).getTime();
     }
   };
 
