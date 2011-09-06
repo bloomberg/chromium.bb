@@ -34,8 +34,7 @@ remoting.OAuth2.prototype.SCOPE_ =
       'https://www.googleapis.com/auth/googletalk ' +
       'https://www.googleapis.com/auth/userinfo#email';
 remoting.OAuth2.prototype.REDIRECT_URI_ =
-      'https://chromoting-httpxmpp-oauth2-dev.corp.google.com' +
-      '/oauth2_trampoline';
+      'https://talkgadget.google.com/talkgadget/blank';
 remoting.OAuth2.prototype.OAUTH2_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/token';
 

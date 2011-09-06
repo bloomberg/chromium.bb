@@ -15,8 +15,6 @@
   "content_scripts": [
     {
       "matches": [
-          "https://chromoting-httpxmpp-oauth2-dev.corp.google.com/oauth2_trampoline",
-          "https://chromoting-httpxmpp-oauth2-dev.corp.google.com/oauth2_trampoline?*",
           "https://talkgadget.google.com/talkgadget/blank",
           "https://talkgadget.google.com/talkgadget/blank?*"
       ],
