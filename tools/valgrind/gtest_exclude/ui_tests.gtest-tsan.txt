@@ -25,7 +25,6 @@ LocaleTestsHe.TestStart
 LocaleTestsZhTw.TestStart
 
 # These tests fail due to timeouts, see http://crbug.com/64619
-OptionsUITest.LoadOptionsByURL
 OptionsUITest.CommandOpensOptionsTab
 
 # Tests timing out, see http://crbug.com/92717

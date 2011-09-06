@@ -122,3 +122,7 @@ BookmarksUITest.TwoCommandsOneTab
 
 # OptionsUITest.NavBarCheck fails, see http://crbug.com/83209
 OptionsUITest.NavBarCheck
+
+# These tests fail due to timeouts, see http://crbug.com/64619 and
+# http://crbug.com/51387
+OptionsUITest.LoadOptionsByURL
