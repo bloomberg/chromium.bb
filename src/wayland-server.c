@@ -503,7 +503,7 @@ wl_input_device_update_grab(struct wl_input_device *device,
 			    struct wl_grab *grab,
 			    struct wl_surface *surface, uint32_t time)
 {
-	if (device->grab != &device->motion_grab ||
+	if (device->grab != &device->implicit_grab ||
 	    device->grab_time != time ||
 	    device->pointer_focus != surface)
 		return -1;

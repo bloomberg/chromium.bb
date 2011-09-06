@@ -174,7 +174,7 @@ struct wl_input_device {
 
 	int32_t x, y;
 	struct wl_grab *grab;
-	struct wl_grab motion_grab;
+	struct wl_grab implicit_grab;
 	uint32_t grab_time;
 	int32_t grab_x, grab_y;
 	uint32_t grab_button;
