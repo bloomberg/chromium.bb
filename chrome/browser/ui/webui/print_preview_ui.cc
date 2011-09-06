@@ -116,6 +116,11 @@ void PrintPreviewUI::SetInitiatorTabURLAndTitle(
   initiator_tab_title_ = job_title;
 }
 
+void PrintPreviewUI::SendInitiatorTabTitle() {
+  base::StringValue tab_title(initiator_tab_title_);
+  CallJavascriptFunction("setInitiatorTabTitle", tab_title);
+}
+
 // static
 void PrintPreviewUI::GetCurrentPrintPreviewStatus(
     const std::string& preview_ui_addr,
@@ -161,9 +166,8 @@ void PrintPreviewUI::OnDidGetPreviewPageCount(
   base::FundamentalValue count(params.page_count);
   base::FundamentalValue modifiable(params.is_modifiable);
   base::FundamentalValue request_id(params.preview_request_id);
-  StringValue title(initiator_tab_title_);
   CallJavascriptFunction("onDidGetPreviewPageCount", count, modifiable,
-                         request_id, title);
+                         request_id);
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(

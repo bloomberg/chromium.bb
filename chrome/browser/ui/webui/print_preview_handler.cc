@@ -468,6 +468,8 @@ void PrintPreviewHandler::RegisterMessages() {
       NewCallback(this, &PrintPreviewHandler::HandleCancelPendingPrintRequest));
   web_ui_->RegisterMessageCallback("saveLastPrinter",
       NewCallback(this, &PrintPreviewHandler::HandleSaveLastPrinter));
+  web_ui_->RegisterMessageCallback("getInitiatorTabTitle",
+      NewCallback(this, &PrintPreviewHandler::HandleGetInitiatorTabTitle));
 }
 
 TabContentsWrapper* PrintPreviewHandler::preview_tab_wrapper() const {
@@ -477,7 +479,7 @@ TabContents* PrintPreviewHandler::preview_tab() const {
   return web_ui_->tab_contents();
 }
 
-void PrintPreviewHandler::HandleGetDefaultPrinter(const ListValue*) {
+void PrintPreviewHandler::HandleGetDefaultPrinter(const ListValue* /*args*/) {
   scoped_refptr<PrintSystemTaskProxy> task =
       new PrintSystemTaskProxy(AsWeakPtr(),
                                print_backend_.get(),
@@ -488,7 +490,7 @@ void PrintPreviewHandler::HandleGetDefaultPrinter(const ListValue*) {
                         &PrintSystemTaskProxy::GetDefaultPrinter));
 }
 
-void PrintPreviewHandler::HandleGetPrinters(const ListValue*) {
+void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
   scoped_refptr<PrintSystemTaskProxy> task =
       new PrintSystemTaskProxy(AsWeakPtr(),
                                print_backend_.get(),
@@ -647,11 +649,12 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   }
 }
 
-void PrintPreviewHandler::HandleHidePreview(const ListValue*) {
+void PrintPreviewHandler::HandleHidePreview(const ListValue* /*args*/) {
   HidePreviewTab();
 }
 
-void PrintPreviewHandler::HandleCancelPendingPrintRequest(const ListValue*) {
+void PrintPreviewHandler::HandleCancelPendingPrintRequest(
+    const ListValue* /*args*/) {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (initiator_tab) {
     ClearInitiatorTabDetails();
@@ -699,11 +702,11 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
                         printer_name));
 }
 
-void PrintPreviewHandler::HandleSignin(const ListValue*) {
+void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
   cloud_print_signin_dialog::CreateCloudPrintSigninDialog(preview_tab());
 }
 
-void PrintPreviewHandler::HandleManageCloudPrint(const ListValue*) {
+void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
   Browser* browser = BrowserList::GetLastActive();
   browser->OpenURL(CloudPrintURL(browser->profile()).
                    GetCloudPrintServiceManageURL(),
@@ -712,7 +715,7 @@ void PrintPreviewHandler::HandleManageCloudPrint(const ListValue*) {
                    PageTransition::LINK);
 }
 
-void PrintPreviewHandler::HandleShowSystemDialog(const ListValue*) {
+void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
   ReportStats();
   ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
 
@@ -729,12 +732,13 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue*) {
   print_preview_ui->OnCancelPendingPreviewRequest();
 }
 
-void PrintPreviewHandler::HandleManagePrinters(const ListValue*) {
+void PrintPreviewHandler::HandleManagePrinters(const ListValue* /*args*/) {
   ++manage_printers_dialog_request_count_;
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
 
-void PrintPreviewHandler::HandleReloadCrashedInitiatorTab(const ListValue*) {
+void PrintPreviewHandler::HandleReloadCrashedInitiatorTab(
+    const ListValue* /*args*/) {
   ReportStats();
   ReportUserActionHistogram(INITIATOR_TAB_CRASHED);
 
@@ -748,7 +752,7 @@ void PrintPreviewHandler::HandleReloadCrashedInitiatorTab(const ListValue*) {
   ActivateInitiatorTabAndClosePreviewTab();
 }
 
-void PrintPreviewHandler::HandleClosePreviewTab(const ListValue*) {
+void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* /*args*/) {
   ReportStats();
   ReportUserActionHistogram(CANCEL);
 
@@ -763,6 +767,12 @@ void PrintPreviewHandler::HandleClosePreviewTab(const ListValue*) {
 void PrintPreviewHandler::ReportStats() {
   UMA_HISTOGRAM_COUNTS("PrintPreview.ManagePrinters",
                        manage_printers_dialog_request_count_);
+}
+
+void PrintPreviewHandler::HandleGetInitiatorTabTitle(
+    const ListValue* /*args*/) {
+  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(web_ui_);
+  print_preview_ui->SendInitiatorTabTitle();
 }
 
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {

@@ -121,6 +121,10 @@ class PrintPreviewHandler : public WebUIMessageHandler,
   // Asks the browser to close the preview tab. |args| is unused.
   void HandleClosePreviewTab(const base::ListValue* args);
 
+  // Asks the browser for the title of the initiator tab.
+  // |args| is unused.
+  void HandleGetInitiatorTabTitle(const base::ListValue* args);
+
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information.
   void SendPrinterCapabilities(const base::DictionaryValue& settings_info);

@@ -137,6 +137,7 @@ function onLoad() {
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
   showLoadingAnimation();
+  chrome.send('getInitiatorTabTitle');
   chrome.send('getDefaultPrinter');
 }
 
@@ -896,15 +897,12 @@ function setPluginPreviewPageCount() {
  *     modified.
  * @param {number} previewResponseId The preview request id that resulted in
  *     this response.
- * @param {string} jobTitle The print job title
  */
-function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId,
-                                  jobTitle) {
+function onDidGetPreviewPageCount(pageCount, isModifiable, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
   pageSettings.updateState(pageCount);
   previewModifiable = isModifiable;
-  document.title = localStrings.getStringF('printPreviewTitleFormat', jobTitle);
   if (!previewModifiable && pageSettings.requestPrintPreviewIfNeeded())
     return;
 
@@ -1084,6 +1082,19 @@ PrintSettings.prototype.save = function() {
   this.deviceName = getSelectedPrinterName();
   this.isLandscape = layoutSettings.isLandscape();
   this.hasHeaderFooter = headerFooterSettings.hasHeaderFooter();
+}
+
+/**
+ * Updates the title of the print preview tab according to |initiatorTabTitle|.
+ * Called from PrintPreviewUI::OnGetInitiatorTabTitle as a result of sending a
+ * 'getInitiatorTabTitle' message.
+ * @param {string} initiatorTabTitle The title of the initiator tab.
+ */
+function setInitiatorTabTitle(initiatorTabTitle) {
+  if (initiatorTabTitle == '')
+    return;
+  document.title = localStrings.getStringF(
+      'printPreviewTitleFormat', initiatorTabTitle);
 }
 
 /// Pull in all other scripts in a single shot.
