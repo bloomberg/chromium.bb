@@ -58,6 +58,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
     if (job_->cache_entry_not_found())
       cache_entry_not_found_ = true;
     job_ = NULL;
+    storage()->CancelDelegateCallbacks(this);
     return NULL;
   }
 
@@ -218,11 +219,15 @@ void AppCacheRequestHandler::OnMainResponseFound(
     const GURL& fallback_url, const AppCacheEntry& fallback_entry,
     int64 cache_id, const GURL& manifest_url,
     bool was_blocked_by_policy) {
+  DCHECK(job_);
   DCHECK(host_);
   DCHECK(is_main_resource());
   DCHECK(!entry.IsForeign());
   DCHECK(!fallback_entry.IsForeign());
   DCHECK(!(entry.has_response_id() && fallback_entry.has_response_id()));
+
+  if (!job_)
+    return;
 
   if (ResourceType::IsFrame(resource_type_)) {
     if (was_blocked_by_policy)
