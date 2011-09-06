@@ -268,7 +268,7 @@
               # TODO(bradchen): Delete the -B argument when Gold is verified
               # to produce good results with our custom linker script.
               # Until then use ld.bfd.
-              '-B', 'tools/ld_bfd',
+              '-B', '<(PRODUCT_DIR)/../../tools/ld_bfd',
               # This programs is (almost) entirely standalone.  It has
               # its own startup code, so no crt1.o for it.  It is
               # statically linked, and on x86 it actually does not use
@@ -276,8 +276,7 @@
               # things from libc, so we don't use '-nostdlib' here.
               '-static', '-nostartfiles',
               # Link with our custom linker script to get out special layout.
-              # TODO(bradnelson): Use some <(foo) instead of chrome/ here.
-              '-Wl,--script=chrome/nacl/nacl_helper_bootstrap_linux.x',
+              '-Wl,--script=<(PRODUCT_DIR)/../../chrome/nacl/nacl_helper_bootstrap_linux.x',
               # On x86-64, the default page size with some
               # linkers is 2M rather than the real Linux page
               # size of 4K.  A larger page size is incompatible
