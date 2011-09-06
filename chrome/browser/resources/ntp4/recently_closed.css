@@ -7,9 +7,13 @@
   background: none;
   border: 0;
   color: #7F7F7F;
+  cursor: pointer;
   display: block;
   font-size: 9pt;
   font-weight: bold;
+  /* The padding increases the clickable area. */
+  padding-bottom: 8px;
+  padding-top: 8px;
   -webkit-appearance: none;
   -webkit-transition: opacity 0.2s;
   -webkit-transition-delay: 0.1s;
@@ -40,14 +44,26 @@
   display: block;
   font-size: 100%;
   line-height: 20px;
-  margin: 4px;
-  max-width: 600px;
+  margin: 8px;
+  max-width: 450px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   -webkit-margin-start: 0;
   -webkit-padding-end: 0;
   -webkit-padding-start: 22px;
+}
+
+.recent-menu-item:not(:hover) {
+  text-decoration: none;
+}
+
+.recent-menu-item:first-of-type {
+  margin-top: 4px;
+}
+
+.recent-menu-item:last-of-type {
+  margin-bottom: 4px;
 }
 
 html[dir='rtl'] .recent-menu-item {
