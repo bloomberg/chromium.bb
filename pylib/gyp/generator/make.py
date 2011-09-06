@@ -232,8 +232,10 @@ all_deps :=
 #
 # This will allow make to invoke N linker processes as specified in -jN.
 FLOCK ?= %(flock)s $(builddir)/linker.lock
-LINK ?= $(FLOCK) $(CXX)
 
+%(make_global_settings)s
+
+LINK ?= $(FLOCK) $(CXX)
 CC.target ?= $(CC)
 CFLAGS.target ?= $(CFLAGS)
 CXX.target ?= $(CXX)
@@ -2445,6 +2447,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
     })
   header_params.update(RunSystemTests(flavor))
 
+  build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
+  make_global_settings_dict = data[build_file].get('make_global_settings', {})
+  make_global_settings = ''
+  for key, value in make_global_settings_dict:
+    if value[0] != '$':
+      value = '$(abspath %s)' % value
+    if key == 'LINK':
+      make_global_settings += '%s = $(FLOCK) %s\n' % (key, value)
+    else:
+      make_global_settings += '%s = %s\n' % (key, value)
+  header_params['make_global_settings'] = make_global_settings
+
   ensure_directory_exists(makefile_path)
   root_makefile = open(makefile_path, 'w')
   root_makefile.write(SHARED_HEADER % header_params)
@@ -2479,6 +2493,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
   for qualified_target in target_list:
     build_file, target, toolset = gyp.common.ParseQualifiedTarget(
         qualified_target)
+
+    this_make_global_settings = data[build_file].get('make_global_settings', {})
+    assert make_global_settings_dict == this_make_global_settings, (
+        "make_global_settings needs to be the same for all targets.")
+
     build_files.add(gyp.common.RelativePath(build_file, options.toplevel_dir))
     included_files = data[build_file]['included_files']
     for included_file in included_files:
