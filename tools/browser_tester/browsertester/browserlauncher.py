@@ -6,23 +6,40 @@
 import os.path
 import re
 import shutil
-import subprocess
 import sys
 import tempfile
 import time
 
-# mozrunner is needed as long as we are supporting versions of Python
-# before 2.6.
-import mozrunner
+import browserprocess
+
+class LaunchFailure(Exception):
+  pass
+
+
+def GetPlatform():
+  if sys.platform == 'darwin':
+    platform = 'mac'
+  elif sys.platform.startswith('linux'):
+    platform = 'linux'
+  elif sys.platform in ('cygwin', 'win32'):
+    platform = 'windows'
+  else:
+    raise LaunchFailure('Unknown platform: %s' % sys.platform)
+  return platform
+
+
+PLATFORM = GetPlatform()
 
 
 def SelectRunCommand():
   # The subprocess module added support for .kill in Python 2.6
   if sys.version_info[0] < 2 or (sys.version_info[0] == 2 and
                                  sys.version_info[1] < 6):
-    return mozrunner.run_command
+    return browserprocess.RunCommandWithMozrunner
+  elif PLATFORM == 'linux':
+    return browserprocess.RunCommandInProcessGroup
   else:
-    return subprocess.Popen
+    return browserprocess.RunCommandWithSubprocess
 
 
 RunCommand = SelectRunCommand()
@@ -46,24 +63,6 @@ def RemoveDirectory(path):
       # succeeded
       break
 
-
-class LaunchFailure(Exception):
-  pass
-
-
-def GetPlatform():
-  if sys.platform == 'darwin':
-    platform = 'mac'
-  elif sys.platform.startswith('linux'):
-    platform = 'linux'
-  elif sys.platform in ('cygwin', 'win32'):
-    platform = 'windows'
-  else:
-    raise LaunchFailure('Unknown platform: %s' % sys.platform)
-  return platform
-
-
-PLATFORM = GetPlatform()
 
 
 # In Windows, subprocess seems to have an issue with file names that
@@ -126,26 +125,11 @@ class BrowserLauncher(object):
         raise LaunchFailure('Cannot find the browser binary')
       return binary
 
-  # subprocess.wait() doesn't have a timeout, unfortunately.
   def WaitForProcessDeath(self):
-    i = 0
-    while self.handle.poll() is None and i < self.WAIT_STEPS:
-      time.sleep(self.SLEEP_TIME)
-      i += 1
+    self.browser_process.Wait(self.WAIT_STEPS, self.SLEEP_TIME)
 
   def Cleanup(self):
-    if self.handle.poll() is None:
-      print 'KILLING the browser'
-      try:
-        self.handle.kill()
-        # If it doesn't die, we hang.  Oh well.
-        self.handle.wait()
-      except Exception:
-        # If it is already dead, then it's ok.
-        # This may happen if the browser dies after the first poll, but before
-        # the kill.
-        if self.handle.poll() is None:
-          raise
+    self.browser_process.Kill()
 
     RemoveDirectory(self.profile)
     if self.tool_log_dir is not None:
@@ -173,14 +157,13 @@ class BrowserLauncher(object):
     print 'ENV:', ' '.join(['='.join(pair) for pair in env.iteritems()])
     print 'LAUNCHING: %s' % ' '.join(cmd)
     sys.stdout.flush()
-    self.handle = RunCommand(cmd, env=env)
-    print 'PID', self.handle.pid
+    self.browser_process = RunCommand(cmd, env=env)
 
   def IsRunning(self):
-    return self.handle.poll() is None
+    return self.browser_process.IsRunning()
 
   def GetReturnCode(self):
-    return self.handle.returncode
+    return self.browser_process.GetReturnCode()
 
   def Run(self, url, port):
     self.binary = EscapeSpaces(self.FindBinary())

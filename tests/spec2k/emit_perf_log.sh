@@ -15,11 +15,11 @@ LogUserSysTime() {
   local graph_label=$2
   local bench=$3
   local setup=$4
-  # Generate a set of times "{x,y,z}". The chromium perf log parser
-  # will know to average this set of times.
-  local time_set="{$(awk '{print $1 + $2}' ${time_file} | \
-                   tr '\n' ',' | sed 's/,$//')}"
-  LogPerf ${graph_label} ${bench} ${setup} "${time_set}" "secs"
+  # Generate a list of times "[x,y,z]". The chromium perf log parser
+  # will know to average this list of times.
+  local times="[$(awk '{print $1 + $2}' ${time_file} | \
+                   tr '\n' ',' | sed 's/,$//')]"
+  LogPerf ${graph_label} ${bench} ${setup} "${times}" "secs"
 }
 
 #@ LogGzippedSize <file_to_zip> <graph_label> <bench> <compiler_setup>
