@@ -63,12 +63,12 @@ cr.define('login', function() {
     },
 
     /**
-     * Helper function to toggle throbber and input fields.
+     * Helper function to toggle spinner and input fields.
      * @param {boolean} enable True to enable credential input UI.
      * @private
      */
     enableInputs_: function(enable) {
-      $('login-throbber').hidden = enable;
+      $('login-spinner').hidden = enable;
       $('email').hidden = !enable;
       $('password').hidden = !enable;
       $('signin-button').hidden = !enable;
