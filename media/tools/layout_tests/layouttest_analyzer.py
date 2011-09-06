@@ -79,6 +79,13 @@ def parse_option():
                              help=('Name of result directory location '
                                    '(default to %default)'),
                              default=DEFAULT_RESULT_DIR)
+    option_parser.add_option('-b', '--email-appended-text-file-location',
+                             dest='email_appended_text_file_location',
+                             help=('File location of the email appended text. '
+                                   'The text is appended in the status email. '
+                                   '(default to %default and no text is '
+                                   'appended in that case.)'),
+                             default=None)
     return option_parser.parse_args()[0]
 
 
@@ -105,17 +112,35 @@ def main():
   # Read bug annotations and generate an annotation map used for the status
   # email.
   anno_map = {}
-  file_object = open(options.bug_annotation_file_location)
-  data = csv.reader(file_object)
-  for row in data:
-    anno_map[row[0]] = row[1]
-  file_object.close()
+  try:
+    file_object = open(options.bug_annotation_file_location)
+  except IOError:
+    print 'cannot open annotation file %s. Skipping.' % (
+        options.bug_annotation_file_location)
+  else:
+    data = csv.reader(file_object)
+    for row in data:
+      anno_map[row[0]] = row[1]
+    file_object.close()
+
+  appended_text_to_email = ''
+  if options.email_appended_text_file_location:
+    try:
+      file_object = open(options.email_appended_text_file_location)
+    except IOError:
+      print 'cannot open email appended text file %s. Skipping.' % (
+          options.email_appended_text_file_location)
+    else:
+      appended_text_to_email = ''.join(file_object.readlines())
+      file_object.close()
+
 
   layouttest_analyzer_helpers.SendStatusEmail(prev_time, analyzer_result_map,
                                               prev_analyzer_result_map,
                                               anno_map,
                                               options.receiver_email_address,
-                                              options.test_group_name)
+                                              options.test_group_name,
+                                              appended_text_to_email)
   if not options.debug:
     # Save the current result.
     date = start_time.strftime('%Y-%m-%d-%H')

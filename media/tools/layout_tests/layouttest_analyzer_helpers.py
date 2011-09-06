@@ -265,7 +265,8 @@ class AnalyzerResultMap:
 
 
 def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
-                    bug_anno_map, receiver_email_address, test_group_name):
+                    bug_anno_map, receiver_email_address, test_group_name,
+                    appended_text_to_email):
   """Send status email.
 
   Args:
@@ -273,11 +274,13 @@ def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
         used in this analyzer.
     analyzer_result_map: current analyzer result.
     prev_analyzer_result_map: previous analyzer result, which is read from
-         a file.
+        a file.
     bug_anno_map: bug annotation map where bug name and annotations are
-         stored.
+        stored.
     receiver_email_address: receiver's email address.
     test_group_name: string representing the test group name (e.g., 'media').
+    appended_text_to_email: a text which is appended at the end of the status
+        email.
   """
   diff_map = analyzer_result_map.CompareToOtherResultMap(
       prev_analyzer_result_map)
@@ -315,7 +318,7 @@ def SendStatusEmail(prev_time, analyzer_result_map, prev_analyzer_result_map,
                                                       localtime)
   SendEmail('imasaki@chromium.org', 'Kenji Imasaki',
             [receiver_email_address], ['Layout Test Analyzer Result'], subject,
-            str)
+            str + appended_text_to_email)
 
 
 def SendEmail(sender_email_address, sender_name, receivers_email_addresses,
