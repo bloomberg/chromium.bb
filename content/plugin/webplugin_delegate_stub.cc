@@ -162,9 +162,7 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
       command_line.GetSwitchValuePath(switches::kPluginPath);
 
   gfx::PluginWindowHandle parent = gfx::kNullPluginWindow;
-#if defined(USE_AURA)
-  // Nothing.
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   parent = gfx::NativeViewFromId(params.containing_window);
 #elif defined(OS_LINUX)
   // This code is disabled, See issue 17110.

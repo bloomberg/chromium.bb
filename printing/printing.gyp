@@ -110,12 +110,6 @@
             '../build/linux/system.gyp:gtkprint',
           ],
         }],
-        ['use_aura==1', {
-          'sources/': [
-            ['exclude', '^printing_context_win.cc'],
-            ['exclude', '^printing_context_win.h'],          
-          ],
-        }],
         ['OS=="mac" and use_skia==0', {
           'sources/': [
             ['exclude', 'pdf_metafile_skia\\.(cc|h)$'],
