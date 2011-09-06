@@ -5337,7 +5337,7 @@
    fun:_Znw*
    fun:_ZN14ServiceProcess10InitializeEP16MessageLoopForUIRK11CommandLineP19ServiceProcessState
    fun:_Z18ServiceProcessMainRK18MainFunctionParams
-   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+   ...
    fun:ChromeMain
    fun:main
 }
@@ -5367,7 +5367,7 @@
    fun:_ZN16ServiceIPCServer4InitEv
    fun:_ZN14ServiceProcess10InitializeEP16MessageLoopForUIRK11CommandLineP19ServiceProcessState
    fun:_Z18ServiceProcessMainRK18MainFunctionParams
-   fun:_ZN12_GLOBAL__N_123RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+   ...
    fun:ChromeMain
    fun:main
 }
