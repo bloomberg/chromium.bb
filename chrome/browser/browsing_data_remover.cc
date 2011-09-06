@@ -22,6 +22,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/plugin_data_remover.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_thread.h"
 #include "content/browser/download/download_manager.h"
@@ -76,6 +78,9 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_cache_(false),
       waiting_for_clear_lso_data_(false) {
   DCHECK(profile);
+  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
+                                      profile_->GetPrefs(),
+                                      NULL);
 }
 
 BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
@@ -99,6 +104,9 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_cache_(false),
       waiting_for_clear_lso_data_(false) {
   DCHECK(profile);
+  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
+                                      profile_->GetPrefs(),
+                                      NULL);
 }
 
 BrowsingDataRemover::~BrowsingDataRemover() {
@@ -196,17 +204,22 @@ void BrowsingDataRemover::Remove(int remove_mask) {
           base::Bind(&BrowsingDataRemover::ClearCookiesOnIOThread,
                      base::Unretained(this), base::Unretained(rq_context)));
     }
+  }
 
-    // REMOVE_COOKIES is actually "cookies and other site data" so we make sure
-    // to remove other data such local databases, STS state, etc. These only can
+  if (remove_mask & REMOVE_LOCAL_STORAGE) {
+    // Remove data such as local databases, STS state, etc. These only can
     // be removed if a WEBKIT thread exists, so check that first:
     if (BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT)) {
       // We assume the end time is now.
       profile_->GetWebKitContext()->DeleteDataModifiedSince(delete_begin_);
     }
+  }
 
-    // We'll start by using the quota system to clear out AppCaches, WebSQL DBs,
-    // and File Systems.
+  if (remove_mask & REMOVE_INDEXEDDB || remove_mask & REMOVE_WEBSQL ||
+      remove_mask & REMOVE_APPCACHE || remove_mask & REMOVE_FILE_SYSTEMS) {
+    // TODO(mkwst): At the moment, we don't have the ability to pass a mask into
+    // QuotaManager. Until then, we'll clear all quota-managed data types if any
+    // ought to be cleared.
     quota_manager_ = profile_->GetQuotaManager();
     if (quota_manager_) {
       waiting_for_clear_quota_managed_data_ = true;
@@ -216,15 +229,17 @@ void BrowsingDataRemover::Remove(int remove_mask) {
               this,
               &BrowsingDataRemover::ClearQuotaManagedDataOnIOThread));
     }
+  }
 
-    if (profile_->GetTransportSecurityState()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              profile_->GetTransportSecurityState(),
-              &net::TransportSecurityState::DeleteSince,
-              delete_begin_));
-    }
+  if (remove_mask & REMOVE_LSO_DATA && *clear_plugin_lso_data_enabled_) {
+    UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
+
+    waiting_for_clear_lso_data_ = true;
+    if (!plugin_data_remover_.get())
+      plugin_data_remover_ = new PluginDataRemover(profile_);
+    base::WaitableEvent* event =
+        plugin_data_remover_->StartRemoving(delete_begin_);
+    watcher_.StartWatching(event, this);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {
@@ -275,15 +290,14 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     }
   }
 
-  if (remove_mask & REMOVE_LSO_DATA) {
-    UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
-
-    waiting_for_clear_lso_data_ = true;
-    if (!plugin_data_remover_.get())
-      plugin_data_remover_ = new PluginDataRemover(profile_);
-    base::WaitableEvent* event =
-        plugin_data_remover_->StartRemoving(delete_begin_);
-    watcher_.StartWatching(event, this);
+  // Also delete cached TransportSecurityState data.
+  if (profile_->GetTransportSecurityState()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            profile_->GetTransportSecurityState(),
+            &net::TransportSecurityState::DeleteSince,
+            delete_begin_));
   }
 
   NotifyAndDeleteIfDone();

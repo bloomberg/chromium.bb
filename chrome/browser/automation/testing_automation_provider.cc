@@ -3832,7 +3832,7 @@ void TestingAutomationProvider::ClearBrowsingData(
   std::map<std::string, int> string_to_mask_value;
   string_to_mask_value["HISTORY"] = BrowsingDataRemover::REMOVE_HISTORY;
   string_to_mask_value["DOWNLOADS"] = BrowsingDataRemover::REMOVE_DOWNLOADS;
-  string_to_mask_value["COOKIES"] = BrowsingDataRemover::REMOVE_COOKIES;
+  string_to_mask_value["COOKIES"] = BrowsingDataRemover::REMOVE_SITE_DATA;
   string_to_mask_value["PASSWORDS"] = BrowsingDataRemover::REMOVE_PASSWORDS;
   string_to_mask_value["FORM_DATA"] = BrowsingDataRemover::REMOVE_FORM_DATA;
   string_to_mask_value["CACHE"] = BrowsingDataRemover::REMOVE_CACHE;

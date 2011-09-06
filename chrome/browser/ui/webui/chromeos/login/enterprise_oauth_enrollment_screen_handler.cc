@@ -300,13 +300,10 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
   oauth_fetcher_.reset();
 
   // Clear page state.
-  int remove_mask =
-      BrowsingDataRemover::REMOVE_COOKIES |
-      BrowsingDataRemover::REMOVE_LSO_DATA;
   (new BrowsingDataRemover(
       Profile::FromBrowserContext(web_ui_->tab_contents()->browser_context()),
       BrowsingDataRemover::EVERYTHING,
-      base::Time()))->Remove(remove_mask);
+      base::Time()))->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
 }
 
 

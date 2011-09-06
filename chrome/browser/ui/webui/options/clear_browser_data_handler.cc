@@ -100,11 +100,8 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
     remove_mask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
   if (prefs->GetBoolean(prefs::kDeleteCache))
     remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
-  if (prefs->GetBoolean(prefs::kDeleteCookies)) {
-    remove_mask |= BrowsingDataRemover::REMOVE_COOKIES;
-    if (*clear_plugin_lso_data_enabled_)
-      remove_mask |= BrowsingDataRemover::REMOVE_LSO_DATA;
-  }
+  if (prefs->GetBoolean(prefs::kDeleteCookies))
+    remove_mask |= BrowsingDataRemover::REMOVE_SITE_DATA;
   if (prefs->GetBoolean(prefs::kDeletePasswords))
     remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
   if (prefs->GetBoolean(prefs::kDeleteFormData))

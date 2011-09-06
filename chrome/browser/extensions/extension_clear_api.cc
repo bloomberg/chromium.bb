@@ -71,13 +71,9 @@ int ParseRemovalMask(base::DictionaryValue* value) {
     GetRemovalMask |= BrowsingDataRemover::REMOVE_PASSWORDS;
 
   // When we talk users about "cookies", we mean not just cookies, but pretty
-  // much everything associated with an origin. To that end, we explicitly
-  // include the REMOVE_LSO_DATA mask here, and BrowsingDataRemover interprets
-  // the REMOVE_COOKIES mask internally as "cookies and site data".
-  if (DataRemovalRequested(value, keys::kCookiesKey)) {
-    GetRemovalMask |= BrowsingDataRemover::REMOVE_COOKIES;
-    GetRemovalMask |= BrowsingDataRemover::REMOVE_LSO_DATA;
-  }
+  // much everything associated with an origin.
+  if (DataRemovalRequested(value, keys::kCookiesKey))
+    GetRemovalMask |= BrowsingDataRemover::REMOVE_SITE_DATA;
 
   return GetRemovalMask;
 }
@@ -133,8 +129,7 @@ int ClearCacheFunction::GetRemovalMask() const {
 }
 
 int ClearCookiesFunction::GetRemovalMask() const {
-  return BrowsingDataRemover::REMOVE_COOKIES |
-         BrowsingDataRemover::REMOVE_LSO_DATA;
+  return BrowsingDataRemover::REMOVE_SITE_DATA;
 }
 
 int ClearDownloadsFunction::GetRemovalMask() const {

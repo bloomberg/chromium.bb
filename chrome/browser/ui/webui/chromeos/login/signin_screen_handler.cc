@@ -484,8 +484,7 @@ void SigninScreenHandler::StartClearingCookies() {
       BrowsingDataRemover::EVERYTHING,
       base::Time());
   remover->AddObserver(this);
-  remover->Remove(BrowsingDataRemover::REMOVE_COOKIES |
-                  BrowsingDataRemover::REMOVE_LSO_DATA);
+  remover->Remove(BrowsingDataRemover::REMOVE_SITE_DATA);
 }
 
 }  // namespace chromeos

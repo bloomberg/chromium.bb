@@ -729,7 +729,7 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
       base::Time());
-  int remove_mask = BrowsingDataRemover::REMOVE_COOKIES;
+  int remove_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
   remover->Remove(remove_mask);
   // BrowsingDataRemover takes care of deleting itself when done.
 }

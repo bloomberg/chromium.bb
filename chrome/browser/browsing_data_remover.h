@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/time.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cancelable_request.h"
 #include "content/common/notification_observer.h"
@@ -56,14 +57,25 @@ class BrowsingDataRemover : public NotificationObserver,
 
   // Mask used for Remove.
   enum RemoveDataMask {
-    // In addition to visits, this removes keywords and the last session.
-    REMOVE_HISTORY = 1 << 0,
-    REMOVE_DOWNLOADS = 1 << 1,
+    REMOVE_APPCACHE = 1 << 0,
+    REMOVE_CACHE = 1 << 1,
     REMOVE_COOKIES = 1 << 2,
-    REMOVE_PASSWORDS = 1 << 3,
-    REMOVE_FORM_DATA = 1 << 4,
-    REMOVE_CACHE = 1 << 5,
-    REMOVE_LSO_DATA = 1 << 6,
+    REMOVE_DOWNLOADS = 1 << 3,
+    REMOVE_FILE_SYSTEMS = 1 << 4,
+    REMOVE_FORM_DATA = 1 << 5,
+    // In addition to visits, REMOVE_HISTORY removes keywords and last session.
+    REMOVE_HISTORY = 1 << 6,
+    REMOVE_INDEXEDDB = 1 << 7,
+    REMOVE_LOCAL_STORAGE = 1 << 8,
+    REMOVE_LSO_DATA = 1 << 9,
+    REMOVE_PASSWORDS = 1 << 10,
+    REMOVE_WEBSQL = 1 << 11,
+
+    // "Site data" includes cookies, appcache, file systems, indexedDBs, local
+    // storage, webSQL, and LSO data.
+    REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_FILE_SYSTEMS |
+                       REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
+                       REMOVE_LSO_DATA | REMOVE_WEBSQL
   };
 
   // Observer is notified when the removal is done. Done means keywords have
@@ -246,6 +258,9 @@ class BrowsingDataRemover : public NotificationObserver,
 
   // Used if we need to clear history.
   CancelableRequestConsumer request_consumer_;
+
+  // Keeps track of whether clearing LSO data is supported.
+  BooleanPrefMember clear_plugin_lso_data_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemover);
 };

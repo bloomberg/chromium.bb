@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ STDMETHODIMP DeleteChromeHistory::DeleteBrowsingHistory(DWORD flags) {
   }
 
   if (flags & DELETE_BROWSING_HISTORY_COOKIES)
-    remove_mask_ |= BrowsingDataRemover::REMOVE_COOKIES;
+    remove_mask_ |= BrowsingDataRemover::REMOVE_SITE_DATA;
   if (flags & DELETE_BROWSING_HISTORY_TIF)
     remove_mask_ |= BrowsingDataRemover::REMOVE_CACHE;
   if (flags & DELETE_BROWSING_HISTORY_FORMDATA)
