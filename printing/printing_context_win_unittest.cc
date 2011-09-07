@@ -50,6 +50,10 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   scoped_array<uint8> buffer;
   DEVMODE* dev_mode = NULL;
   PRINTER_INFO_2* info_2 = NULL;
+  HRESULT result = S_OK;
+  lppd->hDC = NULL;
+  lppd->hDevMode = NULL;
+  lppd->hDevNames = NULL;
 
   printing::PrintingContextWin::GetPrinterHelper(printer, 2, &buffer);
   if (buffer.get()) {
@@ -57,23 +61,31 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
     if (info_2->pDevMode != NULL)
       dev_mode = info_2->pDevMode;
   }
-  if (!dev_mode)
-    return E_FAIL;
+  if (!dev_mode) {
+    result = E_FAIL;
+    goto Cleanup;
+  }
 
   if (!printing::PrintingContextWin::AllocateContext(printer_name, dev_mode,
       &lppd->hDC)) {
-    return E_FAIL;
+    result = E_FAIL;
+    goto Cleanup;
   }
 
   size_t dev_mode_size = dev_mode->dmSize + dev_mode->dmDriverExtra;
   lppd->hDevMode = GlobalAlloc(GMEM_MOVEABLE, dev_mode_size);
-  if (!lppd->hDevMode)
-    return E_FAIL;
+  if (!lppd->hDevMode) {
+    result = E_FAIL;
+    goto Cleanup;
+  }
   void* dev_mode_ptr = GlobalLock(lppd->hDevMode);
-  if (!dev_mode_ptr)
-    return E_FAIL;
+  if (!dev_mode_ptr) {
+    result = E_FAIL;
+    goto Cleanup;
+  }
   memcpy(dev_mode_ptr, dev_mode, dev_mode_size);
   GlobalUnlock(lppd->hDevMode);
+  dev_mode_ptr = NULL;
 
   size_t driver_size = 2 + sizeof(wchar_t) * lstrlen(info_2->pDriverName);
   size_t printer_size = 2 + sizeof(wchar_t) * lstrlen(info_2->pPrinterName);
@@ -81,11 +93,15 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   size_t dev_names_size = sizeof(DEVNAMES) + driver_size + printer_size +
       port_size;
   lppd->hDevNames = GlobalAlloc(GHND, dev_names_size);
-  if (!lppd->hDevNames)
-    return E_FAIL;
+  if (!lppd->hDevNames) {
+    result = E_FAIL;
+    goto Cleanup;
+  }
   void* dev_names_ptr = GlobalLock(lppd->hDevNames);
-  if (!dev_names_ptr)
-    return E_FAIL;
+  if (!dev_names_ptr) {
+    result = E_FAIL;
+    goto Cleanup;
+  }
   DEVNAMES* dev_names = reinterpret_cast<DEVNAMES*>(dev_names_ptr);
   dev_names->wDefault = 1;
   dev_names->wDriverOffset = sizeof(DEVNAMES);
@@ -98,8 +114,27 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   memcpy(reinterpret_cast<uint8*>(dev_names_ptr) + dev_names->wOutputOffset,
       info_2->pPortName, port_size);
   GlobalUnlock(lppd->hDevNames);
+  dev_names_ptr = NULL;
 
-  return S_OK;
+Cleanup:
+  // Note: This section does proper deallocation/free of DC/global handles.  We
+  //       did not use ScopedHGlobal or ScopedHandle because they did not
+  //       perform what we need.  Goto's are used based on Windows programming
+  //       idiom, to avoid deeply nested if's, and try-catch-finally is not
+  //       allowed in Chromium.
+  if (FAILED(result)) {
+    if (lppd->hDC) {
+      DeleteDC(lppd->hDC);
+    }
+    if (lppd->hDevMode) {
+      GlobalFree(lppd->hDevMode);
+    }
+    if (lppd->hDevNames) {
+      GlobalFree(lppd->hDevNames);
+    }
+  }
+  ClosePrinter(printer);
+  return result;
 }
 
 TEST_F(PrintingContextTest, Base) {
