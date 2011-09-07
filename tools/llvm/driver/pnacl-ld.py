@@ -234,6 +234,7 @@ LDPatterns = [
   ( '(--end-group)',       "env.append('INPUTS', $0)"),
   ( '(-Bstatic)',          "env.append('INPUTS', $0)"),
   ( '(-Bdynamic)',          "env.append('INPUTS', $0)"),
+  ( '(--(no-)?whole-archive)', "env.append('INPUTS', $0)"),
   ( '(-.*)',               UnrecognizedOption),
   ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),
 ]
