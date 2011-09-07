@@ -318,9 +318,7 @@ string16 InputMethodMenu::GetLabelAt(int index) const {
     InputMethodManager* manager = InputMethodManager::GetInstance();
     const input_method::ImePropertyList& property_list =
         manager->current_ime_properties();
-    const std::string& input_method_id = manager->current_input_method().id();
-    return input_method::GetStringUTF16(
-        property_list.at(index).label, input_method_id);
+    return input_method::GetStringUTF16(property_list.at(index).label);
   }
 
   return WideToUTF16(name);
@@ -668,7 +666,7 @@ std::wstring InputMethodMenu::GetTextForMenu(
       language_code == "ta") {
     text = GetLanguageName(language_code) + L" - ";
   }
-  text += input_method::GetString(input_method.id(), input_method.id());
+  text += input_method::GetString(input_method.id());
 
   DCHECK(!text.empty());
   return text;

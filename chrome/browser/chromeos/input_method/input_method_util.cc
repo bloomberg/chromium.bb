@@ -137,6 +137,8 @@ const struct EnglishToResouceId {
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF_PUNCTUATION },
   { "Simplfied/Traditional Chinese",
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE },
+  { "Chinese",
+    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH },
 
   // For ibus-mozc-chewing.
   { "English",
@@ -263,19 +265,6 @@ const struct EnglishToResouceId {
 const size_t kEnglishToResourceIdArraySize =
     arraysize(kEnglishToResourceIdArray);
 
-const struct EnglishAndInputMethodIdToResouceId {
-  const char* english_string_from_ibus;
-  const char* input_method_id;
-  int resource_id;
-} kEnglishAndInputMethodIdToResourceIdArray[] = {
-  { "Chinese", "pinyin",
-    IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_CHINESE_ENGLISH },
-  { "Chinese", "mozc-chewing",
-    IDS_STATUSBAR_IME_CHINESE_MOZC_CHEWING_CHINESE_MODE },
-};
-const size_t kEnglishAndInputMethodIdToResourceIdArraySize =
-    arraysize(kEnglishAndInputMethodIdToResourceIdArray);
-
 // There are some differences between ISO 639-2 (T) and ISO 639-2 B, and
 // some language codes are not recognized by ICU (i.e. ICU cannot convert
 // these codes to two-letter language codes and display names). Hence we
@@ -317,7 +306,6 @@ struct CompareLanguageCodesByLanguageName
 };
 
 bool GetLocalizedString(const std::string& english_string,
-                        const std::string& input_method_id,
                         string16 *out_string) {
   DCHECK(out_string);
 
@@ -336,45 +324,16 @@ bool GetLocalizedString(const std::string& english_string,
     }
   }
 
-  // Initialize the secondary map if needed.
-  typedef std::map<std::pair<std::string, std::string>, int> MapType;
-  static MapType* english_and_input_method_id_to_resource_id = NULL;
-  if (!english_and_input_method_id_to_resource_id) {
-    // We don't free this map.
-    english_and_input_method_id_to_resource_id = new MapType;
-    for (size_t i = 0; i < kEnglishAndInputMethodIdToResourceIdArraySize; ++i) {
-      const EnglishAndInputMethodIdToResouceId& map_entry =
-          kEnglishAndInputMethodIdToResourceIdArray[i];
-      const std::pair<std::string, std::string> key = std::make_pair(
-          map_entry.english_string_from_ibus, map_entry.input_method_id);
-      const bool result = english_and_input_method_id_to_resource_id->insert(
-          std::make_pair(key, map_entry.resource_id)).second;
-      DCHECK(result) << "Duplicated key is found: pair of "
-                     << map_entry.english_string_from_ibus
-                     << " and "
-                     << map_entry.input_method_id;
-    }
-  }
-
   HashType::const_iterator iter = english_to_resource_id->find(english_string);
   if (iter == english_to_resource_id->end()) {
-    // The string is not found in the primary map. Try the secondary map with
-    // |input_method_id|.
-    const std::pair<std::string, std::string> key =
-        std::make_pair(english_string, input_method_id);
-    MapType::const_iterator iter2 =
-        english_and_input_method_id_to_resource_id->find(key);
-    if (iter2 == english_and_input_method_id_to_resource_id->end()) {
-      // TODO(yusukes): Write Autotest which checks if all display names and all
-      // property names for supported input methods are listed in the resource
-      // ID array (crosbug.com/4572).
-      LOG(ERROR) << "Resource ID is not found for: " << english_string;
-      return false;
-    }
-    *out_string = l10n_util::GetStringUTF16(iter2->second);
-  } else {
-    *out_string = l10n_util::GetStringUTF16(iter->second);
+    // TODO(yusukes): Write Autotest which checks if all display names and all
+    // property names for supported input methods are listed in the resource
+    // ID array (crosbug.com/4572).
+    LOG(ERROR) << "Resource ID is not found for: " << english_string;
+    return false;
   }
+
+  *out_string = l10n_util::GetStringUTF16(iter->second);
   return true;
 };
 
@@ -397,37 +356,33 @@ const ExtraLanguage kExtraLanguages[] = {
 };
 const size_t kExtraLanguagesLength = arraysize(kExtraLanguages);
 
-std::wstring GetString(const std::string& english_string,
-                       const std::string& input_method_id) {
+std::wstring GetString(const std::string& english_string) {
   string16 localized_string;
-  if (GetLocalizedString(english_string, input_method_id, &localized_string)) {
+  if (GetLocalizedString(english_string, &localized_string)) {
     return UTF16ToWide(localized_string);
   }
   return UTF8ToWide(english_string);
 }
 
-std::string GetStringUTF8(const std::string& english_string,
-                          const std::string& input_method_id) {
+std::string GetStringUTF8(const std::string& english_string) {
   string16 localized_string;
-  if (GetLocalizedString(english_string, input_method_id, &localized_string)) {
+  if (GetLocalizedString(english_string, &localized_string)) {
     return UTF16ToUTF8(localized_string);
   }
   return english_string;
 }
 
-string16 GetStringUTF16(const std::string& english_string,
-                        const std::string& input_method_id) {
+string16 GetStringUTF16(const std::string& english_string) {
   string16 localized_string;
-  if (GetLocalizedString(english_string, input_method_id, &localized_string)) {
+  if (GetLocalizedString(english_string, &localized_string)) {
     return localized_string;
   }
   return UTF8ToUTF16(english_string);
 }
 
-bool StringIsSupported(const std::string& english_string,
-                       const std::string& input_method_id) {
+bool StringIsSupported(const std::string& english_string) {
   string16 localized_string;
-  return GetLocalizedString(english_string, input_method_id, &localized_string);
+  return GetLocalizedString(english_string, &localized_string);
 }
 
 std::string NormalizeLanguageCode(
@@ -533,8 +488,7 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
 
 std::string GetInputMethodDisplayNameFromId(
     const std::string& input_method_id) {
-  const std::string display_name =
-      GetStringUTF8(input_method_id, input_method_id);
+  const std::string display_name = GetStringUTF8(input_method_id);
   // Return an empty string if the display name is not found.
   return display_name == input_method_id ? "" : display_name;
 }

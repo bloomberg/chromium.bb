@@ -55,24 +55,20 @@ class InputMethodUtilTest : public testing::Test {
 };
 
 TEST_F(InputMethodUtilTest, TestGetStringUTF8) {
-  EXPECT_EQ("Pinyin input method",
-            GetStringUTF8("pinyin", ""));
+  EXPECT_EQ("Pinyin input method", GetStringUTF8("pinyin"));
 #if !defined(GOOGLE_CHROME_BUILD)
   EXPECT_EQ("Japanese input method (for US Dvorak keyboard)",
-            GetStringUTF8("mozc-dv", ""));
+            GetStringUTF8("mozc-dv"));
 #endif
 }
 
 TEST_F(InputMethodUtilTest, TestStringIsSupported) {
-  EXPECT_TRUE(StringIsSupported("Hiragana", "mozc"));
-  EXPECT_TRUE(StringIsSupported("Latin", "mozc"));
-  EXPECT_TRUE(StringIsSupported("Direct input", "mozc"));
-  EXPECT_FALSE(StringIsSupported(
-      "####THIS_STRING_IS_NOT_SUPPORTED####", "mozc"));
-  EXPECT_TRUE(StringIsSupported("Chinese", "pinyin"));
-  EXPECT_TRUE(StringIsSupported("Chinese", "mozc-chewing"));
-  // The string "Chinese" is not for "hangul".
-  EXPECT_FALSE(StringIsSupported("Chinese", "hangul"));
+  EXPECT_TRUE(StringIsSupported("Hiragana"));
+  EXPECT_TRUE(StringIsSupported("Latin"));
+  EXPECT_TRUE(StringIsSupported("Direct input"));
+  EXPECT_FALSE(StringIsSupported("####THIS_STRING_IS_NOT_SUPPORTED####"));
+  EXPECT_TRUE(StringIsSupported("Chinese"));
+  EXPECT_TRUE(StringIsSupported("_Chinese"));
 }
 
 TEST_F(InputMethodUtilTest, TestNormalizeLanguageCode) {

@@ -30,17 +30,13 @@ extern const size_t kExtraLanguagesLength;
 // into Chrome's string ID, then pulls internationalized resource string from
 // the resource bundle and returns it. These functions are not thread-safe.
 // Non-UI threads are not allowed to call them.
-std::wstring GetString(
-    const std::string& english_string, const std::string& input_method_id);
-std::string GetStringUTF8(
-    const std::string& english_string, const std::string& input_method_id);
-string16 GetStringUTF16(
-    const std::string& english_string, const std::string& input_method_id);
+std::wstring GetString(const std::string& english_string);
+std::string GetStringUTF8(const std::string& english_string);
+string16 GetStringUTF16(const std::string& english_string);
 
 // This method is ONLY for unit testing. Returns true if the given string is
 // supported (i.e. the string is associated with a resource ID).
-bool StringIsSupported(const std::string& english_string,
-                       const std::string& input_method_id);
+bool StringIsSupported(const std::string& english_string);
 
 // Normalizes the language code and returns the normalized version.  The
 // function normalizes the given language code to be compatible with the
