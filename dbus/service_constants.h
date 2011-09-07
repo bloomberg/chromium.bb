@@ -165,8 +165,9 @@ const char kResolveNetworkProxy[] = "ResolveNetworkProxy";
 namespace flimflam {
 // Flimflam D-Bus service identifiers.
 const char kFlimflamManagerInterface[] = "org.chromium.flimflam.Manager";
-const char kFlimflamServiceInterface[] = "org.chromium.flimflam.Service";
 const char kFlimflamServiceName[] = "org.chromium.flimflam";
+const char kFlimflamServicePath[] = "/";  // crosbug.com/20135
+const char kFlimflamServiceInterface[] = "org.chromium.flimflam.Service";
 const char kFlimflamIPConfigInterface[] = "org.chromium.flimflam.IPConfig";
 const char kFlimflamDeviceInterface[] = "org.chromium.flimflam.Device";
 const char kFlimflamProfileInterface[] = "org.chromium.flimflam.Profile";
