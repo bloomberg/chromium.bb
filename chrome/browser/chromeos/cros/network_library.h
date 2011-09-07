@@ -93,6 +93,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_L2TPIPSEC_PIN,
   PROPERTY_INDEX_L2TPIPSEC_PSK,
   PROPERTY_INDEX_L2TPIPSEC_USER,
+  PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME,
   PROPERTY_INDEX_MANUFACTURER,
   PROPERTY_INDEX_MDN,
   PROPERTY_INDEX_MEID,
@@ -787,6 +788,7 @@ class VirtualNetwork : public Network {
   const std::string& client_cert_id() const { return client_cert_id_; }
   const std::string& username() const { return username_; }
   const std::string& user_passphrase() const { return user_passphrase_; }
+  const std::string& group_name() const { return group_name_; }
 
   // Sets the well-known PKCS#11 slot and PIN for accessing certificates.
   void SetCertificateSlotAndPin(
@@ -802,10 +804,18 @@ class VirtualNetwork : public Network {
 
   // Public setters.
   void SetCACertNSS(const std::string& ca_cert_nss);
-  void SetPSKPassphrase(const std::string& psk_passphrase);
-  void SetClientCertID(const std::string& cert_id);
-  void SetUsername(const std::string& username);
-  void SetUserPassphrase(const std::string& user_passphrase);
+  void SetL2TPIPsecPSKCredentials(const std::string& psk_passphrase,
+                                  const std::string& username,
+                                  const std::string& user_passphrase,
+                                  const std::string& group_name);
+  void SetL2TPIPsecCertCredentials(const std::string& client_cert_id,
+                                   const std::string& username,
+                                   const std::string& user_passphrase,
+                                   const std::string& group_name);
+  void SetOpenVPNCredentials(const std::string& client_cert_id,
+                             const std::string& username,
+                             const std::string& user_passphrase,
+                             const std::string& otp);
 
  private:
   // This allows NativeNetworkParser and its subclasses access to
@@ -842,6 +852,9 @@ class VirtualNetwork : public Network {
   void set_user_passphrase(const std::string& user_passphrase) {
     user_passphrase_ = user_passphrase;
   }
+  void set_group_name(const std::string& group_name) {
+    group_name_ = group_name;
+  }
 
   // Network overrides.
   virtual void EraseCredentials() OVERRIDE;
@@ -859,6 +872,7 @@ class VirtualNetwork : public Network {
   std::string client_cert_id_;
   std::string username_;
   std::string user_passphrase_;
+  std::string group_name_;
   DISALLOW_COPY_AND_ASSIGN(VirtualNetwork);
 };
 typedef std::vector<VirtualNetwork*> VirtualNetworkVector;
@@ -1572,25 +1586,22 @@ class NetworkLibrary {
       bool save_credentials,
       bool shared) = 0;
 
-  // Connect to the specified virtual network with service name,
-  // server hostname, provider_type, PSK passphrase, username and passphrase.
-  virtual void ConnectToVirtualNetworkPSK(
+  // Connect to the specified virtual network with service name.
+  // VPNConfigData must be provided.
+  struct VPNConfigData {
+    std::string psk;
+    std::string server_ca_cert_nss_nickname;
+    std::string client_cert_pkcs11_id;
+    std::string username;
+    std::string user_passphrase;
+    std::string otp;
+    std::string group_name;
+  };
+  virtual void ConnectToUnconfiguredVirtualNetwork(
       const std::string& service_name,
       const std::string& server_hostname,
-      const std::string& psk,
-      const std::string& username,
-      const std::string& user_passphrase) = 0;
-
-  // Connect to a virtual network with user certificate information.
-  // TODO(jamescook): Convert both this and above to take a struct of
-  // configuration information.
-  virtual void ConnectToVirtualNetworkCert(
-      const std::string& service_name,
-      const std::string& server_hostname,
-      const std::string& server_ca_cert_nss_nickname,
-      const std::string& client_cert_pkcs11_id,
-      const std::string& username,
-      const std::string& user_passphrase) = 0;
+      ProviderType provider_type,
+      const VPNConfigData& config) = 0;
 
   // Disconnect from the specified network.
   virtual void DisconnectFromNetwork(const Network* network) = 0;

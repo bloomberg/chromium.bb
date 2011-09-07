@@ -11462,6 +11462,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE" desc="In settings Internet options, a string specifying VPN user passphrase.">
         Password:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_OTP" desc="In settings Internet options, a string specifying One Time Passphrase for VPN.">
+        OTP:
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_GROUP_NAME" desc="In settings Internet options, a string specifying VPN group name.">
         Group name:
       </message>
