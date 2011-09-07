@@ -199,12 +199,12 @@ void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
 PluginInstance* PluginInstance::Create1_0(PluginDelegate* delegate,
                                           PluginModule* module,
                                           const void* ppp_instance_if_1_0) {
-  const PPP_Instance_1_0* interface =
+  const PPP_Instance_1_0* instance =
       static_cast<const PPP_Instance_1_0*>(ppp_instance_if_1_0);
   return new PluginInstance(
       delegate,
       module,
-      new ::ppapi::PPP_Instance_Combined(*interface));
+      new ::ppapi::PPP_Instance_Combined(*instance));
 }
 
 PluginInstance::PluginInstance(

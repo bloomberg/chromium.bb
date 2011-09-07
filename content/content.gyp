@@ -7,6 +7,7 @@
     'chromium_code': 1,  # Use higher warning level.
   },
   'includes': [
+    '../build/win_precompile.gypi',
     'content_app.gypi',
     'content_browser.gypi',
     'content_common.gypi',

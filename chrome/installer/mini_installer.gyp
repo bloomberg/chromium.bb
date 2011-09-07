@@ -7,6 +7,9 @@
     'msvs_use_common_release': 0,
     'msvs_use_common_linker_extras': 0,
   },
+  'includes': [
+    '../../build/win_precompile.gypi',
+  ],
   'conditions': [
     ['OS=="win"', {
       'target_defaults': {

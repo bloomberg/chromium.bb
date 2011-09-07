@@ -29,6 +29,9 @@
       }],
     ],
   },
+  'includes': [
+    '../build/win_precompile.gypi',
+  ],
   'target_defaults': {
     'dependencies': [
       '../chrome/chrome.gyp:chrome_resources',
@@ -132,7 +135,7 @@
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
-                '../breakpad/breakpad.gyp:breakpad_handler',              
+                '../breakpad/breakpad.gyp:breakpad_handler',
                 # TODO(slightlyoff): Get automation targets working on OS X
                 '../chrome/chrome.gyp:automation',
               ],

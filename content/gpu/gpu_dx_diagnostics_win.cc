@@ -13,6 +13,9 @@
 #include "base/utf_string_conversions.h"
 #include "content/gpu/gpu_info_collector.h"
 
+// Functions in this file depend on functions exported from dxguid.dll.
+#pragma comment(lib, "dxguid.lib")
+
 namespace {
 
 // Traverses the IDxDiagContainer tree and populates a tree of DxDiagNode

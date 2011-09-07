@@ -5,6 +5,9 @@
 {
   'conditions': [
     ['use_harfbuzz_ng==0', {
+      'includes': [
+        '../../build/win_precompile.gypi',
+      ],
       'targets': [
         {
           'target_name': 'harfbuzz',

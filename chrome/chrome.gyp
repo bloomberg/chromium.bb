@@ -125,6 +125,7 @@
     # Note on Win64 targets: targets that end with win64 be used
     # on 64-bit Windows only. Targets that end with nacl_win64 should be used
     # by Native Client only.
+    '../build/win_precompile.gypi',
     'app/policy/policy_templates.gypi',
     'chrome_browser.gypi',
     'chrome_common.gypi',

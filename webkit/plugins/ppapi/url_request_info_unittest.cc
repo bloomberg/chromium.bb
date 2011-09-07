@@ -119,16 +119,16 @@ WebView* URLRequestInfoTest::web_view_;
 WebFrame* URLRequestInfoTest::frame_;
 
 TEST_F(URLRequestInfoTest, GetInterface) {
-  const PPB_URLRequestInfo* interface =
+  const PPB_URLRequestInfo* request_info =
       ::ppapi::thunk::GetPPB_URLRequestInfo_Thunk();
-  EXPECT_TRUE(interface);
-  EXPECT_TRUE(interface->Create);
-  EXPECT_TRUE(interface->IsURLRequestInfo);
-  EXPECT_TRUE(interface->SetProperty);
-  EXPECT_TRUE(interface->AppendDataToBody);
-  EXPECT_TRUE(interface->AppendFileToBody);
-  EXPECT_TRUE(interface->Create);
-  EXPECT_TRUE(interface->Create);
+  EXPECT_TRUE(request_info);
+  EXPECT_TRUE(request_info->Create);
+  EXPECT_TRUE(request_info->IsURLRequestInfo);
+  EXPECT_TRUE(request_info->SetProperty);
+  EXPECT_TRUE(request_info->AppendDataToBody);
+  EXPECT_TRUE(request_info->AppendFileToBody);
+  EXPECT_TRUE(request_info->Create);
+  EXPECT_TRUE(request_info->Create);
 }
 
 TEST_F(URLRequestInfoTest, AsURLRequestInfo) {

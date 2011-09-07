@@ -88,7 +88,8 @@ class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
   // object as a convenience. Returns NULL on failure.
   static PluginDispatcher* GetForResource(const Resource* resource);
 
-  static const void* GetInterfaceFromDispatcher(const char* interface);
+  static const void* GetInterfaceFromDispatcher(
+      const char* dispatcher_interface);
 
   // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not

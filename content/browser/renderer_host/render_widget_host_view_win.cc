@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Need Win 7 headers for WM_GESTURE and ChangeWindowMessageFilterEx
+// Need a few defines from Win 7 headers for WM_GESTURE and
+// ChangeWindowMessageFilterEx.
 // TODO(jschuh): See crbug.com/92941 for longterm fix.
-#undef  WINVER
-#define WINVER _WIN32_WINNT_WIN7
-#undef  _WIN32_WINNT
-#define _WIN32_WINNT _WIN32_WINNT_WIN7
 #include <windows.h>
+#if(WINVER < 0x0601)
+typedef struct tagCHANGEFILTERSTRUCT {
+  DWORD cbSize;
+  DWORD ExtStatus;
+} CHANGEFILTERSTRUCT, *PCHANGEFILTERSTRUCT;
+#define MSGFLT_ALLOW (1)
+#define WM_GESTURE 0x0119
+#endif  // WINVER < 0x0601
 
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 

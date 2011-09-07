@@ -80,7 +80,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // if the plugin supports the given interface (with caching) and returns the
   // pointer to the proxied interface if it is supported. Returns NULL if the
   // given interface isn't supported by the plugin or the proxy.
-  const void* GetProxiedInterface(const std::string& interface);
+  const void* GetProxiedInterface(const std::string& proxied_interface);
 
   // Returns the proxy object associated with the given interface ID, creating
   // it if necessary. This is used in cases where a proxy needs to access code

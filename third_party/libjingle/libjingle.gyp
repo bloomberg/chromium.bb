@@ -6,6 +6,9 @@
   'variables': {
     'no_libjingle_logging%': 0,
   },
+  'includes': [
+    '../../build/win_precompile.gypi',
+  ],
   'target_defaults': {
     'defines': [
       'FEATURE_ENABLE_SSL',

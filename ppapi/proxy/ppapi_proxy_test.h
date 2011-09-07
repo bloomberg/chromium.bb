@@ -53,7 +53,7 @@ class ProxyTestHarnessBase {
   // Allows the test to specify an interface implementation for a given
   // interface name. This will be returned when any of the proxy logic
   // requests a local interface.
-  void RegisterTestInterface(const char* name, const void* interface);
+  void RegisterTestInterface(const char* name, const void* test_interface);
 
   // Sends a "supports interface" message to the current dispatcher and returns
   // true if it's supported. This is just for the convenience of tests.

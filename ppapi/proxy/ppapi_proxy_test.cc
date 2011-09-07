@@ -105,8 +105,8 @@ const void* ProxyTestHarnessBase::GetInterface(const char* name) {
 }
 
 void ProxyTestHarnessBase::RegisterTestInterface(const char* name,
-                                                 const void* interface) {
-  registered_interfaces_[name] = interface;
+                                                 const void* test_interface) {
+  registered_interfaces_[name] = test_interface;
 }
 
 bool ProxyTestHarnessBase::SupportsInterface(const char* name) {

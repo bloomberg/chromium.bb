@@ -5,7 +5,10 @@
 {
   'variables': {
     'chromium_code': 1,
-   },
+  },
+  'includes': [
+    '../../build/win_precompile.gypi',
+  ],
   'targets': [
     {
       'target_name': 'default_plugin',
@@ -33,7 +36,7 @@
         'plugin_impl_win.cc',
         'plugin_impl_win.h',
         'plugin_installer_base.cc',
-        'plugin_installer_base.h',      
+        'plugin_installer_base.h',
         'plugin_main.cc',
         'plugin_main.h',
       ],

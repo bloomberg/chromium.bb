@@ -80,9 +80,9 @@ PluginDispatcher* PluginDispatcher::GetForResource(const Resource* resource) {
 
 // static
 const void* PluginDispatcher::GetInterfaceFromDispatcher(
-    const char* interface) {
+    const char* dispatcher_interface) {
   // All interfaces the plugin requests of the browser are "PPB".
-  const InterfaceProxy::Info* info = GetPPBInterfaceInfo(interface);
+  const InterfaceProxy::Info* info = GetPPBInterfaceInfo(dispatcher_interface);
   if (!info)
     return NULL;
   return info->interface_ptr;

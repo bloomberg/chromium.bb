@@ -4,6 +4,7 @@
 
 {
   'includes': [
+    '../../build/win_precompile.gypi',
     '../appcache/webkit_appcache.gypi',
     '../blob/webkit_blob.gypi',
     '../database/webkit_database.gypi',

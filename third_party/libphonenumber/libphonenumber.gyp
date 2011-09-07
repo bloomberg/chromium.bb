@@ -19,6 +19,9 @@
       'USE_GOOGLE_BASE=1',
     ],
   },
+  'includes': [
+    '../../build/win_precompile.gypi',
+  ],
   'targets': [{
     'target_name': 'libphonenumber',
     'type': 'static_library',

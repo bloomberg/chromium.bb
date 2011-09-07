@@ -198,25 +198,27 @@ void HostDispatcher::OnChannelError() {
   ppb_proxy_->PluginCrashed(pp_module());
 }
 
-const void* HostDispatcher::GetProxiedInterface(const std::string& interface) {
+const void* HostDispatcher::GetProxiedInterface(
+    const std::string& proxied_interface) {
   // First see if we even have a proxy for this interface.
-  const InterfaceProxy::Info* info = GetPPPInterfaceInfo(interface);
+  const InterfaceProxy::Info* info = GetPPPInterfaceInfo(proxied_interface);
   if (!info)
     return NULL;
 
-  PluginIFSupportedMap::iterator iter(plugin_if_supported_.find(interface));
+  PluginIFSupportedMap::iterator iter(plugin_if_supported_.find(
+      proxied_interface));
   if (iter == plugin_if_supported_.end()) {
     // Need to query. Cache the result so we only do this once.
     bool supported = false;
 
     bool previous_reentrancy_value = allow_plugin_reentrancy_;
     allow_plugin_reentrancy_ = true;
-    Send(new PpapiMsg_SupportsInterface(interface, &supported));
+    Send(new PpapiMsg_SupportsInterface(proxied_interface, &supported));
     allow_plugin_reentrancy_ = previous_reentrancy_value;
 
     std::pair<PluginIFSupportedMap::iterator, bool> iter_success_pair;
     iter_success_pair = plugin_if_supported_.insert(
-        PluginIFSupportedMap::value_type(interface, supported));
+        PluginIFSupportedMap::value_type(proxied_interface, supported));
     iter = iter_success_pair.first;
   }
   if (iter->second)
