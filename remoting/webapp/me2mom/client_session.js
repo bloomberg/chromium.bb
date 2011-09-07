@@ -13,6 +13,7 @@
 
 'use strict';
 
+/** @suppress {duplicate} */
 var remoting = remoting || {};
 
 (function() {
@@ -30,7 +31,7 @@ var remoting = remoting || {};
  */
 remoting.ClientSession = function(hostJid, hostPublicKey, accessCode, email,
                                   onStateChange) {
-  this.state = remoting.ClientSession.CREATED;
+  this.state = remoting.ClientSession.State.CREATED;
 
   this.hostJid = hostJid;
   this.hostPublicKey = hostPublicKey;
@@ -65,6 +66,7 @@ remoting.ClientSession.prototype.state = remoting.ClientSession.State.UNKNOWN;
  * compatible.
  *
  * @const
+ * @private
  */
 remoting.ClientSession.prototype.API_VERSION_ = 2;
 
@@ -73,6 +75,7 @@ remoting.ClientSession.prototype.API_VERSION_ = 2;
  * connections.
  *
  * @const
+ * @private
  */
 remoting.ClientSession.prototype.HTTP_XMPP_PROXY_ =
     'https://chromoting-httpxmpp-oauth2-dev.corp.google.com';
@@ -83,6 +86,7 @@ remoting.ClientSession.prototype.HTTP_XMPP_PROXY_ =
  * compatibility with older API versions.
  *
  * @const
+ * @private
  */
 remoting.ClientSession.prototype.API_MIN_VERSION_ = 1;
 
@@ -98,7 +102,7 @@ remoting.ClientSession.prototype.PLUGIN_ID = 'session-client-plugin';
  *
  * @type {function(remoting.ClientSession.State):void}
  */
-remoting.ClientSession.prototype.onStateChange = null;
+remoting.ClientSession.prototype.onStateChange = function(state) { };
 
 /**
  * Adds <embed> element to |container| and readies the sesion object.
@@ -109,7 +113,8 @@ remoting.ClientSession.prototype.onStateChange = null;
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
     function(container, oauth2AccessToken) {
-  this.plugin = document.createElement('embed');
+  this.plugin = /** @type {remoting.ViewerPlugin} */
+      document.createElement('embed');
   this.plugin.id = this.PLUGIN_ID;
   this.plugin.src = 'about://none';
   this.plugin.type = 'pepper-application/x-chromoting';
@@ -146,7 +151,7 @@ remoting.ClientSession.prototype.createPluginAndConnect =
     this.registerConnection_(oauth2AccessToken);
   } else {
     remoting.debug.log('ERROR: remoting plugin not loaded');
-    this.setState_(remoting.ClientSession.UNKNOWN_PLUGIN_ERROR);
+    this.setState_(remoting.ClientSession.State.UNKNOWN_PLUGIN_ERROR);
   }
 };
 
@@ -186,11 +191,12 @@ remoting.ClientSession.prototype.disconnect = function() {
     'host_jid': this.hostJid
   };
   this.sendIqWithParameters_(parameters);
-}
+};
 
 /**
  * Sends an IQ stanza via the http xmpp proxy.
  *
+ * @private
  * @param {string} msg XML string of IQ stanza to send to server.
  * @return {void} Nothing.
  */
@@ -225,17 +231,19 @@ remoting.ClientSession.prototype.sendIq_ = function(msg) {
 /**
  * Sends an IQ stanza via the http xmpp proxy.
  *
- * @param {(string|Object.<string>)} paramters Parameters to include.
+ * @private
+ * @param {(string|Object.<string>)} parameters Parameters to include.
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.sendIqWithParameters_ = function(parameters) {
   remoting.xhr.post(this.HTTP_XMPP_PROXY_ + '/sendIq', function(xhr) {},
                     parameters, {}, true);
-}
+};
 
 /**
  * Executes a poll loop on the server for more IQ packet to feed to the plugin.
  *
+ * @private
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.feedIq_ = function() {
@@ -252,7 +260,7 @@ remoting.ClientSession.prototype.feedIq_ = function() {
     } else {
       remoting.debug.log('HttpXmpp gateway returned code: ' + xhr.status);
       that.plugin.disconnect();
-      that.setState_(remoting.ClientSession.CONNECTION_FAILED);
+      that.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
     }
   }
 
@@ -261,7 +269,8 @@ remoting.ClientSession.prototype.feedIq_ = function() {
 };
 
 /**
- * @param {Element} plugin The embed element for the plugin.
+ * @private
+ * @param {remoting.ViewerPlugin} plugin The embed element for the plugin.
  * @return {boolean} True if the plugin and web-app versions are compatible.
  */
 remoting.ClientSession.prototype.isPluginVersionSupported_ = function(plugin) {
@@ -272,6 +281,7 @@ remoting.ClientSession.prototype.isPluginVersionSupported_ = function(plugin) {
 /**
  * Registers a new connection with the HttpXmpp proxy.
  *
+ * @private
  * @param {string} oauth2AccessToken A valid OAuth2 access token.
  * @return {void} Nothing.
  */
@@ -288,7 +298,7 @@ remoting.ClientSession.prototype.registerConnection_ =
     if (xhr.status != 200) {
       remoting.debug.log('FailedToConnect: --' + xhr.responseText +
                          '-- (status=' + xhr.status + ')');
-      that.setState_(remoting.ClientSession.CONNECTION_FAILED);
+      that.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
       return;
     }
 
@@ -334,6 +344,7 @@ remoting.ClientSession.prototype.connectionInfoUpdateCallback = function() {
 };
 
 /**
+ * @private
  * @param {remoting.ClientSession.State} state The new state for the session.
  * @return {void} Nothing.
  */
@@ -349,6 +360,7 @@ remoting.ClientSession.prototype.setState_ = function(state) {
  * This is a callback that gets called when the desktop size contained in the
  * the plugin has changed.
  *
+ * @private
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {

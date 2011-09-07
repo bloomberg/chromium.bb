@@ -4,12 +4,15 @@
 
 /**
  * @fileoverview
- * Simple utilities for makeing XHRs more pleasant.
+ * Simple utilities for making XHRs more pleasant.
  */
 
-"use strict";
+'use strict';
 
+/** @suppress {duplicate} */
 var remoting = remoting || {};
+
+/** Namespace for XHR functions */
 remoting.xhr = remoting.xhr || {};
 
 (function() {
@@ -45,7 +48,7 @@ remoting.xhr.urlencodeParamHash = function(paramHash) {
  *     request.
  * @param {boolean} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
                             opt_withCredentials) {
@@ -60,7 +63,7 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
   // Add parameters into URL.
   if (typeof(opt_parameters) === 'string') {
     if (opt_parameters.length > 0) {
-      url = url + '?' + opt_parameters
+      url = url + '?' + opt_parameters;
     }
   } else if (typeof(opt_parameters) === 'object') {
     var paramString = remoting.xhr.urlencodeParamHash(opt_parameters);
@@ -70,7 +73,7 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
   } else if (opt_parameters === undefined) {
     // No problem here. Do nothing.
   } else {
-    throw "opt_parameters must be string or associated array.";
+    throw 'opt_parameters must be string or associated array.';
   }
 
   xhr.open('GET', url, true);
@@ -83,7 +86,7 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
   } else if (opt_headers === undefined) {
     // No problem here. Do nothing.
   } else {
-    throw "opt_headers must be associative array.";
+    throw 'opt_headers must be associative array.';
   }
 
   if (opt_withCredentials) {
@@ -106,7 +109,7 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
  *     request.
  * @param {boolean} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
- * @return {void}
+ * @return {void} Nothing.
  */
 remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
                              opt_withCredentials) {
@@ -127,7 +130,7 @@ remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
   } else if (opt_parameters === undefined) {
     // No problem here. Do nothing.
   } else {
-    throw "opt_parameters must be string or associated array.";
+    throw 'opt_parameters must be string or associated array.';
   }
 
   xhr.open('POST', url, true);
@@ -141,7 +144,7 @@ remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
   } else if (opt_headers === undefined) {
     // No problem here. Do nothing.
   } else {
-    throw "opt_headers must be associative array.";
+    throw 'opt_headers must be associative array.';
   }
 
   if (opt_withCredentials) {

@@ -7,7 +7,9 @@
  * Module to support logging debug messages.
  */
 
-"use strict";
+'use strict';
+
+/** @suppress {duplicate} */
 var remoting = remoting || {};
 
 (function() {

@@ -10,7 +10,7 @@ var l10n = l10n || {};
  * and an optional set of substitutions.
  * @param {Element} element The element to localize.
  * @param {string} tag The localization tag.
- * @param {{string|Object}=} opt_substitutions An optional set of substitution
+ * @param {(string|Array)=} opt_substitutions An optional set of substitution
  *     strings corresponding to the "placeholders" attributes in messages.json.
  * @return {boolean} True if the localization was successful; false otherwise.
  */
@@ -22,13 +22,13 @@ l10n.localizeElementFromTag = function(element, tag, opt_substitutions) {
     console.error('Missing translation for "' + tag + '":', element);
   }
   return translation != null;
-}
+};
 
 /**
  * Localize an element by setting its innerText according to its i18n-content
  * attribute, and an optional set of substitutions.
  * @param {Element} element The element to localize.
- * @param {{string|Object}=} opt_substitutions An optional set of substitution
+ * @param {(string|Array)=} opt_substitutions An optional set of substitution
  *     strings corresponding to the "placeholders" attributes in messages.json.
  * @return {boolean} True if the localization was successful; false otherwise.
  */

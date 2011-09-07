@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @suppress {duplicate} */
 var remoting = remoting || {};
 
 (function() {
@@ -114,10 +115,11 @@ function setEmail(value) {
 }
 
 /**
- * @return {string} The email address associated with the auth credentials.
+ * @return {?string} The email address associated with the auth credentials.
  */
 function getEmail() {
-  return window.localStorage.getItem(KEY_EMAIL_);
+  var result = window.localStorage.getItem(KEY_EMAIL_);
+  return typeof result == 'string' ? result : null;
 }
 
 function exchangedCodeForToken_() {
@@ -158,6 +160,7 @@ remoting.init = function() {
   if (email) {
     document.getElementById('current-email').innerText = email;
   }
+
   remoting.setMode(getAppStartupMode());
   if (isHostModeSupported()) {
     var unsupported = document.getElementById('client-footer-text-cros');
@@ -176,7 +179,8 @@ remoting.init = function() {
  * elements with an data-ui-mode attribute of 'host' or 'host.shared' and hide
  * all others.
  *
- * @param {string} mode The new modal state, expressed as a dotted hiearchy.
+ * @param {remoting.AppMode} mode The new modal state, expressed as a dotted
+ * hiearchy.
  */
 remoting.setMode = function(mode) {
   var modes = mode.split('.');
@@ -205,9 +209,9 @@ remoting.setMode = function(mode) {
 
 /**
  * Get the major mode that the app is running in.
- * @return {remoting.Mode} The app's current major mode.
+ * @return {remoting.AppMode} The app's current major mode.
  */
-remoting.getMajorMode = function(mode) {
+remoting.getMajorMode = function() {
   return remoting.currentMode.split('.')[0];
 }
 
@@ -231,7 +235,8 @@ remoting.tryShare = function() {
   disableTimeoutCountdown_();
 
   var div = document.getElementById('host-plugin-container');
-  var plugin = document.createElement('embed');
+  var plugin = /** @type {remoting.HostPlugin} */
+      document.createElement('embed');
   plugin.type = remoting.PLUGIN_MIMETYPE;
   plugin.id = remoting.HOST_PLUGIN_ID;
   // Hiding the plugin means it doesn't load, so make it size zero instead.
@@ -241,7 +246,7 @@ remoting.tryShare = function() {
   plugin.onStateChanged = onStateChanged_;
   plugin.logDebugInfo = debugInfoCallback_;
   plugin.localize(chrome.i18n.getMessage);
-  plugin.connect(getEmail(),
+  plugin.connect(/** @type {string} */ (getEmail()),
                  'oauth2:' + remoting.oauth2.getAccessToken());
 }
 
@@ -260,7 +265,8 @@ var ACCESS_CODE_RED_THRESHOLD = 10;
  * Show/hide or restyle various elements, depending on the remaining countdown
  * and timer state.
  *
- * @return {bool} True if the timeout is in progress, false if it has expired.
+ * @return {boolean} True if the timeout is in progress, false if it has
+ * expired.
  */
 function updateTimeoutStyles_() {
   if (remoting.timerRunning) {
@@ -295,7 +301,8 @@ remoting.updateAccessCodeTimeoutElement_ = function() {
 }
 
 function onStateChanged_() {
-  var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
+  var plugin = /** @type {remoting.HostPlugin} */
+      document.getElementById(remoting.HOST_PLUGIN_ID);
   var state = plugin.state;
   if (state == plugin.REQUESTED_ACCESS_CODE) {
     // Nothing to do here.
@@ -357,7 +364,7 @@ function debugInfoCallback_(msg) {
 /**
 * Show a host-side error message.
 *
-* @param {string} errorCode The error message to be localized and displayed.
+* @param {string} errorTag The error message to be localized and displayed.
 * @return {void} Nothing.
 */
 function showShareError_(errorTag) {
@@ -369,7 +376,8 @@ function showShareError_(errorTag) {
 
 remoting.cancelShare = function() {
   remoting.debug.log('Canceling share...');
-  var plugin = document.getElementById(remoting.HOST_PLUGIN_ID);
+  var plugin = /** @type {remoting.HostPlugin} */
+      document.getElementById(remoting.HOST_PLUGIN_ID);
   try {
     plugin.disconnect();
   } catch (error) {
@@ -466,10 +474,11 @@ function onClientStateChange_(oldState) {
 
 function startSession_() {
   remoting.debug.log('Starting session...');
-  remoting.username = getEmail();
+  remoting.username =
+      /** @type {string} email must be non-NULL to get here */ getEmail();
   remoting.session =
       new remoting.ClientSession(remoting.hostJid, remoting.hostPublicKey,
-                                 remoting.accessCode, getEmail(),
+                                 remoting.accessCode, remoting.username,
                                  onClientStateChange_);
   remoting.oauth2.callWithToken(function(token) {
     remoting.session.createPluginAndConnect(
@@ -481,13 +490,14 @@ function startSession_() {
 /**
  * Show a client-side error message.
  *
- * @param {ClientError} errorTag The error to be localized and displayed.
+ * @param {remoting.ClientError} errorTag The error to be localized and
+ * displayed.
  * @return {void} Nothing.
  */
 function showConnectError_(errorTag) {
   remoting.debug.log('Connection failed: ' + errorTag);
   var errorDiv = document.getElementById('connect-error-message');
-  l10n.localizeElementFromTag(errorDiv, errorTag);
+  l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
   remoting.accessCode = '';
   if (remoting.session) {
     remoting.session.disconnect();
@@ -621,7 +631,8 @@ function isHostModeSupported() {
 /**
  * Enable or disable scale-to-fit.
  *
- * @param {boolean} scale True to enable scaling.
+ * @param {Element} button The scale-to-fit button. The style of this button is
+ * updated to reflect the new scaling state.
  * @return {void} Nothing.
  */
 remoting.toggleScaleToFit = function(button) {
@@ -651,7 +662,7 @@ remoting.disconnect = function() {
 /**
  * If the client is connected, or the host is shared, prompt before closing.
  *
- * @return {(string|void)} The prompt string if a connection is active.
+ * @return {?string} The prompt string if a connection is active.
  */
 remoting.promptClose = function() {
   switch (remoting.currentMode) {
@@ -663,7 +674,7 @@ remoting.promptClose = function() {
       var result = chrome.i18n.getMessage(/*i18n-content*/'CLOSE_PROMPT');
       return result;
     default:
-      return NULL;
+      return null;
   }
 }
 
