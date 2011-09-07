@@ -58,7 +58,7 @@ class TestWindowDelegate : public WindowDelegate {
 
 class WindowTest : public testing::Test {
  public:
-  WindowTest() {
+  WindowTest() : main_message_loop(MessageLoop::TYPE_UI) {
     aura::Desktop::GetInstance()->Show();
     aura::Desktop::GetInstance()->SetSize(gfx::Size(500, 500));
   }
@@ -93,11 +93,13 @@ class WindowTest : public testing::Test {
   }
 
   void RunPendingMessages() {
-    MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+    MessageLoop message_loop(MessageLoop::TYPE_UI);
     MessageLoopForUI::current()->Run(NULL);
   }
 
  private:
+  MessageLoop main_message_loop;
+
   DISALLOW_COPY_AND_ASSIGN(WindowTest);
 };
 

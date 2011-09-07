@@ -460,6 +460,15 @@ void NativeWidgetWin::PopForceHidden() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetWin, CompositorDelegate implementation:
+
+void NativeWidgetWin::ScheduleCompositorPaint() {
+  RECT rect;
+  ::GetClientRect(GetNativeView(), &rect);
+  InvalidateRect(GetNativeView(), &rect, FALSE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, NativeWidget implementation:
 
 void NativeWidgetWin::InitNativeWidget(const Widget::InitParams& params) {
@@ -1247,7 +1256,7 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
     } else {
       CRect window_rect;
       GetClientRect(&window_rect);
-      compositor_ = ui::Compositor::Create(
+      compositor_ = ui::Compositor::Create(this,
           hwnd(),
           gfx::Size(window_rect.Width(), window_rect.Height()));
     }

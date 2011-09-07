@@ -674,7 +674,7 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
     } else {
       gint width, height;
       gdk_drawable_get_size(window_contents_->window, &width, &height);
-      compositor_ = ui::Compositor::Create(
+      compositor_ = ui::Compositor::Create(this,
           GDK_WINDOW_XID(window_contents_->window),
           gfx::Size(width, height));
     }
@@ -1803,6 +1803,10 @@ void NativeWidgetGtk::HandleGtkGrabBroke() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetGtk, private:
+
+void NativeWidgetGtk::ScheduleCompositorPaint() {
+  SchedulePaintInRect(gfx::Rect(gfx::Point(), size_));
+}
 
 void NativeWidgetGtk::DispatchKeyEventPostIME(const KeyEvent& key) {
   // Always reset |should_handle_menu_key_release_| unless we are handling a

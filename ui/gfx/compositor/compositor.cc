@@ -7,7 +7,8 @@
 namespace ui {
 
 // static
-Compositor* Compositor::Create(gfx::AcceleratedWidget widget,
+Compositor* Compositor::Create(CompositorDelegate* delegate,
+                               gfx::AcceleratedWidget widget,
                                const gfx::Size& size) {
   return NULL;
 }

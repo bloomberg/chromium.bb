@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -71,6 +72,9 @@ int main(int argc, char** argv) {
 #if defined(USE_X11)
   base::MessagePumpX::DisableGtkMessagePump();
 #endif
+
+  // Create the message-loop here before creating the desktop.
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
 
   aura::Desktop::GetInstance();
 

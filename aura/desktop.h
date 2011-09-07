@@ -10,14 +10,12 @@
 #include "aura/aura_export.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/task.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Size;
-}
-
-namespace ui {
-class Compositor;
 }
 
 namespace aura {
@@ -26,7 +24,7 @@ class DesktopHost;
 class MouseEvent;
 
 // Desktop is responsible for hosting a set of windows.
-class AURA_EXPORT Desktop {
+class AURA_EXPORT Desktop : public ui::CompositorDelegate {
  public:
   Desktop();
   ~Desktop();
@@ -57,6 +55,9 @@ class AURA_EXPORT Desktop {
   static Desktop* GetInstance();
 
  private:
+  // Overridden from ui::CompositorDelegate
+  virtual void ScheduleCompositorPaint();
+
   scoped_refptr<ui::Compositor> compositor_;
 
   scoped_ptr<internal::RootWindow> window_;
@@ -64,6 +65,9 @@ class AURA_EXPORT Desktop {
   DesktopHost* host_;
 
   static Desktop* instance_;
+
+  // Used to schedule painting.
+  ScopedRunnableMethodFactory<Desktop> schedule_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(Desktop);
 };

@@ -17,8 +17,11 @@ namespace aura {
 Desktop* Desktop::instance_ = NULL;
 
 Desktop::Desktop()
-    : host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1024, 768))) {
-  compositor_ = ui::Compositor::Create(host_->GetAcceleratedWidget(),
+    : host_(aura::DesktopHost::Create(gfx::Rect(200, 200, 1024, 768))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_(this)) {
+  DCHECK(MessageLoopForUI::current())
+      << "The UI message loop must be initialized first.";
+  compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
                                        host_->GetSize());
   host_->SetDesktop(this);
   DCHECK(compositor_.get());
@@ -38,7 +41,6 @@ void Desktop::SetSize(const gfx::Size& size) {
 
 void Desktop::Run() {
   Show();
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   MessageLoopForUI::current()->Run(host_);
 }
 
@@ -54,6 +56,13 @@ bool Desktop::OnMouseEvent(const MouseEvent& event) {
 
 bool Desktop::OnKeyEvent(const KeyEvent& event) {
   return window_->HandleKeyEvent(event);
+}
+
+void Desktop::ScheduleCompositorPaint() {
+  if (schedule_paint_.empty()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        schedule_paint_.NewRunnableMethod(&Desktop::Draw));
+  }
 }
 
 // static

@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/x/active_window_watcher_x.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/size.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/native_widget_private.h"
@@ -41,6 +42,7 @@ class NativeWidgetDelegate;
 
 // Widget implementation for GTK.
 class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
+                                     public ui::CompositorDelegate,
                                      public ui::ActiveWindowWatcherX::Observer {
  public:
   explicit NativeWidgetGtk(internal::NativeWidgetDelegate* delegate);
@@ -296,6 +298,9 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
  private:
   class DropObserver;
   friend class DropObserver;
+
+  // Overridden from ui::CompositorDelegate
+  virtual void ScheduleCompositorPaint();
 
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;

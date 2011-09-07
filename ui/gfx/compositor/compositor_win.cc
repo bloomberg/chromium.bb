@@ -86,7 +86,8 @@ class ViewTexture : public Texture {
 // D3D 10 Compositor implementation.
 class CompositorWin : public Compositor {
  public:
-  CompositorWin(gfx::AcceleratedWidget widget,
+  CompositorWin(CompositorDelegate* delegate,
+                gfx::AcceleratedWidget widget,
                 const gfx::Size& size);
 
   void Init();
@@ -104,7 +105,6 @@ class CompositorWin : public Compositor {
   virtual void NotifyStart() OVERRIDE;
   virtual void NotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
-  virtual void SchedulePaint() OVERRIDE;
 
  protected:
   virtual void OnWidgetSizeChanged() OVERRIDE;
@@ -321,9 +321,10 @@ void ViewTexture::CreateVertexBufferForRegion(const gfx::Rect& bounds) {
                                          vertex_buffer_.Receive()));
 }
 
-CompositorWin::CompositorWin(gfx::AcceleratedWidget widget,
+CompositorWin::CompositorWin(CompositorDelegate* delegate,
+                             gfx::AcceleratedWidget widget,
                              const gfx::Size& size)
-    : Compositor(size),
+    : Compositor(delegate, size),
       host_(widget),
       technique_(NULL) {
 }
@@ -497,12 +498,6 @@ void CompositorWin::Blur(const gfx::Rect& bounds) {
   device_->IASetVertexBuffers(0, 1, &vertex_buffer, &stride, &offset);
   device_->IASetIndexBuffer(index_buffer_.get(), DXGI_FORMAT_R32_UINT, 0);
 #endif
-}
-
-void CompositorWin::SchedulePaint() {
-  RECT bounds;
-  GetClientRect(host_, &bounds);
-  InvalidateRect(host_, &bounds, FALSE);
 }
 
 void CompositorWin::OnWidgetSizeChanged() {
@@ -796,9 +791,10 @@ ID3D10Buffer* CompositorWin::CreateVertexBufferForRegion(
 }  // namespace
 
 // static
-Compositor* Compositor::Create(gfx::AcceleratedWidget widget,
+Compositor* Compositor::Create(CompositorDelegate* delegate,
+                               gfx::AcceleratedWidget widget,
                                const gfx::Size& size) {
-  CompositorWin* compositor = new CompositorWin(widget, size);
+  CompositorWin* compositor = new CompositorWin(delegate, widget, size);
   compositor->Init();
   return compositor;
 }

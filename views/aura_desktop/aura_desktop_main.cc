@@ -121,6 +121,9 @@ int main(int argc, char** argv) {
   base::MessagePumpX::DisableGtkMessagePump();
 #endif
 
+  // Create the message-loop here before creating the desktop.
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+
   aura::Desktop::GetInstance();
 
   // Create a hierarchy of test windows.

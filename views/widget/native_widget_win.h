@@ -21,6 +21,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "ui/base/win/window_impl.h"
+#include "ui/gfx/compositor/compositor.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout/layout_manager.h"
 #include "views/widget/native_widget_private.h"
@@ -79,6 +80,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
                                      public MessageLoopForUI::Observer,
+                                     public ui::CompositorDelegate,
                                      public internal::NativeWidgetPrivate {
  public:
   explicit NativeWidgetWin(internal::NativeWidgetDelegate* delegate);
@@ -179,6 +181,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
     DCHECK(::IsWindow(GetNativeView()));
     return ::GetClientRect(GetNativeView(), rect);
   }
+
+  // Overridden from ui::CompositorDelegate:
+  virtual void ScheduleCompositorPaint();
 
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;

@@ -441,9 +441,10 @@ void TextureGL::DrawInternal(const ui::TextureProgramGL& program,
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-CompositorGL::CompositorGL(gfx::AcceleratedWidget widget,
+CompositorGL::CompositorGL(CompositorDelegate* delegate,
+                           gfx::AcceleratedWidget widget,
                            const gfx::Size& size)
-    : Compositor(size),
+    : Compositor(delegate, size),
       started_(false) {
   gl_surface_ = gfx::GLSurface::CreateViewGLSurface(false, widget);
   gl_context_ = SharedResources::GetInstance()->
@@ -493,18 +494,14 @@ void CompositorGL::Blur(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-void CompositorGL::SchedulePaint() {
-  // TODO: X doesn't provide coalescing of regions, its left to the toolkit.
-  NOTIMPLEMENTED();
-}
-
 // static
-Compositor* Compositor::Create(gfx::AcceleratedWidget widget,
+Compositor* Compositor::Create(CompositorDelegate* owner,
+                               gfx::AcceleratedWidget widget,
                                const gfx::Size& size) {
   if (SharedResources::GetInstance() == NULL)
     return NULL;
   else
-    return new CompositorGL(widget, size);
+    return new CompositorGL(owner, widget, size);
 }
 
 }  // namespace ui

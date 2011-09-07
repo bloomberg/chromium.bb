@@ -63,6 +63,13 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
   friend class base::RefCounted<Texture>;
 };
 
+// An interface to allow the compositor to communicate with its owner.
+class COMPOSITOR_EXPORT CompositorDelegate {
+ public:
+  // Requests the owner to schedule a paint.
+  virtual void ScheduleCompositorPaint() = 0;
+};
+
 // Compositor object to take care of GPU painting.
 // A Browser compositor object is responsible for generating the final
 // displayable form of pixels comprising a single widget's contents. It draws an
@@ -71,7 +78,8 @@ class COMPOSITOR_EXPORT Texture : public base::RefCounted<Texture> {
 class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
  public:
   // Create a compositor from the provided handle.
-  static Compositor* Create(gfx::AcceleratedWidget widget,
+  static Compositor* Create(CompositorDelegate* delegate,
+                            gfx::AcceleratedWidget widget,
                             const gfx::Size& size);
 
   // Creates a new texture. The caller owns the returned object.
@@ -87,7 +95,9 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   virtual void Blur(const gfx::Rect& bounds) = 0;
 
   // Schedules a paint on the widget this Compositor was created for.
-  virtual void SchedulePaint() = 0;
+  virtual void SchedulePaint() {
+    delegate_->ScheduleCompositorPaint();
+  }
 
   // Notifies the compositor that the size of the widget that it is
   // drawing to has changed.
@@ -100,12 +110,17 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   const gfx::Size& size() { return size_; }
 
  protected:
-  explicit Compositor(const gfx::Size& size) : size_(size) {}
+  Compositor(CompositorDelegate* delegate, const gfx::Size& size)
+      : delegate_(delegate),
+        size_(size) {}
   virtual ~Compositor() {}
 
   virtual void OnWidgetSizeChanged() = 0;
 
+  CompositorDelegate* delegate() { return delegate_; }
+
  private:
+  CompositorDelegate* delegate_;
   gfx::Size size_;
 
   friend class base::RefCounted<Compositor>;
