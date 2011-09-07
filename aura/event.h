@@ -6,6 +6,7 @@
 #define AURA_EVENT_H_
 #pragma once
 
+#include "aura/aura_export.h"
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "ui/base/events.h"
@@ -74,7 +75,7 @@ class LocatedEvent : public Event {
   DISALLOW_COPY_AND_ASSIGN(LocatedEvent);
 };
 
-class MouseEvent : public LocatedEvent {
+class AURA_EXPORT MouseEvent : public LocatedEvent {
  public:
   explicit MouseEvent(NativeEvent native_event);
 
@@ -90,7 +91,7 @@ class MouseEvent : public LocatedEvent {
   DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
-class KeyEvent : public Event {
+class AURA_EXPORT KeyEvent : public Event {
  public:
   explicit KeyEvent(NativeEvent native_event);
 

@@ -14,6 +14,10 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+#if !defined(OS_WIN)
+#include "aura/hit_test.h"
+#endif
+
 namespace aura {
 namespace internal {
 
