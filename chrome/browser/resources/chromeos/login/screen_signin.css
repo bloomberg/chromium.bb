@@ -18,10 +18,21 @@
 }
 
 #signin-right {
-  -webkit-margin-end: 80px;
   font-size: 12px;
-  height: 100%;
+  position: absolute;
+  top: 60px;
   width: 200px;
+}
+
+html[dir=ltr] #signin-right {
+  right: -150px;  /* ('gaia-sign'.width - 'signin-frame'.width) / 2 -
+                     desiredGap - 'signin-right'.width =
+                     (640 - 340) / 2 - 100 - 200 = -150
+                   */
+}
+
+html[dir=rtl] #signin-right {
+  left: -150px;
 }
 
 .signin-text {

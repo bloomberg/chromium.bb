@@ -498,8 +498,7 @@ cr.define('cr.ui', function() {
       // to get a good anchor point. However, this always gives (0,0) on
       // the device.
       // TODO(xiyuan): Figure out why the above fails and get rid of this.
-      if ($('createAccount').hidden && $('guestSignin').hidden)
-        anchorPos.left += 150;  // (640 - 340) / 2
+      anchorPos.left += 150;  // (640 - 340) / 2
 
       // TODO(xiyuan): Find a reliable way to align with Gaia UI.
       anchorPos.left += 60;
