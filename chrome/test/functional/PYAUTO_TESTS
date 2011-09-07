@@ -125,6 +125,8 @@
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # crbug.com/95031
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
+      # crbug.com/91578
+      '-history.HistoryTest.testFtpHistory',
     ],
 
     'win': [
