@@ -307,6 +307,9 @@ cr.define('ntp4', function() {
       } else {
         wrapper.hidden = true;
       }
+
+      if (this.id === ROOT_NODE_ID && !tile_count)
+        this.showImportPromo_();
     },
 
     /**
@@ -375,6 +378,8 @@ cr.define('ntp4', function() {
     bookmarkNodeAdded: function(id, bookmark, fromCurrentPage) {
       if (this.importing) return;
       if (this.currentlyInFolder_(bookmark.parentId)) {
+        // Hide the import promo if it exists.
+        this.hideImportPromo_();
         // If source of the add came from this page, show an animated insertion,
         // otherwise just quietly do it.
         this.addTileAt(new Bookmark(bookmark), bookmark.index, fromCurrentPage);
@@ -547,6 +552,28 @@ cr.define('ntp4', function() {
         title = url;
       // Create a bookmark for the dropped data.
       this.generateBookmarkForLink(parentId, index, title, url);
+    },
+
+    /**
+     * Show the 'Import bookmarks' promo.
+     * @private
+     */
+    showImportPromo_: function() {
+      var importTemplate = $('bookmarks-import-data-link-template');
+      var importWrapper = importTemplate.cloneNode(true);
+      importWrapper.id = '';
+      importWrapper.hidden = false;
+      this.querySelector('.tile-page-content').appendChild(importWrapper);
+    },
+
+    /**
+     * Hide the 'Import bookmarks' promo.
+     * @private
+     */
+    hideImportPromo_: function() {
+      var wrapper = this.querySelector('.bookmarks-import-data-link-wrapper');
+      if (wrapper)
+        wrapper.parentNode.removeChild(wrapper);
     },
 
     /**

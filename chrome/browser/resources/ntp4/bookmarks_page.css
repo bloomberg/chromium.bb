@@ -173,3 +173,10 @@ html[dir=rtl] .bookmark .close-button {
   margin: 0px -70px;
   text-align: end;
 }
+
+.bookmarks-import-data-link-wrapper {
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 33%;
+}
