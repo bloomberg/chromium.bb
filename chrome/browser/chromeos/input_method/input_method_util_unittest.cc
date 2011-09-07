@@ -12,6 +12,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(TOUCH_UI)
+// Since TOUCH_UI build only supports a few keyboard layouts, we skip the tests
+// for now.
+#define TestGetFirstLoginInputMethodIds_Dvorak_And_Ja \
+  DISABLED_TestGetFirstLoginInputMethodIds_Dvorak_And_Ja
+#define TestGetFirstLoginInputMethodIds_JP_And_Ja \
+  DISABLED_TestGetFirstLoginInputMethodIds_JP_And_Ja
+#define TestGetFirstLoginInputMethodIds_Us_And_Ru \
+  DISABLED_TestGetFirstLoginInputMethodIds_Us_And_Ru
+#define TestGetInputMethodDescriptorFromXkbId \
+  DISABLED_TestGetInputMethodDescriptorFromXkbId
+#define TestGetKeyboardLayoutName DISABLED_TestGetKeyboardLayoutName
+#define TestGetLanguageCodesFromInputMethodIds \
+  DISABLED_TestGetLanguageCodesFromInputMethodIds
+#endif  // TOUCH_UI
+
 namespace chromeos {
 namespace input_method {
 
@@ -38,7 +54,7 @@ class InputMethodUtilTest : public testing::Test {
   ScopedStubCrosEnabler stub_cros_enabler_;
 };
 
-TEST_F(InputMethodUtilTest, GetStringUTF8) {
+TEST_F(InputMethodUtilTest, TestGetStringUTF8) {
   EXPECT_EQ("Pinyin input method",
             GetStringUTF8("pinyin", ""));
 #if !defined(GOOGLE_CHROME_BUILD)
@@ -47,7 +63,7 @@ TEST_F(InputMethodUtilTest, GetStringUTF8) {
 #endif
 }
 
-TEST_F(InputMethodUtilTest, StringIsSupported) {
+TEST_F(InputMethodUtilTest, TestStringIsSupported) {
   EXPECT_TRUE(StringIsSupported("Hiragana", "mozc"));
   EXPECT_TRUE(StringIsSupported("Latin", "mozc"));
   EXPECT_TRUE(StringIsSupported("Direct input", "mozc"));
@@ -59,7 +75,7 @@ TEST_F(InputMethodUtilTest, StringIsSupported) {
   EXPECT_FALSE(StringIsSupported("Chinese", "hangul"));
 }
 
-TEST_F(InputMethodUtilTest, NormalizeLanguageCode) {
+TEST_F(InputMethodUtilTest, TestNormalizeLanguageCode) {
   // TODO(yusukes): test all language codes that IBus provides.
   EXPECT_EQ("ja", NormalizeLanguageCode("ja"));
   EXPECT_EQ("ja", NormalizeLanguageCode("jpn"));
@@ -82,12 +98,12 @@ TEST_F(InputMethodUtilTest, NormalizeLanguageCode) {
   EXPECT_EQ("sk", NormalizeLanguageCode("slo"));
 }
 
-TEST_F(InputMethodUtilTest, IsKeyboardLayout) {
+TEST_F(InputMethodUtilTest, TestIsKeyboardLayout) {
   EXPECT_TRUE(IsKeyboardLayout("xkb:us::eng"));
   EXPECT_FALSE(IsKeyboardLayout("mozc"));
 }
 
-TEST_F(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
+TEST_F(InputMethodUtilTest, TestGetLanguageCodeFromDescriptor) {
   EXPECT_EQ("ja", GetLanguageCodeFromDescriptor(
       GetDesc("mozc", "us", "ja")));
   EXPECT_EQ("zh-TW", GetLanguageCodeFromDescriptor(
@@ -104,7 +120,7 @@ TEST_F(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
       GetDesc("xkb:uk::eng", "us", "eng")));
 }
 
-TEST_F(InputMethodUtilTest, GetKeyboardLayoutName) {
+TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
   // Unsupported case.
   EXPECT_EQ("", GetKeyboardLayoutName("UNSUPPORTED_ID"));
 
@@ -122,19 +138,19 @@ TEST_F(InputMethodUtilTest, GetKeyboardLayoutName) {
   EXPECT_EQ("de(neo)", GetKeyboardLayoutName("xkb:de:neo:ger"));
 }
 
-TEST_F(InputMethodUtilTest, GetLanguageCodeFromInputMethodId) {
+TEST_F(InputMethodUtilTest, TestGetLanguageCodeFromInputMethodId) {
   // Make sure that the -CN is added properly.
   EXPECT_EQ("zh-CN", GetLanguageCodeFromInputMethodId("pinyin"));
 }
 
-TEST_F(InputMethodUtilTest, GetInputMethodDisplayNameFromId) {
+TEST_F(InputMethodUtilTest, TestGetInputMethodDisplayNameFromId) {
   EXPECT_EQ("Pinyin input method", GetInputMethodDisplayNameFromId("pinyin"));
   EXPECT_EQ("US keyboard",
             GetInputMethodDisplayNameFromId("xkb:us::eng"));
   EXPECT_EQ("", GetInputMethodDisplayNameFromId("nonexistent"));
 }
 
-TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
+TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromId) {
   EXPECT_EQ(NULL, GetInputMethodDescriptorFromId("non_existent"));
 
   const InputMethodDescriptor* descriptor =
@@ -147,7 +163,7 @@ TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromId) {
   EXPECT_EQ("zh-CN", descriptor->language_code());
 }
 
-TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromXkbId) {
+TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromXkbId) {
   EXPECT_EQ(NULL, GetInputMethodDescriptorFromXkbId("non_existent"));
 
   const InputMethodDescriptor* descriptor =
@@ -158,11 +174,11 @@ TEST_F(InputMethodUtilTest, GetInputMethodDescriptorFromXkbId) {
   EXPECT_EQ("eng", descriptor->language_code());
 }
 
-TEST_F(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {
+TEST_F(InputMethodUtilTest, TestGetLanguageNativeDisplayNameFromCode) {
   EXPECT_EQ(UTF8ToUTF16("suomi"), GetLanguageNativeDisplayNameFromCode("fi"));
 }
 
-TEST_F(InputMethodUtilTest, SortLanguageCodesByNames) {
+TEST_F(InputMethodUtilTest, TestSortLanguageCodesByNames) {
   std::vector<std::string> language_codes;
   // Check if this function can handle an empty list.
   SortLanguageCodesByNames(&language_codes);
@@ -187,7 +203,7 @@ TEST_F(InputMethodUtilTest, SortLanguageCodesByNames) {
   ASSERT_EQ("t",  language_codes[3]);  // Others
 }
 
-TEST_F(InputMethodUtilTest, GetInputMethodIdsForLanguageCode) {
+TEST_F(InputMethodUtilTest, TestGetInputMethodIdsForLanguageCode) {
   std::multimap<std::string, std::string> language_code_to_ids_map;
   language_code_to_ids_map.insert(std::make_pair("ja", "mozc"));
   language_code_to_ids_map.insert(std::make_pair("ja", "mozc-jp"));
@@ -219,7 +235,7 @@ TEST_F(InputMethodUtilTest, GetInputMethodIdsForLanguageCode) {
 }
 
 // US keyboard + English US UI = US keyboard only.
-TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_EnUs) {
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_EnUs) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("xkb:us::eng");  // US keyboard.
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
@@ -230,7 +246,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_EnUs) {
 }
 
 // US keyboard + Japanese UI = US keyboard + mozc.
-TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_Ja) {
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Ja) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("xkb:us::eng");  // US keyboard.
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
@@ -242,7 +258,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_Ja) {
 }
 
 // JP keyboard + Japanese UI = JP keyboard + mozc-jp.
-TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_JP_And_Ja) {
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_JP_And_Ja) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("xkb:jp::jpn");  // Japanese keyboard.
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
@@ -254,7 +270,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_JP_And_Ja) {
 }
 
 // US dvorak keyboard + Japanese UI = US dvorak keyboard + mozc-dv.
-TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Dvorak_And_Ja) {
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Dvorak_And_Ja) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("xkb:us:dvorak:eng");  // US Drovak keyboard.
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
@@ -266,7 +282,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Dvorak_And_Ja) {
 }
 
 // US keyboard + Russian UI = US keyboard + Russsian keyboard
-TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_Ru) {
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Ru) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("xkb:us::eng");  // US keyboard.
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
@@ -278,7 +294,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_Ru) {
 }
 
 // US keyboard + Traditional Chinese = US keyboard + chewing.
-TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_ZhTw) {
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_ZhTw) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("xkb:us::eng");  // US keyboard.
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
@@ -290,7 +306,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_ZhTw) {
 }
 
 // US keyboard + Thai = US keyboard + kesmanee.
-TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_Th) {
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Th) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("xkb:us::eng");  // US keyboard.
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
@@ -302,7 +318,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_Th) {
 }
 
 // US keyboard + Vietnamese = US keyboard + TCVN6064.
-TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_Vi) {
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Vi) {
   const InputMethodDescriptor* descriptor =
       GetInputMethodDescriptorFromId("xkb:us::eng");  // US keyboard.
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
@@ -313,7 +329,7 @@ TEST_F(InputMethodUtilTest, GetFirstLoginInputMethodIds_Us_And_Vi) {
   EXPECT_EQ("m17n:vi:tcvn", input_method_ids[1]);  // TCVN6064.
 }
 
-TEST_F(InputMethodUtilTest, GetLanguageCodesFromInputMethodIds) {
+TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
   std::vector<std::string> input_method_ids;
   input_method_ids.push_back("xkb:us::eng");  // English US.
   input_method_ids.push_back("xkb:us:dvorak:eng");  // English US Dvorak.

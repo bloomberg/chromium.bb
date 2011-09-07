@@ -14,6 +14,15 @@
 #include "base/logging.h"
 #include "ui/base/x/x11_util.h"
 
+#if defined(TOUCH_UI)
+// Since TOUCH_UI build only supports a few keyboard layouts, we skip the tests
+// for now.
+#define TestCreateFullXkbLayoutNameKeepAlt \
+  DISABLED_TestCreateFullXkbLayoutNameKeepAlt
+#define TestCreateFullXkbLayoutNameKeepCapsLock \
+  DISABLED_TestCreateFullXkbLayoutNameKeepCapsLock
+#endif  // TOUCH_UI
+
 namespace chromeos {
 namespace input_method {
 

@@ -7,6 +7,14 @@
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(TOUCH_UI)
+// Since TOUCH_UI build only supports a few keyboard layouts, we skip the tests
+// for now.
+#define TestCreateInputMethodDescriptor DISABLED_TestCreateInputMethodDescriptor
+#define TestInputMethodIdIsWhitelisted DISABLED_TestInputMethodIdIsWhitelisted
+#define TestXkbLayoutIsSupported DISABLED_TestXkbLayoutIsSupported
+#endif  // TOUCH_UI
+
 namespace chromeos {
 namespace input_method {
 
@@ -17,7 +25,7 @@ InputMethodDescriptor GetDesc(const std::string& raw_layout) {
 }
 }  // namespace
 
-TEST(IBusControllerTest, InputMethodIdIsWhitelisted) {
+TEST(IBusControllerTest, TestInputMethodIdIsWhitelisted) {
   EXPECT_TRUE(InputMethodIdIsWhitelisted("mozc"));
   EXPECT_TRUE(InputMethodIdIsWhitelisted("xkb:us:dvorak:eng"));
   EXPECT_FALSE(InputMethodIdIsWhitelisted("mozc,"));
@@ -27,7 +35,7 @@ TEST(IBusControllerTest, InputMethodIdIsWhitelisted) {
   EXPECT_FALSE(InputMethodIdIsWhitelisted(""));
 }
 
-TEST(IBusControllerTest, XkbLayoutIsSupported) {
+TEST(IBusControllerTest, TestXkbLayoutIsSupported) {
   EXPECT_TRUE(XkbLayoutIsSupported("us"));
   EXPECT_TRUE(XkbLayoutIsSupported("us(dvorak)"));
   EXPECT_TRUE(XkbLayoutIsSupported("fr"));
@@ -39,7 +47,7 @@ TEST(IBusControllerTest, XkbLayoutIsSupported) {
   EXPECT_FALSE(XkbLayoutIsSupported(""));
 }
 
-TEST(IBusControllerTest, CreateInputMethodDescriptor) {
+TEST(IBusControllerTest, TestCreateInputMethodDescriptor) {
   EXPECT_EQ("us", GetDesc("us").keyboard_layout());
   EXPECT_EQ("us", GetDesc("us,us(dvorak)").keyboard_layout());
   EXPECT_EQ("us(dvorak)", GetDesc("us(dvorak),us").keyboard_layout());
