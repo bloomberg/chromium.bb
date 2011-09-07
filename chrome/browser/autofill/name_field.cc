@@ -10,10 +10,79 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/autofill_type.h"
-#include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+const char kNameIgnoredRe[] =
+    "user.?name|user.?id|nickname|maiden name|title|prefix|suffix"
+    // de-DE: |vollständiger.?name
+    "|vollst\xc3\xa4ndiger.?name"
+    // zh-CN: |用户名
+    "|\xe7\x94\xa8\xe6\x88\xb7\xe5\x90\x8d"
+    // ko-KR: |(사용자.?)?아이디|사용자.?ID
+    "|(\xec\x82\xac\xec\x9a\xa9\xec\x9e\x90.?)?\xec\x95\x84\xec\x9d\xb4\xeb"
+        "\x94\x94|\xec\x82\xac\xec\x9a\xa9\xec\x9e\x90.?ID";
+const char kNameRe[] =
+    "^name|full.?name|your.?name|customer.?name|firstandlastname|bill.?name"
+        "|ship.?name"
+    // es: |nombre.*y.*apellidos
+    "|nombre.*y.*apellidos"
+    // fr-FR: |^nom
+    "|^nom"
+    // ja-JP: |お名前|氏名
+    "|\xe3\x81\x8a\xe5\x90\x8d\xe5\x89\x8d|\xe6\xb0\x8f\xe5\x90\x8d"
+    // pt-BR, pt-PT: |^nome
+    "|^nome"
+    // zh-CN: |姓名
+    "|\xe5\xa7\x93\xe5\x90\x8d"
+    // ko-KR: |성명
+    "|\xec\x84\xb1\xeb\xaa\x85";
+const char kNameSpecificRe[] =
+    "^name"
+    // fr-FR: |^nom
+    "|^nom"
+    // pt-BR, pt-PT: |^nome
+    "|^nome";
+const char kFirstNameRe[] =
+    "first.*name|initials|fname|first$"
+    // de-DE: |vorname
+    "|vorname"
+    // es: |nombre
+    "|nombre"
+    // fr-FR: |forename|prénom|prenom
+    "|forename|pr\xc3\xa9nom|prenom"
+    // ja-JP: |名
+    "|\xe5\x90\x8d"
+    // pt-BR, pt-PT: |nome
+    "|nome"
+    // ru: |Имя
+    "|\xd0\x98\xd0\xbc\xd1\x8f"
+    // ko-KR: |이름
+    "|\xec\x9d\xb4\xeb\xa6\x84";
+const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
+const char kMiddleNameRe[] =
+    "middle.*name|mname|middle$"
+    // es: |apellido.?materno|lastlastname
+    "|apellido.?materno|lastlastname";
+const char kLastNameRe[] =
+    "last.*name|lname|surname|last$|secondname"
+    // de-DE: |nachname
+    "|nachname"
+    // es: |apellido
+    "|apellido"
+    // fr-FR: |famille|^nom
+    "|famille|^nom"
+    // it-IT: |cognome
+    "|cognome"
+    // ja-JP: |姓
+    "|\xe5\xa7\x93"
+    // pt-BR, pt-PT: |morada|apelidos|surename|sobrenome
+    "|morada|apelidos|surename|sobrenome"
+    // ru: |Фамилия
+    "|\xd0\xa4\xd0\xb0\xd0\xbc\xd0\xb8\xd0\xbb\xd0\xb8\xd1\x8f"
+    // ko-KR: |성[^명]?
+    "|\xec\x84\xb1[^\xeb\xaa\x85]?";
 
 // A form field that can parse a full name field.
 class FullNameField : public NameField {
@@ -75,8 +144,7 @@ bool NameField::ClassifyField(FieldTypeMap* map) const {
 FullNameField* FullNameField::Parse(AutofillScanner* scanner) {
   // Exclude e.g. "username" or "nickname" fields.
   scanner->SaveCursor();
-  bool should_ignore = ParseField(
-      scanner, l10n_util::GetStringUTF16(IDS_AUTOFILL_NAME_IGNORED_RE), NULL);
+  bool should_ignore = ParseField(scanner, UTF8ToUTF16(kNameIgnoredRe), NULL);
   scanner->Rewind();
   if (should_ignore)
     return NULL;
@@ -85,8 +153,7 @@ FullNameField* FullNameField::Parse(AutofillScanner* scanner) {
   // for example, Travelocity_Edit travel profile.html contains a field
   // "Travel Profile Name".
   const AutofillField* field = NULL;
-  if (ParseField(scanner, l10n_util::GetStringUTF16(IDS_AUTOFILL_NAME_RE),
-                 &field))
+  if (ParseField(scanner, UTF8ToUTF16(kNameRe), &field))
     return new FullNameField(field);
 
   return NULL;
@@ -109,8 +176,7 @@ FirstLastNameField* FirstLastNameField::ParseSpecificName(
 
   const AutofillField* next;
   if (ParseField(scanner,
-                 l10n_util::GetStringUTF16(IDS_AUTOFILL_NAME_SPECIFIC_RE),
-                 &v->first_name_) &&
+                 UTF8ToUTF16(kNameSpecificRe), &v->first_name_) &&
       ParseEmptyLabel(scanner, &next)) {
     if (ParseEmptyLabel(scanner, &v->last_name_)) {
       // There are three name fields; assume that the middle one is a
@@ -146,16 +212,13 @@ FirstLastNameField* FirstLastNameField::ParseComponentNames(
   // Allow name fields to appear in any order.
   while (!scanner->IsEnd()) {
     // Skip over any unrelated fields, e.g. "username" or "nickname".
-    if (ParseFieldSpecifics(scanner,
-                   l10n_util::GetStringUTF16(IDS_AUTOFILL_NAME_IGNORED_RE),
-                   MATCH_DEFAULT | MATCH_SELECT, NULL)) {
+    if (ParseFieldSpecifics(scanner, UTF8ToUTF16(kNameIgnoredRe),
+                            MATCH_DEFAULT | MATCH_SELECT, NULL)) {
           continue;
     }
 
     if (!v->first_name_ &&
-        ParseField(scanner,
-                   l10n_util::GetStringUTF16(IDS_AUTOFILL_FIRST_NAME_RE),
-                   &v->first_name_)) {
+        ParseField(scanner, UTF8ToUTF16(kFirstNameRe), &v->first_name_)) {
       continue;
     }
 
@@ -165,24 +228,18 @@ FirstLastNameField* FirstLastNameField::ParseComponentNames(
     // "txtmiddlename"); such a field probably actually represents a
     // middle initial.
     if (!v->middle_name_ &&
-        ParseField(scanner,
-                   l10n_util::GetStringUTF16(IDS_AUTOFILL_MIDDLE_INITIAL_RE),
-                   &v->middle_name_)) {
+        ParseField(scanner, UTF8ToUTF16(kMiddleInitialRe), &v->middle_name_)) {
       v->middle_initial_ = true;
       continue;
     }
 
     if (!v->middle_name_ &&
-        ParseField(scanner,
-                   l10n_util::GetStringUTF16(IDS_AUTOFILL_MIDDLE_NAME_RE),
-                   &v->middle_name_)) {
+        ParseField(scanner, UTF8ToUTF16(kMiddleNameRe), &v->middle_name_)) {
       continue;
     }
 
     if (!v->last_name_ &&
-        ParseField(scanner,
-                   l10n_util::GetStringUTF16(IDS_AUTOFILL_LAST_NAME_RE),
-                   &v->last_name_)) {
+        ParseField(scanner, UTF8ToUTF16(kLastNameRe), &v->last_name_)) {
       continue;
     }
 
