@@ -1008,16 +1008,14 @@ class ArchiveStage(NonHaltingBuilderStage):
       """Upload test results when they are ready."""
       test_results = self._GetTestResults()
       if test_results:
-        if config['archive_build_debug'] and self._WaitForBreakpadSymbols():
+        if self._WaitForBreakpadSymbols():
           commands.GenerateMinidumpStackTraces(buildroot, board, test_results)
         filename = commands.ArchiveTestTarball(test_results, archive_path)
         commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
 
     def ArchiveDebugSymbols():
       """Generate and upload debug symbols."""
-      # TODO(thieule): Generate breakpad symbols if a crash was detected for
-      # bots that do not normally generate breakpad symbols
-      if config['archive_build_debug']:
+      if config['archive_build_debug'] or config['vm_tests']:
         success = False
         try:
           commands.GenerateBreakpadSymbols(buildroot, board)
