@@ -4262,13 +4262,6 @@
    fun:_ZN10URLFetcher4Core30StartURLRequestWhenAppropriateEv
 }
 {
-   bug_81782
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos29ServicesCustomizationDocument22LoadManifestFromStringERKSs
-   fun:_ZN8chromeos29ServicesCustomizationDocumentC1ERKSsS2_
-}
-{
    bug_81753a
    Memcheck:Cond
    ...

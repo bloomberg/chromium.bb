@@ -1613,13 +1613,6 @@
    fun:TabContents
 }
 {
-   bug_81782
-   Heapcheck:Leak
-   ...
-   fun:chromeos::ServicesCustomizationDocument::LoadManifestFromString
-   fun:ServicesCustomizationDocument
-}
-{
    bug_90271
    Heapcheck:Leak
    ...
