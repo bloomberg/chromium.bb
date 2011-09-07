@@ -100,14 +100,15 @@ def main():
     analyzer_result_map = layouttest_analyzer_helpers.AnalyzerResultMap(
         layouttests.JoinWithTestExpectation(TestExpectations()))
     (prev_time, prev_analyzer_result_map) = (
-      layouttest_analyzer_helpers.FindLatestResult('result'))
+        layouttest_analyzer_helpers.FindLatestResult(
+            options.result_directory_location))
   else:
     analyzer_result_map = layouttest_analyzer_helpers.AnalyzerResultMap.Load(
         CURRENT_RESULT_FILE_FOR_DEBUG)
     prev_time = PREV_TIME_FOR_DEBUG
     prev_analyzer_result_map = (
         layouttest_analyzer_helpers.AnalyzerResultMap.Load(
-            os.path.join(options.result_directory_location, prev_time)))
+            os.path.join(DEFAULT_RESULT_DIR, prev_time)))
 
   # Read bug annotations and generate an annotation map used for the status
   # email.
