@@ -968,8 +968,8 @@ void OmniboxViewGtk::SetBaseColor() {
 #else
     background_color_ptr = &LocationBarViewGtk::kBackgroundColor;
 #endif
-    gtk_widget_modify_cursor(
-        text_view_, &ui::kGdkBlack, &ui::kGdkGray);
+    GdkColor gray = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
+    gtk_widget_modify_cursor(text_view_, &ui::kGdkBlack, &gray);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
 
 #if !defined(TOOLKIT_VIEWS)

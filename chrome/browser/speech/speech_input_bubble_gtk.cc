@@ -33,7 +33,7 @@ const int kIconHorizontalPadding = 10;
 const int kButtonBarHorizontalSpacing = 10;
 
 // Use black for text labels since the bubble has white background.
-const GdkColor kLabelTextColor = ui::kGdkBlack;
+const GdkColor& kLabelTextColor = ui::kGdkBlack;
 
 // Implementation of SpeechInputBubble for GTK. This shows a speech input bubble
 // on screen.

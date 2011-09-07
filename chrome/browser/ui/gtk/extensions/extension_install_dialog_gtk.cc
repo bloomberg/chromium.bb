@@ -138,7 +138,8 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     GtkWidget* users_label = gtk_label_new(UTF16ToUTF8(
         prompt.GetUserCount()).c_str());
     gtk_util::SetLabelWidth(users_label, kLeftColumnMinWidth);
-    gtk_util::SetLabelColor(users_label, &ui::kGdkGray);
+    GdkColor gray = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
+    gtk_util::SetLabelColor(users_label, &gray);
     gtk_util::ForceFontSizePixels(rating_label, kRatingTextSize);
     gtk_box_pack_start(GTK_BOX(heading_vbox), users_label,
                        FALSE, FALSE, 0);

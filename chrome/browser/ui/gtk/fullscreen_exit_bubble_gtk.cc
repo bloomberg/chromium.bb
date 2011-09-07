@@ -46,8 +46,8 @@ void FullscreenExitBubbleGtk::InitWidgets() {
   link_container_.Own(gtk_util::CreateGtkBorderBin(
       link, &ui::kGdkBlack,
       kPaddingPx, kPaddingPx, kPaddingPx, kPaddingPx));
-  gtk_util::ActAsRoundedWindow(link_container_.get(), ui::kGdkGreen,
-      kPaddingPx,
+  GdkColor green = GDK_COLOR_RGB(0x00, 0xff, 0x00);
+  gtk_util::ActAsRoundedWindow(link_container_.get(), green, kPaddingPx,
       gtk_util::ROUNDED_BOTTOM_LEFT | gtk_util::ROUNDED_BOTTOM_RIGHT,
       gtk_util::BORDER_NONE);
 

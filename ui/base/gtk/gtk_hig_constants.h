@@ -15,16 +15,20 @@
 
 typedef struct _GdkColor GdkColor;
 
+// Define a macro for creating GdkColors from RGB values.  This is a macro to
+// allow static construction of literals, etc.  Use this like:
+//   GdkColor white = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+#define GDK_COLOR_RGB(r, g, b) {0, r * ::ui::kSkiaToGDKMultiplier,  \
+        g * ::ui::kSkiaToGDKMultiplier, b * ::ui::kSkiaToGDKMultiplier}
+
 namespace ui {
 
 // Multiply uint8 color components by this.
 const int kSkiaToGDKMultiplier = 257;
 
 // Named color constants.
-UI_EXPORT extern const GdkColor kGdkWhite;
-UI_EXPORT extern const GdkColor kGdkGray;
-UI_EXPORT extern const GdkColor kGdkBlack;
-UI_EXPORT extern const GdkColor kGdkGreen;
+const GdkColor kGdkWhite = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+const GdkColor kGdkBlack = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 
 // Constants relating to the layout of dialog windows:
 // (See http://library.gnome.org/devel/hig-book/stable/design-window.html.en)
@@ -49,10 +53,5 @@ const int kFormControlSpacing = 10;
 
 }  // namespace ui
 
-// Define a macro for creating GdkColors from RGB values.  This is a macro to
-// allow static construction of literals, etc.  Use this like:
-//   GdkColor white = GDK_COLOR_RGB(0xff, 0xff, 0xff);
-#define GDK_COLOR_RGB(r, g, b) {0, r * ::ui::kSkiaToGDKMultiplier,  \
-        g * ::ui::kSkiaToGDKMultiplier, b * ::ui::kSkiaToGDKMultiplier}
 
 #endif  // UI_BASE_GTK_GTK_HIG_CONSTANTS_H_
