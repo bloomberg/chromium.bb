@@ -236,18 +236,15 @@
           ],
         },
         {
-          'target_name': 'nacl_helper_bootstrap_raw',
-          'type': 'executable',
+          'target_name': 'nacl_helper_bootstrap_lib',
+          'type': 'static_library',
+          'product_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
+          'hard_depencency': 1,
           'include_dirs': [
             '..',
           ],
           'sources': [
             'nacl/nacl_helper_bootstrap_linux.c',
-            # We list the linker script here for documentation purposes.
-            # But even this doesn't make gyp treat it as a dependency,
-            # so incremental builds won't relink when the script changes.
-            # TODO(bradnelson): Fix the dependency handling.
-            'nacl/nacl_helper_bootstrap_linux.x',
           ],
           'cflags': [
             # The tiny standalone bootstrap program is incompatible with
@@ -263,27 +260,67 @@
             '-fno-pic', '-fno-PIC',
             '-fno-pie', '-fno-PIE',
           ],
-          'link_settings': {
-            'ldflags': [
-              # TODO(bradchen): Delete the -B argument when Gold is verified
-              # to produce good results with our custom linker script.
-              # Until then use ld.bfd.
-              '-B', '<(PRODUCT_DIR)/../../tools/ld_bfd',
-              # This programs is (almost) entirely standalone.  It has
-              # its own startup code, so no crt1.o for it.  It is
-              # statically linked, and on x86 it actually does not use
-              # libc at all.  However, on ARM it needs a few (safe)
-              # things from libc, so we don't use '-nostdlib' here.
-              '-static', '-nostartfiles',
-              # Link with our custom linker script to get out special layout.
-              '-Wl,--script=<(PRODUCT_DIR)/../../chrome/nacl/nacl_helper_bootstrap_linux.x',
-              # On x86-64, the default page size with some
-              # linkers is 2M rather than the real Linux page
-              # size of 4K.  A larger page size is incompatible
-              # with our custom linker script's special layout.
-              '-Wl,-z,max-page-size=0x1000',
-            ],
-          },
+        },
+        {
+          'target_name': 'nacl_helper_bootstrap_raw',
+          'type': 'none',
+          'dependencies': [
+            'nacl_helper_bootstrap_lib',
+          ],
+          'actions': [
+            {
+              'action_name': 'link_with_ld_bfd',
+              'variables': {
+                'bootstrap_lib': '<(SHARED_INTERMEDIATE_DIR)/chrome/<(STATIC_LIB_PREFIX)nacl_helper_bootstrap_lib<(STATIC_LIB_SUFFIX)',
+                'linker_script': 'nacl/nacl_helper_bootstrap_linux.x',
+              },
+              'inputs': [
+                 '<(linker_script)',
+                 '<(bootstrap_lib)',
+                 '../tools/ld_bfd/ld',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/nacl_helper_bootstrap_raw',
+              ],
+              'message': 'Linking nacl_helper_bootstrap_raw',
+              'conditions': [
+                ['target_arch=="x64"', {
+                  'variables': {
+                    'linker_emulation': 'elf_x86_64',
+                  }
+                }],
+                ['target_arch=="ia32"', {
+                  'variables': {
+                    'linker_emulation': 'elf_i386',
+                  }
+                }],
+                ['target_arch=="arm"', {
+                  'variables': {
+                    'linker_emulation': 'armelf_linux_eabi',
+                  }
+                }],
+              ],
+              'action': ['../tools/ld_bfd/ld',
+                         '-m', '<(linker_emulation)',
+                         # This program is (almost) entirely standalone.  It
+                         # has its own startup code, so no crt1.o for it.  It is
+                         # statically linked, and on x86 it does not use
+                         # libc at all.  However, on ARM it needs a few (safe)
+                         # things from libc.
+                         '-static',
+                         # Link with custom linker script for special layout.
+                         '--script=<(linker_script)',
+                         '-o', '<@(_outputs)',
+                         # On x86-64, the default page size with some
+                         # linkers is 2M rather than the real Linux page
+                         # size of 4K.  A larger page size is incompatible
+                         # with our custom linker script's special layout.
+                         '-z', 'max-page-size=0x1000',
+                         '--whole-archive', '<(bootstrap_lib)',
+                         '--no-whole-archive',
+                       ],
+            }
+          ],
         },
         {
           'target_name': 'nacl_helper_bootstrap',
@@ -301,7 +338,7 @@
               'message': 'Munging ELF program header',
               'action': ['python', '<@(_inputs)', '<@(_outputs)']
             }],
-          }
+          },
       ],
     }],
   ],
