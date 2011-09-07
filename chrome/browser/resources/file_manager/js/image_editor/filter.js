@@ -109,12 +109,12 @@ filter.getHistogram = function(imageData) {
  *
  * @param {number} maxArg Maximum argument value (inclusive).
  * @param {function(number): number} func
- * @return {Array.<number>} Computed results
+ * @return {Uint8Array} Computed results
  */
 filter.precompute = function(maxArg, func) {
-  var results = [];
+  var results = new Uint8Array(maxArg + 1);
   for (var arg = 0; arg <= maxArg; arg ++) {
-    results.push(Math.max(0, Math.min(0xFF, Math.round(func(arg)))));
+    results[arg] = Math.max(0, Math.min(0xFF, Math.round(func(arg))));
   }
   return results;
 };
@@ -158,10 +158,13 @@ filter.mapPixels = function(rMap, gMap, bMap, dst, src, offsetX, offsetY) {
 };
 
 filter.FIXED_POINT_SHIFT = 16;
-filter.MAX_SHIFTED_VALUE = 0xFF << filter.FIXED_POINT_SHIFT;
+// Maximum value that can be represented in fixed point without overflow.
+filter.MAX_FLOAT_VALUE = 0x7FFFFFFF >> filter.FIXED_POINT_SHIFT;
 
 filter.floatToFixedPoint = function(x) {
-  return Math.round((x || 0) * (1 << filter.FIXED_POINT_SHIFT));
+  // Math.round on negative arguments causes V8 to deoptimize the calling
+  // function, so we are using >> 0 instead.
+  return (x * (1<< filter.FIXED_POINT_SHIFT)) >> 0;
 };
 
 /**
@@ -173,20 +176,19 @@ filter.floatToFixedPoint = function(x) {
  *  0 w2 w1 w2  0
  *  0  0 w3  0  0
  *
- * For performance reasons the weights are in fixed point format
- * (left shifted by filter.FIXED_POINT_SHIFT).
- *
- * @param {number} w0 See the picture above
- * @param {number} w1 See the picture above
- * @param {number} w2 See the picture above
- * @param {number} w3 See the picture above
+ * @param {Array.<number>} weights See the picture above.
  * @param {ImageData} dst Destination image data. Can be smaller than the
  *                        source, must completely fit inside the source.
  * @param {ImageData} src Source image data.
  * @param {number} offsetX Horizontal offset of dst relative to src.
  * @param {number} offsetY Vertical offset of dst relative to src.
  */
-filter.convolve5x5 = function(w0, w1, w2, w3, dst, src, offsetX, offsetY) {
+filter.convolve5x5 = function(weights, dst, src, offsetX, offsetY) {
+  var w0 = filter.floatToFixedPoint(weights[0]);
+  var w1 = filter.floatToFixedPoint(weights[1]);
+  var w2 = filter.floatToFixedPoint(weights[2]);
+  var w3 = filter.floatToFixedPoint(weights[3]);
+
   var dstData = dst.data;
   var dstWidth = dst.width;
   var dstHeight = dst.height;
@@ -200,12 +202,12 @@ filter.convolve5x5 = function(w0, w1, w2, w3, dst, src, offsetX, offsetY) {
 
   if (offsetX < 0 || offsetX + dstWidth > srcWidth ||
       offsetY < 0 || offsetY + dstHeight > srcHeight)
-      throw new Error('Invalid offset');
+    throw new Error('Invalid offset');
 
-  w0 = filter.floatToFixedPoint(w0);
-  w1 = filter.floatToFixedPoint(w1);
-  w2 = filter.floatToFixedPoint(w2);
-  w3 = filter.floatToFixedPoint(w3);
+  // Javascript is not very good at inlining constants.
+  // We inline manually and assert that the constant is equal to the variable.
+  if (filter.FIXED_POINT_SHIFT != 16)
+    throw new Error('Wrong fixed point shift');
 
   var margin = 2;
 
@@ -236,10 +238,10 @@ filter.convolve5x5 = function(w0, w1, w2, w3, dst, src, offsetX, offsetY) {
                         srcData[srcIndex + srcStride2]);
         if (sum < 0)
           dstData[dstIndex++] = 0;
-        else if (sum > Filter.MAX_SHIFTED_VALUE)
+        else if (sum > 0xFF0000)
           dstData[dstIndex++] = 0xFF;
         else
-          dstData[dstIndex++] = sum >> Filter.FIXED_POINT_SHIFT;
+          dstData[dstIndex++] = sum >> 16;
         srcIndex++;
       }
       srcIndex++;
@@ -249,23 +251,194 @@ filter.convolve5x5 = function(w0, w1, w2, w3, dst, src, offsetX, offsetY) {
 };
 
 /**
+ * Compute the average color for the image.
+ *
+ * @param {ImageData} imageData
+ * @return {{r: number, g: number, b: number}}
+ */
+filter.getAverageColor = function(imageData) {
+  var data = imageData.data;
+  var width = imageData.width;
+  var height = imageData.height;
+
+  var total = 0;
+  var r = 0;
+  var g = 0;
+  var b = 0;
+
+  var maxIndex = 4 * width * height;
+  for (var i = 0; i != maxIndex;) {
+    total++;
+    r += data[i++];
+    g += data[i++];
+    b += data[i++];
+    i++;
+  }
+  if (total == 0) return { r: 0, g: 0, b: 0 };
+  return { r: r / total, g: g / total, b: b / total };
+};
+
+/**
+ * Compute the average color with more weight given to pixes at the center.
+ *
+ * @param {ImageData} imageData
+ * @return {{r: number, g: number, b: number}}
+ */
+filter.getWeightedAverageColor = function(imageData) {
+  var data = imageData.data;
+  var width = imageData.width;
+  var height = imageData.height;
+
+  var total = 0;
+  var r = 0;
+  var g = 0;
+  var b = 0;
+
+  var center = Math.floor(width / 2);
+  var maxDist = center * Math.sqrt(2);
+  maxDist *= 2; // Weaken the effect of distance
+
+  var i = 0;
+  for (var x = 0; x != width; x++) {
+    for (var y = 0; y != height; y++) {
+      var dist = Math.sqrt(
+          (x - center) * (x - center) + (y - center) * (y - center));
+      var weight = (maxDist - dist) / maxDist;
+
+      total += weight;
+      r += data[i++] * weight;
+      g += data[i++] * weight;
+      b += data[i++] * weight;
+      i++;
+    }
+  }
+  if (total == 0) return { r: 0, g: 0, b: 0 };
+  return { r: r / total, g: g / total, b: b / total };
+};
+
+/**
+ * Apply a 3x3 color matrix.
+ *
+ * @param {Array.<number>} matrix 3x3 color matrix
+ * @param {ImageData} dst
+ * @param {ImageData} src
+ * @param {number} offsetX
+ * @param {number} offsetY
+ */
+filter.colorMatrix3x3 = function(matrix, dst, src, offsetX, offsetY) {
+  var c11 = filter.floatToFixedPoint(matrix[0]);
+  var c12 = filter.floatToFixedPoint(matrix[1]);
+  var c13 = filter.floatToFixedPoint(matrix[2]);
+  var c21 = filter.floatToFixedPoint(matrix[3]);
+  var c22 = filter.floatToFixedPoint(matrix[4]);
+  var c23 = filter.floatToFixedPoint(matrix[5]);
+  var c31 = filter.floatToFixedPoint(matrix[6]);
+  var c32 = filter.floatToFixedPoint(matrix[7]);
+  var c33 = filter.floatToFixedPoint(matrix[8]);
+
+  var dstData = dst.data;
+  var dstWidth = dst.width;
+  var dstHeight = dst.height;
+
+  var srcData = src.data;
+  var srcWidth = src.width;
+  var srcHeight = src.height;
+
+  if (offsetX < 0 || offsetX + dstWidth > srcWidth ||
+      offsetY < 0 || offsetY + dstHeight > srcHeight)
+      throw new Error('Invalid offset');
+
+  // Javascript is not very good at inlining constants.
+  // We inline manually and assert that the constant is equal to the variable.
+  if (filter.FIXED_POINT_SHIFT != 16)
+    throw new Error('Wrong fixed point shift');
+
+  var dstIndex = 0;
+  for (var y = 0; y != dstHeight; y++) {
+    var srcIndex = (offsetX + (offsetY + y)* srcWidth)* 4;
+    for (var x = 0; x != dstWidth; x++ ) {
+      var r = srcData[srcIndex++];
+      var g = srcData[srcIndex++];
+      var b = srcData[srcIndex++];
+      srcIndex++;
+
+      var rNew = r * c11 + g * c12 + b * c13;
+      var gNew = r * c21 + g * c22 + b * c23;
+      var bNew = r * c31 + g * c32 + b * c33;
+
+      if (rNew < 0) {
+        dstData[dstIndex++] = 0;
+      } else if (rNew > 0xFF0000) {
+        dstData[dstIndex++] = 0xFF;
+      } else {
+        dstData[dstIndex++] = rNew >> 16;
+      }
+
+      if (gNew < 0) {
+        dstData[dstIndex++] = 0;
+      } else if (gNew > 0xFF0000) {
+        dstData[dstIndex++] = 0xFF;
+      } else {
+        dstData[dstIndex++] = gNew >> 16;
+      }
+
+      if (bNew < 0) {
+        dstData[dstIndex++] = 0;
+      } else if (bNew > 0xFF0000) {
+        dstData[dstIndex++] = 0xFF;
+      } else {
+        dstData[dstIndex++] = bNew >> 16;
+      }
+
+      dstIndex++;
+    }
+  }
+};
+
+/**
  * Return a convolution filter function bound to specific weights.
  *
- * @param {Array.<number>} weights Weights for the convolution matrix.
+ * @param {Array.<number>} weights Weights for the convolution matrix
+ *                                 (not normalized).
  * @return {function(ImageData,ImageData,number,number)}
  */
-filter.convolution5x5 = function(weights) {
+filter.createConvolutionFilter = function(weights) {
+  // Normalize the weights to sum to 1.
   var total = 0;
   for (var i = 0; i != weights.length; i++) {
     total += weights[i] * (i ? 4 : 1);
   }
 
+  var normalized = [];
   for (i = 0; i != weights.length; i++) {
-    weights[i] /= total;
+    normalized.push(weights[i] / total);
+  }
+  for (; i < 4; i++) {
+    normalized.push(0);
   }
 
-  return filter.convolve5x5.bind(
-      null, weights[0], weights[1], weights[2], weights[3]);
+  var maxWeightedSum = 0xFF *
+      Math.abs(normalized[0]) +
+      Math.abs(normalized[1]) * 4 +
+      Math.abs(normalized[2]) * 4 +
+      Math.abs(normalized[3]) * 4;
+  if (maxWeightedSum > filter.MAX_FLOAT_VALUE)
+    throw new Error('convolve5x5 cannot convert the weights to fixed point');
+
+  return filter.convolve5x5.bind(null, normalized);
+};
+
+filter.createColorMatrixFilter = function(matrix) {
+  for (var r = 0; r != 3; r++) {
+    var maxRowSum = 0;
+    for (var c = 0; c != 3; c++) {
+      maxRowSum += 0xFF * Math.abs(matrix[r * 3 + c]);
+    }
+    if (maxRowSum > filter.MAX_FLOAT_VALUE)
+      throw new Error(
+          'colorMatrix3x3 cannot convert the matrix to fixed point');
+  }
+  return filter.colorMatrix3x3.bind(null, matrix);
 };
 
 /**
@@ -275,13 +448,13 @@ filter.convolution5x5 = function(weights) {
  */
 filter.blur = function(options) {
   if (options.radius == 1)
-    return filter.convolution5x5(
+    return filter.createConvolutionFilter(
         [1, options.strength]);
   else if (options.radius == 2)
-    return filter.convolution5x5(
+    return filter.createConvolutionFilter(
         [1, options.strength, options.strength]);
   else
-    return filter.convolution5x5(
+    return filter.createConvolutionFilter(
         [1, options.strength, options.strength, options.strength]);
 };
 
@@ -292,13 +465,13 @@ filter.blur = function(options) {
  */
 filter.sharpen = function(options) {
   if (options.radius == 1)
-    return filter.convolution5x5(
+    return filter.createConvolutionFilter(
         [5, -options.strength]);
   else if (options.radius == 2)
-    return filter.convolution5x5(
+    return filter.createConvolutionFilter(
         [10, -options.strength, -options.strength]);
   else
-    return filter.convolution5x5(
+    return filter.createConvolutionFilter(
         [15, -options.strength, -options.strength, -options.strength]);
 };
 

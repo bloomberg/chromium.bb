@@ -53,7 +53,12 @@ function ImageEditor(container, saveCallback, closeCallback) {
 ImageEditor.open = function(saveCallback, closeCallback, source, opt_metadata) {
   var container = document.getElementsByClassName('image-editor')[0];
   var editor = new ImageEditor(container, saveCallback, closeCallback);
-  window.addEventListener('resize', editor.resizeFrame.bind(editor), false);
+  if (ImageEditor.resizeListener) {
+    // Make sure we do not leak the previous instance.
+    window.removeEventListener('resize', ImageEditor.resizeListener, false);
+  }
+  ImageEditor.resizeListener = editor.resizeFrame.bind(editor);
+  window.addEventListener('resize', ImageEditor.resizeListener, false);
   editor.load(source, opt_metadata);
   return editor;
 };
