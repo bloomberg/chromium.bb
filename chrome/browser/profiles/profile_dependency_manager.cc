@@ -10,6 +10,7 @@
 
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
@@ -38,6 +39,7 @@ void AssertFactoriesBuilt() {
     BackgroundContentsServiceFactory::GetInstance();
     CloudPrintProxyServiceFactory::GetInstance();
     PluginPrefs::Initialize();
+    prerender::PrerenderManagerFactory::GetInstance();
     SessionServiceFactory::GetInstance();
     TabRestoreServiceFactory::GetInstance();
     TemplateURLServiceFactory::GetInstance();

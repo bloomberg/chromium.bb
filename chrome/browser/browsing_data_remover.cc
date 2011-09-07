@@ -24,6 +24,7 @@
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -178,7 +179,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     // It also may have a prerendered page. If so, the page could be considered
     // to have a small amount of historical information, so delete it, too.
     prerender::PrerenderManager* prerender_manager =
-        profile_->GetPrerenderManager();
+        prerender::PrerenderManagerFactory::GetForProfile(profile_);
     if (prerender_manager) {
       prerender_manager->ClearData(
           prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS |
@@ -283,7 +284,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     // The PrerenderManager may have a page actively being prerendered, which
     // is essentially a preemptively cached page.
     prerender::PrerenderManager* prerender_manager =
-        profile_->GetPrerenderManager();
+        prerender::PrerenderManagerFactory::GetForProfile(profile_);
     if (prerender_manager) {
       prerender_manager->ClearData(
           prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS);

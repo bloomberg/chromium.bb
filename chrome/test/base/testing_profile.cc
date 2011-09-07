@@ -776,16 +776,6 @@ ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
   return chrome_url_data_manager_.get();
 }
 
-prerender::PrerenderManager* TestingProfile::GetPrerenderManager() {
-  if (!prerender::PrerenderManager::IsPrerenderingPossible())
-    return NULL;
-  if (!prerender_manager_.get()) {
-    prerender_manager_.reset(new prerender::PrerenderManager(
-        this, g_browser_process->prerender_tracker()));
-  }
-  return prerender_manager_.get();
-}
-
 PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }

@@ -28,6 +28,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -510,8 +511,8 @@ void ChromeContentBrowserClient::AllowCertificateError(
     return;
   }
   prerender::PrerenderManager* prerender_manager =
-      Profile::FromBrowserContext(tab->browser_context())->
-          GetPrerenderManager();
+      prerender::PrerenderManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(tab->browser_context()));
   if (prerender_manager && prerender_manager->IsTabContentsPrerendering(tab)) {
     if (prerender_manager->prerender_tracker()->TryCancel(
             handler->render_process_host_id(),

@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -212,7 +213,8 @@ TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
 
 bool TaskManagerTabContentsResource::IsPrerendering() const {
   prerender::PrerenderManager* prerender_manager =
-      tab_contents_->profile()->GetPrerenderManager();
+      prerender::PrerenderManagerFactory::GetForProfile(
+          tab_contents_->profile());
   return prerender_manager &&
          prerender_manager->IsTabContentsPrerendering(
              tab_contents_->tab_contents());

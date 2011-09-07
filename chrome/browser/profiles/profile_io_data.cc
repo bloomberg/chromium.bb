@@ -31,6 +31,7 @@
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
@@ -183,7 +184,7 @@ prerender::PrerenderManager* GetPrerenderManagerOnUI(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile = profile_getter.Run();
   if (profile)
-    return profile->GetPrerenderManager();
+    return prerender::PrerenderManagerFactory::GetForProfile(profile);
   return NULL;
 }
 

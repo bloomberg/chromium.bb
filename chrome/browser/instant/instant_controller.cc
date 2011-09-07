@@ -18,6 +18,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -205,7 +206,8 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
   } else if (preview_condition == PREVIEW_CONDITION_INSTANT_SEARCH_ONLY) {
     // Start Prerender of this page instead.
     prerender::PrerenderManager* prerender_manager =
-        tab_contents_->profile()->GetPrerenderManager();
+        prerender::PrerenderManagerFactory::GetForProfile(
+            tab_contents_->profile());
     if (prerender_manager)
       prerender_manager->AddPrerenderFromOmnibox(match.destination_url);
 

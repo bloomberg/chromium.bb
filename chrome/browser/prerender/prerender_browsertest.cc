@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -541,7 +542,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   PrerenderManager* prerender_manager() const {
     Profile* profile = browser()->GetSelectedTabContentsWrapper()->profile();
-    PrerenderManager* prerender_manager = profile->GetPrerenderManager();
+    PrerenderManager* prerender_manager =
+        PrerenderManagerFactory::GetForProfile(profile);
     return prerender_manager;
   }
 

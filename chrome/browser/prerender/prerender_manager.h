@@ -23,6 +23,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -52,7 +53,8 @@ class PrerenderTracker;
 // views of webpages. All methods must be called on the UI thread unless
 // indicated otherwise.
 class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
-                         public base::NonThreadSafe {
+                         public base::NonThreadSafe,
+                         public ProfileKeyedService {
  public:
   // PrerenderManagerMode is used in a UMA_HISTOGRAM, so please do not
   // add in the middle.
@@ -79,6 +81,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderManager(Profile* profile, PrerenderTracker* prerender_tracker);
 
   virtual ~PrerenderManager();
+
+  // ProfileKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
 
   // Entry points for adding prerenders.
 
@@ -217,6 +222,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       PrerenderContents::Factory* prerender_contents_factory);
 
   PendingContentsData* FindPendingEntry(const GURL& url);
+
+  // Utility method that is called from the virtual Shutdown method on this
+  // class but is called directly from the TestPrerenderManager in the unit
+  // tests.
+  void DoShutdown();
 
  private:
   // Test that needs needs access to internal functions.
