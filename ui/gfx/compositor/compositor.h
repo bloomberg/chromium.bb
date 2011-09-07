@@ -95,7 +95,7 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   virtual void Blur(const gfx::Rect& bounds) = 0;
 
   // Schedules a paint on the widget this Compositor was created for.
-  virtual void SchedulePaint() {
+  void SchedulePaint() {
     delegate_->ScheduleCompositorPaint();
   }
 
