@@ -235,7 +235,6 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
           last_timestamp_ = frame_timestamp;
           ConvertFrame(frame);
         }
-        frame = NULL;
       }
       renderer_->PutCurrentFrame(frame);
 
