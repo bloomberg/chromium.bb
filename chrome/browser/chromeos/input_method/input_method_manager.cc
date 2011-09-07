@@ -64,7 +64,7 @@ namespace input_method {
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
                                public NotificationObserver,
-                               public input_method::IBusController::Observer {
+                               public IBusController::Observer {
  public:
   InputMethodManagerImpl()
       : ibus_controller_(NULL),
@@ -87,7 +87,7 @@ class InputMethodManagerImpl : public InputMethodManager,
     notification_registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                                 NotificationService::AllSources());
 
-    ibus_controller_ = input_method::IBusController::Create();
+    ibus_controller_ = IBusController::Create();
     // The observer should be added before Connect() so we can capture the
     // initial connection change.
     ibus_controller_->AddObserver(this);
@@ -118,20 +118,18 @@ class InputMethodManagerImpl : public InputMethodManager,
     virtual_keyboard_observers_.RemoveObserver(observer);
   }
 
-  virtual input_method::InputMethodDescriptors* GetActiveInputMethods() {
-    input_method::InputMethodDescriptors* result =
-        new input_method::InputMethodDescriptors;
+  virtual InputMethodDescriptors* GetActiveInputMethods() {
+    InputMethodDescriptors* result = new InputMethodDescriptors;
     // Build the active input method descriptors from the active input
     // methods cache |active_input_method_ids_|.
     for (size_t i = 0; i < active_input_method_ids_.size(); ++i) {
       const std::string& input_method_id = active_input_method_ids_[i];
-      const input_method::InputMethodDescriptor* descriptor =
-          input_method::GetInputMethodDescriptorFromId(
-              input_method_id);
+      const InputMethodDescriptor* descriptor =
+          GetInputMethodDescriptorFromId(input_method_id);
       if (descriptor) {
         result->push_back(*descriptor);
       } else {
-        std::map<std::string, input_method::InputMethodDescriptor>::
+        std::map<std::string, InputMethodDescriptor>::
             const_iterator ix = extra_input_method_ids_.find(input_method_id);
         if (ix != extra_input_method_ids_.end()) {
           result->push_back(ix->second);
@@ -144,14 +142,13 @@ class InputMethodManagerImpl : public InputMethodManager,
     // returns the fallback input method descriptor.
     if (result->empty()) {
       LOG(WARNING) << "No active input methods found.";
-      result->push_back(input_method::GetFallbackInputMethodDescriptor());
+      result->push_back(GetFallbackInputMethodDescriptor());
     }
     return result;
   }
 
   virtual size_t GetNumActiveInputMethods() {
-    scoped_ptr<input_method::InputMethodDescriptors> input_methods(
-        GetActiveInputMethods());
+    scoped_ptr<InputMethodDescriptors> input_methods(GetActiveInputMethods());
     return input_methods->size();
   }
 
@@ -163,7 +160,7 @@ class InputMethodManagerImpl : public InputMethodManager,
     // If the input method daemon is not running and the specified input
     // method is a keyboard layout, switch the keyboard directly.
     if (ibus_daemon_process_handle_ == base::kNullProcessHandle &&
-        input_method::IsKeyboardLayout(input_method_id)) {
+        IsKeyboardLayout(input_method_id)) {
       // We shouldn't use SetCurrentKeyboardLayoutByName() here. See
       // comments at ChangeCurrentInputMethod() for details.
       ChangeCurrentInputMethodFromId(input_method_id);
@@ -188,9 +185,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   }
 
   virtual bool InputMethodIsActivated(const std::string& input_method_id) {
-    scoped_ptr<input_method::InputMethodDescriptors>
-        active_input_method_descriptors(
-            GetActiveInputMethods());
+    scoped_ptr<InputMethodDescriptors> active_input_method_descriptors(
+        GetActiveInputMethods());
     for (size_t i = 0; i < active_input_method_descriptors->size(); ++i) {
       if (active_input_method_descriptors->at(i).id() == input_method_id) {
         return true;
@@ -201,7 +197,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   virtual bool SetImeConfig(const std::string& section,
                             const std::string& config_name,
-                            const input_method::ImeConfigValue& value) {
+                            const ImeConfigValue& value) {
     // If the config change is for preload engines, update the active
     // input methods cache |active_input_method_ids_| here. We need to
     // update the cache before actually flushing the config. since we need
@@ -211,11 +207,10 @@ class InputMethodManagerImpl : public InputMethodManager,
     // screen before the input method starts.
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName &&
-        value.type == input_method::ImeConfigValue::kValueTypeStringList) {
+        value.type == ImeConfigValue::kValueTypeStringList) {
       active_input_method_ids_ = value.string_list_value;
 
-      std::map<std::string, input_method::InputMethodDescriptor>::
-          const_iterator ix;
+      std::map<std::string, InputMethodDescriptor>::const_iterator ix;
       for (ix = extra_input_method_ids_.begin();
            ix != extra_input_method_ids_.end(); ++ix) {
         active_input_method_ids_.push_back(ix->first);
@@ -246,7 +241,7 @@ class InputMethodManagerImpl : public InputMethodManager,
     std::string virtual_layouts = JoinString(layouts, ',');
 
     extra_input_method_ids_[id] =
-        input_method::InputMethodDescriptor::CreateInputMethodDescriptor(
+        InputMethodDescriptor::CreateInputMethodDescriptor(
             id, virtual_layouts, language);
     active_input_method_ids_.push_back(id);
   }
@@ -263,11 +258,10 @@ class InputMethodManagerImpl : public InputMethodManager,
     extra_input_method_ids_.erase(id);
   }
 
-  virtual bool GetExtraDescriptor(
-      const std::string& id,
-      input_method::InputMethodDescriptor* descriptor) {
-    std::map<std::string, input_method::InputMethodDescriptor>::
-        const_iterator ix = extra_input_method_ids_.find(id);
+  virtual bool GetExtraDescriptor(const std::string& id,
+                                  InputMethodDescriptor* descriptor) {
+    std::map<std::string, InputMethodDescriptor>::const_iterator ix =
+        extra_input_method_ids_.find(id);
     if (ix != extra_input_method_ids_.end()) {
       *descriptor = ix->second;
       return true;
@@ -276,26 +270,25 @@ class InputMethodManagerImpl : public InputMethodManager,
     }
   }
 
-  virtual input_method::InputMethodDescriptor previous_input_method() const {
+  virtual InputMethodDescriptor previous_input_method() const {
     if (previous_input_method_.id().empty()) {
-      return input_method::GetFallbackInputMethodDescriptor();
+      return GetFallbackInputMethodDescriptor();
     }
     return previous_input_method_;
   }
 
-  virtual input_method::InputMethodDescriptor current_input_method() const {
+  virtual InputMethodDescriptor current_input_method() const {
     if (current_input_method_.id().empty()) {
-      return input_method::GetFallbackInputMethodDescriptor();
+      return GetFallbackInputMethodDescriptor();
     }
     return current_input_method_;
   }
 
-  virtual const input_method::ImePropertyList& current_ime_properties() const {
+  virtual const ImePropertyList& current_ime_properties() const {
     return current_ime_properties_;
   }
 
-  virtual void SendHandwritingStroke(
-      const input_method::HandwritingStroke& stroke) {
+  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) {
     ibus_controller_->SendHandwritingStroke(stroke);
   }
 
@@ -348,12 +341,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Returns true if the given input method config value is a single
   // element string list that contains an input method ID of a keyboard
   // layout.
-  bool ContainOnlyOneKeyboardLayout(
-      const input_method::ImeConfigValue& value) {
-    return (value.type == input_method::ImeConfigValue::kValueTypeStringList &&
+  bool ContainOnlyOneKeyboardLayout(const ImeConfigValue& value) {
+    return (value.type == ImeConfigValue::kValueTypeStringList &&
             value.string_list_value.size() == 1 &&
-            input_method::IsKeyboardLayout(
-                value.string_list_value[0]));
+            IsKeyboardLayout(value.string_list_value[0]));
   }
 
   // Starts input method daemon based on the |defer_ime_startup_| flag and
@@ -363,10 +354,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   // "previous_engine"). |value| is the configuration value to be set.
   void MaybeStartInputMethodDaemon(const std::string& section,
                                    const std::string& config_name,
-                                   const input_method::ImeConfigValue& value) {
+                                   const ImeConfigValue& value) {
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName &&
-        value.type == input_method::ImeConfigValue::kValueTypeStringList &&
+        value.type == ImeConfigValue::kValueTypeStringList &&
         !value.string_list_value.empty()) {
       // If there is only one input method which is a keyboard layout,
       // we don't start the input method processes.  When
@@ -417,7 +408,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   // See also: MaybeStartInputMethodDaemon().
   void MaybeStopInputMethodDaemon(const std::string& section,
                                   const std::string& config_name,
-                                  const input_method::ImeConfigValue& value) {
+                                  const ImeConfigValue& value) {
     // If there is only one input method which is a keyboard layout,
     // and |enable_auto_ime_shutdown_| is true, we'll stop the input
     // method daemon.
@@ -434,7 +425,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   void MaybeChangeCurrentKeyboardLayout(
       const std::string& section,
       const std::string& config_name,
-      const input_method::ImeConfigValue& value) {
+      const ImeConfigValue& value) {
 
     // If there is only one input method which is a keyboard layout, we'll
     // change the keyboard layout per the only one input method now
@@ -461,7 +452,7 @@ class InputMethodManagerImpl : public InputMethodManager,
       // synced with cloud) and kLanguagePreloadEngines (synced with cloud) are
       // mismatched. e.g. the former is 'xkb:us::eng' and the latter (on the
       // sync server) is 'xkb:jp::jpn,mozc'.
-      scoped_ptr<input_method::InputMethodDescriptors> input_methods(
+      scoped_ptr<InputMethodDescriptors> input_methods(
           GetActiveInputMethods());
       DCHECK(!input_methods->empty());
       if (!input_methods->empty()) {
@@ -491,7 +482,7 @@ class InputMethodManagerImpl : public InputMethodManager,
     while (iter != pending_config_requests_.end()) {
       const std::string& section = iter->first.first;
       const std::string& config_name = iter->first.second;
-      input_method::ImeConfigValue& value = iter->second;
+      ImeConfigValue& value = iter->second;
 
       if (config_name == language_prefs::kPreloadEnginesConfigName &&
           !tentative_current_input_method_id_.empty()) {
@@ -576,7 +567,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // IBusController override.
   virtual void OnCurrentInputMethodChanged(
-      const input_method::InputMethodDescriptor& current_input_method) {
+      const InputMethodDescriptor& current_input_method) {
     // The handler is called when the input method method change is
     // notified via a DBus connection. Since the DBus notificatiosn are
     // handled in the UI thread, we can assume that this function always
@@ -591,7 +582,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // IBusController override.
   virtual void OnRegisterImeProperties(
-      const input_method::ImePropertyList& prop_list) {
+      const ImePropertyList& prop_list) {
     // See comments in InputMethodChangedHandler.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       LOG(ERROR) << "Not on UI thread";
@@ -603,7 +594,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // IBusController override.
   virtual void OnUpdateImeProperty(
-      const input_method::ImePropertyList& prop_list) {
+      const ImePropertyList& prop_list) {
     // See comments in InputMethodChangedHandler.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       LOG(ERROR) << "Not on UI thread";
@@ -624,9 +615,8 @@ class InputMethodManagerImpl : public InputMethodManager,
     ime_connected_ = connected;
     if (connected) {
       pending_config_requests_.clear();
-      pending_config_requests_.insert(
-          current_config_values_.begin(),
-          current_config_values_.end());
+      pending_config_requests_.insert(current_config_values_.begin(),
+                                      current_config_values_.end());
       FlushImeConfig();
 
       ChangeInputMethod(previous_input_method().id());
@@ -639,14 +629,14 @@ class InputMethodManagerImpl : public InputMethodManager,
   // and notifies observers about the change (that will update the
   // preferences), hence this function should always be used even if you
   // just need to change the current keyboard layout.
-  void ChangeCurrentInputMethod(const input_method::InputMethodDescriptor&
+  void ChangeCurrentInputMethod(const InputMethodDescriptor&
                                 new_input_method) {
     if (current_input_method_.id() != new_input_method.id()) {
       previous_input_method_ = current_input_method_;
       current_input_method_ = new_input_method;
 
       // Change the keyboard layout to a preferred layout for the input method.
-      if (!input_method::SetCurrentKeyboardLayoutByName(
+      if (!SetCurrentKeyboardLayoutByName(
               current_input_method_.keyboard_layout())) {
         LOG(ERROR) << "Failed to change keyboard layout to "
                    << current_input_method_.keyboard_layout();
@@ -679,11 +669,11 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   void UpdateVirtualKeyboardUI() {
 #if defined(TOUCH_UI)
-    const input_method::VirtualKeyboard* virtual_keyboard = NULL;
+    const VirtualKeyboard* virtual_keyboard = NULL;
     std::string virtual_keyboard_layout = "";
 
-    const std::vector<std::string>& layouts_vector
-        = current_input_method_.virtual_keyboard_layouts();
+    const std::vector<std::string>& layouts_vector =
+        current_input_method_.virtual_keyboard_layouts();
     std::vector<std::string>::const_iterator iter;
     for (iter = layouts_vector.begin(); iter != layouts_vector.end(); ++iter) {
       virtual_keyboard =
@@ -703,10 +693,9 @@ class InputMethodManagerImpl : public InputMethodManager,
 
       // If the hardware is for US, show US Qwerty virtual keyboard.
       // If it's for France, show Azerty one.
-      const std::string fallback_id =
-          input_method::GetHardwareInputMethodId();
-      const input_method::InputMethodDescriptor* fallback_desc =
-          input_method::GetInputMethodDescriptorFromId(fallback_id);
+      const std::string fallback_id = GetHardwareInputMethodId();
+      const InputMethodDescriptor* fallback_desc =
+          GetInputMethodDescriptorFromId(fallback_id);
 
       DCHECK(fallback_desc);
       const std::vector<std::string>& fallback_layouts_vector =
@@ -751,9 +740,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Changes the current input method from the given input method ID.
   // This function is just a wrapper of ChangeCurrentInputMethod().
   void ChangeCurrentInputMethodFromId(const std::string& input_method_id) {
-    const input_method::InputMethodDescriptor* descriptor =
-        input_method::GetInputMethodDescriptorFromId(
-            input_method_id);
+    const InputMethodDescriptor* descriptor = GetInputMethodDescriptorFromId(
+        input_method_id);
     if (descriptor) {
       ChangeCurrentInputMethod(*descriptor);
     } else {
@@ -762,14 +750,13 @@ class InputMethodManagerImpl : public InputMethodManager,
   }
 
   // Registers the properties used by the current input method.
-  void RegisterProperties(const input_method::ImePropertyList& prop_list) {
+  void RegisterProperties(const ImePropertyList& prop_list) {
     // |prop_list| might be empty. This means "clear all properties."
     current_ime_properties_ = prop_list;
 
     // Update input method menu
     FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
-                      PropertyListChanged(this,
-                                          current_ime_properties_));
+                      PropertyListChanged(this, current_ime_properties_));
   }
 
   // Starts the input method daemon. Unlike MaybeStopInputMethodDaemon(),
@@ -781,15 +768,14 @@ class InputMethodManagerImpl : public InputMethodManager,
   }
 
   // Updates the properties used by the current input method.
-  void UpdateProperty(const input_method::ImePropertyList& prop_list) {
+  void UpdateProperty(const ImePropertyList& prop_list) {
     for (size_t i = 0; i < prop_list.size(); ++i) {
       FindAndUpdateProperty(prop_list[i], &current_ime_properties_);
     }
 
     // Update input method menu
     FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
-                      PropertyListChanged(this,
-                                          current_ime_properties_));
+                      PropertyListChanged(this, current_ime_properties_));
   }
 
   // Launches an input method procsess specified by the given command
@@ -840,8 +826,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
 #if !defined(TOUCH_UI)
     if (!candidate_window_controller_.get()) {
-      candidate_window_controller_.reset(
-          new input_method::CandidateWindowController);
+      candidate_window_controller_.reset(new CandidateWindowController);
       if (!candidate_window_controller_->Init()) {
         LOG(WARNING) << "Failed to initialize the candidate window controller";
       }
@@ -921,21 +906,20 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // A reference to the language api, to allow callbacks when the input method
   // status changes.
-  input_method::IBusController* ibus_controller_;
+  IBusController* ibus_controller_;
   ObserverList<InputMethodManager::Observer> observers_;
   ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 
   // The input method which was/is selected.
-  input_method::InputMethodDescriptor previous_input_method_;
-  input_method::InputMethodDescriptor current_input_method_;
+  InputMethodDescriptor previous_input_method_;
+  InputMethodDescriptor current_input_method_;
 
   // The input method properties which the current input method uses. The list
   // might be empty when no input method is used.
-  input_method::ImePropertyList current_ime_properties_;
+  ImePropertyList current_ime_properties_;
 
   typedef std::pair<std::string, std::string> ConfigKeyType;
-  typedef std::map<ConfigKeyType,
-        input_method::ImeConfigValue> InputMethodConfigRequests;
+  typedef std::map<ConfigKeyType, ImeConfigValue> InputMethodConfigRequests;
   // SetImeConfig requests that are not yet completed.
   // Use a map to queue config requests, so we only send the last request for
   // the same config key (i.e. we'll discard ealier requests for the same
@@ -969,8 +953,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.
 #if !defined(TOUCH_UI)
-  scoped_ptr<input_method::CandidateWindowController>
-      candidate_window_controller_;
+  scoped_ptr<CandidateWindowController> candidate_window_controller_;
 #endif
 
   // True if we've received the APP_TERMINATING notification.
@@ -981,15 +964,14 @@ class InputMethodManagerImpl : public InputMethodManager,
   base::ProcessHandle ibus_daemon_process_handle_;
 
   // An object which keeps a list of available virtual keyboards.
-  input_method::VirtualKeyboardSelector virtual_keyboard_selector_;
+  VirtualKeyboardSelector virtual_keyboard_selector_;
 
   // The active input method ids cache.
   std::vector<std::string> active_input_method_ids_;
 
   // Extra input methods that have been explicitly added to the menu, such as
   // those created by extension.
-  std::map<std::string, input_method::InputMethodDescriptor>
-      extra_input_method_ids_;
+  std::map<std::string, InputMethodDescriptor> extra_input_method_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

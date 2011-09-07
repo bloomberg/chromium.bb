@@ -39,25 +39,25 @@ class InputMethodManager {
     // Called when the current input method is changed.
     virtual void InputMethodChanged(
         InputMethodManager* manager,
-        const input_method::InputMethodDescriptor& current_input_method,
+        const InputMethodDescriptor& current_input_method,
         size_t num_active_input_methods) = 0;
 
     // Called when the active input methods are changed.
     virtual void ActiveInputMethodsChanged(
         InputMethodManager* manager,
-        const input_method::InputMethodDescriptor& current_input_method,
+        const InputMethodDescriptor& current_input_method,
         size_t num_active_input_methods) = 0;
 
     // Called when the preferences have to be updated.
     virtual void PreferenceUpdateNeeded(
         InputMethodManager* manager,
-        const input_method::InputMethodDescriptor& previous_input_method,
-        const input_method::InputMethodDescriptor& current_input_method) = 0;
+        const InputMethodDescriptor& previous_input_method,
+        const InputMethodDescriptor& current_input_method) = 0;
 
     // Called when the list of properties is changed.
     virtual void PropertyListChanged(
         InputMethodManager* manager,
-        const input_method::ImePropertyList& current_ime_properties) = 0;
+        const ImePropertyList& current_ime_properties) = 0;
 
     // Called by AddObserver() when the first observer is added.
     virtual void FirstObserverIsAdded(InputMethodManager* obj) = 0;
@@ -69,7 +69,7 @@ class InputMethodManager {
     // Called when the current virtual keyboard is changed.
     virtual void VirtualKeyboardChanged(
         InputMethodManager* manager,
-        const input_method::VirtualKeyboard& virtual_keyboard,
+        const VirtualKeyboard& virtual_keyboard,
         const std::string& virtual_keyboard_layout) = 0;
   };
 
@@ -89,7 +89,7 @@ class InputMethodManager {
   // Returns the list of input methods we can select (i.e. active). If the cros
   // library is not found or IBus/DBus daemon is not alive, this function
   // returns a fallback input method list (and never returns NULL).
-  virtual input_method::InputMethodDescriptors* GetActiveInputMethods() = 0;
+  virtual InputMethodDescriptors* GetActiveInputMethods() = 0;
 
   // Returns the number of active input methods.
   virtual size_t GetNumActiveInputMethods() = 0;
@@ -121,7 +121,7 @@ class InputMethodManager {
   // function. See also http://crosbug.com/5217.
   virtual bool SetImeConfig(const std::string& section,
                             const std::string& config_name,
-                            const input_method::ImeConfigValue& value) = 0;
+                            const ImeConfigValue& value) = 0;
 
   // Add an input method to insert into the language menu.
   virtual void AddActiveIme(const std::string& id,
@@ -132,9 +132,8 @@ class InputMethodManager {
   // Remove an input method from the language menu.
   virtual void RemoveActiveIme(const std::string& id) = 0;
 
-  virtual bool GetExtraDescriptor(
-      const std::string& id,
-      input_method::InputMethodDescriptor* descriptor) = 0;
+  virtual bool GetExtraDescriptor(const std::string& id,
+                                  InputMethodDescriptor* descriptor) = 0;
 
   // Sets the IME state to enabled, and launches input method daemon if needed.
   // Returns true if the daemon is started. Otherwise, e.g. the daemon is
@@ -155,7 +154,7 @@ class InputMethodManager {
   // Sends a handwriting stroke to libcros. See chromeos::SendHandwritingStroke
   // for details.
   virtual void SendHandwritingStroke(
-      const input_method::HandwritingStroke& stroke) = 0;
+      const HandwritingStroke& stroke) = 0;
 
   // Clears last N handwriting strokes in libcros. See
   // chromeos::CancelHandwriting for details.
@@ -188,11 +187,10 @@ class InputMethodManager {
   virtual const std::multimap<std::string, const VirtualKeyboard*>&
   GetLayoutNameToKeyboardMapping() const = 0;
 
-  virtual input_method::InputMethodDescriptor previous_input_method() const = 0;
-  virtual input_method::InputMethodDescriptor current_input_method() const = 0;
+  virtual InputMethodDescriptor previous_input_method() const = 0;
+  virtual InputMethodDescriptor current_input_method() const = 0;
 
-  virtual const input_method::ImePropertyList& current_ime_properties()
-      const = 0;
+  virtual const ImePropertyList& current_ime_properties() const = 0;
 };
 
 }  // namespace input_method
