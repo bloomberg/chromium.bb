@@ -28,6 +28,7 @@ static Bool FixUpSection(uintptr_t load_address,
                          unsigned char *code,
                          size_t code_size) {
   int bundle_size = 32;
+  enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
   NaClValidationStatus status =
       /* Start by stubbing out the code.
        * We should not stub out any instructions based on the features
@@ -36,7 +37,7 @@ static Bool FixUpSection(uintptr_t load_address,
       NACL_SUBARCH_NAME(ApplyValidator,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (NaClApplyValidationDoStubout, load_address, code,
+      (sb_kind, NaClApplyValidationDoStubout, load_address, code,
        code_size,  bundle_size, FALSE);
   if (status == NaClValidationSucceeded) {
     /* Now run the validator again, so that we report any errors
@@ -46,7 +47,7 @@ static Bool FixUpSection(uintptr_t load_address,
     status = NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)
-        (NaClApplyCodeValidation, load_address, code, code_size,
+        (sb_kind, NaClApplyCodeValidation, load_address, code, code_size,
          bundle_size, FALSE);
   }
 
