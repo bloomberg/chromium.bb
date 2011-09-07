@@ -192,6 +192,8 @@
       '-process_count.ProcessCountTest.testProcessCountFlashProcess',
       '-process_count.ProcessCountTest.testProcessCountFreshProfile',
       '-process_count.ProcessCountTest.testProcessCountNewWindow',
+      #	crbug.com/95621
+      '-youtube.YoutubeTest.testPlayerStatus',
     ],
 
     'mac': [
