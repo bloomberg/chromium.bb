@@ -141,22 +141,42 @@ DELETE = (
 
 
 class PatchTest(unittest.TestCase):
+  def _check_patch(self,
+      p,
+      filename,
+      diff,
+      is_binary=False,
+      is_delete=False,
+      is_git_diff=False,
+      is_new=False,
+      patchlevel=0,
+      svn_properties=None):
+    svn_properties = svn_properties or []
+    self.assertEquals(p.filename, filename)
+    self.assertEquals(p.is_binary, is_binary)
+    self.assertEquals(p.is_delete, is_delete)
+    if hasattr(p, 'is_git_diff'):
+      self.assertEquals(p.is_git_diff, is_git_diff)
+    self.assertEquals(p.is_new, is_new)
+    if hasattr(p, 'patchlevel'):
+      self.assertEquals(p.patchlevel, patchlevel)
+    if diff:
+      self.assertEquals(p.get(), diff)
+    if hasattr(p, 'svn_properties'):
+      self.assertEquals(p.svn_properties, svn_properties)
+
   def testFilePatchDelete(self):
     p = patch.FilePatchDelete('foo', False)
-    self.assertEquals(p.filename, 'foo')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, True)
-    self.assertEquals(p.is_new, False)
+    self._check_patch(p, 'foo', None, is_delete=True)
     try:
       p.get()
       self.fail()
     except NotImplementedError:
       pass
+
+  def testFilePatchDeleteBin(self):
     p = patch.FilePatchDelete('foo', True)
-    self.assertEquals(p.filename, 'foo')
-    self.assertEquals(p.is_binary, True)
-    self.assertEquals(p.is_delete, True)
-    self.assertEquals(p.is_new, False)
+    self._check_patch(p, 'foo', None, is_delete=True, is_binary=True)
     try:
       p.get()
       self.fail()
@@ -165,29 +185,15 @@ class PatchTest(unittest.TestCase):
 
   def testFilePatchBinary(self):
     p = patch.FilePatchBinary('foo', 'data', [], is_new=False)
-    self.assertEquals(p.filename, 'foo')
-    self.assertEquals(p.is_binary, True)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.get(), 'data')
+    self._check_patch(p, 'foo', 'data', is_binary=True)
 
   def testFilePatchBinaryNew(self):
     p = patch.FilePatchBinary('foo', 'data', [], is_new=True)
-    self.assertEquals(p.filename, 'foo')
-    self.assertEquals(p.is_binary, True)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_new, True)
-    self.assertEquals(p.get(), 'data')
+    self._check_patch(p, 'foo', 'data', is_binary=True, is_new=True)
 
   def testFilePatchDiff(self):
     p = patch.FilePatchDiff('chrome/file.cc', SVN_PATCH, [])
-    self.assertEquals(p.filename, 'chrome/file.cc')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_git_diff, False)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.patchlevel, 0)
-    self.assertEquals(p.get(), SVN_PATCH)
+    self._check_patch(p, 'chrome/file.cc', SVN_PATCH)
 
   def testFilePatchDiffHeaderMode(self):
     diff = (
@@ -195,14 +201,9 @@ class PatchTest(unittest.TestCase):
         'old mode 100644\n'
         'new mode 100755\n')
     p = patch.FilePatchDiff('git_cl/git-cl', diff, [])
-    self.assertEquals(p.filename, 'git_cl/git-cl')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_git_diff, True)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.patchlevel, 1)
-    self.assertEquals(p.get(), diff)
-    self.assertEquals([('svn:executable', '*')], p.svn_properties)
+    self._check_patch(
+        p, 'git_cl/git-cl', diff, is_git_diff=True, patchlevel=1,
+        svn_properties=[('svn:executable', '*')])
 
   def testFilePatchDiffHeaderModeIndex(self):
     diff = (
@@ -211,35 +212,20 @@ class PatchTest(unittest.TestCase):
         'old mode 100644\n'
         'new mode 100755\n')
     p = patch.FilePatchDiff('git_cl/git-cl', diff, [])
-    self.assertEquals(p.filename, 'git_cl/git-cl')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_git_diff, True)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.patchlevel, 1)
-    self.assertEquals(p.get(), diff)
+    self._check_patch(
+        p, 'git_cl/git-cl', diff, is_git_diff=True, patchlevel=1,
+        svn_properties=[('svn:executable', '*')])
 
   def testFilePatchDiffSvnNew(self):
     # The code path is different for git and svn.
     p = patch.FilePatchDiff('foo', NEW, [])
-    self.assertEquals(p.filename, 'foo')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_git_diff, False)
-    self.assertEquals(p.is_new, True)
-    self.assertEquals(p.patchlevel, 0)
-    self.assertEquals(p.get(), NEW)
+    self._check_patch(p, 'foo', NEW, is_new=True)
 
   def testFilePatchDiffGitNew(self):
     # The code path is different for git and svn.
     p = patch.FilePatchDiff('foo', GIT_NEW, [])
-    self.assertEquals(p.filename, 'foo')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_git_diff, True)
-    self.assertEquals(p.is_new, True)
-    self.assertEquals(p.patchlevel, 1)
-    self.assertEquals(p.get(), GIT_NEW)
+    self._check_patch(
+        p, 'foo', GIT_NEW, is_new=True, is_git_diff=True, patchlevel=1)
 
   def testFilePatchDiffBad(self):
     try:
@@ -454,69 +440,41 @@ class PatchTest(unittest.TestCase):
 
   def testDelete(self):
     p = patch.FilePatchDiff('tools/clang_check/README.chromium', DELETE, [])
-    self.assertEquals(p.filename, 'tools/clang_check/README.chromium')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, True)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.get(), DELETE)
-    self.assertEquals([], p.svn_properties)
+    self._check_patch(
+        p, 'tools/clang_check/README.chromium', DELETE, is_delete=True)
 
   def testGitDelete(self):
     p = patch.FilePatchDiff('tools/clang_check/README.chromium', GIT_DELETE, [])
-    self.assertEquals(p.filename, 'tools/clang_check/README.chromium')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, True)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.get(), GIT_DELETE)
-    self.assertEquals([], p.svn_properties)
+    self._check_patch(
+        p, 'tools/clang_check/README.chromium', GIT_DELETE, is_delete=True,
+        is_git_diff=True, patchlevel=1)
 
   def testGitRename(self):
     p = patch.FilePatchDiff('tools/run_local_server.sh', GIT_RENAME, [])
-    self.assertEquals(p.filename, 'tools/run_local_server.sh')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.get(), GIT_RENAME)
-    self.assertEquals([], p.svn_properties)
+    self._check_patch(p, 'tools/run_local_server.sh', GIT_RENAME,
+        is_git_diff=True, patchlevel=1)
 
   def testGitRenamePartial(self):
     p = patch.FilePatchDiff(
         'chrome/browser/chromeos/views/webui_menu_widget.h',
         GIT_RENAME_PARTIAL, [])
-    self.assertEquals(
-        p.filename, 'chrome/browser/chromeos/views/webui_menu_widget.h')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.get(), GIT_RENAME_PARTIAL)
-    self.assertEquals([], p.svn_properties)
+    self._check_patch(
+        p, 'chrome/browser/chromeos/views/webui_menu_widget.h',
+        GIT_RENAME_PARTIAL, is_git_diff=True, patchlevel=1)
 
   def testGitCopy(self):
     p = patch.FilePatchDiff('pp', GIT_COPY, [])
-    self.assertEquals(p.filename, 'pp')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.get(), GIT_COPY)
-    self.assertEquals([], p.svn_properties)
-
-  def testGitNew(self):
-    p = patch.FilePatchDiff('foo', GIT_NEW, [])
-    self.assertEquals(p.filename, 'foo')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_new, True)
-    self.assertEquals(p.get(), GIT_NEW)
-    self.assertEquals([], p.svn_properties)
+    self._check_patch(p, 'pp', GIT_COPY, is_git_diff=True, patchlevel=1)
 
   def testOnlyHeader(self):
-    p = patch.FilePatchDiff('file_a', '--- file_a\n+++ file_a\n', [])
-    self.assertTrue(p)
+    diff = '--- file_a\n+++ file_a\n'
+    p = patch.FilePatchDiff('file_a', diff, [])
+    self._check_patch(p, 'file_a', diff)
 
   def testSmallest(self):
-    p = patch.FilePatchDiff(
-        'file_a', '--- file_a\n+++ file_a\n@@ -0,0 +1 @@\n+foo\n', [])
-    self.assertTrue(p)
+    diff = '--- file_a\n+++ file_a\n@@ -0,0 +1 @@\n+foo\n'
+    p = patch.FilePatchDiff('file_a', diff, [])
+    self._check_patch(p, 'file_a', diff)
 
   def testInverted(self):
     try:
@@ -534,14 +492,10 @@ class PatchTest(unittest.TestCase):
       pass
 
   def testRenameOnlyHeader(self):
-    p = patch.FilePatchDiff('file_b', '--- file_a\n+++ file_b\n', [])
-    self.assertEquals(p.filename, 'file_b')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
+    diff = '--- file_a\n+++ file_b\n'
+    p = patch.FilePatchDiff('file_b', diff, [])
     # Should it be marked as new?
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.get(), '--- file_a\n+++ file_b\n')
-    self.assertEquals([], p.svn_properties)
+    self._check_patch(p, 'file_b', diff)
 
   def testGitCopyPartial(self):
     diff = (
@@ -559,13 +513,8 @@ class PatchTest(unittest.TestCase):
         ' # blah blah blah as\n'
         ' # found in the LICENSE file.\n')
     p = patch.FilePatchDiff('wtf2', diff, [])
-    self.assertEquals(p.filename, 'wtf2')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
     # Should it be marked as new?
-    self.assertEquals(p.is_new, False)
-    self.assertEquals(p.get(), diff)
-    self.assertEquals([], p.svn_properties)
+    self._check_patch(p, 'wtf2', diff, is_git_diff=True, patchlevel=1)
 
   def testGitExe(self):
     diff = (
@@ -576,12 +525,9 @@ class PatchTest(unittest.TestCase):
         '@@ -0,0 +1,1 @@\n'
         '+#!/usr/bin/env python\n')
     p = patch.FilePatchDiff('natsort_test.py', diff, [])
-    self.assertEquals(p.filename, 'natsort_test.py')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_new, True)
-    self.assertEquals(p.get(), diff)
-    self.assertEquals([('svn:executable', '*')], p.svn_properties)
+    self._check_patch(
+        p, 'natsort_test.py', diff, is_new=True, is_git_diff=True, patchlevel=1,
+        svn_properties=[('svn:executable', '*')])
 
   def testGitExe2(self):
     diff = (
@@ -592,12 +538,8 @@ class PatchTest(unittest.TestCase):
         '@@ -0,0 +1,1 @@\n'
         '+#!/usr/bin/env python\n')
     p = patch.FilePatchDiff('natsort_test.py', diff, [])
-    self.assertEquals(p.filename, 'natsort_test.py')
-    self.assertEquals(p.is_binary, False)
-    self.assertEquals(p.is_delete, False)
-    self.assertEquals(p.is_new, True)
-    self.assertEquals(p.get(), diff)
-    self.assertEquals([], p.svn_properties)
+    self._check_patch(
+        p, 'natsort_test.py', diff, is_new=True, is_git_diff=True, patchlevel=1)
 
 
 if __name__ == '__main__':
