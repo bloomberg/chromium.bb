@@ -174,7 +174,7 @@ void BookmarksHandler::HandleCreateBookmark(const ListValue* args) {
   CHECK(base::StringToInt64(parent_id_string, &parent_id));
 
   const BookmarkNode* parent = model_->GetNodeByID(parent_id);
-  CHECK(parent);
+  if (!parent) return;
 
   double index;
   if (!args->GetDouble(1, &index) ||
@@ -265,7 +265,7 @@ void BookmarksHandler::HandleRemoveBookmark(const ListValue* args) {
   CHECK(base::StringToInt64(id_string, &id));
 
   const BookmarkNode* node = model_->GetNodeByID(id);
-  CHECK(node);
+  if (!node) return;
 
   AutoReset<bool> from_page(&from_current_page_, true);
   model_->Remove(node->parent(), node->parent()->GetIndexOf(node));
@@ -288,10 +288,10 @@ void BookmarksHandler::HandleMoveBookmark(const ListValue* args) {
   args->GetDouble(2, &index);
 
   const BookmarkNode* parent = model_->GetNodeByID(parent_id);
-  CHECK(parent);
+  if (!parent) return;
 
   const BookmarkNode* node = model_->GetNodeByID(id);
-  CHECK(node);
+  if (!node) return;
 
   AutoReset<bool> from_page(&from_current_page_, true);
   model_->Move(node, parent, static_cast<int>(index));
