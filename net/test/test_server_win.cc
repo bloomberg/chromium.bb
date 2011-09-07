@@ -23,59 +23,6 @@
 
 namespace {
 
-bool LaunchTestServerAsJob(const CommandLine& cmdline,
-                           bool start_hidden,
-                           base::ProcessHandle* process_handle,
-                           base::win::ScopedHandle* job_handle) {
-  // Launch test server process.
-  STARTUPINFO startup_info = {0};
-  startup_info.cb = sizeof(startup_info);
-  startup_info.dwFlags = STARTF_USESHOWWINDOW;
-  startup_info.wShowWindow = start_hidden ? SW_HIDE : SW_SHOW;
-  PROCESS_INFORMATION process_info;
-
-  // If this code is run under a debugger, the test server process is
-  // automatically associated with a job object created by the debugger.
-  // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this.
-  if (!CreateProcess(
-      NULL, const_cast<wchar_t*>(cmdline.GetCommandLineString().c_str()),
-      NULL, NULL, TRUE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL,
-      &startup_info, &process_info)) {
-    LOG(ERROR) << "Could not create process.";
-    return false;
-  }
-  CloseHandle(process_info.hThread);
-
-  // If the caller wants the process handle, we won't close it.
-  if (process_handle) {
-    *process_handle = process_info.hProcess;
-  } else {
-    CloseHandle(process_info.hProcess);
-  }
-
-  // Create a JobObject and associate the test server process with it.
-  job_handle->Set(CreateJobObject(NULL, NULL));
-  if (!job_handle->IsValid()) {
-    LOG(ERROR) << "Could not create JobObject.";
-    return false;
-  } else {
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION limit_info = {0};
-    limit_info.BasicLimitInformation.LimitFlags =
-        JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-    if (0 == SetInformationJobObject(job_handle->Get(),
-      JobObjectExtendedLimitInformation, &limit_info, sizeof(limit_info))) {
-      LOG(ERROR) << "Could not SetInformationJobObject.";
-      return false;
-    }
-    if (0 == AssignProcessToJobObject(job_handle->Get(),
-                                      process_info.hProcess)) {
-      LOG(ERROR) << "Could not AssignProcessToObject.";
-      return false;
-    }
-  }
-  return true;
-}
-
 // Writes |size| bytes to |handle| and sets |*unblocked| to true.
 // Used as a crude timeout mechanism by ReadData().
 void UnblockPipe(HANDLE handle, DWORD size, bool* unblocked) {
@@ -179,10 +126,25 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   python_command.AppendArg("--startup-pipe=" +
       base::IntToString(reinterpret_cast<uintptr_t>(child_write)));
 
-  if (!LaunchTestServerAsJob(python_command,
-                             true,
-                             &process_handle_,
-                             &job_handle_)) {
+  job_handle_.Set(CreateJobObject(NULL, NULL));
+  if (!job_handle_.IsValid()) {
+    LOG(ERROR) << "Could not create JobObject.";
+    return false;
+  }
+
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION limit_info = {0};
+  limit_info.BasicLimitInformation.LimitFlags =
+      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+  if (0 == SetInformationJobObject(job_handle_.Get(),
+    JobObjectExtendedLimitInformation, &limit_info, sizeof(limit_info))) {
+    LOG(ERROR) << "Could not SetInformationJobObject.";
+    return false;
+  }
+
+  base::LaunchOptions launch_options;
+  launch_options.inherit_handles = true;
+  launch_options.job_handle = job_handle_.Get();
+  if (!base::LaunchProcess(python_command, launch_options, &process_handle_)) {
     LOG(ERROR) << "Failed to launch " << python_command.GetCommandLineString();
     return false;
   }
