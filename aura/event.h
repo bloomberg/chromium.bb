@@ -27,7 +27,7 @@ typedef XEvent* NativeEvent;
 
 class Window;
 
-class Event {
+class AURA_EXPORT Event {
  public:
   const NativeEvent& native_event() const { return native_event_; }
   ui::EventType type() const { return type_; }
@@ -52,7 +52,7 @@ class Event {
   int flags_;
 };
 
-class LocatedEvent : public Event {
+class AURA_EXPORT LocatedEvent : public Event {
  public:
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
