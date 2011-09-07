@@ -23,8 +23,8 @@ extern const char kTransitionQualifiersKey[];
 extern const char kUrlKey[];
 
 // Events.
+extern const char kOnBeforeCreateNavigationTarget[];
 extern const char kOnBeforeNavigate[];
-extern const char kOnBeforeRetarget[];
 extern const char kOnCommitted[];
 extern const char kOnCompleted[];
 extern const char kOnDOMContentLoaded[];

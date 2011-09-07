@@ -159,13 +159,14 @@ void DispatchOnCompleted(TabContents* tab_contents,
   DispatchEvent(tab_contents->browser_context(), keys::kOnCompleted, json_args);
 }
 
-// Constructs and dispatches an onBeforeRetarget event.
-void DispatchOnBeforeRetarget(TabContents* tab_contents,
-                              content::BrowserContext* browser_context,
-                              int64 source_frame_id,
-                              bool source_frame_is_main_frame,
-                              TabContents* target_tab_contents,
-                              const GURL& target_url) {
+// Constructs and dispatches an onBeforeCreateNavigationTarget event.
+void DispatchOnBeforeCreateNavigationTarget(
+    TabContents* tab_contents,
+    content::BrowserContext* browser_context,
+    int64 source_frame_id,
+    bool source_frame_is_main_frame,
+    TabContents* target_tab_contents,
+    const GURL& target_url) {
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kSourceTabIdKey,
@@ -180,7 +181,8 @@ void DispatchOnBeforeRetarget(TabContents* tab_contents,
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(browser_context, keys::kOnBeforeRetarget, json_args);
+  DispatchEvent(
+      browser_context, keys::kOnBeforeCreateNavigationTarget, json_args);
 }
 
 // Constructs and dispatches an onErrorOccurred event.
@@ -403,7 +405,7 @@ void ExtensionWebNavigationEventRouter::Retargeting(
             details->target_tab_contents,
             details->target_url);
   } else {
-    DispatchOnBeforeRetarget(
+    DispatchOnBeforeCreateNavigationTarget(
         details->source_tab_contents,
         details->target_tab_contents->browser_context(),
         details->source_frame_id,
@@ -419,12 +421,13 @@ void ExtensionWebNavigationEventRouter::TabAdded(TabContents* tab_contents) {
   if (iter == pending_tab_contents_.end())
     return;
 
-  DispatchOnBeforeRetarget(iter->second.source_tab_contents,
-                           iter->second.target_tab_contents->browser_context(),
-                           iter->second.source_frame_id,
-                           iter->second.source_frame_is_main_frame,
-                           iter->second.target_tab_contents,
-                           iter->second.target_url);
+  DispatchOnBeforeCreateNavigationTarget(
+      iter->second.source_tab_contents,
+      iter->second.target_tab_contents->browser_context(),
+      iter->second.source_frame_id,
+      iter->second.source_frame_is_main_frame,
+      iter->second.target_tab_contents,
+      iter->second.target_url);
   pending_tab_contents_.erase(iter);
 }
 

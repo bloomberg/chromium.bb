@@ -48,8 +48,8 @@ function NavigationCollector() {
   // Bind handlers to the 'webNavigation' events that we're interested
   // in handling in order to build up a complete picture of the whole
   // navigation event.
-  chrome.experimental.webNavigation.onBeforeRetarget.addListener(
-      this.onBeforeRetargetListener_.bind(this));
+  chrome.experimental.webNavigation.onBeforeCreateNavigationTarget.addListener(
+      this.onBeforeCreateNavigationTargetListener_.bind(this));
   chrome.experimental.webNavigation.onBeforeNavigate.addListener(
       this.onBeforeNavigateListener_.bind(this));
   chrome.experimental.webNavigation.onCompleted.addListener(
@@ -157,8 +157,9 @@ NavigationCollector.prototype = {
 
 
   /**
-   * Handler for the 'onBeforeRetarget' event. Updates the pending request
-   * with a source frame/tab, and notes that it was opened in a new tab.
+   * Handler for the 'onBeforeCreateNavigationTarget' event. Updates the
+   * pending request with a source frame/tab, and notes that it was opened in a
+   * new tab.
    *
    * Pushes the request onto the
    * 'pending_' object, and stores it for later use.
@@ -166,7 +167,7 @@ NavigationCollector.prototype = {
    * @param {!Object} data The event data generated for this request.
    * @private
    */
-  onBeforeRetargetListener_: function(data) {
+  onBeforeCreateNavigationTargetListener_: function(data) {
     var id = this.parseId_(data);
     this.prepareDataStorage_(id, data.url);
     this.pending_[id].openedInNewTab = data.tabId;

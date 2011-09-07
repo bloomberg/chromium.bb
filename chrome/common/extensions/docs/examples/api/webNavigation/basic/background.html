@@ -13,8 +13,9 @@
     <script>
       var nav = new NavigationCollector();
 
-      var eventList = ['onBeforeNavigate', 'onBeforeRetarget', 'onCommitted',
-          'onCompleted', 'onDOMContentLoaded', 'onErrorOccurred'];
+      var eventList = ['onBeforeNavigate', 'onBeforeCreateNavigationTarget',
+          'onCommitted', 'onCompleted', 'onDOMContentLoaded',
+          'onErrorOccurred'];
 
       eventList.forEach(function(e) {
         chrome.experimental.webNavigation[e].addListener(function(data) {

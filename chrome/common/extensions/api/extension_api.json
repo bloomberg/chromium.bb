@@ -5323,7 +5323,7 @@
         ]
       },
       {
-        "name": "onBeforeRetarget",
+        "name": "onBeforeCreateNavigationTarget",
         "type": "function",
         "description": "Fired when a new window, or a new tab in an existing window, is about to be created to host a navigation.",
         "parameters": [

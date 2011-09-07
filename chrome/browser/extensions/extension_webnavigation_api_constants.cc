@@ -18,7 +18,8 @@ const char kTransitionQualifiersKey[] = "transitionQualifiers";
 const char kUrlKey[] = "url";
 
 const char kOnBeforeNavigate[] = "experimental.webNavigation.onBeforeNavigate";
-const char kOnBeforeRetarget[] = "experimental.webNavigation.onBeforeRetarget";
+const char kOnBeforeCreateNavigationTarget[] =
+    "experimental.webNavigation.onBeforeCreateNavigationTarget";
 const char kOnCommitted[] = "experimental.webNavigation.onCommitted";
 const char kOnCompleted[] = "experimental.webNavigation.onCompleted";
 const char kOnDOMContentLoaded[] =
