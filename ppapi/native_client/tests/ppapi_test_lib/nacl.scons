@@ -24,9 +24,8 @@ Import('env')
 # tests when we have a common place to add these
 # (e.g. ppapi/native_client/nacl.scons) included into native_client/SConstruct.
 env_clone = env.Clone()
-# The test is flaky. Disable for now.
-#env_clone.SConscript('../ppapi_browser/ppb_fullscreen/nacl.scons',
-#                     exports=['env'])
+env_clone.SConscript('../ppapi_browser/ppb_fullscreen/nacl.scons',
+                     exports=['env'])
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
 
