@@ -5,8 +5,8 @@
 #ifndef PPAPI_THUNK_PPB_GRAPHICS_3D_API_H_
 #define PPAPI_THUNK_PPB_GRAPHICS_3D_API_H_
 
-#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
-#include "ppapi/c/dev/ppb_graphics_3d_trusted_dev.h"
+#include "ppapi/c/ppb_graphics_3d.h"
+#include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 

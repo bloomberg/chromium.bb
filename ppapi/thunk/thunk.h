@@ -31,8 +31,8 @@ struct PPB_Font_Dev;
 struct PPB_Fullscreen_Dev;
 struct PPB_GLESChromiumTextureMapping_Dev;
 struct PPB_Graphics2D;
-struct PPB_Graphics3D_Dev;
-struct PPB_Graphics3DTrusted_Dev;
+struct PPB_Graphics3D;
+struct PPB_Graphics3DTrusted;
 struct PPB_ImageData;
 struct PPB_ImageDataTrusted;
 struct PPB_InputEvent;
@@ -91,8 +91,8 @@ PPAPI_THUNK_EXPORT const PPB_Fullscreen_Dev* GetPPB_Fullscreen_Thunk();
 PPAPI_THUNK_EXPORT const PPB_GLESChromiumTextureMapping_Dev*
     GetPPB_GLESChromiumTextureMapping_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Graphics2D* GetPPB_Graphics2D_Thunk();
-PPAPI_THUNK_EXPORT const PPB_Graphics3D_Dev* GetPPB_Graphics3D_Thunk();
-PPAPI_THUNK_EXPORT const PPB_Graphics3DTrusted_Dev*
+PPAPI_THUNK_EXPORT const PPB_Graphics3D* GetPPB_Graphics3D_Thunk();
+PPAPI_THUNK_EXPORT const PPB_Graphics3DTrusted*
     GetPPB_Graphics3DTrusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_InputEvent* GetPPB_InputEvent_Thunk();
 PPAPI_THUNK_EXPORT const PPB_ImageData* GetPPB_ImageData_Thunk();

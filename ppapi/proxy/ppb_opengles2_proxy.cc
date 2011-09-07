@@ -28,7 +28,7 @@ PPB_OpenGLES2_Proxy::~PPB_OpenGLES2_Proxy() {
 const InterfaceProxy::Info* PPB_OpenGLES2_Proxy::GetInfo() {
   static const Info info = {
     ppapi::OpenGLES2Impl::GetInterface(),
-    PPB_OPENGLES2_DEV_INTERFACE,
+    PPB_OPENGLES2_INTERFACE,
     INTERFACE_ID_PPB_OPENGLES2,
     false,
     &CreateOpenGLES2Proxy,

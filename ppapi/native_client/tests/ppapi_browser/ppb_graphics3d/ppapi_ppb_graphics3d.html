@@ -38,6 +38,14 @@ function setupTests(tester, plugin) {
   tester.addAsyncTest('PPB_Graphics3D::SwapBuffers', function(test) {
     testAndAssertStatus(test, 'TestSwapBuffers', 'TestSwapCallback:PASSED');
   });
+  tester.addAsyncTest('PPB_Graphics3D::ResizeBuffers', function(test) {
+    testAndAssertStatus(test, 'TestResizeBuffersWithoutDepthBuffer',
+                              'TestResizeAndSwapCallback:PASSED');
+  });
+  tester.addAsyncTest('PPB_Graphics3D::ResizeBuffers w/ Depth', function(test) {
+    testAndAssertStatus(test, 'TestResizeBuffersWithDepthBuffer',
+                              'TestResizeAndSwapCallback:PASSED');
+  });
   tester.addAsyncTest('glTerminatePPAPI', function(test) {
     testAndAssertStatus(test, 'Test_glTerminatePPAPI');
   });
@@ -46,7 +54,7 @@ function setupTests(tester, plugin) {
     </script>
     <title>PPAPI PPB_Graphics3D Test</title>
   </head>
-  <body>
+  <body style="height:100%">
     <h1>PPAPI PPB_Graphics3D Test</h1>
   NOTE: requires --enable-pepper-testing --enable-accelerated-plugins
   <br>
@@ -58,7 +66,7 @@ function setupTests(tester, plugin) {
            name="nacl_module"
            src="ppapi_ppb_graphics3d.nmf"
            style="background-color:#FFFFFF"
-           width="320" height="200" />
+           width="80%" height="40%" />
   <br>
     <script type="text/javascript">
       //<![CDATA[

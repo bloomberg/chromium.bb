@@ -8,9 +8,7 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
-#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -21,10 +19,12 @@
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_opengles.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -70,6 +70,11 @@ const PPB_Graphics2D* PPBGraphics2D() {
       GetBrowserInterfaceSafe(PPB_GRAPHICS_2D_INTERFACE));
 }
 
+const PPB_Graphics3D* PPBGraphics3D() {
+  return reinterpret_cast<const PPB_Graphics3D*>(
+      GetBrowserInterface(PPB_GRAPHICS_3D_INTERFACE));
+}
+
 const PPB_ImageData* PPBImageData() {
   return reinterpret_cast<const PPB_ImageData*>(
       GetBrowserInterfaceSafe(PPB_IMAGEDATA_INTERFACE));
@@ -98,6 +103,11 @@ const PPB_Messaging* PPBMessaging() {
 const PPB_MouseInputEvent* PPBMouseInputEvent() {
   return reinterpret_cast<const PPB_MouseInputEvent*>(
       GetBrowserInterfaceSafe(PPB_MOUSE_INPUT_EVENT_INTERFACE));
+}
+
+const PPB_OpenGLES2* PPBOpenGLES2() {
+  return reinterpret_cast<const PPB_OpenGLES2*>(
+      GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
 }
 
 const PPB_URLLoader* PPBURLLoader() {
@@ -138,11 +148,6 @@ const PPB_CursorControl_Dev* PPBCursorControlDev() {
       GetBrowserInterface(PPB_CURSOR_CONTROL_DEV_INTERFACE));
 }
 
-const PPB_Graphics3D_Dev* PPBGraphics3DDev() {
-  return reinterpret_cast<const PPB_Graphics3D_Dev*>(
-      GetBrowserInterface(PPB_GRAPHICS_3D_DEV_INTERFACE));
-}
-
 const PPB_Font_Dev* PPBFontDev() {
   return reinterpret_cast<const PPB_Font_Dev*>(
       GetBrowserInterface(PPB_FONT_DEV_INTERFACE));
@@ -156,11 +161,6 @@ const PPB_Fullscreen_Dev* PPBFullscreenDev() {
 const PPB_Memory_Dev* PPBMemoryDev() {
   return reinterpret_cast<const PPB_Memory_Dev*>(
       GetBrowserInterface(PPB_MEMORY_DEV_INTERFACE));
-}
-
-const PPB_OpenGLES2_Dev* PPBOpenGLES2Dev() {
-  return reinterpret_cast<const PPB_OpenGLES2_Dev*>(
-      GetBrowserInterface(PPB_OPENGLES2_DEV_INTERFACE));
 }
 
 const PPB_Scrollbar_Dev* PPBScrollbarDev() {

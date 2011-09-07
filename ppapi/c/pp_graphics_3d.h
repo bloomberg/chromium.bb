@@ -3,12 +3,12 @@
  * found in the LICENSE file.
  */
 
-#ifndef PPAPI_C_DEV_PP_GRAPHICS_3D_DEV_H_
-#define PPAPI_C_DEV_PP_GRAPHICS_3D_DEV_H_
+#ifndef PPAPI_C_PP_GRAPHICS_3D_H_
+#define PPAPI_C_PP_GRAPHICS_3D_H_
 
 #include "ppapi/c/pp_stdint.h"
 
-enum PP_Graphics3DAttrib_Dev {
+enum PP_Graphics3DAttrib {
   // Bits of Alpha in the color buffer.
   PP_GRAPHICS3DATTRIB_ALPHA_SIZE = 0x3021,
   // Bits of Blue in the color buffer.
@@ -45,4 +45,4 @@ enum PP_Graphics3DAttrib_Dev {
 // are deprecated.
 typedef int32_t PP_Config3D_Dev;
 
-#endif  // PPAPI_C_DEV_PP_GRAPHICS_3D_DEV_H_
+#endif  // PPAPI_C_PP_GRAPHICS_3D_H_

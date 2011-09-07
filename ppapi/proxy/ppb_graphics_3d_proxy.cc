@@ -408,7 +408,7 @@ PPB_Graphics3D_Proxy::~PPB_Graphics3D_Proxy() {
 const InterfaceProxy::Info* PPB_Graphics3D_Proxy::GetInfo() {
   static const Info info = {
     thunk::GetPPB_Graphics3D_Thunk(),
-    PPB_GRAPHICS_3D_DEV_INTERFACE,
+    PPB_GRAPHICS_3D_INTERFACE,
     INTERFACE_ID_PPB_GRAPHICS_3D,
     false,
     &CreateGraphics3DProxy,

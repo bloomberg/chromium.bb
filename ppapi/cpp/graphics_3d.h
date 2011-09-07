@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_GRAPHICS_3D_DEV_H_
-#define PPAPI_CPP_DEV_GRAPHICS_3D_DEV_H_
+#ifndef PPAPI_CPP_GRAPHICS_3D_H_
+#define PPAPI_CPP_GRAPHICS_3D_H_
 
-#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
@@ -14,16 +14,16 @@ class CompletionCallback;
 class Instance;
 class Var;
 
-class Graphics3D_Dev : public Resource {
+class Graphics3D : public Resource {
  public:
   // Creates an is_null() Graphics3D_Dev object.
-  Graphics3D_Dev();
+  Graphics3D();
 
-  Graphics3D_Dev(const Instance& instance,
-                 const Graphics3D_Dev& share_context,
-                 const int32_t* attrib_list);
+  Graphics3D(const Instance& instance,
+             const Graphics3D& share_context,
+             const int32_t* attrib_list);
 
-  ~Graphics3D_Dev();
+  ~Graphics3D();
 
   int32_t GetAttribs(int32_t* attrib_list) const;
   int32_t SetAttribs(int32_t* attrib_list);
@@ -35,5 +35,5 @@ class Graphics3D_Dev : public Resource {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_GRAPHICS_3D_DEV_H_
+#endif  // PPAPI_CPP_GRAPHICS_3D_H_
 

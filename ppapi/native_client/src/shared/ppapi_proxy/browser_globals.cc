@@ -213,16 +213,16 @@ const PPB_Graphics2D* PPBGraphics2DInterface() {
   return ppb;
 }
 
-const PPB_Graphics3D_Dev* PPBGraphics3DInterface() {
-  static const PPB_Graphics3D_Dev* ppb = static_cast<const PPB_Graphics3D_Dev*>(
-      GetBrowserInterfaceSafe(PPB_GRAPHICS_3D_DEV_INTERFACE));
+const PPB_Graphics3D* PPBGraphics3DInterface() {
+  static const PPB_Graphics3D* ppb = static_cast<const PPB_Graphics3D*>(
+      GetBrowserInterfaceSafe(PPB_GRAPHICS_3D_INTERFACE));
   return ppb;
 }
 
-const PPB_Graphics3DTrusted_Dev* PPBGraphics3DTrustedInterface() {
-  static const PPB_Graphics3DTrusted_Dev* ppb =
-      static_cast<const PPB_Graphics3DTrusted_Dev*>(
-          GetBrowserInterfaceSafe(PPB_GRAPHICS_3D_TRUSTED_DEV_INTERFACE));
+const PPB_Graphics3DTrusted* PPBGraphics3DTrustedInterface() {
+  static const PPB_Graphics3DTrusted* ppb =
+      static_cast<const PPB_Graphics3DTrusted*>(
+          GetBrowserInterfaceSafe(PPB_GRAPHICS_3D_TRUSTED_INTERFACE));
   return ppb;
 }
 

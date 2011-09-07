@@ -5,8 +5,8 @@
 // This file is auto-generated. DO NOT EDIT!
 
 // OpenGL ES interface.
-#ifndef PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
-#define PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
+#ifndef PPAPI_C_PPB_OPENGLES_H_
+#define PPAPI_C_PPB_OPENGLES_H_
 
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -31,13 +31,10 @@ typedef unsigned short GLushort;
 typedef int GLclampx;
 #endif  // __gl2_h_
 
-// TODO(brettw) this string should be PPB_OpenGLES2;1.0 when this is frozen.
-// The 2.0 is trying to describe the version of OpenGL ES which is different
-// than the Pepper interface version.
-#define PPB_OPENGLES2_DEV_INTERFACE_0_1 "PPB_OpenGLES(Dev);2.0"
-#define PPB_OPENGLES2_DEV_INTERFACE PPB_OPENGLES2_DEV_INTERFACE_0_1
+#define PPB_OPENGLES2_INTERFACE_1_0 "PPB_OpenGLES2;1.0"
+#define PPB_OPENGLES2_INTERFACE PPB_OPENGLES2_INTERFACE_1_0
 
-struct PPB_OpenGLES2_Dev {
+struct PPB_OpenGLES2 {
   void (*ActiveTexture)(PP_Resource context, GLenum texture);
   void (*AttachShader)(PP_Resource context, GLuint program, GLuint shader);
   void (*BindAttribLocation)(
@@ -304,5 +301,5 @@ struct PPB_OpenGLES2_Dev {
       PP_Resource context, GLint x, GLint y, GLsizei width, GLsizei height);
 };
 
-#endif  // PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
+#endif  // PPAPI_C_PPB_OPENGLES_H_
 

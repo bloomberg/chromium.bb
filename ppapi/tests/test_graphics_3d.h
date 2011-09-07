@@ -8,10 +8,10 @@
 #include <string>
 #include "ppapi/tests/test_case.h"
 
-struct PPB_OpenGLES2_Dev;
+struct PPB_OpenGLES2;
 
 namespace pp {
-class Graphics3D_Dev;
+class Graphics3D;
 }  // namespace pp
 
 class TestGraphics3D : public TestCase {
@@ -27,12 +27,12 @@ class TestGraphics3D : public TestCase {
   std::string TestFrame();
 
   // Utils used by various tests.
-  int32_t SwapBuffersSync(pp::Graphics3D_Dev* context);
-  std::string TestPixel(pp::Graphics3D_Dev* context,
+  int32_t SwapBuffersSync(pp::Graphics3D* context);
+  std::string TestPixel(pp::Graphics3D* context,
                         int x, int y, const uint8_t expected_color[4]);
 
   // OpenGL ES2 interface.
-  const PPB_OpenGLES2_Dev* opengl_es2_;
+  const PPB_OpenGLES2* opengl_es2_;
 };
 
 #endif  // PAPPI_TESTS_TEST_GRAPHICS_3D_H_
