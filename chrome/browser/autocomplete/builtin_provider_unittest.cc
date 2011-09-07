@@ -131,7 +131,7 @@ TEST_F(BuiltinProviderTest, NonChromeURLs) {
                 &AutocompleteMatch::destination_url);
 }
 
-TEST_F(BuiltinProviderTest, ChromeURLs) {
+TEST_F(BuiltinProviderTest, DISABLED_ChromeURLs) {
   const string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme);
   const string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme);
   const string16 kSeparator1 = ASCIIToUTF16(":");
