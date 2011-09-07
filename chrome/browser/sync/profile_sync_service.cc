@@ -576,9 +576,7 @@ std::string ProfileSyncService::GetExperimentNameForDataType(
     syncable::ModelType data_type) {
   switch (data_type) {
     case syncable::SESSIONS:
-      return "sync-sessions";
-    case syncable::TYPED_URLS:
-      return "sync-typed-urls";
+      return "sync-tabs";
     default:
       break;
   }

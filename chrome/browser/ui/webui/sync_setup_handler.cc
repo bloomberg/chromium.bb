@@ -239,7 +239,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "typedURLs", IDS_SYNC_DATATYPE_TYPED_URLS },
     { "apps", IDS_SYNC_DATATYPE_APPS },
     { "searchEngines", IDS_SYNC_DATATYPE_SEARCH_ENGINES },
-    { "foreignSessions", IDS_SYNC_DATATYPE_SESSIONS },
+    { "openTabs", IDS_SYNC_DATATYPE_TABS },
     { "syncZeroDataTypesError", IDS_SYNC_ZERO_DATA_TYPES_ERROR },
     { "abortedError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },
     { "encryptAllLabel", IDS_SYNC_ENCRYPT_ALL_LABEL },

@@ -150,7 +150,7 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
 
   // Session sync is disabled by default.  Register only if explicitly
   // enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncSessions)) {
+  if (command_line_->HasSwitch(switches::kEnableSyncTabs)) {
     pss->RegisterDataTypeController(
         new SessionDataTypeController(this, profile_, pss));
   }

@@ -977,7 +977,7 @@ void SyncManager::SyncInternal::UpdateEnabledTypes() {
   }
   sync_notifier_->UpdateEnabledTypes(enabled_types);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncSessionsForOtherClients)) {
+      switches::kEnableSyncTabsForOtherClients)) {
     MaybeSetSyncTabsInNigoriNode(enabled_types);
   }
 }

@@ -218,8 +218,8 @@ void SyncTest::AddTestSwitches(CommandLine* cl) {
 
 void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {
   // TODO(sync): Remove this once sessions sync is enabled by default.
-  if (!cl->HasSwitch(switches::kEnableSyncSessions))
-    cl->AppendSwitch(switches::kEnableSyncSessions);
+  if (!cl->HasSwitch(switches::kEnableSyncTabs))
+    cl->AppendSwitch(switches::kEnableSyncTabs);
 }
 
 // static

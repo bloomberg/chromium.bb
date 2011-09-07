@@ -4561,17 +4561,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
-      <message name="IDS_FLAGS_SYNC_SESSIONS_NAME" desc="Title for the flag to enable syncing the Sessions datatype">
-        Enable syncing sessions
-      </message>
-      <message name="IDS_FLAGS_SYNC_SESSIONS_DESCRIPTION" desc="Description for the flag to enable syncing the Sessions datatype">
-        Enable sessions in the sync options. This allows syncing your sessions to other clients.
-      </message>
       <message name="IDS_FLAGS_SYNC_SEARCH_ENGINES_NAME" desc="Title for the flag to enable syncing the Search Engines datatype">
         Enable syncing search engines
       </message>
       <message name="IDS_FLAGS_SYNC_SEARCH_ENGINES_DESCRIPTION" desc="Description for the flag to enable syncing the Search Engines datatype">
         Enable search engines in the sync options. This allows syncing your custom search engines to other clients.
+      </message>
+      <message name="IDS_FLAGS_SYNC_TABS_NAME" desc="Title for the flag to enable syncing the open tabs datatype">
+        Enable syncing open tabs
+      </message>
+      <message name="IDS_FLAGS_SYNC_TABS_DESCRIPTION" desc="Description for the flag to enable syncing the open tabs datatype">
+        Enable open tabs in the sync options. This allows syncing your open tabs to other clients.
       </message>
       <message name="IDS_FLAGS_SYNC_OAUTH_NAME" desc="Title for the flag to enable authenticating with OAuth">
         Use OAuth to authenticate Sync operations.
@@ -9857,8 +9857,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_DATATYPE_SEARCH_ENGINES" desc="Search Engines, one of the data types that we allow syncing.">
         Search Engines
       </message>
-      <message name="IDS_SYNC_DATATYPE_SESSIONS" desc="Sessions, one of the data types that we allow syncing.">
-        Foreign Sessions
+      <message name="IDS_SYNC_DATATYPE_TABS" desc="Open Tabs, one of the data types that we allow syncing.">
+        Open Tabs
       </message>
 
       <!-- Encryption tab of the configure sync dialog -->

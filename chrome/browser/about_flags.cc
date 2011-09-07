@@ -315,11 +315,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSyncOAuth)
   },
   {
-    "sync-sessions",
-    IDS_FLAGS_SYNC_SESSIONS_NAME,
-    IDS_FLAGS_SYNC_SESSIONS_DESCRIPTION,
+    "sync-tabs",
+    IDS_FLAGS_SYNC_TABS_NAME,
+    IDS_FLAGS_SYNC_TABS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableSyncSessions)
+    SINGLE_VALUE_TYPE(switches::kEnableSyncTabs)
   },
   {
     "sync-search-engines",

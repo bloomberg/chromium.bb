@@ -183,7 +183,7 @@ void PersonalOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("syncsearchengines",
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SEARCH_ENGINES));
   localized_strings->SetString("syncsessions",
-      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SESSIONS));
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_TABS));
 
 #if defined(OS_CHROMEOS)
   localized_strings->SetString("account",

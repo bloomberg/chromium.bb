@@ -514,11 +514,11 @@ const char kEnableSyncOAuth[]               = "enable-sync-oauth";
 const char kEnableSyncSearchEngines[]       = "enable-sync-search-engines";
 
 // Enable syncing browser sessions.
-const char kEnableSyncSessions[]            = "enable-sync-sessions";
+const char kEnableSyncTabs[]            = "enable-sync-tabs";
 
 // Enable syncing browser sessions for other synced clients.
-const char kEnableSyncSessionsForOtherClients[] =
-    "enable-sync-sessions-for-other-clients";
+const char kEnableSyncTabsForOtherClients[] =
+    "enable-sync-tabs-for-other-clients";
 
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]     = "enable-tab-groups-context-menu";
