@@ -31,7 +31,7 @@ void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
   v8::Handle<v8::String> source = v8::String::New(script_source.data(),
                                                   script_source.size());
   v8::Handle<v8::String> name = v8::String::New(script_name.data(),
-                                                script_source.size());
+                                                script_name.size());
 
   v8::TryCatch try_catch;
   v8::Handle<v8::Script> script = v8::Script::Compile(source, name);
