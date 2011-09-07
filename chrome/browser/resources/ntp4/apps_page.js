@@ -286,6 +286,7 @@ cr.define('ntp4', function() {
       }
 
       this.appImgSrc_ = src;
+      this.classList.add('default-icon');
     },
 
     /**
@@ -296,6 +297,7 @@ cr.define('ntp4', function() {
       if (this.appImgSrc_)
         this.appImg_.src = this.appImgSrc_;
       this.appImgSrc_ = null;
+      this.classList.remove('default-icon');
     },
 
     // Shows a notification text below the app icon and stuffs the attributes
@@ -582,7 +584,10 @@ cr.define('ntp4', function() {
         ntp4.getCardSlider().selectCardByValue(this);
         this.content_.scrollTop = this.content_.scrollHeight;
       }
-      this.appendTile(new App(appData), animate);
+      var app = new App(appData);
+      if (this.classList.contains('selected-card'))
+        app.loadIcon();
+      this.appendTile(app, animate);
     },
 
     /**
@@ -591,11 +596,7 @@ cr.define('ntp4', function() {
      * @private
      */
     onCardSelected_: function(e) {
-      if (this.hasBeenSelected_)
-        return;
-      this.hasBeenSelected_ = true;
-
-      var apps = this.querySelectorAll('.app');
+      var apps = this.querySelectorAll('.app.default-icon');
       for (var i = 0; i < apps.length; i++) {
         apps[i].loadIcon();
       }
