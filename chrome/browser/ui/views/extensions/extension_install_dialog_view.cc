@@ -15,6 +15,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "views/border.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
@@ -142,15 +143,15 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
+  int left_column_width = prompt.GetPermissionCount() > 0 ?
+      kPermissionsLeftColumnWidth : kNoPermissionsLeftColumnWidth;
 
   column_set->AddColumn(GridLayout::LEADING,
                         GridLayout::FILL,
                         0, // no resizing
                         GridLayout::USE_PREF,
                         0, // no fixed with
-                        prompt.GetPermissionCount() > 0 ?
-                            kNoPermissionsLeftColumnWidth :
-                            kPermissionsLeftColumnWidth);
+                        left_column_width);
   column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
   column_set->AddColumn(GridLayout::LEADING,
                         GridLayout::LEADING,
@@ -166,6 +167,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   heading->SetFont(heading->font().DeriveFont(kHeadingFontSizeDelta,
                                               gfx::Font::BOLD));
   heading->SetMultiLine(true);
+  heading->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  heading->SizeToFit(left_column_width);
   layout->AddView(heading);
 
   // Scale down to icon size, but allow smaller icons (don't scale up).
@@ -200,6 +203,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
         UTF16ToWide(prompt.GetRatingCount()));
     rating_count->SetFont(
         rating_count->font().DeriveFont(kRatingFontSizeDelta));
+    // Add some space between the stars and the rating count.
+    rating_count->set_border(views::Border::CreateEmptyBorder(0, 2, 0, 0));
     rating->AddChildView(rating_count);
 
     layout->StartRow(0, column_set_id);
@@ -231,6 +236,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     views::Label* permissions_header = new views::Label(UTF16ToWide(
         prompt.GetPermissionsHeader()));
     permissions_header->SetMultiLine(true);
+    permissions_header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    permissions_header->SizeToFit(left_column_width);
     layout->AddView(permissions_header);
 
     for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
@@ -240,10 +247,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
           UTF16ToWide(prompt.GetPermission(i)));
       permission_label->SetMultiLine(true);
       permission_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      layout->AddView(permission_label,
-                      1, 1,
-                      GridLayout::LEADING, GridLayout::FILL,
-                      kPermissionsLeftColumnWidth, 0);
+      permission_label->SizeToFit(left_column_width);
+      layout->AddView(permission_label);
     }
   }
 }
