@@ -132,13 +132,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
 // Test Scribe ID - 370489.
 // TODO(rsimha): Enable after http://crbug.com/94941 is fixed.
-#if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        FAILS_SC_AddFirstBMWithFavicon) {
-#else
-IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
-                       SC_AddFirstBMWithFavicon) {
-#endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
 
