@@ -306,7 +306,9 @@ function onStateChanged_() {
   var state = plugin.state;
   if (state == plugin.REQUESTED_ACCESS_CODE) {
     // Nothing to do here.
+    remoting.debug.log('Host plugin state: REQUESTED_ACCESS_CODE');
   } else if (state == plugin.RECEIVED_ACCESS_CODE) {
+    remoting.debug.log('Host plugin state: RECEIVED_ACCESS_CODE');
     var accessCode = plugin.accessCode;
     var accessCodeDisplay = document.getElementById('access-code-display');
     accessCodeDisplay.innerText = '';
@@ -332,12 +334,14 @@ function onStateChanged_() {
       remoting.cancelShare();
     }
   } else if (state == plugin.CONNECTED) {
+    remoting.debug.log('Host plugin state: CONNECTED');
     var element = document.getElementById('host-shared-message');
     var client = plugin.client;
     l10n.localizeElement(element, client);
     remoting.setMode(remoting.AppMode.HOST_SHARED);
     disableTimeoutCountdown_();
   } else if (state == plugin.DISCONNECTED) {
+    remoting.debug.log('Host plugin state: DISCONNECTED');
     if (remoting.currentMode != remoting.AppMode.HOST_SHARE_FAILED) {
       // If an error is being displayed, then the plugin should not be able to
       // hide it by setting the state. Errors must be dismissed by the user
@@ -346,7 +350,8 @@ function onStateChanged_() {
     }
     plugin.parentNode.removeChild(plugin);
   } else if (state == plugin.ERROR) {
-    remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
+    remoting.debug.log('Host plugin state: ERROR');
+    showShareError_(/*i18n-content*/'ERROR_GENERIC');
   } else {
     remoting.debug.log('Unknown state -> ' + state);
   }
