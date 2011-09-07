@@ -90,7 +90,7 @@ struct ThumbnailScore {
   // Time before we take a worse thumbnail (subject to
   // kThumbnailMaximumBoringness) over what's currently in the database
   // for freshness.
-  static const base::TimeDelta kUpdateThumbnailTime;
+  static const int64 kUpdateThumbnailTimeDays;
 
   // Penalty of how much more boring a thumbnail should be per hour.
   static const double kThumbnailDegradePerHour;
