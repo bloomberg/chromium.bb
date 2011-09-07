@@ -227,7 +227,10 @@ label {
 }
 
 #session-mode {
-  width: 100%;
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  -webkit-box-shadow: 0 0 8px 0 black;
   -webkit-user-select: none;
 }
 

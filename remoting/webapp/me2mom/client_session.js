@@ -352,11 +352,10 @@ remoting.ClientSession.prototype.setState_ = function(state) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
-  var width = this.plugin.desktopWidth;
-  var height = this.plugin.desktopHeight;
-  remoting.debug.log('desktop size changed: ' + width + 'x' + height);
-  this.plugin.width = width;
-  this.plugin.height = height;
+  remoting.debug.log('desktop size changed: ' +
+                     this.plugin.desktopWidth + 'x' +
+                     this.plugin.desktopHeight);
+  this.setScaleToFit(remoting.scaleToFit);
 };
 
 /**
@@ -395,6 +394,19 @@ remoting.ClientSession.prototype.setScaleToFit = function(shouldScale) {
     this.plugin.width = this.plugin.desktopWidth;
     this.plugin.height = this.plugin.desktopHeight;
   }
+
+  // Resize the plugin's container.  The container's style places its origin at
+  // the center of the page, so we use -ve margins to move that origin to the
+  // center of the container, rather than its top-left corner, so that it will
+  // appear centered on the page.
+  if (this.plugin.parentNode) {
+    var parentNode = this.plugin.parentNode;
+    parentNode.style["width"] = this.plugin.width + "px";
+    parentNode.style["height"] = this.plugin.height + "px";
+    parentNode.style["margin-left"] = -(this.plugin.width/2) + "px";
+    parentNode.style["margin-top"] = -(this.plugin.height/2) + "px";
+  }
+
   remoting.debug.log('plugin size is now: ' +
                      this.plugin.width + ' x ' + this.plugin.height + '.');
   this.plugin.setScaleToFit(shouldScale);

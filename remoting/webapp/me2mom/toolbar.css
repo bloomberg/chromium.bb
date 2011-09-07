@@ -13,6 +13,7 @@
   -webkit-transition-delay: 0.7s;
   font-size: 13px;
   pointer-events: none;
+  z-index: 1;
 }
 
 .toolbar-container button {
