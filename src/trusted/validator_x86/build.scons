@@ -147,23 +147,6 @@ if generate:
 # This step sits in the middle because of dependency order, where the next
 # generation step requires this executable.
 
-# Add old x86 table generator.
-#
-#
-# Isolate the environment for ncdecode_table to prevent a cycle.
-env_decode_table = test_env.Clone()
-# TODO: This should be handled more cleanly, by just building
-#   Testing type programs for coverage. But for the moment, we need sel_ldr
-#   and others to have coverage, so it's easier to gate it off here.
-env_decode_table['COVERAGE_LINKCOM_EXTRAS'] = None
-
-ncdecode_table = env_decode_table.ComponentProgram(
-    'ncdecode_table',
-    ['ncdecode_table.c'],
-    EXTRA_LIBS=[env_decode_table.NaClTargetArchSuffix('ncval_base_verbose')])
-
-env.Requires(ncdecode_table, crt)
-
 # Add new x86 table generator.
 #
 #
@@ -201,23 +184,6 @@ gen_env.Requires(ncdecode_tablegen, crt)
 # by ncdecode_tablegen.
 #
 if generate:
-  #
-  # Generate 32 and 64 bit versions of ncdecodetab and ncdisasmtab.
-  #
-  for bits in ['32', '64']:
-    ncv_decodetab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdecodetab', bits)
-    ncv_disasmtab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdisasmtab', bits)
-    ncv_badprefixmask_h= '%s/gen/%s_%s.h' % (val_src_dir, 'ncbadprefixmask', bits)
-    exe_path = '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'
-    gen_env.Command(
-        [ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h],
-        exe_path,
-        ['%s -m%s %s %s %s' % (exe_path, bits, ncv_decodetab_h,
-                               ncv_disasmtab_h, ncv_badprefixmask_h )]
-    )
-    tables.append(ncv_decodetab_h)
-    tables.append(ncv_disasmtab_h)
-    tables.append(ncv_badprefixmask_h)
 
   #
   # Generate 32 and 64 bit versions of nc_opcode_table and nc_subregs
@@ -449,7 +415,7 @@ ncval = test_env.ComponentProgram(
   EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
               test_env.NaClTargetArchSuffix('ncval_seg_sfi'),
               test_env.NaClTargetArchSuffix('ncfileutils'),
-              'utils'
+              'utils',
               ])
 
 test_env.SDKInstallTrusted('ncval', ncval)

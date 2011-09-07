@@ -25,9 +25,9 @@
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
 
 #if NACL_TARGET_SUBARCH == 64
-# include "native_client/src/trusted/validator_x86/gen/ncbadprefixmask_64.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/gen/ncbadprefixmask_64.h"
 #else
-# include "native_client/src/trusted/validator_x86/gen/ncbadprefixmask_32.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/gen/ncbadprefixmask_32.h"
 #endif
 
 /* debugging stuff */

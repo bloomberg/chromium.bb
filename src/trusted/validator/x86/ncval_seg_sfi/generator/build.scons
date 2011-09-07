@@ -1,0 +1,122 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import sys
+Import('env')
+
+#
+#
+# Build on x86 only.
+#
+#
+if not env.Bit('target_x86'): Return()
+
+# ------------------------------------------------------
+# General adjustments to the environment for builds.
+
+# Make a copy of debug CRT for now.
+# TODO(bradnelson): there should be a better way to generalize this requirement.
+# NOTE: debug builds on windows break without this
+crt = []
+if env.AllBits('windows', 'debug'):
+  for i in ['.', '$STAGING_DIR']:
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
+                         'x86/Microsoft.VC80.DebugCRT')
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+# TODO(bradchen): eliminate need for the following line
+env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
+
+# Defines the source directory where validator generated files should be added.
+val_src_dir = '$MAIN_DIR/src/trusted/validator/x86/ncval_seg_sfi'
+# ------------------------------------------------------
+# Source generation:
+#
+# Source generation is controlled by to command line directives, and can be
+# built in either the x86-32 or the x86-64 platform. The two directives are:
+#
+#   valclean : Delete the existing versions of the generated files.
+#       This step should be done whenever ANY change may effect
+#       the generated sources.
+#
+#   valgen : Regenerate any deleted source files. Note: some generated
+#       source files do understand dependencies and do not need to be
+#       deleted before calling valgen. However, do not count on this,
+#       as some dependencies are not caught. To be safe, if you have
+#       modified a file that effects source generation, run "valclean"
+#       followed by a "valgen" to guarantee that generated sources are
+#       up to date.
+
+
+gen_env = env.Clone();
+gen_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+
+generate = False
+if 'valgen' in COMMAND_LINE_TARGETS: generate = True
+if 'valclean' in COMMAND_LINE_TARGETS: generate = True
+
+# Set of generated (source) decoder tables.
+tables = []
+
+# ------------------------------------------------------
+# Table generators:
+#
+# In the middle of generating, we unconditionally add ncdecode_table and
+# ncdecode_tablegen so that the tests which depend on it, can run correctly.
+# This step sits in the middle because of dependency order, where the next
+# generation step requires this executable.
+
+# Add x86 decoder table generator for segment SFI sandboxing validator.
+#
+#
+# Isolate the environment for ncdecode_table to prevent a cycle.
+env_decode_table = env.Clone()
+env_decode_table.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
+
+# TODO: This should be handled more cleanly, by just building
+#   Testing type programs for coverage. But for the moment, we need sel_ldr
+#   and others to have coverage, so it's easier to gate it off here.
+env_decode_table['COVERAGE_LINKCOM_EXTRAS'] = None
+
+ncdecode_table = env_decode_table.ComponentProgram(
+    'ncdecode_table',
+    ['ncdecode_table.c'],
+    EXTRA_LIBS=[env_decode_table.NaClTargetArchSuffix('ncval_base_verbose')])
+
+env.Requires(ncdecode_table, crt)
+
+# ------------------------------------------------------
+#  Source generation step 2: Generate decoder tables.
+#
+# Now we are back to conditionally defining the large tables generated
+# by ncdecode_tablegen.
+#
+if generate:
+  #
+  # Generate 32 and 64 bit versions of ncdecodetab and ncdisasmtab.
+  #
+  for bits in ['32', '64']:
+    ncv_decodetab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdecodetab', bits)
+    ncv_disasmtab_h = '%s/gen/%s_%s.h' % (val_src_dir, 'ncdisasmtab', bits)
+    ncv_badprefixmask_h= '%s/gen/%s_%s.h' % (
+        val_src_dir, 'ncbadprefixmask', bits)
+    exe_path = '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}'
+    gen_env.Command(
+        [ncv_decodetab_h, ncv_disasmtab_h, ncv_badprefixmask_h],
+        exe_path,
+        ['%s -m%s %s %s %s' % (exe_path, bits, ncv_decodetab_h,
+                               ncv_disasmtab_h, ncv_badprefixmask_h )]
+    )
+    tables.append(ncv_decodetab_h)
+    tables.append(ncv_disasmtab_h)
+    tables.append(ncv_badprefixmask_h)
+
+  # Generate 32 and 64 bit versions of ncval_opcode_table (validator
+  # decoder tables)
+  gen_env.AlwaysBuild(
+      gen_env.Alias('valgen', tables))
+  gen_env.AlwaysBuild(
+      gen_env.Alias('valclean', action=[Delete(x) for x in tables]))

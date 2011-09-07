@@ -20,9 +20,9 @@
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 
 #if NACL_TARGET_SUBARCH == 64
-# include "native_client/src/trusted/validator_x86/gen/ncdisasmtab_64.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/gen/ncdisasmtab_64.h"
 #else
-# include "native_client/src/trusted/validator_x86/gen/ncdisasmtab_32.h"
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/gen/ncdisasmtab_32.h"
 #endif
 
 /* To turn on debugging of instruction decoding, change value of
