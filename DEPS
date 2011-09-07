@@ -272,7 +272,7 @@ deps = {
     (Var("googlecode_url") % "webrtc") + "/trunk/src@" + Var("webrtc_revision"),
 
   "src/third_party/mozc/session":
-    "http://mozc.googlecode.com/svn/trunk/src/session@58",
+    (Var("googlecode_url") % "mozc") + "/trunk/src/session@58",
 }
 
 
