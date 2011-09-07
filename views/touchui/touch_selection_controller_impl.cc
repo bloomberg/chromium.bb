@@ -31,6 +31,9 @@ const int kSelectionHandleAlpha = 0x7F;
 const SkColor kSelectionHandleColor =
     SkColorSetA(SK_ColorBLUE, kSelectionHandleAlpha);
 
+// The minimum selection size to trigger selection controller.
+const int kMinSelectionSize = 4;
+
 const int kContextMenuCommands[] = {IDS_APP_CUT,
                                     IDS_APP_COPY,
 // TODO(varunjain): PASTE is acting funny due to some gtk clipboard issue.
@@ -76,6 +79,15 @@ void PaintCircle(const Circle& circle, gfx::Canvas* canvas) {
   SkScalar radius = SkIntToScalar(circle.radius);
   path.addRoundRect(rect, radius, radius);
   canvas->AsCanvasSkia()->drawPath(path, paint);
+}
+
+// The points may not match exactly, since the selection range computation may
+// introduce some floating point errors. So check for a minimum size to decide
+// whether or not there is any selection.
+bool IsEmptySelection(const gfx::Point& p1, const gfx::Point& p2) {
+  int delta_x = p2.x() - p1.x();
+  int delta_y = p2.y() - p1.y();
+  return (abs(delta_x) < kMinSelectionSize && abs(delta_y) < kMinSelectionSize);
 }
 
 }  // namespace
@@ -278,7 +290,7 @@ void TouchSelectionControllerImpl::SelectionChanged(const gfx::Point& p1,
     UpdateContextMenu(p1, p2);
 
     // Check if there is any selection at all.
-    if (screen_pos_1 == screen_pos_2) {
+    if (IsEmptySelection(screen_pos_2, screen_pos_1)) {
       selection_handle_1_->SetVisible(false);
       selection_handle_2_->SetVisible(false);
       return;
@@ -386,7 +398,7 @@ void TouchSelectionControllerImpl::UpdateContextMenu(const gfx::Point& p1,
   HideContextMenu();
 
   // If there is selection, we restart the context menu timer.
-  if (p1 != p2) {
+  if (!IsEmptySelection(p1, p2)) {
     context_menu_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kContextMenuTimoutMs),

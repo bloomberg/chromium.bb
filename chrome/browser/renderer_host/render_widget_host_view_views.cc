@@ -43,6 +43,7 @@
 
 static const int kMaxWindowWidth = 4000;
 static const int kMaxWindowHeight = 4000;
+static const int kTouchControllerUpdateDelay = 150;
 
 // static
 const char RenderWidgetHostViewViews::kViewClassName[] =
@@ -95,7 +96,8 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(touch_selection_controller_(
-          views::TouchSelectionController::create(this))) {
+          views::TouchSelectionController::create(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(update_touch_selection_(this)) {
   set_focusable(true);
   host_->SetView(this);
 
@@ -156,10 +158,7 @@ void RenderWidgetHostViewViews::DidBecomeSelected() {
   if (host_)
     host_->WasRestored();
 
-  if (touch_selection_controller_.get()) {
-    touch_selection_controller_->SelectionChanged(selection_start_,
-                                                  selection_end_);
-  }
+  UpdateTouchSelectionController();
 }
 
 void RenderWidgetHostViewViews::WasHidden() {
@@ -175,6 +174,9 @@ void RenderWidgetHostViewViews::WasHidden() {
   // reduce its resource utilization.
   if (host_)
     host_->WasHidden();
+
+  if (!update_touch_selection_.empty())
+    update_touch_selection_.RevokeAll();
 
   if (touch_selection_controller_.get())
     touch_selection_controller_->ClientViewLostFocus();
@@ -346,8 +348,21 @@ void RenderWidgetHostViewViews::SelectionChanged(const std::string& text,
   NOTIMPLEMENTED();
   selection_start_ = start;
   selection_end_ = end;
-  if (touch_selection_controller_.get())
-    touch_selection_controller_->SelectionChanged(start, end);
+
+  // TODO(sad): This is a workaround for a webkit bug:
+  // https://bugs.webkit.org/show_bug.cgi?id=67464
+  // Remove this when the bug gets fixed.
+  //
+  // Webkit can send spurious selection-change on text-input (e.g. when
+  // inserting text at the beginning of a non-empty text control). But in those
+  // cases, it does send the correct selection information quickly afterwards.
+  // So delay the notification to the touch-selection controller.
+  if (update_touch_selection_.empty()) {
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        update_touch_selection_.NewRunnableMethod(
+          &RenderWidgetHostViewViews::UpdateTouchSelectionController),
+        kTouchControllerUpdateDelay);
+  }
 }
 
 void RenderWidgetHostViewViews::ShowingContextMenu(bool showing) {
@@ -815,4 +830,10 @@ void RenderWidgetHostViewViews::FinishImeCompositionSession() {
   DCHECK(GetInputMethod());
   GetInputMethod()->CancelComposition(this);
   has_composition_text_ = false;
+}
+
+void RenderWidgetHostViewViews::UpdateTouchSelectionController() {
+  if (touch_selection_controller_.get())
+    touch_selection_controller_->SelectionChanged(selection_start_,
+                                                  selection_end_);
 }

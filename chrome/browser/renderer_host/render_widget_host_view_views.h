@@ -205,6 +205,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   // to cancel its ongoing composition sesstion.
   void FinishImeCompositionSession();
 
+  // Updates the touch-selection controller (e.g. when the selection/focus
+  // changes).
+  void UpdateTouchSelectionController();
+
 #if defined(TOOLKIT_USES_GTK)
   // On some systems, there can be two native views, where an outer native view
   // contains the inner native view (e.g. when using GTK+). This returns the
@@ -271,6 +275,8 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   scoped_ptr<views::TouchSelectionController> touch_selection_controller_;
   gfx::Point selection_start_;
   gfx::Point selection_end_;
+  ScopedRunnableMethodFactory<RenderWidgetHostViewViews>
+      update_touch_selection_;
 
 #if defined(TOUCH_UI)
   std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerTouch> >
