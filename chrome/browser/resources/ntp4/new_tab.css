@@ -22,7 +22,8 @@ body {
   -webkit-user-select: none;
 }
 
-.hidden {
+/* [hidden] does display:none, but its priority is too low in some cases. */
+[hidden], .hidden {
   display: none !important;
 }
 
