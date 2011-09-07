@@ -9,57 +9,6 @@
   </outputs>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
-      <message name="IDS_AUTOFILL_ADDRESS_LINE_1_RE">
-        address.*line|address1|addr1|street<!-- de-DE -->|strasse|straße|hausnummer|housenumber<!-- en-GB -->|house.?name<!-- es -->|direccion|dirección<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所1<!-- pt-BR, pt-PT -->|morada|endereço<!-- ru -->|Адрес<!-- zh-CN -->|地址<!-- ko-KR -->|주소.?1
-      </message>
-      <message name="IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE">
-        address<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- ja-JP -->|住所<!-- zh-CN -->|地址<!-- ko-KR -->|주소
-      </message>
-      <message name="IDS_AUTOFILL_ADDRESS_LINE_2_RE">
-        address.*line2|address2|addr2|street|suite|unit<!-- de-DE -->|adresszusatz|ergänzende.?angaben<!-- es -->|direccion2|colonia|adicional<!-- fr-FR -->|addresssuppl|complementnom|appartement<!-- it-IT -->|indirizzo2<!-- ja-JP -->|住所2<!-- pt-BR, pt-PT -->|complemento|addrcomplement<!-- ru -->|Улица<!-- zh-CN -->|地址2<!-- ko-KR -->|주소.?2
-      </message>
-      <message name="IDS_AUTOFILL_ADDRESS_LINE_2_LABEL_RE">
-        address<!-- fr-FR -->|adresse<!-- it-IT -->|indirizzo<!-- zh-CN -->|地址<!-- ko-KR -->|주소
-      </message>
-      <message name="IDS_AUTOFILL_ADDRESS_LINE_3_RE">
-        address.*line3|address3|addr3|street|line3<!-- es -->|municipio<!-- fr-FR -->|batiment|residence<!-- it-IT -->|indirizzo3
-      </message>
-      <message name="IDS_AUTOFILL_COMPANY_RE">
-        company|business|organization|organisation<!-- de-DE -->|firma|firmenname<!-- es -->|empresa<!-- fr-FR -->|societe|société<!-- it-IT -->|ragione.?sociale<!-- ja-JP -->|会社<!-- ru -->|название.?компании<!-- zh-CN -->|单位|公司<!-- ko-KR -->|회사|직장
-      </message>
-      <message name="IDS_AUTOFILL_ATTENTION_IGNORED_RE">
-        attention|attn
-      </message>
-      <message name="IDS_AUTOFILL_REGION_IGNORED_RE">
-        province|region|other<!-- es -->|provincia<!-- pt-BR, pt-PT -->|bairro|suburb
-      </message>
-      <message name="IDS_AUTOFILL_COUNTRY_RE">
-        country|countries|location<!-- es -->|país|pais<!-- ja-JP -->|国<!-- zh-CN -->|国家<!-- ko-KR -->|국가|나라
-      </message>
-      <message name="IDS_AUTOFILL_ZIP_CODE_RE">
-        zip|postal|post.*code|pcode|^1z$<!-- de-DE -->|postleitzahl<!-- es -->|\bcp\b<!-- fr-FR -->|\bcdp\b<!-- it-IT -->|\bcap\b<!-- ja-JP -->|郵便番号<!-- pt-BR, pt-PT -->|codigo|codpos|\bcep\b<!-- ru -->|Почтовый.?Индекс<!--zh-CN -->|邮政编码|邮编<!-- zh-TW -->|郵遞區號<!-- ko-KR -->|우편.?번호
-      </message>
-      <message name="IDS_AUTOFILL_ZIP_4_RE">
-        zip|^-$|post2<!-- pt-BR, pt-PT -->|codpos2
-      </message>
-      <message name="IDS_AUTOFILL_CITY_RE">
-        city|town<!-- de-DE -->|\bort\b|stadt<!-- en-AU -->|suburb<!-- es -->|ciudad|provincia|localidad|poblacion<!-- fr-FR -->|ville|commune<!-- it-IT -->|localita<!-- ja-JP -->|市区町村<!-- pt-BR, pt-PT -->|cidade<!-- ru -->|Город<!-- zh-CN -->|市<!-- zh-TW -->|分區<!-- ko-KR -->|^시[^도·・]|시[·・]?군[·・]?구
-      </message>
-      <message name="IDS_AUTOFILL_STATE_RE">
-        (?&lt;!united )state|county|region|province<!-- de-DE -->|land<!-- en-UK -->|county|principality<!-- ja-JP -->|都道府県<!-- pt-BR, pt-PT -->|estado|provincia<!-- ru -->|область<!-- zh-CN -->|省<!-- zh-TW -->|地區<!-- ko-KR -->|^시[·・]?도
-      </message>
-      <message name="IDS_AUTOFILL_ADDRESS_TYPE_SAME_AS_RE">
-        same as
-      </message>
-      <message name="IDS_AUTOFILL_ADDRESS_TYPE_USE_MY_RE">
-        use my
-      </message>
-      <message name="IDS_AUTOFILL_BILLING_DESIGNATOR_RE">
-        bill
-      </message>
-      <message name="IDS_AUTOFILL_SHIPPING_DESIGNATOR_RE">
-        ship
-      </message>
       <message name="IDS_AUTOFILL_EMAIL_RE">
         e.?mail<!-- ja-JP -->|メールアドレス<!-- ru -->|Электронной.?Почты<!-- zh-CN -->|邮件|邮箱<!-- zh-TW -->|電郵地址<!-- ko-KR -->|(이메일|전자.?우편|[Ee]-?mail)(.?주소)?
       </message>

@@ -14,8 +14,195 @@
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/autofill_scanner.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "grit/autofill_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+const char kAttentionIgnoredRe[] = "attention|attn";
+const char kRegionIgnoredRe[] =
+    "province|region|other"
+    // es
+    "|provincia"
+      // pt-BR, pt-PT
+    "|bairro|suburb";
+const char kCompanyRe[] =
+    "company|business|organization|organisation"
+    // de-DE
+    "|firma|firmenname"
+    // es
+    "|empresa"
+    // fr-FR: |societe|société
+    "|societe|soci\xc3\xa9t\xc3\xa9"
+    // it-IT
+    "|ragione.?sociale"
+    // ja-JP: 会社
+    "|\xe4\xbc\x9a\xe7\xa4\xbe"
+    // ru: название.?компании
+    "|\xd0\xbd\xd0\xb0\xd0\xb7\xd0\xb2\xd0\xb0\xd0\xbd\xd0\xb8\xd0\xb5.?\xd0"
+        "\xba\xd0\xbe\xd0\xbc\xd0\xbf\xd0\xb0\xd0\xbd\xd0\xb8\xd0\xb8"
+    // zh-CN: 单位|公司
+    "|\xe5\x8d\x95\xe4\xbd\x8d|\xe5\x85\xac\xe5\x8f\xb8"
+    // ko-KR: 회사|직장
+    "|\xed\x9a\x8c\xec\x82\xac|\xec\xa7\x81\xec\x9e\xa5";
+const char kAddressLine1Re[] =
+    "address.*line|address1|addr1|street"
+    // de-DE: |strasse|straße|hausnummer|housenumber
+    "|strasse|stra\xc3\x9f""e|hausnummer|housenumber"
+    // en-GB
+    "|house.?name"
+    // es: |direccion|dirección
+    "|direccion|direcci\xc3\xb3n"
+    // fr-FR
+    "|adresse"
+    // it-IT
+    "|indirizzo"
+    // ja-JP: 住所1
+    "|\xe4\xbd\x8f\xe6\x89\x80""1"
+    // pt-BR, pt-PT: morada|endereço
+    "|morada|endere\xc3\xa7o"
+    // ru: Адрес
+    "|\xd0\x90\xd0\xb4\xd1\x80\xd0\xb5\xd1\x81"
+    // zh-CN: 地址
+    "|\xe5\x9c\xb0\xe5\x9d\x80"
+    // ko-KR: 주소.?1
+    "|\xec\xa3\xbc\xec\x86\x8c.?1";
+const char kAddressLine1LabelRe[] =
+    "address"
+    // fr-FR: |adresse
+    "|adresse"
+    // it-IT: |indirizzo
+    "|indirizzo"
+    // ja-JP: |住所
+    "|\xe4\xbd\x8f\xe6\x89\x80"
+    // zh-CN: |地址
+    "|\xe5\x9c\xb0\xe5\x9d\x80"
+    // ko-KR: |주소
+    "|\xec\xa3\xbc\xec\x86\x8c";
+const char kAddressLine2Re[] =
+    "address.*line2|address2|addr2|street|suite|unit"
+    // de-DE: |adresszusatz|ergänzende.?angaben
+    "|adresszusatz|erg\xc3\xa4nzende.?angaben"
+    // es: |direccion2|colonia|adicional
+    "|direccion2|colonia|adicional"
+    // fr-FR: |addresssuppl|complementnom|appartement
+    "|addresssuppl|complementnom|appartement"
+    // it-IT: |indirizzo2
+    "|indirizzo2"
+    // ja-JP: |住所2
+    "|\xe4\xbd\x8f\xe6\x89\x80""2"
+    // pt-BR, pt-PT: |complemento|addrcomplement
+    "|complemento|addrcomplement"
+    // ru: |Улица
+    "|\xd0\xa3\xd0\xbb\xd0\xb8\xd1\x86\xd0\xb0"
+    // zh-CN: |地址2
+    "|\xe5\x9c\xb0\xe5\x9d\x80""2"
+    // ko-KR: |주소.?2
+    "|\xec\xa3\xbc\xec\x86\x8c.?2";
+const char kAddressLine2LabelRe[] =
+    "address"
+    // fr-FR: |adresse
+    "|adresse"
+    // it-IT: |indirizzo
+    "|indirizzo"
+    // zh-CN: |地址
+    "|\xe5\x9c\xb0\xe5\x9d\x80"
+    // ko-KR: |주소
+    "|\xec\xa3\xbc\xec\x86\x8c";
+const char kAddressLine3Re[] =
+    "address.*line3|address3|addr3|street|line3"
+    // es: |municipio
+    "|municipio"
+    // fr-FR: |batiment|residence
+    "|batiment|residence"
+    // it-IT: |indirizzo3
+    "|indirizzo3";
+const char kCountryRe[] =
+    "country|countries|location"
+    // es: |país|pais
+    "|pa\xc3\xads|pais"
+    // ja-JP: |国
+    "|\xe5\x9b\xbd"
+    // zh-CN: |国家
+    "|\xe5\x9b\xbd\xe5\xae\xb6"
+    // ko-KR: |국가|나라
+    "|\xea\xb5\xad\xea\xb0\x80|\xeb\x82\x98\xeb\x9d\xbc";
+const char kZipCodeRe[] =
+    "zip|postal|post.*code|pcode|^1z$"
+    // de-DE: |postleitzahl
+    "|postleitzahl"
+    // es: |\bcp\b
+    "|\\bcp\\b"
+    // fr-FR: |\bcdp\b
+    "|\\bcdp\\b"
+    // it-IT: |\bcap\b
+    "|\\bcap\\b"
+    // ja-JP: |郵便番号
+    "|\xe9\x83\xb5\xe4\xbe\xbf\xe7\x95\xaa\xe5\x8f\xb7"
+    // pt-BR, pt-PT: |codigo|codpos|\bcep\b
+    "|codigo|codpos|\\bcep\\b"
+    // ru: |Почтовый.?Индекс
+    "|\xd0\x9f\xd0\xbe\xd1\x87\xd1\x82\xd0\xbe\xd0\xb2\xd1\x8b\xd0\xb9.?\xd0"
+        "\x98\xd0\xbd\xd0\xb4\xd0\xb5\xd0\xba\xd1\x81"
+    // zh-CN: |邮政编码|邮编
+    "|\xe9\x82\xae\xe6\x94\xbf\xe7\xbc\x96\xe7\xa0\x81|\xe9\x82\xae\xe7\xbc"
+        "\x96"
+    // zh-TW: |郵遞區號
+    "|\xe9\x83\xb5\xe9\x81\x9e\xe5\x8d\x80\xe8\x99\x9f"
+    // ko-KR: |우편.?번호
+    "|\xec\x9a\xb0\xed\x8e\xb8.?\xeb\xb2\x88\xed\x98\xb8";
+const char kZip4Re[] =
+    "zip|^-$|post2"
+    // pt-BR, pt-PT: |codpos2
+    "|codpos2";
+const char kCityRe[] =
+    "city|town"
+    // de-DE: |\bort\b|stadt
+    "|\\bort\\b|stadt"
+    // en-AU: |suburb
+    "|suburb"
+    // es: |ciudad|provincia|localidad|poblacion
+    "|ciudad|provincia|localidad|poblacion"
+    // fr-FR: |ville|commune
+    "|ville|commune"
+    // it-IT: |localita
+    "|localita"
+    // ja-JP: |市区町村
+    "|\xe5\xb8\x82\xe5\x8c\xba\xe7\x94\xba\xe6\x9d\x91"
+    // pt-BR, pt-PT: |cidade
+    "|cidade"
+    // ru: |Город
+    "|\xd0\x93\xd0\xbe\xd1\x80\xd0\xbe\xd0\xb4"
+    // zh-CN: |市
+    "|\xe5\xb8\x82"
+    // zh-TW: |分區
+    "|\xe5\x88\x86\xe5\x8d\x80"
+    // ko-KR: |^시[^도·・]|시[·・]?군[·・]?구
+    "|^\xec\x8b\x9c[^\xeb\x8f\x84\xc2\xb7\xe3\x83\xbb]|\xec\x8b\x9c[\xc2\xb7"
+        "\xe3\x83\xbb]?\xea\xb5\xb0[\xc2\xb7\xe3\x83\xbb]?\xea\xb5\xac";
+const char kStateRe[] =
+    "(?<!united )state|county|region|province"
+    // de-DE: |land
+    "|land"
+    // en-UK: |county|principality
+    "|county|principality"
+    // ja-JP: |都道府県
+    "|\xe9\x83\xbd\xe9\x81\x93\xe5\xba\x9c\xe7\x9c\x8c"
+    // pt-BR, pt-PT: |estado|provincia
+    "|estado|provincia"
+    // ru: |область
+    "|\xd0\xbe\xd0\xb1\xd0\xbb\xd0\xb0\xd1\x81\xd1\x82\xd1\x8c"
+    // zh-CN: |省
+    "|\xe7\x9c\x81"
+    // zh-TW: |地區
+    "|\xe5\x9c\xb0\xe5\x8d\x80"
+    // ko-KR: |^시[·・]?도
+    "|^\xec\x8b\x9c[\xc2\xb7\xe3\x83\xbb]?\xeb\x8f\x84";
+const char kAddressTypeSameAsRe[] = "same as";
+const char kAddressTypeUseMyRe[] = "use my";
+const char kBillingDesignatorRe[] = "bill";
+const char kShippingDesignatorRe[] = "ship";
+
+}  // namespace
 
 FormField* AddressField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
@@ -25,10 +212,8 @@ FormField* AddressField::Parse(AutofillScanner* scanner) {
   const AutofillField* const initial_field = scanner->Cursor();
   size_t saved_cursor = scanner->SaveCursor();
 
-  string16 attention_ignored =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ATTENTION_IGNORED_RE);
-  string16 region_ignored =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_REGION_IGNORED_RE);
+  string16 attention_ignored = UTF8ToUTF16(kAttentionIgnoredRe);
+  string16 region_ignored = UTF8ToUTF16(kRegionIgnoredRe);
 
   // Allow address fields to appear in any order.
   size_t begin_trailing_non_labeled_fields = 0;
@@ -189,8 +374,7 @@ bool AddressField::ParseCompany(AutofillScanner* scanner,
   if (address_field->company_ && !address_field->company_->IsEmpty())
     return false;
 
-  return ParseField(scanner, l10n_util::GetStringUTF16(IDS_AUTOFILL_COMPANY_RE),
-                    &address_field->company_);
+  return ParseField(scanner, UTF8ToUTF16(kCompanyRe), &address_field->company_);
 }
 
 // static
@@ -207,9 +391,8 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
   if (address_field->address1_)
     return false;
 
-  string16 pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_1_RE);
-  string16 label_pattern =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE);
+  string16 pattern = UTF8ToUTF16(kAddressLine1Re);
+  string16 label_pattern = UTF8ToUTF16(kAddressLine1LabelRe);
 
   if (!ParseField(scanner, pattern, &address_field->address1_) &&
       !ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
@@ -220,9 +403,8 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
   // Optionally parse more address lines, which may have empty labels.
   // Some pages have 3 address lines (eg SharperImageModifyAccount.html)
   // Some pages even have 4 address lines (e.g. uk/ShoesDirect2.html)!
-  pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_2_RE);
-  label_pattern =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_1_LABEL_RE);
+  pattern = UTF8ToUTF16(kAddressLine2Re);
+  label_pattern = UTF8ToUTF16(kAddressLine2LabelRe);
   if (!ParseEmptyLabel(scanner, &address_field->address2_) &&
       !ParseField(scanner, pattern, &address_field->address2_)) {
     ParseFieldSpecifics(scanner, label_pattern, MATCH_LABEL | MATCH_TEXT,
@@ -231,7 +413,7 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner,
 
   // Try for a third line, which we will promptly discard.
   if (address_field->address2_ != NULL) {
-    pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_3_RE);
+    pattern = UTF8ToUTF16(kAddressLine3Re);
     ParseField(scanner, pattern, NULL);
   }
 
@@ -247,7 +429,7 @@ bool AddressField::ParseCountry(AutofillScanner* scanner,
     return false;
 
   return ParseFieldSpecifics(scanner,
-                             l10n_util::GetStringUTF16(IDS_AUTOFILL_COUNTRY_RE),
+                             UTF8ToUTF16(kCountryRe),
                              MATCH_DEFAULT | MATCH_SELECT,
                              &address_field->country_);
 }
@@ -265,7 +447,7 @@ bool AddressField::ParseZipCode(AutofillScanner* scanner,
   if (address_field->zip_)
     return false;
 
-  string16 pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_ZIP_CODE_RE);
+  string16 pattern = UTF8ToUTF16(kZipCodeRe);
   if (!ParseField(scanner, pattern, &address_field->zip_))
     return false;
 
@@ -273,7 +455,7 @@ bool AddressField::ParseZipCode(AutofillScanner* scanner,
   // Look for a zip+4, whose field name will also often contain
   // the substring "zip".
   ParseField(scanner,
-             l10n_util::GetStringUTF16(IDS_AUTOFILL_ZIP_4_RE),
+             UTF8ToUTF16(kZip4Re),
              &address_field->zip4_);
 
   return true;
@@ -289,7 +471,7 @@ bool AddressField::ParseCity(AutofillScanner* scanner,
 
   // Select fields are allowed here.  This occurs on top-100 site rediff.com.
   return ParseFieldSpecifics(scanner,
-                             l10n_util::GetStringUTF16(IDS_AUTOFILL_CITY_RE),
+                             UTF8ToUTF16(kCityRe),
                              MATCH_DEFAULT | MATCH_SELECT,
                              &address_field->city_);
 }
@@ -301,17 +483,15 @@ bool AddressField::ParseState(AutofillScanner* scanner,
     return false;
 
   return ParseFieldSpecifics(scanner,
-                             l10n_util::GetStringUTF16(IDS_AUTOFILL_STATE_RE),
+                             UTF8ToUTF16(kStateRe),
                              MATCH_DEFAULT | MATCH_SELECT,
                              &address_field->state_);
 }
 
 AddressField::AddressType AddressField::AddressTypeFromText(
     const string16 &text) {
-  if (text.find(l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_TYPE_SAME_AS_RE))
-          != string16::npos ||
-      text.find(l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_TYPE_USE_MY_RE))
-          != string16::npos)
+  if (text.find(UTF8ToUTF16(kAddressTypeSameAsRe)) != string16::npos ||
+      text.find(UTF8ToUTF16(kAddressTypeUseMyRe)) != string16::npos)
     // This text could be a checkbox label such as "same as my billing
     // address" or "use my shipping address".
     // ++ It would help if we generally skipped all text that appears
@@ -321,10 +501,8 @@ AddressField::AddressType AddressField::AddressTypeFromText(
   // Not all pages say "billing address" and "shipping address" explicitly;
   // for example, Craft Catalog1.html has "Bill-to Address" and
   // "Ship-to Address".
-  size_t bill = text.rfind(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_BILLING_DESIGNATOR_RE));
-  size_t ship = text.rfind(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_SHIPPING_DESIGNATOR_RE));
+  size_t bill = text.rfind(UTF8ToUTF16(kBillingDesignatorRe));
+  size_t ship = text.rfind(UTF8ToUTF16(kShippingDesignatorRe));
 
   if (bill == string16::npos && ship == string16::npos)
     return kGenericAddress;
