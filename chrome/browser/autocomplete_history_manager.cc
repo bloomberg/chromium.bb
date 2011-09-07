@@ -28,11 +28,11 @@ namespace {
 const int kMaxAutocompleteMenuItems = 6;
 
 // The separator characters for SSNs.
-const string16 kSSNSeparators = ASCIIToUTF16(" -");
+const char16 kSSNSeparators[] = {' ', '-', 0};
 
 bool IsSSN(const string16& text) {
   string16 number_string;
-  RemoveChars(text, kSSNSeparators.c_str(), &number_string);
+  RemoveChars(text, kSSNSeparators, &number_string);
 
   // A SSN is of the form AAA-GG-SSSS (A = area number, G = group number, S =
   // serial number). The validation we do here is simply checking if the area,
