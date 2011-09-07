@@ -438,7 +438,8 @@ void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
 }
 
 void PanelBrowserFrameView::RunMenu(View* source, const gfx::Point& pt) {
-  EnsureSettingsMenuCreated();
+  if (!EnsureSettingsMenuCreated())
+    return;
 
   DCHECK_EQ(settings_button_, source);
   gfx::Point screen_point;
@@ -737,13 +738,13 @@ const Extension* PanelBrowserFrameView::GetExtension() const {
   return Panel::GetExtension(browser_view_->browser());
 }
 
-void PanelBrowserFrameView::EnsureSettingsMenuCreated() {
+bool PanelBrowserFrameView::EnsureSettingsMenuCreated() {
   if (settings_menu_contents_.GetItemCount())
-    return;
+    return true;
 
   const Extension* extension = GetExtension();
   if (!extension)
-    return;
+    return false;
 
   settings_menu_contents_.AddItem(
       COMMAND_NAME, UTF8ToUTF16(extension->name()));
@@ -759,4 +760,5 @@ void PanelBrowserFrameView::EnsureSettingsMenuCreated() {
       COMMAND_MANAGE, l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS));
 
   settings_menu_adapter_.BuildMenu(settings_menu_);
+  return true;
 }

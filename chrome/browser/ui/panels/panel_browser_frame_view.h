@@ -171,7 +171,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   const Extension* GetExtension() const;
 
-  void EnsureSettingsMenuCreated();
+  bool EnsureSettingsMenuCreated();
 
 #ifdef UNIT_TEST
   void set_mouse_watcher(MouseWatcher* mouse_watcher) {
