@@ -47,7 +47,8 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     if path in self.server.file_mapping:
       return self.server.file_mapping[path]
     for extra_dir in self.server.serving_dirs:
-      full_path = os.path.join(extra_dir, path)
+      # TODO(halyavin): set allowed paths in another parameter?
+      full_path = os.path.join(extra_dir, os.path.basename(path))
       if os.path.isfile(full_path):
         return full_path
     if not path.endswith('favicon.ico') and not self.server.allow_404:
