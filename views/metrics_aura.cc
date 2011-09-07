@@ -4,7 +4,9 @@
 
 #include "views/metrics.h"
 
+#if defined(OS_WIN)
 #include <windows.h>
+#endif
 
 namespace views {
 
@@ -24,7 +26,7 @@ int GetMenuShowDelay() {
   return delay;
 #else
   return 0;
-#endif;
+#endif
 }
 
 }  // namespace views

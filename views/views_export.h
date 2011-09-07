@@ -26,4 +26,4 @@
 #define VIEWS_EXPORT
 #endif
 
-#endif  // UI_UI_EXPORT_H_
+#endif  // VIEWS_VIEWS_EXPORT_H_

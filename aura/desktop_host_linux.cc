@@ -5,6 +5,7 @@
 #include "aura/desktop_host.h"
 
 #include "aura/desktop.h"
+#include "aura/event.h"
 #include "base/message_loop.h"
 #include "base/message_pump_x.h"
 
@@ -28,6 +29,7 @@ class DesktopHostLinux : public DesktopHost {
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) OVERRIDE;
 
   Desktop* desktop_;
 
@@ -68,13 +70,27 @@ DesktopHostLinux::~DesktopHostLinux() {
 
 base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
     XEvent* xev) {
-  // TODO(sad): Create events and dispatch to the appropriate window.
+  bool handled = false;
   switch (xev->type) {
     case Expose:
       desktop_->Draw();
+      handled = true;
       break;
+    case KeyPress:
+    case KeyRelease: {
+      KeyEvent keyev(xev);
+      handled = desktop_->OnKeyEvent(keyev);
+      break;
+    }
+    case ButtonPress:
+    case ButtonRelease:
+    case MotionNotify: {
+      MouseEvent mouseev(xev);
+      handled = desktop_->OnMouseEvent(mouseev);
+      break;
+    }
   }
-  return EVENT_IGNORED;
+  return handled ? EVENT_PROCESSED : EVENT_IGNORED;
 }
 
 void DesktopHostLinux::SetDesktop(Desktop* desktop) {
@@ -90,6 +106,10 @@ void DesktopHostLinux::Show() {
 
 gfx::Size DesktopHostLinux::GetSize() {
   return bounds_.size();
+}
+
+void DesktopHostLinux::SetSize(const gfx::Size& size) {
+  XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
 }
 
 }  // namespace

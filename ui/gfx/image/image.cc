@@ -354,7 +354,10 @@ internal::ImageRep* Image::GetRepresentation(
   if (default_rep->type() == Image::kImageRepSkia) {
     internal::ImageRepSkia* skia_rep = default_rep->AsImageRepSkia();
     internal::ImageRep* native_rep = NULL;
-#if defined(TOOLKIT_USES_GTK)
+#if defined(USE_AURA)
+    skia_rep = NULL;
+    NOTIMPLEMENTED();
+#elif defined(TOOLKIT_USES_GTK)
     if (rep_type == Image::kImageRepGdk) {
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(skia_rep->bitmap());
       native_rep = new internal::ImageRepGdk(pixbuf);

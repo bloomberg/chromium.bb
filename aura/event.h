@@ -12,12 +12,15 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
+#if defined(USE_X11)
+typedef union _XEvent XEvent;
+#endif
+
 namespace aura {
 
 #if defined(OS_WIN)
 typedef MSG NativeEvent;
 #elif defined(USE_X11)
-typedef union _XEvent XEvent;
 typedef XEvent* NativeEvent;
 #endif
 

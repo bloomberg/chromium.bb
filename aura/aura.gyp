@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'aura',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -18,6 +18,9 @@
         '../ui/ui.gyp:gfx_resources',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
+      ],
+      'defines': [
+        'AURA_IMPLEMENTATION',
       ],
       'sources': [
         'desktop_host.h',
@@ -29,6 +32,7 @@
         'event.cc',
         'event.h',
         'event_win.cc',
+        'event_x.cc',
         'focus_manager.cc',
         'focus_manager.h',
         'hit_test.h',

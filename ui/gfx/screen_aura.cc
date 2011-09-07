@@ -4,7 +4,9 @@
 
 #include "ui/gfx/screen.h"
 
+#if defined(OS_WIN)
 #include <windows.h>
+#endif
 
 #include "base/logging.h"
 
@@ -17,6 +19,8 @@ gfx::Point Screen::GetCursorScreenPoint() {
   GetCursorPos(&pt);
   return gfx::Point(pt);
 #endif
+  NOTIMPLEMENTED();
+  return gfx::Point();
 }
 
 // static

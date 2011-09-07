@@ -7,6 +7,7 @@
 #pragma once
 
 #include "aura/root_window.h"
+#include "aura/aura_export.h"
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
@@ -25,7 +26,7 @@ class DesktopHost;
 class MouseEvent;
 
 // Desktop is responsible for hosting a set of windows.
-class Desktop {
+class AURA_EXPORT Desktop {
  public:
   Desktop();
   ~Desktop();

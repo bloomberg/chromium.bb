@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "aura/aura_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/compositor/layer_delegate.h"
@@ -35,7 +36,7 @@ class FocusManager;
 // Aura window implementation. Interesting events are sent to the
 // WindowDelegate.
 // TODO(beng): resolve ownership.
-class Window : public ui::LayerDelegate {
+class AURA_EXPORT Window : public ui::LayerDelegate {
  public:
   enum Visibility {
     // Don't display the window onscreen and don't let it receive mouse

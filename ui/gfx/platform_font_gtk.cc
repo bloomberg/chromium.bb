@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/gtk_util.h"
+#include "ui/gfx/linux_util.h"
 
 #if !defined(USE_WAYLAND)
 #include <gdk/gdk.h>

@@ -16,6 +16,11 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
 
+#if defined(USE_X11)
+#include "aura/hit_test.h"
+#include "base/message_pump_x.h"
+#endif
+
 namespace {
 
 // Trivial WindowDelegate implementation that draws a colored background.
