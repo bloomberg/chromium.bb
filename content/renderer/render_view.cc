@@ -4281,9 +4281,15 @@ void RenderView::OnImeConfirmComposition(const string16& text) {
 
 ui::TextInputType RenderView::GetTextInputType() {
   if (pepper_delegate_.IsPluginFocused()) {
+#if !defined(TOUCH_UI)
     // TODO(kinaba) Until PPAPI has an interface for handling IME events, we
     // consider all the parts of PPAPI plugins are accepting text inputs.
     return ui::TEXT_INPUT_TYPE_TEXT;
+#else
+    // Disable keyboard input in flash for touch ui until PPAPI can support IME
+    // events.
+    return ui::TEXT_INPUT_TYPE_NONE;
+#endif
   }
   return RenderWidget::GetTextInputType();
 }
