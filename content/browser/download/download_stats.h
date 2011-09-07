@@ -57,6 +57,12 @@ enum DownloadCountTypes {
   // Downloads that were interrupted by the OS.
   INTERRUPTED_COUNT,
 
+  // Write sizes for downloads.
+  WRITE_SIZE_COUNT,
+
+  // Counts iterations of the BaseFile::AppendDataToFile() loop.
+  WRITE_LOOP_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
@@ -64,13 +70,19 @@ enum DownloadCountTypes {
 void RecordDownloadCount(DownloadCountTypes type);
 
 // Record COMPLETED_COUNT and how long the download took.
-void RecordDownloadCompleted(const base::TimeTicks& start);
+void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len);
 
 // Record INTERRUPTED_COUNT, |error|, |received| and |total| bytes.
 void RecordDownloadInterrupted(int error, int64 received, int64 total);
 
 // Records the mime type of the download.
 void RecordDownloadMimeType(const std::string& mime_type);
+
+// Record WRITE_SIZE_COUNT and data_len.
+void RecordDownloadWriteSize(size_t data_len);
+
+// Record WRITE_LOOP_COUNT and number of loops.
+void RecordDownloadWriteLoopCount(int count);
 
 }  // namespace download_stats
 

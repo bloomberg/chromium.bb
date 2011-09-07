@@ -22,9 +22,16 @@ void RecordDownloadCount(DownloadCountTypes type) {
       "Download.Counts", type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
-void RecordDownloadCompleted(const base::TimeTicks& start) {
+void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len) {
   RecordDownloadCount(COMPLETED_COUNT);
   UMA_HISTOGRAM_LONG_TIMES("Download.Time", (base::TimeTicks::Now() - start));
+  int64 max = 1024 * 1024 * 1024;  // One Terabyte.
+  download_len /= 1024;  // In Kilobytes
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize",
+                              download_len,
+                              1,
+                              max,
+                              256);
 }
 
 void RecordDownloadInterrupted(int error, int64 received, int64 total) {
@@ -70,6 +77,17 @@ void RecordDownloadInterrupted(int error, int64 received, int64 total) {
   }
 
   UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
+}
+
+void RecordDownloadWriteSize(size_t data_len) {
+  RecordDownloadCount(WRITE_SIZE_COUNT);
+  int max = 1024 * 1024;  // One Megabyte.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.WriteSize", data_len, 1, max, 256);
+}
+
+void RecordDownloadWriteLoopCount(int count) {
+  RecordDownloadCount(WRITE_LOOP_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("Download.WriteLoopCount", count, 20);
 }
 
 namespace {

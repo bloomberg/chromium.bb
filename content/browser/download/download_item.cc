@@ -409,7 +409,7 @@ void DownloadItem::Completed() {
   DCHECK(all_data_saved_);
   TransitionTo(COMPLETE);
   download_manager_->DownloadCompleted(id());
-  download_stats::RecordDownloadCompleted(start_tick_);
+  download_stats::RecordDownloadCompleted(start_tick_, received_bytes_);
 
   if (auto_opened_) {
     // If it was already handled by the delegate, do nothing.
