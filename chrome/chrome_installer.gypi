@@ -412,8 +412,6 @@
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/nacl_helper',
           '<(PRODUCT_DIR)/nacl_helper_bootstrap',
-          '<(PRODUCT_DIR)/default_apps/gmail.crx',
-          '<(PRODUCT_DIR)/default_apps/youtube.crx',
         ],
         'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
         'deb_build': '<(PRODUCT_DIR)/installer/debian/build.sh',
