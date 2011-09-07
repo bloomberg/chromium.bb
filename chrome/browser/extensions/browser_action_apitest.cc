@@ -379,3 +379,29 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoDragging) {
   EXPECT_EQ(kTooltipC, incognito_bar.GetTooltip(0));
   EXPECT_EQ(kTooltipA, incognito_bar.GetTooltip(1));
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, CloseBackgroundPage) {
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "browser_action/close_background")));
+  const Extension* extension = GetSingleLoadedExtension();
+
+  // There is a background page and a browser action with no badge text.
+  ExtensionProcessManager* manager =
+      browser()->profile()->GetExtensionProcessManager();
+  ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension));
+  ExtensionAction* action = extension->browser_action();
+  ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));
+
+  // Click the browser action.
+  browser()->profile()->GetExtensionService()->browser_event_router()->
+      BrowserActionExecuted(
+          browser()->profile(), action->extension_id(), browser());
+
+  // It can take a moment for the background page to actually get destroyed
+  // so we wait for the notification before checking that it's really gone
+  // and the badge text has been set.
+  ui_test_utils::WaitForNotification(
+      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED);
+  ASSERT_FALSE(manager->GetBackgroundHostForExtension(extension));
+  ASSERT_EQ("X", action->GetBadgeText(ExtensionAction::kDefaultTabId));
+}

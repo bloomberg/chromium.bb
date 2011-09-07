@@ -481,6 +481,7 @@ void ExtensionHost::OnDialogClosed(IPC::Message* reply_msg,
 void ExtensionHost::Close(RenderViewHost* render_view_host) {
   if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_DIALOG ||
+      extension_host_type_ == ViewType::EXTENSION_BACKGROUND_PAGE ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
     NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
@@ -517,6 +518,7 @@ WebPreferences ExtensionHost::GetWebkitPrefs() {
 
   if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_DIALOG ||
+      extension_host_type_ == ViewType::EXTENSION_BACKGROUND_PAGE ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR)
     webkit_prefs.allow_scripts_to_close_windows = true;
 

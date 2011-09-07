@@ -100,6 +100,8 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  Source<Profile>(original_profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+                 Source<Profile>(profile));
   // We can listen to everything for SITE_INSTANCE_DELETED because we check the
   // |site_instance_id| in UnregisterExtensionSiteInstance.
   registrar_.Add(this, content::NOTIFICATION_SITE_INSTANCE_DELETED,
@@ -333,6 +335,16 @@ void ExtensionProcessManager::Observe(int type,
     case content::NOTIFICATION_SITE_INSTANCE_DELETED: {
       SiteInstance* site_instance = Source<SiteInstance>(source).ptr();
       UnregisterExtensionSiteInstance(site_instance->id());
+      break;
+    }
+
+    case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+      ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+      if (host->extension_host_type() == ViewType::EXTENSION_BACKGROUND_PAGE) {
+        delete host;
+        // |host| should deregister itself from our structures.
+        CHECK(background_hosts_.find(host) == background_hosts_.end());
+      }
       break;
     }
 
