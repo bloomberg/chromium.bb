@@ -398,8 +398,14 @@ void WizardController::OnEulaAccepted() {
       g_browser_process->local_state());
   bool enabled =
       OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);
+  // Make sure the local state cached value is updated too because the real
+  // policy will only get written when the owner is created and the cache won't
+  // be updated until the policy is reread.
+  g_browser_process->local_state()->SetBoolean(kStatsReportingPref, enabled);
   if (enabled) {
 #if defined(USE_LINUX_BREAKPAD)
+    // The crash reporter initialization needs IO to complete.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     InitCrashReporter();
 #endif
   }
