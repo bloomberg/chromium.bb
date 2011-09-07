@@ -49,6 +49,12 @@ class PanelBrowserView : public BrowserView,
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, ShowOrHideSettingsButton);
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserViewTest, SetBoundsAnimation);
 
+  enum MouseDraggingState {
+    NO_DRAGGING,
+    DRAGGING_STARTED,
+    DRAGGING_ENDED
+  };
+
   // Overridden from BrowserView:
   virtual void Init() OVERRIDE;
   virtual void Close() OVERRIDE;
@@ -130,7 +136,7 @@ class PanelBrowserView : public BrowserView,
 
   // Is the titlebar currently being dragged?  That is, has the cursor
   // moved more than kDragThreshold away from its starting position?
-  bool mouse_dragging_;
+  MouseDraggingState mouse_dragging_state_;
 
   // Used to animate the bounds change.
   scoped_ptr<ui::SlideAnimation> bounds_animator_;

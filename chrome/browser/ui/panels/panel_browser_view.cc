@@ -41,7 +41,7 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
     closed_(false),
     focused_(false),
     mouse_pressed_(false),
-    mouse_dragging_(false),
+    mouse_dragging_state_(NO_DRAGGING),
     is_drawing_attention_(false) {
 }
 
@@ -90,7 +90,7 @@ void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
     restored_height_ = bounds.height();
 
   // No animation if the panel is being dragged.
-  if (mouse_dragging_) {
+  if (mouse_dragging_state_ == DRAGGING_STARTED) {
     ::BrowserView::SetBounds(bounds);
     return;
   }
@@ -350,7 +350,7 @@ PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
 bool PanelBrowserView::OnTitlebarMousePressed(const gfx::Point& location) {
   mouse_pressed_ = true;
   mouse_pressed_point_ = location;
-  mouse_dragging_ = false;
+  mouse_dragging_state_ = NO_DRAGGING;
   return true;
 }
 
@@ -360,18 +360,24 @@ bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
 
   int delta_x = location.x() - mouse_pressed_point_.x();
   int delta_y = location.y() - mouse_pressed_point_.y();
-  if (!mouse_dragging_ && ExceededDragThreshold(delta_x, delta_y)) {
+  if (mouse_dragging_state_ == NO_DRAGGING &&
+      ExceededDragThreshold(delta_x, delta_y)) {
     panel_->manager()->StartDragging(panel_.get());
-    mouse_dragging_ = true;
+    mouse_dragging_state_ = DRAGGING_STARTED;
   }
-  if (mouse_dragging_)
+  if (mouse_dragging_state_ == DRAGGING_STARTED)
     panel_->manager()->Drag(delta_x);
   return true;
 }
 
 bool PanelBrowserView::OnTitlebarMouseReleased() {
-  if (mouse_dragging_)
+  if (mouse_dragging_state_ == DRAGGING_STARTED)
     return EndDragging(false);
+
+  // If the panel drag was cancelled before the mouse is released, do not treat
+  // this as a click.
+  if (mouse_dragging_state_ != NO_DRAGGING)
+    return true;
 
   // Do not minimize the panel when we just clear the attention state. This is
   // a hack to prevent the panel from being minimized when the user clicks on
@@ -390,7 +396,7 @@ bool PanelBrowserView::OnTitlebarMouseReleased() {
 }
 
 bool PanelBrowserView::OnTitlebarMouseCaptureLost() {
-  if (mouse_dragging_)
+  if (mouse_dragging_state_ == DRAGGING_STARTED)
     return EndDragging(true);
   return true;
 }
@@ -401,9 +407,7 @@ bool PanelBrowserView::EndDragging(bool cancelled) {
     return false;
   mouse_pressed_ = false;
 
-  if (!mouse_dragging_)
-    cancelled = true;
-  mouse_dragging_ = false;
+  mouse_dragging_state_ = DRAGGING_ENDED;
   panel_->manager()->EndDragging(cancelled);
   return true;
 }
