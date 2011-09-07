@@ -80,7 +80,14 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
   std::string test_gallery_url_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
+// Flakily fails on linux.  http://crbug.com/95280
+#if defined(OS_LINUX)
+#define MAYBE_Install FLAKY_Install
+#else
+#define MAYBE_Install Install
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_Install) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
 
   ui_test_utils::WindowedNotificationObserver load_signal(
@@ -123,7 +130,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_FindLink) {
   RunInlineInstallTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
+// Flakily fails on Linux and Mac.  http://crbug.com/95280
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_ArgumentValidation FLAKY_ArgumentValidation
+#else
+#define MAYBE_ArgumentValidation ArgumentValidation
+#endif
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_ArgumentValidation) {
   SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
