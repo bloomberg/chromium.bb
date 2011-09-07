@@ -1101,7 +1101,7 @@ class ArchiveStage(NonHaltingBuilderStage):
       BuildAndArchiveAllImages])
 
     # Update and upload LATEST file.
-    commands.UpdateLatestFile(self._bot_archive_root, self._gsutil_archive)
+    commands.UpdateLatestFile(self._bot_archive_root, self._set_version)
     commands.UploadArchivedFile(self._bot_archive_root, self._gsutil_archive,
                                 'LATEST', debug)
 
