@@ -10,7 +10,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 
 extern "C" {
@@ -134,6 +136,36 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   return true;
 }
 
+// static
+bool FontLoader::CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
+                                     uint32 font_data_size,
+                                     CGFontRef* out) {
+  *out = NULL;
+
+  using base::SharedMemory;
+  DCHECK(SharedMemory::IsHandleValid(font_data));
+  DCHECK_GT(font_data_size, 0U);
+
+  SharedMemory shm(font_data, /*read_only=*/true);
+  if (!shm.Map(font_data_size))
+    return false;
+
+  NSData* data = [NSData dataWithBytes:shm.memory()
+                                length:font_data_size];
+  base::mac::ScopedCFTypeRef<CGDataProviderRef> provider(
+      CGDataProviderCreateWithCFData(base::mac::NSToCFCast(data)));
+  if (!provider)
+    return false;
+
+  *out = CGFontCreateWithDataProvider(provider.get());
+
+  if (*out == NULL)
+    return false;
+
+  return true;
+}
+
+// TODO(jeremy): Remove once http://webk.it/66935 lands.
 // static
 bool FontLoader::ATSFontContainerFromBuffer(base::SharedMemoryHandle font_data,
                                             uint32 font_data_size,

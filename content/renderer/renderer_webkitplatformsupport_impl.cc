@@ -116,7 +116,14 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)
   virtual bool loadFont(
-      NSFont* srcFont, ATSFontContainerRef* container, uint32* fontID);
+      NSFont* src_font,
+      CGFontRef* container,
+      uint32* font_id);
+  // TODO(jeremy): Remove once http://webk.it/66935 lands.
+  virtual bool loadFont(
+      NSFont* src_font,
+      ATSFontContainerRef* out,
+      uint32_t* font_id);
 #elif defined(OS_POSIX)
   virtual WebKit::WebString getFontFamilyForCharacters(
       const WebKit::WebUChar* characters,
@@ -448,29 +455,52 @@ bool RendererWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
 #elif defined(OS_MACOSX)
 
 bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
-    NSFont* srcFont, ATSFontContainerRef* container, uint32* fontID) {
-  DCHECK(srcFont);
-  DCHECK(container);
-  DCHECK(fontID);
-
+    NSFont* src_font, CGFontRef* out, uint32* font_id) {
   uint32 font_data_size;
-  FontDescriptor src_font_descriptor(srcFont);
+  FontDescriptor src_font_descriptor(src_font);
   base::SharedMemoryHandle font_data;
   if (!RenderThread::current()->Send(new ViewHostMsg_LoadFont(
-        src_font_descriptor, &font_data_size, &font_data, fontID))) {
-    LOG(ERROR) << "Sending ViewHostMsg_LoadFont() IPC failed for " <<
-        src_font_descriptor.font_name;
-    *container = kATSFontContainerRefUnspecified;
-    *fontID = 0;
+        src_font_descriptor, &font_data_size, &font_data, font_id))) {
+    *out = NULL;
+    *font_id = 0;
     return false;
   }
 
   if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle() ||
-      *fontID == 0) {
-    LOG(ERROR) << "Bad response from ViewHostMsg_LoadFont() for " <<
+      *font_id == 0) {
+    NOTREACHED() << "Bad response from ViewHostMsg_LoadFont() for " <<
+        src_font_descriptor.font_name;
+    *out = NULL;
+    *font_id = 0;
+    return false;
+  }
+
+  // TODO(jeremy): Need to call back into WebKit to make sure that the font
+  // isn't already activated, based on the font id.  If it's already
+  // activated, don't reactivate it here - crbug.com/72727 .
+
+  return FontLoader::CGFontRefFromBuffer(font_data, font_data_size, out);
+}
+
+// TODO(jeremy): Remove once http://webk.it/66935 lands.
+bool RendererWebKitPlatformSupportImpl::SandboxSupport::loadFont(
+    NSFont* src_font, ATSFontContainerRef* container, uint32* font_id) {
+  uint32 font_data_size;
+  FontDescriptor src_font_descriptor(src_font);
+  base::SharedMemoryHandle font_data;
+  if (!RenderThread::current()->Send(new ViewHostMsg_LoadFont(
+        src_font_descriptor, &font_data_size, &font_data, font_id))) {
+    *container = kATSFontContainerRefUnspecified;
+    *font_id = 0;
+    return false;
+  }
+
+  if (font_data_size == 0 || font_data == base::SharedMemory::NULLHandle() ||
+      *font_id == 0) {
+    NOTREACHED() << "Bad response from ViewHostMsg_LoadFont() for " <<
         src_font_descriptor.font_name;
     *container = kATSFontContainerRefUnspecified;
-    *fontID = 0;
+    *font_id = 0;
     return false;
   }
 

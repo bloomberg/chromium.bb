@@ -26,6 +26,10 @@ using WebKit::WebSandboxSupport;
 using WebKit::WebString;
 using WebKit::WebUChar;
 
+// TODO(jeremy): Remove once http://webk.it/66935 lands.
+typedef uintptr_t ATSFontContainerRef;
+typedef struct CGFont* CGFontRef;
+
 class PpapiWebKitPlatformSupportImpl::SandboxSupport : public WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
@@ -33,6 +37,9 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport : public WebSandboxSupport 
 #if defined(OS_WIN)
   virtual bool ensureFontLoaded(HFONT);
 #elif defined(OS_MACOSX)
+  virtual bool loadFont(
+      NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
+  // TODO(jeremy): Remove once http://webk.it/66935 lands.
   virtual bool loadFont(
       NSFont* srcFont, ATSFontContainerRef* out, uint32_t* fontID);
 #elif defined(OS_POSIX)
@@ -66,8 +73,21 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::ensureFontLoaded(
 
 #elif defined(OS_MACOSX)
 
-bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(NSFont* srcFont,
-    ATSFontContainerRef* out, uint32_t* fontID) {
+bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
+    NSFont* src_font,
+    CGFontRef* out,
+    uint32_t* font_id) {
+  // TODO(brettw) this should do the something similar to what
+  // RendererWebKitClientImpl does and request that the browser load the font.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+// TODO(jeremy): Remove once http://webk.it/66935 lands.
+bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
+    NSFont* src_font,
+    ATSFontContainerRef* out,
+    uint32_t* font_id) {
   // TODO(brettw) this should do the something similar to what
   // RendererWebKitPlatformSupportImpl does and request that the browser load
   // the font.

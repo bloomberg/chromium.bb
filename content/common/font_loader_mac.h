@@ -19,7 +19,7 @@ class NSFont;
 // Provides functionality to transmit fonts over IPC.
 //
 // Note about font formats: .dfont (datafork suitcase) fonts are currently not
-// supported by this code since ATSFontActivateFromMemory() can't handle them
+// supported by this code since CGFontCreateWithDataProvider() can't handle them
 // directly.
 
 class FontLoader {
@@ -39,16 +39,22 @@ class FontLoader {
                                  uint32* font_id);
 
   // Given a shared memory buffer containing the raw data for a font file, load
-  // the font and return a container ref.
+  // the font and return a CGFontRef.
   //
   // |data| - A shared memory handle pointing to the raw data from a font file.
   // |data_size| - Size of |data|.
   //
   // On return:
   //  returns true on success, false on failure.
-  //  |font_container| - A font container corresponding to the designated font.
-  //  The caller is responsible for releasing this value via ATSFontDeactivate()
-  //  when done
+  //  |out| - A CGFontRef corresponding to the designated font.
+  //  The caller is responsible for releasing this value via CGFontRelease()
+  //  when done.
+  static bool CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
+                                  uint32 font_data_size,
+                                  CGFontRef* out);
+
+
+  // TODO(jeremy): Remove once http://webk.it/66935 lands.
   static bool ATSFontContainerFromBuffer(base::SharedMemoryHandle font_data,
                                          uint32 font_data_size,
                                          ATSFontContainerRef* font_container);
