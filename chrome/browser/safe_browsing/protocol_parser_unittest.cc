@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -192,8 +192,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestTruncatedBinHashChunk) {
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
   SBChunkList chunks;
-  bool result = parser.ParseChunk(add_chunk,
-                                  safe_browsing_util::kBinHashList,
+  bool result = parser.ParseChunk(safe_browsing_util::kBinHashList,
+                                  add_chunk,
                                   static_cast<int>(sizeof(add_chunk)),
                                   "", "", &re_key, &chunks);
   EXPECT_FALSE(result);
@@ -210,8 +210,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestTruncatedUrlHashChunk) {
   SBChunkList chunks;
 
   // For safe_browsing_util::kMalwareList.
-  bool result = parser.ParseChunk(add_chunk,
-                                  safe_browsing_util::kMalwareList,
+  bool result = parser.ParseChunk(safe_browsing_util::kMalwareList,
+                                  add_chunk,
                                   static_cast<int>(sizeof(add_chunk)),
                                   "", "", &re_key, &chunks);
   EXPECT_FALSE(result);
@@ -219,8 +219,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestTruncatedUrlHashChunk) {
   EXPECT_EQ(chunks.size(), 0U);
 
   // For safe_browsing_util::kPhishingList.
-  result = parser.ParseChunk(add_chunk,
-                             safe_browsing_util::kPhishingList,
+  result = parser.ParseChunk(safe_browsing_util::kPhishingList,
+                             add_chunk,
                              static_cast<int>(sizeof(add_chunk)),
                              "", "", &re_key, &chunks);
   EXPECT_FALSE(result);
@@ -228,8 +228,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestTruncatedUrlHashChunk) {
   EXPECT_EQ(chunks.size(), 0U);
 
   // For safe_browsing_util::kBinUrlList.
-  result = parser.ParseChunk(add_chunk,
-                             safe_browsing_util::kBinUrlList,
+  result = parser.ParseChunk(safe_browsing_util::kBinUrlList,
+                             add_chunk,
                              static_cast<int>(sizeof(add_chunk)),
                              "", "", &re_key, &chunks);
   EXPECT_FALSE(result);
