@@ -739,15 +739,11 @@ void TestingAutomationProvider::AddPrivateNetwork(
     }
     new VirtualConnectObserver(this, reply_message, service_name);
     // Connect using a pre-shared key.
-    chromeos::NetworkLibrary::VPNConfigData config_data;
-    config_data.psk = key;
-    config_data.username = username;
-    config_data.user_passphrase = password;
-    network_library->ConnectToUnconfiguredVirtualNetwork(
-        service_name,
-        hostname,
-        chromeos::PROVIDER_TYPE_L2TP_IPSEC_PSK,
-        config_data);
+    network_library->ConnectToVirtualNetworkPSK(service_name,
+                                                hostname,
+                                                key,
+                                                username,
+                                                password);
   } else if (provider_type == VPNProviderTypeToString(
       chromeos::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT)) {
     if (!args->GetString("cert_id", &cert_id) ||
@@ -758,32 +754,18 @@ void TestingAutomationProvider::AddPrivateNetwork(
     }
     new VirtualConnectObserver(this, reply_message, service_name);
     // Connect using a user certificate.
-    chromeos::NetworkLibrary::VPNConfigData config_data;
-    config_data.server_ca_cert_nss_nickname = cert_nss;
-    config_data.client_cert_pkcs11_id = cert_id;
-    config_data.username = username;
-    config_data.user_passphrase = password;
-    network_library->ConnectToUnconfiguredVirtualNetwork(
-        service_name,
-        hostname,
-        chromeos::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT,
-        config_data);
+    network_library->ConnectToVirtualNetworkCert(service_name,
+                                                 hostname,
+                                                 cert_nss,
+                                                 cert_id,
+                                                 username,
+                                                 password);
   } else if (provider_type == VPNProviderTypeToString(
       chromeos::PROVIDER_TYPE_OPEN_VPN)) {
-    std::string otp;
-    args->GetString("otp", &otp);
-    // Connect using OPEN_VPN.
-    chromeos::NetworkLibrary::VPNConfigData config_data;
-    config_data.server_ca_cert_nss_nickname = cert_nss;
-    config_data.client_cert_pkcs11_id = cert_id;
-    config_data.username = username;
-    config_data.user_passphrase = password;
-    config_data.otp = otp;
-    network_library->ConnectToUnconfiguredVirtualNetwork(
-        service_name,
-        hostname,
-        chromeos::PROVIDER_TYPE_OPEN_VPN,
-        config_data);
+    // Connect using OPEN_VPN. Not yet supported by the VPN implementation.
+    AutomationJSONReply(this, reply_message)
+      .SendError("Provider type OPEN_VPN is not yet supported.");
+    return;
   } else {
     AutomationJSONReply(this, reply_message)
         .SendError("Unsupported provider type.");

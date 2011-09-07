@@ -643,7 +643,6 @@ bool VirtualNetwork::NeedMoreInfoToConnect() const {
         return true;
       break;
     case PROVIDER_TYPE_MAX:
-      NOTREACHED();
       break;
   }
   return false;
@@ -675,58 +674,29 @@ void VirtualNetwork::SetCACertNSS(const std::string& ca_cert_nss) {
       flimflam::kL2tpIpsecCaCertNssProperty, ca_cert_nss, &ca_cert_nss_);
 }
 
-void VirtualNetwork::SetL2TPIPsecPSKCredentials(
-    const std::string& psk_passphrase,
-    const std::string& username,
-    const std::string& user_passphrase,
-    const std::string& group_name) {
-  SetStringProperty(flimflam::kL2tpIpsecPskProperty,
-                    psk_passphrase, &psk_passphrase_);
-  SetStringProperty(flimflam::kL2tpIpsecUserProperty, username, &username_);
-  SetStringProperty(flimflam::kL2tpIpsecPasswordProperty,
-                    user_passphrase, &user_passphrase_);
-  SetStringProperty(flimflam::kL2tpIpsecGroupNameProperty,
-                    group_name, &group_name_);
+void VirtualNetwork::SetPSKPassphrase(const std::string& psk_passphrase) {
+  SetStringProperty(
+      flimflam::kL2tpIpsecPskProperty, psk_passphrase, &psk_passphrase_);
 }
 
-void VirtualNetwork::SetL2TPIPsecCertCredentials(
-    const std::string& client_cert_id,
-    const std::string& username,
-    const std::string& user_passphrase,
-    const std::string& group_name) {
-  SetStringProperty(flimflam::kL2tpIpsecClientCertIdProperty,
-                    client_cert_id, &client_cert_id_);
-  SetStringProperty(flimflam::kL2tpIpsecUserProperty, username, &username_);
-  SetStringProperty(flimflam::kL2tpIpsecPasswordProperty,
-                    user_passphrase, &user_passphrase_);
-  SetStringProperty(flimflam::kL2tpIpsecGroupNameProperty,
-                    group_name, &group_name_);
+void VirtualNetwork::SetClientCertID(const std::string& cert_id) {
+  SetStringProperty(
+      flimflam::kL2tpIpsecClientCertIdProperty, cert_id, &client_cert_id_);
 }
 
-void VirtualNetwork::SetOpenVPNCredentials(
-    const std::string& client_cert_id,
-    const std::string& username,
-    const std::string& user_passphrase,
-    const std::string& otp) {
-  SetStringProperty(flimflam::kOpenVPNClientCertIdProperty,
-                    client_cert_id, &client_cert_id_);
-  SetStringProperty(flimflam::kOpenVPNUserProperty, username, &username_);
-  SetStringProperty(flimflam::kOpenVPNPasswordProperty,
-                    user_passphrase, &user_passphrase_);
-  SetStringProperty(flimflam::kOpenVPNOTPProperty, otp, NULL);
+void VirtualNetwork::SetUsername(const std::string& username) {
+  SetStringProperty(flimflam::kL2tpIpsecUserProperty, username, &username_);
+}
+
+void VirtualNetwork::SetUserPassphrase(const std::string& user_passphrase) {
+  SetStringProperty(
+      flimflam::kL2tpIpsecPasswordProperty, user_passphrase, &user_passphrase_);
 }
 
 void VirtualNetwork::SetCertificateSlotAndPin(
     const std::string& slot, const std::string& pin) {
-  if (provider_type() == PROVIDER_TYPE_OPEN_VPN) {
-    SetOrClearStringProperty(flimflam::kOpenVPNClientCertSlotProperty,
-                             slot, NULL);
-    SetOrClearStringProperty(flimflam::kOpenVPNPinProperty, pin, NULL);
-  } else {
-    SetOrClearStringProperty(flimflam::kL2tpIpsecClientCertSlotProperty,
-                             slot, NULL);
-    SetOrClearStringProperty(flimflam::kL2tpIpsecPinProperty, pin, NULL);
-  }
+  SetOrClearStringProperty(flimflam::kL2tpIpsecClientCertSlotProp, slot, NULL);
+  SetOrClearStringProperty(flimflam::kL2tpIpsecPinProperty, pin, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1590,12 +1560,19 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
       const EAPConfigData* eap_config,
       bool save_credentials,
       bool shared) OVERRIDE;
-
-  virtual void ConnectToUnconfiguredVirtualNetwork(
+  virtual void ConnectToVirtualNetworkPSK(
       const std::string& service_name,
       const std::string& server_hostname,
-      ProviderType provider_type,
-      const VPNConfigData& config) OVERRIDE;
+      const std::string& psk,
+      const std::string& username,
+      const std::string& user_passphrase) OVERRIDE;
+  virtual void ConnectToVirtualNetworkCert(
+      const std::string& service_name,
+      const std::string& server_hostname,
+      const std::string& server_ca_cert_nss_nickname,
+      const std::string& client_cert_pkcs11_id,
+      const std::string& username,
+      const std::string& user_passphrase) OVERRIDE;
 
   // virtual DisconnectFromNetwork implemented in derived classes.
   virtual void ForgetNetwork(const std::string& service_path) OVERRIDE;
@@ -1640,10 +1617,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
         profile_type(PROFILE_NONE) {}
     ConnectionSecurity security;
     std::string service_name;  // For example, SSID.
-    std::string username;
     std::string passphrase;
-    std::string otp;
-    std::string group_name;
     std::string server_hostname;
     std::string server_ca_cert_nss_nickname;
     std::string client_cert_pkcs11_id;
@@ -1653,6 +1627,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
     std::string eap_identity;
     std::string eap_anonymous_identity;
     std::string psk_key;
+    std::string psk_username;
     bool save_credentials;
     NetworkProfileType profile_type;
   };
@@ -2536,24 +2511,41 @@ void NetworkLibraryImplBase::ConnectToUnconfiguredWifiNetwork(
 }
 
 // 1. Connect to a virtual network with a PSK.
-void NetworkLibraryImplBase::ConnectToUnconfiguredVirtualNetwork(
+void NetworkLibraryImplBase::ConnectToVirtualNetworkPSK(
     const std::string& service_name,
     const std::string& server_hostname,
-    ProviderType provider_type,
-    const VPNConfigData& config) {
+    const std::string& psk,
+    const std::string& username,
+    const std::string& user_passphrase) {
+  // Store the connection data to be used by the callback.
+  connect_data_.service_name = service_name;
+  connect_data_.psk_key = psk;
+  connect_data_.server_hostname = server_hostname;
+  connect_data_.psk_username = username;
+  connect_data_.passphrase = user_passphrase;
+  CallRequestVirtualNetworkAndConnect(
+      service_name, server_hostname,
+      PROVIDER_TYPE_L2TP_IPSEC_PSK);
+}
+
+// 1. Connect to a virtual network with a user cert.
+void NetworkLibraryImplBase::ConnectToVirtualNetworkCert(
+    const std::string& service_name,
+    const std::string& server_hostname,
+    const std::string& server_ca_cert_nss_nickname,
+    const std::string& client_cert_pkcs11_id,
+    const std::string& username,
+    const std::string& user_passphrase) {
   // Store the connection data to be used by the callback.
   connect_data_.service_name = service_name;
   connect_data_.server_hostname = server_hostname;
-  connect_data_.psk_key = config.psk;
-  connect_data_.server_ca_cert_nss_nickname =
-      config.server_ca_cert_nss_nickname;
-  connect_data_.client_cert_pkcs11_id = config.client_cert_pkcs11_id;
-  connect_data_.username = config.username;
-  connect_data_.passphrase = config.user_passphrase;
-  connect_data_.otp = config.otp;
-  connect_data_.group_name = config.group_name;
+  connect_data_.server_ca_cert_nss_nickname = server_ca_cert_nss_nickname;
+  connect_data_.client_cert_pkcs11_id = client_cert_pkcs11_id;
+  connect_data_.psk_username = username;
+  connect_data_.passphrase = user_passphrase;
   CallRequestVirtualNetworkAndConnect(
-      service_name, server_hostname, provider_type);
+      service_name, server_hostname,
+      PROVIDER_TYPE_L2TP_IPSEC_USER_CERT);
 }
 
 // 2. Requests a WiFi Network by SSID and security.
@@ -2612,29 +2604,11 @@ void NetworkLibraryImplBase::ConnectToVirtualNetworkUsingConnectData(
   vpn->set_added(true);
   if (!data.server_hostname.empty())
     vpn->set_server_hostname(data.server_hostname);
-
   vpn->SetCACertNSS(data.server_ca_cert_nss_nickname);
-  switch (vpn->provider_type()) {
-    case PROVIDER_TYPE_L2TP_IPSEC_PSK:
-      vpn->SetL2TPIPsecPSKCredentials(
-          data.psk_key, data.username, data.passphrase, data.group_name);
-      break;
-    case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT: {
-      vpn->SetL2TPIPsecCertCredentials(
-          data.client_cert_pkcs11_id,
-          data.username, data.passphrase, data.group_name);
-      break;
-    }
-    case PROVIDER_TYPE_OPEN_VPN: {
-      vpn->SetOpenVPNCredentials(
-          data.client_cert_pkcs11_id,
-          data.username, data.passphrase, data.otp);
-      break;
-    }
-    case PROVIDER_TYPE_MAX:
-      NOTREACHED();
-      break;
-  }
+  vpn->SetClientCertID(data.client_cert_pkcs11_id);
+  vpn->SetPSKPassphrase(data.psk_key);
+  vpn->SetUsername(data.psk_username);
+  vpn->SetUserPassphrase(data.passphrase);
 
   NetworkConnectStartVPN(vpn);
 }

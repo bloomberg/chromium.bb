@@ -91,8 +91,6 @@ class VPNConfigView : public ChildNetworkConfigView,
   const std::string GetPSKPassphrase() const;
   const std::string GetUsername() const;
   const std::string GetUserPassphrase() const;
-  const std::string GetOTP() const;
-  const std::string GetGroupName() const;
   const std::string GetServerCACertNssNickname() const;
   const std::string GetUserCertID() const;
 
@@ -117,8 +115,6 @@ class VPNConfigView : public ChildNetworkConfigView,
   views::Combobox* server_ca_cert_combobox_;
   views::Textfield* username_textfield_;
   views::Textfield* user_passphrase_textfield_;
-  views::Textfield* otp_textfield_;
-  views::Textfield* group_name_textfield_;
   views::Label* error_label_;
 
   DISALLOW_COPY_AND_ASSIGN(VPNConfigView);
