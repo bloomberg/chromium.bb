@@ -11,7 +11,7 @@ class BrowserMainPartsChromeos : public BrowserMainPartsGtk {
  public:
   explicit BrowserMainPartsChromeos(const MainFunctionParams& parameters);
 
-  ~BrowserMainPartsChromeos();
+  virtual ~BrowserMainPartsChromeos();
 
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
