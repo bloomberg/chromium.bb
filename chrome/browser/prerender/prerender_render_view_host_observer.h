@@ -39,18 +39,6 @@ class PrerenderRenderViewHostObserver : public RenderViewHostObserver {
 
  private:
   // Message handlers.
-  void OnJSOutOfMemory();
-  void OnRunJavaScriptMessage(const string16& message,
-                              const string16& default_prompt,
-                              const GURL& frame_url,
-                              const int flags,
-                              bool* did_suppress_message,
-                              string16* prompt_field);
-  void OnRenderViewGone(int status, int exit_code);
-  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                         bool is_main_frame,
-                                         bool has_opener_set,
-                                         const GURL& url);
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
   void OnMaybeCancelPrerenderForHTML5Media();
   void OnCancelPrerenderForPrinting();

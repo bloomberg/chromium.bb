@@ -147,7 +147,7 @@ class TestPrerenderContents : public PrerenderContents {
       MessageLoopForUI::current()->Quit();
   }
 
-  virtual void OnRenderViewGone(int status, int exit_code) OVERRIDE {
+  virtual void RenderViewGone() OVERRIDE {
     // On quit, it's possible to end up here when render processes are closed
     // before the PrerenderManager is destroyed.  As a result, it's possible to
     // get either FINAL_STATUS_APP_TERMINATING or FINAL_STATUS_RENDERER_CRASHED
@@ -155,7 +155,7 @@ class TestPrerenderContents : public PrerenderContents {
     if (expected_final_status_ == FINAL_STATUS_APP_TERMINATING)
       expected_final_status_ = FINAL_STATUS_RENDERER_CRASHED;
 
-    PrerenderContents::OnRenderViewGone(status, exit_code);
+    PrerenderContents::RenderViewGone();
   }
 
   virtual bool AddAliasURL(const GURL& url) OVERRIDE {

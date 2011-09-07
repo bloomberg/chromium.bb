@@ -109,6 +109,14 @@ class PrerenderContents::TabContentsDelegateImpl
     return false;
   }
 
+  virtual void JSOutOfMemory(TabContents* tab) OVERRIDE {
+    prerender_contents_->OnJSOutOfMemory();
+  }
+
+  virtual bool ShouldSuppressDialogs() OVERRIDE {
+    return prerender_contents_->ShouldSuppressDialogs();
+  }
+
   // Commits the History of Pages to the given TabContents.
   void CommitHistory(TabContentsWrapper* tab) {
     for (size_t i = 0; i < add_page_vector_.size(); ++i)
@@ -409,23 +417,6 @@ void PrerenderContents::OnRenderViewHostCreated(
     RenderViewHost* new_render_view_host) {
 }
 
-void PrerenderContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                                          bool is_main_frame,
-                                                          bool has_opener_set,
-                                                          const GURL& url) {
-  if (is_main_frame) {
-    if (!AddAliasURL(url))
-      return;
-
-    // Usually, this event fires if the user clicks or enters a new URL.
-    // Neither of these can happen in the case of an invisible prerender.
-    // So the cause is: Some JavaScript caused a new URL to be loaded.  In that
-    // case, the spinner would start again in the browser, so we must reset
-    // has_stopped_loading_ so that the spinner won't be stopped.
-    has_stopped_loading_ = false;
-  }
-}
-
 void PrerenderContents::OnUpdateFaviconURL(
     int32 page_id,
     const std::vector<FaviconURL>& urls) {
@@ -478,27 +469,40 @@ void PrerenderContents::OnJSOutOfMemory() {
   Destroy(FINAL_STATUS_JS_OUT_OF_MEMORY);
 }
 
-void PrerenderContents::OnRunJavaScriptMessage(
-    const string16& message,
-    const string16& default_prompt,
-    const GURL& frame_url,
-    const int flags,
-    bool* did_suppress_message,
-    string16* prompt_field) {
-  // Always suppress JavaScript messages if they're triggered by a page being
-  // prerendered.
-  *did_suppress_message = true;
-  // We still want to show the user the message when they navigate to this
-  // page, so cancel this prerender.
-  Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
-}
-
-void PrerenderContents::OnRenderViewGone(int status, int exit_code) {
+void PrerenderContents::RenderViewGone() {
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
 }
 
 void PrerenderContents::DidStopLoading() {
   has_stopped_loading_ = true;
+}
+
+void PrerenderContents::DidStartProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    bool is_error_page,
+    RenderViewHost* render_view_host) {
+  if (is_main_frame) {
+    if (!AddAliasURL(validated_url))
+      return;
+
+    // Usually, this event fires if the user clicks or enters a new URL.
+    // Neither of these can happen in the case of an invisible prerender.
+    // So the cause is: Some JavaScript caused a new URL to be loaded.  In that
+    // case, the spinner would start again in the browser, so we must reset
+    // has_stopped_loading_ so that the spinner won't be stopped.
+    has_stopped_loading_ = false;
+  }
+}
+
+bool PrerenderContents::ShouldSuppressDialogs() {
+  // Always suppress JavaScript messages if they're triggered by a page being
+  // prerendered.
+  // We still want to show the user the message when they navigate to this
+  // page, so cancel this prerender.
+  Destroy(FINAL_STATUS_JAVASCRIPT_ALERT);
+  return true;
 }
 
 void PrerenderContents::Destroy(FinalStatus final_status) {

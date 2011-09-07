@@ -120,16 +120,17 @@ class PrerenderContents : public NotificationObserver,
   bool MatchesURL(const GURL& url, GURL* matching_url) const;
 
   void OnJSOutOfMemory();
-  void OnRunJavaScriptMessage(const string16& message,
-                              const string16& default_prompt,
-                              const GURL& frame_url,
-                              const int flags,
-                              bool* did_suppress_message,
-                              string16* prompt_field);
-  virtual void OnRenderViewGone(int status, int exit_code);
+  bool ShouldSuppressDialogs();
 
   // TabContentsObserver implementation.
   virtual void DidStopLoading() OVERRIDE;
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewGone() OVERRIDE;
 
   // NotificationObserver
   virtual void Observe(int type,
@@ -192,10 +193,6 @@ class PrerenderContents : public NotificationObserver,
   friend class PrerenderRenderViewHostObserver;
 
   // Message handlers.
-  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
-                                         bool main_frame,
-                                         bool has_opener_set,
-                                         const GURL& url);
   void OnUpdateFaviconURL(int32 page_id, const std::vector<FaviconURL>& urls);
 
   // Returns the RenderViewHost Delegate for this prerender.
