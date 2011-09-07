@@ -658,13 +658,14 @@ def GenerateBreakpadSymbols(buildroot, board):
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
-def GenerateDebugTarball(buildroot, board, archive_path):
+def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   """Generates a debug tarball in the archive_dir.
 
   Args:
     buildroot: The root directory where the build occurs.
     board: Board type that was built on this machine
     archive_dir: Directory where tarball should be stored.
+    gdb_symbols: Include *.debug files for debugging core files with gdb.
 
   Returns the filename of the created debug tarball.
   """
@@ -673,9 +674,14 @@ def GenerateDebugTarball(buildroot, board, archive_path):
   # symbols are only readable by root.
   board_dir = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'lib')
   debug_tgz = os.path.join(archive_path, 'debug.tgz')
-  cmd = ['sudo', 'tar', 'czf', debug_tgz,
-         '--checkpoint=10000', '--exclude', 'debug/usr/local/autotest',
-         '--exclude', 'debug/tests', 'debug']
+  cmd = ['sudo', 'tar', 'czf', debug_tgz, '--checkpoint=10000']
+  if gdb_symbols:
+    cmd.extend(['--exclude', 'debug/usr/local/autotest',
+                '--exclude', 'debug/tests',
+                'debug'])
+  else:
+    cmd.append('debug/breakpad')
+
   tar_cmd = cros_lib.RunCommand(cmd, cwd=board_dir, error_ok=True,
                                 exit_code=True)
 

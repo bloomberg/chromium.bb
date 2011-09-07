@@ -1023,7 +1023,7 @@ class ArchiveStage(NonHaltingBuilderStage):
         finally:
           self._BreakpadSymbolsGenerated(success)
         filename = commands.GenerateDebugTarball(
-          buildroot, board, archive_path)
+            buildroot, board, archive_path, config['archive_build_debug'])
         commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
 
       if not debug and config['upload_symbols']:
