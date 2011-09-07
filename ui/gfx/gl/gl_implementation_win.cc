@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <d3dx9.h>
+
 #include <vector>
 
+#include "base/at_exit.h"
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
@@ -27,6 +32,23 @@ void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
 void GL_BINDING_CALL MarshalDepthRangeToDepthRangef(GLclampd z_near,
                                                     GLclampd z_far) {
   glDepthRangef(static_cast<GLclampf>(z_near), static_cast<GLclampf>(z_far));
+}
+
+bool LoadD3DXLibrary(const FilePath& module_path,
+                     const FilePath::StringType& name) {
+  base::NativeLibrary library = base::LoadNativeLibrary(FilePath(name), NULL);
+  if (!library) {
+    library = base::LoadNativeLibrary(module_path.Append(name), NULL);
+    if (!library) {
+      VLOG(1) << name << " not found.";
+      return false;
+    }
+  }
+
+  base::AtExitManager::RegisterTask(
+      base::Bind(base::UnloadNativeLibrary, library));
+
+  return true;
 }
 
 }  // namespace anonymous
@@ -83,9 +105,18 @@ bool InitializeGLBindings(GLImplementation implementation) {
       SetupSoftwareRenderer();
 #endif
 
+      // Attempt to load D3DX and its dependencies using the default search path
+      // and if that fails, using an absolute path. This is to ensure these DLLs
+      // are loaded before ANGLE is loaded in case they are not in the default
+      // search path.
+      LoadD3DXLibrary(module_path, base::StringPrintf(L"d3dcompiler_%d.dll",
+                                                      D3DX_SDK_VERSION));
+      LoadD3DXLibrary(module_path, base::StringPrintf(L"d3dx9_%d.dll",
+                                                      D3DX_SDK_VERSION));
+
       // Load libglesv2.dll before libegl.dll because the latter is dependent on
       // the former and if there is another version of libglesv2.dll in the dll
-      // search path, it will get loaded.
+      // search path, it will get loaded instead.
       base::NativeLibrary gles_library = base::LoadNativeLibrary(
           module_path.Append(L"libglesv2.dll"), NULL);
       if (!gles_library) {

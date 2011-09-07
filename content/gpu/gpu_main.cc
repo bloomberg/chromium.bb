@@ -41,6 +41,19 @@ int GpuMain(const MainFunctionParams& parameters) {
     ChildProcess::WaitForDebugger("Gpu");
   }
 
+  if (!command_line.HasSwitch(switches::kSingleProcess)) {
+#if defined(OS_WIN)
+    // Prevent Windows from displaying a modal dialog on failures like not being
+    // able to load a DLL.
+    SetErrorMode(
+        SEM_FAILCRITICALERRORS |
+        SEM_NOGPFAULTERRORBOX |
+        SEM_NOOPENFILEERRORBOX);
+#elif defined(USE_X11)
+    ui::SetDefaultX11ErrorHandlers();
+#endif
+  }
+
   // Initialization of the OpenGL bindings may fail, in which case we
   // will need to tear down this process. However, we can not do so
   // safely until the IPC channel is set up, because the detection of
@@ -91,19 +104,6 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   MessageLoop main_message_loop(message_loop_type);
   base::PlatformThread::SetName("CrGpuMain");
-
-  if (!command_line.HasSwitch(switches::kSingleProcess)) {
-#if defined(OS_WIN)
-    // Prevent Windows from displaying a modal dialog on failures like not being
-    // able to load a DLL.
-    SetErrorMode(
-        SEM_FAILCRITICALERRORS |
-        SEM_NOGPFAULTERRORBOX |
-        SEM_NOOPENFILEERRORBOX);
-#elif defined(USE_X11)
-    ui::SetDefaultX11ErrorHandlers();
-#endif
-  }
 
   GpuProcess gpu_process;
 
