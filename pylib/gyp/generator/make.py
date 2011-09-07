@@ -742,6 +742,14 @@ class XcodeSettings(object):
     else:
       return self._GetStandaloneBinaryPath()
 
+  def _SdkPath(self):
+    sdk_root = 'macosx10.5'
+    if 'SDKROOT' in self._Settings():
+      sdk_root = self._Settings()['SDKROOT']
+    if sdk_root.startswith('macosx'):
+      sdk_root = 'MacOSX' + sdk_root[len('macosx'):]
+    return '/Developer/SDKs/%s.sdk' % sdk_root
+
   def GetCflags(self, configname):
     """Returns flags that need to be added to .c, .cc, .m, and .mm
     compilations."""
@@ -751,11 +759,9 @@ class XcodeSettings(object):
     self.configname = configname
     cflags = []
 
-    sdk_root = 'Mac10.5'
+    sdk_root = self._SdkPath()
     if 'SDKROOT' in self._Settings():
-      sdk_root = self._Settings()['SDKROOT']
-      cflags.append('-isysroot /Developer/SDKs/%s.sdk' % sdk_root)
-    sdk_root_dir = '/Developer/SDKs/%s.sdk' % sdk_root
+      cflags.append('-isysroot %s' % sdk_root)
 
     if self._Test('GCC_CW_ASM_SYNTAX', 'YES', default='YES'):
       cflags.append('-fasm-blocks')
@@ -822,7 +828,7 @@ class XcodeSettings(object):
     config = self.spec['configurations'][self.configname]
     framework_dirs = config.get('mac_framework_dirs', [])
     for directory in framework_dirs:
-      cflags.append('-F ' + os.path.join(sdk_root_dir, directory))
+      cflags.append('-F ' + os.path.join(sdk_root, directory))
 
     self.configname = None
     return cflags
@@ -897,8 +903,8 @@ class XcodeSettings(object):
         ldflags, 'DYLIB_CURRENT_VERSION', '-current_version %s')
     self._Appendf(
         ldflags, 'MACOSX_DEPLOYMENT_TARGET', '-mmacosx-version-min=%s')
-    self._Appendf(
-        ldflags, 'SDKROOT', '-isysroot /Developer/SDKs/%s.sdk')
+    if 'SDKROOT' in self._Settings():
+      ldflags.append('-isysroot ' + self._SdkPath())
 
     for library_path in self._Settings().get('LIBRARY_SEARCH_PATHS', []):
       ldflags.append('-L' + library_path)
