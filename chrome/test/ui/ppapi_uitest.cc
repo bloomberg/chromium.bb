@@ -174,8 +174,6 @@ TEST_PPAPI_IN_PROCESS(Instance)
 TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Instance)
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
-// Disabled because it times out: http://crbug.com/89961
-//TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)
 
 TEST_PPAPI_IN_PROCESS(ImageData)
 TEST_PPAPI_OUT_OF_PROCESS(ImageData)
@@ -254,10 +252,7 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileRef)
 //TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileRef)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileSystem)
-// http://crbug.com/90040
-TEST_F(OutOfProcessPPAPITest, FLAKY_FileSystem) {
-  RunTestViaHTTP("FileSystem");
-}
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 
 #if defined(OS_POSIX)
 #define MAYBE_DirectoryReader FLAKY_DirectoryReader
