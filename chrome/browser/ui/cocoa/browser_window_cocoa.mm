@@ -380,9 +380,10 @@ void BrowserWindowCocoa::ShowRepostFormWarningDialog(
   RepostFormWarningMac::Create(GetNativeHandle(), tab_contents);
 }
 
-void BrowserWindowCocoa::ShowCollectedCookiesDialog(TabContents* tab_contents) {
+void BrowserWindowCocoa::ShowCollectedCookiesDialog(
+    TabContentsWrapper* wrapper) {
   // Deletes itself on close.
-  new CollectedCookiesMac(GetNativeHandle(), tab_contents);
+  new CollectedCookiesMac(GetNativeHandle(), wrapper);
 }
 
 void BrowserWindowCocoa::ShowThemeInstallBubble() {

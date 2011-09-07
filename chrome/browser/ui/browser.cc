@@ -3764,8 +3764,8 @@ void Browser::ShowContentSettingsPage(ContentSettingsType content_type) {
       ContentSettingsHandler::ContentSettingsTypeToGroupName(content_type));
 }
 
-void Browser::ShowCollectedCookiesDialog(TabContents *tab_contents) {
-  window()->ShowCollectedCookiesDialog(tab_contents);
+void Browser::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
+  window()->ShowCollectedCookiesDialog(wrapper);
 }
 
 bool Browser::ShouldAddNavigationToHistory(

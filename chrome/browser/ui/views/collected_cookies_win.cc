@@ -36,9 +36,9 @@ namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContents* tab_contents) {
+                                TabContentsWrapper* wrapper) {
   // Deletes itself on close.
-  new CollectedCookiesWin(parent_window, tab_contents);
+  new CollectedCookiesWin(parent_window, wrapper);
 }
 
 }  // namespace browser
@@ -164,8 +164,8 @@ class InfobarView : public views::View {
 // CollectedCookiesWin, constructor and destructor:
 
 CollectedCookiesWin::CollectedCookiesWin(gfx::NativeWindow parent_window,
-                                         TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+                                         TabContentsWrapper* wrapper)
+    : wrapper_(wrapper),
       allowed_label_(NULL),
       blocked_label_(NULL),
       allowed_cookies_tree_(NULL),
@@ -175,15 +175,13 @@ CollectedCookiesWin::CollectedCookiesWin(gfx::NativeWindow parent_window,
       for_session_blocked_button_(NULL),
       infobar_(NULL),
       status_changed_(false) {
-  TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
-          content_settings();
+  TabSpecificContentSettings* content_settings = wrapper->content_settings();
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  Source<TabSpecificContentSettings>(content_settings));
 
   Init();
 
-  window_ = new ConstrainedWindowViews(tab_contents_, this);
+  window_ = new ConstrainedWindowViews(wrapper->tab_contents(), this);
 }
 
 CollectedCookiesWin::~CollectedCookiesWin() {
@@ -238,9 +236,7 @@ void CollectedCookiesWin::Init() {
 }
 
 views::View* CollectedCookiesWin::CreateAllowedPane() {
-  TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-          content_settings();
+  TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
   // Create the controls that go into the pane.
   allowed_label_ = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
@@ -288,12 +284,10 @@ views::View* CollectedCookiesWin::CreateAllowedPane() {
 }
 
 views::View* CollectedCookiesWin::CreateBlockedPane() {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_);
-  TabSpecificContentSettings* content_settings = wrapper->content_settings();
+  TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
   HostContentSettingsMap* host_content_settings_map =
-      wrapper->profile()->GetHostContentSettingsMap();
+      wrapper_->profile()->GetHostContentSettingsMap();
 
   // Create the controls that go into the pane.
   blocked_label_ = new views::Label(
@@ -379,9 +373,8 @@ void CollectedCookiesWin::DeleteDelegate() {
 
 bool CollectedCookiesWin::Cancel() {
   if (status_changed_) {
-    TabContentsWrapper::GetCurrentWrapperForContents(tab_contents_)->
-        infobar_tab_helper()->AddInfoBar(
-            new CollectedCookiesInfoBarDelegate(tab_contents_));
+    wrapper_->infobar_tab_helper()->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(wrapper_->tab_contents()));
   }
 
   return true;
@@ -486,8 +479,7 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
                                               ContentSetting setting) {
   CookieTreeOriginNode* origin_node =
       static_cast<CookieTreeOriginNode*>(tree_view->GetSelectedNode());
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents_->browser_context());
+  Profile* profile = wrapper_->profile();
   origin_node->CreateContentException(profile->GetHostContentSettingsMap(),
                                       setting);
   infobar_->UpdateVisibility(true, setting, origin_node->GetTitle());
@@ -500,7 +492,8 @@ void CollectedCookiesWin::AddContentException(views::TreeView* tree_view,
   // window, while NativeWidgetWin::SetBounds wants screen coordinates. Do the
   // translation here until http://crbug.com/52851 is fixed.
   POINT topleft = {bounds.x(), bounds.y()};
-  MapWindowPoints(HWND_DESKTOP, tab_contents_->GetNativeView(), &topleft, 1);
+  MapWindowPoints(HWND_DESKTOP, wrapper_->tab_contents()->GetNativeView(),
+                  &topleft, 1);
   gfx::Size size = GetWidget()->GetRootView()->GetPreferredSize();
   bounds.SetRect(topleft.x, topleft.y, size.width(), size.height());
   GetWidget()->SetBounds(bounds);

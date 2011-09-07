@@ -18,6 +18,7 @@
 
 class GURL;
 class TabContents;
+class TabContentsWrapper;
 
 namespace gfx {
 class Size;
@@ -30,7 +31,7 @@ class CollectedCookiesUIDelegate : public HtmlDialogUIDelegate,
   virtual ~CollectedCookiesUIDelegate();
 
   // static factory method that shows CollectedCookiesUI for |tab_contents|.
-  static void Show(TabContents* tab_contents);
+  static void Show(TabContentsWrapper* wrapper);
 
   // HtmlDialogUIDelegate implementation:
   virtual bool IsDialogModal() const OVERRIDE;
@@ -49,7 +50,7 @@ class CollectedCookiesUIDelegate : public HtmlDialogUIDelegate,
   virtual void RegisterMessages();
 
  private:
-  explicit CollectedCookiesUIDelegate(TabContents* tab_contents);
+  explicit CollectedCookiesUIDelegate(TabContentsWrapper* wrapper);
 
   // Closes the dialog from javascript.
   void CloseDialog();
@@ -75,7 +76,7 @@ class CollectedCookiesUIDelegate : public HtmlDialogUIDelegate,
   void AllowThisSession(const base::ListValue* args);
 
   NotificationRegistrar registrar_;
-  TabContents* tab_contents_;
+  TabContentsWrapper* wrapper_;
   bool closed_;
 
   scoped_ptr<CookiesTreeModel> allowed_cookies_tree_model_;

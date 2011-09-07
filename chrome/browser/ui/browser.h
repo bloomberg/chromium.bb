@@ -740,8 +740,8 @@ class Browser : public TabHandlerDelegate,
   // specified.
   GURL GetHomePage() const;
 
-  // Shows the cookies collected in the tab contents.
-  void ShowCollectedCookiesDialog(TabContents* tab_contents);
+  // Shows the cookies collected in the tab contents wrapper.
+  void ShowCollectedCookiesDialog(TabContentsWrapper* wrapper);
 
   // Interface implementations ////////////////////////////////////////////////
 

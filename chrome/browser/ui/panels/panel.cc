@@ -316,7 +316,7 @@ void Panel::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   NOTIMPLEMENTED();
 }
 
-void Panel::ShowCollectedCookiesDialog(TabContents* tab_contents) {
+void Panel::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
   NOTIMPLEMENTED();
 }
 

@@ -83,7 +83,7 @@ void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
 
 // Shows the collected cookies dialog box.
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContents* tab_contents);
+                                TabContentsWrapper* tab_contents);
 
 
 // Shows the create web app shortcut dialog box.

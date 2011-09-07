@@ -41,11 +41,11 @@ void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
 }
 
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContents* tab_contents) {
+                                TabContentsWrapper* wrapper) {
 #if defined(OS_CHROMEOS)
-  CollectedCookiesUIDelegate::Show(tab_contents);
+  CollectedCookiesUIDelegate::Show(wrapper);
 #else
-  new CollectedCookiesGtk(GTK_WINDOW(parent_window), tab_contents);
+  new CollectedCookiesGtk(GTK_WINDOW(parent_window), wrapper);
 #endif
 }
 

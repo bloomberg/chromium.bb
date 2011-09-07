@@ -331,7 +331,7 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
         chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
         Source<TabSpecificContentSettings>(tab_contents()->content_settings()),
         NotificationService::NoDetails());
-    browser()->ShowCollectedCookiesDialog(tab_contents()->tab_contents());
+    browser()->ShowCollectedCookiesDialog(tab_contents());
   }
 };
 

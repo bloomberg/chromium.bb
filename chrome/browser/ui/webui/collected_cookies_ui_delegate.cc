@@ -130,22 +130,19 @@ void CollectedCookiesSource::StartDataRequest(const std::string& path,
 }  // namespace
 
 // static
-void CollectedCookiesUIDelegate::Show(TabContents* tab_contents) {
+void CollectedCookiesUIDelegate::Show(TabContentsWrapper* wrapper) {
   CollectedCookiesUIDelegate* delegate =
-      new CollectedCookiesUIDelegate(tab_contents);
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents->browser_context());
+      new CollectedCookiesUIDelegate(wrapper);
+  Profile* profile = wrapper->profile();
   ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile,
                                                  delegate,
-                                                 tab_contents);
+                                                 wrapper->tab_contents());
 }
 
 CollectedCookiesUIDelegate::CollectedCookiesUIDelegate(
-    TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+    TabContentsWrapper* wrapper)
+    : wrapper_(wrapper),
       closed_(false) {
-  TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
   TabSpecificContentSettings* content_settings = wrapper->content_settings();
   HostContentSettingsMap* host_content_settings_map =
       wrapper->profile()->GetHostContentSettingsMap();
@@ -229,8 +226,7 @@ void CollectedCookiesUIDelegate::SetInfobarLabel(const std::string& text) {
 void CollectedCookiesUIDelegate::AddContentException(
     CookieTreeOriginNode* origin_node, ContentSetting setting) {
   if (origin_node->CanCreateContentException()) {
-    Profile* profile =
-        Profile::FromBrowserContext(tab_contents_->browser_context());
+    Profile* profile = wrapper_->profile();
     origin_node->CreateContentException(profile->GetHostContentSettingsMap(),
                                         setting);
 

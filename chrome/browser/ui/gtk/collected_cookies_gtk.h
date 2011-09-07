@@ -19,6 +19,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class CookiesTreeModel;
+class TabContentsWrapper;
 
 // CollectedCookiesGtk is a dialog that displays the allowed and blocked
 // cookies of the current tab contents.  To display the dialog, invoke
@@ -26,10 +27,10 @@ class CookiesTreeModel;
 // content settings tab helper.
 
 class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
-                                   gtk_tree::TreeAdapter::Delegate,
-                                   NotificationObserver {
+                            public gtk_tree::TreeAdapter::Delegate,
+                            public NotificationObserver {
  public:
-  CollectedCookiesGtk(GtkWindow* parent, TabContents* tab_contents);
+  CollectedCookiesGtk(GtkWindow* parent, TabContentsWrapper* wrapper);
 
   // ConstrainedWindowGtkDelegate methods.
   virtual GtkWidget* GetWidgetRoot();
@@ -112,8 +113,8 @@ class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
   // Displays information about selected cookie.
   GtkWidget* cookie_info_view_;
 
-  // The tab contents.
-  TabContents* tab_contents_;
+  // The tab contents wrapper.
+  TabContentsWrapper* wrapper_;
 
   bool status_changed_;
 

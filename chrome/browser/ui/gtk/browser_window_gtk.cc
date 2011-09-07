@@ -984,9 +984,9 @@ void BrowserWindowGtk::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   new RepostFormWarningGtk(GetNativeHandle(), tab_contents);
 }
 
-void BrowserWindowGtk::ShowCollectedCookiesDialog(TabContents* tab_contents) {
+void BrowserWindowGtk::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
   // Deletes itself on close.
-  new CollectedCookiesGtk(GetNativeHandle(), tab_contents);
+  new CollectedCookiesGtk(GetNativeHandle(), wrapper);
 }
 
 void BrowserWindowGtk::ShowThemeInstallBubble() {

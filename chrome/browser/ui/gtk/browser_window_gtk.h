@@ -106,7 +106,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual bool IsDownloadShelfVisible() const;
   virtual DownloadShelf* GetDownloadShelf();
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
-  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents);
+  virtual void ShowCollectedCookiesDialog(TabContentsWrapper* tab_contents);
   virtual void ShowThemeInstallBubble();
   virtual void ConfirmBrowserCloseWithPendingDownloads();
   virtual gfx::NativeWindow ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

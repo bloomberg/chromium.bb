@@ -307,7 +307,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool IsDownloadShelfVisible() const OVERRIDE;
   virtual DownloadShelf* GetDownloadShelf() OVERRIDE;
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
-  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) OVERRIDE;
+  virtual void ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) OVERRIDE;
   virtual void ShowThemeInstallBubble() OVERRIDE;
   virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE;
   virtual gfx::NativeWindow ShowHTMLDialog(

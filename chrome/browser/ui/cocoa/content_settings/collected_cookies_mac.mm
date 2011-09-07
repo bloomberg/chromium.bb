@@ -78,24 +78,21 @@ enum TabViewItemIndices {
 #pragma mark Constrained window delegate
 
 CollectedCookiesMac::CollectedCookiesMac(NSWindow* parent,
-                                         TabContents* tab_contents)
+                                         TabContentsWrapper* wrapper)
     : ConstrainedWindowMacDelegateCustomSheet(
         [[[CollectedCookiesSheetBridge alloc]
             initWithCollectedCookiesMac:this] autorelease],
-        @selector(sheetDidEnd:returnCode:contextInfo:)),
-      tab_contents_(tab_contents) {
-  TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents)->
-          content_settings();
+        @selector(sheetDidEnd:returnCode:contextInfo:)) {
+  TabSpecificContentSettings* content_settings = wrapper->content_settings();
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  Source<TabSpecificContentSettings>(content_settings));
 
   sheet_controller_ = [[CollectedCookiesWindowController alloc]
-      initWithTabContents:tab_contents];
+      initWithTabContentsWrapper:wrapper];
 
   set_sheet([sheet_controller_ window]);
 
-  window_ = new ConstrainedWindowMac(tab_contents, this);
+  window_ = new ConstrainedWindowMac(wrapper->tab_contents(), this);
 }
 
 CollectedCookiesMac::~CollectedCookiesMac() {
@@ -142,15 +139,15 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 @synthesize allowedTreeController = allowedTreeController_;
 @synthesize blockedTreeController = blockedTreeController_;
 
-- (id)initWithTabContents:(TabContents*)tabContents {
-  DCHECK(tabContents);
+- (id)initWithTabContentsWrapper:(TabContentsWrapper*)wrapper {
+  DCHECK(wrapper);
 
   NSString* nibpath =
       [base::mac::MainAppBundle() pathForResource:@"CollectedCookies"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    tabContents_ = tabContents;
-    [self loadTreeModelFromTabContents];
+    wrapper_ = wrapper;
+    [self loadTreeModelFromTabContentsWrapper];
 
     animation_.reset([[NSViewAnimation alloc] init]);
     [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
@@ -186,8 +183,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   [infoBar_ setStrokeColor:bannerStrokeColor];
 
   // Change the label of the blocked cookies part if necessary.
-  Profile* profile =
-      Profile::FromBrowserContext(tabContents_->browser_context());
+  Profile* profile = wrapper_->profile();
   if (profile->GetHostContentSettingsMap()->BlockThirdPartyCookies()) {
     [blockedCookiesText_ setStringValue:l10n_util::GetNSString(
         IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED)];
@@ -219,9 +215,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 - (void)windowWillClose:(NSNotification*)notif {
   if (contentSettingsChanged_) {
-    TabContentsWrapper::GetCurrentWrapperForContents(tabContents_)->
-        infobar_tab_helper()->AddInfoBar(
-            new CollectedCookiesInfoBarDelegate(tabContents_));
+    wrapper_->infobar_tab_helper()->AddInfoBar(
+        new CollectedCookiesInfoBarDelegate(wrapper_->tab_contents()));
   }
   [allowedOutlineView_ setDelegate:nil];
   [blockedOutlineView_ setDelegate:nil];
@@ -245,8 +240,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
         CookieTreeNode::DetailedInfo::TYPE_ORIGIN) {
       continue;
     }
-    Profile* profile =
-        Profile::FromBrowserContext(tabContents_->browser_context());
+    Profile* profile = wrapper_->profile();
     CookieTreeOriginNode* origin_node =
         static_cast<CookieTreeOriginNode*>(cookie);
     origin_node->CreateContentException(profile->GetHostContentSettingsMap(),
@@ -359,10 +353,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 // Initializes the |allowedTreeModel_| and |blockedTreeModel_|, and builds
 // the |cocoaAllowedTreeModel_| and |cocoaBlockedTreeModel_|.
-- (void)loadTreeModelFromTabContents {
-  TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(tabContents_)->
-          content_settings();
+- (void)loadTreeModelFromTabContentsWrapper {
+  TabSpecificContentSettings* content_settings = wrapper_->content_settings();
   allowedTreeModel_.reset(content_settings->GetAllowedCookiesTreeModel());
   blockedTreeModel_.reset(content_settings->GetBlockedCookiesTreeModel());
 

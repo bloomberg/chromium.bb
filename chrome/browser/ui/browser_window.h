@@ -234,7 +234,7 @@ class BrowserWindow {
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) = 0;
 
   // Shows the collected cookies dialog box.
-  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) = 0;
+  virtual void ShowCollectedCookiesDialog(TabContentsWrapper* tab_contents) = 0;
 
   // Show the bubble that indicates to the user that a theme is being installed.
   virtual void ShowThemeInstallBubble() = 0;

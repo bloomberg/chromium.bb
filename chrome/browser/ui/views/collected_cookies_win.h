@@ -20,6 +20,7 @@ class CookieInfoView;
 class CookiesTreeModel;
 class InfobarView;
 class TabContents;
+class TabContentsWrapper;
 
 namespace views {
 class Label;
@@ -41,7 +42,7 @@ class CollectedCookiesWin : public views::DialogDelegate,
  public:
   // Use BrowserWindow::ShowCollectedCookiesDialog to show.
   CollectedCookiesWin(gfx::NativeWindow parent_window,
-                      TabContents* tab_contents);
+                      TabContentsWrapper* wrapper);
 
   // views::DialogDelegate:
   virtual std::wstring GetWindowTitle() const OVERRIDE;
@@ -89,7 +90,7 @@ class CollectedCookiesWin : public views::DialogDelegate,
   ConstrainedWindow* window_;
 
   // The tab contents.
-  TabContents* tab_contents_;
+  TabContentsWrapper* wrapper_;
 
   // Assorted views.
   views::Label* allowed_label_;
