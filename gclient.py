@@ -172,6 +172,14 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
     # Required dependencies to run before running this one:
     self.requirements = set()
 
+    # Post process the url to remove trailing slashes.
+    if isinstance(self.url, basestring):
+      # urls are sometime incorrectly written as proto://host/path/@rev. Replace
+      # it to proto://host/path@rev.
+      if self.url.count('@') > 1:
+        raise gclient_utils.Error('Invalid url "%s"' % self.url)
+      self.url = self.url.replace('/@', '@')
+
     self._FindDependencies()
 
     # Sanity checks
@@ -263,8 +271,10 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
           break
       if not found_dep:
         raise gclient_utils.Error(
-            'Couldn\'t find %s in %s, referenced by %s\n%s' % (
-                sub_target, ref.name, self.name, str(self.root_parent())))
+            'Couldn\'t find %s in %s, referenced by %s (parent: %s)\n%s' % (
+                sub_target, ref.name, self.name, self.parent.name,
+                str(self.root_parent())))
+
       # Call LateOverride() again.
       parsed_url = found_dep.LateOverride(found_dep.url)
       logging.info('%s, %s to %s' % (self.name, url, parsed_url))

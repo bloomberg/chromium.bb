@@ -181,6 +181,13 @@ class GclientTest(trial_dir.TestCase):
       pass
     return items
 
+  def testAutofix(self):
+    # Invalid urls causes pain when specifying requirements. Make sure it's
+    # auto-fixed.
+    d = gclient.Dependency(
+        None, 'name', 'proto://host/path/@revision', None, None,
+        None, '', True)
+    self.assertEquals('proto://host/path@revision', d.url)
 
 if __name__ == '__main__':
   logging.basicConfig(
