@@ -18,12 +18,21 @@ class TabContents;
 
 class HungRendererDialog : private HtmlDialogUIDelegate {
  public:
+  // Shows a hung renderer dialog.
+  static void ShowHungRendererDialog(TabContents* contents);
+
+  // Hides a hung renderer dialog.
+  static void HideHungRendererDialog(TabContents* contents);
+
+ private:
   HungRendererDialog();
 
   // Shows the hung renderer dialog.
-  void ShowDialog(gfx::NativeWindow owning_window, TabContents* contents);
+  void ShowDialog(TabContents* contents);
 
- private:
+  // Hides the hung renderer dialog.
+  void HideDialog(TabContents* contents);
+
   // HtmlDialogUIDelegate methods
   virtual bool IsDialogModal() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
@@ -39,6 +48,9 @@ class HungRendererDialog : private HtmlDialogUIDelegate {
 
   // The tab contents.
   TabContents* contents_;
+
+  // The dialog window.
+  gfx::NativeWindow window_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialog);
 };
@@ -63,3 +75,4 @@ class HungRendererDialogHandler : public WebUIMessageHandler {
 
 
 #endif  // CHROME_BROWSER_UI_WEBUI_HUNG_RENDERER_DIALOG_H_
+

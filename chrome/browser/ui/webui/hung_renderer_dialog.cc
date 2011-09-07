@@ -19,6 +19,7 @@
 #include "content/common/result_codes.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "views/widget/widget.h"
 
 namespace {
 HungRendererDialog* g_instance = NULL;
@@ -29,40 +30,62 @@ const int kHungRendererDialogHeight = 200;
 namespace browser {
 
 void ShowHungRendererDialog(TabContents* contents) {
-  if (!logging::DialogsAreSuppressed()) {
-    if (!g_instance) {
-      g_instance = new HungRendererDialog();
-    } else {
-      NOTIMPLEMENTED() << " ShowHungRendererDialog called twice.";
-      return;
-    }
-    g_instance->ShowDialog(NULL, contents);
-  }
+  HungRendererDialog::ShowHungRendererDialog(contents);
 }
 
 void HideHungRendererDialog(TabContents* contents) {
-  if (!logging::DialogsAreSuppressed() && g_instance) {
-    // TODO(wyck): Hide the webui hung renderer dialog.
-    NOTIMPLEMENTED() << " TODO: Hide the webui hung renderer dialog.";
-  }
+  HungRendererDialog::HideHungRendererDialog(contents);
 }
 
 }  // namespace browser
 
 ////////////////////////////////////////////////////////////////////////////////
-// HungRendererDialog methods
+// HungRendererDialog public static methods
 
-HungRendererDialog::HungRendererDialog()
-    : contents_(NULL) {
+void HungRendererDialog::ShowHungRendererDialog(TabContents* contents) {
+  if (!logging::DialogsAreSuppressed()) {
+    if (g_instance)
+      return;
+    g_instance = new HungRendererDialog();
+    g_instance->ShowDialog(contents);
+  }
 }
 
-void HungRendererDialog::ShowDialog(gfx::NativeWindow owning_window,
-                                    TabContents* contents) {
+void HungRendererDialog::HideHungRendererDialog(TabContents* contents) {
+  if (!logging::DialogsAreSuppressed() && g_instance)
+    g_instance->HideDialog(contents);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// HungRendererDialog private methods
+
+HungRendererDialog::HungRendererDialog()
+    : contents_(NULL),
+      window_(NULL) {
+}
+
+void HungRendererDialog::ShowDialog(TabContents* contents) {
   DCHECK(contents);
   contents_ = contents;
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-  browser->BrowserShowHtmlDialog(this, owning_window);
+  window_ = browser->BrowserShowHtmlDialog(this, NULL);
+}
+
+void HungRendererDialog::HideDialog(TabContents* contents) {
+  DCHECK(contents);
+  // Don't close the dialog if it's a TabContents for some other renderer.
+  if (contents_ && contents_->GetRenderProcessHost() !=
+      contents->GetRenderProcessHost())
+    return;
+  // Settings |contents_| to NULL prevents the hang monitor from restarting.
+  // We do this because the close dialog handler runs whether it is trigged by
+  // the user closing the box, or by being closed externally with widget->Close.
+  contents_ = NULL;
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window_);
+  DCHECK(widget);
+  widget->Close();
 }
 
 bool HungRendererDialog::IsDialogModal() const {
@@ -94,13 +117,12 @@ void HungRendererDialog::OnDialogClosed(const std::string& json_retval) {
   // Figure out what the response was.
   scoped_ptr<Value> root(base::JSONReader::Read(json_retval, false));
   bool response = false;
-  ListValue* list;
-  if (!root.get() || !root->GetAsList(&list) || !list ||
-      !list->GetBoolean(0, &response)) {
-    NOTREACHED() << "json does not describe a valid result";
-  }
-
-  if (response) {
+  ListValue* list = NULL;
+  // If the dialog closes because of a button click then the json is a list
+  // containing a single bool.  If the dialog closes some other way, then we
+  // assume it means no permission was given to kill tabs.
+  if (root.get() && root->GetAsList(&list) && list &&
+      list->GetBoolean(0, &response) && response) {
     // The user indicated that it is OK to kill the renderer process.
     if (contents_ && contents_->GetRenderProcessHost()) {
       base::KillProcess(contents_->GetRenderProcessHost()->GetHandle(),
@@ -112,7 +134,6 @@ void HungRendererDialog::OnDialogClosed(const std::string& json_retval) {
     if (contents_ && contents_->render_view_host())
       contents_->render_view_host()->RestartHangMonitorTimeout();
   }
-
   g_instance = NULL;
   delete this;
 }
@@ -160,4 +181,3 @@ void HungRendererDialogHandler::RequestTabContentsList(
   web_ui_->CallJavascriptFunction("hungRendererDialog.setTabContentsList",
                                   tab_contents_list);
 }
-
