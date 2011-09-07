@@ -1802,8 +1802,7 @@ WebPreferences TabContents::GetWebkitPrefs() {
   // chrome-devtools: pages (unless it's specifically allowed).
   if ((GetURL().SchemeIs(chrome::kChromeDevToolsScheme) ||
       GetURL().SchemeIs(chrome::kChromeUIScheme) ||
-      (GetURL().SchemeIs(chrome::kAboutScheme) &&
-       GetURL().spec() != chrome::kAboutBlankURL)) &&
+      GetURL().SchemeIs(chrome::kAboutScheme)) &&
       !web_prefs.allow_webui_compositing) {
     web_prefs.accelerated_compositing_enabled = false;
     web_prefs.accelerated_2d_canvas_enabled = false;
