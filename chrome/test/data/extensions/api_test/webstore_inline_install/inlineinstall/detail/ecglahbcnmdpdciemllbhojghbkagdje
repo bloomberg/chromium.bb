@@ -3,5 +3,6 @@
   "users": "371,674",
   "average_rating": 4.36,
   "rating_count": 788,
+  "verified_site": "app.com",
   "manifest": "{\"name\":\"Inline Install Test Extension\",\"version\":\"0.1\",\"icons\":{\"128\":\"icon.png\"},\"permissions\":[\"tabs\"]}"
 }

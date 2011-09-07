@@ -149,14 +149,16 @@ void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
 }
 
 void ExtensionTabHelper::OnInlineWebstoreInstall(
-    const std::string& webstore_item_id) {
+    int install_id,
+    const std::string& webstore_item_id,
+    const GURL& requestor_url) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableInlineWebstoreInstall)) {
     return;
   }
 
   scoped_refptr<WebstoreInlineInstaller> installer(new WebstoreInlineInstaller(
-      tab_contents(), webstore_item_id, this));
+      tab_contents(), install_id, webstore_item_id, requestor_url, this));
   installer->BeginInstall();
 }
 
@@ -208,13 +210,15 @@ Browser* ExtensionTabHelper::GetBrowser() {
   return NULL;
 }
 
-void ExtensionTabHelper::OnInlineInstallSuccess() {
-  Send(new ExtensionMsg_InlineWebstoreInstallResponse(routing_id(), true, ""));
+void ExtensionTabHelper::OnInlineInstallSuccess(int install_id) {
+  Send(new ExtensionMsg_InlineWebstoreInstallResponse(
+      routing_id(), install_id, true, ""));
 }
 
-void ExtensionTabHelper::OnInlineInstallFailure(const std::string& error) {
+void ExtensionTabHelper::OnInlineInstallFailure(int install_id,
+                                                const std::string& error) {
   Send(new ExtensionMsg_InlineWebstoreInstallResponse(
-      routing_id(), false, error));
+      routing_id(), install_id, false, error));
 }
 
 TabContents* ExtensionTabHelper::GetAssociatedTabContents() const {

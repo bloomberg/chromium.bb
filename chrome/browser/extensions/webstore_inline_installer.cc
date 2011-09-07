@@ -15,9 +15,9 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/utility_process_host.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 
@@ -28,12 +28,17 @@ const char kLocalizedDescriptionKey[] = "localized_description";
 const char kUsersKey[] = "users";
 const char kAverageRatingKey[] = "average_rating";
 const char kRatingCountKey[] = "rating_count";
+const char kVerifiedSiteKey[] = "verified_site";
 
-const char kInvalidWebstoreItemId[] = "Invalid webstore item ID";
-const char kWebstoreRequestError[] = "Could not fetch data from webstore";
-const char kInvalidWebstoreResponseError[] = "Invalid webstore reponse";
+const char kInvalidWebstoreItemId[] = "Invalid Chrome Web Store item ID";
+const char kWebstoreRequestError[] =
+    "Could not fetch data from the Chrome Web Store";
+const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
 const char kInvalidManifestError[] = "Invalid manifest";
 const char kUserCancelledError[] = "User cancelled install";
+const char kNotFromVerifiedSite[] =
+    "Installs can only be initiated by the Chrome Web Store item's verified "
+    "site";
 
 class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
  public:
@@ -127,10 +132,14 @@ class SafeWebstoreResponseParser : public UtilityProcessHost::Client {
 };
 
 WebstoreInlineInstaller::WebstoreInlineInstaller(TabContents* tab_contents,
+                                                 int install_id,
                                                  std::string webstore_item_id,
+                                                 GURL requestor_url,
                                                  Delegate* delegate)
     : tab_contents_(tab_contents),
+      install_id_(install_id),
       id_(webstore_item_id),
+      requestor_url_(requestor_url),
       delegate_(delegate) {}
 
 WebstoreInlineInstaller::~WebstoreInlineInstaller() {
@@ -225,6 +234,26 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
     }
   }
 
+  // Verified site is optional
+  if (webstore_data->HasKey(kVerifiedSiteKey)) {
+    std::string verified_site_domain;
+    if (!webstore_data->GetString(kVerifiedSiteKey, &verified_site_domain)) {
+      CompleteInstall(kInvalidWebstoreResponseError);
+      return;
+    }
+
+    URLPattern verified_site_pattern(URLPattern::SCHEME_ALL);
+    verified_site_pattern.SetScheme("*");
+    verified_site_pattern.SetHost(verified_site_domain);
+    verified_site_pattern.SetMatchSubdomains(true);
+    verified_site_pattern.SetPath("/*");
+
+    if (!verified_site_pattern.MatchesURL(requestor_url_)) {
+      CompleteInstall(kNotFromVerifiedSite);
+      return;
+    }
+  }
+
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
       this,
       manifest,
@@ -312,9 +341,9 @@ void WebstoreInlineInstaller::InstallUIAbort(bool user_initiated) {
 
 void WebstoreInlineInstaller::CompleteInstall(const std::string& error) {
   if (error.empty()) {
-    delegate_->OnInlineInstallSuccess();
+    delegate_->OnInlineInstallSuccess(install_id_);
   } else {
-    delegate_->OnInlineInstallFailure(error);
+    delegate_->OnInlineInstallFailure(install_id_, error);
   }
   Release(); // Matches the AddRef in BeginInstall.
 }

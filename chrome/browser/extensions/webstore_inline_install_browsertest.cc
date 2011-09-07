@@ -23,6 +23,7 @@
 
 const char kWebstoreDomain[] = "cws.com";
 const char kAppDomain[] = "app.com";
+const char kNonAppDomain[] = "nonapp.com";
 
 class WebstoreInlineInstallTest : public InProcessBrowserTest {
  public:
@@ -52,6 +53,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     host_resolver()->AddRule(kWebstoreDomain, "127.0.0.1");
     host_resolver()->AddRule(kAppDomain, "127.0.0.1");
+    host_resolver()->AddRule(kNonAppDomain, "127.0.0.1");
   }
 
  protected:
@@ -63,6 +65,16 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
     GURL::Replacements replace_host;
     replace_host.SetHostStr(domain);
     return page_url.ReplaceComponents(replace_host);
+  }
+
+  void RunInlineInstallTest() {
+    bool result = false;
+    std::string script =
+        StringPrintf("runTest('%s')", test_gallery_url_.c_str());
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        UTF8ToWide(script), &result));
+    EXPECT_TRUE(result);
   }
 
   std::string test_gallery_url_;
@@ -78,18 +90,23 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
 
-  bool result = false;
-  std::string script = StringPrintf("runTest('%s')", test_gallery_url_.c_str());
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      UTF8ToWide(script), &result));
-  EXPECT_TRUE(result);
+  RunInlineInstallTest();
 
   load_signal.Wait();
 
   const Extension* extension = browser()->profile()->GetExtensionService()->
       GetExtensionById("ecglahbcnmdpdciemllbhojghbkagdje", false);
   EXPECT_TRUE(extension != NULL);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebstoreInlineInstallTest, InstallNotAllowedFromNonVerifiedDomains) {
+  SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GenerateTestServerUrl(kNonAppDomain, "install-non-verified-domain.html"));
+
+  RunInlineInstallTest();
 }
 
 // Flakily fails on Linux.  http://crbug.com/95280
@@ -103,10 +120,13 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, MAYBE_FindLink) {
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "find_link.html"));
 
-  bool result = false;
-  std::string script = StringPrintf("runTest('%s')", test_gallery_url_.c_str());
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      UTF8ToWide(script), &result));
-  EXPECT_TRUE(result);
+  RunInlineInstallTest();
+}
+
+IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
+  SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
+  ui_test_utils::NavigateToURL(
+      browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
+
+  RunInlineInstallTest();
 }

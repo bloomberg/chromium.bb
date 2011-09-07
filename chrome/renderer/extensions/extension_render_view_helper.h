@@ -42,7 +42,9 @@ class ExtensionRenderViewHelper
   bool InstallWebApplicationUsingDefinitionFile(WebKit::WebFrame* frame,
                                                 string16* error);
 
-  void InlineWebstoreInstall(std::string webstore_item_id);
+  void InlineWebstoreInstall(int install_id,
+                             std::string webstore_item_id,
+                             GURL requestor_url);
 
   int browser_window_id() const { return browser_window_id_; }
   ViewType::Type view_type() const { return view_type_; }
@@ -69,7 +71,8 @@ class ExtensionRenderViewHelper
   void OnGetApplicationInfo(int page_id);
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnUpdateBrowserWindowId(int window_id);
-  void OnInlineWebstoreInstallResponse(bool success, const std::string& error);
+  void OnInlineWebstoreInstallResponse(
+      int install_id, bool success, const std::string& error);
 
   // Callback triggered when we finish downloading the application definition
   // file.

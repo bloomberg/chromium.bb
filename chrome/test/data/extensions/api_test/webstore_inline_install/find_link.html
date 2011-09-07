@@ -7,9 +7,9 @@
   var NO_LINK_EXCEPTION = 'No Chrome Web Store item link found.';
   var INVALID_URL_EXCEPTION = 'Invalid Chrome Web Store item URL.';
 
-  function checkNoLinkFound(expectedException) {
+  function checkNoLinkFound(expectedException, opt_preferredStoreUrl) {
     try {
-      chrome.webstore.install();
+      chrome.webstore.install(opt_preferredStoreUrl);
       console.log('Exception should have been thrown');
       window.domAutomationController.send(false);
       return;
@@ -54,6 +54,13 @@
     linkNode.href =
         galleryUrl + '/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm?foo=bar';
     checkNoLinkFound(INVALID_URL_EXCEPTION);
+
+    // Non-existent preferred link.
+    linkNode.rel = 'chrome-webstore-item';
+    linkNode.href = galleryUrl + '/detail/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm';
+    checkNoLinkFound(
+        NO_LINK_EXCEPTION,
+        galleryUrl + '/detail/iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
 
     // Successful installation is tested elsewhere
     window.domAutomationController.send(true);

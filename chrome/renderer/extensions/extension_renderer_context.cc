@@ -89,7 +89,7 @@ void ExtensionRendererContext::WebKitInitialized() {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableInlineWebstoreInstall)) {
-    RegisterExtension(extensions_v8::ChromeWebstoreExtension::Get(), false);
+    RegisterExtension(ChromeWebstoreExtension::Get(), false);
   }
 
   // Add v8 extensions related to chrome extensions.

@@ -10,17 +10,19 @@
 #define CHROME_RENDERER_EXTENSIONS_CHROME_WEBSTORE_BINDINGS_H_
 #pragma once
 
+#include <string>
+
 namespace v8 {
 class Extension;
 }
 
-namespace extensions_v8 {
-
 class ChromeWebstoreExtension {
  public:
   static v8::Extension* Get();
-};
 
-}  // namespace extensions_v8
+  static void HandleInstallResponse(int install_id,
+                                    bool success,
+                                    const std::string& error);
+};
 
 #endif  // CHROME_RENDERER_EXTENSIONS_CHROME_WEBSTORE_BINDINGS_H_

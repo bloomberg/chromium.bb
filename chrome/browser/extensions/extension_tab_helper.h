@@ -97,7 +97,9 @@ class ExtensionTabHelper : public TabContentsObserver,
   // Message handlers.
   void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
   void OnInstallApplication(const WebApplicationInfo& info);
-  void OnInlineWebstoreInstall(const std::string& webstore_item_id);
+  void OnInlineWebstoreInstall(int install_id,
+                               const std::string& webstore_item_id,
+                               const GURL& requestor_url);
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // App extensions related methods:
@@ -111,8 +113,9 @@ class ExtensionTabHelper : public TabContentsObserver,
                              int index) OVERRIDE;
 
   // WebstoreInlineInstaller::Delegate.
-  virtual void OnInlineInstallSuccess() OVERRIDE;
-  virtual void OnInlineInstallFailure(const std::string& error) OVERRIDE;
+  virtual void OnInlineInstallSuccess(int install_id) OVERRIDE;
+  virtual void OnInlineInstallFailure(int install_id,
+                                      const std::string& error) OVERRIDE;
 
   // Data for app extensions ---------------------------------------------------
 

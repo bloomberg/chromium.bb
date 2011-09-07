@@ -15,13 +15,19 @@
       chrome.webstore.install(
           undefined,
           function() {
-            window.domAutomationController.send(true);
+            console.log('did not expect install success');
+            window.domAutomationController.send(false);
           },
           function(error) {
-            console.log('Unexpected error: ' + error);
-            window.domAutomationController.send(false);
+            if (error.indexOf('verified site') != -1) {
+              window.domAutomationController.send(true);
+            } else {
+              console.log('Unexpected error: ' + error);
+              window.domAutomationController.send(false);
+            }
           });
     } catch (e) {
+      console.log('Unexpected exception: ' + e);
       window.domAutomationController.send(false);
       throw e;
     }

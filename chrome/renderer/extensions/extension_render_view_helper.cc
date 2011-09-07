@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/renderer/extensions/chrome_webstore_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_bindings_context.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
@@ -107,21 +108,16 @@ bool ExtensionRenderViewHelper::InstallWebApplicationUsingDefinitionFile(
 }
 
 void ExtensionRenderViewHelper::InlineWebstoreInstall(
-    std::string webstore_item_id) {
+    int install_id, std::string webstore_item_id, GURL requestor_url) {
   Send(new ExtensionHostMsg_InlineWebstoreInstall(
-      routing_id(), webstore_item_id));
+      routing_id(), install_id, webstore_item_id, requestor_url));
 }
 
 void ExtensionRenderViewHelper::OnInlineWebstoreInstallResponse(
+    int install_id,
     bool success,
     const std::string& error) {
-  // TODO(mihaip): dispatch these as events to the the WebFrame that initiated
-  // the inline install.
-  if (success) {
-    VLOG(1) << "Inline install succeeded.";
-  } else {
-    VLOG(1) << "Inline install failed: " << error;
-  }
+  ChromeWebstoreExtension::HandleInstallResponse(install_id, success, error);
 }
 
 bool ExtensionRenderViewHelper::OnMessageReceived(const IPC::Message& message) {

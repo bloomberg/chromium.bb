@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "content/common/url_fetcher.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class TabContents;
@@ -32,12 +33,15 @@ class WebstoreInlineInstaller
  public:
   class Delegate {
    public:
-    virtual void OnInlineInstallSuccess() = 0;
-    virtual void OnInlineInstallFailure(const std::string& error) = 0;
+    virtual void OnInlineInstallSuccess(int install_id) = 0;
+    virtual void OnInlineInstallFailure(int install_id,
+                                        const std::string& error) = 0;
   };
 
   WebstoreInlineInstaller(TabContents* tab_contents,
+                          int install_id,
                           std::string webstore_item_id,
+                          GURL requestor_url,
                           Delegate* d);
   void BeginInstall();
 
@@ -82,7 +86,9 @@ class WebstoreInlineInstaller
   void CompleteInstall(const std::string& error);
 
   TabContents* tab_contents_;
+  int install_id_;
   std::string id_;
+  GURL requestor_url_;
   Delegate* delegate_;
 
   // For fetching webstore JSON data.
