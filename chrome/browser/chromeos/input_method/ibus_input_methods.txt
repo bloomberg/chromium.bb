@@ -158,10 +158,14 @@ m17n:ta:itrans	us	ta
 # m17n:ta:tamil99	us	ta
 # m17n:ta:typewriter	us	ta
 
+# TODO(yusukes): Uncomment Kannada and Telugu once Lohit font is upgraded.
+# Telugu
+# m17n:te:itrans	us	te
+# Kannada
+# m17n:kn:itrans	us	kn
+
 # Amharic
 m17n:am:sera	us	am
-
-# TODO(yusukes): Support Kannada and Telugu once Lohit font is upgraded.
 
 # ibux-xkb-layouts input methods (keyboard layouts).
 xkb:br::por	br	por	!defined(TOUCH_UI)

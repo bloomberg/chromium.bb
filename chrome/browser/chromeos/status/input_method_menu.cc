@@ -652,7 +652,6 @@ std::wstring InputMethodMenu::GetTextForMenu(
   const std::string language_code
       = input_method::GetLanguageCodeFromDescriptor(input_method);
   std::wstring text;
-  // TODO(yusukes): Add Telugu and Kanada.
   if (language_code == "am" ||
       language_code == "ar" ||
       language_code == "bn" ||
@@ -660,10 +659,12 @@ std::wstring InputMethodMenu::GetTextForMenu(
       language_code == "fr" ||
       language_code == "gu" ||
       language_code == "hi" ||
+      language_code == "kn" ||
       language_code == "ml" ||
       language_code == "mr" ||
       language_code == "nl" ||
-      language_code == "ta") {
+      language_code == "ta" ||
+      language_code == "te") {
     text = GetLanguageName(language_code) + L" - ";
   }
   text += input_method::GetString(input_method.id());
