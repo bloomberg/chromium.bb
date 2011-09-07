@@ -10,12 +10,15 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_input_event_box.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
+#include "chrome/browser/ui/tabs/tab_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/models/accelerator_gtk.h"
 #include "ui/gfx/path.h"
 
@@ -62,8 +65,7 @@ TabGtk::TabGtk(TabDelegate* delegate)
       title_width_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(drag_end_factory_(this)) {
-  event_box_ = gtk_event_box_new();
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
+  event_box_ = gtk_input_event_box_new();
   g_signal_connect(event_box_, "button-press-event",
                    G_CALLBACK(OnButtonPressEventThunk), this);
   g_signal_connect(event_box_, "button-release-event",
@@ -95,6 +97,13 @@ TabGtk::~TabGtk() {
     // Invoke this so that we hide the highlight.
     ContextMenuClosed();
   }
+}
+
+void TabGtk::Raise() const {
+  GdkWindow* window = gtk_input_event_box_get_window(
+      GTK_INPUT_EVENT_BOX(event_box_));
+  gdk_window_raise(window);
+  TabRendererGtk::Raise();
 }
 
 gboolean TabGtk::OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event) {
@@ -257,6 +266,17 @@ void TabGtk::UpdateData(TabContents* contents, bool app, bool loading_only) {
 
 void TabGtk::SetBounds(const gfx::Rect& bounds) {
   TabRendererGtk::SetBounds(bounds);
+
+  if (gtk_input_event_box_get_window(GTK_INPUT_EVENT_BOX(event_box_))) {
+    gfx::Path mask;
+    TabResources::GetHitTestMask(bounds.width(), bounds.height(), &mask);
+    ui::ScopedRegion region(mask.CreateNativeRegion());
+    gdk_window_input_shape_combine_region(
+        gtk_input_event_box_get_window(GTK_INPUT_EVENT_BOX(event_box_)),
+        region.Get(),
+        0, 0);
+  }
+
   UpdateTooltipState();
 }
 

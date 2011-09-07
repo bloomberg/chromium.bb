@@ -750,6 +750,8 @@ void TabStripGtk::Init() {
                                  -1 };
   ui::SetDestTargetList(tabstrip_.get(), targets);
 
+  g_signal_connect(tabstrip_.get(), "map",
+                   G_CALLBACK(OnMapThunk), this);
   g_signal_connect(tabstrip_.get(), "expose-event",
                    G_CALLBACK(OnExposeThunk), this);
   g_signal_connect(tabstrip_.get(), "size-allocate",
@@ -1006,6 +1008,8 @@ void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
   } else {
     Layout();
   }
+
+  ReStack();
 }
 
 void TabStripGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
@@ -1015,6 +1019,13 @@ void TabStripGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   // previous remove is completed fully and index is valid in sync with the
   // model index.
   GetTabAt(index)->set_closing(true);
+}
+
+void TabStripGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
+                                   TabContentsWrapper* new_contents,
+                                   int index,
+                                   bool user_gesture) {
+  ReStack();
 }
 
 void TabStripGtk::TabSelectionChanged(const TabStripSelectionModel& old_model) {
@@ -1075,6 +1086,7 @@ void TabStripGtk::TabMoved(TabContentsWrapper* contents,
   tab_data_.insert(tab_data_.begin() + to_index, data);
   GenerateIdealBounds();
   StartMoveTabAnimation(from_index, to_index);
+  ReStack();
 }
 
 void TabStripGtk::TabChangedAt(TabContentsWrapper* contents, int index,
@@ -1580,6 +1592,26 @@ bool TabStripGtk::IsCursorInTabStripZone() const {
   return bds.Contains(cursor_point);
 }
 
+void TabStripGtk::ReStack() {
+  if (!GTK_WIDGET_REALIZED(tabstrip_.get())) {
+    // If the window isn't realized yet, we can't stack them yet. It will be
+    // done by the OnMap signal handler.
+    return;
+  }
+  int tab_count = GetTabCount();
+  TabGtk* active_tab = NULL;
+  for (int i = tab_count - 1; i >= 0; --i) {
+    TabGtk* tab = GetTabAt(i);
+    if (tab->IsActive())
+      active_tab = tab;
+    else
+      tab->Raise();
+  }
+  if (active_tab)
+    active_tab->Raise();
+}
+
+
 void TabStripGtk::AddMessageLoopObserver() {
   if (!added_as_message_loop_observer_) {
     MessageLoopForUI::current()->AddObserver(this);
@@ -1935,6 +1967,10 @@ void TabStripGtk::FinishAnimation(TabStripGtk::TabAnimation* animation,
 
   if (layout)
     Layout();
+}
+
+void TabStripGtk::OnMap(GtkWidget* widget) {
+  ReStack();
 }
 
 gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {

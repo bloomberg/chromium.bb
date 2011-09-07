@@ -226,6 +226,9 @@ class TabRendererGtk : public ui::AnimationDelegate,
   const gfx::Rect& title_bounds() const { return title_bounds_; }
   const gfx::Rect& close_button_bounds() const { return close_button_bounds_; }
 
+  // Raise button to top of Z-order.
+  void Raise() const;
+
   // Returns the title of the Tab.
   string16 GetTitle() const;
 

@@ -34,6 +34,10 @@
 #include "ui/gfx/platform_font_gtk.h"
 #include "ui/gfx/skbitmap_operations.h"
 
+#if !GTK_CHECK_VERSION(2, 22, 0)
+#define gtk_button_get_event_window(button) button->event_window
+#endif  // Gtk+ >= 2.22
+
 namespace {
 
 const int kFontPixelSize = 12;
@@ -71,10 +75,6 @@ const double kMiniTitleChangeThrobOpacity = 0.75;
 
 // Duration for when the title of an inactive mini-tab changes.
 const int kMiniTitleChangeThrobDuration = 1000;
-
-const SkScalar kTabCapWidth = 15;
-const SkScalar kTabTopCurveWidth = 4;
-const SkScalar kTabBottomCurveWidth = 3;
 
 // The vertical and horizontal offset used to position the close button
 // in the tab. TODO(jhawkins): Ask pkasting what the Fuzz is about.
@@ -569,6 +569,12 @@ void TabRendererGtk::Observe(int type,
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk, protected:
+
+void TabRendererGtk::Raise() const {
+  if (gtk_button_get_event_window(GTK_BUTTON(close_button_->widget())))
+    gdk_window_raise(gtk_button_get_event_window(
+        GTK_BUTTON(close_button_->widget())));
+}
 
 string16 TabRendererGtk::GetTitle() const {
   return data_.title;

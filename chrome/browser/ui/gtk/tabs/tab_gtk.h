@@ -113,6 +113,9 @@ class TabGtk : public TabRendererGtk,
   void set_dragging(bool dragging) { dragging_ = dragging; }
   bool dragging() const { return dragging_; }
 
+  // Raise to top of Z-order.
+  void Raise() const;
+
   // TabRendererGtk overrides:
   virtual bool IsActive() const;
   virtual bool IsSelected() const;
