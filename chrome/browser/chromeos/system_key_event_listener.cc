@@ -41,7 +41,6 @@ SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
 
 SystemKeyEventListener::SystemKeyEventListener()
     : stopped_(false),
-      waiting_for_shift_for_caps_lock_(false),
       caps_lock_is_on_(input_method::CapsLockIsEnabled()),
       xkb_event_base_(0),
       audio_handler_(AudioHandler::GetInstance()) {
@@ -246,37 +245,23 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
         const bool other_shift_is_held = (xevent->xkey.state & ShiftMask);
         const bool other_mods_are_held =
             (xevent->xkey.state & ~(ShiftMask | LockMask));
-
-        if (waiting_for_shift_for_caps_lock_ &&
-            other_shift_is_held && !other_mods_are_held) {
+        if (other_shift_is_held && !other_mods_are_held)
           input_method::SetCapsLockEnabled(!caps_lock_is_on_);
-        }
-
-        // Only toggle on the next Shift press if we're seeing the first Shift
-        // key get pressed by itself here.
-        waiting_for_shift_for_caps_lock_ =
-            (!other_shift_is_held && !other_mods_are_held);
-      } else {
-        // If we see a non-Shift key get pressed, start over.
-        waiting_for_shift_for_caps_lock_ = false;
       }
 
       // Only doing non-Alt/Shift/Ctrl modified keys
       if (!(xevent->xkey.state & (Mod1Mask | ShiftMask | ControlMask))) {
-        if ((keycode == key_f8_) ||
-            (keycode == key_volume_mute_)) {
+        if (keycode == key_f8_ || keycode == key_volume_mute_) {
           if (keycode == key_f8_)
             UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
           OnVolumeMute();
           return true;
-        } else if ((keycode == key_f9_) ||
-                    keycode == key_volume_down_) {
+        } else if (keycode == key_f9_ || keycode == key_volume_down_) {
           if (keycode == key_f9_)
             UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
           OnVolumeDown();
           return true;
-        } else if ((keycode == key_f10_) ||
-                   (keycode == key_volume_up_)) {
+        } else if (keycode == key_f10_ || keycode == key_volume_up_) {
           if (keycode == key_f10_)
             UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
           OnVolumeUp();
