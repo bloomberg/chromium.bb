@@ -69,9 +69,10 @@ class ChildProcessLauncher::Context
 
     BrowserThread::PostTask(
         BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        NewRunnableMethod(
-            this,
+        NewRunnableFunction(
             &Context::LaunchInternal,
+            make_scoped_refptr(this),
+            client_thread_id_,
 #if defined(OS_WIN)
             exposed_dir,
 #elif defined(OS_POSIX)
@@ -101,7 +102,10 @@ class ChildProcessLauncher::Context
     Terminate();
   }
 
-  void LaunchInternal(
+  static void LaunchInternal(
+      // |this_object| is NOT thread safe. Only use it to post a task back.
+      scoped_refptr<Context> this_object,
+      BrowserThread::ID client_thread_id,
 #if defined(OS_WIN)
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
@@ -194,10 +198,10 @@ class ChildProcessLauncher::Context
 #endif  // else defined(OS_POSIX)
 
     BrowserThread::PostTask(
-        client_thread_id_, FROM_HERE,
+        client_thread_id, FROM_HERE,
         NewRunnableMethod(
-            this,
-            &ChildProcessLauncher::Context::Notify,
+            this_object.get(),
+            &Context::Notify,
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
             use_zygote,
 #endif
@@ -247,7 +251,7 @@ class ChildProcessLauncher::Context
     BrowserThread::PostTask(
         BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
         NewRunnableFunction(
-            &ChildProcessLauncher::Context::TerminateInternal,
+            &Context::TerminateInternal,
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
             zygote_,
 #endif
@@ -255,9 +259,10 @@ class ChildProcessLauncher::Context
     process_.set_handle(base::kNullProcessHandle);
   }
 
-  void SetProcessBackgrounded(bool background) {
-    DCHECK(!starting_);
-    process_.SetProcessBackgrounded(background);
+  static void SetProcessBackgrounded(base::ProcessHandle handle,
+                                     bool background) {
+    base::Process process(handle);
+    process.SetProcessBackgrounded(background);
   }
 
   static void TerminateInternal(
@@ -375,10 +380,9 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      NewRunnableMethod(
-          context_.get(),
+      NewRunnableFunction(
           &ChildProcessLauncher::Context::SetProcessBackgrounded,
-          background));
+          GetHandle(), background));
 }
 
 void ChildProcessLauncher::SetTerminateChildOnShutdown(

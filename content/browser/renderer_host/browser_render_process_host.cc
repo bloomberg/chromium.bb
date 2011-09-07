@@ -901,8 +901,13 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   if (deleting_soon_)
     return;
 
-  if (child_process_launcher_.get())
+  if (child_process_launcher_.get()) {
+    if (!child_process_launcher_->GetHandle()) {
+      OnChannelError();
+      return;
+    }
     child_process_launcher_->SetProcessBackgrounded(backgrounded_);
+  }
 
   if (max_page_id_ != -1)
     Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
