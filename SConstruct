@@ -1365,6 +1365,12 @@ def PPAPIBrowserTester(env,
       command.extend(GenerateManifestCommands(env, nmf_file))
   if 'browser_test_tool' in ARGUMENTS:
     command.extend(['--tool', ARGUMENTS['browser_test_tool']])
+
+  # Suppress debugging information on the Chrome waterfall.
+  if env.Bit('disable_flaky_tests') and '--debug' in args:
+    args = list(args) # Might be a tuple.
+    args.remove('--debug')
+
   command.extend(args)
   for flag in browser_flags:
     if flag.find(' ') != -1:

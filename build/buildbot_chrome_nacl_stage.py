@@ -15,6 +15,7 @@ import sys
 
 import chromebinaries
 
+
 # Copied from buildbot/buildbot_lib.py
 def TryToCleanContents(path, file_name_filter=lambda fn: True):
   """
@@ -115,9 +116,9 @@ def BuildAndTest(options):
 
   # Download the toolchain.
   subprocess.check_call([sys.executable,
-                        os.path.join(script_dir, 'download_toolchains.py'),
-                        '--x86-version', x86_rev,
-                        '--arm-version', arm_rev])
+                         os.path.join(script_dir, 'download_toolchains.py'),
+                         '--x86-version', x86_rev,
+                         '--arm-version', arm_rev])
 
   # Decide platform specifics.
   env = dict(os.environ)
@@ -212,7 +213,9 @@ def BuildAndTest(options):
 
   sys.stdout.write('\nRunning %s\n\n' % ' '.join(cmd))
   sys.stdout.flush()
-  subprocess.check_call(cmd, cwd=nacl_dir, env=env)
+  retcode = subprocess.call(cmd, cwd=nacl_dir, env=env)
+  if retcode != 0:
+    sys.exit(retcode)
 
 
 def MakeCommandLineParser():

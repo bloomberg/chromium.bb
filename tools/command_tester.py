@@ -501,4 +501,8 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  retval = main(sys.argv[1:])
+  # Add some whitepsace to make the logs easier to read.
+  sys.stdout.write('\n\n')
+  sys.exit(retval)
+
