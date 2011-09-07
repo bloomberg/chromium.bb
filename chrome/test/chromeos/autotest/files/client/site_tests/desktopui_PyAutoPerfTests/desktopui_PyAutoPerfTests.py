@@ -83,6 +83,7 @@ class desktopui_PyAutoPerfTests(chrome_test.ChromeTestBase):
             functional_cmd, shell=True, stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
         output = proc.communicate()[0]
+        print output  # Ensure pyauto test output is stored in autotest logs.
         if proc.returncode != 0:
           raise error.TestFail(
               'Unexpected return code from pyauto_functional.py when running '

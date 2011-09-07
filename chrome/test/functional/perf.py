@@ -23,8 +23,8 @@ import pyauto
 import test_utils
 
 
-class PerfTest(pyauto.PyUITest):
-  """Basic performance tests."""
+class BasePerfTest(pyauto.PyUITest):
+  """Base class for performance tests."""
 
   _DEFAULT_NUM_ITERATIONS = 50
   _PERF_OUTPUT_MARKER_PRE = '_PERF_PRE_'
@@ -43,17 +43,6 @@ class PerfTest(pyauto.PyUITest):
         self.fail('Error processing environment variable: %s' % e)
     pyauto.PyUITest.setUp(self)
 
-  def _LoginToGoogleAccount(self):
-    """Logs in to a testing Google account."""
-    creds = self.GetPrivateInfo()['test_google_account']
-    test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
-    self.assertTrue(self.WaitForInfobarCount(1),
-                    msg='Save password infobar did not appear when logging in.')
-    self.NavigateToURL('about:blank')  # Clear the existing tab.
-
-  # TODO(dennisjeffrey): Reorganize the code to create a base PerfTest class
-  # to separate out common functionality, then create specialized subclasses
-  # such as TabPerfTest that implement the test-specific functionality.
   def _MeasureElapsedTime(self, python_command, num_invocations):
     """Measures time (in msec) to execute a python command one or more times.
 
@@ -141,19 +130,24 @@ class PerfTest(pyauto.PyUITest):
 
     timings = []
     for _ in range(self._num_iterations):
-      elapsed = self._MeasureElapsedTime(open_tab_command, num_tabs)
+      timings.append(self._MeasureElapsedTime(open_tab_command, num_tabs))
       self.assertEqual(1 + num_tabs, self.GetTabCount(),
                        msg='Did not open %d new tab(s).' % num_tabs)
       for _ in range(num_tabs):
         self.GetBrowserWindow(0).GetTab(1).Close(True)
-      timings.append(elapsed)
 
     self._PrintSummaryResults(description, timings, 'milliseconds')
 
+
+class TabPerfTest(BasePerfTest):
+  """Tests that involve opening tabs."""
+
   def testNewTab(self):
     """Measures time to open a new tab."""
-    self._RunNewTabTest('NewTabPage',
-                        lambda: self.AppendTab(pyauto.GURL('chrome://newtab')))
+    self._RunNewTabTest(
+        'NewTabPage',
+        lambda: self.assertTrue(self.AppendTab(pyauto.GURL('chrome://newtab')),
+                                msg='Failed to append tab for new tab page.'))
 
   def testNewTabPdf(self):
     """Measures time to open a new tab navigated to a PDF file."""
@@ -162,8 +156,10 @@ class PerfTest(pyauto.PyUITest):
                                     'TechCrunch.pdf')),
         msg='Missing required PDF data file.')
     url = self.GetFileURLForDataPath('pyauto_private', 'pdf', 'TechCrunch.pdf')
-    self._RunNewTabTest('NewTabPdfPage',
-                        lambda: self.AppendTab(pyauto.GURL(url)))
+    self._RunNewTabTest(
+        'NewTabPdfPage',
+        lambda: self.assertTrue(self.AppendTab(pyauto.GURL(url)),
+                                msg='Failed to append PDF tab.'))
 
   def testNewTabFlash(self):
     """Measures time to open a new tab navigated to a flash page."""
@@ -171,19 +167,28 @@ class PerfTest(pyauto.PyUITest):
         os.path.exists(os.path.join(self.DataDir(), 'plugin', 'flash.swf')),
         msg='Missing required flash data file.')
     url = self.GetFileURLForDataPath('plugin', 'flash.swf')
-    self._RunNewTabTest('NewTabFlashPage',
-                        lambda: self.AppendTab(pyauto.GURL(url)))
+    self._RunNewTabTest(
+        'NewTabFlashPage',
+        lambda: self.assertTrue(self.AppendTab(pyauto.GURL(url)),
+                                msg='Failed to append flash tab.'))
 
   def test20Tabs(self):
     """Measures time to open 20 tabs."""
     self._RunNewTabTest(
         '20TabsNewTabPage',
-        lambda: self.AppendTab(pyauto.GURL('chrome://newtab')), num_tabs=20)
+        lambda: self.assertTrue(self.AppendTab(pyauto.GURL('chrome://newtab')),
+                                msg='Failed to append tab for new tab page.'),
+        num_tabs=20)
+
+
+class BenchmarkPerfTest(BasePerfTest):
+  """Benchmark performance tests."""
 
   def testV8BenchmarkSuite(self):
     """Measures score from online v8 benchmark suite."""
     url = self.GetFileURLForDataPath('v8_benchmark_v6', 'run.html')
-    self.AppendTab(pyauto.GURL(url))
+    self.assertTrue(self.AppendTab(pyauto.GURL(url)),
+                    msg='Failed to append tab for v8 benchmark suite.')
     js = """
         var val = document.getElementById("status").innerHTML;
         window.domAutomationController.send(val);
@@ -193,12 +198,28 @@ class PerfTest(pyauto.PyUITest):
             lambda: 'Score:' in self.ExecuteJavascript(js, 0, 1), timeout=300,
             expect_retval=True),
         msg='Timed out when waiting for v8 benchmark score.')
-    val = self.ExecuteJavascript(js, 0, 1)
-    score = int(val[val.find(':') + 2:])
+    val = self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
+    score = int(val.split(':')[1].strip())
     self._PrintSummaryResults('V8Benchmark', [score], 'score')
 
-  # TODO(dennisjeffrey): Move the 3 tests below (Gmail/Cal/Docs) into a separate
-  # test class in this file: LiveWebappLoadTest.
+
+class LiveWebappLoadTest(BasePerfTest):
+  """Tests that involve performance measurements of live webapps.
+
+  These tests connect to live webpages (e.g., Gmail, Calendar, Docs) and are
+  therefore subject to network conditions.  These tests are meant to generate
+  "ball-park" numbers only (to see roughly how long things take to occur from a
+  user's perspective), and are not expected to be precise.
+  """
+
+  def _LoginToGoogleAccount(self):
+    """Logs in to a testing Google account."""
+    creds = self.GetPrivateInfo()['test_google_account']
+    test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
+    self.assertTrue(self.WaitForInfobarCount(1),
+                    msg='Save password infobar did not appear when logging in.')
+    self.NavigateToURL('about:blank')  # Clear the existing tab.
+
   def testNewTabGmail(self):
     """Measures time to open a tab to a logged-in Gmail account.
 
@@ -217,11 +238,14 @@ class PerfTest(pyauto.PyUITest):
           }
           window.domAutomationController.send("false");
       """ % EXPECTED_SUBSTRING
-      return self.ExecuteJavascript(js, 0, 1)
+      return self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
 
     def _RunSingleGmailTabOpen():
-      self.AppendTab(pyauto.GURL('http://www.gmail.com'))
-      self.WaitUntil(_SubstringExistsOnPage, timeout=120, expect_retval='true')
+      self.assertTrue(self.AppendTab(pyauto.GURL('http://www.gmail.com')),
+                      msg='Failed to append tab for Gmail.')
+      self.assertTrue(self.WaitUntil(_SubstringExistsOnPage, timeout=120,
+                                     expect_retval='true'),
+                      msg='Timed out waiting for expected Gmail string.')
 
     self._LoginToGoogleAccount()
     self._RunNewTabTest('NewTabGmail', _RunSingleGmailTabOpen)
@@ -244,11 +268,14 @@ class PerfTest(pyauto.PyUITest):
           }
           window.domAutomationController.send("false");
       """ % EXPECTED_SUBSTRING
-      return self.ExecuteJavascript(js, 0, 1)
+      return self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
 
     def _RunSingleCalendarTabOpen():
-      self.AppendTab(pyauto.GURL('http://calendar.google.com'))
-      self.WaitUntil(_DivTitleStartsWith, timeout=120, expect_retval='true')
+      self.assertTrue(self.AppendTab(pyauto.GURL('http://calendar.google.com')),
+                      msg='Failed to append tab for Calendar.')
+      self.assertTrue(self.WaitUntil(_DivTitleStartsWith, timeout=120,
+                                     expect_retval='true'),
+                      msg='Timed out waiting for expected Calendar string.')
 
     self._LoginToGoogleAccount()
     self._RunNewTabTest('NewTabCalendar', _RunSingleCalendarTabOpen)
@@ -271,11 +298,14 @@ class PerfTest(pyauto.PyUITest):
           }
           window.domAutomationController.send("false");
       """ % EXPECTED_SUBSTRING
-      return self.ExecuteJavascript(js, 0, 1)
+      return self.ExecuteJavascript(js, 0, 1)  # Window index 0, tab index 1.
 
     def _RunSingleDocsTabOpen():
-      self.AppendTab(pyauto.GURL('http://docs.google.com'))
-      self.WaitUntil(_SubstringExistsOnPage, timeout=120, expect_retval='true')
+      self.assertTrue(self.AppendTab(pyauto.GURL('http://docs.google.com')),
+                      msg='Failed to append tab for Docs.')
+      self.assertTrue(self.WaitUntil(_SubstringExistsOnPage, timeout=120,
+                                     expect_retval='true'),
+                      msg='Timed out waiting for expected Docs string.')
 
     self._LoginToGoogleAccount()
     self._RunNewTabTest('NewTabDocs', _RunSingleDocsTabOpen)
