@@ -27,7 +27,7 @@ class WebIntentPickerDelegate;
 class WebIntentPickerGtk : public WebIntentPicker,
                            public ConstrainedWindowGtkDelegate {
  public:
-  WebIntentPickerGtk(TabContents* tab_contents,
+  WebIntentPickerGtk(TabContentsWrapper* tab_contents,
                      WebIntentPickerDelegate* delegate);
   virtual ~WebIntentPickerGtk();
 
@@ -50,7 +50,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnCloseButtonClick);
 
   // A weak pointer to the tab contents on which to display the picker UI.
-  TabContents* tab_contents_;
+  TabContentsWrapper* wrapper_;
 
   // A weak pointer to the WebIntentPickerDelegate to notify when the user
   // chooses a service or cancels.

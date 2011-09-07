@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_FACTORY_H_
 #pragma once
 
-class TabContents;
+class TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerDelegate;
 
@@ -16,7 +16,7 @@ class WebIntentPickerFactory {
   virtual ~WebIntentPickerFactory() {}
 
   // Creates a new WebIntentPicker. The picker is owned by the factory.
-  virtual WebIntentPicker* Create(TabContents* tab_contents,
+  virtual WebIntentPicker* Create(TabContentsWrapper* tab_contents,
                                   WebIntentPickerDelegate* delegate) = 0;
 
   // Closes and destroys the picker.

@@ -87,16 +87,16 @@ class WebIntentPickerMock : public WebIntentPicker {
 class WebIntentPickerFactoryMock : public WebIntentPickerFactory {
  public:
   MOCK_METHOD2(Create,
-               WebIntentPicker*(TabContents* tab_contents,
+               WebIntentPicker*(TabContentsWrapper* wrapper,
                                 WebIntentPickerDelegate* delegate));
   MOCK_METHOD1(ClosePicker, void(WebIntentPicker* picker));
 };
 
 class TestWebIntentPickerController : public WebIntentPickerController {
  public:
-  TestWebIntentPickerController(TabContents* tab_contents,
+  TestWebIntentPickerController(TabContentsWrapper* wrapper,
                                 WebIntentPickerFactory* factory)
-      : WebIntentPickerController(tab_contents, factory) {
+      : WebIntentPickerController(wrapper, factory) {
   }
 
   MOCK_METHOD1(OnServiceChosen, void(size_t index));
@@ -133,8 +133,8 @@ class WebIntentPickerControllerTest : public TabContentsWrapperTestHarness {
     registry->Initialize(web_data_service_);
 
     picker_factory_ = new WebIntentPickerFactoryMock();
-    controller_.reset(new TestWebIntentPickerController(contents(),
-                                                  picker_factory_));
+    controller_.reset(new TestWebIntentPickerController(contents_wrapper(),
+                                                        picker_factory_));
   }
 
   virtual void TearDown() {

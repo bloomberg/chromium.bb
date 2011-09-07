@@ -248,8 +248,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   web_intent_picker_controller_.reset(new WebIntentPickerController(
-        contents,
-        new WebIntentConstrainedDialogFactory()));
+      this, new WebIntentConstrainedDialogFactory()));
 
   // Create the per-tab observers.
   download_request_limiter_observer_.reset(

@@ -17,7 +17,7 @@
 class FaviconService;
 class GURL;
 class SkBitmap;
-class TabContents;
+class TabContentsWrapper;
 class WebDataService;
 class WebIntentPicker;
 class WebIntentPickerFactory;
@@ -29,7 +29,7 @@ class WebIntentPickerController : public NotificationObserver,
                                   public WebIntentPickerDelegate {
  public:
   // Takes ownership of |factory|.
-  WebIntentPickerController(TabContents* tab_contents,
+  WebIntentPickerController(TabContentsWrapper* wrapper,
                             WebIntentPickerFactory* factory);
   virtual ~WebIntentPickerController();
 
@@ -67,7 +67,7 @@ class WebIntentPickerController : public NotificationObserver,
   void ClosePicker();
 
   // A weak pointer to the tab contents that the picker is displayed on.
-  TabContents* tab_contents_;
+  TabContentsWrapper* wrapper_;
 
   // A notification registrar, listening for notifications when the tab closes
   // to close the picker ui.

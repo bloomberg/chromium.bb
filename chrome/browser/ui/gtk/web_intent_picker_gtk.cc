@@ -25,23 +25,21 @@
 
 namespace {
 
-GtkThemeService *GetThemeService(TabContents* tab_contents) {
-  Profile* profile = Profile::FromBrowserContext(
-      tab_contents->browser_context());
-  return GtkThemeService::GetFrom(profile);
+GtkThemeService *GetThemeService(TabContentsWrapper* wrapper) {
+  return GtkThemeService::GetFrom(wrapper->profile());
 }
 
 } // namespace
 
 // static
-WebIntentPicker* WebIntentPicker::Create(TabContents* tab_contents,
+WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
                                          WebIntentPickerDelegate* delegate) {
-  return new WebIntentPickerGtk(tab_contents, delegate);
+  return new WebIntentPickerGtk(wrapper, delegate);
 }
 
-WebIntentPickerGtk::WebIntentPickerGtk(TabContents* tab_contents,
+WebIntentPickerGtk::WebIntentPickerGtk(TabContentsWrapper* wrapper,
                                        WebIntentPickerDelegate* delegate)
-    : tab_contents_(tab_contents),
+    : wrapper_(wrapper),
       delegate_(delegate),
       window_(NULL) {
   DCHECK(delegate_ != NULL);
@@ -52,7 +50,7 @@ WebIntentPickerGtk::WebIntentPickerGtk(TabContents* tab_contents,
   gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
 
   close_button_.reset(
-      CustomDrawButton::CloseButton(GetThemeService(tab_contents_)));
+      CustomDrawButton::CloseButton(GetThemeService(wrapper_)));
   g_signal_connect(close_button_->widget(),
                    "clicked",
                    G_CALLBACK(OnCloseButtonClickThunk),
@@ -109,7 +107,7 @@ void WebIntentPickerGtk::SetDefaultServiceIcon(size_t index) {
 
 void WebIntentPickerGtk::Show() {
   DCHECK(window_ == NULL) << "Show already called.";
-  window_ = new ConstrainedWindowGtk(tab_contents_, this);
+  window_ = new ConstrainedWindowGtk(wrapper_->tab_contents(), this);
 }
 
 void WebIntentPickerGtk::Close() {

@@ -22,7 +22,7 @@ class WebIntentConstrainedDialogFactory : public WebIntentPickerFactory {
 
   // WebIntentPickerFactory implementation.
   virtual WebIntentPicker* Create(
-      TabContents* tab_contents,
+      TabContentsWrapper* wrapper,
       WebIntentPickerDelegate* delegate) OVERRIDE;
   virtual void ClosePicker(WebIntentPicker* picker) OVERRIDE;
 

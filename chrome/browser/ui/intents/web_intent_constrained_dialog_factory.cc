@@ -17,12 +17,12 @@ WebIntentConstrainedDialogFactory::~WebIntentConstrainedDialogFactory() {
 }
 
 WebIntentPicker* WebIntentConstrainedDialogFactory::Create(
-    TabContents* tab_contents,
+    TabContentsWrapper* wrapper,
     WebIntentPickerDelegate* delegate) {
   // Only allow one picker per factory.
   DCHECK(picker_ == NULL);
 
-  picker_ = WebIntentPicker::Create(tab_contents, delegate);
+  picker_ = WebIntentPicker::Create(wrapper, delegate);
 
   // TODO(binji) Remove this check when there are implementations of the picker
   // for windows and mac.

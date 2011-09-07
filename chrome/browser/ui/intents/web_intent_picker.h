@@ -11,7 +11,7 @@
 
 class GURL;
 class SkBitmap;
-class TabContents;
+class TabContentsWrapper;
 class WebIntentPickerDelegate;
 
 // Base class for the web intent picker dialog.
@@ -20,7 +20,7 @@ class WebIntentPicker {
   class Delegate;
 
   // Platform specific factory function.
-  static WebIntentPicker* Create(TabContents* tab_contents,
+  static WebIntentPicker* Create(TabContentsWrapper* wrapper,
                                  WebIntentPickerDelegate* delegate);
 
   // Initalizes this picker with the |urls|.
