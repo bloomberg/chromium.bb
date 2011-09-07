@@ -29,17 +29,6 @@
 
 EXTERN_C_BEGIN
 
-/* Defines the API to select the validator kind.
- * So far only the ARM architecture has a non-default validator kind
- *
- * NaClSBKind can be architecture specific, but requries more
- * scaffolding. So it is probably not worth while to split up the flag.
- */
-enum NaClSBKind {
-  NACL_SB_DEFAULT         = 0,
-  NACL_SB_ARM_THUMB2      = 1
-};
-
 /* Defines possible validation status values. */
 typedef enum NaClValidationStatus {
   /* The call to the validator succeeded. */
@@ -102,13 +91,12 @@ typedef enum NaClApplyValidationKind {
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
                                               NACL_TARGET_ARCH,
                                               NACL_TARGET_SUBARCH)(
-    enum NaClSBKind         sb_kind,
     NaClApplyValidationKind kind,
-    uintptr_t               guest_addr,
-    uint8_t                 *data,
-    size_t                  size,
-    int                     bundle_size,
-    Bool                    local_cpu);
+    uintptr_t guest_addr,
+    uint8_t *data,
+    size_t size,
+    int bundle_size,
+    Bool local_cpu);
 
 /* Applies the validator, as used in a command-line tool to report issues.
  * Note: This is intentionally separated from ApplyValidator, since it need
@@ -127,13 +115,12 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
                                               NACL_TARGET_ARCH,
                                               NACL_TARGET_SUBARCH)(
-    enum NaClSBKind         sb_kind,
     NaClApplyValidationKind kind,
-    uintptr_t               guest_addr,
-    uint8_t                 *data,
-    size_t                  size,
-    int                     bundle_size,
-    Bool                    local_cpu);
+    uintptr_t guest_addr,
+    uint8_t *data,
+    size_t size,
+    int bundle_size,
+    Bool local_cpu);
 
 /* Applies validator to new code segment, assuming that it was updated
  * from the previously validated old code segment. Assumes that instruction
@@ -151,12 +138,11 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
                                               NACL_TARGET_ARCH,
                                               NACL_TARGET_SUBARCH)(
-      enum NaClSBKind sb_kind,
-      uintptr_t       guest_addr,
-      uint8_t         *data_old,
-      uint8_t         *data_new,
-      size_t          size,
-      int             bundle_size);
+      uintptr_t guest_addr,
+      uint8_t *data_old,
+      uint8_t *data_new,
+      size_t size,
+      int bundle_size);
 
 /* Runs the validator to copy code from an existing code segment to a new
  * code segment.
@@ -177,12 +163,11 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
                                               NACL_TARGET_ARCH,
                                               NACL_TARGET_SUBARCH)(
-    enum NaClSBKind sb_kind,
-    uintptr_t       guest_addr,
-    uint8_t         *data_old,
-    uint8_t         *data_new,
-    size_t          size,
-    int             bundle_size);
+    uintptr_t guest_addr,
+    uint8_t *data_old,
+    uint8_t *data_new,
+    size_t size,
+    int bundle_size);
 
 EXTERN_C_END
 

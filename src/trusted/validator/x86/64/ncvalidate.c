@@ -5,7 +5,7 @@
  */
 
 /* Implement the ApplyValidator API for the x86-64 architecture. */
-#include <assert.h>
+
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -63,7 +63,6 @@ NaClValidationStatus NaClApplyValidatorStubout_x86_64(
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
-    enum NaClSBKind sb_kind,
     NaClApplyValidationKind kind,
     uintptr_t guest_addr,
     uint8_t *data,
@@ -71,7 +70,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, x86, 64) (
     int bundle_size,
     Bool local_cpu) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
-  assert(NACL_SB_DEFAULT == sb_kind);
+
   if (bundle_size == 16 || bundle_size == 32) {
     if (local_cpu) {
       NaClCPUData cpu_data;
@@ -113,14 +112,12 @@ static NaClValidationStatus NaClApplyValidatorPair(
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 64)
-    (enum NaClSBKind sb_kind,
-     uintptr_t guest_addr,
+    (uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      int bundle_size) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
-  assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
     NaClCPUData cpu_data;
     NaClCPUDataGet(&cpu_data);

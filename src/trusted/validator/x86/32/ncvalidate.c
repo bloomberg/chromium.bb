@@ -9,7 +9,6 @@
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_detailed.h"
-#include <assert.h>
 
 /* Be sure the correct compile flags are defined for this. */
 #if NACL_ARCH(NACL_TARGET_ARCH) != NACL_x86
@@ -64,7 +63,6 @@ NaClValidationStatus NCApplyValidatorStubout_x86_32(
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
-    enum NaClSBKind sb_kind,
     NaClApplyValidationKind kind,
     uintptr_t guest_addr,
     uint8_t *data,
@@ -72,7 +70,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
     int bundle_size,
     Bool local_cpu) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
-  assert(NACL_SB_DEFAULT == sb_kind);
+
   if (bundle_size == 16 || bundle_size == 32) {
     if (local_cpu) {
       NaClCPUData cpu_data;
@@ -98,14 +96,12 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
-    (enum NaClSBKind sb_kind,
-     uintptr_t guest_addr,
+    (uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      int bundle_size) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
-  assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
     NaClCPUData cpu_data;
     NaClCPUDataGet(&cpu_data);
