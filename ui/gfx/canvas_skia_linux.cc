@@ -50,7 +50,7 @@ void UpdateCairoFontOptions() {
   gchar* hint_style = NULL;
   gchar* rgba_style = NULL;
 
-#if !defined(USE_WAYLAND)
+#if !defined(USE_WAYLAND) && !defined(USE_AURA)
   GtkSettings* gtk_settings = gtk_settings_get_default();
   g_object_get(gtk_settings,
                "gtk-xft-antialias", &antialias,

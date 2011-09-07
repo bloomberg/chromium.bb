@@ -312,7 +312,7 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 void DialogClientView::OnPaint(gfx::Canvas* canvas) {
 #if defined(OS_WIN)
   FillViewWithSysColor(canvas, this, GetSysColor(COLOR_3DFACE));
-#elif defined(USE_WAYLAND)
+#elif defined(USE_WAYLAND) || defined(USE_AURA)
   SkColor sk_color = SkColorSetARGB(200, 255, 255, 255);
   canvas->FillRectInt(sk_color, 0, 0, width(), height());
 #else

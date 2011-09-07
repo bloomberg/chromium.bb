@@ -236,6 +236,7 @@
         'drag_utils.cc',
         'drag_utils.h',
         'drag_utils_gtk.cc',
+        'drag_utils_linux.cc',
         'drag_utils_win.cc',
         'events/event.cc',
         'events/event.h',
@@ -417,6 +418,10 @@
           'dependencies': [
             '../aura/aura.gyp:aura',
           ],
+          'sources/': [
+            ['exclude', '_(gtk|x)\\.cc$'],
+            ['exclude', '/(gtk|x)_[^/]*\\.cc$'],
+          ],
           'sources!': [
             'controls/menu/menu_2.cc',
             'controls/menu/menu_2.h',
@@ -436,6 +441,8 @@
             'controls/table/table_view_observer.h',
             'controls/tree/tree_view.cc',
             'controls/tree/tree_view.h',
+            'focus/accelerator_handler_aura.cc',
+            'focus/accelerator_handler_touch.cc',
             'widget/aero_tooltip_manager.cc',
             'widget/aero_tooltip_manager.h',
             'widget/child_window_message_processor.cc',
@@ -451,6 +458,10 @@
               ],
             }],
           ],
+        }, { # else: use_aura==1
+          'sources!': [
+            'drag_utils_linux.cc',
+          ]
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
@@ -842,6 +853,7 @@
           'target_name': 'views_aura_desktop',
           'type': 'executable',
           'dependencies': [
+            '../aura/aura.gyp:aura',
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
             '../chrome/chrome.gyp:packed_resources',

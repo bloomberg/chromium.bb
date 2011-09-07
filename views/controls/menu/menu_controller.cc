@@ -877,6 +877,12 @@ base::MessagePumpDispatcher::DispatchStatus
       base::MessagePumpDispatcher::EVENT_QUIT :
       base::MessagePumpDispatcher::EVENT_PROCESSED;
 }
+#elif defined(USE_AURA)
+base::MessagePumpDispatcher::DispatchStatus
+    MenuController::Dispatch(XEvent* xev) {
+  NOTREACHED();
+  return EVENT_PROCESSED;
+}
 #elif defined(TOUCH_UI)
 base::MessagePumpDispatcher::DispatchStatus
     MenuController::Dispatch(XEvent* xev) {

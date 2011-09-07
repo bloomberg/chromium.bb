@@ -20,6 +20,10 @@
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 
+#if !defined(OS_WIN)
+#include "aura/hit_test.h"
+#endif
+
 namespace {
 
 // Trivial WindowDelegate implementation that draws a colored background.

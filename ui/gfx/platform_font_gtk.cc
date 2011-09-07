@@ -114,7 +114,7 @@ string16 FindBestMatchFontFamilyName(const char* family_name) {
 }
 
 std::string GetDefaultFont() {
-#if defined(USE_WAYLAND)
+#if defined(USE_WAYLAND) || defined(USE_AURA)
   return "sans 10";
 #else
   GtkSettings* settings = gtk_settings_get_default();
