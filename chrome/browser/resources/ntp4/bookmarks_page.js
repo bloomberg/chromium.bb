@@ -127,9 +127,11 @@ cr.define('ntp4', function() {
      * current drag.
      */
     setDragData: function(dataTransfer) {
-      // We don't need to do anything here at the moment other than make sure
-      // this method exists. The default data given to us in the drag events are
-      // good enough.
+      // OS X requires extra data drag data to consider a drag useful, so we're
+      // appending some semi-useful data at the end to force drags to work on
+      // this OS. Don't use this data for anything -- this is just a hack to
+      // ensure drag works the same as on other platforms.
+      dataTransfer.setData('Text', this.data.id);
     },
 
     /**
