@@ -19,6 +19,7 @@
 #include "content/common/pepper_plugin_registry.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 
 namespace {
 
@@ -84,6 +85,14 @@ bool GetLatestPepperFlashDirectory(FilePath* result, Version* latest) {
     }
   }
   return found;
+}
+
+// Returns true if the pepper |interface_name| is implemented  by this browser.
+// It does not check if the interface is proxied.
+bool SupportsPepperInterface(const char* interface_name) {
+  static webkit::ppapi::PluginModule::GetInterfaceFunc get_itf =
+      webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc();
+  return get_itf(interface_name) != NULL;
 }
 
 }  // namespace
@@ -173,6 +182,19 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
     return false;
   if (!file_util::PathExists(unpack_path.Append(kPepperFlashPluginFileName)))
     return false;
+
+  // Check that we implement the required interfaces.
+  base::ListValue* interfaces = NULL;
+  if (manifest->GetList("x-ppapi-required-interfaces", &interfaces)) {
+    for (size_t ix = 0; ix != interfaces->GetSize(); ++ix) {
+      std::string interface_name;
+      if (!interfaces->GetString(ix, &interface_name))
+        return false;
+      if (!SupportsPepperInterface(interface_name.c_str()))
+        return false;
+    }
+  }
+
   // Passed the basic tests. Time to install it.
   FilePath path =
       GetPepperFlashBaseDirectory().AppendASCII(version.GetString());
